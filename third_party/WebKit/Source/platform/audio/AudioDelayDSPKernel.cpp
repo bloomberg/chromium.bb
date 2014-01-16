@@ -29,6 +29,7 @@
 #include "platform/audio/AudioDelayDSPKernel.h"
 
 #include "platform/audio/AudioUtilities.h"
+#include "wtf/MathExtras.h"
 #include <algorithm>
 
 using namespace std;
@@ -51,8 +52,8 @@ AudioDelayDSPKernel::AudioDelayDSPKernel(double maxDelayTime, float sampleRate)
     , m_writeIndex(0)
     , m_firstTime(true)
 {
-    ASSERT(maxDelayTime > 0.0);
-    if (maxDelayTime <= 0.0)
+    ASSERT(maxDelayTime > 0.0 && !std::isnan(maxDelayTime));
+    if (maxDelayTime <= 0.0 || std::isnan(maxDelayTime))
         return;
 
     size_t bufferLength = bufferLengthForDelay(maxDelayTime, sampleRate);

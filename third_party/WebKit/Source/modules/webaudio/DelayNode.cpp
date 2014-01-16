@@ -31,6 +31,7 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 
@@ -40,7 +41,7 @@ DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTim
     : AudioBasicProcessorNode(context, sampleRate)
 {
     ScriptWrappable::init(this);
-    if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
+    if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime || std::isnan(maxDelayTime)) {
         exceptionState.throwDOMException(
             NotSupportedError,
             "max delay time (" + String::number(maxDelayTime)
