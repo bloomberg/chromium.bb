@@ -1648,11 +1648,6 @@ Editor::Command Editor::command(const String& commandName, EditorCommandSource s
     return Command(internalCommand(commandName), source, &m_frame);
 }
 
-bool Editor::commandIsSupportedFromMenuOrKeyBinding(const String& commandName)
-{
-    return internalCommand(commandName);
-}
-
 Editor::Command::Command()
     : m_command(0)
 {

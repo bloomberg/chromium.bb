@@ -572,28 +572,6 @@ TriState Editor::selectionOrderedListState() const
     return FalseTriState;
 }
 
-PassRefPtr<Node> Editor::insertOrderedList()
-{
-    if (!canEditRichly())
-        return 0;
-
-    ASSERT(m_frame.document());
-    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame.document(), InsertListCommand::OrderedList);
-    revealSelectionAfterEditingOperation();
-    return newList;
-}
-
-PassRefPtr<Node> Editor::insertUnorderedList()
-{
-    if (!canEditRichly())
-        return 0;
-
-    ASSERT(m_frame.document());
-    RefPtr<Node> newList = InsertListCommand::insertList(*m_frame.document(), InsertListCommand::UnorderedList);
-    revealSelectionAfterEditingOperation();
-    return newList;
-}
-
 void Editor::removeFormattingAndStyle()
 {
     ASSERT(m_frame.document());

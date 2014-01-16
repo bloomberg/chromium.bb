@@ -112,8 +112,6 @@ public:
 
     TriState selectionUnorderedListState() const;
     TriState selectionOrderedListState() const;
-    PassRefPtr<Node> insertOrderedList();
-    PassRefPtr<Node> insertUnorderedList();
 
     void removeFormattingAndStyle();
 
@@ -157,7 +155,6 @@ public:
     };
     Command command(const String& commandName); // Command source is CommandFromMenuOrKeyBinding.
     Command command(const String& commandName, EditorCommandSource);
-    static bool commandIsSupportedFromMenuOrKeyBinding(const String& commandName); // Works without a frame.
 
     bool insertText(const String&, Event* triggeringEvent);
     bool insertTextWithoutSendingTextEvent(const String&, bool selectInsertedText, TextEvent* triggeringEvent);
