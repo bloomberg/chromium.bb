@@ -127,6 +127,7 @@ private:
     bool fillGlyphBuffer(GlyphBuffer*);
     void fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, FloatPoint& firstOffsetOfNextRun);
     void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*);
+    void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
 
     GlyphBufferAdvance createGlyphBufferAdvance(float, float);
 

@@ -627,14 +627,23 @@ bool HarfBuzzShaper::collectHarfBuzzRuns()
                 nextScript = currentScript;
             currentCharacterPosition = iterator.characters();
         }
-        unsigned numCharactersOfCurrentRun = iterator.currentCharacter() - startIndexOfCurrentRun;
-        hb_script_t script = hb_icu_script_to_script(currentScript);
-        m_harfBuzzRuns.append(HarfBuzzRun::create(currentFontData, startIndexOfCurrentRun, numCharactersOfCurrentRun, m_run.direction(), script));
+        addHarfBuzzRun(startIndexOfCurrentRun, iterator.currentCharacter(), currentFontData, currentScript);
         currentFontData = nextFontData;
         startIndexOfCurrentRun = iterator.currentCharacter();
     } while (iterator.consume(character, clusterLength));
 
     return !m_harfBuzzRuns.isEmpty();
+}
+
+void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
+    unsigned endCharacter, const SimpleFontData* fontData,
+    UScriptCode script)
+{
+    ASSERT(endCharacter > startCharacter);
+    ASSERT(script != USCRIPT_INVALID_CODE);
+    return m_harfBuzzRuns.append(HarfBuzzRun::create(fontData,
+        startCharacter, endCharacter - startCharacter,
+        m_run.direction(), hb_icu_script_to_script(script)));
 }
 
 static const uint16_t* toUint16(const UChar* src)
