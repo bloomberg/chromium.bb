@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_resource_protocols.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -21,6 +20,7 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/switches.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -128,7 +128,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     // TODO(jamescook): Should we check here if the process is in the extension
     // service process map, or can we assume all renderers are extension
     // renderers?
-    command_line->AppendSwitch(switches::kExtensionProcess);
+    command_line->AppendSwitch(extensions::switches::kExtensionProcess);
   }
 }
 

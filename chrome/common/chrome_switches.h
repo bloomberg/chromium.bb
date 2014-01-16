@@ -236,7 +236,6 @@ extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kExplicitlyAllowedPorts[];
-extern const char kExtensionProcess[];
 extern const char kExtensionsInstallVerification[];
 extern const char kExtensionsNotWebstore[];
 extern const char kExtensionsUpdateFrequency[];

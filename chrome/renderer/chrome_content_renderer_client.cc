@@ -81,6 +81,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/renderer_resources.h"
@@ -1389,7 +1390,7 @@ bool ChromeContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
   // SiteIsolationPolicy for a renderer process that does not have the extension
   // flag on.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kExtensionProcess);
+  return !command_line->HasSwitch(extensions::switches::kExtensionProcess);
 }
 
 blink::WebWorkerPermissionClientProxy*

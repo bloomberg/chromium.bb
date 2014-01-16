@@ -503,7 +503,7 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
 }
 
 int GetCrashSignalFD(const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kExtensionProcess)) {
+  if (command_line.HasSwitch(extensions::switches::kExtensionProcess)) {
     static breakpad::CrashHandlerHostLinux* crash_handler = NULL;
     if (!crash_handler)
       crash_handler = CreateCrashHandlerHost("extension");
@@ -1459,7 +1459,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       if (extension_service) {
         extensions::ProcessMap* process_map = extension_service->process_map();
         if (process_map && process_map->Contains(process->GetID()))
-          command_line->AppendSwitch(switches::kExtensionProcess);
+          command_line->AppendSwitch(extensions::switches::kExtensionProcess);
       }
 
       PrefService* prefs = profile->GetPrefs();

@@ -841,9 +841,6 @@ const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
-// Marks a renderer as extension process.
-const char kExtensionProcess[]              = "extension-process";
-
 // Turns on extension install verification if it would not otherwise have been
 // turned on.
 const char kExtensionsInstallVerification[] = "extensions-install-verification";

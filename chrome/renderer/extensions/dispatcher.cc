@@ -82,6 +82,7 @@
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/view_type.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
@@ -460,8 +461,8 @@ Dispatcher::Dispatcher()
       v8_schema_registry_(new V8SchemaRegistry) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
-      command_line.HasSwitch(switches::kExtensionProcess) ||
-      command_line.HasSwitch(switches::kSingleProcess);
+      command_line.HasSwitch(extensions::switches::kExtensionProcess) ||
+      command_line.HasSwitch(::switches::kSingleProcess);
 
   if (is_extension_process_) {
     RenderThread::Get()->SetIdleNotificationDelayInMs(
@@ -1179,7 +1180,7 @@ void Dispatcher::DidCreateScriptContext(
       is_within_platform_app &&
       GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAppWindowControls)) {
+          ::switches::kEnableAppWindowControls)) {
     module_system->Require("windowControls");
   }
 
@@ -1221,7 +1222,8 @@ void Dispatcher::DidCreateScriptContext(
   // Same comment as above for <adview> tag.
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
       is_within_platform_app) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdview)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kEnableAdview)) {
       if (extension->HasAPIPermission(APIPermission::kAdView)) {
         module_system->Require("adView");
       } else {
@@ -1474,7 +1476,7 @@ void Dispatcher::OnUpdateUserScripts(
 
 void Dispatcher::UpdateActiveExtensions() {
   // In single-process mode, the browser process reports the active extensions.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kSingleProcess))
     return;
 
   std::set<std::string> active_extensions = active_extension_ids_;
