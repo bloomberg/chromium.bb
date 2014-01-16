@@ -9,7 +9,6 @@
           'data/',
           'test/data/',
         ],
-        'read_only': 1,
       },
     }],
     ['OS=="linux"', {
@@ -36,6 +35,7 @@
         'isolate_dependency_untracked': [
           '../tools/swarming_client/',
         ],
+        'read_only': 1,
       },
     }],
     ['OS=="mac" or OS=="win"', {
