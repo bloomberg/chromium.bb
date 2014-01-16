@@ -62,7 +62,7 @@ extern NSString* KSRegistrationRemoveExistingTag;
                 authorization:(AuthorizationRef)authorization;
 
 - (void)setActive;
-- (void)checkForUpdate;
+- (void)checkForUpdateWasUserInitiated:(BOOL)userInitiated;
 - (void)startUpdate;
 - (keystone_registration::KSRegistrationTicketType)ticketType;
 
