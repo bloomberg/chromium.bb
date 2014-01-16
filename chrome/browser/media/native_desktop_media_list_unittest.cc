@@ -51,14 +51,6 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
     NOTIMPLEMENTED();
   }
 
-  virtual bool GetScreenList(ScreenList* screens) OVERRIDE {
-    return false;
-  }
-
-  virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE {
-    return false;
-  }
-
  protected:
   Callback* callback_;
 

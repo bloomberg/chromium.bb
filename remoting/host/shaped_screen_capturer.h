@@ -28,8 +28,6 @@ class ShapedScreenCapturer : public webrtc::ScreenCapturer,
   virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE;
   virtual void SetMouseShapeObserver(
       MouseShapeObserver* mouse_shape_observer) OVERRIDE;
-  virtual bool GetScreenList(ScreenList* screens) OVERRIDE;
-  virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE;
 
  private:
   // webrtc::ScreenCapturer::Callback interface.

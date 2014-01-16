@@ -370,8 +370,7 @@ scoped_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
       if (screen_capturer) {
         capturer.reset(new webrtc::DesktopAndCursorComposer(
             screen_capturer.release(),
-            webrtc::MouseCursorMonitor::CreateForScreen(
-                options, webrtc::kFullDesktopScreenId)));
+            webrtc::MouseCursorMonitor::CreateForScreen(options)));
       }
       break;
     }
