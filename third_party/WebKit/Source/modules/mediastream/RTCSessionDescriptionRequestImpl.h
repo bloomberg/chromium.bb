@@ -33,6 +33,8 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "platform/mediastream/RTCSessionDescriptionRequest.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 class WebRTCSessionDescription;

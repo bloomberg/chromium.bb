@@ -45,7 +45,7 @@ namespace {
 
 class ExtraDataContainer : public MediaStreamDescriptor::ExtraData {
 public:
-    ExtraDataContainer(WebMediaStream::ExtraData* extraData) : m_extraData(adoptPtr(extraData)) { }
+    ExtraDataContainer(PassOwnPtr<WebMediaStream::ExtraData> extraData) : m_extraData(extraData) { }
 
     WebMediaStream::ExtraData* extraData() { return m_extraData.get(); }
 
@@ -77,15 +77,15 @@ WebString WebMediaStream::id() const
 
 WebMediaStream::ExtraData* WebMediaStream::extraData() const
 {
-    RefPtr<MediaStreamDescriptor::ExtraData> data = m_private->extraData();
+    MediaStreamDescriptor::ExtraData* data = m_private->extraData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data.get())->extraData();
+    return static_cast<ExtraDataContainer*>(data)->extraData();
 }
 
 void WebMediaStream::setExtraData(ExtraData* extraData)
 {
-    m_private->setExtraData(adoptRef(new ExtraDataContainer(extraData)));
+    m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
 }
 
 void WebMediaStream::audioTracks(WebVector<WebMediaStreamTrack>& webTracks) const

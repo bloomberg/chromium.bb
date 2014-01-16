@@ -50,7 +50,7 @@ namespace {
 
 class ExtraDataContainer : public MediaStreamSource::ExtraData {
 public:
-    ExtraDataContainer(WebMediaStreamSource::ExtraData* extraData) : m_extraData(adoptPtr(extraData)) { }
+    ExtraDataContainer(PassOwnPtr<WebMediaStreamSource::ExtraData> extraData) : m_extraData(extraData) { }
 
     WebMediaStreamSource::ExtraData* extraData() { return m_extraData.get(); }
 
@@ -154,7 +154,7 @@ void WebMediaStreamSource::setExtraData(ExtraData* extraData)
     if (extraData)
         extraData->setOwner(m_private.get());
 
-    m_private->setExtraData(new ExtraDataContainer(extraData));
+    m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
 }
 
 WebMediaConstraints WebMediaStreamSource::constraints()

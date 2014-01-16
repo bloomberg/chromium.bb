@@ -31,9 +31,8 @@
 #ifndef RTCSessionDescriptionRequest_h
 #define RTCSessionDescriptionRequest_h
 
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -44,7 +43,7 @@ namespace WebCore {
 
 class RTCSessionDescriptionRequest : public RefCounted<RTCSessionDescriptionRequest> {
 public:
-    class ExtraData : public RefCounted<ExtraData> {
+    class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
@@ -54,14 +53,14 @@ public:
     virtual void requestSucceeded(const blink::WebRTCSessionDescription&) = 0;
     virtual void requestFailed(const String& error) = 0;
 
-    PassRefPtr<ExtraData> extraData() const { return m_extraData; }
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
+    ExtraData* extraData() const { return m_extraData.get(); }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 protected:
     RTCSessionDescriptionRequest() { }
 
 private:
-    RefPtr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
 };
 
 } // namespace WebCore

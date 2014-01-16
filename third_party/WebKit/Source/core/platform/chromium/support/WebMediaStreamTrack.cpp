@@ -131,10 +131,10 @@ WebMediaStreamSource WebMediaStreamTrack::source() const
 
 WebMediaStreamTrack::ExtraData* WebMediaStreamTrack::extraData() const
 {
-    RefPtr<MediaStreamComponent::ExtraData> data = m_private->extraData();
+    MediaStreamComponent::ExtraData* data = m_private->extraData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data.get())->extraData();
+    return static_cast<ExtraDataContainer*>(data)->extraData();
 }
 
 void WebMediaStreamTrack::setExtraData(ExtraData* extraData)
@@ -144,7 +144,7 @@ void WebMediaStreamTrack::setExtraData(ExtraData* extraData)
     if (extraData)
         extraData->setOwner(m_private.get());
 
-    m_private->setExtraData(adoptRef(new ExtraDataContainer(adoptPtr(extraData))));
+    m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
 }
 
 void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider)

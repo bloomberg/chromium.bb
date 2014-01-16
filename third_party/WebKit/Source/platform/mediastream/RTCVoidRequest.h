@@ -31,16 +31,15 @@
 #ifndef RTCVoidRequest_h
 #define RTCVoidRequest_h
 
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class RTCVoidRequest : public RefCounted<RTCVoidRequest> {
 public:
-    class ExtraData : public RefCounted<ExtraData> {
+    class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
@@ -50,14 +49,14 @@ public:
     virtual void requestSucceeded() = 0;
     virtual void requestFailed(const String& error) = 0;
 
-    PassRefPtr<ExtraData> extraData() const { return m_extraData; }
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
+    ExtraData* extraData() const { return m_extraData.get(); }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 protected:
     RTCVoidRequest() { }
 
 private:
-    RefPtr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
 };
 
 } // namespace WebCore

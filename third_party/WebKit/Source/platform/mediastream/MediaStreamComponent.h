@@ -33,6 +33,7 @@
 #define MediaStreamComponent_h
 
 #include "platform/audio/AudioSourceProvider.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -49,7 +50,7 @@ class MediaStreamSource;
 
 class PLATFORM_EXPORT MediaStreamComponent : public RefCounted<MediaStreamComponent> {
 public:
-    class ExtraData : public RefCounted<ExtraData> {
+    class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
@@ -73,7 +74,7 @@ public:
 #endif // ENABLE(WEB_AUDIO)
 
     ExtraData* extraData() const { return m_extraData.get(); }
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
     MediaStreamComponent(const String& id, MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
@@ -109,7 +110,7 @@ private:
     RefPtr<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;
-    RefPtr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
 };
 
 typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;

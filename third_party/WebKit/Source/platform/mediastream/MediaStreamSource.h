@@ -81,7 +81,7 @@ public:
     void removeObserver(Observer*);
 
     ExtraData* extraData() const { return m_extraData.get(); }
-    void setExtraData(ExtraData* extraData) { m_extraData = adoptPtr(extraData); }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
     void setConstraints(PassRefPtr<MediaConstraints> constraints) { m_constraints = constraints; }
     MediaConstraints* constraints() { return m_constraints.get(); }

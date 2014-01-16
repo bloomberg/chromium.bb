@@ -34,6 +34,7 @@
 
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
@@ -51,7 +52,7 @@ public:
 
 class MediaStreamDescriptor FINAL : public RefCounted<MediaStreamDescriptor> {
 public:
-    class ExtraData : public RefCounted<ExtraData> {
+    class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
@@ -82,8 +83,8 @@ public:
     bool ended() const { return m_ended; }
     void setEnded() { m_ended = true; }
 
-    PassRefPtr<ExtraData> extraData() const { return m_extraData; }
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
+    ExtraData* extraData() const { return m_extraData.get(); }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
     MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
@@ -95,7 +96,7 @@ private:
     Vector<RefPtr<MediaStreamComponent> > m_videoComponents;
     bool m_ended;
 
-    RefPtr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
 };
 
 typedef Vector<RefPtr<MediaStreamDescriptor> > MediaStreamDescriptorVector;

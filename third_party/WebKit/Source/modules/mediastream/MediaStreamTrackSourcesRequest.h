@@ -29,9 +29,9 @@
 #include "modules/mediastream/SourceInfo.h"
 #include "platform/Timer.h"
 #include "public/platform/WebVector.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -44,7 +44,7 @@ class MediaStreamTrackSourcesCallback;
 
 class MediaStreamTrackSourcesRequest FINAL : public RefCounted<MediaStreamTrackSourcesRequest> {
 public:
-    class ExtraData : public RefCounted<ExtraData> {
+    class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
@@ -56,8 +56,8 @@ public:
 
     void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&);
 
-    PassRefPtr<ExtraData> extraData() const { return m_extraData; }
-    void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
+    ExtraData* extraData() const { return m_extraData.get(); }
+    void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
     MediaStreamTrackSourcesRequest(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
@@ -65,7 +65,7 @@ private:
     void scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequest>*);
 
     OwnPtr<MediaStreamTrackSourcesCallback> m_callback;
-    RefPtr<ExtraData> m_extraData;
+    OwnPtr<ExtraData> m_extraData;
     String m_origin;
     Timer<MediaStreamTrackSourcesRequest> m_scheduledEventTimer;
     SourceInfoVector m_sourceInfos;

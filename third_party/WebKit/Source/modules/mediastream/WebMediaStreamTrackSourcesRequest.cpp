@@ -39,7 +39,7 @@ namespace {
 
 class ExtraDataContainer : public MediaStreamTrackSourcesRequest::ExtraData {
 public:
-    ExtraDataContainer(WebMediaStreamTrackSourcesRequest::ExtraData* extraData) : m_extraData(adoptPtr(extraData)) { }
+    ExtraDataContainer(PassOwnPtr<WebMediaStreamTrackSourcesRequest::ExtraData> extraData) : m_extraData(extraData) { }
 
     WebMediaStreamTrackSourcesRequest::ExtraData* extraData() { return m_extraData.get(); }
 
@@ -78,15 +78,15 @@ void WebMediaStreamTrackSourcesRequest::requestSucceeded(const WebVector<WebSour
 
 WebMediaStreamTrackSourcesRequest::ExtraData* WebMediaStreamTrackSourcesRequest::extraData() const
 {
-    RefPtr<MediaStreamTrackSourcesRequest::ExtraData> data = m_private->extraData();
+    MediaStreamTrackSourcesRequest::ExtraData* data = m_private->extraData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data.get())->extraData();
+    return static_cast<ExtraDataContainer*>(data)->extraData();
 }
 
 void WebMediaStreamTrackSourcesRequest::setExtraData(ExtraData* extraData)
 {
-    m_private->setExtraData(adoptRef(new ExtraDataContainer(extraData)));
+    m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
 }
 
 } // namespace blink
