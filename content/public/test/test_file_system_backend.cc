@@ -23,11 +23,17 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+using fileapi::FileSystemContext;
+using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+
+namespace content {
 
 namespace {
 
-class TestFileUtil : public LocalFileUtil {
+class TestFileUtil : public fileapi::LocalFileUtil {
  public:
   explicit TestFileUtil(const base::FilePath& base_path)
       : base_path_(base_path) {}
@@ -50,8 +56,8 @@ class TestFileUtil : public LocalFileUtil {
 
 // This only supports single origin.
 class TestFileSystemBackend::QuotaUtil
-    : public FileSystemQuotaUtil,
-      public FileUpdateObserver {
+    : public fileapi::FileSystemQuotaUtil,
+      public fileapi::FileUpdateObserver {
  public:
   explicit QuotaUtil(base::SequencedTaskRunner* task_runner)
       : usage_(0),
@@ -70,12 +76,12 @@ class TestFileSystemBackend::QuotaUtil
     return base::PLATFORM_FILE_OK;
   }
 
-  virtual scoped_refptr<QuotaReservation>
+  virtual scoped_refptr<fileapi::QuotaReservation>
       CreateQuotaReservationOnFileTaskRunner(
           const GURL& origin_url,
           FileSystemType type) OVERRIDE {
     NOTREACHED();
-    return scoped_refptr<QuotaReservation>();
+    return scoped_refptr<fileapi::QuotaReservation>();
   }
 
   virtual void GetOriginsForTypeOnFileTaskRunner(
@@ -107,29 +113,29 @@ class TestFileSystemBackend::QuotaUtil
 
   virtual void AddFileChangeObserver(
       FileSystemType type,
-      FileChangeObserver* observer,
+      fileapi::FileChangeObserver* observer,
       base::SequencedTaskRunner* task_runner) OVERRIDE {
     change_observers_ = change_observers_.AddObserver(observer, task_runner);
   }
 
   virtual void AddFileAccessObserver(
       FileSystemType type,
-      FileAccessObserver* observer,
+      fileapi::FileAccessObserver* observer,
       base::SequencedTaskRunner* task_runner) OVERRIDE {
     NOTIMPLEMENTED();
   }
 
-  virtual const UpdateObserverList* GetUpdateObservers(
+  virtual const fileapi::UpdateObserverList* GetUpdateObservers(
       FileSystemType type) const OVERRIDE {
     return &update_observers_;
   }
 
-  virtual const ChangeObserverList* GetChangeObservers(
+  virtual const fileapi::ChangeObserverList* GetChangeObservers(
       FileSystemType type) const OVERRIDE {
     return &change_observers_;
   }
 
-  virtual const AccessObserverList* GetAccessObservers(
+  virtual const fileapi::AccessObserverList* GetAccessObservers(
       FileSystemType type) const OVERRIDE {
     NOTIMPLEMENTED();
     return NULL;
@@ -149,15 +155,16 @@ class TestFileSystemBackend::QuotaUtil
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  UpdateObserverList update_observers_;
-  ChangeObserverList change_observers_;
+  fileapi::UpdateObserverList update_observers_;
+  fileapi::ChangeObserverList change_observers_;
 };
 
 TestFileSystemBackend::TestFileSystemBackend(
     base::SequencedTaskRunner* task_runner,
     const base::FilePath& base_path)
     : base_path_(base_path),
-      file_util_(new AsyncFileUtilAdapter(new TestFileUtil(base_path))),
+      file_util_(
+          new fileapi::AsyncFileUtilAdapter(new TestFileUtil(base_path))),
       quota_util_(new QuotaUtil(task_runner)),
       require_copy_or_move_validator_(false) {
 }
@@ -166,7 +173,7 @@ TestFileSystemBackend::~TestFileSystemBackend() {
 }
 
 bool TestFileSystemBackend::CanHandleType(FileSystemType type) const {
-  return (type == kFileSystemTypeTest);
+  return (type == fileapi::kFileSystemTypeTest);
 }
 
 void TestFileSystemBackend::Initialize(FileSystemContext* context) {
@@ -175,18 +182,19 @@ void TestFileSystemBackend::Initialize(FileSystemContext* context) {
 void TestFileSystemBackend::OpenFileSystem(
     const GURL& origin_url,
     FileSystemType type,
-    OpenFileSystemMode mode,
+    fileapi::OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   callback.Run(GetFileSystemRootURI(origin_url, type),
                GetFileSystemName(origin_url, type),
                base::PLATFORM_FILE_OK);
 }
 
-AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(FileSystemType type) {
+fileapi::AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(
+    FileSystemType type) {
   return file_util_.get();
 }
 
-CopyOrMoveFileValidatorFactory*
+fileapi::CopyOrMoveFileValidatorFactory*
 TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
@@ -200,7 +208,7 @@ TestFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
 }
 
 void TestFileSystemBackend::InitializeCopyOrMoveFileValidatorFactory(
-    scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
+    scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
   if (!copy_or_move_file_validator_factory_)
     copy_or_move_file_validator_factory_ = factory.Pass();
 }
@@ -234,23 +242,23 @@ TestFileSystemBackend::CreateFileStreamWriter(
     int64 offset,
     FileSystemContext* context) const {
   return scoped_ptr<fileapi::FileStreamWriter>(
-      new SandboxFileStreamWriter(context, url, offset,
-                                  *GetUpdateObservers(url.type())));
+      new fileapi::SandboxFileStreamWriter(context, url, offset,
+                                           *GetUpdateObservers(url.type())));
 }
 
-FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
+fileapi::FileSystemQuotaUtil* TestFileSystemBackend::GetQuotaUtil() {
   return quota_util_.get();
 }
 
-const UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
+const fileapi::UpdateObserverList* TestFileSystemBackend::GetUpdateObservers(
     FileSystemType type) const {
   return quota_util_->GetUpdateObservers(type);
 }
 
 void TestFileSystemBackend::AddFileChangeObserver(
-    FileChangeObserver* observer) {
+    fileapi::FileChangeObserver* observer) {
   quota_util_->AddFileChangeObserver(
-      kFileSystemTypeTest, observer, quota_util_->task_runner());
+      fileapi::kFileSystemTypeTest, observer, quota_util_->task_runner());
 }
 
-}  // namespace fileapi
+}  // namespace content

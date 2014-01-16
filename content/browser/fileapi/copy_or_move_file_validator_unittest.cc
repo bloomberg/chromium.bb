@@ -21,12 +21,18 @@
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::CopyOrMoveFileValidator;
+using fileapi::CopyOrMoveFileValidatorFactory;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+
+namespace content {
 
 namespace {
 
-const FileSystemType kNoValidatorType = kFileSystemTypeTemporary;
-const FileSystemType kWithValidatorType = kFileSystemTypeTest;
+const FileSystemType kNoValidatorType = fileapi::kFileSystemTypeTemporary;
+const FileSystemType kWithValidatorType = fileapi::kFileSystemTypeTest;
 
 void ExpectOk(const GURL& origin_url,
               const std::string& name,
@@ -56,17 +62,17 @@ class CopyOrMoveFileValidatorTestHelper {
     file_system_context_ = CreateFileSystemContextForTesting(NULL, base_dir);
 
     // Set up TestFileSystemBackend to require CopyOrMoveFileValidator.
-    FileSystemBackend* test_file_system_backend =
+    fileapi::FileSystemBackend* test_file_system_backend =
         file_system_context_->GetFileSystemBackend(kWithValidatorType);
     static_cast<TestFileSystemBackend*>(test_file_system_backend)->
         set_require_copy_or_move_validator(true);
 
     // Sets up source.
-    FileSystemBackend* src_file_system_backend =
+    fileapi::FileSystemBackend* src_file_system_backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     src_file_system_backend->OpenFileSystem(
         origin_, src_type_,
-        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(SourceURL("")));
@@ -90,7 +96,7 @@ class CopyOrMoveFileValidatorTestHelper {
   }
 
   void SetMediaCopyOrMoveFileValidatorFactory(
-      scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
+      scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
     TestFileSystemBackend* backend = static_cast<TestFileSystemBackend*>(
         file_system_context_->GetFileSystemBackend(kWithValidatorType));
     backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
@@ -170,7 +176,7 @@ class CopyOrMoveFileValidatorTestHelper {
   std::string dest_fsid_;
 
   base::MessageLoop message_loop_;
-  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   FileSystemURL copy_src_;
   FileSystemURL copy_dest_;
@@ -188,7 +194,7 @@ enum Validity {
 };
 
 class TestCopyOrMoveFileValidatorFactory
-    : public CopyOrMoveFileValidatorFactory {
+    : public fileapi::CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
   // TODO(gbillock): switch args to enum or something
@@ -196,7 +202,7 @@ class TestCopyOrMoveFileValidatorFactory
       : validity_(validity) {}
   virtual ~TestCopyOrMoveFileValidatorFactory() {}
 
-  virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+  virtual fileapi::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) OVERRIDE {
     return new TestCopyOrMoveFileValidator(validity_);
@@ -323,4 +329,4 @@ TEST(CopyOrMoveFileValidatorTest, RejectPostWrite) {
   helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);
 }
 
-}  // namespace fileapi
+}  // namespace content

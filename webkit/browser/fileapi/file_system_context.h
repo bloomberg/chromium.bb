@@ -273,10 +273,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   friend class FileSystemOperationRunner;
 
   // For sandbox_backend().
-  friend class SandboxFileSystemTestHelper;
+  friend class content::SandboxFileSystemTestHelper;
 
   // For plugin_private_backend().
-  friend class PluginPrivateFileSystemBackendTest;
+  friend class content::PluginPrivateFileSystemBackendTest;
 
   // Deleters.
   friend struct DefaultContextDeleter;

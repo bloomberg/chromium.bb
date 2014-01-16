@@ -251,7 +251,7 @@ class PicasaFileUtilTest : public testing::Test {
         NULL,
         additional_providers.Pass(),
         profile_dir_.path(),
-        fileapi::CreateAllowFileAccessOptions());
+        content::CreateAllowFileAccessOptions());
   }
 
   virtual void TearDown() OVERRIDE {

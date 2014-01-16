@@ -14,25 +14,28 @@ class SpecialStoragePolicy;
 }
 
 namespace fileapi {
-
 class FileSystemContext;
 class FileSystemBackend;
+}
 
-FileSystemContext* CreateFileSystemContextForTesting(
+namespace content {
+
+fileapi::FileSystemContext* CreateFileSystemContextForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path);
 
 // The caller is responsible for including TestFileSystemBackend in
 // |additional_providers| if needed.
-FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
+fileapi::FileSystemContext*
+CreateFileSystemContextWithAdditionalProvidersForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
-    ScopedVector<FileSystemBackend> additional_providers,
+    ScopedVector<fileapi::FileSystemBackend> additional_providers,
     const base::FilePath& base_path);
 
-FileSystemContext* CreateIncognitoFileSystemContextForTesting(
+fileapi::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path);
 
-}  // namespace fileapi
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_CONTEXT_H_

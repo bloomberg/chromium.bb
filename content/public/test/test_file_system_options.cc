@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
-namespace fileapi {
+using fileapi::FileSystemOptions;
+
+namespace content {
 
 FileSystemOptions CreateIncognitoFileSystemOptions() {
   std::vector<std::string> additional_allowed_schemes;
@@ -37,4 +39,4 @@ FileSystemOptions CreateDisallowFileAccessOptions() {
                            additional_allowed_schemes);
 };
 
-}  // namespace fileapi
+}  // namespace content

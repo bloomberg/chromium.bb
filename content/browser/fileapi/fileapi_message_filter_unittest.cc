@@ -50,7 +50,7 @@ class FileAPIMessageFilterTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     file_system_context_ =
-        fileapi::CreateFileSystemContextForTesting(NULL, base::FilePath());
+        CreateFileSystemContextForTesting(NULL, base::FilePath());
 
     std::vector<fileapi::FileSystemType> types;
     file_system_context_->GetFileSystemTypes(&types);

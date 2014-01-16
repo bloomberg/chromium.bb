@@ -12,26 +12,27 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
-namespace fileapi {
+namespace content {
 
-FileSystemContext* CreateFileSystemContextForTesting(
+fileapi::FileSystemContext* CreateFileSystemContextForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path) {
-  ScopedVector<FileSystemBackend> additional_providers;
+  ScopedVector<fileapi::FileSystemBackend> additional_providers;
   additional_providers.push_back(new TestFileSystemBackend(
       base::MessageLoopProxy::current().get(), base_path));
   return CreateFileSystemContextWithAdditionalProvidersForTesting(
       quota_manager_proxy, additional_providers.Pass(), base_path);
 }
 
-FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
+fileapi::FileSystemContext*
+CreateFileSystemContextWithAdditionalProvidersForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
-    ScopedVector<FileSystemBackend> additional_providers,
+    ScopedVector<fileapi::FileSystemBackend> additional_providers,
     const base::FilePath& base_path) {
-  return new FileSystemContext(
+  return new fileapi::FileSystemContext(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
-      ExternalMountPoints::CreateRefCounted().get(),
+      fileapi::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
@@ -39,14 +40,14 @@ FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
       CreateAllowFileAccessOptions());
 }
 
-FileSystemContext* CreateIncognitoFileSystemContextForTesting(
+fileapi::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path) {
-  ScopedVector<FileSystemBackend> additional_providers;
-  return new FileSystemContext(
+  ScopedVector<fileapi::FileSystemBackend> additional_providers;
+  return new fileapi::FileSystemContext(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
-      ExternalMountPoints::CreateRefCounted().get(),
+      fileapi::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
@@ -54,4 +55,4 @@ FileSystemContext* CreateIncognitoFileSystemContextForTesting(
       CreateIncognitoFileSystemOptions());
 }
 
-}  // namespace fileapi
+}  // namespace content

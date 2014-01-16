@@ -108,12 +108,12 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     ASSERT_TRUE(base::CreateDirectory(src_path));
 
     ScopedVector<fileapi::FileSystemBackend> additional_providers;
-    additional_providers.push_back(new fileapi::TestFileSystemBackend(
+    additional_providers.push_back(new content::TestFileSystemBackend(
         base::MessageLoopProxy::current().get(), src_path));
     additional_providers.push_back(new MediaFileSystemBackend(
         base, base::MessageLoopProxy::current().get()));
     file_system_context_ =
-        fileapi::CreateFileSystemContextWithAdditionalProvidersForTesting(
+        content::CreateFileSystemContextWithAdditionalProvidersForTesting(
             NULL, additional_providers.Pass(), base);
 
     move_src_ = file_system_context_->CreateCrackedFileSystemURL(

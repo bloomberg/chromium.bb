@@ -20,11 +20,11 @@
 #include "webkit/common/quota/quota_types.h"
 
 using base::PlatformFileError;
+using content::SandboxFileSystemTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
-using fileapi::SandboxFileSystemTestHelper;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;
 

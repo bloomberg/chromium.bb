@@ -26,6 +26,11 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace content {
+class SandboxFileSystemBackendDelegateTest;
+class SandboxFileSystemTestHelper;
+}
+
 namespace quota {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
@@ -46,7 +51,6 @@ class FileSystemUsageCache;
 class ObfuscatedFileUtil;
 class QuotaReservationManager;
 class SandboxFileSystemBackend;
-class SandboxFileSystemTestHelper;
 class SandboxQuotaObserver;
 
 // Delegate implementation of the some methods in Sandbox/SyncFileSystemBackend.
@@ -190,10 +194,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   FileSystemFileUtil* sync_file_util();
 
  private:
-  friend class SandboxQuotaObserver;
-  friend class SandboxFileSystemTestHelper;
   friend class QuotaBackendImpl;
-  FRIEND_TEST_ALL_PREFIXES(SandboxFileSystemBackendDelegateTest, IsAccessValid);
+  friend class SandboxQuotaObserver;
+  friend class content::SandboxFileSystemBackendDelegateTest;
+  friend class content::SandboxFileSystemTestHelper;
 
   // Performs API-specific validity checks on the given path |url|.
   // Returns true if access to |url| is valid in this filesystem.

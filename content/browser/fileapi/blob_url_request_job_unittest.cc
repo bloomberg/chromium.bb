@@ -29,7 +29,10 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/blob/blob_data.h"
 
-namespace webkit_blob {
+using webkit_blob::BlobData;
+using webkit_blob::BlobURLRequestJob;
+
+namespace content {
 
 namespace {
 
@@ -169,7 +172,7 @@ class BlobURLRequestJobTest : public testing::Test {
 
   void SetUpFileSystem() {
     // Prepare file system.
-    file_system_context_ = fileapi::CreateFileSystemContextForTesting(
+    file_system_context_ = CreateFileSystemContextForTesting(
         NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
@@ -474,4 +477,4 @@ TEST_F(BlobURLRequestJobTest, TestExtraHeaders) {
   EXPECT_EQ(kTestContentDisposition, content_disposition);
 }
 
-}  // namespace webkit_blob
+}  // namespace content

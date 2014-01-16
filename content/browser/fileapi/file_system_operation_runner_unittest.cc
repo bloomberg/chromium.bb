@@ -12,7 +12,12 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-namespace fileapi {
+using fileapi::FileSystemContext;
+using fileapi::FileSystemOperationRunner;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+
+namespace content {
 
 void GetStatus(bool* done,
                base::PlatformFileError *status_out,
@@ -52,7 +57,7 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), kFileSystemTypeTemporary,
+        GURL("http://example.com"), fileapi::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 
@@ -159,4 +164,4 @@ TEST_F(FileSystemOperationRunnerTest, CancelWithInvalidId) {
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION, cancel_status);
 }
 
-}  // namespace fileapi
+}  // namespace content

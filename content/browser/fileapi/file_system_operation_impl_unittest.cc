@@ -27,11 +27,16 @@
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
+using fileapi::AsyncFileTestHelper;
+using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemOperationRunner;
+using fileapi::FileSystemURL;
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
 using webkit_blob::ShareableFileReference;
 
-namespace fileapi {
+namespace content {
 
 namespace {
 
@@ -56,7 +61,8 @@ class FileSystemOperationImplTest
  protected:
   virtual void SetUp() OVERRIDE {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
-    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
+    change_observers_ = fileapi::MockFileChangeObserver::CreateList(
+        &change_observer_);
 
     base::FilePath base_dir = base_.path().AppendASCII("filesystem");
     quota_manager_ =
@@ -86,7 +92,7 @@ class FileSystemOperationImplTest
   int status() const { return status_; }
   const base::PlatformFileInfo& info() const { return info_; }
   const base::FilePath& path() const { return path_; }
-  const std::vector<DirectoryEntry>& entries() const {
+  const std::vector<fileapi::DirectoryEntry>& entries() const {
     return entries_;
   }
 
@@ -103,11 +109,11 @@ class FileSystemOperationImplTest
         quota_manager_proxy_.get());
   }
 
-  FileSystemFileUtil* file_util() {
+  fileapi::FileSystemFileUtil* file_util() {
     return sandbox_file_system_.file_util();
   }
 
-  MockFileChangeObserver* change_observer() {
+  fileapi::MockFileChangeObserver* change_observer() {
     return &change_observer_;
   }
 
@@ -191,7 +197,7 @@ class FileSystemOperationImplTest
 
   void DidReadDirectory(
       base::PlatformFileError status,
-      const std::vector<DirectoryEntry>& entries,
+      const std::vector<fileapi::DirectoryEntry>& entries,
       bool /* has_more */) {
     entries_ = entries;
     status_ = status;
@@ -283,11 +289,11 @@ class FileSystemOperationImplTest
   int status_;
   base::PlatformFileInfo info_;
   base::FilePath path_;
-  std::vector<DirectoryEntry> entries_;
+  std::vector<fileapi::DirectoryEntry> entries_;
   scoped_refptr<ShareableFileReference> shareable_file_ref_;
 
-  MockFileChangeObserver change_observer_;
-  ChangeObserverList change_observers_;
+  fileapi::MockFileChangeObserver change_observer_;
+  fileapi::ChangeObserverList change_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_;
 
@@ -1280,4 +1286,4 @@ TEST_F(FileSystemOperationImplTest,
   EXPECT_EQ(expected_usage, usage);
 }
 
-}  // namespace fileapi
+}  // namespace content

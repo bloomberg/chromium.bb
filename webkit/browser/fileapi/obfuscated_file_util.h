@@ -29,6 +29,10 @@ class SequencedTaskRunner;
 class TimeTicks;
 }
 
+namespace content {
+class ObfuscatedFileUtilTest;
+}
+
 namespace quota {
 class SpecialStoragePolicy;
 }
@@ -229,17 +233,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   typedef SandboxDirectoryDatabase::FileInfo FileInfo;
 
   friend class ObfuscatedFileEnumerator;
-  friend class ObfuscatedFileUtilTest;
   friend class QuotaBackendImplTest;
-  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase);
-  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
-                           MaybeDropDatabasesAlreadyDeletedCase);
-  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
-                           DestroyDirectoryDatabase_Isolated);
-  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
-                           GetDirectoryDatabase_Isolated);
-  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
-                           MigrationBackFromIsolated);
+  friend class content::ObfuscatedFileUtilTest;
 
   // Helper method to create an obfuscated file util for regular
   // (temporary, persistent) file systems. Used only for testing.

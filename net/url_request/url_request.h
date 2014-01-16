@@ -53,21 +53,11 @@ class AppCacheURLRequestJobTest;
 // Temporary layering violation to allow existing users of a deprecated
 // interface.
 namespace content {
-class ResourceDispatcherHostTest;
-}
-
-// Temporary layering violation to allow existing users of a deprecated
-// interface.
-namespace fileapi {
+class BlobURLRequestJobTest;
 class FileSystemDirURLRequestJobTest;
 class FileSystemURLRequestJobTest;
 class FileWriterDelegateTest;
-}
-
-// Temporary layering violation to allow existing users of a deprecated
-// interface.
-namespace webkit_blob {
-class BlobURLRequestJobTest;
+class ResourceDispatcherHostTest;
 }
 
 namespace net {
@@ -180,11 +170,11 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     friend class appcache::AppCacheInterceptor;
     friend class appcache::AppCacheRequestHandlerTest;
     friend class appcache::AppCacheURLRequestJobTest;
+    friend class content::BlobURLRequestJobTest;
+    friend class content::FileSystemDirURLRequestJobTest;
+    friend class content::FileSystemURLRequestJobTest;
+    friend class content::FileWriterDelegateTest;
     friend class content::ResourceDispatcherHostTest;
-    friend class fileapi::FileSystemDirURLRequestJobTest;
-    friend class fileapi::FileSystemURLRequestJobTest;
-    friend class fileapi::FileWriterDelegateTest;
-    friend class webkit_blob::BlobURLRequestJobTest;
 
     // Use URLRequestJobFactory::ProtocolHandler instead.
     static ProtocolFactory* RegisterProtocolFactory(const std::string& scheme,

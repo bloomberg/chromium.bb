@@ -23,12 +23,20 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::AsyncFileUtilAdapter;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+using fileapi::LocalFileUtil;
+
+namespace content {
 
 namespace {
 
 const GURL kOrigin("http://foo/");
-const FileSystemType kFileSystemType = kFileSystemTypeTest;
+const FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
 
 }  // namespace
 
@@ -385,4 +393,4 @@ TEST_F(LocalFileUtilTest, MoveDirectory) {
   EXPECT_EQ(1020, GetSize(to_file));
 }
 
-}  // namespace fileapi
+}  // namespace content

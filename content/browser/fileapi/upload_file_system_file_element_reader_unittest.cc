@@ -17,7 +17,13 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+using fileapi::UploadFileSystemFileElementReader;
+
+namespace content {
 
 namespace {
 
@@ -34,13 +40,13 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_system_context_ = fileapi::CreateFileSystemContextForTesting(
+    file_system_context_ = CreateFileSystemContextForTesting(
         NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
         GURL(kFileSystemURLOrigin),
         kFileSystemType,
-        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&UploadFileSystemFileElementReaderTest::OnOpenFileSystem,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -275,4 +281,4 @@ TEST_F(UploadFileSystemFileElementReaderTest, WrongURL) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, init_callback.WaitForResult());
 }
 
-}  // namespace fileapi
+}  // namespace content

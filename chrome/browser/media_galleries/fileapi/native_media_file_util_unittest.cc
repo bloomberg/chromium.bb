@@ -134,7 +134,7 @@ class NativeMediaFileUtilTest : public testing::Test {
         NULL,
         additional_providers.Pass(),
         data_dir_.path(),
-        fileapi::CreateAllowFileAccessOptions());
+        content::CreateAllowFileAccessOptions());
 
     filesystem_id_ = isolated_context()->RegisterFileSystemForPath(
         fileapi::kFileSystemTypeNativeMedia, root_path(), NULL);

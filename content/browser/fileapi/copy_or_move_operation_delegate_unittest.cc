@@ -29,9 +29,17 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::CopyOrMoveOperationDelegate;
+using fileapi::FileStreamWriter;
+using fileapi::FileSystemOperation;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+using fileapi::test::TestCaseRecord;
 
-typedef FileSystemOperation::FileEntryList FileEntryList;
+namespace content {
+
+typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
 namespace {
 
@@ -41,13 +49,13 @@ void ExpectOk(const GURL& origin_url,
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 }
 
-class TestValidatorFactory : public CopyOrMoveFileValidatorFactory {
+class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
   TestValidatorFactory() {}
   virtual ~TestValidatorFactory() {}
 
-  virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+  virtual fileapi::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) OVERRIDE {
     // Move arg management to TestValidator?
@@ -55,7 +63,7 @@ class TestValidatorFactory : public CopyOrMoveFileValidatorFactory {
   }
 
  private:
-  class TestValidator : public CopyOrMoveFileValidator {
+  class TestValidator : public fileapi::CopyOrMoveFileValidator {
    public:
     explicit TestValidator(bool pre_copy_valid,
                            bool post_copy_valid,
@@ -99,14 +107,14 @@ class TestValidatorFactory : public CopyOrMoveFileValidatorFactory {
 
 // Records CopyProgressCallback invocations.
 struct ProgressRecord {
-  FileSystemOperation::CopyProgressType type;
+  fileapi::FileSystemOperation::CopyProgressType type;
   FileSystemURL source_url;
   FileSystemURL dest_url;
   int64 size;
 };
 
 void RecordProgressCallback(std::vector<ProgressRecord>* records,
-                            FileSystemOperation::CopyProgressType type,
+                            fileapi::FileSystemOperation::CopyProgressType type,
                             const FileSystemURL& source_url,
                             const FileSystemURL& dest_url,
                             int64 size) {
@@ -197,16 +205,16 @@ class CopyOrMoveOperationTestHelper {
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 
     // Prepare the origin's root directory.
-    FileSystemBackend* backend =
+    fileapi::FileSystemBackend* backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     backend->OpenFileSystem(origin_, src_type_,
-                            OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                             base::Bind(&ExpectOk));
     backend = file_system_context_->GetFileSystemBackend(dest_type_);
-    if (dest_type_ == kFileSystemTypeTest) {
+    if (dest_type_ == fileapi::kFileSystemTypeTest) {
       TestFileSystemBackend* test_backend =
           static_cast<TestFileSystemBackend*>(backend);
-      scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
+      scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory(
           new TestValidatorFactory);
       test_backend->set_require_copy_or_move_validator(
           require_copy_or_move_validator);
@@ -214,17 +222,19 @@ class CopyOrMoveOperationTestHelper {
         test_backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
     }
     backend->OpenFileSystem(origin_, dest_type_,
-                            OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                             base::Bind(&ExpectOk));
     base::RunLoop().RunUntilIdle();
 
     // Grant relatively big quota initially.
-    quota_manager_->SetQuota(origin_,
-                             FileSystemTypeToQuotaStorageType(src_type_),
-                             1024 * 1024);
-    quota_manager_->SetQuota(origin_,
-                             FileSystemTypeToQuotaStorageType(dest_type_),
-                             1024 * 1024);
+    quota_manager_->SetQuota(
+        origin_,
+        fileapi::FileSystemTypeToQuotaStorageType(src_type_),
+        1024 * 1024);
+    quota_manager_->SetQuota(
+        origin_,
+        fileapi::FileSystemTypeToQuotaStorageType(dest_type_),
+        1024 * 1024);
   }
 
   int64 GetSourceUsage() {
@@ -269,11 +279,11 @@ class CopyOrMoveOperationTestHelper {
 
   base::PlatformFileError SetUpTestCaseFiles(
       const FileSystemURL& root,
-      const test::TestCaseRecord* const test_cases,
+      const TestCaseRecord* const test_cases,
       size_t test_case_size) {
     base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
     for (size_t i = 0; i < test_case_size; ++i) {
-      const test::TestCaseRecord& test_case = test_cases[i];
+      const TestCaseRecord& test_case = test_cases[i];
       FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
           root.origin(),
           root.mount_type(),
@@ -291,9 +301,9 @@ class CopyOrMoveOperationTestHelper {
 
   void VerifyTestCaseFiles(
       const FileSystemURL& root,
-      const test::TestCaseRecord* const test_cases,
+      const TestCaseRecord* const test_cases,
       size_t test_case_size) {
-    std::map<base::FilePath, const test::TestCaseRecord*> test_case_map;
+    std::map<base::FilePath, const TestCaseRecord*> test_case_map;
     for (size_t i = 0; i < test_case_size; ++i) {
       test_case_map[
           base::FilePath(test_cases[i].path).NormalizePathSeparators()] =
@@ -327,7 +337,7 @@ class CopyOrMoveOperationTestHelper {
       }
     }
     EXPECT_TRUE(test_case_map.empty());
-    std::map<base::FilePath, const test::TestCaseRecord*>::const_iterator it;
+    std::map<base::FilePath, const TestCaseRecord*>::const_iterator it;
     for (it = test_case_map.begin(); it != test_case_map.end(); ++it) {
       LOG(ERROR) << "Extra entry: " << it->first.LossyDisplayName();
     }
@@ -378,7 +388,7 @@ class CopyOrMoveOperationTestHelper {
   const FileSystemType dest_type_;
 
   base::MessageLoopForIO message_loop_;
-  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<quota::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;
 
@@ -387,8 +397,8 @@ class CopyOrMoveOperationTestHelper {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypePersistent);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -416,8 +426,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypePersistent);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -445,8 +455,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypePersistent);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -474,8 +484,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypePersistent);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -503,8 +513,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypePersistent);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -516,8 +526,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      test::kRegularTestCases,
-                                      test::kRegularTestCaseSize));
+                                      fileapi::test::kRegularTestCases,
+                                      fileapi::test::kRegularTestCaseSize));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Copy it.
@@ -531,8 +541,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
   helper.VerifyTestCaseFiles(dest,
-                             test::kRegularTestCases,
-                             test::kRegularTestCaseSize);
+                             fileapi::test::kRegularTestCases,
+                             fileapi::test::kRegularTestCaseSize);
 
   int64 src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage + src_increase, src_new_usage);
@@ -543,8 +553,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypePersistent);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -556,8 +566,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      test::kRegularTestCases,
-                                      test::kRegularTestCaseSize));
+                                      fileapi::test::kRegularTestCases,
+                                      fileapi::test::kRegularTestCaseSize));
   int64 src_increase = helper.GetSourceUsage() - src_initial_usage;
 
   // Move it.
@@ -568,8 +578,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
   helper.VerifyTestCaseFiles(dest,
-                             test::kRegularTestCases,
-                             test::kRegularTestCaseSize);
+                             fileapi::test::kRegularTestCases,
+                             fileapi::test::kRegularTestCaseSize);
 
   int64 src_new_usage = helper.GetSourceUsage();
   ASSERT_EQ(src_initial_usage, src_new_usage);
@@ -581,8 +591,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
 TEST(LocalFileSystemCopyOrMoveOperationTest,
      MoveDirectoryFailPostWriteValidation) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypeTest);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypeTest);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -592,8 +602,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
   ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      test::kRegularTestCases,
-                                      test::kRegularTestCaseSize));
+                                      fileapi::test::kRegularTestCases,
+                                      fileapi::test::kRegularTestCaseSize));
 
   // Move it.
   helper.Move(src, dest);
@@ -602,7 +612,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
   ASSERT_TRUE(helper.DirectoryExists(src));
   ASSERT_TRUE(helper.DirectoryExists(dest));
 
-  test::TestCaseRecord kMoveDirResultCases[] = {
+  TestCaseRecord kMoveDirResultCases[] = {
     {false, FILE_PATH_LITERAL("file 0"), 38},
     {false, FILE_PATH_LITERAL("file 3"), 0},
   };
@@ -614,8 +624,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypeTest);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypeTest);
   helper.SetUpNoValidator();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -632,8 +642,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       kFileSystemTypeTemporary,
-                                       kFileSystemTypePersistent);
+                                       fileapi::kFileSystemTypeTemporary,
+                                       fileapi::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -643,8 +653,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             helper.SetUpTestCaseFiles(src,
-                                      test::kRegularTestCases,
-                                      test::kRegularTestCaseSize));
+                                      fileapi::test::kRegularTestCases,
+                                      fileapi::test::kRegularTestCaseSize));
 
   std::vector<ProgressRecord> records;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
@@ -653,8 +663,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
                                                base::Unretained(&records))));
 
   // Verify progress callback.
-  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
-    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
+    const TestCaseRecord& test_case = fileapi::test::kRegularTestCases[i];
 
     FileSystemURL src_url = helper.SourceURL(
         std::string("a/") + base::FilePath(test_case.path).AsUTF8Unsafe());
@@ -863,4 +873,4 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_ABORT, error);
 }
 
-}  // namespace fileapi
+}  // namespace content

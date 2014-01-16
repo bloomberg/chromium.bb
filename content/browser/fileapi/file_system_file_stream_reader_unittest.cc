@@ -21,7 +21,13 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemFileStreamReader;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+
+namespace content {
 
 namespace {
 
@@ -30,7 +36,7 @@ const char kTestFileName[] = "test.dat";
 const char kTestData[] = "0123456789";
 const int kTestDataSize = arraysize(kTestData) - 1;
 
-void ReadFromReader(FileSystemFileStreamReader* reader,
+void ReadFromReader(fileapi::FileSystemFileStreamReader* reader,
                     std::string* data,
                     size_t size,
                     int* result) {
@@ -69,8 +75,8 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
-        GURL(kURLOrigin), kFileSystemTypeTemporary,
-        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        GURL(kURLOrigin), fileapi::kFileSystemTypeTemporary,
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&OnOpenFileSystem));
     base::RunLoop().RunUntilIdle();
 
@@ -83,7 +89,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   }
 
  protected:
-  FileSystemFileStreamReader* CreateFileReader(
+  fileapi::FileSystemFileStreamReader* CreateFileReader(
       const std::string& file_name,
       int64 initial_offset,
       const base::Time& expected_modification_time) {
@@ -125,7 +131,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   FileSystemURL GetFileSystemURL(const std::string& file_name) {
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL(kURLOrigin),
-        kFileSystemTypeTemporary,
+        fileapi::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
   }
 
@@ -263,4 +269,4 @@ TEST_F(FileSystemFileStreamReaderTest, DeleteWithUnfinishedRead) {
   reader.reset();
 }
 
-}  // namespace fileapi
+}  // namespace content

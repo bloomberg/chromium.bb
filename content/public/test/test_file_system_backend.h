@@ -17,14 +17,16 @@ class SequencedTaskRunner;
 }
 
 namespace fileapi {
-
 class AsyncFileUtilAdapter;
 class FileSystemQuotaUtil;
+}
+
+namespace content {
 
 // This should be only used for testing.
 // This file system backend uses LocalFileUtil and stores data file
 // under the given directory.
-class TestFileSystemBackend : public FileSystemBackend {
+class TestFileSystemBackend : public fileapi::FileSystemBackend {
  public:
   TestFileSystemBackend(
       base::SequencedTaskRunner* task_runner,
@@ -32,39 +34,42 @@ class TestFileSystemBackend : public FileSystemBackend {
   virtual ~TestFileSystemBackend();
 
   // FileSystemBackend implementation.
-  virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
-  virtual void Initialize(FileSystemContext* context) OVERRIDE;
+  virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
+  virtual void Initialize(fileapi::FileSystemContext* context) OVERRIDE;
   virtual void OpenFileSystem(
       const GURL& origin_url,
-      FileSystemType type,
-      OpenFileSystemMode mode,
+      fileapi::FileSystemType type,
+      fileapi::OpenFileSystemMode mode,
       const OpenFileSystemCallback& callback) OVERRIDE;
-  virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
-  virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
-      FileSystemType type,
+  virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
+      fileapi::FileSystemType type) OVERRIDE;
+  virtual fileapi::CopyOrMoveFileValidatorFactory*
+      GetCopyOrMoveFileValidatorFactory(
+      fileapi::FileSystemType type,
       base::PlatformFileError* error_code) OVERRIDE;
-  virtual FileSystemOperation* CreateFileSystemOperation(
-      const FileSystemURL& url,
-      FileSystemContext* context,
+  virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
+      const fileapi::FileSystemURL& url,
+      fileapi::FileSystemContext* context,
       base::PlatformFileError* error_code) const OVERRIDE;
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
-      const FileSystemURL& url,
+      const fileapi::FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time,
-      FileSystemContext* context) const OVERRIDE;
-  virtual scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
-      const FileSystemURL& url,
+      fileapi::FileSystemContext* context) const OVERRIDE;
+  virtual scoped_ptr<fileapi::FileStreamWriter> CreateFileStreamWriter(
+      const fileapi::FileSystemURL& url,
       int64 offset,
-      FileSystemContext* context) const OVERRIDE;
-  virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+      fileapi::FileSystemContext* context) const OVERRIDE;
+  virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
   // Initialize the CopyOrMoveFileValidatorFactory. Invalid to call more than
   // once.
   void InitializeCopyOrMoveFileValidatorFactory(
-      scoped_ptr<CopyOrMoveFileValidatorFactory> factory);
+      scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory);
 
-  const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
-  void AddFileChangeObserver(FileChangeObserver* observer);
+  const fileapi::UpdateObserverList*
+      GetUpdateObservers(fileapi::FileSystemType type) const;
+  void AddFileChangeObserver(fileapi::FileChangeObserver* observer);
 
   // For CopyOrMoveFileValidatorFactory testing. Once it's set to true
   // GetCopyOrMoveFileValidatorFactory will start returning security
@@ -78,16 +83,16 @@ class TestFileSystemBackend : public FileSystemBackend {
 
   base::FilePath base_path_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<AsyncFileUtilAdapter> file_util_;
+  scoped_ptr<fileapi::AsyncFileUtilAdapter> file_util_;
   scoped_ptr<QuotaUtil> quota_util_;
 
   bool require_copy_or_move_validator_;
-  scoped_ptr<CopyOrMoveFileValidatorFactory>
+  scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory>
       copy_or_move_file_validator_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFileSystemBackend);
 };
 
-}  // namespace fileapi
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_

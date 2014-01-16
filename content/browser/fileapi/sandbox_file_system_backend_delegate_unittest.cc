@@ -15,14 +15,17 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+using fileapi::FileSystemURL;
+
+namespace content {
 
 namespace {
 
 FileSystemURL CreateFileSystemURL(const char* path) {
   const GURL kOrigin("http://foo/");
-  return FileSystemURL::CreateForTest(
-      kOrigin, kFileSystemTypeTemporary, base::FilePath::FromUTF8Unsafe(path));
+  return fileapi::FileSystemURL::CreateForTest(
+      kOrigin, fileapi::kFileSystemTypeTemporary,
+      base::FilePath::FromUTF8Unsafe(path));
 }
 
 }  // namespace
@@ -31,7 +34,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    delegate_.reset(new SandboxFileSystemBackendDelegate(
+    delegate_.reset(new fileapi::SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,
         base::MessageLoopProxy::current().get(),
         data_dir_.path(),
@@ -39,44 +42,48 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
         CreateAllowFileAccessOptions()));
   }
 
+  bool IsAccessValid(const FileSystemURL& url) const {
+    return delegate_->IsAccessValid(url);
+  }
+
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-  scoped_ptr<SandboxFileSystemBackendDelegate> delegate_;
+  scoped_ptr<fileapi::SandboxFileSystemBackendDelegate> delegate_;
 };
 
 TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
   // Normal case.
-  EXPECT_TRUE(delegate_->IsAccessValid(CreateFileSystemURL("a")));
+  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL("a")));
 
   // Access to a path with parent references ('..') should be disallowed.
-  EXPECT_FALSE(delegate_->IsAccessValid(CreateFileSystemURL("a/../b")));
+  EXPECT_FALSE(IsAccessValid(CreateFileSystemURL("a/../b")));
 
   // Access from non-allowed scheme should be disallowed.
-  EXPECT_FALSE(delegate_->IsAccessValid(
+  EXPECT_FALSE(IsAccessValid(
       FileSystemURL::CreateForTest(
-          GURL("unknown://bar"), kFileSystemTypeTemporary,
+          GURL("unknown://bar"), fileapi::kFileSystemTypeTemporary,
           base::FilePath::FromUTF8Unsafe("foo"))));
 
   // Access with restricted name should be disallowed.
-  EXPECT_FALSE(delegate_->IsAccessValid(CreateFileSystemURL(".")));
-  EXPECT_FALSE(delegate_->IsAccessValid(CreateFileSystemURL("..")));
+  EXPECT_FALSE(IsAccessValid(CreateFileSystemURL(".")));
+  EXPECT_FALSE(IsAccessValid(CreateFileSystemURL("..")));
 
   // This is also disallowed due to Windows XP parent path handling.
-  EXPECT_FALSE(delegate_->IsAccessValid(CreateFileSystemURL("...")));
+  EXPECT_FALSE(IsAccessValid(CreateFileSystemURL("...")));
 
   // These are identified as unsafe cases due to weird path handling
   // on Windows.
-  EXPECT_FALSE(delegate_->IsAccessValid(CreateFileSystemURL(" ..")));
-  EXPECT_FALSE(delegate_->IsAccessValid(CreateFileSystemURL(".. ")));
+  EXPECT_FALSE(IsAccessValid(CreateFileSystemURL(" ..")));
+  EXPECT_FALSE(IsAccessValid(CreateFileSystemURL(".. ")));
 
   // Similar but safe cases.
-  EXPECT_TRUE(delegate_->IsAccessValid(CreateFileSystemURL(" .")));
-  EXPECT_TRUE(delegate_->IsAccessValid(CreateFileSystemURL(". ")));
-  EXPECT_TRUE(delegate_->IsAccessValid(CreateFileSystemURL("b.")));
-  EXPECT_TRUE(delegate_->IsAccessValid(CreateFileSystemURL(".b")));
+  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL(" .")));
+  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL(". ")));
+  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL("b.")));
+  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL(".b")));
 
   // A path that looks like a drive letter.
-  EXPECT_TRUE(delegate_->IsAccessValid(CreateFileSystemURL("c:")));
+  EXPECT_TRUE(IsAccessValid(CreateFileSystemURL("c:")));
 }
 
-}  // namespace fileapi
+}  // namespace content

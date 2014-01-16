@@ -53,7 +53,7 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
     bool is_incognito,
     quota::QuotaManagerProxy* quota_manager_proxy) {
 
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
       pool->GetSequencedTaskRunnerWithShutdownBehavior(
           pool->GetNamedSequenceToken("FileAPI"),

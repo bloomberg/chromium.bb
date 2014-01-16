@@ -104,7 +104,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           NULL,  // quota_manager_proxy,
           ScopedVector<fileapi::FileSystemBackend>(),
           temp_dir_.path(),  // partition_path
-          fileapi::CreateAllowFileAccessOptions()));
+          content::CreateAllowFileAccessOptions()));
 
   // Type:"external" + virtual_path:"drive/foo/bar" resolves to "drive/foo/bar".
   const std::string& drive_mount_name =

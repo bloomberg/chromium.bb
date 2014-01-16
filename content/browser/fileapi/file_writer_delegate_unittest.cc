@@ -26,12 +26,16 @@
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::FileSystemURL;
+using fileapi::FileWriterDelegate;
+
+namespace content {
 
 namespace {
 
 const GURL kOrigin("http://example.com");
-const FileSystemType kFileSystemType = kFileSystemTypeTest;
+const fileapi::FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
 
 const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
 const int kDataSize = ARRAYSIZE_UNSAFE(kData) - 1;
@@ -109,13 +113,15 @@ class FileWriterDelegateTest : public PlatformTest {
       const char* test_file_path,
       int64 offset,
       int64 allowed_growth) {
-    SandboxFileStreamWriter* writer = new SandboxFileStreamWriter(
-        file_system_context_.get(),
-        GetFileSystemURL(test_file_path),
-        offset,
-        *file_system_context_->GetUpdateObservers(kFileSystemType));
+    fileapi::SandboxFileStreamWriter* writer =
+        new fileapi::SandboxFileStreamWriter(
+            file_system_context_.get(),
+            GetFileSystemURL(test_file_path),
+            offset,
+            *file_system_context_->GetUpdateObservers(kFileSystemType));
     writer->set_default_quota(allowed_growth);
-    return new FileWriterDelegate(scoped_ptr<FileStreamWriter>(writer));
+    return new FileWriterDelegate(
+        scoped_ptr<fileapi::FileStreamWriter>(writer));
   }
 
   FileWriterDelegate::DelegateWriteCallback GetWriteCallback(Result* result) {
@@ -139,7 +145,7 @@ class FileWriterDelegateTest : public PlatformTest {
   // This should be alive until the very end of this instance.
   base::MessageLoopForIO loop_;
 
-  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   net::URLRequestContext empty_context_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
@@ -452,4 +458,4 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace content

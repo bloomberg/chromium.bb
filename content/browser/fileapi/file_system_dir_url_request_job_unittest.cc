@@ -31,7 +31,11 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
-namespace fileapi {
+using fileapi::FileSystemContext;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemURL;
+
+namespace content {
 namespace {
 
 // We always use the TEMPORARY FileSystem in this test.
@@ -54,8 +58,8 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
         NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
-        GURL("http://remote/"), kFileSystemTypeTemporary,
-        OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        GURL("http://remote/"), fileapi::kFileSystemTypeTemporary,
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&FileSystemDirURLRequestJobTest::OnOpenFileSystem,
                    weak_factory_.GetWeakPtr()));
     base::RunLoop().RunUntilIdle();
@@ -85,7 +89,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     delegate_->set_quit_on_redirect(true);
     request_ = empty_context_.CreateRequest(
         url, net::DEFAULT_PRIORITY, delegate_.get());
-    job_ = new FileSystemDirURLRequestJob(
+    job_ = new fileapi::FileSystemDirURLRequestJob(
         request_.get(), NULL, file_system_context);
 
     request_->Start();
@@ -206,7 +210,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     }
   }
 
-  FileSystemFileUtil* file_util() {
+  fileapi::FileSystemFileUtil* file_util() {
     return file_system_context_->sandbox_delegate()->sync_file_util();
   }
 
@@ -318,4 +322,4 @@ TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
 }
 
 }  // namespace (anonymous)
-}  // namespace fileapi
+}  // namespace content

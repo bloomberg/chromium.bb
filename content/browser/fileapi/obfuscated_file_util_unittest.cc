@@ -34,7 +34,19 @@
 #include "webkit/common/database/database_identifier.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+using fileapi::ObfuscatedFileUtil;
+using fileapi::SandboxDirectoryDatabase;
+using fileapi::SandboxIsolatedOriginDatabase;
+using fileapi::kFileSystemTypeTemporary;
+using fileapi::kFileSystemTypePersistent;
+
+namespace content {
 
 namespace {
 
@@ -110,11 +122,12 @@ FileSystemURL FileSystemURLAppendUTF8(
 
 FileSystemURL FileSystemURLDirName(const FileSystemURL& url) {
   return FileSystemURL::CreateForTest(
-      url.origin(), url.mount_type(), VirtualPath::DirName(url.virtual_path()));
+      url.origin(), url.mount_type(),
+      fileapi::VirtualPath::DirName(url.virtual_path()));
 }
 
 std::string GetTypeString(FileSystemType type) {
-  return SandboxFileSystemBackendDelegate::GetTypeString(type);
+  return fileapi::SandboxFileSystemBackendDelegate::GetTypeString(type);
 }
 
 bool HasFileSystemType(
@@ -133,7 +146,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
  public:
   ObfuscatedFileUtilTest()
       : origin_(GURL("http://www.example.com")),
-        type_(kFileSystemTypeTemporary),
+        type_(fileapi::kFileSystemTypeTemporary),
         weak_factory_(this),
         sandbox_file_system_(origin_, type_),
         quota_status_(quota::kQuotaStatusUnknown),
@@ -162,7 +175,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     sandbox_file_system_.SetUp(file_system_context_.get());
 
-    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
+    change_observers_ = fileapi::MockFileChangeObserver::CreateList(
+        &change_observer_);
   }
 
   virtual void TearDown() {
@@ -196,11 +210,11 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return context;
   }
 
-  const ChangeObserverList& change_observers() const {
+  const fileapi::ChangeObserverList& change_observers() const {
     return change_observers_;
   }
 
-  MockFileChangeObserver* change_observer() {
+  fileapi::MockFileChangeObserver* change_observer() {
     return &change_observer_;
   }
 
@@ -215,6 +229,14 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     file_system->SetUp(file_system_context_.get());
     return file_system;
+  }
+
+  scoped_ptr<ObfuscatedFileUtil> CreateObfuscatedFileUtil(
+      quota::SpecialStoragePolicy* storage_policy) {
+    return scoped_ptr<ObfuscatedFileUtil>(
+      ObfuscatedFileUtil::CreateForTesting(
+          storage_policy, data_dir_path(),
+          base::MessageLoopProxy::current().get()));
   }
 
   ObfuscatedFileUtil* ofu() {
@@ -283,7 +305,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 usage() const { return usage_; }
-  FileSystemUsageCache* usage_cache() {
+  fileapi::FileSystemUsageCache* usage_cache() {
     return sandbox_file_system_.usage_cache();
   }
 
@@ -427,7 +449,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       std::set<base::FilePath::StringType>* files,
       std::set<base::FilePath::StringType>* directories) {
     scoped_ptr<FileSystemOperationContext> context;
-    std::vector<DirectoryEntry> entries;
+    std::vector<fileapi::DirectoryEntry> entries;
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               AsyncFileTestHelper::ReadDirectory(
                   file_system_context(), root_url, &entries));
@@ -471,17 +493,17 @@ class ObfuscatedFileUtilTest : public testing::Test {
     FillTestDirectory(root_url, &files, &directories);
 
     scoped_ptr<FileSystemOperationContext> context;
-    std::vector<DirectoryEntry> entries;
+    std::vector<fileapi::DirectoryEntry> entries;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               AsyncFileTestHelper::ReadDirectory(
                   file_system_context(), root_url, &entries));
-    std::vector<DirectoryEntry>::iterator entry_iter;
+    std::vector<fileapi::DirectoryEntry>::iterator entry_iter;
     EXPECT_EQ(files.size() + directories.size(), entries.size());
     EXPECT_TRUE(change_observer()->HasNoChange());
     for (entry_iter = entries.begin(); entry_iter != entries.end();
         ++entry_iter) {
-      const DirectoryEntry& entry = *entry_iter;
+      const fileapi::DirectoryEntry& entry = *entry_iter;
       std::set<base::FilePath::StringType>::iterator iter =
           files.find(entry.name);
       if (iter != files.end()) {
@@ -662,6 +684,120 @@ class ObfuscatedFileUtilTest : public testing::Test {
     EXPECT_NE(base::Time(), GetModifiedTime(dest_dir_url));
   }
 
+  void MaybeDropDatabasesAliveCaseTestBody() {
+    scoped_ptr<ObfuscatedFileUtil> file_util = CreateObfuscatedFileUtil(NULL);
+    file_util->InitOriginDatabase(GURL(), true /*create*/);
+    ASSERT_TRUE(file_util->origin_database_ != NULL);
+
+    // Callback to Drop DB is called while ObfuscatedFileUtilTest is
+    // still alive.
+    file_util->db_flush_delay_seconds_ = 0;
+    file_util->MarkUsed();
+    base::RunLoop().RunUntilIdle();
+
+    ASSERT_TRUE(file_util->origin_database_ == NULL);
+  }
+
+  void MaybeDropDatabasesAlreadyDeletedCaseTestBody() {
+    // Run message loop after OFU is already deleted to make sure callback
+    // doesn't cause a crash for use after free.
+    {
+      scoped_ptr<ObfuscatedFileUtil> file_util = CreateObfuscatedFileUtil(NULL);
+      file_util->InitOriginDatabase(GURL(), true /*create*/);
+      file_util->db_flush_delay_seconds_ = 0;
+      file_util->MarkUsed();
+    }
+
+    // At this point the callback is still in the message queue but OFU is gone.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void DestroyDirectoryDatabase_IsolatedTestBody() {
+    storage_policy_->AddIsolated(origin_);
+    scoped_ptr<ObfuscatedFileUtil> file_util = CreateObfuscatedFileUtil(
+        storage_policy_.get());
+    const FileSystemURL url = FileSystemURL::CreateForTest(
+        origin_, kFileSystemTypePersistent, base::FilePath());
+
+    // Create DirectoryDatabase for isolated origin.
+    SandboxDirectoryDatabase* db =
+        file_util->GetDirectoryDatabase(url, true /* create */);
+    ASSERT_TRUE(db != NULL);
+
+    // Destory it.
+    ASSERT_TRUE(file_util->DestroyDirectoryDatabase(
+        url.origin(), GetTypeString(url.type())));
+    ASSERT_TRUE(file_util->directories_.empty());
+  }
+
+  void GetDirectoryDatabase_IsolatedTestBody() {
+    storage_policy_->AddIsolated(origin_);
+    scoped_ptr<ObfuscatedFileUtil> file_util = CreateObfuscatedFileUtil(
+        storage_policy_.get());
+    const FileSystemURL url = FileSystemURL::CreateForTest(
+        origin_, kFileSystemTypePersistent, base::FilePath());
+
+    // Create DirectoryDatabase for isolated origin.
+    SandboxDirectoryDatabase* db =
+        file_util->GetDirectoryDatabase(url, true /* create */);
+    ASSERT_TRUE(db != NULL);
+    ASSERT_EQ(1U, file_util->directories_.size());
+
+    // Remove isolated.
+    storage_policy_->RemoveIsolated(url.origin());
+
+    // This should still get the same database.
+    SandboxDirectoryDatabase* db2 =
+        file_util->GetDirectoryDatabase(url, false /* create */);
+    ASSERT_EQ(db, db2);
+  }
+
+  void MigrationBackFromIsolatedTestBody() {
+    std::string kFakeDirectoryData("0123456789");
+    base::FilePath old_directory_db_path;
+
+    // Initialize the directory with one origin using
+    // SandboxIsolatedOriginDatabase.
+    {
+      std::string origin_string =
+          webkit_database::GetIdentifierFromOrigin(origin_);
+      SandboxIsolatedOriginDatabase database_old(
+          origin_string, data_dir_path(),
+          base::FilePath(
+              SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory));
+      base::FilePath path;
+      EXPECT_TRUE(database_old.GetPathForOrigin(origin_string, &path));
+      EXPECT_FALSE(path.empty());
+
+      // Populate the origin directory with some fake data.
+      old_directory_db_path = data_dir_path().Append(path);
+      ASSERT_TRUE(base::CreateDirectory(old_directory_db_path));
+      EXPECT_EQ(static_cast<int>(kFakeDirectoryData.size()),
+                file_util::WriteFile(old_directory_db_path.AppendASCII("dummy"),
+                                     kFakeDirectoryData.data(),
+                                     kFakeDirectoryData.size()));
+    }
+
+    storage_policy_->AddIsolated(origin_);
+    scoped_ptr<ObfuscatedFileUtil> file_util = CreateObfuscatedFileUtil(
+        storage_policy_.get());
+    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+    base::FilePath origin_directory = file_util->GetDirectoryForOrigin(
+        origin_, true /* create */, &error);
+    EXPECT_EQ(base::PLATFORM_FILE_OK, error);
+
+    // The database is migrated from the old one.
+    EXPECT_TRUE(base::DirectoryExists(origin_directory));
+    EXPECT_FALSE(base::DirectoryExists(old_directory_db_path));
+
+    // Check we see the same contents in the new origin directory.
+    std::string origin_db_data;
+    EXPECT_TRUE(base::PathExists(origin_directory.AppendASCII("dummy")));
+    EXPECT_TRUE(base::ReadFileToString(
+            origin_directory.AppendASCII("dummy"), &origin_db_data));
+    EXPECT_EQ(kFakeDirectoryData, origin_db_data);
+  }
+
   int64 ComputeCurrentUsage() {
     return sandbox_file_system_.ComputeCurrentOriginUsage() -
         sandbox_file_system_.ComputeCurrentDirectoryDatabaseUsage();
@@ -687,8 +823,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
   SandboxFileSystemTestHelper sandbox_file_system_;
   quota::QuotaStatusCode quota_status_;
   int64 usage_;
-  MockFileChangeObserver change_observer_;
-  ChangeObserverList change_observers_;
+  fileapi::MockFileChangeObserver change_observer_;
+  fileapi::ChangeObserverList change_observers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);
@@ -1120,7 +1256,7 @@ TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
       ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
 
-  std::vector<DirectoryEntry> entries;
+  std::vector<fileapi::DirectoryEntry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
             AsyncFileTestHelper::ReadDirectory(
                 file_system_context(), url, &entries));
@@ -1567,9 +1703,10 @@ TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
 
   int64 expected_quota = 0;
 
-  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kRegularTestCase " << i);
-    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+    const fileapi::test::TestCaseRecord& test_case =
+        fileapi::test::kRegularTestCases[i];
     base::FilePath file_path(test_case.path);
     expected_quota += ObfuscatedFileUtil::ComputeFilePathCost(file_path);
     if (test_case.is_directory) {
@@ -1702,7 +1839,7 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
     EXPECT_TRUE(created);
   }
 
-  std::vector<DirectoryEntry> entries;
+  std::vector<fileapi::DirectoryEntry> entries;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             AsyncFileTestHelper::ReadDirectory(
                 file_system_context(), empty_path, &entries));
@@ -1959,7 +2096,7 @@ TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
                          base::Time()));
 
   context.reset(NewContext(NULL));
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
+  scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator> file_enum(
       ofu()->CreateFileEnumerator(context.get(), dir, false));
 
   int count = 0;
@@ -2312,128 +2449,23 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
-  scoped_ptr<ObfuscatedFileUtil> file_util(
-      ObfuscatedFileUtil::CreateForTesting(
-          NULL, data_dir_path(),
-          base::MessageLoopProxy::current().get()));
-  file_util->InitOriginDatabase(GURL(), true /*create*/);
-  ASSERT_TRUE(file_util->origin_database_ != NULL);
-
-  // Callback to Drop DB is called while ObfuscatedFileUtilTest is still alive.
-  file_util->db_flush_delay_seconds_ = 0;
-  file_util->MarkUsed();
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_TRUE(file_util->origin_database_ == NULL);
+  MaybeDropDatabasesAliveCaseTestBody();
 }
 
 TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
-  // Run message loop after OFU is already deleted to make sure callback doesn't
-  // cause a crash for use after free.
-  {
-    scoped_ptr<ObfuscatedFileUtil> file_util(
-        ObfuscatedFileUtil::CreateForTesting(
-            NULL, data_dir_path(),
-            base::MessageLoopProxy::current().get()));
-    file_util->InitOriginDatabase(GURL(), true /*create*/);
-    file_util->db_flush_delay_seconds_ = 0;
-    file_util->MarkUsed();
-  }
-
-  // At this point the callback is still in the message queue but OFU is gone.
-  base::RunLoop().RunUntilIdle();
+  MaybeDropDatabasesAlreadyDeletedCaseTestBody();
 }
 
 TEST_F(ObfuscatedFileUtilTest, DestroyDirectoryDatabase_Isolated) {
-  storage_policy_->AddIsolated(origin_);
-  scoped_ptr<ObfuscatedFileUtil> file_util(
-      ObfuscatedFileUtil::CreateForTesting(
-          storage_policy_.get(), data_dir_path(),
-          base::MessageLoopProxy::current().get()));
-  const FileSystemURL url = FileSystemURL::CreateForTest(
-      origin_, kFileSystemTypePersistent, base::FilePath());
-
-  // Create DirectoryDatabase for isolated origin.
-  SandboxDirectoryDatabase* db =
-      file_util->GetDirectoryDatabase(url, true /* create */);
-  ASSERT_TRUE(db != NULL);
-
-  // Destory it.
-  ASSERT_TRUE(file_util->DestroyDirectoryDatabase(
-      url.origin(), GetTypeString(url.type())));
-  ASSERT_TRUE(file_util->directories_.empty());
+  DestroyDirectoryDatabase_IsolatedTestBody();
 }
 
 TEST_F(ObfuscatedFileUtilTest, GetDirectoryDatabase_Isolated) {
-  storage_policy_->AddIsolated(origin_);
-  scoped_ptr<ObfuscatedFileUtil> file_util(
-      ObfuscatedFileUtil::CreateForTesting(
-          storage_policy_.get(), data_dir_path(),
-          base::MessageLoopProxy::current().get()));
-  const FileSystemURL url = FileSystemURL::CreateForTest(
-      origin_, kFileSystemTypePersistent, base::FilePath());
-
-  // Create DirectoryDatabase for isolated origin.
-  SandboxDirectoryDatabase* db =
-      file_util->GetDirectoryDatabase(url, true /* create */);
-  ASSERT_TRUE(db != NULL);
-  ASSERT_EQ(1U, file_util->directories_.size());
-
-  // Remove isolated.
-  storage_policy_->RemoveIsolated(url.origin());
-
-  // This should still get the same database.
-  SandboxDirectoryDatabase* db2 =
-      file_util->GetDirectoryDatabase(url, false /* create */);
-  ASSERT_EQ(db, db2);
+  GetDirectoryDatabase_IsolatedTestBody();
 }
 
 TEST_F(ObfuscatedFileUtilTest, MigrationBackFromIsolated) {
-  std::string kFakeDirectoryData("0123456789");
-  base::FilePath old_directory_db_path;
-
-  // Initialize the directory with one origin using
-  // SandboxIsolatedOriginDatabase.
-  {
-    std::string origin_string =
-        webkit_database::GetIdentifierFromOrigin(origin_);
-    SandboxIsolatedOriginDatabase database_old(
-        origin_string, data_dir_path(),
-        base::FilePath(
-            SandboxIsolatedOriginDatabase::kObsoleteOriginDirectory));
-    base::FilePath path;
-    EXPECT_TRUE(database_old.GetPathForOrigin(origin_string, &path));
-    EXPECT_FALSE(path.empty());
-
-    // Populate the origin directory with some fake data.
-    old_directory_db_path = data_dir_path().Append(path);
-    ASSERT_TRUE(base::CreateDirectory(old_directory_db_path));
-    EXPECT_EQ(static_cast<int>(kFakeDirectoryData.size()),
-              file_util::WriteFile(old_directory_db_path.AppendASCII("dummy"),
-                                   kFakeDirectoryData.data(),
-                                   kFakeDirectoryData.size()));
-  }
-
-  storage_policy_->AddIsolated(origin_);
-  scoped_ptr<ObfuscatedFileUtil> file_util(
-      ObfuscatedFileUtil::CreateForTesting(
-          storage_policy_.get(), data_dir_path(),
-          base::MessageLoopProxy::current().get()));
-  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-  base::FilePath origin_directory = file_util->GetDirectoryForOrigin(
-      origin_, true /* create */, &error);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error);
-
-  // The database is migrated from the old one.
-  EXPECT_TRUE(base::DirectoryExists(origin_directory));
-  EXPECT_FALSE(base::DirectoryExists(old_directory_db_path));
-
-  // Check we see the same contents in the new origin directory.
-  std::string origin_db_data;
-  EXPECT_TRUE(base::PathExists(origin_directory.AppendASCII("dummy")));
-  EXPECT_TRUE(base::ReadFileToString(
-      origin_directory.AppendASCII("dummy"), &origin_db_data));
-  EXPECT_EQ(kFakeDirectoryData, origin_db_data);
+  MigrationBackFromIsolatedTestBody();
 }
 
 TEST_F(ObfuscatedFileUtilTest, OpenPathInNonDirectory) {
@@ -2487,4 +2519,4 @@ TEST_F(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
                                    true /* recursive */));
 }
 
-}  // namespace fileapi
+}  // namespace content

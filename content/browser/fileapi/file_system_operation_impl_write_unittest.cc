@@ -30,15 +30,18 @@
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
+using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationRunner;
+using fileapi::FileSystemURL;
 using webkit_blob::MockBlobURLRequestContext;
 using webkit_blob::ScopedTextBlob;
 
-namespace fileapi {
+namespace content {
 
 namespace {
 
 const GURL kOrigin("http://example.com");
-const FileSystemType kFileSystemType = kFileSystemTypeTest;
+const fileapi::FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
 
 void AssertStatusEq(base::PlatformFileError expected,
                     base::PlatformFileError actual) {
@@ -56,7 +59,8 @@ class FileSystemOperationImplWriteTest
         bytes_written_(0),
         complete_(false),
         weak_factory_(this) {
-    change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
+    change_observers_ = fileapi::MockFileChangeObserver::CreateList(
+        &change_observer_);
   }
 
   virtual void SetUp() {
@@ -101,11 +105,11 @@ class FileSystemOperationImplWriteTest
   bool complete() const { return complete_; }
 
  protected:
-  const ChangeObserverList& change_observers() const {
+  const fileapi::ChangeObserverList& change_observers() const {
     return change_observers_;
   }
 
-  MockFileChangeObserver* change_observer() {
+  fileapi::MockFileChangeObserver* change_observer() {
     return &change_observer_;
   }
 
@@ -148,7 +152,7 @@ class FileSystemOperationImplWriteTest
     return *url_request_context_;
   }
 
-  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;
 
   base::MessageLoopForIO loop_;
@@ -164,8 +168,8 @@ class FileSystemOperationImplWriteTest
 
   scoped_ptr<MockBlobURLRequestContext> url_request_context_;
 
-  MockFileChangeObserver change_observer_;
-  ChangeObserverList change_observers_;
+  fileapi::MockFileChangeObserver change_observer_;
+  fileapi::ChangeObserverList change_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplWriteTest> weak_factory_;
 
@@ -325,4 +329,4 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelFailingWrite) {
 
 // TODO(ericu,dmikurube,kinuko): Add more tests for cancel cases.
 
-}  // namespace fileapi
+}  // namespace content

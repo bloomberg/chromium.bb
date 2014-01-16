@@ -18,6 +18,10 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace content {
+class PluginPrivateFileSystemBackendTest;
+}
+
 namespace quota {
 class SpecialStoragePolicy;
 }
@@ -122,7 +126,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
       FileSystemType type) const OVERRIDE;
 
  private:
-  friend class PluginPrivateFileSystemBackendTest;
+  friend class content::PluginPrivateFileSystemBackendTest;
 
   ObfuscatedFileUtil* obfuscated_file_util();
   const base::FilePath& base_path() const { return base_path_; }

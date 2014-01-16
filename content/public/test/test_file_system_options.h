@@ -7,17 +7,17 @@
 
 #include "webkit/browser/fileapi/file_system_options.h"
 
-namespace fileapi {
+namespace content {
 
 // Returns Filesystem options for incognito mode.
-FileSystemOptions CreateIncognitoFileSystemOptions();
+fileapi::FileSystemOptions CreateIncognitoFileSystemOptions();
 
 // Returns Filesystem options that allow file access.
-FileSystemOptions CreateAllowFileAccessOptions();
+fileapi::FileSystemOptions CreateAllowFileAccessOptions();
 
 // Returns Filesystem options that disallow file access.
-FileSystemOptions CreateDisallowFileAccessOptions();
+fileapi::FileSystemOptions CreateDisallowFileAccessOptions();
 
-}  // namespace fileapi
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_OPTIONS_H_

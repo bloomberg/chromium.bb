@@ -19,6 +19,10 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace content {
+class FileSystemFileStreamReaderTest;
+}
+
 namespace fileapi {
 
 class FileSystemContext;
@@ -41,7 +45,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemFileStreamReader
 
  private:
   friend class webkit_blob::FileStreamReader;
-  friend class FileSystemFileStreamReaderTest;
+  friend class content::FileSystemFileStreamReaderTest;
 
   FileSystemFileStreamReader(FileSystemContext* file_system_context,
                              const FileSystemURL& url,

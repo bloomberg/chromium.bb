@@ -19,10 +19,14 @@
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-namespace fileapi {
+using fileapi::FileSystemContext;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemURL;
+
+namespace content {
 namespace {
 
-class LoggingRecursiveOperation : public RecursiveOperationDelegate {
+class LoggingRecursiveOperation : public fileapi::RecursiveOperationDelegate {
  public:
   struct LogEntry {
     enum Type {
@@ -37,7 +41,7 @@ class LoggingRecursiveOperation : public RecursiveOperationDelegate {
   LoggingRecursiveOperation(FileSystemContext* file_system_context,
                             const FileSystemURL& root,
                             const StatusCallback& callback)
-      : RecursiveOperationDelegate(file_system_context),
+      : fileapi::RecursiveOperationDelegate(file_system_context),
         root_(root),
         callback_(callback),
         weak_factory_(this) {
@@ -113,7 +117,8 @@ void ReportStatus(base::PlatformFileError* out_error,
 
 // To test the Cancel() during operation, calls Cancel() of |operation|
 // after |counter| times message posting.
-void CallCancelLater(RecursiveOperationDelegate* operation, int counter) {
+void CallCancelLater(fileapi::RecursiveOperationDelegate* operation,
+                     int counter) {
   if (counter > 0) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -145,7 +150,7 @@ class RecursiveOperationDelegateTest : public testing::Test {
     return make_scoped_ptr(context);
   }
 
-  FileSystemFileUtil* file_util() {
+  fileapi::FileSystemFileUtil* file_util() {
     return sandbox_file_system_.file_util();
   }
 
@@ -277,4 +282,4 @@ TEST_F(RecursiveOperationDelegateTest, Cancel) {
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_ABORT, error);
 }
 
-}  // namespace fileapi
+}  // namespace content

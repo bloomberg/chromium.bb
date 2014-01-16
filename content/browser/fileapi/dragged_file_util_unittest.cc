@@ -26,7 +26,13 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/test_file_set.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+
+namespace content {
 
 namespace {
 
@@ -94,7 +100,7 @@ class DraggedFileUtilTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(partition_dir_.CreateUniqueTempDir());
-    file_util_.reset(new DraggedFileUtil());
+    file_util_.reset(new fileapi::DraggedFileUtil());
 
     // Register the files/directories of RegularTestCases (with random
     // root paths) as dropped files.
@@ -112,8 +118,8 @@ class DraggedFileUtilTest : public testing::Test {
   }
 
  protected:
-  IsolatedContext* isolated_context() const {
-    return IsolatedContext::GetInstance();
+  fileapi::IsolatedContext* isolated_context() const {
+    return fileapi::IsolatedContext::GetInstance();
   }
   const base::FilePath& root_path() const {
     return data_dir_.path();
@@ -121,7 +127,7 @@ class DraggedFileUtilTest : public testing::Test {
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
-  FileSystemFileUtil* file_util() const { return file_util_.get(); }
+  fileapi::FileSystemFileUtil* file_util() const { return file_util_.get(); }
   std::string filesystem_id() const { return filesystem_id_; }
 
   base::FilePath GetTestCasePlatformPath(
@@ -142,14 +148,14 @@ class DraggedFileUtilTest : public testing::Test {
         filesystem_id()).Append(path);
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://example.com"),
-        kFileSystemTypeIsolated,
+        fileapi::kFileSystemTypeIsolated,
         virtual_path);
   }
 
   FileSystemURL GetOtherFileSystemURL(const base::FilePath& path) const {
     return file_system_context()->CreateCrackedFileSystemURL(
         GURL("http://example.com"),
-        kFileSystemTypeTemporary,
+        fileapi::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII("dest").Append(path));
   }
 
@@ -241,9 +247,9 @@ class DraggedFileUtilTest : public testing::Test {
     }
   }
 
-  scoped_ptr<FileSystemOperationContext> GetOperationContext() {
+  scoped_ptr<fileapi::FileSystemOperationContext> GetOperationContext() {
     return make_scoped_ptr(
-        new FileSystemOperationContext(file_system_context())).Pass();
+        new fileapi::FileSystemOperationContext(file_system_context())).Pass();
   }
 
 
@@ -251,9 +257,10 @@ class DraggedFileUtilTest : public testing::Test {
   void SimulateDropFiles() {
     size_t root_path_index = 0;
 
-    IsolatedContext::FileInfoSet toplevels;
-    for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
-      const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+    fileapi::IsolatedContext::FileInfoSet toplevels;
+    for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
+      const fileapi::test::TestCaseRecord& test_case =
+          fileapi::test::kRegularTestCases[i];
       base::FilePath path(test_case.path);
       base::FilePath toplevel = GetTopLevelPath(path);
 
@@ -266,7 +273,7 @@ class DraggedFileUtilTest : public testing::Test {
         toplevels.AddPath(root.Append(path), NULL);
       }
 
-      test::SetUpOneTestCase(toplevel_root_map_[toplevel], test_case);
+      fileapi::test::SetUpOneTestCase(toplevel_root_map_[toplevel], test_case);
     }
 
     // Register the toplevel entries.
@@ -279,14 +286,15 @@ class DraggedFileUtilTest : public testing::Test {
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;
-  scoped_ptr<DraggedFileUtil> file_util_;
+  scoped_ptr<fileapi::DraggedFileUtil> file_util_;
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtilTest);
 };
 
 TEST_F(DraggedFileUtilTest, BasicTest) {
-  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
+  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
     SCOPED_TRACE(testing::Message() << "Testing RegularTestCases " << i);
-    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+    const fileapi::test::TestCaseRecord& test_case =
+        fileapi::test::kRegularTestCases[i];
 
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
@@ -319,7 +327,7 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
 
   for (size_t i = 0; i < arraysize(kUnregisteredCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kUnregisteredCases " << i);
-    const test::TestCaseRecord& test_case = kUnregisteredCases[i];
+    const fileapi::test::TestCaseRecord& test_case = kUnregisteredCases[i];
 
     // Prepare the test file/directory.
     SetUpOneTestCase(root_path(), test_case);
@@ -334,7 +342,7 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
 
   for (size_t i = 0; i < arraysize(kUnregisteredCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kUnregisteredCases " << i);
-    const test::TestCaseRecord& test_case = kUnregisteredCases[i];
+    const fileapi::test::TestCaseRecord& test_case = kUnregisteredCases[i];
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     // We should not be able to get the valid URL for unregistered files.
@@ -343,8 +351,9 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
 }
 
 TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
-  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
-    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
+    const fileapi::test::TestCaseRecord& test_case =
+        fileapi::test::kRegularTestCases[i];
     if (!test_case.is_directory)
       continue;
 
@@ -352,7 +361,8 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
                  << ": " << test_case.path);
 
     // Read entries in the directory to construct the expected results map.
-    typedef std::map<base::FilePath::StringType, DirectoryEntry> EntryMap;
+    typedef std::map<base::FilePath::StringType, fileapi::DirectoryEntry>
+        EntryMap;
     EntryMap expected_entry_map;
 
     base::FilePath dir_path = GetTestCasePlatformPath(test_case.path);
@@ -362,7 +372,7 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
     base::FilePath current;
     while (!(current = file_enum.Next()).empty()) {
       base::FileEnumerator::FileInfo file_info = file_enum.GetInfo();
-      DirectoryEntry entry;
+      fileapi::DirectoryEntry entry;
       entry.is_directory = file_info.IsDirectory();
       entry.name = current.BaseName().value();
       entry.size = file_info.GetSize();
@@ -389,7 +399,7 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
 
     EXPECT_EQ(expected_entry_map.size(), entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
-      const DirectoryEntry& entry = entries[i];
+      const fileapi::DirectoryEntry& entry = entries[i];
       EntryMap::iterator found = expected_entry_map.find(entry.name);
       EXPECT_TRUE(found != expected_entry_map.end());
       EXPECT_EQ(found->second.name, entry.name);
@@ -402,8 +412,9 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
 }
 
 TEST_F(DraggedFileUtilTest, GetLocalFilePathTest) {
-  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
-    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
+    const fileapi::test::TestCaseRecord& test_case =
+        fileapi::test::kRegularTestCases[i];
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
 
     FileSystemOperationContext context(file_system_context());
@@ -486,8 +497,9 @@ TEST_F(DraggedFileUtilTest, CopyOutDirectoryTest) {
 }
 
 TEST_F(DraggedFileUtilTest, TouchTest) {
-  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
-    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
+    const fileapi::test::TestCaseRecord& test_case =
+        fileapi::test::kRegularTestCases[i];
     if (test_case.is_directory)
       continue;
     SCOPED_TRACE(testing::Message() << test_case.path);
@@ -513,8 +525,9 @@ TEST_F(DraggedFileUtilTest, TouchTest) {
 }
 
 TEST_F(DraggedFileUtilTest, TruncateTest) {
-  for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {
-    const test::TestCaseRecord& test_case = test::kRegularTestCases[i];
+  for (size_t i = 0; i < fileapi::test::kRegularTestCaseSize; ++i) {
+    const fileapi::test::TestCaseRecord& test_case =
+        fileapi::test::kRegularTestCases[i];
     if (test_case.is_directory)
       continue;
 
@@ -541,4 +554,4 @@ TEST_F(DraggedFileUtilTest, TruncateTest) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace content

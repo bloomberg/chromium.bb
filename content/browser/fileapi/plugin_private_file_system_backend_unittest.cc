@@ -19,14 +19,19 @@
 #include "webkit/browser/fileapi/plugin_private_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+using fileapi::AsyncFileTestHelper;
+using fileapi::FileSystemContext;
+using fileapi::FileSystemURL;
+using fileapi::IsolatedContext;
+
+namespace content {
 
 namespace {
 
 const GURL kOrigin("http://www.example.com");
 const std::string kPlugin1("plugin1");
 const std::string kPlugin2("plugin2");
-const FileSystemType kType = kFileSystemTypePluginPrivate;
+const fileapi::FileSystemType kType = fileapi::kFileSystemTypePluginPrivate;
 const std::string kRootName = "pluginprivate";
 
 void DidOpenFileSystem(base::PlatformFileError* error_out,
@@ -58,7 +63,7 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
         root.virtual_path().AppendASCII(relative));
   }
 
-  PluginPrivateFileSystemBackend* backend() const {
+  fileapi::PluginPrivateFileSystemBackend* backend() const {
     return context_->plugin_private_backend();
   }
 
@@ -75,7 +80,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, filesystem_id1, kPlugin1,
-      OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
@@ -85,13 +90,14 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   error = base::PLATFORM_FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, filesystem_id2, kPlugin1,
-      OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 
   const GURL root_url(
-      GetIsolatedFileSystemRootURIString(kOrigin, filesystem_id1, kRootName));
+      fileapi::GetIsolatedFileSystemRootURIString(
+          kOrigin, filesystem_id1, kRootName));
   FileSystemURL file = CreateURL(root_url, "foo");
   base::FilePath platform_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -109,7 +115,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
   base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, filesystem_id1, kPlugin1,
-      OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
@@ -118,14 +124,15 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
   error = base::PLATFORM_FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
       kOrigin, kType, filesystem_id2, kPlugin2,
-      OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 
   // Create 'foo' in kPlugin1.
   const GURL root_url1(
-      GetIsolatedFileSystemRootURIString(kOrigin, filesystem_id1, kRootName));
+      fileapi::GetIsolatedFileSystemRootURIString(
+          kOrigin, filesystem_id1, kRootName));
   FileSystemURL file1 = CreateURL(root_url1, "foo");
   base::FilePath platform_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -135,7 +142,8 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
 
   // See the same path is not available in kPlugin2.
   const GURL root_url2(
-      GetIsolatedFileSystemRootURIString(kOrigin, filesystem_id2, kRootName));
+      fileapi::GetIsolatedFileSystemRootURIString(
+          kOrigin, filesystem_id2, kRootName));
   FileSystemURL file2 = CreateURL(root_url2, "foo");
   EXPECT_FALSE(AsyncFileTestHelper::FileExists(
       context_.get(), file2, AsyncFileTestHelper::kDontCheckSize));
@@ -144,4 +152,4 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
 // TODO(kinuko,nhiroki): also test if DeleteOriginDataOnFileThread
 // works fine when there's multiple plugin partitions.
 
-}  // namespace fileapi
+}  // namespace content
