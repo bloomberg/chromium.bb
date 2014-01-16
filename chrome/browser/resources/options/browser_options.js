@@ -424,10 +424,22 @@ cr.define('options', function() {
 
       // Accessibility section (CrOS only).
       if (cr.isChromeOS) {
+        var updateAccessibilitySettingsButton = function() {
+          $('accessibility-settings').hidden =
+              !($('accessibility-spoken-feedback-check').checked);
+        };
+        Preferences.getInstance().addEventListener(
+            'settings.accessibility',
+            updateAccessibilitySettingsButton);
+        $('accessibility-settings-button').onclick = function(event) {
+          window.open(loadTimeData.getString('accessibilitySettingsURL'));
+        };
         $('accessibility-spoken-feedback-check').onchange = function(event) {
           chrome.send('spokenFeedbackChange',
                       [$('accessibility-spoken-feedback-check').checked]);
+          updateAccessibilitySettingsButton();
         };
+        updateAccessibilitySettingsButton();
 
         $('accessibility-high-contrast-check').onchange = function(event) {
           chrome.send('highContrastChange',
