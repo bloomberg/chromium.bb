@@ -16,6 +16,8 @@ usage() {
   echo "--[no-]arm: enable or disable installation of arm cross toolchain"
   echo "--[no-]chromeos-fonts: enable or disable installation of Chrome OS"\
        "fonts"
+  echo "--[no-]nacl: enable or disable installation of prerequisites for"\
+       "building standalone NaCl and all its toolchains"
   echo "--no-prompt: silently select standard options/defaults"
   echo "--quick-check: quickly try to determine if dependencies are installed"
   echo "               (this avoids interactive prompts and sudo commands,"
@@ -42,6 +44,8 @@ do
   --no-arm)                 do_inst_arm=0;;
   --chromeos-fonts)         do_inst_chromeos_fonts=1;;
   --no-chromeos-fonts)      do_inst_chromeos_fonts=0;;
+  --nacl)                   do_inst_nacl=1;;
+  --no-nacl)                do_inst_nacl=0;;
   --no-prompt)              do_default=1
                             do_quietly="-qq --assume-yes"
     ;;
@@ -143,6 +147,9 @@ armel_list="libc6-armel-cross libc6-dev-armel-cross libgcc1-armel-cross
 
 # TODO(sbc): remove armel once the armhf transition is complete
 arm_list="$arm_list $armel_list"
+
+# Packages to build standalone NaCl and all its toolchains.
+nacl_list="g++-mingw-w64-i686"
 
 # Some package names have changed over time
 if package_exists ttf-mscorefonts-installer; then
@@ -252,8 +259,17 @@ else
   arm_list=
 fi
 
-packages="$(echo "${dev_list} ${lib_list} ${dbg_list} ${arm_list}" | \
-  tr " " "\n" | sort -u | tr "\n" " ")"
+if test "$do_inst_nacl" = "1"; then
+  echo "Including standalone NaCl dependencies."
+else
+  echo "Skipping standalone NaCl dependencies."
+  nacl_list=
+fi
+
+packages="$(
+  echo "${dev_list} ${lib_list} ${dbg_list} ${arm_list} ${nacl_list}" |
+  tr " " "\n" | sort -u | tr "\n" " "
+)"
 
 if [ 1 -eq "${do_quick_check-0}" ] ; then
   failed_check="$(dpkg-query -W -f '${PackageSpec}:${Status}\n' \
