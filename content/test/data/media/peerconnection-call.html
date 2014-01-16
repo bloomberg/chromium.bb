@@ -147,8 +147,9 @@
     navigator.webkitGetUserMedia({audio: true, video: true},
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     onLocalDescriptionError = function(error) {
-      var expectedMsg = 'SetLocalDescription failed: Failed to' +
-          ' update session state: ERROR_CONTENT';
+      var expectedMsg = 'Failed to set local offer sdp:' +
+          ' Session error code: ERROR_CONTENT. Session error description:' +
+              ' Failed to set video receive codecs..';
       expectEquals(expectedMsg, error);
 
       // Got the right message, test succeeded.
@@ -163,8 +164,8 @@
     navigator.webkitGetUserMedia({audio: true, video: true},
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     onLocalDescriptionError = function(error) {
-      var expectedMsg = 'SetLocalDescription failed: Called with a SDP without'
-                         + ' crypto enabled.';
+      var expectedMsg = 'Failed to set local offer sdp:' +
+          ' Called with a SDP without crypto enabled.';
       expectEquals(expectedMsg, error);
 
       // Got the right message, test succeeded.

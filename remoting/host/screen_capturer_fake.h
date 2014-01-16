@@ -32,6 +32,8 @@ class ScreenCapturerFake : public webrtc::ScreenCapturer {
   // ScreenCapturer interface.
   virtual void SetMouseShapeObserver(
       MouseShapeObserver* mouse_shape_observer) OVERRIDE;
+  virtual bool GetScreenList(ScreenList* screens) OVERRIDE;
+  virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE;
 
  private:
   // Generates an image in the front buffer.
