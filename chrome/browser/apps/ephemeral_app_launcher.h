@@ -9,9 +9,11 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
+class ExtensionEnableFlow;
 class Profile;
 
 namespace content {
@@ -28,7 +30,8 @@ class Extension;
 class EphemeralAppLauncher
     : public extensions::WebstoreStandaloneInstaller,
       public content::WebContentsObserver,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public ExtensionEnableFlowDelegate {
  public:
   typedef WebstoreStandaloneInstaller::Callback Callback;
 
@@ -60,7 +63,7 @@ class EphemeralAppLauncher
 
   virtual ~EphemeralAppLauncher();
 
-  void Init();
+  void StartObserving();
   void LaunchApp(const extensions::Extension* extension) const;
 
   // WebstoreStandaloneInstaller implementation.
@@ -94,6 +97,10 @@ class EphemeralAppLauncher
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ExtensionEnableFlowDelegate implementation.
+  virtual void ExtensionEnableFlowFinished() OVERRIDE;
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
+
   content::NotificationRegistrar registrar_;
 
   gfx::NativeWindow parent_window_;
@@ -101,6 +108,8 @@ class EphemeralAppLauncher
 
   // Created in CheckInstallValid().
   scoped_refptr<extensions::Extension> extension_;
+
+  scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(EphemeralAppLauncher);
 };

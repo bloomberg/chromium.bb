@@ -61,6 +61,7 @@ class WebstoreStandaloneInstaller
   virtual ~WebstoreStandaloneInstaller();
 
   void AbortInstall();
+  void InvokeCallback(const std::string& error);
   virtual void CompleteInstall(const std::string& error);
 
   // Template Method's hooks to be implemented by subclasses.

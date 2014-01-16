@@ -300,9 +300,13 @@ void WebstoreStandaloneInstaller::AbortInstall() {
   }
 }
 
-void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
+void WebstoreStandaloneInstaller::InvokeCallback(const std::string& error) {
   if (!callback_.is_null())
     callback_.Run(error.empty(), error);
+}
+
+void WebstoreStandaloneInstaller::CompleteInstall(const std::string& error) {
+  InvokeCallback(error);
   Release();  // Matches the AddRef in BeginInstall.
 }
 

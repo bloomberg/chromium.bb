@@ -638,7 +638,8 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
-  prompt_.set_type(RE_ENABLE_PROMPT);
+  prompt_.set_type(extension->is_ephemeral() ? LAUNCH_PROMPT :
+                                               RE_ENABLE_PROMPT);
 
   LoadImageIfNeeded();
 }

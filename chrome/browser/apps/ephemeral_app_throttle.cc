@@ -10,16 +10,13 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/navigation_interception/intercept_navigation_resource_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -46,26 +43,18 @@ bool LaunchEphemeralApp(
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(service);
-  const Extension* extension = service->GetExtensionById(app_id, false);
+  const Extension* extension = service->GetInstalledExtension(app_id);
 
-  if (extension && extension->is_app()) {
-    // If the app is already installed, launch it.
-    AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
-    params.desktop_type = chrome::GetHostDesktopTypeForNativeView(
-        source->GetView()->GetNativeView());
-    OpenApplication(params);
-    return true;
-  }
+  // Only launch apps.
+  if (extension && !extension->is_app())
+    return false;
 
-  if (!extension) {
-    // Install ephemeral app and launch.
-    scoped_refptr<EphemeralAppLauncher> installer =
-        EphemeralAppLauncher::CreateForLink(app_id, source);
-    installer->Start();
-    return true;
-  }
-
-  return false;
+  // The EphemeralAppLauncher will handle launching of an existing app or
+  // installing and launching a new ephemeral app.
+  scoped_refptr<EphemeralAppLauncher> installer =
+      EphemeralAppLauncher::CreateForLink(app_id, source);
+  installer->Start();
+  return true;
 }
 
 }  // namespace

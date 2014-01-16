@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/common/extensions/api/alarms.h"
 #include "content/public/test/browser_test.h"
@@ -26,6 +28,9 @@ const char kDispatchEventTestApp[] =
 
 const char kMessagingReceiverApp[] =
     "platform_apps/ephemeral_apps/messaging_receiver";
+
+const char kMessagingReceiverAppV2[] =
+    "platform_apps/ephemeral_apps/messaging_receiver2";
 
 class EphemeralAppBrowserTest : public PlatformAppBrowserTest {
  protected:
@@ -149,4 +154,49 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, ReceiveMessagesWhenLaunched) {
   // Verify that messages are not received while the app is inactive.
   LoadAndLaunchPlatformApp("ephemeral_apps/messaging_sender_fail");
   EXPECT_TRUE(result_catcher.GetNextResult());
+}
+
+// Verify that an updated ephemeral app will still have its ephemeral flag
+// enabled.
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
+  const Extension* app_v1 = InstallEphemeralApp(kMessagingReceiverApp);
+  ASSERT_TRUE(app_v1);
+  ASSERT_TRUE(app_v1->is_ephemeral());
+  std::string app_id = app_v1->id();
+  base::Version app_original_version = *app_v1->version();
+  app_v1 = NULL; // The extension object will be destroyed during update.
+
+  // Pack version 2 of the app.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::FilePath crx_path = temp_dir.path().AppendASCII("temp.crx");
+  if (!base::DeleteFile(crx_path, false)) {
+    ADD_FAILURE() << "Failed to delete crx: " << crx_path.value();
+    return;
+  }
+
+  base::FilePath app_v2_path = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII(kMessagingReceiverAppV2),
+      crx_path,
+      test_data_dir_.AppendASCII(kMessagingReceiverApp).ReplaceExtension(
+          FILE_PATH_LITERAL(".pem")),
+      base::FilePath());
+  ASSERT_FALSE(app_v2_path.empty());
+
+  // Update the ephemeral app and wait for the update to finish.
+  extensions::CrxInstaller* crx_installer = NULL;
+  content::WindowedNotificationObserver windowed_observer(
+      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::Source<extensions::CrxInstaller>(crx_installer));
+  ExtensionService* service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  EXPECT_TRUE(
+      service->UpdateExtension(app_id, app_v2_path, GURL(), &crx_installer));
+  windowed_observer.Wait();
+
+  const Extension* app_v2 = service->GetExtensionById(app_id, false);
+  ASSERT_TRUE(app_v2);
+  EXPECT_TRUE(app_v2->version()->CompareTo(app_original_version) > 0);
+  EXPECT_TRUE(app_v2->is_ephemeral());
 }
