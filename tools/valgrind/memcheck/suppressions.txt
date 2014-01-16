@@ -6402,8 +6402,3 @@
    fun:_ZN7content12_GLOBAL__N_123CreateWebFrameTestProxyEPNS_14RenderViewImplEi
    fun:_ZN7content15RenderFrameImpl6CreateEPNS_14RenderViewImplEi
 }
-{
-   bug_334049
-   Memcheck:Uninitialized
-   fun:_ZNK7WebCore11RenderBlock21isSelfCollapsingBlockEv
-}
