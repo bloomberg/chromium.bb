@@ -55,7 +55,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/FastTextAutosizer.h"
-#include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderLayer.h"
@@ -867,8 +866,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         // If enabled, only do partial layout for the second layout.
         // FIXME (crbug.com/256657): Do not do two layouts for text autosizing.
         PartialLayoutDisabler partialLayoutDisabler(partialLayout(), m_frame->settings() && m_frame->settings()->textAutosizingEnabled());
-
-        LayoutIndicator layoutIndicator;
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
 
@@ -880,7 +877,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     bool autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
     if (autosized && rootForThisLayout->needsLayout()) {
         TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
-        LayoutIndicator layoutIndicator;
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
 

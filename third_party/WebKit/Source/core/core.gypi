@@ -1391,8 +1391,6 @@
             'rendering/InlineFlowBox.cpp',
             'rendering/InlineIterator.h',
             'rendering/InlineTextBox.cpp',
-            'rendering/LayoutIndicator.cpp',
-            'rendering/LayoutIndicator.h',
             'rendering/LayoutRectRecorder.cpp',
             'rendering/LayoutRepainter.cpp',
             'rendering/LayoutState.cpp',
