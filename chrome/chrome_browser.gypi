@@ -2035,8 +2035,6 @@
         'browser/signin/signin_promo.h',
         'browser/signin/signin_ui_util.cc',
         'browser/signin/signin_ui_util.h',
-        'browser/signin/ubertoken_fetcher.cc',
-        'browser/signin/ubertoken_fetcher.h',
         'browser/site_details.cc',
         'browser/site_details.h',
         'browser/speech/chrome_speech_recognition_manager_delegate.cc',

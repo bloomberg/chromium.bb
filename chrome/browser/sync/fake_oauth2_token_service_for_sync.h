@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_H_
-#define CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_H_
+#ifndef CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_FOR_SYNC_H_
+#define CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_FOR_SYNC_H_
 
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 
@@ -11,7 +11,7 @@ namespace content {
 class BrowserContext;
 }
 
-class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
+class FakeOAuth2TokenServiceForSync : public ProfileOAuth2TokenService {
  public:
   static BrowserContextKeyedService* BuildTokenService(
       content::BrowserContext* context);
@@ -36,4 +36,4 @@ class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
   std::string refresh_token_;
 };
 
-#endif  // CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_H_
+#endif  // CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_FOR_SYNC_H_

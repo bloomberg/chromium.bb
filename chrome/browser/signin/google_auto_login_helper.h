@@ -8,8 +8,8 @@
 #include <deque>
 
 #include "base/observer_list.h"
-#include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/ubertoken_fetcher.h"
 
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;

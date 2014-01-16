@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_UBERTOKEN_FETCHER_H_
-#define CHROME_BROWSER_SIGNIN_UBERTOKEN_FETCHER_H_
+#ifndef GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
+#define GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -20,7 +20,10 @@
 
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
-class Profile;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 // Callback for the |UbertokenFetcher| class.
 class UbertokenConsumer {
@@ -35,7 +38,9 @@ class UbertokenConsumer {
 class UbertokenFetcher : public GaiaAuthConsumer,
                          public OAuth2TokenService::Consumer {
  public:
-  UbertokenFetcher(Profile* profile, UbertokenConsumer* consumer);
+  UbertokenFetcher(OAuth2TokenService* token_service,
+                   UbertokenConsumer* consumer,
+                   net::URLRequestContextGetter* request_context);
   virtual ~UbertokenFetcher();
 
   // Start fetching the token for |account_id|.
@@ -54,12 +59,13 @@ class UbertokenFetcher : public GaiaAuthConsumer,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
-  Profile* profile_;
+  OAuth2TokenService* token_service_;
   UbertokenConsumer* consumer_;
+  net::URLRequestContextGetter* request_context_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(UbertokenFetcher);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_UBERTOKEN_FETCHER_H_
+#endif  // GOOGLE_APIS_GAIA_UBERTOKEN_FETCHER_H_

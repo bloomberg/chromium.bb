@@ -11,7 +11,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/fake_oauth2_token_service.h"
+#include "chrome/browser/sync/fake_oauth2_token_service_for_sync.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
@@ -81,7 +81,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
                               FakeSigninManager::Build);
 #endif
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              FakeOAuth2TokenService::BuildTokenService);
+                              FakeOAuth2TokenServiceForSync::BuildTokenService);
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
                               BuildService);
     return builder.Build();

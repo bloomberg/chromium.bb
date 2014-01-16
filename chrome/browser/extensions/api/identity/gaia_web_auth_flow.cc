@@ -8,6 +8,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -58,7 +59,9 @@ GaiaWebAuthFlow::~GaiaWebAuthFlow() {
 void GaiaWebAuthFlow::Start() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  ubertoken_fetcher_.reset(new UbertokenFetcher(profile_, this));
+  ubertoken_fetcher_.reset(new UbertokenFetcher(token_service,
+                                                this,
+                                                profile_->GetRequestContext()));
   ubertoken_fetcher_->StartFetchingToken(token_service->GetPrimaryAccountId());
 }
 

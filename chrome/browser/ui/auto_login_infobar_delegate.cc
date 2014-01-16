@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -35,6 +34,7 @@
 #include "content/public/common/referrer.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/ubertoken_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -90,7 +90,9 @@ AutoLoginRedirector::AutoLoginRedirector(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  ubertoken_fetcher_.reset(new UbertokenFetcher(profile, this));
+  ubertoken_fetcher_.reset(new UbertokenFetcher(token_service,
+                                                this,
+                                                profile->GetRequestContext()));
   ubertoken_fetcher_->StartFetchingToken(token_service->GetPrimaryAccountId());
 }
 

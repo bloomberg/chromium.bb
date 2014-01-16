@@ -124,6 +124,8 @@
         'gaia/oauth2_mint_token_flow.h',
         'gaia/oauth2_token_service.cc',
         'gaia/oauth2_token_service.h',
+        'gaia/ubertoken_fetcher.cc',
+        'gaia/ubertoken_fetcher.h',
         'google_api_keys.cc',
         'google_api_keys.h',
       ],
@@ -169,6 +171,7 @@
         'gaia/oauth2_api_call_flow_unittest.cc',
         'gaia/oauth2_mint_token_flow_unittest.cc',
         'gaia/oauth2_token_service_unittest.cc',
+        'gaia/ubertoken_fetcher_unittest.cc',
       ],
       'conditions': [
         ['OS=="android"', {
@@ -204,6 +207,8 @@
         'drive/test_util.h',
         'gaia/fake_gaia.cc',
         'gaia/fake_gaia.h',
+        'gaia/fake_oauth2_token_service.cc',
+        'gaia/fake_oauth2_token_service.h',
         'gaia/mock_url_fetcher_factory.h',
         'gaia/oauth2_token_service_test_util.cc',
         'gaia/oauth2_token_service_test_util.h',

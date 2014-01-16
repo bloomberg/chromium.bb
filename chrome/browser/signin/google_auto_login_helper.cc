@@ -7,6 +7,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -79,7 +81,10 @@ void GoogleAutoLoginHelper::OnMergeSessionFailure(
 }
 
 void GoogleAutoLoginHelper::StartFetching() {
-  uber_token_fetcher_.reset(new UbertokenFetcher(profile_, this));
+  uber_token_fetcher_.reset(new UbertokenFetcher(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+      this,
+      profile_->GetRequestContext()));
   uber_token_fetcher_->StartFetchingToken(accounts_.front());
 }
 
