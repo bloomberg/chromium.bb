@@ -165,6 +165,9 @@
   "page_cycler.top_10_mobile":{
     "description":"Page load time benchmark for the top 10 mobile web pages. Runs against pages recorded in November, 2013."
   },
+  "page_cycler.key_mobile_sites":{
+    "description":"Page load time benchmark for key mobile sites."
+  },
   "page_cycler.tough_layout_cases":{
     "description":"Page loading benchmark for the slowest layouts observed in the Alexa top 1 million sites in July 2013."
   },

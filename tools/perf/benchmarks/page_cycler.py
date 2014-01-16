@@ -96,6 +96,12 @@ class PageCyclerTop10Mobile(test.Test):
   options = {'pageset_repeat_iters': 10}
 
 
+class PageCyclerKeyMobileSites(test.Test):
+  test = page_cycler.PageCycler
+  page_set = 'page_sets/key_mobile_sites.json'
+  options = {'pageset_repeat_iters': 10}
+
+
 class PageCyclerToughLayoutCases(test.Test):
   test = page_cycler.PageCycler
   page_set = 'page_sets/tough_layout_cases.json'
