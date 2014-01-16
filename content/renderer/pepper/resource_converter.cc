@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
+#include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
@@ -15,8 +16,11 @@
 #include "ppapi/shared_impl/resource_var.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
+#include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 
+namespace content {
 namespace {
 
 void FlushComplete(
@@ -52,7 +56,7 @@ PP_FileSystemType WebFileSystemTypeToPPAPI(blink::WebFileSystem::Type type) {
 // On error, false.
 bool DOMFileSystemToResource(
     PP_Instance instance,
-    content::RendererPpapiHost* host,
+    RendererPpapiHost* host,
     const blink::WebDOMFileSystem& dom_file_system,
     int* pending_renderer_id,
     scoped_ptr<IPC::Message>* create_message,
@@ -71,8 +75,8 @@ bool DOMFileSystemToResource(
 
   *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
       scoped_ptr<ppapi::host::ResourceHost>(
-          new content::PepperFileSystemHost(host, instance, 0, root_url,
-                                            file_system_type)));
+          new PepperFileSystemHost(host, instance, 0, root_url,
+              file_system_type)));
   if (*pending_renderer_id == 0)
     return false;
 
@@ -85,9 +89,37 @@ bool DOMFileSystemToResource(
   return true;
 }
 
-}  // namespace
+bool DOMMediaStreamTrackToResource(
+    PP_Instance instance,
+    RendererPpapiHost* host,
+    const blink::WebDOMMediaStreamTrack& dom_media_stream_track,
+    int* pending_renderer_id,
+    scoped_ptr<IPC::Message>* create_message) {
+  DCHECK(!dom_media_stream_track.isNull());
+  *pending_renderer_id = 0;
 
-namespace content {
+  const blink::WebMediaStreamTrack track = dom_media_stream_track.component();
+  const std::string id = track.source().id().utf8();
+
+  if (track.source().type() == blink::WebMediaStreamSource::TypeVideo) {
+    *pending_renderer_id = host->GetPpapiHost()->AddPendingResourceHost(
+        scoped_ptr<ppapi::host::ResourceHost>(
+            new PepperMediaStreamVideoTrackHost(host, instance, 0, track)));
+    if (*pending_renderer_id == 0)
+      return false;
+
+    create_message->reset(
+        new PpapiPluginMsg_MediaStreamVideoTrack_CreateFromPendingHost(id));
+    return true;
+  } else if (track.source().type() == blink::WebMediaStreamSource::TypeAudio) {
+    // TODO(penghuang): support audio track.
+    return false;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 ResourceConverter::~ResourceConverter() {}
 
@@ -128,6 +160,23 @@ bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
     scoped_refptr<HostResourceVar> result_var =
         CreateResourceVarWithBrowserHost(
             pending_renderer_id, *create_message, *browser_host_create_message);
+    *result = result_var->GetPPVar();
+    *was_resource = true;
+    return true;
+  }
+
+  blink::WebDOMMediaStreamTrack dom_media_stream_track =
+      blink::WebDOMMediaStreamTrack::fromV8Value(val);
+  if (!dom_media_stream_track.isNull()) {
+    int pending_renderer_id;
+    scoped_ptr<IPC::Message> create_message;
+    if (!DOMMediaStreamTrackToResource(instance_, host_, dom_media_stream_track,
+                                       &pending_renderer_id, &create_message)) {
+      return false;
+    }
+    DCHECK(create_message);
+    scoped_refptr<HostResourceVar> result_var = CreateResourceVar(
+        pending_renderer_id, *create_message);
     *result = result_var->GetPPVar();
     *was_resource = true;
     return true;

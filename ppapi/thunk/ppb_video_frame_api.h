@@ -9,6 +9,9 @@
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
+
+union MediaStreamFrame;
+
 namespace thunk {
 
 class PPAPI_THUNK_EXPORT PPB_VideoFrame_API {
@@ -20,6 +23,11 @@ class PPAPI_THUNK_EXPORT PPB_VideoFrame_API {
   virtual PP_Bool GetSize(PP_Size* size) = 0;
   virtual void* GetDataBuffer() = 0;
   virtual uint32_t GetDataBufferSize() = 0;
+
+  // Private APIs:
+  virtual MediaStreamFrame* GetFrameBuffer() = 0;
+  virtual int32_t GetFrameBufferIndex() = 0;
+  virtual void Invalidate() = 0;
 };
 
 }  // namespace thunk

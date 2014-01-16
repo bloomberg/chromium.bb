@@ -6,6 +6,7 @@
 #define PPAPI_HOST_PPAPI_HOST_H_
 
 #include <map>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
@@ -24,6 +25,7 @@ namespace ppapi {
 namespace proxy {
 class ResourceMessageCallParams;
 class ResourceMessageReplyParams;
+class SerializedHandle;
 }
 
 namespace host {
@@ -60,6 +62,12 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
 
   // Sends the given unsolicited reply message to the plugin.
   void SendUnsolicitedReply(PP_Resource resource, const IPC::Message& msg);
+
+  // Similar to |SendUnsolicitedReply()|, but also sends handles.
+  void SendUnsolicitedReplyWithHandles(
+      PP_Resource resource,
+      const IPC::Message& msg,
+      const std::vector<proxy::SerializedHandle>& handles);
 
   // Create a ResourceHost with the given |nested_msg|.
   scoped_ptr<ResourceHost> CreateResourceHost(

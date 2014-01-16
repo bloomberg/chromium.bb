@@ -12,10 +12,13 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
+#include "ppapi/proxy/serialized_handle.h"
 #include "ppapi/shared_impl/host_resource.h"
 
 namespace ppapi {
 namespace host {
+
+using proxy::SerializedHandle;
 
 namespace {
 
@@ -99,11 +102,23 @@ void PpapiHost::SendReply(const ReplyMessageContext& context,
 
 void PpapiHost::SendUnsolicitedReply(PP_Resource resource,
                                      const IPC::Message& msg) {
-  TRACE_EVENT2("ppapi proxy", "PpapiHost::SendUnsolicitedReply",
+  SendUnsolicitedReplyWithHandles(
+      resource, msg, std::vector<SerializedHandle>());
+}
+
+void PpapiHost::SendUnsolicitedReplyWithHandles(
+    PP_Resource resource,
+    const IPC::Message& msg,
+    const std::vector<SerializedHandle>& handles) {
+  TRACE_EVENT2("ppapi proxy", "PpapiHost::SendUnsolicitedReplyWithHandles",
                "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(msg.type()));
   DCHECK(resource);  // If this fails, host is probably pending.
   proxy::ResourceMessageReplyParams params(resource, 0);
+  for (std::vector<SerializedHandle>::const_iterator it = handles.begin();
+      it != handles.end(); ++it) {
+    params.AppendHandle(*it);
+  }
   Send(new PpapiPluginMsg_ResourceReply(params, msg));
 }
 
