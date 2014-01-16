@@ -83,7 +83,7 @@
             'remoting_android_resources',
           ],
           'variables': {
-            'apk_name': 'Chromoting',
+            'apk_name': '<!(python <(version_py_path) -f <(branding_path) -t "@APK_FILE_NAME@")',
             'android_app_version_name': '<(version_full)',
             'android_app_version_code': '<!(python tools/android_version.py <(android_app_version_name))',
             'manifest_package_name': 'org.chromium.chromoting',

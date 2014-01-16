@@ -1,9 +1,10 @@
-HOST_PLUGIN_FILE_NAME=Chromoting Host
+APK_FILE_NAME=Chromoting
 DAEMON_FILE_NAME=Chromoting Host Service
+HOST_PLUGIN_FILE_NAME=Chromoting Host
 MAC_BUNDLE_ID=org.chromium.Chromium
 MAC_CREATOR=Cr24
 MAC_HOST_BUNDLE_ID=org.chromium.chromoting.me2me-host
+MAC_PREFPANE_BUNDLE_ID=org.chromium.remoting.preferences
 MAC_UNINSTALLER_NAME=Chromoting Host Uninstaller
 MAC_UNINSTALLER_BUNDLE_PREFIX=org.chromium.pkg
 MAC_UNINSTALLER_BUNDLE_ID=org.chromium.chromoting.me2me-host-uninstaller
-MAC_PREFPANE_BUNDLE_ID=org.chromium.remoting.preferences
