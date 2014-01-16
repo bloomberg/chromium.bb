@@ -304,12 +304,16 @@ Profile* ProfileManager::GetActiveUserProfile() {
     return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
         profile_manager->user_data_dir());
   chromeos::UserManager* manager = chromeos::UserManager::Get();
-  // Note: The user manager will take care of guest profiles.
-  return manager->GetProfileByUser(manager->GetActiveUser());
-#else
+  const chromeos::User* user = manager->GetActiveUser();
+  // To avoid an endless loop (crbug.com/334098) we have to additionally check
+  // if the profile of the user was already created. If the profile was not yet
+  // created we load the profile using the profile directly.
+  // TODO: This should be cleaned up with the new profile manager.
+  if (user && user->is_profile_created())
+    return manager->GetProfileByUser(user);
+#endif
   return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
       profile_manager->user_data_dir());
-#endif
 }
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {

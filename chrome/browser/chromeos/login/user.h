@@ -171,6 +171,11 @@ class User {
   // True if current user is active within the current session.
   virtual bool is_active() const;
 
+  // True if the user Profile is created.
+  bool is_profile_created() const {
+    return profile_is_created_;
+  }
+
  protected:
   friend class SupervisedUserManagerImpl;
   friend class UserManagerImpl;
@@ -189,10 +194,6 @@ class User {
 
   explicit User(const std::string& email);
   virtual ~User();
-
-  bool is_profile_created() const {
-    return profile_is_created_;
-  }
 
   const std::string* GetAccountLocale() const {
     return account_locale_.get();
