@@ -1368,7 +1368,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   DevToolsWindow *devtools_window =
-      DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
+      DevToolsWindow::GetInstanceForInspectedRenderViewHost(
+          contents->GetRenderViewHost());
   EXPECT_TRUE(devtools_window);
 
   // Disable devtools via policy.
@@ -1382,10 +1383,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   // wait for devtools close
   close_observer.Wait();
   // The existing devtools window should have closed.
-  EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
+  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedRenderViewHost(
+      contents->GetRenderViewHost()));
   // And it's not possible to open it again.
   EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
-  EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
+  EXPECT_FALSE(DevToolsWindow::GetInstanceForInspectedRenderViewHost(
+      contents->GetRenderViewHost()));
 }
 
 // TODO(samarth): remove along with rest of NTP4 code.

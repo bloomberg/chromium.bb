@@ -412,16 +412,14 @@ void Panel::ExecuteCommandWithDisposition(int id,
     // DevTools
     case IDC_DEV_TOOLS:
       content::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));
-      DevToolsWindow::ToggleDevToolsWindow(
+      DevToolsWindow::OpenDevToolsWindow(
           GetWebContents()->GetRenderViewHost(),
-          true,
           DevToolsToggleAction::Show());
       break;
     case IDC_DEV_TOOLS_CONSOLE:
       content::RecordAction(UserMetricsAction("DevTools_ToggleConsole"));
-      DevToolsWindow::ToggleDevToolsWindow(
+      DevToolsWindow::OpenDevToolsWindow(
           GetWebContents()->GetRenderViewHost(),
-          true,
           DevToolsToggleAction::ShowConsole());
       break;
 

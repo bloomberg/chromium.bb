@@ -254,8 +254,7 @@ void ExtensionPopup::ShowBubble() {
   host()->host_contents()->GetView()->Focus();
 
   if (inspect_with_devtools_) {
-    DevToolsWindow::ToggleDevToolsWindow(host()->render_view_host(),
-        true,
+    DevToolsWindow::OpenDevToolsWindow(host()->render_view_host(),
         DevToolsToggleAction::ShowConsole());
   }
 }

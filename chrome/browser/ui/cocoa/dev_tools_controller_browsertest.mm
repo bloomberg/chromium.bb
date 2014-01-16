@@ -22,8 +22,7 @@ class DevToolsControllerTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    DevToolsWindow::ToggleDevToolsWindow(browser(),
-                                         DevToolsToggleAction::Show());
+    DevToolsWindow::OpenDevToolsWindowForTest(browser(), true);
   }
 
  private:

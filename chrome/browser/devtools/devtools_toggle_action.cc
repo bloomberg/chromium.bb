@@ -62,3 +62,8 @@ DevToolsToggleAction DevToolsToggleAction::Reveal(
   return DevToolsToggleAction(
       new RevealParams(url, line_number, column_number));
 }
+
+// static
+DevToolsToggleAction DevToolsToggleAction::NoOp() {
+  return DevToolsToggleAction(kNoOp);
+}

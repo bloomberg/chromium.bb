@@ -513,12 +513,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_WebWorkerJSHeapMemory) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeInTabDevToolsWindow) {
-  DevToolsWindow* dev_tools = DevToolsWindow::ToggleDevToolsWindow(
-      model()->GetResourceWebContents(1)->GetRenderViewHost(),
-      true,
-      DevToolsToggleAction::Inspect());
-  // Dock side bottom should be the default.
-  ASSERT_EQ(DEVTOOLS_DOCK_SIDE_BOTTOM, dev_tools->dock_side());
+  DevToolsWindow::OpenDevToolsWindowForTest(
+      model()->GetResourceWebContents(1)->GetRenderViewHost(), true);
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
 }
 
@@ -527,12 +523,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeInTabDevToolsWindow) {
 IN_PROC_BROWSER_TEST_F(TaskManagerNoShowBrowserTest,
                        NoticeInTabDevToolsWindow) {
   // First create the devtools window.
-  DevToolsWindow* dev_tools = DevToolsWindow::ToggleDevToolsWindow(
+  DevToolsWindow::OpenDevToolsWindowForTest(
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      true,
-      DevToolsToggleAction::Inspect());
-  // Dock side bottom should be the default.
-  ASSERT_EQ(DEVTOOLS_DOCK_SIDE_BOTTOM, dev_tools->dock_side());
+      true);
   // Make sure that the devtools window is loaded before starting the task
   // manager.
   content::RunAllPendingInMessageLoop();

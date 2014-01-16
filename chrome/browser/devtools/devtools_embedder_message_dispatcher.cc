@@ -167,6 +167,9 @@ DevToolsEmbedderMessageDispatcher::DevToolsEmbedderMessageDispatcher(
   RegisterHandler("requestSetDockSide",
       BindToListParser(base::Bind(&Delegate::SetDockSide,
                                   base::Unretained(delegate))));
+  RegisterHandler("setIsDocked",
+      BindToListParser(base::Bind(&Delegate::SetIsDocked,
+                                  base::Unretained(delegate))));
   RegisterHandler("openInNewTab",
       BindToListParser(base::Bind(&Delegate::OpenInNewTab,
                                   base::Unretained(delegate))));

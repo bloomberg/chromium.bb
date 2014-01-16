@@ -591,7 +591,6 @@ extern const char kNtpWebStoreEnabled[];
 extern const char kDevToolsAdbKey[];
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsDiscoverUsbDevicesEnabled[];
-extern const char kDevToolsDockSide[];
 extern const char kDevToolsEditedFiles[];
 extern const char kDevToolsFileSystemPaths[];
 extern const char kDevToolsOpenDocked[];

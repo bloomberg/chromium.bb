@@ -106,6 +106,8 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
   }
 }
 
+}  // namespace
+
 class DevToolsSanityTest : public InProcessBrowserTest {
  public:
   DevToolsSanityTest()
@@ -114,7 +116,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 
  protected:
   void RunTest(const std::string& test_name, const std::string& test_page) {
-    OpenDevToolsWindow(test_page);
+    OpenDevToolsWindow(test_page, false);
     RunTestFunction(window_, test_name.c_str());
     CloseDevToolsWindow();
   }
@@ -128,7 +130,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     load_observer.Wait();
   }
 
-  void OpenDevToolsWindow(const std::string& test_page) {
+  void OpenDevToolsWindow(const std::string& test_page, bool is_docked) {
     ASSERT_TRUE(test_server()->Start());
     LoadTestPage(test_page);
 
@@ -136,7 +138,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     inspected_rvh_ = GetInspectedTab()->GetRenderViewHost();
-    window_ = DevToolsWindow::OpenDevToolsWindow(inspected_rvh_);
+    window_ =
+        DevToolsWindow::OpenDevToolsWindowForTest(inspected_rvh_, is_docked);
     observer.Wait();
   }
 
@@ -151,6 +154,11 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     DevToolsWindow::ToggleDevToolsWindow(inspected_rvh_, false,
         DevToolsToggleAction::Toggle());
     close_observer.Wait();
+  }
+
+  void ToggleDevToolsWindowDontWait() {
+    DevToolsWindow::ToggleDevToolsWindow(inspected_rvh_, false,
+        DevToolsToggleAction::Toggle());
   }
 
   void CloseDevToolsWindow() {
@@ -214,8 +222,7 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
   }
 
   void CloseDockedDevTools() {
-    DevToolsWindow::ToggleDevToolsWindow(inspected_rvh_, false,
-        DevToolsToggleAction::Toggle());
+    ToggleDevToolsWindowDontWait();
   }
 
   void CloseUndockedDevTools() {
@@ -232,11 +239,10 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
         "function(event) { event.returnValue = 'Foo'; });"));
   }
 
-  void RunBeforeUnloadSanityTest(DevToolsDockSide dock_side,
-                             base::Callback<void(void)> close_method,
-                             bool wait_for_browser_close = true) {
-    OpenDevToolsWindow(kDebuggerTestPage);
-    window_->SetDockSideForTest(dock_side);
+  void RunBeforeUnloadSanityTest(bool is_docked,
+                                 base::Callback<void(void)> close_method,
+                                 bool wait_for_browser_close = true) {
+    OpenDevToolsWindow(kDebuggerTestPage, is_docked);
     content::WindowedNotificationObserver devtools_close_observer(
         content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<content::WebContents>(window_->web_contents()));
@@ -260,12 +266,12 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
   }
 
   DevToolsWindow* OpenDevToolWindowOnWebContents(
-      content::WebContents* contents) {
+      content::WebContents* contents, bool is_docked) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    DevToolsWindow* window = DevToolsWindow::OpenDevToolsWindow(
-        contents->GetRenderViewHost());
+    DevToolsWindow* window = DevToolsWindow::OpenDevToolsWindowForTest(
+        contents->GetRenderViewHost(), is_docked);
     observer.Wait();
     return window;
   }
@@ -543,14 +549,11 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
   void OpenDevToolsWindowForSharedWorker(WorkerData* worker_data) {
     Profile* profile = browser()->profile();
-    window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
-    window_->Show(DevToolsToggleAction::Show());
     scoped_refptr<DevToolsAgentHost> agent_host(
         DevToolsAgentHost::GetForWorker(
             worker_data->worker_process_id,
             worker_data->worker_route_id));
-    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-        agent_host.get(), window_->GetDevToolsClientHostForTest());
+    window_ = DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     WebContents* client_contents = WebContents::FromRenderViewHost(client_rvh);
     if (client_contents->IsLoading()) {
@@ -577,7 +580,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 // Tests that BeforeUnload event gets called on docked devtools if
 // we try to close them.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
-  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_BOTTOM, base::Bind(
+  RunBeforeUnloadSanityTest(true, base::Bind(
       &DevToolsBeforeUnloadTest::CloseDockedDevTools, this), false);
 }
 
@@ -585,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
 // we try to close the inspected page.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestDockedDevToolsInspectedTabClose) {
-  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_BOTTOM, base::Bind(
+  RunBeforeUnloadSanityTest(true, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedTab, this));
 }
 
@@ -593,14 +596,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // we try to close the inspected browser.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestDockedDevToolsInspectedBrowserClose) {
-  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_BOTTOM, base::Bind(
+  RunBeforeUnloadSanityTest(true, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedBrowser, this));
 }
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close them.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
-  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+  RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseUndockedDevTools, this), false);
 }
 
@@ -608,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
 // we try to close the inspected page.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsInspectedTabClose) {
-  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+  RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedTab, this));
 }
 
@@ -616,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // we try to close the inspected browser.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsInspectedBrowserClose) {
-  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+  RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedBrowser, this));
 }
 
@@ -624,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 // we try to exit application.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsApplicationClose) {
-  RunBeforeUnloadSanityTest(DEVTOOLS_DOCK_SIDE_UNDOCKED, base::Bind(
+  RunBeforeUnloadSanityTest(false, base::Bind(
       &chrome::CloseAllBrowsers));
 }
 
@@ -636,8 +639,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsUnresponsiveBeforeUnloadTest,
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
   DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
-      GetInspectedTab());
-  devtools_window->SetDockSideForTest(DEVTOOLS_DOCK_SIDE_UNDOCKED);
+      GetInspectedTab(), false);
   content::WindowedNotificationObserver devtools_close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(
@@ -658,8 +660,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
   DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
-      GetInspectedTab());
-  devtools_window->SetDockSideForTest(DEVTOOLS_DOCK_SIDE_UNDOCKED);
+      GetInspectedTab(), false);
   content::WindowedNotificationObserver devtools_close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(
@@ -687,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   content::WebContents* inspected_web_contents = GetInspectedTab();
   for (int i = 0; i < 3; ++i) {
     DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
-      inspected_web_contents);
+      inspected_web_contents, i == 0);
     windows.push_back(devtools_window);
     content::WindowedNotificationObserver* close_observer =
         new content::WindowedNotificationObserver(
@@ -864,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
 // Tests that external navigation from inspector page is always handled by
 // DevToolsWindow and results in inspected page navigation.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
-  OpenDevToolsWindow(kDebuggerTestPage);
+  OpenDevToolsWindow(kDebuggerTestPage, true);
   GURL url = test_server()->GetURL(kNavigateBackTestPage);
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -889,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
 // Tests that inspector will reattach to inspected page when it is reloaded
 // after a crash. See http://crbug.com/101952
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestReattachAfterCrash) {
-  OpenDevToolsWindow(kDebuggerTestPage);
+  OpenDevToolsWindow(kDebuggerTestPage, false);
 
   content::CrashTab(GetInspectedTab());
   content::WindowedNotificationObserver observer(
@@ -905,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestReattachAfterCrash) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
-  OpenDevToolsWindow("about:blank");
+  OpenDevToolsWindow("about:blank", false);
   std::string result;
   ASSERT_TRUE(
       content::ExecuteScriptAndExtractString(
@@ -999,5 +1000,3 @@ IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, RemoteDebugger) {
 
   ASSERT_TRUE(RunExtensionTest("target_list")) << message_;
 }
-
-}  // namespace

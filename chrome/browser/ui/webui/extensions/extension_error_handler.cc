@@ -197,13 +197,6 @@ void ExtensionErrorHandler::HandleOpenDevTools(const base::ListValue* args) {
   if (!rvh)
     return;
 
-  // Check if we already have an inspector for the given RenderViewHost. If not,
-  // create one.
-  DevToolsWindow* window =
-      DevToolsWindow::GetInstanceForInspectedRenderViewHost(rvh);
-  if (!window)
-    window = DevToolsWindow::OpenDevToolsWindow(rvh);
-
   // If we include a url, we should inspect it specifically (and not just the
   // render view).
   base::string16 url;
@@ -216,8 +209,10 @@ void ExtensionErrorHandler::HandleOpenDevTools(const base::ListValue* args) {
 
     // Line/column numbers are reported in display-friendly 1-based numbers,
     // but are inspected in zero-based numbers.
-    window->Show(
+    DevToolsWindow::OpenDevToolsWindow(rvh,
         DevToolsToggleAction::Reveal(url, line_number - 1, column_number - 1));
+  } else {
+    DevToolsWindow::OpenDevToolsWindow(rvh);
   }
 
   // Once we open the inspector, we focus on the appropriate tab...

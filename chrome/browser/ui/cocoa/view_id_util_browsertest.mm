@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,9 +48,7 @@ class ViewIDTest : public InProcessBrowserTest {
     chrome::ShowFindBar(browser());
 
     // Make sure docked devtools is created to test VIEW_ID_DEV_TOOLS_DOCKED
-    browser()->profile()->GetPrefs()->SetString(prefs::kDevToolsDockSide,
-                                                "dock_bottom");
-    chrome::ToggleDevToolsWindow(browser(), DevToolsToggleAction::Inspect());
+    DevToolsWindow::OpenDevToolsWindowForTest(browser(), true);
 
     // Make sure download shelf is created to test VIEW_ID_DOWNLOAD_SHELF
     browser()->window()->GetDownloadShelf()->Show();

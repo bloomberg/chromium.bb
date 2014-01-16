@@ -1793,9 +1793,6 @@ const char kDevToolsDisabled[] = "devtools.disabled";
 const char kDevToolsDiscoverUsbDevicesEnabled[] =
     "devtools.discover_usb_devices";
 
-// A string specifying the dock location (either 'bottom' or 'right').
-const char kDevToolsDockSide[] = "devtools.dock_side";
-
 // Maps of files edited locally using DevTools.
 const char kDevToolsEditedFiles[] = "devtools.edited_files";
 

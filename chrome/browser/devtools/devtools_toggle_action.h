@@ -16,7 +16,8 @@ struct DevToolsToggleAction {
     kShowConsole,
     kInspect,
     kToggle,
-    kReveal
+    kReveal,
+    kNoOp
   };
 
   struct RevealParams {
@@ -41,6 +42,7 @@ struct DevToolsToggleAction {
   static DevToolsToggleAction Reveal(const base::string16& url,
                                      size_t line_number,
                                      size_t column_number);
+  static DevToolsToggleAction NoOp();
 
   Type type() const { return type_; }
   const RevealParams* params() const { return params_.get(); }

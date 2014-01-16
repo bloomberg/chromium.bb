@@ -63,9 +63,8 @@ class DevToolsRestorer : public content::NotificationObserver {
                    content::RenderViewHost* created_view)
       : delayed_create_function_(delayed_create_function) {
     DevToolsWindow* devtools_window =
-        DevToolsWindow::ToggleDevToolsWindow(
+        DevToolsWindow::OpenDevToolsWindow(
             created_view,
-            true /* force_open */,
             DevToolsToggleAction::ShowConsole());
 
     registrar_.Add(

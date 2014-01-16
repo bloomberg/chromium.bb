@@ -378,8 +378,8 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        StatusBubblePositioning) {
   NSPoint origin = [controller() statusBubbleBaseFrame].origin;
 
-  DevToolsWindow* devtools_window = DevToolsWindow::ToggleDevToolsWindow(
-      browser(), DevToolsToggleAction::Show());
+  DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindowForTest(
+      browser(), true);
   SetDevToolsWindowContentsInsets(devtools_window, 10, 10, 10, 10);
 
   NSPoint originWithDevTools = [controller() statusBubbleBaseFrame].origin;
