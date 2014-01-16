@@ -616,28 +616,9 @@ class TestSubmitChange(cros_test_lib.MoxTestCase):
   def tearDown(self):
     validation_pool.SUBMITTED_WAIT_TIMEOUT = self.orig_timeout
 
-  def testSubmitChangeMerged(self):
-    """Submit one change to gerrit, status MERGED."""
-    result = cros_test_lib.EasyAttr(status='MERGED')
-    change = cros_test_lib.EasyAttr(gerrit_number=12345)
-    pool = self.mox.CreateMock(validation_pool.ValidationPool)
-    pool.dryrun = False
-    pool._helper_pool = self.mox.CreateMock(validation_pool.HelperPool)
-    helper = self.mox.CreateMock(validation_pool.gerrit.GerritHelper)
-
-    # Prepare replay script.
-    pool._helper_pool.ForChange(change).AndReturn(helper)
-    helper.SubmitChange(change, dryrun=False)
-    helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
-    self.mox.ReplayAll()
-
-    # Verify results.
-    self.assertTrue(validation_pool.ValidationPool._SubmitChange(pool, change))
-    self.mox.VerifyAll()
-
-  def testSubmitChangeSubmitted(self):
-    """Submit one change to gerrit, stuck on SUBMITTED."""
-    result = cros_test_lib.EasyAttr(status='SUBMITTED')
+  def _TestSubmitChange(self, results):
+    """Test submitting a change with the given results."""
+    results = [cros_test_lib.EasyAttr(status=r) for r in results]
     change = cros_test_lib.EasyAttr(gerrit_number=12345,
                                     gerrit_number_str='12345')
     pool = self.mox.CreateMock(validation_pool.ValidationPool)
@@ -648,38 +629,34 @@ class TestSubmitChange(cros_test_lib.MoxTestCase):
     # Prepare replay script.
     pool._helper_pool.ForChange(change).AndReturn(helper)
     helper.SubmitChange(change, dryrun=False)
-    # The query will be retried 1 more time than query timeout.
-    for _i in xrange(validation_pool.SUBMITTED_WAIT_TIMEOUT + 1):
+    for result in results:
       helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
     self.mox.ReplayAll()
 
     # Verify results.
-    self.assertFalse(validation_pool.ValidationPool._SubmitChange(pool, change))
+    retval = validation_pool.ValidationPool._SubmitChange(pool, change)
     self.mox.VerifyAll()
+    return retval
+
+  def testSubmitChangeMerged(self):
+    """Submit one change to gerrit, status MERGED."""
+    self.assertTrue(self._TestSubmitChange(['MERGED']))
+
+  def testSubmitChangeSubmitted(self):
+    """Submit one change to gerrit, stuck on SUBMITTED."""
+    # The query will be retried 1 more time than query timeout.
+    results = ['SUBMITTED' for _i in
+               xrange(validation_pool.SUBMITTED_WAIT_TIMEOUT + 1)]
+    self.assertTrue(self._TestSubmitChange(results))
 
   def testSubmitChangeSubmittedToMerged(self):
     """Submit one change to gerrit, status SUBMITTED then MERGED."""
-    submitted_result = cros_test_lib.EasyAttr(status='SUBMITTED')
-    merged_result = cros_test_lib.EasyAttr(status='MERGED')
-    change = cros_test_lib.EasyAttr(gerrit_number=12345,
-                                    gerrit_number_str='12345')
-    pool = self.mox.CreateMock(validation_pool.ValidationPool)
-    pool.dryrun = False
-    pool._helper_pool = self.mox.CreateMock(validation_pool.HelperPool)
-    helper = self.mox.CreateMock(validation_pool.gerrit.GerritHelper)
+    results = ['SUBMITTED', 'SUBMITTED', 'MERGED']
+    self.assertTrue(self._TestSubmitChange(results))
 
-    # Prepare replay script.
-    pool._helper_pool.ForChange(change).AndReturn(helper)
-    helper.SubmitChange(change, dryrun=False)
-    # Pretend SUBMITTED returned twice then MERGED.
-    helper.QuerySingleRecord(change.gerrit_number).AndReturn(submitted_result)
-    helper.QuerySingleRecord(change.gerrit_number).AndReturn(submitted_result)
-    helper.QuerySingleRecord(change.gerrit_number).AndReturn(merged_result)
-    self.mox.ReplayAll()
-
-    # Verify results.
-    self.assertTrue(validation_pool.ValidationPool._SubmitChange(pool, change))
-    self.mox.VerifyAll()
+  def testSubmitChangeFailed(self):
+    """Submit one change to gerrit, reported back as NEW."""
+    self.assertFalse(self._TestSubmitChange(['NEW']))
 
 
 class ValidationFailureOrTimeout(MoxBase):

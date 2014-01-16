@@ -49,7 +49,7 @@ PRE_CQ = 'pre-cq'
 CQ = 'cq'
 
 # The gerrit-on-borg team tells us that delays up to 2 minutes can be
-# normal.  Setting timeout to 4 minutes to be safe-ish.
+# normal.  Setting timeout to 8 minutes to be safe-ish.
 SUBMITTED_WAIT_TIMEOUT = 8 * 60 # Time in seconds.
 
 class TreeIsClosedException(Exception):
@@ -1882,8 +1882,8 @@ class ValidationPool(object):
     helper.SubmitChange(change, dryrun=self.dryrun)
     updated_change = helper.QuerySingleRecord(change.gerrit_number)
 
-    # If change is 'SUBMITTED' give gerrit a few seconds to resolve that
-    # to 'MERGED', if it can, otherwise consider it to be not merged.
+    # If change is 'SUBMITTED' give gerrit some time to resolve that
+    # to 'MERGED' or fail outright.
     if updated_change.status == 'SUBMITTED':
       def _Query():
         return helper.QuerySingleRecord(change.gerrit_number)
@@ -1895,14 +1895,27 @@ class ValidationPool(object):
             _Retry, _Query, timeout=SUBMITTED_WAIT_TIMEOUT, period=1)
       except timeout_util.TimeoutError:
         # The change really is stuck on submitted, not merged, then.
-        pass
+        logging.warning('Timed out waiting for gerrit to finish submitting'
+                        ' change %s, but status is still "%s".',
+                        change.gerrit_number_str, updated_change.status)
 
     was_change_submitted = updated_change.status == 'MERGED'
     if not was_change_submitted:
       logging.warning(
-          'Change %s was submitted without errors, but gerrit is still'
-          ' reporting it with status "%s" (expected "%s").  This is odd!',
-          change.gerrit_number_str, updated_change.status, 'MERGED')
+          'Change %s was submitted to gerrit without errors, but gerrit is'
+          ' reporting it with status "%s" (expected "MERGED").',
+          change.gerrit_number_str, updated_change.status)
+      if updated_change.status == 'SUBMITTED':
+        # So far we have never seen a SUBMITTED CL that did not eventually
+        # transition to MERGED.  If it is stuck on SUBMITTED treat as MERGED.
+        was_change_submitted = True
+        logging.info('Proceeding now with the assumption that change %s'
+                     ' will eventually transition to "MERGED".',
+                     change.gerrit_number_str)
+      else:
+        logging.error('Most likely gerrit was unable to merge change %s.',
+                      change.gerrit_number_str)
+
     return was_change_submitted
 
   def RemoveCommitReady(self, change):
