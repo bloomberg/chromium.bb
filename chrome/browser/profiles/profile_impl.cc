@@ -883,7 +883,7 @@ void ProfileImpl::SetExitType(ExitType exit_type) {
                       ExitTypeToSessionTypePrefValue(exit_type));
 
     // NOTE: If you change what thread this writes on, be sure and update
-    // ChromeFrame::EndSession().
+    // chrome::SessionEnding().
     prefs_->CommitPendingWrite();
   }
 }
