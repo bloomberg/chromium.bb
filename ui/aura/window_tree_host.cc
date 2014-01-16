@@ -167,7 +167,10 @@ WindowTreeHost::WindowTreeHost()
     : delegate_(NULL) {
 }
 
-void WindowTreeHost::DestroyCompositor() { compositor_.reset(); }
+void WindowTreeHost::DestroyCompositor() {
+  DCHECK(GetAcceleratedWidget());
+  compositor_.reset();
+}
 
 void WindowTreeHost::CreateCompositor(
     gfx::AcceleratedWidget accelerated_widget) {

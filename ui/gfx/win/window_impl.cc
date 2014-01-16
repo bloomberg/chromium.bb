@@ -260,7 +260,10 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
   if (!window)
     return 0;
 
-  return window->OnWndProc(message, w_param, l_param);
+  LRESULT result = window->OnWndProc(message, w_param, l_param);
+  if (message == WM_NCDESTROY)
+    window->hwnd_ = NULL;
+  return result;
 }
 
 ATOM WindowImpl::GetWindowClassAtom() {

@@ -142,7 +142,6 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
 }
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
-  DestroyCompositor();
   root_window_->window()->ClearProperty(kHostForRootWindow);
   aura::client::SetWindowMoveClient(root_window_->window(), NULL);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(root_window_);
@@ -319,6 +318,11 @@ void DesktopWindowTreeHostX11::CloseNow() {
   // because otherwise we get assert during ~RootWindow().
   desktop_native_widget_aura_->root_window_event_filter()->RemoveHandler(
       x11_window_event_filter_.get());
+
+  // Destroy the compositor before destroying the |xwindow_| since shutdown
+  // may try to swap, and the swap without a window causes an X error, which
+  // causes a crash with in-process renderer.
+  DestroyCompositor();
 
   open_windows().remove(xwindow_);
   // Actually free our native resources.
