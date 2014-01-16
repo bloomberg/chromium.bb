@@ -24,24 +24,6 @@ namespace {
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap);
 
-class TestPixelRef : public SkPixelRef {
- public:
-  TestPixelRef(const SkImageInfo& info);
-  virtual ~TestPixelRef();
-
-  virtual SkFlattenable::Factory getFactory() const OVERRIDE;
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-  virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
-#endif
-  virtual bool onNewLockPixels(LockRec* rec) OVERRIDE;
-  virtual void onUnlockPixels() OVERRIDE {}
-  virtual SkPixelRef* deepCopy(SkBitmap::Config config, const SkIRect* subset)
-      OVERRIDE;
-
- private:
-  scoped_ptr<char[]> pixels_;
-};
-
 class TestDiscardableShader : public SkShader {
  public:
   TestDiscardableShader() {
@@ -76,46 +58,15 @@ class TestDiscardableShader : public SkShader {
   SkBitmap bitmap_;
 };
 
-TestPixelRef::TestPixelRef(const SkImageInfo& info)
-    : SkPixelRef(info),
-      pixels_(new char[4 * info.fWidth * info.fHeight]) {}
-
-TestPixelRef::~TestPixelRef() {}
-
-SkFlattenable::Factory TestPixelRef::getFactory() const { return NULL; }
-
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-void* TestPixelRef::onLockPixels(SkColorTable** color_table) {
-  return pixels_.get();
-}
-#endif
-
-bool TestPixelRef::onNewLockPixels(LockRec* rec) {
-  if (pixels_.get()) {
-    rec->fPixels = pixels_.get();
-    rec->fColorTable = NULL;
-    rec->fRowBytes = 4 * info().fWidth;
-    return true;
-  }
-  return false;
-}
-
-SkPixelRef* TestPixelRef::deepCopy(SkBitmap::Config config,
-                                   const SkIRect* subset) {
-  this->ref();
-  return this;
-}
-
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
   const SkImageInfo info = {
     size.width(), size.height(), kPMColor_SkColorType, kPremul_SkAlphaType
   };
-  skia::RefPtr<TestPixelRef> pixel_ref =
-      skia::AdoptRef(new TestPixelRef(info));
-  pixel_ref->setURI(uri);
 
   bitmap->setConfig(info);
-  bitmap->setPixelRef(pixel_ref.get());
+  bitmap->allocPixels();
+  bitmap->pixelRef()->setImmutable();
+  bitmap->pixelRef()->setURI(uri);
 }
 
 SkCanvas* StartRecording(SkPicture* picture, gfx::Rect layer_rect) {
