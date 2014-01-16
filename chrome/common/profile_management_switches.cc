@@ -13,6 +13,18 @@ namespace {
 const char kNewProfileManagementFieldTrialName[] = "NewProfileManagement";
 
 bool CheckProfileManagementFlag(std::string command_switch, bool active_state) {
+  // Individiual flag settings take precedence.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(command_switch)) {
+    return true;
+  }
+
+  // --new-profile-management flag always affects all switches.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kNewProfileManagement)) {
+    return active_state;
+  }
+
+  // NewProfileManagement experiment acts like above flag.
   std::string trial_type =
       base::FieldTrialList::FindFullName(kNewProfileManagementFieldTrialName);
   if (!trial_type.empty()) {
@@ -21,7 +33,8 @@ bool CheckProfileManagementFlag(std::string command_switch, bool active_state) {
     if (trial_type == "Disabled")
       return !active_state;
   }
-  return CommandLine::ForCurrentProcess()->HasSwitch(command_switch);
+
+  return false;
 }
 
 }  // namespace
