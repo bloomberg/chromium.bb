@@ -30,6 +30,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -191,11 +193,17 @@ void ExtensionHost::CreateRenderViewSoon() {
 
 void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
-  if (IsBackgroundPage()) {
+  if (!IsBackgroundPage()) {
     DCHECK(IsRenderViewLive());
-    ExtensionSystem::GetForBrowserContext(browser_context_)->
-        extension_service()->DidCreateRenderViewForBackgroundPage(this);
+    ExtensionService* service = GetExtensionService();
+    if (service)
+      service->DidCreateRenderViewForBackgroundPage(this);
   }
+}
+
+ExtensionService* ExtensionHost::GetExtensionService() {
+  return ExtensionSystem::GetForBrowserContext(browser_context_)
+      ->extension_service();
 }
 
 const GURL& ExtensionHost::GetURL() const {
@@ -315,8 +323,13 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
 
 void ExtensionHost::OnDocumentAvailable() {
   DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
-  ExtensionSystem::GetForBrowserContext(browser_context_)->
-      extension_service()->SetBackgroundPageReady(extension_);
+  ExtensionService* service = GetExtensionService();
+  if (service)
+    service->SetBackgroundPageReady(extension_);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+      content::Source<const Extension>(extension_),
+      content::NotificationService::NoDetails());
 }
 
 void ExtensionHost::CloseContents(WebContents* contents) {

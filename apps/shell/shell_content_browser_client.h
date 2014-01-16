@@ -8,6 +8,12 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/content_browser_client.h"
 
+class GURL;
+
+namespace extensions {
+class Extension;
+}
+
 namespace apps {
 class ShellBrowserMainParts;
 
@@ -24,8 +30,19 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
   // TODO(jamescook): Quota management?
   // TODO(jamescook): Speech recognition?
+  virtual bool IsHandledURL(const GURL& url) OVERRIDE;
+  virtual void SiteInstanceGotProcess(content::SiteInstance* site_instance)
+      OVERRIDE;
+  virtual void SiteInstanceDeleting(content::SiteInstance* site_instance)
+      OVERRIDE;
+  virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
+                                              int child_process_id) OVERRIDE;
 
  private:
+  // Returns the extension or app associated with |site_instance| or NULL.
+  const extensions::Extension* GetExtension(
+      content::SiteInstance* site_instance);
+
   // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* browser_main_parts_;
 

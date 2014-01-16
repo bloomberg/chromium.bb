@@ -46,6 +46,10 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
     return browser_context_.get();
   }
 
+  extensions::ShellExtensionSystem* extension_system() {
+    return extension_system_;
+  }
+
   // BrowserMainParts overrides.
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;

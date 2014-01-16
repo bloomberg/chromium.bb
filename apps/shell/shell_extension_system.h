@@ -20,6 +20,7 @@ class BrowserContext;
 namespace extensions {
 
 class EventRouter;
+class InfoMap;
 class LazyBackgroundTaskQueue;
 class ProcessManager;
 
@@ -62,6 +63,9 @@ class ShellExtensionSystem : public ExtensionSystem {
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.
+
+  // Data to be accessed on the IO thread. Must outlive process_manager_.
+  scoped_refptr<InfoMap> info_map_;
 
   scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
   scoped_ptr<EventRouter> event_router_;

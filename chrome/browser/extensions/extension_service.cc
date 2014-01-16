@@ -2502,6 +2502,8 @@ void ExtensionService::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      // TODO(jamescook): Extract this block of code to src/extensions so it
+      // can be shared with app_shell.
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
       Profile* host_profile =
@@ -2623,10 +2625,6 @@ bool ExtensionService::IsBackgroundPageReady(const Extension* extension) const {
 void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
   DCHECK(extensions::BackgroundInfo::HasBackgroundPage(extension));
   extension_runtime_data_[extension->id()].background_page_ready = true;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-      content::Source<const Extension>(extension),
-      content::NotificationService::NoDetails());
 }
 
 bool ExtensionService::IsBeingUpgraded(const Extension* extension) const {

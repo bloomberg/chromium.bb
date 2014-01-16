@@ -12,15 +12,18 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
 
 using content::BrowserContext;
+using content::BrowserThread;
 
 namespace extensions {
 
@@ -44,10 +47,16 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
     return false;
   }
 
+  // TODO(jamescook): We may want to do some of these things here:
+  // * Create a PermissionsUpdater.
+  // * Call PermissionsUpdater::GrantActivePermissions().
+  // * Call ExtensionService::SatisfyImports().
+  // * Call ExtensionPrefs::OnExtensionInstalled().
+  // * Send NOTIFICATION_EXTENSION_INSTALLED.
+
   ExtensionRegistry::Get(browser_context_)->AddEnabled(extension);
 
-  // TODO(jamescook): If RegisterExtensionWithRequestContexts() did something,
-  // this would be the place to call it.
+  RegisterExtensionWithRequestContexts(extension);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -56,9 +65,6 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
 
   // Inform the rest of the extensions system to start.
   ready_.Signal();
-  LOG(WARNING) << "-----------------------------------";
-  LOG(WARNING) << "app_shell is expected to crash now.";
-  LOG(WARNING) << "-----------------------------------";
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSIONS_READY,
       content::Source<BrowserContext>(browser_context_),
@@ -79,7 +85,6 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 }
 
 ExtensionService* ShellExtensionSystem::extension_service() {
-  NOTREACHED();
   return NULL;
 }
 
@@ -104,7 +109,9 @@ StateStore* ShellExtensionSystem::rules_store() {
 }
 
 InfoMap* ShellExtensionSystem::info_map() {
-  return NULL;
+  if (!info_map_.get())
+    info_map_ = new InfoMap;
+  return info_map_;
 }
 
 LazyBackgroundTaskQueue* ShellExtensionSystem::lazy_background_task_queue() {
@@ -133,6 +140,11 @@ InstallVerifier* ShellExtensionSystem::install_verifier() {
 
 void ShellExtensionSystem::RegisterExtensionWithRequestContexts(
     const Extension* extension) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&InfoMap::AddExtension, info_map(),
+                 make_scoped_refptr(extension), base::Time::Now(),
+                 false, false));
 }
 
 void ShellExtensionSystem::UnregisterExtensionWithRequestContexts(

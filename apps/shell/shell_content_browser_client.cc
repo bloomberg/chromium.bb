@@ -6,7 +6,25 @@
 
 #include "apps/shell/shell_browser_context.h"
 #include "apps/shell/shell_browser_main_parts.h"
+#include "apps/shell/shell_extension_system.h"
+#include "base/command_line.h"
+#include "chrome/browser/extensions/extension_protocols.h"
+#include "chrome/browser/extensions/extension_resource_protocols.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "url/gurl.h"
+
+using content::BrowserThread;
+using extensions::ExtensionRegistry;
 
 namespace apps {
 
@@ -27,9 +45,99 @@ net::URLRequestContextGetter*
 ShellContentBrowserClient::CreateRequestContext(
     content::BrowserContext* content_browser_context,
     content::ProtocolHandlerMap* protocol_handlers) {
-  // TODO(jamescook): Should this be an off-the-record context?
+  // Handle chrome-extension: and chrome-extension-resource: requests.
+  extensions::InfoMap* extension_info_map =
+      browser_main_parts_->extension_system()->info_map();
+  (*protocol_handlers)[extensions::kExtensionScheme] =
+      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          CreateExtensionProtocolHandler(false /*is_incognito*/,
+                                         extension_info_map));
+  (*protocol_handlers)[extensions::kExtensionResourceScheme] =
+      linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+          CreateExtensionResourceProtocolHandler());
+  // Let content::ShellBrowserContext handle the rest of the setup.
   return browser_main_parts_->browser_context()->CreateRequestContext(
       protocol_handlers);
+}
+
+bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
+  if (!url.is_valid())
+    return false;
+  // Keep in sync with ProtocolHandlers added in CreateRequestContext() and in
+  // content::ShellURLRequestContextGetter::GetURLRequestContext().
+  static const char* const kProtocolList[] = {
+      chrome::kBlobScheme,
+      chrome::kChromeUIScheme,
+      chrome::kChromeDevToolsScheme,
+      chrome::kDataScheme,
+      content::kFileScheme,
+      content::kFileSystemScheme,
+      extensions::kExtensionScheme,
+      extensions::kExtensionResourceScheme,
+  };
+  for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
+    if (url.scheme() == kProtocolList[i])
+      return true;
+  }
+  return false;
+}
+
+void ShellContentBrowserClient::SiteInstanceGotProcess(
+    content::SiteInstance* site_instance) {
+  // If this isn't an extension renderer there's nothing to do.
+  const extensions::Extension* extension = GetExtension(site_instance);
+  if (!extension)
+    return;
+
+  // TODO(jamescook): Add to extension service process_map().
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&extensions::InfoMap::RegisterExtensionProcess,
+                 browser_main_parts_->extension_system()->info_map(),
+                 extension->id(),
+                 site_instance->GetProcess()->GetID(),
+                 site_instance->GetId()));
+}
+
+void ShellContentBrowserClient::SiteInstanceDeleting(
+    content::SiteInstance* site_instance) {
+  // If this isn't an extension renderer there's nothing to do.
+  const extensions::Extension* extension = GetExtension(site_instance);
+  if (!extension)
+    return;
+
+  // TODO(jamescook): Remove from extension service process_map().
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&extensions::InfoMap::UnregisterExtensionProcess,
+                 browser_main_parts_->extension_system()->info_map(),
+                 extension->id(),
+                 site_instance->GetProcess()->GetID(),
+                 site_instance->GetId()));
+}
+
+void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
+    CommandLine* command_line, int child_process_id) {
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  if (process_type == switches::kRendererProcess) {
+    // TODO(jamescook): Should we check here if the process is in the extension
+    // service process map, or can we assume all renderers are extension
+    // renderers?
+    command_line->AppendSwitch(switches::kExtensionProcess);
+  }
+}
+
+const extensions::Extension* ShellContentBrowserClient::GetExtension(
+    content::SiteInstance* site_instance) {
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(site_instance->GetBrowserContext());
+  return registry->enabled_extensions().GetExtensionOrAppByURL(
+      site_instance->GetSiteURL());
 }
 
 }  // namespace apps

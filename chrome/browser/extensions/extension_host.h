@@ -19,6 +19,7 @@
 #include "extensions/common/stack_frame.h"
 #include "extensions/common/view_type.h"
 
+class ExtensionService;
 class PrefsTabHelper;
 
 namespace content {
@@ -127,6 +128,9 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Actually create the RenderView for this host. See CreateRenderViewSoon.
   void CreateRenderViewNow();
+
+  // Returns the ExtensionService for |browser_context_| or NULL if none exists.
+  ExtensionService* GetExtensionService();
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
