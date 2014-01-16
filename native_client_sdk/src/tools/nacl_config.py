@@ -22,6 +22,7 @@ if sys.version_info < (2, 6, 0):
 
 
 VALID_ARCHES = ('arm', 'x86_32', 'x86_64', 'i686')
+VALID_PNACL_ARCHES = (None, 'pnacl')
 ARCH_NAME = {
   'arm': 'arm',
   'x86_32': 'i686',
@@ -91,7 +92,7 @@ def ExpectToolchain(toolchain, expected_toolchains):
 def ExpectArch(arch, expected_arches):
   Expect(arch in expected_arches,
          'Expected arch to be one of [%s], not %s.' % (
-             ', '.join(expected_arches), arch))
+             ', '.join(map(str, expected_arches)), arch))
 
 
 def CheckValidToolchainArch(toolchain, arch, arch_required=False):
@@ -103,7 +104,7 @@ def CheckValidToolchainArch(toolchain, arch, arch_required=False):
            'Expected no arch for host toolchain %r. Got %r.' % (
                toolchain, arch))
   elif toolchain == 'pnacl':
-    Expect(arch is None,
+    Expect(arch is None or arch == 'pnacl',
            'Expected no arch for toolchain %r. Got %r.' % (toolchain, arch))
   elif arch_required:
     Expect(arch is not None,
@@ -112,7 +113,11 @@ def CheckValidToolchainArch(toolchain, arch, arch_required=False):
                ', '.join(VALID_ARCHES), toolchain))
 
   if arch:
-    ExpectArch(arch, VALID_ARCHES)
+    if toolchain == 'pnacl':
+      ExpectArch(arch, VALID_PNACL_ARCHES)
+    else:
+      ExpectArch(arch, VALID_ARCHES)
+
     if arch == 'arm':
       Expect(toolchain == 'newlib', 'The arm arch only supports newlib.')
 
@@ -148,7 +153,6 @@ def GetToolchainDir(toolchain, arch=None):
   root = GetPosixSDKPath()
   platform = getos.GetPlatform()
   if toolchain == 'pnacl':
-    assert arch is None
     subdir = '%s_pnacl' % platform
   else:
     assert arch is not None

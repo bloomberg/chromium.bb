@@ -87,6 +87,8 @@ class TestNaclConfig(unittest.TestCase):
             '/sdk_root/toolchain/mac_x86_glibc/bin/x86_64-nacl-%s' % nacl_tool,
 
         'pnacl': '/sdk_root/toolchain/mac_pnacl/bin/pnacl-%s' % pnacl_tool,
+        ('pnacl', 'pnacl'):
+            '/sdk_root/toolchain/mac_pnacl/bin/pnacl-%s' % pnacl_tool,
     }
 
     for tc_arch, expected in cases.iteritems():
@@ -101,6 +103,12 @@ class TestNaclConfig(unittest.TestCase):
     for toolchain in ('host', 'mac', 'win', 'linux'):
       self.assertRaises(nacl_config.Error,
                         nacl_config.GetToolPath, toolchain, None, tool)
+
+    # Using toolchain=pnacl with any arch other than None, or 'pnacl' is an
+    # error.
+    for arch in ('x86_32', 'x86_64', 'arm', 'foobar'):
+      self.assertRaises(nacl_config.Error,
+                        nacl_config.GetToolPath, toolchain, arch, tool)
 
     # No arm glibc.
     self.assertRaises(nacl_config.Error,
