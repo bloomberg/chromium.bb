@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_list.h"
@@ -45,6 +46,9 @@ bool PluginLoaderPosix::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PluginLoaderPosix::OnProcessCrashed(int exit_code) {
+  RecordAction(
+      base::UserMetricsAction("PluginLoaderPosix.UtilityProcessCrashed"));
+
   if (next_load_index_ == canonical_list_.size()) {
     // How this case occurs is unknown. See crbug.com/111935.
     canonical_list_.clear();
@@ -99,6 +103,9 @@ void PluginLoaderPosix::LoadPluginsInternal() {
   // forking.
   if (MaybeRunPendingCallbacks())
     return;
+
+  RecordAction(
+      base::UserMetricsAction("PluginLoaderPosix.LaunchUtilityProcess"));
 
   if (load_start_time_.is_null())
     load_start_time_ = base::TimeTicks::Now();
