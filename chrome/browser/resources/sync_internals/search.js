@@ -9,6 +9,7 @@ cr.ui.decorate('#sync-results-splitter', cr.ui.Splitter);
 
 chrome.sync.decorateSearchControls(
   $('sync-search-query'),
+  $('sync-search-submit'),
   $('sync-search-status'),
   $('sync-results-list'),
   $('sync-result-details'));

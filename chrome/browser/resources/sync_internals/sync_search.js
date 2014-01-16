@@ -38,6 +38,8 @@ cr.define('chrome.sync', function() {
    *
    * @param {!HTMLInputElement} queryControl The <input> object of
    *     type=search where the user types in his query.
+   * @param {!HTMLButtonElement} submitControl The <button> object of
+   *     where the user can click to do his query.
    * @param {!HTMLElement} statusControl The <span> object display the
    *     search status.
    * @param {!HTMLElement} listControl The <list> object which holds
@@ -45,12 +47,11 @@ cr.define('chrome.sync', function() {
    * @param {!HTMLPreElement} detailsControl The <pre> object which
    *     holds the details of the selected result.
    */
-  function decorateSearchControls(queryControl, statusControl,
+  function decorateSearchControls(queryControl, submitControl, statusControl,
                                   resultsControl, detailsControl) {
     var resultsDataModel = new cr.ui.ArrayDataModel([]);
 
-    // Decorate search box.
-    queryControl.onsearch = function() {
+    var searchFunction = function() {
       var query = queryControl.value;
       statusControl.textContent = '';
       resultsDataModel.splice(0, resultsDataModel.length);
@@ -82,6 +83,10 @@ cr.define('chrome.sync', function() {
         }
       });
     };
+
+    submitControl.addEventListener('click', searchFunction);
+    // Decorate search box.
+    queryControl.onsearch = searchFunction;
     queryControl.value = '';
 
     // Decorate results list.

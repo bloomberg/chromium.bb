@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #sync-search-query {
-  width: 20em;
+  width: 16em;
 }
 
 #sync-search-query[error] {
