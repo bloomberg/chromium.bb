@@ -17,9 +17,8 @@ ScopedJavaLocalRef<jbyteArray> ToJavaByteArray(
   CheckException(env);
   DCHECK(byte_array);
 
-  jbyte* elements = env->GetByteArrayElements(byte_array, NULL);
-  memcpy(elements, bytes, len);
-  env->ReleaseByteArrayElements(byte_array, elements, 0);
+  env->SetByteArrayRegion(
+      byte_array, 0, len, reinterpret_cast<const jbyte*>(bytes));
   CheckException(env);
 
   return ScopedJavaLocalRef<jbyteArray>(env, byte_array);
@@ -31,9 +30,8 @@ ScopedJavaLocalRef<jintArray> ToJavaIntArray(
   CheckException(env);
   DCHECK(int_array);
 
-  jint* elements = env->GetIntArrayElements(int_array, NULL);
-  memcpy(elements, ints, len * sizeof(*ints));
-  env->ReleaseIntArrayElements(int_array, elements, 0);
+  env->SetIntArrayRegion(
+      int_array, 0, len, reinterpret_cast<const jint*>(ints));
   CheckException(env);
 
   return ScopedJavaLocalRef<jintArray>(env, int_array);
@@ -50,9 +48,8 @@ ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
   CheckException(env);
   DCHECK(long_array);
 
-  jlong* elements = env->GetLongArrayElements(long_array, NULL);
-  memcpy(elements, longs, len * sizeof(*longs));
-  env->ReleaseLongArrayElements(long_array, elements, 0);
+  env->SetLongArrayRegion(
+      long_array, 0, len, reinterpret_cast<const jlong*>(longs));
   CheckException(env);
 
   return ScopedJavaLocalRef<jlongArray>(env, long_array);
