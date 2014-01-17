@@ -29,16 +29,14 @@
  */
 
 [
-    Conditional=PARTIAL_CONDITION,
-    RuntimeEnabled=PartialFeatureName,
+    ImplementedAs=TestPartialInterfacePythonImplementation,  // Conflicts with default partial interface class name
+    PerContextEnabled=PartialContextName, // Conflicts with [RuntimeEnabled]
 ] partial interface TestInterfacePython {
-    const unsigned short PARTIAL_UNSIGNED_SHORT = 0;
+    const unsigned short PARTIAL2_UNSIGNED_SHORT = 0;
 
-    attribute long partialLongAttribute;
-    static attribute long partialStaticLongAttribute;
-    [CallWith=ExecutionContext] attribute long partialCallWithExecutionContextLongAttribute;
+    attribute long partial2LongAttribute;
+    static attribute long partial2StaticLongAttribute;
 
-    void partialVoidMethod();
-    static void partialStaticVoidMethod();
-    [CallWith=ExecutionContext, RaisesException] void partialCallWithExecutionContextRaisesExceptionVoidMethod();
+    void partial2VoidMethod();
+    static void partial2StaticVoidMethod();
 };

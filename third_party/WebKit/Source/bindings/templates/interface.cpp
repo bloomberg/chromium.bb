@@ -450,7 +450,8 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% if is_check_security and interface_name != 'Window' %}
     instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
-    {% for attribute in attributes if attribute.runtime_enabled_function %}
+    {% for attribute in attributes
+       if attribute.runtime_enabled_function and not attribute.is_static %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function}}()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
@@ -507,7 +508,9 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% for attribute in attributes if attribute.is_static %}
     {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
            (cpp_class, attribute.name) %}
+    {% filter conditional(attribute.conditional_string) %}
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    {% endfilter %}
     {% endfor %}
 
     // Custom toString template

@@ -43,17 +43,17 @@ TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
 """
 
 DEPENDENCY_IDL_FILES = set([
+    'SupportTestPartialInterface.idl',
     'TestImplements.idl',
     'TestPartialInterface.idl',
     'TestPartialInterfacePython.idl',
-    'SupportTestPartialInterface.idl',
+    'TestPartialInterfacePython2.idl',
 ])
 
 # Python compiler is incomplete; skip IDLs with unimplemented features
 SKIP_PYTHON = set([
     'TestCustomAccessors.idl',
     'TestEventTarget.idl',
-    'TestImplements.idl',
     'TestInterface.idl',
     'TestObject.idl',
     'TestSVG.idl',
