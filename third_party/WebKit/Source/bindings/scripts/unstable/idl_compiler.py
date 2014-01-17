@@ -102,8 +102,7 @@ def main():
     if options.dump_json_and_pickle:
         write_json_and_pickle(definitions, interface_name, output_directory)
         return
-    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, interfaces_info, options.output_directory, options.idl_directories, verbose)
-    code_generator.write_header_and_cpp()
+    code_generator_v8.write_header_and_cpp(definitions, interface_name, interfaces_info, options.output_directory, options.idl_directories, verbose)
 
 
 if __name__ == '__main__':
