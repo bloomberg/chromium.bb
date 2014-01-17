@@ -327,6 +327,9 @@ void ParamTraits<cc::RenderPass>::Write(
       case cc::DrawQuad::SOLID_COLOR:
         WriteParam(m, *cc::SolidColorDrawQuad::MaterialCast(quad));
         break;
+      case cc::DrawQuad::SURFACE_CONTENT:
+        WriteParam(m, *cc::SurfaceDrawQuad::MaterialCast(quad));
+        break;
       case cc::DrawQuad::TILED_CONTENT:
         WriteParam(m, *cc::TileDrawQuad::MaterialCast(quad));
         break;
@@ -441,6 +444,9 @@ bool ParamTraits<cc::RenderPass>::Read(
       case cc::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         return false;
+      case cc::DrawQuad::SURFACE_CONTENT:
+        draw_quad = ReadDrawQuad<cc::SurfaceDrawQuad>(m, iter);
+        break;
       case cc::DrawQuad::TEXTURE_CONTENT:
         draw_quad = ReadDrawQuad<cc::TextureDrawQuad>(m, iter);
         break;
@@ -550,6 +556,9 @@ void ParamTraits<cc::RenderPass>::Log(
         break;
       case cc::DrawQuad::SOLID_COLOR:
         LogParam(*cc::SolidColorDrawQuad::MaterialCast(quad), l);
+        break;
+      case cc::DrawQuad::SURFACE_CONTENT:
+        LogParam(*cc::SurfaceDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::TILED_CONTENT:
         LogParam(*cc::TileDrawQuad::MaterialCast(quad), l);

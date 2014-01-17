@@ -293,6 +293,8 @@
         'quads/solid_color_draw_quad.h',
         'quads/stream_video_draw_quad.cc',
         'quads/stream_video_draw_quad.h',
+        'quads/surface_draw_quad.cc',
+        'quads/surface_draw_quad.h',
         'quads/texture_draw_quad.cc',
         'quads/texture_draw_quad.h',
         'quads/tile_draw_quad.cc',

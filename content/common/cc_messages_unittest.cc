@@ -27,6 +27,7 @@ using cc::RenderPassDrawQuad;
 using cc::ResourceProvider;
 using cc::SharedQuadState;
 using cc::SolidColorDrawQuad;
+using cc::SurfaceDrawQuad;
 using cc::TextureDrawQuad;
 using cc::TileDrawQuad;
 using cc::TransferableResource;
@@ -105,6 +106,10 @@ class CCMessagesTest : public testing::Test {
         Compare(StreamVideoDrawQuad::MaterialCast(a),
                 StreamVideoDrawQuad::MaterialCast(b));
         break;
+      case DrawQuad::SURFACE_CONTENT:
+        Compare(SurfaceDrawQuad::MaterialCast(a),
+                SurfaceDrawQuad::MaterialCast(b));
+        break;
       case DrawQuad::YUV_VIDEO_CONTENT:
         Compare(YUVVideoDrawQuad::MaterialCast(a),
                 YUVVideoDrawQuad::MaterialCast(b));
@@ -157,6 +162,10 @@ class CCMessagesTest : public testing::Test {
   void Compare(const StreamVideoDrawQuad* a, const StreamVideoDrawQuad* b) {
     EXPECT_EQ(a->resource_id, b->resource_id);
     EXPECT_EQ(a->matrix, b->matrix);
+  }
+
+  void Compare(const SurfaceDrawQuad* a, const SurfaceDrawQuad* b) {
+    EXPECT_EQ(a->surface_id, b->surface_id);
   }
 
   void Compare(const TextureDrawQuad* a, const TextureDrawQuad* b) {
@@ -362,6 +371,17 @@ TEST_F(CCMessagesTest, AllQuads) {
   scoped_ptr<DrawQuad> streamvideo_cmp = streamvideo_in->Copy(
       streamvideo_in->shared_quad_state);
 
+  int arbitrary_surface_id = 3;
+  scoped_ptr<SurfaceDrawQuad> surface_in = SurfaceDrawQuad::Create();
+  surface_in->SetAll(shared_state3_in.get(),
+                         arbitrary_rect2,
+                         arbitrary_rect2_inside_rect2,
+                         arbitrary_rect1_inside_rect2,
+                         arbitrary_bool1,
+                         arbitrary_surface_id);
+  scoped_ptr<DrawQuad> surface_cmp = surface_in->Copy(
+      surface_in->shared_quad_state);
+
   scoped_ptr<TextureDrawQuad> texture_in = TextureDrawQuad::Create();
   texture_in->SetAll(shared_state3_in.get(),
                      arbitrary_rect2,
@@ -422,6 +442,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   pass_in->shared_quad_state_list.push_back(shared_state3_in.Pass());
   pass_in->quad_list.push_back(solidcolor_in.PassAs<DrawQuad>());
   pass_in->quad_list.push_back(streamvideo_in.PassAs<DrawQuad>());
+  pass_in->quad_list.push_back(surface_in.PassAs<DrawQuad>());
   pass_in->quad_list.push_back(texture_in.PassAs<DrawQuad>());
   pass_in->quad_list.push_back(tile_in.PassAs<DrawQuad>());
   pass_in->quad_list.push_back(yuvvideo_in.PassAs<DrawQuad>());
@@ -442,6 +463,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   pass_cmp->shared_quad_state_list.push_back(shared_state3_cmp.Pass());
   pass_cmp->quad_list.push_back(solidcolor_cmp.PassAs<DrawQuad>());
   pass_cmp->quad_list.push_back(streamvideo_cmp.PassAs<DrawQuad>());
+  pass_cmp->quad_list.push_back(surface_cmp.PassAs<DrawQuad>());
   pass_cmp->quad_list.push_back(texture_cmp.PassAs<DrawQuad>());
   pass_cmp->quad_list.push_back(tile_cmp.PassAs<DrawQuad>());
   pass_cmp->quad_list.push_back(yuvvideo_cmp.PassAs<DrawQuad>());
@@ -449,7 +471,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   // Make sure the in and cmp RenderPasses match.
   Compare(pass_cmp.get(), pass_in.get());
   ASSERT_EQ(3u, pass_in->shared_quad_state_list.size());
-  ASSERT_EQ(9u, pass_in->quad_list.size());
+  ASSERT_EQ(10u, pass_in->quad_list.size());
   for (size_t i = 0; i < 3; ++i) {
     Compare(pass_cmp->shared_quad_state_list[i],
             pass_in->shared_quad_state_list[i]);
@@ -481,7 +503,7 @@ TEST_F(CCMessagesTest, AllQuads) {
       frame_out.render_pass_list.begin());
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
-  ASSERT_EQ(9u, pass_out->quad_list.size());
+  ASSERT_EQ(10u, pass_out->quad_list.size());
   for (size_t i = 0; i < 3; ++i) {
     Compare(pass_cmp->shared_quad_state_list[i],
             pass_out->shared_quad_state_list[i]);
@@ -696,6 +718,9 @@ TEST_F(CCMessagesTest, LargestQuadType) {
         break;
       case cc::DrawQuad::SOLID_COLOR:
         largest = std::max(largest, sizeof(cc::SolidColorDrawQuad));
+        break;
+      case cc::DrawQuad::SURFACE_CONTENT:
+        largest = std::max(largest, sizeof(cc::SurfaceDrawQuad));
         break;
       case cc::DrawQuad::TILED_CONTENT:
         largest = std::max(largest, sizeof(cc::TileDrawQuad));

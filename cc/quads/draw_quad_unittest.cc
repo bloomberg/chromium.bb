@@ -17,6 +17,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
+#include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
@@ -466,6 +467,20 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
   EXPECT_EQ(matrix, copy_quad->matrix);
 }
 
+TEST(DrawQuadTest, CopySurfaceDrawQuad) {
+  int surface_id = 1234;
+  CREATE_SHARED_STATE();
+
+  CREATE_QUAD_1_NEW(SurfaceDrawQuad, surface_id);
+  EXPECT_EQ(DrawQuad::SURFACE_CONTENT, copy_quad->material);
+  EXPECT_EQ(surface_id, copy_quad->surface_id);
+
+  CREATE_QUAD_1_ALL(SurfaceDrawQuad, surface_id);
+  EXPECT_EQ(DrawQuad::SURFACE_CONTENT, copy_quad->material);
+  EXPECT_EQ(surface_id, copy_quad->surface_id);
+}
+
+
 TEST(DrawQuadTest, CopyTextureDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   unsigned resource_id = 82;
@@ -726,6 +741,14 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
   EXPECT_EQ(resource_id, quad_new->resource_id);
   EXPECT_EQ(1, IterateAndCount(quad_new.get()));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id);
+}
+
+TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
+  int surface_id = 4321;
+
+  CREATE_SHARED_STATE();
+  CREATE_QUAD_1_NEW(SurfaceDrawQuad, surface_id);
+  EXPECT_EQ(0, IterateAndCount(quad_new.get()));
 }
 
 TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {

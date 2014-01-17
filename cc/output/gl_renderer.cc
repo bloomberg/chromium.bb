@@ -346,6 +346,11 @@ void GLRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
     case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawStreamVideoQuad(frame, StreamVideoDrawQuad::MaterialCast(quad));
       break;
+    case DrawQuad::SURFACE_CONTENT:
+      // Surface content should be fully resolved to other quad types before
+      // reaching a direct renderer.
+      NOTREACHED();
+      break;
     case DrawQuad::TEXTURE_CONTENT:
       EnqueueTextureQuad(frame, TextureDrawQuad::MaterialCast(quad));
       break;
