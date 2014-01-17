@@ -21,7 +21,7 @@
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/remove_operation_delegate.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"

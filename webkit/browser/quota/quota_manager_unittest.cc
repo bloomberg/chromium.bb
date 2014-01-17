@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -22,6 +23,7 @@
 #include "webkit/browser/quota/mock_storage_client.h"
 #include "webkit/browser/quota/quota_database.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 
 using base::MessageLoopProxy;
 

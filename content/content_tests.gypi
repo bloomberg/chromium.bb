@@ -624,6 +624,8 @@
         '../webkit/common/user_agent/user_agent_unittest.cc',
         '../webkit/browser/quota/mock_quota_manager.cc',
         '../webkit/browser/quota/mock_quota_manager.h',
+        '../webkit/browser/quota/mock_quota_manager_proxy.cc',
+        '../webkit/browser/quota/mock_quota_manager_proxy.h',
         '../webkit/browser/quota/mock_quota_manager_unittest.cc',
         '../webkit/browser/quota/mock_special_storage_policy.cc',
         '../webkit/browser/quota/mock_special_storage_policy.h',

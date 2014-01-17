@@ -18,6 +18,7 @@
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/database/vfs_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/database/database_identifier.h"
 
 #if defined(OS_POSIX)
@@ -25,7 +26,6 @@
 #endif
 
 using quota::QuotaManager;
-using quota::QuotaManagerProxy;
 using quota::QuotaStatusCode;
 using webkit_database::DatabaseTracker;
 using webkit_database::DatabaseUtil;

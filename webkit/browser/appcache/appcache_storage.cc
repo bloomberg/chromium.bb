@@ -10,7 +10,7 @@
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace appcache {
 

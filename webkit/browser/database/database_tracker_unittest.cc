@@ -17,7 +17,7 @@
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/database/database_identifier.h"
 
 using base::ASCIIToUTF16;

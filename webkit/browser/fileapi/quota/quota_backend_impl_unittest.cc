@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace fileapi {
 

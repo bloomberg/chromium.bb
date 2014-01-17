@@ -23,7 +23,9 @@
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
+#include "webkit/browser/quota/mock_quota_manager_proxy.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

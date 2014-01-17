@@ -15,6 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/appcache/appcache_storage.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
@@ -28,7 +29,6 @@ class MessageLoopProxy;
 }
 
 namespace quota {
-class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 

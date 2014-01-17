@@ -30,6 +30,7 @@
 #include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
 namespace appcache {

@@ -26,6 +26,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/test_file_set.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
+#include "webkit/browser/quota/mock_quota_manager_proxy.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

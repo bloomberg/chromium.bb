@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace content {
 

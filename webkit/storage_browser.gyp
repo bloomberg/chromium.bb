@@ -199,6 +199,8 @@
         'browser/quota/quota_database.h',
         'browser/quota/quota_manager.cc',
         'browser/quota/quota_manager.h',
+        'browser/quota/quota_manager_proxy.cc',
+        'browser/quota/quota_manager_proxy.h',
         'browser/quota/quota_task.cc',
         'browser/quota/quota_task.h',
         'browser/quota/quota_temporary_storage_evictor.cc',

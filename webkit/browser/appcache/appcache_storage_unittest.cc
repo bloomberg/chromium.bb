@@ -9,7 +9,7 @@
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/appcache/mock_appcache_service.h"
-#include "webkit/browser/quota/mock_quota_manager.h"
+#include "webkit/browser/quota/mock_quota_manager_proxy.h"
 
 namespace appcache {
 

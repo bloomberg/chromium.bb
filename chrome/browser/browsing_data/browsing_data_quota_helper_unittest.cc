@@ -14,6 +14,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "webkit/browser/quota/mock_storage_client.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 
 using content::BrowserThread;
 

@@ -17,6 +17,7 @@
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using fileapi::FileSystemContext;

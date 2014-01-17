@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/quota/quota_manager.h"
+#include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace {
 // This is temporary until we figure out how registration ids will be
