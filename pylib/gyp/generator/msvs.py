@@ -266,7 +266,8 @@ def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None,
   for f in folders:
     contents = _ConvertSourcesToFilterHierarchy(folders[f], prefix=prefix + [f],
                                                 excluded=excluded,
-                                                list_excluded=list_excluded)
+                                                list_excluded=list_excluded,
+                                                msvs_version=msvs_version)
     contents = MSVSProject.Filter(f, contents=contents)
     result.append(contents)
   return result
