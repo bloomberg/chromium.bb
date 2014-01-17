@@ -81,9 +81,8 @@ SynchronousCompositorFactoryImpl::GetOffscreenContextProviderForMainThread() {
   // a compositor did successfully initialize hardware draw in the past.
   // In particular this does not guarantee that the main thread context
   // will fail creation when all compositors release hardware draw.
-  bool failed = !CanCreateMainThreadContext();
-  if (!failed &&
-      (!offscreen_context_for_main_thread_.get() ||
+  bool failed = false;
+  if ((!offscreen_context_for_main_thread_.get() ||
        offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
     offscreen_context_for_main_thread_ =
         webkit::gpu::ContextProviderInProcess::Create(
