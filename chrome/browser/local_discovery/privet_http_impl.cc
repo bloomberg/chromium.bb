@@ -766,7 +766,6 @@ scoped_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
   replacements.SetHostStr(host_port_.host());
   std::string port(base::IntToString(host_port_.port()));  // Keep string alive.
   replacements.SetPortStr(port);
-  GURL url2 = url.ReplaceComponents(replacements);
   return fetcher_factory_.CreateURLFetcher(url.ReplaceComponents(replacements),
                                            request_type, delegate);
 }
