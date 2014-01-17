@@ -585,6 +585,9 @@ HTMLMediaElement::NetworkState HTMLMediaElement::networkState() const
 
 String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySystem) const
 {
+    if (!keySystem.isNull())
+        UseCounter::count(document(), UseCounter::CanPlayTypeKeySystem);
+
     WebMimeRegistry::SupportsType support = supportsType(ContentType(mimeType), keySystem);
     String canPlay;
 
