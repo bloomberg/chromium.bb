@@ -787,6 +787,47 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(1, observer_.num_changes());
 }
 
+TEST_F(OutputConfiguratorTest, Casting) {
+  InitWithSingleOutput();
+
+  // Notify configurator that casting session is started.
+  configurator_.OnCastingSessionStartedOrStopped(true);
+  EXPECT_EQ(kProjectingOn, delegate_->GetActionsAndClear());
+
+  // Verify that the configurator keeps a count of active casting sessions
+  // instead of treating it as a single global state.
+  configurator_.OnCastingSessionStartedOrStopped(true);
+  EXPECT_EQ(kProjectingOn, delegate_->GetActionsAndClear());
+  configurator_.OnCastingSessionStartedOrStopped(false);
+  EXPECT_EQ(kProjectingOn, delegate_->GetActionsAndClear());
+
+  // Turn all displays off and check that projecting is not turned off.
+  configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
+                                OutputConfigurator::kSetDisplayPowerNoFlags);
+  EXPECT_EQ(JoinActions(kGrab,
+                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
+                            outputs_[0].crtc, 0).c_str(),
+                        GetCrtcAction(outputs_[0].crtc, 0, 0, 0,
+                            outputs_[0].output).c_str(),
+                        kUngrab, NULL),
+            delegate_->GetActionsAndClear());
+
+  // Turn all displays back on.
+  configurator_.SetDisplayPower(DISPLAY_POWER_ALL_ON,
+                                OutputConfigurator::kSetDisplayPowerNoFlags);
+  EXPECT_EQ(JoinActions(kGrab,
+                        GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
+                            outputs_[0].crtc, 0).c_str(),
+                        GetCrtcAction(outputs_[0].crtc, 0, 0, kSmallModeId,
+                            outputs_[0].output).c_str(),
+                        kForceDPMS, kUngrab, NULL),
+            delegate_->GetActionsAndClear());
+
+  // Notify configurator that casting session is ended.
+  configurator_.OnCastingSessionStartedOrStopped(false);
+  EXPECT_EQ(kProjectingOff, delegate_->GetActionsAndClear());
+}
+
 TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   InitWithSingleOutput();
 

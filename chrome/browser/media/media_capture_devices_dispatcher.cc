@@ -89,21 +89,47 @@ bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
       origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
       origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
       origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/" ||
+      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/" ||
       origin.spec() == "chrome-extension://gfdkimpbcpahaombhbimeihdjnejgicl/") {
     return true;
   }
   // Check against hashed origins.
+  // TODO(hshi): remove this when trusted tester becomes public.
   const std::string origin_hash = base::SHA1HashString(origin.spec());
   DCHECK_EQ(origin_hash.length(), base::kSHA1Length);
   const std::string hexencoded_origin_hash =
       base::HexEncode(origin_hash.data(), origin_hash.length());
   return
-      hexencoded_origin_hash == "3C2705BC432E7C51CA8553FDC5BEE873FF2468EE" ||
-      hexencoded_origin_hash == "50F02B8A668CAB274527D58356F07C2143080FCC";
+      hexencoded_origin_hash == "3C2705BC432E7C51CA8553FDC5BEE873FF2468EE";
 #else
   return false;
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+// Returns true of the security origin is associated with casting.
+bool IsOriginForCasting(const GURL& origin) {
+#if defined(OFFICIAL_BUILD)
+  // Whitelisted tab casting extensions.
+  if (origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
+      origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
+      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/" ||
+      origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/") {
+    return true;
+  }
+  // Check against hashed origins.
+  // TODO(hshi): remove this when trusted tester becomes public.
+  const std::string origin_hash = base::SHA1HashString(origin.spec());
+  DCHECK_EQ(origin_hash.length(), base::kSHA1Length);
+  const std::string hexencoded_origin_hash =
+      base::HexEncode(origin_hash.data(), origin_hash.length());
+  return
+      hexencoded_origin_hash == "3C2705BC432E7C51CA8553FDC5BEE873FF2468EE";
+#else
+  return false;
+#endif
+}
+#endif
 
 // Helper to get title of the calling application shown in the screen capture
 // notification.
@@ -395,7 +421,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       // display the notification for stream capture.
       bool display_notification = !component_extension;
 
-      ui = GetDevicesForDesktopCapture(devices, screen_id,  capture_audio,
+      ui = GetDevicesForDesktopCapture(devices, screen_id, capture_audio,
                                        display_notification, application_title);
     }
   }
@@ -657,6 +683,7 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
     int render_process_id,
     int render_view_id,
     int page_request_id,
+    const GURL& security_origin,
     const content::MediaStreamDevice& device,
     content::MediaRequestState state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -665,7 +692,7 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
       base::Bind(
           &MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread,
           base::Unretained(this), render_process_id, render_view_id,
-          page_request_id, device, state));
+          page_request_id, security_origin, device, state));
 }
 
 void MediaCaptureDevicesDispatcher::OnAudioStreamPlayingChanged(
@@ -709,6 +736,7 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
     int render_process_id,
     int render_view_id,
     int page_request_id,
+    const GURL& security_origin,
     const content::MediaStreamDevice& device,
     content::MediaRequestState state) {
   // Track desktop capture sessions.  Tracking is necessary to avoid unbalanced
@@ -754,6 +782,17 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
         break;
     }
   }
+
+#if defined(OS_CHROMEOS)
+  if (IsOriginForCasting(security_origin) && IsVideoMediaType(device.type)) {
+    // Notify ash that casting state has changed.
+    if (state == content::MEDIA_REQUEST_STATE_DONE) {
+      ash::Shell::GetInstance()->OnCastingSessionStartedOrStopped(true);
+    } else if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
+      ash::Shell::GetInstance()->OnCastingSessionStartedOrStopped(false);
+    }
+  }
+#endif
 
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnRequestUpdate(render_process_id,

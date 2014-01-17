@@ -389,6 +389,13 @@ void Shell::OnLockStateChanged(bool locked) {
 #endif
 }
 
+void Shell::OnCastingSessionStartedOrStopped(bool started) {
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  if (output_configurator_)
+    output_configurator_->OnCastingSessionStartedOrStopped(started);
+#endif
+}
+
 void Shell::CreateShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();

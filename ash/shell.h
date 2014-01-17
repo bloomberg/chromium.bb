@@ -286,6 +286,9 @@ class ASH_EXPORT Shell
   // unlocked.
   void OnLockStateChanged(bool locked);
 
+  // Called when a casting session is started or stopped.
+  void OnCastingSessionStartedOrStopped(bool started);
+
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 

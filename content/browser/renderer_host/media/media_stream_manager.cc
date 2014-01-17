@@ -217,7 +217,7 @@ class MediaStreamManager::DeviceRequest {
 
     media_observer->OnMediaRequestStateChanged(
         ui_request_->render_process_id, ui_request_->render_view_id,
-        ui_request_->page_request_id,
+        ui_request_->page_request_id, ui_request_->security_origin,
         MediaStreamDevice(stream_type, device_id, device_id), new_state);
   }
 

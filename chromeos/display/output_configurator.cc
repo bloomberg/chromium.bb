@@ -106,20 +106,6 @@ int GetOutputPower(
   return num_on_outputs;
 }
 
-// Determine if there is an "internal" output and how many outputs are
-// connected.
-bool IsProjecting(
-    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
-  bool has_internal_output = false;
-  int connected_output_count = outputs.size();
-  for (size_t i = 0; i < outputs.size(); ++i)
-    has_internal_output |= outputs[i].type == OUTPUT_TYPE_INTERNAL;
-
-  // "Projecting" is defined as having more than 1 output connected while at
-  // least one of them is an internal output.
-  return has_internal_output && (connected_output_count > 1);
-}
-
 }  // namespace
 
 OutputConfigurator::ModeInfo::ModeInfo()
@@ -252,7 +238,8 @@ OutputConfigurator::OutputConfigurator()
       xrandr_event_base_(0),
       output_state_(STATE_INVALID),
       power_state_(DISPLAY_POWER_ALL_ON),
-      next_output_protection_client_id_(1) {
+      next_output_protection_client_id_(1),
+      casting_session_count_(0) {
 }
 
 OutputConfigurator::~OutputConfigurator() {}
@@ -294,7 +281,7 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
   // that all displays are on when signing out.
   delegate_->ForceDPMSOn();
   delegate_->UngrabServer();
-  delegate_->SendProjectingStateToPowerManager(IsProjecting(cached_outputs_));
+  SendProjectingStateToPowerManager();
   NotifyObservers(success, new_state);
 }
 
@@ -333,6 +320,22 @@ bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
   }
 
   return true;
+}
+
+void OutputConfigurator::SendProjectingStateToPowerManager() {
+  bool has_internal_output = false;
+  int connected_output_count = cached_outputs_.size() + casting_session_count_;
+  for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+    if (cached_outputs_[i].type == OUTPUT_TYPE_INTERNAL) {
+      has_internal_output = true;
+      break;
+    }
+  }
+
+  // "Projecting" is defined as having more than 1 output connected while at
+  // least one of them is an internal output.
+  bool is_projecting = has_internal_output && (connected_output_count > 1);
+  delegate_->SendProjectingStateToPowerManager(is_projecting);
 }
 
 OutputConfigurator::OutputProtectionClientId
@@ -599,6 +602,18 @@ base::EventStatus OutputConfigurator::WillProcessEvent(
 void OutputConfigurator::DidProcessEvent(const base::NativeEvent& event) {
 }
 
+void OutputConfigurator::OnCastingSessionStartedOrStopped(bool started) {
+  if (started) {
+    ++casting_session_count_;
+  } else {
+    DCHECK_GT(casting_session_count_, 0);
+    --casting_session_count_;
+    if (casting_session_count_ < 0)
+      casting_session_count_ = 0;
+  }
+  SendProjectingStateToPowerManager();
+}
+
 void OutputConfigurator::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -777,7 +792,7 @@ void OutputConfigurator::ConfigureOutputs() {
   delegate_->UngrabServer();
 
   NotifyObservers(success, new_state);
-  delegate_->SendProjectingStateToPowerManager(IsProjecting(cached_outputs_));
+  SendProjectingStateToPowerManager();
 }
 
 void OutputConfigurator::NotifyObservers(bool success,

@@ -379,6 +379,9 @@ class CHROMEOS_EXPORT OutputConfigurator
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
+  // Called when a casting session is started or stopped.
+  void OnCastingSessionStartedOrStopped(bool started);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -503,6 +506,9 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Applies output protections according to requests.
   bool ApplyProtections(const DisplayProtections& requests);
 
+  // Sends the current projecting state to power manager.
+  void SendProjectingStateToPowerManager();
+
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
   scoped_ptr<Delegate> delegate_;
@@ -550,6 +556,9 @@ class CHROMEOS_EXPORT OutputConfigurator
 
   // Output protection requests of each client.
   ProtectionRequests client_protection_requests_;
+
+  // Number of outstanding casting sessions.
+  int casting_session_count_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };
