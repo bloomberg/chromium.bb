@@ -104,7 +104,7 @@ class TesterTest(unittest.TestCase):
             STUBS_CLASS + '.serial_test_empty',
             ])
 
-    def integration_test_coverage_works(self):
+    def test_coverage_works(self):
         filesystem = FileSystem()
         executive = Executive()
         module_path = filesystem.path_to_module(self.__module__)

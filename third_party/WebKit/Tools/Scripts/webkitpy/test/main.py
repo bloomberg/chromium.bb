@@ -35,6 +35,7 @@ import unittest
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.system.executive import Executive
 from webkitpy.test.finder import Finder
 from webkitpy.test.printer import Printer
 from webkitpy.test.runner import Runner, unit_test_name
@@ -75,6 +76,7 @@ def main():
 class Tester(object):
     def __init__(self, filesystem=None, webkit_finder=None):
         self.filesystem = filesystem or FileSystem()
+        self.executive = Executive()
         self.finder = Finder(self.filesystem)
         self.printer = Printer(sys.stderr)
         self.webkit_finder = webkit_finder or WebKitFinder(self.filesystem)
@@ -86,7 +88,7 @@ class Tester(object):
     def skip(self, names, reason, bugid):
         self.finder.skip(names, reason, bugid)
 
-    def _parse_args(self, argv=None):
+    def _parse_args(self, argv):
         parser = optparse.OptionParser(usage='usage: %prog [options] [args...]')
         parser.add_option('-a', '--all', action='store_true', default=False,
                           help='run all the tests')
@@ -111,17 +113,24 @@ class Tester(object):
         return parser.parse_args(argv)
 
     def run(self):
-        self._options, args = self._parse_args()
+        argv = sys.argv[1:]
+        self._options, args = self._parse_args(argv)
 
         # Make sure PYTHONPATH is set up properly.
         sys.path = self.finder.additional_paths(sys.path) + sys.path
 
-        # FIXME: unittest2 and coverage need to be in sys.path for their internal imports to work.
+        # FIXME: unittest2 needs to be in sys.path for its internal imports to work.
         thirdparty_path = self.webkit_finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
         if not thirdparty_path in sys.path:
             sys.path.append(thirdparty_path)
 
         self.printer.configure(self._options)
+
+        # Do this after configuring the printer, so that logging works properly.
+        if self._options.coverage:
+            argv = ['-j', '1'] + [arg for arg in argv if arg not in ('-c', '--coverage', '-j', '--child-processes')]
+            _log.warning('Checking code coverage, so running things serially')
+            return self._run_under_coverage(argv)
 
         self.finder.clean_trees()
 
@@ -132,15 +141,26 @@ class Tester(object):
 
         return self._run_tests(names)
 
+    def _run_under_coverage(self, argv):
+        # coverage doesn't run properly unless its parent dir is in PYTHONPATH.
+        # This means we need to add that dir to the environment. Also, the
+        # report output is best when the paths are relative to the Scripts dir.
+        dirname = self.filesystem.dirname
+        script_dir = dirname(dirname(dirname(__file__)))
+        thirdparty_dir = self.filesystem.join(script_dir, 'webkitpy', 'thirdparty')
+
+        env = os.environ.copy()
+        python_path = env.get('PYTHONPATH', '')
+        python_path = python_path + os.pathsep + thirdparty_dir
+        env['PYTHONPATH'] = python_path
+
+        prefix_cmd = [sys.executable, 'webkitpy/thirdparty/coverage']
+        exit_code = self.executive.call(prefix_cmd + ['run', __file__] + argv, cwd=script_dir, env=env)
+        if not exit_code:
+            exit_code = self.executive.call(prefix_cmd + ['report', '--omit', 'webkitpy/thirdparty/*,/usr/*,/Library/*'], cwd=script_dir, env=env)
+        return (exit_code == 0)
+
     def _run_tests(self, names):
-        if self._options.coverage:
-            _log.warning("Checking code coverage, so running things serially")
-            self._options.child_processes = 1
-
-            import coverage
-            cov = coverage.coverage(omit=["/usr/*", "*/webkitpy/thirdparty/*", "/Library/*"])
-            cov.start()
-
         self.printer.write_update("Checking imports ...")
         if not self._check_imports(names):
             return False
@@ -157,11 +177,6 @@ class Tester(object):
         test_runner.run(serial_tests, 1)
 
         self.printer.print_result(time.time() - start)
-
-        if self._options.coverage:
-            cov.stop()
-            cov.save()
-            cov.report(show_missing=False)
 
         return not self.printer.num_errors and not self.printer.num_failures
 
