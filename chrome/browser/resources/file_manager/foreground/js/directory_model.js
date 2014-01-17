@@ -193,64 +193,53 @@ DirectoryModel.prototype.getCurrentDirEntry = function() {
 };
 
 /**
- * @return {Array.<string>} File paths of selected files.
+ * @return {Array.<Entry>} Array of selected entries..
  * @private
  */
-DirectoryModel.prototype.getSelectedPaths_ = function() {
+DirectoryModel.prototype.getSelectedEntries_ = function() {
   var indexes = this.fileListSelection_.selectedIndexes;
   var fileList = this.getFileList();
   if (fileList) {
     return indexes.map(function(i) {
-      return fileList.item(i).fullPath;
+      return fileList.item(i);
     });
   }
   return [];
 };
 
 /**
- * @param {Array.<string>} value List of file paths of selected files.
+ * @param {Array.<Entry>} value List of selected entries.
  * @private
  */
-DirectoryModel.prototype.setSelectedPaths_ = function(value) {
+DirectoryModel.prototype.setSelectedEntries_ = function(value) {
   var indexes = [];
   var fileList = this.getFileList();
-
-  var safeKey = function(key) {
-    // The transformation must:
-    // 1. Never generate a reserved name ('__proto__')
-    // 2. Keep different keys different.
-    return '#' + key;
-  };
-
-  var hash = {};
-
-  for (var i = 0; i < value.length; i++)
-    hash[safeKey(value[i])] = 1;
+  var urls = util.entriesToURLs(value);
 
   for (var i = 0; i < fileList.length; i++) {
-    if (hash.hasOwnProperty(safeKey(fileList.item(i).fullPath)))
+    if (urls.indexOf(fileList.item(i).toURL()) !== -1)
       indexes.push(i);
   }
   this.fileListSelection_.selectedIndexes = indexes;
 };
 
 /**
- * @return {string} Lead item file path.
+ * @return {Entry} Lead entry.
  * @private
  */
-DirectoryModel.prototype.getLeadPath_ = function() {
+DirectoryModel.prototype.getLeadEntry_ = function() {
   var index = this.fileListSelection_.leadIndex;
-  return index >= 0 && this.getFileList().item(index).fullPath;
+  return index >= 0 && this.getFileList().item(index);
 };
 
 /**
- * @param {string} value The name of new lead index.
+ * @param {Entry} value The new lead entry.
  * @private
  */
-DirectoryModel.prototype.setLeadPath_ = function(value) {
+DirectoryModel.prototype.setLeadEntry_ = function(value) {
   var fileList = this.getFileList();
   for (var i = 0; i < fileList.length; i++) {
-    if (fileList.item(i).fullPath === value) {
+    if (util.isSameEntry(fileList.item(i), value)) {
       this.fileListSelection_.leadIndex = i;
       return;
     }
@@ -459,19 +448,19 @@ DirectoryModel.prototype.scan_ = function(
 DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
   cr.dispatchSimpleEvent(this, 'begin-update-files');
   this.updateSelectionAndPublishEvent_(this.fileListSelection_, function() {
-    var selectedPaths = this.getSelectedPaths_();
+    var selectedEntries = this.getSelectedEntries_();
     var selectedIndices = this.fileListSelection_.selectedIndexes;
 
     // Restore leadIndex in case leadName no longer exists.
     var leadIndex = this.fileListSelection_.leadIndex;
-    var leadPath = this.getLeadPath_();
+    var leadEntry = this.getLeadEntry_();
 
     this.currentDirContents_ = dirContents;
     dirContents.replaceContextFileList();
 
-    this.setSelectedPaths_(selectedPaths);
+    this.setSelectedEntries_(selectedEntries);
     this.fileListSelection_.leadIndex = leadIndex;
-    this.setLeadPath_(leadPath);
+    this.setLeadEntry_(leadEntry);
 
     // If nothing is selected after update, then select file next to the
     // latest selection
@@ -719,7 +708,7 @@ DirectoryModel.prototype.resolveDirectory = function(
 };
 
 /**
- * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
+ * @param {DirectoryEntry} dirEntry The entry of the new directory.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  * @private
@@ -746,7 +735,7 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  * Dispatches the 'directory-changed' event when the directory is successfully
  * changed.
  *
- * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
+ * @param {DirectoryEntry} dirEntry The entry of the new directory.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */
