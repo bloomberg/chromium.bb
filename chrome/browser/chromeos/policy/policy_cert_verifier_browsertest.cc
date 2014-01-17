@@ -173,10 +173,7 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
 }
 
 TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
-  if (!SupportsAdditionalTrustAnchors()) {
-    LOG(INFO) << "Test skipped on this platform. NSS >= 3.14.2 required.";
-    return;
-  }
+  ASSERT_TRUE(SupportsAdditionalTrustAnchors());
 
   // |test_server_cert_| is untrusted, so Verify() fails.
   {
