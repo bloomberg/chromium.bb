@@ -1427,6 +1427,8 @@ create_cursor(struct wayland_compositor *c, struct weston_config *config)
 
 	c->cursor_theme = wl_cursor_theme_load(theme, size, c->parent.shm);
 
+	free(theme);
+
 	c->cursor = NULL;
 	for (i = 0; !c->cursor && i < ARRAY_LENGTH(left_ptrs); ++i)
 		c->cursor = wl_cursor_theme_get_cursor(c->cursor_theme,
