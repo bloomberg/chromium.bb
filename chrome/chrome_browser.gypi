@@ -1008,6 +1008,8 @@
         'browser/mac/keystone_registration.mm',
         'browser/mac/master_prefs.h',
         'browser/mac/master_prefs.mm',
+        'browser/mac/obsolete_system.cc',
+        'browser/mac/obsolete_system.h',
         'browser/mac/relauncher.cc',
         'browser/mac/relauncher.h',
         'browser/mac/security_wrappers.cc',

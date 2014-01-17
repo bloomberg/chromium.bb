@@ -67,6 +67,14 @@
         <div id="update-status-message-container">
           <div id="update-status-message" i18n-content="updateCheckStarted">
           </div>
+<if expr="is_macosx">
+          <div id="update-obsolete-system-container" hidden>
+            <span id="update-obsolete-system" 
+                i18n-content="updateObsoleteSystem"></span>
+            <a i18n-values="href:updateObsoleteSystemURL"
+                i18n-content="learnMore" target="_blank"></a>
+          </div>
+</if>
           <div id="allowed-connection-types-message" hidden></div>
         </div>
       </div>

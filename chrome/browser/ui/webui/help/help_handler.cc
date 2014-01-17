@@ -38,6 +38,10 @@
 #include "v8/include/v8.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/mac/obsolete_system.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "base/files/file_util_proxy.h"
 #include "base/i18n/time_formatting.h"
@@ -215,6 +219,13 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
                       l10n_util::GetStringUTF16(resources[i].ids));
   }
 
+#if defined(OS_MACOSX)
+  source->AddString("updateObsoleteSystem",
+                    ObsoleteSystemMac::LocalizedObsoleteSystemString());
+  source->AddString("updateObsoleteSystemURL",
+                    chrome::kMac32BitDeprecationURL);
+#endif
+
   source->AddString(
       "browserVersion",
       l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
@@ -343,6 +354,17 @@ void HelpHandler::OnPageLoaded(const base::ListValue* args) {
       , base::Bind(&HelpHandler::SetPromotionState, base::Unretained(this))
 #endif
       );
+
+#if defined(OS_MACOSX)
+  web_ui()->CallJavascriptFunction(
+      "help.HelpPage.setObsoleteSystem",
+      base::FundamentalValue(ObsoleteSystemMac::Is32BitObsoleteNowOrSoon() &&
+                             ObsoleteSystemMac::Has32BitOnlyCPU()));
+  web_ui()->CallJavascriptFunction(
+      "help.HelpPage.setObsoleteSystemEndOfTheLine",
+      base::FundamentalValue(ObsoleteSystemMac::Is32BitObsoleteNowOrSoon() &&
+                             ObsoleteSystemMac::Is32BitEndOfTheLine()));
+#endif
 
 #if defined(OS_CHROMEOS)
   web_ui()->CallJavascriptFunction(

@@ -671,4 +671,13 @@ const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chrome/topic/1678461";
 #endif
 
+#if defined(OS_MACOSX)
+const char kMac32BitDeprecationURL[] =
+#if !defined(ARCH_CPU_64_BITS)
+    "https://support.google.com/chrome/?p=ui_mac_32bit_support";
+#else
+    "";
+#endif
+#endif
+
 }  // namespace chrome

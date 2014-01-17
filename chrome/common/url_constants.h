@@ -506,6 +506,11 @@ extern const char kMediaAccessLearnMoreUrl[];
 // The URL for the "Learn more" link in the language settings.
 extern const char kLanguageSettingsLearnMoreUrl[];
 
+#if defined(OS_MACOSX)
+// The URL for the 32-bit Mac deprecation help center article
+extern const char kMac32BitDeprecationURL[];
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_URL_CONSTANTS_H_

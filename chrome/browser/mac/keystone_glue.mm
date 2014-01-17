@@ -7,8 +7,6 @@
 #include <sys/mount.h>
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <sys/sysctl.h>
-#include <sys/types.h>
 
 #include <vector>
 
@@ -26,6 +24,7 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #import "chrome/browser/mac/keystone_registration.h"
+#include "chrome/browser/mac/obsolete_system.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "grit/chromium_strings.h"
@@ -190,9 +189,6 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 
 // Returns the brand file path to use for Keystone.
 - (NSString*)brandFilePath;
-
-// YES if the system's CPU is 32-bit-only, NO if it's 64-bit-capable.
-- (BOOL)has32BitOnlyCPU;
 
 // YES if no update installation has succeeded since a binary diff patch
 // installation failed. This signals the need to attempt a full installer
@@ -1013,19 +1009,6 @@ NSString* const kVersionKey = @"KSVersion";
   }
 }
 
-- (BOOL)has32BitOnlyCPU {
-#if defined(ARCH_CPU_64_BITS)
-  return NO;
-#else  // ARCH_CPU_64_BITS
-  int value;
-  size_t valueSize = sizeof(value);
-  if (sysctlbyname("hw.cpu64bit_capable", &value, &valueSize, NULL, 0) != 0) {
-    return YES;
-  }
-  return value == 0;
-#endif  // ARCH_CPU_64_BITS
-}
-
 - (BOOL)wantsFullInstaller {
   // It's difficult to check the tag prior to Keystone registration, and
   // performing registration replaces the tag. keystone_install.sh
@@ -1057,7 +1040,7 @@ NSString* const kVersionKey = @"KSVersion";
   // Info.plist, tag suffix components should only be appended to the tag
   // suffix in ASCII sort order.
   NSString* tagSuffix = @"";
-  if ([self has32BitOnlyCPU]) {
+  if (ObsoleteSystemMac::Has32BitOnlyCPU()) {
     tagSuffix = [tagSuffix stringByAppendingString:@"-32bit"];
   }
   if ([self wantsFullInstaller]) {
