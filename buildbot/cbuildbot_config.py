@@ -1985,6 +1985,7 @@ _x86_firmware_boards = (
   'stumpy',
   'wolf',
   'x86-mario',
+  'zako',
 )
 
 _x86_depthcharge_firmware_boards = (
@@ -1996,10 +1997,12 @@ _x86_depthcharge_firmware_boards = (
   'rambi',
   'samus',
   'squawks',
+  'zako',
 )
 
 _arm_firmware_boards = (
   'daisy',
+  'daisy_skate',
   'daisy_spring',
   'peach_pit',
   'peach_pi',
