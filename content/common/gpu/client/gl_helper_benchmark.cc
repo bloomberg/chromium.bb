@@ -292,8 +292,7 @@ TEST_F(GLHelperTest, DISABLED_ScaleTestImage) {
           gfx::Rect(0, 0,
                     dst_size.width(),
                     dst_size.height()),
-          static_cast<unsigned char *>(output_pixels.getPixels()),
-          SkBitmap::kARGB_8888_Config);
+          static_cast<unsigned char *>(output_pixels.getPixels()));
       context_->deleteTexture(dst_texture);
       std::string filename = base::StringPrintf("testoutput_%s_%d.ppm",
                                                 kQualityNames[q],

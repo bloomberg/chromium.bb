@@ -1134,12 +1134,7 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
 void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
-    bool readback_config_rgb565) {
-  if (readback_config_rgb565) {
-    NOTIMPLEMENTED();
-    callback.Run(false, SkBitmap());
-  }
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
   float scale = ScaleFactor(cocoa_view_);

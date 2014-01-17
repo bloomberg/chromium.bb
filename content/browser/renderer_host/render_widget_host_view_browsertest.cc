@@ -732,10 +732,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                        CopyFromCompositingSurfaceCallback,
                    base::Unretained(this),
                    run_loop.QuitClosure());
-      rwhvp->CopyFromCompositingSurface(copy_rect,
-                                        output_size,
-                                        callback,
-                                        false);
+      rwhvp->CopyFromCompositingSurface(copy_rect, output_size, callback);
     }
     run_loop.Run();
   }

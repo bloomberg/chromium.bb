@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {
 class Rect;
@@ -182,7 +181,6 @@ class CONTENT_EXPORT GLHelper {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
-      bool readback_config_rgb565,
       const base::Callback<void(bool)>& callback);
 
   // Copies the block of pixels specified with |src_subrect| from |src_mailbox|,
@@ -201,7 +199,6 @@ class CONTENT_EXPORT GLHelper {
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
-      bool readback_config_rgb565,
       const base::Callback<void(bool)>& callback);
 
   // Copies the texture data out of |texture| into |out|.  |size| is the
@@ -211,8 +208,7 @@ class CONTENT_EXPORT GLHelper {
   // current OpenGL context.
   void ReadbackTextureSync(GLuint texture,
                            const gfx::Rect& src_rect,
-                           unsigned char* out,
-                           SkBitmap::Config format);
+                           unsigned char* out);
 
   // Creates a copy of the specified texture. |size| is the size of the texture.
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
@@ -269,9 +265,6 @@ class CONTENT_EXPORT GLHelper {
   // Copies the all framebuffer data to |texture|. |size| specifies the
   // size of the framebuffer.
   void CopyTextureFullImage(GLuint texture, const gfx::Size& size);
-
-  // Check whether rgb565 readback is supported or not.
-  bool CanUseRgb565Readback();
 
   // A scaler will cache all intermediate textures and programs
   // needed to scale from a specified size to a destination size.
@@ -333,8 +326,6 @@ class CONTENT_EXPORT GLHelper {
   gpu::ContextSupport* context_support_;
   scoped_ptr<CopyTextureToImpl> copy_texture_to_impl_;
   scoped_ptr<GLHelperScaling> scaler_impl_;
-  bool initialized_565_format_check_;
-  bool support_565_format_;
 
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
 };
