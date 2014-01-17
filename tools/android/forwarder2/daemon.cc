@@ -255,13 +255,17 @@ bool Daemon::SpawnIfNeeded() {
 
 bool Daemon::Kill() {
   pid_t daemon_pid = Socket::GetUnixDomainSocketProcessOwner(identifier_);
-  if (daemon_pid < 0)
-    return true;  // No daemon running.
+  if (daemon_pid < 0) {
+    LOG(ERROR) << "No forwarder daemon seems to be running";
+    return true;
+  }
   if (kill(daemon_pid, SIGTERM) < 0) {
-    if (errno == ESRCH /* invalid PID */)
+    if (errno == ESRCH /* invalid PID */) {
       // The daemon exited for some reason (e.g. kill by a process other than
       // us) right before the call to kill() above.
+      LOG(ERROR) << "Could not kill daemon with PID " << daemon_pid;
       return true;
+    }
     PError("kill");
     return false;
   }
