@@ -13,28 +13,18 @@
 namespace drive {
 namespace file_system {
 
-namespace {
-
-struct SearchResultPair {
-  const char* path;
-  const bool is_directory;
-};
-
-}  // namespace
-
 typedef OperationTestBase SearchOperationTest;
 
 TEST_F(SearchOperationTest, ContentSearch) {
   SearchOperation operation(blocking_task_runner(), scheduler(), metadata());
 
-  const SearchResultPair kExpectedResults[] = {
-    { "drive/root/Directory 1/Sub Directory Folder/Sub Sub Directory Folder",
-      true },
-    { "drive/root/Directory 1/Sub Directory Folder", true },
-    { "drive/root/Directory 1/SubDirectory File 1.txt", false },
-    { "drive/root/Directory 1", true },
-    { "drive/root/Directory 2 excludeDir-test", true },
-  };
+  std::set<std::string> expected_results;
+  expected_results.insert(
+      "drive/root/Directory 1/Sub Directory Folder/Sub Sub Directory Folder");
+  expected_results.insert("drive/root/Directory 1/Sub Directory Folder");
+  expected_results.insert("drive/root/Directory 1/SubDirectory File 1.txt");
+  expected_results.insert("drive/root/Directory 1");
+  expected_results.insert("drive/root/Directory 2 excludeDir-test");
 
   FileError error = FILE_ERROR_FAILED;
   GURL next_link;
@@ -47,10 +37,10 @@ TEST_F(SearchOperationTest, ContentSearch) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
-  EXPECT_EQ(ARRAYSIZE_UNSAFE(kExpectedResults), results->size());
+  EXPECT_EQ(expected_results.size(), results->size());
   for (size_t i = 0; i < results->size(); i++) {
-    EXPECT_EQ(kExpectedResults[i].path, results->at(i).path.AsUTF8Unsafe());
-    EXPECT_EQ(kExpectedResults[i].is_directory, results->at(i).is_directory);
+    EXPECT_TRUE(expected_results.count(results->at(i).path.AsUTF8Unsafe()))
+        << results->at(i).path.AsUTF8Unsafe();
   }
 }
 
@@ -71,10 +61,9 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   // As the result of the first Search(), only entries in the current file
   // system snapshot are expected to be returned in the "right" path. New
   // entries like "New Directory 1!" is temporarily added to "drive/other".
-  const SearchResultPair kExpectedResultsBeforeLoad[] = {
-      { "drive/root/Directory 1", true },
-      { "drive/other/New Directory 1!", true },
-  };
+  std::set<std::string> expected_results;
+  expected_results.insert("drive/root/Directory 1");
+  expected_results.insert("drive/other/New Directory 1!");
 
   FileError error = FILE_ERROR_FAILED;
   GURL next_link;
@@ -87,22 +76,19 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
-  ASSERT_EQ(ARRAYSIZE_UNSAFE(kExpectedResultsBeforeLoad), results->size());
+  ASSERT_EQ(expected_results.size(), results->size());
   for (size_t i = 0; i < results->size(); i++) {
-    EXPECT_EQ(kExpectedResultsBeforeLoad[i].path,
-              results->at(i).path.AsUTF8Unsafe());
-    EXPECT_EQ(kExpectedResultsBeforeLoad[i].is_directory,
-              results->at(i).is_directory);
+    EXPECT_TRUE(expected_results.count(results->at(i).path.AsUTF8Unsafe()))
+        << results->at(i).path.AsUTF8Unsafe();
   }
 
   // Load the change from FakeDriveService.
   ASSERT_EQ(FILE_ERROR_OK, CheckForUpdates());
 
   // Now the new entry must be reported to be in the right directory.
-  const SearchResultPair kExpectedResultsAfterLoad[] = {
-      { "drive/root/Directory 1", true },
-      { "drive/root/New Directory 1!", true },
-  };
+  expected_results.clear();
+  expected_results.insert("drive/root/Directory 1");
+  expected_results.insert("drive/root/New Directory 1!");
   error = FILE_ERROR_FAILED;
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
@@ -111,12 +97,10 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
-  ASSERT_EQ(ARRAYSIZE_UNSAFE(kExpectedResultsAfterLoad), results->size());
+  ASSERT_EQ(expected_results.size(), results->size());
   for (size_t i = 0; i < results->size(); i++) {
-    EXPECT_EQ(kExpectedResultsAfterLoad[i].path,
-              results->at(i).path.AsUTF8Unsafe());
-    EXPECT_EQ(kExpectedResultsAfterLoad[i].is_directory,
-              results->at(i).is_directory);
+    EXPECT_TRUE(expected_results.count(results->at(i).path.AsUTF8Unsafe()))
+        << results->at(i).path.AsUTF8Unsafe();
   }
 }
 

@@ -90,53 +90,44 @@ chrome.test.runTests([
 
   // Tests chrome.fileBrowserPrivate.searchDrive method.
   function driveSearch() {
-    var testCases = [
-      {
-        nextFeed: '',
-        expectedPath: '/drive/root/test_dir/empty_test_dir',
-        expectedType: 'dir',
-        expectedNextFeed:
-            'http://localhost/?start-offset=1&max-results=1&q=empty',
-      },
-      {
-        // The same as the previous test case's expected next feed.
-        nextFeed: 'http://localhost/?start-offset=1&max-results=1&q=empty',
-        expectedPath: '/drive/root/test_dir/empty_test_file.foo',
-        expectedType: 'file',
-        expectedNextFeed: '',
-      }
+    var query = 'empty';
+    var expectedEntries = [
+      {path: '/drive/root/test_dir/empty_test_dir', type: 'dir'},
+      {path: '/drive/root/test_dir/empty_test_file.foo', type: 'file'},
     ];
 
-    function runNextQuery() {
-      // If there is no more queries the test ended successfully.
-      if (testCases.length == 0) {
-        chrome.test.succeed();
-        return;
-      }
-
-      var testCase = testCases.shift();
+    function runNextQuery(entries, nextFeed) {
+      chrome.test.assertFalse(!entries);
 
       // Each search query should return exactly one result (this should be
       // ensured by Chrome part of the test).
-      chrome.fileBrowserPrivate.searchDrive(
-          {query: 'empty', nextFeed: testCase.nextFeed},
-          function(entries, nextFeed) {
-            chrome.test.assertFalse(!entries);
-            chrome.test.assertEq(1, entries.length);
-            chrome.test.assertEq(testCase.expectedPath,
-                                 entries[0].fullPath);
-            chrome.test.assertEq(testCase.expectedNextFeed, nextFeed);
+      chrome.test.assertEq(1, entries.length);
 
-            var verifyEntry = getEntryVerifier(testCase.expectedType);
-            chrome.test.assertFalse(!verifyEntry);
+      var index = -1;
+      for (var i = 0; i < expectedEntries.length; ++i) {
+        if (expectedEntries[i].path === entries[0].fullPath)
+          index = i;
+      }
+      chrome.test.assertFalse(index === -1);
 
-            // The callback will be called only it the entry is successfully
-            // verified, otherwise the test function will fail.
-            verifyEntry(entries[0], runNextQuery);
+      var verifyEntry = getEntryVerifier(expectedEntries[index].type);
+      chrome.test.assertFalse(!verifyEntry);
+      verifyEntry(entries[0], function() {
+        expectedEntries.splice(index, 1);
+
+        if (nextFeed === '') {
+          chrome.test.assertEq(0, expectedEntries.length);
+          chrome.test.succeed();
+          return;
+        }
+
+        chrome.fileBrowserPrivate.searchDrive(
+            {query: query, nextFeed: nextFeed}, runNextQuery);
       });
     }
 
-    runNextQuery();
+    chrome.fileBrowserPrivate.searchDrive(
+        {query: query, nextFeed: ''}, runNextQuery);
   },
 
   // Tests chrome.fileBrowserPrivate.searchDriveMetadata method.
