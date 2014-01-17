@@ -363,6 +363,7 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 	int height;
 	int stride;
 	int ret;
+	int applied_opaque_region = 0;
 #ifdef HAVE_RESOURCE_WRITE_DATA_RECT
 	int n;
 #endif
@@ -384,13 +385,18 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 
 		if (!pixels)
 			return -1;
+
+		applied_opaque_region = 1;
 	}
 #endif
 
 	ret = rpi_resource_realloc(resource, ifmt & ~PREMULT_ALPHA_FLAG,
 				   width, height, stride, height);
-	if (ret < 0)
+	if (ret < 0) {
+		if (applied_opaque_region)
+			free(pixels);
 		return -1;
+	}
 
 	pixman_region32_init_rect(&write_region, 0, 0, width, height);
 	if (ret == 0)
@@ -437,12 +443,8 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 
 	pixman_region32_fini(&write_region);
 
-#ifndef HAVE_ELEMENT_SET_OPAQUE_RECT
-	if (pixman_region32_not_empty(opaque_region) &&
-	    wl_shm_buffer_get_format(buffer->shm_buffer) == WL_SHM_FORMAT_ARGB8888 &&
-	    resource->enable_opaque_regions)
+	if (applied_opaque_region)
 		free(pixels);
-#endif
 
 	return ret ? -1 : 0;
 }
