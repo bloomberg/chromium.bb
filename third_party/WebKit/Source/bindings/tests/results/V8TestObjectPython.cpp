@@ -1044,6 +1044,8 @@ static void nodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8:
 static void nodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    if (V8DOMWrapper::isWrapperOfType(jsValue, &V8Attr::wrapperTypeInfo))
+        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
     TestObjectPythonV8Internal::nodeAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -4054,6 +4056,8 @@ static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 static void voidMethodNodeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    if (V8DOMWrapper::isWrapperOfType(info[0], &V8Attr::wrapperTypeInfo))
+        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
     TestObjectPythonV8Internal::voidMethodNodeArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
