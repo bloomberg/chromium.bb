@@ -170,17 +170,31 @@ GURL DriveApiUrlGenerator::GetChildrenDeleteUrl(
                          net::EscapePath(child_id).c_str()));
 }
 
-GURL DriveApiUrlGenerator::GetInitiateUploadNewFileUrl() const {
-  return AddResumableUploadParam(
+GURL DriveApiUrlGenerator::GetInitiateUploadNewFileUrl(
+    bool set_modified_date) const {
+  GURL url = AddResumableUploadParam(
       base_url_.Resolve(kDriveV2InitiateUploadNewFileUrl));
+
+  // setModifiedDate is "false" by default.
+  if (set_modified_date)
+    url = net::AppendOrReplaceQueryParameter(url, "setModifiedDate", "true");
+
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GetInitiateUploadExistingFileUrl(
-    const std::string& resource_id) const {
-  const GURL& url = base_url_.Resolve(
+    const std::string& resource_id,
+    bool set_modified_date) const {
+  GURL url = base_url_.Resolve(
       kDriveV2InitiateUploadExistingFileUrlPrefix +
       net::EscapePath(resource_id));
-  return AddResumableUploadParam(url);
+  url = AddResumableUploadParam(url);
+
+  // setModifiedDate is "false" by default.
+  if (set_modified_date)
+    url = net::AppendOrReplaceQueryParameter(url, "setModifiedDate", "true");
+
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GenerateDownloadFileUrl(

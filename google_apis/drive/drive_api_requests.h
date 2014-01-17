@@ -624,6 +624,18 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
                                const InitiateUploadCallback& callback);
   virtual ~InitiateUploadNewFileRequest();
 
+  // Optional parameters.
+  const base::Time& modified_date() const { return modified_date_; }
+  void set_modified_date(const base::Time& modified_date) {
+    modified_date_ = modified_date;
+  }
+  const base::Time& last_viewed_by_me_date() const {
+    return last_viewed_by_me_date_;
+  }
+  void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
+    last_viewed_by_me_date_ = last_viewed_by_me_date;
+  }
+
  protected:
   // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
@@ -635,6 +647,9 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
   const DriveApiUrlGenerator url_generator_;
   const std::string parent_resource_id_;
   const std::string title_;
+
+  base::Time modified_date_;
+  base::Time last_viewed_by_me_date_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileRequest);
 };
@@ -659,16 +674,42 @@ class InitiateUploadExistingFileRequest : public InitiateUploadRequestBase {
                                     const InitiateUploadCallback& callback);
   virtual ~InitiateUploadExistingFileRequest();
 
+
+  // Optional parameters.
+  const std::string& parent_resource_id() const { return parent_resource_id_; }
+  void set_parent_resource_id(const std::string& parent_resource_id) {
+    parent_resource_id_ = parent_resource_id;
+  }
+  const std::string& title() const { return title_; }
+  void set_title(const std::string& title) { title_ = title; }
+  const base::Time& modified_date() const { return modified_date_; }
+  void set_modified_date(const base::Time& modified_date) {
+    modified_date_ = modified_date;
+  }
+  const base::Time& last_viewed_by_me_date() const {
+    return last_viewed_by_me_date_;
+  }
+  void set_last_viewed_by_me_date(const base::Time& last_viewed_by_me_date) {
+    last_viewed_by_me_date_ = last_viewed_by_me_date;
+  }
+
  protected:
   // UrlFetchRequestBase overrides.
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
 
  private:
   const DriveApiUrlGenerator url_generator_;
   const std::string resource_id_;
   const std::string etag_;
+
+  std::string parent_resource_id_;
+  std::string title_;
+  base::Time modified_date_;
+  base::Time last_viewed_by_me_date_;
 
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileRequest);
 };

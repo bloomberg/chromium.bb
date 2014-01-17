@@ -75,11 +75,12 @@ class DriveApiUrlGenerator {
                             const std::string& folder_id) const;
 
   // Returns a URL to initiate uploading a new file.
-  GURL GetInitiateUploadNewFileUrl() const;
+  GURL GetInitiateUploadNewFileUrl(bool set_modified_date) const;
 
   // Returns a URL to initiate uploading an existing file specified by
   // |resource_id|.
-  GURL GetInitiateUploadExistingFileUrl(const std::string& resource_id) const;
+  GURL GetInitiateUploadExistingFileUrl(const std::string& resource_id,
+                                        bool set_modified_date) const;
 
   // Generates a URL for downloading a file.
   GURL GenerateDownloadFileUrl(const std::string& resource_id) const;

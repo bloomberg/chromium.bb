@@ -1257,6 +1257,60 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
   }
 }
 
+TEST_F(DriveApiRequestsTest, UploadNewFileWithMetadataRequest) {
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kLastViewedByMeDate =
+      {2013, 7, 0, 19, 15, 59, 13, 123};
+
+  // Set an expected url for uploading.
+  expected_upload_path_ = kTestUploadNewFilePath;
+
+  const char kTestContentType[] = "text/plain";
+  const std::string kTestContent(100, 'a');
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_url;
+
+  // Initiate uploading a new file to the directory with "parent_resource_id".
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadNewFileRequest* request =
+        new drive::InitiateUploadNewFileRequest(
+            request_sender_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "parent_resource_id",  // The resource id of the parent directory.
+            "new file title",  // The title of the file being uploaded.
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
+    request->set_last_viewed_by_me_date(
+        base::Time::FromUTCExploded(kLastViewedByMeDate));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
+  EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kTestContent.size()),
+            http_request_.headers["X-Upload-Content-Length"]);
+
+  EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
+  EXPECT_EQ("/upload/drive/v2/files?uploadType=resumable&setModifiedDate=true",
+            http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"lastViewedByMeDate\":\"2013-07-19T15:59:13.123Z\","
+            "\"modifiedDate\":\"2012-07-19T15:59:13.123Z\","
+            "\"parents\":[{\"id\":\"parent_resource_id\","
+            "\"kind\":\"drive#fileLink\"}],"
+            "\"title\":\"new file title\"}",
+            http_request_.content);
+}
+
 TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
   // Set an expected url for uploading.
   expected_upload_path_ = kTestUploadExistingFilePath;
@@ -1571,6 +1625,65 @@ TEST_F(DriveApiRequestsTest,
 
   // New entry should be NULL.
   EXPECT_FALSE(new_entry.get());
+}
+
+TEST_F(DriveApiRequestsTest, UploadExistingFileWithMetadataRequest) {
+  const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kLastViewedByMeDate =
+      {2013, 7, 0, 19, 15, 59, 13, 123};
+
+  // Set an expected url for uploading.
+  expected_upload_path_ = kTestUploadExistingFilePath;
+
+  const char kTestContentType[] = "text/plain";
+  const std::string kTestContent(100, 'a');
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  GURL upload_url;
+
+  // Initiate uploading a new file to the directory with "parent_resource_id".
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadExistingFileRequest* request =
+        new drive::InitiateUploadExistingFileRequest(
+            request_sender_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "resource_id",  // The resource id of the file to be overwritten.
+            kTestETag,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request->set_parent_resource_id("new_parent_resource_id");
+    request->set_title("new file title");
+    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
+    request->set_last_viewed_by_me_date(
+        base::Time::FromUTCExploded(kLastViewedByMeDate));
+
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
+  EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);
+  EXPECT_EQ(base::Int64ToString(kTestContent.size()),
+            http_request_.headers["X-Upload-Content-Length"]);
+  EXPECT_EQ(kTestETag, http_request_.headers["If-Match"]);
+
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("/upload/drive/v2/files/resource_id?"
+            "uploadType=resumable&setModifiedDate=true",
+            http_request_.relative_url);
+  EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
+  EXPECT_TRUE(http_request_.has_content);
+  EXPECT_EQ("{\"lastViewedByMeDate\":\"2013-07-19T15:59:13.123Z\","
+            "\"modifiedDate\":\"2012-07-19T15:59:13.123Z\","
+            "\"parents\":[{\"id\":\"new_parent_resource_id\","
+            "\"kind\":\"drive#fileLink\"}],"
+            "\"title\":\"new file title\"}",
+            http_request_.content);
 }
 
 TEST_F(DriveApiRequestsTest, DownloadFileRequest) {

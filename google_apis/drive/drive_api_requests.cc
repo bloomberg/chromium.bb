@@ -113,6 +113,15 @@ void ParseFileResourceWithUploadRangeAndRun(
   callback.Run(response, file_resource.Pass());
 }
 
+// Creates a Parents value which can be used as a part of request body.
+scoped_ptr<base::DictionaryValue> CreateParentValue(
+    const std::string& file_id) {
+  scoped_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
+  parent->SetString("kind", kParentLinkKind);
+  parent->SetString("id", file_id);
+  return parent.Pass();
+}
+
 }  // namespace
 
 namespace drive {
@@ -602,7 +611,7 @@ InitiateUploadNewFileRequest::InitiateUploadNewFileRequest(
 InitiateUploadNewFileRequest::~InitiateUploadNewFileRequest() {}
 
 GURL InitiateUploadNewFileRequest::GetURL() const {
-  return url_generator_.GetInitiateUploadNewFileUrl();
+  return url_generator_.GetInitiateUploadNewFileUrl(!modified_date_.is_null());
 }
 
 net::URLFetcher::RequestType
@@ -619,15 +628,16 @@ bool InitiateUploadNewFileRequest::GetContentData(
   root.SetString("title", title_);
 
   // Fill parent link.
-  {
-    scoped_ptr<base::DictionaryValue> parent(new base::DictionaryValue);
-    parent->SetString("kind", kParentLinkKind);
-    parent->SetString("id", parent_resource_id_);
+  scoped_ptr<base::ListValue> parents(new base::ListValue);
+  parents->Append(CreateParentValue(parent_resource_id_).release());
+  root.Set("parents", parents.release());
 
-    scoped_ptr<base::ListValue> parents(new base::ListValue);
-    parents->Append(parent.release());
+  if (!modified_date_.is_null())
+    root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
 
-    root.Set("parents", parents.release());
+  if (!last_viewed_by_me_date_.is_null()) {
+    root.SetString("lastViewedByMeDate",
+                   util::FormatTimeAsString(last_viewed_by_me_date_));
   }
 
   base::JSONWriter::Write(&root, upload_content);
@@ -659,7 +669,8 @@ InitiateUploadExistingFileRequest::InitiateUploadExistingFileRequest(
 InitiateUploadExistingFileRequest::~InitiateUploadExistingFileRequest() {}
 
 GURL InitiateUploadExistingFileRequest::GetURL() const {
-  return url_generator_.GetInitiateUploadExistingFileUrl(resource_id_);
+  return url_generator_.GetInitiateUploadExistingFileUrl(
+      resource_id_, !modified_date_.is_null());
 }
 
 net::URLFetcher::RequestType
@@ -673,6 +684,37 @@ InitiateUploadExistingFileRequest::GetExtraRequestHeaders() const {
       InitiateUploadRequestBase::GetExtraRequestHeaders());
   headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
+}
+
+bool InitiateUploadExistingFileRequest::GetContentData(
+    std::string* upload_content_type,
+    std::string* upload_content) {
+  base::DictionaryValue root;
+  if (!parent_resource_id_.empty()) {
+    scoped_ptr<base::ListValue> parents(new base::ListValue);
+    parents->Append(CreateParentValue(parent_resource_id_).release());
+    root.Set("parents", parents.release());
+  }
+
+  if (!title_.empty())
+    root.SetString("title", title_);
+
+  if (!modified_date_.is_null())
+    root.SetString("modifiedDate", util::FormatTimeAsString(modified_date_));
+
+  if (!last_viewed_by_me_date_.is_null()) {
+    root.SetString("lastViewedByMeDate",
+                   util::FormatTimeAsString(last_viewed_by_me_date_));
+  }
+
+  if (root.empty())
+    return false;
+
+  *upload_content_type = kContentTypeApplicationJson;
+  base::JSONWriter::Write(&root, upload_content);
+  DVLOG(1) << "InitiateUploadExistingFile data: " << *upload_content_type
+           << ", [" << *upload_content << "]";
+  return true;
 }
 
 //============================ ResumeUploadRequest ===========================
