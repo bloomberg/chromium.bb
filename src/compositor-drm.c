@@ -431,9 +431,10 @@ drm_output_check_scanout_format(struct drm_output *output,
 		/* We can scanout an ARGB buffer if the surface's
 		 * opaque region covers the whole output, but we have
 		 * to use XRGB as the KMS format code. */
-		pixman_region32_init(&r);
-		pixman_region32_subtract(&r, &output->base.region,
-					 &es->opaque);
+		pixman_region32_init_rect(&r, 0, 0,
+					  output->base.width,
+					  output->base.height);
+		pixman_region32_subtract(&r, &r, &es->opaque);
 
 		if (!pixman_region32_not_empty(&r))
 			format = GBM_FORMAT_XRGB8888;
