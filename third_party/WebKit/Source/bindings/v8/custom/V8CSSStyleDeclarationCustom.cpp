@@ -131,6 +131,8 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
             return 0;
         }
 
+        bool hasSeenUpper = isASCIIUpper(propertyName[i]);
+
         builder.append(toASCIILower(propertyName[i++]));
 
         for (; i < length; ++i) {
@@ -141,10 +143,15 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
                 builder.append(c);
             }
             else {
+                hasSeenUpper = true;
                 builder.append('-');
                 builder.append(toASCIILower(c));
             }
         }
+
+        // Reject names containing both dashes and upper-case characters, such as "border-rightColor".
+        if (hasSeenDash && hasSeenUpper)
+            return 0;
 
         String propName = builder.toString();
         CSSPropertyID propertyID = cssPropertyID(propName);
