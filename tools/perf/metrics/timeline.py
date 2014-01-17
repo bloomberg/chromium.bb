@@ -121,7 +121,7 @@ class LoadTimesTimelineMetric(TimelineMetric):
 # for simplicity.
 TimelineThreadCategories =  {
   "Chrome_InProcGpuThread": "GPU",
-  "CrGPUMain"             : "GPU",
+  "CrGpuMain"             : "GPU",
   "AsyncTransferThread"   : "GPU_transfer",
   "CrBrowserMain"         : "browser_main",
   "Browser Compositor"    : "browser_compositor",
