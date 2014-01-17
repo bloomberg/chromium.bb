@@ -1509,7 +1509,7 @@ weston_buffer_from_resource(struct wl_resource *resource)
 {
 	struct weston_buffer *buffer;
 	struct wl_listener *listener;
-	
+
 	listener = wl_resource_get_destroy_listener(resource,
 						    weston_buffer_destroy_handler);
 
@@ -1526,7 +1526,7 @@ weston_buffer_from_resource(struct wl_resource *resource)
 	buffer->destroy_listener.notify = weston_buffer_destroy_handler;
 	buffer->y_inverted = 1;
 	wl_resource_add_destroy_listener(resource, &buffer->destroy_listener);
-	
+
 	return buffer;
 }
 
@@ -3857,7 +3857,7 @@ print_backtrace(void)
 			filename = dlinfo.dli_fname;
 		else
 			filename = "?";
-		
+
 		weston_log("%u: %s (%s%s+0x%x) [%p]\n", i++, filename, procname,
 			   ret == -UNW_ENOMEM ? "..." : "", (int)off, (void *)(pip.start_ip + off));
 
@@ -3913,6 +3913,9 @@ weston_load_module(const char *name, const char *entrypoint)
 {
 	char path[PATH_MAX];
 	void *module, *init;
+
+	if (name == NULL)
+		return NULL;
 
 	if (name[0] != '/')
 		snprintf(path, sizeof path, "%s/%s", MODULEDIR, name);
@@ -4125,6 +4128,7 @@ int main(int argc, char *argv[])
 	char *backend = NULL;
 	char *option_backend = NULL;
 	char *shell = NULL;
+	char *option_shell = NULL;
 	char *modules, *option_modules = NULL;
 	char *log = NULL;
 	int32_t idle_time = 300;
@@ -4136,7 +4140,7 @@ int main(int argc, char *argv[])
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &option_backend },
-		{ WESTON_OPTION_STRING, "shell", 0, &shell },
+		{ WESTON_OPTION_STRING, "shell", 0, &option_shell },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
@@ -4156,7 +4160,7 @@ int main(int argc, char *argv[])
 	}
 
 	weston_log_file_open(log);
-	
+
 	weston_log("%s\n"
 		   STAMP_SPACE "%s\n"
 		   STAMP_SPACE "Bug reports to: %s\n"
@@ -4190,22 +4194,23 @@ int main(int argc, char *argv[])
 	}
 	section = weston_config_get_section(config, "core", NULL, NULL);
 
-	weston_config_section_get_string(section, "backend", &backend, NULL);
-	if (option_backend) {
-		backend = option_backend;
-	}
+	if (option_backend)
+		backend = strdup(option_backend);
+	else
+		weston_config_section_get_string(section, "backend", &backend,
+						 NULL);
+
 	if (!backend) {
 		if (getenv("WAYLAND_DISPLAY"))
-			backend = "wayland-backend.so";
+			backend = strdup("wayland-backend.so");
 		else if (getenv("DISPLAY"))
-			backend = "x11-backend.so";
+			backend = strdup("x11-backend.so");
 		else
-			backend = WESTON_NATIVE_BACKEND;
+			backend = strdup(WESTON_NATIVE_BACKEND);
 	}
 
-	weston_config_section_get_string(section, "modules", &modules, "");
-
 	backend_init = weston_load_module(backend, "backend_init");
+	free(backend);
 	if (!backend_init)
 		exit(EXIT_FAILURE);
 
@@ -4223,14 +4228,25 @@ int main(int argc, char *argv[])
 
 	setenv("WAYLAND_DISPLAY", socket_name, 1);
 
-	if (!shell)
+	if (option_shell)
+		shell = strdup(option_shell);
+	else
 		weston_config_section_get_string(section, "shell", &shell,
 						 "desktop-shell.so");
-	if (load_modules(ec, shell, &argc, argv) < 0)
-		goto out;
 
-	if (load_modules(ec, modules, &argc, argv) < 0)
+	if (load_modules(ec, shell, &argc, argv) < 0) {
+		free(shell);
 		goto out;
+	}
+	free(shell);
+
+	weston_config_section_get_string(section, "modules", &modules, "");
+	if (load_modules(ec, modules, &argc, argv) < 0) {
+		free(modules);
+		goto out;
+	}
+	free(modules);
+
 	if (load_modules(ec, option_modules, &argc, argv) < 0)
 		goto out;
 
