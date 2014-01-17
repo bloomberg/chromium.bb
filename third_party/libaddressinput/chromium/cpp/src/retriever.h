@@ -30,7 +30,7 @@ namespace addressinput {
 class Downloader;
 class Storage;
 
-// Retrieves data. Sample usage:
+// Manages downloading data and caching it locally. Sample usage:
 //    Storage* storage = ...;
 //    Downloader* downloader = ...;
 //    Retriever retriever("https://i18napis.appspot.com/ssl-address/",
@@ -57,12 +57,12 @@ class Retriever {
   // Callback for when a rule is retrieved from |storage_|.
   void OnDataRetrievedFromStorage(bool success,
                                   const std::string& key,
-                                  const std::string& data);
+                                  const std::string& stored_data);
 
   // Callback for when a rule is retrieved by |downloader_|.
   void OnDownloaded(bool success,
                     const std::string& url,
-                    const std::string& data);
+                    const std::string& downloaded_data);
 
   // Returns the URL where the |key| can be retrieved. For example, returns
   // "https://i18napis.appspot.com/ssl-address/data/US" for input "data/US".

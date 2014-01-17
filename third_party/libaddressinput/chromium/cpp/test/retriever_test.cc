@@ -134,6 +134,19 @@ TEST_F(RetrieverTest, FaultyDownloader) {
   EXPECT_TRUE(data_.empty());
 }
 
+TEST_F(RetrieverTest, FaultyDownloaderFallback) {
+  Retriever bad_retriever(FakeDownloader::kFakeDataUrl,
+                          scoped_ptr<Downloader>(new FaultyDownloader),
+                          scoped_ptr<Storage>(new FakeStorage));
+  const char kFallbackDataKey[] = "data/US";
+  bad_retriever.Retrieve(kFallbackDataKey, BuildCallback());
+
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(kFallbackDataKey, key_);
+  EXPECT_FALSE(data_.empty());
+  EXPECT_NE(kEmptyData, data_);
+}
+
 // The downloader that doesn't get back to you.
 class HangingDownloader : public Downloader {
  public:

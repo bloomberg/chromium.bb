@@ -26,6 +26,7 @@
 #include <string>
 #include <utility>
 
+#include "fallback_data_store.h"
 #include "util/stl_util.h"
 
 namespace i18n {
@@ -64,13 +65,13 @@ void Retriever::Retrieve(const std::string& key,
 
 void Retriever::OnDataRetrievedFromStorage(bool success,
                                            const std::string& key,
-                                           const std::string& data) {
+                                           const std::string& stored_data) {
   // TODO(rouslan): Add validation for data integrity and freshness. If a
   // download fails, then it's OK to use stale data.
   if (success) {
     scoped_ptr<Callback> retrieved = GetCallbackForKey(key);
     if (retrieved != NULL) {
-      (*retrieved)(success, key, data);
+      (*retrieved)(success, key, stored_data);
     }
   } else {
     downloader_->Download(GetUrlForKey(key),
@@ -80,14 +81,19 @@ void Retriever::OnDataRetrievedFromStorage(bool success,
 
 void Retriever::OnDownloaded(bool success,
                              const std::string& url,
-                             const std::string& data) {
+                             const std::string& downloaded_data) {
   const std::string& key = GetKeyForUrl(url);
+  std::string response;
   if (success) {
-    storage_->Put(key, data);
+    storage_->Put(key, downloaded_data);
+    response = downloaded_data;
+  } else {
+    success = FallbackDataStore::Get(key, &response);
   }
+
   scoped_ptr<Callback> retrieved = GetCallbackForKey(key);
   if (retrieved != NULL) {
-    (*retrieved)(success, key, success ? data : std::string());
+    (*retrieved)(success, key, response);
   }
 }
 
