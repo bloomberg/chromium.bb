@@ -392,10 +392,10 @@ bool PDBSourceLineWriter::PrintFrameData() {
   if (!FindTable(session_, &frame_data_enum))
     return false;
 
-  DWORD last_type = std::numeric_limits<DWORD>::max()
-  DWORD last_rva = std::numeric_limits<DWORD>::max()
+  DWORD last_type = std::numeric_limits<DWORD>::max();
+  DWORD last_rva = std::numeric_limits<DWORD>::max();
   DWORD last_code_size = 0;
-  DWORD last_prolog_size = std::numeric_limits<DWORD>::max()
+  DWORD last_prolog_size = std::numeric_limits<DWORD>::max();
 
   CComPtr<IDiaFrameData> frame_data;
   ULONG count = 0;
