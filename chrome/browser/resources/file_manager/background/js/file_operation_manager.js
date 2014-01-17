@@ -298,7 +298,6 @@ function FileOperationManager() {
   this.copyTasks_ = [];
   this.deleteTasks_ = [];
   this.taskIdCounter_ = 0;
-
   this.eventRouter_ = new FileOperationManager.EventRouter();
 
   Object.seal(this);
@@ -581,6 +580,7 @@ FileOperationManager.CopyTask.prototype.initialize = function(callback) {
             console.error(
                 'Failed to resolve for copy: %s',
                 util.getFileErrorMnemonic(error.code));
+            callback();
           });
     }.bind(this, i));
   }
@@ -908,7 +908,7 @@ FileOperationManager.ZipTask.prototype.initialize = function(callback) {
               resolvedEntryMap[entries[j].toURL()] = entries[j];
             callback();
           },
-          function(error) {});
+          callback);
     }.bind(this, i));
   }
 
@@ -1165,54 +1165,65 @@ FileOperationManager.prototype.paste = function(
 
 /**
  * Checks if the move operation is available between the given two locations.
+ * This method uses the volume manager, which is lazily created, therefore the
+ * result is returned asynchronously.
  *
  * @param {DirectoryEntry} sourceEntry An entry from the source.
  * @param {DirectoryEntry} targetDirEntry Directory entry for the target.
- * @return {boolean} Whether we can move from the source to the target.
+ * @param {function(boolean)} callback Callback with result whether the entries
+ *     can be directly moved.
+ * @private
  */
-FileOperationManager.prototype.isMovable = function(
-    sourceEntry, targetDirEntry) {
-  var sourceLocationInfo = this.volumeManager_.getLocationInfo(sourceEntry);
-  var targetDirLocationInfo = this.volumeManager_.getLocationInfo(
-      targetDirEntry);
-
-  return sourceLocationInfo && targetDirLocationInfo &&
-      sourceLocationInfo.volumeInfo === targetDirLocationInfo.volumeInfo;
+FileOperationManager.prototype.isMovable_ = function(
+    sourceEntry, targetDirEntry, callback) {
+  VolumeManager.getInstance(function(volumeManager) {
+    var sourceLocationInfo = volumeManager.getLocationInfo(sourceEntry);
+    var targetDirLocationInfo = volumeManager.getLocationInfo(targetDirEntry);
+    callback(
+        sourceLocationInfo && targetDirLocationInfo &&
+        sourceLocationInfo.volumeInfo === targetDirLocationInfo.volumeInfo);
+  });
 };
 
 /**
- * Initiate a file copy.
+ * Initiate a file copy. When copying files, null can be specified as source
+ * directory.
  *
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {Array.<Entry>} entries Entries to copy.
  * @param {boolean} isMove In case of move.
- * @return {FileOperationManager.Task} Copy task.
  * @private
  */
 FileOperationManager.prototype.queueCopy_ = function(
     targetDirEntry, entries, isMove) {
-  // When copying files, null can be specified as source directory.
+  var createTask = function(task) {
+    task.taskId = this.generateTaskId_();
+    task.initialize(function() {
+      this.copyTasks_.push(task);
+      this.eventRouter_.sendProgressEvent(
+          'BEGIN', task.getStatus(), task.taskId);
+      if (this.copyTasks_.length === 1)
+        this.serviceAllTasks_();
+    }.bind(this));
+  }.bind(this);
+
   var task;
   if (isMove) {
-    if (this.isMovable(entries[0], targetDirEntry)) {
-      task = new FileOperationManager.MoveTask(entries, targetDirEntry);
-    } else {
-      task = new FileOperationManager.CopyTask(entries, targetDirEntry);
-      task.deleteAfterCopy = true;
-    }
+    // When moving between different volumes, moving is implemented as a copy
+    // and delete. This is because moving between volumes is slow, and moveTo()
+    // is not cancellable nor provides progress feedback.
+    this.isMovable_(entries[0], targetDirEntry, function(isMovable) {
+      if (isMovable) {
+        createTask(new FileOperationManager.MoveTask(entries, targetDirEntry));
+      } else {
+        var task = new FileOperationManager.CopyTask(entries, targetDirEntry);
+        task.deleteAfterCopy = true;
+        createTask(task);
+      }
+    });
   } else {
-    task = new FileOperationManager.CopyTask(entries, targetDirEntry);
+    createTask(new FileOperationManager.CopyTask(entries, targetDirEntry));
   }
-
-  task.taskId = this.generateTaskId_();
-  task.initialize(function() {
-    this.copyTasks_.push(task);
-    this.eventRouter_.sendProgressEvent('BEGIN', task.getStatus(), task.taskId);
-    if (this.copyTasks_.length == 1)
-      this.serviceAllTasks_();
-  }.bind(this));
-
-  return task;
 };
 
 /**
