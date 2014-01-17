@@ -13,7 +13,7 @@ Test uncommon arguments for initialize()
 PASS circle1.transform.baseVal.initialize(30) threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.initialize('aString') threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.initialize(circle1) threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
-PASS circle1.transform.baseVal.initialize(null) threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': The PassListItemType provided is invalid..
+PASS circle1.transform.baseVal.initialize(null) threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 
 Test uncommon arguments for getItem()
 PASS circle1.transform.baseVal.getItem(30) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
@@ -49,7 +49,7 @@ PASS circle1.getAttribute('transform') is "scale(2 2) translate(10 10)"
 PASS circle1.transform.baseVal.insertItemBefore(30, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.insertItemBefore('aString', 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.insertItemBefore(circle1, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
-PASS circle1.transform.baseVal.insertItemBefore(null, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': The PassListItemType provided is invalid..
+PASS circle1.transform.baseVal.insertItemBefore(null, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 
 Set transform='rotate(90) scale(2 2) translate(10 10) skewX(45)' for circle1
 PASS circle1.setAttribute('transform', 'rotate(90) scale(2 2) translate(10 10) skewX(45)') is undefined.
@@ -68,7 +68,7 @@ PASS circle1.transform.baseVal.replaceItem(null) threw exception TypeError: Fail
 PASS circle1.transform.baseVal.replaceItem(30, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.replaceItem('aString', 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.replaceItem(circle1, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
-PASS circle1.transform.baseVal.replaceItem(null, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': The PassListItemType provided is invalid..
+PASS circle1.transform.baseVal.replaceItem(null, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.replaceItem(circle1.transform.baseVal.getItem(0), 0) is circle1.transform.baseVal.getItem(0)
 PASS circle1.transform.baseVal.numberOfItems is 4
 PASS dumpTransform(circle1.transform.baseVal.getItem(0)) is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
@@ -119,7 +119,7 @@ Test uncommon arguments for appendItem()
 PASS circle1.transform.baseVal.appendItem(30) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.appendItem('aString') threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 PASS circle1.transform.baseVal.appendItem(circle1) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
-PASS circle1.transform.baseVal.appendItem(null) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': The PassListItemType provided is invalid..
+PASS circle1.transform.baseVal.appendItem(null) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 
 Testing animVal clear throws
 PASS circle1.transform.animVal.clear() threw exception NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed..

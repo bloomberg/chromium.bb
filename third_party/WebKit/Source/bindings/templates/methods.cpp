@@ -89,7 +89,7 @@ if (UNLIKELY(info.Length() <= {{argument.index}})) {
 {% if method.is_strict_type_checking and argument.is_wrapper_type %}
 {# Type checking for wrapper interface types (if interface not implemented,
    throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
+if (info.Length() > {{argument.index}} && !{% if argument.is_nullable %}isUndefinedOrNull(info[{{argument.index}}]){% else %}info[{{argument.index}}]->IsUndefined(){% endif %} && !V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
     {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
                                (argument.index + 1, argument.idl_type)) | indent}}
     return;

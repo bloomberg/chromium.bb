@@ -123,6 +123,7 @@ interface TestObjectPython {
     // Nullable attributes
     attribute DOMString? nullableStringAttribute;
     attribute long? nullableLongAttribute;
+    attribute TestInterface? nullableTestInterfaceAttribute;
     // Enumerations
     attribute TestEnum testEnumAttribute;
     // Static attributes
@@ -409,6 +410,7 @@ interface TestObjectPython {
     [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
     [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsRuntimeEnabledVoidMethod();
     [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
+    [StrictTypeChecking] void strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArg(TestInterfaceEmpty? testInterfaceEmptyArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [Unforgeable] void unforgeableVoidMethod();

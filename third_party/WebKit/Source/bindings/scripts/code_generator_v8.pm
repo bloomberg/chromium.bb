@@ -2778,7 +2778,8 @@ END
                 my $argValue = "info[$paramIndex]";
                 my $argType = $parameter->type;
                 if (IsWrapperType($argType)) {
-                    $parameterCheckString .= "    if (info.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::hasInstance($argValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
+                    my $undefinedNullCheck = $parameter->isNullable ? "isUndefinedOrNull($argValue)" : "${argValue}->IsUndefined()";
+                    $parameterCheckString .= "    if (info.Length() > $paramIndex && !$undefinedNullCheck && !V8${argType}::hasInstance($argValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
                     if ($hasExceptionState) {
                         $parameterCheckString .= "        exceptionState.throwTypeError(\"parameter $humanFriendlyIndex is not of type \'$argType\'.\");\n";
                         $parameterCheckString .= "        exceptionState.throwIfNeeded();\n";
