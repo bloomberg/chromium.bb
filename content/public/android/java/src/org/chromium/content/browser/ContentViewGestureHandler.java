@@ -850,8 +850,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mZoomManager.processTouchEvent(me);
         me.recycle();
         mLongPressDetector.cancelLongPress();
-        if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
-        mCurrentDownEvent = null;
     }
 
     /**
@@ -935,6 +933,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
             mTouchMoveToNativeConfirmed = false;
             mTouchDownToNativeX = event.getX();
             mTouchDownToNativeY = event.getY();
+            if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
+            mCurrentDownEvent = null;
         }
 
         if (mTouchHandlingState == NO_TOUCH_HANDLER_FOR_GESTURE) return EVENT_NOT_FORWARDED;
