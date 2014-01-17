@@ -619,10 +619,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedContentSecurityPolicyReportOnly:
         return "The 'X-WebKit-CSP' headers are no longer supported. Please consider using the canonical 'Content-Security-Policy' header instead.";
 
-    // HTMLMediaElement
-    case PrefixedMediaGenerateKeyRequest:
-        return "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated. Please use 'MediaKeys.createSession()' instead.";
-
     // Quota
     case StorageInfo:
         return "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.";

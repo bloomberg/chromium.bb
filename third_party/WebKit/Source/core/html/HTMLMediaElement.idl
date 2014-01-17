@@ -90,10 +90,9 @@
     [MeasureAs=PrefixedAudioDecodedByteCount] readonly attribute unsigned long webkitAudioDecodedByteCount;
     [MeasureAs=PrefixedVideoDecodedByteCount] readonly attribute unsigned long webkitVideoDecodedByteCount;
 
-    // FIXME: add DeprecateAs=PrefixedMediaGenerateKeyRequest when MediaKeys is ready.
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
-    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
+    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaGenerateKeyRequest] void webkitGenerateKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, optional Uint8Array initData);
+    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaAddKey] void webkitAddKey([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, Uint8Array key, optional Uint8Array initData, [Default=NullString] optional DOMString sessionId);
+    [RuntimeEnabled=PrefixedEncryptedMedia, RaisesException, MeasureAs=PrefixedMediaCancelKeyRequest] void webkitCancelKeyRequest([TreatNullAs=NullString, TreatUndefinedAs=NullString] DOMString keySystem, [Default=NullString] optional DOMString sessionId);
 
     [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyadded;
     [RuntimeEnabled=PrefixedEncryptedMedia] attribute EventHandler onwebkitkeyerror;
