@@ -41,6 +41,7 @@ namespace download_extension_errors {
 // Errors that can be returned through chrome.runtime.lastError.message.
 extern const char kEmptyFile[];
 extern const char kFileAlreadyDeleted[];
+extern const char kFileNotRemoved[];
 extern const char kIconNotFound[];
 extern const char kInvalidDangerType[];
 extern const char kInvalidFilename[];
@@ -169,8 +170,7 @@ class DownloadsEraseFunction : public ChromeSyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsEraseFunction);
 };
 
-class DownloadsRemoveFileFunction : public ChromeAsyncExtensionFunction,
-                                    public content::DownloadItem::Observer {
+class DownloadsRemoveFileFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.removeFile", DOWNLOADS_REMOVEFILE)
   DownloadsRemoveFileFunction();
@@ -180,10 +180,7 @@ class DownloadsRemoveFileFunction : public ChromeAsyncExtensionFunction,
   virtual ~DownloadsRemoveFileFunction();
 
  private:
-  virtual void OnDownloadUpdated(content::DownloadItem* item) OVERRIDE;
-  virtual void OnDownloadDestroyed(content::DownloadItem* item) OVERRIDE;
-
-  content::DownloadItem* item_;
+  void Done(bool success);
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsRemoveFileFunction);
 };

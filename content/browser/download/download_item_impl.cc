@@ -66,6 +66,16 @@ bool DeleteDownloadedFile(const base::FilePath& path) {
   return base::DeleteFile(path, false);
 }
 
+void DeleteDownloadedFileDone(
+    base::WeakPtr<DownloadItemImpl> item,
+    const base::Callback<void(bool)>& callback,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (success && item.get())
+    item->OnDownloadedFileRemoved();
+  callback.Run(success);
+}
+
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that
 // takes ownership of the DownloadFile and hence implicitly destroys it
 // at the end of the function.
@@ -616,17 +626,29 @@ bool DownloadItemImpl::GetFileExternallyRemoved() const {
   return file_externally_removed_;
 }
 
-void DownloadItemImpl::DeleteFile() {
+void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if ((GetState() != DownloadItem::COMPLETE) ||
-      file_externally_removed_) {
+  if (GetState() != DownloadItem::COMPLETE) {
+    // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DeleteDownloadedFileDone,
+                   base::WeakPtr<DownloadItemImpl>(), callback, false));
+    return;
+  }
+  if (current_path_.empty() || file_externally_removed_) {
+    // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DeleteDownloadedFileDone,
+                   base::WeakPtr<DownloadItemImpl>(), callback, true));
     return;
   }
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DeleteDownloadedFile, current_path_),
-      base::Bind(&DownloadItemImpl::OnDownloadedFileRemoved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&DeleteDownloadedFileDone,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
   current_path_.clear();
 }
 
@@ -947,9 +969,7 @@ void DownloadItemImpl::NotifyRemoved() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
 }
 
-void DownloadItemImpl::OnDownloadedFileRemoved(bool success) {
-  if (!success)
-    return;
+void DownloadItemImpl::OnDownloadedFileRemoved() {
   file_externally_removed_ = true;
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
   UpdateObservers();

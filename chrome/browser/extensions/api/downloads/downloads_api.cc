@@ -89,6 +89,7 @@ namespace download_extension_errors {
 
 const char kEmptyFile[] = "Filename not yet determined";
 const char kFileAlreadyDeleted[] = "Download file already deleted";
+const char kFileNotRemoved[] = "Unable to remove file";
 const char kIconNotFound[] = "Icon not found";
 const char kInvalidDangerType[] = "Invalid danger type";
 const char kInvalidFilename[] = "Invalid filename";
@@ -1200,15 +1201,10 @@ bool DownloadsEraseFunction::RunImpl() {
   return true;
 }
 
-DownloadsRemoveFileFunction::DownloadsRemoveFileFunction()
-    : item_(NULL) {
+DownloadsRemoveFileFunction::DownloadsRemoveFileFunction() {
 }
 
 DownloadsRemoveFileFunction::~DownloadsRemoveFileFunction() {
-  if (item_) {
-    item_->RemoveObserver(this);
-    item_ = NULL;
-  }
 }
 
 bool DownloadsRemoveFileFunction::RunImpl() {
@@ -1223,29 +1219,18 @@ bool DownloadsRemoveFileFunction::RunImpl() {
       Fault(download_item->GetFileExternallyRemoved(),
             errors::kFileAlreadyDeleted, &error_))
     return false;
-  item_ = download_item;
-  item_->AddObserver(this);
   RecordApiFunctions(DOWNLOADS_FUNCTION_REMOVE_FILE);
-  download_item->DeleteFile();
+  download_item->DeleteFile(
+      base::Bind(&DownloadsRemoveFileFunction::Done, this));
   return true;
 }
 
-void DownloadsRemoveFileFunction::OnDownloadUpdated(DownloadItem* download) {
+void DownloadsRemoveFileFunction::Done(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(item_, download);
-  if (!item_->GetFileExternallyRemoved())
-    return;
-  item_->RemoveObserver(this);
-  item_ = NULL;
-  SendResponse(true);
-}
-
-void DownloadsRemoveFileFunction::OnDownloadDestroyed(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(item_, download);
-  item_->RemoveObserver(this);
-  item_ = NULL;
-  SendResponse(true);
+  if (!success) {
+    error_ = errors::kFileNotRemoved;
+  }
+  SendResponse(error_.empty());
 }
 
 DownloadsAcceptDangerFunction::DownloadsAcceptDangerFunction() {}

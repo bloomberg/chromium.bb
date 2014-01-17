@@ -129,7 +129,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual const std::string& GetHash() const OVERRIDE;
   virtual const std::string& GetHashState() const OVERRIDE;
   virtual bool GetFileExternallyRemoved() const OVERRIDE;
-  virtual void DeleteFile() OVERRIDE;
+  virtual void DeleteFile(const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual bool IsDangerous() const OVERRIDE;
   virtual DownloadDangerType GetDangerType() const OVERRIDE;
   virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;
@@ -184,7 +184,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // Notify observers that this item is being removed by the user.
   virtual void NotifyRemoved();
 
-  virtual void OnDownloadedFileRemoved(bool success);
+  virtual void OnDownloadedFileRemoved();
 
   // Provide a weak pointer reference to a DownloadDestinationObserver
   // for use by download destinations.

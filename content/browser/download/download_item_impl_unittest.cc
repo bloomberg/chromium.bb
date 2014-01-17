@@ -381,16 +381,8 @@ TEST_F(DownloadItemTest, NotificationAfterDownloadedFileRemoved) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockObserver observer(item);
 
-  item->OnDownloadedFileRemoved(true);
+  item->OnDownloadedFileRemoved();
   ASSERT_TRUE(observer.CheckUpdated());
-}
-
-TEST_F(DownloadItemTest, NoNotificationAfterDownloadedFileNotRemoved) {
-  DownloadItemImpl* item = CreateDownloadItem();
-  MockObserver observer(item);
-
-  item->OnDownloadedFileRemoved(false);
-  ASSERT_FALSE(observer.CheckUpdated());
 }
 
 TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
@@ -871,7 +863,7 @@ TEST_F(DownloadItemTest, FileRemoved) {
   DownloadItemImpl* item = CreateDownloadItem();
 
   EXPECT_FALSE(item->GetFileExternallyRemoved());
-  item->OnDownloadedFileRemoved(true);
+  item->OnDownloadedFileRemoved();
   EXPECT_TRUE(item->GetFileExternallyRemoved());
 }
 
