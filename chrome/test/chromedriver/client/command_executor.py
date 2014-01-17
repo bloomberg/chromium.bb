@@ -133,6 +133,8 @@ class Command(object):
   TOUCH_FLICK = (_Method.POST, '/session/:sessionId/touch/flick')
   GET_LOG = (_Method.POST, '/session/:sessionId/log')
   GET_AVAILABLE_LOG_TYPES = (_Method.GET, '/session/:sessionId/log/types')
+  IS_AUTO_REPORTING = (_Method.GET, '/session/:sessionId/autoreport')
+  SET_AUTO_REPORTING = (_Method.POST, '/session/:sessionId/autoreport')
   GET_SESSION_LOGS = (_Method.POST, '/logs')
   STATUS = (_Method.GET, '/status')
 

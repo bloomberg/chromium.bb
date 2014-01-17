@@ -49,6 +49,7 @@ struct Session {
                         const std::string& chromedriver_frame_id);
   std::string GetCurrentFrameId() const;
   std::vector<WebDriverLog*> GetAllLogs() const;
+  std::string GetFirstBrowserError() const;
 
   const std::string id;
   bool quit;
@@ -72,6 +73,7 @@ struct Session {
   scoped_ptr<WebDriverLog> driver_log;
   base::ScopedTempDir temp_dir;
   scoped_ptr<base::DictionaryValue> capabilities;
+  bool auto_reporting_enabled;
 };
 
 Session* GetThreadLocalSession();

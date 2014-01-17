@@ -39,7 +39,8 @@ Session::Session(const std::string& id)
       force_devtools_screenshot(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
-      page_load_timeout(kDefaultPageLoadTimeout) {}
+      page_load_timeout(kDefaultPageLoadTimeout),
+      auto_reporting_enabled(false) {}
 
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
     : id(id),
@@ -49,7 +50,8 @@ Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
       chrome(chrome.Pass()),
       sticky_modifiers(0),
       mouse_position(0, 0),
-      page_load_timeout(kDefaultPageLoadTimeout) {}
+      page_load_timeout(kDefaultPageLoadTimeout),
+      auto_reporting_enabled(false) {}
 
 Session::~Session() {}
 
@@ -91,6 +93,19 @@ std::vector<WebDriverLog*> Session::GetAllLogs() const {
   if (driver_log)
     logs.push_back(driver_log.get());
   return logs;
+}
+
+std::string Session::GetFirstBrowserError() const {
+  for (ScopedVector<WebDriverLog>::const_iterator it = devtools_logs.begin();
+       it != devtools_logs.end();
+       ++it) {
+    if ((*it)->type() == WebDriverLog::kBrowserType) {
+      std::string message = (*it)->GetFirstErrorMessage();
+      if (!message.empty())
+        return message;
+    }
+  }
+  return std::string();
 }
 
 Session* GetThreadLocalSession() {

@@ -632,6 +632,16 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(logs[0]['source'], 'network')
     self.assertEquals(logs[1]['source'], 'javascript')
 
+  def testAutoReporting(self):
+    self.assertFalse(self._driver.IsAutoReporting())
+    self._driver.SetAutoReporting(True)
+    self.assertTrue(self._driver.IsAutoReporting())
+    url = self.GetHttpUrlForFile('/chromedriver/console_log.html')
+    self.assertRaisesRegexp(chromedriver.UnknownError,
+                            '.*404.*',
+                            self._driver.Load,
+                            url)
+
   def testContextMenuEventFired(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/context_menu.html'))
     self._driver.MouseMoveTo(self._driver.FindElement('tagName', 'div'))

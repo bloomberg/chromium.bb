@@ -311,3 +311,9 @@ class ChromeDriver(object):
 
   def GetAvailableLogTypes(self):
     return self.ExecuteCommand(Command.GET_AVAILABLE_LOG_TYPES)
+
+  def IsAutoReporting(self):
+    return self.ExecuteCommand(Command.IS_AUTO_REPORTING)
+
+  def SetAutoReporting(self, enabled):
+    self.ExecuteCommand(Command.SET_AUTO_REPORTING, {'enabled': enabled})

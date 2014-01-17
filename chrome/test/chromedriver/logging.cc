@@ -150,6 +150,26 @@ scoped_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
   return ret.Pass();
 }
 
+std::string WebDriverLog::GetFirstErrorMessage() const {
+  for (base::ListValue::iterator it = entries_->begin();
+       it != entries_->end();
+       ++it) {
+    base::DictionaryValue* log_entry = NULL;
+    (*it)->GetAsDictionary(&log_entry);
+    if (log_entry != NULL) {
+      std::string level;
+      if (log_entry->GetString("level", &level)) {
+        if (level == kLevelToName[Log::kError]) {
+          std::string message;
+          if (log_entry->GetString("message", &message))
+            return message;
+        }
+      }
+    }
+  }
+  return std::string();
+}
+
 void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
                                        Log::Level level,
                                        const std::string& source,

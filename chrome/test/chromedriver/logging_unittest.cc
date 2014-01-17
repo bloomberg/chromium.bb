@@ -135,3 +135,19 @@ TEST(Logging, DefaultLogs) {
   ASSERT_EQ(1u, listeners.size());
   ASSERT_EQ("browser", logs[0]->type());
 }
+
+TEST(Logging, GetFirstErrorMessage) {
+  WebDriverLog log(WebDriverLog::kBrowserType, Log::kAll);
+  std::string entry;
+
+  entry = log.GetFirstErrorMessage();
+  ASSERT_TRUE(entry.empty());
+
+  log.AddEntry(Log::kInfo, "info message");
+  log.AddEntry(Log::kError, "first error message");
+  log.AddEntry(Log::kDebug, "debug message");
+  log.AddEntry(Log::kError, "second error message");
+
+  entry = log.GetFirstErrorMessage();
+  ASSERT_EQ("first error message", entry);
+}

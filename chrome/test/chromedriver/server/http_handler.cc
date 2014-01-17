@@ -523,6 +523,15 @@ HttpHandler::HttpHandler(
       CommandMapping(kGet,
                      "session/:sessionId/is_loading",
                      WrapToCommand("IsLoading", base::Bind(&ExecuteIsLoading))),
+      CommandMapping(kGet,
+                     "session/:sessionId/autoreport",
+                     WrapToCommand("IsAutoReporting",
+                                   base::Bind(&ExecuteIsAutoReporting))),
+      CommandMapping(kPost,
+                     "session/:sessionId/autoreport",
+                     WrapToCommand(
+                         "SetAutoReporting",
+                         base::Bind(&ExecuteSetAutoReporting))),
   };
   command_map_.reset(
       new CommandMap(commands, commands + arraysize(commands)));

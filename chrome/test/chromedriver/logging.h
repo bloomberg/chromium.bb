@@ -39,6 +39,10 @@ class WebDriverLog : public Log {
   // creates and owns a new empty ListValue for further accumulation.
   scoped_ptr<base::ListValue> GetAndClearEntries();
 
+  // Finds the first error message in the log and returns it. If none exist,
+  // returns an empty string. Does not clear entries.
+  std::string GetFirstErrorMessage() const;
+
   // Translates a Log entry level into a WebDriver level and stores the entry.
   virtual void AddEntryTimestamped(const base::Time& timestamp,
                                    Level level,

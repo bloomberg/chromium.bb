@@ -631,3 +631,22 @@ Status ExecuteUploadFile(
   value->reset(new base::StringValue(upload.value()));
   return Status(kOk);
 }
+
+Status ExecuteIsAutoReporting(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  value->reset(new base::FundamentalValue(session->auto_reporting_enabled));
+  return Status(kOk);
+}
+
+Status ExecuteSetAutoReporting(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  bool enabled;
+  if (!params.GetBoolean("enabled", &enabled))
+    return Status(kUnknownError, "missing parameter 'enabled'");
+  session->auto_reporting_enabled = enabled;
+  return Status(kOk);
+}

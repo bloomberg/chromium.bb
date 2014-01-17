@@ -194,6 +194,12 @@ void ExecuteSessionCommandOnSessionThread(
             << (result.length() ? " " + result : "");
   }
 
+  if (status.IsOk() && session->auto_reporting_enabled) {
+    std::string message = session->GetFirstBrowserError();
+    if (!message.empty())
+      status = Status(kUnknownError, message);
+  }
+
   cmd_task_runner->PostTask(
       FROM_HERE,
       base::Bind(callback_on_cmd, status, base::Passed(&value), session->id));
