@@ -32,8 +32,8 @@ static const char* const s_targetPropertyNames[] = {
   "Transform",
   "Opacity",
   "Filter",
-  "BackgroundColor",
-  "ScrollOffset"
+  "ScrollOffset",
+  "BackgroundColor"
 };
 
 COMPILE_ASSERT(static_cast<int>(cc::Animation::TargetPropertyEnumSize) ==

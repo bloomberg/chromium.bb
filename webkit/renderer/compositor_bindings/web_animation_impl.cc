@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebAnimationCurve.h"
 #include "webkit/renderer/compositor_bindings/web_filter_animation_curve_impl.h"
 #include "webkit/renderer/compositor_bindings/web_float_animation_curve_impl.h"
+#include "webkit/renderer/compositor_bindings/web_scroll_offset_animation_curve_impl.h"
 #include "webkit/renderer/compositor_bindings/web_transform_animation_curve_impl.h"
 
 using cc::Animation;
@@ -51,6 +52,14 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& web_curve,
       curve = filter_curve_impl->CloneToAnimationCurve();
       break;
     }
+#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
+    case WebAnimationCurve::AnimationCurveTypeScrollOffset: {
+      const WebScrollOffsetAnimationCurveImpl* scroll_curve_impl =
+          static_cast<const WebScrollOffsetAnimationCurveImpl*>(&web_curve);
+      curve = scroll_curve_impl->CloneToAnimationCurve();
+      break;
+    }
+#endif
   }
   animation_ = Animation::Create(
       curve.Pass(),
@@ -109,5 +118,9 @@ COMPILE_ASSERT_MATCHING_ENUMS(
     WebAnimation::TargetPropertyOpacity, Animation::Opacity);
 COMPILE_ASSERT_MATCHING_ENUMS(
     WebAnimation::TargetPropertyFilter, Animation::Filter);
+#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
+COMPILE_ASSERT_MATCHING_ENUMS(
+    WebAnimation::TargetPropertyScrollOffset, Animation::ScrollOffset);
+#endif
 
 }  // namespace webkit
