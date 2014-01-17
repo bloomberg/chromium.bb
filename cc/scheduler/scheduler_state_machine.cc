@@ -26,7 +26,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_swap_performed_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_update_visible_tiles_was_called_(-1),
-      last_frame_number_manage_tiles_called_(-1),
+      manage_tiles_funnel_(0),
       consecutive_failed_draws_(0),
       needs_redraw_(false),
       needs_manage_tiles_(false),
@@ -239,6 +239,7 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
       "last_frame_number_update_visible_tiles_was_called",
       last_frame_number_update_visible_tiles_was_called_);
 
+  minor_state->SetInteger("manage_tiles_funnel", manage_tiles_funnel_);
   minor_state->SetInteger("consecutive_failed_draws",
                           consecutive_failed_draws_);
   minor_state->SetBoolean("needs_redraw", needs_redraw_);
@@ -268,6 +269,14 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
   state->Set("minor_state", minor_state.release());
 
   return state.PassAs<base::Value>();
+}
+
+void SchedulerStateMachine::AdvanceCurrentFrameNumber() {
+  current_frame_number_++;
+
+  // "Drain" the ManageTiles funnel.
+  if (manage_tiles_funnel_ > 0)
+    manage_tiles_funnel_--;
 }
 
 bool SchedulerStateMachine::HasSentBeginMainFrameThisFrame() const {
@@ -507,9 +516,9 @@ bool SchedulerStateMachine::IsCommitStateWaiting() const {
 
 bool SchedulerStateMachine::ShouldManageTiles() const {
   // ManageTiles only really needs to be called immediately after commit
-  // and then periodically after that.  Limiting to once per frame prevents
-  // post-commit and post-draw ManageTiles on the same frame.
-  if (last_frame_number_manage_tiles_called_ == current_frame_number_)
+  // and then periodically after that. Use a funnel to make sure we average
+  // one ManageTiles per BeginImplFrame in the long run.
+  if (manage_tiles_funnel_ > 0)
     return false;
 
   // Limiting to once per-frame is not enough, since we only want to
@@ -885,7 +894,7 @@ bool SchedulerStateMachine::ProactiveBeginImplFrameWanted() const {
 }
 
 void SchedulerStateMachine::OnBeginImplFrame(const BeginFrameArgs& args) {
-  current_frame_number_++;
+  AdvanceCurrentFrameNumber();
   last_begin_impl_frame_args_ = args;
   DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE) << *AsValue();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING;
@@ -981,7 +990,7 @@ bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
 }
 
 void SchedulerStateMachine::DidEnterPollForAnticipatedDrawTriggers() {
-  current_frame_number_++;
+  AdvanceCurrentFrameNumber();
   inside_poll_for_anticipated_draw_triggers_ = true;
 }
 
@@ -1081,7 +1090,8 @@ void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {
 
 void SchedulerStateMachine::DidManageTiles() {
   needs_manage_tiles_ = false;
-  last_frame_number_manage_tiles_called_ = current_frame_number_;
+  // "Fill" the ManageTiles funnel.
+  manage_tiles_funnel_++;
 }
 
 void SchedulerStateMachine::DidLoseOutputSurface() {

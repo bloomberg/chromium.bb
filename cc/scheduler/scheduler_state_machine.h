@@ -254,6 +254,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldCommit() const;
   bool ShouldManageTiles() const;
 
+  void AdvanceCurrentFrameNumber();
   bool HasSentBeginMainFrameThisFrame() const;
   bool HasScheduledManageTilesThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
@@ -280,8 +281,12 @@ class CC_EXPORT SchedulerStateMachine {
   int last_frame_number_swap_performed_;
   int last_frame_number_begin_main_frame_sent_;
   int last_frame_number_update_visible_tiles_was_called_;
-  int last_frame_number_manage_tiles_called_;
 
+  // manage_tiles_funnel_ is "filled" each time ManageTiles is called
+  // and "drained" on each BeginImplFrame. If the funnel gets too full,
+  // we start throttling ACTION_MANAGE_TILES such that we average one
+  // ManageTile per BeginImplFrame.
+  int manage_tiles_funnel_;
   int consecutive_failed_draws_;
   bool needs_redraw_;
   bool needs_manage_tiles_;

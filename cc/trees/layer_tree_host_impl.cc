@@ -424,6 +424,8 @@ void LayerTreeHostImpl::ManageTiles() {
   SendManagedMemoryStats(memory_required_bytes,
                          memory_nice_to_have_bytes,
                          memory_used_bytes);
+
+  client_->DidManageTiles();
 }
 
 void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
