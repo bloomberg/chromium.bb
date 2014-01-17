@@ -399,9 +399,9 @@ double WebMediaPlayerAndroid::duration() const {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return std::numeric_limits<double>::quiet_NaN();
 
-  // TODO(wolenetz): Correctly handle durations that MediaSourcePlayer
-  // considers unseekable, including kInfiniteDuration().
-  // See http://crbug.com/248396
+  if (duration_ == media::kInfiniteDuration())
+    return std::numeric_limits<double>::infinity();
+
   return duration_.InSecondsF();
 }
 
@@ -440,8 +440,10 @@ double WebMediaPlayerAndroid::maxTimeSeekable() const {
   if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
     return 0.0;
 
-  // TODO(hclam): If this stream is not seekable this should return 0.
-  return duration();
+  if (duration() == std::numeric_limits<double>::infinity())
+    return 0.0;
+
+  return std::min(std::numeric_limits<int32>::max() / 1000.0, duration());
 }
 
 bool WebMediaPlayerAndroid::didLoadingProgress() const {
@@ -557,9 +559,6 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
 
   // Update duration, if necessary, prior to ready state updates that may
   // cause duration() query.
-  // TODO(wolenetz): Correctly handle durations that MediaSourcePlayer
-  // considers unseekable, including kInfiniteDuration().
-  // See http://crbug.com/248396
   if (!ignore_metadata_duration_change_ && duration_ != duration) {
     duration_ = duration;
 
@@ -763,9 +762,6 @@ void WebMediaPlayerAndroid::OnDurationChanged(const base::TimeDelta& duration) {
 
   // Cache the new duration value and trust it over any subsequent duration
   // values received in OnMediaMetadataChanged().
-  // TODO(wolenetz): Correctly handle durations that MediaSourcePlayer
-  // considers unseekable, including kInfiniteDuration().
-  // See http://crbug.com/248396
   duration_ = duration;
   ignore_metadata_duration_change_ = true;
 
