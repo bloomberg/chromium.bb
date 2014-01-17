@@ -1742,11 +1742,13 @@ rpi_renderer_create(struct weston_compositor *compositor,
 	renderer->egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (renderer->egl_display == EGL_NO_DISPLAY) {
 		weston_log("failed to create EGL display\n");
+		free(renderer);
 		return -1;
 	}
 
 	if (!eglInitialize(renderer->egl_display, &major, &minor)) {
 		weston_log("failed to initialize EGL display\n");
+		free(renderer);
 		return -1;
 	}
 
@@ -1761,6 +1763,7 @@ rpi_renderer_create(struct weston_compositor *compositor,
 						   EGL_EXTENSIONS);
 	if (!extensions) {
 		weston_log("Retrieving EGL extension string failed.\n");
+		free(renderer);
 		return -1;
 	}
 
