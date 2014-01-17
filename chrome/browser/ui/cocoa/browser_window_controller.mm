@@ -1586,18 +1586,18 @@ enum {
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
 
-  [devToolsController_ updateDevToolsForWebContents:contents
-                                        withProfile:browser_->profile()];
-
   // Update the bookmark bar.
-  // Must do it after devtools updates, otherwise bookmark bar might
-  // call resizeView -> layoutSubviews and cause unnecessary relayout.
   // TODO(viettrungluu): perhaps update to not terminate running animations (if
   // applicable)?
   windowShim_->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
   [infoBarContainerController_ changeWebContents:contents];
+
+  // Must do this after bookmark and infobar updates to avoid
+  // unnecesary resize in contents.
+  [devToolsController_ updateDevToolsForWebContents:contents
+                                        withProfile:browser_->profile()];
 
   [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
