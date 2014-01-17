@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy_impl.h"
 #include "base/message_loop/message_loop_test.h"
+#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
@@ -445,7 +446,7 @@ void PostNTasksThenQuit(int posts_remaining) {
 
 #if defined(OS_WIN)
 
-class DispatcherImpl : public MessageLoopForUI::Dispatcher {
+class DispatcherImpl : public MessagePumpDispatcher {
  public:
   DispatcherImpl() : dispatch_count_(0) {}
 

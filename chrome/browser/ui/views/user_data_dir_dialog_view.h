@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -19,7 +19,7 @@ class MessageBoxView;
 // A dialog box that tells the user that we can't write to the specified user
 // data directory. Provides the user a chance to pick a different directory.
 class UserDataDirDialogView : public views::DialogDelegate,
-                              public base::MessageLoopForUI::Dispatcher,
+                              public base::MessagePumpDispatcher,
                               public ui::SelectFileDialog::Listener {
  public:
   explicit UserDataDirDialogView(const base::FilePath& user_data_dir);
@@ -40,7 +40,7 @@ class UserDataDirDialogView : public views::DialogDelegate,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // Overridden from MessageLoopForUI::Dispatcher:
+  // Overridden from MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& msg) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:

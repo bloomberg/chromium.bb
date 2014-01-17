@@ -25,9 +25,8 @@
 #include "base/time/time.h"
 #include "base/tracking_info.h"
 
+// TODO(sky): these includes should not be necessary. Nuke them.
 #if defined(OS_WIN)
-// We need this to declare base::MessagePumpWin::Dispatcher, which we should
-// really just eliminate.
 #include "base/message_loop/message_pump_win.h"
 #elif defined(OS_IOS)
 #include "base/message_loop/message_pump_io_ios.h"
@@ -53,7 +52,6 @@
 namespace base {
 
 class HistogramBase;
-class MessagePumpDispatcher;
 class MessagePumpObserver;
 class RunLoop;
 class ThreadTaskRunnerHandle;
@@ -97,7 +95,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
  public:
 
 #if defined(USE_AURA)
-  typedef MessagePumpDispatcher Dispatcher;
   typedef MessagePumpObserver Observer;
 #elif defined(USE_GTK_MESSAGE_PUMP)
   typedef MessagePumpGdkObserver Observer;

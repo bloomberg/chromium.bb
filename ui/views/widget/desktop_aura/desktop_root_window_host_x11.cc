@@ -1225,7 +1225,7 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, MessageLoop::Dispatcher implementation:
+// DesktopWindowTreeHostX11, MessagePumpDispatcher implementation:
 
 bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;

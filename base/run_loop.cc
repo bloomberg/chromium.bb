@@ -6,6 +6,10 @@
 
 #include "base/bind.h"
 
+#if defined(USE_AURA)
+#include "base/message_loop/message_pump_dispatcher.h"
+#endif
+
 namespace base {
 
 RunLoop::RunLoop()
@@ -23,7 +27,7 @@ RunLoop::RunLoop()
 }
 
 #if defined(USE_AURA)
-RunLoop::RunLoop(MessageLoop::Dispatcher* dispatcher)
+RunLoop::RunLoop(MessagePumpDispatcher* dispatcher)
     : loop_(MessageLoop::current()),
       previous_run_loop_(NULL),
       dispatcher_(dispatcher),

@@ -37,7 +37,7 @@ class FirstRunDialog : public views::DialogDelegateView,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // Overridden from MessageLoop::Dispatcher:
+  // Overridden from MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   Profile* profile_;

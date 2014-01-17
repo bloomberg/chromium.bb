@@ -13,7 +13,7 @@
 #undef RootWindow
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_tree_host.h"
@@ -34,7 +34,7 @@ class TouchEventCalibrate;
 }
 
 class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
-                                      public base::MessageLoop::Dispatcher,
+                                      public base::MessagePumpDispatcher,
                                       public ui::EventSource,
                                       public EnvObserver {
  public:
