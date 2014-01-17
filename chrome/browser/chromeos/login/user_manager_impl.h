@@ -353,6 +353,9 @@ class UserManagerImpl
   void DoUpdateAccountLocale(const std::string& user_id,
                              const std::string& resolved_locale);
 
+  // Update the number of users.
+  void UpdateNumberOfUsers();
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 

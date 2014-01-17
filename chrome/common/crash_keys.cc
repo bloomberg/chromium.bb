@@ -85,6 +85,10 @@ const char kGPURenderer[] = "gpu-gl-renderer";
 
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
+#if defined(OS_CHROMEOS)
+const char kNumberOfUsers[] = "num-users";
+#endif
+
 #if defined(OS_MACOSX)
 namespace mac {
 
@@ -134,6 +138,9 @@ size_t RegisterChromeCrashKeys() {
     // content/:
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
+#if defined(OS_CHROMEOS)
+    { kNumberOfUsers, kSmallSize },
+#endif
 #if defined(OS_MACOSX)
     { mac::kFirstNSException, kMediumSize },
     { mac::kFirstNSExceptionTrace, kMediumSize },

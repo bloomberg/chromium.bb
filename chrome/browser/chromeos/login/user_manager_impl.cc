@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -193,6 +195,7 @@ UserManagerImpl::UserManagerImpl()
       manager_creation_time_(base::TimeTicks::Now()),
       multi_profile_first_run_notification_(
           new MultiProfileFirstRunNotification) {
+  UpdateNumberOfUsers();
   // UserManager instance should be used only on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
@@ -1377,6 +1380,7 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
 }
 
 void UserManagerImpl::NotifyOnLogin() {
+  UpdateNumberOfUsers();
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NotifyActiveUserHashChanged(active_user_->username_hash());
   NotifyActiveUserChanged(active_user_);
@@ -1697,6 +1701,7 @@ void UserManagerImpl::NotifyActiveUserChanged(const User* active_user) {
 }
 
 void UserManagerImpl::NotifyUserAddedToSession(const User* added_user) {
+  UpdateNumberOfUsers();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
                     session_state_observer_list_,
@@ -1869,5 +1874,9 @@ void UserManagerImpl::DoUpdateAccountLocale(
     user->SetAccountLocale(resolved_locale);
 }
 
+void UserManagerImpl::UpdateNumberOfUsers() {
+  base::debug::SetCrashKeyValue(crash_keys::kNumberOfUsers,
+      base::StringPrintf("%" PRIuS, GetLoggedInUsers().size()));
+}
 
 }  // namespace chromeos
