@@ -285,21 +285,10 @@
       "whitelist": ["BC3A0F8D5AE0DE6454D74AB376EBCC59E10CDD5A"]
     }
   ],
-  "desktopCapture": [
-    {
-      "channel": "beta",
-      "extension_types": ["extension", "platform_app"]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["extension", "platform_app"],
-      "whitelist": [
-        "80B9DC58E5210749F052F5B4DB239C50CF72AEB6",
-        // Hangout Services component extension.
-        "DF84F03F9B960409CCDE0D895B9650EBE81C0A8E"
-      ]
-    }
-  ],
+  "desktopCapture": {
+    "channel": "stable",
+    "extension_types": ["extension", "platform_app"]
+  },
   "dns": [
     {
       "channel": "dev",
