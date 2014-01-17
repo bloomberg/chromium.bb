@@ -90,6 +90,10 @@ std::string GetOAuth2ClientID(OAuth2Client client);
 // in, e.g. URL-escaped if you use it in a URL.
 std::string GetOAuth2ClientSecret(OAuth2Client client);
 
+// Returns if the API key using in the current build is the one for official
+// Google Chrome.
+bool IsGoogleChromeAPIKeyUsed();
+
 }  // namespace google_apis
 
 #endif  // GOOGLE_APIS_GOOGLE_API_KEYS_H_

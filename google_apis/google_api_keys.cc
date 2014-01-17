@@ -269,4 +269,12 @@ std::string GetOAuth2ClientSecret(OAuth2Client client) {
   return g_api_key_cache.Get().GetClientSecret(client);
 }
 
+bool IsGoogleChromeAPIKeyUsed() {
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace google_apis
