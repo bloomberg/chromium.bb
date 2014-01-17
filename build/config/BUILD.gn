@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # When set, turns off the definition of _GLIBCXX_DEBUG when it would
+  # otherwise be set. Setting _GLIBCXX_DEBUG adds iterator debugging stuff
+  # that is usually helpful in debugging, but can cause problems in some
+  # contexts.
+  disable_glibcxx_debug = false
+}
+
 config("my_msvs") {
   defines = [
       "CHROMIUM_BUILD",
@@ -48,7 +56,7 @@ config("debug") {
     "WTF_USE_DYNAMIC_ANNOTATIONS=1",
   ]
 
-  if (is_linux && !is_android && cpu_arch == "x64") {
+  if (is_linux && !is_android && cpu_arch == "x64" && !disable_glibcxx_debug) {
     # Enable libstdc++ debugging facilities to help catch problems early, see
     # http://crbug.com/65151 .
     # TODO(phajdan.jr): Should we enable this for all of POSIX?
