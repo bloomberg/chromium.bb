@@ -18,7 +18,6 @@ and whether it should upload an SDK to file storage (GSTORE)
 # pylint: disable=W0621
 
 # std python includes
-import copy
 import datetime
 import glob
 import optparse
@@ -529,7 +528,7 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
 
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
                   out_dir, force_arm_gcc=True):
-  gyp_env = copy.copy(os.environ)
+  gyp_env = dict(os.environ)
   gyp_env['GYP_GENERATORS'] = 'ninja'
   gyp_defines = []
   if options.mac_sdk:
@@ -537,16 +536,25 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
   if arch:
     gyp_defines.append('target_arch=%s' % arch)
     if arch == 'arm':
-      gyp_defines += ['armv7=1', 'arm_thumb=0', 'arm_neon=1']
+      if getos.GetPlatform() == 'linux':
+        gyp_env['CC'] = 'arm-linux-gnueabihf-gcc'
+        gyp_env['CXX'] = 'arm-linux-gnueabihf-g++'
+        gyp_env['AR'] = 'arm-linux-gnueabihf-ar'
+        gyp_env['AS'] = 'arm-linux-gnueabihf-as'
+        gyp_env['CC_host'] = 'cc'
+        gyp_env['CXX_host'] = 'c++'
+      gyp_defines += ['armv7=1', 'arm_thumb=0', 'arm_neon=1',
+          'arm_float_abi=hard']
       if force_arm_gcc:
         gyp_defines.append('nacl_enable_arm_gcc=1')
   if getos.GetPlatform() == 'mac':
     gyp_defines.append('clang=1')
 
   gyp_env['GYP_DEFINES'] = ' '.join(gyp_defines)
-  for key in ['GYP_GENERATORS', 'GYP_DEFINES']:
-    value = gyp_env[key]
-    print '%s="%s"' % (key, value)
+  for key in ['GYP_GENERATORS', 'GYP_DEFINES', 'CC']:
+    value = gyp_env.get(key)
+    if value is not None:
+      print '%s="%s"' % (key, value)
   gyp_generator_flags = ['-G', 'output_dir=%s' % (out_dir,)]
   gyp_depth = '--depth=.'
   buildbot_common.Run(
