@@ -47,7 +47,8 @@ function test()
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function(){}, 3);
     manager.addFiles(fileSystemPath, files);
 
-    var scope = new WebInspector.SourcesSearchScope(InspectorTest.testWorkspace);
+    var scope = new WebInspector.SourcesSearchScope();
+    scope._workspace = InspectorTest.testWorkspace;
 
     function runSearchAndDumpResults(searchConfig, callback)
     {
