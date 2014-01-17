@@ -304,5 +304,16 @@ TEST_F(TiledLayerImplTest, GPUMemoryUsage) {
   EXPECT_EQ(layer->GPUMemoryUsageInBytes(), 0u);
 }
 
+TEST_F(TiledLayerImplTest, EmptyMask) {
+  gfx::Size tile_size(20, 20);
+  gfx::Size layer_size(0, 0);
+  scoped_ptr<TiledLayerImpl> layer =
+      CreateLayer(tile_size, layer_size, LayerTilingData::NO_BORDER_TEXELS);
+
+  EXPECT_EQ(0u, layer->ContentsResourceId());
+  EXPECT_EQ(0, layer->TilingForTesting()->num_tiles_x());
+  EXPECT_EQ(0, layer->TilingForTesting()->num_tiles_y());
+}
+
 }  // namespace
 }  // namespace cc
