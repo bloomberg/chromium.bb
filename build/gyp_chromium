@@ -164,7 +164,6 @@ def GetArgsStringForGN(supplemental_files):
   #   host_os=linux  Probably can skip, GN knows the host OS.
   #   order_text_section=<path>   http://crbug.com/330299
   #   chromium_win_pch=0          http://crbug.com/297678
-  #   clang_use_chrome_plugins=1  http://crbug.com/330298
   #   chromium_ios_signing=0      http://crbug.com/330302
   #   linux_use_tcmalloc=0        http://crbug.com/330303
   #   release_extra_flags=...     http://crbug.com/330305
@@ -177,6 +176,7 @@ def GetArgsStringForGN(supplemental_files):
       ('buildtype', 'Official', 'is_official_build=true'),
       ('component', 'shared_library', 'is_component_build=true'),
       ('clang', '1', 'is_clang=true'),
+      ('clang_use_chrome_plugins', '0', 'clang_use_chrome_plugins=false'),
       ('disable_glibcxx_debug', '1', 'disable_glibcxx_debug=true'),
       ('target_arch', 'ia32', 'cpu_arch="x86"'),
       ('target_arch', 'x64', 'cpu_arch="x64" force_win64=true'),
