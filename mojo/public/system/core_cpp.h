@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_SYSTEM_CORE_CPP_H_
 
 #include <assert.h>
+#include <stddef.h>
 
 #include <limits>
 
@@ -199,6 +200,8 @@ inline void CreateMessagePipe(ScopedMessagePipeHandle* message_pipe0,
   message_pipe1->reset(h1);
 }
 
+// A wrapper class that automatically creates a message pipe and owns both
+// handles.
 class MessagePipe {
  public:
   MessagePipe();
@@ -208,8 +211,12 @@ class MessagePipe {
   ScopedMessagePipeHandle handle1;
 };
 
-inline MessagePipe::MessagePipe() { CreateMessagePipe(&handle0, &handle1); }
-inline MessagePipe::~MessagePipe() {}
+inline MessagePipe::MessagePipe() {
+  CreateMessagePipe(&handle0, &handle1);
+}
+
+inline MessagePipe::~MessagePipe() {
+}
 
 // These "raw" versions fully expose the underlying API, but don't help with
 // ownership of handles (especially when writing messages).
@@ -268,9 +275,6 @@ MOJO_COMPILE_ASSERT(sizeof(ScopedDataPipeConsumerHandle) ==
                         sizeof(DataPipeConsumerHandle),
                     bad_size_for_cpp_ScopedDataPipeConsumerHandle);
 
-// TODO(vtl): Make more friendly wrappers (e.g., a create that doesn't "require"
-// |options|; maybe templatized functions that are optimized for a particular
-// "type" instead of some vague "element", or functions that take a "vector").
 inline MojoResult CreateDataPipe(
     const MojoCreateDataPipeOptions* options,
     ScopedDataPipeProducerHandle* data_pipe_producer,
@@ -327,6 +331,31 @@ inline MojoResult BeginReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,
 inline MojoResult EndReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,
                                  uint32_t num_bytes_read) {
   return MojoEndReadData(data_pipe_consumer.value(), num_bytes_read);
+}
+
+// A wrapper class that automatically creates a data pipe and owns both handles.
+// TODO(vtl): Make an even more friendly version? (Maybe templatized for a
+// particular type instead of some "element"? Maybe functions that take
+// vectors?)
+class DataPipe {
+ public:
+  DataPipe();
+  explicit DataPipe(const MojoCreateDataPipeOptions& options);
+  ~DataPipe();
+
+  ScopedDataPipeProducerHandle producer_handle;
+  ScopedDataPipeConsumerHandle consumer_handle;
+};
+
+inline DataPipe::DataPipe() {
+  CreateDataPipe(NULL, &producer_handle, &consumer_handle);
+}
+
+inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
+  CreateDataPipe(&options, &producer_handle, &consumer_handle);
+}
+
+inline DataPipe::~DataPipe() {
 }
 
 }  // namespace mojo
