@@ -1052,7 +1052,6 @@
         'browser/net/dns_probe_service_unittest.cc',
         'browser/net/evicted_domain_cookie_counter_unittest.cc',
         'browser/net/firefox_proxy_settings_unittest.cc',
-        'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
         'browser/net/http_pipelining_compatibility_client_unittest.cc',
         'browser/net/http_server_properties_manager_unittest.cc',
         'browser/net/net_error_tab_helper_unittest.cc',
@@ -2313,7 +2312,6 @@
           ],
           'sources!': [
             'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc',
-            'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
             'browser/extensions/api/log_private/syslog_parser_unittest.cc',
           ],
@@ -2542,7 +2540,6 @@
             'browser/download/download_shelf_unittest.cc',
             'browser/extensions/extension_message_bubble_controller_unittest.cc',
             'browser/storage_monitor/media_storage_util_unittest.cc',
-            'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/policy/policy_path_parser_unittest.cc',
             'browser/profiles/off_the_record_profile_impl_unittest.cc',
             'browser/profiles/profile_list_desktop_unittest.cc',
