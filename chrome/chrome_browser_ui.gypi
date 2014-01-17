@@ -2615,8 +2615,6 @@
         'browser/ui/window_sizer/window_sizer_aura.cc',
         'browser/ui/window_sizer/window_sizer_gtk.cc',
         'browser/ui/window_sizer/window_sizer_mac.mm',
-        'browser/ui/window_snapshot/window_snapshot.cc',
-        'browser/ui/window_snapshot/window_snapshot.h',
         'browser/ui/zoom/zoom_controller.cc',
         'browser/ui/zoom/zoom_controller.h',
         'browser/ui/zoom/zoom_observer.h',

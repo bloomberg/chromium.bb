@@ -11,13 +11,13 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/vector2d.h"
+#include "ui/snapshot/snapshot.h"
 
 // The delegate class to receive the notification from NSViewAnimation.
 @interface BatchBoundsAnimationDelegate : NSObject<NSAnimationDelegate> {
@@ -300,11 +300,10 @@ void PanelStackWindowCocoa::Minimize() {
     Panel* panel = *iter;
     gfx::Rect snapshot_bounds = gfx::Rect(panel->GetBounds().size());
     std::vector<unsigned char> png;
-    if (!chrome::GrabWindowSnapshotForUser(panel->GetNativeWindow(),
-                                           &png,
-                                           snapshot_bounds)) {
+    if (!ui::GrabWindowSnapshot(panel->GetNativeWindow(),
+                                &png,
+                                snapshot_bounds))
       break;
-    }
     gfx::Image snapshot_image = gfx::Image::CreateFrom1xPNGBytes(
         &(png[0]), png.size());
     canvas.DrawImageInt(snapshot_image.AsImageSkia(), 0, y);

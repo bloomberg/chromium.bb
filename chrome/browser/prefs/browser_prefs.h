@@ -18,6 +18,8 @@ namespace chrome {
 // Register all prefs that will be used via the local state PrefService.
 void RegisterLocalState(PrefRegistrySimple* registry);
 
+void RegisterScreenshotPrefs(PrefRegistrySimple* registry);
+
 // Register all prefs that will be used via a PrefService attached to a user
 // Profile.
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

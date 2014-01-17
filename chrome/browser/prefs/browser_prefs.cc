@@ -91,7 +91,6 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/metrics/caching_permuted_entropy_provider.h"
@@ -477,6 +476,10 @@ void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS)
   chromeos::PowerPrefs::RegisterUserProfilePrefs(registry);
 #endif
+}
+
+void RegisterScreenshotPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDisableScreenshots, false);
 }
 
 #if defined(OS_CHROMEOS)
