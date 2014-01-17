@@ -140,7 +140,9 @@ def generate_attribute(interface, attribute):
     return contents
 
 
+################################################################################
 # Getter
+################################################################################
 
 def generate_getter(interface, attribute, contents):
     idl_type = attribute.idl_type
@@ -177,6 +179,8 @@ def getter_expression(interface, attribute, contents):
     this_getter_base_name = getter_base_name(attribute, arguments)
     getter_name = v8_utilities.scoped_name(interface, attribute, this_getter_base_name)
 
+    if 'ImplementedBy' in attribute.extended_attributes:
+        arguments.append('imp')
     arguments.extend(v8_utilities.call_with_arguments(attribute))
     if attribute.is_nullable:
         arguments.append('isNull')
@@ -235,7 +239,9 @@ def is_keep_alive_for_gc(interface, attribute):
              idl_type.startswith('HTML'))))
 
 
+################################################################################
 # Setter
+################################################################################
 
 def setter_expression(interface, attribute, contents):
     arguments = v8_utilities.call_with_arguments(attribute, attribute.extended_attributes.get('SetterCallWith'))
@@ -243,6 +249,8 @@ def setter_expression(interface, attribute, contents):
     this_setter_base_name = setter_base_name(attribute, arguments)
     setter_name = v8_utilities.scoped_name(interface, attribute, this_setter_base_name)
 
+    if 'ImplementedBy' in attribute.extended_attributes:
+        arguments.append('imp')
     idl_type = attribute.idl_type
     if idl_type == 'EventHandler':
         # FIXME: pass the isolate instead of the isolated world
@@ -291,7 +299,9 @@ def scoped_name(interface, attribute, base_name):
     return 'imp->%s' % base_name
 
 
+################################################################################
 # Attribute configuration
+################################################################################
 
 # [Replaceable]
 def setter_callback_name(interface, attribute):
@@ -335,7 +345,9 @@ def property_attributes(attribute):
     return property_attributes_list or ['v8::None']
 
 
+################################################################################
 # Constructors
+################################################################################
 
 def is_constructor_attribute(attribute):
     return attribute.idl_type.endswith('Constructor')

@@ -109,8 +109,8 @@ class InterfaceDependencyResolver:
     def compute_dependency_idl_files(self, target_interface_name):
         """Returns list of IDL file dependencies for a given main IDL file.
 
-        - Returns a list of IDL files on which a given IDL file depends,
-          possibly empty.
+        - Returns a list of full paths to IDL files on which a given IDL file
+          depends, possibly empty.
           Dependencies consist of partial interface files and files for other
           interfaces that the given interface implements.
         - Returns an empty list also if the given IDL file is an additional IDL
@@ -119,7 +119,7 @@ class InterfaceDependencyResolver:
           dependency, for which we don't want to generate bindings.
         """
         if target_interface_name in self.interfaces_info:
-            return self.interfaces_info[target_interface_name]['dependencies']
+            return self.interfaces_info[target_interface_name]['dependencies_full_paths']
 
         # additional_interfaces is a list of interfaces that should not be
         # included in DerivedSources*.cpp, and hence are not listed in the

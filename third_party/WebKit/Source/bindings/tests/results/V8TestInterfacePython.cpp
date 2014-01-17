@@ -36,6 +36,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8ReferencedType.h"
+#include "bindings/tests/idls/TestPartialInterfacePython.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
@@ -154,6 +155,34 @@ static void perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld(v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void longAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    v8SetReturnValueInt(info, TestPartialInterfacePython::longAttribute(imp));
+}
+
+static void longAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfacePythonImplementationV8Internal::longAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void longAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    ExceptionState exceptionState(ExceptionState::SetterContext, "longAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
+    TestPartialInterfacePython::setLongAttribute(imp, cppValue);
+}
+
+static void longAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestInterfacePythonImplementationV8Internal::longAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
@@ -199,6 +228,7 @@ void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfacePythonAttributes[] = {
     {"testInterfacePythonAttribute", TestInterfacePythonImplementationV8Internal::testInterfacePythonAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::testInterfacePythonAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"perWorldBindingsStringAttribute", TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallbackForMainWorld, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"longAttribute", TestInterfacePythonImplementationV8Internal::longAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::longAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfacePythonMethods[] = {

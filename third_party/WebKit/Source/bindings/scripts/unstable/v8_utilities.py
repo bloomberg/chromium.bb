@@ -45,7 +45,10 @@ import v8_types
 ACRONYMS = ['CSS', 'HTML', 'IME', 'JS', 'SVG', 'URL', 'WOFF', 'XML', 'XSLT']
 
 
-# Extended attributes
+################################################################################
+# Extended attribute parsing
+################################################################################
+
 def extended_attribute_value_contains(extended_attribute_value, value):
     return (extended_attribute_value and
             value in re.split('[|&]', extended_attribute_value))
@@ -62,7 +65,10 @@ def has_extended_attribute_value(definition_or_member, name, value):
             extended_attribute_value_contains(extended_attributes[name], value))
 
 
+################################################################################
 # String handling
+################################################################################
+
 def capitalize(name):
     """Capitalize first letter or initial acronym (used in setter names)."""
     for acronym in ACRONYMS:
@@ -89,7 +95,10 @@ def uncapitalize(name):
     return name[0].lower() + name[1:]
 
 
+################################################################################
 # C++
+################################################################################
+
 def enum_validation_expression(idl_type):
     if not v8_types.is_enum(idl_type):
         return None
@@ -100,12 +109,19 @@ def enum_validation_expression(idl_type):
 def scoped_name(interface, definition, base_name):
     if definition.is_static:
         return '%s::%s' % (interface.name, base_name)
+    implemented_by = definition.extended_attributes.get('ImplementedBy')
+    if implemented_by:
+        return '%s::%s' % (implemented_by, base_name)
     return 'imp->%s' % base_name
 
 
 def v8_class_name(interface):
     return v8_types.v8_type(interface.name)
 
+
+################################################################################
+# Specific extended attributes
+################################################################################
 
 # [ActivityLogging]
 def activity_logging_world_list(member, access_type=None):

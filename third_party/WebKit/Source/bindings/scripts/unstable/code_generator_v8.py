@@ -96,6 +96,7 @@ class CodeGeneratorV8:
 
         interface_info = interfaces_info[interface_name]
         self.include_for_cpp_class = interface_info['include_path']
+        self.includes_for_dependencies = interface_info.get('dependencies_include_paths', [])
 
         v8_types.set_callback_functions(definitions.callback_functions.keys())
         v8_types.set_enums((enum.name, enum.values)
@@ -133,6 +134,7 @@ class CodeGeneratorV8:
         template_contents = self.generate_contents(interface)
         template_contents['header_includes'].add(self.include_for_cpp_class)
         template_contents['header_includes'] = sorted(template_contents['header_includes'])
+        includes.update(self.includes_for_dependencies)
         template_contents['cpp_includes'] = sorted(includes)
 
         header_basename = v8_class_name(interface) + '.h'

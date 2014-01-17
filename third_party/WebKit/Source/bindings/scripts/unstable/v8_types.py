@@ -321,7 +321,6 @@ def set_implemented_as_interfaces(new_implemented_as_interfaces):
 # Includes
 ################################################################################
 
-
 def includes_for_cpp_class(class_name, relative_dir_posix):
     return set([posixpath.join('bindings', relative_dir_posix, class_name + '.h')])
 
@@ -459,7 +458,6 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 ################################################################################
 # C++ -> V8
 ################################################################################
-
 
 def preprocess_idl_type(idl_type):
     if is_enum(idl_type):

@@ -241,7 +241,9 @@ def generate_constant(constant):
     return constant_parameter
 
 
+################################################################################
 # Overloads
+################################################################################
 
 def generate_overloads(methods):
     generate_overloads_by_type(methods, is_static=False)  # Regular methods
@@ -356,7 +358,9 @@ def overload_check_argument(index, argument):
     return None
 
 
+################################################################################
 # Constructors
+################################################################################
 
 # [Constructor]
 def generate_constructor(interface, constructor):
