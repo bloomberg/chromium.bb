@@ -140,7 +140,7 @@ void CmdBufferImageTransportFactory::AcquireTexture(
   }
   context_->bindTexture(GL_TEXTURE_2D, texture_id);
   context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name);
-  context_->flush();
+  context_->shallowFlushCHROMIUM();
 }
 
 GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
