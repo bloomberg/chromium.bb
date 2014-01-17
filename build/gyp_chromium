@@ -203,6 +203,10 @@ def GetArgsStringForGN(supplemental_files):
     if v in vars_dict:
       gn_args += ' ' + v + '=' + EscapeStringForGN(vars_dict[v])
 
+  # gomadir is renamed goma_dir in the GN build.
+  if 'gomadir' in vars_dict:
+    gn_args += ' goma_dir="%s"' % vars_dict['gomadir']
+
   # These arguments get passed directly as integers (avoiding the quoting and
   # escaping of the string ones above).
   for v in ['arm_version']:
