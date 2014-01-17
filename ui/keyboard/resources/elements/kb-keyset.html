@@ -13,6 +13,9 @@
         -webkit-box-orient: vertical;
         display: -webkit-box;
       }
+      :host:not(.activeKeyset) {
+        display: none;
+      }
     </style>
     <content select="kb-row"></content>
     <content select="kb-altkey-container" id="altkeyContainer"
@@ -77,6 +80,26 @@
         var nodes = activeAltKeySet.childNodes;
         nodes[activeAltKeySet.offset].classList.add('active');
         altkeyContainer.hidden = false;
+      },
+
+      show: function() {
+        var old = $('keyboard').querySelector('.activeKeyset');
+        if (old && old != this)
+          old.classList.remove('activeKeyset');
+        this.classList.add('activeKeyset');
+        this.fire('stateChange', {
+          state: 'keysetChanged',
+          value: this.id
+        });
+      },
+
+      enteredView: function() {
+        if (this.isDefault) {
+          var self = this;
+          Platform.endOfMicrotask(function() {
+            self.show();
+          });
+        }
       }
     });
   </script>

@@ -53,6 +53,15 @@ function expandHTML(importedContent) {
 function flattenKeysets(content) {
   var importedContent = importHTML(content);
   expandHTML(importedContent);
+  var rows = importedContent.querySelectorAll('kb-row');
+  for (var i = 0 ; i < rows.length; i++) {
+    var allKeys = rows[i].children;
+    for (var j = 0; j< allKeys.length; j++) {
+      var weight = allKeys[j].getAttribute('weight');
+      if (weight)
+        allKeys[j].style.webkitBoxFlex = weight;
+    }
+  }
   return importedContent;
 }
 

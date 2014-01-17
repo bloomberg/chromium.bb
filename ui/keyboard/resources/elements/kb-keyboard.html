@@ -26,7 +26,7 @@
       -- allowing the shift and spacebar keys to be common across multiple
       -- keyboard layouts.
       -->
-    <content id="content" select="#{{layout}}-{{keyset}}"></content>
+    <content id="content"></content>
     <kb-keyboard-overlay id="overlay" hidden></kb-keyboard-overlay>
     <kb-key-codes id="keyCodeMetadata"></kb-key-codes>
   </template>
@@ -337,40 +337,23 @@
         return false;
       },
 
+      keysetChanged: function() {
+        var keyset = this.activeKeyset;
+        // Show the keyset if it has been initialized.
+        if (keyset)
+          keyset.show();
+      },
+
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
         this.swipeHandler = this.move.bind(this);
       },
 
       /**
-       * Registers a callback for state change events. Lazy initializes a
-       * mutation observer used to detect when the keyset selection is changed.
+       * Registers a callback for state change events.
        * @param{!Function} callback Callback function to register.
        */
       addKeysetChangedObserver: function(callback) {
-        if (!this.keysetChangedObserver) {
-          var target = this.$.content;
-          var self = this;
-          var observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(m) {
-              if (m.type == 'attributes' && m.attributeName == 'select') {
-                var value = m.target.getAttribute('select');
-                self.fire('stateChange', {
-                  state: 'keysetChanged',
-                  value: value
-                });
-              }
-            });
-          });
-
-          observer.observe(target, {
-            attributes: true,
-            childList: true,
-            subtree: true
-          });
-          this.keysetChangedObserver = observer;
-
-        }
         this.addEventListener('stateChange', callback);
       },
 
@@ -833,6 +816,9 @@
               });
             }
           }
+        // New keyset has already been loaded, can show immediately.
+        } else {
+          this.activeKeyset.show();
         }
       },
 
@@ -897,8 +883,12 @@
         var keyset =  this.activeKeyset;
         if (!keyset)
           return false;
-        var content = this.$.content.getDistributedNodes()[0];
-        return content == keyset;
+        var nodes = this.$.content.getDistributedNodes();
+        for (var i = 0; i < nodes.length; i++) {
+          if (nodes[i].id && nodes[i].id == keyset.id)
+            return true;
+        }
+        return false;
       },
 
       /**
