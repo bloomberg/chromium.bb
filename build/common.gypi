@@ -371,6 +371,7 @@
       # MemorySanitizer only works with clang, but msan=1 implies clang=1
       # See http://clang.llvm.org/docs/MemorySanitizer.html
       'msan%': 0,
+      'msan_blacklist%': '<(PRODUCT_DIR)/../../tools/msan/blacklist.txt',
 
       # Use the dynamic libraries instrumented by one of the sanitizers
       # instead of the standard system libraries.
@@ -934,6 +935,7 @@
     'asan_coverage%': '<(asan_coverage)',
     'lsan%': '<(lsan)',
     'msan%': '<(msan)',
+    'msan_blacklist%': '<(msan_blacklist)',
     'tsan%': '<(tsan)',
     'tsan_blacklist%': '<(tsan_blacklist)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
@@ -3512,6 +3514,7 @@
                   '-fsanitize=memory',
                   '-fsanitize-memory-track-origins',
                   '-fPIC',
+                  '-fsanitize-blacklist=<(msan_blacklist)',
                 ],
                 'ldflags': [
                   '-fsanitize=memory',

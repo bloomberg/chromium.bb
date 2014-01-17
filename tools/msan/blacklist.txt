@@ -1,0 +1,8 @@
+# The rules in this file are only applied at compile time.
+# Because the Chrome buildsystem does not automatically touch the files
+# mentioned here, changing this file requires clobbering all MSan bots.
+#
+# Please think twice before you add or remove these rules.
+
+# V8 is blacklisted until it can properly support MSan. http://crbug.com/330709
+src:*/v8/src/*
