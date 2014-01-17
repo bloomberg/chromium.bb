@@ -202,12 +202,14 @@ base_unittests.exe!base::ToolsSanityTest_SingleElementDeletedWithBraces_Test::Te
 UNINITIALIZED READ
 name=sanity test 14 (malloc/read uninit)
 base_unittests.exe!*ReadUninitializedValue
+...
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNINITIALIZED READ
 name=sanity test 15 (new/read uninit)
 base_unittests.exe!*ReadUninitializedValue
+...
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
