@@ -85,7 +85,7 @@
     unsigned short compareDocumentPosition(Node other);
 
     // Introduced in DOM4
-    [ImplementedAs=containsForBindings] boolean contains(Node other);
+    [ImplementedAs=containsIncludingShadowDOM] boolean contains(Node other);
 
     // IE extensions
     [PerWorldBindings] readonly attribute Element parentElement;
