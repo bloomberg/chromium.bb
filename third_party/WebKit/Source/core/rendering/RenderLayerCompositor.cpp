@@ -1135,10 +1135,13 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
     // an invalidation if we needed to.
     if (layer->shouldInvalidateNextBacking()) {
         // FIXME: these should invalidate only the rect that needs to be invalidated, i.e. the layer's rect in the squashingLayer's space.
-        if (layer->compositingState() == PaintsIntoGroupedBacking && squashingState.mostRecentMapping->squashingLayer())
+        if (layer->compositingState() == PaintsIntoGroupedBacking && squashingState.mostRecentMapping->squashingLayer()) {
             squashingState.mostRecentMapping->squashingLayer()->setNeedsDisplay();
-        else
-            layer->enclosingCompositingLayerForRepaint(ExcludeSelf)->compositedLayerMapping()->setContentsNeedDisplay();
+        } else {
+            RenderLayer* enclosingLayer = layer->enclosingCompositingLayerForRepaint(ExcludeSelf);
+            if (enclosingLayer->hasCompositedLayerMapping())
+                enclosingLayer->compositedLayerMapping()->setContentsNeedDisplay();
+        }
 
         layer->setShouldInvalidateNextBacking(false);
     }
