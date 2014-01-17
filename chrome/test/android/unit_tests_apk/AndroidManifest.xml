@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Copyright 2014 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
@@ -13,8 +13,8 @@ found in the LICENSE file.
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="19" />
 
     <application android:label="ChromeNativeTests"
-            android:name="org.chromium.base.BaseChromiumApplication">
-        <activity android:name=".ChromeNativeTestActivity"
+            android:name="org.chromium.chrome.unit_tests_apk.ChromeNativeTestApplication">
+        <activity android:name="org.chromium.native_test.ChromeNativeTestActivity"
                 android:label="ChromeNativeTest"
                 android:configChanges="orientation|keyboardHidden">
             <intent-filter>

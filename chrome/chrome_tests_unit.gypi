@@ -2801,15 +2801,28 @@
     ['OS == "android" and gtest_target_type == "shared_library"', {
       'targets': [
         {
+          'target_name': 'unit_tests_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': 'test/android/unit_tests_apk',
+          },
+          'dependencies': [
+            'chrome_java',
+          ],
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
           'target_name': 'unit_tests_apk',
           'type': 'none',
           'dependencies': [
             'chrome_java',
+            'unit_tests_java',
             'unit_tests',
           ],
           'variables': {
             'test_suite_name': 'unit_tests',
             'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)unit_tests<(SHARED_LIB_SUFFIX)',
+            'android_manifest_path': 'test/android/unit_tests_apk/AndroidManifest.xml',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },

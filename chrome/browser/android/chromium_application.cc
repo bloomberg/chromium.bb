@@ -33,5 +33,11 @@ void ChromiumApplication::ShowTermsOfServiceDialog() {
       base::android::GetApplicationContext());
 }
 
+bool ChromiumApplication::AreParentalControlsEnabled() {
+  return Java_ChromiumApplication_areParentalControlsEnabled(
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext());
+}
+
 }  // namespace android
 }  // namespace chrome

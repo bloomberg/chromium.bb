@@ -61,6 +61,10 @@ class IncognitoModePrefs {
   static bool CanOpenBrowser(Profile* profile);
 
  private:
+  // Returns whether parental controls have been enabled on the platform, which
+  // if enabled will overrule the Availability as configured in prefs.
+  static bool ArePlatformParentalControlsEnabled();
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(IncognitoModePrefs);
 };
 

@@ -28,6 +28,9 @@ class ChromiumApplication {
   // Shows a dialog with the terms of service.
   static void ShowTermsOfServiceDialog();
 
+  // Determines whether parental controls are enabled.
+  static bool AreParentalControlsEnabled();
+
  private:
   ChromiumApplication() {}
   ~ChromiumApplication() {}

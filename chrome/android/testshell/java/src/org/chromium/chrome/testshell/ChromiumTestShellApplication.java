@@ -82,4 +82,9 @@ public class ChromiumTestShellApplication extends ChromiumApplication {
     @Override
     protected void showTermsOfServiceDialog() {
     }
+
+    @Override
+    protected boolean areParentalControlsEnabled() {
+        return false;
+    }
 }
