@@ -24,7 +24,7 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 GIT_REVISIONS = {
     'binutils': '38dbda270a4248ab5b7facc012b9c8d8527f6fb2',
     'gcc': '145a627d95b98f54915d037dddbcbb0f7b283494',
-    'newlib': '9f95ad0b4875d153b9d138090e61ac4c24e9a87d',
+    'newlib': 'cc9ce45891a45ecfbc671f4a6f1b06ba60a55ad9',
     }
 
 TAR_FILES = {
@@ -616,13 +616,6 @@ def CommonTargetCflags(target):
   return options
 
 
-def NewlibTargetCflags(target):
-  options = CommonTargetCflags(target) + [
-      '-D_I386MACH_ALLOW_HW_INTERRUPTS',
-      ]
-  return ' '.join(options)
-
-
 def TargetCommands(host, target, command_list):
   # First we have to copy the host tools into a common directory.
   # We can't just have both directories in our PATH, because the
@@ -661,7 +654,7 @@ def TargetLibs(host, target):
       '--enable-newlib-io-c99-formats',
       '--enable-newlib-mb',
       'CFLAGS=-O2',
-      'CFLAGS_FOR_TARGET=' + NewlibTargetCflags(target),
+      'CFLAGS_FOR_TARGET=' + ' '.join(CommonTargetCflags(target)),
       'INSTALL_DATA=' + newlib_install_data,
       ]
 
