@@ -134,6 +134,8 @@ def generate_argument(interface, method, argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
     this_cpp_value = cpp_value(interface, method, index)
+    if idl_type == 'Node':
+        includes.update(['core/frame/UseCounter.h', 'V8Attr.h'])
     return {
         'cpp_type': v8_types.cpp_type(idl_type),
         'cpp_value': this_cpp_value,
