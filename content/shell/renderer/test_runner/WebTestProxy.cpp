@@ -723,12 +723,12 @@ void WebTestProxyBase::invalidateAll()
     m_paintRect = WebRect(0, 0, INT_MAX, INT_MAX);
 }
 
-void WebTestProxyBase::scheduleComposite()
+void WebTestProxyBase::ScheduleComposite()
 {
     invalidateAll();
 }
 
-void WebTestProxyBase::scheduleAnimation()
+void WebTestProxyBase::ScheduleAnimation()
 {
     if (!m_testInterfaces->testRunner()->testIsRunning())
         return;

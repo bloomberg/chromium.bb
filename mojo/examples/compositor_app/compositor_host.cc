@@ -102,7 +102,7 @@ void CompositorHost::Animate(double frame_begin_time) {
   child_transform.Translate(200, 200);
   child_transform.Rotate(child_rotation_degrees);
   child_layer_->SetTransform(child_transform);
-  tree_->SetNeedsAnimate();
+  tree_->SetNeedsUpdateLayers();
 }
 
 void CompositorHost::Layout() {}

@@ -98,8 +98,9 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
                                        bool use_anchor,
                                        float new_page_scale,
                                        double duration_sec);
-  virtual void setNeedsAnimate();
-  virtual bool commitRequested() const;
+  virtual void setNeedsAnimate(); // Renamed. Staged for removal.
+  virtual void setNeedsUpdateLayers();
+  virtual bool commitRequested() const; // Unused. Staged for removal.
   virtual void didStopFlinging();
   virtual bool compositeAndReadback(void *pixels, const blink::WebRect& rect);
   virtual void finishAllRendering();

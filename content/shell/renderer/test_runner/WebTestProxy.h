@@ -106,9 +106,6 @@ public:
 
     void setLogConsoleOutput(bool enabled);
 
-    // FIXME: Make this private again.
-    void scheduleComposite();
-
     void didOpenChooser();
     void didCloseChooser();
     bool isChooserShown();
@@ -136,7 +133,6 @@ protected:
 
     void didInvalidateRect(const blink::WebRect&);
     void didScrollRect(int, int, const blink::WebRect&);
-    void scheduleAnimation();
     // FIXME: Remove once we switch to use didForceResize.
     void setWindowRect(const blink::WebRect&);
     void show(blink::WebNavigationPolicy);
@@ -191,6 +187,9 @@ protected:
     blink::WebNavigationPolicy decidePolicyForNavigation(blink::WebFrame*, blink::WebDataSource::ExtraData*, const blink::WebURLRequest&, blink::WebNavigationType, blink::WebNavigationPolicy defaultPolicy, bool isRedirect);
     bool willCheckAndDispatchMessageEvent(blink::WebFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent);
     void resetInputMethod();
+
+    void ScheduleComposite();
+    void ScheduleAnimation();
 
 private:
     template<class, typename, typename> friend class WebFrameTestProxy;
@@ -254,14 +253,6 @@ public:
     virtual void didScrollRect(int dx, int dy, const blink::WebRect& clipRect)
     {
         WebTestProxyBase::didScrollRect(dx, dy, clipRect);
-    }
-    virtual void scheduleComposite()
-    {
-        WebTestProxyBase::scheduleComposite();
-    }
-    virtual void scheduleAnimation()
-    {
-        WebTestProxyBase::scheduleAnimation();
     }
     virtual void setWindowRect(const blink::WebRect& rect)
     {
@@ -528,6 +519,15 @@ public:
         WebTestProxyBase::postSpellCheckEvent(eventName);
     }
 
+    // Override Base implementation
+    virtual void ScheduleComposite()
+    {
+        WebTestProxyBase::ScheduleComposite();
+    }
+    virtual void ScheduleAnimation()
+    {
+        WebTestProxyBase::ScheduleAnimation();
+    }
 private:
     DISALLOW_COPY_AND_ASSIGN(WebTestProxy);
 };
