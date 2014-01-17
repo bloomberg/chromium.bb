@@ -54,7 +54,6 @@ public:
     const Font& font() const { return m_font; }
     bool isVisible() const { return m_visible; }
     bool isDisplayNone() const { return m_isDisplayNone; }
-    Length textIndent() const { return m_textIndent; }
     TextDirection textDirection() const { return m_textDirection; }
     bool hasTextDirectionOverride() const { return m_hasTextDirectionOverride; }
     BackgroundColorType backgroundColorType() const { return m_backgroundColorType; }

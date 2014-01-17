@@ -95,12 +95,6 @@ const AtomicString& HTMLSelectElement::formControlType() const
     return m_multiple ? selectMultiple : selectOne;
 }
 
-void HTMLSelectElement::deselectItems(HTMLOptionElement* excludeElement)
-{
-    deselectItemsWithoutValidation(excludeElement);
-    setNeedsValidityCheck();
-}
-
 void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeNow, bool allowMultipleSelection)
 {
     // User interaction such as mousedown events can cause list box select elements to send change events.

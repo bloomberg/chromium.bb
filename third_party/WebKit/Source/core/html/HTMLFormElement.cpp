@@ -88,11 +88,6 @@ HTMLFormElement::~HTMLFormElement()
         m_imageElements[i]->m_form = 0;
 }
 
-bool HTMLFormElement::formWouldHaveSecureSubmission(const String& url)
-{
-    return document().completeURL(url).protocolIs("https");
-}
-
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!m_wasDemoted)
@@ -643,11 +638,6 @@ bool HTMLFormElement::noValidate() const
 const AtomicString& HTMLFormElement::action() const
 {
     return getAttribute(actionAttr);
-}
-
-void HTMLFormElement::setAction(const AtomicString& value)
-{
-    setAttribute(actionAttr, value);
 }
 
 void HTMLFormElement::setEnctype(const AtomicString& value)

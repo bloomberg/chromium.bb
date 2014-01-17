@@ -78,14 +78,12 @@ public:
     void setDemoted(bool);
 
     void submitImplicitly(Event*, bool fromImplicitSubmissionTrigger);
-    bool formWouldHaveSecureSubmission(const String& url);
 
     String name() const;
 
     bool noValidate() const;
 
     const AtomicString& action() const;
-    void setAction(const AtomicString&);
 
     String method() const;
     void setMethod(const AtomicString&);

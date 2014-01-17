@@ -93,7 +93,6 @@ public:
     bool isPasswordField() const;
     bool isCheckbox() const;
     bool isRangeControl() const;
-    bool isColorControl() const;
 
     // FIXME: It's highly likely that any call site calling this function should instead
     // be using a different one. Many input elements behave like text fields, and in addition
@@ -105,7 +104,6 @@ public:
     bool isFileUpload() const;
     bool isImageButton() const;
     bool isNumberField() const;
-    bool isSubmitButton() const;
     bool isTelephoneField() const;
     bool isURLField() const;
     bool isDateField() const;

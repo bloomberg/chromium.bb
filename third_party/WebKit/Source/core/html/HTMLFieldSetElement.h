@@ -39,7 +39,6 @@ public:
     PassRefPtr<HTMLCollection> elements();
 
     const Vector<FormAssociatedElement*>& associatedElements() const;
-    unsigned length() const;
 
 protected:
     virtual void disabledAttributeChanged() OVERRIDE;

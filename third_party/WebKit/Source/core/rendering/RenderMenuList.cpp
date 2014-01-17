@@ -508,22 +508,6 @@ PopupMenuStyle RenderMenuList::menuStyle() const
         s->display() == NONE, s->textIndent(), style()->direction(), isOverride(style()->unicodeBidi()));
 }
 
-HostWindow* RenderMenuList::hostWindow() const
-{
-    return document().view()->hostWindow();
-}
-
-PassRefPtr<Scrollbar> RenderMenuList::createScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize)
-{
-    RefPtr<Scrollbar> widget;
-    bool hasCustomScrollbarStyle = style()->hasPseudoStyle(SCROLLBAR);
-    if (hasCustomScrollbarStyle)
-        widget = RenderScrollbar::createCustomScrollbar(scrollableArea, orientation, this->node());
-    else
-        widget = Scrollbar::create(scrollableArea, orientation, controlSize);
-    return widget.release();
-}
-
 LayoutUnit RenderMenuList::clientPaddingLeft() const
 {
     return paddingLeft() + m_innerBlock->paddingLeft();
@@ -585,11 +569,6 @@ bool RenderMenuList::itemIsSelected(unsigned listIndex) const
 void RenderMenuList::setTextFromItem(unsigned listIndex)
 {
     setTextFromOption(selectElement()->listToOptionIndex(listIndex));
-}
-
-FontSelector* RenderMenuList::fontSelector() const
-{
-    return document().styleEngine()->fontSelector();
 }
 
 }

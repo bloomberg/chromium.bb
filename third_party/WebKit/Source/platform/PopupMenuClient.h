@@ -25,16 +25,9 @@
 #include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
 #include "platform/PopupMenuStyle.h"
-#include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
-
-class Color;
-class FontSelector;
-class HostWindow;
-class Scrollbar;
-class ScrollableArea;
 
 class PopupMenuClient {
 public:
@@ -57,7 +50,6 @@ public:
     virtual bool itemIsSeparator(unsigned listIndex) const = 0;
     virtual bool itemIsLabel(unsigned listIndex) const = 0;
     virtual bool itemIsSelected(unsigned listIndex) const = 0;
-    virtual bool valueShouldChangeOnHotTrack() const = 0;
     virtual void setTextFromItem(unsigned listIndex) = 0;
 
     virtual void listBoxSelectItem(int /*listIndex*/, bool /*allowMultiplySelections*/, bool /*shift*/, bool /*fireOnChangeNow*/ = true) { ASSERT_NOT_REACHED(); }
@@ -66,11 +58,6 @@ public:
         ASSERT_NOT_REACHED();
         return false;
     }
-
-    virtual FontSelector* fontSelector() const = 0;
-    virtual HostWindow* hostWindow() const = 0;
-
-    virtual PassRefPtr<Scrollbar> createScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize) = 0;
 };
 
 }

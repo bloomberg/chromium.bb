@@ -92,13 +92,9 @@ private:
     virtual bool itemIsSeparator(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsLabel(unsigned listIndex) const OVERRIDE;
     virtual bool itemIsSelected(unsigned listIndex) const OVERRIDE;
-    virtual bool valueShouldChangeOnHotTrack() const OVERRIDE { return true; }
     virtual void setTextFromItem(unsigned listIndex) OVERRIDE;
     virtual void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) OVERRIDE;
     virtual bool multiple() const OVERRIDE;
-    virtual FontSelector* fontSelector() const OVERRIDE;
-    virtual HostWindow* hostWindow() const OVERRIDE;
-    virtual PassRefPtr<Scrollbar> createScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize) OVERRIDE;
 
     virtual bool hasLineIfEmpty() const OVERRIDE { return true; }
 

@@ -132,14 +132,4 @@ const Vector<FormAssociatedElement*>& HTMLFieldSetElement::associatedElements() 
     return m_associatedElements;
 }
 
-unsigned HTMLFieldSetElement::length() const
-{
-    refreshElementsIfNeeded();
-    unsigned len = 0;
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i)
-        if (m_associatedElements[i]->isEnumeratable())
-            ++len;
-    return len;
-}
-
 } // namespace
