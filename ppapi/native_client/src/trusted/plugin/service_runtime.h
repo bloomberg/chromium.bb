@@ -276,7 +276,9 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool InitCommunication(nacl::DescWrapper* shm, ErrorInfo* error_info);
+  bool LoadModule(nacl::DescWrapper* shm, ErrorInfo* error_info);
+  bool InitReverseService(ErrorInfo* error_info);
+  bool StartModule(ErrorInfo* error_info);
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;

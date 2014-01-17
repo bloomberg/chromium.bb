@@ -490,18 +490,29 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
   NaClXCondVarCtor(&cond_);
 }
 
-bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
-                                       ErrorInfo* error_info) {
-  NaClLog(4, "ServiceRuntime::InitCommunication"
+bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc,
+                                ErrorInfo* error_info) {
+  NaClLog(4, "ServiceRuntime::LoadModule"
           " (this=%p, subprocess=%p)\n",
           static_cast<void*>(this),
           static_cast<void*>(subprocess_.get()));
+  CHECK(nacl_desc);
   // Create the command channel to the sel_ldr and load the nexe from nacl_desc.
-  if (!subprocess_->SetupCommandAndLoad(&command_channel_, nacl_desc)) {
+  if (!subprocess_->SetupCommand(&command_channel_)) {
     error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
                           "ServiceRuntime: command channel creation failed");
     return false;
   }
+
+  if (!subprocess_->LoadModule(&command_channel_, nacl_desc)) {
+    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                          "ServiceRuntime: load module failed");
+    return false;
+  }
+  return true;
+}
+
+bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
   // Hook up the reverse service channel.  We are the IMC client, but
   // provide SRPC service.
   NaClDesc* out_conn_cap;
@@ -527,19 +538,22 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
-  NaClLog(4, "ServiceRuntime::InitCommunication: starting reverse service\n");
+  NaClLog(4, "ServiceRuntime::InitReverseService: starting reverse service\n");
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
     error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
                           "ServiceRuntime: starting reverse services failed");
     return false;
   }
+  return true;
+}
 
+bool ServiceRuntime::StartModule(ErrorInfo* error_info) {
   // start the module.  otherwise we cannot connect for multimedia
   // subsystem since that is handled by user-level code (not secure!)
   // in libsrpc.
   int load_status = -1;
-  rpc_result =
+  NaClSrpcResultCodes rpc_result =
       NaClSrpcInvokeBySignature(&command_channel_,
                                 "start_module::i",
                                 &load_status);
@@ -549,7 +563,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
                           "ServiceRuntime: could not start nacl module");
     return false;
   }
-  NaClLog(4, "ServiceRuntime::InitCommunication (load_status=%d)\n",
+  NaClLog(4, "ServiceRuntime::StartModule (load_status=%d)\n",
           load_status);
   if (main_service_runtime_) {
     plugin_->ReportSelLdrLoadStatus(load_status);
@@ -617,7 +631,10 @@ bool ServiceRuntime::LoadNexeAndStart(nacl::DescWrapper* nacl_desc,
                                       const pp::CompletionCallback& crash_cb) {
   NaClLog(4, "ServiceRuntime::LoadNexeAndStart (nacl_desc=%p)\n",
           reinterpret_cast<void*>(nacl_desc));
-  if (!InitCommunication(nacl_desc, error_info)) {
+  bool ok = LoadModule(nacl_desc, error_info) &&
+            InitReverseService(error_info) &&
+            StartModule(error_info);
+  if (!ok) {
     // On a load failure the service runtime does not crash itself to
     // avoid a race where the no-more-senders error on the reverse
     // channel esrvice thread might cause the crash-detection logic to
