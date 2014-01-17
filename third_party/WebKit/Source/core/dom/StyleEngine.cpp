@@ -71,7 +71,6 @@ StyleEngine::StyleEngine(Document& document)
     , m_isMaster(HTMLImport::isMaster(&document))
     , m_pendingStylesheets(0)
     , m_injectedStyleSheetCacheValid(false)
-    , m_needsUpdateActiveStylesheetsOnStyleRecalc(false)
     , m_documentStyleSheetCollection(document)
     , m_documentScopeDirty(true)
     , m_usesSiblingRules(false)
@@ -371,15 +370,8 @@ void StyleEngine::collectDocumentActiveStyleSheets(StyleSheetCollectionBase& col
 bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 {
     ASSERT(isMaster());
+    ASSERT(!m_document.inStyleRecalc());
 
-    if (m_document.inStyleRecalc()) {
-        // SVG <use> element may manage to invalidate style selector in the middle of a style recalc.
-        // https://bugs.webkit.org/show_bug.cgi?id=54344
-        // FIXME: This should be fixed in SVG and the call site replaced by ASSERT(!m_inStyleRecalc).
-        m_needsUpdateActiveStylesheetsOnStyleRecalc = true;
-        return false;
-
-    }
     if (!m_document.isActive())
         return false;
 
@@ -404,7 +396,7 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
             for (HashSet<TreeScope*>::iterator it = treeScopesRemoved.begin(); it != treeScopesRemoved.end(); ++it)
                 m_activeTreeScopes.remove(*it);
     }
-    m_needsUpdateActiveStylesheetsOnStyleRecalc = false;
+
     InspectorInstrumentation::activeStyleSheetsUpdated(&m_document);
     m_usesRemUnits = m_documentStyleSheetCollection.usesRemUnits();
 

@@ -167,6 +167,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGStyleElement.h"
+#include "core/svg/SVGUseElement.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParser.h"
@@ -1523,7 +1524,7 @@ void Document::scheduleStyleRecalc()
     if (m_styleRecalcTimer.isActive())
         return;
 
-    ASSERT(needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc());
+    ASSERT(needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty());
 
     m_styleRecalcTimer.startOneShot(0);
 
@@ -1654,9 +1655,10 @@ void Document::recalcStyle(StyleRecalcChange change)
     TRACE_EVENT0("webkit", "Document::recalcStyle");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "RecalcStyle");
 
-    updateDistributionIfNeeded();
-
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
+
+    updateDistributionIfNeeded();
+    updateUseShadowTrees();
 
     if (m_evaluateMediaQueriesOnStyleRecalc) {
         m_evaluateMediaQueriesOnStyleRecalc = false;
@@ -1669,9 +1671,6 @@ void Document::recalcStyle(StyleRecalcChange change)
     // resolves style (here) and then when we resolve style on the parent chain, we may end up
     // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
-
-    if (m_styleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
-        m_styleEngine->updateActiveStyleSheets(FullStyleUpdate);
 
     if (m_elemSheet && m_elemSheet->contents()->usesRemUnits())
         m_styleEngine->setUsesRemUnit(true);
@@ -1721,11 +1720,6 @@ void Document::recalcStyle(StyleRecalcChange change)
         clearChildNeedsStyleRecalc();
         unscheduleStyleRecalc();
 
-        // FIXME: SVG <use> element can schedule a recalc in the middle of an already running one.
-        // See StyleEngine::updateActiveStyleSheets.
-        if (m_styleEngine->needsUpdateActiveStylesheetsOnStyleRecalc())
-            setNeedsStyleRecalc();
-
         if (m_styleEngine->hasResolver()) {
             // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
             StyleResolver& resolver = m_styleEngine->ensureResolver();
@@ -1748,7 +1742,7 @@ void Document::updateStyleIfNeeded()
     ASSERT(isMainThread());
     ASSERT(!view() || (!view()->isInLayout() && !view()->isPainting()));
 
-    if (!needsStyleRecalc() && !childNeedsStyleRecalc() && !childNeedsDistributionRecalc())
+    if (!needsStyleRecalc() && !childNeedsStyleRecalc() && !childNeedsDistributionRecalc() && m_useElementsNeedingUpdate.isEmpty())
         return;
 
     RefPtr<Frame> holder(m_frame);
@@ -1940,6 +1934,31 @@ void Document::setIsViewSource(bool isViewSource)
 
     setSecurityOrigin(SecurityOrigin::createUnique());
     didUpdateSecurityOrigin();
+}
+
+void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element)
+{
+    m_useElementsNeedingUpdate.add(&element);
+    scheduleStyleRecalc();
+}
+
+void Document::unscheduleUseShadowTreeUpdate(SVGUseElement& element)
+{
+    m_useElementsNeedingUpdate.remove(&element);
+}
+
+void Document::updateUseShadowTrees()
+{
+    if (m_useElementsNeedingUpdate.isEmpty())
+        return;
+
+    Vector<SVGUseElement*> elements;
+    copyToVector(m_useElementsNeedingUpdate, elements);
+    m_useElementsNeedingUpdate.clear();
+
+    Vector<SVGUseElement*>::iterator end = elements.end();
+    for (Vector<SVGUseElement*>::iterator it = elements.begin(); it != end; ++it)
+        (*it)->buildPendingResource();
 }
 
 StyleResolver* Document::styleResolver() const

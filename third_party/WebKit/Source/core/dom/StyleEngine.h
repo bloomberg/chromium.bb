@@ -106,8 +106,6 @@ public:
 
     void addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet);
 
-    bool needsUpdateActiveStylesheetsOnStyleRecalc() const { return m_needsUpdateActiveStylesheetsOnStyleRecalc; }
-
     void clearMediaQueryRuleSetStyleSheets();
     bool updateActiveStyleSheets(StyleResolverUpdateMode);
 
@@ -221,8 +219,6 @@ private:
     mutable bool m_injectedStyleSheetCacheValid;
 
     Vector<RefPtr<CSSStyleSheet> > m_authorStyleSheets;
-
-    bool m_needsUpdateActiveStylesheetsOnStyleRecalc;
 
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
     HashMap<TreeScope*, OwnPtr<StyleSheetCollection> > m_styleSheetCollectionMap;

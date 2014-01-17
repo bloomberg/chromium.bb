@@ -97,10 +97,10 @@ class Element;
 class Event;
 class EventListener;
 class ExceptionState;
-class MainThreadTaskRunner;
 class FastTextAutosizer;
 class FloatQuad;
 class FloatRect;
+class FontFaceSet;
 class FormController;
 class Frame;
 class FrameHost;
@@ -127,6 +127,7 @@ class LayoutRect;
 class LiveNodeListBase;
 class Locale;
 class Location;
+class MainThreadTaskRunner;
 class MediaQueryList;
 class MediaQueryMatcher;
 class MouseEventWithHitTestResults;
@@ -142,6 +143,7 @@ class RenderView;
 class RequestAnimationFrameCallback;
 class ResourceFetcher;
 class SVGDocumentExtensions;
+class SVGUseElement;
 class ScriptElementData;
 class ScriptResource;
 class ScriptRunner;
@@ -167,8 +169,6 @@ class VisitedLinkState;
 class XMLHttpRequest;
 
 struct AnnotatedRegionValue;
-
-class FontFaceSet;
 
 typedef int ExceptionCode;
 
@@ -424,6 +424,9 @@ public:
     void addedStyleSheet(StyleSheet*, RecalcStyleTime when = RecalcStyleDeferred) { styleResolverChanged(when); }
     void modifiedStyleSheet(StyleSheet*, RecalcStyleTime when = RecalcStyleDeferred, StyleResolverUpdateMode = FullStyleUpdate);
     void changedSelectorWatch() { styleResolverChanged(RecalcStyleDeferred); }
+
+    void scheduleUseShadowTreeUpdate(SVGUseElement&);
+    void unscheduleUseShadowTreeUpdate(SVGUseElement&);
 
     void evaluateMediaQueryList();
 
@@ -809,7 +812,7 @@ public:
     void setTransformSource(PassOwnPtr<TransformSource>);
     TransformSource* transformSource() const { return m_transformSource.get(); }
 
-    void incDOMTreeVersion() { m_domTreeVersion = ++s_globalTreeVersion; }
+    void incDOMTreeVersion() { ASSERT(!inStyleRecalc()); m_domTreeVersion = ++s_globalTreeVersion; }
     uint64_t domTreeVersion() const { return m_domTreeVersion; }
 
     enum PendingSheetLayout { NoLayoutWithPendingSheets, DidLayoutWithPendingSheets, IgnoreLayoutWithPendingSheets };
@@ -1039,6 +1042,8 @@ private:
     virtual EventQueue* eventQueue() const OVERRIDE FINAL;
 
     void updateDistributionIfNeeded();
+
+    void updateUseShadowTrees();
 
     void detachParser();
 
@@ -1304,6 +1309,8 @@ private:
 
     Timer<Document> m_didAssociateFormControlsTimer;
     HashSet<RefPtr<Element> > m_associatedFormControls;
+
+    HashSet<SVGUseElement*> m_useElementsNeedingUpdate;
 
     bool m_hasViewportUnits;
 };

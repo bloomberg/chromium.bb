@@ -53,6 +53,8 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
 
+    virtual void buildPendingResource() OVERRIDE;
+
 private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
@@ -61,14 +63,10 @@ private:
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void buildPendingResource() OVERRIDE;
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
-
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void toClipPath(Path&) OVERRIDE;
@@ -76,6 +74,8 @@ private:
     void clearResourceReferences();
     void buildShadowAndInstanceTree(SVGElement* target);
     void detachInstance();
+
+    void scheduleShadowTreeRecreation();
 
     virtual bool haveLoadedRequiredResources() OVERRIDE { return m_haveFiredLoadEvent; }
 

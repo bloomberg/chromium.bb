@@ -244,19 +244,6 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-void SVGUseElement::attach(const AttachContext& context)
-{
-    if (m_needsShadowTreeRecreation)
-        buildPendingResource();
-    SVGGraphicsElement::attach(context);
-}
-
-void SVGUseElement::willRecalcStyle(StyleRecalcChange)
-{
-    if (!m_wasInsertedByParser && m_needsShadowTreeRecreation && renderer() && needsStyleRecalc())
-        buildPendingResource();
-}
-
 #ifdef DUMP_INSTANCE_TREE
 static void dumpInstanceTree(unsigned int& depth, String& text, SVGElementInstance* targetInstance)
 {
@@ -365,6 +352,14 @@ static bool subtreeContainsDisallowedElement(Node* start)
     return false;
 }
 
+void SVGUseElement::scheduleShadowTreeRecreation()
+{
+    if (!referencedDocument() || isInShadowTree())
+        return;
+    m_needsShadowTreeRecreation = true;
+    document().scheduleUseShadowTreeUpdate(*this);
+}
+
 void SVGUseElement::clearResourceReferences()
 {
     // FIXME: We should try to optimize this, to at least allow partial reclones.
@@ -377,6 +372,7 @@ void SVGUseElement::clearResourceReferences()
     }
 
     m_needsShadowTreeRecreation = false;
+    document().unscheduleUseShadowTreeUpdate(*this);
 
     document().accessSVGExtensions()->removeAllTargetReferencesForElement(this);
 }
@@ -880,8 +876,7 @@ void SVGUseElement::invalidateShadowTree()
 {
     if (!inActiveDocument() || m_needsShadowTreeRecreation)
         return;
-    m_needsShadowTreeRecreation = true;
-    setNeedsStyleRecalc();
+    scheduleShadowTreeRecreation();
     invalidateDependentShadowTrees();
 }
 
