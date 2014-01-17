@@ -372,7 +372,7 @@ def WithDepsOptions(options, component=None):
 # to Google Storage are constrained.  GNU configuration tuples contain
 # dashes, which we translate to underscores.
 def ForHost(component_name, host):
-  return component_name + '_' + re.sub(r'[^A-Za-z0-9_/.]', '_', host)
+  return component_name + '_' + gsd_storage.LegalizeName(host)
 
 
 # These are libraries that go into building the compiler itself.

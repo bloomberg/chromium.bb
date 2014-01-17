@@ -27,6 +27,7 @@ import sys
 
 import command
 import file_tools
+import gsd_storage
 import platform_tools
 import pnacl_commands
 import pnacl_targetlibs
@@ -221,17 +222,10 @@ def HostToolsSources(GetGitSyncCmd):
   return sources
 
 
-# Return the component name we'll use for a base component name and
-# a host triple.  The component names cannot contain dashes or other
-# non-identifier characters, because the names of the files uploaded
-# to Google Storage are constrained.  GNU configuration tuples contain
-# dashes, which we translate to underscores.
-def Mangle(component_name, extra):
-  return component_name + '_' + re.sub(r'[^A-Za-z0-9_/.]', '_', extra)
-
 def HostTools(host):
   def H(component_name):
-    return Mangle(component_name, host)
+    # Return a package name for a component name with a host triple.
+    return component_name + '_' + gsd_storage.LegalizeName(host)
   tools = {
       H('binutils_pnacl'): {
           'dependencies': ['binutils_pnacl_src'],
@@ -385,6 +379,9 @@ if __name__ == '__main__':
     hosts.append('i686-w64-mingw32')
   for host in hosts:
     packages.update(HostTools(host))
+  # On linux use the 32-bit compiler to build the target libs since that's what
+  # most developers will be using.
+  packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0]))
 
   tb = toolchain_main.PackageBuilder(packages,
                                      leftover_args)

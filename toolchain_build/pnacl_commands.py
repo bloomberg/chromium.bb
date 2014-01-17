@@ -30,7 +30,7 @@ DRIVER_UTILS = [name + '.py' for name in
                      'shelltools')]
 
 def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
-                         host_64bit=False):
+                         host_64bit=False, extra_config=[]):
   srcdir = subst.SubstituteAbsPaths(srcdir)
   dstdir = subst.SubstituteAbsPaths(dstdir)
   file_tools.MakeDirectoryIfAbsent(os.path.join(dstdir, 'pydir'))
@@ -53,3 +53,5 @@ def InstallDriverScripts(subst, srcdir, dstdir, host_windows=False,
   with open(os.path.join(dstdir, 'driver.conf'), 'w') as f:
     print >> f, 'HAS_FRONTEND=1'
     print >> f, 'HOST_ARCH=x86_64' if host_64bit else 'HOST_ARCH=x86_32'
+    for line in extra_config:
+      print >> f, subst.Substitute(line)

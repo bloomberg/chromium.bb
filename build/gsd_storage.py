@@ -14,6 +14,7 @@ more or less like a key+value data-store.
 
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -26,6 +27,14 @@ import http_download
 GS_PATTERN = 'gs://%s'
 GS_HTTPS_PATTERN = 'https://storage.googleapis.com/%s'
 
+
+def LegalizeName(name):
+  """ Return a file name suitable for uploading to Google Storage.
+
+  The names of such files cannot contain dashes or other non-identifier
+  characters.
+  """
+  return re.sub(r'[^A-Za-z0-9_/.]', '_', name)
 
 def HttpDownload(url, target):
   """Default download route."""
