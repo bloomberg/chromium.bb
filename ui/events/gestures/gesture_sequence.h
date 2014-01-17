@@ -19,7 +19,12 @@ class GestureEvent;
 enum GestureState {
   GS_NO_GESTURE,
   GS_PENDING_SYNTHETIC_CLICK,
+  // One finger is down: tap could occur, but scroll cannot until the number of
+  // active touch points changes.
   GS_PENDING_SYNTHETIC_CLICK_NO_SCROLL,
+  // One finger is down: no gestures can occur until the number of active touch
+  // points changes.
+  GS_SYNTHETIC_CLICK_ABORTED,
   GS_SCROLL,
   GS_PINCH,
   GS_PENDING_TWO_FINGER_TAP,

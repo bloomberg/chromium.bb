@@ -3741,5 +3741,154 @@ TEST_F(GestureRecognizerTest, GestureEventShowPressSentOnTap) {
   EXPECT_TRUE(delegate->tap());
 }
 
+// Test that consuming the first move touch event prevents a scroll.
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveScrollTest) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(dispatcher()));
+  TimedEvents tes;
+  const int kTouchId = 7;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  delegate->ReceivedAck();
+
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(2, 2),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
+  delegate->ReceivedAckPreventDefaulted();
+
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
+  delegate->ReceivedAck();
+
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+}
+
+// Test that consuming the first touch move event of a touch point doesn't
+// prevent pinching once an additional touch has been pressed.
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMovePinchTest) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(dispatcher()));
+  TimedEvents tes;
+  const int kTouchId1 = 7;
+  const int kTouchId2 = 4;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                       kTouchId1, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
+  delegate->ReceivedAck();
+
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(2, 2),
+                       kTouchId1, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
+  delegate->ReceivedAckPreventDefaulted();
+
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                       kTouchId1, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
+  delegate->ReceivedAck();
+
+  // We can't scroll, because a move has been consumed.
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->pinch_begin());
+
+  // An additional press will allow us to pinch.
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                       kTouchId2, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
+  delegate->ReceivedAck();
+
+  ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                       kTouchId2, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move3);
+  delegate->ReceivedAck();
+
+  EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_FALSE(delegate->pinch_update());
+
+  delegate->Reset();
+
+  ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(40, 40),
+                       kTouchId2, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move4);
+  delegate->ReceivedAck();
+
+  EXPECT_TRUE(delegate->pinch_update());
+  EXPECT_EQ(10, delegate->scroll_x());
+  EXPECT_EQ(10, delegate->scroll_y());
+}
+
+// Test that consuming the first move touch doesn't prevent a tap.
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveTapTest) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(dispatcher()));
+  TimedEvents tes;
+  const int kTouchId = 7;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  delegate->ReceivedAck();
+
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(2, 2),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  delegate->ReceivedAckPreventDefaulted();
+
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(2, 2),
+                         kTouchId, tes.LeapForward(50));
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
+  delegate->ReceivedAck();
+
+  EXPECT_TRUE(delegate->tap());
+}
+
+// Test that consuming the first move touch doesn't prevent a long press.
+TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveLongPressTest) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(dispatcher()));
+  TimedEvents tes;
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  delegate->Reset();
+
+  TimerTestGestureRecognizer* gesture_recognizer =
+      new TimerTestGestureRecognizer();
+
+  ScopedGestureRecognizerSetter gr_setter(gesture_recognizer);
+
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                        kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
+  delegate->ReceivedAck();
+
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(103, 203),
+                       kTouchId, tes.Now());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  delegate->ReceivedAckPreventDefaulted();
+
+  // Wait until the timer runs out
+  delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
+  EXPECT_TRUE(delegate->long_press());
+}
+
 }  // namespace test
 }  // namespace aura
