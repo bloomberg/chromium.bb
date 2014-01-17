@@ -183,5 +183,13 @@
       'dependencies': [
       ],
     },
+    {
+      # Build the java portions of the binary size analysis tool.
+      'target_name': 'binary_size_tool',
+      'type': 'none',
+      'dependencies': [
+        '../tools/binary_size/binary_size.gyp:binary_size_java',
+      ],
+    },
   ],  # targets
 }
