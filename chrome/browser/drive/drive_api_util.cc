@@ -39,6 +39,25 @@ const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
 const char kGoogleFormMimeType[] = "application/vnd.google-apps.form";
 const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
+std::string GetMimeTypeFromEntryKind(google_apis::DriveEntryKind kind) {
+  switch (kind) {
+    case google_apis::ENTRY_KIND_DOCUMENT:
+      return kGoogleDocumentMimeType;
+    case google_apis::ENTRY_KIND_SPREADSHEET:
+      return kGoogleSpreadsheetMimeType;
+    case google_apis::ENTRY_KIND_PRESENTATION:
+      return kGooglePresentationMimeType;
+    case google_apis::ENTRY_KIND_DRAWING:
+      return kGoogleDrawingMimeType;
+    case google_apis::ENTRY_KIND_TABLE:
+      return kGoogleTableMimeType;
+    case google_apis::ENTRY_KIND_FORM:
+      return kGoogleFormMimeType;
+    default:
+      return std::string();
+  }
+}
+
 ScopedVector<std::string> CopyScopedVectorString(
     const ScopedVector<std::string>& source) {
   ScopedVector<std::string> result;
@@ -323,10 +342,14 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
                              "shared") != entry.labels().end());
 
   file->set_download_url(entry.download_url());
-  if (entry.is_folder())
+  if (entry.is_folder()) {
     file->set_mime_type(kDriveFolderMimeType);
-  else
-    file->set_mime_type(entry.content_mime_type());
+  } else {
+    std::string mime_type = GetMimeTypeFromEntryKind(entry.kind());
+    if (mime_type.empty())
+      mime_type = entry.content_mime_type();
+    file->set_mime_type(mime_type);
+  }
 
   file->set_md5_checksum(entry.file_md5());
   file->set_file_size(entry.file_size());

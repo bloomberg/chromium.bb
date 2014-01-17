@@ -557,6 +557,7 @@ class FileResource {
 
   // Returns parent references (directories) of this file.
   const ScopedVector<ParentReference>& parents() const { return parents_; }
+  ScopedVector<ParentReference>* mutable_parents() { return &parents_; }
 
   // Returns the link to the file's thumbnail.
   const GURL& thumbnail_link() const { return thumbnail_link_; }
@@ -761,6 +762,7 @@ class ChangeResource {
 
   // Returns FileResource of the file which the change refers to.
   const FileResource* file() const { return file_.get(); }
+  FileResource* mutable_file() { return file_.get(); }
 
   void set_change_id(int64 change_id) {
     change_id_ = change_id;

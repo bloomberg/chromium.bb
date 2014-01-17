@@ -10,6 +10,11 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "google_apis/drive/auth_service_interface.h"
 
+namespace google_apis {
+class ChangeResource;
+class FileResource;
+}
+
 namespace drive {
 
 // This class implements a fake DriveService which acts like a real Drive
@@ -249,36 +254,31 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::GetResourceEntryCallback& callback);
 
  private:
+  struct EntryInfo;
   struct UploadSession;
 
   // Returns a pointer to the entry that matches |resource_id|, or NULL if
   // not found.
-  base::DictionaryValue* FindEntryByResourceId(const std::string& resource_id);
-
-  // Returns a pointer to the entry that matches |content_url|, or NULL if
-  // not found.
-  base::DictionaryValue* FindEntryByContentUrl(const GURL& content_url);
+  EntryInfo* FindEntryByResourceId(const std::string& resource_id);
 
   // Returns a new resource ID, which looks like "resource_id_<num>" where
   // <num> is a monotonically increasing number starting from 1.
   std::string GetNewResourceId();
 
   // Increments |largest_changestamp_| and adds the new changestamp.
-  void AddNewChangestamp(base::DictionaryValue* entry);
+  void AddNewChangestamp(google_apis::ChangeResource* change);
 
-  // Update ETag of |entry| based on |largest_changestamp_|.
-  void UpdateETag(base::DictionaryValue* entry);
+  // Update ETag of |file| based on |largest_changestamp_|.
+  void UpdateETag(google_apis::FileResource* file);
 
-  // Adds a new entry based on the given parameters. |entry_kind| should be
-  // "file" or "folder". Returns a pointer to the newly added entry, or NULL
-  // if failed.
-  const base::DictionaryValue* AddNewEntry(
+  // Adds a new entry based on the given parameters.
+  // Returns a pointer to the newly added entry, or NULL if failed.
+  const EntryInfo* AddNewEntry(
     const std::string& content_type,
     const std::string& content_data,
     const std::string& parent_resource_id,
     const std::string& title,
-    bool shared_with_me,
-    const std::string& entry_kind);
+    bool shared_with_me);
 
   // Core implementation of GetResourceList.
   // This method returns the slice of the all matched entries, and its range
@@ -297,7 +297,8 @@ class FakeDriveService : public DriveServiceInterface {
   // Returns new upload session URL.
   GURL GetNewUploadSessionUrl();
 
-  scoped_ptr<base::DictionaryValue> resource_list_value_;
+  typedef std::map<std::string, EntryInfo*> EntryInfoMap;
+  EntryInfoMap entries_;
   scoped_ptr<base::DictionaryValue> account_metadata_value_;
   scoped_ptr<base::DictionaryValue> app_info_value_;
   std::map<GURL, UploadSession> upload_sessions_;

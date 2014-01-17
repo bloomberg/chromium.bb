@@ -34,8 +34,10 @@ using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;
 using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
+using google_apis::ChangeResource;
 using google_apis::DownloadActionCallback;
 using google_apis::EntryActionCallback;
+using google_apis::FileResource;
 using google_apis::GDATA_FILE_ERROR;
 using google_apis::GDATA_NO_CONNECTION;
 using google_apis::GDATA_OTHER_ERROR;
@@ -53,6 +55,7 @@ using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
 using google_apis::Link;
+using google_apis::ParentReference;
 using google_apis::ProgressCallback;
 using google_apis::ResourceEntry;
 using google_apis::ResourceList;
@@ -63,13 +66,8 @@ namespace test_util = google_apis::test_util;
 namespace drive {
 namespace {
 
-// Rel property of an upload link in the entries dictionary value.
-const char kUploadUrlRel[] =
-    "http://schemas.google.com/g/2005#resumable-create-media";
-
-// Rel property of a share link in the entries dictionary value.
-const char kShareUrlRel[] =
-    "http://schemas.google.com/docs/2007#share";
+// Mime type of directories.
+const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
 // Returns true if a resource entry matches with the search query.
 // Supports queries consist of following format.
@@ -126,23 +124,13 @@ void EntryActionCallbackAdapter(
   callback.Run(error);
 }
 
-void ClearPropatiesForPermanentDelete(base::DictionaryValue* entry) {
-  scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
-  const char* kPreservedProperties[] = {
-    "docs$removed", "docs$changestamp", "gd$resourceId", "id", "updated"
-  };
-
-  for (size_t i = 0; i < arraysize(kPreservedProperties); ++i) {
-    const char* key = kPreservedProperties[i];
-    scoped_ptr<base::Value> value;
-    if (entry->Remove(key, &value))
-      new_entry->Set(key, value.release());
-  }
-
-  entry->Swap(new_entry.get());
-}
-
 }  // namespace
+
+struct FakeDriveService::EntryInfo {
+  google_apis::ChangeResource change_resource;
+  GURL share_url;
+  std::string content_data;
+};
 
 struct FakeDriveService::UploadSession {
   std::string content_type;
@@ -194,6 +182,7 @@ FakeDriveService::FakeDriveService()
 
 FakeDriveService::~FakeDriveService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  STLDeleteValues(&entries_);
 }
 
 bool FakeDriveService::LoadResourceListForWapi(
@@ -209,26 +198,40 @@ bool FakeDriveService::LoadResourceListForWapi(
   if (raw_value->GetAsDictionary(&as_dict) &&
       as_dict->Remove("feed", &feed) &&
       feed->GetAsDictionary(&feed_as_dict)) {
-    ignore_result(feed.release());
-    resource_list_value_.reset(feed_as_dict);
-
-    // Go through entries and convert test$data from a string to a binary blob.
     base::ListValue* entries = NULL;
     if (feed_as_dict->GetList("entry", &entries)) {
       for (size_t i = 0; i < entries->GetSize(); ++i) {
         base::DictionaryValue* entry = NULL;
-        std::string content_data;
-        if (entries->GetDictionary(i, &entry) &&
-            entry->GetString("test$data", &content_data)) {
-          entry->Set("test$data",
-                     base::BinaryValue::CreateWithCopiedBuffer(
-                         content_data.c_str(), content_data.size()));
+        if (entries->GetDictionary(i, &entry)) {
+          scoped_ptr<ResourceEntry> resource_entry =
+              ResourceEntry::CreateFrom(*entry);
+
+          const std::string resource_id = resource_entry->resource_id();
+          EntryInfoMap::iterator it = entries_.find(resource_id);
+          if (it == entries_.end()) {
+            it = entries_.insert(
+                std::make_pair(resource_id, new EntryInfo)).first;
+          }
+          EntryInfo* new_entry = it->second;
+
+          ChangeResource* change = &new_entry->change_resource;
+          change->set_change_id(resource_entry->changestamp());
+          change->set_file_id(resource_id);
+          change->set_file(
+              util::ConvertResourceEntryToFileResource(*resource_entry));
+
+          const Link* share_url =
+              resource_entry->GetLinkByType(Link::LINK_SHARE);
+          if (share_url)
+            new_entry->share_url = share_url->href();
+
+          entry->GetString("test$data", &new_entry->content_data);
         }
       }
     }
   }
 
-  return resource_list_value_;
+  return feed_as_dict;
 }
 
 bool FakeDriveService::LoadAccountMetadataForWapi(
@@ -248,18 +251,8 @@ bool FakeDriveService::LoadAccountMetadataForWapi(
 
   // Add the largest changestamp to the existing entries.
   // This will be used to generate change lists in GetResourceList().
-  if (resource_list_value_) {
-    base::ListValue* entries = NULL;
-    if (resource_list_value_->GetList("entry", &entries)) {
-      for (size_t i = 0; i < entries->GetSize(); ++i) {
-        base::DictionaryValue* entry = NULL;
-        if (entries->GetDictionary(i, &entry)) {
-          entry->SetString("docs$changestamp.value",
-                           base::Int64ToString(largest_changestamp_));
-        }
-      }
-    }
-  }
+  for (EntryInfoMap::iterator it = entries_.begin(); it != entries_.end(); ++it)
+    it->second->change_resource.set_change_id(largest_changestamp_);
 
   return account_metadata_value_;
 }
@@ -465,10 +458,10 @@ CancelCallback FakeDriveService::GetResourceEntry(
     return CancelCallback();
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (entry) {
     scoped_ptr<ResourceEntry> resource_entry =
-        ResourceEntry::CreateFrom(*entry);
+        util::ConvertChangeResourceToResourceEntry(entry->change_resource);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, base::Passed(&resource_entry)));
@@ -499,26 +492,14 @@ CancelCallback FakeDriveService::GetShareUrl(
     return CancelCallback();
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (entry) {
-    // Share urls are stored in the resource entry, and they do not rely on the
-    // embedding origin.
-    scoped_ptr<ResourceEntry> resource_entry =
-        ResourceEntry::CreateFrom(*entry);
-    const Link* share_url = resource_entry->GetLinkByType(Link::LINK_SHARE);
-    if (share_url) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, HTTP_SUCCESS, share_url->href()));
-    } else {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, HTTP_SUCCESS, GURL()));
-    }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_SUCCESS, entry->share_url));
     return CancelCallback();
   }
 
-  scoped_ptr<ResourceEntry> null;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_NOT_FOUND, GURL()));
@@ -589,36 +570,28 @@ CancelCallback FakeDriveService::DeleteResource(
     return CancelCallback();
   }
 
-  base::ListValue* entries = NULL;
-  if (resource_list_value_->GetList("entry", &entries)) {
-    for (size_t i = 0; i < entries->GetSize(); ++i) {
-      base::DictionaryValue* entry = NULL;
-      std::string current_resource_id;
-      if (entries->GetDictionary(i, &entry) &&
-          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
-          resource_id == current_resource_id) {
-        if (entry->HasKey("docs$removed")) {
-          base::MessageLoop::current()->PostTask(
-              FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
-          return CancelCallback();
-        }
-
-        std::string entry_etag;
-        entry->GetString("gd$etag", &entry_etag);
-        if (!etag.empty() && entry_etag != etag) {
-          base::MessageLoop::current()->PostTask(
-              FROM_HERE, base::Bind(callback, HTTP_PRECONDITION));
-          return CancelCallback();
-        }
-
-        entry->Set("docs$removed", new base::DictionaryValue);
-        AddNewChangestamp(entry);
-        ClearPropatiesForPermanentDelete(entry);
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
-        return CancelCallback();
-      }
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (entry) {
+    ChangeResource* change = &entry->change_resource;
+    const FileResource* file = change->file();
+    if (change->is_deleted()) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
+      return CancelCallback();
     }
+
+    if (!etag.empty() && etag != file->etag()) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(callback, HTTP_PRECONDITION));
+      return CancelCallback();
+    }
+
+    change->set_deleted(true);
+    AddNewChangestamp(change);
+    change->set_file(scoped_ptr<FileResource>());
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+    return CancelCallback();
   }
 
   base::MessageLoop::current()->PostTask(
@@ -638,28 +611,21 @@ CancelCallback FakeDriveService::TrashResource(
     return CancelCallback();
   }
 
-  base::ListValue* entries = NULL;
-  // Go through entries and remove the one that matches |resource_id|.
-  if (resource_list_value_->GetList("entry", &entries)) {
-    for (size_t i = 0; i < entries->GetSize(); ++i) {
-      base::DictionaryValue* entry = NULL;
-      std::string current_resource_id;
-      if (entries->GetDictionary(i, &entry) &&
-          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
-          resource_id == current_resource_id) {
-        GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-        if (entry->HasKey("gd$deleted") || entry->HasKey("docs$removed")) {
-          error = HTTP_NOT_FOUND;
-        } else {
-          entry->Set("gd$deleted", new base::DictionaryValue);
-          AddNewChangestamp(entry);
-          error = HTTP_SUCCESS;
-        }
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(callback, error));
-        return CancelCallback();
-      }
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (entry) {
+    ChangeResource* change = &entry->change_resource;
+    FileResource* file = change->mutable_file();
+    GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    if (change->is_deleted() || file->labels().is_trashed()) {
+      error = HTTP_NOT_FOUND;
+    } else {
+      file->mutable_labels()->set_trashed(true);
+      AddNewChangestamp(change);
+      error = HTTP_SUCCESS;
     }
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, error));
+    return CancelCallback();
   }
 
   base::MessageLoop::current()->PostTask(
@@ -685,8 +651,7 @@ CancelCallback FakeDriveService::DownloadFile(
     return CancelCallback();
   }
 
-  // The field content.src is the URL to download the file.
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -694,51 +659,42 @@ CancelCallback FakeDriveService::DownloadFile(
     return CancelCallback();
   }
 
-  // Write "x"s of the file size specified in the entry.
-  std::string file_size_string;
-  entry->GetString("docs$size.$t", &file_size_string);
-  int64 file_size = 0;
-  if (base::StringToInt64(file_size_string, &file_size)) {
-    base::BinaryValue* content_binary_data;
-    std::string content_data;
-    if (entry->GetBinary("test$data", &content_binary_data)) {
-      content_data = std::string(content_binary_data->GetBuffer(),
-          content_binary_data->GetSize());
-    }
-    DCHECK_EQ(static_cast<size_t>(file_size), content_data.size());
+  const FileResource* file = entry->change_resource.file();
+  const std::string& content_data = entry->content_data;
+  int64 file_size = file->file_size();
+  DCHECK_EQ(static_cast<size_t>(file_size), content_data.size());
 
-    if (!get_content_callback.is_null()) {
-      const int64 kBlockSize = 5;
-      for (int64 i = 0; i < file_size; i += kBlockSize) {
-        const int64 size = std::min(kBlockSize, file_size - i);
-        scoped_ptr<std::string> content_for_callback(
-            new std::string(content_data.substr(i, size)));
-        base::MessageLoopProxy::current()->PostTask(
-            FROM_HERE,
-            base::Bind(get_content_callback, HTTP_SUCCESS,
-                       base::Passed(&content_for_callback)));
-      }
-    }
-
-    if (test_util::WriteStringToFile(local_cache_path, content_data)) {
-      if (!progress_callback.is_null()) {
-        // See also the comment in ResumeUpload(). For testing that clients
-        // can handle the case progress_callback is called multiple times,
-        // here we invoke the callback twice.
-        base::MessageLoopProxy::current()->PostTask(
-            FROM_HERE,
-            base::Bind(progress_callback, file_size / 2, file_size));
-        base::MessageLoopProxy::current()->PostTask(
-            FROM_HERE,
-            base::Bind(progress_callback, file_size, file_size));
-      }
+  if (!get_content_callback.is_null()) {
+    const int64 kBlockSize = 5;
+    for (int64 i = 0; i < file_size; i += kBlockSize) {
+      const int64 size = std::min(kBlockSize, file_size - i);
+      scoped_ptr<std::string> content_for_callback(
+          new std::string(content_data.substr(i, size)));
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
-          base::Bind(download_action_callback,
-                     HTTP_SUCCESS,
-                     local_cache_path));
-      return CancelCallback();
+          base::Bind(get_content_callback, HTTP_SUCCESS,
+                     base::Passed(&content_for_callback)));
     }
+  }
+
+  if (test_util::WriteStringToFile(local_cache_path, content_data)) {
+    if (!progress_callback.is_null()) {
+      // See also the comment in ResumeUpload(). For testing that clients
+      // can handle the case progress_callback is called multiple times,
+      // here we invoke the callback twice.
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(progress_callback, file_size / 2, file_size));
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(progress_callback, file_size, file_size));
+    }
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(download_action_callback,
+                   HTTP_SUCCESS,
+                   local_cache_path));
+    return CancelCallback();
   }
 
   // Failed to write the content.
@@ -770,57 +726,51 @@ CancelCallback FakeDriveService::CopyResource(
   const std::string& parent_resource_id = in_parent_resource_id.empty() ?
       GetRootResourceId() : in_parent_resource_id;
 
-  base::ListValue* entries = NULL;
-  // Go through entries and copy the one that matches |resource_id|.
-  if (resource_list_value_->GetList("entry", &entries)) {
-    for (size_t i = 0; i < entries->GetSize(); ++i) {
-      base::DictionaryValue* entry = NULL;
-      std::string current_resource_id;
-      if (entries->GetDictionary(i, &entry) &&
-          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
-          resource_id == current_resource_id) {
-        // Make a copy and set the new resource ID and the new title.
-        scoped_ptr<base::DictionaryValue> copied_entry(entry->DeepCopy());
-        copied_entry->SetString("gd$resourceId.$t", GetNewResourceId());
-        copied_entry->SetString("title.$t", new_title);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (entry) {
+    // Make a copy and set the new resource ID and the new title.
+    scoped_ptr<EntryInfo> copied_entry(new EntryInfo);
+    copied_entry->content_data = entry->content_data;
+    copied_entry->share_url = entry->share_url;
 
-        // Reset parent directory.
-        base::ListValue* links = NULL;
-        if (!copied_entry->GetList("link", &links)) {
-          links = new base::ListValue;
-          copied_entry->Set("link", links);
-        }
-        links->Clear();
+    // TODO(hashimoto): Implement a proper way to copy FileResource.
+    scoped_ptr<ResourceEntry> copied_resource_entry =
+        util::ConvertChangeResourceToResourceEntry(entry->change_resource);
+    copied_entry->change_resource.set_file(
+        util::ConvertResourceEntryToFileResource(*copied_resource_entry));
 
-        base::DictionaryValue* link = new base::DictionaryValue;
-        link->SetString(
-            "rel", "http://schemas.google.com/docs/2007#parent");
-        link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
-        links->Append(link);
+    ChangeResource* new_change = &copied_entry->change_resource;
+    FileResource* new_file = new_change->mutable_file();
+    const std::string new_resource_id = GetNewResourceId();
+    new_change->set_file_id(new_resource_id);
+    new_file->set_file_id(new_resource_id);
+    new_file->set_title(new_title);
 
-        if (!last_modified.is_null()) {
-          copied_entry->SetString(
-              "updated.$t",
-              google_apis::util::FormatTimeAsString(last_modified));
-        }
+    scoped_ptr<ParentReference> parent(new ParentReference);
+    parent->set_file_id(parent_resource_id);
+    parent->set_parent_link(GetFakeLinkUrl(parent_resource_id));
+    parent->set_is_root(parent_resource_id == GetRootResourceId());
+    ScopedVector<ParentReference> parents;
+    parents.push_back(parent.release());
+    new_file->set_parents(parents.Pass());
 
-        AddNewChangestamp(copied_entry.get());
-        UpdateETag(copied_entry.get());
+    if (!last_modified.is_null())
+      new_file->set_modified_date(last_modified);
 
-        // Parse the new entry.
-        scoped_ptr<ResourceEntry> resource_entry =
-            ResourceEntry::CreateFrom(*copied_entry);
-        // Add it to the resource list.
-        entries->Append(copied_entry.release());
+    AddNewChangestamp(new_change);
+    UpdateETag(new_file);
 
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(callback,
-                       HTTP_SUCCESS,
-                       base::Passed(&resource_entry)));
-        return CancelCallback();
-      }
-    }
+    scoped_ptr<ResourceEntry> resource_entry =
+        util::ConvertChangeResourceToResourceEntry(*new_change);
+    // Add the new entry to the map.
+    entries_[new_resource_id] = copied_entry.release();
+
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   HTTP_SUCCESS,
+                   base::Passed(&resource_entry)));
+    return CancelCallback();
   }
 
   scoped_ptr<ResourceEntry> null;
@@ -847,58 +797,35 @@ CancelCallback FakeDriveService::UpdateResource(
     return CancelCallback();
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (entry) {
-    entry->SetString("title.$t", new_title);
+    ChangeResource* change = &entry->change_resource;
+    FileResource* file = change->mutable_file();
+    file->set_title(new_title);
 
     // Set parent if necessary.
     if (!parent_resource_id.empty()) {
-      base::ListValue* links = NULL;
-      if (!entry->GetList("link", &links)) {
-        links = new base::ListValue;
-        entry->Set("link", links);
-      }
+      scoped_ptr<ParentReference> parent(new ParentReference);
+      parent->set_file_id(parent_resource_id);
+      parent->set_parent_link(GetFakeLinkUrl(parent_resource_id));
+      parent->set_is_root(parent_resource_id == GetRootResourceId());
 
-      // Remove old parent(s).
-      for (size_t i = 0; i < links->GetSize(); ) {
-        base::DictionaryValue* link = NULL;
-        std::string rel;
-        std::string href;
-        if (links->GetDictionary(i, &link) &&
-            link->GetString("rel", &rel) &&
-            link->GetString("href", &href) &&
-            rel == "http://schemas.google.com/docs/2007#parent") {
-          links->Remove(i, NULL);
-        } else {
-          ++i;
-        }
-      }
-
-      base::DictionaryValue* link = new base::DictionaryValue;
-      link->SetString("rel", "http://schemas.google.com/docs/2007#parent");
-      link->SetString(
-          "href", GetFakeLinkUrl(parent_resource_id).spec());
-      links->Append(link);
+      ScopedVector<ParentReference> parents;
+      parents.push_back(parent.release());
+      file->set_parents(parents.Pass());
     }
 
-    if (!last_modified.is_null()) {
-      entry->SetString(
-          "updated.$t",
-          google_apis::util::FormatTimeAsString(last_modified));
-    }
+    if (!last_modified.is_null())
+      file->set_modified_date(last_modified);
 
-    if (!last_viewed_by_me.is_null()) {
-      entry->SetString(
-          "gd$lastViewed.$t",
-          google_apis::util::FormatTimeAsString(last_viewed_by_me));
-    }
+    if (!last_viewed_by_me.is_null())
+      file->set_last_viewed_by_me_date(last_viewed_by_me);
 
-    AddNewChangestamp(entry);
-    UpdateETag(entry);
+    AddNewChangestamp(change);
+    UpdateETag(file);
 
-    // Parse the new entry.
     scoped_ptr<ResourceEntry> resource_entry =
-        ResourceEntry::CreateFrom(*entry);
+        util::ConvertChangeResourceToResourceEntry(*change);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, base::Passed(&resource_entry)));
@@ -937,25 +864,20 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
     return CancelCallback();
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (entry) {
-    base::ListValue* links = NULL;
-    if (!entry->GetList("link", &links)) {
-      links = new base::ListValue;
-      entry->Set("link", links);
-    }
-
+    ChangeResource* change = &entry->change_resource;
     // On the real Drive server, resources do not necessary shape a tree
     // structure. That is, each resource can have multiple parent.
     // We mimic the behavior here; AddResourceToDirectoy just adds
-    // one more parent link, not overwriting old links.
-    base::DictionaryValue* link = new base::DictionaryValue;
-    link->SetString("rel", "http://schemas.google.com/docs/2007#parent");
-    link->SetString(
-        "href", GetFakeLinkUrl(parent_resource_id).spec());
-    links->Append(link);
+    // one more parent, not overwriting old ones.
+    scoped_ptr<ParentReference> parent(new ParentReference);
+    parent->set_file_id(parent_resource_id);
+    parent->set_parent_link(GetFakeLinkUrl(parent_resource_id));
+    parent->set_is_root(parent_resource_id == GetRootResourceId());
+    change->mutable_file()->mutable_parents()->push_back(parent.release());
 
-    AddNewChangestamp(entry);
+    AddNewChangestamp(change);
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
     return CancelCallback();
@@ -979,26 +901,18 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
     return CancelCallback();
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (entry) {
-    base::ListValue* links = NULL;
-    if (entry->GetList("link", &links)) {
-      GURL parent_content_url = GetFakeLinkUrl(parent_resource_id);
-      for (size_t i = 0; i < links->GetSize(); ++i) {
-        base::DictionaryValue* link = NULL;
-        std::string rel;
-        std::string href;
-        if (links->GetDictionary(i, &link) &&
-            link->GetString("rel", &rel) &&
-            link->GetString("href", &href) &&
-            rel == "http://schemas.google.com/docs/2007#parent" &&
-            GURL(href) == parent_content_url) {
-          links->Remove(i, NULL);
-          AddNewChangestamp(entry);
-          base::MessageLoop::current()->PostTask(
-              FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
-          return CancelCallback();
-        }
+    ChangeResource* change = &entry->change_resource;
+    FileResource* file = change->mutable_file();
+    ScopedVector<ParentReference>* parents = file->mutable_parents();
+    for (size_t i = 0; i < parents->size(); ++i) {
+      if ((*parents)[i]->file_id() == parent_resource_id) {
+        parents->erase(parents->begin() + i);
+        AddNewChangestamp(change);
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE, base::Bind(callback, HTTP_NO_CONTENT));
+        return CancelCallback();
       }
     }
   }
@@ -1025,13 +939,11 @@ CancelCallback FakeDriveService::AddNewDirectory(
     return CancelCallback();
   }
 
-  const char kContentType[] = "application/atom+xml;type=feed";
-  const base::DictionaryValue* new_entry = AddNewEntry(kContentType,
-                                                       "",  // content_data
-                                                       parent_resource_id,
-                                                       directory_title,
-                                                       false,  // shared_with_me
-                                                       "folder");
+  const EntryInfo* new_entry = AddNewEntry(kDriveFolderMimeType,
+                                           "",  // content_data
+                                           parent_resource_id,
+                                           directory_title,
+                                           false);  // shared_with_me
   if (!new_entry) {
     scoped_ptr<ResourceEntry> null;
     base::MessageLoop::current()->PostTask(
@@ -1040,7 +952,8 @@ CancelCallback FakeDriveService::AddNewDirectory(
     return CancelCallback();
   }
 
-  scoped_ptr<ResourceEntry> parsed_entry(ResourceEntry::CreateFrom(*new_entry));
+  scoped_ptr<ResourceEntry> parsed_entry(
+      util::ConvertChangeResourceToResourceEntry(new_entry->change_resource));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_CREATED, base::Passed(&parsed_entry)));
@@ -1064,7 +977,7 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
   }
 
   if (parent_resource_id != GetRootResourceId() &&
-      !FindEntryByResourceId(parent_resource_id)) {
+      !entries_.count(parent_resource_id)) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_NOT_FOUND, GURL()));
@@ -1101,7 +1014,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     return CancelCallback();
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -1109,9 +1022,8 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     return CancelCallback();
   }
 
-  std::string entry_etag;
-  entry->GetString("gd$etag", &entry_etag);
-  if (!etag.empty() && etag != entry_etag) {
+  const FileResource* file = entry->change_resource.file();
+  if (!etag.empty() && etag != file->etag()) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_PRECONDITION, GURL()));
@@ -1123,7 +1035,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
       UploadSession(content_type, content_length,
                     "",  // parent_resource_id
                     resource_id,
-                    entry_etag,
+                    file->etag(),
                     "" /* title */);
 
   base::MessageLoop::current()->PostTask(
@@ -1209,45 +1121,44 @@ CancelCallback FakeDriveService::ResumeUpload(
   if (session->resource_id.empty()) {
     DCHECK(!session->parent_resource_id.empty());
     DCHECK(!session->title.empty());
-    const base::DictionaryValue* new_entry = AddNewEntry(
+    const EntryInfo* new_entry = AddNewEntry(
         session->content_type,
         content_data,
         session->parent_resource_id,
         session->title,
-        false,  // shared_with_me
-        "file");
+        false);  // shared_with_me
     if (!new_entry) {
       completion_callback.Run(HTTP_NOT_FOUND, scoped_ptr<ResourceEntry>());
       return CancelCallback();
     }
 
-    completion_callback.Run(HTTP_CREATED,
-                            ResourceEntry::CreateFrom(*new_entry));
+    completion_callback.Run(
+        HTTP_CREATED,
+        util::ConvertChangeResourceToResourceEntry(new_entry->change_resource));
     return CancelCallback();
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(session->resource_id);
+  EntryInfo* entry = FindEntryByResourceId(session->resource_id);
   if (!entry) {
     completion_callback.Run(HTTP_NOT_FOUND, scoped_ptr<ResourceEntry>());
     return CancelCallback();
   }
 
-  std::string entry_etag;
-  entry->GetString("gd$etag", &entry_etag);
-  if (entry_etag.empty() || session->etag != entry_etag) {
+  ChangeResource* change = &entry->change_resource;
+  FileResource* file = change->mutable_file();
+  if (file->etag().empty() || session->etag != file->etag()) {
     completion_callback.Run(HTTP_PRECONDITION, scoped_ptr<ResourceEntry>());
     return CancelCallback();
   }
 
-  entry->SetString("docs$md5Checksum.$t", base::MD5String(content_data));
-  entry->Set("test$data",
-             base::BinaryValue::CreateWithCopiedBuffer(
-                 content_data.data(), content_data.size()));
-  entry->SetString("docs$size.$t", base::Int64ToString(end_position));
-  AddNewChangestamp(entry);
-  UpdateETag(entry);
+  file->set_md5_checksum(base::MD5String(content_data));
+  entry->content_data = content_data;
+  file->set_file_size(end_position);
+  AddNewChangestamp(change);
+  UpdateETag(file);
 
-  completion_callback.Run(HTTP_SUCCESS, ResourceEntry::CreateFrom(*entry));
+  completion_callback.Run(HTTP_SUCCESS,
+                          util::ConvertChangeResourceToResourceEntry(*change));
   return CancelCallback();
 }
 
@@ -1368,19 +1279,11 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
     return;
   }
 
-  // Prepare "kind" for hosted documents. This only supports Google Document.
-  std::string entry_kind;
-  if (content_type == "application/vnd.google-apps.document")
-    entry_kind = "document";
-  else
-    entry_kind = "file";
-
-  const base::DictionaryValue* new_entry = AddNewEntry(content_type,
-                                                       content_data,
-                                                       parent_resource_id,
-                                                       title,
-                                                       shared_with_me,
-                                                       entry_kind);
+  const EntryInfo* new_entry = AddNewEntry(content_type,
+                                           content_data,
+                                           parent_resource_id,
+                                           title,
+                                           shared_with_me);
   if (!new_entry) {
     scoped_ptr<ResourceEntry> null;
     base::MessageLoop::current()->PostTask(
@@ -1390,7 +1293,7 @@ void FakeDriveService::AddNewFile(const std::string& content_type,
   }
 
   scoped_ptr<ResourceEntry> parsed_entry(
-      ResourceEntry::CreateFrom(*new_entry));
+      util::ConvertChangeResourceToResourceEntry(new_entry->change_resource));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_CREATED, base::Passed(&parsed_entry)));
@@ -1413,7 +1316,7 @@ void FakeDriveService::SetLastModifiedTime(
     return;
   }
 
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     scoped_ptr<ResourceEntry> null;
     base::MessageLoop::current()->PostTask(
@@ -1422,62 +1325,25 @@ void FakeDriveService::SetLastModifiedTime(
     return;
   }
 
-  if (last_modified_time.is_null()) {
-    entry->Remove("updated.$t", NULL);
-  } else {
-    entry->SetString(
-        "updated.$t",
-        google_apis::util::FormatTimeAsString(last_modified_time));
-  }
+  ChangeResource* change = &entry->change_resource;
+  FileResource* file = change->mutable_file();
+  file->set_modified_date(last_modified_time);
 
   scoped_ptr<ResourceEntry> parsed_entry(
-      ResourceEntry::CreateFrom(*entry));
+      util::ConvertChangeResourceToResourceEntry(*change));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS, base::Passed(&parsed_entry)));
 }
 
-base::DictionaryValue* FakeDriveService::FindEntryByResourceId(
+FakeDriveService::EntryInfo* FakeDriveService::FindEntryByResourceId(
     const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::ListValue* entries = NULL;
-  // Go through entries and return the one that matches |resource_id|.
-  if (resource_list_value_->GetList("entry", &entries)) {
-    for (size_t i = 0; i < entries->GetSize(); ++i) {
-      base::DictionaryValue* entry = NULL;
-      std::string current_resource_id;
-      if (entries->GetDictionary(i, &entry) &&
-          entry->GetString("gd$resourceId.$t", &current_resource_id) &&
-          resource_id == current_resource_id &&
-          !entry->HasKey("docs$removed")) {
-        return entry;
-      }
-    }
-  }
-
-  return NULL;
-}
-
-base::DictionaryValue* FakeDriveService::FindEntryByContentUrl(
-    const GURL& content_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::ListValue* entries = NULL;
-  // Go through entries and return the one that matches |content_url|.
-  if (resource_list_value_->GetList("entry", &entries)) {
-    for (size_t i = 0; i < entries->GetSize(); ++i) {
-      base::DictionaryValue* entry = NULL;
-      std::string current_content_url;
-      if (entries->GetDictionary(i, &entry) &&
-          entry->GetString("content.src", &current_content_url) &&
-          content_url == GURL(current_content_url)) {
-        return entry;
-      }
-    }
-  }
-
-  return NULL;
+  EntryInfoMap::iterator it = entries_.find(resource_id);
+  // Deleted entries don't have FileResource.
+  return it != entries_.end() && it->second->change_resource.file() ?
+      it->second : NULL;
 }
 
 std::string FakeDriveService::GetNewResourceId() {
@@ -1487,125 +1353,86 @@ std::string FakeDriveService::GetNewResourceId() {
   return base::StringPrintf("resource_id_%d", resource_id_count_);
 }
 
-void FakeDriveService::UpdateETag(base::DictionaryValue* entry) {
-  entry->SetString("gd$etag",
-                   "etag_" + base::Int64ToString(largest_changestamp_));
+void FakeDriveService::UpdateETag(google_apis::FileResource* file) {
+  file->set_etag("etag_" + base::Int64ToString(largest_changestamp_));
 }
 
-void FakeDriveService::AddNewChangestamp(base::DictionaryValue* entry) {
+void FakeDriveService::AddNewChangestamp(google_apis::ChangeResource* change) {
   ++largest_changestamp_;
-  entry->SetString("docs$changestamp.value",
-                   base::Int64ToString(largest_changestamp_));
+  change->set_change_id(largest_changestamp_);
 }
 
-const base::DictionaryValue* FakeDriveService::AddNewEntry(
+const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
     const std::string& content_type,
     const std::string& content_data,
     const std::string& parent_resource_id,
     const std::string& title,
-    bool shared_with_me,
-    const std::string& entry_kind) {
+    bool shared_with_me) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!parent_resource_id.empty() &&
       parent_resource_id != GetRootResourceId() &&
-      !FindEntryByResourceId(parent_resource_id)) {
+      !entries_.count(parent_resource_id)) {
     return NULL;
   }
 
   std::string resource_id = GetNewResourceId();
   GURL upload_url = GURL("https://xxx/upload/" + resource_id);
 
-  scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
+  scoped_ptr<EntryInfo> new_entry(new EntryInfo);
+  ChangeResource* new_change = &new_entry->change_resource;
+  FileResource* new_file = new FileResource;
+  new_change->set_file(make_scoped_ptr(new_file));
+
   // Set the resource ID and the title
-  new_entry->SetString("gd$resourceId.$t", resource_id);
-  new_entry->SetString("title.$t", title);
-  new_entry->SetString("docs$filename", title);
+  new_change->set_file_id(resource_id);
+  new_file->set_file_id(resource_id);
+  new_file->set_title(title);
   // Set the contents, size and MD5 for a file.
-  if (entry_kind == "file") {
-    new_entry->Set("test$data",
-        base::BinaryValue::CreateWithCopiedBuffer(
-            content_data.c_str(), content_data.size()));
-    new_entry->SetString("docs$size.$t",
-                         base::Int64ToString(content_data.size()));
-    new_entry->SetString("docs$md5Checksum.$t",
-                         base::MD5String(content_data));
+  if (content_type != kDriveFolderMimeType) {
+    new_entry->content_data = content_data;
+    new_file->set_file_size(content_data.size());
+    new_file->set_md5_checksum(base::MD5String(content_data));
   }
 
-  // Add "category" which sets the resource type to |entry_kind|.
-  base::ListValue* categories = new base::ListValue;
-  base::DictionaryValue* category = new base::DictionaryValue;
-  category->SetString("scheme", "http://schemas.google.com/g/2005#kind");
-  category->SetString("term", "http://schemas.google.com/docs/2007#" +
-                      entry_kind);
-  categories->Append(category);
-  new_entry->Set("category", categories);
   if (shared_with_me) {
-    base::DictionaryValue* shared_with_me_label = new base::DictionaryValue;
-    shared_with_me_label->SetString("label", "shared-with-me");
-    shared_with_me_label->SetString("scheme",
-                                    "http://schemas.google.com/g/2005/labels");
-    shared_with_me_label->SetString(
-        "term", "http://schemas.google.com/g/2005/labels#shared");
-    categories->Append(shared_with_me_label);
+    // Set current time to mark the file as shared_with_me.
+    new_file->set_shared_with_me_date(base::Time::Now());
   }
 
   std::string escaped_resource_id = net::EscapePath(resource_id);
 
-  // Add "content" which sets the content URL.
-  base::DictionaryValue* content = new base::DictionaryValue;
-  content->SetString("src", "https://xxx/content/" + escaped_resource_id);
-  content->SetString("type", content_type);
-  new_entry->Set("content", content);
+  // Set download URL and mime type.
+  new_file->set_download_url(
+      GURL("https://xxx/content/" + escaped_resource_id));
+  new_file->set_mime_type(content_type);
 
-  // Add "link" which sets the parent URL, the edit URL and the upload URL.
-  base::ListValue* links = new base::ListValue;
-
-  base::DictionaryValue* parent_link = new base::DictionaryValue;
+  // Set parents.
+  scoped_ptr<ParentReference> parent(new ParentReference);
   if (parent_resource_id.empty())
-    parent_link->SetString("href", GetFakeLinkUrl(GetRootResourceId()).spec());
+    parent->set_file_id(GetRootResourceId());
   else
-    parent_link->SetString("href", GetFakeLinkUrl(parent_resource_id).spec());
-  parent_link->SetString("rel",
-                         "http://schemas.google.com/docs/2007#parent");
-  links->Append(parent_link);
+    parent->set_file_id(parent_resource_id);
+  parent->set_parent_link(GetFakeLinkUrl(parent->file_id()));
+  parent->set_is_root(parent->file_id() == GetRootResourceId());
+  ScopedVector<ParentReference> parents;
+  parents.push_back(parent.release());
+  new_file->set_parents(parents.Pass());
 
-  base::DictionaryValue* edit_link = new base::DictionaryValue;
-  edit_link->SetString("href", "https://xxx/edit/" + escaped_resource_id);
-  edit_link->SetString("rel", "edit");
-  links->Append(edit_link);
+  new_file->set_self_link(GURL("https://xxx/edit/" + escaped_resource_id));
 
-  base::DictionaryValue* upload_link = new base::DictionaryValue;
-  upload_link->SetString("href", upload_url.spec());
-  upload_link->SetString("rel", kUploadUrlRel);
-  links->Append(upload_link);
-
-  const GURL share_url = net::AppendOrReplaceQueryParameter(
+  new_entry->share_url = net::AppendOrReplaceQueryParameter(
       share_url_base_, "name", title);
-  base::DictionaryValue* share_link = new base::DictionaryValue;
-  upload_link->SetString("href", share_url.spec());
-  upload_link->SetString("rel", kShareUrlRel);
-  links->Append(share_link);
-  new_entry->Set("link", links);
 
-  AddNewChangestamp(new_entry.get());
-  UpdateETag(new_entry.get());
+  AddNewChangestamp(new_change);
+  UpdateETag(new_file);
 
   base::Time published_date =
       base::Time() + base::TimeDelta::FromMilliseconds(++published_date_seq_);
-  new_entry->SetString(
-      "published.$t",
-      google_apis::util::FormatTimeAsString(published_date));
+  new_file->set_created_date(published_date);
 
-  // If there are no entries, prepare an empty entry to add.
-  if (!resource_list_value_->HasKey("entry"))
-    resource_list_value_->Set("entry", new base::ListValue);
-
-  base::DictionaryValue* raw_new_entry = new_entry.release();
-  base::ListValue* entries = NULL;
-  if (resource_list_value_->GetList("entry", &entries))
-    entries->Append(raw_new_entry);
-
+  EntryInfo* raw_new_entry = new_entry.release();
+  entries_[resource_id] = raw_new_entry;
   return raw_new_entry;
 }
 
@@ -1626,21 +1453,14 @@ void FakeDriveService::GetResourceListInternal(
     return;
   }
 
-  scoped_ptr<ResourceList> resource_list =
-      ResourceList::CreateFrom(*resource_list_value_);
-
-  // TODO(hashimoto): Drive API always provides largest changestamp. Remove this
-  // if-statement after API switch.
-  if (start_changestamp > 0 && start_offset == 0)
-    resource_list->set_largest_changestamp(largest_changestamp_);
-
   // Filter out entries per parameters like |directory_resource_id| and
   // |search_query|.
-  ScopedVector<ResourceEntry>* entries = resource_list->mutable_entries();
-
+  ScopedVector<ResourceEntry> entries;
   int num_entries_matched = 0;
-  for (size_t i = 0; i < entries->size();) {
-    ResourceEntry* entry = (*entries)[i];
+  for (EntryInfoMap::iterator it = entries_.begin(); it != entries_.end();
+       ++it) {
+    scoped_ptr<ResourceEntry> entry =
+        util::ConvertChangeResourceToResourceEntry(it->second->change_resource);
     bool should_exclude = false;
 
     // If |directory_resource_id| is set, exclude the entry if it's not in
@@ -1688,16 +1508,18 @@ void FakeDriveService::GetResourceListInternal(
     if (start_offset > 0 && num_entries_matched <= start_offset)
       should_exclude = true;
 
-    if (should_exclude)
-      entries->erase(entries->begin() + i);
-    else
-      ++i;
+    if (!should_exclude)
+      entries.push_back(entry.release());
   }
+
+  scoped_ptr<ResourceList> resource_list(new ResourceList);
+  if (start_changestamp > 0 && start_offset == 0)
+    resource_list->set_largest_changestamp(largest_changestamp_);
 
   // If |max_results| is set, trim the entries if the number exceeded the max
   // results.
-  if (max_results > 0 && entries->size() > static_cast<size_t>(max_results)) {
-    entries->erase(entries->begin() + max_results, entries->end());
+  if (max_results > 0 && entries.size() > static_cast<size_t>(max_results)) {
+    entries.erase(entries.begin() + max_results, entries.end());
     // Adds the next URL.
     // Here, we embed information which is needed for continuing the
     // GetResourceList request in the next invocation into url query
@@ -1725,6 +1547,7 @@ void FakeDriveService::GetResourceListInternal(
     link->set_href(next_url);
     resource_list->mutable_links()->push_back(link);
   }
+  resource_list->set_entries(entries.Pass());
 
   if (load_counter)
     *load_counter += 1;
