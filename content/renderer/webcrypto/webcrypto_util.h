@@ -35,6 +35,8 @@ blink::WebArrayBuffer CreateArrayBuffer(const uint8* data, unsigned data_size);
 // In Web Crypto, this type of encoding is only used inside JWK.
 bool Base64DecodeUrlSafe(const std::string& input, std::string* output);
 
+CONTENT_EXPORT bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id);
+
 // Returns the "hash" param for an algorithm if it exists, otherwise returns
 // a null algorithm.
 blink::WebCryptoAlgorithm GetInnerHashAlgorithm(

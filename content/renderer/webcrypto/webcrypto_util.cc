@@ -15,14 +15,6 @@ namespace webcrypto {
 
 namespace {
 
-bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id) {
-  return alg_id == blink::WebCryptoAlgorithmIdSha1 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha224 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha256 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha384 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha512;
-}
-
 }  // namespace
 
 const uint8* Uint8VectorStart(const std::vector<uint8>& data) {
@@ -64,16 +56,35 @@ bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
   return base::Base64Decode(base64EncodedText, output);
 }
 
+bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id) {
+  return alg_id == blink::WebCryptoAlgorithmIdSha1 ||
+         alg_id == blink::WebCryptoAlgorithmIdSha224 ||
+         alg_id == blink::WebCryptoAlgorithmIdSha256 ||
+         alg_id == blink::WebCryptoAlgorithmIdSha384 ||
+         alg_id == blink::WebCryptoAlgorithmIdSha512;
+}
+
 blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
     const blink::WebCryptoAlgorithm& algorithm) {
-  if (algorithm.hmacParams())
-    return algorithm.hmacParams()->hash();
-  if (algorithm.hmacKeyParams())
-    return algorithm.hmacKeyParams()->hash();
-  if (algorithm.rsaSsaParams())
-    return algorithm.rsaSsaParams()->hash();
-  if (algorithm.rsaOaepParams())
-    return algorithm.rsaOaepParams()->hash();
+  DCHECK(!algorithm.isNull());
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdHmac:
+      if (algorithm.hmacParams())
+        return algorithm.hmacParams()->hash();
+      else if (algorithm.hmacKeyParams())
+        return algorithm.hmacKeyParams()->hash();
+      break;
+    case blink::WebCryptoAlgorithmIdRsaOaep:
+      if (algorithm.rsaOaepParams())
+        return algorithm.rsaOaepParams()->hash();
+      break;
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+      if (algorithm.rsaSsaParams())
+        return algorithm.rsaSsaParams()->hash();
+      break;
+    default:
+      break;
+  }
   return blink::WebCryptoAlgorithm::createNull();
 }
 

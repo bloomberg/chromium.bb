@@ -437,6 +437,8 @@ bool ImportKeyInternalRaw(
       return false;
   }
 
+  // TODO(bryaneyler): Need to split handling for symmetric and asymmetric keys.
+  // Currently only supporting symmetric.
   CK_MECHANISM_TYPE mechanism = CKM_INVALID_MECHANISM;
   // Flags are verified at the Blink layer; here the flags are set to all
   // possible operations for this key type.
@@ -1058,6 +1060,12 @@ bool WebCryptoImpl::SignInternal(
     const unsigned char* data,
     unsigned data_size,
     blink::WebArrayBuffer* buffer) {
+
+  // Note: It is not an error to sign empty data.
+
+  DCHECK(buffer);
+  DCHECK_NE(0, key.usages() & blink::WebCryptoKeyUsageSign);
+
   blink::WebArrayBuffer result;
 
   switch (algorithm.id()) {
@@ -1071,7 +1079,6 @@ bool WebCryptoImpl::SignInternal(
 
       DCHECK_EQ(PK11_GetMechanism(sym_key->key()),
                 WebCryptoHashToHMACMechanism(params->hash()));
-      DCHECK_NE(0, key.usages() & blink::WebCryptoKeyUsageSign);
 
       SECItem param_item = { siBuffer, NULL, 0 };
       SECItem data_item = {
@@ -1109,6 +1116,53 @@ bool WebCryptoImpl::SignInternal(
 
       break;
     }
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
+      if (key.type() != blink::WebCryptoKeyTypePrivate ||
+          webcrypto::GetInnerHashAlgorithm(algorithm).isNull())
+        return false;
+
+      PrivateKeyHandle* const private_key =
+          reinterpret_cast<PrivateKeyHandle*>(key.handle());
+      DCHECK(private_key);
+      DCHECK(private_key->key());
+
+      // Pick the NSS signing algorithm by combining RSA-SSA (RSA PKCS1) and the
+      // inner hash of the input Web Crypto algorithm.
+      SECOidTag sign_alg_tag;
+      switch (webcrypto::GetInnerHashAlgorithm(algorithm).id()) {
+        case blink::WebCryptoAlgorithmIdSha1:
+          sign_alg_tag = SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
+          break;
+        case blink::WebCryptoAlgorithmIdSha224:
+          sign_alg_tag = SEC_OID_PKCS1_SHA224_WITH_RSA_ENCRYPTION;
+          break;
+        case blink::WebCryptoAlgorithmIdSha256:
+          sign_alg_tag = SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
+          break;
+        case blink::WebCryptoAlgorithmIdSha384:
+          sign_alg_tag = SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
+          break;
+        case blink::WebCryptoAlgorithmIdSha512:
+          sign_alg_tag = SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
+          break;
+        default:
+          return false;
+      }
+
+      crypto::ScopedSECItem signature_item(SECITEM_AllocItem(NULL, NULL, 0));
+      if (SEC_SignData(signature_item.get(),
+                       data,
+                       data_size,
+                       private_key->key(),
+                       sign_alg_tag) != SECSuccess) {
+        return false;
+      }
+
+      result = webcrypto::CreateArrayBuffer(signature_item->data,
+                                            signature_item->len);
+
+      break;
+    }
     default:
       return false;
   }
@@ -1125,6 +1179,11 @@ bool WebCryptoImpl::VerifySignatureInternal(
     const unsigned char* data,
     unsigned data_size,
     bool* signature_match) {
+
+  if (!signature_size)
+    return false;
+  DCHECK(signature);
+
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdHmac: {
       blink::WebArrayBuffer result;
@@ -1139,6 +1198,54 @@ bool WebCryptoImpl::VerifySignatureInternal(
       *signature_match =
           result.byteLength() == signature_size &&
           crypto::SecureMemEqual(result.data(), signature, signature_size);
+
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5: {
+      if (key.type() != blink::WebCryptoKeyTypePublic)
+        return false;
+
+      PublicKeyHandle* const public_key =
+          reinterpret_cast<PublicKeyHandle*>(key.handle());
+      DCHECK(public_key);
+      DCHECK(public_key->key());
+
+      const SECItem signature_item = {
+          siBuffer,
+          const_cast<unsigned char*>(signature),
+          signature_size
+      };
+
+      SECOidTag hash_alg_tag;
+      switch (webcrypto::GetInnerHashAlgorithm(algorithm).id()) {
+        case blink::WebCryptoAlgorithmIdSha1:
+          hash_alg_tag = SEC_OID_SHA1;
+          break;
+        case blink::WebCryptoAlgorithmIdSha224:
+          hash_alg_tag = SEC_OID_SHA224;
+          break;
+        case blink::WebCryptoAlgorithmIdSha256:
+          hash_alg_tag = SEC_OID_SHA256;
+          break;
+        case blink::WebCryptoAlgorithmIdSha384:
+          hash_alg_tag = SEC_OID_SHA384;
+          break;
+        case blink::WebCryptoAlgorithmIdSha512:
+          hash_alg_tag = SEC_OID_SHA512;
+          break;
+        default:
+          return false;
+      }
+
+      *signature_match =
+          SECSuccess == VFY_VerifyDataDirect(data,
+                                             data_size,
+                                             public_key->key(),
+                                             &signature_item,
+                                             SEC_OID_PKCS1_RSA_ENCRYPTION,
+                                             hash_alg_tag,
+                                             NULL,
+                                             NULL);
 
       break;
     }

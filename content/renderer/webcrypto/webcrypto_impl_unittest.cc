@@ -117,6 +117,17 @@ void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
   dict->SetString("e", "AQAB");
 }
 
+blink::WebCryptoAlgorithm CreateRsaAlgorithmWithInnerHash(
+    blink::WebCryptoAlgorithmId algorithm_id,
+    blink::WebCryptoAlgorithmId hash_id) {
+  DCHECK(algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
+         algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep);
+  DCHECK(webcrypto::IsHashAlgorithm(hash_id));
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      algorithm_id,
+      new blink::WebCryptoRsaSsaParams(webcrypto::CreateAlgorithm(hash_id)));
+}
+
 // Determines if two ArrayBuffers have identical content.
 bool ArrayBuffersEqual(
     const blink::WebArrayBuffer& a,
@@ -161,6 +172,42 @@ blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
                                   key_length_bits);
 }
 
+// The following key pair is comprised of the SPKI (public key) and PKCS#8
+// (private key) representations of the key pair provided in Example 1 of the
+// NIST test vectors at
+// ftp://ftp.rsa.com/pub/rsalabs/tmp/pkcs1v15sign-vectors.txt
+const unsigned kModulusLength = 1024;
+const char* const kPublicKeySpkiDerHex =
+    "30819f300d06092a864886f70d010101050003818d0030818902818100a5"
+    "6e4a0e701017589a5187dc7ea841d156f2ec0e36ad52a44dfeb1e61f7ad9"
+    "91d8c51056ffedb162b4c0f283a12a88a394dff526ab7291cbb307ceabfc"
+    "e0b1dfd5cd9508096d5b2b8b6df5d671ef6377c0921cb23c270a70e2598e"
+    "6ff89d19f105acc2d3f0cb35f29280e1386b6f64c4ef22e1e1f20d0ce8cf"
+    "fb2249bd9a21370203010001";
+const char* const kPrivateKeyPkcs8DerHex =
+    "30820275020100300d06092a864886f70d01010105000482025f3082025b"
+    "02010002818100a56e4a0e701017589a5187dc7ea841d156f2ec0e36ad52"
+    "a44dfeb1e61f7ad991d8c51056ffedb162b4c0f283a12a88a394dff526ab"
+    "7291cbb307ceabfce0b1dfd5cd9508096d5b2b8b6df5d671ef6377c0921c"
+    "b23c270a70e2598e6ff89d19f105acc2d3f0cb35f29280e1386b6f64c4ef"
+    "22e1e1f20d0ce8cffb2249bd9a2137020301000102818033a5042a90b27d"
+    "4f5451ca9bbbd0b44771a101af884340aef9885f2a4bbe92e894a724ac3c"
+    "568c8f97853ad07c0266c8c6a3ca0929f1e8f11231884429fc4d9ae55fee"
+    "896a10ce707c3ed7e734e44727a39574501a532683109c2abacaba283c31"
+    "b4bd2f53c3ee37e352cee34f9e503bd80c0622ad79c6dcee883547c6a3b3"
+    "25024100e7e8942720a877517273a356053ea2a1bc0c94aa72d55c6e8629"
+    "6b2dfc967948c0a72cbccca7eacb35706e09a1df55a1535bd9b3cc34160b"
+    "3b6dcd3eda8e6443024100b69dca1cf7d4d7ec81e75b90fcca874abcde12"
+    "3fd2700180aa90479b6e48de8d67ed24f9f19d85ba275874f542cd20dc72"
+    "3e6963364a1f9425452b269a6799fd024028fa13938655be1f8a159cbaca"
+    "5a72ea190c30089e19cd274a556f36c4f6e19f554b34c077790427bbdd8d"
+    "d3ede2448328f385d81b30e8e43b2fffa02786197902401a8b38f398fa71"
+    "2049898d7fb79ee0a77668791299cdfa09efc0e507acb21ed74301ef5bfd"
+    "48be455eaeb6e1678255827580a8e4e8e14151d1510a82a3f2e729024027"
+    "156aba4126d24a81f3a528cbfb27f56886f840a9f6e86e17a44b94fe9319"
+    "584b8e22fdde1e5a2e3bd8aa5ba8d8584194eb2190acf832b847f13a3d24"
+    "a79f4d";
+
 }  // namespace
 
 class WebCryptoImplTest : public testing::Test {
@@ -188,6 +235,43 @@ class WebCryptoImplTest : public testing::Test {
     EXPECT_EQ(extractable, key.extractable());
     EXPECT_EQ(usage, key.usages());
     return key;
+  }
+
+  void ImportRsaKeyPair(
+      const std::string& spki_der_hex,
+      const std::string& pkcs8_der_hex,
+      const blink::WebCryptoAlgorithm& algorithm,
+      bool extractable,
+      blink::WebCryptoKeyUsageMask usage_mask,
+      blink::WebCryptoKey* public_key,
+      blink::WebCryptoKey* private_key) {
+    EXPECT_TRUE(ImportKeyInternal(
+        blink::WebCryptoKeyFormatSpki,
+        HexStringToBytes(spki_der_hex),
+        algorithm,
+        true,
+        usage_mask,
+        public_key));
+    EXPECT_FALSE(public_key->isNull());
+    EXPECT_TRUE(public_key->handle());
+    EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key->type());
+    EXPECT_EQ(algorithm.id(), public_key->algorithm().id());
+    EXPECT_EQ(extractable, extractable);
+    EXPECT_EQ(usage_mask, public_key->usages());
+
+    EXPECT_TRUE(ImportKeyInternal(
+        blink::WebCryptoKeyFormatPkcs8,
+        HexStringToBytes(pkcs8_der_hex),
+        algorithm,
+        extractable,
+        usage_mask,
+        private_key));
+    EXPECT_FALSE(private_key->isNull());
+    EXPECT_TRUE(private_key->handle());
+    EXPECT_EQ(blink::WebCryptoKeyTypePrivate, private_key->type());
+    EXPECT_EQ(algorithm.id(), private_key->algorithm().id());
+    EXPECT_EQ(extractable, extractable);
+    EXPECT_EQ(usage_mask, private_key->usages());
   }
 
   // TODO(eroman): For Linux builds using system NSS, AES-GCM support is a
@@ -335,6 +419,22 @@ class WebCryptoImplTest : public testing::Test {
                                            webcrypto::Uint8VectorStart(data),
                                            data.size(),
                                            signature_match);
+  }
+
+  bool VerifySignatureInternal(
+      const blink::WebCryptoAlgorithm& algorithm,
+      const blink::WebCryptoKey& key,
+      const std::vector<uint8>& signature,
+      const std::vector<uint8>& data,
+      bool* signature_match) {
+    return crypto_.VerifySignatureInternal(
+        algorithm,
+        key,
+        webcrypto::Uint8VectorStart(signature),
+        signature.size(),
+        webcrypto::Uint8VectorStart(data),
+        data.size(),
+        signature_match);
   }
 
   bool EncryptInternal(
@@ -1289,26 +1389,11 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportJwkHappy)) {
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
-  // openssl genrsa -out pair.pem 2048
-  // openssl rsa -in pair.pem -out pubkey.der -outform DER -pubout
-  // xxd -p pubkey.der
-  const std::string hex_rsa_spki_der =
-      "30820122300d06092a864886f70d01010105000382010f003082010a0282"
-      "010100f19e40f94e3780858701577a571cca000cb9795db89ddf8e98ab0e"
-      "5eecfa47516cb08dc591cae5ab7fa43d6db402e95991d4a2de52e7cd3a66"
-      "4f58284be2eb4675d5a849a2582c585d2b3c6c225a8f2c53a0414d5dbd06"
-      "172371cefdf953e9ec3000fc9ad000743023f74e82d12aa93917a2c9b832"
-      "696085ee0711154cf98a6d098f44cee00ea3b7584236503a5483ba8b6792"
-      "fee588d1a8f4a0618333c4cb3447d760b43d5a0d9ed6ef79763df670cd8b"
-      "5eb869a20833f1e3e6d8b88240a5d4335c73fd20487f2a7d112af8692357"
-      "6425e44a273e5ad2e93d6b50a28e65f9e133958e4f0c7d12e0adc90fedd4"
-      "f6b6848e7b6900666642a08b520a6534a35d4f0203010001";
-
   // Passing case: Import a valid RSA key in SPKI format.
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   ASSERT_TRUE(ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
-      HexStringToBytes(hex_rsa_spki_der),
+      HexStringToBytes(kPublicKeySpkiDerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
       true,
       blink::WebCryptoKeyUsageEncrypt,
@@ -1332,7 +1417,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // to map to a Web Crypto algorithm.
   EXPECT_FALSE(ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
-      HexStringToBytes(hex_rsa_spki_der),
+      HexStringToBytes(kPublicKeySpkiDerHex),
       blink::WebCryptoAlgorithm::createNull(),
       true,
       blink::WebCryptoKeyUsageEncrypt,
@@ -1350,7 +1435,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // Failing case: Import RSA key but provide an inconsistent input algorithm.
   EXPECT_FALSE(ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
-      HexStringToBytes(hex_rsa_spki_der),
+      HexStringToBytes(kPublicKeySpkiDerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
       true,
       blink::WebCryptoKeyUsageEncrypt,
@@ -1360,7 +1445,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // and compare to original data.
   blink::WebArrayBuffer output;
   ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
-  ExpectArrayBufferMatchesHex(hex_rsa_spki_der, output);
+  ExpectArrayBufferMatchesHex(kPublicKeySpkiDerHex, output);
 
   // Failing case: Try to export a previously imported RSA public key in raw
   // format (not allowed for a public key).
@@ -1369,7 +1454,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
   // Failing case: Try to export a non-extractable key
   ASSERT_TRUE(ImportKeyInternal(
       blink::WebCryptoKeyFormatSpki,
-      HexStringToBytes(hex_rsa_spki_der),
+      HexStringToBytes(kPublicKeySpkiDerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
       false,
       blink::WebCryptoKeyUsageEncrypt,
@@ -1380,35 +1465,11 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportExportSpki)) {
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
-
-  // The following is a DER-encoded PKCS#8 representation of the RSA key from
-  // Example 1 of NIST's "Test vectors for RSA PKCS#1 v1.5 Signature".
-  // ftp://ftp.rsa.com/pub/rsalabs/tmp/pkcs1v15sign-vectors.txt
-  const std::string hex_rsa_pkcs8_der =
-      "30820275020100300D06092A864886F70D01010105000482025F3082025B020100028181"
-      "00A56E4A0E701017589A5187DC7EA841D156F2EC0E36AD52A44DFEB1E61F7AD991D8C510"
-      "56FFEDB162B4C0F283A12A88A394DFF526AB7291CBB307CEABFCE0B1DFD5CD9508096D5B"
-      "2B8B6DF5D671EF6377C0921CB23C270A70E2598E6FF89D19F105ACC2D3F0CB35F29280E1"
-      "386B6F64C4EF22E1E1F20D0CE8CFFB2249BD9A2137020301000102818033A5042A90B27D"
-      "4F5451CA9BBBD0B44771A101AF884340AEF9885F2A4BBE92E894A724AC3C568C8F97853A"
-      "D07C0266C8C6A3CA0929F1E8F11231884429FC4D9AE55FEE896A10CE707C3ED7E734E447"
-      "27A39574501A532683109C2ABACABA283C31B4BD2F53C3EE37E352CEE34F9E503BD80C06"
-      "22AD79C6DCEE883547C6A3B325024100E7E8942720A877517273A356053EA2A1BC0C94AA"
-      "72D55C6E86296B2DFC967948C0A72CBCCCA7EACB35706E09A1DF55A1535BD9B3CC34160B"
-      "3B6DCD3EDA8E6443024100B69DCA1CF7D4D7EC81E75B90FCCA874ABCDE123FD2700180AA"
-      "90479B6E48DE8D67ED24F9F19D85BA275874F542CD20DC723E6963364A1F9425452B269A"
-      "6799FD024028FA13938655BE1F8A159CBACA5A72EA190C30089E19CD274A556F36C4F6E1"
-      "9F554B34C077790427BBDD8DD3EDE2448328F385D81B30E8E43B2FFFA02786197902401A"
-      "8B38F398FA712049898D7FB79EE0A77668791299CDFA09EFC0E507ACB21ED74301EF5BFD"
-      "48BE455EAEB6E1678255827580A8E4E8E14151D1510A82A3F2E729024027156ABA4126D2"
-      "4A81F3A528CBFB27F56886F840A9F6E86E17A44B94FE9319584B8E22FDDE1E5A2E3BD8AA"
-      "5BA8D8584194EB2190ACF832B847F13A3D24A79F4D";
-
   // Passing case: Import a valid RSA key in PKCS#8 format.
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   ASSERT_TRUE(ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
-      HexStringToBytes(hex_rsa_pkcs8_der),
+      HexStringToBytes(kPrivateKeyPkcs8DerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
       true,
       blink::WebCryptoKeyUsageSign,
@@ -1432,7 +1493,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
   // to map to a Web Crypto algorithm.
   EXPECT_FALSE(ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
-      HexStringToBytes(hex_rsa_pkcs8_der),
+      HexStringToBytes(kPrivateKeyPkcs8DerHex),
       blink::WebCryptoAlgorithm::createNull(),
       true,
       blink::WebCryptoKeyUsageSign,
@@ -1450,7 +1511,7 @@ TEST_F(WebCryptoImplTest, MAYBE(ImportPkcs8)) {
   // Failing case: Import RSA key but provide an inconsistent input algorithm.
   EXPECT_FALSE(ImportKeyInternal(
       blink::WebCryptoKeyFormatPkcs8,
-      HexStringToBytes(hex_rsa_pkcs8_der),
+      HexStringToBytes(kPrivateKeyPkcs8DerHex),
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
       true,
       blink::WebCryptoKeyUsageSign,
@@ -1492,7 +1553,9 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
   unsigned exponent_length = sizeof(unsigned long) + 1;  // NOLINT
   const std::vector<uint8> long_exponent(exponent_length, 0x01);
   algorithm = webcrypto::CreateRsaKeyGenAlgorithm(
-      blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, modulus_length, long_exponent);
+      blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+      modulus_length,
+      long_exponent);
   EXPECT_FALSE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
 
@@ -1572,23 +1635,19 @@ TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyPairRsa)) {
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(RsaEsRoundTrip)) {
-  // Note: using unrealistic short key length here to avoid bogging down tests.
-
-  // Create a key pair.
-  const unsigned kModulusLength = 256;
+  // Import a key pair.
   blink::WebCryptoAlgorithm algorithm =
-      webcrypto::CreateRsaKeyGenAlgorithm(
-          blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-          kModulusLength,
-          HexStringToBytes("010001"));
-  const blink::WebCryptoKeyUsageMask usage_mask =
-      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt;
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
   blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
-  EXPECT_TRUE(GenerateKeyPairInternal(
-      algorithm, false, usage_mask, &public_key, &private_key));
-  EXPECT_FALSE(public_key.isNull());
-  EXPECT_FALSE(private_key.isNull());
+  ImportRsaKeyPair(
+      kPublicKeySpkiDerHex,
+      kPrivateKeyPkcs8DerHex,
+      algorithm,
+      false,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+      &public_key,
+      &private_key);
 
   // Make a maximum-length data message. RSAES can operate on messages up to
   // length of k - 11 bytes, where k is the octet length of the RSA modulus.
@@ -1694,31 +1753,19 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsKnownAnswer)) {
       "3bbf8915055aea4fa7c3cbfdfbcc163f04c234fb6d847f39bab9612ecbee"
       "04626e945c3ccf42";
 
-  // Import the public key.
-  const blink::WebCryptoAlgorithm algorithm =
+  // Import the key pair.
+  blink::WebCryptoAlgorithm algorithm =
       webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  ASSERT_TRUE(ImportKeyInternal(
-      blink::WebCryptoKeyFormatSpki,
-      HexStringToBytes(rsa_spki_der_hex),
-      algorithm,
-      true,
-      blink::WebCryptoKeyUsageEncrypt,
-      &public_key));
-  EXPECT_FALSE(public_key.isNull());
-  EXPECT_TRUE(public_key.handle());
-
-  // Import the private key.
   blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
-  ASSERT_TRUE(ImportKeyInternal(
-      blink::WebCryptoKeyFormatPkcs8,
-      HexStringToBytes(rsa_pkcs8_der_hex),
+  ImportRsaKeyPair(
+      rsa_spki_der_hex,
+      rsa_pkcs8_der_hex,
       algorithm,
-      true,
-      blink::WebCryptoKeyUsageDecrypt,
-      &private_key));
-  EXPECT_FALSE(private_key.isNull());
-  EXPECT_TRUE(private_key.handle());
+      false,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+      &public_key,
+      &private_key);
 
   // Decrypt the known-good ciphertext with the private key. As a check we must
   // get the known original cleartext.
@@ -1755,27 +1802,21 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsKnownAnswer)) {
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(RsaEsFailures)) {
-  // Note: using unrealistic short key length here to avoid bogging down tests.
-
-  // Create a key pair.
-  const unsigned kModulusLength = 256;
+  // Import a key pair.
   blink::WebCryptoAlgorithm algorithm =
-      webcrypto::CreateRsaKeyGenAlgorithm(
-          blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-          kModulusLength,
-          HexStringToBytes("010001"));
-  const blink::WebCryptoKeyUsageMask usage_mask =
-      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt;
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
   blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
-  EXPECT_TRUE(GenerateKeyPairInternal(
-      algorithm, false, usage_mask, &public_key, &private_key));
-  EXPECT_FALSE(public_key.isNull());
-  EXPECT_FALSE(private_key.isNull());
+  ImportRsaKeyPair(
+      kPublicKeySpkiDerHex,
+      kPrivateKeyPkcs8DerHex,
+      algorithm,
+      false,
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+      &public_key,
+      &private_key);
 
   // Fail encrypt with a private key.
-  algorithm =
-      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
   blink::WebArrayBuffer encrypted_data;
   const std::string message_hex_str("0102030405060708090a0b0c0d0e0f");
   const std::vector<uint8> message_hex(HexStringToBytes(message_hex_str));
@@ -1826,6 +1867,360 @@ TEST_F(WebCryptoImplTest, MAYBE(RsaEsFailures)) {
       encrypted_data.byteLength(),
       &decrypted_data));
   ExpectArrayBufferMatchesHex(message_hex_str, decrypted_data);
+}
+
+TEST_F(WebCryptoImplTest, MAYBE(RsaSsaSignVerifyFailures)) {
+  // Import a key pair.
+  blink::WebCryptoAlgorithm algorithm = CreateRsaAlgorithmWithInnerHash(
+      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+      blink::WebCryptoAlgorithmIdSha1);
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  ImportRsaKeyPair(
+      kPublicKeySpkiDerHex,
+      kPrivateKeyPkcs8DerHex,
+      algorithm,
+      false,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+      &public_key,
+      &private_key);
+
+  blink::WebArrayBuffer signature;
+  bool signature_match;
+
+  // Compute a signature.
+  const std::vector<uint8> data = HexStringToBytes("010203040506070809");
+  ASSERT_TRUE(SignInternal(algorithm, private_key, data, &signature));
+
+  // Ensure truncated signature does not verify by passing one less byte.
+  EXPECT_TRUE(VerifySignatureInternal(
+      algorithm,
+      public_key,
+      static_cast<const unsigned char*>(signature.data()),
+      signature.byteLength() - 1,
+      data,
+      &signature_match));
+  EXPECT_FALSE(signature_match);
+
+  // Ensure corrupted signature does not verify.
+  std::vector<uint8> corrupt_sig(
+      static_cast<uint8*>(signature.data()),
+      static_cast<uint8*>(signature.data()) + signature.byteLength());
+  corrupt_sig[corrupt_sig.size() / 2] ^= 0x1;
+  EXPECT_TRUE(VerifySignatureInternal(
+      algorithm,
+      public_key,
+      webcrypto::Uint8VectorStart(corrupt_sig),
+      corrupt_sig.size(),
+      data,
+      &signature_match));
+  EXPECT_FALSE(signature_match);
+
+  // Ensure signatures that are greater than the modulus size fail.
+  const unsigned long_message_size_bytes = 1024;
+  DCHECK_GT(long_message_size_bytes, kModulusLength/8);
+  const unsigned char kLongSignature[long_message_size_bytes] = { 0 };
+  EXPECT_TRUE(VerifySignatureInternal(
+      algorithm,
+      public_key,
+      kLongSignature,
+      sizeof(kLongSignature),
+      data,
+      &signature_match));
+  EXPECT_FALSE(signature_match);
+
+  // Ensure that verifying using a private key, rather than a public key, fails.
+  EXPECT_FALSE(VerifySignatureInternal(
+      algorithm,
+      private_key,
+      static_cast<const unsigned char*>(signature.data()),
+      signature.byteLength(),
+      data,
+      &signature_match));
+
+  // Ensure that signing using a public key, rather than a private key, fails.
+  EXPECT_FALSE(SignInternal(algorithm, public_key, data, &signature));
+
+  // Ensure that signing and verifying with an incompatible algorithm fails.
+  algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
+  EXPECT_FALSE(SignInternal(algorithm, private_key, data, &signature));
+  EXPECT_FALSE(VerifySignatureInternal(
+      algorithm,
+      public_key,
+      static_cast<const unsigned char*>(signature.data()),
+      signature.byteLength(),
+      data,
+      &signature_match));
+
+  // Some crypto libraries (NSS) can automatically select the RSA SSA inner hash
+  // based solely on the contents of the input signature data. In the Web Crypto
+  // implementation, the inner hash should be specified uniquely by the input
+  // algorithm parameter. To validate this behavior, call Verify with a computed
+  // signature that used one hash type (SHA-1), but pass in an algorithm with a
+  // different inner hash type (SHA-256). If the hash type is determined by the
+  // signature itself (undesired), the verify will pass, while if the hash type
+  // is specified by the input algorithm (desired), the verify will fail.
+
+  // Compute a signature using SHA-1 as the inner hash.
+  EXPECT_TRUE(SignInternal(CreateRsaAlgorithmWithInnerHash(
+                               blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                               blink::WebCryptoAlgorithmIdSha1),
+                           private_key,
+                           data,
+                           &signature));
+
+  // Now verify using an algorithm whose inner hash is SHA-256, not SHA-1. The
+  // signature should not verify.
+  // NOTE: public_key was produced by generateKey, and so its associated
+  // algorithm has WebCryptoRsaKeyGenParams and not WebCryptoRsaSsaParams. Thus
+  // it has no inner hash to conflict with the input algorithm.
+  bool is_match;
+  EXPECT_TRUE(VerifySignatureInternal(
+      CreateRsaAlgorithmWithInnerHash(
+          blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+          blink::WebCryptoAlgorithmIdSha256),
+      public_key,
+      static_cast<const unsigned char*>(signature.data()),
+      signature.byteLength(),
+      data,
+      &is_match));
+  EXPECT_FALSE(is_match);
+}
+
+TEST_F(WebCryptoImplTest, MAYBE(RsaSignVerifyKnownAnswer)) {
+  // Use the NIST test vectors from Example 1 of
+  // ftp://ftp.rsa.com/pub/rsalabs/tmp/pkcs1v15sign-vectors.txt
+  // These vectors are known answers for RSA PKCS#1 v1.5 Signature with a SHA-1
+  // digest, using a predefined key pair.
+
+  struct TestCase {
+    const std::string message_hex;
+    const std::string signature_hex;
+  };
+
+  // The following data are the input messages and corresponding computed RSA
+  // PKCS#1 v1.5 signatures from the NIST link above.
+  const TestCase kTests[] = {
+      // PKCS#1 v1.5 Signature Example 1.1
+      {"cdc87da223d786df3b45e0bbbc721326d1ee2af806cc315475cc6f0d9c66e1b6"
+       "2371d45ce2392e1ac92844c310102f156a0d8d52c1f4c40ba3aa65095786cb76"
+       "9757a6563ba958fed0bcc984e8b517a3d5f515b23b8a41e74aa867693f90dfb0"
+       "61a6e86dfaaee64472c00e5f20945729cbebe77f06ce78e08f4098fba41f9d61"
+       "93c0317e8b60d4b6084acb42d29e3808a3bc372d85e331170fcbf7cc72d0b71c"
+       "296648b3a4d10f416295d0807aa625cab2744fd9ea8fd223c42537029828bd16"
+       "be02546f130fd2e33b936d2676e08aed1b73318b750a0167d0",
+       "6bc3a06656842930a247e30d5864b4d819236ba7c68965862ad7dbc4e24af28e"
+       "86bb531f03358be5fb74777c6086f850caef893f0d6fcc2d0c91ec013693b4ea"
+       "00b80cd49aac4ecb5f8911afe539ada4a8f3823d1d13e472d1490547c659c761"
+       "7f3d24087ddb6f2b72096167fc097cab18e9a458fcb634cdce8ee35894c484d7"},
+      // PKCS#1 v1.5 Signature Example 1.2
+      {"851384cdfe819c22ed6c4ccb30daeb5cf059bc8e1166b7e3530c4c233e2b5f8f"
+       "71a1cca582d43ecc72b1bca16dfc7013226b9e",
+       "84fd2ce734ec1da828d0f15bf49a8707c15d05948136de537a3db421384167c8"
+       "6fae022587ee9e137daee754738262932d271c744c6d3a189ad4311bdb020492"
+       "e322fbddc40406ea860d4e8ea2a4084aa98b9622a446756fdb740ddb3d91db76"
+       "70e211661bbf8709b11c08a70771422d1a12def29f0688a192aebd89e0f896f8"},
+      // PKCS#1 v1.5 Signature Example1.3
+      {"a4b159941761c40c6a82f2b80d1b94f5aa2654fd17e12d588864679b54cd04ef"
+       "8bd03012be8dc37f4b83af7963faff0dfa225477437c48017ff2be8191cf3955"
+       "fc07356eab3f322f7f620e21d254e5db4324279fe067e0910e2e81ca2cab31c7"
+       "45e67a54058eb50d993cdb9ed0b4d029c06d21a94ca661c3ce27fae1d6cb20f4"
+       "564d66ce4767583d0e5f060215b59017be85ea848939127bd8c9c4d47b51056c"
+       "031cf336f17c9980f3b8f5b9b6878e8b797aa43b882684333e17893fe9caa6aa"
+       "299f7ed1a18ee2c54864b7b2b99b72618fb02574d139ef50f019c9eef4169713"
+       "38e7d470",
+       "0b1f2e5180e5c7b4b5e672929f664c4896e50c35134b6de4d5a934252a3a245f"
+       "f48340920e1034b7d5a5b524eb0e1cf12befef49b27b732d2c19e1c43217d6e1"
+       "417381111a1d36de6375cf455b3c9812639dbc27600c751994fb61799ecf7da6"
+       "bcf51540afd0174db4033188556675b1d763360af46feeca5b60f882829ee7b2"},
+      // PKCS#1 v1.5 Signature Example 1.4
+      {"bc656747fa9eafb3f0",
+       "45607ad611cf5747a41ac94d0ffec878bdaf63f6b57a4b088bf36e34e109f840"
+       "f24b742ada16102dabf951cbc44f8982e94ed4cd09448d20ec0efa73545f80b6"
+       "5406bed6194a61c340b4ad1568cbb75851049f11af1734964076e02029aee200"
+       "e40e80be0f4361f69841c4f92a4450a2286d43289b405554c54d25c6ecb584f4"},
+      // PKCS#1 v1.5 Signature Example 1.5
+      {"b45581547e5427770c768e8b82b75564e0ea4e9c32594d6bff706544de0a8776"
+       "c7a80b4576550eee1b2acabc7e8b7d3ef7bb5b03e462c11047eadd00629ae575"
+       "480ac1470fe046f13a2bf5af17921dc4b0aa8b02bee6334911651d7f8525d10f"
+       "32b51d33be520d3ddf5a709955a3dfe78283b9e0ab54046d150c177f037fdccc"
+       "5be4ea5f68b5e5a38c9d7edcccc4975f455a6909b4",
+       "54be9d90877515f450279c15b5f61ad6f15ecc95f18cbed82b65b1667a575809"
+       "587994668044f3bc2ae7f884501f64f0b43f588cfa205a6ab704328c2d4ab92a"
+       "7ae13440614d3e085f401da9ad28e2105e4a0edb681a6424df047388ce051ee9"
+       "df7bc2163fe347520ad51ccd518064383e741acad3cbdc2cb5a7c68e868464c2"},
+      // PKCS#1 v1.5 Signature Example 1.6
+      {"10aae9a0ab0b595d0841207b700d48d75faedde3b775cd6b4cc88ae06e4694ec"
+       "74ba18f8520d4f5ea69cbbe7cc2beba43efdc10215ac4eb32dc302a1f53dc6c4"
+       "352267e7936cfebf7c8d67035784a3909fa859c7b7b59b8e39c5c2349f1886b7"
+       "05a30267d402f7486ab4f58cad5d69adb17ab8cd0ce1caf5025af4ae24b1fb87"
+       "94c6070cc09a51e2f9911311e3877d0044c71c57a993395008806b723ac38373"
+       "d395481818528c1e7053739282053529510e935cd0fa77b8fa53cc2d474bd4fb"
+       "3cc5c672d6ffdc90a00f9848712c4bcfe46c60573659b11e6457e861f0f604b6"
+       "138d144f8ce4e2da73",
+       "0e6ff63a856b9cbd5dbe423183122047dd39d6f76d1b2310e546fe9ee73b33ef"
+       "a7c78f9474455c9e5b88cb383aafc3698668e7b7a59a9cbb5b0897b6c5afb7f8"
+       "bac4b924e98d760a15fc43d2814ab2d5187f79bed9915a93397ebc22a7677506"
+       "a02e076d3ffdc0441dbd4db00453dc28d830e0573f77b817b505c38b4a4bb5d0"},
+      // PKCS#1 v1.5 Signature Example 1.7
+      {"efb5da1b4d1e6d9a5dff92d0184da7e31f877d1281ddda625664869e8379e67a"
+       "d3b75eae74a580e9827abd6eb7a002cb5411f5266797768fb8e95ae40e3e8b34"
+       "66f5ab15d69553952939ec23e61d58497fac76aa1c0bb5a3cb4a54383587c7bb"
+       "78d13eefda205443e6ce4365802df55c64713497984e7ca96722b3edf84d56",
+       "8385d58533a995f72df262b70f40b391ddf515f464b9d2cc2d66398fc05689d8"
+       "11632946d62eabdca7a31fcf6cd6c981d28bbc29083e4a6d5b2b378ca4e540f0"
+       "60b96d53ad2693f82178b94e2e2f86b9accfa02025107e062ab7080175684501"
+       "028f676461d81c008fe4750671649970878fc175cf98e96b2ecbf6874d77dacb"},
+      // PKCS#1 v1.5 Signature Example 1.8
+      {"53bb58ce42f1984940552657233b14969af365c0a561a4132af18af39432280e"
+       "3e437082434b19231837184f02cf2b2e726bebf74d7ae3256d8b72f3eafdb134"
+       "d33de06f2991d299d59f5468d43b9958d6a968f5969edbbc6e7185cbc716c7c9"
+       "45dafa9cc71ddfaaa01094a452ddf5e2407320400bf05ea9729cafbf0600e788"
+       "07ef9462e3fde32ed7d981a56f4751ef64fb4549910ecc911d728053b3994300"
+       "4740e6f5821fe8d75c0617bf2c6b24bbfc34013fc95f0dedf5ba297f504fb833"
+       "da2a436d1d8ff1cc5193e2a64389fced918e7feb6716330f66801db9497549cf"
+       "1d3bd97cf1bc6255",
+       "8e1f3d26ec7c6bbb8c54c5d25f3120587803af6d3c2b99a37ced6a3657d4ae54"
+       "266f63fffde660c866d65d0ab0589e1d12d9ce6054b05c8668ae127171ccaae7"
+       "f1cd409677f52157b6123ab227f27a00966d1439b42a32169d1070394026fc8b"
+       "c93545b1ac252d0f7da751c02e33a47831fbd71514c2bbbd3adb6740c0fd68ad"},
+      // PKCS#1 v1.5 Signature Example 1.9
+      {"27cadc698450945f204ec3cf8c6cbd8ceb4cc0cbe312274fa96b04deac855160"
+       "c0e04e4ac5d38210c27c",
+       "7b63f9223356f35f6117f68c8f8220034fc2384ab5dc6904141f139314d6ee89"
+       "f54ec6ffd18c413a23c5931c7fbb13c555ccfd590e0eaa853c8c94d2520cd425"
+       "0d9a05a193b65dc749b82478af0156ee1de55ddad33ec1f0099cad6c891a3617"
+       "c7393d05fbfbbb00528a001df0b204ebdf1a341090dea89f870a877458427f7b"},
+      // PKCS#1 v1.5 Signature Example 1.10
+      {"716407e901b9ef92d761b013fd13eb7ad72aed",
+       "2a22dbe3774d5b297201b55a0f17f42dce63b7845cb325cfe951d0badb5c5a14"
+       "472143d896c86cc339f83671164215abc97862f2151654e75a3b357c37311b3d"
+       "7268cab540202e23bee52736f2cd86cce0c7dbde95e1c600a47395dc5eb0a472"
+       "153fbc4fb21b643e0c04ae14dd37e97e617a7567c89652219781001ba6f83298"},
+      // PKCS#1 v1.5 Signature Example 1.11
+      {"46c24e4103001629c712dd4ce8d747ee595d6c744ccc4f71347d9b8abf49d1b8"
+       "fb2ef91b95dc899d4c0e3d2997e638f4cf3f68e0498de5aabd13f0dfe02ff26b"
+       "a4379104e78ffa95ffbd15067ef8cbd7eb7860fecc71abe13d5c720a66851f2d"
+       "efd4e795054d7bec024bb422a46a7368b56d95b47aebafbeadd612812593a70d"
+       "b9f96d451ee15edb299308d777f4bb68ed3377c32156b41b7a9c92a14c8b8114"
+       "4399c56a5a432f4f770aa97da8415d0bda2e813206031e70620031c881d616bf"
+       "fd5f03bf147c1e73766c26246208",
+       "12235b0b406126d9d260d447e923a11051fb243079f446fd73a70181d53634d7"
+       "a0968e4ee27777eda63f6e4a3a91ad5985998a4848da59ce697b24bb332fa2ad"
+       "9ce462ca4affdc21dab908e8ce15af6eb9105b1abcf39142aa17b34c4c092386"
+       "a7abbfe028afdbebc14f2ce26fbee5edeca11502d39a6b7403154843d98a62a7"},
+      // PKCS#1 v1.5 Signature Example 1.12
+      {"bc99a932aa16d622bfff79c50b4c42358673261129e28d6a918ff1b0f1c4f46a"
+       "d8afa98b0ca0f56f967975b0a29be882e93b6cd3fc33e1faef72e52b2ae0a3f1"
+       "2024506e25690e902e782982145556532284cf505789738f4da31fa1333d3af8"
+       "62b2ba6b6ce7ab4cce6aba",
+       "872ec5ad4f1846256f17e9936ac50e43e9963ea8c1e76f15879b7874d77d122a"
+       "609dc8c561145b94bf4ffdffdeb17e6e76ffc6c10c0747f5e37a9f434f5609e7"
+       "9da5250215a457afdf12c6507cc1551f54a28010595826a2c9b97fa0aa851cc6"
+       "8b705d7a06d720ba027e4a1c0b019500fb63b78071684dcfa9772700b982dc66"},
+      // PKCS#1 v1.5 Signature Example 1.13
+      {"731e172ac063992c5b11ba170dfb23bb000d47ba195329cf278061037381514c"
+       "146064c5285db130dd5bae98b772225950eab05d3ea996f6fffb9a8c8622913f"
+       "279914c89ada4f3dd77666a868bfcbff2b95b7daf453d4e2c9d75beee7f8e709"
+       "05e4066a4f73aecc67f956aa5a3292b8488c917d317cfdc86253e690381e15ab",
+       "76204eacc1d63ec1d6ad5bd0692e1a2f686df6e64ca945c77a824de212efa6d9"
+       "782d81b4591403ff4020620298c07ebd3a8a61c5bf4dad62cbfc4ae6a03937be"
+       "4b49a216d570fc6e81872937876e27bd19cf601effc30ddca573c9d56cd4569b"
+       "db4851c450c42cb21e738cdd61027b8be5e9b410fc46aa3f29e4be9e64451346"},
+      // PKCS#1 v1.5 Signature Example 1.14
+      {"0211382683a74d8d2a2cb6a06550563be1c26ca62821e4ff163b720464fc3a28"
+       "d91bedddc62749a5538eaf41fbe0c82a77e06ad99383c9e985ffb8a93fd4d7c5"
+       "8db51ad91ba461d69a8fd7ddabe2496757a0c49122c1a79a85cc0553e8214d03"
+       "6dfe0185efa0d05860c612fa0882c82d246e5830a67355dff18a2c36b732f988"
+       "cfedc562264c6254b40fcabb97b760947568dcd6a17cda6ee8855bddbab93702"
+       "471aa0cfb1bed2e13118eba1175b73c96253c108d0b2aba05ab8e17e84392e20"
+       "085f47404d8365527dc3fb8f2bb48a50038e71361ccf973407",
+       "525500918331f1042eae0c5c2054aa7f92deb26991b5796634f229daf9b49eb2"
+       "054d87319f3cfa9b466bd075ef6699aea4bd4a195a1c52968b5e2b75e092d846"
+       "ea1b5cc27905a8e1d5e5de0edfdb21391ebb951864ebd9f0b0ec35b654287136"
+       "0a317b7ef13ae06af684e38e21b1e19bc7298e5d6fe0013a164bfa25d3e7313d"},
+      // PKCS#1 v1.5 Signature Example 1.15
+      {"fc6b700d22583388ab2f8dafcaf1a05620698020da4bae44dafbd0877b501250"
+       "6dc3181d5c66bf023f348b41fd9f94795ab96452a4219f2d39d72af359cf1956"
+       "51c7",
+       "4452a6cc2626b01e95ab306df0d0cc7484fbab3c22e9703283567f66eadc248d"
+       "bda58fce7dd0c70cce3f150fca4b369dff3b6237e2b16281ab55b53fb13089c8"
+       "5cd265056b3d62a88bfc2135b16791f7fbcab9fd2dc33becb617be419d2c0461"
+       "42a4d47b338314552edd4b6fe9ce1104ecec4a9958d7331e930fc09bf08a6e64"},
+      // PKCS#1 v1.5 Signature Example 1.16
+      {"13ba086d709cfa5fedaa557a89181a6140f2300ed6d7c3febb6cf68abebcbc67"
+       "8f2bca3dc2330295eec45bb1c4075f3ada987eae88b39c51606cb80429e649d9"
+       "8acc8441b1f8897db86c5a4ce0abf28b1b81dca3667697b850696b74a5ebd85d"
+       "ec56c90f8abe513efa857853720be319607921bca947522cd8fac8cace5b827c"
+       "3e5a129e7ee57f6b84932f14141ac4274e8cbb46e6912b0d3e2177d499d1840c"
+       "d47d4d7ae0b4cdc4d3",
+       "1f3b5a87db72a2c97bb3eff2a65a301268eacd89f42abc1098c1f2de77b0832a"
+       "65d7815feb35070063f221bb3453bd434386c9a3fde18e3ca1687fb649e86c51"
+       "d658619dde5debb86fe15491ff77ab748373f1be508880d66ea81e870e91cdf1"
+       "704875c17f0b10103188bc64eef5a3551b414c733670215b1a22702562581ab1"},
+      // PKCS#1 v1.5 Signature Example 1.17
+      {"eb1e5935",
+       "370cb9839ae6074f84b2acd6e6f6b7921b4b523463757f6446716140c4e6c0e7"
+       "5bec6ad0197ebfa86bf46d094f5f6cd36dca3a5cc73c8bbb70e2c7c9ab5d964e"
+       "c8e3dfde481b4a1beffd01b4ad15b31ae7aebb9b70344a9411083165fdf9c375"
+       "4bbb8b94dd34bd4813dfada1f6937de4267d5597ca09a31e83d7f1a79dd19b5e"},
+      // PKCS#1 v1.5 Signature Example 1.18
+      {"6346b153e889c8228209630071c8a57783f368760b8eb908cfc2b276",
+       "2479c975c5b1ae4c4e940f473a9045b8bf5b0bfca78ec29a38dfbedc8a749b7a"
+       "2692f7c52d5bc7c831c7232372a00fed3b6b49e760ec99e074ff2eead5134e83"
+       "05725dfa39212b84bd4b8d80bc8bc17a512823a3beb18fc08e45ed19c26c8177"
+       "07d67fb05832ef1f12a33e90cd93b8a780319e2963ca25a2af7b09ad8f595c21"},
+      // PKCS#1 v1.5 Signature Example 1.19
+      {"64702db9f825a0f3abc361974659f5e9d30c3aa4f56feac69050c72905e77fe0"
+       "c22f88a378c21fcf45fe8a5c717302093929",
+       "152f3451c858d69594e6567dfb31291c1ee7860b9d15ebd5a5edd276ac3e6f7a"
+       "8d1480e42b3381d2be023acf7ebbdb28de3d2163ae44259c6df98c335d045b61"
+       "dac9dba9dbbb4e6ab4a083cd76b580cbe472206a1a9fd60680ceea1a570a29b0"
+       "881c775eaef5525d6d2f344c28837d0aca422bbb0f1aba8f6861ae18bd73fe44"},
+      // PKCS#1 v1.5 Signature Example 1.20
+      {"941921de4a1c9c1618d6f3ca3c179f6e29bae6ddf9a6a564f929e3ce82cf3265"
+       "d7837d5e692be8dcc9e86c",
+       "7076c287fc6fff2b20537435e5a3107ce4da10716186d01539413e609d27d1da"
+       "6fd952c61f4bab91c045fa4f8683ecc4f8dde74227f773cff3d96db84718c494"
+       "4b06affeba94b725f1b07d3928b2490a85c2f1abf492a9177a7cd2ea0c966875"
+       "6f825bbec900fa8ac3824e114387ef573780ca334882387b94e5aad7a27a28dc"}};
+
+  // Import the key pair.
+  blink::WebCryptoAlgorithm algorithm = CreateRsaAlgorithmWithInnerHash(
+      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+      blink::WebCryptoAlgorithmIdSha1);
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  ImportRsaKeyPair(
+      kPublicKeySpkiDerHex,
+      kPrivateKeyPkcs8DerHex,
+      algorithm,
+      false,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+      &public_key,
+      &private_key);
+
+  // Validate the signatures are computed and verified as expected.
+  blink::WebArrayBuffer signature;
+  for (size_t idx = 0; idx < ARRAYSIZE_UNSAFE(kTests); ++idx) {
+    SCOPED_TRACE(idx);
+    const TestCase& test = kTests[idx];
+    const std::vector<uint8> message = HexStringToBytes(test.message_hex);
+
+    signature.reset();
+    ASSERT_TRUE(SignInternal(algorithm, private_key, message, &signature));
+    ExpectArrayBufferMatchesHex(test.signature_hex, signature);
+
+    bool is_match = false;
+    ASSERT_TRUE(VerifySignatureInternal(
+        algorithm,
+        public_key,
+        HexStringToBytes(test.signature_hex),
+        message,
+        &is_match));
+    EXPECT_TRUE(is_match);
+  }
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(AesKwKeyImport)) {
