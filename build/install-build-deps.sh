@@ -149,7 +149,7 @@ armel_list="libc6-armel-cross libc6-dev-armel-cross libgcc1-armel-cross
 arm_list="$arm_list $armel_list"
 
 # Packages to build standalone NaCl and all its toolchains.
-nacl_list="g++-mingw-w64-i686"
+nacl_list="g++-mingw-w64-i686 libtinfo-dev:i386"
 
 # Some package names have changed over time
 if package_exists ttf-mscorefonts-installer; then
