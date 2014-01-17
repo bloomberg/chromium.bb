@@ -110,7 +110,11 @@ int WebMClusterParser::Parse(const uint8* buf, int size) {
     // If there were no buffers in this cluster, set the cluster start time to
     // be the |cluster_timecode_|.
     if (cluster_start_time_ == kNoTimestamp()) {
-      DCHECK_GT(cluster_timecode_, -1);
+      // If the cluster did not even have a |cluster_timecode_|, signal parse
+      // error.
+      if (cluster_timecode_ < 0)
+        return -1;
+
       cluster_start_time_ = base::TimeDelta::FromMicroseconds(
           cluster_timecode_ * timecode_multiplier_);
     }

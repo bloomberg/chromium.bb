@@ -525,4 +525,21 @@ TEST_F(WebMClusterParserTest, ParseBadEncryptedBlock) {
   EXPECT_EQ(-1, result);
 }
 
+TEST_F(WebMClusterParserTest, ParseInvalidZeroSizedCluster) {
+  const uint8 kBuffer[] = {
+    0x1F, 0x43, 0xB6, 0x75, 0x80,  // CLUSTER (size = 0)
+  };
+
+  EXPECT_EQ(parser_->Parse(kBuffer, sizeof(kBuffer)), -1);
+}
+
+TEST_F(WebMClusterParserTest, ParseInvalidUnknownButActuallyZeroSizedCluster) {
+  const uint8 kBuffer[] = {
+    0x1F, 0x43, 0xB6, 0x75, 0xFF,  // CLUSTER (size = "unknown")
+    0x1F, 0x43, 0xB6, 0x75, 0x85,  // CLUSTER (size = 5)
+  };
+
+  EXPECT_EQ(parser_->Parse(kBuffer, sizeof(kBuffer)), -1);
+}
+
 }  // namespace media
