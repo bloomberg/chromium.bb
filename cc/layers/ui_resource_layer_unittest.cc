@@ -58,8 +58,6 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
-  layer_tree_host_->InitializeOutputSurfaceIfNeeded();
-
   ResourceUpdateQueue queue;
   OcclusionTracker occlusion_tracker(gfx::Rect(), false);
   test_layer->SavePaintProperties();
@@ -87,8 +85,6 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   layer_tree_host_->SetRootLayer(test_layer);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
-
-  layer_tree_host_->InitializeOutputSurfaceIfNeeded();
 
   ResourceUpdateQueue queue;
   OcclusionTracker occlusion_tracker(gfx::Rect(), false);

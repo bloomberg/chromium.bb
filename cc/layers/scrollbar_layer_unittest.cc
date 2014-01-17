@@ -592,7 +592,6 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     layer_tree_root->AddChild(content_layer);
     layer_tree_root->AddChild(scrollbar_layer);
 
-    layer_tree_host_->InitializeOutputSurfaceIfNeeded();
     layer_tree_host_->SetRootLayer(layer_tree_root);
 
     scrollbar_layer->SetIsDrawable(true);
@@ -670,7 +669,6 @@ class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
     layer_tree_root->AddChild(content_layer);
     layer_tree_root->AddChild(scrollbar_layer);
 
-    layer_tree_host_->InitializeOutputSurfaceIfNeeded();
     layer_tree_host_->SetRootLayer(layer_tree_root);
 
     scrollbar_layer->SetIsDrawable(true);

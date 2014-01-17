@@ -7,6 +7,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/run_loop.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/resources/bitmap_content_layer_updater.h"
 #include "cc/resources/layer_painter.h"
@@ -44,6 +45,52 @@ class TestOcclusionTracker : public OcclusionTracker {
   }
 };
 
+class SynchronousOutputSurfaceLayerTreeHost : public LayerTreeHost {
+ public:
+  static scoped_ptr<SynchronousOutputSurfaceLayerTreeHost> Create(
+      LayerTreeHostClient* client,
+      SharedBitmapManager* manager,
+      const LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+    return make_scoped_ptr(new SynchronousOutputSurfaceLayerTreeHost(
+        client, manager, settings, impl_task_runner));
+  }
+
+  virtual ~SynchronousOutputSurfaceLayerTreeHost() {}
+
+  bool EnsureOutputSurfaceCreated() {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        run_loop_.QuitClosure(),
+        base::TimeDelta::FromSeconds(5));
+    run_loop_.Run();
+    return output_surface_created_;
+  }
+
+  virtual CreateResult OnCreateAndInitializeOutputSurfaceAttempted(
+      bool success) OVERRIDE {
+    CreateResult result =
+        LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(success);
+    output_surface_created_ = success;
+    run_loop_.Quit();
+    return result;
+  }
+
+ private:
+  SynchronousOutputSurfaceLayerTreeHost(
+      LayerTreeHostClient* client,
+      SharedBitmapManager* manager,
+      const LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
+      : LayerTreeHost(client, manager, settings),
+        output_surface_created_(false) {
+    LayerTreeHost::InitializeThreaded(impl_task_runner);
+  }
+
+  bool output_surface_created_;
+  base::RunLoop run_loop_;
+};
+
 class TiledLayerTest : public testing::Test {
  public:
   TiledLayerTest()
@@ -59,7 +106,7 @@ class TiledLayerTest : public testing::Test {
 
   virtual void SetUp() {
     impl_thread_.Start();
-    layer_tree_host_ = LayerTreeHost::CreateThreaded(
+    layer_tree_host_ = SynchronousOutputSurfaceLayerTreeHost::Create(
         &fake_layer_tree_host_client_,
         NULL,
         settings_,
@@ -67,7 +114,7 @@ class TiledLayerTest : public testing::Test {
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);
     layer_tree_host_->SetLayerTreeHostClientReady();
-    layer_tree_host_->InitializeOutputSurfaceIfNeeded();
+    CHECK(layer_tree_host_->EnsureOutputSurfaceCreated());
     layer_tree_host_->SetRootLayer(Layer::Create());
 
     CHECK(output_surface_->BindToClient(&output_surface_client_));
@@ -199,7 +246,7 @@ class TiledLayerTest : public testing::Test {
   PriorityCalculator priority_calculator_;
   base::Thread impl_thread_;
   FakeLayerTreeHostClient fake_layer_tree_host_client_;
-  scoped_ptr<LayerTreeHost> layer_tree_host_;
+  scoped_ptr<SynchronousOutputSurfaceLayerTreeHost> layer_tree_host_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
   scoped_ptr<PrioritizedResourceManager> resource_manager_;
   TestOcclusionTracker* occlusion_;

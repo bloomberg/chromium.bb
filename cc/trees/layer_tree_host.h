@@ -127,7 +127,8 @@ class CC_EXPORT LayerTreeHost {
     CreateFailedButTryAgain,
     CreateFailedAndGaveUp,
   };
-  CreateResult OnCreateAndInitializeOutputSurfaceAttempted(bool success);
+  virtual CreateResult OnCreateAndInitializeOutputSurfaceAttempted(
+      bool success);
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
