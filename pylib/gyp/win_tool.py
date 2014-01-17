@@ -48,7 +48,8 @@ class WinTool(object):
     for arg in args:
       m = _LINK_EXE_OUT_ARG.match(arg)
       if m:
-        endpoint_name = '%s_%d' % (m.group('out'), os.getpid())
+        endpoint_name = re.sub(r'\W+', '',
+            '%s_%d' % (m.group('out'), os.getpid()))
         break
 
     if endpoint_name is None:
