@@ -328,11 +328,11 @@ void AlarmManager::ScheduleNextPoll() {
         soonest_alarm_time = cur_alarm_time;
       if (l_it->granularity < min_granularity)
         min_granularity = l_it->granularity;
-      base::TimeDelta cur_alarm_delta = cur_alarm_time - clock_->Now();
+      base::TimeDelta cur_alarm_delta = cur_alarm_time - last_poll_time_;
+      if (cur_alarm_delta < l_it->minimum_granularity)
+        cur_alarm_delta = l_it->minimum_granularity;
       if (cur_alarm_delta < min_granularity)
         min_granularity = cur_alarm_delta;
-      if (min_granularity < l_it->minimum_granularity)
-        min_granularity = l_it->minimum_granularity;
     }
   }
 

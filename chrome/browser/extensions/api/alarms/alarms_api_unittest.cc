@@ -616,4 +616,29 @@ TEST_F(ExtensionAlarmsSchedulingTest, MinimumGranularity) {
                     alarm_manager_->test_next_poll_time_.ToJsTime());
 }
 
+TEST_F(ExtensionAlarmsSchedulingTest, DifferentMinimumGranularities) {
+  test_clock_->SetNow(base::Time::FromJsTime(0));
+  // Create an alarm to go off in 12 seconds. This uses the default, unpacked
+  // extension - so there is no minimum granularity.
+  CreateAlarm("[\"a\", {\"periodInMinutes\": 0.2}]");  // 12 seconds.
+
+  // Create a new extension, which is packed, and has a granularity of 1 minute.
+  // CreateAlarm() uses extension_, so keep a ref of the old one around, and
+  // repopulate extension_.
+  scoped_refptr<Extension> extension2(extension_);
+  extension_ =
+      utils::CreateEmptyExtensionWithLocation(extensions::Manifest::INTERNAL);
+
+  CreateAlarm("[\"b\", {\"periodInMinutes\": 2}]");
+
+  alarm_manager_->last_poll_time_ = base::Time::FromJsTime(0);
+  alarm_manager_->ScheduleNextPoll();
+
+  // The next poll time should be 12 seconds from now - the time at which the
+  // first alarm should go off.
+  EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
+                    base::TimeDelta::FromSeconds(12)).ToJsTime(),
+                    alarm_manager_->test_next_poll_time_.ToJsTime());
+}
+
 }  // namespace extensions
