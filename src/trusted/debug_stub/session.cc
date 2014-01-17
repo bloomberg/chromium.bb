@@ -53,10 +53,14 @@ bool Session::Connected() {
   return connected_;
 }
 
+void Session::Disconnect() {
+  io_->Disconnect();
+  connected_ = false;
+}
+
 bool Session::GetChar(char *ch) {
   if (!io_->Read(ch, 1)) {
-    io_->Disconnect();
-    connected_ = false;
+    Disconnect();
     return false;
   }
 

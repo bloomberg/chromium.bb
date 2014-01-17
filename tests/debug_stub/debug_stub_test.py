@@ -12,6 +12,12 @@ import xml.etree.ElementTree
 import gdb_rsp
 
 
+if sys.platform == 'win32':
+  RETURNCODE_KILL = -9
+else:
+  RETURNCODE_KILL = -9 & 0xff
+
+
 NACL_SIGTRAP = 5
 NACL_SIGSEGV = 11
 
@@ -194,6 +200,9 @@ def PopenDebugStub(test):
 
 
 def KillProcess(process):
+  if process.returncode is not None:
+    # kill() won't work if we've already wait()'ed on the process.
+    return
   try:
     process.kill()
   except OSError:
@@ -623,6 +632,52 @@ class DebugStubTest(unittest.TestCase):
       write_command = 'M%x,%x:%s' % (func_addr, len(data), EncodeHex(data))
       reply = connection.RspRequest(write_command)
       self.assertEquals(reply, 'E03')
+
+  def test_kill(self):
+    sel_ldr = PopenDebugStub('test_exit_code')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+      # Request killing the target.
+      reply = connection.RspRequest('k')
+      self.assertEquals(reply, 'OK')
+      self.assertEquals(sel_ldr.wait(), RETURNCODE_KILL)
+    finally:
+      KillProcess(sel_ldr)
+
+  def test_detach(self):
+    sel_ldr = PopenDebugStub('test_exit_code')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+      # Request detaching from the target.
+      # This resumes execution, so we get the nexe's normal exit() status.
+      reply = connection.RspRequest('D')
+      self.assertEquals(reply, 'OK')
+      self.assertEquals(sel_ldr.wait(), 2)
+    finally:
+      KillProcess(sel_ldr)
+
+  def test_disconnect(self):
+    sel_ldr = PopenDebugStub('test_exit_code')
+    try:
+      # Connect and record the instruction pointer.
+      connection = gdb_rsp.GdbRspConnection()
+      # Check something basic responds with sane results.
+      reply = connection.RspRequest('vCont?')
+      self.assertEqual(reply, 'vCont;s;S;c;C')
+      # Store the instruction pointer.
+      registers = DecodeRegs(connection.RspRequest('g'))
+      initial_ip = registers[IP_REG[ARCH]]
+      connection.Close()
+      # Reconnect 5 times.
+      for _ in range(5):
+        connection = gdb_rsp.GdbRspConnection()
+        # Confirm the instruction pointer stays where it was, indicating that
+        # the thread stayed suspended.
+        registers = DecodeRegs(connection.RspRequest('g'))
+        self.assertEquals(registers[IP_REG[ARCH]], initial_ip)
+        connection.Close()
+    finally:
+      KillProcess(sel_ldr)
 
 
 class DebugStubBreakpointTest(unittest.TestCase):

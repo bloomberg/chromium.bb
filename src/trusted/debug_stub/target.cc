@@ -12,6 +12,7 @@
 
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/debug_stub/abi.h"
 #include "native_client/src/trusted/debug_stub/packet.h"
@@ -46,7 +47,10 @@ Target::Target(struct NaClApp *nap, const Abi* abi)
     cur_signal_(0),
     sig_thread_(0),
     reg_thread_(0),
-    step_over_breakpoint_thread_(0) {
+    step_over_breakpoint_thread_(0),
+    all_threads_suspended_(false),
+    detaching_(false),
+    should_exit_(false) {
   if (NULL == abi_) abi_ = Abi::Get();
 }
 
@@ -207,131 +211,180 @@ void Target::EraseBreakpointsFromCopyOfMemory(uint32_t user_address,
 }
 
 void Target::Run(Session *ses) {
-  bool initial_breakpoint_seen = false;
   NaClXMutexLock(&mutex_);
   session_ = ses;
   NaClXMutexUnlock(&mutex_);
+
   do {
-    bool ignore_input_from_gdb = step_over_breakpoint_thread_ != 0 ||
-        !initial_breakpoint_seen;
-    ses->WaitForDebugStubEvent(nap_, ignore_input_from_gdb);
+    WaitForDebugEvent();
 
     // Lock to prevent anyone else from modifying threads
     // or updating the signal information.
     MutexLock lock(&mutex_);
-    Packet recv, reply;
 
-    if (step_over_breakpoint_thread_ != 0) {
-      // We are waiting for a specific thread to fault while all other
-      // threads are suspended.  Note that faulted_thread_count might
-      // be >1, because multiple threads can fault simultaneously
-      // before the debug stub gets a chance to suspend all threads.
-      // This is why we must check the status of a specific thread --
-      // we cannot call UnqueueAnyFaultedThread() and expect it to
-      // return step_over_breakpoint_thread_.
-      IThread *thread = threads_[step_over_breakpoint_thread_];
-      if (!thread->HasThreadFaulted()) {
-        // The thread has not faulted.  Nothing to do, so try again.
-        // Note that we do not respond to input from GDB while in this
-        // state.
-        // TODO(mseaborn): We should allow GDB to interrupt execution.
-        continue;
-      }
-      // All threads but one are already suspended.  We only need to
-      // suspend the single thread that we allowed to run.
-      thread->SuspendThread();
-      CopyFaultSignalFromAppThread(thread);
-      cur_signal_ = thread->GetFaultSignal();
-      thread->UnqueueFaultedThread();
-      sig_thread_ = step_over_breakpoint_thread_;
-      reg_thread_ = step_over_breakpoint_thread_;
-      step_over_breakpoint_thread_ = 0;
-    } else if (nap_->faulted_thread_count != 0) {
-      // At least one untrusted thread has got an exception.  First we
-      // need to ensure that all threads are suspended.  Then we can
-      // retrieve a thread from the set of faulted threads.
-      SuspendAllThreads();
-      UnqueueAnyFaultedThread(&sig_thread_, &cur_signal_);
-      reg_thread_ = sig_thread_;
-    } else {
-      // Otherwise look for messages from GDB.  To fix a potential
-      // race condition, we don't do this on the first run, because in
-      // that case we are waiting for the initial breakpoint to be
-      // reached.  We don't want GDB to observe states where the
-      // (internal) initial breakpoint is still registered or where
-      // the initial thread is suspended in NaClStartThreadInApp()
-      // before executing its first untrusted instruction.
-      if (!initial_breakpoint_seen || !ses->IsDataAvailable()) {
-        // No input from GDB.  Nothing to do, so try again.
-        continue;
-      }
-      // GDB should have tried to interrupt the target.
-      // See http://sourceware.org/gdb/current/onlinedocs/gdb/Interrupts.html
-      // TODO(eaeltsin): should we verify the interrupt sequence?
+    ProcessDebugEvent();
+    ProcessCommands();
+  } while (session_->Connected());
 
-      // Indicate we have no current thread.
-      // TODO(eaeltsin): or pick any thread? Add a test.
-      // See http://code.google.com/p/nativeclient/issues/detail?id=2743
-      sig_thread_ = 0;
-      SuspendAllThreads();
-    }
-
-    if (sig_thread_ != 0) {
-      // Reset single stepping.
-      threads_[sig_thread_]->SetStep(false);
-      RemoveInitialBreakpoint();
-    }
-
-    // Next update the current thread info
-    char tmp[16];
-    snprintf(tmp, sizeof(tmp), "QC%x", sig_thread_);
-    properties_["C"] = tmp;
-
-    if (!initial_breakpoint_seen) {
-      // First time on a connection, we don't send the signal
-      initial_breakpoint_seen = true;
-    } else {
-      // All other times, send the signal that triggered us
-      Packet pktOut;
-      SetStopReply(&pktOut);
-      ses->SendPacketOnly(&pktOut);
-    }
-
-    // Now we are ready to process commands
-    // Loop through packets until we process a continue
-    // packet.
-    do {
-      if (ses->GetPacket(&recv)) {
-        reply.Clear();
-        if (ProcessPacket(&recv, &reply)) {
-          // If this is a continue command, break out of this loop
-          break;
-        } else {
-          // Othwerise send the reponse
-          ses->SendPacket(&reply);
-        }
-      }
-    } while (ses->Connected());
-
-    // Reset the signal value
-    cur_signal_ = 0;
-
-    // TODO(eaeltsin): it might make sense to resume signaled thread before
-    // others, though it is not required by GDB docs.
-    if (step_over_breakpoint_thread_ == 0) {
-      ResumeAllThreads();
-    } else {
-      // Resume one thread while leaving all others suspended.
-      threads_[step_over_breakpoint_thread_]->ResumeThread();
-    }
-
-    // Continue running until the connection is lost.
-  } while (ses->Connected());
   NaClXMutexLock(&mutex_);
   session_ = NULL;
   NaClXMutexUnlock(&mutex_);
 }
 
+bool Target::IsInitialBreakpointActive() {
+  return initial_breakpoint_addr_ != 0;
+}
+
+void Target::WaitForDebugEvent() {
+  if (all_threads_suspended_) {
+    // If all threads are suspended (which may be left over from a previous
+    // connection), we are already ready to handle commands from GDB.
+    return;
+  }
+  // Wait for either:
+  //   * an untrusted thread to fault (or single-step)
+  //   * an interrupt from GDB
+  bool ignore_input_from_gdb = step_over_breakpoint_thread_ != 0 ||
+    IsInitialBreakpointActive();
+  session_->WaitForDebugStubEvent(nap_, ignore_input_from_gdb);
+}
+
+void Target::ProcessDebugEvent() {
+  if (all_threads_suspended_) {
+    // We are already in a suspended state.
+    return;
+  } else if (step_over_breakpoint_thread_ != 0) {
+    // We are waiting for a specific thread to fault while all other
+    // threads are suspended.  Note that faulted_thread_count might
+    // be >1, because multiple threads can fault simultaneously
+    // before the debug stub gets a chance to suspend all threads.
+    // This is why we must check the status of a specific thread --
+    // we cannot call UnqueueAnyFaultedThread() and expect it to
+    // return step_over_breakpoint_thread_.
+    IThread *thread = threads_[step_over_breakpoint_thread_];
+    if (!thread->HasThreadFaulted()) {
+      // The thread has not faulted.  Nothing to do, so try again.
+      // Note that we do not respond to input from GDB while in this
+      // state.
+      // TODO(mseaborn): We should allow GDB to interrupt execution.
+      return;
+    }
+    // All threads but one are already suspended.  We only need to
+    // suspend the single thread that we allowed to run.
+    thread->SuspendThread();
+    CopyFaultSignalFromAppThread(thread);
+    cur_signal_ = thread->GetFaultSignal();
+    thread->UnqueueFaultedThread();
+    sig_thread_ = step_over_breakpoint_thread_;
+    reg_thread_ = step_over_breakpoint_thread_;
+    step_over_breakpoint_thread_ = 0;
+  } else if (nap_->faulted_thread_count != 0) {
+    // At least one untrusted thread has got an exception.  First we
+    // need to ensure that all threads are suspended.  Then we can
+    // retrieve a thread from the set of faulted threads.
+    SuspendAllThreads();
+    UnqueueAnyFaultedThread(&sig_thread_, &cur_signal_);
+    reg_thread_ = sig_thread_;
+  } else {
+    // Otherwise look for messages from GDB.  To fix a potential
+    // race condition, we don't do this on the first run, because in
+    // that case we are waiting for the initial breakpoint to be
+    // reached.  We don't want GDB to observe states where the
+    // (internal) initial breakpoint is still registered or where
+    // the initial thread is suspended in NaClStartThreadInApp()
+    // before executing its first untrusted instruction.
+    if (IsInitialBreakpointActive() || !session_->IsDataAvailable()) {
+      // No input from GDB.  Nothing to do, so try again.
+      return;
+    }
+    // GDB should have tried to interrupt the target.
+    // See http://sourceware.org/gdb/current/onlinedocs/gdb/Interrupts.html
+    // TODO(eaeltsin): should we verify the interrupt sequence?
+
+    // Indicate we have no current thread.
+    // TODO(eaeltsin): or pick any thread? Add a test.
+    // See http://code.google.com/p/nativeclient/issues/detail?id=2743
+    sig_thread_ = 0;
+    SuspendAllThreads();
+  }
+
+  bool initial_breakpoint_was_active = IsInitialBreakpointActive();
+
+  if (sig_thread_ != 0) {
+    // Reset single stepping.
+    threads_[sig_thread_]->SetStep(false);
+    RemoveInitialBreakpoint();
+  }
+
+  // Next update the current thread info
+  char tmp[16];
+  snprintf(tmp, sizeof(tmp), "QC%x", sig_thread_);
+  properties_["C"] = tmp;
+
+  if (!initial_breakpoint_was_active) {
+    // First time on a connection, we don't send the signal.
+    // All other times, send the signal that triggered us.
+    Packet pktOut;
+    SetStopReply(&pktOut);
+    session_->SendPacketOnly(&pktOut);
+  }
+
+  all_threads_suspended_ = true;
+}
+
+void Target::ProcessCommands() {
+  if (!all_threads_suspended_) {
+    // Don't process commands if we haven't stopped all threads.
+    return;
+  }
+
+  // Now we are ready to process commands.
+  // Loop through packets until we process a continue packet or a detach.
+  Packet recv, reply;
+  do {
+    if (!session_->GetPacket(&recv))
+      continue;
+    reply.Clear();
+    if (ProcessPacket(&recv, &reply)) {
+      // If this is a continue type command, break out of this loop.
+      break;
+    }
+    // Otherwise send the response.
+    session_->SendPacket(&reply);
+
+    if (detaching_) {
+      detaching_ = false;
+      session_->Disconnect();
+      Resume();
+      return;
+    }
+
+    if (should_exit_) {
+      NaClExit(-9);
+    }
+  } while (session_->Connected());
+
+  if (session_->Connected()) {
+    // Continue if we're still connected.
+    Resume();
+  }
+}
+
+void Target::Resume() {
+  // Reset the signal value
+  cur_signal_ = 0;
+
+  // TODO(eaeltsin): it might make sense to resume signaled thread before
+  // others, though it is not required by GDB docs.
+  if (step_over_breakpoint_thread_ == 0) {
+    ResumeAllThreads();
+  } else {
+    // Resume one thread while leaving all others suspended.
+    threads_[step_over_breakpoint_thread_]->ResumeThread();
+  }
+
+  all_threads_suspended_ = false;
+}
 
 void Target::SetStopReply(Packet *pktOut) const {
   pktOut->AddRawChar('T');
@@ -403,11 +456,19 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     case 'c':
       return true;
 
-    // IN : $d
-    // OUT: -NONE-
-    case 'd':
+    // IN : $D
+    // OUT: $OK
+    case 'D':
       Detach();
-      break;
+      pktOut->AddString("OK");
+      return false;
+
+    // IN : $k
+    // OUT: $OK
+    case 'k':
+      Kill();
+      pktOut->AddString("OK");
+      return false;
 
     // IN : $g
     // OUT: $xx...xx
@@ -836,8 +897,13 @@ void Target::Exit() {
 
 void Target::Detach() {
   NaClLog(LOG_INFO, "Requested Detach.\n");
+  detaching_ = true;
 }
 
+void Target::Kill() {
+  NaClLog(LOG_INFO, "Requested Kill.\n");
+  should_exit_ = true;
+}
 
 IThread* Target::GetRegThread() {
   ThreadMap_t::const_iterator itr;

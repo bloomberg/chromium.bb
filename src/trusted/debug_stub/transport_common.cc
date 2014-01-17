@@ -65,7 +65,12 @@ class Transport : public ITransport {
       NaClLog(LOG_FATAL,
               "Transport::CreateSocketEvent: Failed to create socket event\n");
     }
-    if (WSAEventSelect(handle_, socket_event_, FD_READ) == SOCKET_ERROR) {
+    // Listen for close events in order to handle them correctly.
+    // Additionally listen for read readiness as WSAEventSelect sets the socket
+    // to non-blocking mode.
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/ms738547(v=vs.85).aspx
+    if (WSAEventSelect(
+          handle_, socket_event_, FD_CLOSE | FD_READ) == SOCKET_ERROR) {
       NaClLog(LOG_FATAL,
               "Transport::CreateSocketEvent: Failed to bind event to socket\n");
     }

@@ -64,6 +64,7 @@ class Session {
   // Is there any data available right now.
   virtual bool IsDataAvailable();
   virtual bool Connected();
+  virtual void Disconnect();
 
   void WaitForDebugStubEvent(struct NaClApp *nap, bool ignore_gdb) {
     io_->WaitForDebugStubEvent(nap, ignore_gdb);

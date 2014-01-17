@@ -95,3 +95,6 @@ class GdbRspConnection(object):
   def RspInterrupt(self):
     self._socket.send('\x03')
     return self._GetReply()
+
+  def Close(self):
+    self._socket.close()
