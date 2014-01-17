@@ -33,6 +33,13 @@ package_exists() {
   apt-cache pkgnames | grep -x "$1" > /dev/null 2>&1
 }
 
+# These default to on because (some) bots need them and it keeps things
+# simple for the bot setup if all bots just run the script in its default
+# mode.  Developers who don't want stuff they don't need installed on their
+# own workstations can pass --no-arm --no-nacl when running the script.
+do_inst_arm=1
+do_inst_nacl=1
+
 while test "$1" != ""
 do
   case "$1" in
