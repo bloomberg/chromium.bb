@@ -75,17 +75,10 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
     unsigned priority = 0;
     TaskGraph graph;
 
-    size_t raster_tasks_required_for_activation_count = 0u;
-    for (RasterTaskVector::const_iterator it = raster_tasks().begin();
-         it != raster_tasks().end(); ++it) {
-      if (IsRasterTaskRequiredForActivation(it->get()))
-        raster_tasks_required_for_activation_count++;
-    }
-
     scoped_refptr<internal::WorkerPoolTask>
         raster_required_for_activation_finished_task(
             CreateRasterRequiredForActivationFinishedTask(
-                raster_tasks_required_for_activation_count));
+                raster_tasks_required_for_activation().size()));
     internal::GraphNode* raster_required_for_activation_finished_node =
         CreateGraphNodeForTask(
             raster_required_for_activation_finished_task.get(),
