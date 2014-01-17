@@ -513,7 +513,7 @@
             '../..',
           ],
           'sources': [
-            'allocator_unittests.cc',
+            'allocator_unittest.cc',
             '../profiler/alternate_timer.cc',
             '../profiler/alternate_timer.h',
           ],
@@ -616,7 +616,7 @@
           'sources': [
             'type_profiler_control.cc',
             'type_profiler_control.h',
-            'type_profiler_unittests.cc',
+            'type_profiler_unittest.cc',
           ],
         },
         {
@@ -638,7 +638,7 @@
             '../..',
           ],
           'sources': [
-            'type_profiler_map_unittests.cc',
+            'type_profiler_map_unittest.cc',
             '<(tcmalloc_dir)/src/gperftools/type_profiler_map.h',
             '<(tcmalloc_dir)/src/type_profiler_map.cc',
           ],

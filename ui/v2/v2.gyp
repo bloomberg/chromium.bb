@@ -60,7 +60,7 @@
         'v2',
       ],
       'sources': [
-        'src/v2_unittests.cc',
+        'src/v2_unittest.cc',
         'src/view_unittest.cc',
       ],
     },

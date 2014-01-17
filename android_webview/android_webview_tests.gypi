@@ -87,7 +87,7 @@
         'browser/net/input_stream_reader_unittest.cc',
         'lib/main/webview_tests.cc',
         'native/input_stream_unittest.cc',
-        'native/state_serializer_unittests.cc',
+        'native/state_serializer_unittest.cc',
       ],
     },
     {

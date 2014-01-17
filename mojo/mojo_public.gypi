@@ -59,7 +59,7 @@
         'public/tests/bindings/buffer_unittest.cc',
         'public/tests/bindings/math_calculator.mojom',
         'public/tests/bindings/sample_factory.mojom',
-        'public/tests/bindings/sample_service_unittests.cc',
+        'public/tests/bindings/sample_service_unittest.cc',
         'public/tests/bindings/test_structs.mojom',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
