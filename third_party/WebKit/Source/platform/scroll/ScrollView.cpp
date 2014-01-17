@@ -1109,12 +1109,6 @@ void ScrollView::hide()
     Widget::hide();
 }
 
-bool ScrollView::isOffscreen() const
-{
-    return !isVisible();
-}
-
-
 void ScrollView::addPanScrollIcon(const IntPoint& iconPosition)
 {
     HostWindow* window = hostWindow();

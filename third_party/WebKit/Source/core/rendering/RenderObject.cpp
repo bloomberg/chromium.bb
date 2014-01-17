@@ -3092,7 +3092,7 @@ bool RenderObject::willRenderImage(ImageResource*)
 
     // If we're not in a window (i.e., we're dormant from being in a background tab)
     // then we don't want to render either.
-    return !document().view()->isOffscreen();
+    return document().view()->isVisible();
 }
 
 int RenderObject::maximalOutlineSize(PaintPhase p) const

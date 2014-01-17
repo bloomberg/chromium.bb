@@ -189,10 +189,6 @@ public:
     IntRect contentsToScreen(const IntRect&) const;
     IntPoint screenToContents(const IntPoint&) const;
 
-    // The purpose of this function is to answer whether or not the scroll view is currently visible. Animations and painting updates can be suspended if
-    // we know that we are either not in a window right now or if that window is not visible.
-    bool isOffscreen() const;
-
     // These functions are used to enable scrollbars to avoid window resizer controls that overlap the scroll view. This happens on Mac
     // for example.
     virtual IntRect windowResizerRect() const { return IntRect(); }
