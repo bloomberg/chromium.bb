@@ -47,7 +47,6 @@ void LiveNodeListBase::invalidateCache() const
 {
     m_cachedItem = 0;
     m_isLengthCacheValid = false;
-    m_isItemCacheValid = false;
 }
 
 void LiveNodeListBase::invalidateIdNameCacheMaps() const

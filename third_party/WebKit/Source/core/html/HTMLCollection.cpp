@@ -391,7 +391,7 @@ bool ALWAYS_INLINE LiveNodeListBase::isLastItemCloserThanLastOrCachedItem(unsign
 {
     ASSERT(isLengthCacheValid());
     unsigned distanceFromLastItem = cachedLength() - offset;
-    if (!isItemCacheValid())
+    if (!cachedItem())
         return distanceFromLastItem < offset;
 
     return cachedItemOffset() < offset && distanceFromLastItem < offset - cachedItemOffset();
@@ -399,7 +399,6 @@ bool ALWAYS_INLINE LiveNodeListBase::isLastItemCloserThanLastOrCachedItem(unsign
 
 bool ALWAYS_INLINE LiveNodeListBase::isFirstItemCloserThanCachedItem(unsigned offset) const
 {
-    ASSERT(isItemCacheValid());
     if (cachedItemOffset() < offset)
         return false;
 
@@ -421,7 +420,7 @@ unsigned LiveNodeListBase::length() const
 // FIXME: It is silly that these functions are in HTMLCollection.cpp.
 Node* LiveNodeListBase::item(unsigned offset) const
 {
-    if (isItemCacheValid() && cachedItemOffset() == offset)
+    if (cachedItem() && cachedItemOffset() == offset)
         return cachedItem();
 
     if (isLengthCacheValid() && cachedLength() <= offset)
@@ -438,7 +437,7 @@ Node* LiveNodeListBase::item(unsigned offset) const
         Node* lastItem = itemBefore(0);
         ASSERT(lastItem);
         setItemCache(lastItem, cachedLength() - 1);
-    } else if (!isItemCacheValid() || isFirstItemCloserThanCachedItem(offset) || (overridesItemAfter() && offset < cachedItemOffset())) {
+    } else if (!cachedItem() || isFirstItemCloserThanCachedItem(offset) || (overridesItemAfter() && offset < cachedItemOffset())) {
         Node* firstItem;
         if (isLiveNodeListType(type()))
             firstItem = static_cast<const LiveNodeList*>(this)->traverseToFirstElement(*root);

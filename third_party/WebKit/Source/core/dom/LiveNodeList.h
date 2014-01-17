@@ -53,7 +53,6 @@ public:
         : m_ownerNode(ownerNode)
         , m_cachedItem(0)
         , m_isLengthCacheValid(false)
-        , m_isItemCacheValid(false)
         , m_rootType(rootType)
         , m_invalidationType(invalidationType)
         , m_shouldOnlyIncludeDirectChildren(shouldOnlyIncludeDirectChildren)
@@ -100,9 +99,8 @@ protected:
     ContainerNode* rootContainerNode() const;
     bool overridesItemAfter() const { return m_overridesItemAfter; }
 
-    ALWAYS_INLINE bool isItemCacheValid() const { return m_isItemCacheValid; }
     ALWAYS_INLINE Node* cachedItem() const { return m_cachedItem; }
-    ALWAYS_INLINE unsigned cachedItemOffset() const { return m_cachedItemOffset; }
+    ALWAYS_INLINE unsigned cachedItemOffset() const { ASSERT(cachedItem()); return m_cachedItemOffset; }
 
     ALWAYS_INLINE bool isLengthCacheValid() const { return m_isLengthCacheValid; }
     ALWAYS_INLINE unsigned cachedLength() const { return m_cachedLength; }
@@ -116,7 +114,6 @@ protected:
         ASSERT(item);
         m_cachedItem = item;
         m_cachedItemOffset = offset;
-        m_isItemCacheValid = true;
     }
 
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
@@ -135,7 +132,6 @@ private:
     mutable unsigned m_cachedLength;
     mutable unsigned m_cachedItemOffset;
     mutable unsigned m_isLengthCacheValid : 1;
-    mutable unsigned m_isItemCacheValid : 1;
     const unsigned m_rootType : 2;
     const unsigned m_invalidationType : 4;
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
