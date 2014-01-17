@@ -38,6 +38,7 @@
 ] interface TestInterfacePython : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
     // configuration and method configuration
+    const unsigned long UNSIGNED_LONG = 0;
     attribute TestInterfacePython testInterfacePythonAttribute;  // Self-referential interface type with [ImplementedAs]
     static attribute DOMString staticStringAttribute;
     [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;

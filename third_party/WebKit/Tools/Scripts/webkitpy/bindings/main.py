@@ -49,7 +49,6 @@ SKIP_PYTHON = set([
     'TestImplements.idl',
     'TestInterface.idl',
     'TestObject.idl',
-    'TestPartialInterface.idl',
     'TestSVG.idl',
 ])
 

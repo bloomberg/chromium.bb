@@ -183,10 +183,10 @@ def getter_expression(interface, attribute, contents):
     this_getter_base_name = getter_base_name(attribute, arguments)
     getter_name = v8_utilities.scoped_name(interface, attribute, this_getter_base_name)
 
+    arguments.extend(v8_utilities.call_with_arguments(attribute))
     if ('ImplementedBy' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('imp')
-    arguments.extend(v8_utilities.call_with_arguments(attribute))
     if attribute.is_nullable:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:

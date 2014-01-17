@@ -390,24 +390,6 @@ static void supplementalStr2AttributeSetterCallback(v8::Local<v8::String>, v8::L
 #endif // ENABLE(CONDITION_PARTIAL)
 
 #if ENABLE(CONDITION_PARTIAL)
-static void supplementalStr3AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    V8TestInterface::supplementalStr3AttributeGetterCustom(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
-static void supplementalStr3AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    V8TestInterface::supplementalStr3AttributeSetterCustom(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_PARTIAL)
-
-#if ENABLE(CONDITION_PARTIAL)
 static void supplementalNodeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
@@ -825,9 +807,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
 #endif // ENABLE(CONDITION_PARTIAL)
 #if ENABLE(CONDITION_PARTIAL)
     {"supplementalStr2", TestInterfaceV8Internal::supplementalStr2AttributeGetterCallback, TestInterfaceV8Internal::supplementalStr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(CONDITION_PARTIAL)
-#if ENABLE(CONDITION_PARTIAL)
-    {"supplementalStr3", TestInterfaceV8Internal::supplementalStr3AttributeGetterCallback, TestInterfaceV8Internal::supplementalStr3AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(CONDITION_PARTIAL)
 #if ENABLE(CONDITION_PARTIAL)
     {"supplementalNode", TestInterfaceV8Internal::supplementalNodeAttributeGetterCallback, TestInterfaceV8Internal::supplementalNodeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

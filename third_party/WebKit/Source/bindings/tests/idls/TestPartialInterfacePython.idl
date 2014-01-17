@@ -29,6 +29,9 @@
  */
 
 partial interface TestInterfacePython {
+    const unsigned short UNSIGNED_SHORT = 0;
+
     attribute long longAttribute;
     static attribute long staticLongAttribute;
+    [CallWith=ExecutionContext] attribute long callWithExecutionContextLongAttribute;
 };

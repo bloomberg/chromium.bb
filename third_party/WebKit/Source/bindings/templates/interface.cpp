@@ -568,7 +568,8 @@ if ({{constant.runtime_enabled_function}}()) {
 {# Check constants #}
 {% if not do_not_check_constants %}
 {% for constant in constants %}
-COMPILE_ASSERT({{constant.value}} == {{cpp_class}}::{{constant.reflected_name}}, TheValueOf{{cpp_class}}_{{constant.reflected_name}}DoesntMatchWithImplementation);
+{% set constant_cpp_class = constant.cpp_class or cpp_class %}
+COMPILE_ASSERT({{constant.value}} == {{constant_cpp_class}}::{{constant.reflected_name}}, TheValueOf{{cpp_class}}_{{constant.reflected_name}}DoesntMatchWithImplementation);
 {% endfor %}
 {% endif %}
 {% endmacro %}

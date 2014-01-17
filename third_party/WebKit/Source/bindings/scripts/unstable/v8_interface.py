@@ -231,14 +231,15 @@ def generate_constant(constant):
     else:
         value = constant.value
 
-    constant_parameter = {
+    extended_attributes = constant.extended_attributes
+    return {
+        'cpp_class': extended_attributes.get('ImplementedBy'),
         'name': constant.name,
         # FIXME: use 'reflected_name' as correct 'name'
-        'reflected_name': constant.extended_attributes.get('Reflect', constant.name),
+        'reflected_name': extended_attributes.get('Reflect', constant.name),
         'runtime_enabled_function': runtime_enabled_function_name(constant),
         'value': value,
     }
-    return constant_parameter
 
 
 ################################################################################
