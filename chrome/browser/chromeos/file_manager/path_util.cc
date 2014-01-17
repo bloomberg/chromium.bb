@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace file_manager {
@@ -40,18 +41,30 @@ bool MigratePathFromOldFormat(Profile* profile,
   }
 
   // /home/chronos/user/Downloads/xxx => /home/chronos/u-hash/Downloads/xxx
-  const base::FilePath old_base(kOldDownloadsFolderPath);
-  base::FilePath relative;
-  if (old_path == old_base ||
-      old_base.AppendRelativePath(old_path, &relative)) {
-    const base::FilePath new_base = GetDownloadsFolderForProfile(profile);
-    *new_path = new_base.Append(relative);
-    return old_path != *new_path;
+  //
+  // Old path format comes either from stored old settings or from the initial
+  // default value set in DownloadPrefs::RegisterProfilePrefs in profile-unaware
+  // code location. In the former case it is "/home/chronos/user/Downloads",
+  // and in the latter case it is DownloadPrefs::GetDefaultDownloadDirectory().
+  // Those two paths coincides as long as $HOME=/home/chronos/user, but the
+  // environment variable is phasing out (crbug.com/333031) so we care both.
+  const base::FilePath old_bases[] = {
+      base::FilePath(kOldDownloadsFolderPath),
+      DownloadPrefs::GetDefaultDownloadDirectory(),
+  };
+  for (size_t i = 0; i < arraysize(old_bases); ++i) {
+    const base::FilePath& old_base = old_bases[i];
+    base::FilePath relative;
+    if (old_path == old_base ||
+        old_base.AppendRelativePath(old_path, &relative)) {
+      const base::FilePath new_base = GetDownloadsFolderForProfile(profile);
+      *new_path = new_base.Append(relative);
+      return old_path != *new_path;
+    }
   }
 
   return false;
 }
-
 
 }  // namespace util
 }  // namespace file_manager
