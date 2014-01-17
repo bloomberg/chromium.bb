@@ -21,6 +21,7 @@
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/gdata_wapi_requests.h"
 #include "google_apis/drive/request_sender.h"
+#include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
@@ -784,12 +785,28 @@ CancelCallback DriveAPIService::AuthorizeApp(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FilesGetRequest* request = new FilesGetRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
-  request->set_file_id(resource_id);
-  request->set_fields(kFileResourceOpenWithLinksFields);
-  return sender_->StartRequestWithRetry(request);
+  // Files.Authorize is only available for whitelisted clients like official
+  // Google Chrome. In other cases, we fall back to Files.Get that returns the
+  // same value as Files.Authorize without doing authorization. In that case,
+  // the app can open if it was authorized by other means (from whitelisted
+  // clients or drive.google.com web UI.)
+  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
+    google_apis::drive::FilesAuthorizeRequest* request =
+        new google_apis::drive::FilesAuthorizeRequest(
+            sender_.get(), url_generator_,
+            base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
+    request->set_app_id(app_id);
+    request->set_file_id(resource_id);
+    request->set_fields(kFileResourceOpenWithLinksFields);
+    return sender_->StartRequestWithRetry(request);
+  } else {
+    FilesGetRequest* request = new FilesGetRequest(
+        sender_.get(), url_generator_,
+        base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
+    request->set_file_id(resource_id);
+    request->set_fields(kFileResourceOpenWithLinksFields);
+    return sender_->StartRequestWithRetry(request);
+  }
 }
 
 CancelCallback DriveAPIService::UninstallApp(

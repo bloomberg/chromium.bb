@@ -13,6 +13,7 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/google_api_keys.h"
 
 using content::BrowserThread;
 
@@ -205,11 +206,7 @@ void DriveAppRegistry::OnAppUninstalled(const std::string& app_id,
 
 // static
 bool DriveAppRegistry::IsAppUninstallSupported() {
-#ifdef USE_OFFICIAL_GOOGLE_API_KEYS
-  return true;
-#else
-  return false;
-#endif
+  return google_apis::IsGoogleChromeAPIKeyUsed();
 }
 
 namespace util {

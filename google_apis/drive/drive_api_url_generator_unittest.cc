@@ -65,6 +65,15 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
             test_url_generator_.GetFilesGetUrl("file:file_id").spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetFilesAuthorizeUrl) {
+  EXPECT_EQ(
+      "https://www.googleapis.com/drive/v2internal/files/aa/authorize?appId=bb",
+            url_generator_.GetFilesAuthorizeUrl("aa", "bb").spec());
+  EXPECT_EQ(
+      "http://127.0.0.1:12345/drive/v2internal/files/foo/authorize?appId=bar",
+      test_url_generator_.GetFilesAuthorizeUrl("foo", "bar").spec());
+}
+
 TEST_F(DriveApiUrlGeneratorTest, GetFilesInsertUrl) {
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files",
             url_generator_.GetFilesInsertUrl().spec());

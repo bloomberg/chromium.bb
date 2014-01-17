@@ -38,6 +38,10 @@ class DriveApiUrlGenerator {
   // Returns a URL to fetch a file metadata.
   GURL GetFilesGetUrl(const std::string& file_id) const;
 
+  // Returns a URL to authorize an app to access a file.
+  GURL GetFilesAuthorizeUrl(const std::string& file_id,
+                            const std::string& app_id) const;
+
   // Returns a URL to create a resource.
   GURL GetFilesInsertUrl() const;
 

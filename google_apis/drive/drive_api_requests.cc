@@ -162,6 +162,29 @@ GURL FilesGetRequest::GetURLInternal() const {
   return url_generator_.GetFilesGetUrl(file_id_);
 }
 
+//============================ FilesAuthorizeRequest ===========================
+
+FilesAuthorizeRequest::FilesAuthorizeRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const FileResourceCallback& callback)
+    : DriveApiDataRequest(
+          sender,
+          base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+FilesAuthorizeRequest::~FilesAuthorizeRequest() {}
+
+net::URLFetcher::RequestType FilesAuthorizeRequest::GetRequestType() const {
+  return net::URLFetcher::POST;
+}
+
+GURL FilesAuthorizeRequest::GetURLInternal() const {
+  return url_generator_.GetFilesAuthorizeUrl(file_id_, app_id_);
+}
+
 //============================ FilesInsertRequest ============================
 
 FilesInsertRequest::FilesInsertRequest(

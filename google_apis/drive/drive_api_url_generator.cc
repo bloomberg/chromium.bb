@@ -17,9 +17,6 @@ namespace {
 // Hard coded URLs for communication with a google drive server.
 const char kDriveV2AboutUrl[] = "/drive/v2/about";
 const char kDriveV2AppsUrl[] = "/drive/v2/apps";
-// apps.delete API is exposed through a special endpoint v2internal that
-// is accessible only by the official API key for Chrome.
-const char kDriveV2AppsDeleteUrlFormat[] = "/drive/v2internal/apps/%s";
 const char kDriveV2ChangelistUrl[] = "/drive/v2/changes";
 const char kDriveV2FilesUrl[] = "/drive/v2/files";
 const char kDriveV2FileUrlPrefix[] = "/drive/v2/files/";
@@ -32,6 +29,12 @@ const char kDriveV2FileTrashUrlFormat[] = "/drive/v2/files/%s/trash";
 const char kDriveV2InitiateUploadNewFileUrl[] = "/upload/drive/v2/files";
 const char kDriveV2InitiateUploadExistingFileUrlPrefix[] =
     "/upload/drive/v2/files/";
+
+// apps.delete and file.authorize API is exposed through a special endpoint
+// v2internal that is accessible only by the official API key for Chrome.
+const char kDriveV2AppsDeleteUrlFormat[] = "/drive/v2internal/apps/%s";
+const char kDriveV2FilesAuthorizeUrlFormat[] =
+    "/drive/v2internal/files/%s/authorize?appId=%s";
 
 GURL AddResumableUploadParam(const GURL& url) {
   return net::AppendOrReplaceQueryParameter(url, "uploadType", "resumable");
@@ -70,6 +73,14 @@ GURL DriveApiUrlGenerator::GetAppsDeleteUrl(const std::string& app_id) const {
 
 GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id) const {
   return base_url_.Resolve(kDriveV2FileUrlPrefix + net::EscapePath(file_id));
+}
+
+GURL DriveApiUrlGenerator::GetFilesAuthorizeUrl(
+    const std::string& file_id,
+    const std::string& app_id) const {
+  return base_url_.Resolve(base::StringPrintf(kDriveV2FilesAuthorizeUrlFormat,
+                                              net::EscapePath(file_id).c_str(),
+                                              net::EscapePath(app_id).c_str()));
 }
 
 GURL DriveApiUrlGenerator::GetFilesInsertUrl() const {

@@ -93,6 +93,38 @@ class FilesGetRequest : public DriveApiDataRequest {
   DISALLOW_COPY_AND_ASSIGN(FilesGetRequest);
 };
 
+//============================ FilesAuthorizeRequest ===========================
+
+// This class performs request for authorizing an app to access a file.
+// This request is mapped to /drive/v2internal/file/authorize internal endpoint.
+class FilesAuthorizeRequest : public DriveApiDataRequest {
+ public:
+  FilesAuthorizeRequest(RequestSender* sender,
+                        const DriveApiUrlGenerator& url_generator,
+                        const FileResourceCallback& callback);
+  virtual ~FilesAuthorizeRequest();
+
+  // Required parameter.
+  const std::string& file_id() const { return file_id_; }
+  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
+  const std::string& app_id() const { return app_id_; }
+  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+
+  // Overridden from DriveApiDataRequest.
+  virtual GURL GetURLInternal() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  std::string file_id_;
+  std::string app_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FilesAuthorizeRequest);
+};
+
 //============================ FilesInsertRequest =============================
 
 // This class performs the request for creating a resource.
