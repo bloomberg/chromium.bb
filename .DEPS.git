@@ -144,7 +144,7 @@ deps = {
     'src/tools/deps2git':
         Var('git_url') + '/chromium/tools/deps2git.git@f8d30f6821c454ffa789cb9211bd914a579d0131',
     'src/tools/grit':
-        Var('git_url') + '/external/grit-i18n.git@09ac06a38baa2cf86f4862bbd1c0e6d92d130bf2',
+        Var('git_url') + '/external/grit-i18n.git@ee2aae98b1aba3315f768fe9667d245ad46f3c9c',
     'src/tools/gyp':
         Var('git_url') + '/external/gyp.git@1eae492b07f43e79ca3845497a07b42b04f3e3ef',
     'src/tools/page_cycler/acid3':
@@ -152,7 +152,7 @@ deps = {
     'src/tools/swarming_client':
         Var('git_url') + '/external/swarming.client.git@361bfda6c0e4e2469dd3dab8c2b741639cacb086',
     'src/v8':
-        Var('git_url') + '/external/v8.git@26ca35cc4ec47151d9c6d3890b0f052fc79cb8af',
+        Var('git_url') + '/external/v8.git@5c88bc39690cc94affe78cf5777eb8180c4af8a4',
 }
 
 deps_os = {
