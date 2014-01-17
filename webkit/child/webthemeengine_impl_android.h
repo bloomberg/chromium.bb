@@ -5,7 +5,7 @@
 #ifndef WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_ANDROID_H_
 #define WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_ANDROID_H_
 
-#include "third_party/WebKit/public/platform/android/WebThemeEngine.h"
+#include "third_party/WebKit/public/platform/default/WebThemeEngine.h"
 
 namespace webkit_glue {
 
