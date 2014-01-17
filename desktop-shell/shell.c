@@ -356,7 +356,7 @@ shell_touch_grab_start(struct shell_touch_grab *grab,
 		       struct weston_touch *touch)
 {
 	struct desktop_shell *shell = shsurf->shell;
-	
+
 	grab->grab.interface = interface;
 	grab->shsurf = shsurf;
 	grab->shsurf_destroy_listener.notify = destroy_shell_grab_shsurf;
@@ -1506,14 +1506,14 @@ common_surface_move(struct wl_resource *resource,
 	    seat->pointer->button_count > 0 &&
 	    seat->pointer->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->pointer->focus->surface);
-		if ((surface == shsurf->surface) && 
+		if ((surface == shsurf->surface) &&
 		    (surface_move(shsurf, seat) < 0))
 			wl_resource_post_no_memory(resource);
 	} else if (seat->touch &&
 		   seat->touch->focus &&
 		   seat->touch->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->touch->focus->surface);
-		if ((surface == shsurf->surface) && 
+		if ((surface == shsurf->surface) &&
 		    (surface_touch_move(shsurf, seat) < 0))
 			wl_resource_post_no_memory(resource);
 	}
@@ -1577,6 +1577,8 @@ send_configure(struct weston_surface *surface,
 	       uint32_t edges, int32_t width, int32_t height)
 {
 	struct shell_surface *shsurf = get_shell_surface(surface);
+
+	assert(shsurf);
 
 	wl_shell_surface_send_configure(shsurf->resource,
 					edges, width, height);
@@ -3258,6 +3260,8 @@ xdg_send_configure(struct weston_surface *surface,
 {
 	struct shell_surface *shsurf = get_shell_surface(surface);
 
+	assert(shsurf);
+
 	xdg_surface_send_configure(shsurf->resource, edges, width, height);
 }
 
@@ -4226,6 +4230,8 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	wl_signal_add(&es->destroy_signal, &state->surface_destroy_listener);
 
 	shsurf = get_shell_surface(main_surface);
+	assert(shsurf);
+
 	if (shsurf->state.fullscreen)
 		shell_configure_fullscreen(shsurf);
 	else
@@ -4238,7 +4244,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 
 	/* Update the surface’s layer. This brings it to the top of the stacking
 	 * order as appropriate. */
-	shell_surface_update_layer(get_shell_surface(main_surface));
+	shell_surface_update_layer(shsurf);
 }
 
 /* no-op func for checking black surface */
@@ -4716,6 +4722,8 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 
 	shsurf = get_shell_surface(surface);
 
+	assert(shsurf);
+
 	if (shsurf->state.fullscreen)
 		shell_configure_fullscreen(shsurf);
 	else if (shsurf->state.maximized) {
@@ -4744,9 +4752,12 @@ static void
 shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
-	struct desktop_shell *shell = shsurf->shell;
-
+	struct desktop_shell *shell;
 	int type_changed = 0;
+
+	assert(shsurf);
+
+	shell = shsurf->shell;
 
 	if (!weston_surface_is_mapped(es) &&
 	    !wl_list_empty(&shsurf->popup.grab_link)) {
@@ -4783,6 +4794,8 @@ static void
 shell_surface_output_destroyed(struct weston_surface *es)
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
+
+	assert(shsurf);
 
 	shsurf->saved_position_valid = false;
 	shsurf->next_state.maximized = false;
