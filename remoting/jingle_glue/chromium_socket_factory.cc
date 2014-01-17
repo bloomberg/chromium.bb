@@ -13,7 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
-#include "third_party/libjingle/source/talk/base/asyncresolverinterface.h"
+#include "third_party/libjingle/source/talk/base/nethelpers.h"
 
 namespace remoting {
 
@@ -34,29 +34,6 @@ bool IsTransientError(int error) {
   return error == net::ERR_ADDRESS_UNREACHABLE ||
       error == net::ERR_ADDRESS_INVALID;
 }
-
-// TODO(lambroslambrou): Move STUN/relay address resolution from
-// PepperPortAllocator to this class.
-class DummyAsyncResolver : public talk_base::AsyncResolverInterface {
- public:
-  DummyAsyncResolver() {}
-  virtual ~DummyAsyncResolver() {}
-  virtual void Start(const talk_base::SocketAddress& addr) OVERRIDE {}
-  virtual bool GetResolvedAddress(
-      int family,
-      talk_base::SocketAddress* addr) const OVERRIDE {
-    return false;
-  }
-  virtual int GetError() const OVERRIDE {
-    return 0;
-  }
-  virtual void Destroy(bool wait) OVERRIDE {
-    delete this;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyAsyncResolver);
-};
 
 class UdpPacketSocket : public talk_base::AsyncPacketSocket {
  public:
@@ -398,7 +375,7 @@ ChromiumPacketSocketFactory::CreateClientTcpSocket(
 
 talk_base::AsyncResolverInterface*
 ChromiumPacketSocketFactory::CreateAsyncResolver() {
-  return new DummyAsyncResolver();
+  return new talk_base::AsyncResolver();
 }
 
 }  // namespace remoting
