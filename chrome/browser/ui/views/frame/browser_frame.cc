@@ -128,6 +128,9 @@ void BrowserFrame::InitBrowserFrame() {
   const char kX11WindowRolePopup[] = "pop-up";
   params.wm_role_name = browser_view_->browser()->is_type_tabbed() ?
       std::string(kX11WindowRoleBrowser) : std::string(kX11WindowRolePopup);
+
+  params.remove_standard_frame =
+      !command_line.HasSwitch(switches::kUseSystemTitleBar);
 #endif  // defined(OS_LINUX)
 
   Init(params);
