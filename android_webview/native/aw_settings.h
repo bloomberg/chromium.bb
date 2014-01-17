@@ -50,6 +50,8 @@ class AwSettings : public content::WebContentsObserver {
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
 
+  bool accelerated_2d_canvas_disabled_by_switch_;
+
   JavaObjectWeakGlobalRef aw_settings_;
 };
 

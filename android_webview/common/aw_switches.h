@@ -20,6 +20,10 @@ extern const char kTileMemoryMultiplier[];
 // Maximum number of gralloc allocations per webview.
 extern const char kNumGrallocBuffersPerWebview[];
 
+// Explicitly enable accelerated 2d canvas.
+// TODO(boliu): Remove this switch once on by default.
+extern const char kEnableAccelerated2dCanvas[];
+
 }  // namespace switches
 
 #endif  // ANDROID_WEBVIEW_COMMON_AW_SWITCHES_H_

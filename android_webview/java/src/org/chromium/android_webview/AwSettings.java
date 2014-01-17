@@ -83,6 +83,7 @@ public class AwSettings {
     private String mDefaultVideoPosterURL;
     private float mInitialPageScalePercent = 0;
     private boolean mSpatialNavigationEnabled;  // Default depends on device features.
+    private boolean mEnableSupportedHardwareAcceleratedFeatures = false;
 
     private final boolean mSupportLegacyQuirks;
 
@@ -396,6 +397,20 @@ public class AwSettings {
     @CalledByNative
     private boolean getSpatialNavigationLocked() {
         return mSpatialNavigationEnabled;
+    }
+
+    void setEnableSupportedHardwareAcceleratedFeatures(boolean enable) {
+        synchronized (mAwSettingsLock) {
+            if (mEnableSupportedHardwareAcceleratedFeatures != enable) {
+                mEnableSupportedHardwareAcceleratedFeatures = enable;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    @CalledByNative
+    private boolean getEnableSupportedHardwareAcceleratedFeaturesLocked() {
+        return mEnableSupportedHardwareAcceleratedFeatures;
     }
 
     /**

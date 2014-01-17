@@ -8,6 +8,7 @@
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/in_process_view_renderer.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_geolocation_permission_context.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
@@ -66,8 +67,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableExperimentalWebGL);
   cl->AppendSwitch(switches::kDisableSharedWorkers);
 
-  // Ganesh backed 2D-Canvas is not yet working and causes crashes.
-  cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+  // Ganesh backed 2D-Canvas integration is being implemented but not ready to
+  // be turned on by default yet.
+  if (!cl->HasSwitch(switches::kEnableAccelerated2dCanvas))
+    cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
 
   // File system API not supported (requires some new API; internal bug 6930981)
   cl->AppendSwitch(switches::kDisableFileSystem);

@@ -8,12 +8,14 @@
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "jni/AwSettings_jni.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/webpreferences.h"
@@ -45,6 +47,9 @@ class AwSettingsUserData : public base::SupportsUserData::Data {
 AwSettings::AwSettings(JNIEnv* env, jobject obj, jlong web_contents)
     : WebContentsObserver(
           reinterpret_cast<content::WebContents*>(web_contents)),
+      accelerated_2d_canvas_disabled_by_switch_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableAccelerated2dCanvas)),
       aw_settings_(env, obj) {
   reinterpret_cast<content::WebContents*>(web_contents)->
       SetUserData(kAwSettingsUserDataKey, new AwSettingsUserData(this));
@@ -312,6 +317,11 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
       Java_AwSettings_getPasswordEchoEnabledLocked(env, obj);
   web_prefs->spatial_navigation_enabled =
       Java_AwSettings_getSpatialNavigationLocked(env, obj);
+
+  web_prefs->accelerated_2d_canvas_enabled =
+      !accelerated_2d_canvas_disabled_by_switch_ &&
+      Java_AwSettings_getEnableSupportedHardwareAcceleratedFeaturesLocked(
+          env, obj);
 }
 
 static jlong Init(JNIEnv* env,
