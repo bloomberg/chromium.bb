@@ -89,31 +89,30 @@ const char *kBlockedHostnames[] = {
 const struct TestHistoryEntry {
   const char* url;
   const char* title;
-  const char* body;
   int visit_count;
   int typed_count;
   bool starred;
 } kHistoryEntries[] = {
-  {"http://www.bar.com/1", "Page 1", kSearchText, 10, 10, false },
-  {"http://www.bar.com/2", "Page 2", kSearchText, 9, 9, false },
-  {"http://www.bar.com/3", "Page 3", kSearchText, 8, 8, false },
-  {"http://www.bar.com/4", "Page 4", kSearchText, 7, 7, false },
-  {"http://www.bar.com/5", "Page 5", kSearchText, 6, 6, false },
-  {"http://www.bar.com/6", "Page 6", kSearchText, 5, 5, false },
-  {"http://www.bar.com/7", "Page 7", kSearchText, 4, 4, false },
-  {"http://www.bar.com/8", "Page 8", kSearchText, 3, 3, false },
-  {"http://www.bar.com/9", "Page 9", kSearchText, 2, 2, false },
-  {"http://www.site.com/path/1", "Site 1", kSearchText, 4, 4, false },
-  {"http://www.site.com/path/2", "Site 2", kSearchText, 3, 3, false },
-  {"http://www.site.com/path/3", "Site 3", kSearchText, 2, 2, false },
+  {"http://www.bar.com/1", "Page 1", 10, 10, false },
+  {"http://www.bar.com/2", "Page 2", 9, 9, false },
+  {"http://www.bar.com/3", "Page 3", 8, 8, false },
+  {"http://www.bar.com/4", "Page 4", 7, 7, false },
+  {"http://www.bar.com/5", "Page 5", 6, 6, false },
+  {"http://www.bar.com/6", "Page 6", 5, 5, false },
+  {"http://www.bar.com/7", "Page 7", 4, 4, false },
+  {"http://www.bar.com/8", "Page 8", 3, 3, false },
+  {"http://www.bar.com/9", "Page 9", 2, 2, false },
+  {"http://www.site.com/path/1", "Site 1", 4, 4, false },
+  {"http://www.site.com/path/2", "Site 2", 3, 3, false },
+  {"http://www.site.com/path/3", "Site 3", 2, 2, false },
 
   // To trigger inline autocomplete.
-  {"http://www.def.com", "Page def", kSearchText, 10000, 10000, true },
+  {"http://www.def.com", "Page def", 10000, 10000, true },
 
   // Used in particular for the desired TLD test.  This makes it test
   // the interesting case when there's an intranet host with the same
   // name as the .com.
-  {"http://bar/", "Bar", kSearchText, 1, 0, false },
+  {"http://bar/", "Bar", 1, 0, false },
 };
 
 #if defined(TOOLKIT_GTK)
@@ -936,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   // Space should accept keyword even when inline autocomplete is available.
   omnibox_view->SetUserText(base::string16());
   const TestHistoryEntry kHistoryFoobar = {
-    "http://www.foobar.com", "Page foobar", kSearchText, 100, 100, true
+    "http://www.foobar.com", "Page foobar", 100, 100, true
   };
 
   // Add a history entry to trigger inline autocomplete when typing "foo".
@@ -985,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   // input does not look like a keyword, should trigger keyword mode.
   omnibox_view->SetUserText(base::string16());
   const TestHistoryEntry kHistoryFoo = {
-    "http://footest.com", "Page footest", kSearchText, 1000, 1000, true
+    "http://footest.com", "Page footest", 1000, 1000, true
   };
 
   // Add a history entry to trigger HQP matching with text == keyword when
@@ -1277,7 +1276,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_TabTraverseResultsTest) {
   ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
   const TestHistoryEntry kHistoryFoo = {
-    "http://foo/", "Page foo", kSearchText, 1, 1, false
+    "http://foo/", "Page foo", 1, 1, false
   };
 
   // Add a history entry so "foo" gets multiple matches.

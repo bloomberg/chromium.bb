@@ -49,22 +49,21 @@ const char kMountPointC[] = "mnt_c";
 struct TestDeviceData {
   const char* device_path;
   const char* unique_id;
-  const char* device_name;
   StorageInfo::Type type;
   uint64 partition_size_in_bytes;
 };
 
 const TestDeviceData kTestDeviceData[] = {
-  { kDeviceDCIM1, "UUID:FFF0-000F", "TEST_USB_MODEL_1",
+  { kDeviceDCIM1, "UUID:FFF0-000F",
     StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, 88788 },
   { kDeviceDCIM2, "VendorModelSerial:ComName:Model2010:8989",
-    "TEST_USB_MODEL_2", StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
+    StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM,
     8773 },
-  { kDeviceDCIM3, "VendorModelSerial:::WEM319X792", "TEST_USB_MODEL_3",
+  { kDeviceDCIM3, "VendorModelSerial:::WEM319X792",
     StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, 22837 },
-  { kDeviceNoDCIM, "UUID:ABCD-1234", "TEST_USB_MODEL_4",
+  { kDeviceNoDCIM, "UUID:ABCD-1234",
     StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM, 512 },
-  { kDeviceFixed, "UUID:743A-2349", "743A-2349",
+  { kDeviceFixed, "UUID:743A-2349",
     StorageInfo::FIXED_MASS_STORAGE, 17282 },
 };
 
