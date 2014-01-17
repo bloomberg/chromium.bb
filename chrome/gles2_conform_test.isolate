@@ -31,12 +31,5 @@
         ],
       },
     }],
-    # This no-op branch should not be necessary but seems to be.
-    ['(OS=="linux" or OS=="mac" or OS=="win") and internal_gles2_conform_tests==0', {
-      'variables': {
-        'isolate_dependency_tracked': [
-        ],
-      },
-    }],
   ],
 }
