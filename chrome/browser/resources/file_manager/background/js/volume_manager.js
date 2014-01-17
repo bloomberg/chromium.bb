@@ -266,7 +266,11 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
  * @private
  */
 volumeManagerUtil.volumeListOrder_ = [
-  RootType.DRIVE, RootType.DOWNLOADS, RootType.ARCHIVE, RootType.REMOVABLE
+  RootType.DRIVE,
+  RootType.DOWNLOADS,
+  RootType.ARCHIVE,
+  RootType.REMOVABLE,
+  RootType.CLOUD_DEVICE
 ];
 
 /**
@@ -763,6 +767,9 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         break;
       case util.VolumeType.ARCHIVE:
         rootType = RootType.ARCHIVE;
+        break;
+      case util.VolumeType.CLOUD_DEVICE:
+        rootType = RootType.CLOUD_DEVICE;
         break;
       default:
         throw new Error('Invalid volume type: ' + volumeInfo.volumeType);

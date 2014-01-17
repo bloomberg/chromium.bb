@@ -1261,5 +1261,6 @@ util.VolumeType = Object.freeze({
   DRIVE: 'drive',
   DOWNLOADS: 'downloads',
   REMOVABLE: 'removable',
-  ARCHIVE: 'archive'
+  ARCHIVE: 'archive',
+  CLOUD_DEVICE: 'cloud_device'
 });

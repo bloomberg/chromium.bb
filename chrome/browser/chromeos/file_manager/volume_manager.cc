@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -19,7 +20,9 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/local_discovery/storage/privet_filesystem_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -63,6 +66,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "removable";
     case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
       return "archive";
+    case VOLUME_TYPE_CLOUD_DEVICE:
+      return "cloud_device";
   }
   NOTREACHED();
   return "";
@@ -128,6 +133,17 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
   }
   volume_info.volume_id = GenerateVolumeId(volume_info);
 
+  return volume_info;
+}
+
+VolumeInfo CreatePrivetVolumeInfo() {
+  VolumeInfo volume_info;
+  volume_info.type = VOLUME_TYPE_CLOUD_DEVICE;
+  volume_info.mount_path = base::FilePath(local_discovery::kPrivetFilePath);
+  volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume_info.is_parent = true;
+  volume_info.is_read_only = true;
+  volume_info.volume_id = GenerateVolumeId(volume_info);
   return volume_info;
 }
 
@@ -254,6 +270,11 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
     result.push_back(CreateVolumeInfoFromMountPointInfo(
         it->second,
         disk_mount_manager_->FindDiskBySourcePath(it->second.source_path)));
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrivetStorage)) {
+    result.push_back(CreatePrivetVolumeInfo());
   }
 
   return result;

@@ -46,6 +46,7 @@
 #include "chrome/browser/guestview/guestview.h"
 #include "chrome/browser/guestview/guestview_constants.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
+#include "chrome/browser/local_discovery/storage/privet_filesystem_backend.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
@@ -2531,6 +2532,13 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   additional_backends->push_back(
       new sync_file_system::SyncFileSystemBackend(
           Profile::FromBrowserContext(browser_context)));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrivetStorage)) {
+    additional_backends->push_back(
+        new local_discovery::PrivetFileSystemBackend(
+            fileapi::ExternalMountPoints::GetSystemInstance()));
+  }
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

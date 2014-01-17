@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 
+#include <string>
+
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -87,7 +89,7 @@ void GetSelectedFileInfoInternal(Profile* profile,
                          base::Passed(&params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
       }
-   }
+    }
   }
   params->callback.Run(params->selected_files);
 }
@@ -158,6 +160,10 @@ void VolumeInfoToVolumeMetadata(
       break;
     case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
       volume_metadata->volume_type = file_browser_private::VOLUME_TYPE_ARCHIVE;
+      break;
+    case VOLUME_TYPE_CLOUD_DEVICE:
+      volume_metadata->volume_type =
+          file_browser_private::VOLUME_TYPE_CLOUD_DEVICE;
       break;
   }
 

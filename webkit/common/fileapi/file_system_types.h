@@ -116,6 +116,9 @@ enum FileSystemType {
   // given identifier in each origin.
   kFileSystemTypePluginPrivate,
 
+  // A filesystem that is mounted via the Privet storage protocol.
+  kFileSystemTypeCloudDevice,
+
   // --------------------------------------------------------------------
   // Marks the end of internal type enum. (This is not the actual fs type)
   // New internal filesystem types must be added above this line.

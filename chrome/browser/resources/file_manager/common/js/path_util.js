@@ -22,6 +22,9 @@ var RootType = Object.freeze({
   // Root of drive directory.
   DRIVE: 'drive',
 
+  // Root for privet storage volume.
+  CLOUD_DEVICE: 'cloud_device',
+
   // Root for entries that is not located under RootType.DRIVE. e.g. shared
   // files.
   DRIVE_OTHER: 'drive_other',
@@ -47,6 +50,7 @@ var RootDirectory = Object.freeze({
   ARCHIVE: '/archive',
   REMOVABLE: '/removable',
   DRIVE: '/drive',
+  CLOUD_DEVICE: '/privet',
   DRIVE_OFFLINE: '/drive_offline',  // A fake root. Not the actual filesystem.
   DRIVE_SHARED_WITH_ME: '/drive_shared_with_me',  // A fake root.
   DRIVE_RECENT: '/drive_recent'  // A fake root.
@@ -401,4 +405,3 @@ PathUtil.splitExtension = function(path) {
   var extension = dotPosition != -1 ? path.substr(dotPosition) : '';
   return [filename, extension];
 };
-
