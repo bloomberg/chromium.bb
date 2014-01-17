@@ -37,7 +37,7 @@ namespace blink {
 
 // Provides a thread synchronization that can be used to allow one thread to
 // wait until another thread to finish some work.
-class BLINK_PLATFORM_EXPORT WebWaitableEvent {
+class WebWaitableEvent {
 public:
     virtual ~WebWaitableEvent() { }
 
