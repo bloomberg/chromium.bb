@@ -113,7 +113,7 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 void DockedWindowResizer::CompleteDrag() {
   // The root window can change when dragging into a different screen.
   next_window_resizer_->CompleteDrag();
-  FinishedDragging();
+  FinishedDragging(aura::client::MOVE_SUCCESSFUL);
 }
 
 void DockedWindowResizer::RevertDrag() {
@@ -126,7 +126,7 @@ void DockedWindowResizer::RevertDrag() {
     else
       dock_layout_->UndockDraggedWindow();
   }
-  FinishedDragging();
+  FinishedDragging(aura::client::MOVE_CANCELED);
 }
 
 DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
@@ -213,7 +213,8 @@ void DockedWindowResizer::StartedDragging() {
     dock_layout_->DockDraggedWindow(GetTarget());
 }
 
-void DockedWindowResizer::FinishedDragging() {
+void DockedWindowResizer::FinishedDragging(
+    aura::client::WindowMoveResult move_result) {
   if (!did_move_or_resize_)
     return;
   did_move_or_resize_ = false;
@@ -245,7 +246,7 @@ void DockedWindowResizer::FinishedDragging() {
   DockedAction action = MaybeReparentWindowOnDragCompletion(is_resized,
                                                             is_attached_panel);
   dock_layout_->FinishDragging(
-      action,
+      move_result == aura::client::MOVE_CANCELED ? DOCKED_ACTION_NONE : action,
       details().source == aura::client::WINDOW_MOVE_SOURCE_MOUSE ?
           DOCKED_ACTION_SOURCE_MOUSE : DOCKED_ACTION_SOURCE_TOUCH);
 

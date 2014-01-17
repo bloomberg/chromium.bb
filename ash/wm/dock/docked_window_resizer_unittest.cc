@@ -624,6 +624,11 @@ TEST_P(DockedWindowResizerTest, RevertDockedDragRevertsAttachment) {
   if (!SupportsHostWindowResize())
     return;
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  aura::Window* dock_container = Shell::GetContainer(
+      window->GetRootWindow(),
+      kShellWindowId_DockedContainer);
+  DockedWindowLayoutManager* manager =
+      static_cast<DockedWindowLayoutManager*>(dock_container->layout_manager());
   int previous_container_id = window->parent()->id();
   // Drag the window out but revert the drag
   ASSERT_NO_FATAL_FAILURE(DragStart(window.get()));
@@ -631,6 +636,32 @@ TEST_P(DockedWindowResizerTest, RevertDockedDragRevertsAttachment) {
   EXPECT_EQ(CorrectContainerIdDuringDrag(), window->parent()->id());
   DragRevert();
   EXPECT_EQ(previous_container_id, window->parent()->id());
+  EXPECT_EQ(DOCKED_ALIGNMENT_NONE, docked_alignment(manager));
+
+  // Drag a window to the left so that it overlaps the screen edge.
+  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromWindowOrigin(
+      window.get(),
+      window->bounds().width()/2 + 10,
+      0));
+  DragMove(-50 - window->bounds().x(), 50 - window->bounds().y());
+  DragEnd();
+  // The window now overlaps the left screen edge but is not docked.
+  EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
+  EXPECT_EQ(DOCKED_ALIGNMENT_NONE, docked_alignment(manager));
+  EXPECT_LT(window->bounds().x(), 0);
+  EXPECT_GT(window->bounds().right(), 0);
+
+  // Drag the window further left and revert the drag.
+  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromWindowOrigin(
+      window.get(),
+      window->bounds().width()/2 + 10,
+      0));
+  DragMove(-10, 10);
+  DragRevert();
+  // The window should be in default container and not docked.
+  EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
+  // Docked area alignment should be cleared.
+  EXPECT_EQ(DOCKED_ALIGNMENT_NONE, docked_alignment(manager));
 }
 
 // Move a docked window to the second display

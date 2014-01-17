@@ -58,8 +58,9 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   void StartedDragging();
 
   // Informs the DockLayoutManager that the drag is complete if it was informed
-  // of the drag start.
-  void FinishedDragging();
+  // of the drag start. |move_result| specifies if the drag was completed or
+  // reverted.
+  void FinishedDragging(aura::client::WindowMoveResult move_result);
 
   // Reparents dragged window as necessary to the docked container or back to
   // workspace at the end of the drag. Calculates and returns action taken that
