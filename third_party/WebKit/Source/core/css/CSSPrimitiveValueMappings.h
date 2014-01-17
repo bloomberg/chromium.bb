@@ -1346,56 +1346,6 @@ template<> inline CSSPrimitiveValue::operator EEmptyCell() const
     return SHOW;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EAlignItems e)
-    : CSSValue(PrimitiveClass)
-{
-    m_primitiveUnitType = CSS_VALUE_ID;
-    switch (e) {
-    case AlignAuto:
-        m_value.valueID = CSSValueAuto;
-        break;
-    case AlignFlexStart:
-        m_value.valueID = CSSValueFlexStart;
-        break;
-    case AlignFlexEnd:
-        m_value.valueID = CSSValueFlexEnd;
-        break;
-    case AlignCenter:
-        m_value.valueID = CSSValueCenter;
-        break;
-    case AlignStretch:
-        m_value.valueID = CSSValueStretch;
-        break;
-    case AlignBaseline:
-        m_value.valueID = CSSValueBaseline;
-        break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator EAlignItems() const
-{
-    ASSERT(isValueID());
-    switch (m_value.valueID) {
-    case CSSValueAuto:
-        return AlignAuto;
-    case CSSValueFlexStart:
-        return AlignFlexStart;
-    case CSSValueFlexEnd:
-        return AlignFlexEnd;
-    case CSSValueCenter:
-        return AlignCenter;
-    case CSSValueStretch:
-        return AlignStretch;
-    case CSSValueBaseline:
-        return AlignBaseline;
-    default:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return AlignFlexStart;
-}
-
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EJustifyContent e)
     : CSSValue(PrimitiveClass)
 {

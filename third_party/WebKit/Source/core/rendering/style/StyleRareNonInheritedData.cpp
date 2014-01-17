@@ -62,7 +62,9 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_backfaceVisibility(RenderStyle::initialBackfaceVisibility())
     , m_alignContent(RenderStyle::initialAlignContent())
     , m_alignItems(RenderStyle::initialAlignItems())
+    , m_alignItemsOverflowAlignment(RenderStyle::initialAlignItemsOverflowAlignment())
     , m_alignSelf(RenderStyle::initialAlignSelf())
+    , m_alignSelfOverflowAlignment(RenderStyle::initialAlignSelfOverflowAlignment())
     , m_justifyContent(RenderStyle::initialJustifyContent())
     , userDrag(RenderStyle::initialUserDrag())
     , textOverflow(RenderStyle::initialTextOverflow())
@@ -140,7 +142,9 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_backfaceVisibility(o.m_backfaceVisibility)
     , m_alignContent(o.m_alignContent)
     , m_alignItems(o.m_alignItems)
+    , m_alignItemsOverflowAlignment(o.m_alignItemsOverflowAlignment)
     , m_alignSelf(o.m_alignSelf)
+    , m_alignSelfOverflowAlignment(o.m_alignSelfOverflowAlignment)
     , m_justifyContent(o.m_justifyContent)
     , userDrag(o.userDrag)
     , textOverflow(o.textOverflow)
@@ -225,7 +229,9 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_backfaceVisibility == o.m_backfaceVisibility
         && m_alignContent == o.m_alignContent
         && m_alignItems == o.m_alignItems
+        && m_alignItemsOverflowAlignment == o.m_alignItemsOverflowAlignment
         && m_alignSelf == o.m_alignSelf
+        && m_alignSelfOverflowAlignment == o.m_alignSelfOverflowAlignment
         && m_justifyContent == o.m_justifyContent
         && userDrag == o.userDrag
         && textOverflow == o.textOverflow

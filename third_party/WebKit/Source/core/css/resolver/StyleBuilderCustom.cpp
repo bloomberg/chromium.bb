@@ -1713,6 +1713,30 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         return;
     }
 
+    case CSSPropertyAlignSelf: {
+        HANDLE_INHERIT_AND_INITIAL(alignSelf, AlignSelf);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        if (Pair* pairValue = primitiveValue->getPairValue()) {
+            state.style()->setAlignSelf(*pairValue->first());
+            state.style()->setAlignSelfOverflowAlignment(*pairValue->second());
+        } else {
+            state.style()->setAlignSelf(*primitiveValue);
+        }
+        return;
+    }
+
+    case CSSPropertyAlignItems: {
+        HANDLE_INHERIT_AND_INITIAL(alignItems, AlignItems);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        if (Pair* pairValue = primitiveValue->getPairValue()) {
+            state.style()->setAlignItems(*pairValue->first());
+            state.style()->setAlignItemsOverflowAlignment(*pairValue->second());
+        } else {
+            state.style()->setAlignItems(*primitiveValue);
+        }
+        return;
+    }
+
     // These properties are aliased and we already applied the property on the prefixed version.
     case CSSPropertyAnimationDelay:
     case CSSPropertyAnimationDirection:
@@ -1885,8 +1909,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitColumnSpan:
     case CSSPropertyWebkitColumnWidth:
     case CSSPropertyAlignContent:
-    case CSSPropertyAlignItems:
-    case CSSPropertyAlignSelf:
     case CSSPropertyFlexBasis:
     case CSSPropertyFlexDirection:
     case CSSPropertyFlexGrow:

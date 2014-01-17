@@ -124,9 +124,9 @@ flexbox.style.webkitAlignItems = 'foo';
 shouldBeEqualToString('flexbox.style.webkitAlignItems', '');
 
 flexbox.style.webkitAlignItems = 'auto';
-shouldBeEqualToString('flexbox.style.webkitAlignItems', '');
-shouldBeEqualToString('window.getComputedStyle(flexbox, null).webkitAlignItems', 'stretch');
-shouldBeEqualToString('window.getComputedStyle(flexitem, null).webkitAlignSelf', 'stretch');
+shouldBeEqualToString('flexbox.style.webkitAlignItems', 'auto');
+shouldBeEqualToString('window.getComputedStyle(flexbox, null).webkitAlignItems', 'auto');
+shouldBeEqualToString('window.getComputedStyle(flexitem, null).webkitAlignSelf', 'auto');
 
 flexbox.style.webkitAlignItems = 'flex-start';
 shouldBeEqualToString('flexbox.style.webkitAlignItems', 'flex-start');

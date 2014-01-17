@@ -95,7 +95,7 @@ static PassRefPtr<RenderStyle> createFullScreenStyle()
 
     fullscreenStyle->setDisplay(FLEX);
     fullscreenStyle->setJustifyContent(JustifyCenter);
-    fullscreenStyle->setAlignItems(AlignCenter);
+    fullscreenStyle->setAlignItems(ItemPositionCenter);
     fullscreenStyle->setFlexDirection(FlowColumn);
 
     fullscreenStyle->setPosition(FixedPosition);

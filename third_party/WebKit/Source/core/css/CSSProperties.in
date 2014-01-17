@@ -3,8 +3,6 @@
 // Note: Mandatory blank line to skip parameter parsing phase
 
 align-content
-align-items
-align-self type_name=EAlignItems
 background-attachment custom_all
 background-blend-mode custom_all
 background-clip custom_all

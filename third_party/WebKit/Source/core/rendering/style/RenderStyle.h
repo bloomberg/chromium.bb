@@ -758,8 +758,10 @@ public:
     float flexShrink() const { return rareNonInheritedData->m_flexibleBox->m_flexShrink; }
     Length flexBasis() const { return rareNonInheritedData->m_flexibleBox->m_flexBasis; }
     EAlignContent alignContent() const { return static_cast<EAlignContent>(rareNonInheritedData->m_alignContent); }
-    EAlignItems alignItems() const { return static_cast<EAlignItems>(rareNonInheritedData->m_alignItems); }
-    EAlignItems alignSelf() const { return static_cast<EAlignItems>(rareNonInheritedData->m_alignSelf); }
+    ItemPosition alignItems() const { return static_cast<ItemPosition>(rareNonInheritedData->m_alignItems); }
+    OverflowAlignment alignItemsOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_alignItemsOverflowAlignment); }
+    ItemPosition alignSelf() const { return static_cast<ItemPosition>(rareNonInheritedData->m_alignSelf); }
+    OverflowAlignment alignSelfOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_alignSelfOverflowAlignment); }
     EFlexDirection flexDirection() const { return static_cast<EFlexDirection>(rareNonInheritedData->m_flexibleBox->m_flexDirection); }
     bool isColumnFlexDirection() const { return flexDirection() == FlowColumn || flexDirection() == FlowColumnReverse; }
     bool isReverseFlexDirection() const { return flexDirection() == FlowRowReverse || flexDirection() == FlowColumnReverse; }
@@ -1237,8 +1239,10 @@ public:
     void setOrder(int o) { SET_VAR(rareNonInheritedData, m_order, o); }
     void addCallbackSelector(const String& selector);
     void setAlignContent(EAlignContent p) { SET_VAR(rareNonInheritedData, m_alignContent, p); }
-    void setAlignItems(EAlignItems a) { SET_VAR(rareNonInheritedData, m_alignItems, a); }
-    void setAlignSelf(EAlignItems a) { SET_VAR(rareNonInheritedData, m_alignSelf, a); }
+    void setAlignItems(ItemPosition a) { SET_VAR(rareNonInheritedData, m_alignItems, a); }
+    void setAlignItemsOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_alignItemsOverflowAlignment, overflowAlignment); }
+    void setAlignSelf(ItemPosition a) { SET_VAR(rareNonInheritedData, m_alignSelf, a); }
+    void setAlignSelfOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_alignSelfOverflowAlignment, overflowAlignment); }
     void setFlexDirection(EFlexDirection direction) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexDirection, direction); }
     void setFlexWrap(EFlexWrap w) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexWrap, w); }
     void setJustifyContent(EJustifyContent p) { SET_VAR(rareNonInheritedData, m_justifyContent, p); }
@@ -1602,8 +1606,10 @@ public:
     static Length initialFlexBasis() { return Length(Auto); }
     static int initialOrder() { return 0; }
     static EAlignContent initialAlignContent() { return AlignContentStretch; }
-    static EAlignItems initialAlignItems() { return AlignStretch; }
-    static EAlignItems initialAlignSelf() { return AlignAuto; }
+    static ItemPosition initialAlignItems() { return ItemPositionStretch; }
+    static OverflowAlignment initialAlignItemsOverflowAlignment() { return OverflowAlignmentDefault; }
+    static ItemPosition initialAlignSelf() { return ItemPositionAuto; }
+    static OverflowAlignment initialAlignSelfOverflowAlignment() { return OverflowAlignmentDefault; }
     static EFlexDirection initialFlexDirection() { return FlowRow; }
     static EFlexWrap initialFlexWrap() { return FlexNoWrap; }
     static EJustifyContent initialJustifyContent() { return JustifyFlexStart; }

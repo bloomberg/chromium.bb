@@ -902,8 +902,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnRuleStyle:
     case CSSPropertyAlignContent:
-    case CSSPropertyAlignItems:
-    case CSSPropertyAlignSelf:
     case CSSPropertyFlexDirection:
     case CSSPropertyFlexWrap:
     case CSSPropertyJustifyContent:
@@ -940,6 +938,9 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWordBreak:
     case CSSPropertyWordWrap:
         return true;
+    case CSSPropertyAlignItems:
+    case CSSPropertyAlignSelf:
+        return !RuntimeEnabledFeatures::cssGridLayoutEnabled();
     default:
         return false;
     }
@@ -2734,6 +2735,14 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         // auto | none | [pan-x || pan-y]
         return parseTouchAction(important);
 
+    case CSSPropertyAlignSelf:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return parseItemPositionOverflowPosition(propId, important);
+
+    case CSSPropertyAlignItems:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return parseItemPositionOverflowPosition(propId, important);
+
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:
     case CSSPropertyBorderLeftStyle:
@@ -2797,8 +2806,6 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyColumnFill:
     case CSSPropertyWebkitColumnRuleStyle:
     case CSSPropertyAlignContent:
-    case CSSPropertyAlignItems:
-    case CSSPropertyAlignSelf:
     case CSSPropertyFlexDirection:
     case CSSPropertyFlexWrap:
     case CSSPropertyJustifyContent:

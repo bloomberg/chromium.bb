@@ -2431,7 +2431,7 @@ static bool columnFlexItemHasStretchAlignment(const RenderObject* flexitem)
     ASSERT(parent->style()->isColumnFlexDirection());
     if (flexitem->style()->marginStart().isAuto() || flexitem->style()->marginEnd().isAuto())
         return false;
-    return flexitem->style()->alignSelf() == AlignStretch || (flexitem->style()->alignSelf() == AlignAuto && parent->style()->alignItems() == AlignStretch);
+    return flexitem->style()->alignSelf() == ItemPositionStretch || (flexitem->style()->alignSelf() == ItemPositionAuto && parent->style()->alignItems() == ItemPositionStretch);
 }
 
 static bool isStretchingColumnFlexItem(const RenderObject* flexitem)
