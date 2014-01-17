@@ -565,7 +565,8 @@ END
         AddToImplIncludes("core/dom/Element.h");
         $code .= <<END;
     if (Node* owner = impl->${isReachableMethod}()) {
-        setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
+        Node* root = V8GCController::opaqueRootForGC(owner, isolate);
+        isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
 END
