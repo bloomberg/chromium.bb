@@ -11,7 +11,12 @@ var anticlockwise = true;
 ctx.beginPath();
 for (r = 200; r >= 10; r -= 10) {
     ctx.moveTo(150 + r, 75);
-    ctx.ellipse(150, 75, r, r * 1.2, 0, 0, Math.PI * 2, anticlockwise);
+    // Test that anticlockwise is both optional and defaults to false.
+    if (anticlockwise) {
+      ctx.ellipse(150, 75, r, r * 1.2, 0, 0, Math.PI * 2, anticlockwise);
+    } else {
+      ctx.ellipse(150, 75, r, r * 1.2, 0, 0, Math.PI * 2);
+    }
     ctx.closePath();
     anticlockwise = !anticlockwise;
 }
