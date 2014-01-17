@@ -168,6 +168,9 @@ Authenticator.prototype = {
           'newwindow', this.onWebviewNewWindow_.bind(this, gaiaFrame));
     }
     if (this.constrained_) {
+      var preventContextMenu = 'document.addEventListener("contextmenu", ' +
+                               'function(e) {e.preventDefault();})';
+      gaiaFrame.executeScript({code: preventContextMenu});
       gaiaFrame.request.onCompleted.addListener(
           this.onWebviewRequestCompleted_.bind(this),
           {urls: ['<all_urls>'], types: ['main_frame']},
