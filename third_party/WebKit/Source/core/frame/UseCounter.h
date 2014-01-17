@@ -70,7 +70,7 @@ public:
         PrefixedContentSecurityPolicy,
         UnprefixedIndexedDB,
         OpenWebDatabase,
-        UnusedSlot01, // Prior to 7/2013, we used this slot for LegacyHTMLNotifications.
+        REMOVEDLegacyHTMLNotifications,
         LegacyTextNotifications,
         UnprefixedRequestAnimationFrame,
         PrefixedRequestAnimationFrame,
@@ -81,7 +81,7 @@ public:
         UnprefixedTransitionEndEvent,
         PrefixedAndUnprefixedTransitionEndEvent,
         AutoFocusAttribute,
-        UnusedSlot02, // Prior to 4/2013, we used this slot for AutoSaveAttribute.
+        REMOVEDAutoSaveAttribute,
         DataListElement,
         FormAttribute,
         IncrementalAttribute,
@@ -113,9 +113,9 @@ public:
         StepAttribute,
         PageVisits,
         HTMLMarqueeElement,
-        UnusedSlot03, // Removed, was tracking overflow: -webkit-marquee.
+        REMOVEDCSSOverflowMarquee,
         Reflection,
-        CursorVisibility, // Removed, was -webkit-cursor-visibility.
+        REMOVEDCursorVisibility,
         StorageInfo,
         XFrameOptions,
         XFrameOptionsSameOrigin,
@@ -123,7 +123,7 @@ public:
         DeprecatedFlexboxWebContent,
         DeprecatedFlexboxChrome,
         DeprecatedFlexboxChromeExtension,
-        UnusedSlot04,
+        REMOVEDSVGTRefElement,
         UnprefixedPerformanceTimeline,
         PrefixedPerformanceTimeline,
         UnprefixedUserTiming,
@@ -132,7 +132,7 @@ public:
         ContentSecurityPolicyWithBaseElement,
         PrefixedMediaAddKey,
         PrefixedMediaGenerateKeyRequest,
-        UnusedSlot10, // Removed, was AudioBufferSourceNode.looping.
+        REMOVEDWebAudioLooping,
         DocumentClear,
         PrefixedTransitionMediaFeature,
         SVGFontElement,
@@ -140,7 +140,7 @@ public:
         XSLProcessingInstruction,
         XSLTProcessor,
         SVGSwitchElement,
-        UnusedSlot05, // Removed, was document.webkitRegister
+        REMOVEDPrefixedDocumentRegister,
         HTMLShadowElementOlderShadowRoot,
         DocumentAll,
         FormElement,
@@ -180,7 +180,7 @@ public:
         NodeIsSameNode, // Removed from DOM4.
         NodeIsSupported, // Removed from DOM4.
         NodeNamespaceURI, // Removed from DOM4.
-        UnusedSlot06, // Removed, was Node.prefix.
+        REMOVEDNodePrefix,
         NodeLocalName, // Removed from DOM4.
         NavigatorProductSub,
         NavigatorVendor,
@@ -217,9 +217,9 @@ public:
         SVGFontInCSS,
         ScrollTopBodyNotQuirksMode,
         ScrollLeftBodyNotQuirksMode,
-        UnusedSlot07, // Removed, was Attr.isId.
-        UnusedSlot08, // Removed, was Attr.ownerElement.
-        UnusedSlot09, // Removed, was Attr.prefix setter.
+        REMOVEDAttributeIsId,
+        REMOVEDAttributeOwnerElement,
+        REMOVEDAttributeSetPrefix,
         AttributeSpecified, // Removed in DOM4.
         BeforeLoadEventInIsolatedWorld,
         PrefixedAudioDecodedByteCount,
@@ -288,7 +288,7 @@ public:
         AttrUsedAsNodeParameter,
         AttrUsedAsNodeReceiver,
         // Add new features immediately above this line. Don't change assigned
-        // numbers of each items, and don't reuse unused slots.
+        // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.
     };
 
