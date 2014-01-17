@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,36 +71,98 @@ TEST(PrefHashCalculatorTest, TestCurrentAlgorithm) {
 }
 
 // Tests the output against a known value to catch unexpected algorithm changes.
+// The test hashes below must NEVER be updated, the serialization algorithm used
+// must always be able to generate data that will produce these exact hashes.
 TEST(PrefHashCalculatorTest, CatchHashChanges) {
   static const char kSeed[] = "0123456789ABCDEF0123456789ABCDEF";
   static const char kDeviceId[] = "test_device_id1";
-  {
-    static const char kExpectedValue[] =
-        "D8137B8E767D3D910DCD3821CAC61D26ABB042E6EC406AEB0E347ED73A3A4EC1";
 
-    base::ListValue list;
-    list.Set(0, new base::FundamentalValue(true));
-    list.Set(1, new base::FundamentalValue(100));
-    list.Set(2, new base::FundamentalValue(1.0));
+  scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> bool_value(base::Value::CreateBooleanValue(false));
+  scoped_ptr<base::Value> int_value(
+      base::Value::CreateIntegerValue(1234567890));
+  scoped_ptr<base::Value> double_value(
+      base::Value::CreateDoubleValue(123.0987654321));
+  scoped_ptr<base::Value> string_value(base::Value::CreateStringValue(
+      "testing with special chars:\n<>{}:^^@#$\\/"));
 
-    EXPECT_EQ(PrefHashCalculator::VALID,
-              PrefHashCalculator(kSeed, kDeviceId).Validate(
-                  "pref.path2", &list, kExpectedValue));
-  }
-  {
-    static const char kExpectedValue[] =
-        "3F947A044DE9E421A735525385B4C789693682E6F6E3E4CB4741E58724B28F96";
+  scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue);
+  dict_value->Set("a", new base::StringValue("foo"));
+  dict_value->Set("d", new base::StringValue("bad"));
+  dict_value->Set("b", new base::StringValue("bar"));
+  dict_value->Set("c", new base::StringValue("baz"));
 
-    base::DictionaryValue dict;
-    dict.Set("a", new base::StringValue("foo"));
-    dict.Set("d", new base::StringValue("bad"));
-    dict.Set("b", new base::StringValue("bar"));
-    dict.Set("c", new base::StringValue("baz"));
+  scoped_ptr<base::ListValue> list_value(new base::ListValue);
+  list_value->AppendBoolean(true);
+  list_value->AppendInteger(100);
+  list_value->AppendDouble(1.0);
 
-    EXPECT_EQ(PrefHashCalculator::VALID,
-              PrefHashCalculator(kSeed, kDeviceId).Validate(
-                  "pref.path1", &dict, kExpectedValue));
-  }
+  ASSERT_EQ(base::Value::TYPE_NULL, null_value->GetType());
+  ASSERT_EQ(base::Value::TYPE_BOOLEAN, bool_value->GetType());
+  ASSERT_EQ(base::Value::TYPE_INTEGER, int_value->GetType());
+  ASSERT_EQ(base::Value::TYPE_DOUBLE, double_value->GetType());
+  ASSERT_EQ(base::Value::TYPE_STRING, string_value->GetType());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, dict_value->GetType());
+  ASSERT_EQ(base::Value::TYPE_LIST, list_value->GetType());
+
+  // Test every value type independently. Intentionally omits TYPE_BINARY which
+  // isn't even allowed in JSONWriter's input.
+  static const char kExpectedNullValue[] =
+      "C2871D0AC76176E39948C50A9A562B863E610FDA90C675A6A8AD16B4DC4F53DC";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path", null_value.get(), kExpectedNullValue));
+
+  static const char kExpectedBooleanValue[] =
+      "A326E2F405CFE05D08289CDADD9DB4F529592F0945A8CE204289E4C930D8AA43";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path", bool_value.get(), kExpectedBooleanValue));
+
+  static const char kExpectedIntegerValue[] =
+      "4B69938F802A2A26D69467F3E1E4A474F6323C64EFC54DBDB4A5708A7D005042";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path", int_value.get(), kExpectedIntegerValue));
+
+  static const char kExpectedDoubleValue[] =
+      "1734C9C745B9C92D896B9A710994BF1B56D55BFB0F00C207EC995152AF02F08F";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path", double_value.get(), kExpectedDoubleValue));
+
+  static const char kExpectedStringValue[] =
+      "154D15522C856AA944BFA5A9E3FFB46925BF2B95A10199564651CA1C13E98433";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path", string_value.get(), kExpectedStringValue));
+
+  static const char kExpectedDictValue[] =
+      "3F947A044DE9E421A735525385B4C789693682E6F6E3E4CB4741E58724B28F96";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path1", dict_value.get(), kExpectedDictValue));
+
+  static const char kExpectedListValue[] =
+      "D8137B8E767D3D910DCD3821CAC61D26ABB042E6EC406AEB0E347ED73A3A4EC1";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path2", list_value.get(), kExpectedListValue));
+
+  // Also test every value type together in the same dictionary.
+  base::DictionaryValue everything;
+  everything.Set("null", null_value.release());
+  everything.Set("bool", bool_value.release());
+  everything.Set("int", int_value.release());
+  everything.Set("double", double_value.release());
+  everything.Set("string", string_value.release());
+  everything.Set("list", list_value.release());
+  everything.Set("dict", dict_value.release());
+  static const char kExpectedEverythingValue[] =
+      "0A546480C7AB7699779B2FCFA326D65E0AE1446EA62398AE1D338119C6913943";
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(kSeed, kDeviceId).Validate(
+                "pref.path1", &everything, kExpectedEverythingValue));
 }
 
 TEST(PrefHashCalculatorTest, TestCompatibilityWithPrefMetricsService) {
