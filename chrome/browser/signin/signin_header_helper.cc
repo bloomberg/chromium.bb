@@ -16,6 +16,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/signin/account_management_screen_helper.h"
+#endif  // defined(OS_ANDROID)
+
 namespace {
 
 const char kChromeConnectedHeader[] = "X-Chrome-Connected";
@@ -36,6 +40,8 @@ void ShowAvatarBubbleUIThread(int child_id, int route_id) {
   if (browser)
     browser->window()->ShowAvatarBubbleFromAvatarButton();
   // TODO(guohui): need to handle the case when avatar button is not available.
+#else  // defined(OS_ANDROID)
+  AccountManagementScreenHelper::OpenAccountManagementScreen();
 #endif // OS_ANDROID
 }
 

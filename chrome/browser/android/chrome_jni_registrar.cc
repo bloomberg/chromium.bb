@@ -23,6 +23,7 @@
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
 #include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/signin/account_management_screen_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/uma_bridge.h"
@@ -76,6 +77,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni },
   { "RegisterAuxiliaryProfileLoader", autofill::RegisterAutofillAndroidJni },
   // Register JNI for chrome classes.
+  { "AccountManagementScreenHelper", AccountManagementScreenHelper::Register },
   { "AndroidProfileOAuth2TokenService",
     AndroidProfileOAuth2TokenService::Register },
   { "ApplicationLifetime", RegisterApplicationLifetimeAndroid },
