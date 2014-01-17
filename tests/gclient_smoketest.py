@@ -13,7 +13,6 @@ This test assumes GClientSmokeBase.URL_BASE is valid.
 import logging
 import os
 import re
-import socket
 import subprocess
 import sys
 import unittest
@@ -777,7 +776,7 @@ class GClientSmokeSVN(GClientSmokeBase):
 
     # Cripple src/third_party/foo and make sure gclient still succeeds.
     gclient_utils.rmtree(join(third_party, 'foo', '.svn'))
-    self.assertEquals(0, self.gclient(cmd + ['--force'])[-1])
+    self.assertEquals(0, self.gclient(cmd)[-1])
 
 
 class GClientSmokeSVNTransitive(GClientSmokeBase):
@@ -1104,7 +1103,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertTree(tree)
 
     # Pre-DEPS hooks run when syncing with --nohooks.
-    self.gclient(['sync', '--deps', 'mac', '--nohooks', '--force',
+    self.gclient(['sync', '--deps', 'mac', '--nohooks',
                   '--revision', 'src@' + self.githash('repo_5', 2)])
     tree = self.mangle_git_tree(('repo_5@2', 'src'),
                                 ('repo_1@2', 'src/repo1'),
@@ -1116,7 +1115,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'git_pre_deps_hooked'))
 
     # Pre-DEPS hooks don't run with --noprehooks
-    self.gclient(['sync', '--deps', 'mac', '--noprehooks', '--force',
+    self.gclient(['sync', '--deps', 'mac', '--noprehooks',
                   '--revision', 'src@' + self.githash('repo_5', 2)])
     tree = self.mangle_git_tree(('repo_5@2', 'src'),
                                 ('repo_1@2', 'src/repo1'),
@@ -1343,81 +1342,6 @@ class GClientSmokeBoth(GClientSmokeBase):
                 for (scm, url, path) in expected_source]
 
     self.assertEquals(sorted(entries), sorted(expected))
-
-  # TODO(borenet): Enable this at the same time that the guard is removed in
-  # gclient.
-  if (os.environ.get('CHROME_HEADLESS') and
-      socket.gethostname() in ('vm859-m1', 'build1-m1', 'vm630-m1')):
-    def testDeleteConflictingCheckout(self):
-      if not self.enabled:
-        return
-  
-      # Create an initial svn checkout.
-      self.gclient(['config', '--spec',
-          'solutions=['
-          '{"name": "src",'
-          ' "url": "' + self.svn_base + 'trunk/src"},'
-          ']'
-      ])
-      results = self.gclient(['sync', '--deps', 'mac'])
-      self.assertEqual(results[2], 0, 'Sync failed!')
-  
-      # Verify that we have the expected svn checkout.
-      results = self.gclient(['revinfo', '--deps', 'mac'])
-      actual = results[0].splitlines()
-      expected = [
-        'src: %strunk/src' % self.svn_base,
-        'src/file/other: File("%strunk/other/DEPS")' % self.svn_base,
-        'src/other: %strunk/other' % self.svn_base,
-        'src/third_party/foo: %strunk/third_party/foo@1' % self.svn_base,
-      ]
-      self.assertEquals(actual, expected)
-  
-      # Change the desired checkout to git.
-      self.gclient(['config', '--spec',
-          'solutions=['
-          '{"name": "src",'
-          ' "url": "' + self.git_base + 'repo_1"},'
-          ']'
-      ])
-  
-      # Verify that the sync succeeds with --force.
-      results = self.gclient(['sync', '--deps', 'mac', '--force'])
-      self.assertEqual(results[2], 0, 'Sync failed!')
-  
-      # Verify that we got the desired git checkout.
-      results = self.gclient(['revinfo', '--deps', 'mac'])
-      actual = results[0].splitlines()
-      expected = [
-        'src: %srepo_1' % self.git_base,
-        'src/repo2: %srepo_2@%s' % (self.git_base,
-                                    self.githash('repo_2', 1)[:7]),
-        'src/repo2/repo_renamed: %srepo_3' % self.git_base,
-      ]
-      self.assertEquals(actual, expected)
-  
-      # Change the desired checkout back to svn.
-      self.gclient(['config', '--spec',
-          'solutions=['
-          '{"name": "src",'
-          ' "url": "' + self.svn_base + 'trunk/src"},'
-          ']'
-      ])
-  
-      # Verify that the sync succeeds.
-      results = self.gclient(['sync', '--deps', 'mac', '--force'])
-      self.assertEqual(results[2], 0, 'Sync failed!')
-  
-      # Verify that we have the expected svn checkout.
-      results = self.gclient(['revinfo', '--deps', 'mac'])
-      actual = results[0].splitlines()
-      expected = [
-        'src: %strunk/src' % self.svn_base,
-        'src/file/other: File("%strunk/other/DEPS")' % self.svn_base,
-        'src/other: %strunk/other' % self.svn_base,
-        'src/third_party/foo: %strunk/third_party/foo@1' % self.svn_base,
-      ]
-      self.assertEquals(actual, expected)
 
 
 class GClientSmokeFromCheckout(GClientSmokeBase):
