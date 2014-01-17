@@ -202,25 +202,25 @@ TEST(CoreCppTest, Basic) {
       EXPECT_EQ(kHelloSize, buffer_size);
       EXPECT_STREQ(kHello, buffer);
 
-      // Send a handle over the previously-establish |MessagePipe|.
-      ScopedMessagePipeHandle h2;
-      ScopedMessagePipeHandle h3;
-      CreateMessagePipe(&h2, &h3);
+      // Send a handle over the previously-establish message pipe. Use the
+      // |MessagePipe| wrapper (to test it), which automatically creates a
+      // message pipe.
+      MessagePipe mp;
 
-      // Write a message to |h2|, before we send |h3|.
+      // Write a message to |mp.handle0|, before we send |mp.handle1|.
       const char kWorld[] = "world!";
       const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
       EXPECT_EQ(MOJO_RESULT_OK,
-                WriteMessageRaw(h2.get(),
+                WriteMessageRaw(mp.handle0.get(),
                                 kWorld, kWorldSize,
                                 NULL, 0,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-      // Send |h3| over |h1| to |h0|.
+      // Send |mp.handle1| over |h1| to |h0|.
       MojoHandle handles[5];
-      handles[0] = h3.release().value();
+      handles[0] = mp.handle1.release().value();
       EXPECT_NE(kInvalidHandleValue, handles[0]);
-      EXPECT_FALSE(h3.get().is_valid());
+      EXPECT_FALSE(mp.handle1.get().is_valid());
       uint32_t handles_count = 1;
       EXPECT_EQ(MOJO_RESULT_OK,
                 WriteMessageRaw(h1.get(),
@@ -250,11 +250,11 @@ TEST(CoreCppTest, Basic) {
       EXPECT_NE(kInvalidHandleValue, handles[0]);
 
       // Read from the sent/received handle.
-      h3.reset(MessagePipeHandle(handles[0]));
+      mp.handle1.reset(MessagePipeHandle(handles[0]));
       // Save |handles[0]| to check that it gets properly closed.
       hv0 = handles[0];
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(h3.get(), MOJO_WAIT_FLAG_READABLE,
+                Wait(mp.handle1.get(), MOJO_WAIT_FLAG_READABLE,
                      MOJO_DEADLINE_INDEFINITE));
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -262,7 +262,7 @@ TEST(CoreCppTest, Basic) {
         handles[i] = kInvalidHandleValue;
       handles_count = static_cast<uint32_t>(MOJO_ARRAYSIZE(handles));
       EXPECT_EQ(MOJO_RESULT_OK,
-                ReadMessageRaw(h3.get(),
+                ReadMessageRaw(mp.handle1.get(),
                                buffer, &buffer_size,
                                handles, &handles_count,
                                MOJO_READ_MESSAGE_FLAG_NONE));
@@ -278,14 +278,14 @@ TEST(CoreCppTest, Basic) {
 }
 
 TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
-  // Tear down a |MessagePipe| which still has a message enqueued, with the
-  // message also having a valid |MessagePipe| handle.
+  // Tear down a message pipe which still has a message enqueued, with the
+  // message also having a valid message pipe handle.
   {
     ScopedMessagePipeHandle h0;
     ScopedMessagePipeHandle h1;
     CreateMessagePipe(&h0, &h1);
 
-    // Send a handle over the previously-establish |MessagePipe|.
+    // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
     CreateMessagePipe(&h2, &h3);
@@ -325,14 +325,14 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h2.release().value()));
   }
 
-  // Do this in a different order: make the enqueued |MessagePipe| handle only
+  // Do this in a different order: make the enqueued message pipe handle only
   // half-alive.
   {
     ScopedMessagePipeHandle h0;
     ScopedMessagePipeHandle h1;
     CreateMessagePipe(&h0, &h1);
 
-    // Send a handle over the previously-establish |MessagePipe|.
+    // Send a handle over the previously-establish message pipe.
     ScopedMessagePipeHandle h2;
     ScopedMessagePipeHandle h3;
     CreateMessagePipe(&h2, &h3);
