@@ -268,8 +268,8 @@ class CrashGenerationServer {
   // Wether to populate custom information up-front.
   bool pre_fetch_custom_info_;
 
-  // Instance of a mini dump generator.
-  scoped_ptr<MinidumpGenerator> dump_generator_;
+  // The dump path for the server.
+  const std::wstring dump_path_;
 
   // State of the server in performing the IPC with the client.
   // Note that since we restrict the pipe to one instance, we

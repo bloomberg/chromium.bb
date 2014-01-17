@@ -121,17 +121,13 @@ CrashGenerationServer::CrashGenerationServer(
       upload_request_callback_(upload_request_callback),
       upload_context_(upload_context),
       generate_dumps_(generate_dumps),
-      dump_generator_(NULL),
+      dump_path_(*dump_path),
       server_state_(IPC_SERVER_STATE_UNINITIALIZED),
       shutting_down_(false),
       overlapped_(),
       client_info_(NULL),
       pre_fetch_custom_info_(true) {
   InitializeCriticalSection(&sync_);
-
-  if (dump_path) {
-    dump_generator_.reset(new MinidumpGenerator(*dump_path));
-  }
 }
 
 // This should never be called from the OnPipeConnected callback.
@@ -917,15 +913,19 @@ bool CrashGenerationServer::GenerateDump(const ClientInfo& client,
     return false;
   }
 
-  return dump_generator_->WriteMinidump(client.process_handle(),
-                                        client.pid(),
-                                        client_thread_id,
-                                        GetCurrentThreadId(),
-                                        client_ex_info,
-                                        client.assert_info(),
-                                        client.dump_type(),
-                                        true,
-                                        dump_path);
+  MinidumpGenerator dump_generator(dump_path_,
+                                   client.process_handle(),
+                                   client.pid(),
+                                   client_thread_id,
+                                   GetCurrentThreadId(),
+                                   client_ex_info,
+                                   client.assert_info(),
+                                   client.dump_type(),
+                                   true);
+  if (!dump_generator.GenerateDumpFile(dump_path)) {
+    return false;
+  }
+  return dump_generator.WriteMinidump();
 }
 
 }  // namespace google_breakpad

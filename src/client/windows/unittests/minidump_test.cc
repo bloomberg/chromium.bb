@@ -104,19 +104,19 @@ class MinidumpTest: public testing::Test {
       &ctx_record,
     };
 
-    MinidumpGenerator generator(dump_path_);
-
+    MinidumpGenerator generator(dump_path_,
+                                ::GetCurrentProcess(),
+                                ::GetCurrentProcessId(),
+                                ::GetCurrentThreadId(),
+                                ::GetCurrentThreadId(),
+                                &ex_ptrs,
+                                NULL,
+                                static_cast<MINIDUMP_TYPE>(flags),
+                                TRUE);
+    generator.GenerateDumpFile(&dump_file_);
+    generator.GenerateFullDumpFile(&full_dump_file_);
     // And write a dump
-    bool result = generator.WriteMinidump(::GetCurrentProcess(),
-                                          ::GetCurrentProcessId(),
-                                          ::GetCurrentThreadId(),
-                                          ::GetCurrentThreadId(),
-                                          &ex_ptrs,
-                                          NULL,
-                                          static_cast<MINIDUMP_TYPE>(flags),
-                                          TRUE,
-                                          &dump_file_,
-                                          &full_dump_file_);
+    bool result = generator.WriteMinidump();
     return result == TRUE;
   }
 
