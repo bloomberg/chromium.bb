@@ -302,6 +302,9 @@ class ChromeTests:
   def TestFFmpegRegressions(self):
     return self.SimpleTest("chrome", "ffmpeg_regression_tests")
 
+  def TestGCM(self):
+    return self.SimpleTest("gcm", "gcm_unit_tests")
+
   def TestGPU(self):
     return self.SimpleTest("gpu", "gpu_unittests")
 
@@ -554,6 +557,7 @@ class ChromeTests:
     "events": TestEvents,        "events_unittests": TestEvents,
     "ffmpeg": TestFFmpeg,        "ffmpeg_unittests": TestFFmpeg,
     "ffmpeg_regression_tests": TestFFmpegRegressions,
+    "gcm": TestGCM,              "gcm_unit_tests": TestGCM,
     "gpu": TestGPU,              "gpu_unittests": TestGPU,
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "interactive_ui": TestInteractiveUI,
