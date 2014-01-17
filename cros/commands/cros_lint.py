@@ -76,11 +76,18 @@ run other checks (e.g. pyflakes, cpplint, etc.)
   @classmethod
   def AddParser(cls, parser):
     super(LintCommand, cls).AddParser(parser)
-    parser.add_argument('files', help='Files to lint', nargs='+')
+    parser.add_argument('files', help='Files to lint', nargs='*')
 
   def Run(self):
+    files = self.options.files
+    if not files:
+      # Running with no arguments is allowed to make the repo upload hook
+      # simple, but print a warning so that if someone runs this manually
+      # they are aware that nothing was linted.
+      cros_build_lib.Warning('No files provided to lint.  Doing nothing.')
+
     errors = False
-    for pylintrc, paths in sorted(_GetPylintGroups(self.options.files).items()):
+    for pylintrc, paths in sorted(_GetPylintGroups(files).items()):
       paths = sorted(list(set([os.path.realpath(x) for x in paths])))
       cmd = ['pylint', '--rcfile=%s' % pylintrc] + paths
       extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
@@ -89,5 +96,6 @@ run other checks (e.g. pyflakes, cpplint, etc.)
                                       print_cmd=self.options.debug)
       if res.returncode != 0:
         errors = True
+
     if errors:
       sys.exit(1)
