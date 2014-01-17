@@ -48,7 +48,6 @@ class GCMClientDelegate : public GCMClient::Delegate {
     return GCMClient::CheckinInfo();
   }
   virtual void OnLoadingCompleted() OVERRIDE {}
-  virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE { return NULL; }
 
  private:
   std::string username_;
