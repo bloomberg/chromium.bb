@@ -42,8 +42,8 @@ class CC_EXPORT Animation {
     Transform = 0,
     Opacity,
     Filter,
-    ScrollOffset,
     BackgroundColor,
+    ScrollOffset,
     // This sentinel must be last.
     TargetPropertyEnumSize
   };
