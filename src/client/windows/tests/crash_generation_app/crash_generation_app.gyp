@@ -45,6 +45,9 @@
         'resource.h',
         'small.ico',
       ],
+      'libraries': [
+        'user32.lib',
+      ],
       'dependencies': [
         '../../breakpad_client.gyp:common',
         '../../crash_generation/crash_generation.gyp:crash_generation_server',
