@@ -21,7 +21,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_context_stub.h"
+#include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_mock.h"
 
@@ -156,6 +156,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void InitDecoder(
       const char* extensions,
+      const char* gl_version,
       bool has_alpha,
       bool has_depth,
       bool has_stencil,
@@ -166,6 +167,7 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void InitDecoderWithCommandLine(
       const char* extensions,
+      const char* gl_version,
       bool has_alpha,
       bool has_depth,
       bool has_stencil,
@@ -487,7 +489,7 @@ class GLES2DecoderTestBase : public testing::Test {
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<gfx::GLSurfaceStub> surface_;
-  scoped_refptr<gfx::GLContextStub> context_;
+  scoped_refptr<gfx::GLContextStubWithExtensions> context_;
   scoped_ptr<GLES2Decoder> mock_decoder_;
   scoped_ptr<GLES2Decoder> decoder_;
   MemoryTracker* memory_tracker_;

@@ -146,12 +146,8 @@ static void GL_BINDING_CALL CustomRenderbufferStorageMultisampleEXT(
 
 }  // anonymous namespace
 
-void DriverGL::Initialize() {
-  InitializeBindings();
-}
-
-void DriverGL::InitializeExtensions(GLContext* context) {
-  InitializeExtensionBindings(context);
+void DriverGL::InitializeCustomDynamicBindings(GLContext* context) {
+  InitializeDynamicBindings(context);
   orig_fn = fn;
   fn.glTexImage2DFn =
       reinterpret_cast<glTexImage2DProc>(CustomTexImage2D);
@@ -167,9 +163,9 @@ void DriverGL::InitializeExtensions(GLContext* context) {
       CustomRenderbufferStorageMultisampleEXT);
 }
 
-void InitializeGLBindingsGL() {
+void InitializeStaticGLBindingsGL() {
   g_current_gl_context_tls = new base::ThreadLocalPointer<GLApi>;
-  g_driver_gl.Initialize();
+  g_driver_gl.InitializeStaticBindings();
   if (!g_real_gl) {
     g_real_gl = new RealGLApi();
     g_trace_gl = new TraceGLApi(g_real_gl);
@@ -195,8 +191,8 @@ void SetGLToRealGLApi() {
   SetGLApi(g_gl);
 }
 
-void InitializeGLExtensionBindingsGL(GLContext* context) {
-  g_driver_gl.InitializeExtensions(context);
+void InitializeDynamicGLBindingsGL(GLContext* context) {
+  g_driver_gl.InitializeCustomDynamicBindings(context);
 }
 
 void InitializeDebugGLBindingsGL() {

@@ -115,7 +115,7 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
   SetRealGLApi();
 
   SetCurrent(surface);
-  if (!InitializeExtensionBindings()) {
+  if (!InitializeDynamicBindings()) {
     ReleaseCurrent(surface);
     return false;
   }

@@ -14,8 +14,8 @@ namespace gfx {
 class GLContext;
 struct GLWindowSystemBindingInfo;
 
-void InitializeGLBindingsWGL();
-void InitializeGLExtensionBindingsWGL(GLContext* context);
+void InitializeStaticGLBindingsWGL();
+void InitializeDynamicGLBindingsWGL(GLContext* context);
 void InitializeDebugGLBindingsWGL();
 void ClearGLBindingsWGL();
 bool GetGLWindowSystemBindingInfoWGL(GLWindowSystemBindingInfo* info);

@@ -20,8 +20,8 @@ static GLXContext InitGLContext(Display* display, Window window) {
   // dlopen/dlsym, and so linking it into chrome breaks it. So we dynamically
   // load it, and use glew to dynamically resolve symbols.
   // See http://code.google.com/p/chromium/issues/detail?id=16800
-  if (!InitializeGLBindings(gfx::kGLImplementationDesktopGL)) {
-    LOG(ERROR) << "InitializeGLBindings failed";
+  if (!InitializeStaticGLBindings(gfx::kGLImplementationDesktopGL)) {
+    LOG(ERROR) << "InitializeStaticGLBindings failed";
     return NULL;
   }
 

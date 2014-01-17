@@ -69,7 +69,7 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
   SetCurrent(surface);
-  if (!InitializeExtensionBindings()) {
+  if (!InitializeDynamicBindings()) {
     ReleaseCurrent(surface);
     return false;
   }

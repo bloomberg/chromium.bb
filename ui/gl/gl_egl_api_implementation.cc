@@ -9,8 +9,8 @@ namespace gfx {
 
 RealEGLApi* g_real_egl;
 
-void InitializeGLBindingsEGL() {
-  g_driver_egl.InitializeBindings();
+void InitializeStaticGLBindingsEGL() {
+  g_driver_egl.InitializeStaticBindings();
   if (!g_real_egl) {
     g_real_egl = new RealEGLApi();
   }
@@ -18,8 +18,8 @@ void InitializeGLBindingsEGL() {
   g_current_egl_context = g_real_egl;
 }
 
-void InitializeGLExtensionBindingsEGL(GLContext* context) {
-  g_driver_egl.InitializeExtensionBindings(context);
+void InitializeDynamicGLBindingsEGL(GLContext* context) {
+  g_driver_egl.InitializeDynamicBindings(context);
 }
 
 void InitializeDebugGLBindingsEGL() {

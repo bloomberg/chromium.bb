@@ -42,10 +42,11 @@ typedef void* (*GLGetProcAddressProc)(const char* name);
 #endif
 
 // Initialize a particular GL implementation.
-GL_EXPORT bool InitializeGLBindings(GLImplementation implementation);
+GL_EXPORT bool InitializeStaticGLBindings(GLImplementation implementation);
 
-// Initialize extension function bindings for a GL implementation.
-GL_EXPORT bool InitializeGLExtensionBindings(GLImplementation implementation,
+// Initialize function bindings that depend on the context for a GL
+// implementation.
+GL_EXPORT bool InitializeDynamicGLBindings(GLImplementation implementation,
     GLContext* context);
 
 // Initialize Debug logging wrappers for GL bindings.
@@ -81,12 +82,13 @@ void UnloadGLNativeLibraries();
 // Set an additional function that will be called to find GL entry points.
 void SetGLGetProcAddressProc(GLGetProcAddressProc proc);
 
-// Find a core (non-extension) entry point in the current GL implementation. On
-// EGL based implementations core entry points will not be queried through
-// GLGetProcAddressProc.
-void* GetGLCoreProcAddress(const char* name);
-
-// Find an entry point in the current GL implementation.
+// Find an entry point in the current GL implementation. Note that the function
+// may return a non-null pointer to something else than the GL function if an
+// unsupported function is queried. Spec-compliant eglGetProcAddress and
+// glxGetProcAddress are allowed to return garbage for unsupported functions,
+// and when querying functions from the EGL library supplied by Android, it may
+// return a function that prints a log message about the function being
+// unsupported.
 void* GetGLProcAddress(const char* name);
 
 // Return information about the GL window system binding implementation (e.g.,

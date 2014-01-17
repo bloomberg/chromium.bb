@@ -118,7 +118,7 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
 }
 
 void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
-  CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+  CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
 
   output_surface_.reset(
       new PixelTestOutputSurface(new TestInProcessContextProvider));

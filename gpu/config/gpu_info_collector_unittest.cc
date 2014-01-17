@@ -24,7 +24,7 @@ class GPUInfoCollectorTest : public testing::Test {
     // TODO(kbr): make this setup robust in the case where
     // GLSurface::InitializeOneOff() has already been called by
     // another unit test. http://crbug.com/100285
-    gfx::InitializeGLBindings(gfx::kGLImplementationMockGL);
+    gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
 #if defined(OS_WIN)

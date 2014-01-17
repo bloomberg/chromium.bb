@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
@@ -26,7 +27,7 @@ void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationOSMesaGL);
 }
 
-bool InitializeGLBindings(GLImplementation implementation) {
+bool InitializeStaticGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
@@ -77,8 +78,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
       AddGLNativeLibrary(library);
       SetGLImplementation(kGLImplementationOSMesaGL);
 
-      InitializeGLBindingsGL();
-      InitializeGLBindingsOSMESA();
+      InitializeStaticGLBindingsGL();
+      InitializeStaticGLBindingsOSMESA();
       break;
     }
     case kGLImplementationDesktopGL:
@@ -93,13 +94,13 @@ bool InitializeGLBindings(GLImplementation implementation) {
       AddGLNativeLibrary(library);
       SetGLImplementation(implementation);
 
-      InitializeGLBindingsGL();
+      InitializeStaticGLBindingsGL();
       break;
     }
     case kGLImplementationMockGL: {
       SetGLGetProcAddressProc(GetMockGLProcAddress);
       SetGLImplementation(kGLImplementationMockGL);
-      InitializeGLBindingsGL();
+      InitializeStaticGLBindingsGL();
       break;
     }
     default:
@@ -109,19 +110,25 @@ bool InitializeGLBindings(GLImplementation implementation) {
   return true;
 }
 
-bool InitializeGLExtensionBindings(GLImplementation implementation,
+bool InitializeDynamicGLBindings(GLImplementation implementation,
     GLContext* context) {
   switch (implementation) {
     case kGLImplementationOSMesaGL:
-      InitializeGLExtensionBindingsGL(context);
-      InitializeGLExtensionBindingsOSMESA(context);
+      InitializeDynamicGLBindingsGL(context);
+      InitializeDynamicGLBindingsOSMESA(context);
       break;
     case kGLImplementationDesktopGL:
     case kGLImplementationAppleGL:
-      InitializeGLExtensionBindingsGL(context);
+      InitializeDynamicGLBindingsGL(context);
       break;
     case kGLImplementationMockGL:
-      InitializeGLExtensionBindingsGL(context);
+      if (!context) {
+        scoped_refptr<GLContextStubWithExtensions> mock_context(
+            new GLContextStubWithExtensions());
+        mock_context->SetGLVersionString("3.0");
+        InitializeDynamicGLBindingsGL(mock_context.get());
+      } else
+        InitializeDynamicGLBindingsGL(context);
       break;
     default:
       return false;

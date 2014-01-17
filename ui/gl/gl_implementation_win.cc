@@ -17,10 +17,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
+#include "ui/gl/gl_surface_wgl.h"
 #include "ui/gl/gl_wgl_api_implementation.h"
 
 #if defined(ENABLE_SWIFTSHADER)
@@ -106,7 +108,7 @@ void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationOSMesaGL);
 }
 
-bool InitializeGLBindings(GLImplementation implementation) {
+bool InitializeStaticGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
@@ -148,8 +150,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
       AddGLNativeLibrary(library);
       SetGLImplementation(kGLImplementationOSMesaGL);
 
-      InitializeGLBindingsGL();
-      InitializeGLBindingsOSMESA();
+      InitializeStaticGLBindingsGL();
+      InitializeStaticGLBindingsOSMESA();
       break;
     }
     case kGLImplementationEGLGLES2: {
@@ -234,8 +236,8 @@ bool InitializeGLBindings(GLImplementation implementation) {
       AddGLNativeLibrary(gles_library);
       SetGLImplementation(kGLImplementationEGLGLES2);
 
-      InitializeGLBindingsGL();
-      InitializeGLBindingsEGL();
+      InitializeStaticGLBindingsGL();
+      InitializeStaticGLBindingsEGL();
 
       // These two functions take single precision float rather than double
       // precision float parameters in GLES.
@@ -244,8 +246,6 @@ bool InitializeGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationDesktopGL: {
-      // When using Windows OpenGL, first try wglGetProcAddress and then
-      // Windows GetProcAddress.
       base::NativeLibrary library = base::LoadNativeLibrary(
           base::FilePath(L"opengl32.dll"), NULL);
       if (!library) {
@@ -267,14 +267,53 @@ bool InitializeGLBindings(GLImplementation implementation) {
       AddGLNativeLibrary(library);
       SetGLImplementation(kGLImplementationDesktopGL);
 
-      InitializeGLBindingsGL();
-      InitializeGLBindingsWGL();
+      // Initialize GL surface and get some functions needed for the context
+      // creation below.
+      if (!GLSurfaceWGL::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceWGL::InitializeOneOff failed.";
+        return false;
+      }
+      wglCreateContextProc wglCreateContextFn =
+          reinterpret_cast<wglCreateContextProc>(
+              GetGLProcAddress("wglCreateContext"));
+      wglDeleteContextProc wglDeleteContextFn =
+          reinterpret_cast<wglDeleteContextProc>(
+              GetGLProcAddress("wglDeleteContext"));
+      wglMakeCurrentProc wglMakeCurrentFn =
+          reinterpret_cast<wglMakeCurrentProc>(
+              GetGLProcAddress("wglMakeCurrent"));
+
+      // Create a temporary GL context to bind to entry points. This is needed
+      // because wglGetProcAddress is specified to return NULL for all queries
+      // if a context is not current in MSDN documentation, and the static
+      // bindings may contain functions that need to be queried with
+      // wglGetProcAddress. OpenGL wiki further warns that other error values
+      // than NULL could also be returned from wglGetProcAddress on some
+      // implementations, so we need to clear the WGL bindings and reinitialize
+      // them after the context creation.
+      HGLRC gl_context = wglCreateContextFn(GLSurfaceWGL::GetDisplayDC());
+      if (!gl_context) {
+        LOG(ERROR) << "Failed to create temporary context.";
+        return false;
+      }
+      if (!wglMakeCurrentFn(GLSurfaceWGL::GetDisplayDC(), gl_context)) {
+        LOG(ERROR) << "Failed to make temporary GL context current.";
+        wglDeleteContextFn(gl_context);
+        return false;
+      }
+
+      InitializeStaticGLBindingsGL();
+      InitializeStaticGLBindingsWGL();
+
+      wglMakeCurrent(NULL, NULL);
+      wglDeleteContext(gl_context);
+
       break;
     }
     case kGLImplementationMockGL: {
       SetGLGetProcAddressProc(GetMockGLProcAddress);
       SetGLImplementation(kGLImplementationMockGL);
-      InitializeGLBindingsGL();
+      InitializeStaticGLBindingsGL();
       break;
     }
     default:
@@ -284,23 +323,29 @@ bool InitializeGLBindings(GLImplementation implementation) {
   return true;
 }
 
-bool InitializeGLExtensionBindings(GLImplementation implementation,
+bool InitializeDynamicGLBindings(GLImplementation implementation,
     GLContext* context) {
   switch (implementation) {
     case kGLImplementationOSMesaGL:
-      InitializeGLExtensionBindingsGL(context);
-      InitializeGLExtensionBindingsOSMESA(context);
+      InitializeDynamicGLBindingsGL(context);
+      InitializeDynamicGLBindingsOSMESA(context);
       break;
     case kGLImplementationEGLGLES2:
-      InitializeGLExtensionBindingsGL(context);
-      InitializeGLExtensionBindingsEGL(context);
+      InitializeDynamicGLBindingsGL(context);
+      InitializeDynamicGLBindingsEGL(context);
       break;
     case kGLImplementationDesktopGL:
-      InitializeGLExtensionBindingsGL(context);
-      InitializeGLExtensionBindingsWGL(context);
+      InitializeDynamicGLBindingsGL(context);
+      InitializeDynamicGLBindingsWGL(context);
       break;
     case kGLImplementationMockGL:
-      InitializeGLExtensionBindingsGL(context);
+      if (!context) {
+        scoped_refptr<GLContextStubWithExtensions> mock_context(
+            new GLContextStubWithExtensions());
+        mock_context->SetGLVersionString("3.0");
+        InitializeDynamicGLBindingsGL(mock_context.get());
+      } else
+        InitializeDynamicGLBindingsGL(context);
       break;
     default:
       return false;

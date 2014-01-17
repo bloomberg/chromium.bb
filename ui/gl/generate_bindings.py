@@ -11,6 +11,26 @@ import collections
 import re
 import sys
 
+"""In case there are multiple versions of the same function, one that's listed
+first takes priority if its conditions are met. If the function is an extension
+function, finding the extension from the extension string is a condition for
+binding it. The last version of the function is treated as a fallback option in
+case no other versions were bound, so a non-null function pointer in the
+bindings does not guarantee that the function is supported.
+
+Function binding conditions can be specified manually by supplying a versions
+array instead of the names array. Each version has the following keys:
+   name: Mandatory. Name of the function. Multiple versions can have the same
+         name but different conditions.
+   gl_versions: List of GL versions where the function is found.
+   extensions: Extensions where the function is found. If not specified, the
+               extensions are determined based on GL header files.
+               If the function exists in an extension header, you may specify
+               an empty array to prevent making that a condition for binding.
+
+By default, the function gets its name from the first name in its names or
+versions array. This can be overridden by supplying a 'known_as' key.
+"""
 GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glActiveTexture'],
@@ -313,11 +333,13 @@ GL_FUNCTIONS = [
   'names': ['glGetIntegerv'],
   'arguments': 'GLenum pname, GLint* params', },
 { 'return_type': 'void',
-  'names': ['glGetProgramBinary', 'glGetProgramBinaryOES'],
+  'known_as': 'glGetProgramBinary',
+  'versions': [{ 'name': 'glGetProgramBinaryOES' },
+               { 'name': 'glGetProgramBinary',
+                 'extensions': ['GL_ARB_get_program_binary'] },
+               { 'name': 'glGetProgramBinary' }],
   'arguments': 'GLuint program, GLsizei bufSize, GLsizei* length, '
-               'GLenum* binaryFormat, GLvoid* binary',
-  'other_extensions': ['ARB_get_program_binary',
-                       'OES_get_program_binary'] },
+               'GLenum* binaryFormat, GLvoid* binary' },
 { 'return_type': 'void',
   'names': ['glGetProgramiv'],
   'arguments': 'GLuint program, GLenum pname, GLint* params', },
@@ -435,7 +457,8 @@ GL_FUNCTIONS = [
   'names': ['glLinkProgram'],
   'arguments': 'GLuint program', },
 { 'return_type': 'void*',
-  'names': ['glMapBuffer', 'glMapBufferOES'],
+  'known_as': 'glMapBuffer',
+  'names': ['glMapBufferOES', 'glMapBuffer'],
   'arguments': 'GLenum target, GLenum access', },
 { 'return_type': 'void*',
   'names': ['glMapBufferRange'],
@@ -454,15 +477,18 @@ GL_FUNCTIONS = [
   'names': ['glPolygonOffset'],
   'arguments': 'GLfloat factor, GLfloat units', },
 { 'return_type': 'void',
-  'names': ['glProgramBinary', 'glProgramBinaryOES'],
+  'known_as': 'glProgramBinary',
+  'versions': [{ 'name': 'glProgramBinaryOES' },
+               { 'name': 'glProgramBinary',
+                 'extensions': ['GL_ARB_get_program_binary'] },
+               { 'name': 'glProgramBinary' }],
   'arguments': 'GLuint program, GLenum binaryFormat, '
-               'const GLvoid* binary, GLsizei length',
-  'other_extensions': ['ARB_get_program_binary',
-                       'OES_get_program_binary'] },
+               'const GLvoid* binary, GLsizei length' },
 { 'return_type': 'void',
-  'names': ['glProgramParameteri'],
-  'arguments': 'GLuint program, GLenum pname, GLint value',
-  'other_extensions': ['ARB_get_program_binary'] },
+  'versions': [{ 'name': 'glProgramParameteri',
+                 'extensions': ['GL_ARB_get_program_binary'] },
+               { 'name': 'glProgramParameteri' }],
+  'arguments': 'GLuint program, GLenum pname, GLint value' },
 { 'return_type': 'void',
   'names': ['glQueryCounter'],
   'arguments': 'GLuint id, GLenum target', },
@@ -477,10 +503,27 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glReleaseShaderCompiler'],
   'arguments': 'void', },
+# Multisampling API is different in different GL versions, some require an
+# explicit resolve step for renderbuffers and/or FBO texture attachments and
+# some do not. Multiple alternatives might be present in a single
+# implementation, which require different use of the API and may have
+# different performance (explicit resolve performing worse, for example).
+# So even though the function signature is the same across versions, we split
+# their definitions so that the function to use can be chosen correctly at a
+# higher level.
+# TODO(oetuaho@nvidia.com): Some of these might still be possible to combine.
+# This could also fix weirdness in the mock bindings that's caused by the same
+# function name appearing multiple times.
+# This is the ES3 function, which requires explicit resolve:
 { 'return_type': 'void',
   'names': ['glRenderbufferStorageMultisample'],
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
+# In desktop GL, EXT and core versions both have an explicit resolve step,
+# though desktop core GL implicitly resolves when drawing to a window.
+# TODO(oetuaho@nvidia.com): Right now this function also doubles as ES2 EXT
+# function, which has implicit resolve, and for which the fallback is wrong.
+# Fix this.
 { 'return_type': 'void',
   'names': ['glRenderbufferStorageMultisampleEXT',
             'glRenderbufferStorageMultisample'],
@@ -511,8 +554,8 @@ GL_FUNCTIONS = [
                'const void* binary, GLsizei length', },
 { 'return_type': 'void',
   'names': ['glShaderSource'],
-  'arguments':
-      'GLuint shader, GLsizei count, const char* const* str, const GLint* length',
+  'arguments': 'GLuint shader, GLsizei count, const char* const* str, '
+               'const GLint* length',
   'logging_code': """
   GL_SERVICE_LOG_CODE_BLOCK({
     for (GLsizei ii = 0; ii < count; ++ii) {
@@ -636,7 +679,8 @@ GL_FUNCTIONS = [
   'arguments': 'GLint location, GLsizei count, '
                'GLboolean transpose, const GLfloat* value', },
 { 'return_type': 'GLboolean',
-  'names': ['glUnmapBuffer', 'glUnmapBufferOES'],
+  'known_as': 'glUnmapBuffer',
+  'names': ['glUnmapBufferOES', 'glUnmapBuffer'],
   'arguments': 'GLenum target', },
 { 'return_type': 'void',
   'names': ['glUseProgram'],
@@ -712,51 +756,67 @@ GL_FUNCTIONS = [
   'arguments':
     'GLsync sync, GLbitfield flags, GLuint64 timeout', },
 { 'return_type': 'void',
-  'names': ['glDrawArraysInstancedANGLE', 'glDrawArraysInstancedARB'],
+  'known_as': 'glDrawArraysInstancedANGLE',
+  'names': ['glDrawArraysInstancedARB', 'glDrawArraysInstancedANGLE'],
   'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
 { 'return_type': 'void',
-  'names': ['glDrawElementsInstancedANGLE', 'glDrawElementsInstancedARB'],
+  'known_as': 'glDrawElementsInstancedANGLE',
+  'names': ['glDrawElementsInstancedARB', 'glDrawElementsInstancedANGLE'],
   'arguments':
       'GLenum mode, GLsizei count, GLenum type, const void* indices, '
       'GLsizei primcount', },
 { 'return_type': 'void',
-  'names': ['glVertexAttribDivisorANGLE', 'glVertexAttribDivisorARB'],
+  'known_as': 'glVertexAttribDivisorANGLE',
+  'names': ['glVertexAttribDivisorARB', 'glVertexAttribDivisorANGLE'],
   'arguments':
       'GLuint index, GLuint divisor', },
 { 'return_type': 'void',
-  'names': ['glGenVertexArraysOES',
-            'glGenVertexArraysAPPLE',
-            'glGenVertexArrays'],
-  'arguments': 'GLsizei n, GLuint* arrays',
-  'other_extensions': ['OES_vertex_array_object',
-                       'APPLE_vertex_array_object',
-                       'ARB_vertex_array_object'] },
+  'known_as': 'glGenVertexArraysOES',
+  'versions': [{ 'name': 'glGenVertexArrays',
+                 'gl_versions': ['gl3', 'gl4'] },
+               { 'name': 'glGenVertexArrays',
+                 'extensions': ['GL_ARB_vertex_array_object'] },
+               { 'name': 'glGenVertexArraysOES' },
+               { 'name': 'glGenVertexArraysAPPLE',
+                 'extensions': ['GL_APPLE_vertex_array_object'] }],
+  'arguments': 'GLsizei n, GLuint* arrays', },
 { 'return_type': 'void',
-  'names': ['glDeleteVertexArraysOES',
-            'glDeleteVertexArraysAPPLE',
-            'glDeleteVertexArrays'],
-  'arguments': 'GLsizei n, const GLuint* arrays',
-  'other_extensions': ['OES_vertex_array_object',
-                       'APPLE_vertex_array_object',
-                       'ARB_vertex_array_object'] },
+  'known_as': 'glDeleteVertexArraysOES',
+  'versions': [{ 'name': 'glDeleteVertexArrays',
+                 'gl_versions': ['gl3', 'gl4'] },
+               { 'name': 'glDeleteVertexArrays',
+                 'extensions': ['GL_ARB_vertex_array_object'] },
+               { 'name': 'glDeleteVertexArraysOES' },
+               { 'name': 'glDeleteVertexArraysAPPLE',
+                 'extensions': ['GL_APPLE_vertex_array_object'] }],
+  'arguments': 'GLsizei n, const GLuint* arrays' },
 { 'return_type': 'void',
-  'names': ['glBindVertexArrayOES',
-            'glBindVertexArrayAPPLE',
-            'glBindVertexArray'],
-  'arguments': 'GLuint array',
-  'other_extensions': ['OES_vertex_array_object',
-                       'APPLE_vertex_array_object',
-                       'ARB_vertex_array_object'] },
+  'known_as': 'glBindVertexArrayOES',
+  'versions': [{ 'name': 'glBindVertexArray',
+                 'gl_versions': ['gl3', 'gl4'] },
+               { 'name': 'glBindVertexArray',
+                 'extensions': ['GL_ARB_vertex_array_object'] },
+               { 'name': 'glBindVertexArrayOES' },
+               { 'name': 'glBindVertexArrayAPPLE',
+                 'extensions': ['GL_APPLE_vertex_array_object'] }],
+  'arguments': 'GLuint array' },
 { 'return_type': 'GLboolean',
-  'names': ['glIsVertexArrayOES',
-            'glIsVertexArrayAPPLE',
-            'glIsVertexArray'],
-  'arguments': 'GLuint array',
-  'other_extensions': ['OES_vertex_array_object',
-                       'APPLE_vertex_array_object',
-                       'ARB_vertex_array_object'] },
+  'known_as': 'glIsVertexArrayOES',
+  'versions': [{ 'name': 'glIsVertexArray',
+                 'gl_versions': ['gl3', 'gl4'] },
+               { 'name': 'glIsVertexArray',
+                 'extensions': ['GL_ARB_vertex_array_object'] },
+               { 'name': 'glIsVertexArrayOES' },
+               { 'name': 'glIsVertexArrayAPPLE',
+                 'extensions': ['GL_APPLE_vertex_array_object'] }],
+  'arguments': 'GLuint array' },
 { 'return_type': 'void',
-  'names': ['glDiscardFramebufferEXT', 'glInvalidateFramebuffer'],
+  'known_as': 'glDiscardFramebufferEXT',
+  'versions': [{ 'name': 'glInvalidateFramebuffer',
+                 'gl_versions': ['es3'],
+                 'extensions': [] },
+               { 'name': 'glDiscardFramebufferEXT',
+                 'gl_versions': ['es1', 'es2'] }],
   'arguments': 'GLenum target, GLsizei numAttachments, '
       'const GLenum* attachments' },
 ]
@@ -845,15 +905,15 @@ EGL_FUNCTIONS = [
   'arguments':
       'EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint* value', },
 { 'return_type': 'EGLImageKHR',
-  'names': ['eglCreateImageKHR'],
+  'versions': [{ 'name': 'eglCreateImageKHR',
+                 'extensions': ['EGL_KHR_image_base'] }],
   'arguments':
       'EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, '
-      'const EGLint* attrib_list',
-  'other_extensions': ['EGL_KHR_image_base'] },
+      'const EGLint* attrib_list' },
 { 'return_type': 'EGLBoolean',
-  'names': ['eglDestroyImageKHR'],
-  'arguments': 'EGLDisplay dpy, EGLImageKHR image',
-  'other_extensions': ['EGL_KHR_image_base'] },
+  'versions': [{ 'name' : 'eglDestroyImageKHR',
+                 'extensions': ['EGL_KHR_image_base'] }],
+  'arguments': 'EGLDisplay dpy, EGLImageKHR image' },
 { 'return_type': 'EGLSurface',
   'names': ['eglCreateWindowSurface'],
   'arguments': 'EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, '
@@ -951,23 +1011,23 @@ EGL_FUNCTIONS = [
   'arguments':
       'EGLDisplay dpy, EGLSurface surface, EGLint attribute, void** value', },
 { 'return_type': 'EGLSyncKHR',
-  'names': ['eglCreateSyncKHR'],
-  'arguments': 'EGLDisplay dpy, EGLenum type, const EGLint* attrib_list',
-  'other_extensions': ['EGL_KHR_fence_sync'] },
+  'versions': [{ 'name': 'eglCreateSyncKHR',
+                 'extensions': ['EGL_KHR_fence_sync'] }],
+  'arguments': 'EGLDisplay dpy, EGLenum type, const EGLint* attrib_list' },
 { 'return_type': 'EGLint',
-  'names': ['eglClientWaitSyncKHR'],
+  'versions': [{ 'name': 'eglClientWaitSyncKHR',
+                 'extensions': ['EGL_KHR_fence_sync'] }],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, '
-      'EGLTimeKHR timeout',
-  'other_extensions': ['EGL_KHR_fence_sync'] },
+      'EGLTimeKHR timeout' },
 { 'return_type': 'EGLBoolean',
-  'names': ['eglGetSyncAttribKHR'],
+  'versions': [{ 'name': 'eglGetSyncAttribKHR',
+                 'extensions': ['EGL_KHR_fence_sync'] }],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, '
-      'EGLint* value',
-  'other_extensions': ['EGL_KHR_fence_sync'] },
+      'EGLint* value' },
 { 'return_type': 'EGLBoolean',
-  'names': ['eglDestroySyncKHR'],
-  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync',
-  'other_extensions': ['EGL_KHR_fence_sync'] },
+  'versions': [{ 'name': 'eglDestroySyncKHR',
+                 'extensions': ['EGL_KHR_fence_sync'] }],
+  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync' },
 { 'return_type': 'EGLBoolean',
   'names': ['eglGetSyncValuesCHROMIUM'],
   'arguments':
@@ -975,9 +1035,9 @@ EGL_FUNCTIONS = [
       'EGLuint64CHROMIUM* ust, EGLuint64CHROMIUM* msc, '
       'EGLuint64CHROMIUM* sbc', },
 { 'return_type': 'EGLint',
-  'names': ['eglWaitSyncKHR'],
-  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint flags',
-  'other_extensions': ['EGL_KHR_wait_sync'] },
+  'versions': [{ 'name': 'eglWaitSyncKHR',
+                 'extensions': ['EGL_KHR_fence_sync'] }],
+  'arguments': 'EGLDisplay dpy, EGLSyncKHR sync, EGLint flags' }
 ]
 
 WGL_FUNCTIONS = [
@@ -1227,7 +1287,7 @@ FUNCTION_SETS = [
   [GLX_FUNCTIONS, [], 'glx', ['GL/glx.h', 'GL/glxext.h'], []],
 ]
 
-def GenerateHeader(file, functions, set_name, used_extension_functions):
+def GenerateHeader(file, functions, set_name, used_extensions):
   """Generates gl_bindings_autogen_x.h"""
 
   # Write file header.
@@ -1252,12 +1312,12 @@ class GLContext;
   file.write('\n')
   for func in functions:
     file.write('typedef %s (GL_BINDING_CALL *%sProc)(%s);\n' %
-        (func['return_type'], func['names'][0], func['arguments']))
+        (func['return_type'], func['known_as'], func['arguments']))
 
   # Write declarations for booleans indicating which extensions are available.
   file.write('\n')
   file.write("struct Extensions%s {\n" % set_name.upper())
-  for extension, ext_functions in used_extension_functions:
+  for extension in sorted(used_extensions):
     file.write('  bool b_%s;\n' % extension)
   file.write('};\n')
   file.write('\n')
@@ -1265,7 +1325,7 @@ class GLContext;
   # Write Procs struct.
   file.write("struct Procs%s {\n" % set_name.upper())
   for func in functions:
-    file.write('  %sProc %sFn;\n' % (func['names'][0], func['names'][0]))
+    file.write('  %sProc %sFn;\n' % (func['known_as'], func['known_as']))
   file.write('};\n')
   file.write('\n')
 
@@ -1279,7 +1339,7 @@ class GLContext;
 """ % {'name': set_name.upper()})
   for func in functions:
     file.write('  virtual %s %sFn(%s) = 0;\n' %
-      (func['return_type'], func['names'][0], func['arguments']))
+      (func['return_type'], func['known_as'], func['arguments']))
   file.write('};\n')
   file.write('\n')
 
@@ -1290,14 +1350,14 @@ class GLContext;
   file.write('\n')
   for func in functions:
     file.write('#define %s ::gfx::g_current_%s_context->%sFn\n' %
-        (func['names'][0], set_name.lower(), func['names'][0]))
+        (func['known_as'], set_name.lower(), func['known_as']))
 
   file.write('\n')
   file.write('#endif  //  UI_GFX_GL_GL_BINDINGS_AUTOGEN_%s_H_\n' %
       set_name.upper())
 
 
-def GenerateAPIHeader(file, functions, set_name, used_extension_functions):
+def GenerateAPIHeader(file, functions, set_name):
   """Generates gl_bindings_api_autogen_x.h"""
 
   # Write file header.
@@ -1313,12 +1373,12 @@ def GenerateAPIHeader(file, functions, set_name, used_extension_functions):
   # Write API declaration.
   for func in functions:
     file.write('  virtual %s %sFn(%s) OVERRIDE;\n' %
-      (func['return_type'], func['names'][0], func['arguments']))
+      (func['return_type'], func['known_as'], func['arguments']))
 
   file.write('\n')
 
 
-def GenerateMockHeader(file, functions, set_name, used_extension_functions):
+def GenerateMockHeader(file, functions, set_name):
   """Generates gl_mock_autogen_x.h"""
 
   # Write file header.
@@ -1340,13 +1400,12 @@ def GenerateMockHeader(file, functions, set_name, used_extension_functions):
     if len(args):
       arg_count = func['arguments'].count(',') + 1
     file.write('  MOCK_METHOD%d(%s, %s(%s));\n' %
-      (arg_count, func['names'][0][2:], func['return_type'], args))
+      (arg_count, func['known_as'][2:], func['return_type'], args))
 
   file.write('\n')
 
 
-def GenerateInterfaceHeader(
-    file, functions, set_name, used_extension_functions):
+def GenerateInterfaceHeader(file, functions, set_name):
   """Generates gl_interface_autogen_x.h"""
 
   # Write file header.
@@ -1365,13 +1424,13 @@ def GenerateInterfaceHeader(
     if args == 'void':
       args = ''
     file.write('  virtual %s %s(%s) = 0;\n' %
-      (func['return_type'], func['names'][0][2:], args))
+      (func['return_type'], func['known_as'][2:], args))
 
   file.write('\n')
 
 
 def GenerateSource(
-  file, functions, nulldraw_functions, set_name, used_extension_functions):
+  file, functions, nulldraw_functions, set_name, used_extensions):
   """Generates gl_bindings_autogen_x.cc"""
 
   # Write file header.
@@ -1388,6 +1447,7 @@ def GenerateSource(
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/gl_%s_api_implementation.h"
 
 using gpu::gles2::GLES2Util;
@@ -1395,78 +1455,161 @@ using gpu::gles2::GLES2Util;
 namespace gfx {
 """ % set_name.lower())
 
-  # Write definitions of function pointers.
   file.write('\n')
   file.write('static bool g_debugBindingsInitialized;\n')
   file.write('Driver%s g_driver_%s;\n' % (set_name.upper(), set_name.lower()))
   file.write('\n')
 
-  # Write function to initialize the core function pointers. The code assumes
-  # any non-NULL pointer returned by GetGLCoreProcAddress() is valid, although
-  # it may be overwritten by an extension function pointer later.
+  # Write stub functions that take the place of some functions before a context
+  # is initialized. This is done to provide clear asserts on debug build and to
+  # avoid crashing in case of a bug on release build.
   file.write('\n')
-  file.write('void Driver%s::InitializeBindings() {\n' %
-             set_name.upper())
   for func in functions:
-    first_name = func['names'][0]
-    for i, name in enumerate(func['names']):
-      if i:
-        file.write('  if (!fn.%sFn)\n  ' % first_name)
-      file.write(
-          '  fn.%sFn = reinterpret_cast<%sProc>('
-          'GetGLCoreProcAddress("%s"));\n' %
-          (first_name, first_name, name))
+    unique_names = set([version['name'] for version in func['versions']])
+    if len(unique_names) > 1:
+      file.write('%s %sNotBound(%s) {\n' %
+          (func['return_type'], func['known_as'], func['arguments']))
+      file.write('  NOTREACHED();\n')
+      return_type = func['return_type'].lower()
+      # Returning 0 works for booleans, integers and pointers.
+      if return_type != 'void':
+        file.write('  return 0;\n')
+      file.write('}\n')
+
+  # Write function to initialize the function pointers that are always the same
+  # and to initialize bindings where choice of the function depends on the
+  # extension string or the GL version to point to stub functions.
+  file.write('\n')
+  file.write('void Driver%s::InitializeStaticBindings() {\n' %
+             set_name.upper())
+
+  def WriteFuncBinding(file, known_as, version_name):
+    file.write(
+        '  fn.%sFn = reinterpret_cast<%sProc>(GetGLProcAddress("%s"));\n' %
+        (known_as, known_as, version_name))
+
+  for func in functions:
+    unique_names = set([version['name'] for version in func['versions']])
+    if len(unique_names) == 1:
+      WriteFuncBinding(file, func['known_as'], func['known_as'])
+    else:
+      file.write('  fn.%sFn = reinterpret_cast<%sProc>(%sNotBound);\n' %
+          (func['known_as'], func['known_as'], func['known_as']))
+
   file.write('}\n')
   file.write('\n')
 
-  # Write function to initialize the extension function pointers. This function
-  # uses a current context to query which extensions are actually supported.
-  file.write("""void Driver%s::InitializeExtensionBindings(
-    GLContext* context) {
+  # Write function to initialize bindings where choice of the function depends
+  # on the extension string or the GL version.
+  file.write("""void Driver%s::InitializeDynamicBindings(GLContext* context) {
+  DCHECK(context && context->IsCurrent(NULL));
+  const GLVersionInfo* ver ALLOW_UNUSED = context->GetVersionInfo();
+  std::string extensions ALLOW_UNUSED = context->GetExtensions();
+  extensions += " ";
+
 """ % set_name.upper())
-  file.write('  DCHECK(context && context->IsCurrent(NULL));\n')
-  for extension, ext_functions in used_extension_functions:
-    file.write('  ext.b_%s = context->HasExtension("%s");\n' %
+  for extension in sorted(used_extensions):
+    # Extra space at the end of the extension name is intentional, it is used
+    # as a separator
+    file.write('  ext.b_%s = extensions.find("%s ") != std::string::npos;\n' %
         (extension, extension))
-    file.write('  if (ext.b_%s) {\n' %
-        (extension))
-    queried_entry_points = set()
-    for entry_point_name, function_name in ext_functions:
-      # Replace the pointer unconditionally unless this extension has several
-      # alternatives for the same entry point (e.g.,
-      # GL_ARB_blend_func_extended).
-      if entry_point_name in queried_entry_points:
-        file.write('    if (!fn.%sFn)\n  ' % entry_point_name)
-      file.write(
-         '    fn.%sFn = reinterpret_cast<%sProc>(GetGLProcAddress("%s"));\n' %
-             (entry_point_name, entry_point_name, function_name))
-      queried_entry_points.add(entry_point_name)
-    file.write('  }\n')
+
+  def WrapOr(cond):
+    if ' || ' in cond:
+      return '(%s)' % cond
+    return cond
+
+  def WrapAnd(cond):
+    if ' && ' in cond:
+      return '(%s)' % cond
+    return cond
+
+  def VersionCondition(version):
+    conditions = []
+    if 'gl_versions' in version:
+      gl_versions = version['gl_versions']
+      version_cond = ' || '.join(['ver->is_%s' % gl for gl in gl_versions])
+      conditions.append(WrapOr(version_cond))
+    if 'extensions' in version and version['extensions']:
+      ext_cond = ' || '.join(['ext.b_%s' % e for e in version['extensions']])
+      conditions.append(WrapOr(ext_cond))
+    return ' && '.join(conditions)
+
+  def WriteConditionalFuncBinding(file, func):
+    # Functions with only one version are always bound unconditionally
+    assert len(func['versions']) > 1
+    known_as = func['known_as']
+    i = 0
+    first_version = True
+    while i < len(func['versions']):
+      version = func['versions'][i]
+      cond = VersionCondition(version)
+      combined_conditions = [WrapAnd(cond)]
+      last_version = i + 1 == len(func['versions'])
+      while not last_version and \
+          func['versions'][i + 1]['name'] == version['name']:
+        i += 1
+        combinable_cond = VersionCondition(func['versions'][i])
+        combined_conditions.append(WrapAnd(combinable_cond))
+        last_version = i + 1 == len(func['versions'])
+      if len(combined_conditions) > 1:
+        if [1 for cond in combined_conditions if cond == '']:
+          cond = ''
+        else:
+          cond = ' || '.join(combined_conditions)
+      # Don't make the last possible binding conditional on anything else but
+      # that the function isn't already bound to avoid verbose specification
+      # of functions which have both ARB and core versions with the same name,
+      # and to be able to bind to mock extension functions in unit tests which
+      # call InitializeDynamicGLBindings with a stub context that doesn't have
+      # extensions in its extension string.
+      # TODO(oetuaho@nvidia.com): Get rid of the fallback.
+      # http://crbug.com/325668
+      if cond != '' and not last_version:
+        if not first_version:
+          file.write('  if (!fn.%sFn && (%s))\n  ' % (known_as, cond))
+        else:
+          file.write('  if (%s)\n  ' % cond)
+      elif not first_version:
+        file.write('  if (!fn.%sFn)\n  ' % known_as)
+      WriteFuncBinding(file, known_as, version['name'])
+      i += 1
+      first_version = False
+
+  for func in functions:
+    unique_names = set([version['name'] for version in func['versions']])
+    if len(unique_names) > 1:
+      file.write('\n')
+      file.write('  fn.%sFn = 0;\n' % func['known_as'])
+      file.write('  debug_fn.%sFn = 0;\n' % func['known_as'])
+      WriteConditionalFuncBinding(file, func)
+
+  # Some new function pointers have been added, so update them in debug bindings
+  file.write('\n')
   file.write('  if (g_debugBindingsInitialized)\n')
-  file.write('    UpdateDebugExtensionBindings();\n')
+  file.write('    InitializeDebugBindings();\n')
   file.write('}\n')
   file.write('\n')
 
   # Write empty stubs for functions that want one.
   file.write('extern "C" {\n')
   for func in nulldraw_functions:
-    names = func['names']
+    known_as = func['known_as']
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
     file.write('static %s GL_BINDING_CALL Stub_%s(%s) {}\n' %
-        (return_type, names[0], arguments))
+        (return_type, known_as, arguments))
   file.write('}  // extern "C"\n')
 
   # Write logging wrappers for each function.
   file.write('extern "C" {\n')
   for func in functions:
-    names = func['names']
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
     file.write('static %s GL_BINDING_CALL Debug_%s(%s) {\n' %
-        (return_type, names[0], arguments))
+        (return_type, func['known_as'], arguments))
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
     argument_names = re.sub(
@@ -1488,9 +1631,9 @@ namespace gfx {
         log_argument_names)
     log_argument_names = re.sub(
         r'CONSTVOID_([a-zA-Z0-9_]+)',
-        r'static_cast<const void*>(\1)', log_argument_names);
+        r'static_cast<const void*>(\1)', log_argument_names)
     log_argument_names = re.sub(
-        r'CONSTCHAR_([a-zA-Z0-9_]+)', r'\1', log_argument_names);
+        r'CONSTCHAR_([a-zA-Z0-9_]+)', r'\1', log_argument_names)
     log_argument_names = re.sub(
         r'GLenum_([a-zA-Z0-9_]+)', r'GLES2Util::GetStringEnum(\1)',
         log_argument_names)
@@ -1503,7 +1646,7 @@ namespace gfx {
       log_argument_names = ''
     else:
       log_argument_names = " << " + log_argument_names
-    function_name = names[0]
+    function_name = func['known_as']
     if return_type == 'void':
       file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
           (function_name, log_argument_names))
@@ -1519,7 +1662,7 @@ namespace gfx {
       if 'logging_code' in func:
         file.write("%s\n" % func['logging_code'])
       else:
-        file.write('  GL_SERVICE_LOG("GL_RESULT: " << result);\n');
+        file.write('  GL_SERVICE_LOG("GL_RESULT: " << result);\n')
       file.write('  return result;\n')
     file.write('}\n')
   file.write('}  // extern "C"\n')
@@ -1529,7 +1672,7 @@ namespace gfx {
   file.write('void Driver%s::InitializeDebugBindings() {\n' %
              set_name.upper())
   for func in functions:
-    first_name = func['names'][0]
+    first_name = func['known_as']
     file.write('  if (!debug_fn.%sFn) {\n' % first_name)
     file.write('    debug_fn.%sFn = fn.%sFn;\n' % (first_name, first_name))
     file.write('    fn.%sFn = Debug_%s;\n' % (first_name, first_name))
@@ -1544,23 +1687,9 @@ namespace gfx {
                set_name.upper())
 
     for func in nulldraw_functions:
-      first_name = func['names'][0]
+      first_name = func['known_as']
       file.write('  fn.%sFn = Stub_%s;\n' % (first_name, first_name))
     file.write('}\n')
-
-  # Write function to update the debug function pointers to extension functions
-  # after the extensions have been initialized.
-  file.write('\n')
-  file.write('void Driver%s::UpdateDebugExtensionBindings() {\n' %
-             set_name.upper())
-  for extension, ext_functions in used_extension_functions:
-    for name, _ in ext_functions:
-      file.write('  if (debug_fn.%sFn != fn.%sFn &&\n' % (name, name))
-      file.write('      fn.%sFn != Debug_%s) {\n' % (name, name))
-      file.write('    debug_fn.%sFn = fn.%sFn;\n' % (name, name))
-      file.write('    fn.%sFn = Debug_%s;\n' % (name, name))
-      file.write('  }\n')
-  file.write('}\n')
 
   # Write function to clear all function pointers.
   file.write('\n')
@@ -1571,19 +1700,18 @@ namespace gfx {
 
   # Write GLApiBase functions
   for func in functions:
-    names = func['names']
+    function_name = func['known_as']
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
     file.write('%s %sApiBase::%sFn(%s) {\n' %
-        (return_type, set_name.upper(), names[0], arguments))
+        (return_type, set_name.upper(), function_name, arguments))
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
     if argument_names == 'void' or argument_names == '':
       argument_names = ''
-    function_name = names[0]
     if return_type == 'void':
       file.write('  driver_->fn.%sFn(%s);\n' %
           (function_name, argument_names))
@@ -1594,19 +1722,18 @@ namespace gfx {
 
   # Write TraceGLApi functions
   for func in functions:
-    names = func['names']
+    function_name = func['known_as']
     return_type = func['return_type']
     arguments = func['arguments']
     file.write('\n')
     file.write('%s Trace%sApi::%sFn(%s) {\n' %
-        (return_type, set_name.upper(), names[0], arguments))
+        (return_type, set_name.upper(), function_name, arguments))
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
     argument_names = re.sub(
         r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
     if argument_names == 'void' or argument_names == '':
       argument_names = ''
-    function_name = names[0]
     file.write('  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::%s")\n' %
                function_name)
     if return_type == 'void':
@@ -1641,12 +1768,12 @@ namespace gfx {
   for func in functions:
     file.write('\n')
     file.write('%s GL_BINDING_CALL Mock_%s(%s) {\n' %
-        (func['return_type'], func['names'][0], func['arguments']))
-    argument_names = re.sub(r'(const )?[a-zA-Z0-9]+((\s*const\s*)?\*)* ([a-zA-Z0-9]+)', r'\4',
-                              func['arguments'])
+        (func['return_type'], func['known_as'], func['arguments']))
+    arg_re = r'(const )?[a-zA-Z0-9]+((\s*const\s*)?\*)* ([a-zA-Z0-9]+)'
+    argument_names = re.sub(arg_re, r'\4', func['arguments'])
     if argument_names == 'void':
       argument_names = ''
-    function_name = func['names'][0][2:]
+    function_name = func['known_as'][2:]
     if func['return_type'] == 'void':
       file.write('  GLInterface::GetGLInterface()->%s(%s);\n' %
           (function_name, argument_names))
@@ -1667,12 +1794,14 @@ namespace gfx {
   file.write('\n')
   file.write('void* GL_BINDING_CALL GetMockGLProcAddress(const char* name) {\n')
   for func in functions:
-    first_name = func['names'][0]
-    file.write('  if (strcmp(name, "%s") == 0)\n' % first_name)
-    file.write('    return reinterpret_cast<void*>(Mock_%s);\n' % first_name)
+    unique_names = set([version['name'] for version in func['versions']])
+    for name in unique_names:
+      file.write('  if (strcmp(name, "%s") == 0)\n' % name)
+      file.write(
+          '    return reinterpret_cast<void*>(Mock_%s);\n' % func['known_as'])
   # Always return a non-NULL pointer like some EGL implementations do.
   file.write('  return reinterpret_cast<void*>(&MockInvalidFunction);\n')
-  file.write('}\n');
+  file.write('}\n')
 
   file.write('\n')
   file.write('}  // namespace gfx\n')
@@ -1755,49 +1884,45 @@ def LooksLikeExtensionFunction(function):
   return vendor is not None and not vendor.group(1) in ['GL', 'API', 'DC']
 
 
-def GetUsedExtensionFunctions(functions, extension_headers, extra_extensions):
-  """Determine which functions belong to extensions.
+def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
+  """Determine which functions belong to extensions based on extension headers,
+  and fill in this information to the functions table for functions that don't
+  already have the information.
 
   Args:
-    functions: List of (return type, function names, arguments).
+    functions: List of (return type, function versions, arguments).
     extension_headers: List of header file names.
+    extra_extensions: Extensions to add to the list.
   Returns:
-    List of (extension name, [function name alternatives]) sorted with least
-    preferred extensions first.
+    Set of used extensions.
   """
   # Parse known extensions.
   extensions = GetExtensionFunctions(extension_headers)
   functions_to_extensions = GetFunctionToExtensionMap(extensions)
 
-  # Collect all used extension functions.
-  used_extension_functions = collections.defaultdict(lambda: [])
+  # Fill in the extension information.
+  used_extensions = set()
   for func in functions:
-    for name in func['names']:
-      # Make sure we know about all extension functions.
-      if (LooksLikeExtensionFunction(name) and
-          not name in functions_to_extensions):
+    for version in func['versions']:
+      name = version['name']
+      # Make sure we know about all extensions and extension functions.
+      if 'extensions' in version:
+        used_extensions.update(version['extensions'])
+      elif name in functions_to_extensions:
+        # If there are multiple versions with the same name, assume that they
+        # already have all the correct conditions, we can't just blindly add
+        # the same extension conditions to all of them
+        if len([v for v in func['versions'] if v['name'] == name]) == 1:
+          version['extensions'] = functions_to_extensions[name]
+          used_extensions.update(version['extensions'])
+      elif LooksLikeExtensionFunction(name):
         raise RuntimeError('%s looks like an extension function but does not '
             'belong to any of the known extensions.' % name)
-      if name in functions_to_extensions:
-        extensions = functions_to_extensions[name][:]
-        if 'other_extensions' in func:
-          extensions.extend(func['other_extensions'])
-        for extension in extensions:
-          used_extension_functions[extension].append((func['names'][0], name))
 
   # Add extensions that do not have any functions.
-  used_extension_functions.update(dict(
-      [(e, []) for e in extra_extensions if e not in used_extension_functions]))
+  used_extensions.update(extra_extensions)
 
-  def ExtensionSortKey(name):
-    # Prefer ratified extensions and EXTs.
-    preferences = ['_ARB_', '_OES_', '_EXT_', '']
-    for i, category in enumerate(preferences):
-      if category in name:
-        return -i
-  used_extension_functions = sorted(used_extension_functions.items(),
-      key = lambda item: ExtensionSortKey(item[0]))
-  return used_extension_functions
+  return used_extensions
 
 
 def ResolveHeader(header, header_paths):
@@ -1837,54 +1962,66 @@ def main(argv):
         print ResolveHeader(header, options.header_paths)
     return 0
 
+  directory = '.'
   if len(args) >= 1:
-    dir = args[0]
-  else:
-    dir = '.'
+    directory = args[0]
 
   for [functions,
        nulldraw_functions,
        set_name,
        extension_headers,
        extensions] in FUNCTION_SETS:
+    # Function names can be specified in two ways (list of unique names or list
+    # of versions with different binding conditions). Fill in the data to the
+    # versions list in case it is missing, so that can be used from here on:
+    for func in functions + nulldraw_functions:
+      assert 'versions' in func or 'names' in func, 'Function with no names'
+      if 'versions' not in func:
+        func['versions'] = [{'name': n} for n in func['names']]
+      # Use the first version's name unless otherwise specified
+      if 'known_as' not in func:
+        func['known_as'] = func['versions'][0]['name']
+      # Make sure that 'names' is not accidentally used instead of 'versions'
+      if 'names' in func:
+        del func['names']
+
     extension_headers = [ResolveHeader(h, options.header_paths)
                          for h in extension_headers]
-    used_extension_functions = GetUsedExtensionFunctions(
+    used_extensions = FillExtensionsFromHeaders(
         functions, extension_headers, extensions)
 
     header_file = open(
-        os.path.join(dir, 'gl_bindings_autogen_%s.h' % set_name), 'wb')
-    GenerateHeader(header_file, functions, set_name, used_extension_functions)
+        os.path.join(directory, 'gl_bindings_autogen_%s.h' % set_name), 'wb')
+    GenerateHeader(header_file, functions, set_name, used_extensions)
     header_file.close()
 
     header_file = open(
-        os.path.join(dir, 'gl_bindings_api_autogen_%s.h' % set_name), 'wb')
-    GenerateAPIHeader(
-        header_file, functions, set_name, used_extension_functions)
+        os.path.join(directory, 'gl_bindings_api_autogen_%s.h' % set_name),
+        'wb')
+    GenerateAPIHeader(header_file, functions, set_name)
     header_file.close()
 
     source_file = open(
-        os.path.join(dir, 'gl_bindings_autogen_%s.cc' % set_name), 'wb')
+        os.path.join(directory, 'gl_bindings_autogen_%s.cc' % set_name), 'wb')
     GenerateSource(source_file,
                    functions,
                    nulldraw_functions,
                    set_name,
-                   used_extension_functions)
+                   used_extensions)
     source_file.close()
 
     header_file = open(
-        os.path.join(dir, 'gl_interface_autogen_%s.h' % set_name), 'wb')
-    GenerateInterfaceHeader(
-        header_file, functions, set_name, used_extension_functions)
+        os.path.join(directory, 'gl_interface_autogen_%s.h' % set_name), 'wb')
+    GenerateInterfaceHeader(header_file, functions, set_name)
     header_file.close()
 
     header_file = open(
-        os.path.join(dir, 'gl_mock_autogen_%s.h' % set_name), 'wb')
-    GenerateMockHeader(
-        header_file, functions, set_name, used_extension_functions)
+        os.path.join(directory, 'gl_mock_autogen_%s.h' % set_name), 'wb')
+    GenerateMockHeader(header_file, functions, set_name)
     header_file.close()
 
-  source_file = open(os.path.join(dir, 'gl_bindings_autogen_mock.cc'), 'wb')
+  source_file = open(os.path.join(directory, 'gl_bindings_autogen_mock.cc'),
+                     'wb')
   GenerateMockSource(source_file, GL_FUNCTIONS)
   source_file.close()
   return 0

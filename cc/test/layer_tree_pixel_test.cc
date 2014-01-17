@@ -55,7 +55,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
 
     case GL_WITH_DEFAULT:
     case GL_WITH_BITMAP: {
-      CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+      CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
 
       output_surface = make_scoped_ptr(
           new PixelTestOutputSurface(new TestInProcessContextProvider));
@@ -316,7 +316,7 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
   DCHECK_GT(bitmap.width(), 0);
   DCHECK_GT(bitmap.height(), 0);
 
-  CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+  CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
 
   scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();

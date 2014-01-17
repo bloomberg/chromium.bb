@@ -14,6 +14,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gfx {
 
@@ -58,6 +59,13 @@ std::string GLContext::GetExtensions() {
   return std::string(ext ? ext : "");
 }
 
+std::string GLContext::GetGLVersion() {
+  DCHECK(IsCurrent(NULL));
+  const char *version =
+      reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  return std::string(version ? version : "");
+}
+
 bool GLContext::HasExtension(const char* name) {
   std::string extensions = GetExtensions();
   extensions += " ";
@@ -66,6 +74,15 @@ bool GLContext::HasExtension(const char* name) {
   delimited_name += " ";
 
   return extensions.find(delimited_name) != std::string::npos;
+}
+
+const GLVersionInfo* GLContext::GetVersionInfo() {
+  if(!version_info_) {
+    std::string version = GetGLVersion();
+    version_info_ = scoped_ptr<GLVersionInfo>(
+        new GLVersionInfo(version.c_str()));
+  }
+  return version_info_.get();
 }
 
 GLShareGroup* GLContext::share_group() {
@@ -114,14 +131,14 @@ bool GLContext::WasAllocatedUsingRobustnessExtension() {
   return false;
 }
 
-bool GLContext::InitializeExtensionBindings() {
+bool GLContext::InitializeDynamicBindings() {
   DCHECK(IsCurrent(NULL));
   static bool initialized = false;
   if (initialized)
     return initialized;
-  initialized = InitializeGLExtensionBindings(GetGLImplementation(), this);
+  initialized = InitializeDynamicGLBindings(GetGLImplementation(), this);
   if (!initialized)
-    LOG(ERROR) << "Could not initialize extension bindings.";
+    LOG(ERROR) << "Could not initialize dynamic bindings.";
   return initialized;
 }
 

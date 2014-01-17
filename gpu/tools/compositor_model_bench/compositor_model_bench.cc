@@ -186,8 +186,8 @@ class Simulator {
 
   // Initialize the OpenGL context.
   bool InitGLContext() {
-    if (!InitializeGLBindings(gfx::kGLImplementationDesktopGL)) {
-      LOG(FATAL) << "InitializeGLBindings failed";
+    if (!InitializeStaticGLBindings(gfx::kGLImplementationDesktopGL)) {
+      LOG(FATAL) << "InitializeStaticGLBindings failed";
       return false;
     }
 

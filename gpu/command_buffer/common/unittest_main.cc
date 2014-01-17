@@ -34,7 +34,8 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 #endif
   CommandLine::Init(argc, argv);
-  gfx::InitializeGLBindings(gfx::kGLImplementationMockGL);
+  gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
+  gfx::InitializeDynamicGLBindings(gfx::kGLImplementationMockGL, NULL);
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTests(argc,
                                argv,

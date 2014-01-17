@@ -31,7 +31,7 @@ void CompositorTestSuite::Initialize() {
 #if defined(USE_X11)
   XInitThreads();
 #endif
-  CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+  CHECK(gfx::InitializeStaticGLBindings(gfx::kGLImplementationOSMesaGL));
   base::TestSuite::Initialize();
 
   gfx::RegisterPathProvider();

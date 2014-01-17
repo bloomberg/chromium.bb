@@ -55,10 +55,10 @@ bool GLSurface::InitializeOneOff() {
     }
   }
 
-  initialized = InitializeGLBindings(impl) && InitializeOneOffInternal();
+  initialized = InitializeStaticGLBindings(impl) && InitializeOneOffInternal();
   if (!initialized && fallback_to_osmesa) {
     ClearGLBindings();
-    initialized = InitializeGLBindings(kGLImplementationOSMesaGL) &&
+    initialized = InitializeStaticGLBindings(kGLImplementationOSMesaGL) &&
                   InitializeOneOffInternal();
   }
 

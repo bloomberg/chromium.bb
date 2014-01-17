@@ -66,6 +66,10 @@ bool GLContextNSView::MakeCurrent(GLSurface* surface) {
 
   SetRealGLApi();
   SetCurrent(surface);
+  if (!InitializeDynamicBindings()) {
+    ReleaseCurrent(surface);
+    return false;
+  }
 
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Unable to make gl context current.";

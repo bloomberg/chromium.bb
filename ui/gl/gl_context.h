@@ -18,6 +18,7 @@ namespace gfx {
 
 class GLSurface;
 class VirtualGLApi;
+struct GLVersionInfo;
 
 // Encapsulates an OpenGL context, hiding platform specific management.
 class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
@@ -76,6 +77,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // context must be current.
   bool HasExtension(const char* name);
 
+  // Returns version info of the underlying GL context. The context must be
+  // current.
+  const GLVersionInfo* GetVersionInfo();
+
   GLShareGroup* share_group();
 
   // Create a GL context that is compatible with the given surface.
@@ -110,13 +115,16 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   static void SetRealGLApi();
   virtual void SetCurrent(GLSurface* surface);
 
-  // Initialize function pointers to extension functions in the GL
-  // implementation. Should be called immediately after this context is made
-  // current.
-  bool InitializeExtensionBindings();
+  // Initialize function pointers to functions where the bound version depends
+  // on GL version or supported extensions. Should be called immediately after
+  // this context is made current.
+  bool InitializeDynamicBindings();
 
   // Returns the last real (non-virtual) GLContext made current.
   static GLContext* GetRealCurrent();
+
+  // Returns the GL version string. The context must be current.
+  virtual std::string GetGLVersion();
 
  private:
   friend class base::RefCounted<GLContext>;
@@ -127,6 +135,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   scoped_refptr<GLShareGroup> share_group_;
   scoped_ptr<VirtualGLApi> virtual_gl_api_;
   scoped_ptr<GLStateRestorer> state_restorer_;
+  scoped_ptr<GLVersionInfo> version_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };

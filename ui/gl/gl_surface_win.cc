@@ -83,7 +83,7 @@ class DWMVSyncProvider : public VSyncProvider {
 };
 
 // Helper routine that does one-off initialization like determining the
-// pixel format and initializing the GL bindings.
+// pixel format.
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:

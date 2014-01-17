@@ -19,8 +19,8 @@ namespace gfx {
 class GLContext;
 class GLSurface;
 
-void InitializeGLBindingsGL();
-void InitializeGLExtensionBindingsGL(GLContext* context);
+void InitializeStaticGLBindingsGL();
+void InitializeDynamicGLBindingsGL(GLContext* context);
 void InitializeDebugGLBindingsGL();
 void InitializeNullDrawGLBindingsGL();
 void ClearGLBindingsGL();

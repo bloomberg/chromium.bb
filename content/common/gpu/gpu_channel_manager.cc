@@ -58,8 +58,8 @@ GpuChannelManager::~GpuChannelManager() {
 
 gpu::gles2::ProgramCache* GpuChannelManager::program_cache() {
   if (!program_cache_.get() &&
-      (gfx::g_driver_gl.ext.b_ARB_get_program_binary ||
-       gfx::g_driver_gl.ext.b_OES_get_program_binary) &&
+      (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
+       gfx::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuProgramCache)) {
     program_cache_.reset(new gpu::gles2::MemoryProgramCache());

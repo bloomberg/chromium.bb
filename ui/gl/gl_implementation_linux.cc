@@ -30,7 +30,7 @@ base::NativeLibrary LoadLibrary(const char* filename) {
   return LoadLibrary(base::FilePath(filename));
 }
 
-bool InitializeGLBindingsOSMesaGL() {
+bool InitializeStaticGLBindingsOSMesaGL() {
   base::FilePath module_path;
   if (!PathService::Get(base::DIR_MODULE, &module_path)) {
     LOG(ERROR) << "PathService::Get failed.";
@@ -55,8 +55,8 @@ bool InitializeGLBindingsOSMesaGL() {
   AddGLNativeLibrary(library);
   SetGLImplementation(kGLImplementationOSMesaGL);
 
-  InitializeGLBindingsGL();
-  InitializeGLBindingsOSMESA();
+  InitializeStaticGLBindingsGL();
+  InitializeStaticGLBindingsOSMESA();
   return true;
 }
 

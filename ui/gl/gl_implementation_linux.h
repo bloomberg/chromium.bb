@@ -7,7 +7,7 @@
 
 namespace gfx {
 
-bool InitializeGLBindingsOSMesaGL();
+bool InitializeStaticGLBindingsOSMesaGL();
 base::NativeLibrary LoadLibrary(const char* filename);
 base::NativeLibrary LoadLibrary(const base::FilePath& filename);
 

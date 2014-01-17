@@ -46,21 +46,6 @@ void CleanupNativeLibraries(void* unused) {
   }
 }
 
-bool ExportsCoreFunctionsFromGetProcAddress(GLImplementation implementation) {
-  switch (GetGLImplementation()) {
-    case kGLImplementationDesktopGL:
-    case kGLImplementationOSMesaGL:
-    case kGLImplementationAppleGL:
-    case kGLImplementationMockGL:
-      return true;
-    case kGLImplementationEGLGLES2:
-      return false;
-    default:
-      NOTREACHED();
-      return true;
-  }
-}
-
 }
 
 base::ThreadLocalPointer<GLApi>* g_current_gl_context_tls = NULL;
@@ -138,7 +123,7 @@ void SetGLGetProcAddressProc(GLGetProcAddressProc proc) {
   g_get_proc_address = proc;
 }
 
-void* GetGLCoreProcAddress(const char* name) {
+void* GetGLProcAddress(const char* name) {
   DCHECK(g_gl_implementation != kGLImplementationNone);
 
   if (g_libraries) {
@@ -149,27 +134,13 @@ void* GetGLCoreProcAddress(const char* name) {
         return proc;
     }
   }
-  if (ExportsCoreFunctionsFromGetProcAddress(g_gl_implementation) &&
-      g_get_proc_address) {
+  if (g_get_proc_address) {
     void* proc = g_get_proc_address(name);
     if (proc)
       return proc;
   }
 
   return NULL;
-}
-
-void* GetGLProcAddress(const char* name) {
-  DCHECK(g_gl_implementation != kGLImplementationNone);
-
-  void* proc = GetGLCoreProcAddress(name);
-  if (!proc && g_get_proc_address) {
-    proc = g_get_proc_address(name);
-    if (proc)
-      return proc;
-  }
-
-  return proc;
 }
 
 void InitializeNullDrawGLBindings() {

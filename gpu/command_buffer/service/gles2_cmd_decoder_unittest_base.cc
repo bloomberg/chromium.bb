@@ -62,6 +62,7 @@ GLES2DecoderTestBase::~GLES2DecoderTestBase() {}
 void GLES2DecoderTestBase::SetUp() {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       true,    // has alpha
       true,    // has depth
       false,   // has stencil
@@ -81,6 +82,7 @@ void GLES2DecoderTestBase::AddExpectationsForVertexAttribManager() {
 
 void GLES2DecoderTestBase::InitDecoder(
     const char* extensions,
+    const char* gl_version,
     bool has_alpha,
     bool has_depth,
     bool has_stencil,
@@ -89,6 +91,7 @@ void GLES2DecoderTestBase::InitDecoder(
     bool request_stencil,
     bool bind_generates_resource) {
   InitDecoderWithCommandLine(extensions,
+                             gl_version,
                              has_alpha,
                              has_depth,
                              has_stencil,
@@ -101,6 +104,7 @@ void GLES2DecoderTestBase::InitDecoder(
 
 void GLES2DecoderTestBase::InitDecoderWithCommandLine(
     const char* extensions,
+    const char* gl_version,
     bool has_alpha,
     bool has_depth,
     bool has_stencil,
@@ -110,6 +114,10 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
     bool bind_generates_resource,
     const CommandLine* command_line) {
   Framebuffer::ClearFramebufferCompleteComboMap();
+
+  gfx::ClearGLBindings();
+  gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
+
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
 
@@ -279,9 +287,12 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   surface_ = new gfx::GLSurfaceStub;
   surface_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
 
-  context_ = new gfx::GLContextStub;
+  context_ = new gfx::GLContextStubWithExtensions;
+  context_->AddExtensionsString(extensions);
+  context_->SetGLVersionString(gl_version);
 
   context_->MakeCurrent(surface_.get());
+  gfx::InitializeDynamicGLBindings(gfx::kGLImplementationMockGL, context_);
 
   int32 attributes[] = {
     EGL_ALPHA_SIZE, request_alpha ? 8 : 0,

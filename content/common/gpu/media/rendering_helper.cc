@@ -10,7 +10,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_context_stub.h"
+#include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
@@ -42,42 +42,6 @@ static void CreateShader(GLuint program,
   glDeleteShader(shader);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
-
-namespace {
-
-// Lightweight GLContext stub implementation that returns a constructed
-// extensions string.  We use this to create a context that we can use to
-// initialize GL extensions with, without actually creating a platform context.
-class GLContextStubWithExtensions : public gfx::GLContextStub {
- public:
-  GLContextStubWithExtensions() {}
-  virtual std::string GetExtensions() OVERRIDE;
-
-  void AddExtensionsString(const char* extensions);
-
- protected:
-  virtual ~GLContextStubWithExtensions() {}
-
- private:
-  std::string extensions_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLContextStubWithExtensions);
-};
-
-void GLContextStubWithExtensions::AddExtensionsString(const char* extensions) {
-  if (extensions == NULL)
-    return;
-
-  if (extensions_.size() != 0)
-    extensions_ += ' ';
-  extensions_ += extensions;
-}
-
-std::string GLContextStubWithExtensions::GetExtensions() {
-  return extensions_;
-}
-
-}  // anonymous
 
 namespace content {
 
@@ -135,9 +99,9 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     done.Wait();
   }
 
-  gfx::InitializeGLBindings(kGLImplementation);
-  scoped_refptr<GLContextStubWithExtensions> stub_context(
-      new GLContextStubWithExtensions());
+  gfx::InitializeStaticGLBindings(kGLImplementation);
+  scoped_refptr<gfx::GLContextStubWithExtensions> stub_context(
+      new gfx::GLContextStubWithExtensions());
 
   CHECK_GT(params.window_dimensions.size(), 0U);
   CHECK_EQ(params.frame_dimensions.size(), params.window_dimensions.size());
@@ -171,6 +135,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   CHECK(gl_context_);
   stub_context->AddExtensionsString(
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
+  stub_context->SetGLVersionString(
+      reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
 #else // EGL
   EGLNativeDisplayType native_display;
@@ -208,6 +174,8 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
   stub_context->AddExtensionsString(
       eglQueryString(gl_display_, EGL_EXTENSIONS));
+  stub_context->SetGLVersionString(
+      reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 #endif
 
   // Per-window/surface X11 & EGL initialization.
@@ -263,7 +231,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   }
 
   // Must be done after a context is made current.
-  gfx::InitializeGLExtensionBindings(kGLImplementation, stub_context.get());
+  gfx::InitializeDynamicGLBindings(kGLImplementation, stub_context.get());
 
   if (render_as_thumbnails_) {
     CHECK_EQ(window_dimensions_.size(), 1U);

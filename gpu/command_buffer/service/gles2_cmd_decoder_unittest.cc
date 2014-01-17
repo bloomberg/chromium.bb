@@ -66,21 +66,22 @@ class GLES2DecoderTest : public GLES2DecoderTestBase {
       bool init);
 };
 
-class GLES2DecoderTestWithExtensions
+class GLES2DecoderTestWithExtensionsOnGLES2
     : public GLES2DecoderTest,
       public ::testing::WithParamInterface<const char*> {
  public:
-  GLES2DecoderTestWithExtensions() {}
+  GLES2DecoderTestWithExtensionsOnGLES2() {}
 
   virtual void SetUp() {
-    InitDecoder(GetParam(),  // extensions
-                true,        // has alpha
-                true,        // has depth
-                false,       // has stencil
-                true,        // request alpha
-                true,        // request depth
-                false,       // request stencil
-                false);      // bind generates resource
+    InitDecoder(GetParam(),       // extensions
+                "opengl es 2.0",  // gl version
+                true,             // has alpha
+                true,             // has depth
+                false,            // has stencil
+                true,             // request alpha
+                true,             // request depth
+                false,            // request stencil
+                false);           // bind generates resource
   }
 };
 
@@ -103,6 +104,7 @@ class GLES2DecoderGeometryInstancingTest : public GLES2DecoderWithShaderTest {
   virtual void SetUp() {
     InitDecoder(
         "GL_ANGLE_instanced_arrays", // extensions
+        "opengl es 2.0",             // gl version
         true,                        // has alpha
         true,                        // has depth
         false,                       // has stencil
@@ -121,6 +123,7 @@ class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
   virtual void SetUp() {
     InitDecoder(
         "",     // extensions
+        "3.0",  // gl version
         false,  // has alpha
         false,  // has depth
         false,  // has stencil
@@ -3775,6 +3778,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
 TEST_F(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       true,    // has alpha
       false,   // has depth
       false,   // has stencil
@@ -3806,6 +3810,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
 TEST_F(GLES2DecoderManualInitTest, ActualAlphaDoesNotMatchRequestedAlpha) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       true,    // has alpha
       false,   // has depth
       false,   // has stencil
@@ -3837,6 +3842,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualAlphaDoesNotMatchRequestedAlpha) {
 TEST_F(GLES2DecoderManualInitTest, ActualDepthMatchesRequestedDepth) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       true,    // has depth
       false,   // has stencil
@@ -3868,6 +3874,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualDepthMatchesRequestedDepth) {
 TEST_F(GLES2DecoderManualInitTest, ActualDepthDoesNotMatchRequestedDepth) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       true,    // has depth
       false,   // has stencil
@@ -3899,6 +3906,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualDepthDoesNotMatchRequestedDepth) {
 TEST_F(GLES2DecoderManualInitTest, ActualStencilMatchesRequestedStencil) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       true,    // has stencil
@@ -3930,6 +3938,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualStencilMatchesRequestedStencil) {
 TEST_F(GLES2DecoderManualInitTest, ActualStencilDoesNotMatchRequestedStencil) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       true,    // has stencil
@@ -3961,6 +3970,7 @@ TEST_F(GLES2DecoderManualInitTest, ActualStencilDoesNotMatchRequestedStencil) {
 TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       true,    // has depth
       false,   // has stencil
@@ -4023,6 +4033,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
 TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       true,    // has depth
       false,   // has stencil
@@ -4084,6 +4095,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
 TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       true,    // has stencil
@@ -4145,6 +4157,7 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
 TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       true,    // has stencil
@@ -4206,6 +4219,7 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
 TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
   InitDecoder(
       "GL_OES_packed_depth_stencil",      // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       true,    // has depth
       true,    // has stencil
@@ -4250,6 +4264,7 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilReportsCorrectValues) {
 TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
   InitDecoder(
       "GL_OES_packed_depth_stencil",      // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       true,    // has depth
       true,    // has stencil
@@ -4294,6 +4309,7 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilNoRequestedStencil) {
 TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
   InitDecoder(
       "GL_OES_packed_depth_stencil",      // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -4365,6 +4381,7 @@ TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferDepth) {
 TEST_F(GLES2DecoderManualInitTest, PackedDepthStencilRenderbufferStencil) {
   InitDecoder(
       "GL_OES_packed_depth_stencil",      // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -4768,6 +4785,7 @@ TEST_F(GLES2DecoderManualInitTest,
        RenderbufferStorageMultisampleCHROMIUMGLError) {
   InitDecoder(
       "GL_EXT_framebuffer_multisample",  // extensions
+      "2.1",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -4795,6 +4813,7 @@ TEST_F(GLES2DecoderManualInitTest,
        RenderbufferStorageMultisampleCHROMIUMBadArgs) {
   InitDecoder(
       "GL_EXT_framebuffer_multisample",  // extensions
+      "2.1",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -4825,6 +4844,7 @@ TEST_F(GLES2DecoderManualInitTest,
 TEST_F(GLES2DecoderManualInitTest, RenderbufferStorageMultisampleCHROMIUM) {
   InitDecoder(
       "GL_EXT_framebuffer_multisample",  // extensions
+      "2.1",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -4861,6 +4881,7 @@ TEST_F(GLES2DecoderManualInitTest,
        RenderbufferStorageMultisampleEXTNotSupported) {
   InitDecoder(
       "GL_EXT_framebuffer_multisample",  // extensions
+      "2.1",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -4880,7 +4901,7 @@ TEST_F(GLES2DecoderManualInitTest,
 }
 
 class GLES2DecoderMultisampledRenderToTextureTest
-    : public GLES2DecoderTestWithExtensions {};
+    : public GLES2DecoderTestWithExtensionsOnGLES2 {};
 
 TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
        NotCompatibleWithRenderbufferStorageMultisampleCHROMIUM) {
@@ -4979,6 +5000,7 @@ static bool ValueInArray(GLint value, GLint* array, GLint count) {
 TEST_F(GLES2DecoderManualInitTest, GetCompressedTextureFormats) {
   InitDecoder(
       "GL_EXT_texture_compression_s3tc",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5036,6 +5058,7 @@ TEST_F(GLES2DecoderManualInitTest, GetCompressedTextureFormats) {
 TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
   InitDecoder(
       "",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5080,6 +5103,7 @@ TEST_F(GLES2DecoderManualInitTest, GetNoCompressedTextureFormats) {
 TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
   InitDecoder(
       "GL_EXT_texture_compression_s3tc",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5114,6 +5138,7 @@ struct S3TCTestData {
 TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
   InitDecoder(
       "GL_EXT_texture_compression_s3tc",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5268,6 +5293,7 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
 TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   InitDecoder(
       "GL_OES_compressed_ETC1_RGB8_texture",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5340,6 +5366,7 @@ TEST_F(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
 TEST_F(GLES2DecoderManualInitTest, GetCompressedTextureFormatsETC1) {
   InitDecoder(
       "GL_OES_compressed_ETC1_RGB8_texture",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5415,6 +5442,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetProgramInfoCHROMIUMInvalidArgs) {
 TEST_F(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
   InitDecoder(
       "GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5437,6 +5465,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
 TEST_F(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
   InitDecoder(
       "GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5470,6 +5499,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalGetBinding) {
 TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
   InitDecoder(
       "GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5491,6 +5521,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureDefaults) {
 TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
   InitDecoder(
       "GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5550,6 +5581,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParam) {
 TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
   InitDecoder(
       "GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5591,6 +5623,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTextureParamInvalid) {
 TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
   InitDecoder(
       "GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5621,6 +5654,7 @@ TEST_F(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
 TEST_F(GLES2DecoderManualInitTest, BindGeneratesResourceFalse) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5650,6 +5684,7 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUM) {
   const GLuint kObjectId = 123;
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5682,6 +5717,7 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUM) {
 TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMBadId) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5702,6 +5738,7 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMBadId) {
 TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMAlreadyBound) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5723,6 +5760,7 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMAlreadyBound) {
 TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMAlreadySet) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5748,6 +5786,7 @@ TEST_F(GLES2DecoderManualInitTest, CreateStreamTextureCHROMIUMAlreadySet) {
 TEST_F(GLES2DecoderManualInitTest, DrawStreamTextureCHROMIUM) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",                                         // gl version
       true,                                                    // has alpha
       true,                                                    // has depth
       false,                                                   // has stencil
@@ -5797,6 +5836,7 @@ TEST_F(GLES2DecoderManualInitTest, DrawStreamTextureCHROMIUM) {
 TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUMInvalid) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5827,6 +5867,7 @@ TEST_F(GLES2DecoderManualInitTest, BindStreamTextureCHROMIUMInvalid) {
 TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUM) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5854,6 +5895,7 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUM) {
 TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUMInvalid) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5871,6 +5913,7 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUMInvalid) {
 TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUMBadId) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5888,6 +5931,7 @@ TEST_F(GLES2DecoderManualInitTest, DestroyStreamTextureCHROMIUMBadId) {
 TEST_F(GLES2DecoderManualInitTest, StreamTextureCHROMIUMNullMgr) {
   InitDecoder(
       "",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5914,6 +5958,7 @@ TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
   const GLuint kObjectId = 123;
   InitDecoder(
       "GL_CHROMIUM_stream_texture GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -5958,6 +6003,7 @@ TEST_F(GLES2DecoderManualInitTest, ReCreateStreamTextureCHROMIUM) {
 TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
   InitDecoder(
       "GL_CHROMIUM_stream_texture GL_OES_EGL_image_external",  // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6019,6 +6065,7 @@ TEST_F(GLES2DecoderManualInitTest, ProduceAndConsumeStreamTextureCHROMIUM) {
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6041,6 +6088,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6075,6 +6123,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6096,6 +6145,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6155,6 +6205,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6196,6 +6247,7 @@ TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
 TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6299,6 +6351,7 @@ TEST_F(
       base::IntToString(gpu::TEXSUBIMAGE2D_FASTER_THAN_TEXIMAGE2D));
   InitDecoderWithCommandLine(
       "",     // extensions
+      "3.0",  // gl version
       false,  // has alpha
       false,  // has depth
       false,  // has stencil
@@ -6590,6 +6643,7 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DClearsUnclearedTexture) {
 TEST_F(GLES2DecoderManualInitTest, CompressedImage2DMarksTextureAsCleared) {
   InitDecoder(
       "GL_EXT_texture_compression_s3tc",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -6729,6 +6783,7 @@ TEST_F(GLES2DecoderManualInitTest,
        UnClearedAttachmentsGetClearedOnReadPixelsAndDrawBufferGetsRestored) {
   InitDecoder(
       "GL_EXT_framebuffer_multisample",  // extensions
+      "2.1",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -7181,6 +7236,7 @@ TEST_F(GLES2DecoderTest, BeginQueryEXTDisabled) {
 TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   InitDecoder(
       "GL_EXT_occlusion_query_boolean",      // extensions
+      "opengl es 2.0",   // gl version
       true,    // has alpha
       false,   // has depth
       false,   // has stencil
@@ -7303,6 +7359,7 @@ static void CheckBeginEndQueryBadMemoryFails(
 TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
   InitDecoder(
       "GL_EXT_occlusion_query_boolean",      // extensions
+      "opengl es 2.0",   // gl version
       true,    // has alpha
       false,   // has depth
       false,   // has stencil
@@ -7319,6 +7376,7 @@ TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
 TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
   InitDecoder(
       "GL_EXT_occlusion_query_boolean",      // extensions
+      "opengl es 2.0",   // gl version
       true,    // has alpha
       false,   // has depth
       false,   // has stencil
@@ -7516,6 +7574,7 @@ TEST_F(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
 TEST_F(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
   InitDecoder(
       "GL_ANGLE_depth_texture",      // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       true,    // has depth
       true,    // has stencil
@@ -7568,6 +7627,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
 TEST_F(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
   InitDecoder(
       "GL_ANGLE_depth_texture",      // extensions
+      "opengl es 2.0",   // gl version
       false,   // has alpha
       true,    // has depth
       true,    // has stencil
@@ -7588,6 +7648,7 @@ TEST_F(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
 TEST_F(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
   InitDecoder(
       "GL_ANGLE_depth_texture",      // extensions
+      "opengl es 2.0",   // gl version
       true,    // has alpha
       true,    // has depth
       false,   // has stencil
@@ -7719,6 +7780,7 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
   virtual void SetUp() {
     InitDecoder(
         "GL_OES_vertex_array_object",  // extensions
+        "opengl es 2.0",   // gl version
         false,  // has alpha
         false,  // has depth
         false,  // has stencil
@@ -7869,6 +7931,7 @@ class GLES2DecoderEmulatedVertexArraysOESTest
   virtual void SetUp() {
     InitDecoder(
         "",     // extensions
+        "3.0",  // gl version
         false,  // has alpha
         false,  // has depth
         false,  // has stencil
@@ -8225,6 +8288,7 @@ TEST_F(GLES2DecoderWithShaderTest, UseTexImage) {
 TEST_F(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
   InitDecoder(
       "GL_ARB_texture_rectangle",  // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8265,6 +8329,7 @@ TEST_F(GLES2DecoderManualInitTest, GpuMemoryManagerCHROMIUM) {
 TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   InitDecoder(
       "GL_CHROMIUM_async_pixel_transfers",  // extensions
+      "3.0",   // gl version
       false, false, false,  // has alpha/depth/stencil
       false, false, false,  // request alpha/depth/stencil
       true);   // bind generates resource
@@ -8455,6 +8520,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
 TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
   InitDecoder(
       "GL_CHROMIUM_async_pixel_transfers",  // extensions
+      "3.0",   // gl version
       false, false, false,  // has alpha/depth/stencil
       false, false, false,  // request alpha/depth/stencil
       true);   // bind generates resource
@@ -8558,6 +8624,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerInitialSize) {
   set_memory_tracker(memory_tracker.get());
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8576,6 +8643,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
   set_memory_tracker(memory_tracker.get());
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8612,6 +8680,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
   set_memory_tracker(memory_tracker.get());
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8643,6 +8712,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
   set_memory_tracker(memory_tracker.get());
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       true,    // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8680,6 +8750,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerRenderbufferStorage) {
   set_memory_tracker(memory_tracker.get());
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8719,6 +8790,7 @@ TEST_F(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
   set_memory_tracker(memory_tracker.get());
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8808,6 +8880,7 @@ TEST_F(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
 
 TEST_F(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
   InitDecoder("GL_EXT_discard_framebuffer",  // extensions
+              "opengl es 2.0",               // gl version
               false,                         // has alpha
               false,                         // has depth
               false,                         // has stencil
@@ -8865,6 +8938,7 @@ TEST_F(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
 TEST_F(GLES2DecoderRestoreStateTest, NullPreviousState) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8899,6 +8973,7 @@ TEST_F(GLES2DecoderRestoreStateTest, NullPreviousState) {
 TEST_F(GLES2DecoderRestoreStateTest, WithPreviousState) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8929,6 +9004,7 @@ TEST_F(GLES2DecoderRestoreStateTest, WithPreviousState) {
 TEST_F(GLES2DecoderRestoreStateTest, ActiveUnit1) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -8966,6 +9042,7 @@ TEST_F(GLES2DecoderRestoreStateTest, ActiveUnit1) {
 TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit0) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
@@ -9010,6 +9087,7 @@ TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit0) {
 TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit1) {
   InitDecoder(
       "",      // extensions
+      "3.0",   // gl version
       false,   // has alpha
       false,   // has depth
       false,   // has stencil
