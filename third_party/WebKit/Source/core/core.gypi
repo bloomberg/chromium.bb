@@ -1588,6 +1588,8 @@
             'rendering/break_lines.h',
             'rendering/line/LineWidth.cpp',
             'rendering/line/LineWidth.h',
+            'rendering/line/TrailingObjects.h',
+            'rendering/line/TrailingObjects.cpp',
             'rendering/shapes/BoxShape.cpp',
             'rendering/shapes/BoxShape.h',
             'rendering/shapes/PolygonShape.cpp',

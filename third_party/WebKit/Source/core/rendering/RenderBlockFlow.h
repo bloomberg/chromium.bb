@@ -38,6 +38,7 @@
 
 #include "core/rendering/FloatingObjects.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/line/TrailingObjects.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
