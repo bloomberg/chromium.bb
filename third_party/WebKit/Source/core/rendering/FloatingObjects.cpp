@@ -52,7 +52,6 @@ FloatingObject::FloatingObject(RenderBox* renderer)
 #ifndef NDEBUG
     , m_isInPlacedTree(false)
 #endif
-    , m_isOverhangingOrIntruding(false)
 {
     EFloat type = renderer->style()->floating();
     ASSERT(type != NoFloat);
@@ -74,7 +73,6 @@ FloatingObject::FloatingObject(RenderBox* renderer, Type type, const LayoutRect&
 #ifndef NDEBUG
     , m_isInPlacedTree(false)
 #endif
-    , m_isOverhangingOrIntruding(false)
 {
 }
 
@@ -95,6 +93,7 @@ PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset,
 PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
 {
     OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(renderer(), type(), m_frameRect, m_shouldPaint, m_isDescendant));
+    cloneObject->m_originatingLine = m_originatingLine;
     cloneObject->m_paginationStrut = m_paginationStrut;
     cloneObject->m_isPlaced = m_isPlaced;
     return cloneObject.release();
@@ -173,25 +172,9 @@ void FloatingObjects::clear()
 {
     deleteAllValues(m_set);
     m_set.clear();
-    m_overhangingOrIntrudingSet.clear();
     m_placedFloatsTree.clear();
     m_leftObjectsCount = 0;
     m_rightObjectsCount = 0;
-    markLowestFloatLogicalBottomCacheAsDirty();
-}
-
-void FloatingObjects::clearOverhangingAndIntrudingFloats()
-{
-    FloatingObjectSetIterator end = m_overhangingOrIntrudingSet.end();
-    for (FloatingObjectSetIterator it = m_overhangingOrIntrudingSet.begin(); it != end; ++it) {
-        FloatingObject* floatingObject = *it;
-        decreaseObjectsCount(floatingObject->type());
-        m_set.remove(floatingObject);
-        removePlacedObject(floatingObject);
-        ASSERT(!floatingObject->originatingLine());
-        delete floatingObject;
-    }
-    m_overhangingOrIntrudingSet.clear();
     markLowestFloatLogicalBottomCacheAsDirty();
 }
 
@@ -348,21 +331,10 @@ FloatingObject* FloatingObjects::add(PassOwnPtr<FloatingObject> floatingObject)
     return newObject;
 }
 
-FloatingObject* FloatingObjects::addOverhangingOrIntrudingFloat(PassOwnPtr<FloatingObject> floatingObject)
-{
-    ASSERT(floatingObject->isPlaced());
-
-    floatingObject->setIsOverhangingOrIntruding(true);
-
-    m_overhangingOrIntrudingSet.add(floatingObject.get());
-    return add(floatingObject);
-}
-
 void FloatingObjects::remove(FloatingObject* floatingObject)
 {
     decreaseObjectsCount(floatingObject->type());
     m_set.remove(floatingObject);
-    m_overhangingOrIntrudingSet.remove(floatingObject);
     ASSERT(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
     if (floatingObject->isPlaced())
         removePlacedObject(floatingObject);

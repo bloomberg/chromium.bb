@@ -835,8 +835,6 @@ crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
 
 crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_progress.html [ Pass Failure ]
 
-crbug.com/330242 [ Debug ] fast/block/float/float-selection-delete-crash.html [ Skip ]
-
 crbug.com/334242 [ Win ] inspector-protocol/stylesheet-tracking-restart.html [ Pass Failure ]
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
