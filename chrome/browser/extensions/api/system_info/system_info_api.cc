@@ -37,9 +37,11 @@ namespace system_storage = api::system_storage;
 
 namespace {
 
+#if defined(USE_ASH)
 bool IsDisplayChangedEvent(const std::string& event_name) {
   return event_name == system_display::OnDisplayChanged::kEventName;
 }
+#endif
 
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
@@ -68,7 +70,7 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   // Called from any thread to dispatch the systemInfo event to all extension
   // processes cross multiple profiles.
   void DispatchEvent(const std::string& event_name,
-      scoped_ptr<base::ListValue> args);
+                     scoped_ptr<base::ListValue> args);
 
   // Called to dispatch the systemInfo.display.onDisplayChanged event.
   void OnDisplayChanged();
@@ -80,7 +82,7 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
 };
 
 static base::LazyInstance<SystemInfoEventRouter>::Leaky
-  g_system_info_event_router = LAZY_INSTANCE_INITIALIZER;
+    g_system_info_event_router = LAZY_INSTANCE_INITIALIZER;
 
 // static
 SystemInfoEventRouter* SystemInfoEventRouter::GetInstance() {
@@ -105,11 +107,10 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
     return;
 
   // For systemInfo.display event.
-  if (IsDisplayChangedEvent(event_name)) {
 #if defined(USE_ASH)
+  if (IsDisplayChangedEvent(event_name))
     ash::Shell::GetScreen()->AddObserver(this);
 #endif
-  }
 }
 
 void SystemInfoEventRouter::RemoveEventListener(
@@ -118,17 +119,16 @@ void SystemInfoEventRouter::RemoveEventListener(
 
   std::multiset<std::string>::iterator it =
       watching_event_set_.find(event_name);
-  if (it != watching_event_set_.end())
+  if (it != watching_event_set_.end()) {
     watching_event_set_.erase(it);
+    if (watching_event_set_.count(event_name) > 0)
+      return;
+  }
 
-  if (watching_event_set_.count(event_name) > 0)
-    return;
-
-  if (IsDisplayChangedEvent(event_name)) {
 #if defined(USE_ASH)
+  if (IsDisplayChangedEvent(event_name))
     ash::Shell::GetScreen()->RemoveObserver(this);
 #endif
-  }
 }
 
 void SystemInfoEventRouter::OnRemovableStorageAttached(
@@ -143,8 +143,10 @@ void SystemInfoEventRouter::OnRemovableStorageAttached(
 void SystemInfoEventRouter::OnRemovableStorageDetached(
     const StorageInfo& info) {
   scoped_ptr<base::ListValue> args(new base::ListValue);
-  args->Append(new base::StringValue(StorageMonitor::GetInstance()->
-                   GetTransientIdForDeviceId(info.device_id())));
+  std::string transient_id =
+      StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
+          info.device_id());
+  args->AppendString(transient_id);
 
   DispatchEvent(system_storage::OnDetached::kEventName, args.Pass());
 }
@@ -180,16 +182,14 @@ static base::LazyInstance<ProfileKeyedAPIFactory<SystemInfoAPI> >
 
 // static
 ProfileKeyedAPIFactory<SystemInfoAPI>* SystemInfoAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 SystemInfoAPI::SystemInfoAPI(Profile* profile) : profile_(profile) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, system_storage::OnAttached::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, system_storage::OnDetached::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, system_display::OnDisplayChanged::kEventName);
+  EventRouter* router = ExtensionSystem::Get(profile_)->event_router();
+  router->RegisterObserver(this, system_storage::OnAttached::kEventName);
+  router->RegisterObserver(this, system_storage::OnDetached::kEventName);
+  router->RegisterObserver(this, system_display::OnDisplayChanged::kEventName);
 }
 
 SystemInfoAPI::~SystemInfoAPI() {
