@@ -212,7 +212,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
         *static_cast<const WebGestureEvent*>(&event);
     return HandleGestureFling(gesture_event);
   } else if (event.type == WebInputEvent::GestureFlingCancel) {
-    if (CancelCurrentFling())
+    if (CancelCurrentFling(true))
       return DID_HANDLE;
     else if (!fling_may_be_active_on_main_thread_)
       return DROP_EVENT;
@@ -228,7 +228,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     }
     return DROP_EVENT;
   } else if (WebInputEvent::isKeyboardEventType(event.type)) {
-    CancelCurrentFling();
+    CancelCurrentFling(true);
   } else if (event.type == WebInputEvent::MouseMove) {
     const WebMouseEvent& mouse_event =
         *static_cast<const WebMouseEvent*>(&event);
@@ -346,12 +346,13 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     TRACE_EVENT_INSTANT0("renderer",
                          "InputHandlerProxy::animate::flingOver",
                          TRACE_EVENT_SCOPE_THREAD);
-    CancelCurrentFling();
+    CancelCurrentFling(true);
   }
 }
 
 void InputHandlerProxy::MainThreadHasStoppedFlinging() {
   fling_may_be_active_on_main_thread_ = false;
+  client_->DidStopFlinging();
 }
 
 void InputHandlerProxy::DidOverscroll(const cc::DidOverscrollParams& params) {
@@ -369,7 +370,8 @@ void InputHandlerProxy::DidOverscroll(const cc::DidOverscrollParams& params) {
   client_->DidOverscroll(params);
 }
 
-bool InputHandlerProxy::CancelCurrentFling() {
+bool InputHandlerProxy::CancelCurrentFling(
+    bool send_fling_stopped_notification) {
   bool had_fling_animation = fling_curve_;
   if (had_fling_animation &&
       fling_parameters_.sourceDevice == WebGestureEvent::Touchscreen) {
@@ -388,6 +390,8 @@ bool InputHandlerProxy::CancelCurrentFling() {
   fling_curve_.reset();
   gesture_scroll_on_impl_thread_ = false;
   fling_parameters_ = blink::WebActiveWheelFlingParameters();
+  if (send_fling_stopped_notification && had_fling_animation)
+    client_->DidStopFlinging();
   return had_fling_animation;
 }
 
@@ -423,7 +427,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       // the subarea but then is flung "under" the pointer.
       client_->TransferActiveWheelFlingAnimation(fling_parameters_);
       fling_may_be_active_on_main_thread_ = true;
-      CancelCurrentFling();
+      CancelCurrentFling(false);
       break;
   }
 

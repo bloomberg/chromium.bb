@@ -2561,8 +2561,14 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
   UpdateMaxScrollOffset();
   if (RootScrollLayer()->TotalScrollOffset().y() == 0.f)
     return;
-  RootScrollLayer()->ScrollBy(gfx::ScaleVector2d(
-      scroll, 1.f / active_tree_->total_page_scale_factor()));
+  if (scroll.IsZero()) {
+    // This may happen on the first animation step. Force redraw otherwise
+    // the animation would stop because of no new frames.
+    SetNeedsRedraw();
+  } else {
+    RootScrollLayer()->ScrollBy(gfx::ScaleVector2d(
+        scroll, 1.f / active_tree_->total_page_scale_factor()));
+  }
 }
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,

@@ -2063,6 +2063,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidOverscroll,
                     gfx::Vector2dF /* accumulated_overscroll */,
                     gfx::Vector2dF /* current_fling_velocity */)
 
+// Sent by the compositor when a flinging animation is stopped.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopFlinging)
+
 // Reply to a snapshot request containing whether snapshotting succeeded and the
 // SkBitmap if it succeeded.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_Snapshot,

@@ -486,6 +486,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 msg_is_ok = OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidOverscroll, OnOverscrolled)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopFlinging, OnFlingingStopped)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
@@ -1542,6 +1543,11 @@ void RenderWidgetHostImpl::OnOverscrolled(
     gfx::Vector2dF current_fling_velocity) {
   if (view_)
     view_->OnOverscrolled(accumulated_overscroll, current_fling_velocity);
+}
+
+void RenderWidgetHostImpl::OnFlingingStopped() {
+  if (view_)
+    view_->DidStopFlinging();
 }
 
 void RenderWidgetHostImpl::OnUpdateRect(

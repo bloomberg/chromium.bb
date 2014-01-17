@@ -86,6 +86,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void ResizeCompositingSurface(const gfx::Size&) OVERRIDE {}
   virtual void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                               gfx::Vector2dF current_fling_velocity) OVERRIDE;
+  virtual void DidStopFlinging() OVERRIDE {}
   virtual uint32 RendererFrameNumber() OVERRIDE;
   virtual void DidReceiveRendererFrame() OVERRIDE;
 

@@ -55,4 +55,8 @@ void InputHandlerWrapper::DidOverscroll(const cc::DidOverscrollParams& params) {
   input_handler_manager_->DidOverscroll(routing_id_, params);
 }
 
+void InputHandlerWrapper::DidStopFlinging() {
+  input_handler_manager_->DidStopFlinging(routing_id_);
+}
+
 }  // namespace content

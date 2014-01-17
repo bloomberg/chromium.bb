@@ -52,17 +52,16 @@ void InputEventFilter::DidRemoveInputHandler(int routing_id) {
 
 void InputEventFilter::DidOverscroll(int routing_id,
                                      const cc::DidOverscrollParams& params) {
-  DCHECK(target_loop_->BelongsToCurrentThread());
-
   if (!overscroll_notifications_enabled_)
     return;
 
-  io_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
-                 ViewHostMsg_DidOverscroll(routing_id,
-                                           params.accumulated_overscroll,
-                                           params.current_fling_velocity)));
+  SendMessage(ViewHostMsg_DidOverscroll(routing_id,
+                                        params.accumulated_overscroll,
+                                        params.current_fling_velocity));
+}
+
+void InputEventFilter::DidStopFlinging(int routing_id) {
+  SendMessage(ViewHostMsg_DidStopFlinging(routing_id));
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -154,13 +153,16 @@ void InputEventFilter::SendACK(blink::WebInputEvent::Type type,
                                InputEventAckState ack_result,
                                const ui::LatencyInfo& latency_info,
                                int routing_id) {
+  SendMessage(InputHostMsg_HandleInputEvent_ACK(
+      routing_id, type, ack_result, latency_info));
+}
+
+void InputEventFilter::SendMessage(const IPC::Message& message) {
   DCHECK(target_loop_->BelongsToCurrentThread());
 
   io_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
-                 InputHostMsg_HandleInputEvent_ACK(
-                     routing_id, type, ack_result, latency_info)));
+      base::Bind(&InputEventFilter::SendMessageOnIOThread, this, message));
 }
 
 void InputEventFilter::SendMessageOnIOThread(const IPC::Message& message) {

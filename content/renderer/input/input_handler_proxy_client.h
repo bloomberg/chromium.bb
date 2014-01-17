@@ -34,6 +34,8 @@ class InputHandlerProxyClient {
 
   virtual void DidOverscroll(const cc::DidOverscrollParams& params) = 0;
 
+  virtual void DidStopFlinging() = 0;
+
  protected:
   virtual ~InputHandlerProxyClient() {}
 };

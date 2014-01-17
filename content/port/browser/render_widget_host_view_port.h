@@ -305,6 +305,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                               gfx::Vector2dF current_fling_velocity) = 0;
 
+  virtual void DidStopFlinging() = 0;
+
   virtual void SetPopupType(blink::WebPopupType popup_type) = 0;
   virtual blink::WebPopupType GetPopupType() = 0;
 

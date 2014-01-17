@@ -1359,9 +1359,15 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void unhandledFlingStartEvent() {
-        if (mGestureStateListener != null) {
+    private void onFlingStartEventAck(int ackResult) {
+        if (ackResult == ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS
+                && mGestureStateListener != null) {
             mGestureStateListener.onUnhandledFlingStartEvent();
+        }
+        if (ackResult != ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED) {
+            // No fling happened for the fling start event.
+            // Cancel the fling status set when sending GestureFlingStart.
+            getContentViewClient().onFlingStopped();
         }
     }
 
@@ -1428,6 +1434,7 @@ public class ContentViewCore
                 nativeScrollEnd(mNativeContentViewCore, timeMs);
                 return true;
             case ContentViewGestureHandler.GESTURE_FLING_START:
+                mContentViewClient.onFlingStarted();
                 nativeFlingStart(mNativeContentViewCore, timeMs, x, y,
                         b.getInt(ContentViewGestureHandler.VELOCITY_X, 0),
                         b.getInt(ContentViewGestureHandler.VELOCITY_Y, 0));
@@ -3255,6 +3262,11 @@ public class ContentViewCore
     @CalledByNative
     private boolean shouldBlockMediaRequest(String url) {
         return getContentViewClient().shouldBlockMediaRequest(url);
+    }
+
+    @CalledByNative
+    private void onNativeFlingStopped() {
+        getContentViewClient().onFlingStopped();
     }
 
     private native WebContents nativeGetWebContentsAndroid(long nativeContentViewCoreImpl);

@@ -49,6 +49,7 @@ class CONTENT_EXPORT InputEventFilter
   virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
   virtual void DidOverscroll(int routing_id,
                              const cc::DidOverscrollParams& params) OVERRIDE;
+  virtual void DidStopFlinging(int routing_id) OVERRIDE;
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
@@ -66,6 +67,7 @@ class CONTENT_EXPORT InputEventFilter
                InputEventAckState ack_result,
                const ui::LatencyInfo& latency_info,
                int routing_id);
+  void SendMessage(const IPC::Message& message);
   void SendMessageOnIOThread(const IPC::Message& message);
 
   scoped_refptr<base::MessageLoopProxy> main_loop_;

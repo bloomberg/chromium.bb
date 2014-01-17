@@ -63,7 +63,7 @@ class CONTENT_EXPORT InputHandlerProxy
   bool TouchpadFlingScroll(const blink::WebFloatSize& increment);
 
   // Returns true if we actually had an active fling to cancel.
-  bool CancelCurrentFling();
+  bool CancelCurrentFling(bool send_fling_stopped_notification);
 
   scoped_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to

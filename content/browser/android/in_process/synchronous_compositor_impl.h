@@ -82,6 +82,7 @@ class SynchronousCompositorImpl
 
   void SetInputHandler(cc::InputHandler* input_handler);
   void DidOverscroll(const cc::DidOverscrollParams& params);
+  void DidStopFlinging();
 
  private:
   explicit SynchronousCompositorImpl(WebContents* contents);

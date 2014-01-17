@@ -179,4 +179,18 @@ public class ContentViewClient {
     public boolean shouldBlockMediaRequest(String url) {
         return false;
     }
+
+    /**
+     * Called when a fling start event is sent. Note: onFlingStopped() of the previous
+     * fling may be called after onFlingStarted() of the current fling, so if the
+     * client wants to manage the fling status, a counter should be used.
+     */
+    public void onFlingStarted() {
+    }
+
+    /**
+     * Called when a fling is stopped, or a fling start event didn't trigger a fling.
+     */
+    public void onFlingStopped() {
+    }
 }

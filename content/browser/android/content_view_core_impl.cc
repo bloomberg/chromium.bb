@@ -505,12 +505,13 @@ void ContentViewCoreImpl::ConfirmTouchEvent(InputEventAckState ack_result) {
                                          static_cast<jint>(ack_result));
 }
 
-void ContentViewCoreImpl::UnhandledFlingStartEvent() {
+void ContentViewCoreImpl::OnFlingStartEventAck(InputEventAckState ack_result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  Java_ContentViewCore_unhandledFlingStartEvent(env, j_obj.obj());
+  Java_ContentViewCore_onFlingStartEventAck(env, j_obj.obj(),
+                                            static_cast<jint>(ack_result));
 }
 
 void ContentViewCoreImpl::OnScrollUpdateGestureConsumed() {
@@ -676,6 +677,14 @@ bool ContentViewCoreImpl::ShouldBlockMediaRequest(const GURL& url) {
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
   return Java_ContentViewCore_shouldBlockMediaRequest(env, obj.obj(),
                                                       j_url.obj());
+}
+
+void ContentViewCoreImpl::DidStopFlinging() {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null())
+    Java_ContentViewCore_onNativeFlingStopped(env, obj.obj());
 }
 
 gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {

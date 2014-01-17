@@ -178,6 +178,13 @@ void SynchronousCompositorImpl::DidOverscroll(
   }
 }
 
+void SynchronousCompositorImpl::DidStopFlinging() {
+  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      contents_->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->DidStopFlinging();
+}
+
 void SynchronousCompositorImpl::SetContinuousInvalidate(bool enable) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)

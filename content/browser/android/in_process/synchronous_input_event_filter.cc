@@ -76,4 +76,13 @@ void SynchronousInputEventFilter::DidOverscroll(
     compositor->DidOverscroll(params);
 }
 
+void SynchronousInputEventFilter::DidStopFlinging(int routing_id) {
+  // The SynchronusCompositorImpl can be NULL if the WebContents that it's
+  // bound to has already been deleted.
+  SynchronousCompositorImpl* compositor =
+      SynchronousCompositorImpl::FromRoutingID(routing_id);
+  if (compositor)
+    compositor->DidStopFlinging();
+}
+
 }  // namespace content

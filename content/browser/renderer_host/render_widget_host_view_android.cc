@@ -1076,9 +1076,8 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
       ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
     content_view_core_->OnScrollUpdateGestureConsumed();
   }
-  if (gesture_event_type == blink::WebInputEvent::GestureFlingStart &&
-      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
-    content_view_core_->UnhandledFlingStartEvent();
+  if (gesture_event_type == blink::WebInputEvent::GestureFlingStart) {
+    content_view_core_->OnFlingStartEventAck(ack_result);
   }
 }
 
@@ -1296,6 +1295,11 @@ void RenderWidgetHostViewAndroid::OnOverscrolled(
                                          current_fling_velocity)) {
     content_view_core_->SetNeedsAnimate();
   }
+}
+
+void RenderWidgetHostViewAndroid::DidStopFlinging() {
+  if (content_view_core_)
+    content_view_core_->DidStopFlinging();
 }
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(

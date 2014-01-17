@@ -270,7 +270,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   bool HasFocus();
   void ConfirmTouchEvent(InputEventAckState ack_result);
-  void UnhandledFlingStartEvent();
+  void OnFlingStartEventAck(InputEventAckState ack_result);
   void OnScrollUpdateGestureConsumed();
   void HasTouchEventHandlers(bool need_touch_events);
   void OnSelectionChanged(const std::string& text);
@@ -302,6 +302,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Returns True if the given media should be blocked to load.
   bool ShouldBlockMediaRequest(const GURL& url);
+
+  void DidStopFlinging();
 
   // --------------------------------------------------------------------------
   // Methods called from native code
