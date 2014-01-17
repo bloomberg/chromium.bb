@@ -1806,8 +1806,6 @@ void WebFrameImpl::resetMatchCount()
 
 void WebFrameImpl::sendOrientationChangeEvent(int orientation)
 {
-    ASSERT(!RuntimeEnabledFeatures::orientationEventEnabled());
-
     if (frame())
         frame()->sendOrientationChangeEvent(orientation);
 }

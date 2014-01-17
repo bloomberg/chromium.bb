@@ -615,7 +615,7 @@ bool DOMWindow::isCurrentlyDisplayedInFrame() const
 
 int DOMWindow::orientation() const
 {
-    ASSERT(!RuntimeEnabledFeatures::orientationEventEnabled());
+    ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
 
     if (!m_frame)
         return 0;
