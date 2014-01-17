@@ -17,6 +17,7 @@
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_ui_component.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -29,24 +30,31 @@ namespace addressinput {
 
 namespace {
 
-// Returns testing::AssertionSuccess if the |components| are valid. Uses
-// |region_code| in test failure messages.
+// Returns testing::AssertionSuccess if the |components| are valid.
 testing::AssertionResult ComponentsAreValid(
     const std::vector<AddressUiComponent>& components) {
   if (components.empty()) {
     return testing::AssertionFailure() << "no components";
   }
 
+  std::set<AddressField> fields;
   for (std::vector<AddressUiComponent>::const_iterator
-       component_it = components.begin();
-       component_it != components.end(); ++component_it) {
+           component_it = components.begin();
+       component_it != components.end();
+       ++component_it) {
     static const AddressField kMinAddressField = COUNTRY;
     static const AddressField kMaxAddressField = RECIPIENT;
     if (component_it->field < kMinAddressField ||
         component_it->field > kMaxAddressField) {
-      return testing::AssertionFailure() << "unexpected field "
+      return testing::AssertionFailure() << "unexpected input field "
                                          << component_it->field;
     }
+
+    if (fields.find(component_it->field) != fields.end()) {
+      return testing::AssertionFailure() << "duplicate input field "
+                                         << component_it->field;
+    }
+    fields.insert(component_it->field);
 
     if (component_it->name_id == INVALID_MESSAGE_ID) {
       return testing::AssertionFailure() << "invalid field name_id for field "
@@ -81,6 +89,45 @@ INSTANTIATE_TEST_CASE_P(
 TEST_F(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
   EXPECT_TRUE(BuildComponents("INVALID-REGION-CODE").empty());
 }
+
+struct SeparatorData {
+  SeparatorData(const std::string& language_code,
+                const std::string& country_code,
+                const std::string& compact_line_separator)
+      : language_code(language_code),
+        country_code(country_code),
+        compact_line_separator(compact_line_separator) {}
+
+  ~SeparatorData() {}
+
+  std::string language_code;
+  std::string country_code;
+  std::string compact_line_separator;
+};
+
+// Tests for compact line separator.
+class CompactLineSeparatorTest
+  : public testing::TestWithParam<SeparatorData> {};
+
+TEST_P(CompactLineSeparatorTest, BasicTest) {
+  EXPECT_EQ(GetParam().compact_line_separator,
+            GetCompactAddressLinesSeparator(GetParam().language_code,
+                                            GetParam().country_code));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    CompactLineSeparators, CompactLineSeparatorTest,
+    testing::Values(
+        SeparatorData("", "AD", ", "),
+        SeparatorData("", "XX", ", "),
+        SeparatorData("ja", "JP", ""),
+        SeparatorData("zh", "HK", ""),
+        SeparatorData("zh-hans", "CN", ""),
+        SeparatorData("ar", "YE", "، "),
+        SeparatorData("ko", "KR", " "),
+        SeparatorData("th", "TH", " "),
+        SeparatorData("en", "US", ", ")));
+
 
 }  // namespace
 

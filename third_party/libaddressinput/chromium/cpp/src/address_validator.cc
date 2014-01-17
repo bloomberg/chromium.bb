@@ -115,7 +115,7 @@ class AddressValidatorImpl : public AddressValidator {
              field_it = country_rule.GetRequired().begin();
          field_it != country_rule.GetRequired().end();
          ++field_it) {
-      if (address.GetField(*field_it).empty() &&
+      if (address.GetFieldValue(*field_it).empty() &&
           FilterAllows(
               filter, *field_it, AddressProblem::MISSING_REQUIRED_FIELD)) {
         problems->push_back(AddressProblem(
@@ -146,7 +146,7 @@ class AddressValidatorImpl : public AddressValidator {
       // Validate the field values, e.g. state names in US.
       AddressField sub_field_type =
           static_cast<AddressField>(ruleset->field() + 1);
-      const std::string& sub_field = address.GetField(sub_field_type);
+      const std::string& sub_field = address.GetFieldValue(sub_field_type);
       const std::vector<std::string>& sub_keys = rule.GetSubKeys();
       if (!sub_field.empty() &&
           !sub_keys.empty() &&

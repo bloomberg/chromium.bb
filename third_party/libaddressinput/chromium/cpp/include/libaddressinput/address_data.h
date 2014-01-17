@@ -29,19 +29,28 @@ namespace addressinput {
 
 // Stores an address. Sample usage:
 //    AddressData address;
-//    address.country_code = "US";
+//    address.recipient = "Chen-Kang Yang";
+//    address.organization = "Google";
 //    address.address_lines.push_back("1098 Alta Ave");
 //    address.administrative_area = "CA";
 //    address.locality = "Mountain View";
 //    address.postal_code = "94043";
-//    address.organization = "Google";
-//    address.recipient = "Chen-Kang Yang";
+//    address.country_code = "US";
 //    address.language_code = "en";
 //    Process(address);
 struct AddressData {
+  // Clears |lines| and populates it with the lines of the address as they
+  // should appear on an envelope for |country_code|. The |lines| parameter
+  // should not be NULL.
+  //
+  // If there're no address formatting rules for |country_code|, then the
+  // default rules are used:
+  // https://i18napis.appspot.com/ssl-address/data/ZZ
+  void FormatForDisplay(std::vector<std::string>* lines) const;
+
   // Returns the value of the |field|. The parameter should not be
   // STREET_ADDRESS, which comprises multiple fields.
-  const std::string& GetField(AddressField field) const;
+  const std::string& GetFieldValue(AddressField field) const;
 
   // The BCP 47 language code used to guide how the address is formatted for
   // display. The same address may have different representations in different

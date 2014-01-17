@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// The data in this file will be automatically generated. For now, the data
-// comes from:
+// The data in this file will be automatically generated. For now, the address
+// data comes from:
 //
 // https://code.google.com/p/libaddressinput/source/browse/trunk/java/src/com/android/i18n/addressinput/RegionDataConstants.java?r=137
+//
+// The language-to-script and country-to-script mapping is loosely based on:
+//
+// http://unicode.org/cldr/trac/browser/tags/release-24/common/supplemental/supplementalData.xml
 
 #include "region_data_constants.h"
 
@@ -30,10 +34,116 @@ namespace addressinput {
 
 namespace {
 
+enum Script {
+  ARAB,
+  HANG,
+  HANS,
+  HANT,
+  JPAN,
+  THAI,
+  OTHER
+};
+
+Script GetCountryScript(const std::string& country_code) {
+  if (country_code == "JP") {
+    return JPAN;
+  } else if (country_code == "HK" ||
+             country_code == "MO" ||
+             country_code == "TW") {
+    return HANT;
+  } else if (country_code == "CN") {
+    return HANS;
+  } else if (country_code == "AE" ||
+             country_code == "AF" ||
+             country_code == "BH" ||
+             country_code == "DZ" ||
+             country_code == "EG" ||
+             country_code == "EH" ||
+             country_code == "IQ" ||
+             country_code == "IR" ||
+             country_code == "JO" ||
+             country_code == "KM" ||
+             country_code == "KW" ||
+             country_code == "LB" ||
+             country_code == "LY" ||
+             country_code == "MA" ||
+             country_code == "MR" ||
+             country_code == "OM" ||
+             country_code == "PK" ||
+             country_code == "PS" ||
+             country_code == "QA" ||
+             country_code == "SA" ||
+             country_code == "SD" ||
+             country_code == "SY" ||
+             country_code == "TN" ||
+             country_code == "YE") {
+    return ARAB;
+  } else if (country_code == "KP" ||
+             country_code == "KR") {
+    return HANG;
+  } else if (country_code == "TH") {
+    return THAI;
+  }
+  return OTHER;
+}
+
+Script GetLanguageScript(const std::string& language_code) {
+  if (language_code == "ja") {
+    return JPAN;
+  } else if (language_code == "zh" ||
+             language_code == "zh-hant") {
+    return HANT;
+  } else if (language_code == "zh-hans") {
+    return HANS;
+  } else if (language_code == "ar" ||
+             language_code == "cjm" ||
+             language_code == "doi" ||
+             language_code == "fa" ||
+             language_code == "lah" ||
+             language_code == "prd" ||
+             language_code == "ps" ||
+             language_code == "swb" ||
+             language_code == "ug" ||
+             language_code == "ur") {
+    return ARAB;
+  } else if (language_code == "ko") {
+    return HANG;
+  } else if (language_code == "kdt" ||
+             language_code == "lcp" ||
+             language_code == "lwl" ||
+             language_code == "th" ||
+             language_code == "tts") {
+    return THAI;
+  }
+  return OTHER;
+}
+
+const std::string& GetCompactLineSeparator(Script script) {
+  static const std::string kEmptyString;
+  static const std::string kArabicSeparator =  "، ";
+  static const std::string kSpace = " ";
+  static const std::string kCommaAndSpace = ", ";
+  switch (script) {
+    case JPAN:
+    case HANT:
+    case HANS:
+      return kEmptyString;
+    case ARAB:
+      return kArabicSeparator;
+    case HANG:
+    case THAI:
+      return kSpace;
+    default:
+      return kCommaAndSpace;
+  }
+}
+
 std::map<std::string, std::string> InitRegionData() {
   std::map<std::string, std::string> region_data;
   region_data.insert(std::make_pair("AD", "{"
       "\"name\":\"ANDORRA\","
+      "\"lang\":\"ca\","
+      "\"languages\":\"ca\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %S\","
       "\"state_name_type\":\"parish\""
       "}"));
@@ -55,6 +165,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("AM", "{"
       "\"name\":\"ARMENIA\","
+      "\"lang\":\"hy\","
+      "\"languages\":\"hy\","
       "\"fmt\":\"%N%n%O%n%A%n%Z%n%C%n%S\""
       "}"));
   region_data.insert(std::make_pair("AN", "{"
@@ -68,6 +180,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("AR", "{"
       "\"name\":\"ARGENTINA\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C%n%S\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -83,6 +197,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("AU", "{"
       "\"name\":\"AUSTRALIA\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%O%n%N%n%A%n%C %S %Z\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -148,11 +264,15 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("BR", "{"
       "\"name\":\"BRAZIL\","
+      "\"lang\":\"pt\","
+      "\"languages\":\"pt\","
       "\"fmt\":\"%O%n%N%n%A%n%C-%S%n%Z\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("BS", "{"
       "\"name\":\"BAHAMAS\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C, %S\","
       "\"state_name_type\":\"island\""
       "}"));
@@ -174,6 +294,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("CA", "{"
       "\"name\":\"CANADA\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en~fr\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\""
       "}"));
   region_data.insert(std::make_pair("CC", "{"
@@ -192,6 +314,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("CH", "{"
       "\"name\":\"SWITZERLAND\","
+      "\"lang\":\"de\","
+      "\"languages\":\"de~fr~it\","
       "\"fmt\":\"%O%n%N%n%A%nCH-%Z %C\""
       "}"));
   region_data.insert(std::make_pair("CI", "{"
@@ -204,6 +328,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("CL", "{"
       "\"name\":\"CHILE\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C%n%S\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -212,6 +338,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("CN", "{"
       "\"name\":\"P.R. CHINA\","
+      "\"lang\":\"zh-hans\","
+      "\"languages\":\"zh-hans\","
       "\"fmt\":\"%Z%n%S%C%D%n%A%n%O%n%N\""
       "}"));
   region_data.insert(std::make_pair("CO", "{"
@@ -228,6 +356,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("CV", "{"
       "\"name\":\"CAPE VERDE\","
+      "\"lang\":\"pt\","
+      "\"languages\":\"pt\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C%n%S\","
       "\"state_name_type\":\"island\""
       "}"));
@@ -285,6 +415,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("ES", "{"
       "\"name\":\"SPAIN\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\""
       "}"));
   region_data.insert(std::make_pair("ET", "{"
@@ -391,6 +523,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("HK", "{"
       "\"name\":\"HONG KONG\","
+      "\"lang\":\"zh\","
+      "\"languages\":\"zh\","
       "\"fmt\":\"%S%n%A%n%O%n%N\","
       "\"state_name_type\":\"area\""
       "}"));
@@ -420,6 +554,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("IE", "{"
       "\"name\":\"IRELAND\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C%n%S\","
       "\"state_name_type\":\"county\""
       "}"));
@@ -433,6 +569,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("IN", "{"
       "\"name\":\"INDIA\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C %Z%n%S\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -450,6 +588,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("IT", "{"
       "\"name\":\"ITALY\","
+      "\"lang\":\"it\","
+      "\"languages\":\"it\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\""
       "}"));
   region_data.insert(std::make_pair("JE", "{"
@@ -458,6 +598,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("JM", "{"
       "\"name\":\"JAMAICA\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C%n%S %X\","
       "\"state_name_type\":\"parish\""
       "}"));
@@ -467,6 +609,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("JP", "{"
       "\"name\":\"JAPAN\","
+      "\"lang\":\"ja\","
+      "\"languages\":\"ja\","
       "\"fmt\":\"\xE3\x80\x92%Z%n%S%C%n%A%n%O%n%N\","  // \xE3\x80\x92 is 〒.
       "\"state_name_type\":\"prefecture\""
       "}"));
@@ -492,11 +636,15 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("KN", "{"
       "\"name\":\"SAINT KITTS AND NEVIS\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C, %S\","
       "\"state_name_type\":\"island\""
       "}"));
   region_data.insert(std::make_pair("KR", "{"
       "\"name\":\"KOREA (REP.)\","
+      "\"lang\":\"ko\","
+      "\"languages\":\"ko\","
       "\"fmt\":\"%S %C%D%n%A%n%O%n%N%nSEOUL %Z\","
       "\"state_name_type\":\"do_si\""
       "}"));
@@ -506,6 +654,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("KY", "{"
       "\"name\":\"CAYMAN ISLANDS\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%S\","
       "\"state_name_type\":\"island\""
       "}"));
@@ -598,6 +748,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("MO", "{"
       "\"name\":\"MACAO\","
+      "\"lang\":\"zh-hant\","
+      "\"languages\":\"zh-hant\","
       "\"fmt\":\"%A%n%O%n%N\""
       "}"));
   region_data.insert(std::make_pair("MP", "{"
@@ -634,11 +786,15 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("MX", "{"
       "\"name\":\"MEXICO\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C, %S\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("MY", "{"
       "\"name\":\"MALAYSIA\","
+      "\"lang\":\"ms\","
+      "\"languages\":\"ms\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C, %S\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -663,11 +819,15 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("NG", "{"
       "\"name\":\"NIGERIA\","
+      "\"lang\":\"fr\","
+      "\"languages\":\"fr\","
       "\"fmt\":\"%N%n%O%n%A%n%C %Z%n%S\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("NI", "{"
       "\"name\":\"NICARAGUA\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z%n%C, %S\","
       "\"state_name_type\":\"department\""
       "}"));
@@ -685,6 +845,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("NR", "{"
       "\"name\":\"NAURU CENTRAL PACIFIC\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%S\","
       "\"state_name_type\":\"district\""
       "}"));
@@ -828,10 +990,14 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("SO", "{"
       "\"name\":\"SOMALIA\","
+      "\"lang\":\"so\","
+      "\"languages\":\"so\","
       "\"fmt\":\"%N%n%O%n%A%n%C, %S %Z\""
       "}"));
   region_data.insert(std::make_pair("SR", "{"
       "\"name\":\"SURINAME\","
+      "\"lang\":\"nl\","
+      "\"languages\":\"nl\","
       "\"fmt\":\"%N%n%O%n%A%n%C %X%n%S\""
       "}"));
   region_data.insert(std::make_pair("ST", "{"
@@ -840,6 +1006,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("SV", "{"
       "\"name\":\"EL SALVADOR\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z-%C%n%S\""
       "}"));
   region_data.insert(std::make_pair("SZ", "{"
@@ -861,6 +1029,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("TH", "{"
       "\"name\":\"THAILAND\","
+      "\"lang\":\"th\","
+      "\"languages\":\"th\","
       "\"fmt\":\"%N%n%O%n%A%n%C%n%S %Z\""
       "}"));
   region_data.insert(std::make_pair("TJ", "{"
@@ -893,11 +1063,15 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("TV", "{"
       "\"name\":\"TUVALU\","
+      "\"lang\":\"tyv\","
+      "\"languages\":\"tyv\","
       "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%S\","
       "\"state_name_type\":\"island\""
       "}"));
   region_data.insert(std::make_pair("TW", "{"
       "\"name\":\"TAIWAN\","
+      "\"lang\":\"zh-hant\","
+      "\"languages\":\"zh-hant\","
       "\"fmt\":\"%Z%n%S%C%n%A%n%O%n%N\","
       "\"state_name_type\":\"county\""
       "}"));
@@ -919,12 +1093,16 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("US", "{"
       "\"name\":\"UNITED STATES\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("UY", "{"
       "\"name\":\"URUGUAY\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\""
       "}"));
   region_data.insert(std::make_pair("UZ", "{"
@@ -940,6 +1118,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("VE", "{"
       "\"name\":\"VENEZUELA\","
+      "\"lang\":\"es\","
+      "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%C %Z, %S\""
       "}"));
   region_data.insert(std::make_pair("VG", "{"
@@ -953,6 +1133,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("VN", "{"
       "\"name\":\"VIET NAM\","
+      "\"lang\":\"vi\","
+      "\"languages\":\"vi\","
       "\"fmt\":\"%N%n%O%n%A%n%C%n%S\""
       "}"));
   region_data.insert(std::make_pair("VU", "{"
@@ -1035,6 +1217,18 @@ const std::string& RegionDataConstants::GetDefaultRegionData() {
       "\"zip_name_type\":\"postal\""
       "}");
   return kDefaultRegionData;
+}
+
+// static
+const std::string& RegionDataConstants::GetLanguageCompactLineSeparator(
+    const std::string& language_code) {
+  return GetCompactLineSeparator(GetLanguageScript(language_code));
+}
+
+// static
+const std::string& RegionDataConstants::GetCountryCompactLineSeparator(
+    const std::string& country_code) {
+  return GetCompactLineSeparator(GetCountryScript(country_code));
 }
 
 }  // namespace addressinput

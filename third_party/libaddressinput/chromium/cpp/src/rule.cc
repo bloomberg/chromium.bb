@@ -68,30 +68,56 @@ bool ParseToken(char c, AddressField* field) {
   }
 }
 
-// Clears |fields|, parses |format|, and adds the format address fields to
-// |fields|.
+// Clears |lines|, parses |format|, and adds the address fields and literals to
+// |lines|.
 //
-// For example, the address format in Switzerland is "%O%n%N%n%A%nAX-%Z
-// %C%nÅLAND". It includes the allowed fields prefixed with %, newlines denoted
-// %n, and the extra text that should be included on an envelope. This function
-// parses only the tokens denoted % to determine how an address input form
-// should be laid out.
-//
-// The format string "%O%n%N%n%A%nAX-%Z%C%nÅLAND" is parsed into
-// {{ORGANIZATION}, {RECIPIENT}, {STREET_ADDRESS}, {POSTAL_CODE, LOCALITY}, {}}.
+// For example, the address format in Finland is "%O%n%N%n%A%nAX-%Z %C%nÅLAND".
+// It includes the allowed fields prefixed with %, newlines denoted %n, and the
+// extra text that should be included on an envelope. It is parsed into:
+// {
+//     {ORGANIZATION},
+//     {RECIPIENT},
+//     {STREET_ADDRESS},
+//     {"AX-", POSTAL_CODE, " ", LOCALITY},
+//     {"ÅLAND"}
+// }
 void ParseAddressFieldsFormat(const std::string& format,
-                              std::vector<std::vector<AddressField> >* fields) {
-  assert(fields != NULL);
-  fields->clear();
-  fields->resize(1);
+                              std::vector<std::vector<FormatElement> >* lines) {
+  assert(lines != NULL);
+  lines->clear();
+  lines->resize(1);
+
   std::vector<std::string> format_parts;
   SplitString(format, '%', &format_parts);
+
+  // If the address format starts with a literal, then it will be in the first
+  // element of |format_parts|. This literal does not begin with % and should
+  // not be parsed as a token.
+  if (!format_parts.empty() && !format_parts[0].empty()) {
+    lines->back().push_back(FormatElement(format_parts[0]));
+  }
+
+  // The rest of the elements in |format_parts| begin with %.
   for (size_t i = 1; i < format_parts.size(); ++i) {
+    if (format_parts[i].empty()) {
+      continue;
+    }
+
+    // The first character after % denotes a field or a newline token.
+    const char control_character = format_parts[i][0];
+
+    // The rest of the string after the token is a literal.
+    const std::string literal = format_parts[i].substr(1);
+
     AddressField field = COUNTRY;
-    if (ParseToken(format_parts[i][0], &field)) {
-      fields->back().push_back(field);
-    } else if (format_parts[i][0] == 'n') {
-      fields->push_back(std::vector<AddressField>());
+    if (ParseToken(control_character, &field)) {
+      lines->back().push_back(FormatElement(field));
+    } else if (control_character == 'n') {
+      lines->push_back(std::vector<FormatElement>());
+    }
+
+    if (!literal.empty()) {
+      lines->back().push_back(FormatElement(literal));
     }
   }
 }
@@ -172,6 +198,20 @@ int GetPostalCodeMessageId(const std::string& postal_code_type, bool error) {
 }
 
 }  // namespace
+
+FormatElement::FormatElement(AddressField field)
+    : field(field), literal() {}
+
+FormatElement::FormatElement(const std::string& literal)
+    : field(COUNTRY), literal(literal) {
+  assert(!literal.empty());
+}
+
+FormatElement::~FormatElement() {}
+
+bool FormatElement::operator==(const FormatElement& other) const {
+  return field == other.field && literal == other.literal;
+}
 
 Rule::Rule()
     : format_(),

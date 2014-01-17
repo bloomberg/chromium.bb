@@ -30,6 +30,12 @@ const std::vector<std::string>& GetRegionCodes();
 // on error.
 std::vector<AddressUiComponent> BuildComponents(const std::string& region_code);
 
+// Returns the string to use as a separator between lines when displaying the
+// address in a compact form. For example, returns ", " for en-US.
+const std::string& GetCompactAddressLinesSeparator(
+    const std::string& language_code,
+    const std::string& country_code);
+
 }  // namespace addressinput
 }  // namespace i18n
 

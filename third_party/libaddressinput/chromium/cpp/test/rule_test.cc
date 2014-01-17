@@ -30,6 +30,7 @@ namespace {
 using i18n::addressinput::AddressField;
 using i18n::addressinput::ADMIN_AREA;
 using i18n::addressinput::COUNTRY;
+using i18n::addressinput::FormatElement;
 using i18n::addressinput::LOCALITY;
 using i18n::addressinput::ORGANIZATION;
 using i18n::addressinput::POSTAL_CODE;
@@ -38,9 +39,11 @@ using i18n::addressinput::RegionDataConstants;
 using i18n::addressinput::Rule;
 using i18n::addressinput::STREET_ADDRESS;
 
-bool IsFormatEmpty(const std::vector<std::vector<AddressField> >& format) {
-  for (std::vector<std::vector<AddressField> >::const_iterator
-       it = format.begin(); it != format.end(); ++it) {
+bool IsFormatEmpty(const std::vector<std::vector<FormatElement> >& format) {
+  for (std::vector<std::vector<FormatElement> >::const_iterator
+           it = format.begin();
+       it != format.end();
+       ++it) {
     if (!it->empty()) {
       return false;
     }
@@ -188,13 +191,22 @@ TEST(RuleTest, ParseFormatWithNewLines) {
   Rule rule;
   ASSERT_TRUE(
       rule.ParseSerializedRule("{\"fmt\":\"%O%n%N%n%A%nAX-%Z %C%nÅLAND\"}"));
-  std::vector<std::vector<AddressField> > expected_format;
-  expected_format.push_back(std::vector<AddressField>(1, ORGANIZATION));
-  expected_format.push_back(std::vector<AddressField>(1, RECIPIENT));
-  expected_format.push_back(std::vector<AddressField>(1, STREET_ADDRESS));
-  expected_format.push_back(std::vector<AddressField>(1, POSTAL_CODE));
-  expected_format.back().push_back(LOCALITY);
-  expected_format.push_back(std::vector<AddressField>());
+
+  std::vector<std::vector<FormatElement> > expected_format;
+  expected_format.push_back(
+      std::vector<FormatElement>(1, FormatElement(ORGANIZATION)));
+  expected_format.push_back(
+      std::vector<FormatElement>(1, FormatElement(RECIPIENT)));
+  expected_format.push_back(
+      std::vector<FormatElement>(1, FormatElement(STREET_ADDRESS)));
+  expected_format.push_back(
+      std::vector<FormatElement>(1, FormatElement("AX-")));
+  expected_format.back().push_back(FormatElement(POSTAL_CODE));
+  expected_format.back().push_back(FormatElement(" "));
+  expected_format.back().push_back(FormatElement(LOCALITY));
+  expected_format.push_back(
+      std::vector<FormatElement>(1, FormatElement("ÅLAND")));
+
   EXPECT_EQ(expected_format, rule.GetFormat());
 }
 
@@ -413,16 +425,52 @@ class RuleParseTest : public testing::TestWithParam<std::string> {
 TEST_P(RuleParseTest, ConsecutiveLinesWithMultipleFields) {
   ASSERT_TRUE(rule_.ParseSerializedRule(GetData()));
   bool previous_line_has_single_field = true;
-  for (std::vector<std::vector<AddressField> >::const_iterator
-       line_it = rule_.GetFormat().begin();
+  for (std::vector<std::vector<FormatElement> >::const_iterator
+           line_it = rule_.GetFormat().begin();
        line_it != rule_.GetFormat().end();
        ++line_it) {
-    if (line_it->empty()) {
+    int num_fields = 0;
+    for (std::vector<FormatElement>::const_iterator
+             element_it = line_it->begin();
+         element_it != line_it->end();
+         ++element_it) {
+      if (element_it->IsField()) {
+        ++num_fields;
+      }
+    }
+    if (num_fields == 0) {
       continue;
     }
-    ASSERT_TRUE(line_it->size() == 1 || previous_line_has_single_field)
+    ASSERT_TRUE(num_fields == 1 || previous_line_has_single_field)
         << GetParam() << ": " << GetData();
-    previous_line_has_single_field = line_it->size() == 1;
+    previous_line_has_single_field = num_fields == 1;
+  }
+}
+
+// Verifies that a street line is surrounded by either newlines or spaces. A
+// different format will result in incorrect behavior in
+// AddressData::BuildDisplayLines().
+TEST_P(RuleParseTest, StreetAddressSurroundingElements) {
+  ASSERT_TRUE(rule_.ParseSerializedRule(GetData()));
+  for (std::vector<std::vector<FormatElement> >::const_iterator
+           line_it = rule_.GetFormat().begin();
+       line_it != rule_.GetFormat().end();
+       ++line_it) {
+    for (size_t i = 0; i < line_it->size(); ++i) {
+      const FormatElement& element = line_it->at(i);
+      if (element.IsField() && element.field == STREET_ADDRESS) {
+        bool surrounded_by_newlines = line_it->size() == 1;
+        bool surrounded_by_spaces =
+            i > 0 &&
+            i < line_it->size() - 1 &&
+            !line_it->at(i - 1).IsField() &&
+            line_it->at(i - 1).literal == " " &&
+            !line_it->at(i + 1).IsField() &&
+            line_it->at(i + 1).literal == " ";
+        EXPECT_TRUE(surrounded_by_newlines || surrounded_by_spaces)
+            << GetParam() << ": " << GetData();
+      }
+    }
   }
 }
 

@@ -26,7 +26,34 @@
 namespace i18n {
 namespace addressinput {
 
-// Stores the validation rules. Sample usage:
+// Stores an element in the format of an address as it should be displayed on an
+// envelope. The element can be either a literal string, like " ", or a field,
+// like ADMIN_AREA.
+struct FormatElement {
+  // Builds an element of address format for |field|.
+  explicit FormatElement(AddressField field);
+
+  // Builds an element of address format for |literal|. The literal should not
+  // be empty.
+  explicit FormatElement(const std::string& literal);
+
+  ~FormatElement();
+
+  // Returns true if this is a field element.
+  bool IsField() const { return literal.empty(); }
+
+  bool operator==(const FormatElement& other) const;
+
+  // The field for this element in address format. Should be used only if
+  // |literal| is an empty string.
+  AddressField field;
+
+  // The literal string for this element in address format. If empty, then this
+  // is a field element.
+  std::string literal;
+};
+
+// Stores the validation, input, and display rules for an address. Sample usage:
 //    Rule rule;
 //    if (rule.ParseSerializedRule("{\"fmt\": \"%A%n%C%S %Z\"}")) {
 //      Process(rule.GetFormat());
@@ -48,8 +75,8 @@ class Rule {
   // format (JSON dictionary).
   bool ParseSerializedRule(const std::string& serialized_rule);
 
-  // Returns the address format for this rule.
-  const std::vector<std::vector<AddressField> >& GetFormat() const {
+  // Returns the format of the address as it should appear on an envelope.
+  const std::vector<std::vector<FormatElement> >& GetFormat() const {
     return format_;
   }
 
@@ -98,7 +125,7 @@ class Rule {
   int GetInvalidFieldMessageId(AddressField field) const;
 
  private:
-  std::vector<std::vector<AddressField> > format_;
+  std::vector<std::vector<FormatElement> > format_;
   std::vector<AddressField> required_;
   std::vector<std::string> sub_keys_;
   std::vector<std::string> languages_;

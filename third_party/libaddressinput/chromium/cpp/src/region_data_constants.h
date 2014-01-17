@@ -26,6 +26,12 @@ class RegionDataConstants {
   static const std::vector<std::string>& GetRegionCodes();
   static const std::string& GetRegionData(const std::string& region_code);
   static const std::string& GetDefaultRegionData();
+
+  static const std::string& GetLanguageCompactLineSeparator(
+      const std::string& language_code);
+
+  static const std::string& GetCountryCompactLineSeparator(
+      const std::string& country_code);
 };
 
 }  // namespace addressinput

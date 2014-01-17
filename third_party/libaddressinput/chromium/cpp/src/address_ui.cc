@@ -17,6 +17,8 @@
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_ui_component.h>
 
+#include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -74,19 +76,41 @@ std::vector<AddressUiComponent> BuildComponents(
     return result;
   }
 
-  for (std::vector<std::vector<AddressField> >::const_iterator
-       line_it = rule.GetFormat().begin();
+  // For avoiding showing an input field twice, when the field is displayed
+  // twice on an envelope.
+  std::set<AddressField> fields;
+
+  for (std::vector<std::vector<FormatElement> >::const_iterator
+           line_it = rule.GetFormat().begin();
        line_it != rule.GetFormat().end();
        ++line_it) {
-    for (std::vector<AddressField>::const_iterator field_it = line_it->begin();
-         field_it != line_it->end(); ++field_it) {
+    int num_fields_this_row = 0;
+    for (std::vector<FormatElement>::const_iterator element_it =
+             line_it->begin();
+         element_it != line_it->end();
+         ++element_it) {
+      if (element_it->IsField()) {
+        ++num_fields_this_row;
+      }
+    }
+
+    for (std::vector<FormatElement>::const_iterator element_it =
+             line_it->begin();
+         element_it != line_it->end();
+         ++element_it) {
+      AddressField field = element_it->field;
+      if (!element_it->IsField() || fields.find(field) != fields.end()) {
+        continue;
+      }
+      fields.insert(field);
+
       AddressUiComponent component;
       component.length_hint =
-          line_it->size() == 1 ? AddressUiComponent::HINT_LONG
-                               : AddressUiComponent::HINT_SHORT;
-      component.field = *field_it;
+          num_fields_this_row == 1 ? AddressUiComponent::HINT_LONG
+                                   : AddressUiComponent::HINT_SHORT;
+      component.field = field;
       component.name_id =
-          GetMessageIdForField(*field_it,
+          GetMessageIdForField(field,
                                rule.GetAdminAreaNameMessageId(),
                                rule.GetPostalCodeNameMessageId());
       result.push_back(component);
@@ -94,6 +118,32 @@ std::vector<AddressUiComponent> BuildComponents(
   }
 
   return result;
+}
+
+const std::string& GetCompactAddressLinesSeparator(
+    const std::string& language_code,
+    const std::string& country_code) {
+  Rule rule;
+  rule.CopyFrom(Rule::GetDefault());
+  if (!rule.ParseSerializedRule(
+          RegionDataConstants::GetRegionData(country_code))) {
+    return RegionDataConstants::GetLanguageCompactLineSeparator(language_code);
+  }
+
+  std::vector<std::string>::const_iterator lang_it =
+      std::find(rule.GetLanguages().begin(),
+                rule.GetLanguages().end(),
+                language_code);
+  if (lang_it != rule.GetLanguages().end()) {
+    return RegionDataConstants::GetLanguageCompactLineSeparator(*lang_it);
+  }
+
+  if (!rule.GetLanguage().empty()) {
+    return RegionDataConstants::GetLanguageCompactLineSeparator(
+        rule.GetLanguage());
+  }
+
+  return RegionDataConstants::GetCountryCompactLineSeparator(country_code);
 }
 
 }  // namespace addressinput
