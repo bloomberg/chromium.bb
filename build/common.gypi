@@ -353,7 +353,8 @@
       # -fsanitize=address only works with clang, but asan=1 implies clang=1
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/addresssanitizer
       'asan%': 0,
-      # Enable coverage gathering instrumentation in ASan.
+      # Enable coverage gathering instrumentation in ASan. This flag also
+      # controls coverage granularity (experimental).
       'asan_coverage%': 0,
 
       # Enable building with LSan (Clang's -fsanitize=leak option).
@@ -3456,11 +3457,11 @@
               }],
             ],
           }],
-          ['asan_coverage==1', {
+          ['asan_coverage!=0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
-                  '-mllvm -asan-coverage=1',
+                  '-mllvm -asan-coverage=<(asan_coverage)',
                 ],
               }],
             ],
@@ -4120,11 +4121,11 @@
               'MEMORY_TOOL_REPLACES_ALLOCATOR',
             ],
           }],
-          ['asan_coverage==1', {
+          ['asan_coverage!=0', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
-                  '-mllvm -asan-coverage=1',
+                  '-mllvm -asan-coverage=<(asan_coverage)',
                 ],
               }],
             ],
