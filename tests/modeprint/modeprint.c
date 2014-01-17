@@ -41,6 +41,8 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
 int connectors;
 int full_props;
 int edid;
@@ -140,13 +142,37 @@ int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, uint64_t 
 	return 0;
 }
 
+static const char * const output_names[] = { "None",
+					     "VGA",
+					     "DVI-I",
+					     "DVI-D",
+					     "DVI-A",
+					     "Composite",
+					     "SVIDEO",
+					     "LVDS",
+					     "Component",
+					     "DIN",
+					     "DP",
+					     "HDMI-A",
+					     "HDMI-B",
+					     "TV",
+					     "eDP",
+					     "Virtual",
+					     "DSI",
+};
+
 int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uint32_t id)
 {
 	int i = 0;
 	struct drm_mode_modeinfo *mode = NULL;
 	drmModePropertyPtr props;
 
-	printf("Connector: %d-%d\n", connector->connector_type, connector->connector_type_id);
+	if (connector->connector_type < ARRAY_SIZE(output_names))
+		printf("Connector: %s-%d\n", output_names[connector->connector_type],
+			connector->connector_type_id);
+	else
+		printf("Connector: %d-%d\n", connector->connector_type,
+			connector->connector_type_id);
 	printf("\tid             : %i\n", id);
 	printf("\tencoder id     : %i\n", connector->encoder_id);
 	printf("\tconn           : %s\n", getConnectionText(connector->connection));
