@@ -47,6 +47,7 @@ class RunIsolatedTest(auto_stub.TestCase):
     super(RunIsolatedTest, self).setUp()
     self.tempdir = tempfile.mkdtemp(prefix='run_isolated_test')
     logging.debug(self.tempdir)
+    self.mock(run_isolated, 'make_temp_dir', self.fake_make_temp_dir)
 
   def tearDown(self):
     for dirpath, dirnames, filenames in os.walk(self.tempdir, topdown=True):
@@ -67,6 +68,21 @@ class RunIsolatedTest(auto_stub.TestCase):
     else:
       expected = mlinux
     self.assertEqual(expected, actual, (filepath, oct(expected), oct(actual)))
+
+  @property
+  def run_test_temp_dir(self):
+    """Where to map all files in run_isolated.run_tha_test."""
+    return os.path.join(self.tempdir, 'run_tha_test')
+
+  def fake_make_temp_dir(self, _prefix=None, _root_dir=None):
+    """Predictably returns directory for run_tha_test (one per test case)."""
+    assert not os.path.isdir(self.run_test_temp_dir)
+    os.makedirs(self.run_test_temp_dir)
+    return self.run_test_temp_dir
+
+  def temp_join(self, *args):
+    """Shortcut for joining path with self.run_test_temp_dir."""
+    return os.path.join(self.run_test_temp_dir, *args)
 
   def test_umask(self):
     # Check assumptions about umask. Anyone can override umask so this test is
@@ -181,7 +197,7 @@ class RunIsolatedTest(auto_stub.TestCase):
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
-    self.assertEqual([[u'foo.exe', u'cmd with space']], calls)
+    self.assertEqual([[self.temp_join(u'foo.exe'), u'cmd with space']], calls)
 
   def test_main_args(self):
     self.mock(run_isolated.tools, 'disable_buffering', lambda: None)
@@ -213,7 +229,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
     self.assertEqual(
-        [[u'foo.exe', u'cmd with space', '--extraargs', 'bar']], calls)
+        [[self.temp_join(u'foo.exe'), u'cmd with space', '--extraargs', 'bar']],
+        calls)
 
   def _run_tha_test(self, isolated_hash, files):
     make_tree_call = []
@@ -229,7 +246,7 @@ class RunIsolatedTest(auto_stub.TestCase):
         run_isolated.subprocess, 'call',
         lambda *x, **y: subprocess_call.append((x, y)) or 0)
 
-    outdir = tempfile.mkdtemp('run_tha_test')
+    outdir = self.fake_make_temp_dir()
     try:
       ret = run_isolated.run_tha_test(
           isolated_hash,
@@ -255,7 +272,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
-    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+    self.assertEqual(
+        [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_run_tha_test_naked_read_only_0(self):
     isolated = json.dumps(
@@ -271,7 +289,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
-    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+    self.assertEqual(
+        [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_run_tha_test_naked_read_only_1(self):
     isolated = json.dumps(
@@ -287,7 +306,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
-    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+    self.assertEqual(
+        [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_run_tha_test_naked_read_only_2(self):
     isolated = json.dumps(
@@ -303,7 +323,8 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
-    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+    self.assertEqual(
+        [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
 
   def test_main_naked(self):
     # The most naked .isolated file that can exist.
@@ -331,7 +352,39 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(1, len(subprocess_call))
     self.assertTrue(subprocess_call[0][1].pop('cwd'))
     self.assertTrue(subprocess_call[0][1].pop('env'))
-    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+    self.assertEqual(
+        [(([self.temp_join(u'invalid'), u'command'],), {})], subprocess_call)
+
+  def test_modified_cwd(self):
+    isolated = json.dumps({
+        'command': ['../out/some.exe', 'arg'],
+        'relative_cwd': 'some',
+    })
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    files = {isolated_hash:isolated}
+    subprocess_call, _ = self._run_tha_test(isolated_hash, files)
+    self.assertEqual(1, len(subprocess_call))
+    self.assertEqual(subprocess_call[0][1].pop('cwd'), self.temp_join('some'))
+    self.assertTrue(subprocess_call[0][1].pop('env'))
+    self.assertEqual(
+        [(([self.temp_join(u'out', u'some.exe'), 'arg'],), {})],
+        subprocess_call)
+
+  def test_python_cmd(self):
+    isolated = json.dumps({
+        'command': ['../out/cmd.py', 'arg'],
+        'relative_cwd': 'some',
+    })
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    files = {isolated_hash:isolated}
+    subprocess_call, _ = self._run_tha_test(isolated_hash, files)
+    self.assertEqual(1, len(subprocess_call))
+    self.assertEqual(subprocess_call[0][1].pop('cwd'), self.temp_join('some'))
+    self.assertTrue(subprocess_call[0][1].pop('env'))
+    # Injects sys.executable.
+    self.assertEqual(
+        [(([sys.executable, os.path.join('..', 'out', 'cmd.py'), 'arg'],), {})],
+        subprocess_call)
 
 
 if __name__ == '__main__':

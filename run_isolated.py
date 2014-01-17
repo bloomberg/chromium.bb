@@ -664,6 +664,12 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
     change_tree_read_only(outdir, settings.read_only)
     cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
     command = settings.command + extra_args
+
+    # subprocess.call doesn't consider 'cwd' when searching for executable.
+    # Yet isolate can specify command relative to 'cwd'. Convert it to absolute
+    # path if necessary.
+    if not os.path.isabs(command[0]):
+      command[0] = os.path.abspath(os.path.join(cwd, command[0]))
     logging.info('Running %s, cwd=%s' % (command, cwd))
 
     # TODO(csharp): This should be specified somewhere else.
@@ -676,8 +682,8 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
     try:
       with tools.Profiler('RunTest'):
         result = subprocess.call(command, cwd=cwd, env=env)
-    except OSError:
-      tools.report_error('Failed to run %s; cwd=%s' % (command, cwd))
+    except OSError as e:
+      tools.report_error('Failed to run %s; cwd=%s: %s' % (command, cwd, e))
       result = 1
   finally:
     try:
