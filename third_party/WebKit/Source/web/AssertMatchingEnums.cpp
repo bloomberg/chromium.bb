@@ -44,6 +44,7 @@
 #include "WebGeolocationPosition.h"
 #include "WebIconURL.h"
 #include "WebInputElement.h"
+#include "WebNavigatorContentUtilsClient.h"
 #include "WebNotificationPresenter.h"
 #include "WebPageVisibilityState.h"
 #include "WebSettings.h"
@@ -80,6 +81,7 @@
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
 #include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "modules/notifications/NotificationClient.h"
 #include "modules/quota/StorageQuota.h"
 #include "modules/speech/SpeechRecognitionError.h"
@@ -642,6 +644,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelLog, LogMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelWarning, WarningMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelError, ErrorMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelInfo, InfoMessageLevel);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebCustomHandlersNew, NavigatorContentUtilsClient::CustomHandlersNew);
+COMPILE_ASSERT_MATCHING_ENUM(WebCustomHandlersRegistered, NavigatorContentUtilsClient::CustomHandlersRegistered);
+COMPILE_ASSERT_MATCHING_ENUM(WebCustomHandlersDeclined, NavigatorContentUtilsClient::CustomHandlersDeclined);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionNone, TouchActionNone);
 COMPILE_ASSERT_MATCHING_ENUM(WebTouchActionAuto, TouchActionAuto);

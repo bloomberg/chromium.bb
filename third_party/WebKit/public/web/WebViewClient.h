@@ -39,6 +39,7 @@
 #include "WebDragOperation.h"
 #include "WebFileChooserCompletion.h"
 #include "WebFileChooserParams.h"
+#include "WebNavigatorContentUtilsClient.h"
 #include "WebPageVisibilityState.h"
 #include "WebPopupType.h"
 #include "WebTextAffinity.h"
@@ -356,6 +357,15 @@ public:
                                          const WebString& baseUrl,
                                          const WebString& url,
                                          const WebString& title) { }
+
+    // Unregisters a given URL handler for the given protocol.
+    virtual void unregisterProtocolHandler(const WebString& scheme, const WebString& baseUrl, const WebString& url) { }
+
+    // Check if a given URL handler is registered for the given protocol.
+    virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebString& baseUrl, const WebString& url)
+    {
+        return WebCustomHandlersNew;
+    }
 
     // Visibility -----------------------------------------------------------
 

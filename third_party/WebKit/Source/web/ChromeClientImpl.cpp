@@ -1033,13 +1033,12 @@ void NavigatorContentUtilsClientImpl::registerProtocolHandler(const String& sche
 
 NavigatorContentUtilsClient::CustomHandlersState NavigatorContentUtilsClientImpl::isProtocolHandlerRegistered(const String& scheme, const String& baseURL, const String& url)
 {
-    notImplemented();
-    return NavigatorContentUtilsClient::CustomHandlersDeclined;
+    return static_cast<NavigatorContentUtilsClient::CustomHandlersState>(m_webView->client()->isProtocolHandlerRegistered(scheme, baseURL, url));
 }
 
 void NavigatorContentUtilsClientImpl::unregisterProtocolHandler(const String& scheme, const String& baseURL, const String& url)
 {
-    notImplemented();
+    m_webView->client()->unregisterProtocolHandler(scheme, baseURL, url);
 }
 
 } // namespace blink
