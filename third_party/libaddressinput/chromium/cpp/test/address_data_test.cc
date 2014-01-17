@@ -30,6 +30,32 @@ TEST(AddressDataTest, FormatForDisplayEmpty) {
   EXPECT_EQ(std::vector<std::string>(), actual);
 }
 
+TEST(AddressDataTest, FormatForDisplayUs) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "Texas";
+  address.locality = "Houston";
+  address.postal_code = "77005";
+  address.address_lines.push_back("123 Main St");
+  address.address_lines.push_back("Apt 2");
+  address.organization = "ACME Corp.";
+  address.recipient = "John Doe";
+
+  std::vector<std::string> actual;
+  address.FormatForDisplay(&actual);
+
+  std::vector<std::string> expected;
+  expected.push_back(address.recipient);
+  expected.push_back(address.organization);
+  expected.insert(expected.end(),
+                  address.address_lines.begin(),
+                  address.address_lines.end());
+  expected.push_back(address.locality + ", " + address.administrative_area +
+                     " " + address.postal_code);
+
+  EXPECT_EQ(expected, actual);
+}
+
 TEST(AddressDataTest, FormatForDisplayAr) {
   AddressData address;
   address.country_code = "AR";

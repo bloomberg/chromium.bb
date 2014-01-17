@@ -1085,9 +1085,11 @@ std::map<std::string, std::string> InitRegionData() {
   region_data.insert(std::make_pair("UG", "{"
       "\"name\":\"UGANDA\""
       "}"));
+  // NOTE: The fmt value for UM and US differs from the i18napis fmt by the
+  // insertion of a comma separating city and state.
   region_data.insert(std::make_pair("UM", "{"
       "\"name\":\"UNITED STATES MINOR OUTLYING ISLANDS\","
-      "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"fmt\":\"%N%n%O%n%A%n%C, %S %Z\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -1095,7 +1097,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"UNITED STATES\","
       "\"lang\":\"en\","
       "\"languages\":\"en\","
-      "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"fmt\":\"%N%n%O%n%A%n%C, %S %Z\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
