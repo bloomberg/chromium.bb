@@ -687,6 +687,9 @@
     { "name": "www.getcloak.com", "mode": "force-https" },
     { "name": "matteomarescotti.name", "include_subdomains": true, "mode": "force-https" },
     { "name": "www.heliosnet.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "opsmate.com", "mode": "force-https" },
+    { "name": "www.opsmate.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "f-droid.org", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
