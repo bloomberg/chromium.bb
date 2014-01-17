@@ -12477,6 +12477,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ZIP_UNEXPECTED_ERROR" desc="File Manager error message.">
         Zipping failed, unexpected error: $1
       </message>
+      <message name="IDS_FILE_BROWSER_SYNC_FILE_NAME" desc="File Manager status message.">
+        Syncing <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
+      </message>
       <message name="IDS_FILE_BROWSER_SHARE_ERROR" desc="File Manager error message when sharing a file or a directory on Drive fails because of internet connection problems.">
         Sharing failed. Check your connection and try again later.
       </message>
@@ -12504,6 +12507,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_TRANSFER_PROGRESS_SUMMARY" desc="Summary message for mixed operation tasks above the progress bar. 'Transferring' is used here as a generic term for copying, moving, zipping, or deleting.">
         Transferring...
+      </message>
+      <message name="IDS_FILE_BROWSER_SYNC_PROGRESS_SUMMARY" desc="Summary message for drive sync operation. This message can be shown without a progress bar.">
+        Syncing...
       </message>
       <message name="IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY" desc="Summary message for an error above the progress bar. This message may be placed at the next to ohter *_PROGERSS_SUMMARY messages.">
         1 error.

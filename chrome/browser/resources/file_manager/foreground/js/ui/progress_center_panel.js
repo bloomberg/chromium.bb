@@ -20,18 +20,22 @@ function ProgressCenterItemElement(document) {
   progressBar.className = 'progress-bar';
   progressBar.appendChild(progressBarIndicator);
 
+  var progressFrame = document.createElement('div');
+  progressFrame.className = 'progress-frame';
+  progressFrame.appendChild(label);
+  progressFrame.appendChild(progressBar);
+
   var cancelButton = document.createElement('button');
   cancelButton.className = 'cancel';
   cancelButton.setAttribute('tabindex', '-1');
 
-  var progressFrame = document.createElement('div');
-  progressFrame.className = 'progress-frame';
-  progressFrame.appendChild(progressBar);
-  progressFrame.appendChild(cancelButton);
+  var buttonFrame = document.createElement('div');
+  buttonFrame.className = 'button-frame';
+  buttonFrame.appendChild(cancelButton);
 
   var itemElement = document.createElement('li');
-  itemElement.appendChild(label);
   itemElement.appendChild(progressFrame);
+  itemElement.appendChild(buttonFrame);
 
   return ProgressCenterItemElement.decorate(itemElement);
 }
@@ -431,10 +435,8 @@ ProgressCenterPanel.prototype.onToggleAnimationEnd_ = function(event) {
  */
 ProgressCenterPanel.prototype.onClick_ = function(event) {
   // Toggle button.
-  if (event.target.classList.contains('toggle') &&
-      (!this.closeView_.classList.contains('single') ||
-       this.element_.classList.contains('opened'))) {
-
+  if (event.target.classList.contains('open') ||
+      event.target.classList.contains('close')) {
     // If the progress center has already animated, just return.
     if (this.element_.classList.contains('animated'))
       return;
@@ -459,10 +461,11 @@ ProgressCenterPanel.prototype.onClick_ = function(event) {
   }
 
   // Cancel button.
-  if (this.cancelCallback) {
-    var id = event.target.classList.contains('toggle') ?
-        this.closeView_.getAttribute('data-progress-id') :
-        event.target.parentNode.parentNode.getAttribute('data-progress-id');
-    this.cancelCallback(id);
+  if (event.target.classList.contains('cancel')) {
+    var itemElement = event.target.parentNode.parentNode;
+    if (this.cancelCallback) {
+      var id = itemElement.getAttribute('data-progress-id');
+      this.cancelCallback(id);
+    }
   }
 };

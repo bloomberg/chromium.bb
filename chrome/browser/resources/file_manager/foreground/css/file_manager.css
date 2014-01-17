@@ -1906,7 +1906,7 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 
 #progress-center-open-view {
   opacity: 1;
-  padding-top: 42px;
+  padding-top: 10px;
   transition: opacity 300ms linear;
 }
 
@@ -1938,52 +1938,43 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 }
 
 #progress-center li {
-  display: block;
-  min-height: 29px;  /* label 17px + frame 12px */
+  -webkit-padding-end: 10px;
+  display: flex;
+  /* This must not be margin-bottom to calculate parent's height correctly. */
   padding-bottom: 20px;
 }
 
 #progress-center label {
   color: #777;
   display: block;
-  font: 12px/17px normal;
-  min-height: 17px;
   overflow: hidden;
-  padding: 0 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-#progress-center li.error label {
+#progress-center li.error.single label {
   white-space: normal;
 }
 
 #progress-center .progress-frame {
   -webkit-padding-end: 10px;
   -webkit-padding-start: 20px;
-  align-items: center;
-  display: flex;
-  margin-top: 4px;
-}
-
-#progress-center li.error .progress-frame {
-  height: 0;
+  flex: 1 0 0;
 }
 
 #progress-center .progress-bar {
-  -webkit-margin-end: 24px;
   background: #d8d8d8;
   border-radius: 3px;
-  flex: 1 0 0;
+  display: inline-block;
   height: 6px;
   opacity: 1;
   overflow: hidden;
+  width: 100%;
 }
 
 #progress-center li.error .progress-bar,
-#progress-center li.canceled .progress-bar,
 #progress-center li.quiet .progress-bar {
-  visibility: hidden;
+  display: none;
 }
 
 #progress-center .progress-track {
@@ -1995,52 +1986,74 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
   transition: width 300ms linear;
 }
 
+#progress-center .button-frame {
+  align-self: flex-end;
+  flex: none;
+}
+
 #progress-center button {
-  background: orange;
   border: none;
   cursor: pointer;
-  flex: 0 0 auto;
+  display: inline-block;
   height: 12px;
   min-height: 0;
   min-width: 0;
   outline: none;
   padding: 0;
+  vertical-align: middle;
   width: 12px;
-  z-index: 0;
 }
 
-#progress-center button.toggle {
+#progress-center li.error.single .button-frame {
+  display: none;
+}
+
+#progress-center button.close {
+  -webkit-margin-end: 10px;
+  -webkit-margin-start: auto;
   background: -webkit-image-set(
       url(../images/files/ui/process_drawer_button_opened.png) 1x,
       url(../images/files/ui/2x/process_drawer_button_opened.png) 2x)
       no-repeat;
-  position: absolute;
-  right: 10px;
-  top: 17px; /* label height */
-  transition: top 300ms ease-out;
-  z-index: 1;
+  display: block;
+  margin-bottom: 20px;
 }
 
-#progress-center button.toggle:hover {
+#progress-center button.close:hover {
   background: -webkit-image-set(
       url(../images/files/ui/process_drawer_button_opened_hover.png) 1x,
       url(../images/files/ui/2x/process_drawer_button_opened_hover.png) 2x)
       no-repeat;
 }
 
-#progress-center button.toggle:active {
+#progress-center button.close:active {
   background: -webkit-image-set(
       url(../images/files/ui/process_drawer_button_opened_pressed.png) 1x,
       url(../images/files/ui/2x/process_drawer_button_opened_pressed.png) 2x)
       no-repeat;
 }
 
-/*
- * If the closed progress center has only one item,
- * toggle button turned into cancel button the item.
- */
-#progress-center:not(.opened) #progress-center-close-view.single ~
-    button.toggle,
+#progress-center button.open {
+  background: -webkit-image-set(
+      url(../images/files/ui/process_drawer_button_closed.png) 1x,
+      url(../images/files/ui/2x/process_drawer_button_closed.png) 2x)
+      no-repeat;
+}
+
+#progress-center button.open:hover {
+  background: -webkit-image-set(
+      url(../images/files/ui/process_drawer_button_closed_hover.png) 1x,
+      url(../images/files/ui/2x/process_drawer_button_closed_hover.png) 2x)
+      no-repeat;
+}
+
+#progress-center button.open:active {
+  background: -webkit-image-set(
+      url(../images/files/ui/process_drawer_button_closed_pressed.png) 1x,
+      url(../images/files/ui/2x/process_drawer_button_closed_pressed.png) 2x)
+      no-repeat;
+}
+
 #progress-center button.cancel {
   background: -webkit-image-set(
       url(../images/files/ui/close_bar.png) 1x,
@@ -2048,30 +2061,14 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
       no-repeat;
 }
 
-#progress-center:not(.opened)
-    #progress-center-close-view.single:not(.cancelable) ~ button.toggle,
+#progress-center-close-view:not(.single) button.cancel {
+  display: none;
+}
+
+#progress-center-close-view.single button.open {
+  display: none;
+}
+
 #progress-center li:not(.cancelable) button.cancel {
   visibility: hidden;
-}
-
-#progress-center.opened button.toggle {
-  background: -webkit-image-set(
-      url(../images/files/ui/process_drawer_button_closed.png) 1x,
-      url(../images/files/ui/2x/process_drawer_button_closed.png) 2x)
-      no-repeat;
-  top: 10px;
-}
-
-#progress-center.opened button.toggle:hover {
-  background: -webkit-image-set(
-      url(../images/files/ui/process_drawer_button_closed_hover.png) 1x,
-      url(../images/files/ui/2x/process_drawer_button_closed_hover.png) 2x)
-      no-repeat;
-}
-
-#progress-center.opened button.toggle:active {
-  background: -webkit-image-set(
-      url(../images/files/ui/process_drawer_button_closed_pressed.png) 1x,
-      url(../images/files/ui/2x/process_drawer_button_closed_pressed.png) 2x)
-      no-repeat;
 }

@@ -69,6 +69,16 @@ function Background() {
   this.deviceHandler_ = new DeviceHandler();
 
   /**
+   * Drive sync handler.
+   * @type {DriveSyncHandler}
+   * @private
+   */
+  this.driveSyncHandler_ = new DriveSyncHandler(this.progressCenter);
+  this.driveSyncHandler_.addEventListener(
+      DriveSyncHandler.COMPLETED_EVENT,
+      function() { this.tryClose(); }.bind(this));
+
+  /**
    * String assets.
    * @type {Object.<string, string>}
    */
@@ -156,7 +166,8 @@ Background.prototype.ready = function(callback) {
  */
 Background.prototype.tryClose = function() {
   // If the file operation is going, the background page cannot close.
-  if (this.fileOperationManager.hasQueuedTasks()) {
+  if (this.fileOperationManager.hasQueuedTasks() ||
+      this.driveSyncHandler_.syncing) {
     this.lastTimeCanClose_ = null;
     return;
   }

@@ -364,6 +364,9 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
       case ProgressItemType.ZIP:
         messages.push(str('ZIP_PROGRESS_SUMMARY'));
         break;
+      case ProgressItemType.SYNC:
+        messages.push(str('SYNC_PROGRESS_SUMMARY'));
+        break;
       case ProgressItemType.TRANSFER:
         messages.push(str('TRANSFER_PROGRESS_SUMMARY'));
         break;

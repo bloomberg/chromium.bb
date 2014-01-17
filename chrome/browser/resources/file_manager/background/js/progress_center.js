@@ -127,7 +127,8 @@ ProgressCenter.Notifications_.prototype.updateItem = function(
       message: item.message,
       buttons: item.cancelable ? [{title: str('CANCEL_LABEL')}] : undefined,
       progress: item.state === ProgressItemState.PROGRESSING ?
-          item.progressRateByPercent : undefined
+          item.progressRateInPercent : undefined,
+      priority: (item.state === ProgressItemState.ERROR || !item.quiet) ? 0 : -1
     };
     if (newlyAdded)
       chrome.notifications.create(item.id, params, proceed);
