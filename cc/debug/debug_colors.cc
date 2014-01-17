@@ -54,6 +54,14 @@ int DebugColors::ContainerLayerBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(2, tree_impl);
 }
 
+// Surface layers are a blue-ish green.
+SkColor DebugColors::SurfaceLayerBorderColor() {
+  return SkColorSetARGB(128, 0, 255, 136);
+}
+int DebugColors::SurfaceLayerBorderWidth(const LayerTreeImpl* tree_impl) {
+  return Scale(2, tree_impl);
+}
+
 // Render surfaces are blue.
 SkColor DebugColors::SurfaceBorderColor() {
   return SkColorSetARGB(100, 0, 0, 255);
