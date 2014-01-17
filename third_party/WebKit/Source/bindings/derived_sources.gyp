@@ -171,7 +171,6 @@
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
          '<@(generated_global_constructors_idl_files)',
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
        ],
@@ -187,8 +186,6 @@
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
          '--interfaces-info-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-         '--bindings-derived-sources-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
          '--window-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
          '--workerglobalscope-constructors-file',
@@ -297,17 +294,22 @@
       ],
       'actions': [{
         'action_name': 'derived_sources_all_in_one',
+        'variables': {
+          # Write sources into a file, so that the action command line won't
+          # exceed OS limits.
+          'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
+          },
         'inputs': [
-          '../build/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
+          'scripts/action_derivedsourcesallinone.py',
+          '<(main_interface_idl_files_list)',
         ],
         'outputs': [
           '<@(derived_sources_aggregate_files)',
         ],
         'action': [
           'python',
-          '../build/scripts/action_derivedsourcesallinone.py',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
+          'scripts/action_derivedsourcesallinone.py',
+          '<(main_interface_idl_files_list)',
           '--',
           '<@(derived_sources_aggregate_files)',
         ],

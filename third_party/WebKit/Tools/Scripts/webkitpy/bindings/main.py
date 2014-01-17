@@ -98,7 +98,6 @@ class BindingsTests(object):
         self.executive = executive
         _, self.interface_dependencies_filename = provider.newtempfile()
         _, self.interfaces_info_filename = provider.newtempfile()
-        _, self.derived_sources_list_filename = provider.newtempfile()
         # Generate output into the reference directory if resetting results, or
         # a temp directory if not.
         if reset_results:
@@ -184,7 +183,6 @@ class BindingsTests(object):
                    '--support-idl-files-list', support_idl_files_list_filename,
                    '--interface-dependencies-file', self.interface_dependencies_filename,
                    '--interfaces-info-file', self.interfaces_info_filename,
-                   '--bindings-derived-sources-file', self.derived_sources_list_filename,
                    '--window-constructors-file', window_constructors_file,
                    '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
                    '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,

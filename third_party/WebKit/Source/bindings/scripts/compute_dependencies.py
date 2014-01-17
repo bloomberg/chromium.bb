@@ -56,7 +56,6 @@ def parse_options():
     parser.add_option('--support-idl-files-list', help='file listing support IDL files (not compiled to Blink, e.g. testing)')
     parser.add_option('--interface-dependencies-file', help='output file')
     parser.add_option('--interfaces-info-file', help='output pickle file')
-    parser.add_option('--bindings-derived-sources-file', help='output file')
     parser.add_option('--window-constructors-file', help='output file')
     parser.add_option('--workerglobalscope-constructors-file', help='output file')
     parser.add_option('--sharedworkerglobalscope-constructors-file', help='output file')
@@ -70,8 +69,6 @@ def parse_options():
         parser.error('Must specify an output file using --interface-dependencies-file.')
     if options.interfaces_info_file is None:
         parser.error('Must specify an output file using --interfaces-info-file.')
-    if options.bindings_derived_sources_file is None:
-        parser.error('Must specify an output file using --bindings-derived-sources-file.')
     if options.window_constructors_file is None:
         parser.error('Must specify an output file using --window-constructors-file.')
     if options.workerglobalscope_constructors_file is None:
@@ -187,12 +184,6 @@ def get_interface_extended_attributes_from_idl(file_contents):
 ################################################################################
 # Write files
 ################################################################################
-
-def write_bindings_derived_sources_file(bindings_derived_sources_filename, idl_filenames_list, only_if_changed):
-    lines = [idl_filename + '\n'
-             for idl_filename in sorted(idl_filenames_list)]
-    write_file(lines, bindings_derived_sources_filename, only_if_changed)
-
 
 def write_dependencies_file(dependencies_filename, interfaces_info, only_if_changed):
     """Write the interface dependencies file.
@@ -377,8 +368,6 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
             dict of info about main interfaces
             The keys are the interfaces for which bindings are generated.
             This does not include interfaces implemented by another interface.
-        bindings_derived_sources:
-            list of main IDL file names (excludes support IDL file names)
         global_constructors:
             dict of global objects -> list of constructors on that object
         event_names:
@@ -411,13 +400,6 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
             parent = parent_interface[parent]
             ancestors.append(parent)
         interfaces_info[interface]['ancestors'] = ancestors
-
-    # File names of all main IDL files (no support ones) for derived sources
-    bindings_derived_sources_info = interfaces_info.copy()
-    remove_interfaces_implemented_somewhere(bindings_derived_sources_info)
-    bindings_derived_sources = [interface_info['full_path']
-                                for interface_info in
-                                bindings_derived_sources_info.values()]
 
     # Add constructors on global objects to partial interfaces
     # These are all partial interfaces, but the files are dynamically generated,
@@ -468,7 +450,7 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
             ('ancestors' in interface_info and
              interface_info['ancestors'][-1] == 'Event')))
 
-    return interfaces_info, bindings_derived_sources, global_constructors, event_names, interface_extended_attributes
+    return interfaces_info, global_constructors, event_names, interface_extended_attributes
 
 
 ################################################################################
@@ -488,11 +470,10 @@ def main():
         'ServiceWorkerGlobalScope': options.serviceworkerglobalscope_constructors_file,
         }
 
-    interfaces_info, bindings_derived_sources, global_constructors, event_names, interface_extended_attributes = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
+    interfaces_info, global_constructors, event_names, interface_extended_attributes = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
 
     write_dependencies_file(options.interface_dependencies_file, interfaces_info, only_if_changed)
     write_pickle_file(options.interfaces_info_file, interfaces_info, only_if_changed)
-    write_bindings_derived_sources_file(options.bindings_derived_sources_file, bindings_derived_sources, only_if_changed)
     for interface_name, filename in global_constructors_filenames.iteritems():
         if interface_name in interfaces_info:
             write_global_constructors_partial_interface(interface_name, filename, global_constructors[interface_name], only_if_changed)

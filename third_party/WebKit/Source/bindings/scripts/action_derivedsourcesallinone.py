@@ -189,7 +189,8 @@ def main(args):
     output_file_names = args[in_out_break_index + 1:]
 
     with open(input_file_name) as input_file:
-        file_names = [line.rstrip('\n') for line in input_file]
+        file_names = sorted([os.path.realpath(line.rstrip('\n'))
+                             for line in input_file])
         idl_file_names = [file_name for file_name in file_names
                           if not file_name.startswith('/cygdrive')]
         cygdrive_names = [file_name for file_name in file_names
