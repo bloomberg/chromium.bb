@@ -45,7 +45,7 @@ all bots (Windows, Mac, Linux) x (32-bit, 64-bit), run the following
   python ../perf_expectations/update_perf_expectations.py \
     -f .*TestCondvarSignalNoOp.* \
     --reva <new_reva> --revb <new_revb> \
-    --config ./nacl_per_expecations.cfg
+    --config ./nacl_perf_expecations.cfg
 
 That will only reset the reva and revb fields. To actually poll the
 bots for the improve and regress values, use the usual command:
