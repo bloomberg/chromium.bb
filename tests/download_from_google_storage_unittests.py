@@ -133,7 +133,7 @@ class DownloadTests(unittest.TestCase):
 
   def test_enumerate_files_non_recursive(self):
     queue_size = download_from_google_storage.enumerate_work_queue(
-        self.base_path, self.queue, True, False, False, None, False)
+        self.base_path, self.queue, True, False, False, None, False, False)
     expected_queue = [
         ('e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe',
             os.path.join(self.base_path, 'rootfolder_text.txt')),
@@ -144,7 +144,7 @@ class DownloadTests(unittest.TestCase):
 
   def test_enumerate_files_recursive(self):
     queue_size = download_from_google_storage.enumerate_work_queue(
-        self.base_path, self.queue, True, True, False, None, False)
+        self.base_path, self.queue, True, True, False, None, False, False)
     expected_queue = [
         ('e6c4fbd4fe7607f3e6ebf68b2ea4ef694da7b4fe',
             os.path.join(self.base_path, 'rootfolder_text.txt')),
@@ -242,7 +242,8 @@ class DownloadTests(unittest.TestCase):
         output=output_filename,
         ignore_errors=False,
         sha1_file=False,
-        verbose=True)
+        verbose=True,
+        auto_platform=False)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
@@ -273,7 +274,8 @@ class DownloadTests(unittest.TestCase):
         output=None,
         ignore_errors=False,
         sha1_file=False,
-        verbose=True)
+        verbose=True,
+        auto_platform=False)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),

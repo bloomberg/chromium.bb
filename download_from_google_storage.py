@@ -22,6 +22,13 @@ import subprocess2
 GSUTIL_DEFAULT_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'third_party', 'gsutil', 'gsutil')
+# Maps sys.platform to what we actually want to call them.
+PLATFORM_MAPPING = {
+    'cygwin': 'win',
+    'darwin': 'mac',
+    'linux2': 'linux',
+    'win32': 'win',
+}
 
 
 class FileNotFoundError(IOError):
@@ -29,6 +36,10 @@ class FileNotFoundError(IOError):
 
 
 class InvalidFileError(IOError):
+  pass
+
+
+class InvalidPlatformError(Exception):
   pass
 
 
@@ -116,6 +127,17 @@ def check_bucket_permissions(bucket, gsutil):
   return (base_url, code)
 
 
+def check_platform(target):
+  """Checks if any parent directory of target matches (win|mac|linux)."""
+  assert os.path.isabs(target)
+  root, target_name = os.path.split(target)
+  if not target_name:
+    return None
+  if target_name in ('linux', 'mac', 'win'):
+    return target_name
+  return check_platform(root)
+
+
 def get_sha1(filename):
   sha1 = hashlib.sha1()
   with open(filename, 'rb') as f:
@@ -131,7 +153,8 @@ def get_sha1(filename):
 # Download-specific code starts here
 
 def enumerate_work_queue(input_filename, work_queue, directory,
-                         recursive, ignore_errors, output, sha1_file):
+                         recursive, ignore_errors, output, sha1_file,
+                         auto_platform):
   if sha1_file:
     if not os.path.exists(input_filename):
       if not ignore_errors:
@@ -164,6 +187,20 @@ def enumerate_work_queue(input_filename, work_queue, directory,
     for filename in files:
       full_path = os.path.join(root, filename)
       if full_path.endswith('.sha1'):
+        if auto_platform:
+          # Skip if the platform does not match.
+          target_platform = check_platform(os.path.abspath(full_path))
+          if not target_platform:
+            err = ('--auto_platform passed in but no platform name found in '
+                   'the path of %s' % full_path)
+            if not ignore_errors:
+              raise InvalidFileError(err)
+            print >> sys.stderr, err
+            continue
+          current_platform = PLATFORM_MAPPING[sys.platform]
+          if current_platform != target_platform:
+            continue
+
         with open(full_path, 'rb') as f:
           sha1_match = re.match('^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
         if sha1_match:
@@ -240,7 +277,7 @@ def printer_worker(output_queue):
 
 def download_from_google_storage(
     input_filename, base_url, gsutil, num_threads, directory, recursive,
-    force, output, ignore_errors, sha1_file, verbose):
+    force, output, ignore_errors, sha1_file, verbose, auto_platform):
   # Start up all the worker threads.
   all_threads = []
   download_start = time.time()
@@ -263,7 +300,7 @@ def download_from_google_storage(
   # Enumerate our work queue.
   work_queue_size = enumerate_work_queue(
       input_filename, work_queue, directory, recursive,
-      ignore_errors, output, sha1_file)
+      ignore_errors, output, sha1_file, auto_platform)
   for _ in all_threads:
     work_queue.put((None, None))  # Used to tell worker threads to stop.
 
@@ -334,6 +371,12 @@ def main(args):
                     help='A regular expression that is compared against '
                          'Python\'s sys.platform. If this option is specified, '
                          'the download will happen only if there is a match.')
+  parser.add_option('-a', '--auto_platform',
+                    action='store_true',
+                    help='Detects if any parent folder of the target matches '
+                         '(linux|mac|win).  If so, the script will only '
+                         'process files that are in the paths that '
+                         'that matches the current platform.')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Output extra diagnostic and progress information.')
 
@@ -341,6 +384,8 @@ def main(args):
 
   # Make sure we should run at all based on platform matching.
   if options.platform:
+    if options.auto_platform:
+      parser.error('--platform can not be specified with --auto_platform')
     if not re.match(options.platform, GetNormalizedPlatform()):
       if options.verbose:
         print('The current platform doesn\'t match "%s", skipping.' %
@@ -378,6 +423,11 @@ def main(args):
     parser.error('--recursive specified but --directory not specified.')
   if options.output and options.directory:
     parser.error('--directory is specified, so --output has no effect.')
+  if (not (options.sha1_file or options.directory)
+      and options.auto_platform):
+    parser.error('--auto_platform must be specified with either '
+                 '--sha1_file or --directory')
+
   input_filename = args[0]
 
   # Set output filename if not specified.
@@ -410,7 +460,7 @@ def main(args):
   return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,
       options.recursive, options.force, options.output, options.ignore_errors,
-      options.sha1_file, options.verbose)
+      options.sha1_file, options.verbose, options.auto_platform)
 
 
 if __name__ == '__main__':
