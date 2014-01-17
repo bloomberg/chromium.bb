@@ -97,7 +97,6 @@ typedef enum { WTFLogChannelOff, WTFLogChannelOn } WTFLogChannelState;
 
 typedef struct {
     unsigned mask;
-    const char *defaultName;
     WTFLogChannelState state;
 } WTFLogChannel;
 
