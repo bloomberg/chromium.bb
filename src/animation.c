@@ -262,6 +262,9 @@ weston_zoom_run(struct weston_view *view, float start, float stop,
 					 zoom_frame, reset_alpha,
 					 done, data, NULL);
 
+	if (zoom == NULL)
+		return NULL;
+
 	weston_spring_init(&zoom->spring, 300.0, start, stop);
 	zoom->spring.friction = 1400;
 	zoom->spring.previous = start - (stop - start) * 0.03;
@@ -290,6 +293,9 @@ weston_fade_run(struct weston_view *view,
 	fade = weston_view_animation_run(view, 0, end,
 					 fade_frame, reset_alpha,
 					 done, data, NULL);
+
+	if (fade == NULL)
+		return NULL;
 
 	weston_spring_init(&fade->spring, k, start, end);
 
@@ -337,6 +343,8 @@ weston_stable_fade_run(struct weston_view *front_view, float start,
 					    stable_fade_frame, NULL,
 					    done, data, back_view);
 
+	if (fade == NULL)
+		return NULL;
 
 	weston_spring_init(&fade->spring, 400, start, end);
 	fade->spring.friction = 1150;
@@ -434,6 +442,10 @@ weston_move_scale_run(struct weston_view *view, int dx, int dy,
 
 	animation = weston_view_animation_run(view, start, end, move_frame,
 	                                      NULL, move_done, data, move);
+
+	if (animation == NULL)
+		return NULL;
+
 	animation->spring.k = 400;
 	animation->spring.friction = 1150;
 
