@@ -626,8 +626,6 @@ String UseCounter::deprecationMessage(Feature feature)
     // Performance
     case PrefixedPerformanceTimeline:
         return "'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.";
-    case PrefixedUserTiming:
-        return "'window.performance.webkit*' methods have been deprecated. Please use the unprefixed 'window.performance.*' methods instead.";
 
     case DocumentClear:
         return "document.clear() is deprecated. This method doesn't do anything.";

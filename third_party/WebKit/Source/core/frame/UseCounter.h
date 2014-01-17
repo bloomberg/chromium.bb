@@ -127,7 +127,7 @@ public:
         UnprefixedPerformanceTimeline,
         PrefixedPerformanceTimeline,
         UnprefixedUserTiming,
-        PrefixedUserTiming,
+        REMOVEDPrefixedUserTiming,
         WindowEvent,
         ContentSecurityPolicyWithBaseElement,
         PrefixedMediaAddKey,
