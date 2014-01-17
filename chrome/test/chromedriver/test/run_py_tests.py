@@ -638,7 +638,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertTrue(self._driver.IsAutoReporting())
     url = self.GetHttpUrlForFile('/chromedriver/console_log.html')
     self.assertRaisesRegexp(chromedriver.UnknownError,
-                            '.*404.*',
+                            '.*(404|Failed to load resource).*',
                             self._driver.Load,
                             url)
 
