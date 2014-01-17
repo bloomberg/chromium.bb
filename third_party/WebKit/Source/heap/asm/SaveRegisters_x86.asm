@@ -50,10 +50,24 @@
 %define mangle(x) x
 %endif
 
+
+; PRIVATE makes a symbol private.
+%ifidn   __OUTPUT_FORMAT__,elf32
+  %define PRIVATE :hidden
+%elifidn __OUTPUT_FORMAT__,elf64
+  %define PRIVATE :hidden
+%elifidn __OUTPUT_FORMAT__,elfx32
+  %define PRIVATE :hidden
+%elif X64WIN
+  %define PRIVATE
+%else
+  %define PRIVATE :private_extern
+%endif
+
 ;; typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
 ;; extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback)
 
-        global mangle(pushAllRegisters)
+        global mangle(pushAllRegisters) PRIVATE
 
 %if X64POSIX
 

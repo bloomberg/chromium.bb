@@ -36,6 +36,7 @@
 
 .type pushAllRegisters, %function
 .global pushAllRegisters
+.hidden pushAllRegisters
 pushAllRegisters:
         /* FIXME: Implement the actual stub for mips. */
         jr $ra

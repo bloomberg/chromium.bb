@@ -36,6 +36,7 @@
 
 .type pushAllRegisters, %function
 .global pushAllRegisters
+.hidden pushAllRegisters
 pushAllRegisters:
         /* Push all callee-saved registers and save return address. */
         push {r4-r11, lr}
