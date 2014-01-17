@@ -137,7 +137,7 @@ component("crypto") {
   }
 
   if (use_nss) {
-    configs += "//third_party/nss:nss_linux_config"
+    configs += [ "//third_party/nss:nss_linux_config" ]
   } else {
     sources -= [
       "ec_private_key_nss.cc",

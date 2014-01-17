@@ -177,7 +177,7 @@ executable("gn") {
   ]
   if (!is_gyp) {
     # Currently this only works in GYP (see GN_BUILD above).
-    deps += "//build/util:last_change"
+    deps += [ "//build/util:last_change" ]
   }
 }
 

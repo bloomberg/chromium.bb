@@ -674,7 +674,7 @@ component("base") {
   ]
 
   # TODO(brettw) I don't understand the conditions this file is used.
-  sources -= "files/file_path_watcher_stub.cc"
+  sources -= [ "files/file_path_watcher_stub.cc" ]
 
   sources -= [
     # TODO(brettw) do these properly.
@@ -752,12 +752,12 @@ component("base") {
     ]
 
     if (is_component_build) {
-      sources -= "debug/debug_on_start_win.cc"
+      sources -= [ "debug/debug_on_start_win.cc" ]
     }
   } else if (!is_nacl) {
     # Non-Windows.
-    deps += "//third_party/libevent"
-    libs += "dl"
+    deps += [ "//third_party/libevent" ]
+    libs += [ "dl" ]
   }
 
   # Mac.
@@ -767,7 +767,7 @@ component("base") {
       "native_library_posix.cc",
       "strings/sys_string_conversions_posix.cc",
     ]
-    deps += "//third_party/mach_override"
+    deps += [ "//third_party/mach_override" ]
     libs += [
       "AppKit.framework",
       "ApplicationServices.framework",
@@ -779,7 +779,7 @@ component("base") {
     ]
   } else {
     # Non-Mac.
-    sources -= "files/file_path_watcher_kqueue.cc"
+    sources -= [ "files/file_path_watcher_kqueue.cc" ]
   }
 
   # IOS.
@@ -883,7 +883,7 @@ component("base_i18n") {
 
   if (toolkit_uses_gtk) {
     # i18n/rtl.cc uses gtk
-    configs += "//build/config/linux:gtk"
+    configs += [ "//build/config/linux:gtk" ]
   }
 
   #'conditions': [

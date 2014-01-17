@@ -9,13 +9,13 @@ config("find_bad_constructs") {
   ]
 
   if (is_mac) {
-    cflags += rebase_path(
+    cflags += [ rebase_path(
       "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib",
-      ".", root_build_dir)
+      ".", root_build_dir) ]
   } else if (is_linux) {
-    cflags += rebase_path(
+    cflags += [ rebase_path(
       "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so",
-      ".", root_build_dir)
+      ".", root_build_dir) ]
   }
 
   cflags += [

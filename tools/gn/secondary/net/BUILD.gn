@@ -1109,7 +1109,7 @@ component("net") {
   }
 
   if (is_linux && use_nss) {
-    configs += "//third_party/nss:nss_linux_config"
+    configs += [ "//third_party/nss:nss_linux_config" ]
   }
 
   if (is_chromeos) {
@@ -1190,9 +1190,9 @@ component("net") {
     posix_avoid_mmap = false  # TODO(brettw) should be true on 32-bit Android.
     if (posix_avoid_mmap) {
       defines = [ "POSIX_AVOID_MMAP" ]
-      sources -= "disk_cache/mapped_file_posix.cc"
+      sources -= [ "disk_cache/mapped_file_posix.cc" ]
     } else {  # !posix_avoid_mmap
-      sources -= "disk_cache/mapped_file_avoid_mmap_posix.cc"
+      sources -= [ "disk_cache/mapped_file_avoid_mmap_posix.cc" ]
     }
   }
 }

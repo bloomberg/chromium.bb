@@ -59,8 +59,8 @@ static_library("re2") {
     "util/util.h",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
-  configs += "//build/config/compiler:no_chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   direct_dependent_configs = [ ":re2_config" ]
 
   deps = [
@@ -70,6 +70,6 @@ static_library("re2") {
   if (is_win) {
     include_dirs = [ "mswin" ]
   } else {
-    sources -= "mswin/stdint.h"
+    sources -= [ "mswin/stdint.h" ]
   }
 }

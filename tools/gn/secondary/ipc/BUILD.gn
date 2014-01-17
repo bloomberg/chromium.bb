@@ -99,7 +99,7 @@ test("ipc_tests") {
   ]
 
   if (is_win || is_ios) {
-    sources -= "unix_domain_socket_util_unittest.cc"
+    sources -= [ "unix_domain_socket_util_unittest.cc" ]
   }
   #if (is_android && gtest_target_type == "shared_library") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"

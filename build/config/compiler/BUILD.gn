@@ -53,7 +53,7 @@ config("compiler") {
 
     # Stack protection.
     if (is_mac) {
-      cflags += "-fstack-protector-all"
+      cflags += [ "-fstack-protector-all" ]
     } else if (is_linux) {
       cflags += [ "-fstack-protector", "--param=ssp-buffer-size=4" ]
     }
@@ -70,9 +70,9 @@ config("compiler") {
 
     # CPU architecture.
     if (cpu_arch == "x64") {
-      common_mac_flags += "-arch x86_64"
+      common_mac_flags += [ "-arch x86_64" ]
     } else if (cpu_arch == "x86") {
-      common_mac_flags += "-arch i386"
+      common_mac_flags += [ "-arch i386" ]
     }
 
     cflags += common_mac_flags + [
@@ -98,11 +98,11 @@ config("compiler") {
     # CPU architecture. We may or may not be doing a cross compile now, so for
     # simplicity we always explicitly set the architecture.
     if (cpu_arch == "x64") {
-      cflags += "-m64"
-      ldflags += "-m64"
+      cflags += [ "-m64" ]
+      ldflags += [ "-m64" ]
     } else if (cpu_arch == "x86") {
-      cflags += "-m32"
-      ldflags += "-m32"
+      cflags += [ "-m32" ]
+      ldflags += [ "-m32" ]
     } else if (cpu_arch == "arm") {
       # Don't set the compiler flags for the WebView build. These will come
       # from the Android build system.
@@ -113,7 +113,7 @@ config("compiler") {
           "-mfloat-abi=$arm_float_abi",
         ]
         if (arm_tune != "") {
-          cflags += "-mtune=$arm_tune"
+          cflags += [ "-mtune=$arm_tune" ]
         }
         if (arm_use_thumb) {
           cflags += [ "-mthumb" ]
@@ -174,14 +174,14 @@ config("compiler") {
     }
 
     if (sysroot != "") {
-      cflags += "--sysroot=" + sysroot
-      ldflags += "--sysroot=" + sysroot
+      cflags += [ "--sysroot=" + sysroot ]
+      ldflags += [ "--sysroot=" + sysroot ]
 
       # Need to get some linker flags out of the sysroot.
-      ldflags += exec_script("../linux/sysroot_ld_path.py",
+      ldflags += [ exec_script("../linux/sysroot_ld_path.py",
           [rebase_path("../../linux/sysroot_ld_path.sh", ".", root_build_dir),
            sysroot],
-          "value")
+          "value") ]
     }
 
     ldflags += [

@@ -67,8 +67,8 @@ component("ssl") {
     "USE_UTIL_DIRECTLY",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
-  configs += "//build/config/compiler:no_chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   direct_dependent_configs = [ ":ssl_config" ]
 
@@ -86,7 +86,7 @@ component("ssl") {
 
   if (is_linux) {
     include_dirs = [ "bodge" ]
-    configs += "//third_party/nss:nss_linux_config"
+    configs += [ "//third_party/nss:nss_linux_config" ]
   }
   if (is_mac) {
     sources -= "ssl/bodge/secitem_array.c"

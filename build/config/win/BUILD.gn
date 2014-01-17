@@ -61,9 +61,9 @@ config("sdk_link") {
       "$visual_studio_path\VC\lib",
       "$visual_studio_path\VC\atlmfc\lib",
     ]
-    #if (!is_asan) {  TODO(brettw) Address Sanitizer
-    #  ldflags += "/largeaddressaware"
-    #}
+    if (!is_asan) {
+      ldflags += [ "/largeaddressaware" ]
+    }
   }
 }
 

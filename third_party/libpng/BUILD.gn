@@ -53,8 +53,8 @@ static_library("libpng") {
     "pngwutil.c",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
-  configs += "//build/config/compiler:no_chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   forward_dependent_configs_from = [ "//third_party/zlib" ]
 

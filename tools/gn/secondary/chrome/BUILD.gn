@@ -51,7 +51,7 @@ executable("chrome") {
 
   # TODO(brettw) this isn't right for all platforms.
   if (!use_aura) {
-    sources -= "app/chrome_exe_main_aura.cc"
+    sources -= [ "app/chrome_exe_main_aura.cc" ]
   }
 
   if (!is_win) {
@@ -68,7 +68,7 @@ static_library("browser") {
   if (is_linux) {
     libs = [ "dl" ]
     if (toolkit_uses_gtk) {
-      libs += "gconf-2"
+      libs += [ "gconf-2" ]
     }
   }
   if (is_linux) {
@@ -89,7 +89,7 @@ static_library("common") {
     # common/net uses NSS.
     # TODO(brettw) have a better way to express this without having to do
     # "if (use_nss)" everywhere.
-    configs += "//third_party/nss:nss_linux_config"
+    configs += [ "//third_party/nss:nss_linux_config" ]
   }
   deps = [
   ]

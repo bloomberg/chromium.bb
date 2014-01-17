@@ -48,8 +48,8 @@ static_library("libusb") {
     "src/libusb/os",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
-  configs += "//build/config/compiler:no_chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   direct_dependent_configs = [ ":libusb_config" ]
 
@@ -66,7 +66,7 @@ static_library("libusb") {
   }
 
   if (is_mac) {
-    defines += "OS_DARWIN=1"
+    defines += [ "OS_DARWIN=1" ]
   } else {
     sources -= [
       "src/libusb/os/darwin_usb.c",
@@ -81,7 +81,7 @@ static_library("libusb") {
       "USE_UDEV=1",
       "_GNU_SOURCE=1",
     ]
-    configs += "//build/config/linux:udev"
+    configs += [ "//build/config/linux:udev" ]
   } else {
     sources -= [
       "src/libusb/os/linux_udev.c",
@@ -91,9 +91,9 @@ static_library("libusb") {
   }
 
   if (is_win) {
-    include_dirs += "src/msvc"
+    include_dirs += [ "src/msvc" ]
   } else {
-    include_dirs += "src"
+    include_dirs += [ "src" ]
     sources -= [
       "src/libusb/os/poll_windows.c",
       "src/libusb/os/poll_windows.h",

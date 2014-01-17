@@ -38,15 +38,15 @@ config("skia_config") {
       "//third_party/skia/include/gpu",
       "//third_party/skia/src/gpu",
     ]
-    defines += "SK_SUPPORT_GPU=1"
+    defines += [ "SK_SUPPORT_GPU=1" ]
   } else {
-    defines += "SK_SUPPORT_GPU=0"
+    defines += [ "SK_SUPPORT_GPU=0" ]
   }
 
   # For POSIX platforms, prefer the Mutex implementation provided by Skia
   # since it does not generate static initializers.
   if (is_posix) {
-    defines += "SK_USE_POSIX_THREADS"
+    defines += [ "SK_USE_POSIX_THREADS" ]
   }
 
   if (is_android) {
@@ -111,13 +111,13 @@ skia_chrome_sources = [
   "ext/vector_platform_device_skia.h",
 ]
 if (is_posix) {
-  skia_chrome_sources -= "ext/SkThread_chrome.cc"
+  skia_chrome_sources -= [ "ext/SkThread_chrome.cc" ]
 }
 if (is_ios) {
-  skia_chrome_sources -= "ext/vector_platform_device_skia.cc"
+  skia_chrome_sources -= [ "ext/vector_platform_device_skia.cc" ]
 }
 if (is_win) {
-  skia_chrome_sources -= "ext/SkThread_chrome.cc"
+  skia_chrome_sources -= [ "ext/SkThread_chrome.cc" ]
 }
 if (is_android && !enable_printing) {
   skia_chrome_sources -= [
@@ -179,7 +179,7 @@ config("skia_library_config") {
       "SK_DEFAULT_FONT_CACHE_LIMIT=1048576"  # 1024 * 1024
     ]
   } else {
-    defines += "SK_DEFAULT_FONT_CACHE_LIMIT=20971520"  # 20 * 1024 * 1024
+    defines += [ "SK_DEFAULT_FONT_CACHE_LIMIT=20971520" ]  # 20 * 1024 * 1024
   }
 
   if (is_win) {
@@ -188,7 +188,7 @@ config("skia_library_config") {
       "//third_party/skia/src/utils/win",
     ]
 
-    defines += "SK_FONTHOST_USES_FONTMGR"
+    defines += [ "SK_FONTHOST_USES_FONTMGR" ]
 
     cflags = [
       # TODO(brettw) comment what these are.
@@ -1122,12 +1122,12 @@ if (component_mode == "static_library") {
     ]
 
     if (skia_support_pdf) {
-      deps += "//third_party/sfntly"
+      deps += [ "//third_party/sfntly" ]
     } else {
       # TODO(brettw) remove PDF sources.
     }
 
-    configs -= "//build/config/compiler:chromium_code"
+    configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":skia_config",
       ":skia_library_config",
@@ -1154,7 +1154,7 @@ if (component_mode == "static_library") {
     external = true
     sources = skia_chrome_sources
 
-    configs -= "//build/config/compiler:chromium_code"
+    configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":skia_config",
       "//build/config/compiler:no_chromium_code",
@@ -1203,7 +1203,7 @@ if (component_mode == "static_library") {
 
     defines = [ "SKIA_IMPLEMENTATION=1", ]
 
-    configs -= "//build/config/compiler:chromium_code"
+    configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":skia_config",
       ":skia_library_config",
@@ -1251,7 +1251,7 @@ static_library("skia_chrome_opts") {
     "ext/convolver_SSE2.cc",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":skia_config",
     "//build/config/compiler:no_chromium_code"
@@ -1279,7 +1279,7 @@ static_library("skia_opts") {
     "//third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":skia_config",
     "//build/config/compiler:no_chromium_code"
@@ -1296,7 +1296,7 @@ static_library("skia_opts_ssse3") {
     "//third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":skia_config",
     "//build/config/compiler:no_chromium_code"

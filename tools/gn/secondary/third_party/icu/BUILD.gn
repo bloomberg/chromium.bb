@@ -395,7 +395,7 @@ component("icuuc") {
   direct_dependent_configs = [ ":icu_config" ]
 
   if (!is_win) {
-    sources -= "source/stubdata/stubdata.c"
+    sources -= [ "source/stubdata/stubdata.c" ]
   }
 }
 

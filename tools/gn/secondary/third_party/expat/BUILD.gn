@@ -29,9 +29,9 @@ if (is_linux) {
 
     defines = [ "_LIB" ]
     if (is_win) {
-      defines += "COMPILED_FROM_DSP"
+      defines += [ "COMPILED_FROM_DSP" ]
     } else {
-      defines += "HAVE_EXPAT_CONFIG_H"
+      defines += [ "HAVE_EXPAT_CONFIG_H" ]
     }
   }
 }

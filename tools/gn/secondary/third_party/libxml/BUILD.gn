@@ -140,8 +140,8 @@ static_library("libxml") {
     "win32/include/libxml/xmlversion.h",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
-  configs += "//build/config/compiler:no_chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   direct_dependent_configs = [ ":libxml_config" ]
   forward_dependent_configs_from = [ "//third_party/icu:icuuc" ]

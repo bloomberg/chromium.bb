@@ -328,18 +328,18 @@ if (is_win) {
     "//build/config/win:sdk",
   ]
 } else if (is_clang) {
-  native_compiler_configs += "//build/config/clang:find_bad_constructs"
+  native_compiler_configs += [ "//build/config/clang:find_bad_constructs" ]
 }
 
 # Optimizations and debug checking.
 if (is_debug) {
-  native_compiler_configs += "//build/config:debug"
+  native_compiler_configs += [ "//build/config:debug" ]
   default_optimization_config = "//build/config/compiler:no_optimize"
 } else {
-  native_compiler_configs += "//build/config:release"
+  native_compiler_configs += [ "//build/config:release" ]
   default_optimization_config = "//build/config/compiler:optimize"
 }
-native_compiler_configs += default_optimization_config
+native_compiler_configs += [ default_optimization_config ]
 
 # Symbol setup.
 if (is_clang && (is_linux || is_android)) {
@@ -357,7 +357,7 @@ if (is_clang && (is_linux || is_android)) {
 } else {
   assert(false, "Bad value for symbol_level.")
 }
-native_compiler_configs += default_symbols_config
+native_compiler_configs += [ default_symbols_config ]
 
 # Windows linker setup for EXEs and DLLs.
 if (is_win) {
@@ -383,9 +383,9 @@ set_defaults("executable") {
   if (is_win) {
     configs += windows_linker_configs
   } else if (is_mac) {
-    configs += "//build/config/mac:mac_dynamic_flags"
+    configs += [ "//build/config/mac:mac_dynamic_flags" ]
   } else if (is_linux) {
-    configs += "//build/config/linux:executable_ldconfig"
+    configs += [ "//build/config/linux:executable_ldconfig" ]
   }
 }
 
@@ -398,7 +398,7 @@ set_defaults("shared_library") {
   if (is_win) {
     configs += windows_linker_configs
   } else if (is_mac) {
-    configs += "//build/config/mac:mac_dynamic_flags"
+    configs += [ "//build/config/mac:mac_dynamic_flags" ]
   }
 }
 

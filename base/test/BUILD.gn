@@ -106,7 +106,7 @@ static_library("test_support_base") {
   }
   if (is_ios) {
     # iOS uses its own unit test launcher.
-    sources -= "launcher/unit_test_launcher.cc"
+    sources -= [ "launcher/unit_test_launcher.cc" ]
 
     # Pull in specific Mac files for iOS (which have been filtered out
     # by file name rules).
@@ -114,7 +114,7 @@ static_library("test_support_base") {
     sources += "test_file_util_mac.cc"
   }
   if (toolkit_uses_gtk) {
-    configs += "//build/config/linux:gtk"
+    configs += [ "//build/config/linux:gtk" ]
   }
 }
 
@@ -135,7 +135,7 @@ static_library("test_support_perf") {
   direct_dependent_configs = [ ":perf_test_config" ]
 
   if (toolkit_uses_gtk) {
-    configs += "//build/config/linux:gtk"
+    configs += [ "//build/config/linux:gtk" ]
   }
 }
 

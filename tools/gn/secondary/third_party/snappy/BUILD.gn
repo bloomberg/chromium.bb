@@ -10,11 +10,11 @@ config("snappy_config") {
   # These OS-specific generated headers were made by running the configure
   # script offline.
   if (is_win) {
-    include_dirs += "win32"
+    include_dirs += [ "win32" ]
   } else if (is_mac) {
-    include_dirs += "mac"
+    include_dirs += [ "mac" ]
   } else {
-    include_dirs += "linux"
+    include_dirs += [ "linux" ]
   }
 }
 
@@ -29,8 +29,8 @@ static_library("snappy") {
     "src/snappy.h",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
-  configs += "//build/config/compiler:no_chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   direct_dependent_configs = [ ":snappy_config" ]
 
   #['OS=="win"', {
@@ -60,8 +60,8 @@ test("snappy_unittest") {
     "src/snappy_unittest.cc",
   ]
 
-  configs -= "//build/config/compiler:chromium_code"
-  configs += "//build/config/compiler:no_chromium_code"
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   deps = [
     ":snappy",
