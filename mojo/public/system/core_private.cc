@@ -36,11 +36,10 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
   return g_core->WaitMany(handles, flags, num_handles, deadline);
 }
 
-MojoResult MojoCreateMessagePipe(MojoHandle* message_pipe_handle_0,
-                                 MojoHandle* message_pipe_handle_1) {
+MojoResult MojoCreateMessagePipe(MojoHandle* message_pipe_handle0,
+                                 MojoHandle* message_pipe_handle1) {
   assert(g_core);
-  return g_core->CreateMessagePipe(message_pipe_handle_0,
-                                   message_pipe_handle_1);
+  return g_core->CreateMessagePipe(message_pipe_handle0, message_pipe_handle1);
 }
 
 MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,

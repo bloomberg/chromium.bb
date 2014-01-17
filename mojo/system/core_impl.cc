@@ -148,11 +148,11 @@ MojoResult CoreImpl::WaitMany(const MojoHandle* handles,
   return WaitManyInternal(handles, flags, num_handles, deadline);
 }
 
-MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle_0,
-                                       MojoHandle* message_pipe_handle_1) {
-  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle_0, 1))
+MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle0,
+                                       MojoHandle* message_pipe_handle1) {
+  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle0, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle_1, 1))
+  if (!VerifyUserPointer<MojoHandle>(message_pipe_handle1, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   scoped_refptr<MessagePipeDispatcher> dispatcher_0(
@@ -179,8 +179,8 @@ MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle_0,
   dispatcher_0->Init(message_pipe, 0);
   dispatcher_1->Init(message_pipe, 1);
 
-  *message_pipe_handle_0 = h0;
-  *message_pipe_handle_1 = h1;
+  *message_pipe_handle0 = h0;
+  *message_pipe_handle1 = h1;
   return MOJO_RESULT_OK;
 }
 

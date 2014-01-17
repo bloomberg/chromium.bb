@@ -348,20 +348,20 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWaitMany(const MojoHandle* handles,
 
 // Creates a message pipe, which is a bidirectional communication channel for
 // framed data (i.e., messages). Messages can contain plain data and/or Mojo
-// handles. On success, |*message_pipe_handle_0| and |*message_pipe_1| are set
-// to handles for the two endpoints (ports) for the message pipe.
+// handles. On success, |*message_pipe_handle0| and |*message_pipe_handle1| are
+// set to handles for the two endpoints (ports) for the message pipe.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |message_pipe_handle_0| and/or
-//       |message_pipe_handle_1| do not appear to be valid pointers.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |message_pipe_handle0| and/or
+//       |message_pipe_handle1| do not appear to be valid pointers.
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
 //       been reached.
 //
 // TODO(vtl): Add an options struct pointer argument.
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
-    MojoHandle* message_pipe_handle_0,
-    MojoHandle* message_pipe_handle_1);
+    MojoHandle* message_pipe_handle0,
+    MojoHandle* message_pipe_handle1);
 
 // Writes a message to the message pipe endpoint given by |message_pipe_handle|,
 // with message data specified by |bytes| of size |num_bytes| and attached

@@ -22,14 +22,14 @@ namespace js {
 namespace {
 
 gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
-  MojoHandle handle_0 = MOJO_HANDLE_INVALID;
-  MojoHandle handle_1 = MOJO_HANDLE_INVALID;
-  MojoResult result = MojoCreateMessagePipe(&handle_0, &handle_1);
+  MojoHandle handle0 = MOJO_HANDLE_INVALID;
+  MojoHandle handle1 = MOJO_HANDLE_INVALID;
+  MojoResult result = MojoCreateMessagePipe(&handle0, &handle1);
   CHECK(result == MOJO_RESULT_OK);
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
-  dictionary.Set("handle0", handle_0);
-  dictionary.Set("handle1", handle_1);
+  dictionary.Set("handle0", handle0);
+  dictionary.Set("handle1", handle1);
   return dictionary;
 }
 

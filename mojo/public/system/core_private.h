@@ -29,8 +29,8 @@ class MOJO_SYSTEM_EXPORT Core {
                               const MojoWaitFlags* flags,
                               uint32_t num_handles,
                               MojoDeadline deadline) = 0;
-  virtual MojoResult CreateMessagePipe(MojoHandle* message_pipe_handle_0,
-                                       MojoHandle* message_pipe_handle_1) = 0;
+  virtual MojoResult CreateMessagePipe(MojoHandle* message_pipe_handle0,
+                                       MojoHandle* message_pipe_handle1) = 0;
   virtual MojoResult WriteMessage(MojoHandle message_pipe_handle,
                                   const void* bytes,
                                   uint32_t num_bytes,
