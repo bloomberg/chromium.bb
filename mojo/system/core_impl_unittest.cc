@@ -251,11 +251,11 @@ TEST_F(CoreImplTest, InvalidArguments) {
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(0u, info.GetWriteMessageCallCount());
 
-    MockHandleInfo info_2;
-    MojoHandle h_2 = CreateMockHandle(&info_2);
+    MockHandleInfo info2;
+    MojoHandle h2 = CreateMockHandle(&info2);
 
     // This is "okay", but |MockDispatcher| doesn't implement it.
-    handles[0] = h_2;
+    handles[0] = h2;
     EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
               core()->WriteMessage(h, NULL, 0, handles, 1,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -275,15 +275,15 @@ TEST_F(CoreImplTest, InvalidArguments) {
     EXPECT_EQ(1u, info.GetWriteMessageCallCount());
 
     // Can't send a handle twice in the same message.
-    handles[1] = h_2;
+    handles[1] = h2;
     EXPECT_EQ(MOJO_RESULT_BUSY,
               core()->WriteMessage(h, NULL, 0, handles, 2,
                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
     EXPECT_EQ(1u, info.GetWriteMessageCallCount());
 
-    // Note: Since we never successfully sent anything with it, |h_2| should
+    // Note: Since we never successfully sent anything with it, |h2| should
     // still be valid.
-    EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_2));
+    EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h2));
 
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h));
   }

@@ -38,114 +38,114 @@ TEST(MessagePipeDispatcherTest, Basic) {
   uint32_t buffer_size;
   int64_t elapsed_micros;
 
-  // Run this test both with |d_0| as port 0, |d_1| as port 1 and vice versa.
+  // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d_0(new MessagePipeDispatcher());
-    scoped_refptr<MessagePipeDispatcher> d_1(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher());
     {
       scoped_refptr<MessagePipe> mp(new MessagePipe());
-      d_0->Init(mp, i);  // 0, 1.
-      d_1->Init(mp, i ^ 1);  // 1, 0.
+      d0->Init(mp, i);  // 0, 1.
+      d1->Init(mp, i ^ 1);  // 1, 0.
     }
     Waiter w;
 
     // Try adding a writable waiter when already writable.
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 0));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 0));
     // Shouldn't need to remove the waiter (it was not added).
 
-    // Add a readable waiter to |d_0|, then make it readable (by writing to
-    // |d_1|), then wait.
+    // Add a readable waiter to |d0|, then make it readable (by writing to
+    // |d1|), then wait.
     w.Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 1));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 1));
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_1->WriteMessage(buffer, kBufferSize,
-                                NULL,
-                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d1->WriteMessage(buffer, kBufferSize,
+                               NULL,
+                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     stopwatch.Start();
     EXPECT_EQ(1, w.Wait(MOJO_DEADLINE_INDEFINITE));
     elapsed_micros = stopwatch.Elapsed();
     EXPECT_LT(elapsed_micros, kEpsilonMicros);
-    d_0->RemoveWaiter(&w);
+    d0->RemoveWaiter(&w);
 
     // Try adding a readable waiter when already readable (from above).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 2));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 2));
     // Shouldn't need to remove the waiter (it was not added).
 
-    // Make |d_0| no longer readable (by reading from it).
+    // Make |d0| no longer readable (by reading from it).
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_0->ReadMessage(buffer, &buffer_size,
-                               0, NULL,
-                               MOJO_READ_MESSAGE_FLAG_NONE));
+              d0->ReadMessage(buffer, &buffer_size,
+                              0, NULL,
+                              MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
 
-    // Wait for zero time for readability on |d_0| (will time out).
+    // Wait for zero time for readability on |d0| (will time out).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0));
     elapsed_micros = stopwatch.Elapsed();
     EXPECT_LT(elapsed_micros, kEpsilonMicros);
-    d_0->RemoveWaiter(&w);
+    d0->RemoveWaiter(&w);
 
-    // Wait for non-zero, finite time for readability on |d_0| (will time out).
+    // Wait for non-zero, finite time for readability on |d0| (will time out).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(2 * kEpsilonMicros));
     elapsed_micros = stopwatch.Elapsed();
     EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
     EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
-    d_0->RemoveWaiter(&w);
+    d0->RemoveWaiter(&w);
 
-    EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
-    EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
+    EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
+    EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
   }
 }
 
 TEST(MessagePipeDispatcherTest, InvalidParams) {
   char buffer[1];
 
-  scoped_refptr<MessagePipeDispatcher> d_0(new MessagePipeDispatcher());
-  scoped_refptr<MessagePipeDispatcher> d_1(new MessagePipeDispatcher());
+  scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher());
+  scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher());
   {
     scoped_refptr<MessagePipe> mp(new MessagePipe());
-    d_0->Init(mp, 0);
-    d_1->Init(mp, 1);
+    d0->Init(mp, 0);
+    d1->Init(mp, 1);
   }
 
   // |WriteMessage|:
   // Null buffer with nonzero buffer size.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d_0->WriteMessage(NULL, 1,
-                              NULL,
-                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d0->WriteMessage(NULL, 1,
+                             NULL,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE));
   // Huge buffer size.
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            d_0->WriteMessage(buffer, std::numeric_limits<uint32_t>::max(),
-                              NULL,
-                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d0->WriteMessage(buffer, std::numeric_limits<uint32_t>::max(),
+                             NULL,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |ReadMessage|:
   // Null buffer with nonzero buffer size.
   uint32_t buffer_size = 1;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d_0->ReadMessage(NULL, &buffer_size,
-                             0, NULL,
-                             MOJO_READ_MESSAGE_FLAG_NONE));
+            d0->ReadMessage(NULL, &buffer_size,
+                            0, NULL,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
 
-  EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
-  EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
+  EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
+  EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
 }
 
 // Test what happens when one end is closed (single-threaded test).
@@ -154,102 +154,102 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
   uint32_t buffer_size;
 
-  // Run this test both with |d_0| as port 0, |d_1| as port 1 and vice versa.
+  // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d_0(new MessagePipeDispatcher());
-    scoped_refptr<MessagePipeDispatcher> d_1(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher());
     {
       scoped_refptr<MessagePipe> mp(new MessagePipe());
-      d_0->Init(mp, i);  // 0, 1.
-      d_1->Init(mp, i ^ 1);  // 1, 0.
+      d0->Init(mp, i);  // 0, 1.
+      d1->Init(mp, i ^ 1);  // 1, 0.
     }
     Waiter w;
 
-    // Write (twice) to |d_1|.
+    // Write (twice) to |d1|.
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_1->WriteMessage(buffer, kBufferSize,
-                                NULL,
-                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d1->WriteMessage(buffer, kBufferSize,
+                               NULL,
+                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     buffer[0] = 234567890;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_1->WriteMessage(buffer, kBufferSize,
-                                NULL,
-                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d1->WriteMessage(buffer, kBufferSize,
+                               NULL,
+                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    // Try waiting for readable on |d_0|; should fail (already satisfied).
+    // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 0));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 0));
 
-    // Try reading from |d_1|; should fail (nothing to read).
+    // Try reading from |d1|; should fail (nothing to read).
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-              d_1->ReadMessage(buffer, &buffer_size,
-                               0, NULL,
-                               MOJO_READ_MESSAGE_FLAG_NONE));
+              d1->ReadMessage(buffer, &buffer_size,
+                              0, NULL,
+                              MOJO_READ_MESSAGE_FLAG_NONE));
 
-    // Close |d_1|.
-    EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
+    // Close |d1|.
+    EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
 
-    // Try waiting for readable on |d_0|; should fail (already satisfied).
+    // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 1));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 1));
 
-    // Read from |d_0|.
+    // Read from |d0|.
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_0->ReadMessage(buffer, &buffer_size,
-                               0, NULL,
-                               MOJO_READ_MESSAGE_FLAG_NONE));
+              d0->ReadMessage(buffer, &buffer_size,
+                              0, NULL,
+                              MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
 
-    // Try waiting for readable on |d_0|; should fail (already satisfied).
+    // Try waiting for readable on |d0|; should fail (already satisfied).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 2));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 2));
 
-    // Read again from |d_0|.
+    // Read again from |d0|.
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_0->ReadMessage(buffer, &buffer_size,
-                               0, NULL,
-                               MOJO_READ_MESSAGE_FLAG_NONE));
+              d0->ReadMessage(buffer, &buffer_size,
+                              0, NULL,
+                              MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(234567890, buffer[0]);
 
-    // Try waiting for readable on |d_0|; should fail (unsatisfiable).
+    // Try waiting for readable on |d0|; should fail (unsatisfiable).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
 
-    // Try waiting for writable on |d_0|; should fail (unsatisfiable).
+    // Try waiting for writable on |d0|; should fail (unsatisfiable).
     w.Init();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d_0->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 4));
+              d0->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 4));
 
-    // Try reading from |d_0|; should fail (nothing to read and other end
+    // Try reading from |d0|; should fail (nothing to read and other end
     // closed).
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d_0->ReadMessage(buffer, &buffer_size,
-                               0, NULL,
-                               MOJO_READ_MESSAGE_FLAG_NONE));
+              d0->ReadMessage(buffer, &buffer_size,
+                              0, NULL,
+                              MOJO_READ_MESSAGE_FLAG_NONE));
 
-    // Try writing to |d_0|; should fail (other end closed).
+    // Try writing to |d0|; should fail (other end closed).
     buffer[0] = 345678901;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d_0->WriteMessage(buffer, kBufferSize,
-                                NULL,
-                                MOJO_WRITE_MESSAGE_FLAG_NONE));
+              d0->WriteMessage(buffer, kBufferSize,
+                               NULL,
+                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-    EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
+    EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   }
 }
 
@@ -262,33 +262,33 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
   MojoResult result;
   int64_t elapsed_micros;
 
-  // Run this test both with |d_0| as port 0, |d_1| as port 1 and vice versa.
+  // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d_0(new MessagePipeDispatcher());
-    scoped_refptr<MessagePipeDispatcher> d_1(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher());
     {
       scoped_refptr<MessagePipe> mp(new MessagePipe());
-      d_0->Init(mp, i);  // 0, 1.
-      d_1->Init(mp, i ^ 1);  // 1, 0.
+      d0->Init(mp, i);  // 0, 1.
+      d1->Init(mp, i ^ 1);  // 1, 0.
     }
 
-    // Wait for readable on |d_1|, which will become readable after some time.
+    // Wait for readable on |d1|, which will become readable after some time.
     {
-      test::WaiterThread thread(d_1,
-                                MOJO_WAIT_FLAG_READABLE,
-                                MOJO_DEADLINE_INDEFINITE,
-                                0,
-                                &did_wait, &result);
+      test::WaiterThread thread(d1,
+                               MOJO_WAIT_FLAG_READABLE,
+                               MOJO_DEADLINE_INDEFINITE,
+                               0,
+                               &did_wait, &result);
       stopwatch.Start();
       thread.Start();
       base::PlatformThread::Sleep(
           base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
-      // Wake it up by writing to |d_0|.
+      // Wake it up by writing to |d0|.
       buffer[0] = 123456789;
       EXPECT_EQ(MOJO_RESULT_OK,
-                d_0->WriteMessage(buffer, kBufferSize,
-                                  NULL,
-                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
+                d0->WriteMessage(buffer, kBufferSize,
+                                 NULL,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
     }  // Joins the thread.
     elapsed_micros = stopwatch.Elapsed();
     EXPECT_TRUE(did_wait);
@@ -296,9 +296,9 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
     EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
 
-    // Now |d_1| is already readable. Try waiting for it again.
+    // Now |d1| is already readable. Try waiting for it again.
     {
-      test::WaiterThread thread(d_1,
+      test::WaiterThread thread(d1,
                                 MOJO_WAIT_FLAG_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
                                 1,
@@ -311,20 +311,20 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS, result);
     EXPECT_LT(elapsed_micros, kEpsilonMicros);
 
-    // Consume what we wrote to |d_0|.
+    // Consume what we wrote to |d0|.
     buffer[0] = 0;
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
-              d_1->ReadMessage(buffer, &buffer_size,
-                               0, NULL,
-                               MOJO_READ_MESSAGE_FLAG_NONE));
+              d1->ReadMessage(buffer, &buffer_size,
+                              0, NULL,
+                              MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
 
-    // Wait for readable on |d_1| and close |d_0| after some time, which should
+    // Wait for readable on |d1| and close |d0| after some time, which should
     // cancel that wait.
     {
-      test::WaiterThread thread(d_1,
+      test::WaiterThread thread(d1,
                                 MOJO_WAIT_FLAG_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
                                 0,
@@ -333,7 +333,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
       thread.Start();
       base::PlatformThread::Sleep(
           base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
-      EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
+      EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
     }  // Joins the thread.
     elapsed_micros = stopwatch.Elapsed();
     EXPECT_TRUE(did_wait);
@@ -341,22 +341,22 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
     EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
 
-    EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
+    EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
   }
 
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d_0(new MessagePipeDispatcher());
-    scoped_refptr<MessagePipeDispatcher> d_1(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher());
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher());
     {
       scoped_refptr<MessagePipe> mp(new MessagePipe());
-      d_0->Init(mp, i);  // 0, 1.
-      d_1->Init(mp, i ^ 1);  // 1, 0.
+      d0->Init(mp, i);  // 0, 1.
+      d1->Init(mp, i ^ 1);  // 1, 0.
     }
 
-    // Wait for readable on |d_1| and close |d_1| after some time, which should
+    // Wait for readable on |d1| and close |d1| after some time, which should
     // cancel that wait.
     {
-      test::WaiterThread thread(d_1,
+      test::WaiterThread thread(d1,
                                 MOJO_WAIT_FLAG_READABLE,
                                 MOJO_DEADLINE_INDEFINITE,
                                 0,
@@ -365,7 +365,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
       thread.Start();
       base::PlatformThread::Sleep(
           base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
-      EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
+      EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
     }  // Joins the thread.
     elapsed_micros = stopwatch.Elapsed();
     EXPECT_TRUE(did_wait);
@@ -373,7 +373,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
     EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
 
-    EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
+    EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   }
 }
 

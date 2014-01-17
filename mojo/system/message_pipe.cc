@@ -15,10 +15,10 @@
 namespace mojo {
 namespace system {
 
-MessagePipe::MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint_0,
-                         scoped_ptr<MessagePipeEndpoint> endpoint_1) {
-  endpoints_[0].reset(endpoint_0.release());
-  endpoints_[1].reset(endpoint_1.release());
+MessagePipe::MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint0,
+                         scoped_ptr<MessagePipeEndpoint> endpoint1) {
+  endpoints_[0].reset(endpoint0.release());
+  endpoints_[1].reset(endpoint1.release());
 }
 
 MessagePipe::MessagePipe() {

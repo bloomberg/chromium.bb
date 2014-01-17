@@ -186,17 +186,17 @@ MOJO_COMPILE_ASSERT(sizeof(ScopedMessagePipeHandle) ==
 
 // TODO(vtl): In C++11, we could instead return a pair of
 // |ScopedMessagePipeHandle|s.
-inline void CreateMessagePipe(ScopedMessagePipeHandle* message_pipe_0,
-                              ScopedMessagePipeHandle* message_pipe_1) {
-  assert(message_pipe_0);
-  assert(message_pipe_1);
-  MessagePipeHandle h_0;
-  MessagePipeHandle h_1;
+inline void CreateMessagePipe(ScopedMessagePipeHandle* message_pipe0,
+                              ScopedMessagePipeHandle* message_pipe1) {
+  assert(message_pipe0);
+  assert(message_pipe1);
+  MessagePipeHandle h0;
+  MessagePipeHandle h1;
   MojoResult result MOJO_ALLOW_UNUSED =
-      MojoCreateMessagePipe(h_0.mutable_value(), h_1.mutable_value());
+      MojoCreateMessagePipe(h0.mutable_value(), h1.mutable_value());
   assert(result == MOJO_RESULT_OK);
-  message_pipe_0->reset(h_0);
-  message_pipe_1->reset(h_1);
+  message_pipe0->reset(h0);
+  message_pipe1->reset(h1);
 }
 
 class MessagePipe {

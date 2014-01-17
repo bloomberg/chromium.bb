@@ -155,20 +155,18 @@ MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle0,
   if (!VerifyUserPointer<MojoHandle>(message_pipe_handle1, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  scoped_refptr<MessagePipeDispatcher> dispatcher_0(
-      new MessagePipeDispatcher());
-  scoped_refptr<MessagePipeDispatcher> dispatcher_1(
-      new MessagePipeDispatcher());
+  scoped_refptr<MessagePipeDispatcher> dispatcher0(new MessagePipeDispatcher());
+  scoped_refptr<MessagePipeDispatcher> dispatcher1(new MessagePipeDispatcher());
 
   MojoHandle h0, h1;
   {
     base::AutoLock locker(handle_table_lock_);
 
-    h0 = AddDispatcherNoLock(dispatcher_0);
+    h0 = AddDispatcherNoLock(dispatcher0);
     if (h0 == MOJO_HANDLE_INVALID)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-    h1 = AddDispatcherNoLock(dispatcher_1);
+    h1 = AddDispatcherNoLock(dispatcher1);
     if (h1 == MOJO_HANDLE_INVALID) {
       handle_table_.erase(h0);
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -176,8 +174,8 @@ MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle0,
   }
 
   scoped_refptr<MessagePipe> message_pipe(new MessagePipe());
-  dispatcher_0->Init(message_pipe, 0);
-  dispatcher_1->Init(message_pipe, 1);
+  dispatcher0->Init(message_pipe, 0);
+  dispatcher1->Init(message_pipe, 1);
 
   *message_pipe_handle0 = h0;
   *message_pipe_handle1 = h1;

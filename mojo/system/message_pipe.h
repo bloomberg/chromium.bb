@@ -30,8 +30,8 @@ class Waiter;
 class MOJO_SYSTEM_IMPL_EXPORT MessagePipe :
     public base::RefCountedThreadSafe<MessagePipe> {
  public:
-  MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint_0,
-              scoped_ptr<MessagePipeEndpoint> endpoint_1);
+  MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint0,
+              scoped_ptr<MessagePipeEndpoint> endpoint1);
 
   // Convenience constructor that constructs a |MessagePipe| with two new
   // |LocalMessagePipeEndpoint|s.
