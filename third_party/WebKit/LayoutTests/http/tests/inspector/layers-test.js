@@ -1,7 +1,11 @@
 function initialize_LayerTreeTests()
 {
     // FIXME: remove once out of experimental.
-    WebInspector.inspectorView.addPanel(new WebInspector.LayersPanelDescriptor());
+    new WebInspector.LayersPanelDescriptor();
+    var extensions = WebInspector.moduleManager.extensions(WebInspector.Panel).forEach(function(extension) {
+        if (extension.module().name() === "LayersPanel")
+            WebInspector.inspectorView.addPanel(new WebInspector.ModuleManagerExtensionPanelDescriptor(extension));
+    });
     InspectorTest._layerTreeModel = WebInspector.panel("layers")._model;
 
     InspectorTest.labelForLayer = function(layer)
