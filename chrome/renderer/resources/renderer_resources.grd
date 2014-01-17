@@ -60,6 +60,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS" file="extensions\declarative_content_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS" file="extensions\declarative_webrequest_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DESKTOP_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\desktop_capture_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\developer_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DOWNLOADS_CUSTOM_BINDINGS_JS" file="extensions\downloads_custom_bindings.js" type="BINDATA" />
         <include name="IDR_BLUETOOTH_CUSTOM_BINDINGS_JS" file="extensions\bluetooth_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PERMISSIONS_CUSTOM_BINDINGS_JS" file="extensions\permissions_custom_bindings.js" type="BINDATA" />

@@ -366,21 +366,21 @@ class DeveloperPrivateIsProfileManagedFunction
    virtual bool RunImpl() OVERRIDE;
 };
 
-class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
+class DeveloperPrivateLoadDirectoryFunction
     : public ChromeAsyncExtensionFunction {
   public:
-   DECLARE_EXTENSION_FUNCTION("developerPrivate.exportSyncfsFolderToLocalfs",
+   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadDirectory",
                               DEVELOPERPRIVATE_LOADUNPACKEDCROS);
 
-   DeveloperPrivateExportSyncfsFolderToLocalfsFunction();
+   DeveloperPrivateLoadDirectoryFunction();
 
   protected:
-   virtual ~DeveloperPrivateExportSyncfsFolderToLocalfsFunction();
+   virtual ~DeveloperPrivateLoadDirectoryFunction();
 
    // ExtensionFunction
    virtual bool RunImpl() OVERRIDE;
 
-   void ClearPrexistingDirectoryContent(const base::FilePath& project_path);
+   void ClearExistingDirectoryContent(const base::FilePath& project_path);
 
    void ReadSyncFileSystemDirectory(const base::FilePath& project_path,
                                     const base::FilePath& destination_path);
@@ -402,32 +402,26 @@ class DeveloperPrivateExportSyncfsFolderToLocalfsFunction
    void CopyFile(const base::FilePath& src_path,
                  const base::FilePath& dest_path);
 
+   void Load();
+
    scoped_refptr<fileapi::FileSystemContext> context_;
 
+   // syncfs url representing the root of the folder to be copied.
+   std::string project_base_url_;
+
+   // physical path on disc of the folder to be copied.
+   base::FilePath project_base_path_;
+
+   // Path of the current folder to be copied.
+   base::FilePath current_path_;
+
   private:
-   int pendingCopyOperationsCount_;
+   int pending_copy_operations_count_;
 
    // This is set to false if any of the copyFile operations fail on
    // call of the API. It is returned as a response of the API call.
    bool success_;
-};
 
-class DeveloperPrivateLoadProjectFunction
-    : public ChromeAsyncExtensionFunction {
-  public:
-   DECLARE_EXTENSION_FUNCTION("developerPrivate.loadProject",
-                              DEVELOPERPRIVATE_LOADPROJECT);
-
-   DeveloperPrivateLoadProjectFunction();
-
-  protected:
-   virtual ~DeveloperPrivateLoadProjectFunction();
-
-   // ExtensionFunction
-   virtual bool RunImpl() OVERRIDE;
-
-   void GetUnpackedExtension(const base::FilePath& path,
-                             const ExtensionSet* extensions);
 };
 
 }  // namespace api

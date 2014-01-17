@@ -981,6 +981,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("desktopCapture",
                              IDR_DESKTOP_CAPTURE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("developerPrivate",
+                             IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("downloads",
                              IDR_DOWNLOADS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",

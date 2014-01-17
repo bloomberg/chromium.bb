@@ -175,14 +175,9 @@ namespace developerPrivate {
     // Load a user selected unpacked item
     static void loadUnpacked(optional VoidCallback callback);
 
-    // Copies the syncfs folder for the extension to local disk.
-    static void exportSyncfsFolderToLocalfs(DOMString folder_name,
-                                            optional VoidCallback callback);
-
-    // Loads the unpacked app / extension.
-    // |callback| called with itemId of the loaded item.
-    static void loadProject(DOMString project_name,
-                            PathCallback callback);
+    // Loads an extension / app from a given |directory|
+    static void loadDirectory([instanceOf=DirectoryEntry] object directory,
+                        PathCallback callback);
 
     // Open Dialog to browse to an entry.
     // |select_type| : Select a file or a folder.
