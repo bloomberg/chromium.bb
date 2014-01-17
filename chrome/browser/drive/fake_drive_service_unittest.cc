@@ -1118,7 +1118,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
   // The copied entry should have the new resource ID and the title.
-  EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
+  EXPECT_NE(kResourceId, resource_entry->resource_id());
   EXPECT_EQ("new title", resource_entry->title());
   EXPECT_EQ(base::Time::FromUTCExploded(kModifiedDate),
             resource_entry->updated_time());
@@ -1168,7 +1168,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
   // The copied entry should have the new resource ID and the title.
-  EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
+  EXPECT_NE(kResourceId, resource_entry->resource_id());
   EXPECT_EQ("new title", resource_entry->title());
   EXPECT_TRUE(HasParent(kResourceId, fake_service_.GetRootResourceId()));
   // Should be incremented as a new hosted document was created.
@@ -1222,7 +1222,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
-  // The copied entry should have the new resource ID and the title.
+  // The updated entry should have the new title.
   EXPECT_EQ(kResourceId, resource_entry->resource_id());
   EXPECT_EQ("new title", resource_entry->title());
   EXPECT_EQ(base::Time::FromUTCExploded(kModifiedDate),
@@ -1280,7 +1280,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
-  // The copied entry should have the new resource ID and the title.
+  // The updated entry should have the new title.
   EXPECT_EQ(kResourceId, resource_entry->resource_id());
   EXPECT_EQ("new title", resource_entry->title());
   EXPECT_TRUE(HasParent(kResourceId, "fake_root"));

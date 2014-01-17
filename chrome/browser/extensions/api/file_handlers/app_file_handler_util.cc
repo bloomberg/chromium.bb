@@ -124,6 +124,8 @@ class WritableFileChecker
   void CheckRemoteWritableFile(const base::FilePath& remote_path,
                                drive::FileError error,
                                const base::FilePath& local_path);
+  void RemoteCheckDone(const base::FilePath& remote_path,
+                       drive::FileError error);
 #endif
 
   const std::vector<base::FilePath> paths_;
@@ -156,10 +158,18 @@ void WritableFileChecker::Check() {
          it != paths_.end();
          ++it) {
       DCHECK(drive::util::IsUnderDriveMountPoint(*it));
-      drive::util::PrepareWritableFileAndRun(
-          profile_,
-          *it,
-          base::Bind(&WritableFileChecker::CheckRemoteWritableFile, this, *it));
+      if (is_directory_) {
+        drive::util::CheckDirectoryExists(
+            profile_,
+            *it,
+            base::Bind(&WritableFileChecker::RemoteCheckDone, this, *it));
+      } else {
+        drive::util::PrepareWritableFileAndRun(
+            profile_,
+            *it,
+            base::Bind(&WritableFileChecker::CheckRemoteWritableFile, this,
+                       *it));
+      }
     }
     return;
   }
@@ -215,6 +225,12 @@ void WritableFileChecker::CheckRemoteWritableFile(
     const base::FilePath& remote_path,
     drive::FileError error,
     const base::FilePath& /* local_path */) {
+  RemoteCheckDone(remote_path, error);
+}
+
+void WritableFileChecker::RemoteCheckDone(
+    const base::FilePath& remote_path,
+    drive::FileError error) {
   if (error == drive::FILE_ERROR_OK) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,

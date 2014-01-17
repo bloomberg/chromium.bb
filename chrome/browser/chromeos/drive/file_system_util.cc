@@ -109,6 +109,15 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
   return service;
 }
 
+void CheckDirectoryExistsAfterGetResourceEntry(
+    const FileOperationCallback& callback,
+    FileError error,
+    scoped_ptr<ResourceEntry> entry) {
+  if (error == FILE_ERROR_OK && !entry->file_info().is_directory())
+    error = FILE_ERROR_NOT_A_DIRECTORY;
+  callback.Run(error);
+}
+
 }  // namespace
 
 const base::FilePath& GetDriveGrandRootPath() {
@@ -341,6 +350,20 @@ void EnsureDirectoryExists(Profile* profile,
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE, base::Bind(callback, FILE_ERROR_OK));
   }
+}
+
+void CheckDirectoryExists(Profile* profile,
+                          const base::FilePath& directory,
+                          const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  FileSystemInterface* file_system = GetFileSystemByProfile(profile);
+  DCHECK(file_system);
+
+  file_system->GetResourceEntry(
+      ExtractDrivePath(directory),
+      base::Bind(&CheckDirectoryExistsAfterGetResourceEntry, callback));
 }
 
 void EmptyFileOperationCallback(FileError error) {

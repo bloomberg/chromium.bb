@@ -77,6 +77,9 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   void SetUpTestFileHierarchy() {
     const std::string root = fake_drive_service_->GetRootResourceId();
     ASSERT_TRUE(AddTestFile("open_existing.txt", "Can you see me?", root));
+    const std::string subdir = AddTestDirectory("subdir", root);
+    ASSERT_FALSE(subdir.empty());
+    ASSERT_TRUE(AddTestFile("open_existing.txt", "Can you see me?", subdir));
   }
 
   bool AddTestFile(const std::string& title,
@@ -90,6 +93,19 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
                                                          &resource_entry));
     content::RunAllPendingInMessageLoop();
     return error == google_apis::HTTP_CREATED && resource_entry;
+  }
+
+  std::string AddTestDirectory(const std::string& title,
+                               const std::string& parent_id) {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry;
+    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    fake_drive_service_->AddNewDirectory(
+        parent_id, title,
+        google_apis::test_util::CreateCopyResultCallback(&error,
+                                                         &resource_entry));
+    content::RunAllPendingInMessageLoop();
+    return error == google_apis::HTTP_CREATED && resource_entry ?
+        resource_entry->resource_id() : "";
   }
 
   base::ScopedTempDir test_cache_root_;
@@ -119,6 +135,49 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
       &test_file);
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/open_existing_with_write")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiOpenDirectoryTest) {
+  base::FilePath test_directory =
+      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_directory);
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/open_directory"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiOpenDirectoryWithWriteTest) {
+  base::FilePath test_directory =
+      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_directory);
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/file_system/open_directory_with_write"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiOpenDirectoryWithoutPermissionTest) {
+  base::FilePath test_directory =
+      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_directory);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/open_directory_without_permission"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForDrive,
+                       FileSystemApiOpenDirectoryWithOnlyWritePermissionTest) {
+  base::FilePath test_directory =
+      drive::util::GetDriveMountPointPath().AppendASCII("root/subdir");
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_directory);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/open_directory_with_only_write"))
+      << message_;
 }
 
 }  // namespace extensions

@@ -781,8 +781,7 @@ CancelCallback FakeDriveService::CopyResource(
           resource_id == current_resource_id) {
         // Make a copy and set the new resource ID and the new title.
         scoped_ptr<base::DictionaryValue> copied_entry(entry->DeepCopy());
-        copied_entry->SetString("gd$resourceId.$t",
-                                resource_id + "_copied");
+        copied_entry->SetString("gd$resourceId.$t", GetNewResourceId());
         copied_entry->SetString("title.$t", new_title);
 
         // Reset parent directory.

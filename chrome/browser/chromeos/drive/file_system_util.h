@@ -153,6 +153,12 @@ void PrepareWritableFileAndRun(Profile* profile,
                                const base::FilePath& path,
                                const PrepareWritableFileCallback& callback);
 
+// Checks whether a directory exists at the given Drive path |directory|.
+// Must be called from UI thread. The result will be called back to |callback|.
+void CheckDirectoryExists(Profile* profile,
+                          const base::FilePath& directory,
+                          const FileOperationCallback& callback);
+
 // Ensures the existence of |directory| of '/special/drive/foo'.  This will
 // create |directory| and its ancestors if they don't exist.  |callback| is
 // invoked after making sure that |directory| exists.  |callback| should

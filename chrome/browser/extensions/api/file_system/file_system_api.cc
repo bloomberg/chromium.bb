@@ -49,6 +49,10 @@
 #include "base/mac/foundation_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#endif
+
 using apps::SavedFileEntry;
 using apps::SavedFilesService;
 using apps::ShellWindow;
@@ -698,7 +702,13 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
     const std::vector<base::FilePath>& paths,
     content::WebContents* web_contents) {
   DCHECK_EQ(paths.size(), 1u);
+#if defined(OS_CHROMEOS)
+  const base::FilePath path =
+      drive::util::IsUnderDriveMountPoint(paths[0]) ? paths[0] :
+          base::MakeAbsoluteFilePath(paths[0]);
+#else
   const base::FilePath path = base::MakeAbsoluteFilePath(paths[0]);
+#endif
   if (path.empty()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
