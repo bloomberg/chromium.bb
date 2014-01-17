@@ -19,6 +19,7 @@ var changeEventCounter = 0;
 var numberInput = document.getElementsByTagName('input')[0];
 numberInput.focus();
 sendKey('Up');
+numberInput.blur();
 
 testPassed('if not crashed in ASAN build.');
 shouldBe('changeEventCounter', '1');

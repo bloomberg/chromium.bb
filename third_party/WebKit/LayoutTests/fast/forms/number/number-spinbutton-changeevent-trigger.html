@@ -1,0 +1,33 @@
+<!DOCTYPE>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<input type="number" id="num1" onchange="handleChangeEvent(this);" oninput="handleInputEvent(this);">
+<script>
+var changeEventCounter = 0;
+var inputEventCounter = 0;
+
+function handleChangeEvent(element){
+    ++changeEventCounter;
+}
+
+function handleInputEvent(element){
+    ++inputEventCounter;
+}
+
+var numberInput1= document.getElementById('num1');
+numberInput1.focus();
+eventSender.mouseMoveTo(0, 0);
+eventSender.mouseMoveTo(numberInput1.offsetLeft + numberInput1.offsetWidth - 10, numberInput1.offsetTop + numberInput1.offsetHeight / 4);
+eventSender.mouseDown();
+debug('Only input event occurs on mouse down');
+shouldBe('inputEventCounter', '1');
+shouldBe('changeEventCounter', '0');
+debug('Only change event occurs on mouse up');
+eventSender.mouseUp();
+shouldBe('inputEventCounter', '1');
+shouldBe('changeEventCounter', '1');
+
+</script>
+</body>
+</html>

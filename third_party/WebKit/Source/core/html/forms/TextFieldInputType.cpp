@@ -222,6 +222,7 @@ void TextFieldInputType::handleKeydownEventForSpinButton(KeyboardEvent* event)
         spinButtonStepDown();
     else
         return;
+    element().dispatchFormControlChangeEvent();
     event->setDefaultHandled();
 }
 
@@ -573,6 +574,11 @@ bool TextFieldInputType::shouldSpinButtonRespondToMouseEvents()
 bool TextFieldInputType::shouldSpinButtonRespondToWheelEvents()
 {
     return shouldSpinButtonRespondToMouseEvents() && element().focused();
+}
+
+void TextFieldInputType::spinButtonDidReleaseMouseCapture()
+{
+    element().dispatchFormControlChangeEvent();
 }
 
 } // namespace WebCore
