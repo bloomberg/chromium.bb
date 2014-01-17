@@ -787,9 +787,6 @@ prune() {
   echo "removing .pyc files"
   rm -f "${INSTALL_BIN}"/pydir/*.pyc
 
-  echo "remove driver log"
-  rm -f "${INSTALL_ROOT}"/driver.log
-
   local dir_size_after=$(get_dir_size_in_mb "${INSTALL_ROOT}")
   SubBanner "Size after: ${INSTALL_ROOT} ${dir_size_after}MB"
 }

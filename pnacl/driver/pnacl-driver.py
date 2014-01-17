@@ -37,11 +37,6 @@ EXTRA_ENV = {
                           # Useful for debugging.
                           # NOTE: potentially different code paths and bugs
                           #       might be triggered by this
-  'FORCE_INTERMEDIATE_S': '0',
-                          # producing an intermediate .s file
-                          # Useful for debugging.
-                          # NOTE: potentially different code paths and bugs
-                          #       might be triggered by this
   'LANGUAGE'    : '',     # C or CXX (set by SetTool)
   'INCLUDE_CXX_HEADERS': '0', # This is set by RunCC.
 
@@ -698,8 +693,7 @@ def SetupChain(chain, input_type, output_type):
     return
 
   # po -> o
-  if (cur_type == 'po' and output_type == 'o' and
-      not env.getbool('FORCE_INTERMEDIATE_S')):
+  if (cur_type == 'po' and output_type == 'o'):
     # If we aren't using biased bitcode, then at least -expand-byval
     # must be run to work with the PPAPI shim calling convention.
     if IsPortable():

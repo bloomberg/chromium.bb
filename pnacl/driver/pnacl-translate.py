@@ -263,8 +263,6 @@ def main(argv):
     sfile = None
     if output_type == 's':
       sfile = output
-    elif env.getbool('FORCE_INTERMEDIATE_S'):
-      sfile = tng.TempNameForInput(bcfile, 's')
 
     ofile = None
     if output_type == 'o':
