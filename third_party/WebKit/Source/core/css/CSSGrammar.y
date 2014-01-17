@@ -371,6 +371,7 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <valueList> calc_func_expr_list
 %type <valueList> calc_func_paren_expr
 %type <value> calc_function
+%type <value> var_function
 %type <string> min_or_max
 %type <value> min_or_max_function
 
@@ -1721,16 +1722,9 @@ term:
   | UNICODERANGE maybe_space { $$.id = CSSValueInvalid; $$.string = $1; $$.unit = CSSPrimitiveValue::CSS_UNICODE_RANGE; }
   | HEX maybe_space { $$.id = CSSValueInvalid; $$.string = $1; $$.unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR; }
   | '#' maybe_space { $$.id = CSSValueInvalid; $$.string = CSSParserString(); $$.unit = CSSPrimitiveValue::CSS_PARSER_HEXCOLOR; } /* Handle error case: "color: #;" */
-  | VARFUNCTION maybe_space IDENT closing_parenthesis maybe_space {
-      $$.id = CSSValueInvalid;
-      $$.string = $3;
-      $$.unit = CSSPrimitiveValue::CSS_VARIABLE_NAME;
-  }
-  | VARFUNCTION maybe_space expr_recovery closing_parenthesis {
-      YYERROR;
-  }
   /* FIXME: according to the specs a function can have a unary_operator in front. I know no case where this makes sense */
   | function maybe_space
+  | var_function maybe_space
   | calc_function maybe_space
   | min_or_max_function maybe_space
   | '%' maybe_space { /* Handle width: %; */
@@ -1788,13 +1782,22 @@ function:
     }
   ;
 
+var_function:
+  VARFUNCTION maybe_space IDENT closing_parenthesis {
+    CSSParserValue variableName;
+    variableName.string = $3;
+    CSSParserValueList* valueList = parser->createFloatingValueList();
+    valueList->addValue(variableName);
+    $$.setFromFunction(parser->createFloatingFunction($1, parser->sinkFloatingValueList(valueList)));
+  }
+  | VARFUNCTION maybe_space expr_recovery closing_parenthesis {
+      YYERROR;
+  }
+  ;
+
 calc_func_term:
   unary_term
-  | VARFUNCTION maybe_space IDENT closing_parenthesis {
-      $$.id = CSSValueInvalid;
-      $$.string = $3;
-      $$.unit = CSSPrimitiveValue::CSS_VARIABLE_NAME;
-  }
+  | var_function
   | unary_operator unary_term { $$ = $2; $$.fValue *= $1; }
   ;
 

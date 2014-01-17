@@ -603,7 +603,7 @@ private:
     bool parseValue(CSSParserValueList* tokens, unsigned* index, Value* result)
     {
         CSSParserValue* parserValue = tokens->valueAt(*index);
-        if (parserValue->unit == CSSParserValue::Operator || parserValue->unit == CSSParserValue::Function)
+        if (parserValue->unit == CSSParserValue::Operator)
             return false;
 
         RefPtr<CSSValue> value = parserValue->createCSSValue();

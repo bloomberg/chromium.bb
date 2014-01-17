@@ -92,8 +92,13 @@ PassRefPtr<CSSValue> CSSParserValue::createCSSValue()
         primitiveValue->setPrimitiveType(CSSPrimitiveValue::CSS_PARSER_OPERATOR);
         return primitiveValue;
     }
-    if (unit == CSSParserValue::Function)
+    if (unit == CSSParserValue::Function) {
+        if (function->name.equalIgnoringCase("var(")) {
+            ASSERT(function->args->size() == 1);
+            return CSSPrimitiveValue::create(function->args->valueAt(0)->string, CSSPrimitiveValue::CSS_VARIABLE_NAME);
+        }
         return CSSFunctionValue::create(function);
+    }
     if (unit == CSSParserValue::ValueList)
         return CSSValueList::createFromParserValueList(valueList);
     if (unit >= CSSParserValue::Q_EMS)
@@ -109,7 +114,6 @@ PassRefPtr<CSSValue> CSSParserValue::createCSSValue()
         return CSSPrimitiveValue::create(fValue, isInt ? CSSPrimitiveValue::CSS_PARSER_INTEGER : CSSPrimitiveValue::CSS_NUMBER);
     case CSSPrimitiveValue::CSS_STRING:
     case CSSPrimitiveValue::CSS_URI:
-    case CSSPrimitiveValue::CSS_VARIABLE_NAME:
     case CSSPrimitiveValue::CSS_PARSER_HEXCOLOR:
         return CSSPrimitiveValue::create(string, primitiveUnit);
     case CSSPrimitiveValue::CSS_PERCENTAGE:
@@ -157,6 +161,9 @@ PassRefPtr<CSSValue> CSSParserValue::createCSSValue()
     case CSSPrimitiveValue::CSS_CALC:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_NUMBER:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_LENGTH:
+        return 0;
+    case CSSPrimitiveValue::CSS_VARIABLE_NAME:
+        ASSERT_NOT_REACHED();
         return 0;
     }
 

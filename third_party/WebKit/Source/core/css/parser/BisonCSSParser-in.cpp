@@ -1456,6 +1456,11 @@ bool BisonCSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags
     return b;
 }
 
+static bool isVariableName(CSSParserValue* value)
+{
+    return value->unit == CSSParserValue::Function && equal(value->function->name, "var(");
+}
+
 inline bool BisonCSSParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
 {
     // Quirks mode and presentation attributes accept unit less values.
@@ -1467,12 +1472,12 @@ bool BisonCSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParser
     if (isCalculation(value))
         return validCalculationUnit(value, unitflags, releaseCalc);
 
+    // Variables are checked at the point they are dereferenced because unit type is not available here.
+    if (isVariableName(value))
+        return true;
+
     bool b = false;
     switch (value->unit) {
-    case CSSPrimitiveValue::CSS_VARIABLE_NAME:
-        // Variables are checked at the point they are dereferenced because unit type is not available here.
-        b = true;
-        break;
     case CSSPrimitiveValue::CSS_NUMBER:
         b = (unitflags & FNumber);
         if (!b && shouldAcceptUnitLessValues(value, unitflags, cssParserMode)) {
@@ -1533,7 +1538,7 @@ bool BisonCSSParser::validUnit(CSSParserValue* value, Units unitflags, CSSParser
 
 inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveNumericValue(CSSParserValue* value)
 {
-    if (value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
+    if (isVariableName(value))
         return createPrimitiveVariableNameValue(value);
 
     if (m_parsedCalculation) {
@@ -1556,8 +1561,8 @@ inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveStringValue(
 
 inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::createPrimitiveVariableNameValue(CSSParserValue* value)
 {
-    ASSERT(value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME);
-    return CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_VARIABLE_NAME);
+    ASSERT(value->unit == CSSParserValue::Function && value->function->args->size() == 1);
+    return CSSPrimitiveValue::create(value->function->args->valueAt(0)->string, CSSPrimitiveValue::CSS_VARIABLE_NAME);
 }
 
 static inline bool isComma(CSSParserValue* value)
@@ -1611,12 +1616,12 @@ inline PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseValidPrimitive(CSSValu
         return createPrimitiveNumericValue(value);
     if (value->unit >= CSSPrimitiveValue::CSS_DPPX && value->unit <= CSSPrimitiveValue::CSS_DPCM)
         return createPrimitiveNumericValue(value);
-    if (value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
-        return createPrimitiveVariableNameValue(value);
     if (value->unit >= CSSParserValue::Q_EMS)
         return CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::CSS_EMS);
     if (isCalculation(value))
         return CSSPrimitiveValue::create(m_parsedCalculation.release());
+    if (isVariableName(value))
+        return createPrimitiveVariableNameValue(value);
 
     return 0;
 }
@@ -1688,7 +1693,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         return true;
     }
 
-    if (!id && value->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME && num == 1) {
+    if (!id && num == 1 && isVariableName(value)) {
         addProperty(propId, createPrimitiveVariableNameValue(value), important);
         m_valueList->next();
         return true;
@@ -2297,7 +2302,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     case CSSPropertyOrder:
         if (validUnit(value, FInteger, HTMLStandardMode)) {
-            if (value->unit != CSSPrimitiveValue::CSS_VARIABLE_NAME) {
+            if (!isVariableName(value)) {
                 // We restrict the smallest value to int min + 2 because we use int min and int min + 1 as special values in a hash set.
                 parsedValue = cssValuePool().createValue(max(static_cast<double>(std::numeric_limits<int>::min() + 2), value->fValue),
                     static_cast<CSSPrimitiveValue::UnitTypes>(value->unit));
@@ -6773,7 +6778,7 @@ bool BisonCSSParser::parseReflect(CSSPropertyID propId, bool important)
     // Direction comes first.
     CSSParserValue* val = m_valueList->current();
     RefPtr<CSSPrimitiveValue> direction;
-    if (val->unit == CSSPrimitiveValue::CSS_VARIABLE_NAME)
+    if (isVariableName(val))
         direction = createPrimitiveVariableNameValue(val);
     else
     switch (val->id) {
