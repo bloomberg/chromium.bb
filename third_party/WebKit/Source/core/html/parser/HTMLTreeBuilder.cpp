@@ -569,8 +569,8 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token)
     static PrefixedNameToQualifiedNameMap* caseMap = 0;
     if (!caseMap) {
         caseMap = new PrefixedNameToQualifiedNameMap;
-        const QualifiedName* const* svgTags = SVGNames::getSVGTags();
-        mapLoweredLocalNameToName(caseMap, svgTags, SVGNames::SVGTagsCount);
+        OwnPtr<const QualifiedName*[]> svgTags = SVGNames::getSVGTags();
+        mapLoweredLocalNameToName(caseMap, svgTags.get(), SVGNames::SVGTagsCount);
     }
 
     const QualifiedName& casedName = caseMap->get(token->name());
@@ -579,14 +579,14 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token)
     token->setName(casedName.localName());
 }
 
-template<const QualifiedName* const* getAttrs(), unsigned length>
+template<PassOwnPtr<const QualifiedName*[]> getAttrs(), unsigned length>
 static void adjustAttributes(AtomicHTMLToken* token)
 {
     static PrefixedNameToQualifiedNameMap* caseMap = 0;
     if (!caseMap) {
         caseMap = new PrefixedNameToQualifiedNameMap;
-        const QualifiedName* const* attrs = getAttrs();
-        mapLoweredLocalNameToName(caseMap, attrs, length);
+        OwnPtr<const QualifiedName*[]> attrs = getAttrs();
+        mapLoweredLocalNameToName(caseMap, attrs.get(), length);
     }
 
     for (unsigned i = 0; i < token->attributes().size(); ++i) {
@@ -624,11 +624,11 @@ static void adjustForeignAttributes(AtomicHTMLToken* token)
     if (!map) {
         map = new PrefixedNameToQualifiedNameMap;
 
-        const QualifiedName* const* attrs = XLinkNames::getXLinkAttrs();
-        addNamesWithPrefix(map, xlinkAtom, attrs, XLinkNames::XLinkAttrsCount);
+        OwnPtr<const QualifiedName*[]> attrs = XLinkNames::getXLinkAttrs();
+        addNamesWithPrefix(map, xlinkAtom, attrs.get(), XLinkNames::XLinkAttrsCount);
 
-        attrs = XMLNames::getXMLAttrs();
-        addNamesWithPrefix(map, xmlAtom, attrs, XMLNames::XMLAttrsCount);
+        OwnPtr<const QualifiedName*[]> xmlAttrs = XMLNames::getXMLAttrs();
+        addNamesWithPrefix(map, xmlAtom, xmlAttrs.get(), XMLNames::XMLAttrsCount);
 
         map->add(WTF::xmlnsAtom, XMLNSNames::xmlnsAttr);
         map->add("xmlns:xlink", QualifiedName(xmlnsAtom, xlinkAtom, XMLNSNames::xmlnsNamespaceURI));

@@ -5,6 +5,7 @@
 #define {{namespace}}Names_h
 
 #include "core/dom/QualifiedName.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 namespace {{namespace}}Names {
@@ -27,10 +28,10 @@ extern const WebCore::QualifiedName {{attr|symbol}}Attr;
 
 {%- if tags %}
 const unsigned {{namespace}}TagsCount = {{tags|count}};
-const WebCore::QualifiedName* const* get{{namespace}}Tags();
+PassOwnPtr<const QualifiedName*[]> get{{namespace}}Tags();
 {%- endif %}
 const unsigned {{namespace}}AttrsCount = {{attrs|count}};
-const WebCore::QualifiedName* const* get{{namespace}}Attrs();
+PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs();
 
 void init();
 

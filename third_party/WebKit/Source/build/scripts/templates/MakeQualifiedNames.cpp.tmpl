@@ -28,14 +28,13 @@ DEFINE_GLOBAL(QualifiedName, {{tag|symbol}}Tag)
 {%- endfor %}
 
 
-const WebCore::QualifiedName* const* get{{namespace}}Tags()
+PassOwnPtr<const QualifiedName*[]> get{{namespace}}Tags()
 {
-    static const WebCore::QualifiedName* const {{namespace}}Tags[] = {
+    OwnPtr<const QualifiedName*[]> tags = adoptArrayPtr(new const QualifiedName*[{{namespace}}TagsCount]);
 {%- for tag in tags|sort %}
-        (WebCore::QualifiedName*)&{{tag|symbol}}Tag,
+    tags[{{loop.index0}}] = reinterpret_cast<const QualifiedName*>(&{{tag|symbol}}Tag);
 {%- endfor %}
-    };
-    return {{namespace}}Tags;
+    return tags.release();
 }
 
 {%- endif %}
@@ -45,14 +44,13 @@ const WebCore::QualifiedName* const* get{{namespace}}Tags()
 DEFINE_GLOBAL(QualifiedName, {{attr|symbol}}Attr)
 {%- endfor %}
 
-const WebCore::QualifiedName* const* get{{namespace}}Attrs()
+PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs()
 {
-    static const WebCore::QualifiedName* const {{namespace}}Attrs[] = {
+    OwnPtr<const QualifiedName*[]> attrs = adoptArrayPtr(new const QualifiedName*[{{namespace}}AttrsCount]);
 {%- for attr in attrs|sort %}
-        (WebCore::QualifiedName*)&{{attr|symbol}}Attr,
+    attrs[{{loop.index0}}] = reinterpret_cast<const WebCore::QualifiedName*>(&{{attr|symbol}}Attr);
 {%- endfor %}
-    };
-    return {{namespace}}Attrs;
+    return attrs.release();
 }
 
 void init()
