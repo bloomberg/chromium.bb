@@ -294,7 +294,7 @@ void SyncSchedulerImpl::ScheduleConfiguration(
   BuildModelSafeParams(params.types_to_download,
                        params.routing_info,
                        &restricted_routes);
-  session_context_->set_routing_info(restricted_routes);
+  session_context_->SetRoutingInfo(restricted_routes);
 
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {

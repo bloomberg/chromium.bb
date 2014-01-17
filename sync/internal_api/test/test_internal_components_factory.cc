@@ -32,20 +32,21 @@ scoped_ptr<sessions::SyncSessionContext>
 TestInternalComponentsFactory::BuildContext(
     ServerConnectionManager* connection_manager,
     syncable::Directory* directory,
-    const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
     ExtensionsActivity* monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
     TrafficRecorder* traffic_recorder,
+    ModelTypeRegistry* model_type_registry,
     const std::string& invalidator_client_id) {
 
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
   return scoped_ptr<sessions::SyncSessionContext>(
       new sessions::SyncSessionContext(
-          connection_manager, directory, workers, monitor,
+          connection_manager, directory, monitor,
           empty_listeners, debug_info_getter,
           traffic_recorder,
+          model_type_registry,
           switches_.encryption_method == ENCRYPTION_KEYSTORE,
           switches_.pre_commit_updates_policy ==
               FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,

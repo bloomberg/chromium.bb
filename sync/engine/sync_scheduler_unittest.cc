@@ -130,14 +130,18 @@ class SyncSchedulerTest : public testing::Test {
     connection_.reset(new MockConnectionManager(directory(),
                                                 &cancelation_signal_));
     connection_->SetServerReachable();
+
+    model_type_registry_.reset(new ModelTypeRegistry(workers_, directory()));
+
     context_.reset(new SyncSessionContext(
-            connection_.get(), directory(), workers_,
+            connection_.get(), directory(),
             extensions_activity_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL,
+            model_type_registry_.get(),
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance
             "fake_invalidator_client_id"));
-    context_->set_routing_info(routing_info_);
+    context_->SetRoutingInfo(routing_info_);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
@@ -226,6 +230,7 @@ class SyncSchedulerTest : public testing::Test {
   TestDirectorySetterUpper dir_maker_;
   CancelationSignal cancelation_signal_;
   scoped_ptr<MockConnectionManager> connection_;
+  scoped_ptr<ModelTypeRegistry> model_type_registry_;
   scoped_ptr<SyncSessionContext> context_;
   scoped_ptr<SyncSchedulerImpl> scheduler_;
   MockSyncer* syncer_;
@@ -894,7 +899,7 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
 
   // TODO(tim): Figure out how to remove this dangerous need to reset
   // routing info between mode switches.
-  context()->set_routing_info(routing_info());
+  context()->SetRoutingInfo(routing_info());
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   RunLoop();

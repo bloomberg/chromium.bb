@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/sync_directory_commit_contribution.h"
-#include "sync/engine/sync_directory_commit_contributor.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/syncer_error.h"
@@ -24,6 +23,7 @@ class StatusController;
 class SyncSession;
 }
 
+class CommitProcessor;
 class Syncer;
 
 // This class wraps the actions related to building and executing a single
@@ -47,10 +47,11 @@ class SYNC_EXPORT_PRIVATE Commit {
 
   static Commit* Init(
       ModelTypeSet requested_types,
+      ModelTypeSet enabled_types,
       size_t max_entries,
       const std::string& account_name,
       const std::string& cache_guid,
-      CommitContributorMap* contributor_map,
+      CommitProcessor* commit_processor,
       ExtensionsActivity* extensions_activity);
 
   SyncerError PostAndProcessResponse(

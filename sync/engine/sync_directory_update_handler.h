@@ -89,9 +89,6 @@ class SYNC_EXPORT_PRIVATE SyncDirectoryUpdateHandler {
   DISALLOW_COPY_AND_ASSIGN(SyncDirectoryUpdateHandler);
 };
 
-// TODO(rlarocque): Find a better place to define this.
-typedef std::map<ModelType, SyncDirectoryUpdateHandler*> UpdateHandlerMap;
-
 }  // namespace syncer
 
 #endif  // SYNC_ENGINE_SYNC_DIRECTORY_UPDATE_HANDLER_H_

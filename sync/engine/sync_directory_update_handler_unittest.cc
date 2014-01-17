@@ -291,6 +291,8 @@ class SyncDirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   }
 
  private:
+  typedef std::map<ModelType, SyncDirectoryUpdateHandler*> UpdateHandlerMap;
+
   base::MessageLoop loop_;  // Needed to initialize the directory.
   TestDirectorySetterUpper dir_maker_;
   scoped_ptr<TestEntryFactory> entry_factory_;

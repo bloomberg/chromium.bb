@@ -31,6 +31,7 @@
 
 namespace syncer {
 
+class ModelTypeRegistry;
 class SyncAPIServerConnectionManager;
 class WriteNode;
 class WriteTransaction;
@@ -312,6 +313,10 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // The ServerConnectionManager used to abstract communication between the
   // client (the Syncer) and the sync server.
   scoped_ptr<SyncAPIServerConnectionManager> connection_manager_;
+
+  // Maintains state that affects the way we interact with different sync types.
+  // This state changes when entering or exiting a configuration cycle.
+  scoped_ptr<ModelTypeRegistry> model_type_registry_;
 
   // A container of various bits of information used by the SyncScheduler to
   // create SyncSessions.  Must outlive the SyncScheduler.

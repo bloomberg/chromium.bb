@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "sync/engine/syncer_proto_util.h"
+#include "sync/engine/syncer_types.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/model_neutral_mutable_entry.h"
@@ -74,58 +75,6 @@ bool UpdateContainsNewVersion(syncable::BaseTransaction *trans,
   return existing_version < update.version();
 }
 
-}  // namespace
-
-void PartitionUpdatesByType(
-    const sync_pb::GetUpdatesResponse& updates,
-    ModelTypeSet requested_types,
-    TypeSyncEntityMap* updates_by_type) {
-  int update_count = updates.entries().size();
-  for (ModelTypeSet::Iterator it = requested_types.First();
-       it.Good(); it.Inc()) {
-    updates_by_type->insert(std::make_pair(it.Get(), SyncEntityList()));
-  }
-  for (int i = 0; i < update_count; ++i) {
-    const sync_pb::SyncEntity& update = updates.entries(i);
-    ModelType type = GetModelType(update);
-    if (!IsRealDataType(type)) {
-      NOTREACHED() << "Received update with invalid type.";
-      continue;
-    }
-
-    TypeSyncEntityMap::iterator it = updates_by_type->find(type);
-    if (it == updates_by_type->end()) {
-      DLOG(WARNING) << "Skipping update for unexpected type "
-                    << ModelTypeToString(type);
-      continue;
-    }
-
-    it->second.push_back(&update);
-  }
-}
-
-void ProcessDownloadedUpdates(
-    syncable::Directory* dir,
-    syncable::ModelNeutralWriteTransaction* trans,
-    ModelType type,
-    const SyncEntityList& applicable_updates,
-    sessions::StatusController* status) {
-  for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
-       update_it != applicable_updates.end(); ++update_it) {
-    DCHECK_EQ(type, GetModelType(**update_it));
-    if (!UpdateContainsNewVersion(trans, **update_it))
-      status->increment_num_reflected_updates_downloaded_by(1);
-    if ((*update_it)->deleted())
-      status->increment_num_tombstone_updates_downloaded_by(1);
-    VerifyResult verify_result = VerifyUpdate(trans, **update_it, type);
-    if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
-      continue;
-    ProcessUpdate(**update_it, dir->GetCryptographer(trans), trans);
-  }
-}
-
-namespace {
-
 // In the event that IDs match, but tags differ AttemptReuniteClient tag
 // will have refused to unify the update.
 // We should not attempt to apply it at all since it violates consistency
@@ -141,8 +90,10 @@ VerifyResult VerifyTagConsistency(
   return VERIFY_UNDECIDED;
 }
 
-}  // namespace
-
+// Checks whether or not an update is fit for processing.
+//
+// The answer may be "no" if the update appears invalid, or it's not releveant
+// (ie. a delete for an item we've never heard of), or other reasons.
 VerifyResult VerifyUpdate(
     syncable::ModelNeutralWriteTransaction* trans,
     const sync_pb::SyncEntity& entry,
@@ -201,7 +152,6 @@ VerifyResult VerifyUpdate(
   return result;  // This might be VERIFY_SUCCESS as well
 }
 
-namespace {
 // Returns true if the entry is still ok to process.
 bool ReverifyEntry(syncable::ModelNeutralWriteTransaction* trans,
                    const sync_pb::SyncEntity& entry,
@@ -218,9 +168,11 @@ bool ReverifyEntry(syncable::ModelNeutralWriteTransaction* trans,
                                                    model_type,
                                                    same_id);
 }
-}  // namespace
 
 // Process a single update. Will avoid touching global state.
+//
+// If the update passes a series of checks, this function will copy
+// the SyncEntity's data into the SERVER side of the syncable::Directory.
 void ProcessUpdate(
     const sync_pb::SyncEntity& update,
     const Cryptographer* cryptographer,
@@ -324,6 +276,28 @@ void ProcessUpdate(
   UpdateServerFieldsFromUpdate(&target_entry, update, name);
 
   return;
+}
+
+}  // namespace
+
+void ProcessDownloadedUpdates(
+    syncable::Directory* dir,
+    syncable::ModelNeutralWriteTransaction* trans,
+    ModelType type,
+    const SyncEntityList& applicable_updates,
+    sessions::StatusController* status) {
+  for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
+       update_it != applicable_updates.end(); ++update_it) {
+    DCHECK_EQ(type, GetModelType(**update_it));
+    if (!UpdateContainsNewVersion(trans, **update_it))
+      status->increment_num_reflected_updates_downloaded_by(1);
+    if ((*update_it)->deleted())
+      status->increment_num_tombstone_updates_downloaded_by(1);
+    VerifyResult verify_result = VerifyUpdate(trans, **update_it, type);
+    if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
+      continue;
+    ProcessUpdate(**update_it, dir->GetCryptographer(trans), trans);
+  }
 }
 
 }  // namespace syncer

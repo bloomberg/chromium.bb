@@ -411,11 +411,12 @@ void SyncManagerImpl::Init(
 
   std::string sync_id = directory()->cache_guid();
 
+  DVLOG(1) << "Setting sync client ID: " << sync_id;
   allstatus_.SetSyncId(sync_id);
+  DVLOG(1) << "Setting invalidator client ID: " << invalidator_client_id;
   allstatus_.SetInvalidatorClientId(invalidator_client_id);
 
-  DVLOG(1) << "Setting sync client ID: " << sync_id;
-  DVLOG(1) << "Setting invalidator client ID: " << invalidator_client_id;
+  model_type_registry_.reset(new ModelTypeRegistry(workers, directory()));
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
@@ -425,11 +426,11 @@ void SyncManagerImpl::Init(
   session_context_ = internal_components_factory->BuildContext(
       connection_manager_.get(),
       directory(),
-      workers,
       extensions_activity,
       listeners,
       &debug_info_event_listener_,
       &traffic_recorder_,
+      model_type_registry_.get(),
       invalidator_client_id).Pass();
   session_context_->set_account_name(credentials.email);
   scheduler_ = internal_components_factory->BuildScheduler(
@@ -514,7 +515,7 @@ void SyncManagerImpl::StartSyncingNormally(
   // appropriately set and that it's only modified when switching to normal
   // mode.
   DCHECK(thread_checker_.CalledOnValidThread());
-  session_context_->set_routing_info(routing_info);
+  session_context_->SetRoutingInfo(routing_info);
   scheduler_->Start(SyncScheduler::NORMAL_MODE);
 }
 
@@ -626,6 +627,7 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
 
   scheduler_.reset();
   session_context_.reset();
+  model_type_registry_.reset();
 
   if (sync_encryption_handler_) {
     sync_encryption_handler_->RemoveObserver(&debug_info_event_listener_);

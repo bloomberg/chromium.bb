@@ -18,10 +18,11 @@
 
 namespace syncer {
 
+class CancelationSignal;
 class ExtensionsActivity;
+class ModelTypeRegistry;
 class ServerConnectionManager;
 class SyncEngineEventListener;
-class CancelationSignal;
 class SyncScheduler;
 class TrafficRecorder;
 
@@ -82,11 +83,11 @@ class SYNC_EXPORT InternalComponentsFactory {
   virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
-      const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
       ExtensionsActivity* extensions_activity,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
       TrafficRecorder* traffic_recorder,
+      ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) = 0;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>

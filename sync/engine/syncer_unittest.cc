@@ -220,15 +220,18 @@ class SyncerTest : public testing::Test,
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
 
+    model_type_registry_.reset(new ModelTypeRegistry(workers_, directory()));
+
     context_.reset(
         new SyncSessionContext(
-            mock_server_.get(), directory(), workers_,
+            mock_server_.get(), directory(),
             extensions_activity_,
             listeners, debug_info_getter_.get(), &traffic_recorder_,
+            model_type_registry_.get(),
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance experiment
             "fake_invalidator_client_id"));
-    context_->set_routing_info(routing_info);
+    context_->SetRoutingInfo(routing_info);
     syncer_ = new Syncer(&cancelation_signal_);
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -437,7 +440,7 @@ class SyncerTest : public testing::Test,
     GetModelSafeRoutingInfo(&routing_info);
 
     if (context_) {
-      context_->set_routing_info(routing_info);
+      context_->SetRoutingInfo(routing_info);
     }
 
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
@@ -450,7 +453,7 @@ class SyncerTest : public testing::Test,
     GetModelSafeRoutingInfo(&routing_info);
 
     if (context_) {
-      context_->set_routing_info(routing_info);
+      context_->SetRoutingInfo(routing_info);
     }
 
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
@@ -493,6 +496,7 @@ class SyncerTest : public testing::Test,
   Syncer* syncer_;
 
   scoped_ptr<SyncSession> session_;
+  scoped_ptr<ModelTypeRegistry> model_type_registry_;
   scoped_ptr<SyncSessionContext> context_;
   bool saw_syncer_event_;
   base::TimeDelta last_short_poll_interval_received_;

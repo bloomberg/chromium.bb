@@ -22,6 +22,8 @@
 namespace syncer {
 
 class CancelationSignal;
+class CommitProcessor;
+class GetUpdatesProcessor;
 
 // A Syncer provides a control interface for driving the sync cycle.  These
 // cycles consist of downloading updates, parsing the response (aka. process
@@ -69,10 +71,12 @@ class SYNC_EXPORT_PRIVATE Syncer {
                               sessions::SyncSession* session);
 
  private:
-  void ApplyUpdates(sessions::SyncSession* session);
+  void ApplyUpdates(sessions::SyncSession* session,
+                    GetUpdatesProcessor* get_updates_processor);
   bool DownloadAndApplyUpdates(
       ModelTypeSet request_types,
       sessions::SyncSession* session,
+      GetUpdatesProcessor* get_updates_processor,
       base::Callback<void(sync_pb::ClientToServerMessage*)> build_fn);
 
   // This function will commit batches of unsynced items to the server until the
@@ -81,7 +85,8 @@ class SYNC_EXPORT_PRIVATE Syncer {
   // abort any blocking operations.
   SyncerError BuildAndPostCommits(
       ModelTypeSet request_types,
-      sessions::SyncSession* session);
+      sessions::SyncSession* session,
+      CommitProcessor* commit_processor);
 
   void HandleCycleBegin(sessions::SyncSession* session);
   bool HandleCycleEnd(

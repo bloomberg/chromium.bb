@@ -36,10 +36,6 @@ class SyncDirectoryCommitContributor {
   ModelType type_;
 };
 
-// TODO(rlarocque): Find a better place for this definition.
-typedef std::map<ModelType, SyncDirectoryCommitContributor*>
-    CommitContributorMap;
-
 }  // namespace
 
 #endif  // SYNC_ENGINE_SYNC_DIRECTORY_COMMIT_CONTRIBUTOR_H_

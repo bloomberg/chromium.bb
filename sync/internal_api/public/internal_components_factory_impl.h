@@ -27,11 +27,11 @@ class SYNC_EXPORT InternalComponentsFactoryImpl
   virtual scoped_ptr<sessions::SyncSessionContext> BuildContext(
       ServerConnectionManager* connection_manager,
       syncable::Directory* directory,
-      const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
       ExtensionsActivity* extensions_activity,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
       TrafficRecorder* traffic_recorder,
+      ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) OVERRIDE;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>

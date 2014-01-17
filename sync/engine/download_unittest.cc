@@ -25,9 +25,7 @@ using sessions::MockDebugInfoGetter;
 // A test fixture for tests exercising download updates functions.
 class DownloadUpdatesTest : public ::testing::Test {
  protected:
-  DownloadUpdatesTest()
-      : update_handler_map_deleter_(&update_handler_map_) {
-  }
+  DownloadUpdatesTest() : update_handler_deleter_(&update_handler_map_) {}
 
   virtual void SetUp() {
     dir_maker_.SetUp();
@@ -42,20 +40,15 @@ class DownloadUpdatesTest : public ::testing::Test {
   }
 
   ModelTypeSet proto_request_types() {
-    ModelTypeSet types;
-    for (UpdateHandlerMap::iterator it = update_handler_map_.begin();
-         it != update_handler_map_.end(); ++it) {
-      types.Put(it->first);
-    }
-    return types;
+    return proto_request_types_;
   }
 
   syncable::Directory* directory() {
     return dir_maker_.directory();
   }
 
-  UpdateHandlerMap* update_handler_map() {
-    return &update_handler_map_;
+  GetUpdatesProcessor* get_updates_processor() {
+    return get_updates_processor_.get();
   }
 
   void InitFakeUpdateResponse(sync_pb::GetUpdatesResponse* response) {
@@ -74,17 +67,23 @@ class DownloadUpdatesTest : public ::testing::Test {
  private:
   void AddUpdateHandler(ModelType type, ModelSafeGroup group) {
     DCHECK(directory());
+
+    proto_request_types_.Put(type);
+
     scoped_refptr<ModelSafeWorker> worker = new FakeModelWorker(group);
     SyncDirectoryUpdateHandler* handler =
         new SyncDirectoryUpdateHandler(directory(), type, worker);
     update_handler_map_.insert(std::make_pair(type, handler));
+    get_updates_processor_.reset(new GetUpdatesProcessor(&update_handler_map_));
   }
 
   base::MessageLoop loop_;  // Needed for directory init.
   TestDirectorySetterUpper dir_maker_;
 
+  ModelTypeSet proto_request_types_;
   UpdateHandlerMap update_handler_map_;
-  STLValueDeleter<UpdateHandlerMap> update_handler_map_deleter_;
+  STLValueDeleter<UpdateHandlerMap> update_handler_deleter_;
+  scoped_ptr<GetUpdatesProcessor> get_updates_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesTest);
 };
@@ -96,7 +95,7 @@ TEST_F(DownloadUpdatesTest, BookmarkNudge) {
 
   sync_pb::ClientToServerMessage msg;
   download::BuildNormalDownloadUpdatesImpl(proto_request_types(),
-                                           update_handler_map(),
+                                           get_updates_processor(),
                                            nudge_tracker,
                                            msg.mutable_get_updates());
 
@@ -144,7 +143,7 @@ TEST_F(DownloadUpdatesTest, NotifyMany) {
 
   sync_pb::ClientToServerMessage msg;
   download::BuildNormalDownloadUpdatesImpl(proto_request_types(),
-                                           update_handler_map(),
+                                           get_updates_processor(),
                                            nudge_tracker,
                                            msg.mutable_get_updates());
 
@@ -178,7 +177,7 @@ TEST_F(DownloadUpdatesTest, ConfigureTest) {
   sync_pb::ClientToServerMessage msg;
   download::BuildDownloadUpdatesForConfigureImpl(
       proto_request_types(),
-      update_handler_map(),
+      get_updates_processor(),
       sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
       msg.mutable_get_updates());
 
@@ -201,7 +200,7 @@ TEST_F(DownloadUpdatesTest, PollTest) {
   sync_pb::ClientToServerMessage msg;
   download::BuildDownloadUpdatesForPollImpl(
       proto_request_types(),
-      update_handler_map(),
+      get_updates_processor(),
       msg.mutable_get_updates());
 
   const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
@@ -223,7 +222,7 @@ TEST_F(DownloadUpdatesTest, RetryTest) {
   sync_pb::ClientToServerMessage msg;
   download::BuildDownloadUpdatesForRetryImpl(
       proto_request_types(),
-      update_handler_map(),
+      get_updates_processor(),
       msg.mutable_get_updates());
 
   const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
@@ -250,7 +249,7 @@ TEST_F(DownloadUpdatesTest, NudgeWithRetryTest) {
 
   sync_pb::ClientToServerMessage msg;
   download::BuildNormalDownloadUpdatesImpl(proto_request_types(),
-                                           update_handler_map(),
+                                           get_updates_processor(),
                                            nudge_tracker,
                                            msg.mutable_get_updates());
   EXPECT_TRUE(msg.get_updates().is_retry());
@@ -268,7 +267,7 @@ TEST_F(DownloadUpdatesTest, InvalidResponse) {
   sessions::StatusController status;
   SyncerError error = download::ProcessResponse(gu_response,
                                                 proto_request_types(),
-                                                update_handler_map(),
+                                                get_updates_processor(),
                                                 &status);
   EXPECT_EQ(error, SERVER_RESPONSE_VALIDATION_FAILED);
 }
@@ -282,7 +281,7 @@ TEST_F(DownloadUpdatesTest, MoreToDownloadResponse) {
   sessions::StatusController status;
   SyncerError error = download::ProcessResponse(gu_response,
                                                 proto_request_types(),
-                                                update_handler_map(),
+                                                get_updates_processor(),
                                                 &status);
   EXPECT_EQ(error, SERVER_MORE_TO_DOWNLOAD);
 }
@@ -296,7 +295,7 @@ TEST_F(DownloadUpdatesTest, NormalResponseTest) {
   sessions::StatusController status;
   SyncerError error = download::ProcessResponse(gu_response,
                                                 proto_request_types(),
-                                                update_handler_map(),
+                                                get_updates_processor(),
                                                 &status);
   EXPECT_EQ(error, SYNCER_OK);
 }

@@ -2585,7 +2585,7 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   }
 
   // Set the context to have the old routing info.
-  session_context()->set_routing_info(old_routing_info);
+  session_context()->SetRoutingInfo(old_routing_info);
 
   CallbackCounter ready_task_counter, retry_task_counter;
   sync_manager_.ConfigureSyncer(
