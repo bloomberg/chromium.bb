@@ -35,6 +35,7 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   }
 
   virtual void OnStepShown(const std::string& step_name) OVERRIDE {
+    current_step_name_ = step_name;
     if (!on_step_shown_callback_.is_null())
       on_step_shown_callback_.Run();
     controller()->OnStepShown(step_name);
@@ -77,10 +78,10 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   }
 
   void WaitForStep(const std::string& step_name) {
-    if (GetCurrentStepName() == step_name)
+    if (current_step_name_ == step_name)
       return;
     WaitUntilCalled(&on_step_shown_callback_);
-    EXPECT_EQ(GetCurrentStepName(), step_name);
+    EXPECT_EQ(current_step_name_, step_name);
   }
 
   void AdvanceStep() {
@@ -102,11 +103,6 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
     callback->Reset();
   }
 
-  std::string GetCurrentStepName() {
-    return js().GetString(
-        "cr.FirstRun.currentStep_ ? cr.FirstRun.currentStep_.getName() : ''");
-  }
-
   test::JSChecker& js() { return js_; }
 
   ash::FirstRunHelper* shell_helper() {
@@ -118,6 +114,7 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   }
 
  private:
+  std::string current_step_name_;
   bool initialized_;
   bool finalized_;
   base::Closure on_initialized_callback_;
@@ -126,8 +123,7 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   test::JSChecker js_;
 };
 
-// Disabled due to flakiness, see http://crbug.com/335280
-IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, DISABLED_FirstRunFlow) {
+IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
   LaunchTutorial();
   WaitForInitialization();
   WaitForStep(first_run::kAppListStep);
