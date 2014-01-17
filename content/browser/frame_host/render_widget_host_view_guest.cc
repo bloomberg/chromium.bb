@@ -334,7 +334,8 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
 void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    const base::Callback<void(bool, const SkBitmap&)>& callback) {
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    bool readback_config_rgb565) {
   CHECK(guest_);
   guest_->CopyFromCompositingSurface(src_subrect, dst_size, callback);
 }

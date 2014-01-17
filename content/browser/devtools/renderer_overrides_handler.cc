@@ -204,7 +204,8 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
                  weak_factory_.GetWeakPtr(),
                  scoped_refptr<DevToolsProtocol::Command>(), format, quality,
-                 last_compositor_frame_metadata_));
+                 last_compositor_frame_metadata_),
+      false);
 }
 
 void RendererOverridesHandler::ParseCaptureParameters(
@@ -460,7 +461,8 @@ RendererOverridesHandler::PageCaptureScreenshot(
       view_bounds, snapshot_size,
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
                  weak_factory_.GetWeakPtr(), command, format, quality,
-                 last_compositor_frame_metadata_));
+                 last_compositor_frame_metadata_),
+      false);
   return command->AsyncResponsePromise();
 }
 

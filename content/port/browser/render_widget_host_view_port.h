@@ -181,7 +181,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback) = 0;
+      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      bool readback_config_rgb565) = 0;
 
   // Copies a given subset of the compositing surface's content into a YV12
   // VideoFrame, and invokes a callback with a success/fail parameter. |target|
