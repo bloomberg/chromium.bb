@@ -223,6 +223,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
     m_context->bindTexture(GL_TEXTURE_2D, frontColorBufferMailbox->textureId);
     m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
     m_context->flush();
+    frontColorBufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
     markLayerComposited();
 
     *outMailbox = frontColorBufferMailbox->mailbox;
