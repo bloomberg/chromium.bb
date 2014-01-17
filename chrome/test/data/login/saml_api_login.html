@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <script type="text/javascript">
+      function initialize() {
+        window.setTimeout(function() {
+          window.postMessage({
+              type: 'gaia_saml_api',
+              call: {method: 'initialize'}}, '/');
+        }, 0);
+      }
+
+      function send_and_submit() {
+        var form = document.forms[0];
+        var token = form.elements['RelayState'].value;
+        var user = form.elements['Email'].value;
+        var password = form.elements['Password'].value;
+        window.setTimeout(function() {
+          window.postMessage({
+              type: 'gaia_saml_api',
+              call: {method: 'add',
+                     token: token,
+                     user: user,
+                     password: password}}, '/');
+           form.submit();
+         }, 0);
+      }
+    </script>
+  </head>
+  <body onload="initialize();">
+    <form method=post action="$Post">
+      <input type=hidden name=RelayState value="$RelayState">
+      User: <input type=text id=Email name=Email>
+      Password: <input type=password id=Password name=Password>
+      <input id=Submit type=button value="Login" onclick="send_and_submit();"/>
+    </form>
+  </body>
+</html>

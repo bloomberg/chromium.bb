@@ -204,6 +204,8 @@ Authenticator.prototype = {
     this.samlSupportChannel_.connect('authMain');
     this.samlSupportChannel_.registerMessage(
         'onAuthPageLoaded', this.onAuthPageLoaded_.bind(this));
+    this.samlSupportChannel_.registerMessage(
+        'apiCall', this.onAPICall_.bind(this));
     this.samlSupportChannel_.send({
       name: 'setGaiaUrl',
       gaiaUrl: this.gaiaUrl_
@@ -231,6 +233,25 @@ Authenticator.prototype = {
       'isSAML': this.isSAMLFlow_,
       'domain': extractDomain(msg.url)
     }, this.parentPage_);
+  },
+
+  /**
+   * Invoked when one of the credential passing API methods is called by a SAML
+   * provider.
+   * @param {!Object} msg Details of the API call.
+   */
+  onAPICall_: function(msg) {
+    var call = msg.call;
+    if (call.method == 'add') {
+      this.apiToken_ = call.token;
+      this.email_ = call.user;
+      this.password_ = call.password;
+    } else if (call.method == 'confirm') {
+      if (call.token != this.apiToken_)
+        console.error('Authenticator.onAPICall_: token mismatch');
+    } else {
+      console.error('Authenticator.onAPICall_: unknown message');
+    }
   },
 
   onLoginUILoaded: function() {
@@ -261,19 +282,21 @@ Authenticator.prototype = {
                                attemptToken: this.attemptToken_},
                               this.parentPage_);
 
-    this.samlSupportChannel_.sendWithCallback(
-        {name: 'getScrapedPasswords'},
-        function(passwords) {
-          if (passwords.length == 0) {
-            window.parent.postMessage(
-                {method: 'noPassword', email: this.email_},
-                this.parentPage_);
-          } else {
-            window.parent.postMessage(
-                {method: 'confirmPassword', email: this.email_},
-                this.parentPage_);
-          }
-        }.bind(this));
+    if (!this.password_) {
+      this.samlSupportChannel_.sendWithCallback(
+          {name: 'getScrapedPasswords'},
+          function(passwords) {
+            if (passwords.length == 0) {
+              window.parent.postMessage(
+                  {method: 'noPassword', email: this.email_},
+                  this.parentPage_);
+            } else {
+              window.parent.postMessage(
+                  {method: 'confirmPassword', email: this.email_},
+                  this.parentPage_);
+            }
+          }.bind(this));
+    }
   },
 
   maybeCompleteSAMLLogin_: function() {

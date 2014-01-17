@@ -4,19 +4,29 @@
 
 /**
  * @fileoverview
- * The background script of auth extension that bridges the communications
- * between main and injected script.
- * Here are the communications along a SAML sign-in flow:
- * 1. Main script sends an 'onAuthStarted' signal to indicate the authentication
- *    flow is started and SAML pages might be loaded from now on;
- * 2. After the 'onAuthTstarted' signal, injected script starts to scraping
- *    all password fields on normal page (i.e. http or https) and sends page
- *    load signal as well as the passwords to the background script here;
+ * A background script of the auth extension that bridges the communication
+ * between the main and injected scripts.
+ *
+ * Here is an overview of the communication flow when SAML is being used:
+ * 1. The main script sends the |startAuth| signal to this background script,
+ *    indicating that the authentication flow has started and SAML pages may be
+ *    loaded from now on.
+ * 2. A script is injected into each SAML page. The injected script sends three
+ *    main types of messages to this background script:
+ *    a) A |pageLoaded| message is sent when the page has been loaded. This is
+ *       forwarded to the main script as |onAuthPageLoaded|.
+ *    b) If the SAML provider supports the credential passing API, the API calls
+ *       are sent to this backgroudn script as |apiCall| messages. These
+ *       messages are forwarded unmodified to the main script.
+ *    c) The injected script scrapes passwords. They are sent to this background
+ *       script in |updatePassword| messages. The main script can request a list
+ *       of the scraped passwords by sending the |getScrapedPasswords| message.
  */
 
 /**
- * BackgroundBridge holds the main script's state and the scraped passwords
- * from the injected script to help the two collaborate.
+ * BackgroundBridge allows the main script and the injected script to
+ * collaborate. It forwards credentials API calls to the main script and
+ * maintains a list of scraped passwords.
  */
 function BackgroundBridge() {
 }
@@ -89,6 +99,8 @@ BackgroundBridge.prototype = {
     this.channelInjected_ = new Channel();
     this.channelInjected_.init(port);
     this.channelInjected_.registerMessage(
+        'apiCall', this.onAPICall_.bind(this));
+    this.channelInjected_.registerMessage(
         'updatePassword', this.onUpdatePassword_.bind(this));
     this.channelInjected_.registerMessage(
         'pageLoaded', this.onPageLoaded_.bind(this));
@@ -139,6 +151,10 @@ BackgroundBridge.prototype = {
       passwords[this.passwordStore_[property]] = true;
     }
     return Object.keys(passwords);
+  },
+
+  onAPICall_: function(msg) {
+    this.channelMain_.send(msg);
   },
 
   onUpdatePassword_: function(msg) {

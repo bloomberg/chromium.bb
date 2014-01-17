@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -14,6 +17,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
@@ -52,81 +56,123 @@ const char kUserEmail[] = "bob@example.com";
 
 const char kRelayState[] = "RelayState";
 
-const char kDefaultIdpHtml[] =
-    "<form id=IdPForm method=post action=\"$Post\">"
-      "<input type=hidden name=RelayState value=\"$RelayState\">"
-      "User: <input type=text id=Email name=Email>"
-      "Password: <input type=password id=Password name=Password>"
-      "<input id=Submit type=submit>"
-    "</form>";
-
 // FakeSamlIdp serves IdP auth form and the form submission. The form is
 // served with the template's RelayState placeholder expanded to the real
 // RelayState parameter from request. The form submission redirects back to
 // FakeGaia with the same RelayState.
 class FakeSamlIdp {
  public:
-  FakeSamlIdp() : html_template_(kDefaultIdpHtml) {}
-  ~FakeSamlIdp() {}
+  FakeSamlIdp();
+  ~FakeSamlIdp();
 
-  void SetUp(const std::string& base_path, const GURL& gaia_url) {
-    base_path_= base_path;
-    post_path_ = base_path + "Auth";
-    gaia_assertion_url_ = gaia_url.Resolve("/SSO");
-  }
+  void SetUp(const std::string& base_path, const GURL& gaia_url);
 
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    // The scheme and host of the URL is actually not important but required to
-    // get a valid GURL in order to parse |request.relative_url|.
-    GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
-    std::string request_path = request_url.path();
+  void SetLoginHTMLTemplate(const std::string& template_file);
+  void SetLoginAuthHTMLTemplate(const std::string& template_file);
 
-    scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
-    if (request_path == base_path_) {
-      std::string relay_state;
-      net::GetValueForKeyInQuery(request_url, kRelayState, &relay_state);
-
-      std::string response_html = html_template_;
-      ReplaceSubstringsAfterOffset(
-          &response_html, 0, "$RelayState", relay_state);
-      ReplaceSubstringsAfterOffset(
-          &response_html, 0, "$Post", post_path_);
-
-      http_response->set_code(net::HTTP_OK);
-      http_response->set_content(response_html);
-      http_response->set_content_type("text/html");
-    } else if (request_path == post_path_) {
-      std::string relay_state;
-      FakeGaia::GetQueryParameter(request.content, kRelayState, &relay_state);
-
-      GURL redirect_url = gaia_assertion_url_;
-      redirect_url = net::AppendQueryParameter(
-          redirect_url, "SAMLResponse", "fake_response");
-      redirect_url = net::AppendQueryParameter(
-          redirect_url, kRelayState, relay_state);
-
-      http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
-      http_response->AddCustomHeader("Location", redirect_url.spec());
-    } else {
-      // Request not understood.
-      return scoped_ptr<HttpResponse>();
-    }
-
-    return http_response.PassAs<HttpResponse>();
-  }
-
-  void set_html_template(const std::string& html_template) {
-    html_template_ = html_template;
-  }
+  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
 
  private:
-  std::string base_path_;
-  std::string post_path_;
-  std::string html_template_;
+  scoped_ptr<HttpResponse> BuildHTMLResponse(const std::string& html_template,
+                                             const std::string& relay_state,
+                                             const std::string& next_path);
 
+  base::FilePath html_template_dir_;
+
+  std::string login_path_;
+  std::string login_auth_path_;
+
+  std::string login_html_template_;
+  std::string login_auth_html_template_;
   GURL gaia_assertion_url_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeSamlIdp);
 };
+
+FakeSamlIdp::FakeSamlIdp() {
+}
+
+FakeSamlIdp::~FakeSamlIdp() {
+}
+
+void FakeSamlIdp::SetUp(const std::string& base_path, const GURL& gaia_url) {
+  base::FilePath test_data_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  html_template_dir_ = test_data_dir.Append("login");
+
+  login_path_= base_path;
+  login_auth_path_ = base_path + "Auth";
+  gaia_assertion_url_ = gaia_url.Resolve("/SSO");
+}
+
+void FakeSamlIdp::SetLoginHTMLTemplate(const std::string& template_file) {
+  EXPECT_TRUE(base::ReadFileToString(
+      html_template_dir_.Append(template_file),
+      &login_html_template_));
+}
+
+void FakeSamlIdp::SetLoginAuthHTMLTemplate(const std::string& template_file) {
+  EXPECT_TRUE(base::ReadFileToString(
+      html_template_dir_.Append(template_file),
+      &login_auth_html_template_));
+}
+
+scoped_ptr<HttpResponse> FakeSamlIdp::HandleRequest(
+    const HttpRequest& request) {
+  // The scheme and host of the URL is actually not important but required to
+  // get a valid GURL in order to parse |request.relative_url|.
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  std::string request_path = request_url.path();
+
+  if (request_path == login_path_) {
+    std::string relay_state;
+    net::GetValueForKeyInQuery(request_url, kRelayState, &relay_state);
+    return BuildHTMLResponse(login_html_template_,
+                             relay_state,
+                             login_auth_path_);
+  }
+
+  if (request_path != login_auth_path_) {
+    // Request not understood.
+    return scoped_ptr<HttpResponse>();
+  }
+
+  std::string relay_state;
+  FakeGaia::GetQueryParameter(request.content, kRelayState, &relay_state);
+  GURL redirect_url = gaia_assertion_url_;
+
+  if (!login_auth_html_template_.empty()) {
+    return BuildHTMLResponse(login_auth_html_template_,
+                             relay_state,
+                             redirect_url.spec());
+  }
+
+  redirect_url = net::AppendQueryParameter(
+      redirect_url, "SAMLResponse", "fake_response");
+  redirect_url = net::AppendQueryParameter(
+      redirect_url, kRelayState, relay_state);
+
+  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+  http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+  http_response->AddCustomHeader("Location", redirect_url.spec());
+  return http_response.PassAs<HttpResponse>();
+}
+
+scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
+    const std::string& html_template,
+    const std::string& relay_state,
+    const std::string& next_path) {
+  std::string response_html = html_template;
+  ReplaceSubstringsAfterOffset(&response_html, 0, "$RelayState", relay_state);
+  ReplaceSubstringsAfterOffset(&response_html, 0, "$Post", next_path);
+
+  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(response_html);
+  http_response->set_content_type("text/html");
+
+  return http_response.PassAs<HttpResponse>();
+}
 
 }  // namespace
 
@@ -315,6 +361,7 @@ class SamlTest : public InProcessBrowserTest {
 // visible when SAML IdP page is loaded. And 'cancel' button goes back to
 // gaia on clicking.
 IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   // Saml flow UI expectations.
@@ -337,14 +384,32 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   JsExpect("!$('gaia-signin').classList.contains('saml')");
 }
 
-// Tests the single password scraped flow.
-IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
+// Tests the sign-in flow when the credentials passing API is used.
+IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
+  fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   // Fill-in the SAML IdP form and submit.
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
-  ExecuteJsInSigninFrame("document.getElementById('IdPForm').submit();");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
+
+  // Login should finish login and a session should start.
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources()).Wait();
+}
+
+// Tests the single password scraped flow.
+IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
+  StartSamlAndWaitForIdpPageLoad(kUserEmail);
+
+  // Fill-in the SAML IdP form and submit.
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   // Lands on confirm password screen.
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
@@ -362,21 +427,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
 
 // Tests the multiple password scraped flow.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
-  fake_saml_idp()->set_html_template(
-    "<form id=IdPForm method=post action=\"$Post\">"
-      "<input type=hidden name=RelayState value=\"$RelayState\">"
-      "User: <input type=text id=Email name=Email>"
-      "Password: <input type=password id=Password name=Password>"
-      "Password: <input type=password id=Password1 name=Password1>"
-      "<input id=Submit type=submit>"
-    "</form>");
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
 
   StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
   SetSignFormField("Password1", "password1");
-  ExecuteJsInSigninFrame("document.getElementById('IdPForm').submit();");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
 
@@ -389,17 +447,12 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
 
 // Tests the no password scraped flow.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
-  fake_saml_idp()->set_html_template(
-    "<form id=IdPForm method=post action=\"$Post\">"
-      "<input type=hidden name=RelayState value=\"$RelayState\">"
-      "User: <input type=text id=Email name=Email>"
-      "<input id=Submit type=submit>"
-    "</form>");
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login_no_passwords.html");
 
   StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   SetSignFormField("Email", "fake_user");
-  ExecuteJsInSigninFrame("document.getElementById('IdPForm').submit();");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   OobeScreenWaiter(OobeDisplay::SCREEN_MESSAGE_BOX).Wait();
   JsExpect(
@@ -411,6 +464,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
 // |bob@example.com| via SAML. Verifies that the logged-in user is correctly
 // identified as Bob.
 IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   // Type |alice@example.com| into the GAIA login form.
   StartSamlAndWaitForIdpPageLoad(kAnotherUserEmail);
 
@@ -419,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   // reports was set via SetMergeSessionParams()).
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
-  ExecuteJsInSigninFrame("document.getElementById('IdPForm').submit();");
+  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
 

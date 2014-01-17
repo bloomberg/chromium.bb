@@ -4,15 +4,57 @@
 
 /**
  * @fileoverview
- * Script to be injected into SAML provider pages that do not support the
- * auth service provider postMessage API. It serves two main purposes:
+ * Script to be injected into SAML provider pages, serving three main purposes:
  * 1. Signal hosting extension that an external page is loaded so that the
- *    UI around it could be changed accordingly;
- * 2. Scrape password and send it back to be used for encrypt user data and
- *    use for offline login;
+ *    UI around it should be changed accordingly;
+ * 2. Provide an API via which the SAML provider can pass user credentials to
+ *    Chrome OS, allowing the password to be used for encrypting user data and
+ *    offline login.
+ * 3. Scrape password fields, making the password available to Chrome OS even if
+ *    the SAML provider does not support the credential passing API.
  */
 
 (function() {
+  function APICallForwarder() {
+  }
+
+  /**
+   * The credential passing API is used by sending messages to the SAML page's
+   * |window| object. This class forwards the calls to a background script via a
+   * |Channel|.
+   */
+  APICallForwarder.prototype = {
+    // Channel to which API calls are forwarded.
+    channel_: null,
+
+    /**
+     * Initialize the API call forwarder.
+     * @param {!Object} channel Channel to which API calls should be forwarded.
+     */
+    init: function(channel) {
+      this.channel_ = channel;
+      window.addEventListener('message', this.onMessage_.bind(this));
+    },
+
+    onMessage_: function(event) {
+      if (event.source != window ||
+          typeof event.data != 'object' ||
+          !event.data.hasOwnProperty('type') ||
+          event.data.type != 'gaia_saml_api') {
+        return;
+      }
+      if (event.data.call.method == 'initialize') {
+        // Respond to the |initialize| call directly.
+        event.source.postMessage({
+            type: 'gaia_saml_api_reply',
+            response: {result: 'initialized', version: 1}}, '/');
+      } else {
+        // Forward all other calls.
+        this.channel_.send({name: 'apiCall', call: event.data.call});
+      }
+    }
+  };
+
   /**
    * A class to scrape password from type=password input elements under a given
    * docRoot and send them back via a Channel.
@@ -124,6 +166,9 @@
       channel = new Channel();
       channel.connect('injected');
       channel.send({name: 'pageLoaded', url: pageURL});
+
+      apiCallForwarder = new APICallForwarder();
+      apiCallForwarder.init(channel);
 
       passwordScraper = new PasswordInputScraper();
       passwordScraper.init(channel, pageURL, document.documentElement);
