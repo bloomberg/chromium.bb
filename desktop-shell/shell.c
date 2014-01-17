@@ -438,6 +438,15 @@ shell_configuration(struct desktop_shell *shell)
 					 "binding-modifier", &s, "super");
 	shell->binding_modifier = get_modifier(s);
 	free(s);
+
+	weston_config_section_get_string(section,
+					 "exposay-modifier", &s, "none");
+	if (strcmp(s, "none") == 0)
+		shell->exposay_modifier = 0;
+	else
+		shell->exposay_modifier = get_modifier(s);
+	free(s);
+
 	weston_config_section_get_string(section, "animation", &s, "none");
 	shell->win_animation_type = get_animation_type(s);
 	free(s);
@@ -5514,7 +5523,9 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					  workspace_move_surface_down_binding,
 					  shell);
 
-	weston_compositor_add_modifier_binding(ec, mod, exposay_binding, shell);
+	if (shell->exposay_modifier)
+		weston_compositor_add_modifier_binding(ec, shell->exposay_modifier,
+						       exposay_binding, shell);
 
 	/* Add bindings for mod+F[1-6] for workspace 1 to 6. */
 	if (shell->workspaces.num > 1) {
