@@ -38,7 +38,7 @@ namespace ksr = keystone_registration;
 - (void)setActive {
 }
 
-- (void)checkForUpdateWasUserInitiated:(BOOL)userInitiated {
+- (void)checkForUpdate {
 }
 
 - (void)startUpdate {
@@ -55,7 +55,7 @@ namespace ksr = keystone_registration;
 
 // Send the notifications that a real KeystoneGlue object would send.
 
-- (void)checkForUpdateWasUserInitiated:(BOOL)userInitiated {
+- (void)checkForUpdate {
   NSNumber* yesNumber = [NSNumber numberWithBool:YES];
   NSString* statusKey = @"Status";
   NSDictionary* dictionary = [NSDictionary dictionaryWithObject:yesNumber
