@@ -736,15 +736,15 @@ frame_pointer_button(struct frame *frame, void *data,
 {
 	struct frame_pointer *pointer = frame_pointer_get(frame, data);
 	struct frame_pointer_button *button;
-	enum theme_location location;
+	enum theme_location location = THEME_LOCATION_EXTERIOR;
+
+	if (!pointer)
+		return location;
 
 	location = theme_get_location(frame->theme, pointer->x, pointer->y,
 				      frame->width, frame->height,
 				      frame->flags & FRAME_FLAG_MAXIMIZED ?
 				      THEME_FRAME_MAXIMIZED : 0);
-
-	if (!pointer)
-		return location;
 
 	if (state == FRAME_BUTTON_PRESSED) {
 		button = malloc(sizeof *button);
@@ -784,7 +784,7 @@ frame_touch_down(struct frame *frame, void *data, int32_t id, int x, int y)
 	if (id > 0)
 		return;
 
-	if (button) {
+	if (touch && button) {
 		touch->button = button;
 		frame_button_press(touch->button);
 		return;
@@ -822,10 +822,9 @@ frame_touch_up(struct frame *frame, void *data, int32_t id)
 	if (id > 0)
 		return;
 
-	if (touch->button) {
+	if (touch && touch->button) {
 		frame_button_release(touch->button);
 		frame_touch_destroy(touch);
-		return;
 	}
 }
 
