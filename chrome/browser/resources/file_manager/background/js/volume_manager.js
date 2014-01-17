@@ -30,40 +30,32 @@ function VolumeInfo(
     deviceType,
     isReadOnly,
     profile) {
-  this.volumeType = volumeType;
+  this.volumeType_ = volumeType;
   // TODO(hidehiko): This should include FileSystem instance.
-  this.mountPath = mountPath;
-  this.volumeId = volumeId;
-  this.root = root;
-  this.fakeEntries = {};
+  this.mountPath_ = mountPath;
+  this.volumeId_ = volumeId;
+  this.root_ = root;
+  this.displayRoot_ = null;
+  this.fakeEntries_ = {};
+  this.resolveQueue_ = new AsyncUtil.Queue();
 
   if (volumeType === util.VolumeType.DRIVE) {
-    this.fakeEntries[RootType.DRIVE] = {
-      fullPath: RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT,
-      isDirectory: true,
-      rootType: RootType.DRIVE,
-      label: PathUtil.getRootLabel(RootType.DRIVE),
-      toURL: function() { return 'fake-entry://' + this.fullPath; }
-    };
     this.fakeEntries[RootType.DRIVE_OFFLINE] = {
       fullPath: RootDirectory.DRIVE_OFFLINE,
       isDirectory: true,
       rootType: RootType.DRIVE_OFFLINE,
-      label: PathUtil.getRootLabel(RootType.DRIVE_OFFLINE),
       toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
     this.fakeEntries[RootType.DRIVE_SHARED_WITH_ME] = {
       fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
       isDirectory: true,
       rootType: RootType.DRIVE_SHARED_WITH_ME,
-      label: PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME),
       toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
     this.fakeEntries[RootType.DRIVE_RECENT] = {
       fullPath: RootDirectory.DRIVE_RECENT,
       isDirectory: true,
       rootType: RootType.DRIVE_RECENT,
-      label: PathUtil.getRootLabel(RootType.DRIVE_RECENT),
       toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
   }
@@ -76,17 +68,86 @@ function VolumeInfo(
   this.isReadOnly = isReadOnly;
   this.profile = Object.freeze(profile);
 
-  // VolumeInfo is immutable.
-  Object.freeze(this);
+  Object.seal(this);
 }
 
+VolumeInfo.prototype = {
+  /**
+   * @return {util.VolumeType} Volume type.
+   */
+  get volumeType() {
+    return this.volumeType_;
+  },
+  /**
+   * @return {string} Mount path.
+   */
+  get mountPath() {
+    return this.mountPath_;
+  },
+  /**
+   * @return {string} Volume id.
+   */
+  get volumeId() {
+    return this.volumeId_;
+  },
+  /**
+   * @return {DirectoryEntry} Root path.
+   */
+  get root() {
+    return this.root_;
+  },
+  /**
+   * @return {DirectoryEntry} Display root path. It is null before
+   *     resolveDisplayRoot() is called.
+   */
+  get displayRoot() {
+    return this.displayRoot_;
+  },
+  /**
+   * @return {Object.<string, Object>} Fake entries.
+   */
+  get fakeEntries() {
+    return this.fakeEntries_;
+  }
+};
+
 /**
- * Obtains a URL of the display root directory that users can see as a root.
- * @return {string} URL of root entry.
+ * Obtains the display root of the entry. It may take long time for Drive. Once
+ * resolved, it is cached.
+ *
+ * @param {function(DirectoryEntry)} onSuccess Success callback with the display
+ *     root directory as an argument.
+ * @param {function(FileError)} onFailure Failure callback.
  */
-VolumeInfo.prototype.getDisplayRootDirectoryURL = function() {
-  return this.root.toURL() +
-      (this.volumeType === util.VolumeType.DRIVE ? '/root' : '');
+VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
+  // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
+  // remove this if logic. Call onSuccess() always, instead.
+  if (this.volumeType !== util.VolumeType.DRIVE) {
+    if (this.root)
+      onSuccess(this.root);
+    else
+      onFailure(this.error);
+    return;
+  }
+
+  // For Drive, we need to resolve.
+  this.resolveQueue_.run(function(callback) {
+    if (this.displayRoot) {
+      onSuccess(this.displayRoot);
+      callback();
+      return;
+    }
+    var displayRootURL = this.root.toURL() + '/root';
+    webkitResolveLocalFileSystemURL(
+        displayRootURL, function(directoryEntry) {
+          this.displayRoot_ = directoryEntry;
+          onSuccess(directoryEntry);
+          callback();
+        }.bind(this), function(fileError) {
+          onFailure(fileError);
+          callback();
+        }.bind(this));
+  }.bind(this));
 };
 
 /**

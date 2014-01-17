@@ -1036,10 +1036,8 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
     this.dispatchEvent(e);
   }.bind(this, this.changeDirectorySequence_);
 
-  // TODO(hirono): We don't need to obtain the drive root to search.
-  this.resolveDirectory(volumeInfo.fakeEntries[RootType.DRIVE].fullPath,
-                        onDriveDirectoryResolved /* success */,
-                        function() {} /* failed */);
+  volumeInfo.resolveDisplayRoot(
+      onDriveDirectoryResolved /* success */, function() {} /* failed */);
 };
 
 /**

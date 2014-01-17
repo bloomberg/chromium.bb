@@ -50,9 +50,11 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
   while (this.entries_[index]) {
     var currentEntry = this.entries_[index];
     var currentElement = this.items[index];
+    // TODO(mtomasz): Stop using full paths, and use getLocationInfo() instead.
+    var label = PathUtil.getFolderLabel(currentEntry.fullPath);
 
     if (index >= this.items.length) {
-      var item = new DirectoryItem(currentEntry, this, tree);
+      var item = new DirectoryItem(label, currentEntry, this, tree);
       this.add(item);
       index++;
     } else if (currentEntry.fullPath == currentElement.fullPath) {
@@ -61,7 +63,7 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
 
       index++;
     } else if (currentEntry.fullPath < currentElement.fullPath) {
-      var item = new DirectoryItem(currentEntry, this, tree);
+      var item = new DirectoryItem(label, currentEntry, this, tree);
       this.addAt(item, index);
       index++;
     } else if (currentEntry.fullPath > currentElement.fullPath) {
@@ -109,29 +111,31 @@ Object.freeze(DirectoryItemTreeBaseMethods);
 /**
  * A directory in the tree. Each element represents one directory.
  *
+ * @param {string} label Label for this item.
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
  */
-function DirectoryItem(dirEntry, parentDirItem, tree) {
+function DirectoryItem(label, dirEntry, parentDirItem, tree) {
   var item = cr.doc.createElement('div');
-  DirectoryItem.decorate(item, dirEntry, parentDirItem, tree);
+  DirectoryItem.decorate(item, label, dirEntry, parentDirItem, tree);
   return item;
 }
 
 /**
  * @param {HTMLElement} el Element to be DirectoryItem.
+ * @param {string} label Label for this item.
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
 DirectoryItem.decorate =
-    function(el, dirEntry, parentDirItem, tree) {
+    function(el, label, dirEntry, parentDirItem, tree) {
   el.__proto__ = DirectoryItem.prototype;
   (/** @type {DirectoryItem} */ el).decorate(
-      dirEntry, parentDirItem, tree);
+      label, dirEntry, parentDirItem, tree);
 };
 
 DirectoryItem.prototype = {
@@ -178,12 +182,13 @@ DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
 };
 
 /**
+ * @param {string} label Localized label for this item.
  * @param {DirectoryEntry} dirEntry DirectoryEntry of this item.
  * @param {DirectoryItem|DirectoryTree} parentDirItem Parent of this item.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
 DirectoryItem.prototype.decorate = function(
-    dirEntry, parentDirItem, tree) {
+    label, dirEntry, parentDirItem, tree) {
   this.className = 'tree-item';
   this.innerHTML =
       '<div class="tree-row">' +
@@ -197,7 +202,7 @@ DirectoryItem.prototype.decorate = function(
   this.parentTree_ = tree;
   this.directoryModel_ = tree.directoryModel;
   this.parent_ = parentDirItem;
-  this.label = dirEntry.label || dirEntry.name;
+  this.label = label;
   this.fullPath = dirEntry.fullPath;
   this.dirEntry_ = dirEntry;
   this.fileFilter_ = this.directoryModel_.getFileFilter();
@@ -511,14 +516,6 @@ DirectoryTree.prototype.decorate = function(directoryModel, volumeManager) {
 
   this.scrollBar_ = MainPanelScrollBar();
   this.scrollBar_.initialize(this.parentNode, this);
-
-  // Once, draws the list with the fake '/drive/' entry.
-  this.redraw(false /* recursive */);
-  // Resolves 'My Drive' entry and replaces the fake with the true one.
-  this.maybeResolveMyDriveRoot_(function() {
-    // After the true entry is resolved, draws the list again.
-    this.redraw(true /* recursive */);
-  }.bind(this));
 };
 
 /**
@@ -531,74 +528,56 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
   if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(entry.fullPath))
     return;
 
-  this.maybeResolveMyDriveRoot_(function() {
-    if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry))
-      return;
+  var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+  if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry))
+    return;
 
-    if (this.searchAndSelectByEntry(entry))
-      return;
+  if (this.searchAndSelectByEntry(entry))
+    return;
 
-    this.selectedItem = null;
-    this.updateSubDirectories(
-        false /* recursive */,
-        // Success callback, failure is not handled.
-        function() {
-          if (!this.searchAndSelectByEntry(entry))
-            this.selectedItem = null;
-        }.bind(this));
+  this.updateSubDirectories(false /* recursive */);
+  // TODO(yoshiki, mtomasz): There may be a race in here.
+  volumeInfo.resolveDisplayRoot(function() {
+    if (!this.searchAndSelectByEntry(entry))
+        this.selectedItem = null;
   }.bind(this));
 };
 
 /**
- * Resolves the My Drive root's entry, if it is a fake. If the entry is already
- * resolved to a DirectoryEntry, completionCallback() will be called
- * immediately.
- * @param {function()} completionCallback Called when the resolving is
- *     done (or the entry is already resolved), regardless if it is
- *     successfully done or not.
- * @private
- */
-DirectoryTree.prototype.maybeResolveMyDriveRoot_ = function(
-    completionCallback) {
-  var myDriveItem = this.items[0];
-  if (!myDriveItem || !util.isFakeEntry(myDriveItem.entry)) {
-    // The entry is already resolved. Don't need to try again.
-    completionCallback();
-    return;
-  }
-
-  // The entry is a fake.
-  this.directoryModel_.resolveDirectory(
-      myDriveItem.fullPath,
-      function(entry) {
-        if (!util.isFakeEntry(entry))
-          myDriveItem.dirEntry_ = entry;
-
-        completionCallback();
-      },
-      completionCallback);
-};
-
-/**
  * Retrieves the latest subdirectories and update them on the tree.
+ *
  * @param {boolean} recursive True if the update is recursively.
- * @param {function()=} opt_successCallback Callback called on success.
- * @param {function()=} opt_errorCallback Callback called on error.
+ * @param {function()=} opt_callback Called when subdirectories are fully
+ *     updated.
  */
 DirectoryTree.prototype.updateSubDirectories = function(
-    recursive, opt_successCallback, opt_errorCallback) {
-  var hasFakeEntries = this.currentVolumeInfo_ &&
-      this.currentVolumeInfo_.volumeType === util.VolumeType.DRIVE;
-  this.entries_ = hasFakeEntries ? [
-    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE],
-    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE_OFFLINE],
-    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE_SHARED_WITH_ME],
-    this.currentVolumeInfo_.fakeEntries[RootType.DRIVE_RECENT]
-  ] : [];
+    recursive, opt_callback) {
+  var callback = opt_callback || function() {};
+  this.entries_ = [];
 
-  this.redraw(recursive);
-  if (opt_successCallback)
-    opt_successCallback();
+  var compareEntries = function(a, b) {
+    return a.toURL() < b.toURL();
+  };
+
+  // Add fakes (if any).
+  for (var key in this.currentVolumeInfo_.fakeEntries) {
+    this.entries_.push(this.currentVolumeInfo_.fakeEntries[key]);
+  }
+
+  // If the display root is not available yet, then redraw anyway with what
+  // we have. However, concurrently try to resolve the display root and then
+  // redraw.
+  if (!this.currentVolumeInfo_.displayRoot) {
+    this.entries_.sort(compareEntries);
+    this.redraw(recursive);
+  }
+
+  this.currentVolumeInfo_.resolveDisplayRoot(function(displayRoot) {
+    this.entries_.push(this.currentVolumeInfo_.displayRoot);
+    this.entries_.sort(compareEntries);
+    this.redraw(recursive);  // Redraw.
+    callback();
+  }.bind(this), callback /* Ignore errors. */);
 };
 
 /**
