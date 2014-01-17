@@ -19,6 +19,7 @@ extern const struct nacl_irt_fdio kIrtFdIO;
 extern const struct nacl_irt_thread kIrtThread;
 extern const struct nacl_irt_futex kIrtFutex;
 extern const struct nacl_irt_tls kIrtTls;
+extern const struct nacl_irt_clock kIrtClock;
 
 }  // namespace nonsfi
 }  // namespace nacl

@@ -9,6 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "components/nacl/loader/nonsfi/abi_conversion.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
@@ -40,16 +41,13 @@ int IrtClock(nacl_abi_clock_t* ticks) {
 int IrtNanoSleep(const struct nacl_abi_timespec* req,
                  struct nacl_abi_timespec* rem) {
   struct timespec host_req;
-  host_req.tv_sec = req->tv_sec;
-  host_req.tv_nsec = req->tv_nsec;
+  NaClAbiTimeSpecToTimeSpec(*req, &host_req);
   struct timespec host_rem;
   if (nanosleep(&host_req, &host_rem))
     return errno;
 
-  if (rem) {
-    rem->tv_sec = host_rem.tv_sec;
-    rem->tv_nsec = host_rem.tv_nsec;
-  }
+  if (rem)
+    TimeSpecToNaClAbiTimeSpec(host_rem, rem);
   return 0;
 }
 

@@ -9,9 +9,22 @@
 
 #include "base/logging.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+#include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 namespace nacl {
 namespace nonsfi {
+
+void NaClAbiTimeSpecToTimeSpec(const struct nacl_abi_timespec& nacl_timespec,
+                               struct timespec* host_timespec) {
+  host_timespec->tv_sec = nacl_timespec.tv_sec;
+  host_timespec->tv_nsec = nacl_timespec.tv_nsec;
+}
+
+void TimeSpecToNaClAbiTimeSpec(const struct timespec& host_timespec,
+                               struct nacl_abi_timespec* nacl_timespec) {
+  nacl_timespec->tv_sec = host_timespec.tv_sec;
+  nacl_timespec->tv_nsec = host_timespec.tv_nsec;
+}
 
 void StatToNaClAbiStat(
     const struct stat& host_stat, struct nacl_abi_stat* nacl_stat) {
