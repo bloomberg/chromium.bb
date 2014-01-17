@@ -21,68 +21,9 @@
 #include "net/dns/notify_watcher_mac.h"
 #include "net/dns/serial_worker.h"
 
-#if defined(OS_MACOSX)
-#include <dlfcn.h>
-
-#include "third_party/apple_apsl/dnsinfo.h"
-
-namespace {
-
-// dnsinfo symbols are available via libSystem.dylib, but can also be present in
-// SystemConfiguration.framework. To avoid confusion, load them explicitly from
-// libSystem.dylib.
-class DnsInfoApi {
- public:
-  typedef const char* (*dns_configuration_notify_key_t)();
-  typedef dns_config_t* (*dns_configuration_copy_t)();
-  typedef void (*dns_configuration_free_t)(dns_config_t*);
-
-  DnsInfoApi()
-      : dns_configuration_notify_key(NULL),
-        dns_configuration_copy(NULL),
-        dns_configuration_free(NULL) {
-    handle_ = dlopen("/usr/lib/libSystem.dylib",
-                     RTLD_LAZY | RTLD_NOLOAD);
-    if (!handle_)
-      return;
-    dns_configuration_notify_key =
-        reinterpret_cast<dns_configuration_notify_key_t>(
-            dlsym(handle_, "dns_configuration_notify_key"));
-    dns_configuration_copy =
-        reinterpret_cast<dns_configuration_copy_t>(
-            dlsym(handle_, "dns_configuration_copy"));
-    dns_configuration_free =
-        reinterpret_cast<dns_configuration_free_t>(
-            dlsym(handle_, "dns_configuration_free"));
-  }
-
-  ~DnsInfoApi() {
-    if (handle_)
-      dlclose(handle_);
-  }
-
-  dns_configuration_notify_key_t dns_configuration_notify_key;
-  dns_configuration_copy_t dns_configuration_copy;
-  dns_configuration_free_t dns_configuration_free;
-
- private:
-  void* handle_;
-};
-
-const DnsInfoApi& GetDnsInfoApi() {
-  static base::LazyInstance<DnsInfoApi>::Leaky api = LAZY_INSTANCE_INITIALIZER;
-  return api.Get();
-}
-
-struct DnsConfigTDeleter {
-  inline void operator()(dns_config_t* ptr) const {
-    if (GetDnsInfoApi().dns_configuration_free)
-      GetDnsInfoApi().dns_configuration_free(ptr);
-  }
-};
-
-}  // namespace
-#endif  // defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "net/dns/dns_config_watcher_mac.h"
+#endif
 
 namespace net {
 
@@ -94,20 +35,20 @@ namespace {
 const base::FilePath::CharType* kFilePathHosts =
     FILE_PATH_LITERAL("/etc/hosts");
 
-#if defined(OS_MACOSX)
-class ConfigWatcher {
- public:
-  bool Watch(const base::Callback<void(bool succeeded)>& callback) {
-    if (!GetDnsInfoApi().dns_configuration_notify_key)
-      return false;
-    return watcher_.Watch(GetDnsInfoApi().dns_configuration_notify_key(),
-                          callback);
-  }
+#if defined(OS_IOS)
 
- private:
-  NotifyWatcherMac watcher_;
+// There is no plublic API to watch the DNS configuration on iOS.
+class DnsConfigWatcher {
+ public:
+  typedef base::Callback<void(bool succeeded)> CallbackType;
+
+  bool Watch(const CallbackType& callback) {
+    return false;
+  }
 };
-#else
+
+#elif !defined(OS_MACOSX)
+// DnsConfigWatcher for OS_MACOSX is in dns_config_watcher_mac.{hh,cc}.
 
 #ifndef _PATH_RESCONF  // Normally defined in <resolv.h>
 #define _PATH_RESCONF "/etc/resolv.conf"
@@ -116,14 +57,14 @@ class ConfigWatcher {
 static const base::FilePath::CharType* kFilePathConfig =
     FILE_PATH_LITERAL(_PATH_RESCONF);
 
-class ConfigWatcher {
+class DnsConfigWatcher {
  public:
   typedef base::Callback<void(bool succeeded)> CallbackType;
 
   bool Watch(const CallbackType& callback) {
     callback_ = callback;
     return watcher_.Watch(base::FilePath(kFilePathConfig), false,
-                          base::Bind(&ConfigWatcher::OnCallback,
+                          base::Bind(&DnsConfigWatcher::OnCallback,
                                      base::Unretained(this)));
   }
 
@@ -165,31 +106,18 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
 #endif
 #endif
 
-#if defined(OS_MACOSX)
-  if (!GetDnsInfoApi().dns_configuration_copy)
-    return CONFIG_PARSE_POSIX_NO_DNSINFO;
-  scoped_ptr<dns_config_t, DnsConfigTDeleter> dns_config(
-      GetDnsInfoApi().dns_configuration_copy());
-  if (!dns_config)
-    return CONFIG_PARSE_POSIX_NO_DNSINFO;
-
-  // TODO(szym): Parse dns_config_t for resolvers rather than res_state.
-  // DnsClient can't handle domain-specific unscoped resolvers.
-  unsigned num_resolvers = 0;
-  for (int i = 0; i < dns_config->n_resolver; ++i) {
-    dns_resolver_t* resolver = dns_config->resolver[i];
-    if (!resolver->n_nameserver)
-      continue;
-    if (resolver->options && !strcmp(resolver->options, "mdns"))
-      continue;
-    ++num_resolvers;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  ConfigParsePosixResult error = DnsConfigWatcher::CheckDnsConfig();
+  switch (error) {
+    case CONFIG_PARSE_POSIX_OK:
+      break;
+    case CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS:
+      LOG(WARNING) << "dns_config has unhandled options!";
+      config->unhandled_options = true;
+    default:
+      return error;
   }
-  if (num_resolvers > 1) {
-    LOG(WARNING) << "dns_config has unhandled options!";
-    config->unhandled_options = true;
-    return CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS;
-  }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   // Override timeout value to match default setting on Windows.
   config->timeout = base::TimeDelta::FromSeconds(kDnsTimeoutSeconds);
   return result;
@@ -246,7 +174,7 @@ class DnsConfigServicePosix::Watcher {
 
   base::WeakPtrFactory<Watcher> weak_factory_;
   DnsConfigServicePosix* service_;
-  ConfigWatcher config_watcher_;
+  DnsConfigWatcher config_watcher_;
   base::FilePathWatcher hosts_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Watcher);
