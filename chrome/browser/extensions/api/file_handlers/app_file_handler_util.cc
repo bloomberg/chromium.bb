@@ -366,6 +366,11 @@ bool ValidateFileEntryAndGetPath(
     const content::RenderViewHost* render_view_host,
     base::FilePath* file_path,
     std::string* error) {
+  if (filesystem_path.empty()) {
+    *error = kInvalidParameters;
+    return false;
+  }
+
   std::string filesystem_id;
   if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
     *error = kInvalidParameters;
