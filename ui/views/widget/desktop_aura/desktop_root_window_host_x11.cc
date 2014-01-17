@@ -253,9 +253,7 @@ void DesktopWindowTreeHostX11::OnRootWindowCreated(
 
   // TODO(erg): Unify this code once the other consumer goes away.
   x11_window_event_filter_.reset(new X11WindowEventFilter(root_window_, this));
-  x11_window_event_filter_->SetUseHostWindowBorders(
-      params.type == Widget::InitParams::TYPE_WINDOW &&
-      !params.remove_standard_frame);
+  x11_window_event_filter_->SetUseHostWindowBorders(false);
   desktop_native_widget_aura_->root_window_event_filter()->AddHandler(
       x11_window_event_filter_.get());
 

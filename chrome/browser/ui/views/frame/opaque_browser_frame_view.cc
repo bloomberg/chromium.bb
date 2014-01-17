@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
@@ -226,7 +224,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   gfx::Rect sysmenu_rect(IconBounds());
   // In maximized mode we extend the rect to the screen corner to take advantage
   // of Fitts' Law.
-  if (layout_->IsTitleBarCondensed())
+  if (frame()->IsMaximized())
     sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
   sysmenu_rect.set_x(GetMirroredXForRect(sysmenu_rect));
   if (sysmenu_rect.Contains(point))
@@ -265,7 +263,7 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
                                            gfx::Path* window_mask) {
   DCHECK(window_mask);
 
-  if (layout_->IsTitleBarCondensed() || frame()->IsFullscreen())
+  if (frame()->IsMaximized() || frame()->IsFullscreen())
     return;
 
   views::GetDefaultWindowMask(size, window_mask);
@@ -429,26 +427,12 @@ void OpaqueBrowserFrameView::Observe(
 // OpaqueBrowserFrameView, OpaqueBrowserFrameViewLayoutDelegate implementation:
 
 bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // If using the system title bar, we do not want to show a second title bar
-  // inside the client area.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
-    return false;
-#endif
-
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   return platform_observer_->ShouldShowTitleBar() && delegate &&
          delegate->ShouldShowWindowIcon();
 }
 
 bool OpaqueBrowserFrameView::ShouldShowWindowTitle() const {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // If using the system title bar, we do not want to show a second title bar
-  // inside the client area.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
-    return false;
-#endif
-
   // |delegate| may be NULL if called from callback of InputMethodChanged while
   // a window is being destroyed.
   // See more discussion at http://crosbug.com/8958
@@ -538,7 +522,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   if (frame()->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.
 
-  if (layout_->IsTitleBarCondensed())
+  if (frame()->IsMaximized())
     PaintMaximizedFrameBorder(canvas);
   else
     PaintRestoredFrameBorder(canvas);
@@ -553,7 +537,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 
   if (browser_view()->IsToolbarVisible())
     PaintToolbarBackground(canvas);
-  if (!layout_->IsTitleBarCondensed())
+  if (!frame()->IsMaximized())
     PaintRestoredClientEdge(canvas);
 }
 
