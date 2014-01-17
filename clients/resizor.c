@@ -77,17 +77,20 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 
 	assert(!callback || callback == resizor->frame_callback);
 
+	if (resizor->frame_callback) {
+		wl_callback_destroy(resizor->frame_callback);
+		resizor->frame_callback = NULL;
+	}
+
+	if (window_is_maximized(resizor->window))
+		return;
+
 	spring_update(&resizor->width);
 	spring_update(&resizor->height);
 
 	widget_schedule_resize(resizor->widget,
 			       resizor->width.current + 0.5,
 			       resizor->height.current + 0.5);
-
-	if (resizor->frame_callback) {
-		wl_callback_destroy(resizor->frame_callback);
-		resizor->frame_callback = NULL;
-	}
 
 	if (!spring_done(&resizor->width) || !spring_done(&resizor->height)) {
 		resizor->frame_callback =
