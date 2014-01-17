@@ -82,7 +82,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf/protobuf.gyp:protoc#host',
-        '../third_party/re2/re2.gyp:re2',
+        '../out/gn_gyp/third_party/re2/re2.gyp:re2',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/events/events.gyp:dom4_keycode_converter',

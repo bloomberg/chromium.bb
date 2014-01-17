@@ -44,7 +44,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/libusb/libusb.gyp:libusb',
-        '../third_party/re2/re2.gyp:re2',
+        '../out/gn_gyp/third_party/re2/re2.gyp:re2',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/gfx/gfx.gyp:gfx',

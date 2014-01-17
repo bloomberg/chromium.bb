@@ -23,7 +23,7 @@
       'product_name': 'jtl_compiler',
       'dependencies': [
         '../../../base/base.gyp:base',
-        '../../../third_party/re2/re2.gyp:re2',
+        '../../../out/gn_gyp/third_party/re2/re2.gyp:re2',
       ],
       'sources': [
         '../../browser/profile_resetter/jtl_foundation.h',

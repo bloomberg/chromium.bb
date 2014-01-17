@@ -2637,7 +2637,7 @@
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/npapi/npapi.gyp:npapi',
-            '../third_party/re2/re2.gyp:re2',
+            '../out/gn_gyp/third_party/re2/re2.gyp:re2',
             '../ui/compositor/compositor.gyp:compositor',
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',

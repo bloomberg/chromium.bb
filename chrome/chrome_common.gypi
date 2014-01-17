@@ -422,7 +422,7 @@
             '<(DEPTH)/extensions/extensions.gyp:extensions_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
             '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
-            '<(DEPTH)/third_party/re2/re2.gyp:re2',
+            '<(DEPTH)/out/gn_gyp/third_party/re2/re2.gyp:re2',
             '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
         }, {  # OS == ios

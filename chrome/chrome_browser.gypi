@@ -2631,7 +2631,7 @@
             '../third_party/libusb/libusb.gyp:libusb',
             '../third_party/libyuv/libyuv.gyp:libyuv',
             '../third_party/npapi/npapi.gyp:npapi',
-            '../third_party/re2/re2.gyp:re2',
+            '../out/gn_gyp/third_party/re2/re2.gyp:re2',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             '../ui/gl/gl.gyp:gl',
             '../ui/surface/surface.gyp:surface',
