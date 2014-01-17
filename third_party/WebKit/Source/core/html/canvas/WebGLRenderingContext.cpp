@@ -721,10 +721,7 @@ bool WebGLRenderingContext::allowPrivilegedExtensions() const
 
 bool WebGLRenderingContext::allowWebGLDebugRendererInfo() const
 {
-    if (allowPrivilegedExtensions())
-        return true;
-    Frame* frame = canvas()->document().frame();
-    return frame && frame->loader().client()->allowWebGLDebugRendererInfo();
+    return true;
 }
 
 void WebGLRenderingContext::addCompressedTextureFormat(GLenum format)
