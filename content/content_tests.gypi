@@ -1129,6 +1129,9 @@
               'sources': [
                 'browser/media/webrtc_aecdump_browsertest.cc',
                 'browser/media/webrtc_browsertest.cc',
+                'browser/media/webrtc_getusermedia_browsertest.cc',
+                'test/webrtc_content_browsertest_base.cc',
+                'test/webrtc_content_browsertest_base.h',
               ],
               'dependencies': [
                 '../testing/perf/perf_test.gyp:perf_test',

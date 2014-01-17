@@ -67,16 +67,16 @@ DownloadContentTest.ResumeInterruptedDownloadBadPrecondition
 DownloadContentTest.ResumeWithDeletedFile
 
 # http://crbug.com/181069
-WebrtcBrowserTest.CanSetupLegacyCall
-WebrtcBrowserTest.CallWithDataOnly
-WebrtcBrowserTest.CallWithDataAndMedia
-WebrtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
+WebRtcBrowserTest.CanSetupLegacyCall
+WebRtcBrowserTest.CallWithDataOnly
+WebRtcBrowserTest.CallWithDataAndMedia
+WebRtcBrowserTest.CanMakeEmptyCallThenAddStreamsAndRenegotiate
 WebRTCInternalsBrowserTest.WithRealPeerConnectionCall
 WebRTCInternalsBrowserTest.NegotiateUnsupportedVideoCodec
 WebRTCInternalsBrowserTest.NegotiateNonCryptoCall
 
 # http://crbug.com/175683
-WebrtcBrowserTest.CallWithDataAndLaterAddMedia
+WebRtcBrowserTest.CallWithDataAndLaterAddMedia
 
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest

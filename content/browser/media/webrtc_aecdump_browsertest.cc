@@ -4,23 +4,26 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/platform_file.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/trace_event_analyzer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
+#include "content/test/webrtc_content_browsertest_base.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
 // This tests AEC dump enabled using the command line flag. It does not test AEC
 // dump enabled using webrtc-internals (that's tested in webrtc_browsertest.cc).
-class WebrtcAecDumpBrowserTest : public ContentBrowserTest {
+class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
  public:
-  WebrtcAecDumpBrowserTest() {}
-  virtual ~WebrtcAecDumpBrowserTest() {}
+  WebRtcAecDumpBrowserTest() {}
+  virtual ~WebRtcAecDumpBrowserTest() {}
 
   virtual void SetUp() OVERRIDE {
     // Find a safe place to write the dump to.
@@ -34,12 +37,7 @@ class WebrtcAecDumpBrowserTest : public ContentBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // We need fake devices in this test since we want to run on naked VMs. We
-    // assume these switches are set by default in content_browsertests.
-    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kUseFakeDeviceForMediaStream));
-    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kUseFakeUIForMediaStream));
+    WebRtcContentBrowserTest::SetUpCommandLine(command_line);
 
     // Enable AEC dump with the command line flag.
     command_line->AppendSwitchPath(switches::kEnableWebRtcAecRecordings,
@@ -47,21 +45,11 @@ class WebrtcAecDumpBrowserTest : public ContentBrowserTest {
   }
 
  protected:
-  bool ExecuteJavascript(const std::string& javascript) {
-    return ExecuteScript(shell()->web_contents(), javascript);
-  }
-
-  void ExpectTitle(const std::string& expected_title) const {
-    base::string16 expected_title16(base::ASCIIToUTF16(expected_title));
-    TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
-    EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
-  }
-
   base::ScopedTempDir temp_dir_;
   base::FilePath dump_file_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebrtcAecDumpBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(WebRtcAecDumpBrowserTest);
 };
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))
@@ -75,7 +63,7 @@ class WebrtcAecDumpBrowserTest : public ContentBrowserTest {
 // This tests will make a complete PeerConnection-based call, verify that
 // video is playing for the call, and verify that a non-empty AEC dump file
 // exists.
-IN_PROC_BROWSER_TEST_F(WebrtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
+IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));

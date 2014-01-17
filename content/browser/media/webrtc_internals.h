@@ -101,8 +101,8 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
 
  private:
   friend struct DefaultSingletonTraits<WebRTCInternals>;
-  FRIEND_TEST_ALL_PREFIXES(WebrtcBrowserTest, CallWithAecDump);
-  FRIEND_TEST_ALL_PREFIXES(WebrtcBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest, CallWithAecDump);
+  FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest,
                            CallWithAecDumpEnabledThenDisabled);
 
   WebRTCInternals();
