@@ -9,13 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/search/instant_ntp.h"
-#include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -50,10 +46,6 @@ InstantTestBase::~InstantTestBase() {}
 void InstantTestBase::SetupInstant(Browser* browser) {
   browser_ = browser;
 
-  // TODO(samarth): update tests to work with cacheable NTP and remove this.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "InstantExtended", "Group1 use_cacheable_ntp:0"));
-
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(browser_->profile());
   ui_test_utils::WaitForTemplateURLServiceToLoad(service);
@@ -65,6 +57,7 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   data.SetURL(instant_url_.spec() +
               "q={searchTerms}&is_search&{google:omniboxStartMarginParameter}");
   data.instant_url = instant_url_.spec();
+  data.new_tab_url = ntp_url_.spec();
   if (init_suggestions_url_)
     data.suggestions_url = instant_url_.spec() + "#q={searchTerms}";
   data.alternate_urls.push_back(instant_url_.spec() + "#q={searchTerms}");
@@ -73,11 +66,6 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   TemplateURL* template_url = new TemplateURL(browser_->profile(), data);
   service->Add(template_url);  // Takes ownership of |template_url|.
   service->SetDefaultSearchProvider(template_url);
-
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser_->profile());
-  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-  instant_service->ntp_prerenderer()->ReloadInstantNTP();
 }
 
 void InstantTestBase::SetInstantURL(const std::string& url) {
@@ -95,8 +83,11 @@ void InstantTestBase::SetInstantURL(const std::string& url) {
   service->SetDefaultSearchProvider(template_url);
 }
 
-void InstantTestBase::Init(const GURL& instant_url, bool init_suggestions_url) {
+void InstantTestBase::Init(const GURL& instant_url,
+                           const GURL& ntp_url,
+                           bool init_suggestions_url) {
   instant_url_ = instant_url;
+  ntp_url_ = ntp_url;
   init_suggestions_url_ = init_suggestions_url;
 }
 
@@ -108,20 +99,6 @@ void InstantTestBase::FocusOmnibox() {
   } else {
     browser_->window()->GetLocationBar()->FocusLocation(false);
   }
-}
-
-void InstantTestBase::FocusOmniboxAndWaitForInstantNTPSupport() {
-  content::WindowedNotificationObserver ntp_observer(
-      chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
-      content::NotificationService::AllSources());
-  FocusOmnibox();
-
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser_->profile());
-  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-  if (!instant_service->ntp_prerenderer()->ntp() ||
-      !instant_service->ntp_prerenderer()->ntp()->supports_instant())
-    ntp_observer.Wait();
 }
 
 void InstantTestBase::SetOmniboxText(const std::string& text) {
@@ -156,14 +133,6 @@ bool InstantTestBase::GetStringFromJS(content::WebContents* contents,
                                       std::string* result) {
   return content::ExecuteScriptAndExtractString(
       contents, WrapScript(script), result);
-}
-
-bool InstantTestBase::ExecuteScript(const std::string& script) {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser_instant()->profile());
-  if (!instant_service)
-    return false;
-  return content::ExecuteScript(instant_service->GetNTPContents(), script);
 }
 
 bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,

@@ -70,8 +70,7 @@ void RecordCacheableNTPLoadHistogram(bool succeeded) {
 bool IsCacheableNTP(const content::WebContents* contents) {
   const content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
-  return chrome::ShouldUseCacheableNTP() &&
-      chrome::NavEntryIsInstantNTP(contents, entry) &&
+  return chrome::NavEntryIsInstantNTP(contents, entry) &&
       entry->GetURL() != GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
@@ -295,7 +294,6 @@ void SearchTabHelper::DidFailProvisionalLoad(
   // navigation so it shouldn't be redirected.
   if (is_main_frame &&
       error_code != net::ERR_ABORTED &&
-      chrome::ShouldUseCacheableNTP() &&
       validated_url != GURL(chrome::kChromeSearchLocalNtpUrl) &&
       chrome::IsNTPURL(validated_url, profile())) {
     RedirectToLocalNTP();

@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/instant_controller.h"
-#include "chrome/browser/ui/search/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 
 class Browser;
@@ -31,18 +30,6 @@ class BrowserInstantController : public SearchModelObserver,
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
-
-  // If |url| is the new tab page URL, set |target_contents| to the preloaded
-  // NTP contents from InstantController. If |source_contents| is not NULL, we
-  // replace it with the new |target_contents| in the tabstrip and delete
-  // |source_contents|. Otherwise, the caller owns |target_contents| and is
-  // responsible for inserting it into the tabstrip.
-  //
-  // Returns true if and only if we update |target_contents|.
-  bool MaybeSwapInInstantNTPContents(
-      const GURL& url,
-      content::WebContents* source_contents,
-      content::WebContents** target_contents);
 
   // Commits the current Instant, returning true on success. This is intended
   // for use from OpenCurrentURL.
@@ -88,7 +75,6 @@ class BrowserInstantController : public SearchModelObserver,
   Browser* const browser_;
 
   InstantController instant_;
-  InstantUnloadHandler instant_unload_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInstantController);
 };

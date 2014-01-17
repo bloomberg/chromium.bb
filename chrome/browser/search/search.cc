@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,13 +58,7 @@ const uint64 kEmbeddedPageVersionDefault = 1;
 const uint64 kEmbeddedPageVersionDefault = 2;
 #endif
 
-// The staleness timeout can be set (in seconds) via this config.
-const char kStalePageTimeoutFlagName[] = "stale";
-const int kStalePageTimeoutDefault = 3 * 3600;  // 3 hours.
-
 const char kHideVerbatimFlagName[] = "hide_verbatim";
-const char kShowNtpFlagName[] = "show_ntp";
-const char kUseCacheableNTP[] = "use_cacheable_ntp";
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
@@ -395,14 +388,9 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   if (entry->GetURL() == GetLocalInstantURL(profile))
     return true;
 
-  if (ShouldUseCacheableNTP()) {
-    GURL new_tab_url(GetNewTabPageURL(profile));
-    return new_tab_url.is_valid() &&
-        search::MatchesOriginAndPath(entry->GetURL(), new_tab_url);
-  }
-
-  return IsInstantURL(entry->GetVirtualURL(), profile) &&
-      GetSearchTermsImpl(contents, entry).empty();
+  GURL new_tab_url(GetNewTabPageURL(profile));
+  return new_tab_url.is_valid() &&
+      search::MatchesOriginAndPath(entry->GetURL(), new_tab_url);
 }
 
 bool IsSuggestPrefEnabled(Profile* profile) {
@@ -458,9 +446,6 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
 }
 
 GURL GetNewTabPageURL(Profile* profile) {
-  if (!ShouldUseCacheableNTP())
-    return GURL();
-
   if (!profile || profile->IsOffTheRecord())
     return GURL();
 
@@ -488,9 +473,6 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
 }
 
 bool ShouldPrefetchSearchResults() {
-  if (!ShouldUseCacheableNTP())
-    return false;
-
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrefetchSearchResultsFlagName, false, flags);
@@ -504,23 +486,6 @@ bool ShouldHideTopVerbatimMatch() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kHideVerbatimFlagName, false, flags);
-}
-
-bool ShouldUseCacheableNTP() {
-  FieldTrialFlags flags;
-  return !GetFieldTrialInfo(&flags) || GetBoolValueForFlagWithDefault(
-      kUseCacheableNTP, true, flags);
-}
-
-bool ShouldShowInstantNTP() {
-  // If using the cacheable NTP, load the NTP directly instead of preloading its
-  // contents using InstantNTP.
-  if (ShouldUseCacheableNTP())
-    return false;
-
-  FieldTrialFlags flags;
-  return !GetFieldTrialInfo(&flags) ||
-      GetBoolValueForFlagWithDefault(kShowNtpFlagName, true, flags);
 }
 
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
@@ -603,43 +568,6 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
 
   effective_url = effective_url.ReplaceComponents(replacements);
   return effective_url;
-}
-
-int GetInstantLoaderStalenessTimeoutSec() {
-  int timeout_sec = kStalePageTimeoutDefault;
-  FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags)) {
-    timeout_sec = GetUInt64ValueForFlagWithDefault(kStalePageTimeoutFlagName,
-                                                   kStalePageTimeoutDefault,
-                                                   flags);
-  }
-
-  // Require a minimum 5 minute timeout.
-  if (timeout_sec < 0 || (timeout_sec > 0 && timeout_sec < 300))
-    timeout_sec = kStalePageTimeoutDefault;
-
-  // Randomize by upto 15% either side.
-  timeout_sec = base::RandInt(timeout_sec * 0.85, timeout_sec * 1.15);
-
-  return timeout_sec;
-}
-
-bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents) {
-  if (!IsInstantExtendedAPIEnabled())
-    return false;
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager)
-    return false;  // The profile manager can be NULL while testing.
-
-  const std::vector<Profile*>& profiles = profile_manager->GetLoadedProfiles();
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    const InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(profiles[i]);
-    if (instant_service && instant_service->GetNTPContents() == contents)
-      return true;
-  }
-  return false;
 }
 
 bool HandleNewTabURLRewrite(GURL* url,

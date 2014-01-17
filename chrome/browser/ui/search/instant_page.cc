@@ -80,28 +80,6 @@ void InstantPage::DidCommitProvisionalLoadForFrame(
     delegate_->InstantPageAboutToNavigateMainFrame(contents(), url);
 }
 
-void InstantPage::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& /* params */) {
-  // A 204 can be sent by the search provider as a lightweight signal
-  // to fall back to the local page, and we obviously want to fall back
-  // if we get any response code that indicates an error.
-  if (details.http_status_code == 204 || details.http_status_code >= 400)
-    delegate_->InstantPageLoadFailed(contents());
-}
-
-void InstantPage::DidFailProvisionalLoad(
-    int64 /* frame_id */,
-    const base::string16& frame_unique_name,
-    bool is_main_frame,
-    const GURL& /* validated_url */,
-    int /* error_code */,
-    const base::string16& /* error_description */,
-    content::RenderViewHost* /* render_view_host */) {
-  if (is_main_frame)
-    delegate_->InstantPageLoadFailed(contents());
-}
-
 void InstantPage::ModelChanged(const SearchModel::State& old_state,
                                const SearchModel::State& new_state) {
   if (old_state.instant_support != new_state.instant_support)

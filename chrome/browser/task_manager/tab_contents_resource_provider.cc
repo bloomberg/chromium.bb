@@ -13,8 +13,6 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
@@ -90,7 +88,6 @@ class TabContentsResource : public RendererResource {
   static gfx::ImageSkia* prerender_icon_;
   content::WebContents* web_contents_;
   Profile* profile_;
-  bool is_instant_ntp_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsResource);
 };
@@ -102,8 +99,7 @@ TabContentsResource::TabContentsResource(
     : RendererResource(web_contents->GetRenderProcessHost()->GetHandle(),
                        web_contents->GetRenderViewHost()),
       web_contents_(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      is_instant_ntp_(chrome::IsPreloadedInstantExtendedNTP(web_contents)) {
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
   if (!prerender_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     prerender_icon_ = rb.GetImageSkiaNamed(IDR_PRERENDER);
@@ -139,7 +135,6 @@ base::string16 TabContentsResource::GetTitle() const {
       HostsExtension(),
       profile_->IsOffTheRecord(),
       IsContentsPrerendering(web_contents_),
-      is_instant_ntp_,
       false);  // is_background
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
@@ -238,14 +233,6 @@ void TabContentsResourceProvider::StartUpdating() {
     }
   }
 
-  // Add all the Instant Extended prerendered NTPs.
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    const InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(profiles[i]);
-    if (instant_service && instant_service->GetNTPContents())
-      Add(instant_service->GetNTPContents());
-  }
-
 #if defined(ENABLE_FULL_PRINTING)
   // Add all the pages being background printed.
   printing::BackgroundPrintingManager* printing_manager =
@@ -301,7 +288,6 @@ void TabContentsResourceProvider::Add(WebContents* web_contents) {
   // pages, prerender pages, and background printed pages.
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&
-      !chrome::IsPreloadedInstantExtendedNTP(web_contents) &&
       !IsContentsBackgroundPrinted(web_contents) &&
       !DevToolsWindow::IsDevToolsWindow(web_contents->GetRenderViewHost())) {
     return;

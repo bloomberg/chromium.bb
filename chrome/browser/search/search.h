@@ -154,13 +154,6 @@ GURL GetLocalInstantURL(Profile* profile);
 // match.  See comments on ShouldHideTopMatch in autocomplete_result.h.
 bool ShouldHideTopVerbatimMatch();
 
-// Returns true if the cacheable NTP should be shown and false if not.
-// Exposed for testing.
-bool ShouldUseCacheableNTP();
-
-// Returns true if the Instant NTP should be shown and false if not.
-bool ShouldShowInstantNTP();
-
 // Returns when we should show a search button in the omnibox.  This may be any
 // of several values, some of which depend on whether the underlying state of
 // the page would normally be to perform search term replacement; see also
@@ -193,13 +186,6 @@ OriginChipPosition GetOriginChipPosition();
 // This forces the NTP and search results pages to have different SiteIntances,
 // and hence different processes.
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile);
-
-// Returns the staleness timeout (in seconds) that should be used to refresh the
-// InstantLoader.
-int GetInstantLoaderStalenessTimeoutSec();
-
-// Returns true if |contents| corresponds to a preloaded instant extended NTP.
-bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents);
 
 // Rewrites |url| if
 //   1. |url| is kChromeUINewTabURL,
