@@ -476,8 +476,7 @@ def main():
   treemap_out = os.path.join(opts.destdir, 'webtreemap')
   if not os.path.exists(treemap_out):
     os.makedirs(treemap_out, 0755)
-  treemap_src = os.path.join('third_party', 'webtreemap', 'src',
-                             'webtreemap-gh-pages')
+  treemap_src = os.path.join('third_party', 'webtreemap', 'src')
   shutil.copy(os.path.join(treemap_src, 'COPYING'), treemap_out)
   shutil.copy(os.path.join(treemap_src, 'webtreemap.js'), treemap_out)
   shutil.copy(os.path.join(treemap_src, 'webtreemap.css'), treemap_out)

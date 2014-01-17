@@ -66,13 +66,13 @@ function show_report_treemap() {
   var w = window.treemap_width;
   var h = window.treemap_height;
   div.innerHTML = '<div style=\'text-align: center;\'>' +
-                  '<button onclick=\'zoomInTreemap()\'>Zoom In</button>' +
-                  ', <button onclick=\'zoomOutTreemap()\'>Zoom Out</button>' +
+                  '<button onclick=\'zoomInTreemap()\'>Bigger (More Detail)</button>' +
+                  ', <button onclick=\'zoomOutTreemap()\'>Smaller (Less Detail)</button>' +
                   ' or resize to: ' +
                   '<input type=text size=5 id=treemap_width value=' + w + '>x' +
                   '<input type=text size=5 id=treemap_height value=' + h + '>' +
                   '<button onclick=\'resizeTreemap()\'>Go</button>' +
-                  '<br><em>Click on a box to zoom in. ' +
+                  '<br><em>Click on a box to zoom in and reveal more detail. ' +
                   'Click on the outermost box to zoom out.</em>' +
                   '<br>Legend: <table border=1 class=\'treemaplegend\' cellborder=1><tr>' +
                   '<td class=\'webtreemap-symbol-bss\'>BSS</td>' +

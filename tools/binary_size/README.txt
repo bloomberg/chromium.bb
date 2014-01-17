@@ -51,7 +51,7 @@ pretend that you are building the Content Shell APK for Android.
   3. Run the tool specifying the library and the output report directory.
      This command will run the analysis on the Content Shell native library for
      Android using the nm/addr2line binaries from the Android NDK for ARM,
-     producing an HTMl report in /tmp/report:
+     producing an HTML report in /tmp/report:
        tools/binary_size/run_binary_size_analysis.py \
          --library out/Release/lib/libcontent_shell_content_view.so \
          --destdir /tmp/report \
@@ -87,6 +87,11 @@ The tool is not perfect and has several shortcomings:
 
   * Not all space in the binary is accounted for. The cause is still under
     investigation.
+  * When dealing with inlining and such, the size cost is attributed to the
+    resource in which the code gets inlined. Depending upon your goals for
+    analysis, this may be either good or bad; fundamentally, the more trickery
+    that the compiler and/or linker do, the less simple the relationship
+    between the original source and the resultant binary.
   * The tool is partly written in Java, temporarily tying it to Android
     purely and solely because it needs Java build logic which is only defined
     in the Android part of the build system. The Java portions need to be
@@ -95,11 +100,12 @@ The tool is not perfect and has several shortcomings:
   * The Java code assumes that the library file is within a Chromium release
     directory. This limits it to Chromium-based binaries only.
   * The Java code has a hack to accurately identify the source of ICU data
-    within the Chromium source tree due to missing symbols in the ICU ASM
-    output.
+    within the Chromium source tree due to missing size information in the ICU
+    ASM output in some build variants.
   * The Python script assumes that arm-based and mips-based nm/addr2line
-    binaries exist in ../../third_party. This is true only when dealing with
-    Android and again limits the tool to Chromium-based binaries.
+    binaries exist in ../../third_party/android_tools/ndk/toolchains. This is
+    true only when dealing with Android and again limits the tool to
+    Chromium-based binaries.
   * The Python script uses build system variables to construct the classpath
     for running the Java code.
   * The Javascript code in the HTML report Assumes code lives in Chromium for
