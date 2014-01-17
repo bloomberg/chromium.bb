@@ -117,7 +117,6 @@ public:
     void setOverrideAllowInlineStyle(bool);
 
     bool isActive() const;
-    void gatherReportURIs(DOMStringList&) const;
 
     void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression) const;
     void reportDuplicateDirective(const String&) const;

@@ -78,7 +78,6 @@ class ContextFeatures;
 class CustomElementRegistrationContext;
 class DOMImplementation;
 class DOMNamedFlowCollection;
-class DOMSecurityPolicy;
 class DOMSelection;
 class DOMWindow;
 class DOMWrapperWorld;
@@ -362,8 +361,6 @@ public:
     String visibilityState() const;
     bool hidden() const;
     void dispatchVisibilityStateChangeEvent();
-
-    DOMSecurityPolicy* securityPolicy();
 
     PassRefPtr<Node> adoptNode(PassRefPtr<Node> source, ExceptionState&);
 
@@ -1284,8 +1281,6 @@ private:
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
 
     RefPtr<NamedFlowCollection> m_namedFlows;
-
-    RefPtr<DOMSecurityPolicy> m_domSecurityPolicy;
 
     void sharedObjectPoolClearTimerFired(Timer<Document>*);
     Timer<Document> m_sharedObjectPoolClearTimer;

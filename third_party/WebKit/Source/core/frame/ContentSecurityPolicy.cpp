@@ -884,7 +884,6 @@ public:
     bool allowStyleNonce(const String&) const;
     bool allowScriptHash(const SourceHashValue&) const;
 
-    void gatherReportURIs(DOMStringList&) const;
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
     ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
     bool isReportOnly() const { return m_reportOnly; }
@@ -1229,12 +1228,6 @@ bool CSPDirectiveList::allowConnectToSource(const KURL& url, ContentSecurityPoli
     return reportingStatus == ContentSecurityPolicy::SendReport ?
         checkSourceAndReportViolation(operativeDirective(m_connectSrc.get()), url, connectSrc) :
         checkSource(operativeDirective(m_connectSrc.get()), url);
-}
-
-void CSPDirectiveList::gatherReportURIs(DOMStringList& list) const
-{
-    for (size_t i = 0; i < m_reportURIs.size(); ++i)
-        list.append(m_reportURIs[i].string());
 }
 
 bool CSPDirectiveList::allowFormAction(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
@@ -1783,12 +1776,6 @@ ReflectedXSSDisposition ContentSecurityPolicy::reflectedXSSDisposition() const
             disposition = std::max(disposition, m_policies[i]->reflectedXSSDisposition());
     }
     return disposition;
-}
-
-void ContentSecurityPolicy::gatherReportURIs(DOMStringList& list) const
-{
-    for (size_t i = 0; i < m_policies.size(); ++i)
-        m_policies[i]->gatherReportURIs(list);
 }
 
 SecurityOrigin* ContentSecurityPolicy::securityOrigin() const

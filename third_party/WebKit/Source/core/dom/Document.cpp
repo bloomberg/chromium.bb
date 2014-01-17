@@ -111,7 +111,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/DOMSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
@@ -1389,13 +1388,6 @@ void Document::dispatchVisibilityStateChangeEvent()
     dispatchEvent(Event::create(EventTypeNames::visibilitychange));
     // Also send out the deprecated version until it can be removed.
     dispatchEvent(Event::create(EventTypeNames::webkitvisibilitychange));
-}
-
-DOMSecurityPolicy* Document::securityPolicy()
-{
-    if (!m_domSecurityPolicy)
-        m_domSecurityPolicy = DOMSecurityPolicy::create(this);
-    return m_domSecurityPolicy.get();
 }
 
 String Document::nodeName() const

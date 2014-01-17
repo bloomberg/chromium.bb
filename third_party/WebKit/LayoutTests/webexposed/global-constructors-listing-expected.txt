@@ -397,7 +397,6 @@ SVGViewSpec
 SVGZoomEvent
 Screen
 ScriptProcessorNode
-SecurityPolicy
 SecurityPolicyViolationEvent
 Selection
 ShadowRoot
