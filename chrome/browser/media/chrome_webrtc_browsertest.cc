@@ -38,7 +38,7 @@ static const char kMainWebrtcTestHtmlPage[] =
 // Top-level integration test for WebRTC. Requires a real webcam and microphone
 // on the running system. This test is not meant to run in the main browser
 // test suite since normal tester machines do not have webcams.
-class WebrtcBrowserTest : public WebRtcTestBase {
+class WebRtcBrowserTest : public WebRtcTestBase {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
@@ -156,7 +156,7 @@ class WebrtcBrowserTest : public WebRtcTestBase {
   PeerConnectionServerRunner peerconnection_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoWebRTCCallInTwoTabs) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetrics) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestWebAudioMediaStream) {
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL url(embedded_test_server()->GetURL("/webrtc/webaudio_crash.html"));
   ui_test_utils::NavigateToURL(browser(), url);

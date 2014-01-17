@@ -47,7 +47,7 @@ static base::FilePath GetTestDataDir() {
 // Test that the typing detection feature works.
 // You must have the src-internal solution in your .gclient to put the required
 // pyauto_private directory into chrome/test/data/.
-class WebrtcTypingDetectionBrowserTest : public WebRtcTestBase {
+class WebRtcTypingDetectionBrowserTest : public WebRtcTestBase {
  public:
   // TODO(phoglund): clean up duplication from audio quality browser test when
   // this test is complete and is proven to work.
@@ -107,7 +107,7 @@ class WebrtcTypingDetectionBrowserTest : public WebRtcTestBase {
 };
 
 // TODO(phoglund): enable when fully implemented.
-IN_PROC_BROWSER_TEST_F(WebrtcTypingDetectionBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcTypingDetectionBrowserTest,
                        DISABLED_MANUAL_TestTypingDetection) {
   // TODO(phoglund): make this use embedded_test_server when that test server
   // can handle files > ~400Kb.

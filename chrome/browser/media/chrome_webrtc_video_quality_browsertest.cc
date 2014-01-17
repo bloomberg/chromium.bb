@@ -93,9 +93,9 @@ static const char kPyWebSocketPortNumber[] = "12221";
 // frame_analyzer. Both tools can be found under third_party/webrtc/tools. The
 // test also runs a stand alone Python implementation of a WebSocket server
 // (pywebsocket) and a barcode_decoder script.
-class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
+class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
  public:
-  WebrtcVideoQualityBrowserTest()
+  WebRtcVideoQualityBrowserTest()
       : pywebsocket_server_(0),
         environment_(base::Environment::Create()) {}
 
@@ -316,7 +316,7 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
   scoped_ptr<base::Environment> environment_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVGAVideoQuality) {
   ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
       "This is a long-running test; you must specify "

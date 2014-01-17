@@ -140,15 +140,15 @@ static const int64 FAKE_TIME_STAMP = 3600000;
 
 #if defined(OS_WIN)
 // All tests are flaky on Windows: crbug.com/277322.
-#define MAYBE_WebRTCInternalsBrowserTest DISABLED_WebRTCInternalsBrowserTest
+#define MAYBE_WebRtcInternalsBrowserTest DISABLED_WebRtcInternalsBrowserTest
 #else
-#define MAYBE_WebRTCInternalsBrowserTest WebRTCInternalsBrowserTest
+#define MAYBE_WebRtcInternalsBrowserTest WebRtcInternalsBrowserTest
 #endif
 
-class MAYBE_WebRTCInternalsBrowserTest: public ContentBrowserTest {
+class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
  public:
-  MAYBE_WebRTCInternalsBrowserTest() {}
-  virtual ~MAYBE_WebRTCInternalsBrowserTest() {}
+  MAYBE_WebRtcInternalsBrowserTest() {}
+  virtual ~MAYBE_WebRtcInternalsBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // We need fake devices in this test since we want to run on naked VMs. We
@@ -476,7 +476,7 @@ class MAYBE_WebRTCInternalsBrowserTest: public ContentBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
                        AddAndRemovePeerConnection) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
   VerifyNoElementWithId(pc_2.getIdString());
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
                        UpdateAllPeerConnections) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
   VerifyPeerConnectionEntry(pc_1);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, UpdatePeerConnection) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, UpdatePeerConnection) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, UpdatePeerConnection) {
 }
 
 // Tests that adding random named stats updates the dataSeries and graphs.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, AddStats) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, AddStats) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -579,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, AddStats) {
 }
 
 // Tests that the bandwidth estimation values are drawn on a single graph.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, BweCompoundGraph) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, BweCompoundGraph) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, BweCompoundGraph) {
 
 // Tests that the total packet/byte count is converted to count per second,
 // and the converted data is drawn.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, ConvertedGraphs) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, ConvertedGraphs) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -661,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, ConvertedGraphs) {
 // Timing out on ARM linux bot: http://crbug.com/238490
 // Disabling due to failure on Linux, Mac, Win: http://crbug.com/272413
 // Sanity check of the page content under a real PeerConnection call.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
                        DISABLED_WithRealPeerConnectionCall) {
   // Start a peerconnection call in the first window.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -744,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest,
   EXPECT_GT(count, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, CreatePageDump) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, CreatePageDump) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
@@ -789,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, CreatePageDump) {
   VerifyStatsDump(dump.get(), pc_0, type, id, stats);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, UpdateGetUserMedia) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, UpdateGetUserMedia) {
   GURL url("chrome://webrtc-internals");
   NavigateToURL(shell(), url);
 
