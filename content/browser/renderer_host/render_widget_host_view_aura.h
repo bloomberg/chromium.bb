@@ -120,8 +120,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     // Tells the client to start showing touch editing handles.
     virtual void StartTouchEditing() = 0;
 
-    // Notifies the client that touch editing is no longer needed.
-    virtual void EndTouchEditing() = 0;
+    // Notifies the client that touch editing is no longer needed. |quick|
+    // determines whether the handles should fade out quickly or slowly.
+    virtual void EndTouchEditing(bool quick) = 0;
 
     // Notifies the client that the selection bounds need to be updated.
     virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,

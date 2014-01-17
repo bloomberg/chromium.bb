@@ -2546,7 +2546,7 @@ bool RenderWidgetHostViewAura::CanFocus() {
 void RenderWidgetHostViewAura::OnCaptureLost() {
   host_->LostCapture();
   if (touch_editing_client_)
-    touch_editing_client_->EndTouchEditing();
+    touch_editing_client_->EndTouchEditing(false);
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
@@ -3061,7 +3061,7 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     host_->SetInputMethodActive(false);
 
     if (touch_editing_client_)
-      touch_editing_client_->EndTouchEditing();
+      touch_editing_client_->EndTouchEditing(false);
 
     // If we lose the focus while fullscreen, close the window; Pepper Flash
     // won't do it for us (unlike NPAPI Flash). However, we do not close the

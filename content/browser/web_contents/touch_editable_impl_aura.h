@@ -43,7 +43,7 @@ class CONTENT_EXPORT TouchEditableImplAura
 
   // Overridden from RenderWidgetHostViewAura::TouchEditingClient.
   virtual void StartTouchEditing() OVERRIDE;
-  virtual void EndTouchEditing() OVERRIDE;
+  virtual void EndTouchEditing(bool quick) OVERRIDE;
   virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
                                           const gfx::Rect& focus) OVERRIDE;
   virtual void OnTextInputTypeChanged(ui::TextInputType type) OVERRIDE;

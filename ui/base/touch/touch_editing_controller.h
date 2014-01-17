@@ -74,6 +74,10 @@ class UI_BASE_EXPORT TouchSelectionController {
 
   // Returns true if the user is currently dragging one of the handles.
   virtual bool IsHandleDragInProgress() = 0;
+
+  // Hides visible handles. According to the value of |quick|, handles might
+  // fade out quickly or slowly.
+  virtual void HideHandles(bool quick) = 0;
 };
 
 class UI_BASE_EXPORT TouchSelectionControllerFactory {
