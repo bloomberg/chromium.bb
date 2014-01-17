@@ -13,8 +13,10 @@ namespace test {
 
 // This shuts down the global, singleton instance. (Note: "Real" embedders are
 // not expected to ever shut down this instance. This |Shutdown()| function will
-// do more work to ensure that tests don't leak, etc.)
-MOJO_SYSTEM_IMPL_EXPORT void Shutdown();
+// do more work to ensure that tests don't leak, etc.) Returns true if there
+// were no problems, false if there were leaks -- i.e., handles still open -- or
+// any other problems.
+MOJO_SYSTEM_IMPL_EXPORT bool Shutdown();
 
 }  // namespace test
 }  // namespace embedder

@@ -91,7 +91,7 @@ TEST_F(EmbedderTest, ChannelsBasic) {
                                            client_channel_info));
 #endif  // !defined(OS_WIN)
 
-  test::Shutdown();
+  EXPECT_TRUE(test::Shutdown());
 }
 
 // TODO(vtl): Test immediate write & close.

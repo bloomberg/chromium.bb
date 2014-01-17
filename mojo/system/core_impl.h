@@ -14,11 +14,16 @@
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
-
 namespace system {
 
 class CoreImpl;
 class Dispatcher;
+
+// Test-only function (defined/used in embedder/test_embedder.cc). Declared here
+// so it can be friended.
+namespace internal {
+bool ShutdownCheckNoLeaks(CoreImpl*);
+}
 
 // |CoreImpl| is a singleton object that implements the Mojo system calls. All
 // public methods are thread-safe.
@@ -80,6 +85,8 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
                                  uint32_t num_bytes_read) OVERRIDE;
 
  private:
+  friend bool internal::ShutdownCheckNoLeaks(CoreImpl*);
+
   // The |busy| member is used only to deal with functions (in particular
   // |WriteMessage()|) that want to hold on to a dispatcher and later remove it
   // from the handle table, without holding on to the handle table lock.
@@ -145,7 +152,6 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
 };
 
 }  // namespace system
-
 }  // namespace mojo
 
 #endif  // MOJO_SYSTEM_CORE_IMPL_H_
