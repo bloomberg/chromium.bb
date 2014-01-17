@@ -879,11 +879,6 @@
             'base/simd/convert_yuv_to_rgb_x86.cc',
           ],
         }],
-        ['google_tv==1', {
-          'defines': [
-            'ENABLE_EAC3_PLAYBACK',
-          ],
-        }],
         ['OS!="linux" and OS!="win"', {
           'sources!': [
             'base/keyboard_event_counter.cc',

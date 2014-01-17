@@ -35,11 +35,7 @@ std::string GetWebKitRevision() {
 
 #if defined(OS_ANDROID)
 std::string GetAndroidDeviceName() {
-  std::string android_device_name = base::SysInfo::GetDeviceName();
-#if defined(GOOGLE_TV)
-  android_device_name += " TV";
-#endif
-  return android_device_name;
+  return base::SysInfo::GetDeviceName();
 }
 #endif
 

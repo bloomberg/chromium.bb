@@ -705,14 +705,6 @@
         'renderer/media/webrtc_logging.h',
       ],
     }],
-    ['enable_webrtc==1 and google_tv==1', {
-      'sources': [
-        'renderer/media/rtc_video_decoder_bridge_tv.cc',
-        'renderer/media/rtc_video_decoder_bridge_tv.h',
-        'renderer/media/rtc_video_decoder_factory_tv.cc',
-        'renderer/media/rtc_video_decoder_factory_tv.h',
-      ],
-    }],
     ['enable_plugins==1', {
       'dependencies': [
         '../ppapi/ppapi_internal.gyp:ppapi_host',

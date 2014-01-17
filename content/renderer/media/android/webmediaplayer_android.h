@@ -32,7 +32,6 @@
 #include "ui/gfx/rect_f.h"
 
 namespace media {
-class Demuxer;
 class MediaLog;
 }
 
@@ -47,11 +46,6 @@ class WebLayerImpl;
 namespace content {
 class WebMediaPlayerDelegate;
 class RendererMediaPlayerManager;
-
-#if defined(GOOGLE_TV)
-class MediaStreamAudioRenderer;
-class MediaStreamClient;
-#endif
 
 // This class implements blink::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
@@ -225,12 +219,6 @@ class WebMediaPlayerAndroid
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
 
-#if defined(GOOGLE_TV)
-  bool InjectMediaStream(MediaStreamClient* media_stream_client,
-                         media::Demuxer* demuxer,
-                         const base::Closure& destroy_demuxer_cb);
-#endif
-
   // Can be called on any thread.
   static void OnReleaseRemotePlaybackTexture(
       const scoped_refptr<base::MessageLoopProxy>& main_loop,
@@ -401,18 +389,6 @@ class WebMediaPlayerAndroid
   // time.
   gfx::RectF last_computed_rect_;
 #endif  // defined(VIDEO_HOLE)
-
-#if defined(GOOGLE_TV)
-  // Pixel threshold for external surface usage. Negative value means that the
-  // threshold is not defined, so that external surface is never used.
-  int external_surface_threshold_;
-
-  // Media Stream related fields.
-  media::Demuxer* demuxer_;
-  base::Closure destroy_demuxer_cb_;
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
-  MediaStreamClient* media_stream_client_;
-#endif
 
   scoped_ptr<MediaSourceDelegate,
              MediaSourceDelegate::Destroyer> media_source_delegate_;

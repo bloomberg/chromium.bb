@@ -53,10 +53,6 @@ class WebRtcLoggingHandlerImpl;
 class WebRtcLoggingMessageFilter;
 struct StreamDeviceInfo;
 
-#if defined(GOOGLE_TV)
-class RTCVideoDecoderFactoryTv;
-#endif
-
 // Object factory for RTC MediaStreams and RTC PeerConnections.
 class CONTENT_EXPORT MediaStreamDependencyFactory
     : NON_EXPORTED_BASE(public base::NonThreadSafe),
@@ -150,10 +146,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       const std::string& sdp);
 
   WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
-
-#if defined(GOOGLE_TV)
-  RTCVideoDecoderFactoryTv* decoder_factory_tv() { return decoder_factory_tv_; }
-#endif
 
   static void AddNativeTrackToBlinkTrack(
       webrtc::MediaStreamTrackInterface* native_track,
@@ -254,12 +246,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   scoped_ptr<IpcPacketSocketFactory> socket_factory_;
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
-
-#if defined(GOOGLE_TV)
-  // |pc_factory_| will hold the ownership of this object, and |pc_factory_|
-  // outlives this object. Thus weak pointer is sufficient.
-  RTCVideoDecoderFactoryTv* decoder_factory_tv_;
-#endif
 
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;

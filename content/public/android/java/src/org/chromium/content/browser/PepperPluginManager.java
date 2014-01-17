@@ -15,8 +15,6 @@ import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 import android.util.Log;
 
-import org.chromium.base.ContextTypes;
-
 import java.util.List;
 
 /**
@@ -90,11 +88,6 @@ public class PepperPluginManager {
      * @return        Description string for plugins
      */
     public static String getPlugins(final Context context) {
-        if (DeviceUtils.isTv(context) &&
-                !ContextTypes.isRunningInWebapp(context)) {
-            // Chrome-for-tv enables plugins only on webapp mode.
-            return null;
-        }
         StringBuffer ret = new StringBuffer();
         PackageManager pm = context.getPackageManager();
         List<ResolveInfo> plugins = pm.queryIntentServices(

@@ -148,9 +148,6 @@
         # build system.
         'android_webview_build%': 0,
 
-        # Sets whether chrome is built for google tv device.
-        'google_tv%': 0,
-
         # Set ARM architecture version.
         'arm_version%': 7,
 
@@ -254,7 +251,6 @@
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_touch_ui%': '<(enable_touch_ui)',
       'android_webview_build%': '<(android_webview_build)',
-      'google_tv%': '<(google_tv)',
       'use_goma%': '<(use_goma)',
       'gomadir%': '<(gomadir)',
       'enable_app_list%': '<(enable_app_list)',
@@ -698,7 +694,7 @@
           'enable_plugin_installation%': 1,
         }],
 
-        ['(OS=="android" and google_tv!=1) or OS=="ios" or embedded==1', {
+        ['OS=="android" or OS=="ios" or embedded==1', {
           'enable_plugins%': 0,
         }, {
           'enable_plugins%': 1,
@@ -973,7 +969,6 @@
     'android_webview_build%': '<(android_webview_build)',
     'gyp_managed_install%': 0,
     'create_standalone_apk%': 1,
-    'google_tv%': '<(google_tv)',
     'enable_app_list%': '<(enable_app_list)',
     'use_default_render_theme%': '<(use_default_render_theme)',
     'enable_settings_app%': '<(enable_settings_app)',
@@ -1621,7 +1616,7 @@
         'use_cups%': 0,
       }],
 
-      ['enable_plugins==1 and (OS=="linux" or OS=="mac" or OS=="win" or google_tv==1)', {
+      ['enable_plugins==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
         'enable_pepper_cdms%': 1,
       }, {
         'enable_pepper_cdms%': 0,
@@ -1719,11 +1714,6 @@
       ['OS=="android"', {
         'grit_defines': ['-t', 'android',
                          '-E', 'ANDROID_JAVA_TAGGED_ONLY=true'],
-        'conditions': [
-          ['google_tv==1', {
-            'grit_defines': ['-D', 'google_tv'],
-          }],
-        ],
       }],
       ['OS=="mac" or OS=="ios"', {
         'grit_defines': ['-D', 'scale_factors=2x'],
@@ -2178,12 +2168,6 @@
       }],
       ['chromeos==1', {
         'defines': ['OS_CHROMEOS=1'],
-      }],
-      ['google_tv==1', {
-        'defines': [
-          'GOOGLE_TV=1',
-          'VIDEO_HOLE=1',
-        ],
       }],
       ['use_xi2_mt!=0 and use_x11==1', {
         'defines': ['USE_XI2_MT=<(use_xi2_mt)'],

@@ -64,7 +64,6 @@ ContentViewCoreImpl* BrowserMediaPlayerManager::GetContentViewCore() const {
   return ContentViewCoreImpl::FromWebContents(web_contents());
 }
 
-#if !defined(GOOGLE_TV)
 // static
 MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     MediaPlayerHostMsg_Initialize_Type type,
@@ -112,7 +111,6 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
   NOTREACHED();
   return NULL;
 }
-#endif
 
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     RenderViewHost* render_view_host)

@@ -195,7 +195,7 @@
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />
       <include name="IDR_OMNIBOX_JS" file="resources\omnibox\omnibox.js" type="BINDATA" />
-      <if expr="not is_android or pp_ifdef('google_tv')">
+      <if expr="not is_android">
         <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PLUGINS_JS" file="resources\plugins.js" type="BINDATA" />
       </if>
@@ -203,9 +203,6 @@
       <include name="IDR_COMPONENTS_JS" file="resources\components.js" type="BINDATA" />
       <if expr="pp_ifdef('enable_plugins')">
         <include name="IDR_PDF_MANIFEST" file="resources\pdf\manifest.json" type="BINDATA" />
-      </if>
-      <if expr="is_android and pp_ifdef('google_tv')">
-        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_tv.json" type="BINDATA" />
       </if>
       <if expr="is_win">
         <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_win.json" type="BINDATA" />

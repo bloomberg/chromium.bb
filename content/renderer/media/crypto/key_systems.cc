@@ -36,7 +36,6 @@ const char kMp4a[] = "mp4a";
 const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
-#if !defined(GOOGLE_TV)
 inline std::string KeySystemNameForUMAInternal(
     const blink::WebString& key_system) {
   if (key_system == kClearKeyKeySystem)
@@ -47,10 +46,6 @@ inline std::string KeySystemNameForUMAInternal(
 #endif  // WIDEVINE_CDM_AVAILABLE
   return "Unknown";
 }
-#else
-// Declares the function, which is defined in another file.
-std::string KeySystemNameForUMAInternal(const blink::WebString& key_system);
-#endif  // !defined(GOOGLE_TV)
 
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.

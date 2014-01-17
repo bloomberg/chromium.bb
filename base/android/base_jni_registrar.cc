@@ -24,10 +24,6 @@
 #include "base/message_loop/message_pump_android.h"
 #include "base/power_monitor/power_monitor_device_source_android.h"
 
-#if defined(GOOGLE_TV)
-#include "base/android/context_types.h"
-#endif
-
 namespace base {
 namespace android {
 
@@ -35,9 +31,6 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
   { "ActivityStatus", base::android::ActivityStatus::RegisterBindings },
   { "BuildInfo", base::android::BuildInfo::RegisterBindings },
   { "CommandLine", base::android::RegisterCommandLine },
-#if defined(GOOGLE_TV)
-  { "ContextTypes", base::android::RegisterContextTypes },
-#endif
   { "ContentUriUtils", base::RegisterContentUriUtils },
   { "CpuFeatures", base::android::RegisterCpuFeatures },
   { "ImportantFileWriterAndroid",

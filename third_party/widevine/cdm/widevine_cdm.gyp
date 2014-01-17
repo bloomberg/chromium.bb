@@ -40,7 +40,7 @@
           }],
         ],
       }],
-      [ 'OS == "android" and google_tv != 1', {
+      [ 'OS == "android"', {
         'widevine_cdm_version_h_file%':
             'android/widevine_cdm_version.h',
       }],

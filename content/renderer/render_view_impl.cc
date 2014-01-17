@@ -223,11 +223,6 @@
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "ui/gfx/rect_f.h"
 
-#if defined(GOOGLE_TV)
-#include "content/renderer/media/rtc_video_decoder_bridge_tv.h"
-#include "content/renderer/media/rtc_video_decoder_factory_tv.h"
-#endif
-
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
@@ -5889,7 +5884,6 @@ WebMediaPlayer* RenderViewImpl::CreateWebMediaPlayerForMediaStream(
     LOG(ERROR) << "Failed to initialize MediaStreamClient";
     return NULL;
   }
-#if !defined(GOOGLE_TV)
   if (media_stream_client_->IsMediaStream(url)) {
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     bool found_neon =
@@ -5899,7 +5893,6 @@ WebMediaPlayer* RenderViewImpl::CreateWebMediaPlayerForMediaStream(
     return new WebMediaPlayerMS(frame, client, AsWeakPtr(),
                                 media_stream_client_, new RenderMediaLog());
   }
-#endif  // !defined(GOOGLE_TV)
 #endif  // defined(ENABLE_WEBRTC)
   return NULL;
 }
@@ -5997,33 +5990,14 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
         context_provider, gpu_channel_host, routing_id_));
   }
 
-  scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(
-      new WebMediaPlayerAndroid(
+  return new WebMediaPlayerAndroid(
           frame,
           client,
           AsWeakPtr(),
           media_player_manager_,
           stream_texture_factory.release(),
           RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
-          new RenderMediaLog()));
-#if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
-  if (media_stream_client_ && media_stream_client_->IsMediaStream(url)) {
-    RTCVideoDecoderFactoryTv* factory = RenderThreadImpl::current()
-        ->GetMediaStreamDependencyFactory()->decoder_factory_tv();
-    // |media_stream_client| and |factory| outlives |web_media_player_android|.
-    if (!factory->AcquireDemuxer() ||
-        !web_media_player_android->InjectMediaStream(
-            media_stream_client_,
-            factory,
-            base::Bind(
-                base::IgnoreResult(&RTCVideoDecoderFactoryTv::ReleaseDemuxer),
-                base::Unretained(factory)))) {
-      LOG(ERROR) << "Failed to inject media stream.";
-      return NULL;
-    }
-  }
-#endif  // defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
-  return web_media_player_android.release();
+          new RenderMediaLog());
 }
 
 #endif  // defined(OS_ANDROID)

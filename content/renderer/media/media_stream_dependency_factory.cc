@@ -46,10 +46,6 @@
 #include "net/socket/nss_ssl_util.h"
 #endif
 
-#if defined(GOOGLE_TV)
-#include "content/renderer/media/rtc_video_decoder_factory_tv.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_bridge.h"
 #endif
@@ -202,9 +198,6 @@ class SourceStateObserver : public webrtc::ObserverInterface,
 MediaStreamDependencyFactory::MediaStreamDependencyFactory(
     P2PSocketDispatcher* p2p_socket_dispatcher)
     : network_manager_(NULL),
-#if defined(GOOGLE_TV)
-      decoder_factory_tv_(NULL),
-#endif
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       signaling_thread_(NULL),
       worker_thread_(NULL),
@@ -585,16 +578,10 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories();
-#if !defined(GOOGLE_TV)
   if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
     if (gpu_factories)
       decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
   }
-#else
-  // PeerConnectionFactory will hold the ownership of this
-  // VideoDecoderFactory.
-  decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv());
-#endif
 
   if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding)) {
     if (gpu_factories)

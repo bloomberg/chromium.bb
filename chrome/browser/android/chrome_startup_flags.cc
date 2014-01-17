@@ -45,7 +45,4 @@ void SetChromeSpecificCommandLineFlags() {
       switches::kPrerenderFromOmniboxSwitchValueEnabled);
   if (base::android::SysUtils::IsLowEndDevice())
     SetCommandLineSwitch(switches::kDisableSyncFavicons);
-#if defined(GOOGLE_TV)
-  SetCommandLineSwitch(switches::kPpapiInProcess);
-#endif
 }

@@ -42,9 +42,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::DemuxerConfigs)
   IPC_STRUCT_TRAITS_MEMBER(video_extra_data)
 
   IPC_STRUCT_TRAITS_MEMBER(duration_ms)
-#if defined(GOOGLE_TV)
-  IPC_STRUCT_TRAITS_MEMBER(key_system)
-#endif  // defined(GOOGLE_TV)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::DemuxerData)

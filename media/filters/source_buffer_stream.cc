@@ -322,19 +322,10 @@ static base::TimeDelta kSeekToStartFudgeRoom() {
   return base::TimeDelta::FromMilliseconds(1000);
 }
 // The maximum amount of data in bytes the stream will keep in memory.
-#if defined(GOOGLE_TV)
-// In Google TV, set the size of the buffer to 1 min because of
-// the limited memory of the embedded system.
-// 2MB: approximately 1 minutes of 256Kbps content.
-// 30MB: approximately 1 minutes of 4Mbps content.
-static int kDefaultAudioMemoryLimit = 2 * 1024 * 1024;
-static int kDefaultVideoMemoryLimit = 30 * 1024 * 1024;
-#else
 // 12MB: approximately 5 minutes of 320Kbps content.
 // 150MB: approximately 5 minutes of 4Mbps content.
 static int kDefaultAudioMemoryLimit = 12 * 1024 * 1024;
 static int kDefaultVideoMemoryLimit = 150 * 1024 * 1024;
-#endif
 
 namespace media {
 

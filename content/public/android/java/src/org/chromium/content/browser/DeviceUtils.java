@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 
 import org.chromium.base.CommandLine;
 import org.chromium.content.common.ContentSwitches;
@@ -20,7 +19,6 @@ public class DeviceUtils {
      */
     private static final int MINIMUM_TABLET_WIDTH_DP = 600;
 
-    private static Boolean sIsTv = null;
     private static Boolean sIsTablet = null;
 
     /**
@@ -29,35 +27,11 @@ public class DeviceUtils {
      */
     public static boolean isTablet(Context context) {
         if (sIsTablet == null) {
-            if (isTv(context)) {
-                sIsTablet = true;
-                return sIsTablet;
-            }
             int minimumScreenWidthDp = context.getResources().getConfiguration().
                     smallestScreenWidthDp;
             sIsTablet = minimumScreenWidthDp >= MINIMUM_TABLET_WIDTH_DP;
         }
         return sIsTablet;
-    }
-
-    /**
-     * Checks if the device should be treated as TV. Note that this should be
-     * invoked before {@link #isTablet(Context)} to get the correct result
-     * since they are not orthogonal.
-     *
-     * @param context Android context
-     * @return {@code true} if the device should be treated as TV.
-     */
-    public static boolean isTv(Context context) {
-        if (sIsTv == null) {
-            PackageManager manager = context.getPackageManager();
-            if (manager != null) {
-                sIsTv = manager.hasSystemFeature(PackageManager.FEATURE_TELEVISION);
-                return sIsTv;
-            }
-            sIsTv = false;
-        }
-        return sIsTv;
     }
 
     /**

@@ -438,13 +438,6 @@
             'renderer/extensions/tabs_custom_bindings.cc',
             'renderer/extensions/tts_custom_bindings.cc',
           ],
-          'conditions' : [
-            ['google_tv==1', {
-              'sources!' : [
-                'renderer/media/chrome_key_systems.cc',
-              ]
-            }],
-          ],
         }],
         ['OS=="win"', {
           'include_dirs': [

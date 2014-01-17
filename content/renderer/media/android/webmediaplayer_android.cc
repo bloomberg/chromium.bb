@@ -41,11 +41,6 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
-#if defined(GOOGLE_TV)
-#include "content/renderer/media/media_stream_audio_renderer.h"
-#include "content/renderer/media/media_stream_client.h"
-#endif
-
 static const uint32 kGLTextureExternalOES = 0x8D65;
 
 using blink::WebMediaPlayer;
@@ -111,11 +106,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       video_frame_provider_client_(NULL),
-#if defined(GOOGLE_TV)
-      external_surface_threshold_(-1),
-      demuxer_(NULL),
-      media_stream_client_(NULL),
-#endif  // defined(GOOGLE_TV)
       pending_playback_(false),
       player_type_(MEDIA_PLAYER_TYPE_URL),
       current_time_(0),
@@ -130,18 +120,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   base::MessageLoop::current()->AddDestructionObserver(this);
 
   player_id_ = manager_->RegisterMediaPlayer(this);
-
-#if defined(GOOGLE_TV)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseExternalVideoSurfaceThresholdInPixels)) {
-    if (!base::StringToInt(
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kUseExternalVideoSurfaceThresholdInPixels),
-        &external_surface_threshold_)) {
-      external_surface_threshold_ = -1;
-    }
-  }
-#endif  // defined(GOOGLE_TV)
 
 #if defined(VIDEO_HOLE)
   // Defer stream texture creation until we are sure it's necessary.
@@ -192,24 +170,6 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 
   if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE && delegate_)
     delegate_->PlayerGone(this);
-
-#if defined(GOOGLE_TV)
-  if (audio_renderer_) {
-    if (audio_renderer_->IsLocalRenderer()) {
-      audio_renderer_->Stop();
-    } else if (!paused()) {
-      // The |audio_renderer_| can be shared by multiple remote streams, and
-      // it will be stopped when WebRtcAudioDeviceImpl goes away. So we simply
-      // pause the |audio_renderer_| here to avoid re-creating the
-      // |audio_renderer_|.
-      audio_renderer_->Pause();
-    }
-  }
-  if (demuxer_ && !destroy_demuxer_cb_.is_null()) {
-    media_source_delegate_.reset();
-    destroy_demuxer_cb_.Run();
-  }
-#endif
 }
 
 void WebMediaPlayerAndroid::load(LoadType load_type,
@@ -225,14 +185,9 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
       break;
 
     case LoadTypeMediaStream:
-#if defined(GOOGLE_TV)
-      player_type_ = MEDIA_PLAYER_TYPE_MEDIA_STREAM;
-      break;
-#else
       CHECK(false) << "WebMediaPlayerAndroid doesn't support MediaStream on "
                       "this platform";
       return;
-#endif
   }
 
   has_media_metadata_ = false;
@@ -267,19 +222,6 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
           base::Bind(&WebMediaPlayerAndroid::OnDurationChanged,
                      weak_factory_.GetWeakPtr()));
     }
-#if defined(GOOGLE_TV)
-    // TODO(xhwang): Pass set_decryptor_ready_cb in InitializeMediaStream() to
-    // enable ClearKey support for Google TV.
-    if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_STREAM) {
-      media_source_delegate_->InitializeMediaStream(
-          demuxer_,
-          base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
-                     weak_factory_.GetWeakPtr()));
-      audio_renderer_ = media_stream_client_->GetAudioRenderer(url);
-      if (audio_renderer_)
-        audio_renderer_->Start();
-    }
-#endif
   } else {
     info_loader_.reset(
         new MediaInfoLoader(
@@ -332,10 +274,6 @@ void WebMediaPlayerAndroid::play() {
     manager_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
 #endif  // defined(VIDEO_HOLE)
-#if defined(GOOGLE_TV)
-  if (audio_renderer_ && paused())
-    audio_renderer_->Play();
-#endif  // defined(GOOGLE_TV)
 
   TryCreateStreamTextureProxyIfNeeded();
   if (hasVideo() && needs_establish_peer_)
@@ -731,14 +669,9 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     return;
 
 #if defined(VIDEO_HOLE)
-  bool has_surface_size_restriction = false;
-#if defined(GOOGLE_TV)
-  has_surface_size_restriction = external_surface_threshold_ >= 0 &&
-       external_surface_threshold_ <= width * height;
-#endif  // defined(GOOGLE_TV)
   // Use H/W surface for MSE as the content might be protected.
   // TODO(qinmin): Change this so that only EME needs the H/W surface
-  if (media_source_delegate_ || has_surface_size_restriction) {
+  if (media_source_delegate_) {
     needs_external_surface_ = true;
     if (!paused() && !manager_->IsInFullscreen(frame_))
       manager_->RequestExternalSurface(player_id_, last_computed_rect_);
@@ -920,10 +853,6 @@ void WebMediaPlayerAndroid::Detach() {
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
-#if defined(GOOGLE_TV)
-  if (audio_renderer_ && !paused())
-    audio_renderer_->Pause();
-#endif
   manager_->Pause(player_id_, is_media_related_action);
   UpdatePlayingState(false);
 }
@@ -1366,11 +1295,6 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(
 void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
 
-#if defined(GOOGLE_TV)
-  if (media_source_delegate_)
-    media_source_delegate_->NotifyKeyAdded(current_key_system_.utf8());
-#endif  // defined(GOOGLE_TV)
-
   client_->keyAdded(current_key_system_, WebString::fromUTF8(session_id));
 }
 
@@ -1428,19 +1352,6 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
                      init_data_ptr,
                      init_data.size());
 }
-
-#if defined(GOOGLE_TV)
-bool WebMediaPlayerAndroid::InjectMediaStream(
-    MediaStreamClient* media_stream_client,
-    media::Demuxer* demuxer,
-    const base::Closure& destroy_demuxer_cb) {
-  DCHECK(!demuxer);
-  media_stream_client_ = media_stream_client;
-  demuxer_ = demuxer;
-  destroy_demuxer_cb_ = destroy_demuxer_cb;
-  return true;
-}
-#endif
 
 void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(uint32 sync_point) {
   DCHECK(main_thread_checker_.CalledOnValidThread());

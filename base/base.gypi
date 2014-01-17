@@ -713,12 +713,6 @@
               'x11/edid_parser_x11.h',
             ],
           }],
-          ['google_tv==1', {
-           'sources': [
-             'android/context_types.cc',
-             'android/context_types.h',
-           ],
-          }],
         ],
         'defines': [
           'BASE_IMPLEMENTATION',

@@ -24,10 +24,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(GOOGLE_TV)
-#include "base/android/context_types.h"
-#endif
-
 
 // static
 void PepperBrokerInfoBarDelegate::Create(
@@ -45,29 +41,6 @@ void PepperBrokerInfoBarDelegate::Create(
 
   TabSpecificContentSettings* tab_content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-
-#if defined(GOOGLE_TV)
-  // On GoogleTV, Netflix crypto/mdx plugin and DRM server adapter plugin can
-  // only come pre-installed with the OS, so we're willing to auto-grant access
-  // to them. PluginRootName should be matched with PEPPER_PLUGIN_ROOT
-  // in PepperPluginManager.java.
-  const char kPluginRootName[] = "/system/lib/pepperplugin";
-  const char kNetflixCryptoPluginFileName[] = "libnrddpicrypto.so";
-  const char kNetflixMdxPluginFileName[] = "libnrdmdx.so";
-  const char kDrmServerAdapterPluginFileName[] = "libdrmserveradapter.so";
-  base::FilePath::StringType plugin_dir_name = plugin_path.DirName().value();
-  base::FilePath::StringType plugin_file_name = plugin_path.BaseName().value();
-  if (base::android::IsRunningInWebapp() &&
-      plugin_dir_name == FILE_PATH_LITERAL(kPluginRootName) &&
-      (plugin_file_name == FILE_PATH_LITERAL(kNetflixCryptoPluginFileName) ||
-       plugin_file_name == FILE_PATH_LITERAL(kNetflixMdxPluginFileName) ||
-       plugin_file_name ==
-          FILE_PATH_LITERAL(kDrmServerAdapterPluginFileName))) {
-    tab_content_settings->SetPepperBrokerAllowed(true);
-    callback.Run(true);
-    return;
-  }
-#endif
 
   HostContentSettingsMap* content_settings =
       profile->GetHostContentSettingsMap();

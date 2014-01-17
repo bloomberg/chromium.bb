@@ -19,14 +19,12 @@ namespace content {
 
 static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID)
-#if !defined(GOOGLE_TV)
   // MSE/EME implementation needs Android MediaCodec API.
   if (!media::MediaCodecBridge::IsAvailable()) {
     WebRuntimeFeatures::enableWebKitMediaSource(false);
     WebRuntimeFeatures::enableMediaSource(false);
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
   }
-#endif  // !defined(GOOGLE_TV)
   // WebAudio is enabled by default only on ARM and only when the
   // MediaCodec API is available.
   WebRuntimeFeatures::enableWebAudio(

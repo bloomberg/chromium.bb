@@ -821,11 +821,6 @@
             'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],
         }],
-        ['enable_webrtc==1 and google_tv==1', {
-          'sources': [
-            'renderer/media/rtc_video_decoder_factory_tv_unittest.cc',
-          ],
-        }],
         ['use_dbus==0', {
           'sources!': [
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
