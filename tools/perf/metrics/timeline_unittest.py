@@ -78,7 +78,7 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
 
     # Create two frame swaps (Results times should be divided by two)
     gpu_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
-    gpu_main.name = 'CrGPUMain'
+    gpu_main.name = 'CrGpuMain'
     gpu_main.BeginSlice('gpucat', ':RealSwapBuffers', 10, 10)
     gpu_main.EndSlice(11, 11)
     gpu_main.BeginSlice('gpucat', ':RealSwapBuffers', 12, 12)

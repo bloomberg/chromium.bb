@@ -149,6 +149,13 @@ FastPathDetails = NoThreads
 SilkResults = ["renderer_main", "total_all"]
 SilkDetails = MainThread
 
+# TODO(epenner): Thread names above are likely fairly stable but trace names
+# could change. We should formalize this trace to keep this robust.
+GpuFrameTraceName = ":RealSwapBuffers"
+# TODO(epenner): The decoder swap-buffers can be used by several producers.
+# we need to find the canonical swap buffers on Mac.
+GpuFrameTraceNameMac = "GLES2DecoderImpl::DoSwapBuffers"
+
 def ThreadCategoryName(thread_name):
   thread_category = "other"
   for substring, category in TimelineThreadCategories.iteritems():
@@ -226,20 +233,14 @@ class ThreadTimesTimelineMetric(TimelineMetric):
     self.results_to_report = AllThreads
     self.details_to_report = NoThreads
 
-  def CalcFrameCount(self):
-    gpu_swaps = 0
-    for thread in self._model.GetAllThreads():
-      if (ThreadCategoryName(thread.name) == "GPU"):
-        for event in thread.IterAllSlices():
-          if ":RealSwapBuffers" in event.name:
-            gpu_swaps += 1
-    return gpu_swaps
+  def CountSlices(self, slices, substring):
+    count = 0
+    for event in slices:
+      if substring in event.name:
+        count += 1
+    return count
 
   def AddResults(self, tab, results):
-    num_frames = self.CalcFrameCount()
-    if not num_frames:
-      raise MissingFramesError()
-
     # Set up each thread category for consistant results.
     thread_category_results = {}
     for name in TimelineThreadCategories.values():
@@ -258,6 +259,14 @@ class ThreadTimesTimelineMetric(TimelineMetric):
     for thread in self._model.GetAllThreads():
       if ThreadCategoryName(thread.name) in FastPath:
         thread_category_results['total_fast_path'].AppendThreadSlices(thread)
+
+    # Calculate the number of frames from the GPU thread.
+    gpu_slices = thread_category_results['GPU'].all_slices
+    num_frames = self.CountSlices(gpu_slices, GpuFrameTraceName)
+    if not num_frames:
+      num_frames = self.CountSlices(gpu_slices, GpuFrameTraceNameMac)
+    if not num_frames:
+      raise MissingFramesError()
 
     # Report the desired results and details.
     for thread_results in thread_category_results.values():
