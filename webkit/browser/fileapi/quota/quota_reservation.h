@@ -69,10 +69,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservation
       int64 new_reserved_size,
       const StatusCallback& callback,
       base::PlatformFileError error);
-  void DidUpdateReservedQuota(int64 new_reserved_size,
+  bool DidUpdateReservedQuota(int64 new_reserved_size,
                               const StatusCallback& callback,
                               base::PlatformFileError error);
 
+  bool client_crashed_;
   bool running_refresh_request_;
   int64 remaining_quota_;
 

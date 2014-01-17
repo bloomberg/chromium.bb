@@ -15,6 +15,7 @@ void QuotaReservation::RefreshReservation(
     const StatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!running_refresh_request_);
+  DCHECK(!client_crashed_);
   if (!reservation_manager())
     return;
 
@@ -33,11 +34,13 @@ void QuotaReservation::RefreshReservation(
 scoped_ptr<OpenFileHandle> QuotaReservation::GetOpenFileHandle(
     const base::FilePath& platform_path) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(!client_crashed_);
   return reservation_buffer_->GetOpenFileHandle(this, platform_path);
 }
 
 void QuotaReservation::OnClientCrash() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  client_crashed_ = true;
 
   if (remaining_quota_) {
     reservation_buffer_->PutReservationToBuffer(remaining_quota_);
@@ -48,7 +51,9 @@ void QuotaReservation::OnClientCrash() {
 void QuotaReservation::ConsumeReservation(int64 size) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK_LT(0, size);
-  DCHECK_LT(size, remaining_quota_);
+  DCHECK_LE(size, remaining_quota_);
+  if (client_crashed_)
+    return;
 
   remaining_quota_ -= size;
   reservation_buffer_->PutReservationToBuffer(size);
@@ -68,7 +73,8 @@ FileSystemType QuotaReservation::type() const {
 
 QuotaReservation::QuotaReservation(
     QuotaReservationBuffer* reservation_buffer)
-    : running_refresh_request_(false),
+    : client_crashed_(false),
+      running_refresh_request_(false),
       remaining_quota_(0),
       reservation_buffer_(reservation_buffer),
       weak_ptr_factory_(this) {
@@ -93,11 +99,11 @@ bool QuotaReservation::AdaptDidUpdateReservedQuota(
   if (!reservation)
     return false;
 
-  reservation->DidUpdateReservedQuota(new_reserved_size, callback, error);
-  return true;
+  return reservation->DidUpdateReservedQuota(
+      new_reserved_size, callback, error);
 }
 
-void QuotaReservation::DidUpdateReservedQuota(
+bool QuotaReservation::DidUpdateReservedQuota(
     int64 new_reserved_size,
     const StatusCallback& callback,
     base::PlatformFileError error) {
@@ -105,9 +111,15 @@ void QuotaReservation::DidUpdateReservedQuota(
   DCHECK(running_refresh_request_);
   running_refresh_request_ = false;
 
+  if (client_crashed_) {
+    callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
+    return false;
+  }
+
   if (error == base::PLATFORM_FILE_OK)
     remaining_quota_ = new_reserved_size;
   callback.Run(error);
+  return true;
 }
 
 }  // namespace fileapi
