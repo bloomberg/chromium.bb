@@ -26,6 +26,7 @@ import gyp
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Add paths so that pymod_do_main(...) can import files.
+sys.path.insert(1, os.path.join(chrome_src, 'tools'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
 sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
@@ -36,6 +37,8 @@ sys.path.insert(1, os.path.join(chrome_src, 'remoting', 'tools', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'liblouis'))
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'build', 'scripts'))
+
+import find_depot_tools
 
 # On Windows, Psyco shortens warm runs of build/gyp_chromium by about
 # 20 seconds on a z600 machine with 12 GB of RAM, from 90 down to 70
@@ -351,39 +354,30 @@ if __name__ == '__main__':
       not 'OS=ios' in os.environ.get('GYP_DEFINES', []):
     os.environ['GYP_GENERATORS'] = 'ninja'
 
-  # If using ninja on windows, and not opting out of the the automatic
-  # toolchain, then set up variables for the automatic toolchain. Opt-out is
-  # on by default, for now.
+  # If using ninja on windows, and the automatic toolchain has been installed
+  # by depot_tools, then use it.
   if (sys.platform in ('win32', 'cygwin') and
-      os.environ.get('GYP_GENERATORS') == 'ninja' and
-      os.environ.get('GYP_MSVS_USE_SYSTEM_TOOLCHAIN', '1') != '1'):
-    # For now, call the acquisition script here so that there's only one
-    # opt-in step required. This will be moved to a separate DEPS step once
-    # it's on by default.
-    subprocess.check_call([
-        sys.executable,
-        os.path.normpath(os.path.join(script_dir, '..', 'tools', 'win',
-                                      'toolchain',
-                                      'get_toolchain_if_necessary.py'))])
+      os.environ.get('GYP_GENERATORS') == 'ninja'):
+    depot_tools_path = find_depot_tools.add_depot_tools_to_path()
     toolchain = os.path.normpath(os.path.join(
-        script_dir, '..', 'third_party', 'win_toolchain', 'files'))
-    os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
-    os.environ['GYP_MSVS_VERSION'] = '2013'
-    # We need to make sure windows_sdk_path is set to the automated toolchain
-    # values in GYP_DEFINES, but don't want to override any other values there.
-    gyp_defines_dict = gyp.NameValueListToDict(gyp.ShlexEnv('GYP_DEFINES'))
-    win8sdk = os.path.join(toolchain, 'win8sdk')
-    gyp_defines_dict['windows_sdk_path'] = win8sdk
-    os.environ['WINDOWSSDKDIR'] = win8sdk
-    os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
-        for k, v in gyp_defines_dict.iteritems())
-    # Include the VS runtime in the PATH in case it's not machine-installed.
-    runtime_path = ';'.join(
-        os.path.normpath(os.path.join(
-            script_dir, '..', 'third_party', 'win_toolchain', 'files', s))
-        for s in ('sys64', 'sys32'))
-    os.environ['PATH'] = runtime_path + os.environ['PATH']
-    print('Using automatic toolchain in %s.' % toolchain)
+        depot_tools_path, 'win_toolchain', 'vs2013_files'))
+    if os.path.isdir(toolchain):
+      os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
+      os.environ['GYP_MSVS_VERSION'] = '2013'
+      # We need to make sure windows_sdk_path is set to the automated
+      # toolchain values in GYP_DEFINES, but don't want to override any other
+      # values there.
+      gyp_defines_dict = gyp.NameValueListToDict(gyp.ShlexEnv('GYP_DEFINES'))
+      win8sdk = os.path.join(toolchain, 'win8sdk')
+      gyp_defines_dict['windows_sdk_path'] = win8sdk
+      os.environ['WINDOWSSDKDIR'] = win8sdk
+      os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
+          for k, v in gyp_defines_dict.iteritems())
+      # Include the VS runtime in the PATH in case it's not machine-installed.
+      runtime_path = ';'.join(os.path.normpath(os.path.join(toolchain, s))
+                              for s in ('sys64', 'sys32'))
+      os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
+      print('Using automatic toolchain in %s.' % toolchain)
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
