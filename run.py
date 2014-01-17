@@ -10,7 +10,8 @@ import subprocess
 import sys
 import tempfile
 
-sys.path.append("build")
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "build"))
 import platform_tools
 
 # Target architecture for PNaCl can be set through the ``-arch``
