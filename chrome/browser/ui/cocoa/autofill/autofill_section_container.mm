@@ -653,6 +653,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     }
     [control setFieldValue:base::SysUTF16ToNSString(input.initial_value)];
     [control sizeToFit];
+    [control setFrame:NSIntegralRect([control frame])];
     [control setTag:input.type];
     [control setInputDelegate:self];
     // Hide away fields that cannot be edited.

@@ -20,13 +20,15 @@ class ColumnLayout : public SimpleGridLayout {
 class LayoutTest : public testing::Test {
  public:
   base::scoped_nsobject<NSView> CreateViewWithWidth(float width) {
-    NSRect frame = NSMakeRect(0, 0, width, 0);
+    // Height of 1, since empty rects become 0x0 when run by NSIntegralRect.
+    NSRect frame = NSMakeRect(0, 0, width, 1);
     base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
     return view;
   }
 
+  // Width of 1, since empty rects become 0x0 when run by NSIntegralRect.
   base::scoped_nsobject<NSView> CreateViewWithHeight(float height) {
-    NSRect frame = NSMakeRect(0, 0, 0, height);
+    NSRect frame = NSMakeRect(0, 0, 1, height);
     base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
     return view;
   }

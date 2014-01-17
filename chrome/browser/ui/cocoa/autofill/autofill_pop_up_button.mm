@@ -90,12 +90,10 @@
  [super drawBezelWithFrame:frame inView:controlView];
   if (invalid_) {
     // Mimic the rounded rect of default popup bezel in size, outline in red.
-    NSBezierPath* path = [NSBezierPath
-        bezierPathWithRoundedRect:
-            NSOffsetRect(
-                NSInsetRect(NSIntegralRect(frame), 3.5, 3.5), -1.0, -1.0)
-                          xRadius:4.0
-                          yRadius:4.0];
+    NSRect outlineRect = NSOffsetRect(NSInsetRect(frame, 3.0, 3.5), -.5, -1.0);
+    NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:outlineRect
+                                                         xRadius:3.5
+                                                         yRadius:3.5];
     [path setLineWidth:0];
     [[NSColor redColor] setStroke];
     [path stroke];

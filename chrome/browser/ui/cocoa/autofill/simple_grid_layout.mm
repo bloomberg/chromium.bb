@@ -295,7 +295,7 @@ void SimpleGridLayout::Layout(NSView* superView) {
                               rows_[view_state->row_index()]->Location(),
                               view_state->GetColumn()->Size(),
                               rows_[view_state->row_index()]->Size());
-    [view setFrame:frame];
+    [view setFrame:NSIntegralRect(frame)];
   }
 }
 
