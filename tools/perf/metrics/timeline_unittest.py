@@ -77,12 +77,12 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     renderer_main.name = 'CrRendererMain'
 
     # Create two frame swaps (Results times should be divided by two)
-    gpu_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
-    gpu_main.name = 'CrGpuMain'
-    gpu_main.BeginSlice('gpucat', ':RealSwapBuffers', 10, 10)
-    gpu_main.EndSlice(11, 11)
-    gpu_main.BeginSlice('gpucat', ':RealSwapBuffers', 12, 12)
-    gpu_main.EndSlice(13, 13)
+    cc_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
+    cc_main.name = 'Compositor'
+    cc_main.BeginSlice('cc_cat', timeline.CompositorFrameTraceName, 10, 10)
+    cc_main.EndSlice(11, 11)
+    cc_main.BeginSlice('cc_cat', timeline.CompositorFrameTraceName, 12, 12)
+    cc_main.EndSlice(13, 13)
 
     # [      X       ]
     #      [  Y  ]

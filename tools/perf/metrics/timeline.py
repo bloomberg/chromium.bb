@@ -151,10 +151,7 @@ SilkDetails = MainThread
 
 # TODO(epenner): Thread names above are likely fairly stable but trace names
 # could change. We should formalize this trace to keep this robust.
-GpuFrameTraceName = ":RealSwapBuffers"
-# TODO(epenner): The decoder swap-buffers can be used by several producers.
-# we need to find the canonical swap buffers on Mac.
-GpuFrameTraceNameMac = "GLES2DecoderImpl::DoSwapBuffers"
+CompositorFrameTraceName = "::SwapBuffers"
 
 def ThreadCategoryName(thread_name):
   thread_category = "other"
@@ -205,8 +202,8 @@ class ResultsForThread(object):
   def AddResults(self, num_frames, results):
     clock_report_name = ThreadTimeResultName(self.name)
     cpu_report_name  = ThreadCpuTimeResultName(self.name)
-    clock_per_frame = float(self.clock_time) / num_frames
-    cpu_per_frame   = float(self.cpu_time) / num_frames
+    clock_per_frame = (float(self.clock_time) / num_frames) if num_frames else 0
+    cpu_per_frame   = (float(self.cpu_time) / num_frames) if num_frames else 0
     results.Add(clock_report_name, 'ms', clock_per_frame)
     results.Add(cpu_report_name, 'ms', cpu_per_frame)
 
@@ -218,12 +215,12 @@ class ResultsForThread(object):
     for category, slices_in_category in slices_by_category.iteritems():
       self_time = sum([x.self_time for x in slices_in_category])
       all_self_times.append(self_time)
-      self_time_result = float(self_time) / num_frames
+      self_time_result = (float(self_time) / num_frames) if num_frames else 0
       results.Add(ThreadDetailResultName(self.name, category),
                   'ms', self_time_result)
     all_measured_time = sum(all_self_times)
     idle_time = max(0, self.model.bounds.bounds - all_measured_time)
-    idle_time_result = float(idle_time) / num_frames
+    idle_time_result = (float(idle_time) / num_frames) if num_frames else 0
     results.Add(ThreadDetailResultName(self.name, "idle"),
                 'ms', idle_time_result)
 
@@ -260,13 +257,9 @@ class ThreadTimesTimelineMetric(TimelineMetric):
       if ThreadCategoryName(thread.name) in FastPath:
         thread_category_results['total_fast_path'].AppendThreadSlices(thread)
 
-    # Calculate the number of frames from the GPU thread.
-    gpu_slices = thread_category_results['GPU'].all_slices
-    num_frames = self.CountSlices(gpu_slices, GpuFrameTraceName)
-    if not num_frames:
-      num_frames = self.CountSlices(gpu_slices, GpuFrameTraceNameMac)
-    if not num_frames:
-      raise MissingFramesError()
+    # Calculate the number of frames from the CC thread.
+    cc_slices = thread_category_results['renderer_compositor'].all_slices
+    num_frames = self.CountSlices(cc_slices, CompositorFrameTraceName)
 
     # Report the desired results and details.
     for thread_results in thread_category_results.values():
