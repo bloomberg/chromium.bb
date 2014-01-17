@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +31,7 @@ void TestExtensionDir::WriteManifest(base::StringPiece manifest) {
 void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
                                  base::StringPiece contents) {
   EXPECT_EQ(
-      base::checked_numeric_cast<int>(contents.size()),
+      base::checked_cast<int>(contents.size()),
       file_util::WriteFile(
           dir_.path().Append(filename), contents.data(), contents.size()));
 }

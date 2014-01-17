@@ -6,8 +6,8 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -62,7 +62,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     int64 file_size;
     ASSERT_TRUE(base::GetFileSize(GetCommonDataDir().AppendASCII("test.jpg"),
                                   &file_size));
-    test_jpg_size_ = base::checked_numeric_cast<int>(file_size);
+    test_jpg_size_ = base::checked_cast<int>(file_size);
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {

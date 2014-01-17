@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "content/child/child_thread.h"
@@ -418,7 +418,7 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   DCHECK(decoder_texture_target_);
   // Convert timestamp from 90KHz to ms.
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
-      base::checked_numeric_cast<uint64_t>(timestamp) * 1000 / 90);
+      base::checked_cast<uint64_t>(timestamp) * 1000 / 90);
   return media::VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new media::VideoFrame::MailboxHolder(
           pb.texture_mailbox(),

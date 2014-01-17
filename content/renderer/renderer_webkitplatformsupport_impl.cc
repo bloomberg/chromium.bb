@@ -10,8 +10,8 @@
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/platform_file.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/database_util.h"
@@ -1057,7 +1057,7 @@ blink::WebCrypto* RendererWebKitPlatformSupportImpl::crypto() {
 
 void RendererWebKitPlatformSupportImpl::vibrate(unsigned int milliseconds) {
   RenderThread::Get()->Send(
-      new ViewHostMsg_Vibrate(base::checked_numeric_cast<int64>(milliseconds)));
+      new ViewHostMsg_Vibrate(base::checked_cast<int64>(milliseconds)));
 }
 
 void RendererWebKitPlatformSupportImpl::cancelVibration() {

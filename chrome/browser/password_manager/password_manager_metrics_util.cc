@@ -6,10 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/rand_util.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -65,10 +65,10 @@ size_t GetGroupIndex(size_t domain_index, PrefService* pref_service) {
         pref_service, prefs::kPasswordManagerGroupsForDomains);
     // This value has not been generated yet.
     result =
-        base::checked_numeric_cast<int>(base::RandGenerator(kGroupsPerDomain));
+        base::checked_cast<int>(base::RandGenerator(kGroupsPerDomain));
     group_indices_updater->Set(domain_index, new FundamentalValue(result));
   }
-  return base::checked_numeric_cast<size_t>(result);
+  return base::checked_cast<size_t>(result);
 }
 
 }  // namespace

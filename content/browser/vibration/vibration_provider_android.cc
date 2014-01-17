@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/safe_numerics.h"
 #include "content/browser/vibration/vibration_message_filter.h"
 #include "content/common/view_messages.h"
 #include "jni/VibrationProvider_jni.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
 
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //                             SnapshotRequestInfo                            //
@@ -64,5 +64,5 @@ uint32 SnapshotFileDetails::BytesToRead() const {
   static const uint32 kReadChunkSize = 1024 * 1024;
   return std::min(
       kReadChunkSize,
-      base::checked_numeric_cast<uint32>(file_info_.size) - bytes_written_);
+      base::checked_cast<uint32>(file_info_.size) - bytes_written_);
 }

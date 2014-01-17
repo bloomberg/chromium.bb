@@ -7,8 +7,8 @@
 
 #include "ui/base/clipboard/clipboard.h"
 
-#include <shlobj.h>
 #include <shellapi.h>
+#include <shlobj.h>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -518,8 +518,8 @@ void Clipboard::ReadHTML(ClipboardType type,
   offsets.push_back(end_index - html_start);
   markup->assign(base::UTF8ToUTF16AndAdjustOffsets(cf_html.data() + html_start,
                                                    &offsets));
-  *fragment_start = base::checked_numeric_cast<uint32>(offsets[0]);
-  *fragment_end = base::checked_numeric_cast<uint32>(offsets[1]);
+  *fragment_start = base::checked_cast<uint32>(offsets[0]);
+  *fragment_end = base::checked_cast<uint32>(offsets[1]);
 }
 
 void Clipboard::ReadRTF(ClipboardType type, std::string* result) const {

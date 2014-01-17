@@ -12,7 +12,6 @@
 
 #include <string.h>
 
-#include "base/safe_numerics.h"
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/gles2_cmd_ids.h"

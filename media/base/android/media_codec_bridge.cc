@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "jni/MediaCodecBridge_jni.h"
@@ -225,7 +225,7 @@ MediaCodecStatus MediaCodecBridge::QueueInputBuffer(
     size_t data_size,
     const base::TimeDelta& presentation_time) {
   DVLOG(3) << __PRETTY_FUNCTION__ << index << ": " << data_size;
-  if (data_size > base::checked_numeric_cast<size_t>(kint32max))
+  if (data_size > base::checked_cast<size_t>(kint32max))
     return MEDIA_CODEC_ERROR;
   if (data && !FillInputBuffer(index, data, data_size))
     return MEDIA_CODEC_ERROR;
@@ -252,7 +252,7 @@ MediaCodecStatus MediaCodecBridge::QueueSecureInputBuffer(
     int subsamples_size,
     const base::TimeDelta& presentation_time) {
   DVLOG(3) << __PRETTY_FUNCTION__ << index << ": " << data_size;
-  if (data_size > base::checked_numeric_cast<size_t>(kint32max))
+  if (data_size > base::checked_cast<size_t>(kint32max))
     return MEDIA_CODEC_ERROR;
   if (data && !FillInputBuffer(index, data, data_size))
     return MEDIA_CODEC_ERROR;
@@ -349,9 +349,9 @@ MediaCodecStatus MediaCodecBridge::DequeueOutputBuffer(
       Java_MediaCodecBridge_dequeueOutputBuffer(
           env, j_media_codec_.obj(), timeout.InMicroseconds());
   *index = Java_DequeueOutputResult_index(env, result.obj());
-  *offset = base::checked_numeric_cast<size_t>(
+  *offset = base::checked_cast<size_t>(
       Java_DequeueOutputResult_offset(env, result.obj()));
-  *size = base::checked_numeric_cast<size_t>(
+  *size = base::checked_cast<size_t>(
       Java_DequeueOutputResult_numBytes(env, result.obj()));
   if (presentation_time) {
     *presentation_time = base::TimeDelta::FromMicroseconds(
@@ -408,7 +408,7 @@ void MediaCodecBridge::GetInputBuffer(int input_buffer_index,
   ScopedJavaLocalRef<jobject> j_buffer(Java_MediaCodecBridge_getInputBuffer(
       env, j_media_codec_.obj(), input_buffer_index));
   *data = static_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj()));
-  *capacity = base::checked_numeric_cast<size_t>(
+  *capacity = base::checked_cast<size_t>(
       env->GetDirectBufferCapacity(j_buffer.obj()));
 }
 
@@ -590,7 +590,7 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
 
 void AudioCodecBridge::PlayOutputBuffer(int index, size_t size) {
   DCHECK_LE(0, index);
-  int numBytes = base::checked_numeric_cast<int>(size);
+  int numBytes = base::checked_cast<int>(size);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> buf =
       Java_MediaCodecBridge_getOutputBuffer(env, media_codec(), index);

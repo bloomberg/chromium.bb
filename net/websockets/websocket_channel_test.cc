@@ -18,7 +18,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"

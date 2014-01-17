@@ -4,7 +4,7 @@
 
 #include "ppapi/host/error_conversion.h"
 
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -13,7 +13,7 @@ namespace host {
 
 int32_t NetErrorToPepperError(int net_error) {
   if (net_error > 0)
-    return base::checked_numeric_cast<int32_t>(net_error);
+    return base::checked_cast<int32_t>(net_error);
 
   switch (net_error) {
     case net::OK:

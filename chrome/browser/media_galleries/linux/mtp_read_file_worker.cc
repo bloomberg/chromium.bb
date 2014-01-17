@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,9 +28,9 @@ uint32 WriteDataChunkIntoSnapshotFileOnFileThread(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   int bytes_written =
       file_util::AppendToFile(snapshot_file_path, data.data(),
-                              base::checked_numeric_cast<int>(data.size()));
+                              base::checked_cast<int>(data.size()));
   return (static_cast<int>(data.size()) == bytes_written) ?
-      base::checked_numeric_cast<uint32>(bytes_written) : 0;
+      base::checked_cast<uint32>(bytes_written) : 0;
 }
 
 }  // namespace

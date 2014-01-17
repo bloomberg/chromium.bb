@@ -12,7 +12,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -385,9 +385,9 @@ DWORD CopyDataChunkToLocalFile(IStream* stream,
   DCHECK_GT(bytes_read, 0U);
   CHECK_LE(bytes_read, buffer.length());
   int data_len =
-      base::checked_numeric_cast<int>(
+      base::checked_cast<int>(
           std::min(bytes_read,
-                   base::checked_numeric_cast<DWORD>(buffer.length())));
+                   base::checked_cast<DWORD>(buffer.length())));
   if (file_util::AppendToFile(local_path, buffer.c_str(), data_len) != data_len)
     return 0U;
   return data_len;

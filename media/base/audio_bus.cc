@@ -5,7 +5,7 @@
 #include "media/base/audio_bus.h"
 
 #include "base/logging.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/limits.h"
 #include "media/base/vector_math.h"
@@ -130,7 +130,7 @@ AudioBus::AudioBus(int frames, const std::vector<float*>& channel_data)
       frames_(frames),
       can_set_channel_data_(false) {
   ValidateConfig(
-      base::checked_numeric_cast<int>(channel_data_.size()), frames_);
+      base::checked_cast<int>(channel_data_.size()), frames_);
 
   // Sanity check wrapped vector for alignment and channel count.
   for (size_t i = 0; i < channel_data_.size(); ++i)

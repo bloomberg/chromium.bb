@@ -8,8 +8,8 @@
 #include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/safe_numerics.h"
 #include "skia/ext/refptr.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -112,7 +112,7 @@ bool PdfMetafileSkia::FinishDocument() {
 }
 
 uint32 PdfMetafileSkia::GetDataSize() const {
-  return base::checked_numeric_cast<uint32>(data_->pdf_stream_.getOffset());
+  return base::checked_cast<uint32>(data_->pdf_stream_.getOffset());
 }
 
 bool PdfMetafileSkia::GetData(void* dst_buffer,
@@ -241,7 +241,7 @@ PdfMetafileSkia* PdfMetafileSkia::GetMetafileForCurrentPage() {
 
   PdfMetafileSkia* metafile = new PdfMetafileSkia;
   metafile->InitFromData(data->bytes(),
-                         base::checked_numeric_cast<uint32>(data->size()));
+                         base::checked_cast<uint32>(data->size()));
   return metafile;
 }
 

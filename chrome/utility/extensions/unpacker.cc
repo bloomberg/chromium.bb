@@ -12,7 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_handle.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -86,7 +86,7 @@ bool PathContainsParentDirectory(const base::FilePath& path) {
 }
 
 bool WritePickle(const IPC::Message& pickle, const base::FilePath& dest_path) {
-  int size = base::checked_numeric_cast<int>(pickle.size());
+  int size = base::checked_cast<int>(pickle.size());
   const char* data = static_cast<const char*>(pickle.data());
   int bytes_written = file_util::WriteFile(dest_path, data, size);
   return (bytes_written == size);

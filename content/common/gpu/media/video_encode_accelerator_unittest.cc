@@ -8,8 +8,8 @@
 #include "base/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_vector.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "content/common/gpu/media/exynos_video_encode_accelerator.h"
@@ -495,7 +495,7 @@ void VEAClient::BitstreamBufferReady(int32 bitstream_buffer_id,
   seen_keyframe_in_this_buffer_ = false;
 
   if (save_to_file_) {
-    int size = base::checked_numeric_cast<int>(payload_size);
+    int size = base::checked_cast<int>(payload_size);
     EXPECT_EQ(file_util::AppendToFile(
                   base::FilePath::FromUTF8Unsafe(test_stream_.out_filename),
                   static_cast<char*>(shm->memory()),

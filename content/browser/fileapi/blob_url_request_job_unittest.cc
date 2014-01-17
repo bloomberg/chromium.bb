@@ -9,8 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
-#include "base/safe_numerics.h"
 #include "base/time/time.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
@@ -287,7 +287,7 @@ class BlobURLRequestJobTest : public testing::Test {
     const std::vector<BlobData::Item>& items = blob_data_->items();
     for (std::vector<BlobData::Item>::const_iterator it = items.begin();
          it != items.end(); ++it) {
-      int64 length = base::checked_numeric_cast<int64>(it->length());
+      int64 length = base::checked_cast<int64>(it->length());
       CHECK(length <= kint64max - total);
       total += length;
     }

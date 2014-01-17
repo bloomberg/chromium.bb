@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SAFE_NUMERICS_H_
-#define BASE_SAFE_NUMERICS_H_
+#ifndef BASE_SAFE_CONVERSIONS_H_
+#define BASE_SAFE_CONVERSIONS_H_
 
 #include <limits>
 
 #include "base/logging.h"
-#include "base/safe_numerics_impl.h"
+#include "base/numerics/safe_conversions_impl.h"
 
 namespace base {
 
@@ -19,11 +19,11 @@ inline bool IsValueInRangeForNumericType(Src value) {
   return internal::RangeCheck<Dst>(value) == internal::TYPE_VALID;
 }
 
-// checked_numeric_cast<> is analogous to static_cast<> for numeric types,
+// checked_cast<> is analogous to static_cast<> for numeric types,
 // except that it CHECKs that the specified numeric conversion will not
 // overflow or underflow. NaN source will always trigger a CHECK.
 template <typename Dst, typename Src>
-inline Dst checked_numeric_cast(Src value) {
+inline Dst checked_cast(Src value) {
   CHECK(IsValueInRangeForNumericType<Dst>(value));
   return static_cast<Dst>(value);
 }
@@ -59,4 +59,5 @@ inline Dst saturated_cast(Src value) {
 
 }  // namespace base
 
-#endif  // BASE_SAFE_NUMERICS_H_
+#endif  // BASE_SAFE_CONVERSIONS_H_
+

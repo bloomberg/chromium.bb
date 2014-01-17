@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,13 +26,13 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -58,7 +58,7 @@ class PrivateFontFile : public ppapi::Resource {
     size_t temp_size = static_cast<size_t>(*output_length);
     bool rv = content::GetFontTable(
         fd_, table, 0 /* offset */, static_cast<uint8_t*>(output), &temp_size);
-    *output_length = base::checked_numeric_cast<uint32_t>(temp_size);
+    *output_length = base::checked_cast<uint32_t>(temp_size);
     return rv;
   }
 

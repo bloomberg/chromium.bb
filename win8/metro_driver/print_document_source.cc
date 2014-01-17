@@ -8,7 +8,7 @@
 #include <windows.graphics.display.h>
 
 #include "base/logging.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 
 
 namespace {
@@ -253,7 +253,7 @@ STDMETHODIMP PrintDocumentSource::Paginate(uint32 page,
     return S_FALSE;
   hr = dxgi_preview_target_->SetJobPageCount(
            PageCountType::FinalPageCount,
-           base::checked_numeric_cast<UINT32>(page_count));
+           base::checked_cast<UINT32>(page_count));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to SetJobPageCount " << std::hex << hr;
     return hr;

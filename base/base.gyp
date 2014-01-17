@@ -574,7 +574,7 @@
         'process/process_util_unittest.cc',
         'profiler/tracked_time_unittest.cc',
         'rand_util_unittest.cc',
-        'safe_numerics_unittest.cc',
+        'numerics/safe_numerics_unittest.cc',
         'scoped_clear_errno_unittest.cc',
         'scoped_native_library_unittest.cc',
         'scoped_observer.h',

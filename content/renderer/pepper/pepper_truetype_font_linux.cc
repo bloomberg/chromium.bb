@@ -4,7 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/renderer/pepper/pepper_truetype_font.h"
@@ -144,7 +144,7 @@ int32_t PepperTrueTypeFontLinux::GetTable(uint32_t table_tag,
                     &table_size))
     return PP_ERROR_FAILED;
 
-  return base::checked_numeric_cast<int32_t>(table_size);
+  return base::checked_cast<int32_t>(table_size);
 }
 
 }  // namespace

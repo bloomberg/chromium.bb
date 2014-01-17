@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task_runner_util.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -85,7 +85,7 @@ scoped_refptr<base::RefCountedBytes> ScaleRotateAndEncodeBitmap(
   if (!gfx::PNGCodec::Encode(pixels,
                              gfx::PNGCodec::FORMAT_BGRA,
                              gfx::Size(bitmap.width(), bitmap.height()),
-                             base::checked_numeric_cast<int>(bitmap.rowBytes()),
+                             base::checked_cast<int>(bitmap.rowBytes()),
                              true,
                              std::vector<gfx::PNGCodec::Comment>(),
                              &png_data->data())) {

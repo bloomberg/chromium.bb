@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
@@ -168,7 +168,7 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
       LOG(WARNING) << "Failed to parse CRL set from update CRX";
       return false;
     }
-    int size = base::checked_numeric_cast<int>(crl_set_bytes.size());
+    int size = base::checked_cast<int>(crl_set_bytes.size());
     if (file_util::WriteFile(save_to, crl_set_bytes.data(), size) != size) {
       LOG(WARNING) << "Failed to save new CRL set to disk";
       // We don't return false here because we can still use this CRL set. When
@@ -184,7 +184,7 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
     VLOG(1) << "Applied CRL set delta #" << crl_set_->sequence()
             << "->#" << new_crl_set->sequence();
     const std::string new_crl_set_bytes = new_crl_set->Serialize();
-    int size = base::checked_numeric_cast<int>(new_crl_set_bytes.size());
+    int size = base::checked_cast<int>(new_crl_set_bytes.size());
     if (file_util::WriteFile(save_to, new_crl_set_bytes.data(), size) != size) {
       LOG(WARNING) << "Failed to save new CRL set to disk";
       // We don't return false here because we can still use this CRL set. When

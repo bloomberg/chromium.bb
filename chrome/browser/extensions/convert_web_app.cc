@@ -15,8 +15,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/safe_numerics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -173,7 +173,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     }
 
     const char* image_data_ptr = reinterpret_cast<const char*>(&image_data[0]);
-    int size = base::checked_numeric_cast<int>(image_data.size());
+    int size = base::checked_cast<int>(image_data.size());
     if (file_util::WriteFile(icon_file, image_data_ptr, size) != size) {
       LOG(ERROR) << "Could not write icon file.";
       return NULL;

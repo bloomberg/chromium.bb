@@ -9,7 +9,7 @@
 #include "base/basictypes.h"  // for size_t
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/big_endian.h"
@@ -190,7 +190,7 @@ void WebSocketChannel::SendFrame(bool fin,
     NOTREACHED() << "SendFrame() called in state " << state_;
     return;
   }
-  if (data.size() > base::checked_numeric_cast<size_t>(current_send_quota_)) {
+  if (data.size() > base::checked_cast<size_t>(current_send_quota_)) {
     AllowUnused(FailChannel(SEND_GOING_AWAY,
                             kWebSocketMuxErrorSendQuotaViolation,
                             "Send quota exceeded"));

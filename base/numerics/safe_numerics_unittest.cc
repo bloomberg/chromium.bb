@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 
 #include <stdint.h>
 
@@ -258,7 +258,7 @@ TEST(SafeNumerics, CastTests) {
   double double_infinity = std::numeric_limits<float>::infinity();
 
   // Just test that the cast compiles, since the other tests cover logic.
-  EXPECT_EQ(0, base::checked_numeric_cast<int>(static_cast<size_t>(0)));
+  EXPECT_EQ(0, base::checked_cast<int>(static_cast<size_t>(0)));
 
   // Test various saturation corner cases.
   EXPECT_EQ(saturated_cast<int>(small_negative),
@@ -277,3 +277,4 @@ TEST(SafeNumerics, CastTests) {
 
 }  // namespace internal
 }  // namespace base
+

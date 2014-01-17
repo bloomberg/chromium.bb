@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
 #include "content/common/font_list.h"
@@ -84,7 +84,7 @@ int32_t FontMessageFilter::OnHostMsgGetFontFamilies(
 
   context->reply_msg =
       PpapiPluginMsg_TrueTypeFontSingleton_GetFontFamiliesReply(font_families);
-  return base::checked_numeric_cast<int32_t>(font_families.size());
+  return base::checked_cast<int32_t>(font_families.size());
 }
 
 int32_t FontMessageFilter::OnHostMsgGetFontsInFamily(
@@ -97,7 +97,7 @@ int32_t FontMessageFilter::OnHostMsgGetFontsInFamily(
   context->reply_msg =
       PpapiPluginMsg_TrueTypeFontSingleton_GetFontsInFamilyReply(
           fonts_in_family);
-  return base::checked_numeric_cast<int32_t>(fonts_in_family.size());
+  return base::checked_cast<int32_t>(fonts_in_family.size());
 }
 
 }  // namespace

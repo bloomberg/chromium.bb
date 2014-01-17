@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/pepper_video_source_host.h"
 
 #include "base/bind.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -134,8 +134,8 @@ void PepperVideoSourceHost::SendGetFrameReply() {
   DCHECK(last_frame_.get());
   scoped_ptr<cricket::VideoFrame> frame(last_frame_.release());
 
-  int32_t width = base::checked_numeric_cast<int32_t>(frame->GetWidth());
-  int32_t height = base::checked_numeric_cast<int32_t>(frame->GetHeight());
+  int32_t width = base::checked_cast<int32_t>(frame->GetWidth());
+  int32_t height = base::checked_cast<int32_t>(frame->GetHeight());
   PP_ImageDataDesc image_desc;
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;

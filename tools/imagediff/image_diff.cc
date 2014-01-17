@@ -20,8 +20,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/memory.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "tools/imagediff/image_diff_png.h"
@@ -386,7 +386,7 @@ int DiffImages(const base::FilePath& file1, const base::FilePath& file2,
       diff_image.w() * 4, &png_encoding);
   if (file_util::WriteFile(out_file,
           reinterpret_cast<char*>(&png_encoding.front()),
-          base::checked_numeric_cast<int>(png_encoding.size())) < 0)
+          base::checked_cast<int>(png_encoding.size())) < 0)
     return kStatusError;
 
   return kStatusDifferent;

@@ -7,7 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -998,7 +998,7 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
 
     // We should *not* have empty frames in the list.
     if (frame_size <= 0 ||
-        bytes_left < base::checked_numeric_cast<size_t>(frame_size)) {
+        bytes_left < base::checked_cast<size_t>(frame_size)) {
       return false;
     }
 

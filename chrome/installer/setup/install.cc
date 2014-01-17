@@ -15,9 +15,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/safe_numerics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -351,7 +351,7 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 
     // Write the manifest to |src_path|.
     const std::string manifest(UTF16ToUTF8(manifest16));
-    int size = base::checked_numeric_cast<int>(manifest.size());
+    int size = base::checked_cast<int>(manifest.size());
     if (file_util::WriteFile(
         src_path.Append(installer::kVisualElementsManifest),
             manifest.c_str(), size) == size) {

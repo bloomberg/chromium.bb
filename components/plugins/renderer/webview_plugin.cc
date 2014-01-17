@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "content/public/renderer/web_preferences.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -74,15 +74,15 @@ void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
     for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
          ++it) {
       plugin->didReceiveData(
-          it->c_str(), base::checked_numeric_cast<int, size_t>(it->length()));
+          it->c_str(), base::checked_cast<int, size_t>(it->length()));
       total_bytes += it->length();
     }
     UMA_HISTOGRAM_MEMORY_KB(
         "PluginDocument.Memory",
-        (base::checked_numeric_cast<int, size_t>(total_bytes / 1024)));
+        (base::checked_cast<int, size_t>(total_bytes / 1024)));
     UMA_HISTOGRAM_COUNTS(
         "PluginDocument.NumChunks",
-        (base::checked_numeric_cast<int, size_t>(data_.size())));
+        (base::checked_cast<int, size_t>(data_.size())));
   }
   if (finished_loading_) {
     plugin->didFinishLoading();
