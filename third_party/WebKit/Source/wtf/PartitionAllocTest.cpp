@@ -512,7 +512,7 @@ TEST(WTF_PartitionAlloc, GenericAllocSizes)
     EXPECT_NE(-1, page->freeCacheIndex);
     partitionFreeGeneric(genericAllocator.root(), ptr2);
 
-    size = WTF::kGenericMaxBucketed - kExtraAllocSize;
+    size = (((WTF::kPartitionPageSize * WTF::kMaxPartitionPagesPerSlotSpan) - WTF::kSystemPageSize) / 2) - kExtraAllocSize;
     ptr = partitionAllocGeneric(genericAllocator.root(), size);
     EXPECT_TRUE(ptr);
     memset(ptr, 'A', size);
@@ -550,6 +550,23 @@ TEST(WTF_PartitionAlloc, GenericAllocSizes)
     partitionFreeGeneric(genericAllocator.root(), newPtr);
     partitionFreeGeneric(genericAllocator.root(), ptr3);
     partitionFreeGeneric(genericAllocator.root(), ptr4);
+
+    // Can we allocate a massive (512MB) size?
+    ptr = partitionAllocGeneric(genericAllocator.root(), 512 * 1024 * 1024);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    // Check a more reasonable, but still direct mapped, size.
+    // Chop a system page and a byte off to test for rounding errors.
+    size = 20 * 1024 * 1024;
+    size -= WTF::kSystemPageSize;
+    size -= 1;
+    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    char* charPtr = reinterpret_cast<char*>(ptr);
+    *(charPtr + (size - 1)) = 'A';
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    // Can we free null?
+    partitionFreeGeneric(genericAllocator.root(), 0);
 
     TestShutdown();
 }
@@ -885,6 +902,26 @@ TEST(WTF_PartitionAllocDeathTest, DoubleFree)
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
     EXPECT_DEATH(partitionFreeGeneric(genericAllocator.root(), ptr), "");
+
+    TestShutdown();
+}
+
+// Check that guard pages are present where expected.
+TEST(WTF_PartitionAllocDeathTest, GuardPages)
+{
+    TestSetup();
+
+    // This large size will result in a direct mapped allocation with guard
+    // pages at either end.
+    size_t size = (WTF::kGenericMaxBucketed + WTF::kSystemPageSize) - kExtraAllocSize;
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    EXPECT_TRUE(ptr);
+    char* charPtr = reinterpret_cast<char*>(ptr) - kPointerOffset;
+
+    EXPECT_DEATH(*(charPtr - 1) = 'A', "");
+    EXPECT_DEATH(*(charPtr + size + kExtraAllocSize) = 'A', "");
+
+    partitionFreeGeneric(genericAllocator.root(), ptr);
 
     TestShutdown();
 }

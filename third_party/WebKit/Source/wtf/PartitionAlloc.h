@@ -81,11 +81,13 @@
 // - Linear overflows cannot corrupt into the partition.
 // - Linear overflows cannot corrupt out of the partition.
 // - Freed pages will only be re-used within the partition.
+//   (exception: large allocations > ~1MB)
 // - Freed pages will only hold same-sized objects when re-used.
 // - Dereference of freelist pointer should fault.
 // - Out-of-line main metadata: linear over or underflow cannot corrupt it.
 // - Partial pointer overwrite of freelist pointer should fault.
 // - Rudimentary double-free detection.
+// - Large allocations (> ~1MB) are guard-paged at the beginning and end.
 //
 // The following security properties could be investigated in the future:
 // - Per-object bucketing (instead of per-size) is mostly available at the API,
@@ -98,7 +100,6 @@
 #include "wtf/BitwiseOperations.h"
 #include "wtf/ByteSwap.h"
 #include "wtf/CPU.h"
-#include "wtf/FastMalloc.h"
 #include "wtf/PageAllocator.h"
 #include "wtf/SpinLock.h"
 
@@ -173,8 +174,8 @@ static const size_t kPageMetadataSize = 1 << kPageMetadataShift;
 // at index 1 for the least-significant-bit.
 // In terms of allocation sizes, order 0 covers 0, order 1 covers 1, order 2
 // covers 2->3, order 3 covers 4->7, order 4 covers 8->15.
-static const size_t kGenericMaxBucketedOrder = 15; // Largest bucketed order is 1<<(15-1) (storing 16KB -> almost 32KB))
 static const size_t kGenericMinBucketedOrder = 4; // 8 bytes.
+static const size_t kGenericMaxBucketedOrder = 20; // Largest bucketed order is 1<<(20-1) (storing 512KB -> almost 1MB)
 static const size_t kGenericNumBucketedOrders = (kGenericMaxBucketedOrder - kGenericMinBucketedOrder) + 1;
 static const size_t kGenericNumBucketsPerOrderBits = 3; // Eight buckets per order (for the higher orders), e.g. order 8 is 128, 144, 160, ..., 240
 static const size_t kGenericNumBucketsPerOrder = 1 << kGenericNumBucketsPerOrderBits;
@@ -237,9 +238,9 @@ struct PartitionPage {
 struct PartitionBucket {
     PartitionPage* activePagesHead; // Accessed most in hot path => goes first.
     PartitionPage* freePagesHead;
-    uint16_t slotSize;
+    uint32_t slotSize;
     uint16_t numSystemPagesPerSlotSpan;
-    uint32_t numFullPages;
+    uint16_t numFullPages;
 };
 
 // An "extent" is a span of consecutive superpages. We link to the partition's
@@ -301,53 +302,6 @@ WTF_EXPORT bool partitionAllocGenericShutdown(PartitionRootGeneric*);
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, size_t, PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);
 WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, void*, size_t);
-
-// The plan is to eventually remove the SuperPageBitmap.
-#if CPU(32BIT)
-class SuperPageBitmap {
-public:
-    ALWAYS_INLINE static bool isAvailable()
-    {
-        return true;
-    }
-
-    ALWAYS_INLINE static bool isPointerInSuperPage(void* ptr)
-    {
-        uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
-        raw >>= kSuperPageShift;
-        size_t byteIndex = raw >> 3;
-        size_t bit = raw & 7;
-        ASSERT(byteIndex < sizeof(s_bitmap));
-        return s_bitmap[byteIndex] & (1 << bit);
-    }
-
-    static void registerSuperPage(void* ptr);
-    static void unregisterSuperPage(void* ptr);
-
-private:
-    WTF_EXPORT static unsigned char s_bitmap[1 << (32 - kSuperPageShift - 3)];
-};
-
-#else // CPU(32BIT)
-
-class SuperPageBitmap {
-public:
-    ALWAYS_INLINE static bool isAvailable()
-    {
-        return false;
-    }
-
-    ALWAYS_INLINE static bool isPointerInSuperPage(void* ptr)
-    {
-        ASSERT(false);
-        return false;
-    }
-
-    static void registerSuperPage(void* ptr) { }
-    static void unregisterSuperPage(void* ptr) { }
-};
-
-#endif // CPU(32BIT)
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
@@ -443,32 +397,17 @@ ALWAYS_INLINE PartitionPage* partitionPointerToPage(void* ptr)
     return page;
 }
 
-ALWAYS_INLINE bool partitionPointerIsValid(PartitionRootBase* root, void* ptr)
+ALWAYS_INLINE PartitionRootBase* partitionPageToRoot(PartitionPage* page)
 {
-    ASSERT(root->invertedSelf == ~reinterpret_cast<uintptr_t>(root));
-    // On 32-bit systems, we have an optimization where we have a bitmap that
-    // can instantly tell us if a pointer is in a super page or not.
-    // It is a global bitmap instead of a per-partition bitmap but this is a
-    // reasonable space vs. accuracy trade off.
-    if (SuperPageBitmap::isAvailable())
-        return SuperPageBitmap::isPointerInSuperPage(ptr);
+    PartitionSuperPageExtentEntry* extentEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
+    return extentEntry->root;
+}
 
-    // On 64-bit systems, we check the list of super page extents. Due to the
-    // massive address space, we typically have a single extent.
-    // Dominant case: the pointer is in the first extent, which grew without any collision.
-    PartitionSuperPageExtentEntry* firstExtent = root->firstExtent;
-    if (LIKELY(ptr >= firstExtent->superPageBase) && LIKELY(ptr < firstExtent->superPagesEnd))
-        return true;
-
-    // Otherwise, scan through the extent list.
-    PartitionSuperPageExtentEntry* entry = firstExtent->next;
-    while (UNLIKELY(entry != 0)) {
-        if (ptr >= entry->superPageBase && ptr < entry->superPagesEnd)
-            return true;
-        entry = entry->next;
-    }
-
-    return false;
+ALWAYS_INLINE bool partitionPointerIsValid(void* ptr)
+{
+    PartitionPage* page = partitionPointerToPage(ptr);
+    PartitionRootBase* root = partitionPageToRoot(page);
+    return root->invertedSelf == ~reinterpret_cast<uintptr_t>(root);
 }
 
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, PartitionBucket* bucket)
@@ -478,22 +417,18 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, P
     void* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
-        ASSERT(partitionPointerIsValid(root, ret));
-        ASSERT(partitionPointerToPage(ret));
+        ASSERT(partitionPointerIsValid(ret));
         PartitionFreelistEntry* newHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
         page->freelistHead = newHead;
-        ASSERT(!ret || partitionPointerIsValid(root, ret));
-        ASSERT(!ret || partitionPointerToPage(ret));
+        ASSERT(!ret || partitionPointerIsValid(ret));
         page->numAllocatedSlots++;
     } else {
         ret = partitionAllocSlowPath(root, size, bucket);
     }
 #ifndef NDEBUG
-    // This will go away once we don't use tcmalloc to back larger allocations.
-    if (!partitionPointerIsValid(root, ret))
-        return ret;
     // Fill the uninitialized pattern. and write the cookies.
-    size_t bucketSize = bucket->slotSize;
+    page = partitionPointerToPage(ret);
+    size_t bucketSize = page->bucket->slotSize;
     memset(ret, kUninitializedByte, bucketSize);
     *(static_cast<uintptr_t*>(ret)) = kCookieValue;
     void* retEnd = static_cast<char*>(ret) + bucketSize;
@@ -521,12 +456,6 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 #endif // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 }
 
-ALWAYS_INLINE PartitionRootBase* partitionPageToRoot(PartitionPage* page)
-{
-    PartitionSuperPageExtentEntry* extentEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
-    return extentEntry->root;
-}
-
 ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
 {
     // If these asserts fire, you probably corrupted memory.
@@ -539,8 +468,7 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
 #endif
     ASSERT(page->numAllocatedSlots);
     PartitionFreelistEntry* freelistHead = page->freelistHead;
-    ASSERT(!freelistHead || partitionPointerIsValid(partitionPageToRoot(page), freelistHead));
-    ASSERT(!freelistHead || partitionPointerToPage(freelistHead));
+    ASSERT(!freelistHead || partitionPointerIsValid(freelistHead));
     RELEASE_ASSERT(ptr != freelistHead); // Catches an immediate double free.
     ASSERT(!freelistHead || ptr != partitionFreelistMask(freelistHead->next)); // Look for double free one level deeper in debug.
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
@@ -557,8 +485,8 @@ ALWAYS_INLINE void partitionFree(void* ptr)
     free(ptr);
 #else
     ptr = partitionCookieFreePointerAdjust(ptr);
+    ASSERT(partitionPointerIsValid(ptr));
     PartitionPage* page = partitionPointerToPage(ptr);
-    ASSERT(partitionPointerIsValid(partitionPageToRoot(page), ptr));
     partitionFreeWithPage(ptr, page);
 #endif
 }
@@ -603,15 +531,12 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
     if (UNLIKELY(!ptr))
         return;
 
-    if (LIKELY(partitionPointerIsValid(root, ptr))) {
-        ptr = partitionCookieFreePointerAdjust(ptr);
-        PartitionPage* page = partitionPointerToPage(ptr);
-        spinLockLock(&root->lock);
-        partitionFreeWithPage(ptr, page);
-        spinLockUnlock(&root->lock);
-        return;
-    }
-    return WTF::fastFree(ptr);
+    ptr = partitionCookieFreePointerAdjust(ptr);
+    ASSERT(partitionPointerIsValid(ptr));
+    PartitionPage* page = partitionPointerToPage(ptr);
+    spinLockLock(&root->lock);
+    partitionFreeWithPage(ptr, page);
+    spinLockUnlock(&root->lock);
 #endif
 }
 
