@@ -15,6 +15,7 @@ import re
 import sys
 
 import command
+import gsd_storage
 import toolchain_main
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
