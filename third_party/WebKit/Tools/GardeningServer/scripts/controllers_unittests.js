@@ -93,7 +93,7 @@ test("controllers.FailingBuilders", 3, function() {
             '<div class="what">' +
                 '<div class="problem">dummy message:' +
                     '<ul class="effects">' +
-                        '<li class="builder"><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=DummyBuilder">' +
+                        '<li class="builder"><a class="failing-builder" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=DummyBuilder">' +
                             '<span class="version">DummyBuilder</span><span class="failures"> webkit_tests</span></a>' +
                         '</li>' +
                     '</ul>' +

@@ -45,7 +45,6 @@ ui.failures.Builder = base.extends('a', {
             this._addSpan('version', builderName);
 
         this.className = 'failing-builder';
-        this.target = '_blank';
         this.href = ui.displayURLForBuilder(builderName);
         if (failures)
             this._addSpan('failures', ' ' + failures.join(', '));

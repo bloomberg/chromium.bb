@@ -79,7 +79,7 @@ test('Info', 2, function() {
 test('FailingTestGroup', 2, function() {
     var failingTest = new ui.notifications.FailingTestGroup('test', ['test.html']);
     equal(failingTest.tagName, 'LI');
-    equal(failingTest.innerHTML, '<a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test.html" target="_blank">test</a>');
+    equal(failingTest.innerHTML, '<a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test.html">test</a>');
 });
 
 test('SuspiciousCommit', 2, function() {
@@ -87,7 +87,7 @@ test('SuspiciousCommit', 2, function() {
     equal(suspiciousCommit.tagName, 'LI');
     equal(suspiciousCommit.innerHTML,
         '<div class="description">' +
-            '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
+            '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
             '<span>' +
                 '<span class="summary">summary</span>' +
                 '<span class="author">author</span>' +
@@ -130,7 +130,7 @@ test('FailingTestsSummary', 12, function() {
         '<div class="what">' +
             '<div class="problem">' +
                 '<ul class="effects">' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test" target="_blank">test</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test">test</a></li>' +
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
@@ -153,7 +153,7 @@ test('FailingTestsSummary', 12, function() {
         '<div class="what">' +
             '<div class="problem">' +
                 '<ul class="effects">' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test" target="_blank">test</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test">test</a></li>' +
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
@@ -178,7 +178,7 @@ test('FailingTestsSummary', 12, function() {
         '<div class="what">' +
             '<div class="problem">' +
                 '<ul class="effects">' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test" target="_blank">test</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test">test</a></li>' +
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
@@ -188,7 +188,7 @@ test('FailingTestsSummary', 12, function() {
             '<ul class="causes">' +
                 '<li>' +
                     '<div class="description">' +
-                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
                         '<span>' +
                             '<span class="summary">summary</span>' +
                             '<span class="author">author</span>' +
@@ -209,7 +209,7 @@ test('FailingTestsSummary', 12, function() {
                     '<tr class="TEXT">' +
                         '<td><span>TEXT</span></td>' +
                         '<td></td>' +
-                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
+                        '<td><a class="failing-builder" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
                     '</tr>' +
                     '<tr class="BUILDING" style="display: none;"><td><span>BUILDING</span></td><td></td><td></td></tr>' +
                 '</tbody>' +
@@ -218,8 +218,8 @@ test('FailingTestsSummary', 12, function() {
         '<div class="what">' +
             '<div class="problem">' +
                 '<ul class="effects">' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=foo" target="_blank">foo</a></li>' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test" target="_blank">test</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=foo">foo</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test">test</a></li>' +
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
@@ -229,7 +229,7 @@ test('FailingTestsSummary', 12, function() {
             '<ul class="causes">' +
                 '<li>' +
                     '<div class="description">' +
-                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
                         '<span>' +
                             '<span class="summary">summary</span>' +
                             '<span class="author">author</span>' +
@@ -250,11 +250,11 @@ test('FailingTestsSummary', 12, function() {
                     '<tr class="TEXT">' +
                         '<td><span>TEXT</span></td>' +
                         '<td></td>' +
-                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
+                        '<td><a class="failing-builder" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux+(dbg)"><span class="version">lucid</span><span class="architecture">64-bit</span></a></td>' +
                     '</tr>' +
                     '<tr class="BUILDING" style="">' +
                         '<td><span>BUILDING</span></td>' +
-                        '<td><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Mac10.6"><span class="version">snowleopard</span></a></td>' +
+                        '<td><a class="failing-builder" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Mac10.6"><span class="version">snowleopard</span></a></td>' +
                         '<td></td>' +
                     '</tr>' +
                 '</tbody>' +
@@ -263,8 +263,8 @@ test('FailingTestsSummary', 12, function() {
         '<div class="what">' +
             '<div class="problem">' +
                 '<ul class="effects">' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=foo" target="_blank">foo</a></li>' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test" target="_blank">test</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=foo">foo</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=test">test</a></li>' +
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
@@ -274,7 +274,7 @@ test('FailingTestsSummary', 12, function() {
             '<ul class="causes">' +
                 '<li>' +
                     '<div class="description">' +
-                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1" target="_blank">1</a>' +
+                        '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
                         '<span>' +
                             '<span class="summary">summary</span>' +
                             '<span class="author">author</span>' +
@@ -304,8 +304,8 @@ test('FailingTestsSummary (grouping)', 1, function() {
         '<div class="what">' +
             '<div class="problem">' +
                 '<ul class="effects">' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=path%2Fto%2Ftest1.html%2Cpath%2Fto%2Ftest2.html%2Cpath%2Fto%2Ftest3.html%2Cpath%2Fto%2Ftest4.html" target="_blank">path/to (4 tests)</a></li>' +
-                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=path%2Fanother%2Ftest.html" target="_blank">path/another/test.html</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=path%2Fto%2Ftest1.html%2Cpath%2Fto%2Ftest2.html%2Cpath%2Fto%2Ftest3.html%2Cpath%2Fto%2Ftest4.html">path/to (4 tests)</a></li>' +
+                    '<li><a href="http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=path%2Fanother%2Ftest.html">path/another/test.html</a></li>' +
                 '</ul>' +
                 '<ul class="actions">' +
                     '<li><button class="action default" title="Examine these failures in detail.">Examine</button></li>' +
@@ -326,8 +326,8 @@ test('BuildersFailing', 1, function() {
         '<div class="what">' +
             '<div class="problem">Disasterifying:' +
                 '<ul class="effects">' +
-                    '<li class="builder"><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux"><span class="version">lucid</span><span class="architecture">64-bit</span><span class="failures"> compile</span></a></li>' +
-                    '<li class="builder"><a class="failing-builder" target="_blank" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Win7"><span class="version">win7</span><span class="failures"> webkit_tests, update</span></a></li>' +
+                    '<li class="builder"><a class="failing-builder" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Linux"><span class="version">lucid</span><span class="architecture">64-bit</span><span class="failures"> compile</span></a></li>' +
+                    '<li class="builder"><a class="failing-builder" href="http://build.chromium.org/p/chromium.webkit/waterfall?builder=WebKit+Win7"><span class="version">win7</span><span class="failures"> webkit_tests, update</span></a></li>' +
                 '</ul>' +
             '</div>' +
             '<ul class="causes"></ul>' +
