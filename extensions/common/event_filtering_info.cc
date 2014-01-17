@@ -46,7 +46,7 @@ scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
 }
 
 bool EventFilteringInfo::IsEmpty() const {
-  return !has_url_ && service_type_.empty();
+  return !has_url_ && service_type_.empty() && !has_instance_id_;
 }
 
 }  // namespace extensions
