@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.provider.Settings;
+import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.PluginState;
 
@@ -86,6 +87,9 @@ public class AwSettings {
     private final boolean mSupportLegacyQuirks;
 
     private final boolean mPasswordEchoEnabled;
+
+    // Font scale factor determined by Android system setting.
+    private final float mFontScale;
 
     // Not accessed by the native side.
     private boolean mBlockNetworkLoads;  // Default depends on permission of embedding APK.
@@ -181,7 +185,9 @@ public class AwSettings {
                     while (mIsUpdateWebkitPrefsMessagePending) {
                         mAwSettingsLock.wait();
                     }
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Interrupted waiting to sync settings to native", e);
+                }
             }
         }
     }
@@ -215,6 +221,8 @@ public class AwSettings {
             // Respect the system setting for password echoing.
             mPasswordEchoEnabled = Settings.System.getInt(context.getContentResolver(),
                     Settings.System.TEXT_SHOW_PASSWORD, 1) == 1;
+            mFontScale = context.getResources().getConfiguration().fontScale;
+            mTextSizePercent *= mFontScale;
 
             mSupportLegacyQuirks = supportsLegacyQuirks;
         }
@@ -537,8 +545,9 @@ public class AwSettings {
      */
     public void setTextZoom(final int textZoom) {
         synchronized (mAwSettingsLock) {
-            if (mTextSizePercent != textZoom) {
-                mTextSizePercent = textZoom;
+            int scaledTextZoomPercent = (int)(textZoom * mFontScale);
+            if (mTextSizePercent != scaledTextZoomPercent) {
+                mTextSizePercent = scaledTextZoomPercent;
                 mEventHandler.updateWebkitPreferencesLocked();
             }
         }
