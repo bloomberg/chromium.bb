@@ -879,7 +879,7 @@ wayland_output_create_for_config(struct wayland_compositor *c,
 		name = str;
 	}
 	if (!name)
-		name = WINDOW_TITLE;
+		name = strdup(WINDOW_TITLE);
 
 	weston_config_section_get_string(config_section,
 					 "mode", &mode, "1024x600");
