@@ -66,9 +66,7 @@ class CodeGeneratorV8:
         self.idl_directories = idl_directories
         self.output_directory = output_directory
         self.verbose = verbose
-        # FIXME: remove definitions check when remove write_dummy_header_and_cpp
-        if not definitions:
-            return
+
         try:
             self.interface = definitions.interfaces[interface_name]
         except KeyError:
@@ -113,21 +111,6 @@ class CodeGeneratorV8:
             (interface_name, interface_info['implemented_as'])
             for interface_name, interface_info in interfaces_info.iteritems()
             if 'implemented_as' in interface_info))
-
-    def write_dummy_header_and_cpp(self):
-        # FIXME: fix GYP so these files aren't needed and remove this method
-        target_interface_name = self.interface_name
-        header_basename = 'V8%s.h' % target_interface_name
-        cpp_basename = 'V8%s.cpp' % target_interface_name
-        contents = """/*
-    This file is generated just to tell build scripts that {header_basename} and
-    {cpp_basename} are created for {target_interface_name}.idl, and thus
-    prevent the build scripts from trying to generate {header_basename} and
-    {cpp_basename} at every build. This file must not be tried to compile.
-*/
-""".format(**locals())
-        self.write_file(header_basename, contents)
-        self.write_file(cpp_basename, contents)
 
     def write_header_and_cpp(self):
         interface = self.interface

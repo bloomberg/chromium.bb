@@ -38,7 +38,6 @@ my $outputDirectory;
 my $preprocessor;
 my $verbose;
 my $interfaceDependenciesFile;
-my $additionalIdlFiles;
 my $idlAttributesFile;
 my $writeFileOnlyIfChanged;
 
@@ -47,7 +46,6 @@ GetOptions('include=s@' => \@idlDirectories,
            'preprocessor=s' => \$preprocessor,
            'verbose' => \$verbose,
            'interfaceDependenciesFile=s' => \$interfaceDependenciesFile,
-           'additionalIdlFiles=s' => \$additionalIdlFiles,
            'idlAttributesFile=s' => \$idlAttributesFile,
            'write-file-only-if-changed=s' => \$writeFileOnlyIfChanged);
 
@@ -62,7 +60,6 @@ if ($verbose) {
 }
 my $targetInterfaceName = fileparse(basename($targetIdlFile), ".idl");
 
-my $idlFound = 0;
 my @dependencyIdlFiles;
 if ($interfaceDependenciesFile) {
     # The format of the interface dependencies file:
@@ -80,29 +77,12 @@ if ($interfaceDependenciesFile) {
     while (my $line = <FH>) {
         my ($idlFile, @followingIdlFiles) = split(/\s+/, $line);
         if ($idlFile and basename($idlFile) eq basename($targetIdlFile)) {
-            $idlFound = 1;
             # We sort the dependency IDL files so that the corresponding code is generated
             # in a consistent order. This is important for the bindings tests.
             @dependencyIdlFiles = sort @followingIdlFiles;
         }
     }
     close FH;
-
-    # $additionalIdlFiles is for IDL files not listed in the interface
-    # dependencies file, namely generated IDL files for interfaces
-    # (not partial interfaces), so we need to generate .h and .cpp files.
-    if (!$idlFound and $additionalIdlFiles) {
-        my @idlFiles = shellwords($additionalIdlFiles);
-        $idlFound = grep { $_ and basename($_) eq basename($targetIdlFile) } @idlFiles;
-    }
-
-    if (!$idlFound) {
-        # IDL files for dependencies (partial interfaces and interfaces
-        # implemented elsewhere). We generate empty .h and .cpp files just to
-        # tell build scripts that outputs have been created.
-        generateEmptyHeaderAndCpp($targetInterfaceName, $outputDirectory);
-        exit 0;
-    }
 }
 
 # Parse the target IDL file.
@@ -182,28 +162,6 @@ foreach my $interface (@$interfaces) {
     print "Generating bindings code for IDL interface \"" . $interface->name . "\"...\n" if $verbose;
     $codeGenerator->GenerateInterface($interface);
     $codeGenerator->WriteData($interface, $outputDirectory);
-}
-
-sub generateEmptyHeaderAndCpp
-{
-    my ($targetInterfaceName, $outputDirectory) = @_;
-
-    my $headerName = "V8${targetInterfaceName}.h";
-    my $cppName = "V8${targetInterfaceName}.cpp";
-    my $contents = "/*
-    This file is generated just to tell build scripts that $headerName and
-    $cppName are created for ${targetInterfaceName}.idl, and thus
-    prevent the build scripts from trying to generate $headerName and
-    $cppName at every build. This file must not be tried to compile.
-*/
-";
-    open FH, "> ${outputDirectory}/${headerName}" or die "Cannot open $headerName\n";
-    print FH $contents;
-    close FH;
-
-    open FH, "> ${outputDirectory}/${cppName}" or die "Cannot open $cppName\n";
-    print FH $contents;
-    close FH;
 }
 
 sub loadIDLAttributes

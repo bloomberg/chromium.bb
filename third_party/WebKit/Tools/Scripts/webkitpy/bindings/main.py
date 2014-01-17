@@ -42,6 +42,13 @@ NOTRY=true
 TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
 """
 
+DEPENDENCY_IDL_FILES = set([
+    'TestImplements.idl',
+    'TestPartialInterface.idl',
+    'TestPartialInterfacePython.idl',
+    'SupportTestPartialInterface.idl',
+])
+
 # Python compiler is incomplete; skip IDLs with unimplemented features
 SKIP_PYTHON = set([
     'TestCustomAccessors.idl',
@@ -266,6 +273,12 @@ class BindingsTests(object):
             for input_filename in os.listdir(directory):
                 if not input_filename.endswith('.idl'):
                     continue
+                if input_filename in DEPENDENCY_IDL_FILES:
+                    # Dependencies aren't built (they are used by the dependent)
+                    if self.verbose:
+                        print 'DEPENDENCY: %s' % input_filename
+                    continue
+
                 idl_path = os.path.join(directory, input_filename)
                 if self.generate_from_idl_pl(idl_path):
                     return False

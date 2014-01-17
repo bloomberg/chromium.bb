@@ -52,25 +52,16 @@ class InvalidPartialInterfaceError(Exception):
 
 
 class InterfaceDependencyResolver:
-    def __init__(self, interfaces_info, additional_idl_filenames, reader):
+    def __init__(self, interfaces_info, reader):
         """Inits dependency resolver.
 
         Args:
             interfaces_info:
                 dict of interfaces information, from compute_dependencies.py
-            additional_idl_filenames:
-                list of additional files, not listed in
-                interface_dependencies_file, for which bindings should
-                nonetheless be generated
             reader:
                 IdlReader, used for reading dependency files
         """
         self.interfaces_info = interfaces_info
-        self.additional_interfaces = set()
-        for filename in additional_idl_filenames:
-            basename = os.path.basename(filename)
-            interface_name, _ = os.path.splitext(basename)
-            self.additional_interfaces.add(interface_name)
         self.reader = reader
 
     def resolve_dependencies(self, definitions, interface_name):
@@ -109,26 +100,15 @@ class InterfaceDependencyResolver:
     def compute_dependency_idl_files(self, target_interface_name):
         """Returns list of IDL file dependencies for a given main IDL file.
 
-        - Returns a list of full paths to IDL files on which a given IDL file
-          depends, possibly empty.
-          Dependencies consist of partial interface files and files for other
-          interfaces that the given interface implements.
-        - Returns an empty list also if the given IDL file is an additional IDL
-          file.
-        - Otherwise, return None. This happens when the given IDL file is a
-          dependency, for which we don't want to generate bindings.
+        Returns a list of IDL files on which a given IDL file depends,
+        possibly empty.
+        Dependencies consist of partial interface files and files for other
+        interfaces that the given interface implements.
         """
         if target_interface_name in self.interfaces_info:
             return self.interfaces_info[target_interface_name]['dependencies_full_paths']
 
-        # additional_interfaces is a list of interfaces that should not be
-        # included in DerivedSources*.cpp, and hence are not listed in the
-        # interface dependencies file, but for which we should generate .cpp
-        # and .h files.
-        if target_interface_name in self.additional_interfaces:
-            return []
-
-        return None
+        return []
 
 
 def merge_interface_dependencies(target_interface, dependency_idl_filenames, reader):

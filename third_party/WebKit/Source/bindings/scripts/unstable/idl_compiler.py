@@ -39,7 +39,6 @@ For details, see bug http://crbug.com/239771
 import optparse
 import os
 import cPickle as pickle
-import shlex
 import sys
 
 import code_generator_v8
@@ -47,7 +46,6 @@ import idl_reader
 
 def parse_options():
     parser = optparse.OptionParser()
-    parser.add_option('--additional-idl-files')
     # FIXME: The --dump-json-and-pickle option is only for debugging and will
     # be removed once we complete migrating all IDL files from the Perl flow to
     # the Python flow.
@@ -64,12 +62,6 @@ def parse_options():
     options, args = parser.parse_args()
     if options.output_directory is None:
         parser.error('Must specify output directory using --output-directory.')
-    if options.additional_idl_files is None:
-        options.additional_idl_files = []
-    else:
-        # additional_idl_files is passed as a string with varied (shell-style)
-        # quoting, hence needs parsing.
-        options.additional_idl_files = shlex.split(options.additional_idl_files)
     if len(args) != 1:
         parser.error('Must specify exactly 1 input file as argument, but %d given.' % len(args))
     options.idl_filename = os.path.realpath(args[0])
@@ -105,17 +97,12 @@ def main():
     else:
         interfaces_info = None
 
-    reader = idl_reader.IdlReader(interfaces_info, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
+    reader = idl_reader.IdlReader(interfaces_info, options.idl_attributes_file, output_directory, verbose)
     definitions = reader.read_idl_definitions(idl_filename)
-    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, interfaces_info, options.output_directory, options.idl_directories, verbose)
-    if not definitions:
-        # We generate dummy .h and .cpp files just to tell build scripts
-        # that outputs have been created.
-        code_generator.write_dummy_header_and_cpp()
-        return
     if options.dump_json_and_pickle:
         write_json_and_pickle(definitions, interface_name, output_directory)
         return
+    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, interfaces_info, options.output_directory, options.idl_directories, verbose)
     code_generator.write_header_and_cpp()
 
 
