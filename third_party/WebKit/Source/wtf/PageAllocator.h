@@ -62,7 +62,7 @@ static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 // kPageAllocationGranularity.
 // If addr is null, then a suitable and randomized address will be chosen
 // automatically.
-// This call will exit the process if the allocation cannot be satisfied.
+// This call will return null if the allocation cannot be satisfied.
 WTF_EXPORT void* allocPages(void* addr, size_t len, size_t align);
 
 // Free one or more pages.

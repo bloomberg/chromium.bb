@@ -317,6 +317,8 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
     RELEASE_ASSERT(root->totalSizeOfSuperPages <= kMaxPartitionSize);
     char* requestedAddress = root->nextSuperPage;
     char* superPage = reinterpret_cast<char*>(allocPages(requestedAddress, kSuperPageSize, kSuperPageSize));
+    // TODO: handle allocation failure here with PartitionAllocReturnNull.
+    RELEASE_ASSERT(superPage);
     root->nextSuperPage = superPage + kSuperPageSize;
     char* ret = superPage + kPartitionPageSize;
     root->nextPartitionPage = ret + totalSize;
@@ -522,7 +524,7 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionBucket* bucket, boo
     return false;
 }
 
-static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, size_t size)
+static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags, size_t size)
 {
     size += kSystemPageOffsetMask;
     size &= kSystemPageBaseMask;
@@ -548,6 +550,11 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, size_t si
     // TODO: these pages will be zero-filled. Consider internalizing an
     // allocZeroed() API so we can avoid a memset() entirely in this case.
     char* ptr = reinterpret_cast<char*>(allocPages(0, mapSize, kSuperPageSize));
+    if (!ptr) {
+        if (flags & PartitionAllocReturnNull)
+            return 0;
+        RELEASE_ASSERT(false);
+    }
     char* ret = ptr + kPartitionPageSize;
     // TODO: due to all the guard paging, this arrangement creates 4 mappings.
     // We could get it down to three by using read-only for the metadata page,
@@ -594,7 +601,7 @@ static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
     freePages(ptr, unmapSize);
 }
 
-void* partitionAllocSlowPath(PartitionRootBase* root, size_t size, PartitionBucket* bucket)
+void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, PartitionBucket* bucket)
 {
     // The slow path is called when the freelist is empty.
     ASSERT(!bucket->activePagesHead->freelistHead);
@@ -603,11 +610,16 @@ void* partitionAllocSlowPath(PartitionRootBase* root, size_t size, PartitionBuck
     // as special cases. We bounce them through to the slow path so that we
     // can still have a blazing fast hot path due to lack of corner-case
     // branches.
+    bool returnNull = flags & PartitionAllocReturnNull;
     if (UNLIKELY(!bucket->numSystemPagesPerSlotSpan)) {
         ASSERT(size > kGenericMaxBucketed);
         ASSERT(bucket == &PartitionRootBase::gPagedBucket);
-        RELEASE_ASSERT(size <= INT_MAX - kSystemPageSize);
-        return partitionDirectMap(root, size);
+        if (size > INT_MAX - kSystemPageSize) {
+            if (returnNull)
+                return 0;
+            RELEASE_ASSERT(false);
+        }
+        return partitionDirectMap(root, flags, size);
     }
 
     // First, look for a usable page in the existing active pages list.

@@ -107,8 +107,8 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 
 void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
 {
-    data = partitionAllocGeneric(WTF::Partitions::getBufferPartition(), size);
-    if (policy == ZeroInitialize)
+    data = partitionAllocGenericFlags(WTF::Partitions::getBufferPartition(), PartitionAllocReturnNull, size);
+    if (policy == ZeroInitialize && data)
         memset(data, '\0', size);
 }
 

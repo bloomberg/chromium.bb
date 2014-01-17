@@ -568,6 +568,9 @@ TEST(WTF_PartitionAlloc, GenericAllocSizes)
     // Can we free null?
     partitionFreeGeneric(genericAllocator.root(), 0);
 
+    // Do we correctly get a null for a failed allocation?
+    EXPECT_EQ(0, partitionAllocGenericFlags(genericAllocator.root(), WTF::PartitionAllocReturnNull, 3u * 1024 * 1024 * 1024));
+
     TestShutdown();
 }
 

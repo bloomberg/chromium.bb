@@ -73,9 +73,9 @@ static void* systemAllocPages(void* addr, size_t len)
         ret = VirtualAlloc(0, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 #else
     ret = mmap(addr, len, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    RELEASE_ASSERT(ret != MAP_FAILED);
+    if (ret == MAP_FAILED)
+        ret = 0;
 #endif
-    RELEASE_ASSERT(ret);
     return ret;
 }
 
@@ -182,7 +182,6 @@ static void* getRandomPageBase()
 
 void* allocPages(void* addr, size_t len, size_t align)
 {
-    RELEASE_ASSERT(len < INT_MAX - align);
     ASSERT(len >= kPageAllocationGranularity);
     ASSERT(!(len & kPageAllocationGranularityOffsetMask));
     ASSERT(align >= kPageAllocationGranularity);
@@ -201,7 +200,7 @@ void* allocPages(void* addr, size_t len, size_t align)
     // address and length are suitable. Just try it.
     void* ret = systemAllocPages(addr, len);
     // If the alignment is to our liking, we're done.
-    if (!(reinterpret_cast<uintptr_t>(ret) & alignOffsetMask))
+    if (!ret || !(reinterpret_cast<uintptr_t>(ret) & alignOffsetMask))
         return ret;
 
     // Annoying. Unmap and map a larger range to be sure to succeed on the
@@ -209,12 +208,15 @@ void* allocPages(void* addr, size_t len, size_t align)
     freePages(ret, len);
 
     size_t tryLen = len + (align - kPageAllocationGranularity);
+    RELEASE_ASSERT(tryLen > len);
 
     // We loop to cater for the unlikely case where another thread maps on top
     // of the aligned location we choose.
     int count = 0;
     while (count++ < 100) {
         ret = systemAllocPages(addr, tryLen);
+        if (!ret)
+            return 0;
         // We can now try and trim out a subset of the mapping.
         addr = reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(ret) + alignOffsetMask) & alignBaseMask);
 
@@ -228,7 +230,7 @@ void* allocPages(void* addr, size_t len, size_t align)
         // broken mmap() that ignores address hints for valid, unused addresses.
         freePages(ret, tryLen);
         ret = systemAllocPages(addr, len);
-        if (ret == addr)
+        if (ret == addr || !ret)
             return ret;
 
         // Unlikely race / collision. Do the simple thing and just start again.

@@ -33,6 +33,7 @@
 
 #include "wtf/Assertions.h"
 #include <gtest/gtest.h>
+#include <limits.h>
 #include <string.h>
 
 namespace WTF {
@@ -232,6 +233,13 @@ TEST(ArrayBufferBuilder, ShrinkToFitAfterGrowth)
     builder.shrinkToFit();
     EXPECT_EQ(dataSize, builder.byteLength());
     EXPECT_EQ(dataSize, builder.capacity());
+}
+
+TEST(ArrayBufferBuilder, ArrayBufferAllocationFailure)
+{
+    RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(INT_MAX + 1u, 1);
+
+    EXPECT_EQ(0, buffer.get());
 }
 
 } // namespace WTF

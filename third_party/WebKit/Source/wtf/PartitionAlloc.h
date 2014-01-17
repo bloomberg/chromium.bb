@@ -294,12 +294,17 @@ struct PartitionRootGeneric : public PartitionRootBase {
     PartitionBucket buckets[kGenericNumBucketedOrders * kGenericNumBucketsPerOrder];
 };
 
+// Flags for partitionAllocGenericFlags.
+enum PartitionAllocFlags {
+    PartitionAllocReturnNull = 1 << 0,
+};
+
 WTF_EXPORT void partitionAllocInit(PartitionRoot*, size_t numBuckets, size_t maxAllocation);
 WTF_EXPORT bool partitionAllocShutdown(PartitionRoot*);
 WTF_EXPORT void partitionAllocGenericInit(PartitionRootGeneric*);
 WTF_EXPORT bool partitionAllocGenericShutdown(PartitionRootGeneric*);
 
-WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, size_t, PartitionBucket*);
+WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, int, size_t, PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);
 WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, void*, size_t);
 
@@ -324,8 +329,8 @@ ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEnt
 ALWAYS_INLINE size_t partitionCookieSizeAdjustAdd(size_t size)
 {
 #ifndef NDEBUG
-    // Add space for cookies.
-    ASSERT(size <= INT_MAX - (2 * sizeof(uintptr_t)));
+    // Add space for cookies, checking for integer overflow.
+    ASSERT(size + (2 * sizeof(uintptr_t)) > size);
     size += 2 * sizeof(uintptr_t);
 #endif
     return size;
@@ -410,7 +415,7 @@ ALWAYS_INLINE bool partitionPointerIsValid(void* ptr)
     return root->invertedSelf == ~reinterpret_cast<uintptr_t>(root);
 }
 
-ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, PartitionBucket* bucket)
+ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, int flags, size_t size, PartitionBucket* bucket)
 {
     PartitionPage* page = bucket->activePagesHead;
     ASSERT(page->numAllocatedSlots >= 0);
@@ -423,9 +428,11 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, P
         ASSERT(!ret || partitionPointerIsValid(ret));
         page->numAllocatedSlots++;
     } else {
-        ret = partitionAllocSlowPath(root, size, bucket);
+        ret = partitionAllocSlowPath(root, flags, size, bucket);
     }
 #ifndef NDEBUG
+    if (!ret)
+        return 0;
     // Fill the uninitialized pattern. and write the cookies.
     page = partitionPointerToPage(ret);
     size_t bucketSize = page->bucket->slotSize;
@@ -452,7 +459,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
     ASSERT(index < root->numBuckets);
     ASSERT(size == index << kBucketShift);
     PartitionBucket* bucket = &root->buckets()[index];
-    return partitionBucketAlloc(root, size, bucket);
+    return partitionBucketAlloc(root, 0, size, bucket);
 #endif // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 }
 
@@ -504,7 +511,7 @@ ALWAYS_INLINE PartitionBucket* partitionGenericSizeToBucket(PartitionRootGeneric
     return bucket;
 }
 
-ALWAYS_INLINE void* partitionAllocGeneric(PartitionRootGeneric* root, size_t size)
+ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int flags, size_t size)
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     void* result = malloc(size);
@@ -515,10 +522,15 @@ ALWAYS_INLINE void* partitionAllocGeneric(PartitionRootGeneric* root, size_t siz
     size = partitionCookieSizeAdjustAdd(size);
     PartitionBucket* bucket = partitionGenericSizeToBucket(root, size);
     spinLockLock(&root->lock);
-    void* ret = partitionBucketAlloc(root, size, bucket);
+    void* ret = partitionBucketAlloc(root, flags, size, bucket);
     spinLockUnlock(&root->lock);
     return ret;
 #endif
+}
+
+ALWAYS_INLINE void* partitionAllocGeneric(PartitionRootGeneric* root, size_t size)
+{
+    return partitionAllocGenericFlags(root, 0, size);
 }
 
 ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
