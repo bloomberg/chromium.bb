@@ -167,6 +167,11 @@ void ScrollingCoordinator::updateAfterCompositingChange()
         updateShouldUpdateScrollLayerPositionOnMainThread();
     m_wasFrameScrollable = frameIsScrollable;
 
+    // The mainFrame view doesn't get included in the FrameTree below, so we
+    // update its size separately.
+    if (WebLayer* scrollingWebLayer = frameView ? scrollingWebLayerForScrollableArea(frameView) : 0)
+        scrollingWebLayer->setBounds(frameView->contentsSize());
+
     const FrameTree& tree = m_page->mainFrame()->tree();
     for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
         if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(child->view()))
@@ -939,11 +944,16 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const
     return mainThreadScrollingReasonsAsText(m_lastMainThreadScrollingReasons);
 }
 
-bool ScrollingCoordinator::frameViewIsScrollableIsDirty() const
+bool ScrollingCoordinator::frameViewIsDirty() const
 {
     FrameView* frameView = m_page->mainFrame()->view();
     bool frameIsScrollable = frameView && frameView->isScrollable();
-    return frameIsScrollable != m_wasFrameScrollable;
+    if (frameIsScrollable != m_wasFrameScrollable)
+        return true;
+
+    if (WebLayer* scrollLayer = frameView ? scrollingWebLayerForScrollableArea(frameView) : 0)
+        return blink::WebSize(frameView->contentsSize()) != scrollLayer->bounds();
+    return false;
 }
 
 } // namespace WebCore

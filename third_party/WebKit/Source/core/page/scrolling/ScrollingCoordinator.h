@@ -66,7 +66,7 @@ public:
     // Should be called after compositing has been updated.
     void updateAfterCompositingChange();
 
-    bool needsToUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty || frameViewIsScrollableIsDirty(); }
+    bool needsToUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty || frameViewIsDirty(); }
 
     // Should be called whenever a wheel event handler is added or removed in the
     // frame view's underlying document.
@@ -157,7 +157,7 @@ private:
     blink::WebScrollbarLayer* getWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
     void removeWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
-    bool frameViewIsScrollableIsDirty() const;
+    bool frameViewIsDirty() const;
 
     typedef HashMap<ScrollableArea*, OwnPtr<blink::WebScrollbarLayer> > ScrollbarMap;
     ScrollbarMap m_horizontalScrollbars;
