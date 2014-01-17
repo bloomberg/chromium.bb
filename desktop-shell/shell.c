@@ -198,6 +198,7 @@ struct weston_move_grab {
 
 struct weston_touch_move_grab {
 	struct shell_touch_grab base;
+	int active;
 	wl_fixed_t dx, dy;
 };
 
@@ -1313,6 +1314,9 @@ touch_move_grab_up(struct weston_touch_grab *grab, uint32_t time, int touch_id)
 		(struct weston_touch_move_grab *) container_of(
 			grab, struct shell_touch_grab, grab);
 
+	if (touch_id == 0)
+		move->active = 0;
+
 	if (grab->touch->num_tp == 0) {
 		shell_touch_grab_end(&move->base);
 		free(move);
@@ -1329,7 +1333,7 @@ touch_move_grab_motion(struct weston_touch_grab *grab, uint32_t time,
 	int dx = wl_fixed_to_int(grab->touch->grab_x + move->dx);
 	int dy = wl_fixed_to_int(grab->touch->grab_y + move->dy);
 
-	if (!shsurf)
+	if (!shsurf || !move->active)
 		return;
 
 	es = shsurf->surface;
@@ -1374,6 +1378,7 @@ surface_touch_move(struct shell_surface *shsurf, struct weston_seat *seat)
 	if (!move)
 		return -1;
 
+	move->active = 1;
 	move->dx = wl_fixed_from_double(shsurf->view->geometry.x) -
 			seat->touch->grab_x;
 	move->dy = wl_fixed_from_double(shsurf->view->geometry.y) -
