@@ -638,19 +638,6 @@ public class ContentView extends FrameLayout
         return mContentViewCore.getDownloadDelegate();
     }
 
-    public boolean getUseDesktopUserAgent() {
-        return mContentViewCore.getUseDesktopUserAgent();
-    }
-
-    /**
-     * Set whether or not we're using a desktop user agent for the currently loaded page.
-     * @param override If true, use a desktop user agent.  Use a mobile one otherwise.
-     * @param reloadOnChange Reload the page if the UA has changed.
-     */
-    public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange) {
-        mContentViewCore.setUseDesktopUserAgent(override, reloadOnChange);
-    }
-
     /**
      * Zooms in the WebView by 25% (or less if that would result in zooming in
      * more than possible).
