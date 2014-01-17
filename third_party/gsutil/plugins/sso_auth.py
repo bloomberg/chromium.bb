@@ -45,7 +45,7 @@ class SSOAuth(AuthHandler):
   def __init__(self, path, config, provider):
     if provider.name == 'google' and self.has_prodaccess():
       # If we don't have a loas token, then bypass this auth handler.
-      if subprocess.call('loas_check',
+      if subprocess.call(['loas_check', '-loas_check_retry_attempts=0'],
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE):
         raise NotReadyToAuthenticate()
