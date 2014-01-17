@@ -25,6 +25,7 @@
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
@@ -100,7 +101,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
     ASSERT_FALSE(it == all_views.end());
     ASSERT_TRUE(extension_host->IsRenderViewLive());
     extensions::ProcessMap* process_map =
-        browser()->profile()->GetExtensionService()->process_map();
+        extensions::ProcessMap::Get(browser()->profile());
     ASSERT_TRUE(process_map->Contains(
         extension_id,
         extension_host->render_view_host()->GetProcess()->GetID()));

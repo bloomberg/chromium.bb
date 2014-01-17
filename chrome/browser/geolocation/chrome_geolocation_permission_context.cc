@@ -13,18 +13,19 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 
 using extensions::APIPermission;
+using extensions::ExtensionRegistry;
 
 ChromeGeolocationPermissionContext::ChromeGeolocationPermissionContext(
     Profile* profile)
@@ -63,18 +64,17 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
   const PermissionRequestID id(render_process_id, render_view_id, bridge_id, 0);
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (extension_service) {
+  ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
+  if (extension_registry) {
     const extensions::Extension* extension =
-        extension_service->extensions()->GetExtensionOrAppByURL(
+        extension_registry->enabled_extensions().GetExtensionOrAppByURL(
             requesting_frame_origin);
     if (IsExtensionWithPermissionOrSuggestInConsole(APIPermission::kGeolocation,
                                                     extension,
                                                     profile_)) {
       // Make sure the extension is in the calling process.
-      if (extension_service->process_map()->Contains(extension->id(),
-                                                     id.render_process_id())) {
+      if (extensions::ProcessMap::Get(profile_)
+              ->Contains(extension->id(), id.render_process_id())) {
         NotifyPermissionSet(id, requesting_frame_origin, callback, true);
         return;
       }

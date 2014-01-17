@@ -335,7 +335,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   ExtensionSystem* extension_system =
       ExtensionSystem::GetForBrowserContext(browser_context_);
   ExtensionService* service = extension_system->extension_service();
-  extensions::ProcessMap* process_map = service->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser_context_);
   if (!process_map)
     return;
 

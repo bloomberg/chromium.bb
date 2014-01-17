@@ -2249,7 +2249,7 @@ bool Browser::MaybeCreateBackgroundContents(
 
   // Ensure that we're trying to open this from the extension's process.
   SiteInstance* opener_site_instance = opener_web_contents->GetSiteInstance();
-  extensions::ProcessMap* process_map = extensions_service->process_map();
+  extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile_);
   if (!opener_site_instance->GetProcess() ||
       !process_map->Contains(
           extension->id(), opener_site_instance->GetProcess()->GetID())) {

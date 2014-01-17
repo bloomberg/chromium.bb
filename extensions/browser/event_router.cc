@@ -523,10 +523,7 @@ void EventRouter::DispatchEventToProcess(const std::string& extension_id,
     return;
 
   BrowserContext* listener_context = process->GetBrowserContext();
-  ProcessMap* process_map =
-      ExtensionSystem::GetForBrowserContext(listener_context)
-          ->extension_service()
-          ->process_map();
+  ProcessMap* process_map = ProcessMap::Get(listener_context);
   // If the event is privileged, only send to extension processes. Otherwise,
   // it's OK to send to normal renderers (e.g., for content scripts).
   if (ExtensionAPI::GetSharedInstance()->IsPrivileged(event->event_name) &&

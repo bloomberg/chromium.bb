@@ -82,6 +82,7 @@
 #include "extensions/browser/pending_extension_manager.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/update_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -2557,11 +2558,13 @@ void ExtensionService::Observe(int type,
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
           break;
 
-      if (process_map_.Contains(process->GetID())) {
+      extensions::ProcessMap* process_map =
+          extensions::ProcessMap::Get(profile_);
+      if (process_map->Contains(process->GetID())) {
         // An extension process was terminated, this might have resulted in an
         // app or extension becoming idle.
         std::set<std::string> extension_ids =
-            process_map_.GetExtensionsInProcess(process->GetID());
+            process_map->GetExtensionsInProcess(process->GetID());
         for (std::set<std::string>::const_iterator it = extension_ids.begin();
              it != extension_ids.end(); ++it) {
           if (delayed_installs_.Contains(*it)) {
@@ -2574,7 +2577,7 @@ void ExtensionService::Observe(int type,
         }
       }
 
-      process_map_.RemoveAllFromProcess(process->GetID());
+      process_map->RemoveAllFromProcess(process->GetID());
       BrowserThread::PostTask(
           BrowserThread::IO,
           FROM_HERE,

@@ -19,6 +19,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -114,7 +115,7 @@ class IsolatedAppTest : public ExtensionBrowserTest {
     ExtensionService* service = profile->GetExtensionService();
     if (service) {
       std::set<std::string> extension_ids =
-          service->process_map()->GetExtensionsInProcess(
+          extensions::ProcessMap::Get(profile)->GetExtensionsInProcess(
               contents->GetRenderViewHost()->GetProcess()->GetID());
       for (std::set<std::string>::iterator iter = extension_ids.begin();
            iter != extension_ids.end(); ++iter) {

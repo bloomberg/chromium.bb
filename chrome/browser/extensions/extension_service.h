@@ -30,7 +30,6 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pending_extension_manager.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -125,7 +124,8 @@ class ExtensionServiceInterface
   virtual base::SequencedTaskRunner* GetFileTaskRunner() = 0;
 };
 
-// Manages installed and running Chromium extensions.
+// Manages installed and running Chromium extensions. An instance is shared
+// between normal and incognito profiles.
 class ExtensionService
     : public ExtensionServiceInterface,
       public extensions::ExternalProviderInterface::VisitorInterface,
@@ -178,8 +178,6 @@ class ExtensionService
       pending_extension_manager() OVERRIDE;
 
   const base::FilePath& install_directory() const { return install_directory_; }
-
-  extensions::ProcessMap* process_map() { return &process_map_; }
 
   // Updates the app launcher value for the moved extension so that it is now
   // located after the given predecessor and before the successor. This will
@@ -821,8 +819,6 @@ class ExtensionService
   // Used for specially handling external extensions that are installed the
   // first time.
   bool is_first_run_;
-
-  extensions::ProcessMap process_map_;
 
   // A set of the extension ids currently being reloaded.  We use this to
   // avoid showing a "new install" notice for an extension reinstall.

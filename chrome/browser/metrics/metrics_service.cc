@@ -186,7 +186,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/compression_utils.h"
@@ -199,7 +198,6 @@
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/network_stats.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -1760,10 +1758,9 @@ void MetricsService::LogLoadStarted(content::WebContents* web_contents) {
 void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
                                       base::TerminationStatus status,
                                       int exit_code) {
-  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  ExtensionService* service = profile->GetExtensionService();
   bool was_extension_process =
-      service && service->process_map()->Contains(host->GetID());
+      extensions::ProcessMap::Get(host->GetBrowserContext())
+          ->Contains(host->GetID());
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     if (was_extension_process) {

@@ -69,8 +69,8 @@ class AppApiTest : public ExtensionApiTest {
   void TestAppInstancesHelper(std::string app_name) {
     LOG(INFO) << "Start of test.";
 
-    extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service()->process_map();
+    extensions::ProcessMap* process_map =
+        extensions::ProcessMap::Get(browser()->profile());
 
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -146,8 +146,8 @@ class BlockedAppApiTest : public AppApiTest {
 IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
   LOG(INFO) << "Start of test.";
 
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -294,7 +294,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessBackgroundInstances) {
 IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  extensions::ProcessMap* process_map = service->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -419,8 +420,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
 // Fails on Windows. http://crbug.com/238670
 // Added logging to help diagnose the location of the problem.
 IN_PROC_BROWSER_TEST_F(AppApiTest, NavigateIntoAppProcess) {
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -466,8 +467,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, NavigateIntoAppProcess) {
 // Added logging to help diagnose the location of the problem.
 // http://crbug.com/238670
 IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -531,8 +532,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
 // Crashes on Windows and Mac. http://crbug.com/238670
 // Added logging to help diagnose the location of the problem.
 IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcessWithJavaScript) {
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -602,8 +603,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
     return;
 #endif
 
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -752,8 +753,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ClientRedirectToAppFromExtension) {
 // missing special permissions and should be scriptable from the iframe.
 // See http://crbug.com/92669 for more details.
 IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -790,8 +791,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
 #define MAYBE_ReloadAppAfterCrash ReloadAppAfterCrash
 #endif
 IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -832,8 +833,8 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
 // BrowsingInstance, so that postMessage calls to the app's other windows still
 // work.
 IN_PROC_BROWSER_TEST_F(AppApiTest, SameBrowsingInstanceAfterSwap) {
-  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service()->process_map();
+  extensions::ProcessMap* process_map =
+      extensions::ProcessMap::Get(browser()->profile());
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());

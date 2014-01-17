@@ -243,9 +243,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
   // We've loaded 5 extensions with background pages, 1 extension without
   // background page, and one isolated app. We expect only 2 unique processes
   // hosting those extensions.
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
+  extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile);
 
-  EXPECT_GE((size_t) 6, service->process_map()->size());
+  EXPECT_GE((size_t) 6, process_map->size());
   EXPECT_EQ((size_t) 2, process_ids.size());
 }

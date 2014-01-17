@@ -9,6 +9,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -61,10 +66,14 @@ namespace extensions {
 //    RenderProcessHost::FromID() and check the profile of the resulting object.
 //
 // TODO(aa): The above warnings suggest this class could use improvement :).
-class ProcessMap {
+class ProcessMap : public BrowserContextKeyedService {
  public:
   ProcessMap();
-  ~ProcessMap();
+  virtual ~ProcessMap();
+
+  // Returns the instance for |browser_context|. An instance is shared between
+  // an incognito and a regular context.
+  static ProcessMap* Get(content::BrowserContext* browser_context);
 
   size_t size() const { return items_.size(); }
 
@@ -89,6 +98,6 @@ class ProcessMap {
   DISALLOW_COPY_AND_ASSIGN(ProcessMap);
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_PROCESS_MAP_H_

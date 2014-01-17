@@ -4,6 +4,8 @@
 
 #include "extensions/browser/process_map.h"
 
+#include "extensions/browser/process_map_factory.h"
+
 namespace extensions {
 
 // Item
@@ -60,6 +62,11 @@ ProcessMap::ProcessMap() {
 ProcessMap::~ProcessMap() {
 }
 
+// static
+ProcessMap* ProcessMap::Get(content::BrowserContext* browser_context) {
+  return ProcessMapFactory::GetForBrowserContext(browser_context);
+}
+
 bool ProcessMap::Insert(const std::string& extension_id, int process_id,
                         int site_instance_id) {
   return items_.insert(Item(extension_id, process_id, site_instance_id)).second;
@@ -112,4 +119,4 @@ std::set<std::string> ProcessMap::GetExtensionsInProcess(int process_id) const {
   return result;
 }
 
-}  // extensions
+}  // namespace extensions

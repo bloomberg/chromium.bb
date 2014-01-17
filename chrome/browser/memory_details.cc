@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
@@ -238,7 +239,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       extensions::ProcessMap* extension_process_map = NULL;
       // No extensions on Android. So extension_service can be NULL.
       if (extension_service)
-          extension_process_map = extension_service->process_map();
+          extension_process_map = extensions::ProcessMap::Get(profile);
 
       // The RenderProcessHost may host multiple WebContentses.  Any
       // of them which contain diagnostics information make the whole

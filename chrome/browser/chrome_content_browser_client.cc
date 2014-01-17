@@ -125,6 +125,7 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -1090,8 +1091,8 @@ bool ChromeContentBrowserClient::CanCommitURL(
   if (new_extension &&
       new_extension->is_hosted_app() &&
       new_extension->id() == extension_misc::kWebStoreAppId &&
-      !service->process_map()->Contains(new_extension->id(),
-                                        process_host->GetID())) {
+      !extensions::ProcessMap::Get(profile)->
+          Contains(new_extension->id(), process_host->GetID())) {
     return false;
   }
 
@@ -1160,7 +1161,7 @@ bool ChromeContentBrowserClient::IsSuitableHost(
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  extensions::ProcessMap* process_map = service->process_map();
+  extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile);
 
   // Don't allow the Task Manager to share a process with anything else.
   // Otherwise it can affect the renderers it is observing.
@@ -1282,9 +1283,11 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   if (!extension)
     return;
 
-  service->process_map()->Insert(extension->id(),
-                                 site_instance->GetProcess()->GetID(),
-                                 site_instance->GetId());
+  extensions::ProcessMap::Get(profile)
+      ->Insert(extension->id(),
+               site_instance->GetProcess()->GetID(),
+               site_instance->GetId());
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -1312,9 +1315,11 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
   if (!extension)
     return;
 
-  service->process_map()->Remove(extension->id(),
-                                 site_instance->GetProcess()->GetID(),
-                                 site_instance->GetId());
+  extensions::ProcessMap::Get(profile)
+      ->Remove(extension->id(),
+               site_instance->GetProcess()->GetID(),
+               site_instance->GetId());
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -1364,10 +1369,11 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
   // First do a process check.  We should force a BrowsingInstance swap if the
   // current process doesn't know about new_extension, even if current_extension
   // is somehow the same as new_extension.
+  extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile);
   if (new_extension &&
       site_instance->HasProcess() &&
-      !service->process_map()->Contains(new_extension->id(),
-                                        site_instance->GetProcess()->GetID()))
+      !process_map->Contains(
+          new_extension->id(), site_instance->GetProcess()->GetID()))
     return true;
 
   // Otherwise, swap BrowsingInstances if current_extension and new_extension
@@ -1454,13 +1460,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     if (process) {
       Profile* profile = Profile::FromBrowserContext(
           process->GetBrowserContext());
-      ExtensionService* extension_service =
-          extensions::ExtensionSystem::Get(profile)->extension_service();
-      if (extension_service) {
-        extensions::ProcessMap* process_map = extension_service->process_map();
-        if (process_map && process_map->Contains(process->GetID()))
-          command_line->AppendSwitch(extensions::switches::kExtensionProcess);
-      }
+
+      if (extensions::ProcessMap::Get(profile)->Contains(process->GetID()))
+        command_line->AppendSwitch(extensions::switches::kExtensionProcess);
 
       PrefService* prefs = profile->GetPrefs();
       // Currently this pref is only registered if applied via a policy.

@@ -204,6 +204,8 @@
         'browser/process_manager.h',
         'browser/process_map.cc',
         'browser/process_map.h',
+        'browser/process_map_factory.cc',
+        'browser/process_map_factory.h',
         'browser/quota_service.cc',
         'browser/quota_service.h',
         'browser/update_observer.h',

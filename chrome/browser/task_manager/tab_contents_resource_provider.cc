@@ -29,6 +29,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -129,7 +130,7 @@ base::string16 TabContentsResource::GetTitle() const {
   // extension process.  (It's possible to be showing the URL from before it
   // was installed as an app.)
   ExtensionService* extension_service = profile_->GetExtensionService();
-  extensions::ProcessMap* process_map = extension_service->process_map();
+  extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile_);
   bool is_app = extension_service->IsInstalledApp(url) &&
       process_map->Contains(web_contents_->GetRenderProcessHost()->GetID());
 
