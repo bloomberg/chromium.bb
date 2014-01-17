@@ -132,7 +132,7 @@ public:
         ContentSecurityPolicyWithBaseElement,
         PrefixedMediaAddKey,
         PrefixedMediaGenerateKeyRequest,
-        WebAudioLooping,
+        UnusedSlot10, // Removed, was AudioBufferSourceNode.looping.
         DocumentClear,
         PrefixedTransitionMediaFeature,
         SVGFontElement,

@@ -633,10 +633,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedUserTiming:
         return "'window.performance.webkit*' methods have been deprecated. Please use the unprefixed 'window.performance.*' methods instead.";
 
-    // Web Audio
-    case WebAudioLooping:
-        return "AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.";
-
     case DocumentClear:
         return "document.clear() is deprecated. This method doesn't do anything.";
 
