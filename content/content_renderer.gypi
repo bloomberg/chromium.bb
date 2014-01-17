@@ -63,6 +63,8 @@
     'public/renderer/render_view_visitor.h',
     'public/renderer/resource_fetcher.h',
     'public/renderer/v8_value_converter.h',
+    'public/renderer/video_encode_accelerator.cc',
+    'public/renderer/video_encode_accelerator.h',
     'public/renderer/web_preferences.h',
     'renderer/accessibility/accessibility_node_serializer.cc',
     'renderer/accessibility/accessibility_node_serializer.h',
