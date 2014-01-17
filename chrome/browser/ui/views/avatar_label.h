@@ -30,6 +30,11 @@ class AvatarLabel : public views::TextButton {
   // Update the style of the label according to the provided theme.
   void UpdateLabelStyle();
 
+  // Sets whether the label should be displayed on the right or on the left. A
+  // new button border is created which has the right insets for the positioning
+  // of the button.
+  void SetLabelOnRight(bool label_on_right);
+
  private:
   BrowserView* browser_view_;
 

@@ -23,7 +23,7 @@ namespace {
 // A special text button border for the managed user avatar label.
 class AvatarLabelBorder: public views::TextButtonBorder {
  public:
-  explicit AvatarLabelBorder();
+  explicit AvatarLabelBorder(bool label_on_right);
 
   // views::TextButtonBorder:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
@@ -35,9 +35,9 @@ class AvatarLabelBorder: public views::TextButtonBorder {
   DISALLOW_COPY_AND_ASSIGN(AvatarLabelBorder);
 };
 
-AvatarLabelBorder::AvatarLabelBorder() {
-  const int kHorizontalInsetRight = 10;
-  const int kHorizontalInsetLeft = 43;
+AvatarLabelBorder::AvatarLabelBorder(bool label_on_right) {
+  const int kHorizontalInsetRight = label_on_right ? 43 : 10;
+  const int kHorizontalInsetLeft = label_on_right ? 10 : 43;
   const int kVerticalInsetTop = 2;
   const int kVerticalInsetBottom = 3;
   // We want to align with the top of the tab. This works if the default font
@@ -96,7 +96,7 @@ AvatarLabel::AvatarLabel(BrowserView* browser_view)
                  l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL)),
       browser_view_(browser_view) {
   ClearMaxTextSize();
-  set_border(new AvatarLabelBorder);
+  SetLabelOnRight(false);
   UpdateLabelStyle();
 }
 
@@ -111,6 +111,10 @@ bool AvatarLabel::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void AvatarLabel::UpdateLabelStyle() {
+  // |browser_view_| can be NULL in unit tests.
+  if (!browser_view_)
+    return;
+
   SkColor color_label = browser_view_->frame()->GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_MANAGED_USER_LABEL);
   SetEnabledColor(color_label);
@@ -118,4 +122,8 @@ void AvatarLabel::UpdateLabelStyle() {
   SetHoverColor(color_label);
   SetDisabledColor(color_label);
   SchedulePaint();
+}
+
+void AvatarLabel::SetLabelOnRight(bool label_on_right) {
+  set_border(new AvatarLabelBorder(label_on_right));
 }

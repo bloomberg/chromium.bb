@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/views/avatar_label.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/common/profile_management_switches.h"
 #include "ui/gfx/font.h"
@@ -431,15 +432,18 @@ void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {
 
     int edge_offset;
     if (avatar_label_) {
+      avatar_label_->SetLabelOnRight(avatar_on_right);
       // Space between the bottom of the avatar and the bottom of the avatar
       // label.
       const int kAvatarLabelBottomSpacing = 3;
       gfx::Size label_size = avatar_label_->GetPreferredSize();
-      // The x-position of the avatar label should be slightly to the left of
-      // the avatar menu button. Therefore we use the |leading_button_start_|
-      // value directly.
+      // The outside edge of the avatar label should be just outside that of the
+      // avatar menu button.
+      int avatar_label_x = avatar_on_right ?
+          (host->width() - trailing_button_start_ - label_size.width()) :
+          leading_button_start_;
       gfx::Rect label_bounds(
-          leading_button_start_,
+          avatar_label_x,
           avatar_bottom - kAvatarLabelBottomSpacing - label_size.height(),
           label_size.width(),
           delegate_->ShouldShowAvatar() ? label_size.height() : 0);
@@ -626,7 +630,7 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       window_title_ = static_cast<views::Label*>(view);
       break;
     case VIEW_ID_AVATAR_LABEL:
-      avatar_label_ = view;
+      avatar_label_ = static_cast<AvatarLabel*>(view);
       break;
     case VIEW_ID_AVATAR_BUTTON:
       if (view) {

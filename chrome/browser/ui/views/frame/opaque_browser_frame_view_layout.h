@@ -9,6 +9,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/window/frame_buttons.h"
 
+class AvatarLabel;
 class AvatarMenuButton;
 class NewAvatarButton;
 class OpaqueBrowserFrameViewLayoutDelegate;
@@ -178,7 +179,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   views::View* window_icon_;
   views::Label* window_title_;
 
-  views::View* avatar_label_;
+  AvatarLabel* avatar_label_;
   AvatarMenuButton* avatar_button_;
   views::View* new_avatar_button_;
 
