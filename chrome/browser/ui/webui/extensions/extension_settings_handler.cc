@@ -154,7 +154,8 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       deleting_rph_id_(-1),
       registered_for_notifications_(false),
       warning_service_observer_(this),
-      error_console_observer_(this) {
+      error_console_observer_(this),
+      should_do_verification_check_(false) {
 }
 
 ExtensionSettingsHandler::~ExtensionSettingsHandler() {
