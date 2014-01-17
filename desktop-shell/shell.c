@@ -665,6 +665,9 @@ restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 	struct weston_surface *surface;
 
 	wl_list_for_each_safe(state, next, &ws->focus_list, link) {
+		if (state->seat->keyboard == NULL)
+			continue;
+
 		surface = state->keyboard_focus;
 
 		weston_keyboard_set_focus(state->seat->keyboard, surface);
