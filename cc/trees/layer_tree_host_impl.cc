@@ -1984,7 +1984,8 @@ static LayerImpl* NextScrollLayer(LayerImpl* layer) {
 }
 
 LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
-    gfx::PointF device_viewport_point, InputHandler::ScrollInputType type,
+    const gfx::PointF& device_viewport_point,
+    InputHandler::ScrollInputType type,
     LayerImpl* layer_impl, bool* scroll_on_main_thread) const {
   DCHECK(scroll_on_main_thread);
 
@@ -2063,7 +2064,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
     LayerImpl* layer_impl,
     float scale_from_viewport_to_screen_space,
-    gfx::PointF viewport_point,
+    const gfx::PointF& viewport_point,
     gfx::Vector2dF viewport_delta) {
   // Layers with non-invertible screen space transforms should not have passed
   // the scroll hit test in the first place.
@@ -2350,7 +2351,7 @@ void LayerTreeHostImpl::NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) {
 }
 
 float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
-    gfx::PointF device_viewport_point,
+    const gfx::PointF& device_viewport_point,
     LayerImpl* layer_impl) {
   if (!layer_impl)
     return std::numeric_limits<float>::max();
@@ -2418,7 +2419,7 @@ void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
 }
 
 bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,
-    gfx::PointF device_viewport_point) {
+    const gfx::PointF& device_viewport_point) {
   if (layer_impl && layer_impl->ToScrollbarLayer()) {
     int scroll_layer_id = layer_impl->ToScrollbarLayer()->ScrollLayerId();
     layer_impl = active_tree_->LayerById(scroll_layer_id);

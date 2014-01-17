@@ -27,12 +27,13 @@ OverdrawMetrics::OverdrawMetrics(bool record_metrics_for_frame)
       pixels_drawn_translucent_(0),
       pixels_culled_for_drawing_(0) {}
 
-static inline float WedgeProduct(gfx::PointF p1, gfx::PointF p2) {
+static inline float WedgeProduct(const gfx::PointF& p1, const gfx::PointF& p2) {
   return p1.x() * p2.y() - p1.y() * p2.x();
 }
 
 // Calculates area of an arbitrary convex polygon with up to 8 points.
-static inline float PolygonArea(gfx::PointF points[8], int num_points) {
+static inline float PolygonArea(const gfx::PointF (&points)[8],
+                                int num_points) {
   if (num_points < 3)
     return 0;
 

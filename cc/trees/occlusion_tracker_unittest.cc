@@ -200,7 +200,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   typename Types::HostType* GetHost();
 
   typename Types::ContentLayerType* CreateRoot(const gfx::Transform& transform,
-                                               gfx::PointF position,
+                                               const gfx::PointF& position,
                                                gfx::Size bounds) {
     typename Types::ContentLayerPtrType layer(
         Types::CreateContentLayer(GetHost()));
@@ -217,7 +217,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   typename Types::LayerType* CreateLayer(typename Types::LayerType* parent,
                                          const gfx::Transform& transform,
-                                         gfx::PointF position,
+                                         const gfx::PointF& position,
                                          gfx::Size bounds) {
     typename Types::LayerPtrType layer(Types::CreateLayer(GetHost()));
     typename Types::LayerType* layer_ptr = layer.get();
@@ -228,7 +228,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   typename Types::LayerType* CreateSurface(typename Types::LayerType* parent,
                                            const gfx::Transform& transform,
-                                           gfx::PointF position,
+                                           const gfx::PointF& position,
                                            gfx::Size bounds) {
     typename Types::LayerType* layer =
         CreateLayer(parent, transform, position, bounds);
@@ -239,7 +239,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   typename Types::ContentLayerType* CreateDrawingLayer(
       typename Types::LayerType* parent,
       const gfx::Transform& transform,
-      gfx::PointF position,
+      const gfx::PointF& position,
       gfx::Size bounds,
       bool opaque) {
     typename Types::ContentLayerPtrType layer(
@@ -264,7 +264,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   typename Types::LayerType* CreateReplicaLayer(
       typename Types::LayerType* owning_layer,
       const gfx::Transform& transform,
-      gfx::PointF position,
+      const gfx::PointF& position,
       gfx::Size bounds) {
     typename Types::ContentLayerPtrType layer(
         Types::CreateContentLayer(GetHost()));
@@ -288,7 +288,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   typename Types::ContentLayerType* CreateDrawingSurface(
       typename Types::LayerType* parent,
       const gfx::Transform& transform,
-      gfx::PointF position,
+      const gfx::PointF& position,
       gfx::Size bounds,
       bool opaque) {
     typename Types::ContentLayerType* layer =
@@ -413,7 +413,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   void SetBaseProperties(typename Types::LayerType* layer,
                          const gfx::Transform& transform,
-                         gfx::PointF position,
+                         const gfx::PointF& position,
                          gfx::Size bounds) {
     layer->SetTransform(transform);
     layer->SetSublayerTransform(gfx::Transform());
@@ -424,14 +424,14 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   void SetProperties(Layer* layer,
                      const gfx::Transform& transform,
-                     gfx::PointF position,
+                     const gfx::PointF& position,
                      gfx::Size bounds) {
     SetBaseProperties(layer, transform, position, bounds);
   }
 
   void SetProperties(LayerImpl* layer,
                      const gfx::Transform& transform,
-                     gfx::PointF position,
+                     const gfx::PointF& position,
                      gfx::Size bounds) {
     SetBaseProperties(layer, transform, position, bounds);
 

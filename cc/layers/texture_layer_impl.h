@@ -45,8 +45,8 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
     blend_background_color_ = blend;
   }
   void set_flipped(bool flipped) { flipped_ = flipped; }
-  void set_uv_top_left(gfx::PointF top_left) { uv_top_left_ = top_left; }
-  void set_uv_bottom_right(gfx::PointF bottom_right) {
+  void set_uv_top_left(const gfx::PointF& top_left) { uv_top_left_ = top_left; }
+  void set_uv_bottom_right(const gfx::PointF& bottom_right) {
     uv_bottom_right_ = bottom_right;
   }
 

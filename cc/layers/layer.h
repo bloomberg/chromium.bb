@@ -102,7 +102,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return !copy_requests_.empty();
   }
 
-  void SetAnchorPoint(gfx::PointF anchor_point);
+  void SetAnchorPoint(const gfx::PointF& anchor_point);
   gfx::PointF anchor_point() const { return anchor_point_; }
 
   void SetAnchorPointZ(float anchor_point_z);
@@ -165,7 +165,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return contents_opaque_; }
 
-  void SetPosition(gfx::PointF position);
+  void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
 
   void SetIsContainerForFixedPositionLayers(bool container);

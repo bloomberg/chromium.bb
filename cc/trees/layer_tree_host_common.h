@@ -97,15 +97,16 @@ class CC_EXPORT LayerTreeHostCommon {
 
   // Performs hit testing for a given render_surface_layer_list.
   static LayerImpl* FindLayerThatIsHitByPoint(
-      gfx::PointF screen_space_point,
+      const gfx::PointF& screen_space_point,
       const LayerImplList& render_surface_layer_list);
 
   static LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
-      gfx::PointF screen_space_point,
+      const gfx::PointF& screen_space_point,
       const LayerImplList& render_surface_layer_list);
 
-  static bool LayerHasTouchEventHandlersAt(gfx::PointF screen_space_point,
-                                           LayerImpl* layer_impl);
+  static bool LayerHasTouchEventHandlersAt(
+      const gfx::PointF& screen_space_point,
+      LayerImpl* layer_impl);
 
   template <typename LayerType>
   static bool RenderSurfaceContributesToTarget(LayerType*,

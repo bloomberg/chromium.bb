@@ -29,10 +29,10 @@ inline static float PerpProduct(gfx::Vector2dF u, gfx::Vector2dF v) {
 
 // Tests if two edges defined by their endpoints (a,b) and (c,d) intersect.
 // Returns true and the point of intersection if they do and false otherwise.
-static bool EdgeEdgeTest(gfx::PointF a,
-                         gfx::PointF b,
-                         gfx::PointF c,
-                         gfx::PointF d,
+static bool EdgeEdgeTest(const gfx::PointF& a,
+                         const gfx::PointF& b,
+                         const gfx::PointF& c,
+                         const gfx::PointF& d,
                          gfx::PointF* r) {
   gfx::Vector2dF u = b - a;
   gfx::Vector2dF v = d - c;
@@ -242,7 +242,7 @@ LayerShape::~LayerShape() {}
 // to point p which lies on the z = 0 plane. It does it by computing the
 // intersection of a line starting from p along the Z axis and the plane
 // of the layer.
-float LayerShape::LayerZFromProjectedPoint(gfx::PointF p) const {
+float LayerShape::LayerZFromProjectedPoint(const gfx::PointF& p) const {
   gfx::Vector3dF z_axis(0.f, 0.f, 1.f);
   gfx::Vector3dF w = gfx::Point3F(p) - transform_origin;
 

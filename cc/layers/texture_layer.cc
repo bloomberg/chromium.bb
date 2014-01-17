@@ -69,7 +69,8 @@ void TextureLayer::SetFlipped(bool flipped) {
   SetNeedsCommit();
 }
 
-void TextureLayer::SetUV(gfx::PointF top_left, gfx::PointF bottom_right) {
+void TextureLayer::SetUV(const gfx::PointF& top_left,
+                         const gfx::PointF& bottom_right) {
   if (uv_top_left_ == top_left && uv_bottom_right_ == bottom_right)
     return;
   uv_top_left_ = top_left;

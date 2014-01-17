@@ -23,7 +23,7 @@ const float MathUtil::kPiFloat = 3.14159265358979323846f;
 
 static HomogeneousCoordinate ProjectHomogeneousPoint(
     const gfx::Transform& transform,
-    gfx::PointF p) {
+    const gfx::PointF& p) {
   // In this case, the layer we are trying to project onto is perpendicular to
   // ray (point p and z-axis direction) that we are trying to project. This
   // happens when the layer is rotated so that it is infinitesimally thin, or
@@ -87,14 +87,14 @@ static inline void ExpandBoundsToIncludePoint(float* xmin,
                                               float* xmax,
                                               float* ymin,
                                               float* ymax,
-                                              gfx::PointF p) {
+                                              const gfx::PointF& p) {
   *xmin = std::min(p.x(), *xmin);
   *xmax = std::max(p.x(), *xmax);
   *ymin = std::min(p.y(), *ymin);
   *ymax = std::max(p.y(), *ymax);
 }
 
-static inline void AddVertexToClippedQuad(gfx::PointF new_vertex,
+static inline void AddVertexToClippedQuad(const gfx::PointF& new_vertex,
                                           gfx::PointF clipped_quad[8],
                                           int* num_vertices_in_clipped_quad) {
   clipped_quad[*num_vertices_in_clipped_quad] = new_vertex;
@@ -223,8 +223,9 @@ void MathUtil::MapClippedQuad(const gfx::Transform& transform,
   DCHECK_LE(*num_vertices_in_clipped_quad, 8);
 }
 
-gfx::RectF MathUtil::ComputeEnclosingRectOfVertices(gfx::PointF vertices[],
-                                                    int num_vertices) {
+gfx::RectF MathUtil::ComputeEnclosingRectOfVertices(
+    const gfx::PointF vertices[],
+    int num_vertices) {
   if (num_vertices < 2)
     return gfx::RectF();
 
@@ -356,7 +357,7 @@ gfx::QuadF MathUtil::MapQuad(const gfx::Transform& transform,
 }
 
 gfx::PointF MathUtil::MapPoint(const gfx::Transform& transform,
-                               gfx::PointF p,
+                               const gfx::PointF& p,
                                bool* clipped) {
   HomogeneousCoordinate h = MapHomogeneousPoint(transform, gfx::Point3F(p));
 
@@ -421,7 +422,7 @@ gfx::QuadF MathUtil::ProjectQuad(const gfx::Transform& transform,
 }
 
 gfx::PointF MathUtil::ProjectPoint(const gfx::Transform& transform,
-                                   gfx::PointF p,
+                                   const gfx::PointF& p,
                                    bool* clipped) {
   HomogeneousCoordinate h = ProjectHomogeneousPoint(transform, p);
 
@@ -551,7 +552,7 @@ bool MathUtil::FromValue(const base::Value* raw_value, gfx::Rect* out_rect) {
   return true;
 }
 
-scoped_ptr<base::Value> MathUtil::AsValue(gfx::PointF pt) {
+scoped_ptr<base::Value> MathUtil::AsValue(const gfx::PointF& pt) {
   scoped_ptr<base::ListValue> res(new base::ListValue());
   res->AppendDouble(pt.x());
   res->AppendDouble(pt.y());

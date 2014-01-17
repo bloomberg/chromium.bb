@@ -2245,7 +2245,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 }
 
 static bool PointHitsRect(
-    gfx::PointF screen_space_point,
+    const gfx::PointF& screen_space_point,
     const gfx::Transform& local_space_to_screen_space_transform,
     const gfx::RectF& local_space_rect) {
   // If the transform is not invertible, then assume that this point doesn't hit
@@ -2270,7 +2270,7 @@ static bool PointHitsRect(
   return local_space_rect.Contains(hit_test_point_in_local_space);
 }
 
-static bool PointHitsRegion(gfx::PointF screen_space_point,
+static bool PointHitsRegion(const gfx::PointF& screen_space_point,
                             const gfx::Transform& screen_space_transform,
                             const Region& layer_space_region,
                             float layer_content_scale_x,
@@ -2301,8 +2301,9 @@ static bool PointHitsRegion(gfx::PointF screen_space_point,
       gfx::ToRoundedPoint(hit_test_point_in_layer_space));
 }
 
-static bool PointIsClippedBySurfaceOrClipRect(gfx::PointF screen_space_point,
-                                              LayerImpl* layer) {
+static bool PointIsClippedBySurfaceOrClipRect(
+    const gfx::PointF& screen_space_point,
+    LayerImpl* layer) {
   LayerImpl* current_layer = layer;
 
   // Walk up the layer tree and hit-test any render_surfaces and any layer
@@ -2335,7 +2336,7 @@ static bool PointIsClippedBySurfaceOrClipRect(gfx::PointF screen_space_point,
 }
 
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-    gfx::PointF screen_space_point,
+    const gfx::PointF& screen_space_point,
     const LayerImplList& render_surface_layer_list) {
   LayerImpl* found_layer = NULL;
 
@@ -2381,7 +2382,7 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
 }
 
 LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
-    gfx::PointF screen_space_point,
+    const gfx::PointF& screen_space_point,
     const LayerImplList& render_surface_layer_list) {
   // First find out which layer was hit from the saved list of visible layers
   // in the most recent frame.
@@ -2401,7 +2402,7 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
 }
 
 bool LayerTreeHostCommon::LayerHasTouchEventHandlersAt(
-    gfx::PointF screen_space_point,
+    const gfx::PointF& screen_space_point,
     LayerImpl* layer_impl) {
   if (layer_impl->touch_event_handler_region().IsEmpty())
     return false;

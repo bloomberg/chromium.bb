@@ -72,7 +72,8 @@ scoped_ptr<LayerImpl> UIResourceLayer::CreateLayerImpl(
   return UIResourceLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void UIResourceLayer::SetUV(gfx::PointF top_left, gfx::PointF bottom_right) {
+void UIResourceLayer::SetUV(const gfx::PointF& top_left,
+                            const gfx::PointF& bottom_right) {
   if (uv_top_left_ == top_left && uv_bottom_right_ == bottom_right)
     return;
   uv_top_left_ = top_left;

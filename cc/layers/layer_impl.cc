@@ -410,7 +410,7 @@ void LayerImpl::ApplyScrollDeltasSinceBeginMainFrame() {
 }
 
 InputHandler::ScrollStatus LayerImpl::TryScroll(
-    gfx::PointF screen_space_point,
+    const gfx::PointF& screen_space_point,
     InputHandler::ScrollInputType type) const {
   if (should_scroll_on_main_thread()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread");
@@ -790,7 +790,7 @@ void LayerImpl::SetHideLayerAndSubtree(bool hide) {
   NoteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::SetAnchorPoint(gfx::PointF anchor_point) {
+void LayerImpl::SetAnchorPoint(const gfx::PointF& anchor_point) {
   if (anchor_point_ == anchor_point)
     return;
 
@@ -909,7 +909,7 @@ void LayerImpl::SetIsRootForIsolatedGroup(bool root) {
   is_root_for_isolated_group_ = root;
 }
 
-void LayerImpl::SetPosition(gfx::PointF position) {
+void LayerImpl::SetPosition(const gfx::PointF& position) {
   if (position_ == position)
     return;
 

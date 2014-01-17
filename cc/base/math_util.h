@@ -116,7 +116,7 @@ class CC_EXPORT MathUtil {
                              gfx::PointF clipped_quad[8],
                              int* num_vertices_in_clipped_quad);
 
-  static gfx::RectF ComputeEnclosingRectOfVertices(gfx::PointF vertices[],
+  static gfx::RectF ComputeEnclosingRectOfVertices(const gfx::PointF vertices[],
                                                    int num_vertices);
   static gfx::RectF ComputeEnclosingClippedRect(
       const HomogeneousCoordinate& h1,
@@ -130,7 +130,7 @@ class CC_EXPORT MathUtil {
                             const gfx::QuadF& quad,
                             bool* clipped);
   static gfx::PointF MapPoint(const gfx::Transform& transform,
-                              gfx::PointF point,
+                              const gfx::PointF& point,
                               bool* clipped);
   static gfx::Point3F MapPoint(const gfx::Transform&,
                                const gfx::Point3F&,
@@ -139,7 +139,7 @@ class CC_EXPORT MathUtil {
                                 const gfx::QuadF& quad,
                                 bool* clipped);
   static gfx::PointF ProjectPoint(const gfx::Transform& transform,
-                                  gfx::PointF point,
+                                  const gfx::PointF& point,
                                   bool* clipped);
 
   static gfx::Vector2dF ComputeTransform2dScaleComponents(const gfx::Transform&,
@@ -169,7 +169,7 @@ class CC_EXPORT MathUtil {
   static scoped_ptr<base::Value> AsValue(const gfx::SizeF& s);
   static scoped_ptr<base::Value> AsValue(const gfx::Rect& r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
-  static scoped_ptr<base::Value> AsValue(gfx::PointF q);
+  static scoped_ptr<base::Value> AsValue(const gfx::PointF& q);
   static scoped_ptr<base::Value> AsValue(const gfx::QuadF& q);
   static scoped_ptr<base::Value> AsValue(const gfx::RectF& rect);
   static scoped_ptr<base::Value> AsValue(const gfx::Transform& transform);

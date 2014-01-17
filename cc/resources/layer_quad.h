@@ -23,7 +23,7 @@ class CC_EXPORT LayerQuad {
   class Edge {
    public:
     Edge() : x_(0), y_(0), z_(0) {}
-    Edge(gfx::PointF p, gfx::PointF q);
+    Edge(const gfx::PointF& p, const gfx::PointF& q);
 
     float x() const { return x_; }
     float y() const { return y_; }

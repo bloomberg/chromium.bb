@@ -188,7 +188,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool force_render_surface() const { return force_render_surface_; }
   void SetForceRenderSurface(bool force) { force_render_surface_ = force; }
 
-  void SetAnchorPoint(gfx::PointF anchor_point);
+  void SetAnchorPoint(const gfx::PointF& anchor_point);
   gfx::PointF anchor_point() const { return anchor_point_; }
 
   void SetAnchorPointZ(float anchor_point_z);
@@ -232,7 +232,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return is_root_for_isolated_group_;
   }
 
-  void SetPosition(gfx::PointF position);
+  void SetPosition(const gfx::PointF& position);
   gfx::PointF position() const { return position_; }
 
   void SetIsContainerForFixedPositionLayers(bool container) {
@@ -431,7 +431,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool DrawCheckerboardForMissingTiles() const;
 
   InputHandler::ScrollStatus TryScroll(
-      gfx::PointF screen_space_point,
+      const gfx::PointF& screen_space_point,
       InputHandler::ScrollInputType type) const;
 
   void SetDoubleSided(bool double_sided);

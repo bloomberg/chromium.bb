@@ -9,7 +9,7 @@
 
 namespace cc {
 
-LayerQuad::Edge::Edge(gfx::PointF p, gfx::PointF q) {
+LayerQuad::Edge::Edge(const gfx::PointF& p, const gfx::PointF& q) {
   DCHECK(p != q);
 
   gfx::Vector2dF tangent(p.y() - q.y(), q.x() - p.x());

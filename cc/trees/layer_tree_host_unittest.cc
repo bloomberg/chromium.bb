@@ -1589,8 +1589,8 @@ MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(
 static void SetLayerPropertiesForTesting(Layer* layer,
                                          Layer* parent,
                                          const gfx::Transform& transform,
-                                         gfx::PointF anchor,
-                                         gfx::PointF position,
+                                         const gfx::PointF& anchor,
+                                         const gfx::PointF& position,
                                          gfx::Size bounds,
                                          bool opaque) {
   layer->RemoveAllChildren();

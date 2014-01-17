@@ -42,8 +42,8 @@ class LayerTreeHostCommonTestBase {
       LayerType* layer,
       const gfx::Transform& transform,
       const gfx::Transform& sublayer_transform,
-      gfx::PointF anchor,
-      gfx::PointF position,
+      const gfx::PointF& anchor,
+      const gfx::PointF& position,
       gfx::Size bounds,
       bool preserves3d) {
     layer->SetTransform(transform);
@@ -57,8 +57,8 @@ class LayerTreeHostCommonTestBase {
   void SetLayerPropertiesForTesting(Layer* layer,
                                     const gfx::Transform& transform,
                                     const gfx::Transform& sublayer_transform,
-                                    gfx::PointF anchor,
-                                    gfx::PointF position,
+                                    const gfx::PointF& anchor,
+                                    const gfx::PointF& position,
                                     gfx::Size bounds,
                                     bool preserves3d) {
     SetLayerPropertiesForTestingInternal<Layer>(layer,
@@ -73,8 +73,8 @@ class LayerTreeHostCommonTestBase {
   void SetLayerPropertiesForTesting(LayerImpl* layer,
                                     const gfx::Transform& transform,
                                     const gfx::Transform& sublayer_transform,
-                                    gfx::PointF anchor,
-                                    gfx::PointF position,
+                                    const gfx::PointF& anchor,
+                                    const gfx::PointF& position,
                                     gfx::Size bounds,
                                     bool preserves3d) {
     SetLayerPropertiesForTestingInternal<LayerImpl>(layer,

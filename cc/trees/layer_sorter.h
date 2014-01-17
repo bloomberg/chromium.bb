@@ -42,7 +42,7 @@ struct CC_EXPORT LayerShape {
   LayerShape(float width, float height, const gfx::Transform& draw_transform);
   ~LayerShape();
 
-  float LayerZFromProjectedPoint(gfx::PointF p) const;
+  float LayerZFromProjectedPoint(const gfx::PointF& p) const;
 
   gfx::Vector3dF layer_normal;
   gfx::Point3F transform_origin;

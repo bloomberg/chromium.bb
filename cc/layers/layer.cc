@@ -376,7 +376,7 @@ void Layer::RequestCopyOfOutput(
   SetNeedsCommit();
 }
 
-void Layer::SetAnchorPoint(gfx::PointF anchor_point) {
+void Layer::SetAnchorPoint(const gfx::PointF& anchor_point) {
   DCHECK(IsPropertyChangeAllowed());
   if (anchor_point_ == anchor_point)
     return;
@@ -581,7 +581,7 @@ void Layer::SetContentsOpaque(bool opaque) {
   SetNeedsCommit();
 }
 
-void Layer::SetPosition(gfx::PointF position) {
+void Layer::SetPosition(const gfx::PointF& position) {
   DCHECK(IsPropertyChangeAllowed());
   if (position_ == position)
     return;

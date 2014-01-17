@@ -470,7 +470,7 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Vector2dF ScrollLayerWithViewportSpaceDelta(
       LayerImpl* layer_impl,
       float scale_from_viewport_to_screen_space,
-      gfx::PointF viewport_point,
+      const gfx::PointF& viewport_point,
       gfx::Vector2dF viewport_delta);
 
   void UpdateMaxScrollOffset();
@@ -490,7 +490,7 @@ class CC_EXPORT LayerTreeHostImpl
   void ClearCurrentlyScrollingLayer();
 
   bool HandleMouseOverScrollbar(LayerImpl* layer_impl,
-                                gfx::PointF device_viewport_point);
+                                const gfx::PointF& device_viewport_point);
 
   void AnimateScrollbarsRecursive(LayerImpl* layer,
                                   base::TimeTicks time);
@@ -498,11 +498,11 @@ class CC_EXPORT LayerTreeHostImpl
   void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
 
   LayerImpl* FindScrollLayerForDeviceViewportPoint(
-      gfx::PointF device_viewport_point,
+      const gfx::PointF& device_viewport_point,
       InputHandler::ScrollInputType type,
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread) const;
-  float DeviceSpaceDistanceToLayer(gfx::PointF device_viewport_point,
+  float DeviceSpaceDistanceToLayer(const gfx::PointF& device_viewport_point,
                                    LayerImpl* layer_impl);
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
   void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy,

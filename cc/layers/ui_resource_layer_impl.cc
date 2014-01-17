@@ -62,8 +62,8 @@ void UIResourceLayerImpl::SetImageBounds(gfx::Size image_bounds) {
   NoteLayerPropertyChanged();
 }
 
-void UIResourceLayerImpl::SetUV(gfx::PointF top_left,
-                                gfx::PointF bottom_right) {
+void UIResourceLayerImpl::SetUV(const gfx::PointF& top_left,
+                                const gfx::PointF& bottom_right) {
   if (uv_top_left_ == top_left && uv_bottom_right_ == bottom_right)
     return;
   uv_top_left_ = top_left;
