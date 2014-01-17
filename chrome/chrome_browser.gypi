@@ -2790,7 +2790,7 @@
             '../components/components.gyp:policy',
           ],
           'conditions': [
-            ['OS!="android"', {
+            ['OS!="android" and OS!="ios"', {
               'dependencies': [
                 'policy_path_parser',
               ],

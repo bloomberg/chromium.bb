@@ -30,7 +30,7 @@ const int kWaitForInvalidationsTimeoutSeconds = 5;
 
 }  // namespace
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 
 const int64 CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
@@ -214,8 +214,8 @@ void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
     return;
   }
 
-#if defined(OS_ANDROID)
-  // Refreshing on Android:
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // Refreshing on mobile platforms:
   // - if no user is signed-in then the |client_| is never registered and
   //   nothing happens here.
   // - if the user is signed-in but isn't enterprise then the |client_| is

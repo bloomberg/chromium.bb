@@ -124,10 +124,10 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
   }
 
   void CheckInitialRefresh(bool with_invalidations) const {
-#if defined(OS_ANDROID)
-    // Android takes the cache age into account for the initial fetch.
-    // Usually the cache age is ignored for the initial refresh, but Android
-    // uses it to restrain from refreshing on every startup.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    // The mobile platforms take the cache age into account for the initial
+    // fetch. Usually the cache age is ignored for the initial refresh, but on
+    // mobile it's used to restrain from refreshing on every startup.
     base::TimeDelta rate = base::TimeDelta::FromMilliseconds(
         with_invalidations
             ? CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs

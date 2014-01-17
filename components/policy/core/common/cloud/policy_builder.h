@@ -15,7 +15,7 @@
 #include "policy/proto/cloud_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "policy/proto/chrome_extension_policy.pb.h"
 #endif
 
@@ -136,7 +136,7 @@ class TypedPolicyBuilder : public PolicyBuilder {
 typedef TypedPolicyBuilder<enterprise_management::CloudPolicySettings>
     UserPolicyBuilder;
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 typedef TypedPolicyBuilder<enterprise_management::ExternalPolicyData>
     ComponentPolicyBuilder;
 #endif

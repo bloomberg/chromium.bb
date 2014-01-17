@@ -8,7 +8,7 @@
     # platforms to include source files on (e.g. files ending in
     # _mac.h or _mac.cc are only compiled on MacOSX).
     'chromium_code': 1,
-   },
+  },
   'includes': [
     'autofill.gypi',
     'auto_login_parser.gypi',
@@ -23,6 +23,7 @@
     'signin.gypi',
     'startup_metric_utils.gypi',
     'translate.gypi',
+    'url_matcher.gypi',
     'user_prefs.gypi',
     'variations.gypi',
     'webdata.gypi',
@@ -34,7 +35,6 @@
         'navigation_interception.gypi',
         'plugins.gypi',
         'sessions.gypi',
-        'url_matcher.gypi',
         'visitedlink.gypi',
         'web_contents_delegate_android.gypi',
         'web_modal.gypi',

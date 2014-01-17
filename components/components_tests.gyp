@@ -255,7 +255,7 @@
                 'policy/core/common/schema_unittest.cc',
               ],
               'conditions': [
-                ['OS=="android"', {
+                ['OS=="android" or OS=="ios"', {
                   'sources!': [
                     'policy/core/common/async_policy_provider_unittest.cc',
                     'policy/core/common/cloud/component_cloud_policy_service_unittest.cc',

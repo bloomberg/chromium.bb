@@ -132,7 +132,7 @@
         'policy_export.h',
       ],
       'conditions': [
-        ['OS=="android"', {
+        ['OS=="android" or OS=="ios"', {
           'sources': [
             'core/common/cloud/component_cloud_policy_service_stub.cc',
           ],

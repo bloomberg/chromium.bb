@@ -208,7 +208,7 @@
             '../build/protoc.gypi',
           ],
           'conditions': [
-            ['OS=="android"', {
+            ['OS=="android" or OS=="ios"', {
               'sources!': [
                 'policy/proto/chrome_extension_policy.proto',
               ],

@@ -378,7 +378,7 @@ bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
 
 template class CloudPolicyValidator<em::CloudPolicySettings>;
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 template class CloudPolicyValidator<em::ExternalPolicyData>;
 #endif
 
