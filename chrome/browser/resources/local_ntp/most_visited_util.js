@@ -10,30 +10,37 @@
 <include src="instant_iframe_validation.js">
 
 /**
- * Enum for the different types of events that are logged from the NTP.
+ * The different types of events that are logged from the NTP.  This enum is
+ * used to transfer information from the NTP javascript to the renderer and is
+ * not used as a UMA enum histogram's logged value.
+ * Note: Keep in sync with common/ntp_logging_events.h
  * @enum {number}
  * @const
  */
 var NTP_LOGGING_EVENT_TYPE = {
-  // The user moused over an NTP tile or title.
-  NTP_MOUSEOVER: 0,
-  // The page attempted to load a thumbnail image.
-  NTP_THUMBNAIL_ATTEMPT: 1,
+  // The suggestion is coming from the server.
+  NTP_SERVER_SIDE_SUGGESTION: 0,
+  // The suggestion is coming from the client.
+  NTP_CLIENT_SIDE_SUGGESTION: 1,
+  // Indicates a tile was rendered, no matter if it's a thumbnail, a gray tile
+  // or an external tile.
+  NTP_TILE: 2,
+  // The tile uses a local thumbnail image.
+  NTP_THUMBNAIL_TILE: 3,
+  // Used when no thumbnail is specified and a gray tile with the domain is used
+  // as the main tile.
+  NTP_GRAY_TILE: 4,
+  // The visuals of that tile are handled externally by the page itself.
+  NTP_EXTERNAL_TILE: 5,
   // There was an error in loading both the thumbnail image and the fallback
   // (if it was provided), resulting in a grey tile.
-  NTP_THUMBNAIL_ERROR: 2,
-  // The page attempted to load a thumbnail URL while a fallback thumbnail was
-  // provided.
-  NTP_FALLBACK_THUMBNAIL_REQUESTED: 3,
-  // The primary thumbnail image failed to load and caused us to use the
-  // secondary thumbnail as a fallback.
-  NTP_FALLBACK_THUMBNAIL_USED: 4,
-  // The suggestion is coming from the server.
-  NTP_SERVER_SIDE_SUGGESTION: 5,
-  // The suggestion is coming from the client.
-  NTP_CLIENT_SIDE_SUGGESTION: 6,
-  // The visuals of that tile are handled externally by the page itself.
-  NTP_EXTERNAL_TILE: 7
+  NTP_THUMBNAIL_ERROR: 6,
+  // Used a gray tile with the domain as the fallback for a failed thumbnail.
+  NTP_GRAY_TILE_FALLBACK: 7,
+  // The visuals of that tile's fallback are handled externally.
+  NTP_EXTERNAL_TILE_FALLBACK: 8,
+  // The user moused over an NTP tile or title.
+  NTP_MOUSEOVER: 9
 };
 
 /**
@@ -176,7 +183,6 @@ function fillMostVisited(location, fill) {
     // Means that the suggestion data comes from the server. Create data object.
     data.url = params.url;
     data.thumbnailUrl = params.tu || '';
-    data.thumbnailUrl2 = params.tu2 || '';
     data.title = params.ti || '';
     data.direction = params.di || '';
     data.domain = params.dom || '';
@@ -196,7 +202,6 @@ function fillMostVisited(location, fill) {
   }
   if (/^javascript:/i.test(data.url) ||
       /^javascript:/i.test(data.thumbnailUrl) ||
-      /^javascript:/i.test(data.thumbnailUrl2) ||
       !/^[a-z0-9]{0,8}$/i.test(data.provider))
     return;
   if (data.direction)

@@ -60,7 +60,8 @@ void MostVisitedIframeSource::StartDataRequest(
   } else if (path == kThumbnailCSSPath) {
     SendResource(IDR_MOST_VISITED_THUMBNAIL_CSS, callback);
   } else if (path == kThumbnailJSPath) {
-    SendResource(IDR_MOST_VISITED_THUMBNAIL_JS, callback);
+    SendJSWithOrigin(IDR_MOST_VISITED_THUMBNAIL_JS, render_process_id,
+                     render_frame_id, callback);
   } else if (path == kUtilJSPath) {
     SendResource(IDR_MOST_VISITED_UTIL_JS, callback);
   } else if (path == kCommonCSSPath) {

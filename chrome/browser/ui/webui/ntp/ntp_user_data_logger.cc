@@ -15,6 +15,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
+// Macro to log UMA statistics related to the 8 tiles shown on the NTP.
+#define UMA_HISTOGRAM_NTP_TILES(name, sample) \
+    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 0, 8, 9)
+
 namespace {
 
 // Used to track if suggestions were issued by the client or the server.
@@ -54,69 +58,78 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
   return logger;
 }
 
-void NTPUserDataLogger::EmitThumbnailErrorRate() {
-  DCHECK_LE(number_of_thumbnail_errors_, number_of_thumbnail_attempts_);
-  if (number_of_thumbnail_attempts_ != 0) {
-    UMA_HISTOGRAM_PERCENTAGE(
-      "NewTabPage.ThumbnailErrorRate",
-      GetPercentError(number_of_thumbnail_errors_,
-                      number_of_thumbnail_attempts_));
-  }
-  DCHECK_LE(number_of_fallback_thumbnails_used_,
-            number_of_fallback_thumbnails_requested_);
-  if (number_of_fallback_thumbnails_requested_ != 0) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "NewTabPage.ThumbnailFallbackRate",
-        GetPercentError(number_of_fallback_thumbnails_used_,
-                        number_of_fallback_thumbnails_requested_));
-  }
-  number_of_thumbnail_attempts_ = 0;
-  number_of_thumbnail_errors_ = 0;
-  number_of_fallback_thumbnails_requested_ = 0;
-  number_of_fallback_thumbnails_used_ = 0;
-}
-
 void NTPUserDataLogger::EmitNtpStatistics() {
   UMA_HISTOGRAM_COUNTS("NewTabPage.NumberOfMouseOvers", number_of_mouseovers_);
   number_of_mouseovers_ = 0;
-  UMA_HISTOGRAM_COUNTS("NewTabPage.NumberOfExternalTiles",
-                       number_of_external_tiles_);
-  number_of_external_tiles_ = 0;
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.SuggestionsType",
-      server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
-      SUGGESTIONS_TYPE_COUNT);
-  server_side_suggestions_ = false;
+
+  // Only log the following statistics if at least one tile is recorded. This
+  // check is required because the statistics are emitted whenever the user
+  // changes tab away from the NTP. However, if the user comes back to that NTP
+  // later the statistics are not regenerated (i.e. they are all 0). If we log
+  // them again we get a strong bias.
+  if (number_of_tiles_ > 0) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "NewTabPage.SuggestionsType",
+        has_server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
+        SUGGESTIONS_TYPE_COUNT);
+    has_server_side_suggestions_ = false;
+    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfTiles", number_of_tiles_);
+    number_of_tiles_ = 0;
+    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailTiles",
+                            number_of_thumbnail_tiles_);
+    number_of_thumbnail_tiles_ = 0;
+    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTiles",
+                            number_of_gray_tiles_);
+    number_of_gray_tiles_ = 0;
+    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTiles",
+                            number_of_external_tiles_);
+    number_of_external_tiles_ = 0;
+    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailErrors",
+                            number_of_thumbnail_errors_);
+    number_of_thumbnail_errors_ = 0;
+    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTileFallbacks",
+                            number_of_gray_tile_fallbacks_);
+    number_of_gray_tile_fallbacks_ = 0;
+    UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTileFallbacks",
+                            number_of_external_tile_fallbacks_);
+    number_of_external_tile_fallbacks_ = 0;
+  }
 }
 
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event) {
   switch (event) {
-    case NTP_MOUSEOVER:
-      number_of_mouseovers_++;
-      break;
-    case NTP_THUMBNAIL_ATTEMPT:
-      number_of_thumbnail_attempts_++;
-      break;
-    case NTP_THUMBNAIL_ERROR:
-      number_of_thumbnail_errors_++;
-      break;
-    case NTP_FALLBACK_THUMBNAIL_REQUESTED:
-      number_of_fallback_thumbnails_requested_++;
-      break;
-    case NTP_FALLBACK_THUMBNAIL_USED:
-      number_of_fallback_thumbnails_used_++;
-      break;
     case NTP_SERVER_SIDE_SUGGESTION:
-      server_side_suggestions_ = true;
+      has_server_side_suggestions_ = true;
       break;
     case NTP_CLIENT_SIDE_SUGGESTION:
       // We should never get a mix of server and client side suggestions,
       // otherwise there could be a race condition depending on the order in
       // which the iframes call this method.
-      DCHECK(!server_side_suggestions_);
-    break;
+      DCHECK(!has_server_side_suggestions_);
+      break;
+    case NTP_TILE:
+      number_of_tiles_++;
+      break;
+    case NTP_THUMBNAIL_TILE:
+      number_of_thumbnail_tiles_++;
+      break;
+    case NTP_GRAY_TILE:
+      number_of_gray_tiles_++;
+      break;
     case NTP_EXTERNAL_TILE:
       number_of_external_tiles_++;
+      break;
+    case NTP_THUMBNAIL_ERROR:
+      number_of_thumbnail_errors_++;
+      break;
+    case NTP_GRAY_TILE_FALLBACK:
+      number_of_gray_tile_fallbacks_++;
+      break;
+    case NTP_EXTERNAL_TILE_FALLBACK:
+      number_of_external_tile_fallbacks_++;
+      break;
+    case NTP_MOUSEOVER:
+      number_of_mouseovers_++;
       break;
     default:
       NOTREACHED();
@@ -144,24 +157,18 @@ void NTPUserDataLogger::NavigationEntryCommitted(
 
   if (search::MatchesOriginAndPath(ntp_url_, load_details.previous_url)) {
     EmitNtpStatistics();
-    // Only log thumbnail error rates for Instant NTP pages, as we do not have
-    // this data for non-Instant NTPs.
-    if (ntp_url_ != GURL(chrome::kChromeUINewTabURL))
-      EmitThumbnailErrorRate();
   }
 }
 
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      number_of_mouseovers_(0),
-      number_of_thumbnail_attempts_(0),
-      number_of_thumbnail_errors_(0),
-      number_of_fallback_thumbnails_requested_(0),
-      number_of_fallback_thumbnails_used_(0),
+      has_server_side_suggestions_(false),
+      number_of_tiles_(0),
+      number_of_thumbnail_tiles_(0),
+      number_of_gray_tiles_(0),
       number_of_external_tiles_(0),
-      server_side_suggestions_(false) {
-}
-
-size_t NTPUserDataLogger::GetPercentError(size_t errors, size_t events) const {
-  return (100 * errors) / events;
+      number_of_thumbnail_errors_(0),
+      number_of_gray_tile_fallbacks_(0),
+      number_of_external_tile_fallbacks_(0),
+      number_of_mouseovers_(0) {
 }

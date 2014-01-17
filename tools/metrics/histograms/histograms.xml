@@ -12010,6 +12010,17 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.NumberOfExternalTileFallbacks">
+  <summary>
+    The number of tiles for which we relied on external tiles as a fallback
+    because a local screenshot was not available to be used as a thumbnail.
+    External tiles are those for which the visuals are handled by the page
+    itself, not by the iframe. Recorded before changing focus away from the NTP,
+    be it bynavigating to a URL, switching tabs, changing the active window or
+    closing the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.NumberOfExternalTiles">
   <summary>
     The number of external tiles that are displayed on the NTP. External tiles
@@ -12020,12 +12031,71 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.NumberOfGrayTileFallbacks">
+  <summary>
+    The number of tiles for which we displayed a gray tile with the domain name
+    as a fallback because a local screenshot was not available to be used as a
+    thumbnail. Recorded before changing focus away from the NTP, be it by
+    navigating to a URL, switching tabs, changing the active window or closing
+    the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.NumberOfGrayTiles">
+  <summary>
+    The number of tiles for which no thumbnail was specified, but a domain was
+    so we displayed a gray tile with the domain name in it. Recorded before
+    changing focus away from the NTP, be it by navigating to a URL, switching
+    tabs, changing the active window or closing the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.NumberOfMouseOvers">
   <summary>
     The total number of times the user hovered the mouse over Most Visited tile
     or title elements before changing focus away from the NTP, be it by
     navigating to a URL, switching tabs, changing the active window or closing
     the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.NumberOfThumbnailAttempts">
+  <obsolete>
+    Deprecated 01/2014. Replaced by NewTabPage.NumberOfThumbnailTiles.
+  </obsolete>
+  <summary>
+    The number of tiles for which we attempted to use a local screenshot as a
+    thumbnail. Recorded before changing focus away from the NTP, be it by
+    navigating to a URL, switching tabs, changing the active window or closing
+    the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.NumberOfThumbnailErrors">
+  <summary>
+    The number of thumbnails for which a local screenshot was not available so
+    we were not able to display them on the Most Visited section of the NTP.
+    Recorded before changing focus away from the NTP, be it by navigating to a
+    URL, switching tabs, changing the active window or closing the tab/shutting
+    down Chrome.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.NumberOfThumbnailTiles">
+  <summary>
+    The number of tiles for which we attempted to use a local screenshot as a
+    thumbnail. Recorded before changing focus away from the NTP, be it by
+    navigating to a URL, switching tabs, changing the active window or closing
+    the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.NumberOfTiles">
+  <summary>
+    The number of tiles that are displayed on the NTP, no matter if they are
+    thumbnails, gray tiles, or external tiles. Recorded before changing focus
+    away from the NTP, be it by navigating to a URL, switching tabs, changing
+    the active window or closing the tab/shutting down Chrome.
   </summary>
 </histogram>
 
@@ -12109,6 +12179,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="NewTabPage.ThumbnailErrorRate">
+  <obsolete>
+    Deprecated 01/2014. Replaced by NewTabPage.NumberOfThumbnailAttempts and
+    NewTabPage.NumberOfThumbnailErrors.
+  </obsolete>
   <summary>
     The percentage of errors per attempts to load image thumbnails on the New
     Tab Page. When an error occurs, a grey tile is shown instead of a thumbnail
@@ -12120,6 +12194,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="NewTabPage.ThumbnailFallbackRate" units="%">
+  <obsolete>
+    Deprecated 01/2014. Replaced by NewTabPage.NumberOfGrayTileFallbacks and
+    NewTabPage.NumberOfExternalFallbacks.
+  </obsolete>
   <summary>
     The percentage of times most visited tiles use the fallback thumbnail. Only
     requests that actually specify a fallback thumbnail are considered here. We
@@ -33529,6 +33607,7 @@ other types of suffix sets.
 <fieldtrial name="NewTabPageProviders" separator=".">
   <group name="client" label="Suggestions coming from the client."/>
   <group name="server" label="Suggestions coming from the server."/>
+  <group name="server0" label="Suggestions coming from server source 0."/>
   <group name="server1" label="Suggestions coming from server source 1."/>
   <group name="server2" label="Suggestions coming from server source 2."/>
   <group name="server3" label="Suggestions coming from server source 3."/>

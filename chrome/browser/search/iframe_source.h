@@ -35,16 +35,16 @@ class IframeSource : public content::URLDataSource {
   void SendJSWithOrigin(
       int resource_id,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback);
 
   // This is exposed for testing and should not be overridden.
-  // Sets |origin| to the URL of the render view identified by |process_id| and
-  // |render_view_id|. Returns true if successful and false if not, for example
-  // if the render view does not exist.
+  // Sets |origin| to the URL of the render frame identified by |process_id| and
+  // |render_frame_id|. Returns true if successful and false if not, for example
+  // if the render frame does not exist.
   virtual bool GetOrigin(
       int process_id,
-      int render_view_id,
+      int render_frame_id,
       std::string* origin) const;
 
   DISALLOW_COPY_AND_ASSIGN(IframeSource);

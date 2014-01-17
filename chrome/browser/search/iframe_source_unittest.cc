@@ -51,11 +51,11 @@ class TestIframeSource : public IframeSource {
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
   }
 
-  // RenderViewHost is hard to mock in concert with everything else, so stub
+  // RenderFrameHost is hard to mock in concert with everything else, so stub
   // this method out for testing.
   virtual bool GetOrigin(
       int process_id,
-      int render_view_id,
+      int render_frame_id,
       std::string* origin) const OVERRIDE {
     if (process_id == kInstantRendererPID) {
       *origin = kInstantOrigin;
@@ -96,7 +96,7 @@ class IframeSourceTest : public testing::Test {
       const std::string& url,
       bool allocate_info,
       int render_process_id,
-      int render_view_id) {
+      int render_frame_id) {
     net::URLRequest* request =
         new net::URLRequest(GURL(url),
                             net::DEFAULT_PRIORITY,
@@ -107,7 +107,7 @@ class IframeSourceTest : public testing::Test {
                                                        ResourceType::SUB_FRAME,
                                                        &resource_context_,
                                                        render_process_id,
-                                                       render_view_id,
+                                                       render_frame_id,
                                                        MSG_ROUTING_NONE,
                                                        false);
     }
@@ -121,8 +121,8 @@ class IframeSourceTest : public testing::Test {
   void SendJSWithOrigin(
       int resource_id,
       int render_process_id,
-      int render_view_id) {
-    source()->SendJSWithOrigin(resource_id, render_process_id, render_view_id,
+      int render_frame_id) {
+    source()->SendJSWithOrigin(resource_id, render_process_id, render_frame_id,
                                callback_);
   }
 
