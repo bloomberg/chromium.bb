@@ -69,6 +69,7 @@ v8.log
 /chrome/browser/internal
 /chrome/browser/performance_monitor/performance_monitor.xml
 /chrome/browser/protector/internal
+/chrome/browser/resources/pdf/html_office
 /chrome/browser/resources/settings_internal/
 /chrome/browser/resources/software_rendering_list
 /chrome/browser/search_engines/prepopulated_engines.xml
@@ -221,7 +222,6 @@ v8.log
 /third_party/googlemac
 /third_party/gperf
 /third_party/guava/src
-/third_party/html_office
 /third_party/httpcomponents-client
 /third_party/httpcomponents-core
 /third_party/hunspell

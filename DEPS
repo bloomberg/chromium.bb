@@ -290,7 +290,7 @@ deps = {
   "src/third_party/cld_2/src":
     (Var("googlecode_url") % "cld2") + "/trunk@84",
 
-  "src/third_party/html_office":
+  "src/chrome/browser/resources/pdf/html_office":
      Var("chromium_git") +
          "/chromium/html-office-public.git@1d04f3dfbd8bd604190dfb6f5a030d30233ba6ea",
 
