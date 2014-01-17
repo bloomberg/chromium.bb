@@ -102,7 +102,7 @@ def GenerateXbuddyRequest(path, static_dir, board=None):
                                 hashlib.md5(chroot_path).hexdigest())
     abs_dir = os.path.join(static_dir, relative_dir)
     # Make the parent directory if it doesn't exist.
-    osutils.SafeMakedirs(os.path.dirname(abs_dir))
+    osutils.SafeMakedirsNonRoot(os.path.dirname(abs_dir))
     # Create the symlink if it doesn't exist.
     if not os.path.lexists(abs_dir):
       logging.info('Creating a symlink %s -> %s', abs_dir,
@@ -328,6 +328,11 @@ following three options.
       timeout: Timeout for launching devserver (seconds).
     """
     static_dir = self.DEVSERVER_STATIC_DIR
+    # SafeMakedirsNonroot has a side effect that 'chown' an existing
+    # root-owned directory with a non-root user. This makes sure
+    # we can write to static_dir later.
+    osutils.SafeMakedirsNonRoot(static_dir)
+
     ds = ds_wrapper.DevServerWrapper(
         static_dir=static_dir, src_image=src_image)
     req = GenerateXbuddyRequest(path, static_dir, board=board)
