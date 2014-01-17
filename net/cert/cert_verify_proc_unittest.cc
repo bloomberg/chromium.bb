@@ -29,6 +29,8 @@
 #include "base/win/windows_version.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
+#elif defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #endif
 
 using base::HexEncode;
@@ -81,6 +83,26 @@ int WellKnownCaCertVerifyProc::VerifyInternal(
     CertVerifyResult* verify_result) {
   verify_result->is_issued_by_known_root = is_well_known_;
   return OK;
+}
+
+bool SupportsReturningVerifiedChain() {
+#if defined(OS_ANDROID)
+  // Before API level 17, Android does not expose the APIs necessary to get at
+  // the verified certificate chain.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 17)
+    return false;
+#endif
+  return true;
+}
+
+bool SupportsDetectingKnownRoots() {
+#if defined(OS_ANDROID)
+  // Before API level 17, Android does not expose the APIs necessary to get at
+  // the verified certificate chain and detect known roots.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 17)
+    return false;
+#endif
+  return true;
 }
 
 }  // namespace
@@ -398,14 +420,15 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
 // provided by servers. See CertVerifyProcTest.CybertrustGTERoot for further
 // details.
 #define MAYBE_ExtraneousMD5RootCert DISABLED_ExtraneousMD5RootCert
-#elif defined(USE_OPENSSL) || defined(OS_ANDROID)
-// Disabled for OpenSSL / Android - Android and OpenSSL do not attempt to find
-// a minimal certificate chain, thus prefer the MD5 root over the SHA-1 root.
-#define MAYBE_ExtraneousMD5RootCert DISABLED_ExtraneousMD5RootCert
 #else
 #define MAYBE_ExtraneousMD5RootCert ExtraneousMD5RootCert
 #endif
 TEST_F(CertVerifyProcTest, MAYBE_ExtraneousMD5RootCert) {
+  if (!SupportsReturningVerifiedChain()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   base::FilePath certs_dir = GetTestCertsDirectory();
 
   scoped_refptr<X509Certificate> server_cert =
@@ -554,13 +577,12 @@ TEST_F(CertVerifyProcTest, NameConstraintsOk) {
   EXPECT_EQ(0U, verify_result.cert_status);
 }
 
-#if defined(OS_ANDROID)
-// Disabled because Android isn't filling in SPKI hashes: crbug.com/116838.
-#define MAYBE_NameConstraintsFailure DISABLED_NameConstraintsFailure
-#else
-#define MAYBE_NameConstraintsFailure NameConstraintsFailure
-#endif
-TEST_F(CertVerifyProcTest, MAYBE_NameConstraintsFailure) {
+TEST_F(CertVerifyProcTest, NameConstraintsFailure) {
+  if (!SupportsReturningVerifiedChain()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   CertificateList ca_cert_list =
       CreateCertificateListFromFile(GetTestCertsDirectory(),
                                     "root_ca_cert.pem",
@@ -591,8 +613,12 @@ TEST_F(CertVerifyProcTest, MAYBE_NameConstraintsFailure) {
             verify_result.cert_status & CERT_STATUS_NAME_CONSTRAINT_VIOLATION);
 }
 
-// The certse.pem certificate has been revoked. crbug.com/259723.
 TEST_F(CertVerifyProcTest, TestKnownRoot) {
+  if (!SupportsDetectingKnownRoots()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "satveda.pem", X509Certificate::FORMAT_AUTO);
@@ -622,6 +648,11 @@ TEST_F(CertVerifyProcTest, TestKnownRoot) {
 
 // The certse.pem certificate has been revoked. crbug.com/259723.
 TEST_F(CertVerifyProcTest, PublicKeyHashes) {
+  if (!SupportsReturningVerifiedChain()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "satveda.pem", X509Certificate::FORMAT_AUTO);
@@ -717,6 +748,11 @@ TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
 // used to ensure that the actual, verified chain is being returned by
 // Verify().
 TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
+  if (!SupportsReturningVerifiedChain()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "x509_verify_results.chain.pem",
@@ -759,19 +795,16 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
                                             certs[2]->os_cert_handle()));
 }
 
-#if defined(OS_ANDROID)
-// TODO(ppi): Disabled because is_issued_by_known_root is incorrect on Android.
-// Once this is fixed, re-enable this check for android. crbug.com/116838
-#define MAYBE_IntranetHostsRejected DISABLED_IntranetHostsRejected
-#else
-#define MAYBE_IntranetHostsRejected IntranetHostsRejected
-#endif
-
 // Test that certificates issued for 'intranet' names (that is, containing no
 // known public registry controlled domain information) issued by well-known
 // CAs are flagged appropriately, while certificates that are issued by
 // internal CAs are not flagged.
-TEST_F(CertVerifyProcTest, MAYBE_IntranetHostsRejected) {
+TEST_F(CertVerifyProcTest, IntranetHostsRejected) {
+  if (!SupportsDetectingKnownRoots()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   CertificateList cert_list = CreateCertificateListFromFile(
       GetTestCertsDirectory(), "ok_cert.pem",
       X509Certificate::FORMAT_AUTO);
@@ -802,6 +835,11 @@ TEST_F(CertVerifyProcTest, MAYBE_IntranetHostsRejected) {
 // of intermediate certificates are combined, it's possible that order may
 // not be maintained.
 TEST_F(CertVerifyProcTest, VerifyReturnChainProperlyOrdered) {
+  if (!SupportsReturningVerifiedChain()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "x509_verify_results.chain.pem",
@@ -848,6 +886,11 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainProperlyOrdered) {
 // Test that Verify() filters out certificates which are not related to
 // or part of the certificate chain being verified.
 TEST_F(CertVerifyProcTest, VerifyReturnChainFiltersUnrelatedCerts) {
+  if (!SupportsReturningVerifiedChain()) {
+    LOG(INFO) << "Skipping this test in this platform.";
+    return;
+  }
+
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
       certs_dir, "x509_verify_results.chain.pem",
@@ -944,6 +987,32 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
   EXPECT_FALSE(verify_result.is_issued_by_additional_trust_anchor);
+}
+
+// Tests that certificates issued by user-supplied roots are not flagged as
+// issued by a known root. This should pass whether or not the platform supports
+// detecting known roots.
+TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
+  // Load root_ca_cert.pem into the test root store.
+  TestRootCerts* root_certs = TestRootCerts::GetInstance();
+  root_certs->AddFromFile(
+      GetTestCertsDirectory().AppendASCII("root_ca_cert.pem"));
+
+  CertificateList cert_list = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "ok_cert.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> cert(cert_list[0]);
+
+  // Verification should pass.
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = Verify(
+      cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_, &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0U, verify_result.cert_status);
+  // But should not be marked as a known root.
+  EXPECT_FALSE(verify_result.is_issued_by_known_root);
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

@@ -23,9 +23,12 @@ using base::android::ToJavaByteArray;
 namespace net {
 namespace android {
 
-CertVerifyResultAndroid VerifyX509CertChain(
-    const std::vector<std::string>& cert_chain,
-    const std::string& auth_type) {
+void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
+                         const std::string& auth_type,
+                         const std::string& host,
+                         CertVerifyStatusAndroid* status,
+                         bool* is_issued_by_known_root,
+                         std::vector<std::string>* verified_chain) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobjectArray> chain_byte_array =
@@ -36,10 +39,20 @@ CertVerifyResultAndroid VerifyX509CertChain(
       ConvertUTF8ToJavaString(env, auth_type);
   DCHECK(!auth_string.is_null());
 
-  jint result = Java_AndroidNetworkLibrary_verifyServerCertificates(
-      env, chain_byte_array.obj(), auth_string.obj());
+  ScopedJavaLocalRef<jstring> host_string =
+      ConvertUTF8ToJavaString(env, host);
+  DCHECK(!host_string.is_null());
 
-  return static_cast<CertVerifyResultAndroid>(result);
+  ScopedJavaLocalRef<jobject> result =
+      Java_AndroidNetworkLibrary_verifyServerCertificates(
+          env, chain_byte_array.obj(), auth_string.obj(), host_string.obj());
+  if (ClearException(env)) {
+    *status = android::VERIFY_FAILED;
+    return;
+  }
+
+  ExtractCertVerifyResult(result.obj(),
+                          status, is_issued_by_known_root, verified_chain);
 }
 
 void AddTestRootCertificate(const uint8* cert, size_t len) {

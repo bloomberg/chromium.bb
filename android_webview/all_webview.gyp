@@ -23,7 +23,7 @@
         '../content/content.gyp:speech_recognition_error_java',
         '../media/media.gyp:media_android_imageformat_list',
         '../net/net.gyp:certificate_mime_types_java',
-        '../net/net.gyp:cert_verify_result_android_java',
+        '../net/net.gyp:cert_verify_status_android_java',
         '../net/net.gyp:net_errors_java',
         '../net/net.gyp:private_key_types_java',
         '../ui/android/ui_android.gyp:window_open_disposition_java',

@@ -198,20 +198,24 @@ class AndroidNetworkLibrary {
     }
 
     /**
-     * Validate the server's certificate chain is trusted.
+     * Validate the server's certificate chain is trusted. Note that the caller
+     * must still verify the name matches that of the leaf certificate.
      *
      * @param certChain The ASN.1 DER encoded bytes for certificates.
-     * @param authType The key exchange algorithm name (e.g. RSA)
+     * @param authType The key exchange algorithm name (e.g. RSA).
+     * @param host The hostname of the server.
      * @return Android certificate verification result code.
      */
     @CalledByNative
-    public static int verifyServerCertificates(byte[][] certChain, String authType) {
+    public static AndroidCertVerifyResult verifyServerCertificates(byte[][] certChain,
+                                                                   String authType,
+                                                                   String host) {
         try {
-            return X509Util.verifyServerCertificates(certChain, authType);
+            return X509Util.verifyServerCertificates(certChain, authType, host);
         } catch (KeyStoreException e) {
-            return CertVerifyResultAndroid.VERIFY_FAILED;
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_FAILED);
         } catch (NoSuchAlgorithmException e) {
-            return CertVerifyResultAndroid.VERIFY_FAILED;
+            return new AndroidCertVerifyResult(CertVerifyStatusAndroid.VERIFY_FAILED);
         }
     }
 

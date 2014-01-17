@@ -21,9 +21,12 @@ namespace android {
 // |cert_chain| is DER encoded chain of certificates, with the server's own
 // certificate listed first.
 // |auth_type| is as per the Java X509Certificate.checkServerTrusted method.
-CertVerifyResultAndroid VerifyX509CertChain(
-    const std::vector<std::string>& cert_chain,
-    const std::string& auth_type);
+void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
+                         const std::string& auth_type,
+                         const std::string& host,
+                         CertVerifyStatusAndroid* status,
+                         bool* is_issued_by_known_root,
+                         std::vector<std::string>* verified_chain);
 
 // Adds a certificate as a root trust certificate to the trust manager.
 // |cert| is DER encoded certificate, |len| is its length in bytes.

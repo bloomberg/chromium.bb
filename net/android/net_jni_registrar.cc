@@ -18,6 +18,7 @@ namespace net {
 namespace android {
 
 static base::android::RegistrationMethod kNetRegisteredMethods[] = {
+  { "AndroidCertVerifyResult", net::android::RegisterCertVerifyResult },
   { "AndroidKeyStore", net::android::RegisterKeyStore },
   { "AndroidNetworkLibrary", net::android::RegisterNetworkLibrary },
   { "GURLUtils", net::RegisterGURLUtils },

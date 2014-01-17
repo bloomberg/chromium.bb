@@ -8,9 +8,13 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/sha1.h"
+#include "base/strings/string_piece.h"
+#include "crypto/sha2.h"
 #include "net/android/cert_verify_result_android.h"
 #include "net/android/network_library.h"
 #include "net/base/net_errors.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
@@ -22,11 +26,16 @@ namespace {
 // Returns true if the certificate verification call was successful (regardless
 // of its result), i.e. if |verify_result| was set. Otherwise returns false.
 bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
+                                   const std::string& hostname,
                                    CertVerifyResult* verify_result) {
+  android::CertVerifyStatusAndroid status;
+  std::vector<std::string> verified_chain;
+
   // TODO(joth): Fetch the authentication type from SSL rather than hardcode.
-  android::CertVerifyResultAndroid android_result =
-      android::VerifyX509CertChain(cert_bytes, "RSA");
-  switch (android_result) {
+  android::VerifyX509CertChain(cert_bytes, "RSA", hostname,
+                               &status, &verify_result->is_issued_by_known_root,
+                               &verified_chain);
+  switch (status) {
     case android::VERIFY_FAILED:
       return false;
     case android::VERIFY_OK:
@@ -49,6 +58,35 @@ bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
       verify_result->cert_status |= CERT_STATUS_INVALID;
       break;
   }
+
+  // Save the verified chain.
+  if (!verified_chain.empty()) {
+    std::vector<base::StringPiece> verified_chain_pieces(verified_chain.size());
+    for (size_t i = 0; i < verified_chain.size(); i++) {
+      verified_chain_pieces[i] = base::StringPiece(verified_chain[i]);
+    }
+    scoped_refptr<X509Certificate> verified_cert =
+        X509Certificate::CreateFromDERCertChain(verified_chain_pieces);
+    if (verified_cert)
+      verify_result->verified_cert = verified_cert;
+  }
+
+  // Extract the public key hashes.
+  for (size_t i = 0; i < verified_chain.size(); i++) {
+    base::StringPiece spki_bytes;
+    if (!asn1::ExtractSPKIFromDERCert(verified_chain[i], &spki_bytes))
+      continue;
+
+    HashValue sha1(HASH_VALUE_SHA1);
+    base::SHA1HashBytes(reinterpret_cast<const uint8*>(spki_bytes.data()),
+                        spki_bytes.size(), sha1.data());
+    verify_result->public_key_hashes.push_back(sha1);
+
+    HashValue sha256(HASH_VALUE_SHA256);
+    crypto::SHA256HashString(spki_bytes, sha256.data(), crypto::kSHA256Length);
+    verify_result->public_key_hashes.push_back(sha256);
+  }
+
   return true;
 }
 
@@ -99,7 +137,7 @@ int CertVerifyProcAndroid::VerifyInternal(
   std::vector<std::string> cert_bytes;
   if (!GetChainDEREncodedBytes(cert, &cert_bytes))
     return ERR_CERT_INVALID;
-  if (!VerifyFromAndroidTrustManager(cert_bytes, verify_result)) {
+  if (!VerifyFromAndroidTrustManager(cert_bytes, hostname, verify_result)) {
     NOTREACHED();
     return ERR_FAILED;
   }
@@ -110,11 +148,6 @@ int CertVerifyProcAndroid::VerifyInternal(
   // chain, public key hashes of its certificates and |is_issued_by_known_root|
   // flag. All of the above require specific support from the platform, missing
   // in the Java APIs. See also: http://crbug.com/116838
-
-  // Until the required support is available in the platform, we don't know if
-  // the trust root at the end of the chain was standard or user-added, so we
-  // mark all correctly verified certificates as issued by a known root.
-  verify_result->is_issued_by_known_root = true;
 
   return OK;
 }

@@ -60,8 +60,9 @@
         'net_resources',
       ],
       'sources': [
+        'android/cert_verify_result_android.cc',
         'android/cert_verify_result_android.h',
-        'android/cert_verify_result_android_list.h',
+        'android/cert_verify_status_android_list.h',
         'android/gurl_utils.cc',
         'android/gurl_utils.h',
         'android/keystore.cc',
@@ -2958,6 +2959,7 @@
           'target_name': 'net_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/net/AndroidCertVerifyResult.java',
             'android/java/src/org/chromium/net/AndroidKeyStore.java',
             'android/java/src/org/chromium/net/AndroidNetworkLibrary.java',
             'android/java/src/org/chromium/net/GURLUtils.java',
@@ -2991,7 +2993,7 @@
           },
           'dependencies': [
             '../base/base.gyp:base',
-            'cert_verify_result_android_java',
+            'cert_verify_status_android_java',
             'certificate_mime_types_java',
             'net_errors_java',
             'private_key_types_java',
@@ -3044,14 +3046,14 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
-          'target_name': 'cert_verify_result_android_java',
+          'target_name': 'cert_verify_status_android_java',
           'type': 'none',
           'sources': [
-            'android/java/CertVerifyResultAndroid.template',
+            'android/java/CertVerifyStatusAndroid.template',
           ],
           'variables': {
             'package_name': 'org/chromium/net',
-            'template_deps': ['android/cert_verify_result_android_list.h'],
+            'template_deps': ['android/cert_verify_status_android_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,23 +9,23 @@
 // from Java side to the C++ side.
 
 // Certificate is trusted.
-CERT_VERIFY_RESULT_ANDROID(OK, 0)
+CERT_VERIFY_STATUS_ANDROID(OK, 0)
 
 // Certificate verification could not be conducted.
-CERT_VERIFY_RESULT_ANDROID(FAILED, -1)
+CERT_VERIFY_STATUS_ANDROID(FAILED, -1)
 
 // Certificate is not trusted due to non-trusted root of the certificate chain.
-CERT_VERIFY_RESULT_ANDROID(NO_TRUSTED_ROOT, -2)
+CERT_VERIFY_STATUS_ANDROID(NO_TRUSTED_ROOT, -2)
 
 // Certificate is not trusted because it has expired.
-CERT_VERIFY_RESULT_ANDROID(EXPIRED, -3)
+CERT_VERIFY_STATUS_ANDROID(EXPIRED, -3)
 
 // Certificate is not trusted because it is not valid yet.
-CERT_VERIFY_RESULT_ANDROID(NOT_YET_VALID, -4)
+CERT_VERIFY_STATUS_ANDROID(NOT_YET_VALID, -4)
 
 // Certificate is not trusted because it could not be parsed.
-CERT_VERIFY_RESULT_ANDROID(UNABLE_TO_PARSE, -5)
+CERT_VERIFY_STATUS_ANDROID(UNABLE_TO_PARSE, -5)
 
 // Certificate is not trusted because it has an extendedKeyUsage field, but
 // its value is not correct for a web server.
-CERT_VERIFY_RESULT_ANDROID(INCORRECT_KEY_USAGE, -6)
+CERT_VERIFY_STATUS_ANDROID(INCORRECT_KEY_USAGE, -6)

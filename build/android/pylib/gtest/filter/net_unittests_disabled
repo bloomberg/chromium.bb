@@ -1,9 +1,5 @@
 # List of suppressions.
 
-CertVerifyProcTest.PublicKeyHashes
-CertVerifyProcTest.VerifyReturnChainBasic
-CertVerifyProcTest.VerifyReturnChainFiltersUnrelatedCerts
-CertVerifyProcTest.VerifyReturnChainProperlyOrdered
 # Bug: 171812
 MultiThreadedCertVerifierTest.CancelRequest
 
