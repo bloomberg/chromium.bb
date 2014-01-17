@@ -439,9 +439,10 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
     m_resourcesData->setXHRReplayData(requestId, xhrReplayData);
 }
 
-void InspectorResourceAgent::willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
+void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
 {
-    RefPtr<XHRReplayData> xhrReplayData = XHRReplayData::create(method, urlWithoutFragment(url), async, formData, includeCredentials);
+    ASSERT(xhr);
+    RefPtr<XHRReplayData> xhrReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData, includeCredentials);
     HTTPHeaderMap::const_iterator end = headers.end();
     for (HTTPHeaderMap::const_iterator it = headers.begin(); it!= end; ++it)
         xhrReplayData->addHeader(it->key, it->value);
@@ -647,12 +648,19 @@ void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const Str
 
 void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
 {
-    RefPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(m_pageAgent->mainFrame()->document());
     String actualRequestId = requestId;
 
     XHRReplayData* xhrReplayData = m_resourcesData->xhrReplayData(requestId);
     if (!xhrReplayData)
         return;
+
+    ExecutionContext* executionContext = xhrReplayData->executionContext();
+    if (!executionContext) {
+        m_resourcesData->setXHRReplayData(requestId, 0);
+        return;
+    }
+
+    RefPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(executionContext);
 
     Resource* cachedResource = memoryCache()->resourceForURL(xhrReplayData->url());
     if (cachedResource)
