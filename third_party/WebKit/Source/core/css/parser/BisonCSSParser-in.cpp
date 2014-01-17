@@ -1219,6 +1219,12 @@ bool BisonCSSParser::parseColor(const String& string)
     return !m_parsedProperties.isEmpty() && m_parsedProperties.first().id() == CSSPropertyColor;
 }
 
+// FIXME: This is copied from SVGCSSParser.cpp
+static bool isSystemColor(int id)
+{
+    return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
+}
+
 bool BisonCSSParser::parseSystemColor(RGBA32& color, const String& string, Document* document)
 {
     if (!document)
@@ -1227,12 +1233,12 @@ bool BisonCSSParser::parseSystemColor(RGBA32& color, const String& string, Docum
     CSSParserString cssColor;
     cssColor.init(string);
     CSSValueID id = cssValueKeywordID(cssColor);
-    if (id <= 0)
+    if (!isSystemColor(id))
         return false;
 
     Color parsedColor = RenderTheme::theme().systemColor(id);
     color = parsedColor.rgb();
-    return parsedColor.isValid();
+    return true;
 }
 
 void BisonCSSParser::parseSelector(const String& string, CSSSelectorList& selectorList)

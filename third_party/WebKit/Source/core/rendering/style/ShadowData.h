@@ -62,6 +62,7 @@ private:
     FloatPoint m_location;
     float m_blur;
     float m_spread;
+    // FIXME: We should use StyleColor here to allow currentColor to work correctly with visited links
     Color m_color;
     ShadowStyle m_style;
 };

@@ -2423,7 +2423,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     c->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
 
     // These should match the style defined in html.css.
-    Color focusRingColor = RenderTheme::focusRingColor();
+    Color focusRingColor = RenderTheme::theme().focusRingColor();
     const int focusRingWidth = 5;
     const int focusRingOutline = 0;
     c->drawFocusRing(path, focusRingWidth, focusRingOutline, focusRingColor);

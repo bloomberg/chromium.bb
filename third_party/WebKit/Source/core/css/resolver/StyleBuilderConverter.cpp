@@ -146,9 +146,6 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& 
             color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->color());
         else
             color = state.style()->color();
-
-        if (!color.isValid())
-            color = Color::transparent;
         shadows.append(ShadowData(FloatPoint(x, y), blur, spread, shadowStyle, color));
     }
     return ShadowList::adopt(shadows);

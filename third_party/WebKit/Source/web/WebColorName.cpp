@@ -117,7 +117,7 @@ void setNamedColors(const WebColorName* colorNames, const WebColor* colors, size
         // Convert color to internal value identifier.
         int internalColorName = toCSSValueKeyword(colorName);
         if (internalColorName == CSSValueWebkitFocusRingColor) {
-            RenderTheme::setCustomFocusRingColor(color);
+            RenderTheme::theme().setCustomFocusRingColor(color);
             continue;
         }
     }

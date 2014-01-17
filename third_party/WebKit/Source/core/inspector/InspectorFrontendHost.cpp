@@ -193,14 +193,12 @@ void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMe
 
 String InspectorFrontendHost::getSelectionBackgroundColor()
 {
-    Color color = RenderTheme::theme().activeSelectionBackgroundColor();
-    return color.isValid() ? color.serialized() : "";
+    return RenderTheme::theme().activeSelectionBackgroundColor().serialized();
 }
 
 String InspectorFrontendHost::getSelectionForegroundColor()
 {
-    Color color = RenderTheme::theme().activeSelectionForegroundColor();
-    return color.isValid() ? color.serialized() : "";
+    return RenderTheme::theme().activeSelectionForegroundColor().serialized();
 }
 
 PassRefPtr<DOMFileSystem> InspectorFrontendHost::isolatedFileSystem(const String& fileSystemName, const String& rootURL)

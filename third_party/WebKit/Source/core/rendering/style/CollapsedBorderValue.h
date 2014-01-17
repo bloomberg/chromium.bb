@@ -33,7 +33,7 @@ class CollapsedBorderValue {
 public:
     CollapsedBorderValue()
         : m_color(0)
-        , m_colorIsValid(false)
+        , m_colorIsCurrentColor(true)
         , m_width(0)
         , m_style(BNONE)
         , m_precedence(BOFF)
@@ -41,9 +41,9 @@ public:
     {
     }
 
-    CollapsedBorderValue(const BorderValue& border, const Color& color, EBorderPrecedence precedence)
-        : m_color(color.rgb())
-        , m_colorIsValid(color.isValid())
+    CollapsedBorderValue(const BorderValue& border, const StyleColor& color, EBorderPrecedence precedence)
+        : m_color(color.resolve(Color()))
+        , m_colorIsCurrentColor(color.isCurrentColor())
         , m_width(border.nonZero() ? border.width() : 0)
         , m_style(border.style())
         , m_precedence(precedence)
@@ -54,7 +54,7 @@ public:
     unsigned width() const { return m_style > BHIDDEN ? m_width : 0; }
     EBorderStyle style() const { return static_cast<EBorderStyle>(m_style); }
     bool exists() const { return m_precedence != BOFF; }
-    Color color() const { return Color(m_color, m_colorIsValid); }
+    StyleColor color() const { return m_colorIsCurrentColor ? StyleColor::currentColor() : StyleColor(m_color); }
     bool isTransparent() const { return m_transparent; }
     EBorderPrecedence precedence() const { return static_cast<EBorderPrecedence>(m_precedence); }
 
@@ -64,8 +64,8 @@ public:
     }
 
 private:
-    RGBA32 m_color;
-    unsigned m_colorIsValid : 1;
+    Color m_color;
+    unsigned m_colorIsCurrentColor : 1;
     unsigned m_width : 23;
     unsigned m_style : 4; // EBorderStyle
     unsigned m_precedence : 3; // EBorderPrecedence

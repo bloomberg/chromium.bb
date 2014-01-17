@@ -20,6 +20,7 @@
 #ifndef SVGAnimatedType_h
 #define SVGAnimatedType_h
 
+#include "core/css/StyleColor.h"
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGNumberList.h"
@@ -40,7 +41,7 @@ public:
     ~SVGAnimatedType();
 
     static PassOwnPtr<SVGAnimatedType> createAngleAndEnumeration(std::pair<SVGAngle, unsigned>*);
-    static PassOwnPtr<SVGAnimatedType> createColor(Color*);
+    static PassOwnPtr<SVGAnimatedType> createColor(StyleColor*);
     static PassOwnPtr<SVGAnimatedType> createEnumeration(unsigned*);
     static PassOwnPtr<SVGAnimatedType> createInteger(int*);
     static PassOwnPtr<SVGAnimatedType> createIntegerOptionalInteger(std::pair<int, int>*);
@@ -65,7 +66,7 @@ public:
         return *m_data.angleAndEnumeration;
     }
 
-    Color& color()
+    StyleColor& color()
     {
         ASSERT(m_type == AnimatedColor);
         return *m_data.color;
@@ -163,7 +164,7 @@ private:
         }
 
         std::pair<SVGAngle, unsigned>* angleAndEnumeration;
-        Color* color;
+        StyleColor* color;
         unsigned* enumeration;
         int* integer;
         std::pair<int, int>* integerOptionalInteger;

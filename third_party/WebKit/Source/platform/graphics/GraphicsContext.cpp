@@ -316,7 +316,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
     if (paintingDisabled())
         return;
 
-    if (!color.isValid() || !color.alpha() || (!offset.width() && !offset.height() && !blur)) {
+    if (!color.alpha() || (!offset.width() && !offset.height() && !blur)) {
         clearShadow();
         return;
     }

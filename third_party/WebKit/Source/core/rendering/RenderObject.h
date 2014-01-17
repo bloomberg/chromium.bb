@@ -783,17 +783,6 @@ public:
         return style()->visitedDependentColor(colorProperty);
     }
 
-    inline Color resolveColor(int colorProperty, Color fallback) const
-    {
-        Color color = resolveColor(colorProperty);
-        return color.isValid() ? color : fallback;
-    }
-
-    inline Color resolveColor(Color color) const
-    {
-        return color;
-    }
-
     // Used only by Element::pseudoStyleCacheIsInvalid to get a first line style based off of a
     // given new style, without accessing the cache.
     PassRefPtr<RenderStyle> uncachedFirstLineStyle(RenderStyle*) const;

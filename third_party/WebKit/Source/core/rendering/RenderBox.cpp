@@ -1332,7 +1332,7 @@ LayoutRect RenderBox::backgroundPaintedExtent() const
     LayoutRect backgroundRect = pixelSnappedIntRect(borderBoxRect());
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
-    if (backgroundColor.isValid() && backgroundColor.alpha())
+    if (backgroundColor.alpha())
         return backgroundRect;
     if (!style()->backgroundLayers()->image() || style()->backgroundLayers()->next())
         return backgroundRect;
@@ -1347,7 +1347,7 @@ bool RenderBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
         return false;
 
     Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
-    if (!backgroundColor.isValid() || backgroundColor.hasAlpha())
+    if (backgroundColor.hasAlpha())
         return false;
 
     // If the element has appearance, it might be painted by theme.
@@ -1468,7 +1468,7 @@ bool RenderBox::backgroundHasOpaqueTopLayer() const
     // If there is only one layer and no image, check whether the background color is opaque
     if (!fillLayer->next() && !fillLayer->hasImage()) {
         Color bgColor = resolveColor(CSSPropertyBackgroundColor);
-        if (bgColor.isValid() && bgColor.alpha() == 255)
+        if (bgColor.alpha() == 255)
             return true;
     }
 
@@ -1528,7 +1528,7 @@ void RenderBox::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& pa
     }
 
     if (allMaskImagesLoaded) {
-        paintFillLayers(paintInfo, Color(), style()->maskLayers(), paintRect, BackgroundBleedNone, compositeOp);
+        paintFillLayers(paintInfo, Color::transparent, style()->maskLayers(), paintRect, BackgroundBleedNone, compositeOp);
         paintNinePieceImage(paintInfo.context, paintRect, style(), style()->maskBoxImage(), compositeOp);
     }
 

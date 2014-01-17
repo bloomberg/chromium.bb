@@ -71,6 +71,7 @@ String SVGPaint::customCSSText() const
 {
     switch (m_paintType) {
     case SVG_PAINTTYPE_UNKNOWN:
+        return String();
     case SVG_PAINTTYPE_RGBCOLOR:
     case SVG_PAINTTYPE_RGBCOLOR_ICCCOLOR:
     case SVG_PAINTTYPE_CURRENTCOLOR:

@@ -127,6 +127,39 @@ void StyleBuilderFunctions::applyValueCSSPropertyClip(StyleResolverState& state,
     }
 }
 
+void StyleBuilderFunctions::applyInitialCSSPropertyColor(StyleResolverState& state)
+{
+    Color color = RenderStyle::initialColor();
+    if (state.applyPropertyToRegularStyle())
+        state.style()->setColor(color);
+    if (state.applyPropertyToVisitedLinkStyle())
+        state.style()->setVisitedLinkColor(color);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyColor(StyleResolverState& state)
+{
+    Color color = state.parentStyle()->color();
+    if (state.applyPropertyToRegularStyle())
+        state.style()->setColor(color);
+    if (state.applyPropertyToVisitedLinkStyle())
+        state.style()->setVisitedLinkColor(color);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyColor(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    // As per the spec, 'color: currentColor' is treated as 'color: inherit'
+    if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
+        applyInheritCSSPropertyColor(state);
+        return;
+    }
+
+    if (state.applyPropertyToRegularStyle())
+        state.style()->setColor(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color()));
+    if (state.applyPropertyToVisitedLinkStyle())
+        state.style()->setVisitedLinkColor(state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color(), state.element()->isLink() /* forVisitedLink */));
+}
+
 void StyleBuilderFunctions::applyInitialCSSPropertyCursor(StyleResolverState& state)
 {
     state.style()->clearCursorList();

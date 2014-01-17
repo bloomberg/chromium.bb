@@ -333,8 +333,7 @@ bool RenderThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo
 
     blink::WebCanvas* canvas = i.context->canvas();
 
-    // Fallback to white if the specified color object is invalid.
-    Color backgroundColor = o->resolveColor(CSSPropertyBackgroundColor, Color::white);
+    Color backgroundColor = o->resolveColor(CSSPropertyBackgroundColor);
     extraParams.textField.backgroundColor = backgroundColor.rgb();
 
     blink::Platform::current()->themeEngine()->paint(canvas, blink::WebThemeEngine::PartTextField, getWebThemeState(this, o), blink::WebRect(rect), &extraParams);

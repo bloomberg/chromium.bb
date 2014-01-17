@@ -548,10 +548,7 @@ bool RenderThemeChromiumWin::paintTextFieldInternal(RenderObject* o,
                                                     const IntRect& r,
                                                     bool drawEdges)
 {
-    // Fallback to white if the specified color object is invalid.
-    Color backgroundColor(Color::white);
-    if (o->style()->visitedDependentColor(CSSPropertyBackgroundColor).isValid())
-        backgroundColor = o->style()->visitedDependentColor(CSSPropertyBackgroundColor);
+    Color backgroundColor = o->style()->visitedDependentColor(CSSPropertyBackgroundColor);
 
     // If we have background-image, don't fill the content area to expose the
     // parent's background. Also, we shouldn't fill the content area if the

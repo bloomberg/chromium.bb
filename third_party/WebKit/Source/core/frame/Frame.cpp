@@ -497,7 +497,7 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
 
     setView(frameView);
 
-    if (backgroundColor.isValid())
+    if (backgroundColor.alpha())
         frameView->updateBackgroundRecursively(backgroundColor, transparent);
 
     if (isMainFrame)

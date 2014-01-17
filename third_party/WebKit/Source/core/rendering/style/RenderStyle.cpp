@@ -1328,13 +1328,20 @@ void RenderStyle::getShadowVerticalExtent(const ShadowList* shadowList, LayoutUn
     }
 }
 
+StyleColor RenderStyle::visitedDependentDecorationColor() const
+{
+    // Text decoration color fallback is handled in RenderObject::decorationColor.
+    return insideLink() == InsideVisitedLink ? visitedLinkTextDecorationColor() : textDecorationColor();
+}
+
 Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
 {
-    Color result;
+    StyleColor result(StyleColor::currentColor());
     EBorderStyle borderStyle = BNONE;
     switch (colorProperty) {
     case CSSPropertyBackgroundColor:
-        return visitedLink ? visitedLinkBackgroundColor() : backgroundColor(); // Background color doesn't fall back.
+        result = visitedLink ? visitedLinkBackgroundColor() : backgroundColor();
+        break;
     case CSSPropertyBorderLeftColor:
         result = visitedLink ? visitedLinkBorderLeftColor() : borderLeftColor();
         borderStyle = borderLeftStyle();
@@ -1360,9 +1367,6 @@ Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) c
     case CSSPropertyWebkitColumnRuleColor:
         result = visitedLink ? visitedLinkColumnRuleColor() : columnRuleColor();
         break;
-    case CSSPropertyTextDecorationColor:
-        // Text decoration color fallback is handled in RenderObject::decorationColor.
-        return visitedLink ? visitedLinkTextDecorationColor() : textDecorationColor();
     case CSSPropertyWebkitTextEmphasisColor:
         result = visitedLink ? visitedLinkTextEmphasisColor() : textEmphasisColor();
         break;
@@ -1389,13 +1393,14 @@ Color RenderStyle::colorIncludingFallback(int colorProperty, bool visitedLink) c
         break;
     }
 
-    if (!result.isValid()) {
-        if (!visitedLink && (borderStyle == INSET || borderStyle == OUTSET || borderStyle == RIDGE || borderStyle == GROOVE))
-            result.setRGB(238, 238, 238);
-        else
-            result = visitedLink ? visitedLinkColor() : color();
-    }
-    return result;
+    if (!result.isCurrentColor())
+        return result.color();
+
+    // FIXME: Treating styled borders with initial color differently causes problems
+    // See crbug.com/316559, crbug.com/276231
+    if (!visitedLink && (borderStyle == INSET || borderStyle == OUTSET || borderStyle == RIDGE || borderStyle == GROOVE))
+        return Color(238, 238, 238);
+    return visitedLink ? visitedLinkColor() : color();
 }
 
 Color RenderStyle::visitedDependentColor(int colorProperty) const
@@ -1405,10 +1410,6 @@ Color RenderStyle::visitedDependentColor(int colorProperty) const
         return unvisitedColor;
 
     Color visitedColor = colorIncludingFallback(colorProperty, true);
-
-    // Text decoration color validity is preserved (checked in RenderObject::decorationColor).
-    if (colorProperty == CSSPropertyTextDecorationColor)
-        return visitedColor;
 
     // FIXME: Technically someone could explicitly specify the color transparent, but for now we'll just
     // assume that if the background color is transparent that it wasn't set. Note that it's weird that

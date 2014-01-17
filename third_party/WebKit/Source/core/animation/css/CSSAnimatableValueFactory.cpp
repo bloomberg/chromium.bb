@@ -209,26 +209,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSProper
 {
     Color color = style.colorIncludingFallback(property, false);
     Color visitedLinkColor = style.colorIncludingFallback(property, true);
-    Color fallbackColor = style.color();
-    Color fallbackVisitedLinkColor = style.visitedLinkColor();
-    Color resolvedColor;
-
-    if (property == CSSPropertyBackgroundColor) {
-        // For background-color, invalid color means transparent and not currentColor.
-        fallbackColor = Color::transparent;
-        fallbackVisitedLinkColor = Color::transparent;
-    }
-
-    if (color.isValid())
-        resolvedColor = color;
-    else
-        resolvedColor = fallbackColor;
-    Color resolvedVisitedLinkColor;
-    if (visitedLinkColor.isValid())
-        resolvedVisitedLinkColor = visitedLinkColor;
-    else
-        resolvedVisitedLinkColor = fallbackVisitedLinkColor;
-    return AnimatableColor::create(resolvedColor, resolvedVisitedLinkColor);
+    return AnimatableColor::create(color, visitedLinkColor);
 }
 
 inline static PassRefPtr<AnimatableValue> createFromShapeValue(ShapeValue* value)
@@ -388,7 +369,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyStroke:
         return AnimatableSVGPaint::create(style.svgStyle()->strokePaintType(), style.svgStyle()->strokePaintColor(), style.svgStyle()->strokePaintUri());
     case CSSPropertyTextDecorationColor:
-        return createFromColor(property, style);
+        return AnimatableColor::create(style.textDecorationColor().resolve(style.color()), style.visitedLinkTextDecorationColor().resolve(style.visitedLinkColor()));
     case CSSPropertyTextIndent:
         return createFromLength(style.textIndent(), style);
     case CSSPropertyTextShadow:

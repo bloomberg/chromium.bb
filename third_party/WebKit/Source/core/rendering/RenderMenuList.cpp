@@ -482,7 +482,7 @@ void RenderMenuList::getItemBackgroundColor(unsigned listIndex, Color& itemBackg
     Color backgroundColor;
     if (element->renderStyle())
         backgroundColor = resolveColor(element->renderStyle(), CSSPropertyBackgroundColor);
-    itemHasCustomBackgroundColor = backgroundColor.isValid() && backgroundColor.alpha();
+    itemHasCustomBackgroundColor = backgroundColor.alpha();
     // If the item has an opaque background color, return that.
     if (!backgroundColor.hasAlpha()) {
         itemBackgroundColor = backgroundColor;

@@ -33,9 +33,9 @@ namespace WebCore {
 
 struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareInheritedData> {
     void* styleImage;
-    Color firstColor;
+    StyleColor firstColor;
     float firstFloat;
-    Color colors[5];
+    StyleColor colors[5];
     void* ownPtrs[1];
     AtomicString atomicStrings[5];
     void* refPtrs[2];
@@ -55,7 +55,13 @@ COMPILE_ASSERT(sizeof(StyleRareInheritedData) == sizeof(SameSizeAsStyleRareInher
 
 StyleRareInheritedData::StyleRareInheritedData()
     : listStyleImage(RenderStyle::initialListStyleImage())
+    , textStrokeColor(StyleColor::currentColor())
     , textStrokeWidth(RenderStyle::initialTextStrokeWidth())
+    , textFillColor(StyleColor::currentColor())
+    , textEmphasisColor(StyleColor::currentColor())
+    , visitedLinkTextStrokeColor(StyleColor::currentColor())
+    , visitedLinkTextFillColor(StyleColor::currentColor())
+    , visitedLinkTextEmphasisColor(StyleColor::currentColor())
     , indent(RenderStyle::initialTextIndent())
     , m_effectiveZoom(RenderStyle::initialZoom())
     , widows(RenderStyle::initialWidows())

@@ -347,15 +347,13 @@ void FrameView::recalculateScrollbarOverlayStyle()
     ScrollbarOverlayStyle overlayStyle = ScrollbarOverlayStyleDefault;
 
     Color backgroundColor = documentBackgroundColor();
-    if (backgroundColor.isValid()) {
-        // Reduce the background color from RGB to a lightness value
-        // and determine which scrollbar style to use based on a lightness
-        // heuristic.
-        double hue, saturation, lightness;
-        backgroundColor.getHSL(hue, saturation, lightness);
-        if (lightness <= .5)
-            overlayStyle = ScrollbarOverlayStyleLight;
-    }
+    // Reduce the background color from RGB to a lightness value
+    // and determine which scrollbar style to use based on a lightness
+    // heuristic.
+    double hue, saturation, lightness;
+    backgroundColor.getHSL(hue, saturation, lightness);
+    if (lightness <= .5)
+        overlayStyle = ScrollbarOverlayStyleLight;
 
     if (oldOverlayStyle != overlayStyle)
         setScrollbarOverlayStyle(overlayStyle);
@@ -2057,10 +2055,7 @@ Color FrameView::baseBackgroundColor() const
 
 void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 {
-    if (!backgroundColor.isValid())
-        m_baseBackgroundColor = Color::white;
-    else
-        m_baseBackgroundColor = backgroundColor;
+    m_baseBackgroundColor = backgroundColor;
 
     if (renderView() && renderView()->layer()->hasCompositedLayerMapping()) {
         CompositedLayerMappingPtr compositedLayerMapping = renderView()->layer()->compositedLayerMapping();
@@ -2698,29 +2693,12 @@ Color FrameView::documentBackgroundColor() const
     // the document and the body against the base background color of the frame view.
     // Background images are unfortunately impractical to include.
 
-    // Return invalid Color objects whenever there is insufficient information.
+    Color result = baseBackgroundColor();
     if (!frame().document())
-        return Color();
+        return result;
 
     Element* htmlElement = frame().document()->documentElement();
     Element* bodyElement = frame().document()->body();
-
-    // Start with invalid colors.
-    Color htmlBackgroundColor;
-    Color bodyBackgroundColor;
-    if (htmlElement && htmlElement->renderer())
-        htmlBackgroundColor = htmlElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor);
-    if (bodyElement && bodyElement->renderer())
-        bodyBackgroundColor = bodyElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor);
-
-    if (!bodyBackgroundColor.isValid()) {
-        if (!htmlBackgroundColor.isValid())
-            return Color();
-        return baseBackgroundColor().blend(htmlBackgroundColor);
-    }
-
-    if (!htmlBackgroundColor.isValid())
-        return baseBackgroundColor().blend(bodyBackgroundColor);
 
     // We take the aggregate of the base background color
     // the <html> background color, and the <body>
@@ -2729,7 +2707,12 @@ Color FrameView::documentBackgroundColor() const
     // technically part of the document background, but it
     // otherwise poses problems when the aggregate is not
     // fully opaque.
-    return baseBackgroundColor().blend(htmlBackgroundColor).blend(bodyBackgroundColor);
+    if (htmlElement && htmlElement->renderer())
+        result = result.blend(htmlElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor));
+    if (bodyElement && bodyElement->renderer())
+        result = result.blend(bodyElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor));
+
+    return result;
 }
 
 bool FrameView::hasCustomScrollbars() const

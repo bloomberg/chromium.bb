@@ -23,6 +23,7 @@
 #define SVGColor_h
 
 #include "core/css/CSSValue.h"
+#include "core/css/StyleColor.h"
 #include "platform/graphics/Color.h"
 #include "wtf/PassRefPtr.h"
 
@@ -43,7 +44,9 @@ public:
     static PassRefPtr<SVGColor> createFromString(const String& rgbColor)
     {
         RefPtr<SVGColor> color = adoptRef(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
-        color->setColor(colorFromRGBColorString(rgbColor));
+        StyleColor styleColor = colorFromRGBColorString(rgbColor);
+        ASSERT(!styleColor.isCurrentColor());
+        color->setColor(styleColor.color());
         return color.release();
     }
 
@@ -63,7 +66,7 @@ public:
     const SVGColorType& colorType() const { return m_colorType; }
     PassRefPtr<RGBColor> rgbColor() const;
 
-    static Color colorFromRGBColorString(const String&);
+    static StyleColor colorFromRGBColorString(const String&);
 
     void setRGBColor(const String& rgbColor, ExceptionState&);
     void setRGBColorICCColor(const String& rgbColor, const String& iccColor, ExceptionState&);
@@ -83,7 +86,11 @@ protected:
     SVGColor(ClassType, const SVGColorType&);
     SVGColor(ClassType, const SVGColor& cloneFrom);
 
-    void setColor(const Color& color) { m_color = color; }
+    void setColor(const Color& color)
+    {
+        m_color = color;
+        setColorType(SVG_COLORTYPE_RGBCOLOR);
+    }
     void setColorType(const SVGColorType& type) { m_colorType = type; }
 
 private:

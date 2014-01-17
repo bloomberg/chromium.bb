@@ -1159,7 +1159,7 @@ void RenderTableCell::paintCollapsedBorders(PaintInfo& paintInfo, const LayoutPo
     for (CollapsedBorder* border = borders.nextBorder(); border; border = borders.nextBorder()) {
         if (border->borderValue.isSameIgnoringColor(*table()->currentBorderValue())) {
             drawLineForBoxSide(graphicsContext, border->x1, border->y1, border->x2, border->y2, border->side,
-                resolveColor(border->borderValue.color()), border->style, 0, 0, antialias);
+                border->borderValue.color().resolve(style()->visitedDependentColor(CSSPropertyColor)), border->style, 0, 0, antialias);
         }
     }
 }
@@ -1186,7 +1186,7 @@ void RenderTableCell::paintBackgroundsBehindCell(PaintInfo& paintInfo, const Lay
     Color c = backgroundObject->resolveColor(CSSPropertyBackgroundColor);
     const FillLayer* bgLayer = backgroundObject->style()->backgroundLayers();
 
-    if (bgLayer->hasImage() || c.isValid()) {
+    if (bgLayer->hasImage() || c.alpha()) {
         // We have to clip here because the background would paint
         // on top of the borders otherwise.  This only matters for cells and rows.
         bool shouldClip = backgroundObject->hasLayer() && (backgroundObject == this || backgroundObject == parent()) && tableElt->collapseBorders();

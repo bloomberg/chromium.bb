@@ -2322,10 +2322,7 @@ WebColor WebViewImpl::backgroundColor() const
     if (!m_page->mainFrame())
         return m_baseBackgroundColor;
     FrameView* view = m_page->mainFrame()->view();
-    Color backgroundColor = view->documentBackgroundColor();
-    if (!backgroundColor.isValid())
-        return m_baseBackgroundColor;
-    return backgroundColor.rgb();
+    return view->documentBackgroundColor().rgb();
 }
 
 bool WebViewImpl::caretOrSelectionRange(size_t* location, size_t* length)
@@ -3874,7 +3871,7 @@ void WebViewImpl::updateLayerTreeBackgroundColor()
     if (!m_layerTreeView)
         return;
 
-    m_layerTreeView->setBackgroundColor(m_backgroundColorOverride != Color::transparent ? m_backgroundColorOverride : backgroundColor());
+    m_layerTreeView->setBackgroundColor(alphaChannel(m_backgroundColorOverride) ? m_backgroundColorOverride : backgroundColor());
 }
 
 void WebViewImpl::updateLayerTreeDeviceScaleFactor()

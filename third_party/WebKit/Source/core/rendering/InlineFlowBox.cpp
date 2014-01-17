@@ -1359,7 +1359,7 @@ void InlineFlowBox::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
-    paintFillLayers(paintInfo, Color(), renderer()->style()->maskLayers(), paintRect, compositeOp);
+    paintFillLayers(paintInfo, Color::transparent, renderer()->style()->maskLayers(), paintRect, compositeOp);
 
     bool hasBoxImage = maskBoxImage && maskBoxImage->canRender(renderer(), renderer()->style()->effectiveZoom());
     if (!hasBoxImage || !maskBoxImage->isLoaded()) {

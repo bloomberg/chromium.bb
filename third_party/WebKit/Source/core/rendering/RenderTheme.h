@@ -139,9 +139,9 @@ public:
     virtual Color platformActiveTextSearchHighlightColor() const;
     virtual Color platformInactiveTextSearchHighlightColor() const;
 
-    static Color focusRingColor();
+    Color focusRingColor() const;
     virtual Color platformFocusRingColor() const { return Color(0, 0, 0); }
-    static void setCustomFocusRingColor(const Color&);
+    void setCustomFocusRingColor(const Color&);
     static Color tapHighlightColor();
     virtual Color platformTapHighlightColor() const { return RenderTheme::defaultTapHighlightColor; }
     virtual void platformColorsDidChange();
@@ -201,6 +201,8 @@ public:
 
     virtual bool shouldOpenPickerWithF4Key() const;
 
+    virtual bool supportsSelectionForegroundColors() const { return true; }
+
 protected:
     // The platform selection color.
     virtual Color platformActiveSelectionBackgroundColor() const;
@@ -215,8 +217,6 @@ protected:
 
     // A method asking if the theme is able to draw the focus ring.
     virtual bool supportsFocusRing(const RenderStyle*) const;
-    virtual bool supportsSelectionForegroundColors() const { return true; }
-    virtual bool supportsListBoxSelectionForegroundColors() const { return true; }
 
 #if !USE(NEW_THEME)
     // Methods for each appearance value.
@@ -314,15 +314,8 @@ public:
     bool isReadOnlyControl(const RenderObject*) const;
 
 private:
-    mutable Color m_activeSelectionBackgroundColor;
-    mutable Color m_inactiveSelectionBackgroundColor;
-    mutable Color m_activeSelectionForegroundColor;
-    mutable Color m_inactiveSelectionForegroundColor;
-
-    mutable Color m_activeListBoxSelectionBackgroundColor;
-    mutable Color m_inactiveListBoxSelectionBackgroundColor;
-    mutable Color m_activeListBoxSelectionForegroundColor;
-    mutable Color m_inactiveListBoxSelectionForegroundColor;
+    Color m_customFocusRingColor;
+    bool m_hasCustomFocusRingColor;
 
     // This color is expected to be drawn on a semi-transparent overlay,
     // making it more transparent than its alpha value indicates.

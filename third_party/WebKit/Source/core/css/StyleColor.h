@@ -32,79 +32,30 @@
 #define StyleColor_h
 
 #include "platform/graphics/Color.h"
-#include "wtf/FastAllocBase.h"
 
 namespace WebCore {
 
 class StyleColor {
-    WTF_MAKE_FAST_ALLOCATED;
 public:
-    StyleColor()
-        : m_color()
-        , m_valid(false)
-        , m_currentColor(false) { }
-    StyleColor(Color color)
-        : m_color(color)
-        , m_valid(true)
-        , m_currentColor(false) { }
-    StyleColor(RGBA32 color, bool valid = true, bool currentColor = false)
-        : m_color(color)
-        , m_valid(valid)
-        , m_currentColor(currentColor) { }
-    StyleColor(int r, int g, int b)
-        : m_color(Color(r, g, b))
-        , m_valid(true)
-        , m_currentColor(false) { }
-    StyleColor(int r, int g, int b, int a)
-        : m_color(Color(r, g, b, a))
-        , m_valid(true)
-        , m_currentColor(false) { }
-    StyleColor(const StyleColor& other)
-        : m_color(other.m_color)
-        , m_valid(other.m_valid)
-        , m_currentColor(other.m_currentColor) { }
+    StyleColor(Color color) : m_color(color), m_currentColor(false) { }
+    static StyleColor currentColor() { return StyleColor(); }
 
-    Color color() const { return m_color; }
-    bool isValid() const { return m_valid; }
     bool isCurrentColor() const { return m_currentColor; }
-    bool hasAlpha() const { return m_color.hasAlpha(); }
+    Color color() const { ASSERT(!isCurrentColor()); return m_color; }
 
-    void setRGB(int r, int g, int b)
-    {
-        m_color.setRGB(r, g, b);
-        m_valid = true;
-        m_currentColor = false;
-    }
-
-    RGBA32 rgb() const { return m_color.rgb(); } // Preserve the alpha.
-    int red() const { return m_color.red(); }
-    int green() const { return m_color.green(); }
-    int blue() const { return m_color.blue(); }
-    int alpha() const { return m_color.alpha(); }
-
-    static const StyleColor invalid()
-    {
-        return StyleColor(false, false);
-    }
-    static const StyleColor currentColor()
-    {
-        return StyleColor(true, true);
-    }
+    Color resolve(Color currentColor) const { return m_currentColor ? currentColor : m_color; }
 
 private:
-    StyleColor(bool invalid, bool currentColor)
-        : m_color()
-        , m_valid(invalid)
-        , m_currentColor(currentColor) { }
-
+    StyleColor() : m_currentColor(true) { }
     Color m_color;
-    bool m_valid;
     bool m_currentColor;
 };
 
 inline bool operator==(const StyleColor& a, const StyleColor& b)
 {
-    return a.rgb() == b.rgb() && a.isValid() == b.isValid() && a.isCurrentColor() == b.isCurrentColor();
+    if (a.isCurrentColor() || b.isCurrentColor())
+        return a.isCurrentColor() && b.isCurrentColor();
+    return a.color() == b.color();
 }
 
 inline bool operator!=(const StyleColor& a, const StyleColor& b)

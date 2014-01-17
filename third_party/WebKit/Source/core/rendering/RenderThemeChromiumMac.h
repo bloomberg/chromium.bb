@@ -48,6 +48,7 @@ public:
 
     virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE;
     virtual Color platformInactiveSelectionBackgroundColor() const OVERRIDE;
+    virtual Color platformActiveSelectionForegroundColor() const OVERRIDE;
     virtual Color platformActiveListBoxSelectionBackgroundColor() const OVERRIDE;
     virtual Color platformActiveListBoxSelectionForegroundColor() const OVERRIDE;
     virtual Color platformInactiveListBoxSelectionBackgroundColor() const OVERRIDE;
@@ -88,11 +89,11 @@ public:
 
     virtual Color systemColor(CSSValueID) const OVERRIDE;
 
+    virtual bool supportsSelectionForegroundColors() const OVERRIDE { return false; }
+
 protected:
     RenderThemeChromiumMac();
     virtual ~RenderThemeChromiumMac();
-
-    virtual bool supportsSelectionForegroundColors() const OVERRIDE { return false; }
 
     virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 

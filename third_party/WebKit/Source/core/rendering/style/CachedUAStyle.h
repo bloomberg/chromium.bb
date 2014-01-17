@@ -35,11 +35,13 @@ public:
     CachedUAStyle()
         : hasAppearance(false)
         , backgroundLayers(BackgroundFillLayer)
+        , backgroundColor(StyleColor::currentColor())
     { }
 
     explicit CachedUAStyle(const RenderStyle* style)
         : hasAppearance(style->hasAppearance())
         , backgroundLayers(BackgroundFillLayer)
+        , backgroundColor(StyleColor::currentColor())
     {
         // RenderTheme::adjustStyle is the only consumer of this data.
         // It only cares about the styles if appearance is set,
@@ -54,7 +56,7 @@ public:
     bool hasAppearance;
     BorderData border;
     FillLayer backgroundLayers;
-    Color backgroundColor;
+    StyleColor backgroundColor;
 };
 
 

@@ -181,7 +181,6 @@ bool Color::setFromString(const String& name)
 {
     if (name[0] != '#')
         return setNamedColor(name);
-    m_valid = true;
     if (name.is8Bit())
         return parseHexColor(name.characters8() + 1, name.length() - 1, m_color);
     return parseHexColor(name.characters16() + 1, name.length() - 1, m_color);
@@ -280,7 +279,6 @@ bool Color::setNamedColor(const String& name)
 {
     const NamedColor* foundColor = findNamedColor(name);
     m_color = foundColor ? foundColor->ARGBValue : 0;
-    m_valid = true;
     return foundColor;
 }
 

@@ -207,7 +207,7 @@ void SVGInlineTextBox::paintSelectionBackground(PaintInfo& paintInfo)
         return;
 
     Color backgroundColor = renderer()->selectionBackgroundColor();
-    if (!backgroundColor.isValid() || !backgroundColor.alpha())
+    if (!backgroundColor.alpha())
         return;
 
     RenderSVGInlineText* textRenderer = toRenderSVGInlineText(this->textRenderer());
@@ -362,11 +362,11 @@ bool SVGInlineTextBox::acquirePaintingResource(GraphicsContext*& context, float 
     ASSERT(style);
     ASSERT(m_paintingResourceMode != ApplyToDefaultMode);
 
-    Color fallbackColor;
+    bool hasFallback;
     if (m_paintingResourceMode & ApplyToFillMode)
-        m_paintingResource = RenderSVGResource::fillPaintingResource(renderer, style, fallbackColor);
+        m_paintingResource = RenderSVGResource::fillPaintingResource(renderer, style, hasFallback);
     else if (m_paintingResourceMode & ApplyToStrokeMode)
-        m_paintingResource = RenderSVGResource::strokePaintingResource(renderer, style, fallbackColor);
+        m_paintingResource = RenderSVGResource::strokePaintingResource(renderer, style, hasFallback);
     else {
         // We're either called for stroking or filling.
         ASSERT_NOT_REACHED();
@@ -376,11 +376,8 @@ bool SVGInlineTextBox::acquirePaintingResource(GraphicsContext*& context, float 
         return false;
 
     if (!m_paintingResource->applyResource(renderer, style, context, m_paintingResourceMode)) {
-        if (fallbackColor.isValid()) {
-            RenderSVGResourceSolidColor* fallbackResource = RenderSVGResource::sharedSolidPaintingResource();
-            fallbackResource->setColor(fallbackColor);
-
-            m_paintingResource = fallbackResource;
+        if (hasFallback) {
+            m_paintingResource = RenderSVGResource::sharedSolidPaintingResource();
             m_paintingResource->applyResource(renderer, style, context, m_paintingResourceMode);
         }
     }

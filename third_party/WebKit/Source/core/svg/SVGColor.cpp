@@ -45,13 +45,14 @@ PassRefPtr<RGBColor> SVGColor::rgbColor() const
     return RGBColor::create(m_color.rgb());
 }
 
-Color SVGColor::colorFromRGBColorString(const String& colorString)
+StyleColor SVGColor::colorFromRGBColorString(const String& colorString)
 {
     // FIXME: Rework css parser so it is more SVG aware.
     RGBA32 color;
     if (BisonCSSParser::parseColor(color, colorString.stripWhiteSpace()))
-        return color;
-    return Color();
+        return StyleColor(color);
+    // FIXME: This branch catches the string currentColor, but we should error if we have an illegal color value.
+    return StyleColor::currentColor();
 }
 
 void SVGColor::setRGBColor(const String&, ExceptionState& exceptionState)
@@ -81,8 +82,6 @@ String SVGColor::customCSSText() const
         // FIXME: No ICC color support.
         return m_color.serializedAsCSSComponentValue();
     case SVG_COLORTYPE_CURRENTCOLOR:
-        if (m_color.isValid())
-            return m_color.serializedAsCSSComponentValue();
         return "currentColor";
     }
 

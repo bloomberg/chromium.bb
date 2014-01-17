@@ -25,6 +25,7 @@
 #ifndef BorderValue_h
 #define BorderValue_h
 
+#include "core/css/StyleColor.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/graphics/Color.h"
 
@@ -35,7 +36,7 @@ friend class RenderStyle;
 public:
     BorderValue()
         : m_color(0)
-        , m_colorIsValid(false)
+        , m_colorIsCurrentColor(true)
         , m_width(3)
         , m_style(BNONE)
         , m_isAuto(AUTO_OFF)
@@ -49,7 +50,7 @@ public:
 
     bool isTransparent() const
     {
-        return m_colorIsValid && !alphaChannel(m_color);
+        return !m_colorIsCurrentColor && !m_color.alpha();
     }
 
     bool isVisible(bool checkStyle = true) const
@@ -59,7 +60,7 @@ public:
 
     bool operator==(const BorderValue& o) const
     {
-        return m_width == o.m_width && m_style == o.m_style && m_color == o.m_color && m_colorIsValid == o.m_colorIsValid;
+        return m_width == o.m_width && m_style == o.m_style && m_color == o.m_color && m_colorIsCurrentColor == o.m_colorIsCurrentColor;
     }
 
     bool operator!=(const BorderValue& o) const
@@ -67,20 +68,20 @@ public:
         return !(*this == o);
     }
 
-    void setColor(const Color& color)
+    void setColor(const StyleColor& color)
     {
-        m_color = color.rgb();
-        m_colorIsValid = color.isValid();
+        m_color = color.resolve(Color());
+        m_colorIsCurrentColor = color.isCurrentColor();
     }
 
-    Color color() const { return Color(m_color, m_colorIsValid); }
+    StyleColor color() const { return m_colorIsCurrentColor ? StyleColor::currentColor() : StyleColor(m_color); }
 
     unsigned width() const { return m_width; }
     EBorderStyle style() const { return static_cast<EBorderStyle>(m_style); }
 
 protected:
-    RGBA32 m_color;
-    unsigned m_colorIsValid : 1;
+    Color m_color;
+    unsigned m_colorIsCurrentColor : 1;
 
     unsigned m_width : 26;
     unsigned m_style : 4; // EBorderStyle

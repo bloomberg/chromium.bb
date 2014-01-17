@@ -78,6 +78,7 @@ PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerFactory* factory, G
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     : m_client(client)
     , m_anchorPoint(0.5f, 0.5f, 0)
+    , m_backgroundColor(Color::transparent)
     , m_opacity(1)
     , m_zPosition(0)
     , m_blendMode(blink::WebBlendModeNormal)
@@ -98,6 +99,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_replicaLayer(0)
     , m_replicatedLayer(0)
     , m_paintCount(0)
+    , m_contentsSolidColor(Color::transparent)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
     , m_scrollableArea(0)
@@ -649,7 +651,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << ")\n";
     }
 
-    if (m_backgroundColor.isValid() && m_backgroundColor != Color::transparent) {
+    if (m_backgroundColor.alpha()) {
         writeIndent(ts, indent + 1);
         ts << "(backgroundColor " << m_backgroundColor.nameForRenderTreeAsText() << ")\n";
     }
@@ -1043,7 +1045,7 @@ void GraphicsLayer::setContentsToSolidColor(const Color& color)
         return;
 
     m_contentsSolidColor = color;
-    if (color.isValid() && color.alpha()) {
+    if (color.alpha()) {
         if (!m_solidColorLayer) {
             m_solidColorLayer = adoptPtr(Platform::current()->compositorSupport()->createSolidColorLayer());
             registerContentsLayer(m_solidColorLayer->layer());

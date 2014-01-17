@@ -194,6 +194,11 @@ Color RenderThemeChromiumMac::platformInactiveSelectionBackgroundColor() const
     return Color(static_cast<int>(255.0 * [color redComponent]), static_cast<int>(255.0 * [color greenComponent]), static_cast<int>(255.0 * [color blueComponent]));
 }
 
+Color RenderThemeChromiumMac::platformActiveSelectionForegroundColor() const
+{
+    return Color::black;
+}
+
 Color RenderThemeChromiumMac::platformActiveListBoxSelectionBackgroundColor() const
 {
     NSColor* color = [[NSColor alternateSelectedControlColor] colorUsingColorSpaceName:NSDeviceRGBColorSpace];
@@ -394,6 +399,7 @@ Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
     }
 
     Color color;
+    bool needsFallback = false;
     switch (cssValueId) {
         case CSSValueActiveborder:
             color = convertNSColorToColor([NSColor keyboardFocusIndicatorColor]);
@@ -406,6 +412,7 @@ Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
             break;
         case CSSValueBackground:
             // Use theme independent default
+            needsFallback = true;
             break;
         case CSSValueButtonface:
             // We use this value instead of NSColor's controlColor to avoid website incompatibilities.
@@ -491,14 +498,14 @@ Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
             color = convertNSColorToColor([NSColor windowFrameTextColor]);
             break;
         default:
+            needsFallback = true;
             break;
     }
 
-    if (!color.isValid())
+    if (needsFallback)
         color = RenderTheme::systemColor(cssValueId);
 
-    if (color.isValid())
-        m_systemColorCache.set(cssValueId, color.rgb());
+    m_systemColorCache.set(cssValueId, color.rgb());
 
     return color;
 }

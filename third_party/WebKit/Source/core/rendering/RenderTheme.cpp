@@ -69,12 +69,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static Color& customFocusRingColor()
-{
-    DEFINE_STATIC_LOCAL(Color, color, ());
-    return color;
-}
-
 static blink::WebFallbackThemeEngine::State getWebFallbackThemeState(const RenderTheme* theme, const RenderObject* o)
 {
     if (!theme->isEnabled(o))
@@ -88,8 +82,9 @@ static blink::WebFallbackThemeEngine::State getWebFallbackThemeState(const Rende
 }
 
 RenderTheme::RenderTheme()
+    : m_hasCustomFocusRingColor(false)
 #if USE(NEW_THEME)
-    : m_platformTheme(platformTheme())
+    , m_platformTheme(platformTheme())
 #endif
 {
 }
@@ -502,58 +497,42 @@ String RenderTheme::formatMediaControlsCurrentTime(float currentTime, float /*du
 
 Color RenderTheme::activeSelectionBackgroundColor() const
 {
-    if (!m_activeSelectionBackgroundColor.isValid())
-        m_activeSelectionBackgroundColor = platformActiveSelectionBackgroundColor().blendWithWhite();
-    return m_activeSelectionBackgroundColor;
+    return platformActiveSelectionBackgroundColor().blendWithWhite();
 }
 
 Color RenderTheme::inactiveSelectionBackgroundColor() const
 {
-    if (!m_inactiveSelectionBackgroundColor.isValid())
-        m_inactiveSelectionBackgroundColor = platformInactiveSelectionBackgroundColor().blendWithWhite();
-    return m_inactiveSelectionBackgroundColor;
+    return platformInactiveSelectionBackgroundColor().blendWithWhite();
 }
 
 Color RenderTheme::activeSelectionForegroundColor() const
 {
-    if (!m_activeSelectionForegroundColor.isValid() && supportsSelectionForegroundColors())
-        m_activeSelectionForegroundColor = platformActiveSelectionForegroundColor();
-    return m_activeSelectionForegroundColor;
+    return platformActiveSelectionForegroundColor();
 }
 
 Color RenderTheme::inactiveSelectionForegroundColor() const
 {
-    if (!m_inactiveSelectionForegroundColor.isValid() && supportsSelectionForegroundColors())
-        m_inactiveSelectionForegroundColor = platformInactiveSelectionForegroundColor();
-    return m_inactiveSelectionForegroundColor;
+    return platformInactiveSelectionForegroundColor();
 }
 
 Color RenderTheme::activeListBoxSelectionBackgroundColor() const
 {
-    if (!m_activeListBoxSelectionBackgroundColor.isValid())
-        m_activeListBoxSelectionBackgroundColor = platformActiveListBoxSelectionBackgroundColor();
-    return m_activeListBoxSelectionBackgroundColor;
+    return platformActiveListBoxSelectionBackgroundColor();
 }
 
 Color RenderTheme::inactiveListBoxSelectionBackgroundColor() const
 {
-    if (!m_inactiveListBoxSelectionBackgroundColor.isValid())
-        m_inactiveListBoxSelectionBackgroundColor = platformInactiveListBoxSelectionBackgroundColor();
-    return m_inactiveListBoxSelectionBackgroundColor;
+    return platformInactiveListBoxSelectionBackgroundColor();
 }
 
 Color RenderTheme::activeListBoxSelectionForegroundColor() const
 {
-    if (!m_activeListBoxSelectionForegroundColor.isValid() && supportsListBoxSelectionForegroundColors())
-        m_activeListBoxSelectionForegroundColor = platformActiveListBoxSelectionForegroundColor();
-    return m_activeListBoxSelectionForegroundColor;
+    return platformActiveListBoxSelectionForegroundColor();
 }
 
 Color RenderTheme::inactiveListBoxSelectionForegroundColor() const
 {
-    if (!m_inactiveListBoxSelectionForegroundColor.isValid() && supportsListBoxSelectionForegroundColors())
-        m_inactiveListBoxSelectionForegroundColor = platformInactiveListBoxSelectionForegroundColor();
-    return m_inactiveListBoxSelectionForegroundColor;
+    return platformInactiveListBoxSelectionForegroundColor();
 }
 
 Color RenderTheme::platformActiveSelectionBackgroundColor() const
@@ -1027,16 +1006,6 @@ void RenderTheme::adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*
 
 void RenderTheme::platformColorsDidChange()
 {
-    m_activeSelectionForegroundColor = Color();
-    m_inactiveSelectionForegroundColor = Color();
-    m_activeSelectionBackgroundColor = Color();
-    m_inactiveSelectionBackgroundColor = Color();
-
-    m_activeListBoxSelectionForegroundColor = Color();
-    m_inactiveListBoxSelectionForegroundColor = Color();
-    m_activeListBoxSelectionBackgroundColor = Color();
-    m_inactiveListBoxSelectionForegroundColor = Color();
-
     Page::scheduleForcedStyleRecalcForAllPages();
 }
 
@@ -1116,6 +1085,7 @@ Color RenderTheme::systemColor(CSSValueID cssValueId) const
     default:
         break;
     }
+    ASSERT_NOT_REACHED();
     return Color();
 }
 
@@ -1136,12 +1106,13 @@ Color RenderTheme::tapHighlightColor()
 
 void RenderTheme::setCustomFocusRingColor(const Color& c)
 {
-    customFocusRingColor() = c;
+    m_customFocusRingColor = c;
+    m_hasCustomFocusRingColor = true;
 }
 
-Color RenderTheme::focusRingColor()
+Color RenderTheme::focusRingColor() const
 {
-    return customFocusRingColor().isValid() ? customFocusRingColor() : theme().platformFocusRingColor();
+    return m_hasCustomFocusRingColor ? m_customFocusRingColor : theme().platformFocusRingColor();
 }
 
 String RenderTheme::fileListNameForWidth(Locale& locale, const FileList* fileList, const Font& font, int width) const

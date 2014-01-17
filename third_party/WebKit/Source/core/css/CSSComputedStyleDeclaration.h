@@ -33,7 +33,6 @@ namespace WebCore {
 
 class CSSPrimitiveValue;
 class CSSValueList;
-class Color;
 class ExceptionState;
 class MutableStylePropertySet;
 class Node;
@@ -42,6 +41,7 @@ class RenderStyle;
 class SVGPaint;
 class ShadowData;
 class ShadowList;
+class StyleColor;
 class StylePropertySet;
 class StylePropertyShorthand;
 
@@ -128,7 +128,7 @@ private:
 
     PassRefPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread) const;
     PassRefPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle&, bool useSpread) const;
-    PassRefPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const Color&) const;
+    PassRefPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const StyleColor&) const;
     PassRefPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint>, RenderStyle&) const;
 
     PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle&) const;

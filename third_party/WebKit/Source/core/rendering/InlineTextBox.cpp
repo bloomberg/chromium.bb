@@ -403,7 +403,7 @@ static void paintTextWithShadows(GraphicsContext* context,
             float shadowX = horizontal ? shadow.x() : shadow.y();
             float shadowY = horizontal ? shadow.y() : -shadow.x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper.addShadow(offset, shadow.blur(), renderer->resolveColor(shadow.color()),
+            drawLooper.addShadow(offset, shadow.blur(), shadow.color(),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         }
         drawLooper.addUnmodifiedContent();
@@ -585,14 +585,14 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     if (haveSelection) {
         // Check foreground color first.
         Color foreground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionForegroundColor();
-        if (foreground.isValid() && foreground != selectionFillColor && foreground != Color::transparent) {
+        if (foreground != selectionFillColor) {
             if (!paintSelectedTextOnly)
                 paintSelectedTextSeparately = true;
             selectionFillColor = foreground;
         }
 
         Color emphasisMarkForeground = paintInfo.forceBlackText() ? Color::black : renderer()->selectionEmphasisMarkColor();
-        if (emphasisMarkForeground.isValid() && emphasisMarkForeground != selectionEmphasisMarkColor) {
+        if (emphasisMarkForeground != selectionEmphasisMarkColor) {
             if (!paintSelectedTextOnly)
                 paintSelectedTextSeparately = true;
             selectionEmphasisMarkColor = emphasisMarkForeground;
@@ -821,7 +821,7 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
         return;
 
     Color c = renderer()->selectionBackgroundColor();
-    if (!c.isValid() || !c.alpha())
+    if (!c.alpha())
         return;
 
     // If the text color ends up being the same as the selection background, invert the selection
@@ -1068,7 +1068,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
     }
 
     // Get the text decoration colors.
-    Color underline, overline, linethrough;
+    Color underline(Color::transparent), overline(Color::transparent), linethrough(Color::transparent);
     renderer()->getTextDecorationColors(deco, underline, overline, linethrough, true);
     if (isFirstLineStyle())
         renderer()->getTextDecorationColors(deco, underline, overline, linethrough, true, true);

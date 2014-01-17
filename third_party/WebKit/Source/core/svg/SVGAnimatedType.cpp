@@ -96,7 +96,7 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createAngleAndEnumeration(std::pair
     return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createColor(Color* color)
+PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createColor(StyleColor* color)
 {
     ASSERT(color);
     OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedColor));
@@ -213,7 +213,7 @@ String SVGAnimatedType::valueAsString()
     switch (m_type) {
     case AnimatedColor:
         ASSERT(m_data.color);
-        return m_data.color->serializedAsCSSComponentValue();
+        return m_data.color->isCurrentColor() ? "currentColor" : m_data.color->color().serializedAsCSSComponentValue();
     case AnimatedNumber:
         ASSERT(m_data.number);
         return String::number(*m_data.number);
@@ -256,7 +256,7 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     switch (m_type) {
     case AnimatedColor:
         ASSERT(m_data.color);
-        *m_data.color = value.isEmpty() ? Color() : SVGColor::colorFromRGBColorString(value);
+        *m_data.color = value.isEmpty() ? StyleColor::currentColor() : SVGColor::colorFromRGBColorString(value);
         break;
     case AnimatedNumber:
         ASSERT(m_data.number);

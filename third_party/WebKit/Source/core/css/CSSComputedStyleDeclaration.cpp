@@ -644,12 +644,10 @@ static PassRefPtr<CSSValue> valueForPositionOffset(RenderStyle& style, CSSProper
     return zoomAdjustedPixelValueForLength(l, style);
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(const RenderStyle& style, const Color& color) const
+PassRefPtr<CSSPrimitiveValue> CSSComputedStyleDeclaration::currentColorOrValidColor(const RenderStyle& style, const StyleColor& color) const
 {
     // This function does NOT look at visited information, so that computed style doesn't expose that.
-    if (!color.isValid())
-        return cssValuePool().createColorValue(style.color().rgb());
-    return cssValuePool().createColorValue(color.rgb());
+    return cssValuePool().createColorValue(color.resolve(style.color()).rgb());
 }
 
 static PassRefPtr<CSSValueList> valuesForBorderRadiusCorner(LengthSize radius, const RenderStyle& style)
@@ -1579,7 +1577,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             break;
 
         case CSSPropertyBackgroundColor:
-            return cssValuePool().createColorValue(m_allowVisitedStyle? style->visitedDependentColor(CSSPropertyBackgroundColor).rgb() : style->backgroundColor().rgb());
+            return m_allowVisitedStyle ? cssValuePool().createColorValue(style->visitedDependentColor(CSSPropertyBackgroundColor).rgb()) : currentColorOrValidColor(*style, style->backgroundColor());
         case CSSPropertyBackgroundImage:
         case CSSPropertyWebkitMaskImage: {
             const FillLayer* layers = propertyID == CSSPropertyWebkitMaskImage ? style->maskLayers() : style->backgroundLayers();

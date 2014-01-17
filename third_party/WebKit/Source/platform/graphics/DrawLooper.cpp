@@ -62,14 +62,10 @@ void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& col
     ShadowTransformMode shadowTransformMode, ShadowAlphaMode shadowAlphaMode)
 {
     // Detect when there's no effective shadow.
-    if (!color.isValid() || !color.alpha())
+    if (!color.alpha())
         return;
 
-    SkColor skColor;
-    if (color.isValid())
-        skColor = color.rgb();
-    else
-        skColor = SkColorSetARGB(0xFF / 3, 0, 0, 0); // "std" apple shadow color.
+    SkColor skColor = color.rgb();
 
     SkLayerDrawLooper::LayerInfo info;
 

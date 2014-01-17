@@ -188,11 +188,11 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
             CSSShadowValue* item = toCSSShadowValue(cssValue);
             IntPoint location(item->x->computeLength<int>(conversionData), item->y->computeLength<int>(conversionData));
             int blur = item->blur ? item->blur->computeLength<int>(conversionData) : 0;
-            Color shadowColor;
+            Color shadowColor = Color::transparent;
             if (item->color)
                 shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->color());
 
-            operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor.isValid() ? shadowColor : Color::transparent));
+            operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor));
             break;
         }
         case CSSFilterValue::UnknownFilterOperation:

@@ -988,7 +988,7 @@ void CompositedLayerMapping::updateDrawsContent(bool isSimpleContainer)
         CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
         // Content layer may be null if context is lost.
         if (blink::WebLayer* contentLayer = context->platformLayer()) {
-            Color bgColor;
+            Color bgColor(Color::transparent);
             if (contentLayerSupportsDirectBackgroundComposition(renderer())) {
                 bgColor = rendererBackgroundColor();
                 hasPaintedContent = false;
@@ -1411,10 +1411,9 @@ void CompositedLayerMapping::updateBackgroundColor(bool isSimpleContainer)
     Color backgroundColor = rendererBackgroundColor();
     if (isSimpleContainer) {
         m_graphicsLayer->setContentsToSolidColor(backgroundColor);
-        m_graphicsLayer->setBackgroundColor(Color());
+        m_graphicsLayer->setBackgroundColor(Color::transparent);
     } else {
-        // An unset (invalid) color will remove the solid color.
-        m_graphicsLayer->setContentsToSolidColor(Color());
+        m_graphicsLayer->setContentsToSolidColor(Color::transparent);
         m_graphicsLayer->setBackgroundColor(backgroundColor);
     }
 }

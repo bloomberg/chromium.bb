@@ -535,9 +535,9 @@ public:
     void (RenderStyle::*m_setter)(PassRefPtr<ShadowList>);
 };
 
-class PropertyWrapperMaybeInvalidColor FINAL : public AnimationPropertyWrapperBase {
+class PropertyWrapperMaybeInvalidStyleColor FINAL : public AnimationPropertyWrapperBase {
 public:
-    PropertyWrapperMaybeInvalidColor(CSSPropertyID prop, Color (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const Color&))
+    PropertyWrapperMaybeInvalidStyleColor(CSSPropertyID prop, StyleColor (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const StyleColor&))
         : AnimationPropertyWrapperBase(prop)
         , m_getter(getter)
         , m_setter(setter)
@@ -546,42 +546,32 @@ public:
 
     virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
     {
-        Color fromColor = (a->*m_getter)();
-        Color toColor = (b->*m_getter)();
+        StyleColor fromColor = (a->*m_getter)();
+        StyleColor toColor = (b->*m_getter)();
 
-        if (!fromColor.isValid() && !toColor.isValid())
+        if (fromColor.isCurrentColor() && toColor.isCurrentColor())
             return true;
 
-        if (!fromColor.isValid())
-            fromColor = a->color();
-        if (!toColor.isValid())
-            toColor = b->color();
-
-        return fromColor == toColor;
+        return fromColor.resolve(a->color()) == toColor.resolve(b->color());
     }
 
     virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const OVERRIDE
     {
-        Color fromColor = (a->*m_getter)();
-        Color toColor = (b->*m_getter)();
+        StyleColor fromColor = (a->*m_getter)();
+        StyleColor toColor = (b->*m_getter)();
 
-        if (!fromColor.isValid() && !toColor.isValid())
+        if (fromColor.isCurrentColor() && toColor.isCurrentColor())
             return;
 
-        if (!fromColor.isValid())
-            fromColor = a->color();
-        if (!toColor.isValid())
-            toColor = b->color();
-        (dst->*m_setter)(blendFunc(anim, fromColor, toColor, progress));
+        (dst->*m_setter)(blendFunc(anim, fromColor.resolve(a->color()), toColor.resolve(b->color()), progress));
     }
 
 private:
-    Color (RenderStyle::*m_getter)() const;
-    void (RenderStyle::*m_setter)(const Color&);
+    StyleColor (RenderStyle::*m_getter)() const;
+    void (RenderStyle::*m_setter)(const StyleColor&);
 };
 
 
-enum MaybeInvalidColorTag { MaybeInvalidColor };
 class PropertyWrapperVisitedAffectedColor FINAL : public AnimationPropertyWrapperBase {
 public:
     PropertyWrapperVisitedAffectedColor(CSSPropertyID prop, Color (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const Color&),
@@ -591,11 +581,28 @@ public:
         , m_visitedWrapper(adoptPtr(new PropertyWrapperColor(prop, visitedGetter, visitedSetter)))
     {
     }
-    PropertyWrapperVisitedAffectedColor(CSSPropertyID prop, MaybeInvalidColorTag, Color (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const Color&),
-        Color (RenderStyle::*visitedGetter)() const, void (RenderStyle::*visitedSetter)(const Color&))
+    virtual bool equals(const RenderStyle* a, const RenderStyle* b) const
+    {
+        return m_wrapper->equals(a, b) && m_visitedWrapper->equals(a, b);
+    }
+    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
+    {
+        m_wrapper->blend(anim, dst, a, b, progress);
+        m_visitedWrapper->blend(anim, dst, a, b, progress);
+    }
+
+private:
+    OwnPtr<AnimationPropertyWrapperBase> m_wrapper;
+    OwnPtr<AnimationPropertyWrapperBase> m_visitedWrapper;
+};
+
+class PropertyWrapperVisitedAffectedStyleColor FINAL : public AnimationPropertyWrapperBase {
+public:
+    PropertyWrapperVisitedAffectedStyleColor(CSSPropertyID prop, StyleColor (RenderStyle::*getter)() const, void (RenderStyle::*setter)(const StyleColor&),
+        StyleColor (RenderStyle::*visitedGetter)() const, void (RenderStyle::*visitedSetter)(const StyleColor&))
         : AnimationPropertyWrapperBase(prop)
-        , m_wrapper(adoptPtr(new PropertyWrapperMaybeInvalidColor(prop, getter, setter)))
-        , m_visitedWrapper(adoptPtr(new PropertyWrapperMaybeInvalidColor(prop, visitedGetter, visitedSetter)))
+        , m_wrapper(adoptPtr(new PropertyWrapperMaybeInvalidStyleColor(prop, getter, setter)))
+        , m_visitedWrapper(adoptPtr(new PropertyWrapperMaybeInvalidStyleColor(prop, visitedGetter, visitedSetter)))
     {
     }
     virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
@@ -863,15 +870,6 @@ public:
         if ((a->*m_paintTypeGetter)() == SVGPaint::SVG_PAINTTYPE_RGBCOLOR) {
             Color fromColor = (a->*m_getter)();
             Color toColor = (b->*m_getter)();
-
-            if (!fromColor.isValid() && !toColor.isValid())
-                return true;
-
-            if (!fromColor.isValid())
-                fromColor = Color();
-            if (!toColor.isValid())
-                toColor = Color();
-
             return fromColor == toColor;
         }
         return true;
@@ -886,13 +884,6 @@ public:
         Color fromColor = (a->*m_getter)();
         Color toColor = (b->*m_getter)();
 
-        if (!fromColor.isValid() && !toColor.isValid())
-            return;
-
-        if (!fromColor.isValid())
-            fromColor = Color();
-        if (!toColor.isValid())
-            toColor = Color();
         (dst->*m_setter)(blendFunc(anim, fromColor, toColor, progress));
     }
 
@@ -1009,7 +1000,7 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new PropertyWrapper<Length>(CSSPropertyPaddingBottom, &RenderStyle::paddingBottom, &RenderStyle::setPaddingBottom));
     gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyColor, &RenderStyle::color, &RenderStyle::setColor, &RenderStyle::visitedLinkColor, &RenderStyle::setVisitedLinkColor));
 
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyBackgroundColor, &RenderStyle::backgroundColor, &RenderStyle::setBackgroundColor, &RenderStyle::visitedLinkBackgroundColor, &RenderStyle::setVisitedLinkBackgroundColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBackgroundColor, &RenderStyle::backgroundColor, &RenderStyle::setBackgroundColor, &RenderStyle::visitedLinkBackgroundColor, &RenderStyle::setVisitedLinkBackgroundColor));
 
     gPropertyWrappers->append(new FillLayersPropertyWrapper(CSSPropertyBackgroundImage, &RenderStyle::backgroundLayers, &RenderStyle::accessBackgroundLayers));
     gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyListStyleImage, &RenderStyle::listStyleImage, &RenderStyle::setListStyleImage));
@@ -1085,13 +1076,13 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new NonNegativeLengthWrapper(CSSPropertyShapeMargin, &RenderStyle::shapeMargin, &RenderStyle::setShapeMargin));
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyShapeImageThreshold, &RenderStyle::shapeImageThreshold, &RenderStyle::setShapeImageThreshold));
 
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyWebkitColumnRuleColor, MaybeInvalidColor, &RenderStyle::columnRuleColor, &RenderStyle::setColumnRuleColor, &RenderStyle::visitedLinkColumnRuleColor, &RenderStyle::setVisitedLinkColumnRuleColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyWebkitTextStrokeColor, MaybeInvalidColor, &RenderStyle::textStrokeColor, &RenderStyle::setTextStrokeColor, &RenderStyle::visitedLinkTextStrokeColor, &RenderStyle::setVisitedLinkTextStrokeColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyBorderLeftColor, MaybeInvalidColor, &RenderStyle::borderLeftColor, &RenderStyle::setBorderLeftColor, &RenderStyle::visitedLinkBorderLeftColor, &RenderStyle::setVisitedLinkBorderLeftColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyBorderRightColor, MaybeInvalidColor, &RenderStyle::borderRightColor, &RenderStyle::setBorderRightColor, &RenderStyle::visitedLinkBorderRightColor, &RenderStyle::setVisitedLinkBorderRightColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyBorderTopColor, MaybeInvalidColor, &RenderStyle::borderTopColor, &RenderStyle::setBorderTopColor, &RenderStyle::visitedLinkBorderTopColor, &RenderStyle::setVisitedLinkBorderTopColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyBorderBottomColor, MaybeInvalidColor, &RenderStyle::borderBottomColor, &RenderStyle::setBorderBottomColor, &RenderStyle::visitedLinkBorderBottomColor, &RenderStyle::setVisitedLinkBorderBottomColor));
-    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedColor(CSSPropertyOutlineColor, MaybeInvalidColor, &RenderStyle::outlineColor, &RenderStyle::setOutlineColor, &RenderStyle::visitedLinkOutlineColor, &RenderStyle::setVisitedLinkOutlineColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyWebkitColumnRuleColor, &RenderStyle::columnRuleColor, &RenderStyle::setColumnRuleColor, &RenderStyle::visitedLinkColumnRuleColor, &RenderStyle::setVisitedLinkColumnRuleColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyWebkitTextStrokeColor, &RenderStyle::textStrokeColor, &RenderStyle::setTextStrokeColor, &RenderStyle::visitedLinkTextStrokeColor, &RenderStyle::setVisitedLinkTextStrokeColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderLeftColor, &RenderStyle::borderLeftColor, &RenderStyle::setBorderLeftColor, &RenderStyle::visitedLinkBorderLeftColor, &RenderStyle::setVisitedLinkBorderLeftColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderRightColor, &RenderStyle::borderRightColor, &RenderStyle::setBorderRightColor, &RenderStyle::visitedLinkBorderRightColor, &RenderStyle::setVisitedLinkBorderRightColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderTopColor, &RenderStyle::borderTopColor, &RenderStyle::setBorderTopColor, &RenderStyle::visitedLinkBorderTopColor, &RenderStyle::setVisitedLinkBorderTopColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyBorderBottomColor, &RenderStyle::borderBottomColor, &RenderStyle::setBorderBottomColor, &RenderStyle::visitedLinkBorderBottomColor, &RenderStyle::setVisitedLinkBorderBottomColor));
+    gPropertyWrappers->append(new PropertyWrapperVisitedAffectedStyleColor(CSSPropertyOutlineColor, &RenderStyle::outlineColor, &RenderStyle::setOutlineColor, &RenderStyle::visitedLinkOutlineColor, &RenderStyle::setVisitedLinkOutlineColor));
 
     gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
     gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyWebkitBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
@@ -1108,12 +1099,12 @@ void CSSPropertyAnimation::ensurePropertyMap()
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStrokeMiterlimit, &RenderStyle::strokeMiterLimit, &RenderStyle::setStrokeMiterLimit));
 
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFloodOpacity, &RenderStyle::floodOpacity, &RenderStyle::setFloodOpacity));
-    gPropertyWrappers->append(new PropertyWrapperMaybeInvalidColor(CSSPropertyFloodColor, &RenderStyle::floodColor, &RenderStyle::setFloodColor));
+    gPropertyWrappers->append(new PropertyWrapperColor(CSSPropertyFloodColor, &RenderStyle::floodColor, &RenderStyle::setFloodColor));
 
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStopOpacity, &RenderStyle::stopOpacity, &RenderStyle::setStopOpacity));
-    gPropertyWrappers->append(new PropertyWrapperMaybeInvalidColor(CSSPropertyStopColor, &RenderStyle::stopColor, &RenderStyle::setStopColor));
+    gPropertyWrappers->append(new PropertyWrapperColor(CSSPropertyStopColor, &RenderStyle::stopColor, &RenderStyle::setStopColor));
 
-    gPropertyWrappers->append(new PropertyWrapperMaybeInvalidColor(CSSPropertyLightingColor, &RenderStyle::lightingColor, &RenderStyle::setLightingColor));
+    gPropertyWrappers->append(new PropertyWrapperColor(CSSPropertyLightingColor, &RenderStyle::lightingColor, &RenderStyle::setLightingColor));
 
     gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyBaselineShift, &RenderStyle::baselineShiftValue, &RenderStyle::setBaselineShiftValue));
     gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyKerning, &RenderStyle::kerning, &RenderStyle::setKerning));

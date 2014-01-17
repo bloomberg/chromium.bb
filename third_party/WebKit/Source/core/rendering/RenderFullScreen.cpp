@@ -104,7 +104,7 @@ static PassRefPtr<RenderStyle> createFullScreenStyle()
     fullscreenStyle->setLeft(Length(0, WebCore::Fixed));
     fullscreenStyle->setTop(Length(0, WebCore::Fixed));
 
-    fullscreenStyle->setBackgroundColor(Color::black);
+    fullscreenStyle->setBackgroundColor(StyleColor(Color::black));
 
     return fullscreenStyle.release();
 }
