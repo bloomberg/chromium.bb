@@ -33,6 +33,7 @@
 #include "heap/Handle.h"
 #include "heap/Heap.h"
 #include "heap/ThreadState.h"
+#include "heap/Visitor.h"
 
 #include <gtest/gtest.h>
 
@@ -67,6 +68,117 @@ static void getHeapStats(HeapStats* stats)
     TestGCScope scope(ThreadState::NoHeapPointersOnStack);
     Heap::getStats(stats);
 }
+
+#define DEFINE_VISITOR_METHODS(Type)                                       \
+    virtual void mark(const Type* object, TraceCallback callback) OVERRIDE \
+    {                                                                      \
+        if (object)                                                        \
+            m_count++;                                                     \
+    }                                                                      \
+    virtual bool isMarked(const Type*) OVERRIDE { return false; }
+
+class CountingVisitor : public Visitor {
+public:
+    CountingVisitor()
+        : m_count(0)
+    {
+    }
+
+    virtual void mark(const void* object, TraceCallback) OVERRIDE
+    {
+        if (object)
+            m_count++;
+    }
+
+    virtual void mark(HeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    {
+        ASSERT(header->payload());
+        m_count++;
+    }
+
+    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    {
+        ASSERT(header->payload());
+        m_count++;
+    }
+
+    virtual void registerWeakMembers(const void*, WeakPointerCallback) OVERRIDE { }
+    virtual bool isMarked(const void*) OVERRIDE { return false; }
+
+    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
+
+    size_t count() { return m_count; }
+    void reset() { m_count = 0; }
+
+private:
+    size_t m_count;
+};
+
+class SimpleObject : public GarbageCollected<SimpleObject> {
+    DECLARE_GC_INFO;
+public:
+    static SimpleObject* create() { return new SimpleObject(); }
+    void trace(Visitor*) { }
+    char getPayload(int i) { return payload[i]; }
+private:
+    SimpleObject() { }
+    char payload[64];
+};
+
+#undef DEFINE_VISITOR_METHODS
+
+class HeapTestSuperClass : public GarbageCollectedFinalized<HeapTestSuperClass> {
+    DECLARE_GC_INFO
+public:
+    static HeapTestSuperClass* create()
+    {
+        return new HeapTestSuperClass();
+    }
+
+    virtual ~HeapTestSuperClass()
+    {
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+    void trace(Visitor*) { }
+
+protected:
+    HeapTestSuperClass() { }
+};
+
+int HeapTestSuperClass::s_destructorCalls = 0;
+
+class HeapTestOtherSuperClass {
+public:
+    int payload;
+};
+
+static const size_t classMagic = 0xABCDDBCA;
+
+class HeapTestSubClass : public HeapTestOtherSuperClass, public HeapTestSuperClass {
+public:
+    static HeapTestSubClass* create()
+    {
+        return new HeapTestSubClass();
+    }
+
+    virtual ~HeapTestSubClass()
+    {
+        EXPECT_EQ(classMagic, m_magic);
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+
+private:
+
+    HeapTestSubClass() : m_magic(classMagic) { }
+
+    const size_t m_magic;
+};
+
+int HeapTestSubClass::s_destructorCalls = 0;
 
 class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
     DECLARE_GC_INFO
@@ -490,6 +602,95 @@ private:
 
 int RefCountedAndGarbageCollected::s_destructorCalls = 0;
 
+class RefCountedAndGarbageCollected2 : public HeapTestOtherSuperClass, public RefCountedGarbageCollected<RefCountedAndGarbageCollected2> {
+    DECLARE_GC_INFO
+public:
+    static PassRefPtr<RefCountedAndGarbageCollected2> create()
+    {
+        return adoptRef(new RefCountedAndGarbageCollected2());
+    }
+
+    ~RefCountedAndGarbageCollected2()
+    {
+        ++s_destructorCalls;
+    }
+
+    void trace(Visitor*) { }
+
+    static int s_destructorCalls;
+
+private:
+    RefCountedAndGarbageCollected2()
+    {
+    }
+};
+
+int RefCountedAndGarbageCollected2::s_destructorCalls = 0;
+
+#define DEFINE_VISITOR_METHODS(Type)                                       \
+    virtual void mark(const Type* object, TraceCallback callback) OVERRIDE \
+    {                                                                      \
+        mark(object);                                                      \
+    }                                                                      \
+
+class RefCountedGarbageCollectedVisitor : public CountingVisitor {
+public:
+    RefCountedGarbageCollectedVisitor(int expected, void** objects)
+        : m_count(0)
+        , m_expectedCount(expected)
+        , m_expectedObjects(objects)
+    {
+    }
+
+    void mark(const void* ptr) { markNoTrace(ptr); }
+
+    virtual void markNoTrace(const void* ptr)
+    {
+        if (!ptr)
+            return;
+        if (m_count < m_expectedCount)
+            EXPECT_TRUE(expectedObject(ptr));
+        else
+            EXPECT_FALSE(expectedObject(ptr));
+        m_count++;
+    }
+
+    virtual void mark(const void* ptr, TraceCallback) OVERRIDE
+    {
+        mark(ptr);
+    }
+
+    virtual void mark(HeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    {
+        mark(header->payload());
+    }
+
+    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) OVERRIDE
+    {
+        mark(header->payload());
+    }
+
+    bool validate() { return m_count >= m_expectedCount; }
+    void reset() { m_count = 0; }
+
+    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
+
+private:
+    bool expectedObject(const void* ptr)
+    {
+        for (int i = 0; i < m_expectedCount; i++) {
+            if (m_expectedObjects[i] == ptr)
+                return true;
+        }
+        return false;
+    }
+
+    int m_count;
+    int m_expectedCount;
+    void** m_expectedObjects;
+};
+
+#undef DEFINE_VISITOR_METHODS
 
 class Weak : public Bar {
 public:
@@ -563,11 +764,150 @@ TEST(HeapTest, Threading)
     ThreadedHeapTester::test();
 }
 
+TEST(HeapTest, BasicFunctionality)
+{
+    HeapStats heapStats;
+    clearOutOldGarbage(&heapStats);
+    {
+        size_t slack = 0;
+
+        // When the test starts there may already have been leaked some memory
+        // on the heap, so we establish a base line.
+        size_t baseLevel = heapStats.totalObjectSpace();
+        bool testPagesAllocated = !baseLevel;
+        if (testPagesAllocated)
+            EXPECT_EQ(heapStats.totalAllocatedSpace(), 0ul);
+
+        // This allocates objects on the general heap which should add a page of memory.
+        uint8_t* alloc32(Heap::allocate<uint8_t>(32));
+        slack += 4;
+        memset(alloc32, 40, 32);
+        uint8_t* alloc64(Heap::allocate<uint8_t>(64));
+        slack += 4;
+        memset(alloc64, 27, 64);
+
+        size_t total = 96;
+
+        getHeapStats(&heapStats);
+        CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
+        if (testPagesAllocated)
+            EXPECT_EQ(heapStats.totalAllocatedSpace(), blinkPageSize);
+
+        CheckWithSlack(alloc32 + 32 + sizeof(HeapObjectHeader), alloc64, slack);
+
+        EXPECT_EQ(alloc32[0], 40);
+        EXPECT_EQ(alloc32[31], 40);
+        EXPECT_EQ(alloc64[0], 27);
+        EXPECT_EQ(alloc64[63], 27);
+
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+
+        EXPECT_EQ(alloc32[0], 40);
+        EXPECT_EQ(alloc32[31], 40);
+        EXPECT_EQ(alloc64[0], 27);
+        EXPECT_EQ(alloc64[63], 27);
+    }
+
+    clearOutOldGarbage(&heapStats);
+    size_t total = 0;
+    size_t slack = 0;
+    size_t baseLevel = heapStats.totalObjectSpace();
+    bool testPagesAllocated = !baseLevel;
+    if (testPagesAllocated)
+        EXPECT_EQ(heapStats.totalAllocatedSpace(), 0ul);
+
+    const size_t big = 1008;
+    Persistent<uint8_t> bigArea = Heap::allocate<uint8_t>(big);
+    total += big;
+    slack += 4;
+
+    size_t persistentCount = 0;
+    const size_t numPersistents = 100000;
+    Persistent<uint8_t>* persistents[numPersistents];
+
+    for (int i = 0; i < 1000; i++) {
+        size_t size = 128 + i * 8;
+        total += size;
+        persistents[persistentCount++] = new Persistent<uint8_t>(Heap::allocate<uint8_t>(size));
+        slack += 4;
+        getHeapStats(&heapStats);
+        CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
+        if (testPagesAllocated)
+            EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
+    }
+
+    {
+        uint8_t* alloc32b(Heap::allocate<uint8_t>(32));
+        slack += 4;
+        memset(alloc32b, 40, 32);
+        uint8_t* alloc64b(Heap::allocate<uint8_t>(64));
+        slack += 4;
+        memset(alloc64b, 27, 64);
+        EXPECT_TRUE(alloc32b != alloc64b);
+
+        total += 96;
+        getHeapStats(&heapStats);
+        CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
+        if (testPagesAllocated)
+            EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
+    }
+
+    clearOutOldGarbage(&heapStats);
+    total -= 96;
+    slack -= 8;
+    if (testPagesAllocated)
+        EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
+
+    Address bigAreaRaw = bigArea;
+    // Clear the persistent, so that the big area will be garbage collected.
+    bigArea.release();
+    clearOutOldGarbage(&heapStats);
+
+    total -= big;
+    slack -= 4;
+    getHeapStats(&heapStats);
+    CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
+    if (testPagesAllocated)
+        EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
+
+    // Endless loop unless we eventually get the memory back that we just freed.
+    while (true) {
+        Persistent<uint8_t>* alloc = new Persistent<uint8_t>(Heap::allocate<uint8_t>(big / 2));
+        slack += 4;
+        persistents[persistentCount++] = alloc;
+        EXPECT_LT(persistentCount, numPersistents);
+        total += big / 2;
+        if (bigAreaRaw == alloc->get())
+            break;
+    }
+
+    getHeapStats(&heapStats);
+    CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
+    if (testPagesAllocated)
+        EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
+
+    for (size_t i = 0; i < persistentCount; i++)
+        persistents[i]->release();
+
+    uint8_t* address = Heap::reallocate<uint8_t>(0, 100);
+    for (int i = 0; i < 100; i++)
+        address[i] = i;
+    address = Heap::reallocate<uint8_t>(address, 100000);
+    for (int i = 0; i < 100; i++)
+        EXPECT_EQ(address[i], i);
+    address = Heap::reallocate<uint8_t>(address, 50);
+    for (int i = 0; i < 50; i++)
+        EXPECT_EQ(address[i], i);
+    // This should be equivalent to free(address).
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(Heap::reallocate<uint8_t>(address, 0)), 0ul);
+    // This should be equivalent to malloc(0).
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(Heap::reallocate<uint8_t>(0, 0)), 0ul);
+}
+
 TEST(HeapTest, SimpleAllocation)
 {
-    // Get initial heap stats.
     HeapStats initialHeapStats;
-    getHeapStats(&initialHeapStats);
+    clearOutOldGarbage(&initialHeapStats);
     EXPECT_EQ(0ul, initialHeapStats.totalObjectSpace());
 
     // Allocate an object in the heap.
@@ -612,6 +952,28 @@ TEST(HeapTest, SimpleFinalization)
     EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
 }
 
+TEST(HeapTest, Finalization)
+{
+    {
+        HeapTestSubClass* t1 = HeapTestSubClass::create();
+        HeapTestSubClass* t2 = HeapTestSubClass::create();
+        HeapTestSuperClass* t3 = HeapTestSuperClass::create();
+        // FIXME(oilpan): Ignore unused variables.
+        (void)t1;
+        (void)t2;
+        (void)t3;
+    }
+    // Nothing is marked so the GC should free everything and call
+    // the finalizer on all three objects.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, HeapTestSubClass::s_destructorCalls);
+    EXPECT_EQ(3, HeapTestSuperClass::s_destructorCalls);
+    // Destructors not called again when GCing again.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, HeapTestSubClass::s_destructorCalls);
+    EXPECT_EQ(3, HeapTestSuperClass::s_destructorCalls);
+}
+
 TEST(HeapTest, TypedHeapSanity)
 {
     // We use TraceCounter for allocating an object on the general heap.
@@ -649,6 +1011,28 @@ TEST(HeapTest, Members)
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         EXPECT_EQ(2u, Bar::s_live);
         h1->clear();
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(1u, Bar::s_live);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0u, Bar::s_live);
+}
+
+TEST(HeapTest, MarkTest)
+{
+    {
+        Bar::s_live = 0;
+        Persistent<Bar> bar = Bar::create();
+        EXPECT_TRUE(ThreadState::current()->contains(bar));
+        EXPECT_EQ(1u, Bar::s_live);
+        {
+            Foo* foo = Foo::create(bar);
+            EXPECT_TRUE(ThreadState::current()->contains(foo));
+            EXPECT_EQ(2u, Bar::s_live);
+            EXPECT_TRUE(reinterpret_cast<Address>(foo) != reinterpret_cast<Address>(bar.get()));
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+            EXPECT_EQ(2u, Bar::s_live);
+        }
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         EXPECT_EQ(1u, Bar::s_live);
     }
@@ -875,6 +1259,56 @@ TEST(HeapTest, RefCountedGarbageCollected)
     EXPECT_EQ(2, RefCountedAndGarbageCollected::s_destructorCalls);
 }
 
+TEST(HeapTest, RefCountedGarbageCollectedWithStackPointers)
+{
+    RefCountedAndGarbageCollected::s_destructorCalls = 0;
+    RefCountedAndGarbageCollected2::s_destructorCalls = 0;
+    {
+        RefCountedAndGarbageCollected* pointer1 = 0;
+        RefCountedAndGarbageCollected* pointer2 = 0;
+        {
+            RefPtr<RefCountedAndGarbageCollected> object1 = RefCountedAndGarbageCollected::create();
+            RefPtr<RefCountedAndGarbageCollected> object2 = RefCountedAndGarbageCollected::create();
+            pointer1 = object1.get();
+            pointer2 = object2.get();
+            void* objects[2] = { object1.get(), object2.get() };
+            RefCountedGarbageCollectedVisitor visitor(2, objects);
+            ThreadState::current()->visitPersistents(&visitor);
+            EXPECT_TRUE(visitor.validate());
+
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+            EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+        }
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+
+        // At this point, the reference counts of object1 and object2 are 0.
+        // Only pointer1 and pointer2 keep references to object1 and object2.
+        void* objects[] = { 0 };
+        RefCountedGarbageCollectedVisitor visitor(0, objects);
+        ThreadState::current()->visitPersistents(&visitor);
+        EXPECT_TRUE(visitor.validate());
+
+        {
+            RefPtr<RefCountedAndGarbageCollected> object1(pointer1);
+            RefPtr<RefCountedAndGarbageCollected> object2(pointer2);
+            void* objects[2] = { object1.get(), object2.get() };
+            RefCountedGarbageCollectedVisitor visitor(2, objects);
+            ThreadState::current()->visitPersistents(&visitor);
+            EXPECT_TRUE(visitor.validate());
+
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+            EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+        }
+
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+    }
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, RefCountedAndGarbageCollected::s_destructorCalls);
+}
+
 TEST(HeapTest, WeakMembers)
 {
     Bar::s_live = 0;
@@ -923,15 +1357,80 @@ TEST(HeapTest, Comparisons)
     EXPECT_TRUE(barPersistent == fooPersistent);
 }
 
+TEST(HeapTest, CheckAndMarkPointer)
+{
+    HeapStats initialHeapStats;
+    clearOutOldGarbage(&initialHeapStats);
+
+    Vector<Address> objectAddresses;
+    Vector<Address> endAddresses;
+    Address largeObjectAddress;
+    Address largeObjectEndAddress;
+    CountingVisitor visitor;
+    for (int i = 0; i < 10; i++) {
+        SimpleObject* object = SimpleObject::create();
+        Address objectAddress = reinterpret_cast<Address>(object);
+        objectAddresses.append(objectAddress);
+        endAddresses.append(objectAddress + sizeof(SimpleObject) - 1);
+    }
+    LargeObject* largeObject = LargeObject::create();
+    largeObjectAddress = reinterpret_cast<Address>(largeObject);
+    largeObjectEndAddress = largeObjectAddress + sizeof(LargeObject) - 1;
+
+    // This is a low-level test where we call checkAndMarkPointer. This method
+    // causes the object start bitmap to be computed which requires the heap
+    // to be in a consistent state (e.g. the free allocation area must be put
+    // into a free list header). However when we call makeConsistentForGC it
+    // also clears out the freelists so we have to rebuild those before trying
+    // to allocate anything again. We do this by forcing a GC after doing the
+    // checkAndMarkPointer tests.
+    {
+        TestGCScope scope(ThreadState::HeapPointersOnStack);
+        Heap::makeConsistentForGC();
+        for (size_t i = 0; i < objectAddresses.size(); i++) {
+            EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
+            EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, endAddresses[i]));
+        }
+        EXPECT_EQ(objectAddresses.size() * 2, visitor.count());
+        visitor.reset();
+        EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, largeObjectAddress));
+        EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress));
+        EXPECT_EQ(2ul, visitor.count());
+        visitor.reset();
+    }
+    // This forces a GC without stack scanning which results in the objects
+    // being collected. This will also rebuild the above mentioned freelists,
+    // however we don't rely on that below since we don't have any allocations.
+    clearOutOldGarbage(&initialHeapStats);
+    {
+        TestGCScope scope(ThreadState::HeapPointersOnStack);
+        Heap::makeConsistentForGC();
+        for (size_t i = 0; i < objectAddresses.size(); i++) {
+            EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
+            EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, endAddresses[i]));
+        }
+        EXPECT_EQ(0ul, visitor.count());
+        EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, largeObjectAddress));
+        EXPECT_FALSE(Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress));
+        EXPECT_EQ(0ul, visitor.count());
+    }
+    // This round of GC is important to make sure that the object start
+    // bitmap are cleared out and that the free lists are rebuild.
+    clearOutOldGarbage(&initialHeapStats);
+}
+
 DEFINE_GC_INFO(Bar);
 DEFINE_GC_INFO(Baz);
 DEFINE_GC_INFO(ClassWithMember);
 DEFINE_GC_INFO(ConstructorAllocation);
 DEFINE_GC_INFO(HeapAllocatedArray);
+DEFINE_GC_INFO(HeapTestSuperClass);
 DEFINE_GC_INFO(IntWrapper);
 DEFINE_GC_INFO(LargeObject);
 DEFINE_GC_INFO(RefCountedAndGarbageCollected);
+DEFINE_GC_INFO(RefCountedAndGarbageCollected2);
 DEFINE_GC_INFO(SimpleFinalizedObject);
+DEFINE_GC_INFO(SimpleObject);
 DEFINE_GC_INFO(TestTypedHeapClass);
 DEFINE_GC_INFO(TraceCounter);
 

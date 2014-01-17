@@ -1133,7 +1133,7 @@ Address Heap::reallocate(void* previous, size_t size)
         // nothing and return 0.
         return 0;
     }
-    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::State();
+    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     // FIXME: Currently only supports raw allocation on the
     // GeneralHeap. Hence we assume the header is a

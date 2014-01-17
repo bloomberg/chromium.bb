@@ -341,6 +341,8 @@ class HeapVectorBacking;
 template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
 class HeapHashTableBacking;
 
+inline void doNothingTrace(Visitor*, void*) { }
+
 // Non-class types like char don't have an trace method, so we provide a more
 // specialized template instantiation here that will be selected in preference
 // to the default. Most of them do nothing, since the type in question cannot
@@ -364,7 +366,7 @@ class HeapHashTableBacking;
         static const bool nonTrivialFinalizer = false;         \
     };                                                         \
     template<>                                                 \
-    struct GCInfoTrait<type> {                                 \
+    struct HEAP_EXPORT GCInfoTrait<type> {                                 \
         static const GCInfo* get()                             \
         {                                                      \
             return &info;                                      \

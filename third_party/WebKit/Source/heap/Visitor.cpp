@@ -58,4 +58,14 @@ FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_CHECK_MARKER)
 #undef DEFINE_VISITOR_CHECK_MARKER
 #endif
 
+#define DEFINE_DO_NOTHING_TRAIT(type)                  \
+const GCInfo GCInfoTrait<type>::info = {               \
+    #type,                                             \
+    doNothingTrace,                                    \
+    0, /* no finalizer method */                       \
+    false                                              \
+};
+
+ITERATE_DO_NOTHING_TYPES(DEFINE_DO_NOTHING_TRAIT)
+
 }
