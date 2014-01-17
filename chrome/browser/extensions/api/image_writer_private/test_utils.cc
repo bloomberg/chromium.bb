@@ -51,9 +51,7 @@ class ImageWriterFakeImageBurnerClient
 } // namespace
 #endif
 
-MockOperationManager::MockOperationManager()
-    : OperationManager(NULL) {}
-
+MockOperationManager::MockOperationManager() : OperationManager(NULL) {}
 MockOperationManager::~MockOperationManager() {}
 
 ImageWriterUnitTestBase::ImageWriterUnitTestBase() {}

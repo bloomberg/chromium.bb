@@ -21,13 +21,6 @@
 namespace extensions {
 namespace image_writer {
 
-using testing::_;
-using testing::Lt;
-using testing::AnyNumber;
-using testing::AtLeast;
-
-namespace {
-
 // A fake for the EventRouter. If tests require monitoring of interaction with
 // the event router put the logic here.
 class FakeEventRouter : public extensions::EventRouter {
@@ -63,6 +56,8 @@ BrowserContextKeyedService* BuildFakeExtensionSystem(
   return new FakeExtensionSystem(static_cast<Profile*>(profile));
 }
 
+namespace {
+
 class ImageWriterOperationManagerTest
     : public ImageWriterUnitTestBase {
  public:
@@ -75,7 +70,8 @@ class ImageWriterOperationManagerTest
  protected:
   ImageWriterOperationManagerTest()
       : started_(false),
-        start_success_(false) {}
+        start_success_(false) {
+  }
 
   virtual void SetUp() OVERRIDE {
     ImageWriterUnitTestBase::SetUp();

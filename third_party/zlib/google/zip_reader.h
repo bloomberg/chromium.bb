@@ -1,16 +1,17 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #ifndef THIRD_PARTY_ZLIB_GOOGLE_ZIP_READER_H_
 #define THIRD_PARTY_ZLIB_GOOGLE_ZIP_READER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/time/time.h"
 
@@ -42,6 +43,14 @@ namespace zip {
 //
 class ZipReader {
  public:
+  // A callback that is called when the operation is successful.
+  typedef base::Closure SuccessCallback;
+  // A callback that is called when the operation fails.
+  typedef base::Closure FailureCallback;
+  // A callback that is called periodically during the operation with the number
+  // of bytes that have been processed so far.
+  typedef base::Callback<void(int64)> ProgressCallback;
+
   // This class represents information of an entry (file or directory) in
   // a zip file.
   class EntryInfo {
@@ -139,6 +148,18 @@ class ZipReader {
   // timestamp is not valid, the timestamp will be set to the current time.
   bool ExtractCurrentEntryToFilePath(const base::FilePath& output_file_path);
 
+  // Asynchronously extracts the current entry to the given output file path.
+  // If the current entry is a directory it just creates the directory
+  // synchronously instead.  OpenCurrentEntryInZip() must be called beforehand.
+  // success_callback will be called on success and failure_callback will be
+  // called on failure.  progress_callback will be called at least once.
+  // Callbacks will be posted to the current MessageLoop in-order.
+  void ExtractCurrentEntryToFilePathAsync(
+      const base::FilePath& output_file_path,
+      const SuccessCallback& success_callback,
+      const FailureCallback& failure_callback,
+      const ProgressCallback& progress_callback);
+
   // Extracts the current entry to the given output directory path using
   // ExtractCurrentEntryToFilePath(). Sub directories are created as needed
   // based on the file path of the current entry. For example, if the file
@@ -176,10 +197,20 @@ class ZipReader {
   // Resets the internal state.
   void Reset();
 
+  // Extracts a chunk of the file to the target.  Will post a task for the next
+  // chunk and success/failure/progress callbacks as necessary.
+  void ExtractChunk(base::PlatformFile target_file,
+                    const SuccessCallback& success_callback,
+                    const FailureCallback& failure_callback,
+                    const ProgressCallback& progress_callback,
+                    const int64 offset);
+
   unzFile zip_file_;
   int num_entries_;
   bool reached_end_;
   scoped_ptr<EntryInfo> current_entry_info_;
+
+  base::WeakPtrFactory<ZipReader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ZipReader);
 };

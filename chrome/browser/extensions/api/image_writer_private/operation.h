@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_utils.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
+#include "third_party/zlib/google/zip_reader.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
 
@@ -37,8 +38,7 @@ class OperationManager;
 // Run, Complete.  Start and Complete run on the UI thread and are responsible
 // for advancing to the next stage and other UI interaction.  The Run phase does
 // the work on the FILE thread and calls SendProgress or Error as appropriate.
-class Operation
-    : public base::RefCountedThreadSafe<Operation> {
+class Operation : public base::RefCountedThreadSafe<Operation> {
  public:
   typedef base::Callback<void(bool, const std::string&)> StartWriteCallback;
   typedef base::Callback<void(bool, const std::string&)> CancelWriteCallback;
@@ -143,12 +143,18 @@ class Operation
   void OnBurnError();
 #endif
 
+  // Incrementally calculates the MD5 sum of a file.
   void MD5Chunk(scoped_ptr<image_writer_utils::ImageReader> reader,
                 int64 bytes_processed,
                 int64 bytes_total,
                 int progress_offset,
                 int progress_scale,
                 const base::Callback<void(scoped_ptr<std::string>)>& callback);
+
+  // Callbacks for zip::ZipReader.
+  void OnUnzipSuccess();
+  void OnUnzipFailure();
+  void OnUnzipProgress(int64 total_bytes, int64 progress_bytes);
 
   // Runs all cleanup functions.
   void CleanUp();
@@ -161,6 +167,9 @@ class Operation
   // MD5 contexts don't play well with smart pointers.  Just going to allocate
   // memory here.  This requires that we only do one MD5 sum at a time.
   base::MD5Context md5_context_;
+
+  // Zip reader for unzip operations.
+  zip::ZipReader zip_reader_;
 
   // CleanUp operations that must be run.  All these functions are run on the
   // FILE thread.

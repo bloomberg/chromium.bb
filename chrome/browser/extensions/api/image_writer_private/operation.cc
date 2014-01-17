@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/zlib/google/zip.h"
 
 namespace extensions {
 namespace image_writer {
@@ -179,18 +178,18 @@ void Operation::CleanUp() {
   cleanup_functions_.clear();
 }
 
-void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
+void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (IsCancelled()) {
     return;
   }
 
-  DVLOG(1) << "Starting unzip stage for " << zip_file->value();
+  DVLOG(1) << "Starting unzip stage for " << zip_path->value();
 
   SetStage(image_writer_api::STAGE_UNZIP);
 
   base::FilePath tmp_dir;
-  if (!base::CreateTemporaryDirInDir(zip_file->DirName(),
+  if (!base::CreateTemporaryDirInDir(zip_path->DirName(),
                                      FILE_PATH_LITERAL("image_writer"),
                                      &tmp_dir)) {
     Error(error::kTempDirError);
@@ -199,39 +198,34 @@ void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
 
   AddCleanUpFunction(base::Bind(&RemoveTempDirectory, tmp_dir));
 
-  if (!zip::Unzip(*zip_file, tmp_dir)) {
+  if (!base::CreateTemporaryFileInDir(tmp_dir, &image_path_)) {
+    DLOG(ERROR) << "Failed create temporary unzip target in "
+                << tmp_dir.value();
+    Error(error::kTempDirError);
+    return;
+  }
+
+  if (!(zip_reader_.Open(*zip_path) &&
+        zip_reader_.AdvanceToNextEntry() &&
+        zip_reader_.OpenCurrentEntryInZip())) {
+    DLOG(ERROR) << "Failed to open zip file.";
     Error(error::kUnzipGenericError);
     return;
   }
 
-  base::FileEnumerator file_enumerator(tmp_dir,
-                                       false,
-                                       base::FileEnumerator::FILES);
-
-  scoped_ptr<base::FilePath> unzipped_file(
-      new base::FilePath(file_enumerator.Next()));
-
-  if (unzipped_file->empty()) {
+  if (zip_reader_.HasMore()) {
+    DLOG(ERROR) << "Image zip has more than one file.";
     Error(error::kUnzipInvalidArchive);
     return;
   }
 
-  if (!file_enumerator.Next().empty()) {
-    Error(error::kUnzipInvalidArchive);
-    return;
-  }
-
-  DVLOG(1) << "Successfully unzipped as " << unzipped_file->value();
-
-  SetProgress(kProgressComplete);
-
-  image_path_ = *unzipped_file;
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&Operation::WriteStart,
-                 this));
+  zip_reader_.ExtractCurrentEntryToFilePathAsync(
+      image_path_,
+      base::Bind(&Operation::OnUnzipSuccess, this),
+      base::Bind(&Operation::OnUnzipFailure, this),
+      base::Bind(&Operation::OnUnzipProgress,
+                 this,
+                 zip_reader_.current_entry_info()->original_size()));
 }
 
 void Operation::GetMD5SumOfFile(
@@ -325,6 +319,24 @@ void Operation::MD5Chunk(
     reader->Close();
     Error(error::kHashReadError);
   }
+}
+
+void Operation::OnUnzipSuccess() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  SetProgress(kProgressComplete);
+  WriteStart();
+}
+
+void Operation::OnUnzipFailure() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  Error(error::kUnzipGenericError);
+}
+
+void Operation::OnUnzipProgress(int64 total_bytes, int64 progress_bytes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  int progress_percent = 100 * progress_bytes / total_bytes;
+  SetProgress(progress_percent);
 }
 
 }  // namespace image_writer
