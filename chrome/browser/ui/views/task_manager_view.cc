@@ -45,6 +45,8 @@
 
 #if defined(USE_ASH)
 #include "ash/wm/window_util.h"
+#include "chrome/browser/ui/ash/launcher/launcher_item_util.h"
+#include "grit/ash_resources.h"
 #endif
 
 #if defined(OS_WIN)
@@ -524,6 +526,11 @@ void TaskManagerView::Show(Browser* browser) {
   views::FocusManager* focus_manager = instance_->GetFocusManager();
   if (focus_manager)
     focus_manager->SetFocusedView(instance_->tab_table_);
+
+#if defined(USE_ASH)
+  CreateShelfItemForDialog(IDR_AURA_LAUNCHER_ICON_TASK_MANAGER,
+                           instance_->GetWidget()->GetNativeWindow());
+#endif
 }
 
 // ButtonListener implementation.

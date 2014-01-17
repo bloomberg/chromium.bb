@@ -1235,8 +1235,9 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
 ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) {
   DCHECK(index >= 0 && index < model_->item_count());
   LauncherItemType type = model_->items()[index].type;
-  if (type == TYPE_APP_LIST || !delegate_->CanPin())
+  if (type == TYPE_APP_LIST || type == TYPE_DIALOG || !delegate_->CanPin())
     return NOT_REMOVABLE;
+
   std::string app_id =
       delegate_->GetAppIDForLauncherID(model_->items()[index].id);
   // Note: Only pinned app shortcuts can be removed!
