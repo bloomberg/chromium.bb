@@ -30,12 +30,17 @@
   'conditions': [
     ['configuration_policy==1', {
       'dependencies': [
+        'autofill_core_browser',
+        'autofill_core_common',
         'cloud_policy_proto',
+        'policy',
         'url_matcher',
       ],
       'sources': [
         'core/browser/cloud/message_util.cc',
         'core/browser/cloud/message_util.h',
+        'core/browser/autofill_policy_handler.cc',
+        'core/browser/autofill_policy_handler.h',
         'core/browser/configuration_policy_handler.cc',
         'core/browser/configuration_policy_handler.h',
         'core/browser/configuration_policy_handler_list.cc',
@@ -44,6 +49,8 @@
         'core/browser/configuration_policy_pref_store.h',
         'core/browser/policy_error_map.cc',
         'core/browser/policy_error_map.h',
+        'core/browser/url_blacklist_policy_handler.cc',
+        'core/browser/url_blacklist_policy_handler.h',
       ],
     }],
   ],

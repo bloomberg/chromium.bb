@@ -4,19 +4,26 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
-#include "chrome/browser/policy/url_blacklist_policy_handler.h"
+#include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
+#include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// Note: this file should move to components/policy/core/browser, but the
+// components_unittests runner does not load the ResourceBundle as
+// ChromeTestSuite::Initialize does, which leads to failures using
+// PolicyErrorMap.
 
 namespace policy {
 
 namespace {
+
 const char kTestDisabledScheme[] = "kTestDisabledScheme";
 const char kTestBlacklistValue[] = "kTestBlacklistValue";
+
 }  // namespace
 
 class URLBlacklistPolicyHandlerTest : public testing::Test {

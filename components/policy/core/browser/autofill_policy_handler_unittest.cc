@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/prefs/pref_value_map.h"
 #include "base/values.h"
-#include "chrome/browser/policy/autofill_policy_handler.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/common/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -1,20 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_AUTOFILL_POLICY_HANDLER_H_
-#define CHROME_BROWSER_POLICY_AUTOFILL_POLICY_HANDLER_H_
+#ifndef COMPONENTS_POLICY_CORE_BROWSER_AUTOFILL_POLICY_HANDLER_H_
+#define COMPONENTS_POLICY_CORE_BROWSER_AUTOFILL_POLICY_HANDLER_H_
 
 #include "components/policy/core/browser/configuration_policy_handler.h"
-
-class PrefValueMap;
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
-class PolicyMap;
-
 // ConfigurationPolicyHandler for the AutofillEnabled policy.
-class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
+class POLICY_EXPORT AutofillPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   AutofillPolicyHandler();
   virtual ~AutofillPolicyHandler();
@@ -29,4 +26,4 @@ class AutofillPolicyHandler : public TypeCheckingPolicyHandler {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_AUTOFILL_POLICY_HANDLER_H_
+#endif  // COMPONENTS_POLICY_CORE_BROWSER_AUTOFILL_POLICY_HANDLER_H_
