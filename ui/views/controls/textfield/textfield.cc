@@ -21,7 +21,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -1423,8 +1422,8 @@ void Textfield::UpdateContextMenu() {
                                                 IDS_APP_SELECT_ALL);
     if (controller_)
       controller_->UpdateContextMenu(context_menu_contents_.get());
-    context_menu_runner_.reset(new MenuRunner(context_menu_contents_.get()));
   }
+  context_menu_runner_.reset(new MenuRunner(context_menu_contents_.get()));
 }
 
 void Textfield::TrackMouseClicks(const ui::MouseEvent& event) {
