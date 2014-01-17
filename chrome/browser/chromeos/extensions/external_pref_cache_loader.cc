@@ -170,12 +170,6 @@ void ExternalPrefCacheLoader::StartLoading() {
 }
 
 void ExternalPrefCacheLoader::LoadFinished() {
-  // TODO(dzhioev): Remove "Tips & Tricks" app from default apps till M33.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFirstRunUI) &&
-      prefs_.get() && prefs_->HasKey(extension_misc::kTipsAndTricksAppId)) {
-    prefs_->Remove(extension_misc::kTipsAndTricksAppId, NULL);
-  }
   cache_dispatcher_->UpdateExtensionsList(prefs_.Pass());
 }
 

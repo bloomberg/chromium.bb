@@ -121,7 +121,6 @@ const char kStreamsPrivateTestExtensionId[] =
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
-const char kTipsAndTricksAppId[] = "hkhhlkdconhgemhegnplaldnmnmkaemd";
 
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 const char kPlatformAppLaunchHistogram[] = "Apps.AppLaunch";
