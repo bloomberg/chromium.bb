@@ -98,22 +98,20 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
-        if (renderer())
-            setNeedsWidgetUpdate(true);
+        reloadPluginOnAttributeChange(name);
     } else if (name == dataAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
-        if (renderer()) {
+        if (renderer() && isImageType()) {
             setNeedsWidgetUpdate(true);
-            if (isImageType()) {
-                if (!m_imageLoader)
-                    m_imageLoader = adoptPtr(new HTMLImageLoader(this));
-                m_imageLoader->updateFromElementIgnoringPreviousError();
-            }
+            if (!m_imageLoader)
+                m_imageLoader = adoptPtr(new HTMLImageLoader(this));
+            m_imageLoader->updateFromElementIgnoringPreviousError();
+        } else {
+            reloadPluginOnAttributeChange(name);
         }
     } else if (name == classidAttr) {
         m_classId = value;
-        if (renderer())
-            setNeedsWidgetUpdate(true);
+        reloadPluginOnAttributeChange(name);
     } else if (name == onbeforeloadAttr) {
         setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
     } else {
@@ -260,6 +258,30 @@ bool HTMLObjectElement::hasValidClassId()
     // HTML5 says that fallback content should be rendered if a non-empty
     // classid is specified for which the UA can't find a suitable plug-in.
     return classId().isEmpty();
+}
+
+void HTMLObjectElement::reloadPluginOnAttributeChange(const QualifiedName& name)
+{
+    // Following,
+    //   http://www.whatwg.org/specs/web-apps/current-work/#the-object-element
+    //   (Enumerated list below "Whenever one of the following conditions occur:")
+    //
+    // the updating of certain attributes should bring about "redetermination"
+    // of what the element contains.
+    bool needsInvalidation;
+    if (name == typeAttr) {
+        needsInvalidation = !fastHasAttribute(classidAttr) && !fastHasAttribute(dataAttr);
+    } else if (name == dataAttr) {
+        needsInvalidation = !fastHasAttribute(classidAttr);
+    } else if (name == classidAttr) {
+        needsInvalidation = true;
+    } else {
+        ASSERT_NOT_REACHED();
+        needsInvalidation = false;
+    }
+    setNeedsWidgetUpdate(true);
+    if (needsInvalidation)
+        setNeedsStyleRecalc();
 }
 
 // FIXME: This should be unified with HTMLEmbedElement::updateWidget and

@@ -99,6 +99,8 @@ private:
     bool shouldAllowQuickTimeClassIdQuirk();
     bool hasValidClassId();
 
+    void reloadPluginOnAttributeChange(const QualifiedName&);
+
     virtual void refFormAssociatedElement() OVERRIDE { ref(); }
     virtual void derefFormAssociatedElement() OVERRIDE { deref(); }
 

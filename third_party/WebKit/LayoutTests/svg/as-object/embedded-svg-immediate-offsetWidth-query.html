@@ -1,6 +1,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<script>window.enablePixelTesting = true;</script>
+<script>
+window.enablePixelTesting = true;
+window.jsTestIsAsync = true;
+</script>
 <script src="../../resources/js-test.js"></script>
 <script src="../../fast/repaint/resources/repaint.js"></script>
 <script type="text/javascript">
@@ -16,11 +19,15 @@
         shouldBe("newObject.offsetWidth", "302");
         shouldBe("newObject.offsetWidth", "302");
 
-        // Switch to document: "<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="green"/></svg>".
-        // FIXME: This currently fails in WebKit trunk. We don't react on dataAttr changes at all. When manually relayouting using eg. zoom in/out it takes affect.
-        newObject.setAttribute("data", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iZ3JlZW4iLz48L3N2Zz4=");
-        shouldBe("newObject.offsetWidth", "502");
-        shouldBe("newObject.offsetWidth", "502");
+        // Switch to document: "<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="green"/>&lt;script><![CDATA[window.parent.postMessage('running', '*');]]>&lt;/script></svg>".
+
+        // The replacement won't synchronous; wait on its completion.
+        window.onmessage = function () {
+            shouldBe("newObject.offsetWidth", "402");
+            shouldBe("newObject.offsetWidth", "402");
+            finishJSTest();
+        };
+        newObject.setAttribute("data", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iZ3JlZW4iLz48c2NyaXB0PjwhW0NEQVRBW3dpbmRvdy5wYXJlbnQucG9zdE1lc3NhZ2UoJ3J1bm5pbmcnLCAnKicpO11dPjwvc2NyaXB0Pjwvc3ZnPg==");
     }
 </script>
 </head>
