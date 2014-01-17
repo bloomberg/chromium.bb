@@ -1379,6 +1379,10 @@ void CSPDirectiveList::setCSPDirective(const String& name, const String& value, 
 
 void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sandboxPolicy)
 {
+    if (m_reportOnly) {
+        m_policy->reportInvalidInReportOnly(name);
+        return;
+    }
     if (m_haveSandboxPolicy) {
         m_policy->reportDuplicateDirective(name);
         return;
@@ -1896,6 +1900,11 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
         PingLoader::sendViolationReport(frame, reportURIs[i], report, PingLoader::ContentSecurityPolicyViolationReport);
 
     didSendViolationReport(stringifiedReport);
+}
+
+void ContentSecurityPolicy::reportInvalidInReportOnly(const String& name) const
+{
+    logToConsole("The Content Security Policy directive '" + name + "' is ignored when delivered in a report-only policy.");
 }
 
 void ContentSecurityPolicy::reportUnsupportedDirective(const String& name) const
