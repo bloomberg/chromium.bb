@@ -837,7 +837,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   kwargs.setdefault('debug_level', logging.DEBUG)
 
   comp = FindCompressor(compression, chroot=chroot)
-  cmd = ['tar'] + extra_args + ['-I', comp, '-cf', target] + inputs
+  cmd = ['tar'] + extra_args + ['--sparse', '-I', comp, '-cf', target] + inputs
   rc_func = SudoRunCommand if sudo else RunCommand
   return rc_func(cmd, cwd=cwd, **kwargs)
 
