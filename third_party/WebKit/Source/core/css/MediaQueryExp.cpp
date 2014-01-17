@@ -129,7 +129,6 @@ static inline bool featureWithPositiveNumber(const AtomicString& mediaFeature, c
 
     return mediaFeature == MediaFeatureNames::transform2dMediaFeature
         || mediaFeature == MediaFeatureNames::transform3dMediaFeature
-        || mediaFeature == MediaFeatureNames::deprecatedTransitionMediaFeature
         || mediaFeature == MediaFeatureNames::animationMediaFeature
         || mediaFeature == MediaFeatureNames::devicePixelRatioMediaFeature
         || mediaFeature == MediaFeatureNames::maxDevicePixelRatioMediaFeature
@@ -172,7 +171,6 @@ static inline bool featureWithoutValue(const AtomicString& mediaFeature)
         || mediaFeature == MediaFeatureNames::hoverMediaFeature
         || mediaFeature == MediaFeatureNames::transform2dMediaFeature
         || mediaFeature == MediaFeatureNames::transform3dMediaFeature
-        || mediaFeature == MediaFeatureNames::deprecatedTransitionMediaFeature
         || mediaFeature == MediaFeatureNames::animationMediaFeature
         || mediaFeature == MediaFeatureNames::viewModeMediaFeature
         || mediaFeature == MediaFeatureNames::pointerMediaFeature

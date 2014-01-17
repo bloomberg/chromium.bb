@@ -27,7 +27,6 @@ namespace WebCore {
 namespace MediaFeatureNames {
 
 #define CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(macro) \
-    macro(deprecatedTransition, "-webkit-transition") \
     macro(color, "color") \
     macro(colorIndex, "color-index") \
     macro(grid, "grid") \

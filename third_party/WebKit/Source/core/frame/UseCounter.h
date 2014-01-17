@@ -134,7 +134,7 @@ public:
         PrefixedMediaGenerateKeyRequest,
         REMOVEDWebAudioLooping,
         DocumentClear,
-        PrefixedTransitionMediaFeature,
+        REMOVEDPrefixedTransitionMediaFeature,
         SVGFontElement,
         XMLDocument,
         XSLProcessingInstruction,
