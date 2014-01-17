@@ -39,23 +39,23 @@ scoped_ptr<OpenFileHandle> QuotaReservationBuffer::GetOpenFileHandle(
   return make_scoped_ptr(new OpenFileHandle(reservation, *open_file));
 }
 
-void QuotaReservationBuffer::CommitFileGrowth(int64 quota_consumption,
+void QuotaReservationBuffer::CommitFileGrowth(int64 reserved_quota_consumption,
                                               int64 usage_delta) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (!reservation_manager_)
     return;
   reservation_manager_->CommitQuotaUsage(origin_, type_, usage_delta);
 
-  if (quota_consumption > 0) {
-    if (quota_consumption > reserved_quota_) {
+  if (reserved_quota_consumption > 0) {
+    if (reserved_quota_consumption > reserved_quota_) {
       LOG(ERROR) << "Detected over consumption of the storage quota beyond its"
                  << " reservation";
-      quota_consumption = reserved_quota_;
+      reserved_quota_consumption = reserved_quota_;
     }
 
-    reserved_quota_ -= quota_consumption;
+    reserved_quota_ -= reserved_quota_consumption;
     reservation_manager_->ReleaseReservedQuota(
-        origin_, type_, quota_consumption);
+        origin_, type_, reserved_quota_consumption);
   }
 }
 
