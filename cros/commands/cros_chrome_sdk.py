@@ -253,49 +253,17 @@ class SDKFetcher(object):
     Returns:
       The version with release branch prepended.  I.e., R28-3918.0.0.
     """
-    def DebugGsLs(*args, **kwargs):
-      kwargs.setdefault('retries', 0)
-      kwargs.setdefault('debug_level', logging.DEBUG)
-      kwargs.setdefault('error_code_ok', True)
-      return self.gs_ctx.LS(*args, **kwargs)
-
     assert not version.startswith('R')
 
     with self.misc_cache.Lookup(('full-version', version)) as ref:
       if ref.Exists(lock=True):
         return osutils.ReadFile(ref.path).strip()
       else:
-        # First, check if there is a LATEST file and grab from there.
+        # Find out the newest version from the LATEST (or LATEST-%s) file.
         full_version = self._GetNewestFullVersion(version=version)
 
-        # If the LATEST file is missing, try using 'gsutil ls' to find the SDK.
-        # This logic is only here to allow using old versions of the SDK.
-        if full_version is None and self.config['internal']:
-          # Find all builds that match the specified version number. Under the
-          # covers, gsutil actually downloads the full list of files under
-          # self.gs_base and filters them, so this will be slow.
-          lines = DebugGsLs(os.path.join(
-              self.gs_base, 'R*-%s*' % version) + '/').output.splitlines()
-
-          # Verify we found at least one matching SDK.
-          if not lines:
-            raise MissingSDK(self.board, version)
-
-          # ls will return a list of files that match the specified version.
-          # Arbitrarily pick the first one we see.
-          real_path = lines[0]
-
-          # Strip the base URL from the filename.
-          if not real_path.startswith(self.gs_base):
-            raise AssertionError('%s does not start with %s'
-                                 % (real_path, self.gs_base))
-          real_path = real_path[len(self.gs_base) + 1:]
-
-          # Verify that the returned version matches what we expect.
-          full_version = real_path.partition('/')[0]
-          if full_version.split('-')[1] != version:
-            raise AssertionError('%s does not end with %s'
-                                 % (full_version, version))
+        if full_version is None:
+          raise MissingSDK(self.board, version)
 
         ref.AssignText(full_version)
         return full_version
