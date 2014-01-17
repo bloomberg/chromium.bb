@@ -1209,6 +1209,8 @@ class ScreenShutdownTest : public test::AshTestBase {
 };
 
 TEST_F(DisplayManagerTest, ScreenAfterShutdown) {
+  if (!SupportsMultipleDisplays())
+    return;
   UpdateDisplay("500x300,800x400");
 }
 
