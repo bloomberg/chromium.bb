@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
@@ -74,6 +75,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -236,6 +238,12 @@ void ShowNetworkSettingsPage(const std::string& service_path) {
   ShowSettingsSubPageForAppropriateBrowser(
       page,
       ProfileManager::GetPrimaryUserProfile());
+}
+
+void OnAcceptMultiprofilesIntro(bool no_show_again) {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, no_show_again);
+  UserAddingScreen::Get()->Start();
 }
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
@@ -629,8 +637,27 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       return;
 
     // Launch sign in screen to add another user to current session.
-    if (UserManager::Get()->GetUsersAdmittedForMultiProfile().size())
-      UserAddingScreen::Get()->Start();
+    if (UserManager::Get()->GetUsersAdmittedForMultiProfile().size()) {
+      // Don't show dialog if any logged in user in multi-profiles session
+      // dismissed it.
+      bool show_intro = true;
+      const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
+      for (UserList::const_iterator it = logged_in_users.begin();
+           it != logged_in_users.end(); ++it) {
+        show_intro &= !multi_user_util::GetProfileFromUserID(
+            multi_user_util::GetUserIDFromEmail((*it)->email()))->GetPrefs()->
+            GetBoolean(prefs::kMultiProfileNeverShowIntro);
+        if (!show_intro)
+          break;
+      }
+      if (show_intro) {
+        base::Callback<void(bool)> on_accept =
+            base::Bind(&OnAcceptMultiprofilesIntro);
+        ShowMultiprofilesIntroDialog(on_accept);
+      } else {
+        UserAddingScreen::Get()->Start();
+      }
+    }
   }
 
   virtual void ShowSpringChargerReplacementDialog() OVERRIDE {

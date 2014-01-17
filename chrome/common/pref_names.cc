@@ -856,6 +856,11 @@ const char kOpenNetworkConfiguration[] = "onc";
 const char kRAConsentFirstTime[] = "settings.privacy.ra_consent";
 
 // A boolean pref recording whether user has dismissed the multiprofile
+// itroduction dialog show.
+const char kMultiProfileNeverShowIntro[] =
+    "settings.multi_profile_never_show_intro";
+
+// A boolean pref recording whether user has dismissed the multiprofile
 // notification.
 const char kMultiProfileNotificationDismissed[] =
     "settings.multi_profile_notification_dismissed";
