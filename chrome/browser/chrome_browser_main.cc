@@ -372,7 +372,8 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 #endif
 
 void RegisterComponentsForUpdate(const CommandLine& command_line) {
-  ComponentUpdateService* cus = g_browser_process->component_updater();
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
 
   // Registration can be before or after cus->Start() so it is ok to post
   // a task to the UI thread to do registration once you done the necessary

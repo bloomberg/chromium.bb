@@ -24,6 +24,8 @@
 
 using content::BrowserThread;
 
+namespace component_updater {
+
 namespace {
 
 // CRX hash. The extension id is: npdjjkjlcidkjlamlmmdelcjbcpdjocm.
@@ -154,3 +156,6 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
 void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRecoveryComponentVersion, "0.0.0.0");
 }
+
+}  // namespace component_updater
+

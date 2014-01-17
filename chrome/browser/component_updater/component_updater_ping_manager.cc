@@ -184,7 +184,7 @@ PingManager::~PingManager() {
 // Sends a fire and forget ping when the updates are complete. The ping
 // sender object self-deletes after sending the ping.
 void PingManager::OnUpdateComplete(const CrxUpdateItem* item) {
-  component_updater::PingSender* ping_sender(new PingSender);
+  PingSender* ping_sender(new PingSender);
   ping_sender->SendPing(ping_url_, url_request_context_getter_, item);
 }
 

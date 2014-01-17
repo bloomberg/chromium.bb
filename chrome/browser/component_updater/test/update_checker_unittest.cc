@@ -25,11 +25,15 @@ using content::BrowserThread;
 
 namespace component_updater {
 
+namespace {
+
 base::FilePath test_file(const char* file) {
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   return path.AppendASCII("components").AppendASCII(file);
 }
+
+}  // namespace
 
 class UpdateCheckerTest : public testing::Test {
  public:

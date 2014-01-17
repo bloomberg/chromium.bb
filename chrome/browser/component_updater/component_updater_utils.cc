@@ -166,9 +166,8 @@ std::string HexStringToID(const std::string& hexstr) {
 }
 
 std::string GetCrxComponentID(const CrxComponent& component) {
-  return component_updater::HexStringToID(
-      StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
-                         component.pk_hash.size()/2)));
+  return HexStringToID(StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
+                       component.pk_hash.size()/2)));
 }
 
 }  // namespace component_updater

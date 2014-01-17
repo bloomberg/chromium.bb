@@ -19,6 +19,7 @@
 #include "net/cert/crl_set.h"
 #include "net/ssl/ssl_config_service.h"
 
+using component_updater::ComponentUpdateService;
 using content::BrowserThread;
 
 CRLSetFetcher::CRLSetFetcher() : cus_(NULL) {}
@@ -121,7 +122,7 @@ static const uint8 kPublicKeySHA256[32] = {
 void CRLSetFetcher::RegisterComponent(uint32 sequence_of_loaded_crl) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  CrxComponent component;
+  component_updater::CrxComponent component;
   component.pk_hash.assign(kPublicKeySHA256,
                            kPublicKeySHA256 + sizeof(kPublicKeySHA256));
   component.installer = this;

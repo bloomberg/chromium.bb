@@ -18,6 +18,8 @@ class DictionaryValue;
 class FilePath;
 }  // namespace base
 
+namespace component_updater {
+
 // Components should use a DefaultComponentInstaller by defining a class that
 // implements the members of ComponentInstallerTraits, and then registering a
 // DefaultComponentInstaller that has been constructed with an instance of that
@@ -102,5 +104,7 @@ class DefaultComponentInstaller : public ComponentInstaller {
 
   DISALLOW_COPY_AND_ASSIGN(DefaultComponentInstaller);
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_DEFAULT_COMPONENT_INSTALLER_H_

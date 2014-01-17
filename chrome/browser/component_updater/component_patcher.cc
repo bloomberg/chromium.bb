@@ -13,6 +13,8 @@
 #include "chrome/browser/component_updater/component_patcher_operation.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 
+namespace component_updater {
+
 namespace {
 
 // Deserialize the commands file (present in delta update packages). The top
@@ -78,4 +80,6 @@ ComponentUnpacker::Error DifferentialUpdatePatch(
 
   return ComponentUnpacker::kNone;
 }
+
+}  // namespace component_updater
 

@@ -108,9 +108,11 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual ChromeNetLog* net_log() OVERRIDE;
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
-  virtual ComponentUpdateService* component_updater() OVERRIDE;
+  virtual component_updater::ComponentUpdateService*
+      component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
-  virtual PnaclComponentInstaller* pnacl_component_installer() OVERRIDE;
+  virtual component_updater::PnaclComponentInstaller*
+      pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
   virtual StorageMonitor* storage_monitor() OVERRIDE;
   virtual MediaFileSystemRegistry* media_file_system_registry() OVERRIDE;

@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_
 
-class ComponentUpdateService;
-
 namespace base {
 class DictionaryValue;
 class Version;
 }
+
+namespace component_updater {
+
+class ComponentUpdateService;
 
 // Our job is to 1) find what Pepper flash is installed (if any) and 2) register
 // with the component updater to download the latest version when available.
@@ -21,5 +23,7 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus);
 // manifest, with the version specified in the manifest in |version_out|.
 bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
                               base::Version* version_out);
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_

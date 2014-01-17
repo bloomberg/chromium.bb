@@ -120,14 +120,15 @@ void ComponentsDOMHandler::HandleCheckUpdate(const base::ListValue* args) {
 }
 
 void ComponentsDOMHandler::LoadComponents() {
-  ComponentUpdateService* cus = g_browser_process->component_updater();
-  std::vector<CrxComponentInfo> components;
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
+  std::vector<component_updater::CrxComponentInfo> components;
   cus->GetComponents(&components);
 
   // Construct DictionaryValues to return to UI.
   base::ListValue* component_list = new base::ListValue();
   for (size_t j = 0; j < components.size(); ++j) {
-    const CrxComponentInfo& component = components[j];
+    const component_updater::CrxComponentInfo& component = components[j];
 
     base::DictionaryValue* component_entry = new base::DictionaryValue();
     component_entry->SetString("id", component.id);
@@ -160,7 +161,8 @@ ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 // static
 void ComponentsUI::OnDemandUpdate(const std::string& component_id) {
-  ComponentUpdateService* cus = g_browser_process->component_updater();
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
   cus->OnDemandUpdate(component_id);
 }
 

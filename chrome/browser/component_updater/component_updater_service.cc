@@ -36,8 +36,7 @@
 
 using content::BrowserThread;
 
-using component_updater::CrxDownloader;
-using component_updater::CrxUpdateItem;
+namespace component_updater {
 
 // The component updater is designed to live until process shutdown, so
 // base::Bind() calls are not refcounted.
@@ -54,7 +53,7 @@ bool IsVersionNewer(const Version& current, const std::string& proposed) {
 // and the configuration allows it.
 bool CanTryDiffUpdate(const CrxUpdateItem* update_item,
                       const ComponentUpdateService::Configurator& config) {
-  return component_updater::HasDiffUpdate(update_item) &&
+  return HasDiffUpdate(update_item) &&
          !update_item->diff_update_failed &&
          config.DeltasEnabled();
 }
@@ -195,12 +194,10 @@ class CrxUpdateService : public ComponentUpdateService {
     kStepDelayLong,
   };
 
-  void UpdateCheckComplete(
-      int error,
-      const std::string& error_message,
-      const component_updater::UpdateResponse::Results& results);
-  void OnUpdateCheckSucceeded(
-      const component_updater::UpdateResponse::Results& results);
+  void UpdateCheckComplete(int error,
+                           const std::string& error_message,
+                           const UpdateResponse::Results& results);
+  void OnUpdateCheckSucceeded(const UpdateResponse::Results& results);
   void OnUpdateCheckFailed(int error, const std::string& error_message);
 
   void DownloadComplete(
@@ -250,11 +247,11 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_ptr<ComponentPatcher> component_patcher_;
 
-  scoped_ptr<component_updater::UpdateChecker> update_checker_;
+  scoped_ptr<UpdateChecker> update_checker_;
 
-  scoped_ptr<component_updater::PingManager> ping_manager_;
+  scoped_ptr<PingManager> ping_manager_;
 
-  scoped_ptr<component_updater::CrxDownloader> crx_downloader_;
+  scoped_ptr<CrxDownloader> crx_downloader_;
 
   // A collection of every work item.
   typedef std::vector<CrxUpdateItem*> UpdateItems;
@@ -276,9 +273,8 @@ class CrxUpdateService : public ComponentUpdateService {
 CrxUpdateService::CrxUpdateService(ComponentUpdateService::Configurator* config)
     : config_(config),
       component_patcher_(config->CreateComponentPatcher()),
-      ping_manager_(new component_updater::PingManager(
-          config->PingUrl(),
-          config->RequestContext())),
+      ping_manager_(new PingManager(config->PingUrl(),
+                                    config->RequestContext())),
       blocking_task_runner_(BrowserThread::GetBlockingPool()->
           GetSequencedTaskRunnerWithShutdownBehavior(
               BrowserThread::GetBlockingPool()->GetSequenceToken(),
@@ -466,7 +462,7 @@ ComponentUpdateService::Status CrxUpdateService::RegisterComponent(
       !component.installer)
     return kError;
 
-  std::string id(component_updater::GetCrxComponentID(component));
+  std::string id(GetCrxComponentID(component));
   CrxUpdateItem* uit = FindUpdateItemById(id);
   if (uit) {
     uit->component = component;
@@ -545,7 +541,7 @@ void CrxUpdateService::GetComponents(
        it != work_items_.end(); ++it) {
     const CrxUpdateItem* item = *it;
     CrxComponentInfo info;
-    info.id = component_updater::GetCrxComponentID(item->component);
+    info.id = GetCrxComponentID(item->component);
     info.version = item->component.version.GetString();
     info.name = item->component.name;
     components->push_back(info);
@@ -626,7 +622,7 @@ bool CrxUpdateService::CheckForUpdates() {
   if (items_to_check.empty())
     return false;
 
-  update_checker_ = component_updater::UpdateChecker::Create(
+  update_checker_ = UpdateChecker::Create(
       config_->UpdateUrl(),
       config_->RequestContext(),
       base::Bind(&CrxUpdateService::UpdateCheckComplete,
@@ -667,7 +663,7 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
 void CrxUpdateService::UpdateCheckComplete(
     int error,
     const std::string& error_message,
-    const component_updater::UpdateResponse::Results& results) {
+    const UpdateResponse::Results& results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   update_checker_.reset();
   if (!error)
@@ -682,10 +678,10 @@ void CrxUpdateService::UpdateCheckComplete(
 // One of these components will be drafted for the upgrade next time
 // ProcessPendingItems is called.
 void CrxUpdateService::OnUpdateCheckSucceeded(
-    const component_updater::UpdateResponse::Results& results) {
+    const UpdateResponse::Results& results) {
   size_t num_updates_pending = 0;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<component_updater::UpdateResponse::Result>::const_iterator it;
+  std::vector<UpdateResponse::Result>::const_iterator it;
   for (it = results.list.begin(); it != results.list.end(); ++it) {
     CrxUpdateItem* crx = FindUpdateItemById(it->extension_id);
     if (!crx)
@@ -725,8 +721,7 @@ void CrxUpdateService::OnUpdateCheckSucceeded(
     // Parse the members of the result and queue an upgrade for this component.
     crx->next_version = Version(it->manifest.version);
 
-    typedef component_updater::
-        UpdateResponse::Result::Manifest::Package Package;
+    typedef UpdateResponse::Result::Manifest::Package Package;
     const Package& package(it->manifest.packages[0]);
     crx->next_fp = package.fingerprint;
 
@@ -842,7 +837,7 @@ void CrxUpdateService::Install(scoped_ptr<CRXContext> context,
                              context->fingerprint,
                              component_patcher_.get(),
                              context->installer);
-  if (!component_updater::DeleteFileAndEmptyParentDirectory(crx_path))
+  if (!DeleteFileAndEmptyParentDirectory(crx_path))
     NOTREACHED() << crx_path.value();
 
   // Why unretained? See comment at top of file.
@@ -987,4 +982,6 @@ ComponentUpdateService* ComponentUpdateServiceFactory(
   DCHECK(config);
   return new CrxUpdateService(config);
 }
+
+}  // namespace component_updater
 

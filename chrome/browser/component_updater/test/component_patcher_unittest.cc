@@ -19,11 +19,17 @@
 #include "courgette/third_party/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace component_updater {
+
+namespace {
+
 base::FilePath test_file(const char* file) {
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   return path.AppendASCII("components").AppendASCII(file);
 }
+
+}  // namespace
 
 ComponentPatcherOperationTest::ComponentPatcherOperationTest() {
   EXPECT_TRUE(unpack_dir_.CreateUniqueTempDir());
@@ -179,3 +185,6 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
       unpack_dir_.path().Append(FILE_PATH_LITERAL("output.bin")),
       test_file("binary_output.bin")));
 }
+
+}  // namespace component_updater
+

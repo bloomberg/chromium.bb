@@ -25,9 +25,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TestInstaller;
-
 namespace component_updater {
+
+class TestInstaller;
 
 // Intercepts HTTP GET requests sent to "localhost".
 typedef content::URLLocalHostRequestPrepackagedInterceptor GetInterceptor;

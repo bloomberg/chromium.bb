@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 
+namespace component_updater {
+
 TestInstaller::TestInstaller()
     : error_(0), install_count_(0) {
 }
@@ -78,3 +80,6 @@ bool VersionedTestInstaller::GetInstalledFile(const std::string& file,
   *installed_file = path.Append(base::FilePath::FromUTF8Unsafe(file));
   return true;
 }
+
+}  // namespace component_updater
+

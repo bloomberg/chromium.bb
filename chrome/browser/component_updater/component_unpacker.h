@@ -7,10 +7,13 @@
 
 #include <string>
 #include <vector>
+
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
+
+namespace component_updater {
 
 class ComponentInstaller;
 class ComponentPatcher;
@@ -76,5 +79,7 @@ class ComponentUnpacker {
   Error error_;
   int extended_error_;  // Provides additional error information.
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UNPACKER_H_

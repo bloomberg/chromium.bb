@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_COMPONENT_INSTALLER_H_
 
-class ComponentUpdateService;
 class PrefRegistrySimple;
 class PrefService;
+
+namespace component_updater {
+
+class ComponentUpdateService;
 
 // Component update registration for the recovery component. The job of the
 // recovery component is to repair the chrome installation or repair the Google
@@ -18,6 +21,8 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
 
 // Register user preferences related to the recovery component.
 void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry);
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_RECOVERY_COMPONENT_INSTALLER_H_
 

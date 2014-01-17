@@ -225,6 +225,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
   chrome_variations::VariationsService::RegisterPrefs(registry);
+  component_updater::RegisterPrefsForRecoveryComponent(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   FlagsUI::RegisterPrefs(registry);
   geolocation::RegisterPrefs(registry);
@@ -241,7 +242,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ProfileInfoCache::RegisterPrefs(registry);
   profiles::RegisterPrefs(registry);
   PromoResourceService::RegisterPrefs(registry);
-  RegisterPrefsForRecoveryComponent(registry);
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);

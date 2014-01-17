@@ -33,6 +33,8 @@
 using chrome::OmahaQueryParams;
 using content::BrowserThread;
 
+namespace component_updater {
+
 namespace {
 
 // Name of the Pnacl component specified in the manifest.
@@ -455,11 +457,13 @@ void PnaclComponentInstaller::ReRegisterPnacl() {
       base::Bind(&GetProfileInformation, this));
 }
 
+}  // namespace component_updater
 
 namespace pnacl {
 
 bool NeedsOnDemandUpdate() {
-  return base::subtle::NoBarrier_Load(&needs_on_demand_update) != 0;
+  return base::subtle::NoBarrier_Load(
+      &component_updater::needs_on_demand_update) != 0;
 }
 
 }  // namespace pnacl

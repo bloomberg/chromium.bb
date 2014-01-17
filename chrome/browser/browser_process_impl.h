@@ -123,9 +123,11 @@ class BrowserProcessImpl : public BrowserProcess,
 
   virtual ChromeNetLog* net_log() OVERRIDE;
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
-  virtual ComponentUpdateService* component_updater() OVERRIDE;
+  virtual component_updater::ComponentUpdateService*
+      component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
-  virtual PnaclComponentInstaller* pnacl_component_installer() OVERRIDE;
+  virtual component_updater::PnaclComponentInstaller*
+      pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
   virtual StorageMonitor* storage_monitor() OVERRIDE;
   void set_storage_monitor_for_test(scoped_ptr<StorageMonitor> monitor);
@@ -285,9 +287,10 @@ class BrowserProcessImpl : public BrowserProcess,
   // component updater is normally not used under ChromeOS due
   // to concerns over integrity of data shared between profiles,
   // but some users of component updater only install per-user.
-  scoped_ptr<ComponentUpdateService> component_updater_;
+  scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
-  scoped_ptr<PnaclComponentInstaller> pnacl_component_installer_;
+  scoped_ptr<component_updater::PnaclComponentInstaller>
+      pnacl_component_installer_;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   scoped_refptr<PluginsResourceService> plugins_resource_service_;

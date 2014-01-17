@@ -799,12 +799,13 @@ prerender::PrerenderTracker* BrowserProcessImpl::prerender_tracker() {
   return prerender_tracker_.get();
 }
 
-ComponentUpdateService* BrowserProcessImpl::component_updater() {
+component_updater::ComponentUpdateService*
+BrowserProcessImpl::component_updater() {
   if (!component_updater_.get()) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
       return NULL;
-    ComponentUpdateService::Configurator* configurator =
-        MakeChromeComponentUpdaterConfigurator(
+    component_updater::ComponentUpdateService::Configurator* configurator =
+        component_updater::MakeChromeComponentUpdaterConfigurator(
             CommandLine::ForCurrentProcess(),
             io_thread()->system_url_request_context_getter());
     // Creating the component updater does not do anything, components
@@ -820,9 +821,12 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
   return crl_set_fetcher_.get();
 }
 
-PnaclComponentInstaller* BrowserProcessImpl::pnacl_component_installer() {
-  if (!pnacl_component_installer_.get())
-    pnacl_component_installer_.reset(new PnaclComponentInstaller());
+component_updater::PnaclComponentInstaller*
+BrowserProcessImpl::pnacl_component_installer() {
+  if (!pnacl_component_installer_.get()) {
+    pnacl_component_installer_.reset(
+        new component_updater::PnaclComponentInstaller());
+  }
   return pnacl_component_installer_.get();
 }
 

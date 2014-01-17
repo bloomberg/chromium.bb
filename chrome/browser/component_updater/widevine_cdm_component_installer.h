@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_WIDEVINE_CDM_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_WIDEVINE_CDM_COMPONENT_INSTALLER_H_
 
+namespace component_updater {
+
 class ComponentUpdateService;
 
 // Our job is to:
@@ -15,5 +17,7 @@ class ComponentUpdateService;
 // 4) Register the Widevine CDM (via the adapter) with Chrome.
 // The first part is IO intensive so we do it asynchronously in the file thread.
 void RegisterWidevineCdmComponent(ComponentUpdateService* cus);
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_WIDEVINE_CDM_COMPONENT_INSTALLER_H_

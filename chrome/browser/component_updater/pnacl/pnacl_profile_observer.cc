@@ -9,6 +9,8 @@
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "content/public/browser/notification_service.h"
 
+namespace component_updater {
+
 PnaclProfileObserver::PnaclProfileObserver(
     PnaclComponentInstaller* installer) : pnacl_installer_(installer) {
   // We only need to observe NOTIFICATION_LOGIN_USER_CHANGED for ChromeOS
@@ -34,3 +36,5 @@ void PnaclProfileObserver::Observe(
   NOTREACHED() << "Unexpected notification observed";
 #endif
 }
+
+}  // namespace component_updater

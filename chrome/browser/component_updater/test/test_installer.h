@@ -13,6 +13,8 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace component_updater {
+
 // A TestInstaller is an installer that does nothing for installation except
 // increment a counter.
 class TestInstaller : public ComponentInstaller {
@@ -69,5 +71,7 @@ class VersionedTestInstaller : public TestInstaller {
   base::FilePath install_directory_;
   Version current_version_;
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_TEST_INSTALLER_H_

@@ -24,6 +24,8 @@
 
 using crypto::SecureHash;
 
+namespace component_updater {
+
 namespace {
 
 // This class makes sure that the CRX digital signature is valid
@@ -208,3 +210,6 @@ ComponentUnpacker::~ComponentUnpacker() {
   if (!unpack_path_.empty())
     base::DeleteFile(unpack_path_, true);
 }
+
+}  // namespace component_updater
+

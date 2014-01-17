@@ -190,7 +190,8 @@ void AppendComponentUpdaterThrottles(
     ResourceType::Type resource_type,
     ScopedVector<content::ResourceThrottle>* throttles) {
   const char* crx_id = NULL;
-  ComponentUpdateService* cus = g_browser_process->component_updater();
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
   if (!cus)
     return;
   // Check for PNaCl pexe request.

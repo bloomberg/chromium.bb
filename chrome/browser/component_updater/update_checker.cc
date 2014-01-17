@@ -132,9 +132,9 @@ void UpdateCheckerImpl::OnURLFetchComplete(const net::URLFetcher* source) {
 
   int error = 0;
   std::string error_message;
-  component_updater::UpdateResponse update_response;
+  UpdateResponse update_response;
 
-  if (component_updater::FetchSuccess(*source)) {
+  if (FetchSuccess(*source)) {
     std::string xml;
     source->GetResponseAsString(&xml);
     if (!update_response.Parse(xml)) {
@@ -142,7 +142,7 @@ void UpdateCheckerImpl::OnURLFetchComplete(const net::URLFetcher* source) {
       error_message = update_response.errors();
     }
   } else {
-    error = component_updater::GetFetchError(*source);
+    error = GetFetchError(*source);
     error_message.assign("network error");
   }
 

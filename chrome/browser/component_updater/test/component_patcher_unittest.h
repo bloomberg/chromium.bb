@@ -13,6 +13,8 @@
 #include "courgette/third_party/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace component_updater {
+
 class MockComponentPatcher;
 class ReadOnlyTestInstaller;
 
@@ -23,8 +25,6 @@ const char binary_output_hash[] =
 // to avoid introducing a dependency from the unit tests to the installer.
 const int kCourgetteErrorOffset = 300;
 const int kBsdiffErrorOffset = 600;
-
-base::FilePath test_file(const char* file);
 
 class ComponentPatcherOperationTest : public testing::Test {
  public:
@@ -38,5 +38,7 @@ class ComponentPatcherOperationTest : public testing::Test {
   scoped_ptr<MockComponentPatcher> patcher_;
   scoped_ptr<ReadOnlyTestInstaller> installer_;
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_UNITTEST_H_

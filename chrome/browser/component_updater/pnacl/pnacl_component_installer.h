@@ -31,6 +31,8 @@ namespace pnacl {
 bool NeedsOnDemandUpdate();
 }
 
+namespace component_updater {
+
 // Component installer responsible for Portable Native Client files.
 // Files can be installed to a shared location, or be installed to
 // a per-user location.
@@ -94,5 +96,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   ComponentUpdateService* cus_;
   DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstaller);
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_

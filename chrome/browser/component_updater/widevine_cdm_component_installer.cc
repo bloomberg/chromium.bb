@@ -38,6 +38,8 @@
 using content::BrowserThread;
 using content::PluginService;
 
+namespace component_updater {
+
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 
 namespace {
@@ -335,3 +337,6 @@ void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {
   return;
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 }
+
+}  // namespace component_updater
+

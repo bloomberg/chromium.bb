@@ -25,6 +25,8 @@
 using content::BrowserThread;
 using content::GpuDataManager;
 
+namespace component_updater {
+
 namespace {
 
 // CRX hash. The extension id is: nhfgdggnnopgbfdlpeoalgcjdgfafocg.
@@ -244,3 +246,6 @@ void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
       base::Bind(&RegisterSwiftShaderPath, cus));
 #endif
 }
+
+}  // namespace component_updater
+

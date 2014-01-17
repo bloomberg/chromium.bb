@@ -13,6 +13,8 @@
 #include "chrome/browser/component_updater/default_component_installer.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace component_updater {
+
 namespace {
 // Version "0" corresponds to no installed version. By the server's conventions,
 // we represent it as a dotted quad.
@@ -208,3 +210,6 @@ void DefaultComponentInstaller::FinishRegistration(
         manifest_copy.Pass());
   }
 }
+
+}  // namespace component_updater
+

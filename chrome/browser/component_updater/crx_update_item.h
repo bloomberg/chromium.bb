@@ -15,9 +15,9 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/crx_downloader.h"
 
-class CUResourceThrottle;
-
 namespace component_updater {
+
+class CUResourceThrottle;
 
 // This is the one and only per-item state structure. Designed to be hosted
 // in a std::vector or a std::list. The two main members are |component|

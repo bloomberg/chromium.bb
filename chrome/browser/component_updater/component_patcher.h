@@ -36,6 +36,8 @@ namespace base {
 class FilePath;
 }
 
+namespace component_updater {
+
 class ComponentInstaller;
 
 // Applies a delta patch to a single file. Specifically, creates a file at
@@ -82,5 +84,7 @@ ComponentUnpacker::Error DifferentialUpdatePatch(
     ComponentPatcher* component_patcher,
     ComponentInstaller* installer,
     int* error);
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_H_

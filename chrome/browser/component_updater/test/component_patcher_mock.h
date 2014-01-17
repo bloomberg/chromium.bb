@@ -13,6 +13,8 @@ namespace base {
 class FilePath;
 }
 
+namespace component_updater {
+
 class MockComponentPatcher : public ComponentPatcher {
  public:
   MockComponentPatcher() {}
@@ -24,5 +26,7 @@ class MockComponentPatcher : public ComponentPatcher {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockComponentPatcher);
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_MOCK_H_

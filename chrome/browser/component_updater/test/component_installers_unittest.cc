@@ -20,6 +20,8 @@
 
 using content::BrowserThread;
 
+namespace component_updater {
+
 namespace {
 // File name of the Pepper Flash plugin on different platforms.
 const base::FilePath::CharType kDataPath[] =
@@ -82,3 +84,6 @@ TEST(ComponentInstallerTest, MAYBE_PepperFlashCheck) {
   EXPECT_TRUE(CheckPepperFlashManifest(*root, &version));
   EXPECT_TRUE(version.IsValid());
 }
+
+}  // namespace component_updater
+

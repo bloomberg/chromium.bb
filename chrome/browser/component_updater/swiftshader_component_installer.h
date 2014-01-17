@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_SWIFTSHADER_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_SWIFTSHADER_COMPONENT_INSTALLER_H_
 
+namespace component_updater {
+
 class ComponentUpdateService;
 
 // Our job is to 1) find what version of SwiftShader is installed (if any)
@@ -12,5 +14,6 @@ class ComponentUpdateService;
 // component updater if the current gpu is blacklisted.
 void RegisterSwiftShaderComponent(ComponentUpdateService* cus);
 
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_SWIFTSHADER_COMPONENT_INSTALLER_H_

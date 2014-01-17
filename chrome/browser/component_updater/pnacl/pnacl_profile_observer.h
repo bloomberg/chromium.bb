@@ -9,6 +9,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace component_updater {
+
 class PnaclComponentInstaller;
 
 // Monitors profile switching for ChromeOS to check the per-user
@@ -28,5 +30,7 @@ class PnaclProfileObserver : public content::NotificationObserver {
   PnaclComponentInstaller* pnacl_installer_;
   DISALLOW_COPY_AND_ASSIGN(PnaclProfileObserver);
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_PROFILE_OBSERVER_H_

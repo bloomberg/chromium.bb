@@ -340,7 +340,8 @@ prerender::PrerenderTracker* TestingBrowserProcess::prerender_tracker() {
 #endif
 }
 
-ComponentUpdateService* TestingBrowserProcess::component_updater() {
+component_updater::ComponentUpdateService*
+TestingBrowserProcess::component_updater() {
   return NULL;
 }
 
@@ -348,7 +349,8 @@ CRLSetFetcher* TestingBrowserProcess::crl_set_fetcher() {
   return NULL;
 }
 
-PnaclComponentInstaller* TestingBrowserProcess::pnacl_component_installer() {
+component_updater::PnaclComponentInstaller*
+TestingBrowserProcess::pnacl_component_installer() {
   return NULL;
 }
 

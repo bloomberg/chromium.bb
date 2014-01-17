@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/component_updater/component_patcher.h"
 
+namespace component_updater {
+
 class ComponentPatcherWin : public ComponentPatcher {
  public:
   ComponentPatcherWin() {}
@@ -20,5 +22,7 @@ class ComponentPatcherWin : public ComponentPatcher {
  private:
   DISALLOW_COPY_AND_ASSIGN(ComponentPatcherWin);
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_WIN_H_

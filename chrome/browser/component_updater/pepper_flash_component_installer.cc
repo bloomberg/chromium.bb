@@ -43,6 +43,8 @@
 using content::BrowserThread;
 using content::PluginService;
 
+namespace component_updater {
+
 namespace {
 
 // File name of the Pepper Flash component manifest on different platforms.
@@ -407,3 +409,6 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
                           base::Bind(&StartPepperFlashUpdateRegistration, cus));
 #endif
 }
+
+}  // namespace component_updater
+

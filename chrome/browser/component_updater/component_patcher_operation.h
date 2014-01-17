@@ -11,11 +11,11 @@
 #include "chrome/browser/component_updater/component_unpacker.h"
 
 namespace base {
-
 class FilePath;
 class DictionaryValue;
-
 }  // namespace base
+
+namespace component_updater {
 
 class ComponentInstaller;
 class ComponentPatcher;
@@ -154,5 +154,7 @@ class DeltaUpdateOpPatchCourgette : public DeltaUpdateOp {
 
 // Factory function to create DeltaUpdateOp instances.
 DeltaUpdateOp* CreateDeltaUpdateOp(base::DictionaryValue* command);
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_PATCHER_OPERATION_H_

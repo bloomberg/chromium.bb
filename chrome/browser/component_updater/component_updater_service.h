@@ -11,6 +11,8 @@
 #include "base/version.h"
 #include "url/gurl.h"
 
+class ComponentsUI;
+
 namespace base {
 class DictionaryValue;
 class FilePath;
@@ -28,6 +30,8 @@ class OnDemandTester;
 namespace content {
 class ResourceThrottle;
 }
+
+namespace component_updater {
 
 class ComponentPatcher;
 
@@ -205,8 +209,8 @@ class ComponentUpdateService {
 
   virtual ~ComponentUpdateService() {}
 
-  friend class ComponentsUI;
-  friend class component_updater::OnDemandTester;
+  friend class ::ComponentsUI;
+  friend class OnDemandTester;
 
  private:
   // Ask the component updater to do an update check for a previously
@@ -222,5 +226,7 @@ class ComponentUpdateService {
 // the heap which the component updater will own.
 ComponentUpdateService* ComponentUpdateServiceFactory(
     ComponentUpdateService::Configurator* config);
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_SERVICE_H_

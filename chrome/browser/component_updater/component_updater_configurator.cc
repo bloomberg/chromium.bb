@@ -21,6 +21,8 @@
 #include "chrome/browser/component_updater/component_patcher_win.h"
 #endif
 
+namespace component_updater {
+
 namespace {
 
 // Default time constants.
@@ -220,3 +222,6 @@ ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
     const CommandLine* cmdline, net::URLRequestContextGetter* context_getter) {
   return new ChromeConfigurator(cmdline, context_getter);
 }
+
+}  // namespace component_updater
+
