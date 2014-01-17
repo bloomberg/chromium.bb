@@ -69,7 +69,7 @@ public:
 
     ShadowRoot* youngerShadowRoot() const { return prev(); }
 
-    ShadowRoot* bindingsOlderShadowRoot() const;
+    ShadowRoot* olderShadowRootForBindings() const;
     bool shouldExposeToBindings() const { return type() == AuthorShadowRoot; }
 
     bool isYoungest() const { return !youngerShadowRoot(); }

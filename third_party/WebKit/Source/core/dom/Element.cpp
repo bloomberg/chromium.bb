@@ -597,7 +597,7 @@ int Element::offsetHeight()
     return 0;
 }
 
-Element* Element::bindingsOffsetParent()
+Element* Element::offsetParentForBindings()
 {
     Element* element = offsetParent();
     if (!element || !element->isInShadowTree())

@@ -108,7 +108,7 @@ void ShadowRoot::dispose()
     removeDetachedChildren();
 }
 
-ShadowRoot* ShadowRoot::bindingsOlderShadowRoot() const
+ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
 {
     ShadowRoot* older = olderShadowRoot();
     while (older && !older->shouldExposeToBindings())

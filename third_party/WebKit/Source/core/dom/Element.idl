@@ -65,7 +65,7 @@
     [PerWorldBindings] readonly attribute long offsetTop;
     [PerWorldBindings] readonly attribute long offsetWidth;
     [PerWorldBindings] readonly attribute long offsetHeight;
-    [ImplementedAs=bindingsOffsetParent, PerWorldBindings] readonly attribute Element offsetParent;
+    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element offsetParent;
     [PerWorldBindings] readonly attribute long clientLeft;
     [PerWorldBindings] readonly attribute long clientTop;
     [PerWorldBindings] readonly attribute long clientWidth;

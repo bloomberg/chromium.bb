@@ -485,7 +485,7 @@ public:
     Node* commonAncestor(const Node&, Node* (*parent)(const Node&));
 
     // FIXME: Remove this when crbug.com/265716 cleans up contains semantics.
-    bool bindingsContains(const Node* node) const { return containsIncludingShadowDOM(node); }
+    bool containsForBindings(const Node* node) const { return containsIncludingShadowDOM(node); }
 
     // Used to determine whether range offsets use characters or node indices.
     virtual bool offsetInCharacters() const;

@@ -175,8 +175,8 @@ public:
     int offsetHeight();
 
     // FIXME: Replace uses of offsetParent in the platform with calls
-    // to the render layer and merge bindingsOffsetParent and offsetParent.
-    Element* bindingsOffsetParent();
+    // to the render layer and merge offsetParentForBindings and offsetParent.
+    Element* offsetParentForBindings();
 
     Element* offsetParent();
     int clientLeft();
