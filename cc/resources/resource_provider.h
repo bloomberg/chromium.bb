@@ -469,6 +469,7 @@ class CC_EXPORT ResourceProvider {
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
   void LazyCreate(Resource* resource);
   void LazyAllocate(Resource* resource);
+  void BindImageForSampling(Resource* resource);
 
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the

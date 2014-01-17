@@ -1194,6 +1194,11 @@ void ResourceProvider::ReceiveReturnsFromParent(
     if (resource->exported_count)
       continue;
 
+    // Need to wait for the current read lock fence to pass before we can
+    // recycle this resource.
+    if (resource->enable_read_lock_fences)
+      resource->read_lock_fence = current_read_lock_fence_;
+
     if (resource->gl_id) {
       if (returned.sync_point)
         GLC(gl, gl->WaitSyncPointCHROMIUM(returned.sync_point));
@@ -1255,16 +1260,26 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     resource->mailbox = source->shared_bitmap->id();
     resource->is_software = true;
   } else if (!source->mailbox.IsValid()) {
-    // This is a resource allocated by the compositor, we need to produce it.
-    // Don't set a sync point, the caller will do it.
+    LazyCreate(source);
     DCHECK(source->gl_id);
     GLC(gl, gl->BindTexture(resource->target, source->gl_id));
+    if (source->image_id) {
+      DCHECK(source->dirty_image);
+      BindImageForSampling(source);
+    }
+    // This is a resource allocated by the compositor, we need to produce it.
+    // Don't set a sync point, the caller will do it.
     GLC(gl, gl->GenMailboxCHROMIUM(resource->mailbox.name));
     GLC(gl,
         gl->ProduceTextureCHROMIUM(resource->target, resource->mailbox.name));
     source->mailbox.SetName(resource->mailbox);
   } else {
     DCHECK(source->mailbox.IsTexture());
+    if (source->image_id && source->dirty_image) {
+      DCHECK(source->gl_id);
+      GLC(gl, gl->BindTexture(resource->target, source->gl_id));
+      BindImageForSampling(source);
+    }
     // This is either an external resource, or a compositor resource that we
     // already exported. Make sure to forward the sync point that we were given.
     resource->mailbox = source->mailbox.name();
@@ -1497,14 +1512,8 @@ GLenum ResourceProvider::BindForSampling(
     resource->filter = filter;
   }
 
-  if (resource->image_id && resource->dirty_image) {
-    // Release image currently bound to texture.
-    if (resource->bound_image_id)
-      gl->ReleaseTexImage2DCHROMIUM(target, resource->bound_image_id);
-    gl->BindTexImage2DCHROMIUM(target, resource->image_id);
-    resource->bound_image_id = resource->image_id;
-    resource->dirty_image = false;
-  }
+  if (resource->image_id && resource->dirty_image)
+    BindImageForSampling(resource);
 
   return target;
 }
@@ -1628,6 +1637,8 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   if (resource->texture_pool == 0)
     return;
 
+  DCHECK(!resource->external);
+  DCHECK(!resource->mailbox.IsValid());
   resource->gl_id = texture_id_allocator_->NextId();
 
   GLES2Interface* gl = ContextGL();
@@ -1694,6 +1705,19 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
                          NULL));
     }
   }
+}
+
+void ResourceProvider::BindImageForSampling(Resource* resource) {
+  GLES2Interface* gl = ContextGL();
+  DCHECK(resource->gl_id);
+  DCHECK(resource->image_id);
+
+  // Release image currently bound to texture.
+  if (resource->bound_image_id)
+    gl->ReleaseTexImage2DCHROMIUM(resource->target, resource->bound_image_id);
+  gl->BindTexImage2DCHROMIUM(resource->target, resource->image_id);
+  resource->bound_image_id = resource->image_id;
+  resource->dirty_image = false;
 }
 
 void ResourceProvider::EnableReadLockFences(ResourceProvider::ResourceId id,
