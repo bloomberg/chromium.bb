@@ -374,8 +374,12 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     }
 
     // Just schedule a full repaint of our object.
-    if (requiresRepaint)
-        m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()));
+    if (requiresRepaint) {
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && m_box->frameView()->isInLayout())
+            m_box->setShouldDoFullRepaintAfterLayout(true);
+        else
+            m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()));
+    }
 
     // Schedule the scroll DOM event.
     if (m_box->node())
