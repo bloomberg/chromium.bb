@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/debug/trace_event.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "jni/VideoCapture_jni.h"
@@ -196,6 +197,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
     jbyteArray data,
     jint length,
     jint rotation) {
+  TRACE_EVENT0("video", "VideoCaptureDeviceAndroid::OnFrameAvailable");
   DVLOG(3) << "VideoCaptureDeviceAndroid::OnFrameAvailable: length =" << length;
 
   base::AutoLock lock(lock_);
