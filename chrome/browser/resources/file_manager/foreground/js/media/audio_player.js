@@ -40,7 +40,6 @@ function AudioPlayer(container) {
 
   this.audioControls_ = new FullWindowAudioControls(
       createChild(), this.advance_.bind(this), this.onError_.bind(this));
-
   this.audioControls_.attachMedia(createChild('', 'audio'));
 
   chrome.fileBrowserPrivate.getStrings(function(strings) {
@@ -74,7 +73,7 @@ AudioPlayer.load = function() {
 
   AudioPlayer.instance =
       new AudioPlayer(document.querySelector('.audio-player'));
-  reload();
+  AudioPlayer.instance.load(window.appState);
 };
 
 util.addPageLoadHandler(AudioPlayer.load);
@@ -91,11 +90,7 @@ function unload() {
  * Reload the player.
  */
 function reload() {
-  if (window.appState) {
-    util.saveAppState();
-    AudioPlayer.instance.load(window.appState);
-    return;
-  }
+  AudioPlayer.instance.load(window.appState);
 }
 
 /**
@@ -107,8 +102,9 @@ AudioPlayer.prototype.load = function(playlist) {
   this.audioControls_.pause();
   this.currentTrack_ = -1;
 
-  // Save the app state, in case of restart.
-  window.appState = playlist;
+  // Save the app state, in case of restart. Make a copy of the object, so the
+  // playlist member is not changed after entries are resolved.
+  window.appState = JSON.parse(JSON.stringify(playlist));
   util.saveAppState();
 
   util.URLsToEntries(playlist.items, function(entries) {
@@ -216,13 +212,9 @@ AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
 
   this.currentTrack_ = newTrack;
 
-  if (window.appState) {
-    window.appState.position = this.currentTrack_;
-    window.appState.time = 0;
-    util.saveAppState();
-  } else {
-    util.platform.setPreference(AudioPlayer.TRACK_KEY, this.currentTrack_);
-  }
+  window.appState.position = this.currentTrack_;
+  window.appState.time = 0;
+  util.saveAppState();
 
   this.scrollToCurrent_(false);
 

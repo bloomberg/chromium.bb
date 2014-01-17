@@ -490,21 +490,9 @@ MediaControls.prototype.encodeState = function() {
   if (!this.media_.duration)
     return;
 
-  if (window.appState) {
-    window.appState.time = this.media_.currentTime;
-    util.saveAppState();
-    return;
-  }
-
-  var playState = JSON.stringify({
-      play: this.isPlaying(),
-      time: this.media_.currentTime
-    });
-
-  var newLocation = document.location.origin + document.location.pathname +
-      document.location.search + '#' + playState;
-
-  document.location.href = newLocation;
+  window.appState.time = this.media_.currentTime;
+  util.saveAppState();
+  return;
 };
 
 /**
@@ -512,53 +500,23 @@ MediaControls.prototype.encodeState = function() {
  * @return {boolean} True if decode succeeded.
  */
 MediaControls.prototype.decodeState = function() {
-  if (window.appState) {
-    if (!('time' in window.appState))
-      return false;
-    // There is no page reload for apps v2, only app restart.
-    // Always restart in paused state.
-    this.media_.currentTime = appState.time;
-    this.pause();
-    return true;
-  }
-
-  var hash = document.location.hash.substring(1);
-  if (hash) {
-    try {
-      var playState = JSON.parse(hash);
-      if (!('time' in playState))
-        return false;
-
-      this.media_.currentTime = playState.time;
-
-      if (playState.play)
-        this.play();
-      else
-        this.pause();
-
-      return true;
-    } catch (e) {
-      console.warn('Cannot decode play state');
-    }
-  }
-  return false;
+  if (!('time' in window.appState))
+    return false;
+  // There is no page reload for apps v2, only app restart.
+  // Always restart in paused state.
+  this.media_.currentTime = appState.time;
+  this.pause();
+  return true;
 };
 
 /**
  * Remove current state from the page URL or the app state.
  */
 MediaControls.prototype.clearState = function() {
-  if (window.appState) {
-    if ('time' in window.appState)
-      delete window.appState.time;
-    util.saveAppState();
-    return;
-  }
-
-  var newLocation = document.location.origin + document.location.pathname +
-      document.location.search + '#';
-
-  document.location.href = newLocation;
+  if ('time' in window.appState)
+    delete window.appState.time;
+  util.saveAppState();
+  return;
 };
 
 /**
