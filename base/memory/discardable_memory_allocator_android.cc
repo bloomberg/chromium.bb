@@ -124,7 +124,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
     return make_scoped_ptr(new AshmemRegion(fd, size, base, allocator));
   }
 
-  virtual ~AshmemRegion() {
+  ~AshmemRegion() {
     const bool result = internal::CloseAshmemRegion(fd_, size_, base_);
     DCHECK(result);
   }
