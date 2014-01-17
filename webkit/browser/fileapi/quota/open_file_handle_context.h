@@ -29,15 +29,14 @@ class OpenFileHandleContext : public base::RefCounted<OpenFileHandleContext> {
   OpenFileHandleContext(const base::FilePath& platform_path,
                         QuotaReservationBuffer* reservation_buffer);
 
-  void UpdateMaxWrittenOffset(int64 offset,
-                              int64* new_file_size,
-                              int64* growth);
+  // Updates the max written offset and returns the amount of growth.
+  int64 UpdateMaxWrittenOffset(int64 offset);
 
   const base::FilePath& platform_path() const {
     return platform_path_;
   }
 
-  int64 base_file_size() const { return maximum_written_offset_; }
+  int64 GetEstimatedFileSize() const;
 
  private:
   friend class base::RefCounted<OpenFileHandleContext>;

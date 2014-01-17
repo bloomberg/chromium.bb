@@ -13,21 +13,17 @@ OpenFileHandle::~OpenFileHandle() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }
 
-int64 OpenFileHandle::UpdateMaxWrittenOffset(int64 offset) {
+void OpenFileHandle::UpdateMaxWrittenOffset(int64 offset) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  int64 new_file_size = 0;
-  int64 growth = 0;
-  context_->UpdateMaxWrittenOffset(offset, &new_file_size, &growth);
-
+  int64 growth = context_->UpdateMaxWrittenOffset(offset);
   if (growth > 0)
     reservation_->ConsumeReservation(growth);
-
-  return new_file_size;
 }
 
-int64 OpenFileHandle::base_file_size() const {
-  return context_->base_file_size();
+int64 OpenFileHandle::GetEstimatedFileSize() const {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return context_->GetEstimatedFileSize();
 }
 
 OpenFileHandle::OpenFileHandle(QuotaReservation* reservation,

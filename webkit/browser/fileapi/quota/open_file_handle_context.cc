@@ -22,19 +22,19 @@ OpenFileHandleContext::OpenFileHandleContext(
   maximum_written_offset_ = initial_file_size_;
 }
 
-void OpenFileHandleContext::UpdateMaxWrittenOffset(
-    int64 offset,
-    int64* new_file_size,
-    int64* growth) {
+int64 OpenFileHandleContext::UpdateMaxWrittenOffset(int64 offset) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  if (offset > maximum_written_offset_) {
-    *growth = offset - maximum_written_offset_;
-    maximum_written_offset_ = offset;
-  } else {
-    *growth = 0;
-  }
+  if (offset <= maximum_written_offset_)
+    return 0;
 
-  *new_file_size = maximum_written_offset_;
+  int64 growth = offset - maximum_written_offset_;
+  maximum_written_offset_ = offset;
+  return growth;
+}
+
+int64 OpenFileHandleContext::GetEstimatedFileSize() const {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return maximum_written_offset_;
 }
 
 OpenFileHandleContext::~OpenFileHandleContext() {
@@ -51,7 +51,7 @@ OpenFileHandleContext::~OpenFileHandleContext() {
   // In this case, the reserved quota for the plugin should be handled as
   // consumed quota.
   int64 quota_consumption =
-      std::max(maximum_written_offset_, file_size) - initial_file_size_;
+      std::max(GetEstimatedFileSize(), file_size) - initial_file_size_;
 
   reservation_buffer_->CommitFileGrowth(quota_consumption, usage_delta);
   reservation_buffer_->DetachOpenFileHandleContext(this);

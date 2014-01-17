@@ -70,7 +70,7 @@ int64_t QuotaReservation::OpenFile(int32_t id,
   std::pair<FileMap::iterator, bool> insert_result =
       files_.insert(std::make_pair(id, file_handle.get()));
   if (insert_result.second) {
-    int64_t max_written_offset = file_handle->base_file_size();
+    int64_t max_written_offset = file_handle->GetEstimatedFileSize();
     ignore_result(file_handle.release());
     return max_written_offset;
   }
@@ -119,7 +119,7 @@ void QuotaReservation::GotReservedQuota(
   OffsetMap max_written_offsets;
   for (FileMap::iterator it = files_.begin(); it != files_.end(); ++ it) {
     max_written_offsets.insert(
-        std::make_pair(it->first, it->second->base_file_size()));
+        std::make_pair(it->first, it->second->GetEstimatedFileSize()));
   }
 
   if (file_system_context_) {

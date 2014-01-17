@@ -179,7 +179,7 @@ TEST_F(QuotaReservationManagerTest, BasicTest) {
     // operation for the file.
     // The client should calculate how much quota is consumed by itself.
     int64 remaining_quota = reservation->remaining_quota();
-    int64 base_file_size = open_file->base_file_size();
+    int64 base_file_size = open_file->GetEstimatedFileSize();
     int64 max_written_offset = base_file_size;
     ExtendFileTo(90);
     max_written_offset = 90;
@@ -225,10 +225,10 @@ TEST_F(QuotaReservationManagerTest, MultipleWriter) {
 
     int64 remaining_quota = reservation->remaining_quota();
 
-    int64 base_file_size_for_file1 = open_file1->base_file_size();
+    int64 base_file_size_for_file1 = open_file1->GetEstimatedFileSize();
     int64 max_written_offset_for_file1 = base_file_size_for_file1;
 
-    int64 base_file_size_for_file2 = open_file2->base_file_size();
+    int64 base_file_size_for_file2 = open_file2->GetEstimatedFileSize();
     int64 max_written_offset_for_file2 = base_file_size_for_file2;
 
     // Each writer should maintain max_written_offset and base_file_size
@@ -247,13 +247,13 @@ TEST_F(QuotaReservationManagerTest, MultipleWriter) {
     // maximum_written_offset.  UpdateMaxWrittenOffset returns updated
     // base_file_size that the writer should calculate quota consumption based
     // on that.
-    base_file_size_for_file1 =
-        open_file1->UpdateMaxWrittenOffset(max_written_offset_for_file1);
+    open_file1->UpdateMaxWrittenOffset(max_written_offset_for_file1);
+    base_file_size_for_file1 = open_file1->GetEstimatedFileSize();
     max_written_offset_for_file1 = base_file_size_for_file1;
     EXPECT_EQ(100 - (50 - kInitialFileSize), reservation->remaining_quota());
 
-    base_file_size_for_file2 =
-        open_file2->UpdateMaxWrittenOffset(max_written_offset_for_file2);
+    open_file2->UpdateMaxWrittenOffset(max_written_offset_for_file2);
+    base_file_size_for_file2 = open_file2->GetEstimatedFileSize();
     max_written_offset_for_file2 = base_file_size_for_file2;
     EXPECT_EQ(100 - (50 - kInitialFileSize) - (90 - 50),
               reservation->remaining_quota());
@@ -297,11 +297,11 @@ TEST_F(QuotaReservationManagerTest, MultipleClient) {
 
   // Each client should manage reserved quota and its consumption separately.
   int64 remaining_quota1 = reservation1->remaining_quota();
-  int64 base_file_size1 = open_file1->base_file_size();
+  int64 base_file_size1 = open_file1->GetEstimatedFileSize();
   int64 max_written_offset1 = base_file_size1;
 
   int64 remaining_quota2 = reservation2->remaining_quota();
-  int64 base_file_size2 = open_file2->base_file_size();
+  int64 base_file_size2 = open_file2->GetEstimatedFileSize();
   int64 max_written_offset2 = base_file_size2;
 
   max_written_offset1 = 50;
@@ -316,16 +316,16 @@ TEST_F(QuotaReservationManagerTest, MultipleClient) {
 
   // For multiple Reservation case, RefreshQuota needs usage report only from
   // associated OpenFile's.
-  base_file_size1 =
-      open_file1->UpdateMaxWrittenOffset(max_written_offset1);
+  open_file1->UpdateMaxWrittenOffset(max_written_offset1);
+  base_file_size1 = open_file1->GetEstimatedFileSize();
   max_written_offset1 = base_file_size1;
   EXPECT_EQ(100 - (50 - kInitialFileSize), reservation1->remaining_quota());
 
   RefreshQuota(reservation1, 200);
   EXPECT_EQ(200, reservation1->remaining_quota());
 
-  base_file_size2 =
-      open_file2->UpdateMaxWrittenOffset(max_written_offset2);
+  open_file2->UpdateMaxWrittenOffset(max_written_offset2);
+  base_file_size2 = open_file2->GetEstimatedFileSize();
   max_written_offset2 = base_file_size2;
   EXPECT_EQ(500 - (400 - 50), reservation2->remaining_quota());
 

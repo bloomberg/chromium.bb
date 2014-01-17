@@ -24,13 +24,17 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OpenFileHandle {
   ~OpenFileHandle();
 
   // Updates cached file size and consumes quota for that.
-  // This should be called for each modified file before calling RefreshQuota
-  // and file close.
-  // Returns updated base file size that should be used to measure quota
-  // consumption by difference to this.
-  int64 UpdateMaxWrittenOffset(int64 offset);
+  // This should be called for each modified file before calling
+  // QuotaReservation::RefreshQuota and before closing the file.
+  void UpdateMaxWrittenOffset(int64 offset);
 
-  int64 base_file_size() const;
+  // Returns the estimated file size for the quota consumption calculation.
+  // The client must consume its reserved quota when it writes data to the file
+  // beyond the estimated file size.
+  // The estimated file size is greater than or equal to actual file size after
+  // all clients report their file usage,  and is monotonically increasing over
+  // OpenFileHandle object life cycle, so that client may cache the value.
+  int64 GetEstimatedFileSize() const;
 
  private:
   friend class QuotaReservationBuffer;
