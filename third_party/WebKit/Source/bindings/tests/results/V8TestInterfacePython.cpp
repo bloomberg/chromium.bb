@@ -180,87 +180,87 @@ static void perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld(v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void longAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void partialLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    v8SetReturnValueInt(info, TestPartialInterfacePython::longAttribute(imp));
+    v8SetReturnValueInt(info, TestPartialInterfacePython::partialLongAttribute(imp));
 }
 
-static void longAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void partialLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfacePythonImplementationV8Internal::longAttributeAttributeGetter(info);
+    TestInterfacePythonImplementationV8Internal::partialLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void longAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "longAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
-    TestPartialInterfacePython::setLongAttribute(imp, cppValue);
+    TestPartialInterfacePython::setPartialLongAttribute(imp, cppValue);
 }
 
-static void longAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void partialLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfacePythonImplementationV8Internal::longAttributeAttributeSetter(jsValue, info);
+    TestInterfacePythonImplementationV8Internal::partialLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void staticLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void partialStaticLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValueInt(info, TestPartialInterfacePython::staticLongAttribute());
+    v8SetReturnValueInt(info, TestPartialInterfacePython::partialStaticLongAttribute());
 }
 
-static void staticLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void partialStaticLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfacePythonImplementationV8Internal::staticLongAttributeAttributeGetter(info);
+    TestInterfacePythonImplementationV8Internal::partialStaticLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void staticLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "staticLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialStaticLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
-    TestPartialInterfacePython::setStaticLongAttribute(cppValue);
+    TestPartialInterfacePython::setPartialStaticLongAttribute(cppValue);
 }
 
-static void staticLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void partialStaticLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfacePythonImplementationV8Internal::staticLongAttributeAttributeSetter(jsValue, info);
+    TestInterfacePythonImplementationV8Internal::partialStaticLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithExecutionContextLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     ExecutionContext* scriptContext = getExecutionContext();
-    v8SetReturnValueInt(info, TestPartialInterfacePython::callWithExecutionContextLongAttribute(scriptContext, imp));
+    v8SetReturnValueInt(info, TestPartialInterfacePython::partialCallWithExecutionContextLongAttribute(scriptContext, imp));
 }
 
-static void callWithExecutionContextLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestInterfacePythonImplementationV8Internal::callWithExecutionContextLongAttributeAttributeGetter(info);
+    TestInterfacePythonImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void callWithExecutionContextLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "callWithExecutionContextLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     ExecutionContext* scriptContext = getExecutionContext();
-    TestPartialInterfacePython::setCallWithExecutionContextLongAttribute(scriptContext, imp, cppValue);
+    TestPartialInterfacePython::setPartialCallWithExecutionContextLongAttribute(scriptContext, imp, cppValue);
 }
 
-static void callWithExecutionContextLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestInterfacePythonImplementationV8Internal::callWithExecutionContextLongAttributeAttributeSetter(jsValue, info);
+    TestInterfacePythonImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -290,6 +290,48 @@ static void voidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void partialVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    TestPartialInterfacePython::partialVoidMethod(imp);
+}
+
+static void partialVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfacePythonImplementationV8Internal::partialVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void partialStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestPartialInterfacePython::partialStaticVoidMethod();
+}
+
+static void partialStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfacePythonImplementationV8Internal::partialStaticVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialCallWithExecutionContextRaisesExceptionVoidMethod", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    ExecutionContext* scriptContext = getExecutionContext();
+    TestPartialInterfacePython::partialCallWithExecutionContextRaisesExceptionVoidMethod(scriptContext, imp, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+}
+
+static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfacePythonImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 } // namespace TestInterfacePythonImplementationV8Internal
 
 void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
@@ -309,12 +351,14 @@ void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfacePythonAttributes[] = {
     {"testInterfacePythonAttribute", TestInterfacePythonImplementationV8Internal::testInterfacePythonAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::testInterfacePythonAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"perWorldBindingsStringAttribute", TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallback, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeGetterCallbackForMainWorld, TestInterfacePythonImplementationV8Internal::perWorldBindingsStringAttributeAttributeSetterCallbackForMainWorld, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"longAttribute", TestInterfacePythonImplementationV8Internal::longAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::longAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"callWithExecutionContextLongAttribute", TestInterfacePythonImplementationV8Internal::callWithExecutionContextLongAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::callWithExecutionContextLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"partialLongAttribute", TestInterfacePythonImplementationV8Internal::partialLongAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::partialLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"partialCallWithExecutionContextLongAttribute", TestInterfacePythonImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfacePythonMethods[] = {
     {"voidMethod", TestInterfacePythonImplementationV8Internal::voidMethodMethodCallback, TestInterfacePythonImplementationV8Internal::voidMethodMethodCallbackForMainWorld, 0},
+    {"partialVoidMethod", TestInterfacePythonImplementationV8Internal::partialVoidMethodMethodCallback, 0, 0},
+    {"partialCallWithExecutionContextRaisesExceptionVoidMethod", TestInterfacePythonImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback, 0, 0},
 };
 
 static void configureV8TestInterfacePythonTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -334,14 +378,15 @@ static void configureV8TestInterfacePythonTemplate(v8::Handle<v8::FunctionTempla
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
     static const V8DOMConfiguration::ConstantConfiguration V8TestInterfacePythonConstants[] = {
         {"UNSIGNED_LONG", 0},
-        {"UNSIGNED_SHORT", 0},
+        {"PARTIAL_UNSIGNED_SHORT", 0},
     };
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestInterfacePythonConstants, WTF_ARRAY_LENGTH(V8TestInterfacePythonConstants), isolate);
     COMPILE_ASSERT(0 == TestInterfacePythonImplementation::UNSIGNED_LONG, TheValueOfTestInterfacePythonImplementation_UNSIGNED_LONGDoesntMatchWithImplementation);
-    COMPILE_ASSERT(0 == TestPartialInterfacePython::UNSIGNED_SHORT, TheValueOfTestInterfacePythonImplementation_UNSIGNED_SHORTDoesntMatchWithImplementation);
+    COMPILE_ASSERT(0 == TestPartialInterfacePython::PARTIAL_UNSIGNED_SHORT, TheValueOfTestInterfacePythonImplementation_PARTIAL_UNSIGNED_SHORTDoesntMatchWithImplementation);
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterfacePython::legacyCallCustom);
+    functionTemplate->Set(v8AtomicString(isolate, "partialStaticVoidMethod"), v8::FunctionTemplate::New(isolate, TestInterfacePythonImplementationV8Internal::partialStaticVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticStringAttribute"), TestInterfacePythonImplementationV8Internal::staticStringAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticLongAttribute"), TestInterfacePythonImplementationV8Internal::staticLongAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "partialStaticLongAttribute"), TestInterfacePythonImplementationV8Internal::partialStaticLongAttributeAttributeGetterCallback, TestInterfacePythonImplementationV8Internal::partialStaticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());

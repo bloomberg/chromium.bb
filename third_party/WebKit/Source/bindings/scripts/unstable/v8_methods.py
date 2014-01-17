@@ -169,6 +169,9 @@ def cpp_value(interface, method, number_of_arguments):
     arguments = method.arguments[:number_of_arguments]
     cpp_arguments = v8_utilities.call_with_arguments(method)
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
+    if ('ImplementedBy' in method.extended_attributes and
+        not method.is_static):
+        cpp_arguments.append('imp')
     if 'RaisesException' in method.extended_attributes:
         cpp_arguments.append('exceptionState')
 

@@ -541,7 +541,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
 {% macro install_custom_signature(method, world_suffix) %}
 {# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithCustomSignature #}
 {% set method_callback = '%sV8Internal::%sMethodCallback%s' %
-                         (interface_name, method.name, world_suffix) %}
+                         (cpp_class, method.name, world_suffix) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(method.property_attributes) %}
 {{method.function_template}}->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{method_callback}}, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
