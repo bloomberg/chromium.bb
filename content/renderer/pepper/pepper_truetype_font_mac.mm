@@ -12,7 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/safe_numerics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
@@ -293,10 +293,10 @@ int32_t PepperTrueTypeFontMac::GetTable(uint32_t table_tag,
 
   CFIndex table_size = CFDataGetLength(table_ref);
   CFIndex safe_offset =
-      std::min(base::checked_numeric_cast<CFIndex>(offset), table_size);
+      std::min(base::checked_cast<CFIndex>(offset), table_size);
   CFIndex safe_length =
       std::min(table_size - safe_offset,
-               base::checked_numeric_cast<CFIndex>(max_data_length));
+               base::checked_cast<CFIndex>(max_data_length));
   data->resize(safe_length);
   CFDataGetBytes(table_ref, CFRangeMake(safe_offset, safe_length),
                  reinterpret_cast<UInt8*>(&(*data)[0]));
@@ -341,7 +341,7 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
   }
 
   // Calculate the rest of the header values.
-  uint16_t num_tables = base::checked_numeric_cast<uint16_t>(table_count);
+  uint16_t num_tables = base::checked_cast<uint16_t>(table_count);
   uint16_t entry_selector = 0;
   uint16_t search_range = 1;
   while (search_range < num_tables >> 1) {
@@ -386,7 +386,7 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
   }
 
   // Extract a substring if the caller specified an offset or max data length.
-  int32_t font_size = base::checked_numeric_cast<int32_t>(font.size());
+  int32_t font_size = base::checked_cast<int32_t>(font.size());
   int32_t safe_offset = std::min(offset, font_size);
   int32_t safe_length = std::min(font_size - safe_offset, max_data_length);
   if (safe_offset || safe_length != font_size)
