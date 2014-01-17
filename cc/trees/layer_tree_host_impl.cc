@@ -1650,7 +1650,12 @@ void LayerTreeHostImpl::SetNeedsRedraw() {
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   ManagedMemoryPolicy actual = cached_managed_memory_policy_;
-  if (debug_state_.rasterize_only_visible_content) {
+  // TODO(ernstm): The second condition disables pre-painting for all layers
+  // when GPU rasterization is enabled. Once we selectively enable GPU
+  // rasterization per layer, we also need to disable pre-painting selectively:
+  // crbug.com/335387
+  if (debug_state_.rasterize_only_visible_content ||
+      settings_.gpu_rasterization) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
   }
