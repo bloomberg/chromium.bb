@@ -13,6 +13,8 @@ namespace cc {
 
 namespace {
 
+const int kWorkerPoolCount = 3;
+
 class FakeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
   FakeWorkerPoolTaskImpl(const base::Closure& callback,
@@ -60,7 +62,7 @@ class FakeWorkerPool : public WorkerPool {
     unsigned dependent_count;
     unsigned priority;
   };
-  FakeWorkerPool() : WorkerPool(1, "test") {}
+  FakeWorkerPool() : WorkerPool() {}
   virtual ~FakeWorkerPool() {}
 
   static scoped_ptr<FakeWorkerPool> Create() {
@@ -148,249 +150,314 @@ class WorkerPoolTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    worker_pool_ = FakeWorkerPool::Create();
+    for (int i = 0; i < kWorkerPoolCount; ++i)
+      worker_pools_[i] = FakeWorkerPool::Create();
   }
   virtual void TearDown() OVERRIDE {
-    worker_pool_->Shutdown();
-    worker_pool_->CheckForCompletedTasks();
+    for (int i = 0; i < kWorkerPoolCount; ++i) {
+      worker_pools_[i]->Shutdown();
+      worker_pools_[i]->CheckForCompletedTasks();
+    }
   }
 
-  void ResetIds() {
-    run_task_ids_.clear();
-    on_task_completed_ids_.clear();
+  void ResetAllIdsforWorkerPool(int worker_pool_index) {
+    run_task_ids_[worker_pool_index].clear();
+    on_task_completed_ids_[worker_pool_index].clear();
   }
 
-  void RunAllTasks() {
-    worker_pool_->WaitForTasksToComplete();
-    worker_pool_->CheckForCompletedTasks();
+  void RunAllTasksforWorkerPool(int worker_pool_index) {
+    worker_pools_[worker_pool_index]->WaitForTasksToComplete();
+    worker_pools_[worker_pool_index]->CheckForCompletedTasks();
   }
 
-  FakeWorkerPool* worker_pool() {
-    return worker_pool_.get();
+  FakeWorkerPool* worker_pool(int worker_pool_index) {
+    return worker_pools_[worker_pool_index].get();
   }
 
-  void RunTask(unsigned id) {
-    run_task_ids_.push_back(id);
+  void RunTask(int worker_pool_index, unsigned id) {
+    run_task_ids_[worker_pool_index].push_back(id);
   }
 
-  void OnTaskCompleted(unsigned id) {
-    on_task_completed_ids_.push_back(id);
+  void OnTaskCompleted(int worker_pool_index, unsigned id) {
+    on_task_completed_ids_[worker_pool_index].push_back(id);
   }
 
-  const std::vector<unsigned>& run_task_ids() {
-    return run_task_ids_;
+  const std::vector<unsigned>& run_task_ids(int worker_pool_index) {
+    return run_task_ids_[worker_pool_index];
   }
 
-  const std::vector<unsigned>& on_task_completed_ids() {
-    return on_task_completed_ids_;
+  const std::vector<unsigned>& on_task_completed_ids(int worker_pool_index) {
+    return on_task_completed_ids_[worker_pool_index];
   }
 
  private:
-  scoped_ptr<FakeWorkerPool> worker_pool_;
-  std::vector<unsigned> run_task_ids_;
-  std::vector<unsigned> on_task_completed_ids_;
+  scoped_ptr<FakeWorkerPool> worker_pools_[kWorkerPoolCount];
+  std::vector<unsigned> run_task_ids_[kWorkerPoolCount];
+  std::vector<unsigned> on_task_completed_ids_[kWorkerPoolCount];
 };
 
 TEST_F(WorkerPoolTest, Basic) {
-  EXPECT_EQ(0u, run_task_ids().size());
-  EXPECT_EQ(0u, on_task_completed_ids().size());
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    EXPECT_EQ(0u, run_task_ids(i).size());
+    EXPECT_EQ(0u, on_task_completed_ids(i).size());
 
-  worker_pool()->ScheduleTasks(
-      std::vector<FakeWorkerPool::Task>(
-          1,
-          FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
-                                          base::Unretained(this),
-                                          0u),
-                               base::Bind(&WorkerPoolTest::OnTaskCompleted,
-                                          base::Unretained(this),
-                                          0u),
-                               base::Closure(),
-                               1u,
-                               0u)));
-  RunAllTasks();
+    worker_pool(i)->ScheduleTasks(
+        std::vector<FakeWorkerPool::Task>(
+            1,
+            FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
+                                            base::Unretained(this),
+                                            i,
+                                            0u),
+                                 base::Bind(&WorkerPoolTest::OnTaskCompleted,
+                                            base::Unretained(this),
+                                            i,
+                                            0u),
+                                 base::Closure(),
+                                 1u,
+                                 0u)));
+  }
 
-  EXPECT_EQ(1u, run_task_ids().size());
-  EXPECT_EQ(1u, on_task_completed_ids().size());
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    RunAllTasksforWorkerPool(i);
 
-  worker_pool()->ScheduleTasks(
-      std::vector<FakeWorkerPool::Task>(
-          1,
-          FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
-                                          base::Unretained(this),
-                                          0u),
-                               base::Bind(&WorkerPoolTest::OnTaskCompleted,
-                                          base::Unretained(this),
-                                          0u),
-                               base::Bind(&WorkerPoolTest::RunTask,
-                                          base::Unretained(this),
-                                          0u),
-                               1u,
-                               0u)));
-  RunAllTasks();
+    EXPECT_EQ(1u, run_task_ids(i).size());
+    EXPECT_EQ(1u, on_task_completed_ids(i).size());
+  }
 
-  EXPECT_EQ(3u, run_task_ids().size());
-  EXPECT_EQ(2u, on_task_completed_ids().size());
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    worker_pool(i)->ScheduleTasks(
+        std::vector<FakeWorkerPool::Task>(
+            1,
+            FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
+                                            base::Unretained(this),
+                                            i,
+                                            0u),
+                                 base::Bind(&WorkerPoolTest::OnTaskCompleted,
+                                            base::Unretained(this),
+                                            i,
+                                            0u),
+                                 base::Bind(&WorkerPoolTest::RunTask,
+                                            base::Unretained(this),
+                                            i,
+                                            0u),
+                                 1u,
+                                 0u)));
+  }
 
-  worker_pool()->ScheduleTasks(
-      std::vector<FakeWorkerPool::Task>(
-          1, FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
-                                             base::Unretained(this),
-                                             0u),
-                                  base::Bind(&WorkerPoolTest::OnTaskCompleted,
-                                             base::Unretained(this),
-                                             0u),
-                                  base::Bind(&WorkerPoolTest::RunTask,
-                                             base::Unretained(this),
-                                             0u),
-                                  2u,
-                                  0u)));
-  RunAllTasks();
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    RunAllTasksforWorkerPool(i);
 
-  EXPECT_EQ(6u, run_task_ids().size());
-  EXPECT_EQ(3u, on_task_completed_ids().size());
+    EXPECT_EQ(3u, run_task_ids(i).size());
+    EXPECT_EQ(2u, on_task_completed_ids(i).size());
+  }
+
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    worker_pool(i)->ScheduleTasks(
+        std::vector<FakeWorkerPool::Task>(
+            1, FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
+                                               base::Unretained(this),
+                                               i,
+                                               0u),
+                                    base::Bind(&WorkerPoolTest::OnTaskCompleted,
+                                               base::Unretained(this),
+                                               i,
+                                               0u),
+                                    base::Bind(&WorkerPoolTest::RunTask,
+                                               base::Unretained(this),
+                                               i,
+                                               0u),
+                                    2u,
+                                    0u)));
+  }
+
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    RunAllTasksforWorkerPool(i);
+
+    EXPECT_EQ(6u, run_task_ids(i).size());
+    EXPECT_EQ(3u, on_task_completed_ids(i).size());
+  }
 }
 
 TEST_F(WorkerPoolTest, Dependencies) {
-  worker_pool()->ScheduleTasks(
-      std::vector<FakeWorkerPool::Task>(
-          1, FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
-                                             base::Unretained(this),
-                                             0u),
-                                  base::Bind(&WorkerPoolTest::OnTaskCompleted,
-                                             base::Unretained(this),
-                                             0u),
-                                  base::Bind(&WorkerPoolTest::RunTask,
-                                             base::Unretained(this),
-                                             1u),
-                                  1u,
-                                  0u)));
-  RunAllTasks();
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    worker_pool(i)->ScheduleTasks(
+        std::vector<FakeWorkerPool::Task>(
+            1, FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
+                                               base::Unretained(this),
+                                               i,
+                                               0u),
+                                    base::Bind(&WorkerPoolTest::OnTaskCompleted,
+                                               base::Unretained(this),
+                                               i,
+                                               0u),
+                                    base::Bind(&WorkerPoolTest::RunTask,
+                                               base::Unretained(this),
+                                               i,
+                                               1u),
+                                    1u,
+                                    0u)));
+  }
 
-  // Check if task ran before dependent.
-  ASSERT_EQ(2u, run_task_ids().size());
-  EXPECT_EQ(0u, run_task_ids()[0]);
-  EXPECT_EQ(1u, run_task_ids()[1]);
-  ASSERT_EQ(1u, on_task_completed_ids().size());
-  EXPECT_EQ(0u, on_task_completed_ids()[0]);
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    RunAllTasksforWorkerPool(i);
 
-  worker_pool()->ScheduleTasks(
-      std::vector<FakeWorkerPool::Task>(
-          1, FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
-                                             base::Unretained(this),
-                                             2u),
-                                  base::Bind(&WorkerPoolTest::OnTaskCompleted,
-                                             base::Unretained(this),
-                                             2u),
-                                  base::Bind(&WorkerPoolTest::RunTask,
-                                             base::Unretained(this),
-                                             3u),
-                                  2u,
-                                  0u)));
-  RunAllTasks();
+    // Check if task ran before dependent.
+    ASSERT_EQ(2u, run_task_ids(i).size());
+    EXPECT_EQ(0u, run_task_ids(i)[0]);
+    EXPECT_EQ(1u, run_task_ids(i)[1]);
+    ASSERT_EQ(1u, on_task_completed_ids(i).size());
+    EXPECT_EQ(0u, on_task_completed_ids(i)[0]);
+  }
 
-  // Task should only run once.
-  ASSERT_EQ(5u, run_task_ids().size());
-  EXPECT_EQ(2u, run_task_ids()[2]);
-  EXPECT_EQ(3u, run_task_ids()[3]);
-  EXPECT_EQ(3u, run_task_ids()[4]);
-  ASSERT_EQ(2u, on_task_completed_ids().size());
-  EXPECT_EQ(2u, on_task_completed_ids()[1]);
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    worker_pool(i)->ScheduleTasks(
+        std::vector<FakeWorkerPool::Task>(
+            1, FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
+                                               base::Unretained(this),
+                                               i,
+                                               2u),
+                                    base::Bind(&WorkerPoolTest::OnTaskCompleted,
+                                               base::Unretained(this),
+                                               i,
+                                               2u),
+                                    base::Bind(&WorkerPoolTest::RunTask,
+                                               base::Unretained(this),
+                                               i,
+                                               3u),
+                                    2u,
+                                    0u)));
+  }
+
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    RunAllTasksforWorkerPool(i);
+
+    // Task should only run once.
+    ASSERT_EQ(5u, run_task_ids(i).size());
+    EXPECT_EQ(2u, run_task_ids(i)[2]);
+    EXPECT_EQ(3u, run_task_ids(i)[3]);
+    EXPECT_EQ(3u, run_task_ids(i)[4]);
+    ASSERT_EQ(2u, on_task_completed_ids(i).size());
+    EXPECT_EQ(2u, on_task_completed_ids(i)[1]);
+  }
 }
 
 TEST_F(WorkerPoolTest, Priority) {
-  {
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
     FakeWorkerPool::Task tasks[] = {
         FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         0u),
                              base::Bind(&WorkerPoolTest::OnTaskCompleted,
                                         base::Unretained(this),
+                                        i,
                                         0u),
                              base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         2u),
                              1u,
                              1u),  // Priority 1
         FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         1u),
                              base::Bind(&WorkerPoolTest::OnTaskCompleted,
                                         base::Unretained(this),
+                                        i,
                                         1u),
                              base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         3u),
                              1u,
                              0u)  // Priority 0
     };
-    worker_pool()->ScheduleTasks(
+    worker_pool(i)->ScheduleTasks(
         std::vector<FakeWorkerPool::Task>(tasks, tasks + arraysize(tasks)));
   }
-  RunAllTasks();
 
-  // Check if tasks ran in order of priority.
-  ASSERT_EQ(4u, run_task_ids().size());
-  EXPECT_EQ(1u, run_task_ids()[0]);
-  EXPECT_EQ(3u, run_task_ids()[1]);
-  EXPECT_EQ(0u, run_task_ids()[2]);
-  EXPECT_EQ(2u, run_task_ids()[3]);
-  ASSERT_EQ(2u, on_task_completed_ids().size());
-  EXPECT_EQ(1u, on_task_completed_ids()[0]);
-  EXPECT_EQ(0u, on_task_completed_ids()[1]);
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    RunAllTasksforWorkerPool(i);
 
-  ResetIds();
-  {
+    // Check if tasks ran in order of priority.
+    ASSERT_EQ(4u, run_task_ids(i).size());
+    EXPECT_EQ(1u, run_task_ids(i)[0]);
+    EXPECT_EQ(3u, run_task_ids(i)[1]);
+    EXPECT_EQ(0u, run_task_ids(i)[2]);
+    EXPECT_EQ(2u, run_task_ids(i)[3]);
+    ASSERT_EQ(2u, on_task_completed_ids(i).size());
+    EXPECT_EQ(1u, on_task_completed_ids(i)[0]);
+    EXPECT_EQ(0u, on_task_completed_ids(i)[1]);
+  }
+
+  for (int i = 0; i < kWorkerPoolCount; ++i)
+    ResetAllIdsforWorkerPool(i);
+
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
     std::vector<FakeWorkerPool::Task> tasks;
     tasks.push_back(
         FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         0u),
                              base::Bind(&WorkerPoolTest::OnTaskCompleted,
                                         base::Unretained(this),
+                                        i,
                                         0u),
                              base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         3u),
                              1u,    // 1 dependent
                              1u));  // Priority 1
     tasks.push_back(
         FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         1u),
                              base::Bind(&WorkerPoolTest::OnTaskCompleted,
                                         base::Unretained(this),
+                                        i,
                                         1u),
                              base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         4u),
                              2u,    // 2 dependents
                              1u));  // Priority 1
     tasks.push_back(
         FakeWorkerPool::Task(base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         2u),
                              base::Bind(&WorkerPoolTest::OnTaskCompleted,
                                         base::Unretained(this),
+                                        i,
                                         2u),
                              base::Bind(&WorkerPoolTest::RunTask,
                                         base::Unretained(this),
+                                        i,
                                         5u),
                              1u,    // 1 dependent
                              0u));  // Priority 0
-    worker_pool()->ScheduleTasks(tasks);
+    worker_pool(i)->ScheduleTasks(tasks);
   }
-  RunAllTasks();
 
-  // Check if tasks ran in order of priority and that task with more
-  // dependents ran first when priority is the same.
-  ASSERT_LE(3u, run_task_ids().size());
-  EXPECT_EQ(2u, run_task_ids()[0]);
-  EXPECT_EQ(5u, run_task_ids()[1]);
-  EXPECT_EQ(1u, run_task_ids()[2]);
-  ASSERT_EQ(3u, on_task_completed_ids().size());
-  EXPECT_EQ(2u, on_task_completed_ids()[0]);
-  EXPECT_EQ(1u, on_task_completed_ids()[1]);
-  EXPECT_EQ(0u, on_task_completed_ids()[2]);
+  for (int i = 0; i < kWorkerPoolCount; ++i) {
+    RunAllTasksforWorkerPool(i);
+
+    // Check if tasks ran in order of priority and that task with more
+    // dependents ran first when priority is the same.
+    ASSERT_LE(3u, run_task_ids(i).size());
+    EXPECT_EQ(2u, run_task_ids(i)[0]);
+    EXPECT_EQ(5u, run_task_ids(i)[1]);
+    EXPECT_EQ(1u, run_task_ids(i)[2]);
+    ASSERT_EQ(3u, on_task_completed_ids(i).size());
+    EXPECT_EQ(2u, on_task_completed_ids(i)[0]);
+    EXPECT_EQ(1u, on_task_completed_ids(i)[1]);
+    EXPECT_EQ(0u, on_task_completed_ids(i)[2]);
+  }
 }
 
 }  // namespace

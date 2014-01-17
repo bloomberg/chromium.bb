@@ -105,7 +105,16 @@ class CC_EXPORT WorkerPool {
   // completed.
   virtual void Shutdown();
 
- protected:
+  // Sets the number of threads to use for running raster tasks.
+  // Can only be called once prior to GetNumRasterThreads().
+  // Caller is responsible for correct ordering.
+  // TODO(reveman): Move this to RasterWorkerPool: crbug.com/331844
+  static void SetNumRasterThreads(int num_threads);
+
+  // Gets the number of threads to use for running raster tasks.
+  // TODO(reveman): Move this to RasterWorkerPool: crbug.com/331844
+  static int GetNumRasterThreads();
+
   // A task graph contains a unique set of tasks with edges between
   // dependencies pointing in the direction of the dependents. Each task
   // need to be assigned a unique priority and a run count that matches
@@ -113,8 +122,10 @@ class CC_EXPORT WorkerPool {
   typedef base::ScopedPtrHashMap<internal::WorkerPoolTask*, internal::GraphNode>
       GraphNodeMap;
   typedef GraphNodeMap TaskGraph;
+  typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
 
-  WorkerPool(size_t num_threads, const std::string& thread_name_prefix);
+ protected:
+  WorkerPool();
 
   // Schedule running of tasks in |graph|. Any previously scheduled tasks
   // that are not already running will be canceled. Canceled tasks don't run
@@ -125,17 +136,9 @@ class CC_EXPORT WorkerPool {
   void CheckForCompletedWorkerTasks();
 
  private:
-  class Inner;
-  friend class Inner;
-
-  typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
-
   void ProcessCompletedTasks(const TaskVector& completed_tasks);
 
   bool in_dispatch_completion_callbacks_;
-
-  // Hide the gory details of the worker pool in |inner_|.
-  const scoped_ptr<Inner> inner_;
 };
 
 }  // namespace cc

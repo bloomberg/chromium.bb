@@ -12,6 +12,7 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/resources/worker_pool.h"
 
 namespace {
 // Layout pixel buffer around the visible layer rect to record.  Any base
@@ -231,10 +232,11 @@ bool PicturePile::Update(
       }
       int recorded_pixel_count =
           picture->LayerRect().width() * picture->LayerRect().height();
+      int num_raster_threads = WorkerPool::GetNumRasterThreads();
       stats_instrumentation->AddRecord(best_duration, recorded_pixel_count);
-      if (num_raster_threads_ > 1)
+      if (num_raster_threads > 1)
         picture->GatherPixelRefs(tile_grid_info_);
-      picture->CloneForDrawing(num_raster_threads_);
+      picture->CloneForDrawing(num_raster_threads);
     }
 
     for (TilingData::Iterator it(&tiling_, record_rect);

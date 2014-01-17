@@ -15,7 +15,7 @@ namespace {
 
 class FakeRasterWorkerPool : public RasterWorkerPool {
  public:
-  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL, 1) {}
+  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
 
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
     RasterWorkerPool::SetRasterTasks(queue);
@@ -53,7 +53,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
-                  1,
                   std::numeric_limits<unsigned>::max(),
                   NULL) {}
 
@@ -62,7 +61,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
     : TileManager(client,
                   resource_provider,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
-                  1,
                   std::numeric_limits<unsigned>::max(),
                   NULL) {}
 
@@ -72,7 +70,6 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
     : TileManager(client,
                   resource_provider,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
-                  1,
                   raster_task_limit_bytes,
                   NULL) {}
 

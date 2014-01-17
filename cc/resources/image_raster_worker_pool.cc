@@ -59,9 +59,8 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 ImageRasterWorkerPool::ImageRasterWorkerPool(
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
-    size_t num_threads,
     GLenum texture_target)
-    : RasterWorkerPool(resource_provider, context_provider, num_threads),
+    : RasterWorkerPool(resource_provider, context_provider),
       texture_target_(texture_target),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false) {

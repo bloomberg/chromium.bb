@@ -9,6 +9,7 @@
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/worker_pool.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSize.h"
@@ -50,7 +51,8 @@ PicturePileImpl::PicturePileImpl()
 
 PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
     : PicturePileBase(other),
-      clones_for_drawing_(ClonesForDrawing(this, num_raster_threads())) {
+      clones_for_drawing_(ClonesForDrawing(
+                              this, WorkerPool::GetNumRasterThreads())) {
 }
 
 PicturePileImpl::PicturePileImpl(

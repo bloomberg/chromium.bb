@@ -410,7 +410,6 @@ class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
       RasterRequiredForActivationFinishedWorkerPoolTaskImpl);
 };
 
-const char* kWorkerThreadNamePrefix = "CompositorRaster";
 
 }  // namespace
 
@@ -557,10 +556,8 @@ RasterWorkerPool::Task RasterWorkerPool::CreateImageDecodeTask(
 }
 
 RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
-                                   ContextProvider* context_provider,
-                                   size_t num_threads)
-    : WorkerPool(num_threads, kWorkerThreadNamePrefix),
-      client_(NULL),
+                                   ContextProvider* context_provider)
+    : client_(NULL),
       resource_provider_(resource_provider),
       context_provider_(context_provider),
       weak_ptr_factory_(this) {

@@ -1730,7 +1730,6 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
       TileManager::Create(this,
                           resource_provider,
                           context_provider,
-                          settings_.num_raster_threads,
                           rendering_stats_instrumentation_,
                           using_map_image,
                           GetMaxTransferBufferUsageBytes(context_provider),

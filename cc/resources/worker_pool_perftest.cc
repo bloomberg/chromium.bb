@@ -59,7 +59,7 @@ class PerfControlWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
 class PerfWorkerPool : public WorkerPool {
  public:
-  PerfWorkerPool() : WorkerPool(1, "test") {}
+  PerfWorkerPool() : WorkerPool() {}
   virtual ~PerfWorkerPool() {}
 
   static scoped_ptr<PerfWorkerPool> Create() {

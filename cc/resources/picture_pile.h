@@ -29,10 +29,6 @@ class CC_EXPORT PicturePile : public PicturePileBase {
       int frame_number,
       RenderingStatsInstrumentation* stats_instrumentation);
 
-  void set_num_raster_threads(int num_raster_threads) {
-    num_raster_threads_ = num_raster_threads;
-  }
-
   void set_slow_down_raster_scale_factor(int factor) {
     slow_down_raster_scale_factor_for_debug_ = factor;
   }

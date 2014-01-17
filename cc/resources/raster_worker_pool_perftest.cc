@@ -29,7 +29,7 @@ class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
 class PerfRasterWorkerPool : public RasterWorkerPool {
  public:
-  PerfRasterWorkerPool() : RasterWorkerPool(NULL, NULL, 1) {}
+  PerfRasterWorkerPool() : RasterWorkerPool(NULL, NULL) {}
   virtual ~PerfRasterWorkerPool() {}
 
   static scoped_ptr<PerfRasterWorkerPool> Create() {

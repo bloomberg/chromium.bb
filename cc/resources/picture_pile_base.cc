@@ -44,8 +44,7 @@ PicturePileBase::PicturePileBase()
       slow_down_raster_scale_factor_for_debug_(0),
       contents_opaque_(false),
       show_debug_picture_borders_(false),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
-      num_raster_threads_(0) {
+      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
   tile_grid_info_.fMargin.setEmpty();
@@ -63,8 +62,7 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
           other->slow_down_raster_scale_factor_for_debug_),
       contents_opaque_(other->contents_opaque_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
-      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
-      num_raster_threads_(other->num_raster_threads_) {
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_) {
 }
 
 PicturePileBase::PicturePileBase(
@@ -78,8 +76,7 @@ PicturePileBase::PicturePileBase(
           other->slow_down_raster_scale_factor_for_debug_),
       contents_opaque_(other->contents_opaque_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
-      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
-      num_raster_threads_(other->num_raster_threads_) {
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_) {
   for (PictureMap::const_iterator it = other->picture_map_.begin();
        it != other->picture_map_.end();
        ++it) {

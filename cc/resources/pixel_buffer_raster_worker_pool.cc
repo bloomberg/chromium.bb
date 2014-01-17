@@ -92,9 +92,8 @@ bool WasCanceled(const internal::RasterWorkerPoolTask* task) {
 PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
-    size_t num_threads,
     size_t max_transfer_buffer_usage_bytes)
-    : RasterWorkerPool(resource_provider, context_provider, num_threads),
+    : RasterWorkerPool(resource_provider, context_provider),
       shutdown_(false),
       scheduled_raster_task_count_(0),
       bytes_pending_upload_(0),

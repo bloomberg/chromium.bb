@@ -230,8 +230,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
                          scoped_refptr<internal::WorkerPoolTask> > TaskMap;
 
   RasterWorkerPool(ResourceProvider* resource_provider,
-                   ContextProvider* context_provider,
-                   size_t num_threads);
+                   ContextProvider* context_provider);
 
   virtual void OnRasterTasksFinished() = 0;
   virtual void OnRasterTasksRequiredForActivationFinished() = 0;

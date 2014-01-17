@@ -22,11 +22,13 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
+#include "cc/resources/worker_pool.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/child_histogram_message_filter.h"
@@ -159,6 +161,8 @@ const int64 kInitialIdleHandlerDelayMs = 1000;
 const int64 kShortIdleHandlerDelayMs = 1000;
 const int64 kLongIdleHandlerDelayMs = 30*1000;
 const int kIdleCPUUsageThresholdInPercents = 3;
+const int kMinRasterThreads = 1;
+const int kMaxRasterThreads = 64;
 
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -437,6 +441,20 @@ void RenderThreadImpl::Init() {
   // AllocateGpuMemoryBuffer must be used exclusively on one thread but
   // it doesn't have to be the same thread RenderThreadImpl is created on.
   allocate_gpu_memory_buffer_thread_checker_.DetachFromThread();
+
+  if (command_line.HasSwitch(cc::switches::kNumRasterThreads)) {
+    int num_raster_threads;
+    std::string string_value =
+        command_line.GetSwitchValueASCII(cc::switches::kNumRasterThreads);
+    if (base::StringToInt(string_value, &num_raster_threads) &&
+        num_raster_threads >= kMinRasterThreads &&
+        num_raster_threads <= kMaxRasterThreads) {
+      cc::WorkerPool::SetNumRasterThreads(num_raster_threads);
+    } else {
+      LOG(WARNING) << "Failed to parse switch " <<
+                      cc::switches::kNumRasterThreads  << ": " << string_value;
+    }
+  }
 
   TRACE_EVENT_END_ETW("RenderThreadImpl::Init", 0, "");
 }

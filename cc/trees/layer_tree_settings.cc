@@ -43,7 +43,6 @@ LayerTreeSettings::LayerTreeSettings()
       top_controls_hide_threshold(0.5f),
       refresh_rate(60.0),
       max_partial_texture_updates(std::numeric_limits<size_t>::max()),
-      num_raster_threads(1),
       default_tile_size(gfx::Size(256, 256)),
       default_tile_size_gpu_rasterization(gfx::Size(1024, 1024)),
       max_untiled_layer_size(gfx::Size(512, 512)),

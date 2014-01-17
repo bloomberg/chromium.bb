@@ -217,16 +217,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
-  if (cmd->HasSwitch(cc::switches::kNumRasterThreads)) {
-    const int kMinRasterThreads = 1;
-    const int kMaxRasterThreads = 64;
-    int num_raster_threads;
-    if (GetSwitchValueAsInt(*cmd, cc::switches::kNumRasterThreads,
-                            kMinRasterThreads, kMaxRasterThreads,
-                            &num_raster_threads))
-      settings.num_raster_threads = num_raster_threads;
-  }
-
   if (cmd->HasSwitch(cc::switches::kMaxTilesForInterestArea)) {
     int max_tiles_for_interest_area;
     if (GetSwitchValueAsInt(*cmd,

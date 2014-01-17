@@ -88,7 +88,6 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
     recorded_region_ = recorded_region;
   }
 
-  int num_raster_threads() { return num_raster_threads_; }
   int buffer_pixels() const { return tiling_.border_texels(); }
   void Clear();
 
@@ -107,7 +106,6 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   bool contents_opaque_;
   bool show_debug_picture_borders_;
   bool clear_canvas_with_debug_color_;
-  int num_raster_threads_;
 
  private:
   void SetBufferPixels(int buffer_pixels);
