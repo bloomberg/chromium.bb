@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/account_chooser_model.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
@@ -23,11 +24,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
+#include "components/autofill/content/browser/wallet/gaia_account.h"
 #include "components/autofill/content/browser/wallet/mock_wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
@@ -185,6 +188,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   using AutofillDialogControllerImpl::IsEditingExistingData;
+  using AutofillDialogControllerImpl::IsManuallyEditingSection;
   using AutofillDialogControllerImpl::IsPayingWithWallet;
   using AutofillDialogControllerImpl::IsSubmitPausedOn;
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
@@ -556,6 +560,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   AutofillProfile full_profile(test::GetFullProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
+  // Select "Add new shipping address...".
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_SHIPPING);
+  model->ActivatedAt(model->GetItemCount() - 2);
+  ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const ServerFieldType triggering_type = inputs[0].type;
@@ -578,6 +587,10 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   // Now simulate some user edits and try again.
   std::vector<base::string16> expectations;
   for (size_t i = 0; i < inputs.size(); ++i) {
+    if (controller()->ComboboxModelForAutofillType(inputs[i].type)) {
+      expectations.push_back(base::string16());
+      continue;
+    }
     base::string16 users_input = i % 2 == 0 ? base::string16()
                                             : ASCIIToUTF16("dummy");
     view->SetTextContentsOfInput(inputs[i].type, users_input);
@@ -596,6 +609,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
+    if (controller()->ComboboxModelForAutofillType(inputs[i].type))
+      continue;
     EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i].type));
   }
 }
@@ -608,6 +623,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   full_profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
                        ASCIIToUTF16("France"), "en-US");
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  // Select "Add new shipping address...".
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_SHIPPING);
+  model->ActivatedAt(model->GetItemCount() - 2);
+  ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
@@ -634,6 +654,10 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Now simulate some user edits and try again.
   std::vector<base::string16> expectations;
   for (size_t i = 0; i < inputs.size(); ++i) {
+    if (controller()->ComboboxModelForAutofillType(inputs[i].type)) {
+      expectations.push_back(base::string16());
+      continue;
+    }
     base::string16 users_input = i % 2 == 0 ? base::string16()
                                             : ASCIIToUTF16("dummy");
     view->SetTextContentsOfInput(inputs[i].type, users_input);
@@ -655,6 +679,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
+    if (controller()->ComboboxModelForAutofillType(inputs[i].type))
+      continue;
     EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i].type));
   }
 }
@@ -1102,7 +1128,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
   if (base::win::GetVersion() <= base::win::VERSION_XP)
     return;
 #endif
-  InitializeController();
 
   controller()->OnDidFetchWalletCookieValue(std::string());
   std::vector<std::string> usernames;
@@ -1406,6 +1431,173 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   EXPECT_FALSE(RunTestPage(https_server));
+}
+
+class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
+ public:
+  AutofillDialogControllerI18nTest() {}
+  virtual ~AutofillDialogControllerI18nTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
+    CHECK(i18ninput::Enabled());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+                       CountryChangeRebuildsSection) {
+  const DetailInputs& us_billing_inputs =
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
+  const DetailInputs& us_shipping_inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+
+  // Check that there's no dependent locality for the US layout.
+  for (size_t i = 0; i < us_billing_inputs.size(); ++i) {
+    EXPECT_NE(us_billing_inputs[i].type, ADDRESS_BILLING_DEPENDENT_LOCALITY);
+  }
+  for (size_t i = 0; i < us_shipping_inputs.size(); ++i) {
+    EXPECT_NE(us_shipping_inputs[i].type, ADDRESS_HOME_DEPENDENT_LOCALITY);
+  }
+
+  // Select "Add new shipping address...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
+
+  // Add some valid user input that should be preserved when country changes.
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  view->SetTextContentsOfInput(NAME_FULL, ASCIIToUTF16("B. Loblaw"));
+
+  // Change both sections' countries.
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
+  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("France"));
+  view->ActivateInput(ADDRESS_HOME_COUNTRY);
+
+  // Verify the name is still there.
+  EXPECT_EQ(ASCIIToUTF16("B. Loblaw"), view->GetTextContentsOfInput(NAME_FULL));
+
+  const DetailInputs& cn_billing_inputs =
+      controller()->RequestedFieldsForSection(SECTION_BILLING);
+  const DetailInputs& fr_shipping_inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+
+  // Check that there is dependent locality for the Chinese layout.
+  size_t i = 0;
+  for (; i < cn_billing_inputs.size(); ++i) {
+    if (cn_billing_inputs[i].type == ADDRESS_BILLING_DEPENDENT_LOCALITY)
+      break;
+  }
+  EXPECT_LT(i, cn_billing_inputs.size());
+
+  // Check that there's a sorting code (CEDEX) for French layout.
+  for (i = 0; i < fr_shipping_inputs.size(); ++i) {
+    if (fr_shipping_inputs[i].type == ADDRESS_HOME_SORTING_CODE)
+      break;
+  }
+  EXPECT_LT(i, fr_shipping_inputs.size());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+                       ChangingDataSourcePreservesCountry) {
+  AutofillProfile verified_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+
+  CreditCard verified_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&verified_card);
+
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  scoped_ptr<wallet::WalletItems> items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  items->AddAccount(wallet::GetTestGaiaAccount());
+  items->AddInstrument(wallet::GetTestMaskedInstrument());
+  items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(items.Pass());
+
+  EXPECT_TRUE(controller()->IsPayingWithWallet());
+
+  // Select "Add new billing/shipping address...".
+  controller()->MenuModelForSection(SECTION_CC_BILLING)->ActivatedAt(1);
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  ASSERT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  ASSERT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+
+  // Switch both billing and shipping countries.
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
+  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("France"));
+  view->ActivateInput(ADDRESS_HOME_COUNTRY);
+
+  // Switch to using Autofill instead of Wallet.
+  ui::MenuModel* account_chooser = controller()->MenuModelForAccountChooser();
+  account_chooser->ActivatedAt(account_chooser->GetItemCount() - 1);
+
+  EXPECT_FALSE(controller()->IsPayingWithWallet());
+
+  // Countries should have stayed the same.
+  EXPECT_EQ(ASCIIToUTF16("China"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  EXPECT_EQ(ASCIIToUTF16("France"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
+  AutofillProfile verified_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+
+  // Select "Add new billing/shipping address...".
+  controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  ASSERT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  ASSERT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+
+  // Switch both billing and shipping countries.
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("China"));
+  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("France"));
+  view->ActivateInput(ADDRESS_HOME_COUNTRY);
+
+  // Select "Add new billing/shipping address...".
+  controller()->MenuModelForSection(SECTION_BILLING)->ActivatedAt(1);
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+
+  EXPECT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  EXPECT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+                       FillingFormRebuildsInputs) {
+  AutofillProfile full_profile(test::GetFullProfile());
+  full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CN"));
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  // Select "Add new shipping address...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
+
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  ASSERT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  ASSERT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+
+  base::string16 name = full_profile.GetRawInfo(NAME_FULL);
+  view->SetTextContentsOfInput(NAME_FULL, name.substr(0, name.size() / 2));
+  view->ActivateInput(NAME_FULL);
+  ASSERT_EQ(NAME_FULL, controller()->popup_input_type());
+  controller()->DidAcceptSuggestion(base::string16(), 0);
+
+  EXPECT_EQ(ASCIIToUTF16("China"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  EXPECT_EQ(ASCIIToUTF16("China"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 }
 
 }  // namespace autofill

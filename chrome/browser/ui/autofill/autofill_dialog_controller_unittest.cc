@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/autofill/mock_new_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -170,6 +171,7 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
 
   virtual void UpdateSection(DialogSection section) OVERRIDE {
+    section_updates_[section]++;
     EXPECT_GE(updates_started_, 1);
   }
 
@@ -215,8 +217,17 @@ class TestAutofillDialogView : public AutofillDialogView {
     save_details_locally_checked_ = checked;
   }
 
+  void ClearSectionUpdates() {
+    section_updates_.clear();
+  }
+
+  std::map<DialogSection, size_t> section_updates() const {
+    return section_updates_;
+  }
+
  private:
   std::map<DialogSection, FieldValueMap> outputs_;
+  std::map<DialogSection, size_t> section_updates_;
 
   int updates_started_;
   bool save_details_locally_checked_;
@@ -2921,6 +2932,51 @@ TEST_F(AutofillDialogControllerTest, IconReservedForCreditCardField) {
     EXPECT_GE(placeholder_icon.Width(), supported_card_icon.Width());
     EXPECT_GE(placeholder_icon.Height(), supported_card_icon.Height());
   }
+}
+
+TEST_F(AutofillDialogControllerTest, CountryChangeUpdatesSection) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
+
+  Reset();
+
+  TestAutofillDialogView* view = controller()->GetView();
+  view->ClearSectionUpdates();
+
+  controller()->UserEditedOrActivatedInput(SECTION_SHIPPING,
+                                           ADDRESS_HOME_COUNTRY,
+                                           gfx::NativeView(),
+                                           gfx::Rect(),
+                                           ASCIIToUTF16("China"),
+                                           true);
+  std::map<DialogSection, size_t> updates = view->section_updates();
+  EXPECT_EQ(1U, updates[SECTION_SHIPPING]);
+  EXPECT_EQ(1U, updates.size());
+
+  view->ClearSectionUpdates();
+
+  controller()->UserEditedOrActivatedInput(SECTION_CC_BILLING,
+                                           ADDRESS_BILLING_COUNTRY,
+                                           gfx::NativeView(),
+                                           gfx::Rect(),
+                                           ASCIIToUTF16("France"),
+                                           true);
+  updates = view->section_updates();
+  EXPECT_EQ(1U, updates[SECTION_CC_BILLING]);
+  EXPECT_EQ(1U, updates.size());
+
+  SwitchToAutofill();
+  view->ClearSectionUpdates();
+
+  controller()->UserEditedOrActivatedInput(SECTION_BILLING,
+                                           ADDRESS_BILLING_COUNTRY,
+                                           gfx::NativeView(),
+                                           gfx::Rect(),
+                                           ASCIIToUTF16("Italy"),
+                                           true);
+  updates = view->section_updates();
+  EXPECT_EQ(1U, updates[SECTION_BILLING]);
+  EXPECT_EQ(1U, updates.size());
 }
 
 }  // namespace autofill

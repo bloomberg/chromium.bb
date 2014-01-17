@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/account_chooser_model.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -76,7 +78,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                                      public wallet::WalletSigninHelperDelegate,
                                      public PersonalDataManagerObserver,
                                      public AccountChooserModelDelegate,
-                                     public gfx::AnimationDelegate {
+                                     public gfx::AnimationDelegate,
+                                     public ui::ComboboxModelObserver {
  public:
   virtual ~AutofillDialogControllerImpl();
 
@@ -221,6 +224,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
+  // ui::ComboboxModelObserver implementation.
+  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) OVERRIDE;
+
  protected:
   enum DialogSignedInState {
     NOT_CHECKED,
@@ -268,6 +274,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Opens the given URL in a new foreground tab.
   virtual void OpenTabWithUrl(const GURL& url);
+
+  // The active billing section for the current state of the dialog (e.g. when
+  // paying for wallet, the combined credit card + billing address section).
+  DialogSection ActiveBillingSection() const;
 
   // Whether |section| was sent into edit mode based on existing data. This
   // happens when a user clicks "Edit" or a suggestion is invalid.
@@ -422,6 +432,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   DialogSection SectionForSuggestionsMenuModel(
       const SuggestionsMenuModel& model);
 
+  // Gets the CountryComboboxModel for |section|.
+  CountryComboboxModel* CountryComboboxModelForSection(DialogSection section);
+
   // Suggested text and icons for sections. Suggestion text is used to show an
   // abridged overview of the currently used suggestion. Extra text is used when
   // part of a section is suggested but part must be manually input (e.g. during
@@ -448,6 +461,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
+
+  // Returns the country code (e.g. "US") for |section|.
+  std::string CountryCodeForSection(DialogSection section);
 
   // Hides |popup_controller_|'s popup view, if it exists.
   void HidePopup();
@@ -649,8 +665,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   MonthComboboxModel cc_exp_month_combobox_model_;
   YearComboboxModel cc_exp_year_combobox_model_;
 
-  // Model for the country input.
-  CountryComboboxModel country_combobox_model_;
+  // Models for country input.
+  CountryComboboxModel billing_country_combobox_model_;
+  CountryComboboxModel shipping_country_combobox_model_;
 
   // Models for the suggestion views.
   SuggestionsMenuModel suggested_cc_;
@@ -757,6 +774,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // A username string we display in the card scrambling/generated overlay.
   base::string16 submitted_cardholder_name_;
+
+  ScopedObserver<ui::ComboboxModel, AutofillDialogControllerImpl> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

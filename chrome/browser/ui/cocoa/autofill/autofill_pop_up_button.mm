@@ -71,8 +71,10 @@
 }
 
 - (void)didSelectItem:(id)sender {
-  if (inputDelegate_)
+  if (inputDelegate_) {
+    [inputDelegate_ didChange:self];
     [inputDelegate_ didEndEditing:self];
+  }
 }
 
 @end

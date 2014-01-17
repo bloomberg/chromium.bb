@@ -98,8 +98,7 @@ void BuildAddressInputs(common::AddressType address_type,
       billing ? ADDRESS_BILLING_COUNTRY : ADDRESS_HOME_COUNTRY;
   base::string16 placeholder_text =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_COUNTRY);
-  // TODO(dbeam): unhide so users can switch countries. http://crbug.com/331544
-  DetailInput input = { DetailInput::NONE, server_type, placeholder_text };
+  DetailInput input = { DetailInput::LONG, server_type, placeholder_text };
   inputs->push_back(input);
 }
 

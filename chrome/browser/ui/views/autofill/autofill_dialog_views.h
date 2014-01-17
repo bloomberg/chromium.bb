@@ -463,9 +463,9 @@ class AutofillDialogViews : public AutofillDialogView,
     SectionContainer* container;
     // The view that allows manual input.
     views::View* manual_input;
-    // The textfields in |manual_input|, tracked by their DetailInput.
+    // The textfields in |manual_input|, tracked by their ServerFieldType.
     TextfieldMap textfields;
-    // The comboboxes in |manual_input|, tracked by their DetailInput.
+    // The comboboxes in |manual_input|, tracked by their ServerFieldType.
     ComboboxMap comboboxes;
     // The view that holds the text of the suggested data. This will be
     // visible IFF |manual_input| is not visible.
@@ -507,10 +507,8 @@ class AutofillDialogViews : public AutofillDialogView,
   // a given section.
   views::View* CreateInputsContainer(DialogSection section);
 
-  // Creates a grid of textfield views for the given section, and stores them
-  // in the appropriate DetailsGroup. The top level View in the hierarchy is
-  // returned.
-  views::View* InitInputsView(DialogSection section);
+  // Creates a grid of inputs for the given section.
+  void InitInputsView(DialogSection section);
 
   // Changes the function of the whole dialog. Currently this can show a loading
   // shield, an embedded sign in web view, or the more typical detail input mode
@@ -532,6 +530,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // Gets a pointer to the DetailsGroup that's associated with a given |view|.
   // Returns NULL if no DetailsGroup was found.
   DetailsGroup* GroupForView(views::View* view);
+
+  // Erases all views in |group| from |validity_map_|.
+  void EraseInvalidViewsInGroup(const DetailsGroup* group);
 
   // Explicitly focuses the initially focusable view.
   void FocusInitialView();
@@ -563,11 +564,13 @@ class AutofillDialogViews : public AutofillDialogView,
   // ones and returns true if all were valid.
   bool ValidateForm();
 
-  // When an input textfield is edited (its contents change) or activated
-  // (clicked while focused), this function will inform the delegate that it's
-  // time to show a suggestion popup and possibly reset the validity state of
-  // the input.
-  void TextfieldEditedOrActivated(views::Textfield* textfield, bool was_edit);
+  // When an input is edited (its contents change) or activated (clicked while
+  // focused), this function will inform the delegate to take the appropriate
+  // action (textfields may show a suggestion popup, comboboxes may rebuild the
+  // section inputs). May also reset the validity state of the input.
+  void InputEditedOrActivated(ServerFieldType type,
+                              const gfx::Rect& bounds,
+                              bool was_edit);
 
   // Updates the views in the button strip.
   void UpdateButtonStripExtraView();
@@ -577,10 +580,16 @@ class AutofillDialogViews : public AutofillDialogView,
   void DoContentsPreferredSizeChanged();
 
   // Gets the textfield view that is shown for the given |type| or NULL.
-  views::Textfield* TextfieldForType(ServerFieldType type);
+  DecoratedTextfield* TextfieldForType(ServerFieldType type);
+
+  // Returns the associated ServerFieldType for |textfield|.
+  ServerFieldType TypeForTextfield(const views::Textfield* textfield);
 
   // Gets the combobox view that is shown for the given |type|, or NULL.
   views::Combobox* ComboboxForType(ServerFieldType type);
+
+  // Returns the associated ServerFieldType for |combobox|.
+  ServerFieldType TypeForCombobox(const views::Combobox* combobox) const;
 
   // Called when the details container changes in size or position.
   void DetailsContainerBoundsChanged();

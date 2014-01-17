@@ -72,10 +72,10 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
 @interface AutofillSectionContainer ()
 
-// A text field has been edited or activated - inform the delegate that it's
-// time to show a suggestion popup & possibly reset the validity of the input.
-- (void)textfieldEditedOrActivated:(NSControl<AutofillInputField>*)field
-                            edited:(BOOL)edited;
+// An input field has been edited or activated - inform the delegate and
+// possibly reset the validity of the input (if it's a textfield).
+- (void)fieldEditedOrActivated:(NSControl<AutofillInputField>*)field
+                        edited:(BOOL)edited;
 
 // Convenience method to retrieve a field type via the control's tag.
 - (autofill::ServerFieldType)fieldTypeForControl:(NSControl*)control;
@@ -104,8 +104,8 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 // Create a button offering input suggestions.
 - (MenuButton*)makeSuggestionButton;
 
-// Create a view with all inputs requested by |delegate_|. Autoreleased.
-- (LayoutView*)makeInputControls;
+// Create a view with all inputs requested by |delegate_| and resets |input_|.
+- (void)makeInputControls;
 
 // Refresh all field icons based on |delegate_| status.
 - (void)updateFieldIcons;
@@ -159,27 +159,8 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 }
 
 - (void)loadView {
-  // Keep a list of weak pointers to DetailInputs.
-  const autofill::DetailInputs& inputs =
-      delegate_->RequestedFieldsForSection(section_);
+  [self makeInputControls];
 
-  // Reverse the order of all the inputs.
-  for (int i = inputs.size() - 1; i >= 0; --i) {
-    detailInputs_.push_back(&(inputs[i]));
-  }
-
-  // Then right the reversal in each row.
-  std::vector<const autofill::DetailInput*>::iterator it;
-  for (it = detailInputs_.begin(); it < detailInputs_.end(); ++it) {
-    std::vector<const autofill::DetailInput*>::iterator start = it;
-    while (it != detailInputs_.end() &&
-           (*it)->length != autofill::DetailInput::LONG) {
-      ++it;
-    }
-    std::reverse(start, it);
-  }
-
-  inputs_.reset([[self makeInputControls] retain]);
   base::string16 labelText = delegate_->LabelForSection(section_);
   label_.reset(
       [[self makeDetailSectionLabel:base::SysUTF16ToNSString(labelText)]
@@ -288,7 +269,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 }
 
 - (void)onMouseDown:(NSControl<AutofillInputField>*)field {
-  [self textfieldEditedOrActivated:field edited:NO];
+  [self fieldEditedOrActivated:field edited:NO];
   [validationDelegate_ updateMessageForField:field];
 }
 
@@ -297,7 +278,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 }
 
 - (void)didChange:(id)sender {
-  [self textfieldEditedOrActivated:sender edited:YES];
+  [self fieldEditedOrActivated:sender edited:YES];
 }
 
 - (void)didEndEditing:(id)sender {
@@ -419,17 +400,10 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
 #pragma mark Internal API for AutofillSectionContainer.
 
-- (void)textfieldEditedOrActivated:(NSControl<AutofillInputField>*)field
-                            edited:(BOOL)edited {
-  AutofillTextField* textfield =
-      base::mac::ObjCCastStrict<AutofillTextField>(field);
-
-  // This only applies to textfields.
-  if (!textfield)
-    return;
-
+- (void)fieldEditedOrActivated:(NSControl<AutofillInputField>*)field
+                        edited:(BOOL)edited {
   autofill::ServerFieldType type = [self fieldTypeForControl:field];
-  base::string16 fieldValue = base::SysNSStringToUTF16([textfield fieldValue]);
+  base::string16 fieldValue = base::SysNSStringToUTF16([field fieldValue]);
 
   // Get the frame rectangle for the designated field, in screen coordinates.
   NSRect textFrameInScreen = [field convertRect:[field bounds] toView:nil];
@@ -449,15 +423,19 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
                                         fieldValue,
                                         edited);
 
-  // If the field is marked as invalid, check if the text is now valid.
-  // Many fields (i.e. CC#) are invalid for most of the duration of editing,
-  // so flagging them as invalid prematurely is not helpful. However,
-  // correcting a minor mistake (i.e. a wrong CC digit) should immediately
-  // result in validation - positive user feedback.
+  AutofillTextField* textfield = base::mac::ObjCCast<AutofillTextField>(field);
+  if (!textfield)
+    return;
+
+  // If the field is marked as invalid, check if the text is now valid. Many
+  // fields (i.e. CC#) are invalid for most of the duration of editing, so
+  // flagging them as invalid prematurely is not helpful. However, correcting a
+  // minor mistake (i.e. a wrong CC digit) should immediately result in
+  // validation - positive user feedback.
   if ([textfield invalid] && edited) {
     base::string16 message = delegate_->InputValidityMessage(section_,
-                                                       type,
-                                                       fieldValue);
+                                                             type,
+                                                             fieldValue);
     [textfield setValidityMessage:base::SysUTF16ToNSString(message)];
     [validationDelegate_ updateMessageForField:textfield];
 
@@ -485,7 +463,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
       return detailInputs_[i];
   }
   // TODO(groby): Needs to be NOTREACHED. Can't, due to the fact that tests
-  // blindly call setFieldValue:forInput:, even for non-existing inputs.
+  // blindly call setFieldValue:forType:, even for non-existing inputs.
   return NULL;
 }
 
@@ -514,23 +492,24 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 }
 
 - (void)updateAndClobber:(BOOL)shouldClobber {
-  const autofill::DetailInputs& updatedInputs =
-      delegate_->RequestedFieldsForSection(section_);
+  if (shouldClobber) {
+    [self makeInputControls];
+  } else {
+    const autofill::DetailInputs& updatedInputs =
+        delegate_->RequestedFieldsForSection(section_);
 
-  for (autofill::DetailInputs::const_iterator iter = updatedInputs.begin();
-       iter != updatedInputs.end();
-       ++iter) {
-    NSControl<AutofillInputField>* field = [inputs_ viewWithTag:iter->type];
-    DCHECK(field);
-
-    if (shouldClobber || [field isDefault]) {
-      [field setFieldValue:base::SysUTF16ToNSString(iter->initial_value)];
+    for (autofill::DetailInputs::const_iterator iter = updatedInputs.begin();
+         iter != updatedInputs.end();
+         ++iter) {
+      NSControl<AutofillInputField>* field = [inputs_ viewWithTag:iter->type];
+      DCHECK(field);
+      if ([field isDefault])
+        [field setFieldValue:base::SysUTF16ToNSString(iter->initial_value)];
     }
-    if (shouldClobber)
-      [field setValidityMessage:@""];
+    [self updateFieldIcons];
   }
+
   [self updateEditability];
-  [self updateFieldIcons];
   [self modelChanged];
 }
 
@@ -571,7 +550,38 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
 // TODO(estade): we should be using Chrome-style constrained window padding
 // values.
-- (LayoutView*)makeInputControls {
+- (void)makeInputControls {
+  if (inputs_) {
+    // When |inputs_| is replaced in response to a country change, there's a
+    // didEndEditing dispatched that segfaults or DCHECKS() as it's operating on
+    // stale input fields. Nil out the input delegate so this doesn't happen.
+    for (NSControl<AutofillInputField>* input in [inputs_ subviews]) {
+      [input setInputDelegate:nil];
+    }
+  }
+
+  detailInputs_.clear();
+
+  // Keep a list of weak pointers to DetailInputs.
+  const autofill::DetailInputs& inputs =
+      delegate_->RequestedFieldsForSection(section_);
+
+  // Reverse the order of all the inputs.
+  for (int i = inputs.size() - 1; i >= 0; --i) {
+    detailInputs_.push_back(&(inputs[i]));
+  }
+
+  // Then right the reversal in each row.
+  std::vector<const autofill::DetailInput*>::iterator it;
+  for (it = detailInputs_.begin(); it < detailInputs_.end(); ++it) {
+    std::vector<const autofill::DetailInput*>::iterator start = it;
+    while (it != detailInputs_.end() &&
+           (*it)->length != autofill::DetailInput::LONG) {
+      ++it;
+    }
+    std::reverse(start, it);
+  }
+
   base::scoped_nsobject<LayoutView> view([[LayoutView alloc] init]);
   [view setLayoutManager:
       scoped_ptr<SimpleGridLayout>(new SimpleGridLayout(view))];
@@ -625,11 +635,11 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
       NSString* tooltipText =
           base::SysUTF16ToNSString(delegate_->TooltipForField(input.type));
       if ([tooltipText length] > 0) {
-        DCHECK(!tooltipController_);
-        DCHECK(!tooltipField_);
-        tooltipController_.reset(
-            [[AutofillTooltipController alloc]
-                 initWithArrowLocation:info_bubble::kTopRight]);
+        if (!tooltipController_) {
+          tooltipController_.reset(
+              [[AutofillTooltipController alloc]
+                   initWithArrowLocation:info_bubble::kTopRight]);
+        }
         tooltipField_ = field.get();
         NSImage* icon =
             ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
@@ -658,8 +668,15 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     }
   }
 
+  if (inputs_) {
+    [[self view] replaceSubview:inputs_ with:view];
+    id delegate = [[view_ window] windowController];
+    if ([delegate respondsToSelector:@selector(requestRelayout)])
+      [delegate performSelector:@selector(requestRelayout)];
+  }
+
+  inputs_ = view;
   [self updateFieldIcons];
-  return view.autorelease();
 }
 
 - (void)updateFieldIcons {
@@ -682,7 +699,6 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 }
 
 - (void)updateEditability {
-
   base::scoped_nsobject<NSMutableArray> controls([[NSMutableArray alloc] init]);
   [self addInputsToArray:controls];
   for (NSControl<AutofillInputField>* control in controls.get()) {
@@ -716,7 +732,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   NSControl<AutofillInputField>* field = [inputs_ viewWithTag:type];
   if (field) {
     [[field window] makeFirstResponder:field];
-    [self textfieldEditedOrActivated:field edited:NO];
+    [self fieldEditedOrActivated:field edited:NO];
   }
 }
 
