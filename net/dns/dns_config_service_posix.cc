@@ -37,7 +37,7 @@ const base::FilePath::CharType* kFilePathHosts =
 
 #if defined(OS_IOS)
 
-// There is no plublic API to watch the DNS configuration on iOS.
+// There is no public API to watch the DNS configuration on iOS.
 class DnsConfigWatcher {
  public:
   typedef base::Callback<void(bool succeeded)> CallbackType;
