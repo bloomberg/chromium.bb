@@ -9,6 +9,15 @@
 
 namespace media {
 
+static bool HasNestedFadeOutPreroll(
+    const std::vector<scoped_refptr<StreamParserBuffer> >& fade_out_preroll) {
+  for (size_t i = 0; i < fade_out_preroll.size(); ++i) {
+    if (!fade_out_preroll[i]->GetFadeOutPreroll().empty())
+      return true;
+  }
+  return false;
+}
+
 scoped_refptr<StreamParserBuffer> StreamParserBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new StreamParserBuffer(NULL, 0, NULL, 0, false));
 }
@@ -61,6 +70,17 @@ int StreamParserBuffer::GetConfigId() const {
 
 void StreamParserBuffer::SetConfigId(int config_id) {
   config_id_ = config_id;
+}
+
+const std::vector<scoped_refptr<StreamParserBuffer> >&
+StreamParserBuffer::GetFadeOutPreroll() const {
+  return fade_out_preroll_;
+}
+
+void StreamParserBuffer::SetFadeOutPreroll(
+    const std::vector<scoped_refptr<StreamParserBuffer> >& fade_out_preroll) {
+  DCHECK(!HasNestedFadeOutPreroll(fade_out_preroll));
+  fade_out_preroll_ = fade_out_preroll;
 }
 
 }  // namespace media

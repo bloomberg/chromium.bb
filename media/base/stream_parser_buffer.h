@@ -33,6 +33,13 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   int GetConfigId() const;
   void SetConfigId(int config_id);
 
+  // Buffers to be exhausted before using the data in this DecoderBuffer.  Used
+  // to implement the Audio Splice Frame Algorithm per the MSE specification.
+  const std::vector<scoped_refptr<StreamParserBuffer> >& GetFadeOutPreroll()
+      const;
+  void SetFadeOutPreroll(
+      const std::vector<scoped_refptr<StreamParserBuffer> >& fade_out_preroll);
+
  private:
   StreamParserBuffer(const uint8* data, int data_size,
                      const uint8* side_data, int side_data_size,
@@ -42,6 +49,8 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   bool is_keyframe_;
   base::TimeDelta decode_timestamp_;
   int config_id_;
+  std::vector<scoped_refptr<StreamParserBuffer> > fade_out_preroll_;
+
   DISALLOW_COPY_AND_ASSIGN(StreamParserBuffer);
 };
 

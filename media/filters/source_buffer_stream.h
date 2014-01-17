@@ -299,6 +299,11 @@ class MEDIA_EXPORT SourceBufferStream {
 
   Type GetType() const;
 
+  // See GetNextBuffer() for additional details.  The internal method hands out
+  // buffers from the |track_buffer_| and |selected_range_| without additional
+  // processing for splice frame buffers; which is handled by GetNextBuffer().
+  Status GetNextBufferInternal(scoped_refptr<StreamParserBuffer>* out_buffer);
+
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
   LogCB log_cb_;
@@ -374,6 +379,15 @@ class MEDIA_EXPORT SourceBufferStream {
   // config. GetNextBuffer() must not be called again until
   // GetCurrentXXXDecoderConfig() has been called.
   bool config_change_pending_;
+
+  // Used by GetNextBuffer() when a buffer with fade out is returned from
+  // GetNextBufferInternal().  Will be set to the returned buffer and will be
+  // consumed after the fade out section has been exhausted.
+  scoped_refptr<StreamParserBuffer> fade_in_buffer_;
+
+  // Indicates which of the fade out preroll buffers in |fade_in_buffer_| should
+  // be handled out next.
+  size_t fade_out_preroll_index_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStream);
 };

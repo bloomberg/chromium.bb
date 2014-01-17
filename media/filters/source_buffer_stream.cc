@@ -29,6 +29,15 @@ static bool AllowSameTimestamp(
   return prev_is_keyframe || !current_is_keyframe;
 }
 
+// Returns the config ID of |buffer| if |buffer| has no fade out preroll or
+// |index| is out of range.  Otherwise returns the config ID for the fade out
+// preroll buffer at position |index|.
+static int GetConfigId(StreamParserBuffer* buffer, size_t index) {
+  return index < buffer->GetFadeOutPreroll().size()
+             ? buffer->GetFadeOutPreroll()[index]->GetConfigId()
+             : buffer->GetConfigId();
+}
+
 // Helper class representing a range of buffered data. All buffers in a
 // SourceBufferRange are ordered sequentially in presentation order with no
 // gaps.
@@ -346,7 +355,8 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       last_output_buffer_timestamp_(kNoTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kDefaultAudioMemoryLimit),
-      config_change_pending_(false) {
+      config_change_pending_(false),
+      fade_out_preroll_index_(0) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
@@ -368,7 +378,8 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       last_output_buffer_timestamp_(kNoTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kDefaultVideoMemoryLimit),
-      config_change_pending_(false) {
+      config_change_pending_(false),
+      fade_out_preroll_index_(0) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
@@ -391,7 +402,8 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
       last_output_buffer_timestamp_(kNoTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kDefaultAudioMemoryLimit),
-      config_change_pending_(false) {
+      config_change_pending_(false),
+      fade_out_preroll_index_(0) {
 }
 
 SourceBufferStream::~SourceBufferStream() {
@@ -670,6 +682,8 @@ void SourceBufferStream::ResetSeekState() {
   track_buffer_.clear();
   config_change_pending_ = false;
   last_output_buffer_timestamp_ = kNoTimestamp();
+  fade_out_preroll_index_ = 0;
+  fade_in_buffer_ = NULL;
 }
 
 bool SourceBufferStream::ShouldSeekToStartOfBuffered(
@@ -1097,17 +1111,75 @@ void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
 
 SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
+  if (!fade_in_buffer_) {
+    const SourceBufferStream::Status status = GetNextBufferInternal(out_buffer);
+
+    // Just return if GetNextBufferInternal() failed or there's no fade out
+    // preroll, there's nothing else to do.
+    if (status != SourceBufferStream::kSuccess ||
+        (*out_buffer)->GetFadeOutPreroll().empty()) {
+      return status;
+    }
+
+    // Setup fade in buffer and fall through into splice frame buffer handling.
+    fade_out_preroll_index_ = 0;
+    fade_in_buffer_.swap(*out_buffer);
+  }
+
+  DCHECK(fade_in_buffer_);
+  const std::vector<scoped_refptr<StreamParserBuffer> >& fade_out_preroll =
+      fade_in_buffer_->GetFadeOutPreroll();
+
+  // Are there any fade out buffers left to hand out?
+  if (fade_out_preroll_index_ < fade_out_preroll.size()) {
+    // Account for config changes which occur between fade out buffers.
+    if (current_config_index_ !=
+        fade_out_preroll[fade_out_preroll_index_]->GetConfigId()) {
+      config_change_pending_ = true;
+      DVLOG(1) << "Config change (fade out preroll config ID does not match).";
+      return SourceBufferStream::kConfigChange;
+    }
+
+    *out_buffer = fade_out_preroll[fade_out_preroll_index_++];
+    return SourceBufferStream::kSuccess;
+  }
+
+  // Did we hand out the last fade out buffer on the last call?
+  if (fade_out_preroll_index_ == fade_out_preroll.size()) {
+    fade_out_preroll_index_++;
+    config_change_pending_ = true;
+    DVLOG(1) << "Config change (forced for fade in of splice frame).";
+    return SourceBufferStream::kConfigChange;
+  }
+
+  // All fade out buffers have been handed out and a config change completed, so
+  // hand out the final buffer for fade in.  Because a config change is always
+  // issued prior to handing out this buffer, any changes in config id have been
+  // inherently handled.
+  DCHECK_GT(fade_out_preroll_index_, fade_out_preroll.size());
+  out_buffer->swap(fade_in_buffer_);
+  fade_in_buffer_ = NULL;
+  fade_out_preroll_index_ = 0;
+  return SourceBufferStream::kSuccess;
+}
+
+SourceBufferStream::Status SourceBufferStream::GetNextBufferInternal(
+    scoped_refptr<StreamParserBuffer>* out_buffer) {
   CHECK(!config_change_pending_);
 
   if (!track_buffer_.empty()) {
     DCHECK(!selected_range_);
-    if (track_buffer_.front()->GetConfigId() != current_config_index_) {
+    scoped_refptr<StreamParserBuffer>& next_buffer = track_buffer_.front();
+
+    // If the next buffer is an audio splice frame, the next effective config id
+    // comes from the first fade out preroll buffer.
+    if (GetConfigId(next_buffer, 0) != current_config_index_) {
       config_change_pending_ = true;
       DVLOG(1) << "Config change (track buffer config ID does not match).";
       return kConfigChange;
     }
 
-    *out_buffer = track_buffer_.front();
+    *out_buffer = next_buffer;
     track_buffer_.pop_front();
     last_output_buffer_timestamp_ = (*out_buffer)->GetDecodeTimestamp();
 
@@ -1343,8 +1415,14 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
 void SourceBufferStream::CompleteConfigChange() {
   config_change_pending_ = false;
 
+  if (fade_in_buffer_) {
+    current_config_index_ =
+        GetConfigId(fade_in_buffer_, fade_out_preroll_index_);
+    return;
+  }
+
   if (!track_buffer_.empty()) {
-    current_config_index_ = track_buffer_.front()->GetConfigId();
+    current_config_index_ = GetConfigId(track_buffer_.front(), 0);
     return;
   }
 
@@ -1864,7 +1942,7 @@ bool SourceBufferRange::GetNextBuffer(
   if (!HasNextBuffer())
     return false;
 
-  *out_buffer = buffers_.at(next_buffer_index_);
+  *out_buffer = buffers_[next_buffer_index_];
   next_buffer_index_++;
   return true;
 }
@@ -1876,7 +1954,9 @@ bool SourceBufferRange::HasNextBuffer() const {
 
 int SourceBufferRange::GetNextConfigId() const {
   DCHECK(HasNextBuffer());
-  return buffers_.at(next_buffer_index_)->GetConfigId();
+  // If the next buffer is an audio splice frame, the next effective config id
+  // comes from the first fade out preroll buffer.
+  return GetConfigId(buffers_[next_buffer_index_], 0);
 }
 
 base::TimeDelta SourceBufferRange::GetNextTimestamp() const {
@@ -1887,7 +1967,7 @@ base::TimeDelta SourceBufferRange::GetNextTimestamp() const {
     return kNoTimestamp();
   }
 
-  return buffers_.at(next_buffer_index_)->GetDecodeTimestamp();
+  return buffers_[next_buffer_index_]->GetDecodeTimestamp();
 }
 
 bool SourceBufferRange::HasNextBufferPosition() const {

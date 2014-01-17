@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -29,8 +31,8 @@ class SourceBufferStreamTest : public testing::Test {
  protected:
   SourceBufferStreamTest() {
     video_config_ = TestVideoConfig::Normal();
-    stream_.reset(new SourceBufferStream(video_config_, LogCB()));
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
+    stream_.reset(new SourceBufferStream(video_config_, log_cb()));
   }
 
   void SetMemoryLimit(int buffers_of_data) {
@@ -239,6 +241,13 @@ class SourceBufferStreamTest : public testing::Test {
       if (i > 0)
         ss << " ";
 
+      if (timestamps[i] == "C") {
+        EXPECT_EQ(SourceBufferStream::kConfigChange, status);
+        stream_->GetCurrentVideoDecoderConfig();
+        ss << timestamps[i];
+        continue;
+      }
+
       EXPECT_EQ(SourceBufferStream::kSuccess, status);
       if (status != SourceBufferStream::kSuccess)
         break;
@@ -260,6 +269,11 @@ class SourceBufferStreamTest : public testing::Test {
     EXPECT_TRUE(actual.Matches(config))
         << "Expected: " << config.AsHumanReadableString()
         << "\nActual: " << actual.AsHumanReadableString();
+  }
+
+  const LogCB log_cb() {
+    return base::Bind(&SourceBufferStreamTest::DebugMediaLog,
+                      base::Unretained(this));
   }
 
   base::TimeDelta frame_duration() const { return frame_duration_; }
@@ -318,6 +332,21 @@ class SourceBufferStreamTest : public testing::Test {
       EXPECT_EQ(expect_success, stream_->Append(queue));
   }
 
+  // StringToBufferQueue() allows for the generation of StreamParserBuffers from
+  // coded strings of timestamps separated by spaces.  Supported syntax:
+  //
+  // ##:
+  // Generates a StreamParserBuffer with decode timestamp ##.  E.g., "0 1 2 3".
+  //
+  // ##K:
+  // Indicates the buffer with timestamp ## reflects a keyframe.  E.g., "0K 1".
+  //
+  // S(a# ... y# z#)
+  // Indicates a splice frame buffer should be created with timestamp z#.  The
+  // preceding timestamps a# ... y# will be treated as the fade out preroll for
+  // the splice frame.  If a timestamp within the preroll ends with C the config
+  // id to use for that and subsequent preroll appends is incremented by one.
+  // The config id for non-splice frame appends will not be affected.
   SourceBufferStream::BufferQueue StringToBufferQueue(
       const std::string& buffers_to_append) {
     std::vector<std::string> timestamps;
@@ -325,14 +354,40 @@ class SourceBufferStreamTest : public testing::Test {
 
     CHECK_GT(timestamps.size(), 0u);
 
+    bool splice_frame = false;
+    size_t splice_config_id = stream_->append_config_index_;
+    std::vector<scoped_refptr<StreamParserBuffer> > fade_out_preroll;
     SourceBufferStream::BufferQueue buffers;
     for (size_t i = 0; i < timestamps.size(); i++) {
       bool is_keyframe = false;
+      bool last_splice_frame = false;
+      // Handle splice frame starts.
+      if (StartsWithASCII(timestamps[i], "S(", true)) {
+        CHECK(!splice_frame);
+        splice_frame = true;
+        // Remove the "S(" off of the token.
+        timestamps[i] = timestamps[i].substr(2, timestamps[i].length());
+      }
+      if (splice_frame && EndsWith(timestamps[i], ")", true)) {
+        splice_frame = false;
+        last_splice_frame = true;
+        // Remove the ")" off of the token.
+        timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
+      }
+      // Handle config changes within the splice frame.
+      if (splice_frame && EndsWith(timestamps[i], "C", true)) {
+        splice_config_id++;
+        CHECK(splice_config_id < stream_->audio_configs_.size() ||
+              splice_config_id < stream_->video_configs_.size());
+        // Remove the "C" off of the token.
+        timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
+      }
       if (EndsWith(timestamps[i], "K", true)) {
         is_keyframe = true;
         // Remove the "K" off of the token.
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
+
       int time_in_ms;
       CHECK(base::StringToInt(timestamps[i], &time_in_ms));
 
@@ -343,6 +398,25 @@ class SourceBufferStreamTest : public testing::Test {
           base::TimeDelta::FromMilliseconds(time_in_ms);
       buffer->set_timestamp(timestamp);
       buffer->SetDecodeTimestamp(timestamp);
+
+      if (splice_frame) {
+        if (!fade_out_preroll.empty()) {
+          // Enforce strictly monotonically increasing timestamps.
+          CHECK_GT(
+              timestamp.InMicroseconds(),
+              fade_out_preroll.back()->GetDecodeTimestamp().InMicroseconds());
+        }
+        buffer->SetConfigId(splice_config_id);
+        fade_out_preroll.push_back(buffer);
+        continue;
+      }
+
+      if (last_splice_frame) {
+        // Forbid splice frames without preroll.
+        CHECK(!fade_out_preroll.empty());
+        buffer->SetFadeOutPreroll(fade_out_preroll);
+        fade_out_preroll.clear();
+      }
 
       buffers.push_back(buffer);
     }
@@ -378,6 +452,10 @@ class SourceBufferStreamTest : public testing::Test {
       wrapper.push_back(buffers[i]);
       EXPECT_TRUE(stream_->Append(wrapper));
     }
+  }
+
+  void DebugMediaLog(const std::string& log) {
+    DVLOG(1) << log;
   }
 
   int frames_per_second_;
@@ -1398,7 +1476,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
   // Seek to 70ms.
-  SeekToTimestamp(base::TimeDelta::FromMilliseconds(10));
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(70));
   CheckExpectedBuffers("10K 40");
 
   // Overlap with a new segment from 0 to 120ms.
@@ -1556,7 +1634,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
   CheckExpectedRangesByTimestamp("{ [10,160) [200,260) }");
 
   // Seek to 70ms.
-  SeekToTimestamp(base::TimeDelta::FromMilliseconds(10));
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(70));
   CheckExpectedBuffers("10K 40");
 
   // Overlap with a new segment from 0 to 120ms.
@@ -3073,7 +3151,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, NULL, 0, false);
-  stream_.reset(new SourceBufferStream(config, LogCB()));
+  stream_.reset(new SourceBufferStream(config, log_cb()));
   Seek(0);
   NewSegmentAppend("0K 0K 30K 30 60 60");
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
@@ -3082,7 +3160,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_Invalid_1) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, NULL, 0, false);
-  stream_.reset(new SourceBufferStream(config, LogCB()));
+  stream_.reset(new SourceBufferStream(config, log_cb()));
   Seek(0);
   NewSegmentAppend_ExpectFailure("0K 30 30K 60");
 }
@@ -3323,7 +3401,6 @@ TEST_F(SourceBufferStreamTest, Remove_GOPBeingAppended) {
   CheckExpectedBuffers("240K 270 300");
 }
 
-
 TEST_F(SourceBufferStreamTest,
        Remove_PreviousAppendDestroyedAndOverwriteExistingRange) {
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(90));
@@ -3412,6 +3489,92 @@ TEST_F(SourceBufferStreamTest, Text_OverlapBefore) {
 
   Seek(0);
   CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 2500K 3000K 3500K");
+}
+
+TEST_F(SourceBufferStreamTest, SpliceFrame_Basic) {
+  Seek(0);
+  NewSegmentAppend("0K S(3K 6 9 10) 15 20 S(25K 30 35) 40");
+  CheckExpectedBuffers("0K 3K 6 9 C 10 15 20 25K 30 C 35 40");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, SpliceFrame_SeekClearsSplice) {
+  Seek(0);
+  NewSegmentAppend("0K S(3K 6 9 10) 15K 20");
+  CheckExpectedBuffers("0K 3K 6");
+
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(15));
+  CheckExpectedBuffers("15K 20");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, SpliceFrame_SeekClearsSpliceFromTrackBuffer) {
+  Seek(0);
+  NewSegmentAppend("0K 2K S(3K 6 9 10) 15K 20");
+  CheckExpectedBuffers("0K 2K");
+
+  // Overlap the existing segment.
+  NewSegmentAppend("5K 15K 20");
+  CheckExpectedBuffers("3K 6");
+
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(15));
+  CheckExpectedBuffers("15K 20");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, SpliceFrame_ConfigChangeWithinSplice) {
+  VideoDecoderConfig new_config = TestVideoConfig::Large();
+  ASSERT_FALSE(new_config.Matches(video_config_));
+
+  // Add a new video config, then reset the config index back to the original.
+  stream_->UpdateVideoConfig(new_config);
+  stream_->UpdateVideoConfig(video_config_);
+
+  Seek(0);
+  CheckVideoConfig(video_config_);
+  NewSegmentAppend("0K S(3K 6C 9 10) 15");
+
+  CheckExpectedBuffers("0K 3K C");
+  CheckVideoConfig(new_config);
+  CheckExpectedBuffers("6 9 C");
+  CheckVideoConfig(video_config_);
+  CheckExpectedBuffers("10 15");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, SpliceFrame_BasicFromTrackBuffer) {
+  Seek(0);
+  NewSegmentAppend("0K 5K S(8K 9 10) 20");
+  CheckExpectedBuffers("0K 5K");
+
+  // Overlap the existing segment.
+  NewSegmentAppend("5K 20");
+  CheckExpectedBuffers("8K 9 C 10 20");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest,
+       SpliceFrame_ConfigChangeWithinSpliceFromTrackBuffer) {
+  VideoDecoderConfig new_config = TestVideoConfig::Large();
+  ASSERT_FALSE(new_config.Matches(video_config_));
+
+  // Add a new video config, then reset the config index back to the original.
+  stream_->UpdateVideoConfig(new_config);
+  stream_->UpdateVideoConfig(video_config_);
+
+  Seek(0);
+  CheckVideoConfig(video_config_);
+  NewSegmentAppend("0K 5K S(7K 8C 9 10) 20");
+  CheckExpectedBuffers("0K 5K");
+
+  // Overlap the existing segment.
+  NewSegmentAppend("5K 20");
+  CheckExpectedBuffers("7K C");
+  CheckVideoConfig(new_config);
+  CheckExpectedBuffers("8 9 C");
+  CheckVideoConfig(video_config_);
+  CheckExpectedBuffers("10 20");
+  CheckNoNextBuffer();
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

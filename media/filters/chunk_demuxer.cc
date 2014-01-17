@@ -345,12 +345,6 @@ class ChunkDemuxerStream : public DemuxerStream {
 
   void CompletePendingReadIfPossible_Locked();
 
-  // Gets the value to pass to the next Read() callback. Returns true if
-  // |status| and |buffer| should be passed to the callback. False indicates
-  // that |status| and |buffer| were not set and more data is needed.
-  bool GetNextBuffer_Locked(DemuxerStream::Status* status,
-                            scoped_refptr<StreamParserBuffer>* buffer);
-
   // Specifies the type of the stream.
   Type type_;
 
