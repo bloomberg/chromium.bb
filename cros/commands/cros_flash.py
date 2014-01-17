@@ -214,12 +214,13 @@ following three options.
 
     return values
 
-  def UpdateStateful(self, device, payload):
+  def UpdateStateful(self, device, payload, clobber=False):
     """Update the stateful partition of the device.
 
     Args:
       device: The RemoteDevice object to update.
       payload: The path to the update payload.
+      clobber: Clobber stateful partition (defaults to False).
     """
     # Copy latest stateful_update to device.
     stateful_update_bin = ds_wrapper.FromChrootPath(self.STATEFUL_UPDATE_BIN)
@@ -228,6 +229,9 @@ following three options.
     logging.info('Updating stateful partition...')
     cmd = ['sh', os.path.join(device.work_dir,
                               os.path.basename(self.STATEFUL_UPDATE_BIN)), '-']
+    if clobber:
+      cmd.append('--stateful_change=clean')
+
     device.PipeOverSSH(payload, cmd)
     logging.info('Payload decompressed to stateful partition.')
 
@@ -364,24 +368,29 @@ following three options.
         "'latest' for latest local build. You Can also specify a "
         "directory path with pre-generated payloads (defaults to "
         "'latest')")
-    parser.add_argument(
+
+    advanced = parser.add_argument_group('Advanced options')
+    advanced.add_argument(
         '--no-reboot', action='store_false', dest='reboot', default=True,
         help='Do not reboot after update. Default is always reboot.')
-    parser.add_argument(
+    advanced.add_argument(
         '--no-wipe', action='store_false', dest='wipe', default=True,
         help='Do not wipe the temporary working directory.')
-    parser.add_argument(
+    advanced.add_argument(
         '--no-stateful-update', action='store_false', dest='stateful_update',
         help='Do not update the stateful partition on the device.'
         'Default is always update.')
-    parser.add_argument(
+    advanced.add_argument(
         '--no-rootfs-update', action='store_false', dest='rootfs_update',
         help='Do not update the rootfs partition on the device. '
         'Default is always update.')
-    parser.add_argument(
+    advanced.add_argument(
         '--src-image', type='path',
         help='Local path to an image to be used as the base to generate '
         'payloads.')
+    advanced.add_argument(
+        '--clobber-stateful', action='store_true', default=False,
+        help='Clobber stateful partition when performing update.')
 
   def __init__(self, options):
     """Initializes cros flash."""
@@ -389,6 +398,7 @@ following three options.
     self.source_root = constants.SOURCE_ROOT
     self.do_stateful_update = False
     self.do_rootfs_update = False
+    self.clobber_stateful = False
     self.image_as_payload_dir = False
     self.reboot = True
     self.wipe = True
@@ -429,6 +439,7 @@ following three options.
     self.wipe = options.wipe and not options.debug
     self.do_stateful_update =  options.stateful_update
     self.do_rootfs_update = options.rootfs_update
+    self.clobber_stateful = options.clobber_stateful
 
   # pylint: disable=E1101
   def Run(self):
@@ -465,7 +476,7 @@ following three options.
 
         if self.do_stateful_update:
           payload = os.path.join(payload_dir, self.STATEFUL_FILENAME)
-          self.UpdateStateful(device, payload)
+          self.UpdateStateful(device, payload, clobber=self.clobber_stateful)
           logging.info('Stateful update completed.')
 
         if self.reboot:
