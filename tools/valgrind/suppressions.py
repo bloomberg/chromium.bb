@@ -65,9 +65,6 @@ def GetSuppressions():
   tsan_win = ReadSuppressionsFromFile(supp_filename)
   result['win_suppressions'] = tsan_win
 
-  supp_filename = JOIN(suppressions_root, "..", "heapcheck", "suppressions.txt")
-  result['heapcheck_suppressions'] = ReadSuppressionsFromFile(supp_filename)
-
   supp_filename = JOIN(suppressions_root, "drmemory", "suppressions.txt")
   result['drmem_suppressions'] = ReadSuppressionsFromFile(supp_filename)
   supp_filename = JOIN(suppressions_root, "drmemory", "suppressions_full.txt")
@@ -150,7 +147,6 @@ def FilenameToTool(filename):
   """Return the name of the tool that a file is related to, or None.
 
   Example mappings:
-    tools/heapcheck/suppressions.txt -> heapcheck
     tools/valgrind/tsan/suppressions.txt -> tsan
     tools/valgrind/drmemory/suppressions.txt -> drmemory
     tools/valgrind/drmemory/suppressions_full.txt -> drmemory
@@ -160,7 +156,7 @@ def FilenameToTool(filename):
   filename = os.path.abspath(filename)
   parts = filename.split(os.sep)
   tool = parts[-2]
-  if tool in ('heapcheck', 'drmemory', 'memcheck', 'tsan'):
+  if tool in ('drmemory', 'memcheck', 'tsan'):
     return tool
   return None
 
@@ -171,7 +167,6 @@ def ReadSuppressionsFromFile(filename):
     "drmemory":  ReadDrMemorySuppressions,
     "memcheck":  ReadValgrindStyleSuppressions,
     "tsan":      ReadValgrindStyleSuppressions,
-    "heapcheck": ReadValgrindStyleSuppressions,
   }
   tool = FilenameToTool(filename)
   assert tool in tool_to_parser, (
@@ -194,14 +189,14 @@ class ValgrindStyleSuppression(Suppression):
   """A suppression using the Valgrind syntax.
 
   Most tools, even ones that are not Valgrind-based, use this syntax, ie
-  Heapcheck, TSan, etc.
+  TSan, etc.
 
   Attributes:
     Same as Suppression.
   """
 
   def __init__(self, description, type, stack, defined_at):
-    """Creates a suppression using the Memcheck, TSan, and Heapcheck syntax."""
+    """Creates a suppression using the Memcheck and TSan, syntax."""
     regex = '{\n.*\n%s\n' % type
     for line in stack:
       if line == ELLIPSIS:
@@ -302,11 +297,10 @@ def ReadValgrindStyleSuppressions(lines, supp_descriptor):
       continue
     elif not cur_type:
       if (not line.startswith("Memcheck:") and
-          not line.startswith("ThreadSanitizer:") and
-          (line != "Heapcheck:Leak")):
+          not line.startswith("ThreadSanitizer:")):
         raise SuppressionError(
-            'Expected "Memcheck:TYPE", "ThreadSanitizer:TYPE" '
-            'or "Heapcheck:Leak", got "%s"' % line,
+            'Expected "Memcheck:TYPE" or "ThreadSanitizer:TYPE", '
+            'got "%s"' % line,
             "%s:%d" % (supp_descriptor, nline))
       supp_type = line.split(':')[1]
       if not supp_type in ["Addr1", "Addr2", "Addr4", "Addr8",
@@ -635,16 +629,6 @@ def SelfTest():
     fun:expression
   }"""
 
-  test_heapcheck_stack = """{
-    test
-    Heapcheck:Leak
-    fun:absolutly
-    fun:brilliant
-    obj:condition
-    fun:detection
-    fun:expression
-  }"""
-
   test_tsan_stack = """{
     test
     ThreadSanitizer:Race
@@ -696,11 +680,6 @@ def SelfTest():
     "{\nzzz\nMemcheck:Addr4\n...\nfun:detection\n}",
   ]
 
-  positive_heapcheck_suppressions = [
-    "{\nzzz\nHeapcheck:Leak\n...\nobj:condition\n}",
-    "{\nzzz\nHeapcheck:Leak\nfun:absolutly\n}",
-  ]
-
   positive_tsan_suppressions = [
     "{\nzzz\nThreadSanitizer:Race\n...\nobj:condition\n}",
     "{\nzzz\nThreadSanitizer:Race\nfun:absolutly\n}",
@@ -744,11 +723,6 @@ def SelfTest():
     "{\nzzz\nMemcheck:Addr8\nfun:brilliant\n}",
   ]
 
-  negative_heapcheck_suppressions = [
-    "{\nzzz\nMemcheck:Leak\nfun:absolutly\n}",
-    "{\nzzz\nHeapcheck:Leak\nfun:brilliant\n}",
-  ]
-
   negative_tsan_suppressions = [
     "{\nzzz\nThreadSanitizer:Leak\nfun:absolutly\n}",
     "{\nzzz\nThreadSanitizer:Race\nfun:brilliant\n}",
@@ -766,8 +740,6 @@ def SelfTest():
   TestStack(test_memcheck_stack_4,
             positive_memcheck_suppressions_4,
             negative_memcheck_suppressions_4)
-  TestStack(test_heapcheck_stack, positive_heapcheck_suppressions,
-            negative_heapcheck_suppressions)
   TestStack(test_tsan_stack, positive_tsan_suppressions,
             negative_tsan_suppressions)
 
@@ -960,7 +932,6 @@ def SelfTest():
 
   # Test FilenameToTool.
   filenames_to_tools = {
-    "tools/heapcheck/suppressions.txt": "heapcheck",
     "tools/valgrind/tsan/suppressions.txt": "tsan",
     "tools/valgrind/drmemory/suppressions.txt": "drmemory",
     "tools/valgrind/drmemory/suppressions_full.txt": "drmemory",

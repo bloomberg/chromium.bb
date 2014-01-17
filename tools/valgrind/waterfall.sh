@@ -97,10 +97,10 @@ fetch_logs() {
       REPORT_FILE="$LOGS_DIR/report_${S}_${BUILD}"
       rm -f $REPORT_FILE 2>/dev/null || true  # make sure it doesn't exist
 
-      REPORT_URLS=$(grep -o "[0-9]\+/steps/\(memory\|heapcheck\).*/logs/[0-9A-F]\{16\}" \
+      REPORT_URLS=$(grep -o "[0-9]\+/steps/memory.*/logs/[0-9A-F]\{16\}" \
                     "$TMPFILE" \
                     || true)  # `true` is to succeed on empty output
-      FAILED_TESTS=$(grep -o "[0-9]\+/steps/\(memory\|heapcheck\).*/logs/[A-Za-z0-9_.]\+" \
+      FAILED_TESTS=$(grep -o "[0-9]\+/steps/memory.*/logs/[A-Za-z0-9_.]\+" \
                      "$TMPFILE" | grep -v "[0-9A-F]\{16\}" \
                      | grep -v "stdio" || true)
 
