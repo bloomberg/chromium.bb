@@ -220,8 +220,6 @@
         'base/test_data_stream.h',
         'base/upload_bytes_element_reader.cc',
         'base/upload_bytes_element_reader.h',
-        'base/upload_data.cc',
-        'base/upload_data.h',
         'base/upload_data_stream.cc',
         'base/upload_data_stream.h',
         'base/upload_element.cc',
