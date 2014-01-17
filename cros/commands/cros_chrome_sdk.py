@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""The cros chrome-sdk command for the simple chrome workflow."""
+
 import argparse
 import collections
 import contextlib
@@ -328,13 +330,14 @@ class SDKFetcher(object):
         GetDefaultVersion().  If there is no default version set (this is the
         first time we are being executed), then we update the default version.
 
-    Yields: An SDKFetcher.SDKContext namedtuple object.  The attributes of the
+    Yields:
+      An SDKFetcher.SDKContext namedtuple object.  The attributes of the
       object are:
-
-      version: The version that was prepared.
-      metadata: A dictionary containing the build metadata for the SDK version.
-      key_map: Dictionary that contains CacheReference objects for the SDK
-        artifacts, indexed by cache key.
+        version: The version that was prepared.
+        metadata: A dictionary containing the build metadata for the SDK
+          version.
+        key_map: Dictionary that contains CacheReference objects for the SDK
+          artifacts, indexed by cache key.
     """
     if version is None and self.sdk_path is None:
       version = self.GetDefaultVersion()
@@ -389,8 +392,9 @@ class ClangError(Exception):
 
 @cros.CommandDecorator(COMMAND_NAME)
 class ChromeSDKCommand(cros.CrosCommand):
-  """
-  Pulls down SDK components for building and testing Chrome for ChromeOS,
+  """Set up an environment for building Chrome on Chrome OS.
+
+  Pulls down SDK components for building and testing Chrome for Chrome OS,
   sets up the environment for building Chrome, and runs a command in the
   environment, starting a bash session if no command is specified.
 
@@ -522,7 +526,8 @@ class ChromeSDKCommand(cros.CrosCommand):
     instead of the stock sysroot by prepending an asterisk to the version.
 
     Args:
-      board, version: The SDK board and version.
+      board: The SDK board.
+      version: The SDK version.
       chroot: The path to the chroot, if set.
     """
     custom = '*' if chroot else ''
