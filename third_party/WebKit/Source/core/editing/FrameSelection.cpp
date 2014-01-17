@@ -137,20 +137,6 @@ void FrameSelection::moveTo(const Position &pos, EAffinity affinity, EUserTrigge
     setSelection(VisibleSelection(pos, affinity, m_selection.isDirectional()), options);
 }
 
-void FrameSelection::moveTo(const Range *r, EAffinity affinity, EUserTriggered userTriggered)
-{
-    SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
-    VisibleSelection selection = r ? VisibleSelection(r->startPosition(), r->endPosition(), affinity) : VisibleSelection(Position(), Position(), affinity);
-    setSelection(selection, options);
-}
-
-void FrameSelection::moveTo(const Position &base, const Position &extent, EAffinity affinity, EUserTriggered userTriggered)
-{
-    const bool selectionHasDirection = true;
-    SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
-    setSelection(VisibleSelection(base, extent, affinity, selectionHasDirection), options);
-}
-
 static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisiblePosition& visibleExtent)
 {
     RenderedPosition base(visibleBase);
@@ -1208,18 +1194,6 @@ void FrameSelection::setExtent(const VisiblePosition &pos, EUserTriggered userTr
     setSelection(VisibleSelection(m_selection.base(), pos.deepEquivalent(), pos.affinity(), selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
 }
 
-void FrameSelection::setBase(const Position &pos, EAffinity affinity, EUserTriggered userTriggered)
-{
-    const bool selectionHasDirection = true;
-    setSelection(VisibleSelection(pos, m_selection.extent(), affinity, selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
-}
-
-void FrameSelection::setExtent(const Position &pos, EAffinity affinity, EUserTriggered userTriggered)
-{
-    const bool selectionHasDirection = true;
-    setSelection(VisibleSelection(m_selection.base(), pos, affinity, selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
-}
-
 RenderObject* FrameSelection::caretRenderer() const
 {
     return CaretBase::caretRenderer(m_selection.start().deprecatedNode());
@@ -1685,13 +1659,6 @@ void FrameSelection::setFocusedNodeIfNeeded()
 
     if (caretBrowsing)
         m_frame->page()->focusController().setFocusedElement(0, m_frame);
-}
-
-PassRefPtr<MutableStylePropertySet> FrameSelection::copyTypingStyle() const
-{
-    if (!m_typingStyle || !m_typingStyle->style())
-        return 0;
-    return m_typingStyle->style()->mutableCopy();
 }
 
 static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)

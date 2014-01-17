@@ -87,11 +87,9 @@ public:
     bool isContentEditable() const { return m_selection.isContentEditable(); }
     bool isContentRichlyEditable() const { return m_selection.isContentRichlyEditable(); }
 
-    void moveTo(const Range*, EAffinity, EUserTriggered = NotUserTriggered);
     void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
     void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
     void moveTo(const Position&, EAffinity, EUserTriggered = NotUserTriggered);
-    void moveTo(const Position&, const Position&, EAffinity, EUserTriggered = NotUserTriggered);
 
     const VisibleSelection& selection() const { return m_selection; }
     void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded, TextGranularity = CharacterGranularity);
@@ -120,9 +118,7 @@ public:
     void setEnd(const VisiblePosition &, EUserTriggered = NotUserTriggered);
 
     void setBase(const VisiblePosition&, EUserTriggered = NotUserTriggered);
-    void setBase(const Position&, EAffinity, EUserTriggered = NotUserTriggered);
     void setExtent(const VisiblePosition&, EUserTriggered = NotUserTriggered);
-    void setExtent(const Position&, EAffinity, EUserTriggered = NotUserTriggered);
 
     Position base() const { return m_selection.base(); }
     Position extent() const { return m_selection.extent(); }
@@ -147,7 +143,6 @@ public:
     bool isRange() const { return m_selection.isRange(); }
     bool isCaretOrRange() const { return m_selection.isCaretOrRange(); }
     bool isInPasswordField() const;
-    bool isAll(EditingBoundaryCrossingRule rule = CannotCrossEditingBoundary) const { return m_selection.isAll(rule); }
 
     PassRefPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
 
@@ -186,10 +181,7 @@ public:
     void setFocusedNodeIfNeeded();
     void notifyRendererOfSelectionChange(EUserTriggered);
 
-    void paintDragCaret(GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
-
     EditingStyle* typingStyle() const;
-    PassRefPtr<MutableStylePropertySet> copyTypingStyle() const;
     void setTypingStyle(PassRefPtr<EditingStyle>);
     void clearTypingStyle();
 
@@ -203,7 +195,6 @@ public:
     void revealSelection(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
     void setSelectionFromNone();
 
-    bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
     void setShouldShowBlockCursor(bool);
 
 private:
