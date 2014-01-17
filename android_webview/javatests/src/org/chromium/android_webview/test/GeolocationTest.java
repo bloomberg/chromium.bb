@@ -10,9 +10,9 @@ import android.webkit.GeolocationPermissions;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.LocationProviderFactory;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.MockLocationProvider;
+
+import java.util.concurrent.Callable;
 
 /**
  * Test suite for Geolocation in AwContents. Smoke tests for
@@ -20,10 +20,6 @@ import org.chromium.content.browser.test.util.MockLocationProvider;
  * and onResume APIs affect Geolocation as expected.
  */
 public class GeolocationTest extends AwTestBase {
-
-    private static final long TEST_TIMEOUT_MS = 5000L;
-    private static final int CHECK_INTERVAL_MS = 100;
-
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
     private MockLocationProvider mMockLocationProvider;
@@ -97,12 +93,12 @@ public class GeolocationTest extends AwTestBase {
     }
 
     private void ensureGeolocationRunning(final boolean running) throws Exception {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        poll(new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() throws Exception {
                 return mMockLocationProvider.isRunning() == running;
             }
-        }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS));
+        });
     }
 
 
@@ -117,20 +113,20 @@ public class GeolocationTest extends AwTestBase {
 
         mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        poll(new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() throws Exception {
                return getPositionCountFromJS() == 1;
             }
-        }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS));
+        });
 
         mAwContents.evaluateJavaScript("initiate_getCurrentPosition();", null);
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        poll(new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() throws Exception {
                 return getPositionCountFromJS() == 2;
             }
-        }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS));
+        });
     }
 
     /**
@@ -144,12 +140,12 @@ public class GeolocationTest extends AwTestBase {
 
         mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        poll(new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
             }
-        }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS));
+        });
     }
 
     @MediumTest
@@ -161,12 +157,12 @@ public class GeolocationTest extends AwTestBase {
 
         mAwContents.evaluateJavaScript("initiate_watchPosition();", null);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        poll(new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
             }
-        }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS));
+        });
 
         ensureGeolocationRunning(true);
 
@@ -195,12 +191,12 @@ public class GeolocationTest extends AwTestBase {
 
         ensureGeolocationRunning(true);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        poll(new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
             }
-        }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS));
+        });
     }
 
     @MediumTest
@@ -232,13 +228,12 @@ public class GeolocationTest extends AwTestBase {
 
         ensureGeolocationRunning(true);
 
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        poll(new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() throws Exception {
                 return getPositionCountFromJS() > 1;
             }
-        }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS));
-
+        });
     }
 
     @MediumTest

@@ -18,6 +18,9 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
 
+/**
+ * Navigation history tests.
+ */
 public class NavigationHistoryTest extends AwTestBase {
 
     private static final String PAGE_1_PATH = "/page1.html";
@@ -281,34 +284,34 @@ public class NavigationHistoryTest extends AwTestBase {
         getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
         loadUrlSync(mAwContents, onPageFinishedHelper, loginPageUrl);
         // Since the page performs an async action, we can't rely on callbacks.
-        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 String title = mAwContents.getContentViewCore().getTitle();
                 return LOGIN_RESPONSE_PAGE_TITLE.equals(title);
             }
-        }));
+        });
         executeJavaScriptAndWaitForResult(mAwContents,
                 mContentsClient,
                 "link = document.getElementById('" + LOGIN_RESPONSE_PAGE_HELP_LINK_ID + "');" +
                 "link.click();");
-        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 String title = mAwContents.getContentViewCore().getTitle();
                 return PAGE_1_TITLE.equals(title);
             }
-        }));
+        });
         // Verify that we can still go back to the login response page despite that
         // it is non-cacheable.
         HistoryUtils.goBackSync(getInstrumentation(), mAwContents.getContentViewCore(),
                 onPageFinishedHelper);
-        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 String title = mAwContents.getContentViewCore().getTitle();
                 return LOGIN_RESPONSE_PAGE_TITLE.equals(title);
             }
-        }));
+        });
     }
 }

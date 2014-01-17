@@ -15,8 +15,6 @@ import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.concurrent.Callable;
@@ -193,43 +191,31 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
     private void assertScrollInJs(final AwContents awContents,
             final TestAwContentsClient contentsClient,
             final int xCss, final int yCss) throws Exception {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        String x = executeJavaScriptAndWaitForResult(awContents, contentsClient,
-                            "window.scrollX");
-                        String y = executeJavaScriptAndWaitForResult(awContents, contentsClient,
-                            "window.scrollY");
-                        return (Integer.toString(xCss).equals(x) &&
-                            Integer.toString(yCss).equals(y));
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                        fail("Failed to get window.scroll(X/Y): " + t.toString());
-                        return false;
-                    }
-                }
-            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
+        poll(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                String x = executeJavaScriptAndWaitForResult(awContents, contentsClient,
+                    "window.scrollX");
+                String y = executeJavaScriptAndWaitForResult(awContents, contentsClient,
+                    "window.scrollY");
+                return (Integer.toString(xCss).equals(x) &&
+                    Integer.toString(yCss).equals(y));
+            }
+        });
     }
 
     private void assertScrolledToBottomInJs(final AwContents awContents,
             final TestAwContentsClient contentsClient) throws Exception {
         final String isBottomScript = "window.scrollY == " +
             "(window.document.documentElement.scrollHeight - window.innerHeight)";
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        String r = executeJavaScriptAndWaitForResult(awContents, contentsClient,
-                            isBottomScript);
-                        return r.equals("true");
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                        fail("Failed to get window.scroll(X/Y): " + t.toString());
-                        return false;
-                    }
-                }
-            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
+        poll(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                String r = executeJavaScriptAndWaitForResult(awContents, contentsClient,
+                    isBottomScript);
+                return r.equals("true");
+            }
+        });
     }
 
     private void loadTestPageAndWaitForFirstFrame(final ScrollTestContainerView testContainerView,

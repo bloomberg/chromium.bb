@@ -105,9 +105,9 @@ public class WebKitHitTestTest extends AwTestBase {
         return a == null ? b == null : a.equals(b);
     }
 
-    private boolean pollForHitTestDataOnUiThread(
+    private void pollForHitTestDataOnUiThread(
             final int expectedType, final String expectedExtra) throws Throwable {
-        return pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 AwContents.HitTestData data = mAwContents.getLastHitTestResult();
@@ -117,11 +117,11 @@ public class WebKitHitTestTest extends AwTestBase {
         });
     }
 
-    private boolean pollForHrefAndImageSrcOnUiThread(
+    private void pollForHrefAndImageSrcOnUiThread(
             final String expectedHref,
             final String expectedAnchorText,
             final String expectedImageSrc) throws Throwable {
-        boolean pollResult = pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 AwContents.HitTestData data = mAwContents.getLastHitTestResult();
@@ -141,21 +141,18 @@ public class WebKitHitTestTest extends AwTestBase {
                 mAwContents.requestImageRef(imageRefMsg);
             }
         });
-        pollResult &= stringEquals(expectedHref, focusNodeHrefMsg.getData().getString("url"));
-        pollResult &= stringEquals(expectedAnchorText,
-                focusNodeHrefMsg.getData().getString("title"));
-        pollResult &= stringEquals(expectedImageSrc, focusNodeHrefMsg.getData().getString("src"));
-        pollResult &= stringEquals(expectedImageSrc, imageRefMsg.getData().getString("url"));
-
-        return pollResult;
+        assertEquals(expectedHref, focusNodeHrefMsg.getData().getString("url"));
+        assertEquals(expectedAnchorText, focusNodeHrefMsg.getData().getString("title"));
+        assertEquals(expectedImageSrc, focusNodeHrefMsg.getData().getString("src"));
+        assertEquals(expectedImageSrc, imageRefMsg.getData().getString("url"));
     }
 
     private void srcAnchorTypeTestBody(boolean byTouch) throws Throwable {
         String page = fullPageLink(HREF, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.SRC_ANCHOR_TYPE, HREF));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(HREF, ANCHOR_TEXT, null));
+        pollForHitTestDataOnUiThread(HitTestResult.SRC_ANCHOR_TYPE, HREF);
+        pollForHrefAndImageSrcOnUiThread(HREF, ANCHOR_TEXT, null);
     }
 
     @SmallTest
@@ -175,9 +172,8 @@ public class WebKitHitTestTest extends AwTestBase {
         String page = fullPageLink("", ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.SRC_ANCHOR_TYPE, fullPath));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(fullPath, ANCHOR_TEXT, null));
+        pollForHitTestDataOnUiThread(HitTestResult.SRC_ANCHOR_TYPE, fullPath);
+        pollForHrefAndImageSrcOnUiThread(fullPath, ANCHOR_TEXT, null);
     }
 
     @SmallTest
@@ -198,9 +194,8 @@ public class WebKitHitTestTest extends AwTestBase {
         String page = fullPageLink(relPath, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.SRC_ANCHOR_TYPE, fullPath));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(fullPath, ANCHOR_TEXT, null));
+        pollForHitTestDataOnUiThread(HitTestResult.SRC_ANCHOR_TYPE, fullPath);
+        pollForHrefAndImageSrcOnUiThread(fullPath, ANCHOR_TEXT, null);
     }
 
     @SmallTest
@@ -221,8 +216,8 @@ public class WebKitHitTestTest extends AwTestBase {
         String page = fullPageLink(prefix + email, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.EMAIL_TYPE, email));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + email, ANCHOR_TEXT, null));
+        pollForHitTestDataOnUiThread(HitTestResult.EMAIL_TYPE, email);
+        pollForHrefAndImageSrcOnUiThread(prefix + email, ANCHOR_TEXT, null);
     }
 
     @SmallTest
@@ -243,8 +238,8 @@ public class WebKitHitTestTest extends AwTestBase {
         String page = fullPageLink(prefix + location, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.GEO_TYPE, location));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + location, ANCHOR_TEXT, null));
+        pollForHitTestDataOnUiThread(HitTestResult.GEO_TYPE, location);
+        pollForHrefAndImageSrcOnUiThread(prefix + location, ANCHOR_TEXT, null);
     }
 
     @SmallTest
@@ -266,8 +261,8 @@ public class WebKitHitTestTest extends AwTestBase {
         String page = fullPageLink("tel:" + phone_num, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.PHONE_TYPE, expected_phone_num));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(prefix + phone_num, ANCHOR_TEXT, null));
+        pollForHitTestDataOnUiThread(HitTestResult.PHONE_TYPE, expected_phone_num);
+        pollForHrefAndImageSrcOnUiThread(prefix + phone_num, ANCHOR_TEXT, null);
     }
 
     @SmallTest
@@ -289,9 +284,8 @@ public class WebKitHitTestTest extends AwTestBase {
                 fullImageSrc + "\"></a>");
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.SRC_IMAGE_ANCHOR_TYPE, fullImageSrc));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(HREF, null, fullImageSrc));
+        pollForHitTestDataOnUiThread(HitTestResult.SRC_IMAGE_ANCHOR_TYPE, fullImageSrc);
+        pollForHrefAndImageSrcOnUiThread(HREF, null, fullImageSrc);
     }
 
     @SmallTest
@@ -316,9 +310,8 @@ public class WebKitHitTestTest extends AwTestBase {
                 relImageSrc + "\"></a>");
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.SRC_IMAGE_ANCHOR_TYPE, fullImageSrc));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(fullPath, null, fullImageSrc));
+        pollForHitTestDataOnUiThread(HitTestResult.SRC_IMAGE_ANCHOR_TYPE, fullImageSrc);
+        pollForHrefAndImageSrcOnUiThread(fullPath, null, fullImageSrc);
     }
 
     @SmallTest
@@ -342,9 +335,8 @@ public class WebKitHitTestTest extends AwTestBase {
                 "<img class=\"full_view\" src=\"" + relImageSrc + "\">");
         setServerResponseAndLoad(page);
         simulateTouchCenterOfWebViewOnUiThread();
-        assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.IMAGE_TYPE, fullImageSrc));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(null, null, fullImageSrc));
+        pollForHitTestDataOnUiThread(HitTestResult.IMAGE_TYPE, fullImageSrc);
+        pollForHrefAndImageSrcOnUiThread(null, null, fullImageSrc);
     }
 
     private void editTextTypeTestBody(boolean byTouch) throws Throwable {
@@ -352,9 +344,8 @@ public class WebKitHitTestTest extends AwTestBase {
                 "<form><input class=\"full_view\" type=\"text\" name=\"test\"></form>");
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.EDIT_TEXT_TYPE, null));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(null, null, null));
+        pollForHitTestDataOnUiThread(HitTestResult.EDIT_TEXT_TYPE, null);
+        pollForHrefAndImageSrcOnUiThread(null, null, null);
     }
 
     @SmallTest
@@ -375,8 +366,8 @@ public class WebKitHitTestTest extends AwTestBase {
         String page = fullPageLink(javascript, ANCHOR_TEXT);
         setServerResponseAndLoad(page);
         simulateInput(byTouch);
-        assertTrue(pollForHrefAndImageSrcOnUiThread(javascript, ANCHOR_TEXT, null));
-        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null));
+        pollForHrefAndImageSrcOnUiThread(javascript, ANCHOR_TEXT, null);
+        pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null);
     }
 
     @SmallTest
@@ -413,7 +404,7 @@ public class WebKitHitTestTest extends AwTestBase {
             }
         });
         simulateTouchCenterOfWebViewOnUiThread();
-        assertTrue(pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null));
+        pollForHitTestDataOnUiThread(HitTestResult.UNKNOWN_TYPE, null);
     }
 
     @LargeTest
@@ -437,9 +428,8 @@ public class WebKitHitTestTest extends AwTestBase {
 
         // Focus on input element and check the hit test results.
         simulateTabDownUpOnUiThread();
-        assertTrue(pollForHitTestDataOnUiThread(
-                HitTestResult.EDIT_TEXT_TYPE, null));
-        assertTrue(pollForHrefAndImageSrcOnUiThread(null, null, null));
+        pollForHitTestDataOnUiThread(HitTestResult.EDIT_TEXT_TYPE, null);
+        pollForHrefAndImageSrcOnUiThread(null, null, null);
 
         // Touch image. Now the focus based hit test path will try to null out
         // the results and the touch based path will update with the result of
@@ -449,9 +439,8 @@ public class WebKitHitTestTest extends AwTestBase {
         // Make sure the result of image sticks.
         for (int i = 0; i < 2; ++i) {
             Thread.sleep(500);
-            assertTrue(pollForHitTestDataOnUiThread(
-                    HitTestResult.IMAGE_TYPE, fullImageSrc));
-            assertTrue(pollForHrefAndImageSrcOnUiThread(null, null, fullImageSrc));
+            pollForHitTestDataOnUiThread(HitTestResult.IMAGE_TYPE, fullImageSrc);
+            pollForHrefAndImageSrcOnUiThread(null, null, fullImageSrc);
         }
     }
 }

@@ -16,6 +16,10 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
 
+/**
+ * Tests for the {@link android.webkit.WebView#saveState} and
+ * {@link android.webkit.WebView#restoreState} APIs.
+ */
 public class SaveRestoreStateTest extends AwTestBase {
     private static class TestVars {
         public final TestAwContentsClient contentsClient;
@@ -129,13 +133,13 @@ public class SaveRestoreStateTest extends AwTestBase {
     public void testSaveRestoreStateWithTitle() throws Throwable {
         setServerResponseAndLoad(mVars, 1);
         final TestVars restoredVars = saveAndRestoreStateOnUiThread(mVars);
-        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return TITLES[0].equals(restoredVars.contentViewCore.getTitle()) &&
                        TITLES[0].equals(restoredVars.contentsClient.getUpdatedTitle());
             }
-        }));
+        });
     }
 
     @SmallTest

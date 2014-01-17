@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * AwContents tests.
  */
 public class AwContentsTest extends AwTestBase {
-    public static class OnDownloadStartHelper extends CallbackHelper {
+    private static class OnDownloadStartHelper extends CallbackHelper {
         String mUrl;
         String mUserAgent;
         String mContentDisposition;
@@ -163,12 +163,12 @@ public class AwContentsTest extends AwTestBase {
 
         System.gc();
 
-        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return AwContents.getNativeInstanceCount() <= MAX_IDLE_INSTANCES;
             }
-        }));
+        });
         for (int i = 0; i < REPETITIONS; ++i) {
             for (int j = 0; j < CONCURRENT_INSTANCES; ++j) {
                 AwTestContainerView view = createAwTestContainerViewOnMainSync(mContentsClient);
@@ -186,12 +186,12 @@ public class AwContentsTest extends AwTestBase {
 
         System.gc();
 
-        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+        pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return AwContents.getNativeInstanceCount() <= MAX_IDLE_INSTANCES;
             }
-        }));
+        });
     }
 
     private int callDocumentHasImagesSync(final AwContents awContents)
@@ -334,13 +334,13 @@ public class AwContentsTest extends AwTestBase {
             getAwSettingsOnUiThread(awContents).setImagesEnabled(true);
             loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
-            assertTrue(pollOnUiThread(new Callable<Boolean>() {
+            pollOnUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
                     return awContents.getFavicon() != null &&
                         !awContents.getFavicon().sameAs(defaultFavicon);
                 }
-            }));
+            });
 
             final Object originalFaviconSource = (new URL(faviconUrl)).getContent();
             final Bitmap originalFavicon =

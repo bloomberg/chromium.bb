@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
+import android.util.Log;
 
 import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
 
@@ -36,6 +37,7 @@ public class AwTestBase
         extends ActivityInstrumentationTestCase2<AwTestRunnerActivity> {
     protected static final long WAIT_TIMEOUT_MS = ScaleTimeout(15000);
     protected static final int CHECK_INTERVAL = 100;
+    private static final String TAG = "AwTestBase";
 
     public AwTestBase() {
         super(AwTestRunnerActivity.class);
@@ -215,7 +217,7 @@ public class AwTestBase
      * Reloads the current page synchronously.
      */
     protected void reloadSync(final AwContents awContents,
-                              CallbackHelper onPageFinishedHelper) throws Throwable {
+                              CallbackHelper onPageFinishedHelper) throws Exception {
         int currentCallCount = onPageFinishedHelper.getCallCount();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -357,18 +359,31 @@ public class AwTestBase
     }
 
     /**
-     * Similar to CriteriaHelper.pollForCriteria but runs the callable on the UI thread.
-     * Note that exceptions are treated as failure.
+     * Wrapper around CriteriaHelper.pollForCriteria. This uses AwTestBase-specifc timeouts and
+     * treats timeouts and exceptions as test failures automatically.
      */
-    protected boolean pollOnUiThread(final Callable<Boolean> callable) throws Exception {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+    protected static void poll(final Callable<Boolean> callable) throws Exception {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return runTestOnUiThreadAndGetResult(callable);
+                    return callable.call();
                 } catch (Throwable e) {
+                    Log.e(TAG, "Exception while polling.", e);
                     return false;
                 }
+            }
+        }, WAIT_TIMEOUT_MS, CHECK_INTERVAL));
+    }
+
+    /**
+     * Wrapper around {@link AwTestBase#poll()} but runs the callable on the UI thread.
+     */
+    protected void pollOnUiThread(final Callable<Boolean> callable) throws Exception {
+        poll(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return runTestOnUiThreadAndGetResult(callable);
             }
         });
     }
@@ -403,7 +418,7 @@ public class AwTestBase
     /**
      * Returns page scale multiplied by the screen density.
      */
-    protected float getPixelScaleOnUiThread(final AwContents awContents) throws Throwable {
+    protected float getPixelScaleOnUiThread(final AwContents awContents) throws Exception {
         return runTestOnUiThreadAndGetResult(new Callable<Float>() {
             @Override
             public Float call() throws Exception {
@@ -415,7 +430,7 @@ public class AwTestBase
     /**
      * Returns whether a user can zoom the page in.
      */
-    protected boolean canZoomInOnUiThread(final AwContents awContents) throws Throwable {
+    protected boolean canZoomInOnUiThread(final AwContents awContents) throws Exception {
         return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -427,7 +442,7 @@ public class AwTestBase
     /**
      * Returns whether a user can zoom the page out.
      */
-    protected boolean canZoomOutOnUiThread(final AwContents awContents) throws Throwable {
+    protected boolean canZoomOutOnUiThread(final AwContents awContents) throws Exception {
         return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {

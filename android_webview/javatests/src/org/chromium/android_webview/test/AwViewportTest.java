@@ -10,11 +10,10 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.Locale;
+import java.util.concurrent.Callable;
 
 /**
  * Tests for usage and quirks of viewport related methods.
@@ -259,7 +258,7 @@ public class AwViewportTest extends AwTestBase {
         // flaky. So instead, we are just polling the scale until it becomes 1.0.
         settings.setInitialPageScale(50);
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
-        assertTrue(waitUntilScaleBecomes(1.0f, awContents));
+        ensureScaleBecomes(1.0f, awContents);
     }
 
     @MediumTest
@@ -297,19 +296,13 @@ public class AwViewportTest extends AwTestBase {
         assertEquals(1.0f, getScaleOnUiThread(awContents));
     }
 
-    private boolean waitUntilScaleBecomes(final float targetScale, final AwContents awContents)
+    private void ensureScaleBecomes(final float targetScale, final AwContents awContents)
             throws Throwable {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        return targetScale == getScaleOnUiThread(awContents);
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                        fail("Failed to getScaleOnUiThread: " + t.toString());
-                        return false;
-                    }
-                }
-            }, WAIT_TIMEOUT_MS, CHECK_INTERVAL);
+        poll(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return targetScale == getScaleOnUiThread(awContents);
+            }
+        });
     }
 }
