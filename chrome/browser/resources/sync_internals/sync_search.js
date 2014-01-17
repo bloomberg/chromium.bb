@@ -7,6 +7,35 @@
 cr.define('chrome.sync', function() {
   var currSearchId = 0;
 
+  var setQueryString = function(queryControl, query) {
+    queryControl.value = query;
+  };
+
+  var createDoQueryFunction = function(queryControl, submitControl, query) {
+    return function() {
+      setQueryString(queryControl, query);
+      submitControl.click();
+    };
+  };
+
+  /**
+   * Decorates the quick search controls
+   *
+   * @param {Array of DOM elements} quickLinkArray The <a> object which
+   *     will be given a link to a quick filter option.
+   * @param {!HTMLInputElement} queryControl The <input> object of
+   *     type=search where the user types in his query.
+   */
+  var decorateQuickQueryControls = function(quickLinkArray, submitControl,
+                                            queryControl) {
+    for (var index = 0; index < allLinks.length; ++index) {
+      var quickQuery = allLinks[index].getAttribute('data-query');
+      var quickQueryFunction = createDoQueryFunction(queryControl,
+          submitControl, quickQuery);
+      allLinks[index].addEventListener('click', quickQueryFunction);
+    }
+  };
+
   /**
    * Runs a search with the given query.
    *
@@ -38,7 +67,7 @@ cr.define('chrome.sync', function() {
    *
    * @param {!HTMLInputElement} queryControl The <input> object of
    *     type=search where the user types in his query.
-   * @param {!HTMLButtonElement} submitControl The <button> object of
+   * @param {!HTMLButtonElement} submitControl The <button> object
    *     where the user can click to do his query.
    * @param {!HTMLElement} statusControl The <span> object display the
    *     search status.
@@ -102,6 +131,7 @@ cr.define('chrome.sync', function() {
   }
 
   return {
-    decorateSearchControls: decorateSearchControls
+    decorateSearchControls: decorateSearchControls,
+    decorateQuickQueryControls: decorateQuickQueryControls
   };
 });

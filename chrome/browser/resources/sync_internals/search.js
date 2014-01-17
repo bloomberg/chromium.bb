@@ -7,6 +7,13 @@
 
 cr.ui.decorate('#sync-results-splitter', cr.ui.Splitter);
 
+var allLinks = document.getElementsByClassName('sync-search-quicklink');
+
+chrome.sync.decorateQuickQueryControls(
+  allLinks,
+  $('sync-search-submit'),
+  $('sync-search-query'));
+
 chrome.sync.decorateSearchControls(
   $('sync-search-query'),
   $('sync-search-submit'),
