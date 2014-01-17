@@ -118,6 +118,7 @@ void PrerenderTracker::AddPendingSwapThrottleOnIOThread(
   DCHECK(it != pending_swap_throttle_map_.end());
   if (it == pending_swap_throttle_map_.end())
     return;
+  CHECK(!it->second.throttle);
   it->second.throttle = throttle;
 }
 

@@ -454,6 +454,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
         const GURL& validated_url,
         content::PageTransition transition_type,
         content::RenderViewHost* render_view_host) OVERRIDE;
+    virtual void RenderViewCreated(
+        content::RenderViewHost* render_view_host) OVERRIDE;
     virtual void DidFailProvisionalLoad(
         int64 frame_id,
         const base::string16& frame_unique_name,
@@ -479,7 +481,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     bool should_replace_current_entry_;
 
     base::TimeTicks start_time_;
-    PrerenderTracker::ChildRouteIdPair render_frame_route_id_pair_;
+    std::vector<PrerenderTracker::ChildRouteIdPair> main_rfh_ids_;
     base::OneShotTimer<PendingSwap> merge_timeout_;
     bool swap_successful_;
 

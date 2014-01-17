@@ -42,6 +42,7 @@ struct WebPluginAction;
 namespace content {
 
 class ChildProcessSecurityPolicy;
+class RenderFrameHost;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -70,6 +71,9 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   static RenderViewHost* From(RenderWidgetHost* rwh);
 
   virtual ~RenderViewHost() {}
+
+  // Returns the main frame for this render view.
+  virtual RenderFrameHost* GetMainFrame() = 0;
 
   // Tell the render view to enable a set of javascript bindings. The argument
   // should be a combination of values from BindingsPolicy.

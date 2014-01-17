@@ -469,7 +469,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
         request, prerender_tracker_));
   }
   if (prerender_tracker_->IsPendingSwapRequestOnIOThread(
-          info->GetChildID(), info->GetRouteID(), request->url())) {
+          info->GetChildID(), info->GetRenderFrameID(), request->url())) {
     throttles->push_back(new prerender::PrerenderPendingSwapThrottle(
         request, prerender_tracker_));
   }

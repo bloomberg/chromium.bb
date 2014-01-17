@@ -124,6 +124,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual ~RenderViewHostImpl();
 
   // RenderViewHost implementation.
+  virtual RenderFrameHost* GetMainFrame() OVERRIDE;
   virtual void AllowBindings(int binding_flags) OVERRIDE;
   virtual void ClearFocusedNode() OVERRIDE;
   virtual void ClosePage() OVERRIDE;

@@ -1127,20 +1127,14 @@ PrerenderManager::PendingSwap::PendingSwap(
       start_time_(base::TimeTicks::Now()),
       swap_successful_(false),
       weak_factory_(this) {
-  // Record the RFH id in the tracker to install throttles on MAIN_FRAME
-  // requests from that route.
-  int render_process_id =
-      target_contents->GetMainFrame()->GetProcess()->GetID();
-  int render_frame_id = target_contents->GetMainFrame()->GetRoutingID();
-  render_frame_route_id_pair_ = PrerenderTracker::ChildRouteIdPair(
-      render_process_id, render_frame_id);
-  manager_->prerender_tracker()->AddPrerenderPendingSwap(
-      render_frame_route_id_pair_, url_);
+  RenderViewCreated(target_contents->GetRenderViewHost());
 }
 
 PrerenderManager::PendingSwap::~PendingSwap() {
-  manager_->prerender_tracker()->RemovePrerenderPendingSwap(
-        render_frame_route_id_pair_, swap_successful_);
+  for (size_t i = 0; i < main_rfh_ids_.size(); i++) {
+    manager_->prerender_tracker()->RemovePrerenderPendingSwap(
+        main_rfh_ids_[i], swap_successful_);
+  }
 }
 
 void PrerenderManager::PendingSwap::BeginSwap() {
@@ -1183,6 +1177,20 @@ void PrerenderManager::PendingSwap::DidCommitProvisionalLoadForFrame(
   if (!is_main_frame)
     return;
   prerender_data_->ClearPendingSwap();
+}
+
+void PrerenderManager::PendingSwap::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  // Record the RFH id in the tracker to install throttles on MAIN_FRAME
+  // requests from that route.
+  int render_process_id =
+      render_view_host->GetMainFrame()->GetProcess()->GetID();
+  int render_frame_id = render_view_host->GetMainFrame()->GetRoutingID();
+  PrerenderTracker::ChildRouteIdPair render_frame_route_id_pair(
+      render_process_id, render_frame_id);
+  main_rfh_ids_.push_back(render_frame_route_id_pair);
+  manager_->prerender_tracker()->AddPrerenderPendingSwap(
+      render_frame_route_id_pair, url_);
 }
 
 void PrerenderManager::PendingSwap::DidFailProvisionalLoad(

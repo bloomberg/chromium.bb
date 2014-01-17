@@ -58,6 +58,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
@@ -1057,6 +1058,10 @@ void RenderViewHostImpl::DragSourceMovedTo(
 
 void RenderViewHostImpl::DragSourceSystemDragEnded() {
   Send(new DragMsg_SourceSystemDragEnded(GetRoutingID()));
+}
+
+RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
+  return RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_routing_id_);
 }
 
 void RenderViewHostImpl::AllowBindings(int bindings_flags) {

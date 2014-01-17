@@ -787,6 +787,87 @@ void CreateHangingFirstRequestProtocolHandlerOnIO(const GURL& url,
       url, never_respond_handler.Pass());
 }
 
+// Wrapper over URLRequestMockHTTPJob that exposes extra callbacks.
+class MockHTTPJob : public content::URLRequestMockHTTPJob {
+ public:
+  MockHTTPJob(net::URLRequest* request,
+              net::NetworkDelegate* delegate,
+              const base::FilePath& file)
+      : content::URLRequestMockHTTPJob(request, delegate, file) {
+  }
+
+  void set_start_callback(const base::Closure& start_callback) {
+    start_callback_ = start_callback;
+  }
+
+  virtual void Start() OVERRIDE {
+    if (!start_callback_.is_null())
+      start_callback_.Run();
+    content::URLRequestMockHTTPJob::Start();
+  }
+
+ private:
+  virtual ~MockHTTPJob() {}
+
+  base::Closure start_callback_;
+};
+
+// Dummy counter class to live on the UI thread for counting requests.
+class RequestCounter : public base::SupportsWeakPtr<RequestCounter> {
+ public:
+  RequestCounter() : count_(0) {}
+  int count() const { return count_; }
+  void RequestStarted() { count_++; }
+ private:
+  int count_;
+};
+
+// Protocol handler which counts the number of requests that start.
+class CountingProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  CountingProtocolHandler(const base::FilePath& file,
+                          const base::WeakPtr<RequestCounter>& counter)
+      : file_(file),
+        counter_(counter),
+        weak_factory_(this) {
+  }
+  virtual ~CountingProtocolHandler() {}
+
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    MockHTTPJob* job = new MockHTTPJob(request, network_delegate, file_);
+    job->set_start_callback(base::Bind(&CountingProtocolHandler::RequestStarted,
+                                       weak_factory_.GetWeakPtr()));
+    return job;
+  }
+
+  void RequestStarted() {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&RequestCounter::RequestStarted, counter_));
+  }
+
+ private:
+  base::FilePath file_;
+  base::WeakPtr<RequestCounter> counter_;
+  mutable base::WeakPtrFactory<CountingProtocolHandler> weak_factory_;
+};
+
+// Makes |url| respond to requests with the contents of |file|, counting the
+// number that start in |counter|.
+void CreateCountingProtocolHandlerOnIO(
+    const GURL& url,
+    const base::FilePath& file,
+    const base::WeakPtr<RequestCounter>& counter) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> protocol_handler(
+      new CountingProtocolHandler(file, counter));
+  net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
+      url, protocol_handler.Pass());
+}
+
 // Makes |url| respond to requests with the contents of |file|.
 void CreateMockProtocolHandlerOnIO(const GURL& url,
                                    const base::FilePath& file) {
@@ -868,6 +949,12 @@ class NeverRunsExternalProtocolHandlerDelegate
     NOTREACHED();
   }
 };
+
+base::FilePath GetTestPath(const std::string& file_name) {
+  return ui_test_utils::GetTestFilePath(
+      base::FilePath(FILE_PATH_LITERAL("prerender")),
+      base::FilePath().AppendASCII(file_name));
+}
 
 }  // namespace
 
@@ -1711,8 +1798,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
   // Navigate to a page that triggers a prerender for a URL that never commits.
   const GURL kNoCommitUrl("http://never-respond.example.com");
-  base::FilePath file(FILE_PATH_LITERAL(
-      "chrome/test/data/prerender/prerender_page.html"));
+  base::FilePath file(GetTestPath("prerender_page.html"));
 
   base::RunLoop prerender_start_loop;
   BrowserThread::PostTask(
@@ -1734,8 +1820,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap2) {
   // Navigate to a page that then navigates to a URL that never commits.
   const GURL kNoCommitUrl("http://never-respond.example.com");
-  base::FilePath file(FILE_PATH_LITERAL(
-      "chrome/test/data/prerender/prerender_page.html"));
+  base::FilePath file(GetTestPath("prerender_page.html"));
 
   base::RunLoop prerender_start_loop;
   BrowserThread::PostTask(
@@ -3409,8 +3494,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   std::string webstore_url = extension_urls::GetWebstoreLaunchURL();
 
   // Mock out requests to the Web Store.
-  base::FilePath file(FILE_PATH_LITERAL(
-      "chrome/test/data/prerender/prerender_page.html"));
+  base::FilePath file(GetTestPath("prerender_page.html"));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&CreateMockProtocolHandlerOnIO,
@@ -3578,14 +3662,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNewNavigationEntry) {
 // Attempt a swap-in in a new tab, verifying that session storage namespace
 // merging works.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
-  PrerenderTestURL("files/prerender/prerender_session_storage.html",
-                   FINAL_STATUS_USED, 1);
+  // Mock out some URLs and count the number of requests to one of them. Both
+  // prerender_session_storage.html and init_session_storage.html need to be
+  // mocked so they are same-origin.
+  const GURL kInitURL("http://prerender.test/init_session_storage.html");
+  base::FilePath init_file = GetTestPath("init_session_storage.html");
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateMockProtocolHandlerOnIO, kInitURL, init_file));
+
+  const GURL kTestURL("http://prerender.test/prerender_session_storage.html");
+  base::FilePath test_file = GetTestPath("prerender_session_storage.html");
+  RequestCounter counter;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateCountingProtocolHandlerOnIO,
+                 kTestURL, test_file, counter.AsWeakPtr()));
+
+  PrerenderTestURL(kTestURL, FINAL_STATUS_USED, 1);
 
   // Open a new tab to navigate in.
   ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(),
-      test_server()->GetURL("files/prerender/init_session_storage.html"),
-      NEW_FOREGROUND_TAB,
+      current_browser(), kInitURL, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Now navigate in the new tab. Set expect_swap_to_succeed to false because
@@ -3599,6 +3697,60 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
   // Verify DidDisplayPass manually since the previous call skipped it.
   EXPECT_TRUE(DidDisplayPass(
       current_browser()->tab_strip_model()->GetActiveWebContents()));
+
+  // Only one request to the test URL started.
+  EXPECT_EQ(1, counter.count());
+}
+
+// Attempt a swap-in in a new tab, verifying that session storage namespace
+// merging works. Unlike the above test, the swap is for a navigation that would
+// normally be cross-process.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTabCrossProcess) {
+  base::FilePath test_data_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+
+  // Mock out some URLs and count the number of requests to one of them. Both
+  // prerender_session_storage.html and init_session_storage.html need to be
+  // mocked so they are same-origin.
+  const GURL kInitURL("http://prerender.test/init_session_storage.html");
+  base::FilePath init_file = GetTestPath("init_session_storage.html");
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateMockProtocolHandlerOnIO, kInitURL, init_file));
+
+  const GURL kTestURL("http://prerender.test/prerender_session_storage.html");
+  base::FilePath test_file = GetTestPath("prerender_session_storage.html");
+  RequestCounter counter;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateCountingProtocolHandlerOnIO,
+                 kTestURL, test_file, counter.AsWeakPtr()));
+
+  PrerenderTestURL(kTestURL, FINAL_STATUS_USED, 1);
+
+  // Open a new tab to navigate in.
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(), kInitURL, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Navigate to about:blank so the next navigation is cross-process.
+  ui_test_utils::NavigateToURL(current_browser(),
+                               GURL(content::kAboutBlankURL));
+
+  // Now navigate in the new tab. Set expect_swap_to_succeed to false because
+  // the swap does not occur synchronously.
+  //
+  // TODO(davidben): When all swaps become asynchronous, remove the OpenURL
+  // return value assertion and let this go through the usual successful-swap
+  // codepath.
+  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+
+  // Verify DidDisplayPass manually since the previous call skipped it.
+  EXPECT_TRUE(DidDisplayPass(
+      current_browser()->tab_strip_model()->GetActiveWebContents()));
+
+  // Only one request to the test URL started.
+  EXPECT_EQ(1, counter.count());
 }
 
 // Verify that session storage conflicts don't merge.
