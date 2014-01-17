@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_delegate.h"
@@ -203,14 +203,14 @@ void WindowState::ToggleFullscreen() {
 void WindowState::SetBoundsInScreen(
     const gfx::Rect& bounds_in_screen) {
   gfx::Rect bounds_in_parent =
-      ScreenAsh::ConvertRectFromScreen(window_->parent(),
+      ScreenUtil::ConvertRectFromScreen(window_->parent(),
                                        bounds_in_screen);
   window_->SetBounds(bounds_in_parent);
 }
 
 void WindowState::SaveCurrentBoundsForRestore() {
   gfx::Rect bounds_in_screen =
-      ScreenAsh::ConvertRectToScreen(window_->parent(),
+      ScreenUtil::ConvertRectToScreen(window_->parent(),
                                      window_->bounds());
   SetRestoreBoundsInScreen(bounds_in_screen);
 }
@@ -220,7 +220,7 @@ gfx::Rect WindowState::GetRestoreBoundsInScreen() const {
 }
 
 gfx::Rect WindowState::GetRestoreBoundsInParent() const {
-  return ScreenAsh::ConvertRectFromScreen(window_->parent(),
+  return ScreenUtil::ConvertRectFromScreen(window_->parent(),
                                           GetRestoreBoundsInScreen());
 }
 
@@ -230,7 +230,7 @@ void WindowState::SetRestoreBoundsInScreen(const gfx::Rect& bounds) {
 
 void WindowState::SetRestoreBoundsInParent(const gfx::Rect& bounds) {
   SetRestoreBoundsInScreen(
-      ScreenAsh::ConvertRectToScreen(window_->parent(), bounds));
+      ScreenUtil::ConvertRectToScreen(window_->parent(), bounds));
 }
 
 void WindowState::ClearRestoreBounds() {

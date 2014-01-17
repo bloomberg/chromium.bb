@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ash/ash_constants.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -71,7 +71,7 @@ void CenterWindow(aura::Window* window) {
     window_state->SetRestoreBoundsInScreen(center);
     window_state->Restore();
   } else {
-    center = ScreenAsh::ConvertRectFromScreen(window->parent(),
+    center = ScreenUtil::ConvertRectFromScreen(window->parent(),
         center);
     center.ClampToCenteredSize(size);
     window->SetBounds(center);

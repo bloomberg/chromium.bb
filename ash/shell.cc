@@ -36,7 +36,6 @@
 #include "ash/media_delegate.h"
 #include "ash/new_window_delegate.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf_delegate.h"
@@ -83,7 +82,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
@@ -569,8 +567,7 @@ void Shell::SetGPUSupport(scoped_ptr<GPUSupport> gpu_support) {
 // Shell, private:
 
 Shell::Shell(ShellDelegate* delegate)
-    : screen_(new ScreenAsh),
-      target_root_window_(NULL),
+    : target_root_window_(NULL),
       scoped_target_root_window_(NULL),
       delegate_(delegate),
       window_positioner_(new WindowPositioner),
@@ -586,11 +583,6 @@ Shell::Shell(ShellDelegate* delegate)
       gpu_support_(new DefaultGPUSupportImpl) {
   DCHECK(delegate_.get());
   display_manager_.reset(new internal::DisplayManager);
-
-  ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
-  if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
   display_controller_.reset(new DisplayController);
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
@@ -712,6 +704,7 @@ Shell::~Shell() {
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
   // of its owned RootWindowControllers relies on the value.
+  display_manager_->CreateScreenForShutdown();
   display_controller_->Shutdown();
   display_controller_.reset();
   screen_position_controller_.reset();
@@ -811,7 +804,7 @@ void Shell::Init() {
   resolution_notification_controller_.reset(
       new internal::ResolutionNotificationController);
 
-  cursor_manager_.SetDisplay(DisplayController::GetPrimaryDisplay());
+  cursor_manager_.SetDisplay(GetScreen()->GetPrimaryDisplay());
 
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   accelerator_controller_.reset(new AcceleratorController);

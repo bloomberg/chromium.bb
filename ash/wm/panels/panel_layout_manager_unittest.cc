@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -95,7 +95,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   void PanelInScreen(aura::Window* panel) {
     gfx::Rect panel_bounds = panel->GetBoundsInRootWindow();
     gfx::Point root_point = gfx::Point(panel_bounds.x(), panel_bounds.y());
-    gfx::Display display = ScreenAsh::FindDisplayContainingPoint(root_point);
+    gfx::Display display = ScreenUtil::FindDisplayContainingPoint(root_point);
 
     gfx::Rect panel_bounds_in_screen = panel->GetBoundsInScreen();
     gfx::Point screen_bottom_right = gfx::Point(

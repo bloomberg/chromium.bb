@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -172,7 +172,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   gfx::RectF GetTransformedBounds(aura::Window* window) {
-    gfx::RectF bounds(ash::ScreenAsh::ConvertRectToScreen(
+    gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
         window->parent(), window->layer()->bounds()));
     gfx::Transform transform(GetTransformRelativeTo(bounds.origin(),
         window->layer()->transform()));
@@ -181,7 +181,7 @@ class WindowSelectorTest : public test::AshTestBase {
   }
 
   gfx::RectF GetTransformedTargetBounds(aura::Window* window) {
-    gfx::RectF bounds(ash::ScreenAsh::ConvertRectToScreen(
+    gfx::RectF bounds(ScreenUtil::ConvertRectToScreen(
         window->parent(), window->layer()->GetTargetBounds()));
     gfx::Transform transform(GetTransformRelativeTo(bounds.origin(),
         window->layer()->GetTargetTransform()));

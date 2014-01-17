@@ -103,7 +103,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
     // Because the tests use windows without delegates,
     // aura::test::EventGenerator cannot be used.
     gfx::Point drag_to =
-        ash::ScreenAsh::GetDisplayBoundsInParent(window).top_right();
+        ash::ScreenUtil::GetDisplayBoundsInParent(window).top_right();
     scoped_ptr<WindowResizer> resizer(CreateWindowResizer(
         window,
         window->bounds().origin(),
@@ -118,7 +118,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
   // Drag |window| out of the dock.
   void UndockWindow(aura::Window* window) {
     gfx::Point drag_to =
-        ash::ScreenAsh::GetDisplayWorkAreaBoundsInParent(window).top_right() -
+        ash::ScreenUtil::GetDisplayWorkAreaBoundsInParent(window).top_right() -
         gfx::Vector2d(10, 0);
     scoped_ptr<WindowResizer> resizer(CreateWindowResizer(
         window,
@@ -138,7 +138,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
 
   // Returns the secondary display.
   gfx::Display GetSecondaryDisplay() {
-    return ScreenAsh::GetSecondaryDisplay();
+    return ScreenUtil::GetSecondaryDisplay();
   }
 
   // Returns the window which uses the solo header, if any, on the primary
@@ -329,7 +329,7 @@ TEST_F(SoloWindowTrackerTest, MultiDisplay) {
   // Moves the second window to the secondary display.  Both w1/w2 should be
   // solo.
   w2->SetBoundsInScreen(gfx::Rect(1200, 0, 100, 100),
-                        ScreenAsh::GetSecondaryDisplay());
+                        ScreenUtil::GetSecondaryDisplay());
   EXPECT_EQ(w1.get(), GetWindowWithSoloHeaderInPrimary());
   EXPECT_EQ(w2.get(), GetWindowWithSoloHeader(w2->GetRootWindow()));
   EXPECT_TRUE(checker1.IsPaintScheduledAndReset());

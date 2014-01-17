@@ -8,7 +8,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/shared_display_edge_indicator.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_util.h"
@@ -176,7 +176,7 @@ void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
   // instead of using reference.
   const gfx::Rect primary_bounds =
       Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Rect secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
+  const gfx::Rect secondary_bounds = ScreenUtil::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
       display_manager()->GetCurrentDisplayLayout().position;
 
@@ -205,7 +205,7 @@ void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
   // instead of using reference.
   const gfx::Rect primary_bounds =
       Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Rect secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
+  const gfx::Rect secondary_bounds = ScreenUtil::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
       display_manager()->GetCurrentDisplayLayout().position;
 

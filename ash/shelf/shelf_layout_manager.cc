@@ -12,7 +12,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
@@ -271,7 +271,7 @@ ShelfAlignment ShelfLayoutManager::GetAlignment() const {
 
 gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   gfx::Rect bounds(
-      ScreenAsh::GetDisplayBoundsInParent(shelf_->GetNativeView()));
+      ScreenUtil::GetDisplayBoundsInParent(shelf_->GetNativeView()));
   int width = 0, height = 0;
   GetShelfSize(&width, &height);
   return SelectValueForShelfAlignment(
@@ -674,7 +674,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     status_animation_setter.AddObserver(observer);
 
   GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
-  shelf_->SetBounds(ScreenAsh::ConvertRectToScreen(
+  shelf_->SetBounds(ScreenUtil::ConvertRectToScreen(
        shelf_->GetNativeView()->parent(),
        target_bounds.shelf_bounds_in_root));
 
@@ -688,7 +688,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
   status_bounds.set_y(status_bounds.y() +
                       target_bounds.shelf_bounds_in_root.y());
   shelf_->status_area_widget()->SetBounds(
-      ScreenAsh::ConvertRectToScreen(
+      ScreenUtil::ConvertRectToScreen(
           shelf_->status_area_widget()->GetNativeView()->parent(),
           status_bounds));
   Shell::GetInstance()->SetDisplayWorkAreaInsets(

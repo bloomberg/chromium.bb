@@ -24,11 +24,13 @@ namespace gfx {
 class Display;
 class Insets;
 class Rect;
+class Screen;
 }
 
 namespace ash {
 class AcceleratorControllerTest;
 class DisplayController;
+class ScreenAsh;
 
 namespace test {
 class DisplayManagerTestApi;
@@ -96,6 +98,10 @@ class ASH_EXPORT DisplayManager
 
   DisplayLayoutStore* layout_store() {
     return layout_store_.get();
+  }
+
+  gfx::Screen* screen() {
+    return screen_;
   }
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
@@ -265,6 +271,9 @@ class ASH_EXPORT DisplayManager
   // This is used only for bootstrap.
   void CreateMirrorWindowIfAny();
 
+  // Create a screen instance to be used during shutdown.
+  void CreateScreenForShutdown() const;
+
 private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);
@@ -312,6 +321,10 @@ private:
       gfx::Display* secondary_display);
 
   Delegate* delegate_;  // not owned.
+
+  scoped_ptr<ScreenAsh> screen_ash_;
+  // This is to have an accessor without ScreenAsh definition.
+  gfx::Screen* screen_;
 
   scoped_ptr<DisplayLayoutStore> layout_store_;
 

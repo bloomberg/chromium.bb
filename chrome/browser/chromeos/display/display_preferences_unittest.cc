@@ -8,7 +8,7 @@
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -150,7 +150,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   UpdateDisplay("100x100,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   int64 dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
 
@@ -186,7 +186,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   UpdateDisplay("200x200*2, 400x300#400x400|300x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
   gfx::Display::SetInternalDisplayId(id1);
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   int64 dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
 
@@ -197,7 +197,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
       id1, dummy_id, ash::DisplayLayout(ash::DisplayLayout::LEFT, 20));
   // Can't switch to a display that does not exist.
   display_controller->SetPrimaryDisplayId(dummy_id);
-  EXPECT_NE(dummy_id, display_controller->GetPrimaryDisplay().id());
+  EXPECT_NE(dummy_id, ash::Shell::GetScreen()->GetPrimaryDisplay().id());
 
   display_controller->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager->SetDisplayRotation(id1, gfx::Display::ROTATE_90);
@@ -338,7 +338,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
   // Update key as the 2nd display gets new id.
-  id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
   EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
@@ -366,7 +366,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   UpdateDisplay("200x200*2");
   UpdateDisplay("200x200*2, 500x400#600x500|500x400");
   // Update key as the 2nd display gets new id.
-  id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
   EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
@@ -431,12 +431,12 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
 TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
   UpdateDisplay("100x100,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
 
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
   display_controller->SwapPrimaryDisplay();
-  ASSERT_EQ(id1, ash::ScreenAsh::GetSecondaryDisplay().id());
+  ASSERT_EQ(id1, ash::ScreenUtil::GetSecondaryDisplay().id());
 
   LoggedInAsUser();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
@@ -472,15 +472,14 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   UpdateDisplay("200x200*2,200x200");
 
   LoggedInAsGuest();
-  int64 id1 = ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64 id1 = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   gfx::Display::SetInternalDisplayId(id1);
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
   SetCurrentDisplayLayout(layout);
   display_manager->SetDisplayUIScale(id1, 1.25f);
   display_controller->SetPrimaryDisplayId(id2);
-  int64 new_primary =
-      ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay().id();
+  int64 new_primary = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   display_controller->SetOverscanInsets(
       new_primary,
       gfx::Insets(10, 11, 12, 13));

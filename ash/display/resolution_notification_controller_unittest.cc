@@ -5,7 +5,7 @@
 #include "ash/display/resolution_notification_controller.h"
 
 #include "ash/display/display_manager.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -107,7 +107,7 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
     return;
 
   UpdateDisplay("300x300#300x300|200x200,250x250#250x250|200x200");
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::internal::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
@@ -115,7 +115,7 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
 
   // Changes the resolution and apply the result.
   SetDisplayResolutionAndNotify(
-      ScreenAsh::GetSecondaryDisplay(), gfx::Size(200, 200));
+      ScreenUtil::GetSecondaryDisplay(), gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
   gfx::Size resolution;
@@ -137,7 +137,7 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
     return;
 
   UpdateDisplay("300x300#300x300|200x200,250x250#250x250|200x200");
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::internal::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
@@ -145,7 +145,7 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
 
   // Changes the resolution and apply the result.
   SetDisplayResolutionAndNotify(
-      ScreenAsh::GetSecondaryDisplay(), gfx::Size(200, 200));
+      ScreenUtil::GetSecondaryDisplay(), gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
   gfx::Size resolution;
@@ -204,7 +204,7 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
     return;
 
   UpdateDisplay("100x100,150x150#150x150|200x200");
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::internal::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
@@ -212,7 +212,7 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
 
   // Changes the resolution and apply the result.
   SetDisplayResolutionAndNotify(
-      ScreenAsh::GetSecondaryDisplay(), gfx::Size(200, 200));
+      ScreenUtil::GetSecondaryDisplay(), gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
   gfx::Size resolution;
@@ -256,11 +256,11 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
     return;
 
   UpdateDisplay("300x300#300x300|200x200,200x200#250x250|200x200|100x100");
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::internal::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   SetDisplayResolutionAndNotify(
-      ScreenAsh::GetSecondaryDisplay(), gfx::Size(100, 100));
+      ScreenUtil::GetSecondaryDisplay(), gfx::Size(100, 100));
   ASSERT_TRUE(IsNotificationVisible());
 
   // Disconnects the secondary display and verifies it doesn't cause crashes.
@@ -279,12 +279,12 @@ TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
     return;
 
   UpdateDisplay("300x300#300x300|200x200,250x250#250x250|200x200");
-  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   ash::internal::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   SetDisplayResolutionAndNotify(
-      ScreenAsh::GetSecondaryDisplay(), gfx::Size(200, 200));
+      ScreenUtil::GetSecondaryDisplay(), gfx::Size(200, 200));
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
   gfx::Size resolution;
@@ -295,7 +295,7 @@ TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
   // Invokes SetDisplayResolutionAndNotify during the previous notification is
   // visible.
   SetDisplayResolutionAndNotify(
-      ScreenAsh::GetSecondaryDisplay(), gfx::Size(250, 250));
+      ScreenUtil::GetSecondaryDisplay(), gfx::Size(250, 250));
   EXPECT_FALSE(
       display_manager->GetSelectedResolutionForDisplayId(id2, &resolution));
 

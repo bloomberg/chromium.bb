@@ -4,7 +4,6 @@
 
 #include "ash/wm/overview/window_selector_panels.h"
 
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"

@@ -6,7 +6,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"

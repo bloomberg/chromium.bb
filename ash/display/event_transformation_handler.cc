@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_util.h"

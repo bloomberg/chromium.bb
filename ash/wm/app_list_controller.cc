@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -170,7 +170,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
       gfx::Rect applist_button_bounds = Shelf::ForWindow(container)->
           GetAppListButtonView()->GetBoundsInScreen();
       // We need the location of the button within the local screen.
-      applist_button_bounds = ash::ScreenAsh::ConvertRectFromScreen(
+      applist_button_bounds = ScreenUtil::ConvertRectFromScreen(
           root_window,
           applist_button_bounds);
       view->InitAsBubbleAttachedToAnchor(
@@ -196,7 +196,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     // By setting us as DnD recipient, the app list knows that we can
     // handle items.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshDisableDragAndDropAppListToLauncher)) {
+            switches::kAshDisableDragAndDropAppListToLauncher)) {
       SetDragAndDropHostOfCurrentAppList(
           Shelf::ForWindow(window)->GetDragAndDropHostForAppList());
     }
@@ -287,11 +287,11 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
         GetRootWindowController(target->GetRootWindow());
     if (root_controller) {
       aura::Window* menu_container = root_controller->GetContainer(
-          ash::internal::kShellWindowId_MenuContainer);
+          internal::kShellWindowId_MenuContainer);
       if (menu_container->Contains(target))
         return;
       aura::Window* keyboard_container = root_controller->GetContainer(
-          ash::internal::kShellWindowId_VirtualKeyboardContainer);
+          internal::kShellWindowId_VirtualKeyboardContainer);
       if (keyboard_container->Contains(target))
         return;
     }

@@ -48,7 +48,7 @@
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
@@ -361,7 +361,7 @@ void NativeAppWindowViews::InitializePanelWindow(
   if (ash::Shell::HasInstance()) {
     // Open a new panel on the target root.
     aura::Window* target = ash::Shell::GetTargetRootWindow();
-    params.bounds = ash::ScreenAsh::ConvertRectToScreen(
+    params.bounds = ash::ScreenUtil::ConvertRectToScreen(
         target, gfx::Rect(preferred_size_));
   } else {
     params.bounds = gfx::Rect(preferred_size_);

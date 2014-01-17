@@ -6,7 +6,7 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/user/tray_user.h"
@@ -135,7 +135,7 @@ void DragWindowResizer::CompleteDrag() {
       bounds.set_height(size.height());
 
     gfx::Rect dst_bounds =
-        ScreenAsh::ConvertRectToScreen(GetTarget()->parent(), bounds);
+        ScreenUtil::ConvertRectToScreen(GetTarget()->parent(), bounds);
 
     // Adjust the position so that the cursor is on the window.
     if (!dst_bounds.Contains(last_mouse_location_in_screen)) {
@@ -189,7 +189,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
       GetAnotherRootWindow(GetTarget()->GetRootWindow());
   const gfx::Rect root_bounds_in_screen(another_root->GetBoundsInScreen());
   const gfx::Rect bounds_in_screen =
-      ScreenAsh::ConvertRectToScreen(GetTarget()->parent(), bounds);
+      ScreenUtil::ConvertRectToScreen(GetTarget()->parent(), bounds);
   gfx::Rect bounds_in_another_root =
       gfx::IntersectRects(root_bounds_in_screen, bounds_in_screen);
   const float fraction_in_another_window =

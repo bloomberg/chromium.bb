@@ -8,7 +8,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -626,7 +626,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   // Window is wide enough not to get docked right away.
   window_->SetBoundsInScreen(gfx::Rect(800, 10, 400, 60),
-                             ScreenAsh::GetSecondaryDisplay());
+                             ScreenUtil::GetSecondaryDisplay());
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
   {
     EXPECT_EQ("800,10 400x60", window_->GetBoundsInScreen().ToString());
@@ -636,7 +636,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
     int bottom =
-        ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
+        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
     resizer->CompleteDrag();
     // With the resolution of 500x600 we will hit in this case the 50% screen
     // size setting.
@@ -838,7 +838,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
-  int left = ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
+  int left = ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
   int pixels_to_left_border = 50;
   int window_width = 300;
   int window_x = left - window_width + pixels_to_left_border;
@@ -855,7 +855,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
-  int right = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  int right = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
       window_.get()).right();
   int pixels_to_right_border = 50;
   int window_width = 300;
@@ -875,7 +875,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
 TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
-  int bottom = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  int bottom = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
       window_.get()).bottom();
   int delta_to_bottom = 50;
   int height = 380;
@@ -899,7 +899,7 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   // display.
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
-  int right = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  int right = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
       window_.get()).right();
   int pixels_to_right_border = 50;
   int window_width = 300;
@@ -1015,7 +1015,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPLEFT) {
 // Verifies a resize snap when dragging TOPRIGHT.
 TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                           window_.get()));
   scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
       window_.get(), gfx::Point(), HTTOPRIGHT));
@@ -1031,7 +1031,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
 // Verifies a resize snap when dragging BOTTOMRIGHT.
 TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                           window_.get()));
   scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOMRIGHT));
@@ -1048,7 +1048,7 @@ TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
 // Verifies a resize snap when dragging BOTTOMLEFT.
 TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                           window_.get()));
   scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOMLEFT));
@@ -1133,7 +1133,7 @@ TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_TOPLEFT) {
 // Verifies a resize sticks when dragging TOPRIGHT.
 TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_TOPRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                           window_.get()));
   scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
       window_.get(), gfx::Point(), HTTOPRIGHT));
@@ -1149,7 +1149,7 @@ TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_TOPRIGHT) {
 // Verifies a resize snap when dragging BOTTOMRIGHT.
 TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_BOTTOMRIGHT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                           window_.get()));
   scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOMRIGHT));
@@ -1165,7 +1165,7 @@ TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_BOTTOMRIGHT) {
 // Verifies a resize snap when dragging BOTTOMLEFT.
 TEST_F(WorkspaceWindowResizerTestSticky, StickToWorkArea_BOTTOMLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                           window_.get()));
   scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOMLEFT));

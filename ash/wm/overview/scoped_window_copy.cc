@@ -4,7 +4,7 @@
 
 #include "ash/wm/overview/scoped_window_copy.h"
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"

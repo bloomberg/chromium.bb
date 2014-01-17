@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_resizer.h"
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -149,7 +149,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
             dock_container->layout_manager());
 
     work_area.Union(dock_layout->docked_bounds());
-    work_area = ScreenAsh::ConvertRectFromScreen(GetTarget()->parent(),
+    work_area = ScreenUtil::ConvertRectFromScreen(GetTarget()->parent(),
                                                  work_area);
     if (details().size_change_direction & kBoundsChangeDirection_Horizontal) {
       if (IsRightEdge(details().window_component) &&
@@ -222,7 +222,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     screen_work_area.Union(dock_layout->docked_bounds());
     screen_work_area.Inset(kMinimumOnScreenArea, 0);
     gfx::Rect new_bounds_in_screen =
-        ScreenAsh::ConvertRectToScreen(parent, new_bounds);
+        ScreenUtil::ConvertRectToScreen(parent, new_bounds);
     if (!screen_work_area.Intersects(new_bounds_in_screen)) {
       // Make sure that the x origin does not leave the current display.
       new_bounds_in_screen.set_x(
@@ -230,7 +230,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
                    std::min(screen_work_area.right(),
                             new_bounds_in_screen.x())));
       new_bounds =
-          ScreenAsh::ConvertRectFromScreen(parent, new_bounds_in_screen);
+          ScreenUtil::ConvertRectFromScreen(parent, new_bounds_in_screen);
     }
   }
 

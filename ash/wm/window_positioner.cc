@@ -5,7 +5,7 @@
 #include "ash/wm/window_positioner.h"
 
 #include "ash/ash_switches.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -85,7 +85,7 @@ gfx::Rect GetWorkAreaForWindowInParent(aura::Window* window) {
       window->parent()->GetBoundsInScreen()).GetWorkAreaInsets());
   return work_area;
 #else
-  return ScreenAsh::GetDisplayWorkAreaBoundsInParent(window);
+  return ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
 #endif
 }
 

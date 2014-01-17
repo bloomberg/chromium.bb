@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -19,9 +19,9 @@
 namespace ash {
 namespace test {
 
-typedef test::AshTestBase ScreenAshTest;
+typedef test::AshTestBase ScreenUtilTest;
 
-TEST_F(ScreenAshTest, Bounds) {
+TEST_F(ScreenUtilTest, Bounds) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -38,32 +38,32 @@ TEST_F(ScreenAshTest, Bounds) {
 
   // Maximized bounds
   EXPECT_EQ("0,0 600x597",
-            ScreenAsh::GetMaximizedWindowBoundsInParent(
+            ScreenUtil::GetMaximizedWindowBoundsInParent(
                 primary->GetNativeView()).ToString());
   EXPECT_EQ("0,0 500x453",
-            ScreenAsh::GetMaximizedWindowBoundsInParent(
+            ScreenUtil::GetMaximizedWindowBoundsInParent(
                 secondary->GetNativeView()).ToString());
 
   // Display bounds
   EXPECT_EQ("0,0 600x600",
-            ScreenAsh::GetDisplayBoundsInParent(
+            ScreenUtil::GetDisplayBoundsInParent(
                 primary->GetNativeView()).ToString());
   EXPECT_EQ("0,0 500x500",
-            ScreenAsh::GetDisplayBoundsInParent(
+            ScreenUtil::GetDisplayBoundsInParent(
                 secondary->GetNativeView()).ToString());
 
   // Work area bounds
   EXPECT_EQ("0,0 600x597",
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                 primary->GetNativeView()).ToString());
   EXPECT_EQ("0,0 500x453",
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(
                 secondary->GetNativeView()).ToString());
 }
 
 // Test verifies a stable handling of secondary screen widget changes
 // (crbug.com/226132).
-TEST_F(ScreenAshTest, StabilityTest) {
+TEST_F(ScreenUtilTest, StabilityTest) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -80,7 +80,7 @@ TEST_F(ScreenAshTest, StabilityTest) {
   secondary->Close();
 }
 
-TEST_F(ScreenAshTest, ConvertRect) {
+TEST_F(ScreenUtilTest, ConvertRect) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -95,20 +95,20 @@ TEST_F(ScreenAshTest, ConvertRect) {
 
   EXPECT_EQ(
       "0,0 100x100",
-      ScreenAsh::ConvertRectFromScreen(
+      ScreenUtil::ConvertRectFromScreen(
           primary->GetNativeView(), gfx::Rect(10, 10, 100, 100)).ToString());
   EXPECT_EQ(
       "10,10 100x100",
-      ScreenAsh::ConvertRectFromScreen(
+      ScreenUtil::ConvertRectFromScreen(
           secondary->GetNativeView(), gfx::Rect(620, 20, 100, 100)).ToString());
 
   EXPECT_EQ(
       "40,40 100x100",
-      ScreenAsh::ConvertRectToScreen(
+      ScreenUtil::ConvertRectToScreen(
           primary->GetNativeView(), gfx::Rect(30, 30, 100, 100)).ToString());
   EXPECT_EQ(
       "650,50 100x100",
-      ScreenAsh::ConvertRectToScreen(
+      ScreenUtil::ConvertRectToScreen(
           secondary->GetNativeView(), gfx::Rect(40, 40, 100, 100)).ToString());
 }
 

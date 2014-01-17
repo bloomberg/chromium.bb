@@ -5,7 +5,7 @@
 #include "ash/wm/caption_buttons/frame_maximize_button.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
@@ -426,7 +426,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
   if (type == snap_type_) {
     if (snap_sizer_) {
       snap_sizer_->Update(LocationForSnapSizer(location));
-      phantom_window_->Show(ScreenAsh::ConvertRectToScreen(
+      phantom_window_->Show(ScreenUtil::ConvertRectToScreen(
           frame_->GetNativeView()->parent(),
           snap_sizer_->target_bounds()));
     }
@@ -490,12 +490,12 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
   switch (type) {
     case SNAP_LEFT:
     case SNAP_RIGHT:
-      return ScreenAsh::ConvertRectToScreen(window->parent(),
+      return ScreenUtil::ConvertRectToScreen(window->parent(),
                                             snap_sizer.target_bounds());
     case SNAP_MAXIMIZE:
-      return ScreenAsh::ConvertRectToScreen(
+      return ScreenUtil::ConvertRectToScreen(
           window->parent(),
-          ScreenAsh::GetMaximizedWindowBoundsInParent(window));
+          ScreenUtil::GetMaximizedWindowBoundsInParent(window));
     case SNAP_MINIMIZE: {
       gfx::Rect rect = GetMinimizeAnimationTargetBoundsInScreen(window);
       if (!rect.IsEmpty()) {

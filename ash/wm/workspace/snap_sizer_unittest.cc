@@ -5,7 +5,7 @@
 #include "ash/wm/workspace/snap_sizer.h"
 
 #include "ash/ash_switches.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
@@ -32,7 +32,7 @@ TEST_F(SnapSizerTest, MultipleDisplays) {
   const gfx::Rect kPrimaryDisplayWorkAreaBounds =
       ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
   const gfx::Rect kSecondaryDisplayWorkAreaBounds =
-      ScreenAsh::GetSecondaryDisplay().work_area();
+      ScreenUtil::GetSecondaryDisplay().work_area();
 
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
@@ -53,7 +53,7 @@ TEST_F(SnapSizerTest, MultipleDisplays) {
 
   // Move the window to the secondary display.
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
-                            ScreenAsh::GetSecondaryDisplay());
+                            ScreenUtil::GetSecondaryDisplay());
 
   SnapSizer::SnapWindow(window_state, SnapSizer::RIGHT_EDGE);
   expected = gfx::Rect(
@@ -254,8 +254,8 @@ TEST_F(SnapSizerTest, Default) {
   gfx::Rect expected(work_area);
   expected.set_width(work_area.width() * 0.9);
   EXPECT_EQ(expected.ToString(),
-            ScreenAsh::ConvertRectToScreen(window->parent(),
-                                           sizer.target_bounds()).ToString());
+            ScreenUtil::ConvertRectToScreen(window->parent(),
+                                            sizer.target_bounds()).ToString());
 
   // If the largest width the window can snap to is between 1024 and 1280, we
   // should snap to 1024.

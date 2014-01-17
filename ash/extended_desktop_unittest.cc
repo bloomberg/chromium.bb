@@ -5,7 +5,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
@@ -609,7 +609,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
 TEST_F(ExtendedDesktopTest, ConvertPoint) {
   if (!SupportsMultipleDisplays())
     return;
-  gfx::Screen* screen = Shell::GetInstance()->screen();
+  gfx::Screen* screen = Shell::GetScreen();
   UpdateDisplay("1000x600,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   gfx::Display display_1 = screen->GetDisplayNearestWindow(root_windows[0]);
@@ -727,7 +727,7 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
   aura::Window* window = aura::test::CreateTestWindowWithId(
       100, settings_bubble_container);
   window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
-                            ScreenAsh::GetSecondaryDisplay());
+                            ScreenUtil::GetSecondaryDisplay());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
   aura::Window* status_container =
@@ -735,7 +735,7 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
           internal::kShellWindowId_StatusContainer);
   window = aura::test::CreateTestWindowWithId(100, status_container);
   window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
-                            ScreenAsh::GetSecondaryDisplay());
+                            ScreenUtil::GetSecondaryDisplay());
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 }
 
@@ -752,7 +752,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   widget1->Show();
   EXPECT_EQ(root_windows[0], widget1->GetNativeView()->GetRootWindow());
   views::Widget* widget2 = CreateTestWidget(
-      ScreenAsh::GetSecondaryDisplay().bounds());
+      ScreenUtil::GetSecondaryDisplay().bounds());
   widget2->Show();
   EXPECT_EQ(root_windows[1], widget2->GetNativeView()->GetRootWindow());
 

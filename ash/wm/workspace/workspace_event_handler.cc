@@ -5,7 +5,6 @@
 #include "ash/wm/workspace/workspace_event_handler.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/coordinate_conversion.h"

@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -738,8 +738,8 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
@@ -810,8 +810,8 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
@@ -845,15 +845,15 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
   EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, docked_alignment(manager));
   EXPECT_EQ(w1->bounds().width(), docked_width(manager));
   // Desktop work area should now shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width() -
             docked_width(manager) - min_dock_gap(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   // Maximize the second window - Maximized area should be shrunk.
   const gfx::Rect restored_bounds = w2->bounds();
   wm::WindowState* w2_state = wm::GetWindowState(w2.get());
   w2_state->Maximize();
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width() -
             docked_width(manager) - min_dock_gap(),
             w2->bounds().width());
 
@@ -872,7 +872,7 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
   EXPECT_EQ(DOCKED_ALIGNMENT_NONE, docked_alignment(manager));
   EXPECT_EQ(0, docked_width(manager));
   // The second window should now get resized and take up the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
             w2->bounds().width());
 
   // Dock the first window to the left edge.
@@ -891,7 +891,7 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
   // Second window should still be in the desktop.
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
   // Maximized window should be shrunk.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width() -
             docked_width(manager) - min_dock_gap(),
             w2->bounds().width());
 
@@ -909,8 +909,8 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_LEFT, w1.get(), 20);
   // A window should be docked at the left edge.
@@ -992,9 +992,9 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
   EXPECT_EQ(std::max(w1->bounds().width(), w2->bounds().width()),
             docked_width(manager));
   // Desktop work area should now shrink by dock width.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width() -
             docked_width(manager) - min_dock_gap(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 }
 
 // Dock two windows, resize one.
@@ -1008,8 +1008,8 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width(),
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
@@ -1052,9 +1052,9 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
   EXPECT_EQ(w1->bounds().width(), w2->bounds().width());
   EXPECT_EQ(w1->bounds().width(), docked_width(manager));
   // Desktop work area should shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width() -
             docked_width(manager) - min_dock_gap(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   // Resize the first window left by more than the dock maximum width.
   // This should cause the window width to be restricted by maximum dock width.
@@ -1079,9 +1079,9 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
   EXPECT_EQ(w1->bounds().width(), w2->bounds().width());
   EXPECT_EQ(w1->bounds().width(), docked_width(manager));
   // Desktop work area should shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width() -
             docked_width(manager) - min_dock_gap(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   // Resize the first window right to get it completely inside the docked area.
   previous_width = w1->bounds().width();
@@ -1105,9 +1105,9 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
   // The dock should be as wide as w1 or w2.
   EXPECT_EQ(w1->bounds().width(), docked_width(manager));
   // Desktop work area should shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w2.get()).width() -
             docked_width(manager) - min_dock_gap(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
 
   // Resize the first window left to be overhang again.
   previous_width = w1->bounds().width();
@@ -1138,9 +1138,9 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
   // The second window should be still docked.
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
   // Desktop work area should be inset.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w1.get()).width() -
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w1.get()).width() -
             docked_width(manager) - min_dock_gap(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w1.get()).width());
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w1.get()).width());
 }
 
 // Dock a window, resize it and test that undocking it preserves the width.
@@ -1336,8 +1336,8 @@ TEST_P(DockedWindowResizerTest, DragToShelf) {
 
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w1.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w1.get()).width());
+  EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w1.get()).width(),
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w1.get()).width());
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // A window should be docked at the right edge.
@@ -1482,7 +1482,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
   internal::SnapSizer::SnapWindow(window_state,
                                   internal::SnapSizer::RIGHT_EDGE);
   // The window should be snapped at the right edge and the dock should close.
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(w1.get()));
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(w1.get()));
   EXPECT_EQ(0, docked_width(manager));
   EXPECT_EQ(work_area.height(), w1->bounds().height());
   EXPECT_EQ(work_area.right(), w1->bounds().right());
@@ -1506,7 +1506,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
                                   internal::SnapSizer::LEFT_EDGE);
   // The window should be snapped at the right edge and the dock should close.
   EXPECT_EQ(work_area.ToString(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w1.get()).ToString());
+            ScreenUtil::GetDisplayWorkAreaBoundsInParent(w1.get()).ToString());
   EXPECT_EQ(0, docked_width(manager));
   EXPECT_EQ(work_area.height(), w1->bounds().height());
   EXPECT_EQ(work_area.x(), w1->bounds().x());

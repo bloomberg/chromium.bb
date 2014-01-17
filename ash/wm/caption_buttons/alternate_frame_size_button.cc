@@ -5,7 +5,7 @@
 #include "ash/wm/caption_buttons/alternate_frame_size_button.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
@@ -191,7 +191,7 @@ void AlternateFrameSizeButton::UpdatePressedButton(
                          snap_type_ == SNAP_LEFT ?
                              SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE,
                          SnapSizer::OTHER_INPUT);
-    phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
+    phantom_window_controller_->Show(ScreenUtil::ConvertRectToScreen(
           frame_->GetNativeView()->parent(),
           snap_sizer.target_bounds()));
   } else {

@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -79,7 +79,7 @@ void AddLayerAnimationsForMinimize(aura::Window* window,
   gfx::Rect bounds = window->bounds();
   gfx::Rect target_bounds = GetMinimizeAnimationTargetBoundsInScreen(window);
   target_bounds =
-      ScreenAsh::ConvertRectFromScreen(window->parent(), target_bounds);
+      ScreenUtil::ConvertRectFromScreen(window->parent(), target_bounds);
 
   float scale_x = static_cast<float>(target_bounds.width()) / bounds.width();
   float scale_y = static_cast<float>(target_bounds.height()) / bounds.height();

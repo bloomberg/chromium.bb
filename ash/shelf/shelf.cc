@@ -9,7 +9,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -95,7 +95,7 @@ gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
 void Shelf::UpdateIconPositionForWindow(aura::Window* window) {
   shelf_view_->UpdatePanelIconPosition(
       GetLauncherIDForWindow(window),
-      ScreenAsh::ConvertRectFromScreen(
+      ScreenUtil::ConvertRectFromScreen(
           shelf_widget()->GetNativeView(),
           window->GetBoundsInScreen()).CenterPoint());
 }

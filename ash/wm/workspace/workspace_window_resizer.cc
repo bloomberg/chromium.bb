@@ -12,7 +12,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -400,7 +400,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
 
   aura::Window* root = NULL;
   gfx::Display display =
-      ScreenAsh::FindDisplayContainingPoint(location_in_screen);
+      ScreenUtil::FindDisplayContainingPoint(location_in_screen);
   // Track the last screen that the pointer was on to keep the snap phantom
   // window there.
   if (display.is_valid()) {
@@ -449,7 +449,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
        dock_layout_->is_dragged_window_docked()) &&
       (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
     if (!window_state()->HasRestoreBounds()) {
-      gfx::Rect initial_bounds = ScreenAsh::ConvertRectToScreen(
+      gfx::Rect initial_bounds = ScreenUtil::ConvertRectToScreen(
           GetTarget()->parent(), details().initial_bounds_in_parent);
       window_state()->SetRestoreBoundsInScreen(
           details().restore_bounds.IsEmpty() ?
@@ -555,7 +555,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(
     gfx::Rect* bounds) {
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(GetTarget()));
+  gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+      GetTarget()));
   int initial_size = PrimaryAxisSize(details().initial_bounds_in_parent.size());
   int current_size = PrimaryAxisSize(bounds->size());
   int start = PrimaryAxisCoordinate(bounds->right(), bounds->bottom());
@@ -695,7 +696,7 @@ void WorkspaceWindowResizer::CreateBucketsForAttached(
 void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
   if (UpdateMagnetismWindow(*bounds, kAllMagnetismEdges)) {
     gfx::Point point = OriginForMagneticAttach(
-        ScreenAsh::ConvertRectToScreen(GetTarget()->parent(), *bounds),
+        ScreenUtil::ConvertRectToScreen(GetTarget()->parent(), *bounds),
         magnetism_window_->GetBoundsInScreen(),
         magnetism_edge_);
     aura::client::GetScreenPositionClient(GetTarget()->GetRootWindow())->
@@ -709,10 +710,10 @@ void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
   const uint32 edges = WindowComponentToMagneticEdge(
       details().window_component);
   if (UpdateMagnetismWindow(*bounds, edges)) {
-    *bounds = ScreenAsh::ConvertRectFromScreen(
+    *bounds = ScreenUtil::ConvertRectFromScreen(
         GetTarget()->parent(),
         BoundsForMagneticResizeAttach(
-            ScreenAsh::ConvertRectToScreen(GetTarget()->parent(), *bounds),
+            ScreenUtil::ConvertRectToScreen(GetTarget()->parent(), *bounds),
             magnetism_window_->GetBoundsInScreen(),
             magnetism_edge_));
   }
@@ -722,7 +723,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
                                                    uint32 edges) {
   // |bounds| are in coordinates of original window's parent.
   gfx::Rect bounds_in_screen =
-      ScreenAsh::ConvertRectToScreen(GetTarget()->parent(), bounds);
+      ScreenUtil::ConvertRectToScreen(GetTarget()->parent(), bounds);
   MagnetismMatcher matcher(bounds_in_screen, edges);
 
   // If we snapped to a window then check it first. That way we don't bounce
@@ -778,7 +779,7 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(
       last_mouse_location_in_screen);
   gfx::Rect work_area =
-      ScreenAsh::ConvertRectFromScreen(GetTarget()->parent(),
+      ScreenUtil::ConvertRectFromScreen(GetTarget()->parent(),
                                        display.work_area());
   if (details().window_component == HTCAPTION) {
     // Adjust the bounds to the work area where the mouse cursor is located.
@@ -947,7 +948,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   SetDraggedWindowDocked(should_dock);
   snap_type_ = GetSnapType(location);
   if (dock_layout_->is_dragged_window_docked()) {
-    phantom_bounds = ScreenAsh::ConvertRectFromScreen(
+    phantom_bounds = ScreenUtil::ConvertRectFromScreen(
         GetTarget()->parent(), dock_layout_->dragged_bounds());
   }
 
@@ -960,7 +961,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
     snap_phantom_window_controller_.reset(
         new PhantomWindowController(GetTarget()));
   }
-  snap_phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
+  snap_phantom_window_controller_->Show(ScreenUtil::ConvertRectToScreen(
       GetTarget()->parent(), phantom_bounds));
 }
 
@@ -999,11 +1000,11 @@ SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.
-  gfx::Rect area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(GetTarget()));
+  gfx::Rect area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget()));
   if (details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
     // Increase tolerance for touch-snapping near the screen edges. This is only
     // necessary when the work area left or right edge is same as screen edge.
-    gfx::Rect display_bounds(ScreenAsh::GetDisplayBoundsInParent(GetTarget()));
+    gfx::Rect display_bounds(ScreenUtil::GetDisplayBoundsInParent(GetTarget()));
     int inset_left = 0;
     if (area.x() == display_bounds.x())
       inset_left = kScreenEdgeInsetForTouchResize;

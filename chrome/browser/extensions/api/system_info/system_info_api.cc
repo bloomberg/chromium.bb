@@ -23,8 +23,8 @@
 #include "ui/gfx/display_observer.h"
 
 #if defined(USE_ASH)
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ui/gfx/screen.h"
 #endif
 
 namespace extensions {

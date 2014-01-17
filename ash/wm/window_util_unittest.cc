@@ -4,7 +4,7 @@
 
 #include "ash/wm/window_util.h"
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/window.h"
 
@@ -33,7 +33,7 @@ TEST_F(WindowUtilTest, CenterWindow) {
   EXPECT_EQ("200,126 100x100", window->bounds().ToString());
   EXPECT_EQ("200,126 100x100", window->GetBoundsInScreen().ToString());
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
-                            ScreenAsh::GetSecondaryDisplay());
+                            ScreenUtil::GetSecondaryDisplay());
   wm::CenterWindow(window.get());
   EXPECT_EQ("250,126 100x100", window->bounds().ToString());
   EXPECT_EQ("750,126 100x100", window->GetBoundsInScreen().ToString());

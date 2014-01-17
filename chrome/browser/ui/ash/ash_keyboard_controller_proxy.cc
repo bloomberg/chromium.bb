@@ -188,7 +188,7 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
   // is set.
   if (GetInputMethod()->GetTextInputClient()) {
     gfx::Rect showing_area =
-        ash::DisplayController::GetPrimaryDisplay().work_area();
+        ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
     GetInputMethod()->GetTextInputClient()->EnsureCaretInRect(showing_area);
   }
 }

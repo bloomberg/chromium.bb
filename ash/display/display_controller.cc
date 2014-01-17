@@ -17,16 +17,14 @@
 #include "ash/host/root_window_host_factory.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
@@ -35,7 +33,6 @@
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -63,10 +60,6 @@ namespace {
 // during the shutdown instead of always keeping two display instances
 // (one here and another one in display_manager) in sync, which is error prone.
 int64 primary_display_id = gfx::Display::kInvalidDisplayID;
-gfx::Display* primary_display_for_shutdown = NULL;
-// Keeps the number of displays during the shutdown after
-// ash::Shell:: is deleted.
-int num_displays_for_shutdown = -1;
 
 // Specifies how long the display change should have been disabled
 // after each display change operations.
@@ -235,13 +228,9 @@ DisplayController::DisplayController()
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = gfx::Display::kInvalidDisplayID;
-  delete primary_display_for_shutdown;
-  primary_display_for_shutdown = NULL;
-  num_displays_for_shutdown = -1;
 }
 
 DisplayController::~DisplayController() {
-  DCHECK(primary_display_for_shutdown);
 }
 
 void DisplayController::Start() {
@@ -263,11 +252,6 @@ void DisplayController::Shutdown() {
   mirror_window_controller_.reset();
   virtual_keyboard_window_controller_.reset();
 
-  DCHECK(!primary_display_for_shutdown);
-  primary_display_for_shutdown = new gfx::Display(
-      GetDisplayManager()->GetDisplayForId(primary_display_id));
-  num_displays_for_shutdown = GetDisplayManager()->GetNumDisplays();
-
   Shell::GetScreen()->RemoveObserver(this);
   // Delete all root window controllers, which deletes root window
   // from the last so that the primary root window gets deleted last.
@@ -278,21 +262,6 @@ void DisplayController::Shutdown() {
     DCHECK(controller);
     delete controller;
   }
-}
-
-// static
-const gfx::Display& DisplayController::GetPrimaryDisplay() {
-  DCHECK_NE(primary_display_id, gfx::Display::kInvalidDisplayID);
-  if (primary_display_for_shutdown)
-    return *primary_display_for_shutdown;
-  return GetDisplayManager()->GetDisplayForId(primary_display_id);
-}
-
-// static
-int DisplayController::GetNumDisplays() {
-  if (num_displays_for_shutdown >= 0)
-    return num_displays_for_shutdown;
-  return GetDisplayManager()->GetNumDisplays();
 }
 
 void DisplayController::InitPrimaryDisplay() {
@@ -320,6 +289,11 @@ void DisplayController::AddObserver(Observer* observer) {
 
 void DisplayController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// static
+int64 DisplayController::GetPrimaryDisplayId() {
+  return primary_display_id;
 }
 
 aura::Window* DisplayController::GetPrimaryRootWindow() {
@@ -418,10 +392,10 @@ void DisplayController::SwapPrimaryDisplay() {
           &DisplayController::OnFadeOutForSwapDisplayFinished,
           base::Unretained(this)));
     } else {
-      SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
+      SetPrimaryDisplay(ScreenUtil::GetSecondaryDisplay());
     }
 #else
-    SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
+    SetPrimaryDisplay(ScreenUtil::GetSecondaryDisplay());
 #endif
   }
 }
@@ -461,7 +435,7 @@ void DisplayController::SetPrimaryDisplay(
   if (!non_primary_root)
     return;
 
-  gfx::Display old_primary_display = GetPrimaryDisplay();
+  gfx::Display old_primary_display = Shell::GetScreen()->GetPrimaryDisplay();
 
   // Swap root windows between current and new primary display.
   aura::Window* primary_root = root_windows_[primary_display_id];
@@ -490,7 +464,7 @@ void DisplayController::SetPrimaryDisplay(
   display_info_list.push_back(display_manager->GetDisplayInfo(
       primary_display_id));
   display_info_list.push_back(display_manager->GetDisplayInfo(
-      ScreenAsh::GetSecondaryDisplay().id()));
+      ScreenUtil::GetSecondaryDisplay().id()));
   GetDisplayManager()->set_force_bounds_changed(true);
   GetDisplayManager()->UpdateDisplays(display_info_list);
   GetDisplayManager()->set_force_bounds_changed(false);
@@ -553,70 +527,6 @@ bool DisplayController::UpdateWorkAreaOfDisplayNearestWindow(
   return GetDisplayManager()->UpdateWorkAreaOfDisplay(id, insets);
 }
 
-const gfx::Display& DisplayController::GetDisplayNearestWindow(
-    const aura::Window* window) const {
-  if (!window)
-    return GetPrimaryDisplay();
-  const aura::Window* root_window = window->GetRootWindow();
-  if (!root_window)
-    return GetPrimaryDisplay();
-  int64 id = internal::GetRootWindowSettings(root_window)->display_id;
-  // if id is |kInvaildDisplayID|, it's being deleted.
-  DCHECK(id != gfx::Display::kInvalidDisplayID);
-
-  internal::DisplayManager* display_manager = GetDisplayManager();
-  // RootWindow needs Display to determine its device scale factor
-  // for non desktop display.
-  if (display_manager->non_desktop_display().id() == id)
-    return display_manager->non_desktop_display();
-  return display_manager->GetDisplayForId(id);
-}
-
-const gfx::Display& DisplayController::GetDisplayNearestPoint(
-    const gfx::Point& point) const {
-  const gfx::Display& display =
-      GetDisplayManager()->FindDisplayContainingPoint(point);
-  if (display.is_valid())
-    return display;
-
-  // Fallback to the display that has the shortest Manhattan distance from
-  // the |point|. This is correct in the only areas that matter, namely in the
-  // corners between the physical screens.
-  int min_distance = INT_MAX;
-  const gfx::Display* nearest_display = NULL;
-  for (size_t i = 0; i < GetDisplayManager()->GetNumDisplays(); ++i) {
-    const gfx::Display& display = GetDisplayManager()->GetDisplayAt(i);
-    int distance = display.bounds().ManhattanDistanceToPoint(point);
-    if (distance < min_distance) {
-      min_distance = distance;
-      nearest_display = &display;
-    }
-  }
-  // There should always be at least one display that is less than INT_MAX away.
-  DCHECK(nearest_display);
-  return *nearest_display;
-}
-
-const gfx::Display& DisplayController::GetDisplayMatching(
-    const gfx::Rect& rect) const {
-  if (rect.IsEmpty())
-    return GetDisplayNearestPoint(rect.origin());
-
-  int max_area = 0;
-  const gfx::Display* matching = NULL;
-  for (size_t i = 0; i < GetDisplayManager()->GetNumDisplays(); ++i) {
-    const gfx::Display& display = GetDisplayManager()->GetDisplayAt(i);
-    gfx::Rect intersect = gfx::IntersectRects(display.bounds(), rect);
-    int area = intersect.width() * intersect.height();
-    if (area > max_area) {
-      max_area = area;
-      matching = &display;
-    }
-  }
-  // Fallback to the primary display if there is no matching display.
-  return matching ? *matching : GetPrimaryDisplay();
-}
-
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   const internal::DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
@@ -669,7 +579,7 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
       return;
     }
     DCHECK_EQ(1U, root_windows_.size());
-    primary_display_id = ScreenAsh::GetSecondaryDisplay().id();
+    primary_display_id = ScreenUtil::GetSecondaryDisplay().id();
     aura::Window* primary_root = root_to_delete;
 
     // Delete the other root instead.
@@ -695,8 +605,10 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
 }
 
 void DisplayController::OnWindowTreeHostResized(const aura::RootWindow* root) {
+  gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
+      const_cast<aura::Window*>(root->window()));
+
   internal::DisplayManager* display_manager = GetDisplayManager();
-  gfx::Display display = GetDisplayNearestWindow(root->window());
   if (display_manager->UpdateDisplayBounds(
           display.id(),
           root->host()->GetBounds())) {
@@ -728,9 +640,9 @@ void DisplayController::CloseNonDesktopDisplay() {
 void DisplayController::PreDisplayConfigurationChange(bool clear_focus) {
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
   focus_activation_store_->Store(clear_focus);
-
-  gfx::Point point_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
-  gfx::Display display = GetDisplayNearestPoint(point_in_screen);
+  gfx::Screen* screen = Shell::GetScreen();
+  gfx::Point point_in_screen = screen->GetCursorScreenPoint();
+  gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
   aura::Window* root_window = GetRootWindowForDisplayId(display.id());
 
   aura::client::ScreenPositionClient* client =
@@ -763,7 +675,8 @@ void DisplayController::PostDisplayConfigurationChange() {
       // ignored. Happens when a) default layout's primary id
       // doesn't exist, or b) the primary_id has already been
       // set to the same and didn't update it.
-      layout_store->UpdatePrimaryDisplayId(pair, GetPrimaryDisplay().id());
+      layout_store->UpdatePrimaryDisplayId(
+          pair, Shell::GetScreen()->GetPrimaryDisplay().id());
     }
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
@@ -806,7 +719,7 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
 
 void DisplayController::OnFadeOutForSwapDisplayFinished() {
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
+  SetPrimaryDisplay(ScreenUtil::GetSecondaryDisplay());
   Shell::GetInstance()->output_configurator_animation()->StartFadeInAnimation();
 #endif
 }

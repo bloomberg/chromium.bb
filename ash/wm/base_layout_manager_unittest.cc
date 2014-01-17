@@ -4,7 +4,7 @@
 
 #include "ash/wm/base_layout_manager.h"
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -57,7 +57,7 @@ TEST_F(BaseLayoutManagerTest, Maximize) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   // Maximized window fills the work area, not the whole display.
   EXPECT_EQ(
-      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window->bounds().ToString());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
@@ -132,16 +132,16 @@ TEST_F(BaseLayoutManagerTest, MaximizeRootWindowResize) {
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   gfx::Rect initial_work_area_bounds =
-      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get());
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get());
   EXPECT_EQ(initial_work_area_bounds.ToString(), window->bounds().ToString());
   // Enlarge the root window.  We should still match the work area size.
   UpdateDisplay("900x700");
   EXPECT_EQ(
-      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window->bounds().ToString());
   EXPECT_NE(
       initial_work_area_bounds.ToString(),
-      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString());
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString());
 }
 
 // Tests normal->fullscreen->normal.
@@ -218,7 +218,7 @@ TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
   // It should have the default maximized window bounds, inset by the grid size.
   int grid_size = internal::WorkspaceWindowResizer::kScreenEdgeInset;
   gfx::Rect max_bounds =
-      ash::ScreenAsh::GetMaximizedWindowBoundsInParent(window.get());
+      ash::ScreenUtil::GetMaximizedWindowBoundsInParent(window.get());
   max_bounds.Inset(grid_size, grid_size);
   EXPECT_EQ(max_bounds.ToString(), window->bounds().ToString());
 }
@@ -292,16 +292,16 @@ TEST_F(BaseLayoutManagerTest, NotResizeWhenScreenIsLocked) {
       internal::ShelfLayoutManager::ForShelf(window.get());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  window->SetBounds(ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()));
+  window->SetBounds(ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()));
   gfx::Rect window_bounds = window->bounds();
   EXPECT_EQ(
-      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window_bounds.ToString());
 
   Shell::GetInstance()->session_state_delegate()->LockScreen();
   shelf->UpdateVisibilityState();
   EXPECT_NE(
-      ScreenAsh::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window_bounds.ToString());
 
   Shell::GetInstance()->session_state_delegate()->UnlockScreen();

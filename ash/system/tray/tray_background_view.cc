@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -580,7 +580,7 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
         rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
         rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
         0, 0);
-    rect = ScreenAsh::ConvertRectToScreen(target_root, rect);
+    rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
   }
   return rect;
 }

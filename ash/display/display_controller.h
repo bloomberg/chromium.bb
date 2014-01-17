@@ -72,13 +72,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   void Start();
   void Shutdown();
 
-  // Returns primary display. This is safe to use after ash::Shell is
-  // deleted.
-  static const gfx::Display& GetPrimaryDisplay();
-
-  // Returns the number of display. This is safe to use after
-  // ash::Shell is deleted.
-  static int GetNumDisplays();
+  // Returns primary display's ID.
+  // TODO(oshima): Move this out from DisplayController;
+  static int64 GetPrimaryDisplayId();
 
   internal::MirrorWindowController* mirror_window_controller() {
     return mirror_window_controller_.get();
@@ -142,19 +138,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // Sets the work area's |insets| to the display assigned to |window|.
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
-
-  // Returns the display object nearest given |point|.
-  const gfx::Display& GetDisplayNearestPoint(
-      const gfx::Point& point) const;
-
-  // Returns the display object nearest given |window|.
-  const gfx::Display& GetDisplayNearestWindow(
-      const aura::Window* window) const;
-
-  // Returns the display that most closely intersects |match_rect|.
-  const gfx::Display& GetDisplayMatching(
-      const gfx::Rect& match_rect)const;
-
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
       const gfx::Display& display) OVERRIDE;

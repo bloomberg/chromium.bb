@@ -10,7 +10,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/output_configurator_animation.h"
 #include "ash/display/resolution_notification_controller.h"
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"

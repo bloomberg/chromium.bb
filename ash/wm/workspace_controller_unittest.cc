@@ -8,7 +8,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -183,9 +183,9 @@ TEST_F(WorkspaceControllerTest, SingleMaximizeWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 
   EXPECT_EQ(w1.get(), GetDesktop()->children()[0]);
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()).width(),
+  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()).width(),
             w1->bounds().width());
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()).height(),
+  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()).height(),
             w1->bounds().height());
 
   // Restore the window.
@@ -215,7 +215,7 @@ TEST_F(WorkspaceControllerTest, FullscreenWithNormalWindow) {
   EXPECT_EQ(w2.get(), GetDesktop()->children()[1]);
 
   gfx::Rect work_area(
-      ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()));
+      ScreenUtil::GetMaximizedWindowBoundsInParent(w1.get()));
   EXPECT_EQ(work_area.width(), w2->bounds().width());
   EXPECT_EQ(work_area.height(), w2->bounds().height());
 
@@ -443,7 +443,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(
+  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(
                 w2->parent()).ToString(),
             w2->bounds().ToString());
 
@@ -452,7 +452,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
-  EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
+  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
             w2->bounds().ToString());
 
   // Turn off auto-hide, switch back to w2 (maximized) and verify overlap.

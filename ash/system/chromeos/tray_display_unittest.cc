@@ -6,7 +6,7 @@
 
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
@@ -61,7 +61,7 @@ base::string16 GetFirstDisplayName() {
 base::string16 GetSecondDisplayName() {
   return base::UTF8ToUTF16(
       Shell::GetInstance()->display_manager()->GetDisplayNameForId(
-          ScreenAsh::GetSecondaryDisplay().id()));
+          ScreenUtil::GetSecondaryDisplay().id()));
 }
 
 base::string16 GetMirroredDisplayName() {
@@ -263,7 +263,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   // Closed lid mode.
   display_manager->SetSoftwareMirroring(false);
   UpdateDisplay("400x400@1.5,200x200");
-  gfx::Display::SetInternalDisplayId(ScreenAsh::GetSecondaryDisplay().id());
+  gfx::Display::SetInternalDisplayId(ScreenUtil::GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
   tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
@@ -286,7 +286,7 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
 
   // Extended
   UpdateDisplay("400x400,200x200@1.5");
-  const gfx::Display& secondary_display = ScreenAsh::GetSecondaryDisplay();
+  const gfx::Display& secondary_display = ScreenUtil::GetSecondaryDisplay();
 
   tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   EXPECT_TRUE(IsDisplayVisibleInTray());
@@ -339,7 +339,7 @@ TEST_F(TrayDisplayTest, OverscanDisplay) {
 
   // reset the overscan.
   display_manager->SetOverscanInsets(
-      ScreenAsh::GetSecondaryDisplay().id(), gfx::Insets());
+      ScreenUtil::GetSecondaryDisplay().id(), gfx::Insets());
   headline = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
       l10n_util::GetStringFUTF16(
@@ -496,7 +496,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
 
   // Enters closed lid mode.
   UpdateDisplay("400x400@1.5,200x200");
-  gfx::Display::SetInternalDisplayId(ScreenAsh::GetSecondaryDisplay().id());
+  gfx::Display::SetInternalDisplayId(ScreenUtil::GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
             GetDisplayNotificationText());

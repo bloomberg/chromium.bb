@@ -7,7 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -49,7 +49,7 @@ class TouchHudTestBase : public test::AshTestBase {
   }
 
   const gfx::Display& GetSecondaryDisplay() {
-    return ScreenAsh::GetSecondaryDisplay();
+    return ScreenUtil::GetSecondaryDisplay();
   }
 
   void SetupSingleDisplay() {

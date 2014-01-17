@@ -6,13 +6,14 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/common/extensions/api/system_display.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/memory/scoped_ptr.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#endif
 
 namespace extensions {
 

@@ -9,7 +9,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_helper.h"

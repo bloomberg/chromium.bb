@@ -414,8 +414,6 @@ class ASH_EXPORT Shell
     return shelf_item_delegate_manager_.get();
   }
 
-  ScreenAsh* screen() { return screen_; }
-
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
 
@@ -581,8 +579,6 @@ class ASH_EXPORT Shell
   // If set before the Shell is initialized, the mouse cursor will be hidden
   // when the screen is initially created.
   static bool initially_hide_cursor_;
-
-  ScreenAsh* screen_;
 
   // When no explicit target display/RootWindow is given, new windows are
   // created on |scoped_target_root_window_| , unless NULL in

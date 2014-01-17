@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -373,8 +373,8 @@ void WindowOverview::PositionWindowsOnRoot(
     return;
 
   gfx::Size window_size;
-  gfx::Rect total_bounds = ScreenAsh::ConvertRectToScreen(root_window,
-      ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+  gfx::Rect total_bounds = ScreenUtil::ConvertRectToScreen(root_window,
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(
       Shell::GetContainer(root_window,
                           internal::kShellWindowId_DefaultContainer)));
 

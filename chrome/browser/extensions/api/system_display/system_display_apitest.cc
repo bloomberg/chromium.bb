@@ -14,7 +14,7 @@
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/screen_ash.h"
+#include "ash/display/screen_ash.h"
 #include "ash/shell.h"
 #endif
 
@@ -185,7 +185,7 @@ class SystemDisplayApiTest: public ExtensionApiTest {
   virtual void CleanUpOnMainThread() OVERRIDE {
 #if defined(OS_CHROMEOS)
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                   ash::Shell::GetInstance()->screen());
+                                   ash::Shell::GetScreen());
 #endif
     ExtensionApiTest::CleanUpOnMainThread();
   }

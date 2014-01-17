@@ -7,7 +7,7 @@
 #include "ash/display/display_layout.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -108,7 +108,7 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
 
   UpdateDisplay("400x300,500x400");
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
-                            ScreenAsh::GetSecondaryDisplay());
+                            ScreenUtil::GetSecondaryDisplay());
   EXPECT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
   window_state->Minimize();
   // This will not be used for un-minimizing window.

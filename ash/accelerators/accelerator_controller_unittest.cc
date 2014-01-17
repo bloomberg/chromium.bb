@@ -9,7 +9,6 @@
 #include "ash/caps_lock_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness_control_delegate.h"
@@ -28,6 +27,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/gfx/screen.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>

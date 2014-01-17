@@ -6,7 +6,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -38,7 +38,7 @@ namespace {
 
 DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
     const gfx::Point& point) {
-  gfx::Display display = ScreenAsh::FindDisplayContainingPoint(point);
+  gfx::Display display = ScreenUtil::FindDisplayContainingPoint(point);
   if (!display.is_valid())
     return NULL;
   aura::Window* root = Shell::GetInstance()->display_controller()->
@@ -157,7 +157,7 @@ void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
   if (!was_docked_)
     return;
   DockedAlignment dock_alignment = dock_layout_->CalculateAlignment();
-  gfx::Rect dock_bounds = ScreenAsh::ConvertRectFromScreen(
+  gfx::Rect dock_bounds = ScreenUtil::ConvertRectFromScreen(
       GetTarget()->parent(),
       dock_layout_->dock_container()->GetBoundsInScreen());
 
@@ -227,7 +227,7 @@ void DockedWindowResizer::FinishedDragging(
   // When drag is completed the dragged docked window is resized to the bounds
   // calculated by the layout manager that conform to other docked windows.
   if (!is_attached_panel && is_docked_ && !is_resized) {
-    gfx::Rect bounds = ScreenAsh::ConvertRectFromScreen(
+    gfx::Rect bounds = ScreenUtil::ConvertRectFromScreen(
         window->parent(), dock_layout_->dragged_bounds());
     if (!bounds.IsEmpty() && bounds.width() != window->bounds().width()) {
       window->SetBounds(bounds);

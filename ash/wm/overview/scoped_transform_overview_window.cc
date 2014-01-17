@@ -4,7 +4,7 @@
 
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/scoped_window_copy.h"
 #include "ash/wm/window_state.h"
@@ -139,7 +139,7 @@ gfx::Rect ScopedTransformOverviewWindow::GetBoundsInScreen() const {
   gfx::Rect bounds;
   aura::Window* window = window_;
   while (window) {
-    bounds.Union(ScreenAsh::ConvertRectToScreen(window->parent(),
+    bounds.Union(ScreenUtil::ConvertRectToScreen(window->parent(),
                                                 window->GetTargetBounds()));
     window = GetModalTransientParent(window);
   }
@@ -245,7 +245,7 @@ void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
       window_copies_.begin(); iter != window_copies_.end(); ++iter) {
     SetTransformOnWindow(
         (*iter)->GetWindow(),
-        TranslateTransformOrigin(ScreenAsh::ConvertRectToScreen(
+        TranslateTransformOrigin(ScreenUtil::ConvertRectToScreen(
             (*iter)->GetWindow()->parent(),
             (*iter)->GetWindow()->GetTargetBounds()).origin() - origin,
             transform),
@@ -253,7 +253,7 @@ void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
   }
   SetTransformOnWindowAndAllTransientChildren(
       window,
-      TranslateTransformOrigin(ScreenAsh::ConvertRectToScreen(
+      TranslateTransformOrigin(ScreenUtil::ConvertRectToScreen(
           window->parent(), window->GetTargetBounds()).origin() - origin,
           transform),
       animate);

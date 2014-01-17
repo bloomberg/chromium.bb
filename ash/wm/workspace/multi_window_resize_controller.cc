@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -398,7 +398,7 @@ void MultiWindowResizeController::ShowNow() {
       views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   resize_widget_->GetNativeWindow()->SetName("MultiWindowResizeController");
   resize_widget_->SetContentsView(view);
-  show_bounds_in_screen_ = ScreenAsh::ConvertRectToScreen(
+  show_bounds_in_screen_ = ScreenUtil::ConvertRectToScreen(
       windows_.window1->parent(),
       CalculateResizeWidgetBounds(show_location_in_parent_));
   resize_widget_->SetBounds(show_bounds_in_screen_);
@@ -447,7 +447,7 @@ void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,
   aura::client::GetScreenPositionClient(windows_.window1->GetRootWindow())->
       ConvertPointFromScreen(windows_.window1->parent(), &location_in_parent);
   window_resizer_->Drag(location_in_parent, event_flags);
-  gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(
+  gfx::Rect bounds = ScreenUtil::ConvertRectToScreen(
       windows_.window1->parent(),
       CalculateResizeWidgetBounds(location_in_parent));
 

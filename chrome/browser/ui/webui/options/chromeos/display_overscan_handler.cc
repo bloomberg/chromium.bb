@@ -7,7 +7,7 @@
 #include <string>
 
 #include "ash/display/display_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -18,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace chromeos {
 namespace options {
@@ -108,7 +109,7 @@ void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
     return;
   }
 
-  const gfx::Display& display = ash::ScreenAsh::GetDisplayForId(display_id);
+  const gfx::Display& display = ash::ScreenUtil::GetDisplayForId(display_id);
   DCHECK(display.is_valid());
   if (!display.is_valid())
     return;

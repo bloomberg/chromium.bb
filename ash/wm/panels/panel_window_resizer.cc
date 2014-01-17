@@ -5,7 +5,7 @@
 #include "ash/wm/panels/panel_window_resizer.h"
 
 #include "ash/display/display_controller.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -136,7 +136,7 @@ bool PanelWindowResizer::AttachToLauncher(const gfx::Rect& bounds,
   if (panel_container_) {
     internal::PanelLayoutManager* panel_layout_manager =
         GetPanelLayoutManager(panel_container_);
-    gfx::Rect launcher_bounds = ScreenAsh::ConvertRectFromScreen(
+    gfx::Rect launcher_bounds = ScreenUtil::ConvertRectFromScreen(
         GetTarget()->parent(),
         panel_layout_manager->shelf()->
         shelf_widget()->GetWindowBoundsInScreen());

@@ -6,7 +6,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -20,6 +20,8 @@
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
+#include "ui/gfx/screen_type_delegate.h"
 
 namespace ash {
 namespace internal {
@@ -273,7 +275,7 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   EXPECT_EQ("13,12,11,10",
             updated_display_info2.overscan_insets_in_dip().ToString());
   EXPECT_EQ("500,0 378x376",
-            ScreenAsh::GetSecondaryDisplay().bounds().ToString());
+            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 
   // Make sure that SetOverscanInsets() is idempotent.
   display_manager()->SetOverscanInsets(display_info1.id(), gfx::Insets());
@@ -340,11 +342,11 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
 
   // Make sure switching primary display applies the overscan offset only once.
   ash::Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
-      ScreenAsh::GetSecondaryDisplay());
+      ScreenUtil::GetSecondaryDisplay());
   EXPECT_EQ("-500,0 500x500",
-            ScreenAsh::GetSecondaryDisplay().bounds().ToString());
+            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("0,0 500x500",
-            GetDisplayInfo(ScreenAsh::GetSecondaryDisplay()).
+            GetDisplayInfo(ScreenUtil::GetSecondaryDisplay()).
             bounds_in_native().ToString());
   EXPECT_EQ("0,501 400x400",
             GetDisplayInfo(Shell::GetScreen()->GetPrimaryDisplay()).
@@ -655,7 +657,7 @@ TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   EXPECT_EQ("-300,0 300x300",
-            ScreenAsh::GetSecondaryDisplay().bounds().ToString());
+            ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 
   aura::Env* env = aura::Env::GetInstance();
 
@@ -1179,6 +1181,35 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   EXPECT_EQ("100x200", dispatcher0->host()->GetBounds().size().ToString());
   EXPECT_EQ("300,500", dispatcher1->host()->GetBounds().origin().ToString());
   EXPECT_EQ("200x300", dispatcher1->host()->GetBounds().size().ToString());
+}
+
+
+class ScreenShutdownTest : public test::AshTestBase {
+ public:
+  ScreenShutdownTest() {
+  }
+  virtual ~ScreenShutdownTest() {}
+
+  virtual void TearDown() OVERRIDE {
+    gfx::Screen* orig_screen =
+        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+    AshTestBase::TearDown();
+    gfx::Screen* screen =
+        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+    EXPECT_NE(orig_screen, screen);
+    EXPECT_EQ(2, screen->GetNumDisplays());
+    EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
+    std::vector<gfx::Display> all = screen->GetAllDisplays();
+    EXPECT_EQ("500x300", all[0].size().ToString());
+    EXPECT_EQ("800x400", all[1].size().ToString());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenShutdownTest);
+};
+
+TEST_F(DisplayManagerTest, ScreenAfterShutdown) {
+  UpdateDisplay("500x300,800x400");
 }
 
 }  // namespace internal

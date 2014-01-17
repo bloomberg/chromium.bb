@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <map>
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
@@ -232,7 +232,7 @@ class PanelCalloutWidget : public views::Widget {
     params.keep_on_top = true;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = parent;
-    params.bounds = ScreenAsh::ConvertRectToScreen(parent, gfx::Rect());
+    params.bounds = ScreenUtil::ConvertRectToScreen(parent, gfx::Rect());
     params.bounds.set_width(kArrowWidth);
     params.bounds.set_height(kArrowHeight);
     // Why do we need this and can_activate = false?
@@ -586,7 +586,7 @@ void PanelLayoutManager::Relayout() {
   ShelfAlignment alignment = shelf_->shelf_widget()->GetAlignment();
   bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
                     alignment == SHELF_ALIGNMENT_BOTTOM;
-  gfx::Rect shelf_bounds = ash::ScreenAsh::ConvertRectFromScreen(
+  gfx::Rect shelf_bounds = ash::ScreenUtil::ConvertRectFromScreen(
       panel_container_, shelf_->shelf_widget()->GetWindowBoundsInScreen());
   int panel_start_bounds = kPanelIdealSpacing;
   int panel_end_bounds = horizontal ?
@@ -630,8 +630,8 @@ void PanelLayoutManager::Relayout() {
       DCHECK(!active_panel);
       active_panel = panel;
     }
-    icon_bounds = ScreenAsh::ConvertRectFromScreen(panel_container_,
-                                                   icon_bounds);
+    icon_bounds = ScreenUtil::ConvertRectFromScreen(panel_container_,
+                                                    icon_bounds);
     gfx::Point icon_origin = icon_bounds.origin();
     VisiblePanelPositionInfo position_info;
     int icon_start = horizontal ? icon_origin.x() : icon_origin.y();
@@ -796,8 +796,9 @@ void PanelLayoutManager::UpdateCallouts() {
     views::Widget* callout_widget = iter->callout_widget;
 
     gfx::Rect current_bounds = panel->GetBoundsInScreen();
-    gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(panel->parent(),
-                                                      panel->GetTargetBounds());
+    gfx::Rect bounds = ScreenUtil::ConvertRectToScreen(
+        panel->parent(),
+        panel->GetTargetBounds());
     gfx::Rect icon_bounds = shelf_->GetScreenBoundsOfItemIconForWindow(panel);
     if (icon_bounds.IsEmpty() || !panel->layer()->GetTargetVisibility() ||
         panel == dragged_panel_) {
@@ -838,7 +839,7 @@ void PanelLayoutManager::UpdateCallouts() {
         callout_bounds.set_y(bounds.y() - callout_bounds.height());
         break;
     }
-    callout_bounds = ScreenAsh::ConvertRectFromScreen(
+    callout_bounds = ScreenUtil::ConvertRectFromScreen(
         callout_widget->GetNativeWindow()->parent(),
         callout_bounds);
 

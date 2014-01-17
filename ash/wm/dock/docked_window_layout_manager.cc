@@ -5,7 +5,7 @@
 #include "ash/wm/dock/docked_window_layout_manager.h"
 
 #include "ash/ash_switches.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -311,9 +311,9 @@ struct CompareWindowPos {
     // reordered.
     aura::Window* win1(window_with_height1.window());
     aura::Window* win2(window_with_height2.window());
-    gfx::Rect win1_bounds = ScreenAsh::ConvertRectToScreen(
+    gfx::Rect win1_bounds = ScreenUtil::ConvertRectToScreen(
         win1->parent(), win1->GetTargetBounds());
-    gfx::Rect win2_bounds = ScreenAsh::ConvertRectToScreen(
+    gfx::Rect win2_bounds = ScreenUtil::ConvertRectToScreen(
         win2->parent(), win2->GetTargetBounds());
     win1_bounds.set_height(window_with_height1.height_);
     win2_bounds.set_height(window_with_height2.height_);
@@ -382,7 +382,7 @@ class DockedWindowLayoutManager::ShelfWindowObserver : public WindowObserver {
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE {
-    shelf_bounds_in_screen_ = ScreenAsh::ConvertRectToScreen(
+    shelf_bounds_in_screen_ = ScreenUtil::ConvertRectToScreen(
         window->parent(), new_bounds);
     docked_layout_manager_->OnShelfBoundsChanged();
   }
@@ -1153,7 +1153,7 @@ void DockedWindowLayoutManager::FanOutChildren(
   for (std::vector<WindowWithHeight>::iterator iter = visible_windows->begin();
        iter != visible_windows->end(); ++iter) {
     aura::Window* window = iter->window();
-    gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(
+    gfx::Rect bounds = ScreenUtil::ConvertRectToScreen(
         window->parent(), window->GetTargetBounds());
     // A window is extended or shrunk to be as close as possible to the ideal
     // docked area width. Windows that were resized by a user are kept at their
@@ -1200,7 +1200,7 @@ void DockedWindowLayoutManager::FanOutChildren(
     // If the following asserts it is probably because not all the children
     // have been removed when dock was closed.
     DCHECK_NE(alignment_, DOCKED_ALIGNMENT_NONE);
-    bounds = ScreenAsh::ConvertRectFromScreen(dock_container_, bounds);
+    bounds = ScreenUtil::ConvertRectFromScreen(dock_container_, bounds);
     if (bounds != window->GetTargetBounds()) {
       ui::Layer* layer = window->layer();
       ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());

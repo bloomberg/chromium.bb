@@ -5,7 +5,7 @@
 #include "ash/display/screen_position_controller.h"
 
 #include "ash/display/display_manager.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -230,7 +230,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenRotate) {
 
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
-                             ScreenAsh::GetSecondaryDisplay());
+                             ScreenUtil::GetSecondaryDisplay());
   aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
@@ -262,7 +262,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenUIScale) {
 
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
-                             ScreenAsh::GetSecondaryDisplay());
+                             ScreenUtil::GetSecondaryDisplay());
   aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());

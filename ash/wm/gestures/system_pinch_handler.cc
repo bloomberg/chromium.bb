@@ -4,7 +4,7 @@
 
 #include "ash/wm/gestures/system_pinch_handler.h"
 
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -114,9 +114,9 @@ gfx::Rect SystemPinchHandler::GetPhantomWindowScreenBounds(
     const gfx::Point& point) {
   if (pinch_factor_ > kPinchThresholdForMaximize) {
     phantom_state_ = PHANTOM_WINDOW_MAXIMIZED;
-    return ScreenAsh::ConvertRectToScreen(
+    return ScreenUtil::ConvertRectToScreen(
         target_->parent(),
-        ScreenAsh::GetMaximizedWindowBoundsInParent(target_));
+        ScreenUtil::GetMaximizedWindowBoundsInParent(target_));
   }
 
   if (pinch_factor_ < kPinchThresholdForMinimize) {

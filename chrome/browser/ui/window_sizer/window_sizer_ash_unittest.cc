@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/scoped_target_root_window.h"
-#include "ash/screen_ash.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
@@ -23,6 +23,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/gfx/screen.h"
 
 typedef ash::test::AshTestBase WindowSizerAshTest;
 
@@ -607,7 +608,7 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
   gfx::Rect primary_bounds = ash::Shell::GetInstance()->GetScreen()->
       GetPrimaryDisplay().bounds();
-  gfx::Rect secondary_bounds = ash::ScreenAsh::GetSecondaryDisplay().bounds();
+  gfx::Rect secondary_bounds = ash::ScreenUtil::GetSecondaryDisplay().bounds();
 
   ash::Shell::GetInstance()->set_target_root_window(
       ash::Shell::GetPrimaryRootWindow());
