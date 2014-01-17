@@ -191,7 +191,6 @@ TEST(KURLTest, Setters)
         const char* pass;
         const char* path;
         const char* query;
-        const char* ref;
 
         // The full expected URL with the given "set" applied.
         const char* expectedProtocol;
@@ -201,28 +200,25 @@ TEST(KURLTest, Setters)
         const char* expectedPass;
         const char* expectedPath;
         const char* expectedQuery;
-        const char* expectedRef;
     } cases[] = {
-         // url                                   protocol      host               port  user  pass    path            query      ref
-        {"http://www.google.com/",                "https",      "news.google.com", 8888, "me", "pass", "/foo",         "?q=asdf", "heehee",
+        // url                                    protocol      host               port  user  pass    path            query
+        {"http://www.google.com/",                "https",      "news.google.com", 8888, "me", "pass", "/foo",         "?q=asdf",
                                                   "https://www.google.com/",
                                                                 "https://news.google.com/",
                                                                                    "https://news.google.com:8888/",
                                                                                          "https://me@news.google.com:8888/",
                                                                                                "https://me:pass@news.google.com:8888/",
                                                                                                        "https://me:pass@news.google.com:8888/foo",
-                                                                                                                       "https://me:pass@news.google.com:8888/foo?q=asdf",
-                                                                                                                                  "https://me:pass@news.google.com:8888/foo?q=asdf#heehee"},
+                                                                                                                       "https://me:pass@news.google.com:8888/foo?q=asdf"},
 
-        {"https://me:pass@google.com:88/a?f#b",   "http",       "goo.com",         92,   "",   "",     "/",            0,      "",
+        {"https://me:pass@google.com:88/a?f#b",   "http",       "goo.com",         92,   "",   "",     "/",            0,
                                                   "http://me:pass@google.com:88/a?f#b",
                                                                 "http://me:pass@goo.com:88/a?f#b",
                                                                                    "http://me:pass@goo.com:92/a?f#b",
                                                                                          "http://:pass@goo.com:92/a?f#b",
                                                                                                "http://goo.com:92/a?f#b",
                                                                                                         "http://goo.com:92/?f#b",
-                                                                                                                       "http://goo.com:92/#b",
-                                                                                                                                  "https://goo.com:92/"},
+                                                                                                                       "http://goo.com:92/#b"},
     };
 
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
