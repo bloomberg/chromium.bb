@@ -25,6 +25,7 @@ class DownloadFileIconExtractor {
   // Should return false if the request was invalid.  If the return value is
   // true, then |callback| should be called with the result.
   virtual bool ExtractIconURLForPath(const base::FilePath& path,
+                                     float scale,
                                      IconLoader::IconSize icon_size,
                                      IconURLCallback callback) = 0;
 };

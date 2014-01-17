@@ -623,6 +623,7 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
   virtual ~MockIconExtractorImpl() {}
 
   virtual bool ExtractIconURLForPath(const base::FilePath& path,
+                                     float scale,
                                      IconLoader::IconSize icon_size,
                                      IconURLCallback callback) OVERRIDE {
     EXPECT_STREQ(expected_path_.value().c_str(), path.value().c_str());

@@ -380,8 +380,10 @@ namespace downloads {
   };
 
   [inline_doc] dictionary GetFileIconOptions {
-    // The size of the icon.  The returned icon will be square with dimensions
-    // size * size pixels.  The default size for the icon is 32x32 pixels.
+    // The size of the returned icon. The icon will be square with dimensions
+    // size * size pixels. The default and largest size for the icon is 32x32
+    // pixels. The only supported sizes are 16 and 32. It is an error to specify
+    // any other size.
     [legalValues=(16,32)] long? size;
   };
 

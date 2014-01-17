@@ -64,11 +64,10 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
@@ -79,6 +78,7 @@
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/image/image_skia.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -304,20 +304,21 @@ class DownloadFileIconExtractorImpl : public DownloadFileIconExtractor {
   virtual ~DownloadFileIconExtractorImpl() {}
 
   virtual bool ExtractIconURLForPath(const base::FilePath& path,
+                                     float scale,
                                      IconLoader::IconSize icon_size,
                                      IconURLCallback callback) OVERRIDE;
  private:
-  void OnIconLoadComplete(gfx::Image* icon);
+  void OnIconLoadComplete(
+      float scale, const IconURLCallback& callback, gfx::Image* icon);
 
   CancelableTaskTracker cancelable_task_tracker_;
-  IconURLCallback callback_;
 };
 
 bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
     const base::FilePath& path,
+    float scale,
     IconLoader::IconSize icon_size,
     IconURLCallback callback) {
-  callback_ = callback;
   IconManager* im = g_browser_process->icon_manager();
   // The contents of the file at |path| may have changed since a previous
   // request, in which case the associated icon may also have changed.
@@ -325,17 +326,16 @@ bool DownloadFileIconExtractorImpl::ExtractIconURLForPath(
   im->LoadIcon(path,
                icon_size,
                base::Bind(&DownloadFileIconExtractorImpl::OnIconLoadComplete,
-                          base::Unretained(this)),
+                          base::Unretained(this), scale, callback),
                &cancelable_task_tracker_);
   return true;
 }
 
-void DownloadFileIconExtractorImpl::OnIconLoadComplete(gfx::Image* icon) {
+void DownloadFileIconExtractorImpl::OnIconLoadComplete(
+    float scale, const IconURLCallback& callback, gfx::Image* icon) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string url;
-  if (icon)
-    url = webui::GetBitmapDataUrl(icon->AsBitmap());
-  callback_.Run(url);
+  callback.Run(!icon ? std::string() : webui::GetBitmapDataUrl(
+      icon->ToImageSkia()->GetRepresentation(scale).sk_bitmap()));
 }
 
 IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {
@@ -1485,8 +1485,16 @@ bool DownloadsGetFileIconFunction::RunImpl() {
   // found, so use GetTargetFilePath() instead.
   DCHECK(icon_extractor_.get());
   DCHECK(icon_size == 16 || icon_size == 32);
+  float scale = 1.0;
+  content::WebContents* web_contents =
+      dispatcher()->delegate()->GetVisibleWebContents();
+  if (web_contents) {
+    scale = ui::GetImageScale(ui::GetScaleFactorForNativeView(
+        web_contents->GetRenderWidgetHostView()->GetNativeView()));
+  }
   EXTENSION_FUNCTION_VALIDATE(icon_extractor_->ExtractIconURLForPath(
       download_item->GetTargetFilePath(),
+      scale,
       IconLoaderSizeFromPixelSize(icon_size),
       base::Bind(&DownloadsGetFileIconFunction::OnIconURLExtracted, this)));
   return true;
