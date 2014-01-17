@@ -34,7 +34,7 @@ import known_issues
 
 def GetIncompatibleDirectories():
   """Gets a list of third-party directories which use licenses incompatible
-  with Android. This is used by the snapshot tool.
+  with Android. This is used by the snapshot tool and the AOSP bot.
   Returns:
     A list of directories.
   """
@@ -282,8 +282,10 @@ def main():
   parser.description = (__doc__ +
                        '\nCommands:\n' \
                        '  scan  Check licenses.\n' \
-                       '  notice Generate Android NOTICE file on stdout')
-  (options, args) = parser.parse_args()
+                       '  notice Generate Android NOTICE file on stdout. \n' \
+                       '  incompatible_directories Scan for incompatibly'
+                       ' licensed directories.')
+  (_, args) = parser.parse_args()
   if len(args) != 1:
     parser.print_help()
     return ScanResult.Errors
@@ -295,6 +297,13 @@ def main():
     return scan_result
   elif args[0] == 'notice':
     print GenerateNoticeFile()
+    return ScanResult.Ok
+  elif args[0] == 'incompatible_directories':
+    incompatible_directories = GetIncompatibleDirectories()
+    if incompatible_directories:
+      print ("Incompatibly licensed directories found:" +
+             "\n".join(incompatible_directories))
+      return ScanResult.Errors
     return ScanResult.Ok
 
   parser.print_help()
