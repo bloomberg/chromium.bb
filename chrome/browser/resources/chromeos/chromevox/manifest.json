@@ -15,6 +15,7 @@
     "tts",
     "systemPrivate",
     "brailleDisplayPrivate",
+    "commandLinePrivate",
     "<all_urls>"
   ],
   "content_scripts": [
