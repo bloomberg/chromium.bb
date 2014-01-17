@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,59 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebArrayBuffer_h
-#define WebArrayBuffer_h
+#ifndef WebArrayBufferConverter_h
+#define WebArrayBufferConverter_h
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-
-namespace v8 {
-class Value;
-template <class T> class Handle;
-}
-
-namespace WTF { class ArrayBuffer; }
-
-#if BLINK_IMPLEMENTATION
-namespace WTF { template <typename T> class PassRefPtr; }
-#endif
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "public/platform/WebArrayBuffer.h"
 
 namespace blink {
 
-class WebArrayBuffer {
+class WebArrayBufferConverter {
 public:
-    ~WebArrayBuffer() { reset(); }
-
-    WebArrayBuffer() { }
-    WebArrayBuffer(const WebArrayBuffer& b) { assign(b); }
-    WebArrayBuffer& operator=(const WebArrayBuffer& b)
-    {
-        assign(b);
-        return *this;
-    }
-
-    BLINK_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
-
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebArrayBuffer&);
-
-    bool isNull() const { return m_private.isNull(); }
-    BLINK_EXPORT void* data() const;
-    BLINK_EXPORT unsigned byteLength() const;
-
-    BLINK_EXPORT v8::Handle<v8::Value> toV8Value();
-    BLINK_EXPORT static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
-
-#if BLINK_IMPLEMENTATION
-    WebArrayBuffer(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    WebArrayBuffer& operator=(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    operator WTF::PassRefPtr<WTF::ArrayBuffer>() const;
-#endif
-
-protected:
-    WebPrivatePtr<WTF::ArrayBuffer> m_private;
+    static v8::Handle<v8::Value> toV8Value(WebArrayBuffer*);
+    static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
 };
 
 } // namespace blink
 
-#endif // WebArrayBuffer_h
+#endif // WebArrayBufferConverter_h

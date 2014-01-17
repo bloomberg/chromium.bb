@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,59 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebArrayBuffer_h
-#define WebArrayBuffer_h
+#include "config.h"
+#include "WebArrayBufferConverter.h"
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/PassOwnPtr.h"
 
-namespace v8 {
-class Value;
-template <class T> class Handle;
-}
-
-namespace WTF { class ArrayBuffer; }
-
-#if BLINK_IMPLEMENTATION
-namespace WTF { template <typename T> class PassRefPtr; }
-#endif
+using namespace WebCore;
 
 namespace blink {
 
-class WebArrayBuffer {
-public:
-    ~WebArrayBuffer() { reset(); }
+v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer)
+{
+    if (!buffer)
+        return v8::Handle<v8::Value>();
+    return toV8(*buffer, v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
+}
 
-    WebArrayBuffer() { }
-    WebArrayBuffer(const WebArrayBuffer& b) { assign(b); }
-    WebArrayBuffer& operator=(const WebArrayBuffer& b)
-    {
-        assign(b);
-        return *this;
-    }
-
-    BLINK_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
-
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebArrayBuffer&);
-
-    bool isNull() const { return m_private.isNull(); }
-    BLINK_EXPORT void* data() const;
-    BLINK_EXPORT unsigned byteLength() const;
-
-    BLINK_EXPORT v8::Handle<v8::Value> toV8Value();
-    BLINK_EXPORT static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
-
-#if BLINK_IMPLEMENTATION
-    WebArrayBuffer(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    WebArrayBuffer& operator=(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    operator WTF::PassRefPtr<WTF::ArrayBuffer>() const;
-#endif
-
-protected:
-    WebPrivatePtr<WTF::ArrayBuffer> m_private;
-};
+WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value)
+{
+    if (!V8ArrayBuffer::hasInstanceInAnyWorld(value, v8::Isolate::GetCurrent()))
+        return 0;
+    WTF::ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
+    return new WebArrayBuffer(buffer);
+}
 
 } // namespace blink
 
-#endif // WebArrayBuffer_h
