@@ -183,7 +183,8 @@ def getter_expression(interface, attribute, contents):
     this_getter_base_name = getter_base_name(attribute, arguments)
     getter_name = v8_utilities.scoped_name(interface, attribute, this_getter_base_name)
 
-    if 'ImplementedBy' in attribute.extended_attributes:
+    if ('ImplementedBy' in attribute.extended_attributes and
+        not attribute.is_static):
         arguments.append('imp')
     arguments.extend(v8_utilities.call_with_arguments(attribute))
     if attribute.is_nullable:
@@ -253,7 +254,8 @@ def setter_expression(interface, attribute, contents):
     this_setter_base_name = setter_base_name(attribute, arguments)
     setter_name = v8_utilities.scoped_name(interface, attribute, this_setter_base_name)
 
-    if 'ImplementedBy' in attribute.extended_attributes:
+    if ('ImplementedBy' in attribute.extended_attributes and
+        not attribute.is_static):
         arguments.append('imp')
     idl_type = attribute.idl_type
     if idl_type == 'EventHandler':
@@ -295,12 +297,6 @@ def scoped_content_attribute_name(attribute):
     namespace = 'HTMLNames'  # FIXME: can be SVG too
     includes.add('%s.h' % namespace)
     return '%s::%sAttr' % (namespace, content_attribute_name)
-
-
-def scoped_name(interface, attribute, base_name):
-    if attribute.is_static:
-        return '%s::%s' % (interface.name, base_name)
-    return 'imp->%s' % base_name
 
 
 ################################################################################

@@ -462,6 +462,13 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% if constants %}
     {{install_constants() | indent}}
     {% endif %}
+    {% if has_custom_legacy_call_as_function %}
+    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
+    {% endif %}
+    {% if interface_name == 'HTMLAllCollection' %}
+    {# Needed for legacy support of document.all #}
+    functionTemplate->InstanceTemplate()->MarkAsUndetectable();
+    {% endif %}
     {% for method in methods if not method.do_not_check_signature %}
     {# install_custom_signature #}
     {% if not method.overload_index or method.overload_index == 1 %}
@@ -499,16 +506,9 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
     {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
-           (interface_name, attribute.name) %}
+           (cpp_class, attribute.name) %}
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfor %}
-    {% if has_custom_legacy_call_as_function %}
-    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
-    {% endif %}
-    {% if interface_name == 'HTMLAllCollection' %}
-    {# Needed for legacy support of document.all #}
-    functionTemplate->InstanceTemplate()->MarkAsUndetectable();
-    {% endif %}
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());

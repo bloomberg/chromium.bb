@@ -39,6 +39,7 @@
     // members needed to test [ImplementedAs], as this affect attribute
     // configuration and method configuration
     attribute TestInterfacePython testInterfacePythonAttribute;  // Self-referential interface type with [ImplementedAs]
+    static attribute DOMString staticStringAttribute;
     [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
     [PerWorldBindings] void voidMethod();
 };

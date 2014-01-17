@@ -107,11 +107,11 @@ def enum_validation_expression(idl_type):
 
 
 def scoped_name(interface, definition, base_name):
-    if definition.is_static:
-        return '%s::%s' % (interface.name, base_name)
     implemented_by = definition.extended_attributes.get('ImplementedBy')
     if implemented_by:
         return '%s::%s' % (implemented_by, base_name)
+    if definition.is_static:
+        return '%s::%s' % (cpp_name(interface), base_name)
     return 'imp->%s' % base_name
 
 

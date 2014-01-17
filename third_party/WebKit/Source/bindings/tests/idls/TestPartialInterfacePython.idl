@@ -30,4 +30,5 @@
 
 partial interface TestInterfacePython {
     attribute long longAttribute;
+    static attribute long staticLongAttribute;
 };
