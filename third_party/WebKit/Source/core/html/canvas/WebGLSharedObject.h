@@ -30,7 +30,6 @@
 
 namespace WebCore {
 
-class GraphicsContext3D;
 class WebGLContextGroup;
 class WebGLRenderingContext;
 
@@ -63,7 +62,7 @@ protected:
         return m_contextGroup;
     }
 
-    virtual GraphicsContext3D* getAGraphicsContext3D() const OVERRIDE FINAL;
+    virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const OVERRIDE FINAL;
 
 private:
     WebGLContextGroup* m_contextGroup;

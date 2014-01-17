@@ -47,7 +47,7 @@ void WebGLObject::setObject(Platform3DObject object)
     m_object = object;
 }
 
-void WebGLObject::deleteObject(GraphicsContext3D* context3d)
+void WebGLObject::deleteObject(blink::WebGraphicsContext3D* context3d)
 {
     m_deleted = true;
     if (!m_object)
@@ -58,7 +58,7 @@ void WebGLObject::deleteObject(GraphicsContext3D* context3d)
 
     if (!m_attachmentCount) {
         if (!context3d)
-            context3d = getAGraphicsContext3D();
+            context3d = getAWebGraphicsContext3D();
 
         if (context3d)
             deleteObjectImpl(context3d, m_object);
@@ -73,7 +73,7 @@ void WebGLObject::detach()
     }
 
 
-void WebGLObject::onDetached(GraphicsContext3D* context3d)
+void WebGLObject::onDetached(blink::WebGraphicsContext3D* context3d)
 {
     if (m_attachmentCount)
         --m_attachmentCount;

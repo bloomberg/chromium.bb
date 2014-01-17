@@ -62,12 +62,12 @@ public:
 
     void setEmulatedStencilBuffer(PassRefPtr<WebGLRenderbuffer> buffer) { m_emulatedStencilBuffer = buffer; }
     WebGLRenderbuffer* emulatedStencilBuffer() const { return m_emulatedStencilBuffer.get(); }
-    void deleteEmulatedStencilBuffer(GraphicsContext3D* context3d);
+    void deleteEmulatedStencilBuffer(blink::WebGraphicsContext3D* context3d);
 
 protected:
     WebGLRenderbuffer(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
+    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
     virtual bool isRenderbuffer() const OVERRIDE { return true; }

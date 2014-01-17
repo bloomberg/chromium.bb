@@ -2349,7 +2349,7 @@ bool Internals::loseSharedGraphicsContext3D()
     // To prevent tests that call loseSharedGraphicsContext3D from being
     // flaky, we call finish so that the context is guaranteed to be lost
     // synchronously (i.e. before returning).
-    sharedContext->finish();
+    sharedContext->webContext()->finish();
     return true;
 }
 

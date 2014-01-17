@@ -87,7 +87,7 @@ public:
 private:
     WebGLVertexArrayObjectOES(WebGLRenderingContext*, VaoType);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
+    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 
     VaoType m_type;
     bool m_hasEverBeenBound;

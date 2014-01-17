@@ -28,9 +28,12 @@
 
 #include "core/html/canvas/WebGLObject.h"
 
+namespace blink {
+class WebGraphicsContext3D;
+}
+
 namespace WebCore {
 
-class GraphicsContext3D;
 class WebGLRenderingContext;
 
 // WebGLContextObject the base class for objects that are owned by a specific
@@ -56,7 +59,7 @@ protected:
         return m_context;
     }
 
-    virtual GraphicsContext3D* getAGraphicsContext3D() const OVERRIDE FINAL;
+    virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const OVERRIDE FINAL;
 
 private:
     WebGLRenderingContext* m_context;

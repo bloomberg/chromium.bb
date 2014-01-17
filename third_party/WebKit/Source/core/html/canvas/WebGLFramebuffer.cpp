@@ -54,9 +54,9 @@ namespace {
         virtual bool valid() const OVERRIDE;
         virtual bool initialized() const OVERRIDE;
         virtual void setInitialized() OVERRIDE;
-        virtual void onDetached(GraphicsContext3D*) OVERRIDE;
-        virtual void attach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
-        virtual void unattach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
+        virtual void onDetached(blink::WebGraphicsContext3D*) OVERRIDE;
+        virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
+        virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
 
         WebGLRenderbufferAttachment() { };
 
@@ -120,12 +120,12 @@ namespace {
             m_renderbuffer->setInitialized();
     }
 
-    void WebGLRenderbufferAttachment::onDetached(GraphicsContext3D* context)
+    void WebGLRenderbufferAttachment::onDetached(blink::WebGraphicsContext3D* context)
     {
         m_renderbuffer->onDetached(context);
     }
 
-    void WebGLRenderbufferAttachment::attach(GraphicsContext3D* context, GLenum attachment)
+    void WebGLRenderbufferAttachment::attach(blink::WebGraphicsContext3D* context, GLenum attachment)
     {
         Platform3DObject object = objectOrZero(m_renderbuffer.get());
         if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL && m_renderbuffer->emulatedStencilBuffer()) {
@@ -136,7 +136,7 @@ namespace {
         }
     }
 
-    void WebGLRenderbufferAttachment::unattach(GraphicsContext3D* context, GLenum attachment)
+    void WebGLRenderbufferAttachment::unattach(blink::WebGraphicsContext3D* context, GLenum attachment)
     {
         if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL) {
             context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
@@ -167,9 +167,9 @@ namespace {
         virtual bool valid() const OVERRIDE;
         virtual bool initialized() const OVERRIDE;
         virtual void setInitialized() OVERRIDE;
-        virtual void onDetached(GraphicsContext3D*) OVERRIDE;
-        virtual void attach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
-        virtual void unattach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
+        virtual void onDetached(blink::WebGraphicsContext3D*) OVERRIDE;
+        virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
+        virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
 
         WebGLTextureAttachment() { };
 
@@ -231,18 +231,18 @@ namespace {
         // Textures are assumed to be initialized.
     }
 
-    void WebGLTextureAttachment::onDetached(GraphicsContext3D* context)
+    void WebGLTextureAttachment::onDetached(blink::WebGraphicsContext3D* context)
     {
         m_texture->onDetached(context);
     }
 
-    void WebGLTextureAttachment::attach(GraphicsContext3D* context, GLenum attachment)
+    void WebGLTextureAttachment::attach(blink::WebGraphicsContext3D* context, GLenum attachment)
     {
         Platform3DObject object = objectOrZero(m_texture.get());
         context->framebufferTexture2D(GL_FRAMEBUFFER, attachment, m_target, object, m_level);
     }
 
-    void WebGLTextureAttachment::unattach(GraphicsContext3D* context, GLenum attachment)
+    void WebGLTextureAttachment::unattach(blink::WebGraphicsContext3D* context, GLenum attachment)
     {
         if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL) {
             context->framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_target, 0, m_level);
@@ -289,7 +289,7 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContext* ctx)
     , m_hasEverBeenBound(false)
 {
     ScriptWrappable::init(this);
-    setObject(ctx->graphicsContext3D()->createFramebuffer());
+    setObject(ctx->webGraphicsContext3D()->createFramebuffer());
 }
 
 WebGLFramebuffer::~WebGLFramebuffer()
@@ -328,7 +328,7 @@ void WebGLFramebuffer::attach(GLenum attachment, GLenum attachmentPoint)
     ASSERT(isBound());
     WebGLAttachment* attachmentObject = getAttachment(attachment);
     if (attachmentObject)
-        attachmentObject->attach(context()->graphicsContext3D(), attachmentPoint);
+        attachmentObject->attach(context()->webGraphicsContext3D(), attachmentPoint);
 }
 
 WebGLSharedObject* WebGLFramebuffer::getAttachmentObject(GLenum attachment) const
@@ -439,7 +439,7 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(GLenum attachment)
 
     WebGLAttachment* attachmentObject = getAttachment(attachment);
     if (attachmentObject) {
-        attachmentObject->onDetached(context()->graphicsContext3D());
+        attachmentObject->onDetached(context()->webGraphicsContext3D());
         m_attachments.remove(attachment);
         drawBuffersIfNecessary(false);
         switch (attachment) {
@@ -472,7 +472,7 @@ void WebGLFramebuffer::removeAttachmentFromBoundFramebuffer(WebGLSharedObject* a
             WebGLAttachment* attachmentObject = it->value.get();
             if (attachmentObject->isSharedObject(attachment)) {
                 GLenum attachmentType = it->key;
-                attachmentObject->unattach(context()->graphicsContext3D(), attachmentType);
+                attachmentObject->unattach(context()->webGraphicsContext3D(), attachmentType);
                 removeAttachmentFromBoundFramebuffer(attachmentType);
                 checkMore = true;
                 break;
@@ -570,7 +570,7 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
     return GL_FRAMEBUFFER_COMPLETE;
 }
 
-bool WebGLFramebuffer::onAccess(GraphicsContext3D* context3d, const char** reason)
+bool WebGLFramebuffer::onAccess(blink::WebGraphicsContext3D* context3d, const char** reason)
 {
     if (checkStatus(reason) != GL_FRAMEBUFFER_COMPLETE)
         return false;
@@ -585,7 +585,7 @@ bool WebGLFramebuffer::hasStencilBuffer() const
     return attachment && attachment->valid();
 }
 
-void WebGLFramebuffer::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
+void WebGLFramebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
 {
     for (AttachmentMap::iterator it = m_attachments.begin(); it != m_attachments.end(); ++it)
         it->value->onDetached(context3d);

@@ -28,6 +28,7 @@
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebContentDecryptionModule.h"
+#include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebRect.h"
@@ -463,10 +464,11 @@ bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::Graphi
 {
     if (!context || !m_webMediaPlayer)
         return false;
-    if (!context->supportsExtension("GL_CHROMIUM_copy_texture") || !context->supportsExtension("GL_CHROMIUM_flipy")
-        || !context->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
-        return false;
     WebGraphicsContext3D* webGraphicsContext3D = context->webContext();
+    if (!context->supportsExtension("GL_CHROMIUM_copy_texture") || !context->supportsExtension("GL_CHROMIUM_flipy")
+        || !context->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !webGraphicsContext3D->makeContextCurrent())
+        return false;
+
     return m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, texture, level, internalFormat, type, premultiplyAlpha, flipY);
 }
 
@@ -560,8 +562,10 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
         return;
 
+    WebGraphicsContext3D* webGraphicsContext3D = context3D->webContext();
+
     if (!context3D->supportsExtension("GL_CHROMIUM_copy_texture") || !context3D->supportsExtension("GL_CHROMIUM_flipy")
-        || !context3D->makeContextCurrent())
+        || !webGraphicsContext3D->makeContextCurrent())
         return;
 
     // Copy video texture into a RGBA texture based bitmap first as video texture on Android is GL_TEXTURE_EXTERNAL_OES
@@ -572,7 +576,6 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
         return;
 
     // Copy video texture to bitmap texture.
-    WebGraphicsContext3D* webGraphicsContext3D = context3D->webContext();
     WebCanvas* canvas = context->canvas();
     unsigned textureId = static_cast<unsigned>((m_bitmap.getTexture())->getTextureHandle());
     if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE, true, false))

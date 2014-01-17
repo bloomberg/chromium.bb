@@ -30,36 +30,21 @@
 #include "platform/graphics/GraphicsContext3D.h"
 #include "platform/CheckedInt.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
-#include "wtf/CPU.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
 
-#include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 
 namespace WebCore {
 
-GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3D> webContext, bool preserveDrawingBuffer)
-    : m_impl(webContext.get())
-    , m_ownedWebContext(webContext)
-    , m_initializedAvailableExtensions(false)
-    , m_preserveDrawingBuffer(preserveDrawingBuffer)
-    , m_grContext(0)
-{
-}
-
-GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider> provider, bool preserveDrawingBuffer)
+GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider> provider)
     : m_provider(provider)
     , m_impl(m_provider->context3d())
     , m_initializedAvailableExtensions(false)
-    , m_preserveDrawingBuffer(preserveDrawingBuffer)
     , m_grContext(m_provider->grContext())
 {
 }
@@ -67,7 +52,6 @@ GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvi
 GraphicsContext3D::GraphicsContext3D(blink::WebGraphicsContext3D* webContext)
     : m_impl(webContext)
     , m_initializedAvailableExtensions(false)
-    , m_preserveDrawingBuffer(false)
     , m_grContext(0)
 {
 }
@@ -76,112 +60,16 @@ GraphicsContext3D::~GraphicsContext3D()
 {
 }
 
-// Macros to assist in delegating from GraphicsContext3D to
-// WebGraphicsContext3D.
-
-#define DELEGATE_TO_WEBCONTEXT(name) \
-void GraphicsContext3D::name() \
-{ \
-    m_impl->name(); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_R(name, rt) \
-rt GraphicsContext3D::name() \
-{ \
-    return m_impl->name(); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_1(name, t1) \
-void GraphicsContext3D::name(t1 a1) \
-{ \
-    m_impl->name(a1); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_1R(name, t1, rt) \
-rt GraphicsContext3D::name(t1 a1) \
-{ \
-    return m_impl->name(a1); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_2(name, t1, t2) \
-void GraphicsContext3D::name(t1 a1, t2 a2) \
-{ \
-    m_impl->name(a1, a2); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_3(name, t1, t2, t3) \
-void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3) \
-{ \
-    m_impl->name(a1, a2, a3); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_4(name, t1, t2, t3, t4) \
-void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4) \
-{ \
-    m_impl->name(a1, a2, a3, a4); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_5(name, t1, t2, t3, t4, t5) \
-void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5) \
-{ \
-    m_impl->name(a1, a2, a3, a4, a5); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_6(name, t1, t2, t3, t4, t5, t6) \
-void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) \
-{ \
-    m_impl->name(a1, a2, a3, a4, a5, a6); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_7(name, t1, t2, t3, t4, t5, t6, t7) \
-void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7) \
-{ \
-    m_impl->name(a1, a2, a3, a4, a5, a6, a7); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_9(name, t1, t2, t3, t4, t5, t6, t7, t8, t9) \
-void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8, t9 a9) \
-{ \
-    m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
-}
-
 PassRefPtr<GraphicsContext3D> GraphicsContext3D::createContextSupport(blink::WebGraphicsContext3D* webContext)
 {
     RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(webContext));
     return context.release();
 }
 
-// The following three creation methods are obsolete and should not be used by new code. They will be removed soon.
-PassRefPtr<GraphicsContext3D> GraphicsContext3D::create(GraphicsContext3D::Attributes attrs)
+// This creation method is obsolete and should not be used by new code. They will be removed soon.
+PassRefPtr<GraphicsContext3D> GraphicsContext3D::createGraphicsContextFromProvider(PassOwnPtr<blink::WebGraphicsContext3DProvider> provider)
 {
-    blink::WebGraphicsContext3D::Attributes webAttributes;
-    webAttributes.alpha = attrs.alpha;
-    webAttributes.depth = attrs.depth;
-    webAttributes.stencil = attrs.stencil;
-    webAttributes.antialias = attrs.antialias;
-    webAttributes.premultipliedAlpha = attrs.premultipliedAlpha;
-    webAttributes.noExtensions = attrs.noExtensions;
-    webAttributes.shareResources = attrs.shareResources;
-    webAttributes.preferDiscreteGPU = attrs.preferDiscreteGPU;
-    webAttributes.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat;
-    webAttributes.topDocumentURL = attrs.topDocumentURL.string();
-
-    OwnPtr<blink::WebGraphicsContext3D> webContext = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(webAttributes));
-    if (!webContext)
-        return 0;
-
-    return GraphicsContext3D::createGraphicsContextFromWebContext(webContext.release(), attrs.preserveDrawingBuffer);
-}
-
-PassRefPtr<GraphicsContext3D> GraphicsContext3D::createGraphicsContextFromProvider(PassOwnPtr<blink::WebGraphicsContext3DProvider> provider, bool preserveDrawingBuffer)
-{
-    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(provider, preserveDrawingBuffer));
-    return context.release();
-}
-
-PassRefPtr<GraphicsContext3D> GraphicsContext3D::createGraphicsContextFromWebContext(PassOwnPtr<blink::WebGraphicsContext3D> webContext, bool preserveDrawingBuffer)
-{
-    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(webContext, preserveDrawingBuffer));
+    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(provider));
     return context.release();
 }
 
@@ -189,126 +77,6 @@ GrContext* GraphicsContext3D::grContext()
 {
     return m_grContext;
 }
-
-DELEGATE_TO_WEBCONTEXT_R(makeContextCurrent, bool)
-
-DELEGATE_TO_WEBCONTEXT_1(activeTexture, GLenum)
-DELEGATE_TO_WEBCONTEXT_2(attachShader, Platform3DObject, Platform3DObject)
-
-DELEGATE_TO_WEBCONTEXT_2(bindBuffer, GLenum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_2(bindFramebuffer, GLenum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_2(bindRenderbuffer, GLenum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_2(bindTexture, GLenum, Platform3DObject)
-
-DELEGATE_TO_WEBCONTEXT_4(bufferData, GLenum, GLsizeiptr, const void*, GLenum)
-
-DELEGATE_TO_WEBCONTEXT_1R(checkFramebufferStatus, GLenum, GLenum)
-DELEGATE_TO_WEBCONTEXT_1(clear, GLbitfield)
-DELEGATE_TO_WEBCONTEXT_4(clearColor, GLclampf, GLclampf, GLclampf, GLclampf)
-DELEGATE_TO_WEBCONTEXT_1(clearDepth, GLclampf)
-DELEGATE_TO_WEBCONTEXT_1(clearStencil, GLint)
-DELEGATE_TO_WEBCONTEXT_4(colorMask, GLboolean, GLboolean, GLboolean, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1(compileShader, Platform3DObject)
-
-DELEGATE_TO_WEBCONTEXT_1(depthMask, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1(disable, GLenum)
-DELEGATE_TO_WEBCONTEXT_1(disableVertexAttribArray, GLuint)
-DELEGATE_TO_WEBCONTEXT_4(drawElements, GLenum, GLsizei, GLenum, GLintptr)
-
-DELEGATE_TO_WEBCONTEXT_1(enable, GLenum)
-DELEGATE_TO_WEBCONTEXT_1(enableVertexAttribArray, GLuint)
-DELEGATE_TO_WEBCONTEXT(finish)
-DELEGATE_TO_WEBCONTEXT(flush)
-DELEGATE_TO_WEBCONTEXT_4(framebufferRenderbuffer, GLenum, GLenum, GLenum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_5(framebufferTexture2D, GLenum, GLenum, GLenum, Platform3DObject, GLint)
-
-bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GLuint index, ActiveInfo& info)
-{
-    blink::WebGraphicsContext3D::ActiveInfo webInfo;
-    if (!m_impl->getActiveAttrib(program, index, webInfo))
-        return false;
-    info.name = webInfo.name;
-    info.type = webInfo.type;
-    info.size = webInfo.size;
-    return true;
-}
-
-GLint GraphicsContext3D::getAttribLocation(Platform3DObject program, const String& name)
-{
-    return m_impl->getAttribLocation(program, name.utf8().data());
-}
-
-GraphicsContext3D::Attributes GraphicsContext3D::getContextAttributes()
-{
-    blink::WebGraphicsContext3D::Attributes webAttributes = m_impl->getContextAttributes();
-    GraphicsContext3D::Attributes attributes;
-    attributes.alpha = webAttributes.alpha;
-    attributes.depth = webAttributes.depth;
-    attributes.stencil = webAttributes.stencil;
-    attributes.antialias = webAttributes.antialias;
-    attributes.premultipliedAlpha = webAttributes.premultipliedAlpha;
-    attributes.preserveDrawingBuffer = m_preserveDrawingBuffer;
-    attributes.preferDiscreteGPU = webAttributes.preferDiscreteGPU;
-    return attributes;
-}
-
-DELEGATE_TO_WEBCONTEXT_R(getError, GLenum)
-DELEGATE_TO_WEBCONTEXT_2(getIntegerv, GLenum, GLint*)
-DELEGATE_TO_WEBCONTEXT_3(getProgramiv, Platform3DObject, GLenum, GLint*)
-DELEGATE_TO_WEBCONTEXT_3(getShaderiv, Platform3DObject, GLenum, GLint*)
-DELEGATE_TO_WEBCONTEXT_1R(getString, GLenum, String)
-
-GLint GraphicsContext3D::getUniformLocation(Platform3DObject program, const String& name)
-{
-    return m_impl->getUniformLocation(program, name.utf8().data());
-}
-
-DELEGATE_TO_WEBCONTEXT_1(linkProgram, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_2(pixelStorei, GLenum, GLint)
-
-DELEGATE_TO_WEBCONTEXT_7(readPixels, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void*)
-
-DELEGATE_TO_WEBCONTEXT_4(renderbufferStorage, GLenum, GLenum, GLsizei, GLsizei)
-
-void GraphicsContext3D::shaderSource(Platform3DObject shader, const String& string)
-{
-    m_impl->shaderSource(shader, string.utf8().data());
-}
-
-DELEGATE_TO_WEBCONTEXT_2(stencilMaskSeparate, GLenum, GLuint)
-
-DELEGATE_TO_WEBCONTEXT_9(texImage2D, GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*)
-DELEGATE_TO_WEBCONTEXT_3(texParameteri, GLenum, GLenum, GLint)
-
-DELEGATE_TO_WEBCONTEXT_2(uniform1f, GLint, GLfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform1fv, GLint, GLsizei, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_2(uniform1i, GLint, GLint)
-DELEGATE_TO_WEBCONTEXT_3(uniform2f, GLint, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_4(uniform3f, GLint, GLfloat, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_5(uniform4f, GLint, GLfloat, GLfloat, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_4(uniformMatrix4fv, GLint, GLsizei, GLboolean, GLfloat*)
-
-DELEGATE_TO_WEBCONTEXT_1(useProgram, Platform3DObject)
-
-DELEGATE_TO_WEBCONTEXT_6(vertexAttribPointer, GLuint, GLint, GLenum, GLboolean, GLsizei, GLintptr)
-
-DELEGATE_TO_WEBCONTEXT_4(viewport, GLint, GLint, GLsizei, GLsizei)
-
-DELEGATE_TO_WEBCONTEXT_R(createBuffer, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_R(createFramebuffer, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_R(createProgram, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_R(createRenderbuffer, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1R(createShader, GLenum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_R(createTexture, Platform3DObject)
-
-DELEGATE_TO_WEBCONTEXT_1(deleteBuffer, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1(deleteFramebuffer, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1(deleteProgram, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1(deleteRenderbuffer, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1(deleteShader, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1(deleteTexture, Platform3DObject)
-
-DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GLenum)
 
 bool GraphicsContext3D::computeFormatAndTypeParameters(GLenum format, GLenum type, unsigned* componentsPerPixel, unsigned* bytesPerComponent)
 {

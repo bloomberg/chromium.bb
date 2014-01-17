@@ -51,7 +51,7 @@ WebGLTexture::WebGLTexture(WebGLRenderingContext* ctx)
     , m_isHalfFloatType(false)
 {
     ScriptWrappable::init(this);
-    setObject(ctx->graphicsContext3D()->createTexture());
+    setObject(ctx->webGraphicsContext3D()->createTexture());
 }
 
 WebGLTexture::~WebGLTexture()
@@ -245,7 +245,7 @@ bool WebGLTexture::needToUseBlackTexture(TextureExtensionFlag flag) const
     return false;
 }
 
-void WebGLTexture::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
+void WebGLTexture::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
 {
     context3d->deleteTexture(object);
 }

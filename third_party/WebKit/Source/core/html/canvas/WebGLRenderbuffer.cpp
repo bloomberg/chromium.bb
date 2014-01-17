@@ -50,16 +50,16 @@ WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContext* ctx)
     , m_hasEverBeenBound(false)
 {
     ScriptWrappable::init(this);
-    setObject(ctx->graphicsContext3D()->createRenderbuffer());
+    setObject(ctx->webGraphicsContext3D()->createRenderbuffer());
 }
 
-void WebGLRenderbuffer::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
+void WebGLRenderbuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
 {
     context3d->deleteRenderbuffer(object);
     deleteEmulatedStencilBuffer(context3d);
 }
 
-void WebGLRenderbuffer::deleteEmulatedStencilBuffer(GraphicsContext3D* context3d)
+void WebGLRenderbuffer::deleteEmulatedStencilBuffer(blink::WebGraphicsContext3D* context3d)
 {
     if (!m_emulatedStencilBuffer)
         return;

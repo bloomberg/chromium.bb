@@ -46,7 +46,7 @@ public:
 private:
     WebGLShader(WebGLRenderingContext*, GLenum);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
+    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 
     virtual bool isShader() const OVERRIDE { return true; }
 

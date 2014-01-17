@@ -41,7 +41,7 @@ WebGLBuffer::WebGLBuffer(WebGLRenderingContext* ctx)
     , m_target(0)
 {
     ScriptWrappable::init(this);
-    setObject(ctx->graphicsContext3D()->createBuffer());
+    setObject(ctx->webGraphicsContext3D()->createBuffer());
 }
 
 WebGLBuffer::~WebGLBuffer()
@@ -49,7 +49,7 @@ WebGLBuffer::~WebGLBuffer()
     deleteObject(0);
 }
 
-void WebGLBuffer::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
+void WebGLBuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
 {
       context3d->deleteBuffer(object);
 }

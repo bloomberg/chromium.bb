@@ -56,9 +56,9 @@ public:
         virtual bool valid() const = 0;
         virtual bool initialized() const = 0;
         virtual void setInitialized() = 0;
-        virtual void onDetached(GraphicsContext3D*) = 0;
-        virtual void attach(GraphicsContext3D*, GLenum attachment) = 0;
-        virtual void unattach(GraphicsContext3D*, GLenum attachment) = 0;
+        virtual void onDetached(blink::WebGraphicsContext3D*) = 0;
+        virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
+        virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
 
     protected:
         WebGLAttachment();
@@ -86,7 +86,7 @@ public:
     // Return false if the framebuffer is incomplete; otherwise initialize
     // the buffers if they haven't been initialized and
     // needToInitializeAttachments is true.
-    bool onAccess(GraphicsContext3D*, const char** reason);
+    bool onAccess(blink::WebGraphicsContext3D*, const char** reason);
 
     // Software version of glCheckFramebufferStatus(), except that when
     // FRAMEBUFFER_COMPLETE is returned, it is still possible for
@@ -108,7 +108,7 @@ public:
 protected:
     WebGLFramebuffer(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
+    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
     WebGLAttachment* getAttachment(GLenum) const;

@@ -72,7 +72,7 @@ void OESVertexArrayObject::deleteVertexArrayOES(WebGLVertexArrayObjectOES* array
     if (!arrayObject->isDefaultObject() && arrayObject == m_context->m_boundVertexArrayObject)
         m_context->setBoundVertexArrayObject(0);
 
-    arrayObject->deleteObject(m_context->graphicsContext3D());
+    arrayObject->deleteObject(m_context->webGraphicsContext3D());
 }
 
 GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)

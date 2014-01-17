@@ -46,11 +46,11 @@ WebGLContextGroup::~WebGLContextGroup()
     detachAndRemoveAllObjects();
 }
 
-GraphicsContext3D* WebGLContextGroup::getAGraphicsContext3D()
+blink::WebGraphicsContext3D* WebGLContextGroup::getAWebGraphicsContext3D()
 {
     ASSERT(!m_contexts.isEmpty());
     HashSet<WebGLRenderingContext*>::iterator it = m_contexts.begin();
-    return (*it)->graphicsContext3D();
+    return (*it)->webGraphicsContext3D();
 }
 
 void WebGLContextGroup::addContext(WebGLRenderingContext* context)

@@ -63,12 +63,12 @@ public:
 protected:
     WebGLProgram(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
+    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
     virtual bool isProgram() const OVERRIDE { return true; }
 
-    void cacheActiveAttribLocations(GraphicsContext3D*);
+    void cacheActiveAttribLocations(blink::WebGraphicsContext3D*);
     void cacheInfoIfNeeded();
 
     Vector<GLint> m_activeAttribLocations;

@@ -157,7 +157,7 @@ void Canvas2DLayerBridge::prepareForDraw()
         }
         return;
     }
-    m_context->makeContextCurrent();
+    context()->makeContextCurrent();
 }
 
 void Canvas2DLayerBridge::storageAllocatedForRecordingChanged(size_t bytesAllocated)
@@ -272,16 +272,19 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     }
     if (!isValid())
         return false;
+
+    blink::WebGraphicsContext3D* webContext = context();
+
     // Release to skia textures that were previouosly released by the
     // compositor. We do this before acquiring the next snapshot in
     // order to cap maximum gpu memory consumption.
-    m_context->makeContextCurrent();
+    webContext->makeContextCurrent();
     flush();
     Vector<MailboxInfo>::iterator mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
         if (mailboxInfo->m_status == MailboxReleased) {
             if (mailboxInfo->m_mailbox.syncPoint) {
-                context()->waitSyncPoint(mailboxInfo->m_mailbox.syncPoint);
+                webContext->waitSyncPoint(mailboxInfo->m_mailbox.syncPoint);
                 mailboxInfo->m_mailbox.syncPoint = 0;
             }
             // Invalidate texture state in case the compositor altered it since the copy-on-write.
@@ -308,15 +311,15 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     ASSERT(mailboxInfo->m_image.get());
     ASSERT(mailboxInfo->m_image->getTexture());
 
-    m_context->bindTexture(GL_TEXTURE_2D, mailboxInfo->m_image->getTexture()->getTextureHandle());
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    context()->produceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo->m_mailbox.name);
-    context()->flush();
-    mailboxInfo->m_mailbox.syncPoint = context()->insertSyncPoint();
-    m_context->bindTexture(GL_TEXTURE_2D, 0);
+    webContext->bindTexture(GL_TEXTURE_2D, mailboxInfo->m_image->getTexture()->getTextureHandle());
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    webContext->produceTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo->m_mailbox.name);
+    webContext->flush();
+    mailboxInfo->m_mailbox.syncPoint = webContext->insertSyncPoint();
+    webContext->bindTexture(GL_TEXTURE_2D, 0);
     // Because we are changing the texture binding without going through skia,
     // we must dirty the context.
     m_context->grContext()->resetContext(kTextureBinding_GrGLBackendState);
@@ -391,7 +394,7 @@ Platform3DObject Canvas2DLayerBridge::getBackingTexture()
         return 0;
     willUse();
     m_canvas->flush();
-    m_context->flush();
+    context()->flush();
     GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();
     if (renderTarget) {
         return renderTarget->asTexture()->getTextureHandle();

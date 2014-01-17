@@ -1334,7 +1334,7 @@ void WebGLRenderingContext::clear(GLbitfield mask)
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webGraphicsContext3D(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "clear", reason);
         return;
     }
@@ -1488,7 +1488,7 @@ void WebGLRenderingContext::copyTexImage2D(GLenum target, GLint level, GLenum in
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webGraphicsContext3D(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexImage2D", reason);
         return;
     }
@@ -1531,7 +1531,7 @@ void WebGLRenderingContext::copyTexSubImage2D(GLenum target, GLint level, GLint 
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webGraphicsContext3D(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexSubImage2D", reason);
         return;
     }
@@ -1635,10 +1635,11 @@ bool WebGLRenderingContext::deleteObject(WebGLObject* object)
         synthesizeGLError(GL_INVALID_OPERATION, "delete", "object does not belong to this context");
         return false;
     }
-    if (object->object())
+    if (object->object()) {
         // We need to pass in context here because we want
         // things in this context unbound.
-        object->deleteObject(graphicsContext3D());
+        object->deleteObject(webGraphicsContext3D());
+    }
     return true;
 }
 
@@ -1750,7 +1751,7 @@ void WebGLRenderingContext::detachShader(WebGLProgram* program, WebGLShader* sha
         return;
     }
     m_context->detachShader(objectOrZero(program), objectOrZero(shader));
-    shader->onDetached(graphicsContext3D());
+    shader->onDetached(webGraphicsContext3D());
 }
 
 void WebGLRenderingContext::disable(GLenum cap)
@@ -2379,7 +2380,7 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
     case GL_SCISSOR_TEST:
         return getBooleanParameter(pname);
     case GL_SHADING_LANGUAGE_VERSION:
-        return WebGLGetInfo("WebGL GLSL ES 1.0 (" + m_contextSupport->getString(GL_SHADING_LANGUAGE_VERSION) + ")");
+        return WebGLGetInfo("WebGL GLSL ES 1.0 (" + String(m_context->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
     case GL_STENCIL_BACK_FAIL:
         return getUnsignedIntParameter(pname);
     case GL_STENCIL_BACK_FUNC:
@@ -2433,7 +2434,7 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
     case GL_VENDOR:
         return WebGLGetInfo(String("WebKit"));
     case GL_VERSION:
-        return WebGLGetInfo("WebGL 1.0 (" + m_contextSupport->getString(GL_VERSION) + ")");
+        return WebGLGetInfo("WebGL 1.0 (" + String(m_context->getString(GL_VERSION)) + ")");
     case GL_VIEWPORT:
         return getWebGLIntArrayParameter(pname);
     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES: // OES_standard_derivatives
@@ -2443,12 +2444,12 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
         return WebGLGetInfo();
     case WebGLDebugRendererInfo::UNMASKED_RENDERER_WEBGL:
         if (m_webglDebugRendererInfo)
-            return WebGLGetInfo(m_contextSupport->getString(GL_RENDERER));
+            return WebGLGetInfo(m_context->getString(GL_RENDERER));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
         return WebGLGetInfo();
     case WebGLDebugRendererInfo::UNMASKED_VENDOR_WEBGL:
         if (m_webglDebugRendererInfo)
-            return WebGLGetInfo(m_contextSupport->getString(GL_VENDOR));
+            return WebGLGetInfo(m_context->getString(GL_VENDOR));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
         return WebGLGetInfo();
     case GL_VERTEX_ARRAY_BINDING_OES: // OES_vertex_array_object
@@ -3095,7 +3096,7 @@ void WebGLRenderingContext::readPixels(GLint x, GLint y, GLsizei width, GLsizei 
         return;
     }
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webGraphicsContext3D(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
         return;
     }
@@ -3123,7 +3124,7 @@ void WebGLRenderingContext::readPixels(GLint x, GLint y, GLsizei width, GLsizei 
 #if OS(MACOSX)
     // FIXME: remove this section when GL driver bug on Mac is fixed, i.e.,
     // when alpha is off, readPixels should set alpha to 255 instead of 0.
-    if (!m_framebufferBinding && !m_contextSupport->getContextAttributes().alpha) {
+    if (!m_framebufferBinding && !m_context->getContextAttributes().alpha) {
         unsigned char* pixels = reinterpret_cast<unsigned char*>(data);
         for (GLsizei iy = 0; iy < height; ++iy) {
             for (GLsizei ix = 0; ix < width; ++ix) {
@@ -3159,7 +3160,7 @@ void WebGLRenderingContext::renderbufferStorage(GLenum target, GLenum internalfo
         m_context->renderbufferStorage(target, internalformat, width, height);
         m_renderbufferBinding->setInternalFormat(internalformat);
         m_renderbufferBinding->setSize(width, height);
-        m_renderbufferBinding->deleteEmulatedStencilBuffer(m_contextSupport.get());
+        m_renderbufferBinding->deleteEmulatedStencilBuffer(m_context.get());
         break;
     case GL_DEPTH_STENCIL_OES:
         if (isDepthStencilSupported()) {
@@ -4022,7 +4023,7 @@ void WebGLRenderingContext::useProgram(WebGLProgram* program)
     }
     if (m_currentProgram != program) {
         if (m_currentProgram)
-            m_currentProgram->onDetached(graphicsContext3D());
+            m_currentProgram->onDetached(webGraphicsContext3D());
         m_currentProgram = program;
         m_context->useProgram(objectOrZero(program));
         if (program)
@@ -5224,7 +5225,7 @@ bool WebGLRenderingContext::validateDrawArrays(const char* functionName, GLenum 
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webGraphicsContext3D(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
         return false;
     }
@@ -5274,7 +5275,7 @@ bool WebGLRenderingContext::validateDrawElements(const char* functionName, GLenu
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(webGraphicsContext3D(), &reason)) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
         return false;
     }

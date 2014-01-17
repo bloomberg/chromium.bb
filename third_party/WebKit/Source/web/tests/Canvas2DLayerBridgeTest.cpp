@@ -76,9 +76,8 @@ class Canvas2DLayerBridgeTest : public Test {
 protected:
     void fullLifecycleTest()
     {
-        RefPtr<GraphicsContext3D> mainContext = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new MockCanvasContext));
-
-        MockCanvasContext& mainMock = *static_cast<MockCanvasContext*>(mainContext->webContext());
+        MockCanvasContext mainMock;
+        RefPtr<GraphicsContext3D> mainContext = GraphicsContext3D::createContextSupport(&mainMock);
 
         OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
 

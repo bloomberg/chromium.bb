@@ -59,7 +59,7 @@ WebGLVertexArrayObjectOES::~WebGLVertexArrayObjectOES()
     deleteObject(0);
 }
 
-void WebGLVertexArrayObjectOES::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
+void WebGLVertexArrayObjectOES::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
 {
     switch (m_type) {
     case VaoTypeDefault:
@@ -84,7 +84,7 @@ void WebGLVertexArrayObjectOES::setElementArrayBuffer(PassRefPtr<WebGLBuffer> bu
     if (buffer)
         buffer->onAttached();
     if (m_boundElementArrayBuffer)
-        m_boundElementArrayBuffer->onDetached(context()->graphicsContext3D());
+        m_boundElementArrayBuffer->onDetached(context()->webGraphicsContext3D());
     m_boundElementArrayBuffer = buffer;
 
 }
@@ -99,7 +99,7 @@ void WebGLVertexArrayObjectOES::setVertexAttribState(
     if (buffer)
         buffer->onAttached();
     if (state.bufferBinding)
-        state.bufferBinding->onDetached(context()->graphicsContext3D());
+        state.bufferBinding->onDetached(context()->webGraphicsContext3D());
 
     state.bufferBinding = buffer;
     state.bytesPerElement = bytesPerElement;
@@ -114,14 +114,14 @@ void WebGLVertexArrayObjectOES::setVertexAttribState(
 void WebGLVertexArrayObjectOES::unbindBuffer(PassRefPtr<WebGLBuffer> buffer)
 {
     if (m_boundElementArrayBuffer == buffer) {
-        m_boundElementArrayBuffer->onDetached(context()->graphicsContext3D());
+        m_boundElementArrayBuffer->onDetached(context()->webGraphicsContext3D());
         m_boundElementArrayBuffer = 0;
     }
 
     for (size_t i = 0; i < m_vertexAttribState.size(); ++i) {
         VertexAttribState& state = m_vertexAttribState[i];
         if (state.bufferBinding == buffer) {
-            buffer->onDetached(context()->graphicsContext3D());
+            buffer->onDetached(context()->webGraphicsContext3D());
             state.bufferBinding = 0;
         }
     }

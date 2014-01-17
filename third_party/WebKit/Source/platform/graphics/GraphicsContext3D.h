@@ -55,71 +55,27 @@ class WebGraphicsContext3DProvider;
 }
 
 namespace WebCore {
-class DrawingBuffer;
-class GraphicsContext3DContextLostCallbackAdapter;
-class GraphicsContext3DErrorMessageCallbackAdapter;
 class Image;
 class ImageBuffer;
 class IntRect;
 class IntSize;
 
-struct ActiveInfo {
-    String name;
-    GLenum type;
-    GLint size;
-};
-
 class PLATFORM_EXPORT GraphicsContext3D : public RefCounted<GraphicsContext3D> {
 public:
-    // Context creation attributes.
-    struct Attributes {
-        Attributes()
-            : alpha(true)
-            , depth(true)
-            , stencil(false)
-            , antialias(true)
-            , premultipliedAlpha(true)
-            , preserveDrawingBuffer(false)
-            , noExtensions(false)
-            , shareResources(true)
-            , preferDiscreteGPU(false)
-            , failIfMajorPerformanceCaveat(false)
-        {
-        }
-
-        bool alpha;
-        bool depth;
-        bool stencil;
-        bool antialias;
-        bool premultipliedAlpha;
-        bool preserveDrawingBuffer;
-        bool noExtensions;
-        bool shareResources;
-        bool preferDiscreteGPU;
-        bool failIfMajorPerformanceCaveat;
-        KURL topDocumentURL;
-    };
-
     // This is the preferred method for creating an instance of this class. When created this way the webContext
     // is not owned by the GraphicsContext3D
     static PassRefPtr<GraphicsContext3D> createContextSupport(blink::WebGraphicsContext3D* webContext);
 
-    // The following three creation methods are obsolete and should not be used by new code. They will be removed soon.
-
     // Callers must make the context current before using it AND check that the context was created successfully
     // via ContextLost before using the context in any way. Once made current on a thread, the context cannot
     // be used on any other thread.
-    static PassRefPtr<GraphicsContext3D> create(Attributes);
-    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromWebContext(PassOwnPtr<blink::WebGraphicsContext3D>, bool preserveDrawingBuffer = false);
-    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromProvider(PassOwnPtr<blink::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer = false);
-
+    // This creation method is obsolete and should not be used by new code. They will be removed soon.
+    static PassRefPtr<GraphicsContext3D> createGraphicsContextFromProvider(PassOwnPtr<blink::WebGraphicsContext3DProvider>);
 
     ~GraphicsContext3D();
 
     GrContext* grContext();
     blink::WebGraphicsContext3D* webContext() const { return m_impl; }
-
-    bool makeContextCurrent();
 
     //----------------------------------------------------------------------
     // Helpers for texture uploading and pixel readback.
@@ -175,102 +131,6 @@ public:
     {
     return SrcFormat == DataFormatBGRA8 || SrcFormat == DataFormatRGBA8;
     }
-
-    //----------------------------------------------------------------------
-    // Entry points for WebGL.
-    // These are obsolete and should not be called by new code.
-    // Prefer calling WebGraphicsContext3D methods directly instead.
-    //
-
-    void activeTexture(GLenum texture);
-    void attachShader(Platform3DObject program, Platform3DObject shader);
-    void bindBuffer(GLenum target, Platform3DObject);
-    void bindFramebuffer(GLenum target, Platform3DObject);
-    void bindRenderbuffer(GLenum target, Platform3DObject);
-    void bindTexture(GLenum target, Platform3DObject);
-
-    void bufferData(GLenum target, GLsizeiptr, const void* data, GLenum usage);
-
-    GLenum checkFramebufferStatus(GLenum target);
-    void clear(GLbitfield mask);
-    void clearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-    void clearDepth(GLclampf depth);
-    void clearStencil(GLint s);
-    void colorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-    void compileShader(Platform3DObject);
-
-    void depthMask(GLboolean flag);
-    void disable(GLenum cap);
-    void disableVertexAttribArray(GLuint index);
-    void drawElements(GLenum mode, GLsizei count, GLenum type, GLintptr offset);
-
-    void enable(GLenum cap);
-    void enableVertexAttribArray(GLuint index);
-    void finish();
-    void flush();
-    void framebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, Platform3DObject);
-    void framebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, Platform3DObject, GLint level);
-
-    bool getActiveAttrib(Platform3DObject program, GLuint index, ActiveInfo&);
-    GLint getAttribLocation(Platform3DObject, const String& name);
-    Attributes getContextAttributes();
-    GLenum getError();
-    void getIntegerv(GLenum pname, GLint* value);
-    void getProgramiv(Platform3DObject program, GLenum pname, GLint* value);
-    void getShaderiv(Platform3DObject, GLenum pname, GLint* value);
-    String getString(GLenum name);
-    GLint getUniformLocation(Platform3DObject, const String& name);
-
-    void linkProgram(Platform3DObject);
-    void pixelStorei(GLenum pname, GLint param);
-
-    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void* data);
-
-    void renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-    void shaderSource(Platform3DObject, const String& string);
-    void stencilMaskSeparate(GLenum face, GLuint mask);
-
-    void texImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
-    void texParameteri(GLenum target, GLenum pname, GLint param);
-
-    void uniform1f(GLint location, GLfloat x);
-    void uniform1fv(GLint location, GLsizei, GLfloat* v);
-    void uniform1i(GLint location, GLint x);
-    void uniform2f(GLint location, GLfloat x, GLfloat y);
-    void uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z);
-    void uniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void uniformMatrix4fv(GLint location, GLsizei, GLboolean transpose, GLfloat* value);
-
-    void useProgram(Platform3DObject);
-
-    void vertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLintptr offset);
-
-    void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
-
-    // Support for buffer creation and deletion
-    Platform3DObject createBuffer();
-    Platform3DObject createFramebuffer();
-    Platform3DObject createProgram();
-    Platform3DObject createRenderbuffer();
-    Platform3DObject createShader(GLenum);
-    Platform3DObject createTexture();
-
-    void deleteBuffer(Platform3DObject);
-    void deleteFramebuffer(Platform3DObject);
-    void deleteProgram(Platform3DObject);
-    void deleteRenderbuffer(Platform3DObject);
-    void deleteShader(Platform3DObject);
-    void deleteTexture(Platform3DObject);
-
-    // Synthesizes an OpenGL error which will be returned from a
-    // later call to getError. This is used to emulate OpenGL ES
-    // 2.0 behavior on the desktop and to enforce additional error
-    // checking mandated by WebGL.
-    //
-    // Per the behavior of glGetError, this stores at most one
-    // instance of any given error, and returns them from calls to
-    // getError in the order they were added.
-    void synthesizeGLError(GLenum error);
 
     static unsigned getClearBitsByFormat(GLenum);
 
@@ -365,8 +225,7 @@ public:
     static bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
 
 private:
-    GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3D>, bool preserveDrawingBuffer);
-    GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer);
+    GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider>);
     GraphicsContext3D(blink::WebGraphicsContext3D* webContext);
 
     // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
@@ -381,11 +240,9 @@ private:
 
     OwnPtr<blink::WebGraphicsContext3DProvider> m_provider;
     blink::WebGraphicsContext3D* m_impl;
-    OwnPtr<blink::WebGraphicsContext3D> m_ownedWebContext;
     bool m_initializedAvailableExtensions;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;
-    bool m_preserveDrawingBuffer;
     GrContext* m_grContext;
 };
 

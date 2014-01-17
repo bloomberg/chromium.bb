@@ -42,7 +42,7 @@ WebGLShader::WebGLShader(WebGLRenderingContext* ctx, GLenum type)
     , m_source("")
 {
     ScriptWrappable::init(this);
-    setObject(ctx->graphicsContext3D()->createShader(type));
+    setObject(ctx->webGraphicsContext3D()->createShader(type));
 }
 
 WebGLShader::~WebGLShader()
@@ -50,7 +50,7 @@ WebGLShader::~WebGLShader()
     deleteObject(0);
 }
 
-void WebGLShader::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
+void WebGLShader::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
 {
     context3d->deleteShader(object);
 }

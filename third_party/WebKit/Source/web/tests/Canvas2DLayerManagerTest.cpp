@@ -118,7 +118,8 @@ protected:
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 10);
         {
-            RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new blink::MockWebGraphicsContext3D));
+            OwnPtr<blink::MockWebGraphicsContext3D> webContext = adoptPtr(new blink::MockWebGraphicsContext3D);
+            RefPtr<GraphicsContext3D> context = GraphicsContext3D::createContextSupport(webContext.get());
             OwnPtr<SkDeferredCanvas> canvas1 = createCanvas(context.get());
             FakeCanvas2DLayerBridgePtr layer1(adoptRef(new FakeCanvas2DLayerBridge(context, canvas1.release())));
             EXPECT_EQ((size_t)0, manager.m_bytesAllocated);
@@ -145,7 +146,8 @@ protected:
 
     void evictionTest()
     {
-        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new blink::MockWebGraphicsContext3D));
+        OwnPtr<blink::MockWebGraphicsContext3D> webContext = adoptPtr(new blink::MockWebGraphicsContext3D);
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createContextSupport(webContext.get());
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
         OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
@@ -162,7 +164,8 @@ protected:
 
     void flushEvictionTest()
     {
-        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new blink::MockWebGraphicsContext3D));
+        OwnPtr<blink::MockWebGraphicsContext3D> webContext = adoptPtr(new blink::MockWebGraphicsContext3D);
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createContextSupport(webContext.get());
         Canvas2DLayerManager& manager = Canvas2DLayerManager::get();
         manager.init(10, 5);
         OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
@@ -213,7 +216,8 @@ protected:
 
     void deferredFrameTest()
     {
-        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new blink::MockWebGraphicsContext3D));
+        OwnPtr<blink::MockWebGraphicsContext3D> webContext = adoptPtr(new blink::MockWebGraphicsContext3D);
+        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createContextSupport(webContext.get());
         Canvas2DLayerManager::get().init(10, 10);
         OwnPtr<SkDeferredCanvas> canvas = createCanvas(context.get());
         FakeCanvas2DLayerBridgePtr layer(adoptRef(new FakeCanvas2DLayerBridge(context, canvas.release())));

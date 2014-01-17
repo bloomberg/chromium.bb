@@ -31,9 +31,12 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
+namespace blink {
+class WebGraphicsContext3D;
+}
+
 namespace WebCore {
 
-class GraphicsContext3D;
 class WebGLExtension;
 class WebGLSharedObject;
 class WebGLRenderingContext;
@@ -51,7 +54,7 @@ public:
     void addObject(WebGLSharedObject*);
     void removeObject(WebGLSharedObject*);
 
-    GraphicsContext3D* getAGraphicsContext3D();
+    blink::WebGraphicsContext3D* getAWebGraphicsContext3D();
 
     void loseContextGroup(WebGLRenderingContext::LostContextMode);
 

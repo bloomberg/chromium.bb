@@ -126,28 +126,30 @@ blink::WebLayer* ImageBuffer::platformLayer() const
     return m_surface->layer();
 }
 
-bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& contextSupport, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
     if (!m_surface->isAccelerated() || !platformLayer() || !isValid())
         return false;
 
-    if (!context.makeContextCurrent())
+    blink::WebGraphicsContext3D* context = contextSupport.webContext();
+
+    if (!context->makeContextCurrent())
         return false;
 
-    if (!context.supportsExtension("GL_CHROMIUM_copy_texture") || !context.supportsExtension("GL_CHROMIUM_flipy")
-        || !context.canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    if (!contextSupport.supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport.supportsExtension("GL_CHROMIUM_flipy")
+        || !contextSupport.canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
-    context.pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, !premultiplyAlpha);
+    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, !premultiplyAlpha);
 
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
-    context.pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, !flipY);
-    context.webContext()->copyTextureCHROMIUM(GL_TEXTURE_2D, getBackingTexture(), texture, level, internalFormat, destType);
+    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, !flipY);
+    context->copyTextureCHROMIUM(GL_TEXTURE_2D, getBackingTexture(), texture, level, internalFormat, destType);
 
-    context.pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, false);
-    context.pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
-    context.flush();
+    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, false);
+    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
+    context->flush();
     return true;
 }
 
