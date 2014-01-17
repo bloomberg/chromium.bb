@@ -94,8 +94,6 @@ class GrContext* TestContextProvider::GrContext() {
   return NULL;
 }
 
-void TestContextProvider::MakeGrContextCurrent() {}
-
 bool TestContextProvider::IsContextLost() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());

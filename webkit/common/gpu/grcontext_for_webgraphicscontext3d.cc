@@ -14,10 +14,8 @@ namespace gpu {
 
 static void BindWebGraphicsContext3DGLContextCallback(
     const GrGLInterface* interface) {
-#if GR_GL_PER_GL_FUNC_CALLBACK
   reinterpret_cast<blink::WebGraphicsContext3D*>(
       interface->fCallbackData)->makeContextCurrent();
-#endif
 }
 
 GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
@@ -30,11 +28,9 @@ GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
   if (!interface)
     return;
 
-#if GR_GL_PER_GL_FUNC_CALLBACK
   interface->fCallback = BindWebGraphicsContext3DGLContextCallback;
   interface->fCallbackData =
       reinterpret_cast<GrGLInterfaceCallbackData>(context3d);
-#endif
 
   gr_context_ = skia::AdoptRef(GrContext::Create(
       kOpenGL_GrBackend,

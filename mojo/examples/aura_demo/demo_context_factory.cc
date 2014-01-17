@@ -34,7 +34,6 @@ class MojoContextProvider : public cc::ContextProvider {
     return gles2_client_impl_->Support();
   }
   virtual class GrContext* GrContext() OVERRIDE { return NULL; }
-  virtual void MakeGrContextCurrent() OVERRIDE {}
   virtual Capabilities ContextCapabilities() OVERRIDE { return capabilities_; }
   virtual bool IsContextLost() OVERRIDE {
     return !gles2_client_impl_->Interface();

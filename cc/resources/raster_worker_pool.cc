@@ -616,8 +616,6 @@ void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
   if (tasks.empty())
     return;
 
-  context_provider_->MakeGrContextCurrent();
-
   GrContext* gr_context = context_provider_->GrContext();
   // TODO(alokp): Implement TestContextProvider::GrContext().
   if (gr_context)

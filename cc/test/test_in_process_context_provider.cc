@@ -63,30 +63,6 @@ gpu::ContextSupport* TestInProcessContextProvider::ContextSupport() {
   return context_->GetImplementation();
 }
 
-static void BindGrContextCallback(const GrGLInterface* interface) {
-#if GR_GL_PER_GL_FUNC_CALLBACK
-  reinterpret_cast<TestInProcessContextProvider*>(interface->fCallbackData)
-      ->MakeGrContextCurrent();
-#endif  // GR_GL_PER_GL_FUNC_CALLBACK
-}
-
-class GrContext* TestInProcessContextProvider::GrContext() {
-  if (gr_context_)
-    return gr_context_.get();
-
-  skia::RefPtr<GrGLInterface> interface =
-      skia::AdoptRef(skia_bindings::CreateCommandBufferSkiaGLBinding());
-#if GR_GL_PER_GL_FUNC_CALLBACK
-  interface->fCallback = BindGrContextCallback;
-  interface->fCallbackData = reinterpret_cast<GrGLInterfaceCallbackData>(this);
-#endif  // GR_GL_PER_GL_FUNC_CALLBACK
-
-  gr_context_ = skia::AdoptRef(GrContext::Create(
-      kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
-
-  return gr_context_.get();
-}
-
 namespace {
 
 // Singleton used to initialize and terminate the gles2 library.
@@ -105,11 +81,28 @@ static base::LazyInstance<GLES2Initializer> g_gles2_initializer =
 
 }  // namespace
 
-void TestInProcessContextProvider::MakeGrContextCurrent() {
+static void BindGrContextCallback(const GrGLInterface* interface) {
+  TestInProcessContextProvider* context_provider =
+      reinterpret_cast<TestInProcessContextProvider*>(interface->fCallbackData);
+
   // Make sure the gles2 library is initialized first on exactly one thread.
   g_gles2_initializer.Get();
+  gles2::SetGLContext(context_provider->ContextGL());
+}
 
-  gles2::SetGLContext(context_->GetImplementation());
+class GrContext* TestInProcessContextProvider::GrContext() {
+  if (gr_context_)
+    return gr_context_.get();
+
+  skia::RefPtr<GrGLInterface> interface =
+      skia::AdoptRef(skia_bindings::CreateCommandBufferSkiaGLBinding());
+  interface->fCallback = BindGrContextCallback;
+  interface->fCallbackData = reinterpret_cast<GrGLInterfaceCallbackData>(this);
+
+  gr_context_ = skia::AdoptRef(GrContext::Create(
+      kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
+
+  return gr_context_.get();
 }
 
 ContextProvider::Capabilities

@@ -464,9 +464,6 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   // texture.
   renderer->resource_provider()->Flush();
 
-  // Make sure skia uses the correct GL context.
-  offscreen_contexts->MakeGrContextCurrent();
-
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
   backend_texture_description.fWidth = source_texture_resource->size().width();
@@ -571,9 +568,6 @@ static SkBitmap ApplyBlendModeWithBackdrop(
   // in the shared context.  Do this after locking/creating the compositor
   // texture.
   renderer->resource_provider()->Flush();
-
-  // Make sure skia uses the correct GL context.
-  offscreen_contexts->MakeGrContextCurrent();
 
   // Wrap the source texture in a Ganesh platform texture.
   GrBackendTextureDesc backend_texture_description;
