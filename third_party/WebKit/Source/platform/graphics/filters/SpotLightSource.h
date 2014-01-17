@@ -50,10 +50,10 @@ public:
     virtual bool setSpecularExponent(float) OVERRIDE;
     virtual bool setLimitingConeAngle(float) OVERRIDE;
 
-    virtual void initPaintingData(PaintingData&);
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z);
+    virtual void initPaintingData(PaintingData&) OVERRIDE;
+    virtual void updatePaintingData(PaintingData&, int x, int y, float z) OVERRIDE;
 
-    virtual TextStream& externalRepresentation(TextStream&) const;
+    virtual TextStream& externalRepresentation(TextStream&) const OVERRIDE;
 
 private:
     SpotLightSource(const FloatPoint3D& position, const FloatPoint3D& direction,

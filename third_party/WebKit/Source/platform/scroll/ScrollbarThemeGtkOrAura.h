@@ -37,15 +37,15 @@ namespace WebCore {
 
 class PLATFORM_EXPORT ScrollbarThemeGtkOrAura : public ScrollbarThemeNonMacCommon {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize);
+    virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
 
 protected:
-    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart);
-    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart);
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
-    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
-    virtual IntSize buttonSize(ScrollbarThemeClient*);
-    virtual int minimumThumbLength(ScrollbarThemeClient*);
+    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
+    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
+    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
+    virtual IntSize buttonSize(ScrollbarThemeClient*) OVERRIDE;
+    virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
 };
 
 } // namespace WebCore

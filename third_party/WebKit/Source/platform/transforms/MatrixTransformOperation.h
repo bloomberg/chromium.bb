@@ -49,7 +49,7 @@ private:
 
     virtual OperationType type() const OVERRIDE { return Matrix; }
 
-    virtual bool operator==(const TransformOperation& o) const
+    virtual bool operator==(const TransformOperation& o) const OVERRIDE
     {
         if (!isSameType(o))
             return false;

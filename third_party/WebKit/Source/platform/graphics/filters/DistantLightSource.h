@@ -40,10 +40,10 @@ public:
     virtual bool setAzimuth(float) OVERRIDE;
     virtual bool setElevation(float) OVERRIDE;
 
-    virtual void initPaintingData(PaintingData&);
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z);
+    virtual void initPaintingData(PaintingData&) OVERRIDE;
+    virtual void updatePaintingData(PaintingData&, int x, int y, float z) OVERRIDE;
 
-    virtual TextStream& externalRepresentation(TextStream&) const;
+    virtual TextStream& externalRepresentation(TextStream&) const OVERRIDE;
 
 private:
     DistantLightSource(float azimuth, float elevation)

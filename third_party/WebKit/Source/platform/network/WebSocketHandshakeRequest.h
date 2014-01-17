@@ -41,7 +41,7 @@ class PLATFORM_EXPORT WebSocketHandshakeRequest : public HTTPRequest {
 public:
     static PassRefPtr<WebSocketHandshakeRequest> create(const String& requestMethod, const KURL& url) { return adoptRef(new WebSocketHandshakeRequest(requestMethod, url)); }
     static PassRefPtr<WebSocketHandshakeRequest> create() { return adoptRef(new WebSocketHandshakeRequest); }
-    ~WebSocketHandshakeRequest();
+    virtual ~WebSocketHandshakeRequest();
 
     void addAndMergeHeader(const AtomicString& name, const AtomicString& value) { addAndMergeHeader(&m_headerFields, name, value); }
 

@@ -52,7 +52,7 @@ class PlatformWheelEvent;
 class PLATFORM_EXPORT FramelessScrollView : public ScrollView {
 public:
     FramelessScrollView() : m_client(0) { }
-    ~FramelessScrollView();
+    virtual ~FramelessScrollView();
 
     FramelessScrollViewClient* client() const { return m_client; }
     void setClient(FramelessScrollViewClient* client) { m_client = client; }

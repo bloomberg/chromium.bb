@@ -120,8 +120,8 @@ public:
         return adoptRef(new ReferenceFilterOperation(url, fragment));
     }
 
-    virtual bool affectsOpacity() const { return true; }
-    virtual bool movesPixels() const { return true; }
+    virtual bool affectsOpacity() const OVERRIDE { return true; }
+    virtual bool movesPixels() const OVERRIDE { return true; }
 
     const String& url() const { return m_url; }
     const AtomicString& fragment() const { return m_fragment; }
@@ -136,7 +136,7 @@ private:
         return 0;
     }
 
-    virtual bool operator==(const FilterOperation& o) const
+    virtual bool operator==(const FilterOperation& o) const OVERRIDE
     {
         if (!isSameType(o))
             return false;
@@ -172,7 +172,7 @@ public:
 
 private:
     virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const OVERRIDE;
-    virtual bool operator==(const FilterOperation& o) const
+    virtual bool operator==(const FilterOperation& o) const OVERRIDE
     {
         if (!isSameType(o))
             return false;
@@ -207,12 +207,12 @@ public:
 
     double amount() const { return m_amount; }
 
-    virtual bool affectsOpacity() const { return m_type == OPACITY; }
+    virtual bool affectsOpacity() const OVERRIDE { return m_type == OPACITY; }
 
 
 private:
     virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const OVERRIDE;
-    virtual bool operator==(const FilterOperation& o) const
+    virtual bool operator==(const FilterOperation& o) const OVERRIDE
     {
         if (!isSameType(o))
             return false;
@@ -246,13 +246,13 @@ public:
 
     Length stdDeviation() const { return m_stdDeviation; }
 
-    virtual bool affectsOpacity() const { return true; }
-    virtual bool movesPixels() const { return true; }
+    virtual bool affectsOpacity() const OVERRIDE { return true; }
+    virtual bool movesPixels() const OVERRIDE { return true; }
 
 
 private:
     virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const OVERRIDE;
-    virtual bool operator==(const FilterOperation& o) const
+    virtual bool operator==(const FilterOperation& o) const OVERRIDE
     {
         if (!isSameType(o))
             return false;
@@ -284,13 +284,13 @@ public:
     int stdDeviation() const { return m_stdDeviation; }
     Color color() const { return m_color; }
 
-    virtual bool affectsOpacity() const { return true; }
-    virtual bool movesPixels() const { return true; }
+    virtual bool affectsOpacity() const OVERRIDE { return true; }
+    virtual bool movesPixels() const OVERRIDE { return true; }
 
 
 private:
     virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const OVERRIDE;
-    virtual bool operator==(const FilterOperation& o) const
+    virtual bool operator==(const FilterOperation& o) const OVERRIDE
     {
         if (!isSameType(o))
             return false;

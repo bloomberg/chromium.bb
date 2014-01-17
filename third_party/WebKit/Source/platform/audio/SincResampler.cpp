@@ -146,7 +146,7 @@ namespace {
 
 // BufferSourceProvider is an AudioSourceProvider wrapping an in-memory buffer.
 
-class BufferSourceProvider : public AudioSourceProvider {
+class BufferSourceProvider FINAL : public AudioSourceProvider {
 public:
     BufferSourceProvider(const float* source, size_t numberOfSourceFrames)
         : m_source(source)
@@ -155,7 +155,7 @@ public:
     }
 
     // Consumes samples from the in-memory buffer.
-    virtual void provideInput(AudioBus* bus, size_t framesToProcess)
+    virtual void provideInput(AudioBus* bus, size_t framesToProcess) OVERRIDE
     {
         ASSERT(m_source && bus);
         if (!m_source || !bus)

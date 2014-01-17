@@ -49,7 +49,7 @@ public:
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
 
     static inline void calculateSaturateComponents(float* components, float value);
     static inline void calculateHueRotateComponents(float* components, float value);

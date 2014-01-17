@@ -39,10 +39,10 @@ public:
     virtual bool setY(float) OVERRIDE;
     virtual bool setZ(float) OVERRIDE;
 
-    virtual void initPaintingData(PaintingData&);
-    virtual void updatePaintingData(PaintingData&, int x, int y, float z);
+    virtual void initPaintingData(PaintingData&) OVERRIDE;
+    virtual void updatePaintingData(PaintingData&, int x, int y, float z) OVERRIDE;
 
-    virtual TextStream& externalRepresentation(TextStream&) const;
+    virtual TextStream& externalRepresentation(TextStream&) const OVERRIDE;
 
 private:
     PointLightSource(const FloatPoint3D& position)

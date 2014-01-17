@@ -41,7 +41,7 @@ public:
     // Caller must retain ownership of this pointer and ensure that its lifetime
     // exceeds this instance.
     WebScrollbarThemeClientImpl(blink::WebScrollbar*);
-    ~WebScrollbarThemeClientImpl();
+    virtual ~WebScrollbarThemeClientImpl();
 
     // Implement ScrollbarThemeClient interface
     virtual int x() const OVERRIDE;

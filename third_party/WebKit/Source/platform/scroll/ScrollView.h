@@ -43,7 +43,7 @@ class Scrollbar;
 
 class PLATFORM_EXPORT ScrollView : public Widget, public ScrollableArea {
 public:
-    ~ScrollView();
+    virtual ~ScrollView();
 
     // ScrollableArea functions.
     virtual int scrollSize(ScrollbarOrientation) const OVERRIDE;
@@ -199,10 +199,10 @@ public:
     virtual void setParent(Widget*) OVERRIDE; // Overridden to update the overlapping scrollbar count.
 
     // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
-    virtual void frameRectsChanged();
+    virtual void frameRectsChanged() OVERRIDE;
 
     // Widget override to update our scrollbars and notify our contents of the resize.
-    virtual void setFrameRect(const IntRect&);
+    virtual void setFrameRect(const IntRect&) OVERRIDE;
 
     // Widget override to notify our contents of a cliprect change.
     virtual void clipRectChanged() OVERRIDE;
@@ -245,7 +245,7 @@ public:
 
     virtual bool isPointInScrollbarCorner(const IntPoint&);
     virtual bool scrollbarCornerPresent() const;
-    virtual IntRect scrollCornerRect() const;
+    virtual IntRect scrollCornerRect() const OVERRIDE;
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect);
     virtual void paintScrollbar(GraphicsContext*, Scrollbar*, const IntRect&);
 
@@ -334,7 +334,7 @@ private:
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
     void updateOverhangAreas();
 
-    int pageStep(ScrollbarOrientation) const;
+    virtual int pageStep(ScrollbarOrientation) const OVERRIDE;
 }; // class ScrollView
 
 DEFINE_TYPE_CASTS(ScrollView, Widget, widget, widget->isScrollView(), widget.isScrollView());

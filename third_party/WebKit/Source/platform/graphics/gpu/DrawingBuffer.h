@@ -80,7 +80,7 @@ public:
 
     static PassRefPtr<DrawingBuffer> create(blink::WebGraphicsContext3D*, const IntSize&, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
-    ~DrawingBuffer();
+    virtual ~DrawingBuffer();
 
     // Clear all resources from this object, as well as context. Called when context is destroyed
     // to prevent invalid accesses to the resources.

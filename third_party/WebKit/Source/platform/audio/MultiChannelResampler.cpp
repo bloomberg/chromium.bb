@@ -41,7 +41,7 @@ namespace {
 // ChannelProvider provides a single channel of audio data (one channel at a time) for each channel
 // of data provided to us in a multi-channel provider.
 
-class ChannelProvider : public AudioSourceProvider {
+class ChannelProvider FINAL : public AudioSourceProvider {
 public:
     ChannelProvider(AudioSourceProvider* multiChannelProvider, unsigned numberOfChannels)
         : m_multiChannelProvider(multiChannelProvider)
@@ -53,7 +53,7 @@ public:
 
     // provideInput() will be called once for each channel, starting with the first channel.
     // Each time it's called, it will provide the next channel of data.
-    virtual void provideInput(AudioBus* bus, size_t framesToProcess)
+    virtual void provideInput(AudioBus* bus, size_t framesToProcess) OVERRIDE
     {
         bool isBusGood = bus && bus->numberOfChannels() == 1;
         ASSERT(isBusGood);

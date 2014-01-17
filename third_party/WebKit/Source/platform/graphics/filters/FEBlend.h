@@ -50,7 +50,7 @@ public:
                            unsigned colorArrayLength);
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
 
 private:
     FEBlend(Filter*, BlendModeType);

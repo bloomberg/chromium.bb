@@ -73,7 +73,7 @@ public:
 
     virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) OVERRIDE FINAL;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
 
 private:
 

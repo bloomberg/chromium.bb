@@ -48,7 +48,7 @@ class PLATFORM_EXPORT DiscardablePixelRefAllocator : public SkBitmap::Allocator 
 class PLATFORM_EXPORT DiscardablePixelRef : public SkPixelRef {
 public:
     DiscardablePixelRef(const SkImageInfo&, size_t rowBytes, PassOwnPtr<SkMutex>);
-    ~DiscardablePixelRef();
+    virtual ~DiscardablePixelRef();
 
     static bool isDiscardable(SkPixelRef*);
     bool allocAndLockDiscardableMemory(size_t);

@@ -40,7 +40,7 @@ private:
     virtual bool isIdentity() const OVERRIDE FINAL { return true; }
     virtual OperationType type() const OVERRIDE { return Identity; }
 
-    virtual bool operator==(const TransformOperation& o) const
+    virtual bool operator==(const TransformOperation& o) const OVERRIDE
     {
         return isSameType(o);
     }

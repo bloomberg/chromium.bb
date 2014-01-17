@@ -53,7 +53,7 @@ public:
     const LightSource* lightSource() const;
     void setLightSource(PassRefPtr<LightSource>);
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
 
 private:
     FEDiffuseLighting(Filter*, const Color&, float, float, float, float, PassRefPtr<LightSource>);

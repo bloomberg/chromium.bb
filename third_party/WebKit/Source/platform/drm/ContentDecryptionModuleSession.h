@@ -61,7 +61,7 @@ public:
     static PassOwnPtr<ContentDecryptionModuleSession> create(ContentDecryptionModuleSessionClient*);
 
     ContentDecryptionModuleSession(blink::WebContentDecryptionModule*, ContentDecryptionModuleSessionClient*);
-    ~ContentDecryptionModuleSession();
+    virtual ~ContentDecryptionModuleSession();
 
     String sessionId() const;
     void initializeNewSession(const String& mimeType, const Uint8Array& initData);
