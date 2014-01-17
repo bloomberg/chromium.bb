@@ -53,6 +53,7 @@ struct evdev_device {
 	struct wl_event_source *source;
 	struct weston_output *output;
 	struct evdev_dispatch *dispatch;
+	struct wl_listener output_destroy_listener;
 	char *devnode;
 	char *devname;
 	char *output_name;
@@ -123,6 +124,9 @@ evdev_led_update(struct evdev_device *device, enum weston_led leds);
 struct evdev_device *
 evdev_device_create(struct weston_seat *seat, const char *path, int device_fd);
 
+void
+evdev_device_set_output(struct evdev_device *device,
+			struct weston_output *output);
 void
 evdev_device_destroy(struct evdev_device *device);
 

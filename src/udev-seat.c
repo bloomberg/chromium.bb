@@ -126,7 +126,11 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 		device->output_name = strdup(output_name);
 		wl_list_for_each(output, &c->output_list, link)
 			if (strcmp(output->name, device->output_name) == 0)
-				device->output = output;
+				evdev_device_set_output(device, output);
+	} else if (device->output == NULL) {
+		output = container_of(c->output_list.next,
+				      struct weston_output, link);
+		evdev_device_set_output(device, output);
 	}
 
 	if (input->enabled == 1)
@@ -354,8 +358,10 @@ notify_output_create(struct wl_listener *listener, void *data)
 
 	wl_list_for_each(device, &seat->devices_list, link)
 		if (device->output_name &&
-		    strcmp(output->name, device->output_name) == 0)
-			device->output = output;
+		    strcmp(output->name, device->output_name) == 0) {
+			evdev_device_set_output(device, output);
+			break;
+		}
 }
 
 static struct udev_seat *

@@ -102,6 +102,8 @@ evdev_flush_pending_event(struct evdev_device *device, uint32_t time)
 		device->rel.dy = 0;
 		goto handled;
 	case EVDEV_ABSOLUTE_MT_DOWN:
+		if (device->output == NULL)
+			break;
 		weston_output_transform_coordinate(device->output,
 						   wl_fixed_from_int(device->mt.slots[slot].x),
 						   wl_fixed_from_int(device->mt.slots[slot].y),
@@ -113,6 +115,8 @@ evdev_flush_pending_event(struct evdev_device *device, uint32_t time)
 		notify_touch(master, time, seat_slot, x, y, WL_TOUCH_DOWN);
 		goto handled;
 	case EVDEV_ABSOLUTE_MT_MOTION:
+		if (device->output == NULL)
+			break;
 		weston_output_transform_coordinate(device->output,
 						   wl_fixed_from_int(device->mt.slots[slot].x),
 						   wl_fixed_from_int(device->mt.slots[slot].y),
@@ -126,6 +130,8 @@ evdev_flush_pending_event(struct evdev_device *device, uint32_t time)
 		notify_touch(master, time, seat_slot, 0, 0, WL_TOUCH_UP);
 		goto handled;
 	case EVDEV_ABSOLUTE_TOUCH_DOWN:
+		if (device->output == NULL)
+			break;
 		transform_absolute(device, &cx, &cy);
 		weston_output_transform_coordinate(device->output,
 						   wl_fixed_from_int(cx),
@@ -137,6 +143,8 @@ evdev_flush_pending_event(struct evdev_device *device, uint32_t time)
 		notify_touch(master, time, seat_slot, x, y, WL_TOUCH_DOWN);
 		goto handled;
 	case EVDEV_ABSOLUTE_MOTION:
+		if (device->output == NULL)
+			break;
 		transform_absolute(device, &cx, &cy);
 		weston_output_transform_coordinate(device->output,
 						   wl_fixed_from_int(cx),
@@ -219,8 +227,13 @@ evdev_process_touch(struct evdev_device *device,
 		    struct input_event *e,
 		    uint32_t time)
 {
-	const int screen_width = device->output->current_mode->width;
-	const int screen_height = device->output->current_mode->height;
+	int screen_width, screen_height;
+
+	if (device->output == NULL)
+		return;
+
+	screen_width = device->output->current_mode->width;
+	screen_height = device->output->current_mode->height;
 
 	switch (e->code) {
 	case ABS_MT_SLOT:
@@ -257,8 +270,13 @@ static inline void
 evdev_process_absolute_motion(struct evdev_device *device,
 			      struct input_event *e)
 {
-	const int screen_width = device->output->current_mode->width;
-	const int screen_height = device->output->current_mode->height;
+	int screen_width, screen_height;
+
+	if (device->output == NULL)
+		return;
+
+	screen_width = device->output->current_mode->width;
+	screen_height = device->output->current_mode->height;
 
 	switch (e->code) {
 	case ABS_X:
@@ -575,6 +593,34 @@ evdev_configure_device(struct evdev_device *device)
 	return 0;
 }
 
+static void
+notify_output_destroy(struct wl_listener *listener, void *data)
+{
+	struct evdev_device *device =
+		container_of(listener,
+			     struct evdev_device, output_destroy_listener);
+	struct weston_compositor *c = device->seat->compositor;
+	struct weston_output *output;
+
+	if (device->output_name) {
+		output = container_of(c->output_list.next,
+				      struct weston_output, link);
+		evdev_device_set_output(device, output);
+	} else {
+		device->output = NULL;
+	}
+}
+
+void
+evdev_device_set_output(struct evdev_device *device,
+			struct weston_output *output)
+{
+	device->output = output;
+	device->output_destroy_listener.notify = notify_output_destroy;
+	wl_signal_add(&output->destroy_signal,
+		      &device->output_destroy_listener);
+}
+
 struct evdev_device *
 evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 {
@@ -587,9 +633,6 @@ evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 		return NULL;
 
 	ec = seat->compositor;
-	device->output =
-		container_of(ec->output_list.next, struct weston_output, link);
-
 	device->seat = seat;
 	device->seat_caps = 0;
 	device->is_mt = 0;

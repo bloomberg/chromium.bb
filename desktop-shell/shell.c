@@ -1795,7 +1795,7 @@ ping_timeout_handler(void *data)
 	shsurf->unresponsive = 1;
 
 	wl_list_for_each(seat, &shsurf->surface->compositor->seat_list, link)
-		if (seat->pointer && seat->pointer->focus &&
+		if (seat->pointer->focus &&
 		    seat->pointer->focus->surface == shsurf->surface)
 			set_busy_cursor(shsurf, seat->pointer);
 
@@ -5432,6 +5432,8 @@ shell_destroy(struct wl_listener *listener, void *data)
 	struct workspace **ws;
 	struct shell_output *shell_output, *tmp;
 
+	/* Force state to unlocked so we don't try to fade */
+	shell->locked = false;
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
 
