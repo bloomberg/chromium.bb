@@ -1137,13 +1137,23 @@ class SVNWrapper(SCMWrapper):
         '/chrome/trunk/src': 'gs://chromium-svn-checkout/chrome/',
         '/blink/trunk': 'gs://chromium-svn-checkout/blink/',
     }
+    WHITELISTED_ROOTS = [
+        'svn://svn.chromium.org',
+        'svn://svn-mirror.golo.chromium.org',
+    ]
     if not exists:
       try:
         # Split out the revision number since it's not useful for us.
         base_path = urlparse.urlparse(url).path.split('@')[0]
+        # Check to see if we're on a whitelisted root.  We do this because
+        # only some svn servers have matching UUIDs.
+        local_parsed = urlparse.urlparse(url)
+        local_root = '%s://%s' % (local_parsed.scheme, local_parsed.netloc)
         if ('CHROME_HEADLESS' in os.environ
             and sys.platform == 'linux2'  # TODO(hinoka): Enable for win/mac.
-            and base_path in BASE_URLS):
+            and base_path in BASE_URLS
+            and local_root in WHITELISTED_ROOTS):
+
           # Use a tarball for initial sync if we are on a bot.
           # Get an unauthenticated gsutil instance.
           gsutil = download_from_google_storage.Gsutil(
@@ -1181,8 +1191,6 @@ class SVNWrapper(SCMWrapper):
           tarball_parsed = urlparse.urlparse(tarball_url)
           tarball_root = '%s://%s' % (tarball_parsed.scheme,
                                       tarball_parsed.netloc)
-          local_parsed = urlparse.urlparse(url)
-          local_root = '%s://%s' % (local_parsed.scheme, local_parsed.netloc)
 
           if tarball_root != local_root:
             print 'Switching repository root to %s' % local_root
