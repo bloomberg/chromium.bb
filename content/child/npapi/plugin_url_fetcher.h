@@ -33,7 +33,8 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
                    bool is_plugin_src_load,
                    int origin_pid,
                    int render_frame_id,
-                   unsigned long resource_id);
+                   unsigned long resource_id,
+                   bool copy_stream_data);
   virtual ~PluginURLFetcher();
 
   // Cancels the current request.
@@ -71,6 +72,7 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   bool notify_redirects_;
   bool is_plugin_src_load_;
   unsigned long resource_id_;
+  bool copy_stream_data_;
   int64 data_offset_;
   bool pending_failure_notification_;
 

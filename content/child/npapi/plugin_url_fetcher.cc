@@ -4,6 +4,7 @@
 
 #include "content/child/npapi/plugin_url_fetcher.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "content/child/child_thread.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/plugin_host.h"
@@ -80,7 +81,8 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
                                    bool is_plugin_src_load,
                                    int origin_pid,
                                    int render_frame_id,
-                                   unsigned long resource_id)
+                                   unsigned long resource_id,
+                                   bool copy_stream_data)
     : plugin_stream_(plugin_stream),
       url_(url),
       first_party_for_cookies_(first_party_for_cookies),
@@ -89,6 +91,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       notify_redirects_(notify_redirects),
       is_plugin_src_load_(is_plugin_src_load),
       resource_id_(resource_id),
+      copy_stream_data_(copy_stream_data),
       data_offset_(0),
       pending_failure_notification_(false) {
   webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
@@ -301,7 +304,17 @@ void PluginURLFetcher::OnReceivedData(const char* data,
   } else {
     int64 offset = data_offset_;
     data_offset_ += data_length;
-    plugin_stream_->DidReceiveData(data, data_length, offset);
+
+    if (copy_stream_data_) {
+      // QuickTime writes to this memory, and since we got it from
+      // ResourceDispatcher it's not mapped for write access in this process.
+      // http://crbug.com/308466.
+      scoped_ptr<char[]> data_copy(new char[data_length]);
+      memcpy(data_copy.get(), data, data_length);
+      plugin_stream_->DidReceiveData(data_copy.get(), data_length, offset);
+    } else {
+      plugin_stream_->DidReceiveData(data, data_length, offset);
+    }
     // DANGER: this instance may be deleted at this point.
   }
 }

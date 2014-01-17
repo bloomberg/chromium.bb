@@ -76,6 +76,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
     PLUGIN_QUIRK_IGNORE_FIRST_SETWINDOW_CALL = 65536,  // Windows.
     PLUGIN_QUIRK_EMULATE_IME = 131072,  // Windows.
     PLUGIN_QUIRK_FAKE_WINDOW_FROM_POINT = 262144,  // Windows.
+    PLUGIN_QUIRK_COPY_STREAM_DATA = 524288,  // All platforms
   };
 
   static WebPluginDelegateImpl* Create(WebPlugin* plugin,
