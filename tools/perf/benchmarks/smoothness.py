@@ -34,3 +34,30 @@ class SmoothnessKeyMobileSites(test.Test):
 class SmoothnessToughAnimationCases(test.Test):
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_animation_cases.json'
+
+
+class SmoothnessThreadedRasterizationKeySilkCases(test.Test):
+  """Measures rendering statistics for the key silk cases without GPU
+  rasterization
+  """
+  tag = 'disable_gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = 'page_sets/key_silk_cases.json'
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-threaded-compositing')
+    options.AppendExtraBrowserArgs('--force-compositing-mode')
+    options.AppendExtraBrowserArgs('--enable-impl-side-painting')
+    options.AppendExtraBrowserArgs('--disable-gpu-rasterization')
+
+
+class SmoothnessGpuRasterizationKeySilkCases(test.Test):
+  """Measures rendering statistics for the key silk cases with GPU rasterization
+  """
+  tag = 'enable_gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = 'page_sets/key_silk_cases.json'
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-threaded-compositing')
+    options.AppendExtraBrowserArgs('--force-compositing-mode')
+    options.AppendExtraBrowserArgs('--enable-impl-side-painting')
+    options.AppendExtraBrowserArgs('--enable-gpu-rasterization')

@@ -41,6 +41,10 @@ const char kEnableTopControlsPositionCalculation[] =
 // impl-side painting.
 const char kEnableGPURasterization[] = "enable-gpu-rasterization";
 
+// Disable GPU rasterization, i.e. rasterize on the CPU only.
+// Overrides the kEnableGPURasterization flag.
+const char kDisableGPURasterization[] = "disable-gpu-rasterization";
+
 // The height of the movable top controls.
 const char kTopControlsHeight[] = "top-controls-height";
 
@@ -163,6 +167,17 @@ bool IsLCDTextEnabled() {
 #else
   return true;
 #endif
+}
+
+bool IsGpuRasterizationEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableGPURasterization))
+    return false;
+  else if (command_line.HasSwitch(switches::kEnableGPURasterization))
+    return true;
+
+  return false;
 }
 
 bool IsImplSidePaintingEnabled() {

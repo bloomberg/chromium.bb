@@ -131,8 +131,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
                                            max_untiled_layer_height);
 
   settings.impl_side_painting = cc::switches::IsImplSidePaintingEnabled();
-  settings.gpu_rasterization =
-      cmd->HasSwitch(cc::switches::kEnableGPURasterization);
+  settings.gpu_rasterization = cc::switches::IsGpuRasterizationEnabled();
 
   settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
