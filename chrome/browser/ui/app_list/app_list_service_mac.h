@@ -49,6 +49,7 @@ class AppListServiceMac : public AppListServiceImpl,
                               NSPoint* start_origin);
 
   void ShowWindowNearDock();
+  void WindowAnimationDidEnd();
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE;

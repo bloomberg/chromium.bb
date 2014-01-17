@@ -45,6 +45,9 @@ APP_LIST_EXPORT
   // Subview of |backgroundView_| that slides out when search results are shown.
   base::scoped_nsobject<NSView> contentsView_;
 
+  // Progress indicator that is visible while the delegate is NULL.
+  base::scoped_nsobject<NSProgressIndicator> loadingIndicator_;
+
   scoped_ptr<app_list::AppListViewDelegate> delegate_;
   scoped_ptr<app_list::AppListModelObserverBridge>
       app_list_model_observer_bridge_;

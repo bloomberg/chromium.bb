@@ -160,6 +160,10 @@ void AppListModelObserverBridge::OnProfilesChanged() {
 
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate {
   if (delegate_) {
+    // Ensure the search box is cleared when switching profiles.
+    if ([self searchBoxModel])
+      [self searchBoxModel]->SetText(base::string16());
+
     // First clean up, in reverse order.
     app_list_model_observer_bridge_.reset();
     [appsSearchResultsController_ setDelegate:nil];
@@ -167,8 +171,13 @@ void AppListModelObserverBridge::OnProfilesChanged() {
     [appsGridController_ setDelegate:nil];
   }
   delegate_.reset(newDelegate.release());
-  if (!delegate_)
+  if (delegate_) {
+    [loadingIndicator_ stopAnimation:self];
+  } else {
+    [loadingIndicator_ startAnimation:self];
     return;
+  }
+
   [appsGridController_ setDelegate:delegate_.get()];
   [appsSearchBoxController_ setDelegate:self];
   [appsSearchResultsController_ setDelegate:self];
@@ -200,8 +209,20 @@ void AppListModelObserverBridge::OnProfilesChanged() {
   base::scoped_nsobject<NSView> containerView(
       [[NSView alloc] initWithFrame:[backgroundView_ frame]]);
 
+  loadingIndicator_.reset(
+      [[NSProgressIndicator alloc] initWithFrame:NSZeroRect]);
+  [loadingIndicator_ setStyle:NSProgressIndicatorSpinningStyle];
+  [loadingIndicator_ sizeToFit];
+  NSRect indicatorRect = [loadingIndicator_ frame];
+  indicatorRect.origin.x = NSWidth(contentsRect) / 2 - NSMidX(indicatorRect);
+  indicatorRect.origin.y = NSHeight(contentsRect) / 2 - NSMidY(indicatorRect);
+  [loadingIndicator_ setFrame:indicatorRect];
+  [loadingIndicator_ setDisplayedWhenStopped:NO];
+  [loadingIndicator_ startAnimation:self];
+
   [contentsView_ addSubview:[appsGridController_ view]];
   [contentsView_ addSubview:pagerControl_];
+  [contentsView_ addSubview:loadingIndicator_];
   [backgroundView_ addSubview:contentsView_];
   [backgroundView_ addSubview:[appsSearchResultsController_ view]];
   [backgroundView_ addSubview:[appsSearchBoxController_ view]];
