@@ -31,6 +31,9 @@ def main():
   parser.add_option("--sdk_path",
                     action="store", type="string", dest="sdk_path", default="",
                     help="user-specified SDK path; bypasses verification")
+  parser.add_option("--print_sdk_path",
+                    action="store_true", dest="print_sdk_path", default=False,
+                    help="Additionaly print the path the SDK (appears first).")
   (options, args) = parser.parse_args()
   min_sdk_version = args[0]
 
@@ -72,6 +75,10 @@ def main():
     print >>sys.stderr, '                                           ^^^^^^^'
     print >>sys.stderr, ''
     return min_sdk_version
+
+  if options.print_sdk_path:
+    print subprocess.check_output(['xcodebuild', '-version', '-sdk',
+                                   'macosx' + best_sdk, 'Path']).strip()
 
   return best_sdk
 

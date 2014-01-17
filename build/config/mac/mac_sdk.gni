@@ -12,16 +12,23 @@ declare_args() {
   mac_sdk_path = ""
 }
 
+find_sdk_args = [ "--print_sdk_path" ]
 if (is_chrome_branded && is_official_build) {
-  find_sdk_args = [ "--verify", mac_sdk_min "--sdk_path=" + mac_sdk_path ]
+  find_sdk_args += [ "--verify", mac_sdk_min "--sdk_path=" + mac_sdk_path ]
 } else {
-  find_sdk_args = [ mac_sdk_min ]
+  find_sdk_args += [ mac_sdk_min ]
 }
-# Use "list lines" and take the first to get version string without a newline.
+# The tool will print the SDK path on the first line, and the version on the
+# second line.
 find_sdk_lines =
     exec_script("//build/mac/find_sdk.py", find_sdk_args, "list lines")
-mac_sdk_version = find_sdk_lines[0]
+mac_sdk_version = find_sdk_lines[1]
 if (mac_sdk_path == "") {
-  mac_sdk_root = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX"
-  mac_sdk_path = mac_sdk_root + mac_sdk_version + ".sdk"
+  # TODO(brettw) http://crbug.com/335325  when everybody moves to XCode 5 we
+  # can remove the --print_sdk_path argument to find_sdk and instead just use
+  # the following two lines to get the path. Although it looks longer here, it
+  # saves forking a process in find_sdk.py so will be faster.
+  #mac_sdk_root = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX"
+  #mac_sdk_path = mac_sdk_root + mac_sdk_version + ".sdk"
+  mac_sdk_path = find_sdk_lines[0]
 }
