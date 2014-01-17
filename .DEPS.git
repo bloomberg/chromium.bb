@@ -304,7 +304,7 @@ deps_os = {
         'src/third_party/chromite':
             Var('git_url') + '/chromiumos/chromite.git@6637dcd35a8b9f02ba54d2a369118306cee88432',
         'src/third_party/cros_dbus_cplusplus/source':
-            Var('git_url') + '/chromiumos/third_party/dbus-cplusplus.git@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900',
+            Var('git_url') + '/chromiumos/third_party/dbus-cplusplus.git@e4120532bbf3ca9f743b0be1f539381a54d16867',
         'src/third_party/cros_system_api':
             Var('git_url') + '/chromiumos/platform/system_api.git@6445c9773efbcbcbc4077c349f846b18c525b3eb',
         'src/third_party/fontconfig/src':
@@ -320,7 +320,7 @@ deps_os = {
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@e6c7682c40c27527894fbb8bcba38f77edbbb6b7',
         'src/third_party/mtpd/source':
-            Var('git_url') + '/chromiumos/platform/mtpd.git@5be739c938a0a229ba9479b00b180e1f9c843e81',
+            Var('git_url') + '/chromiumos/platform/mtpd.git@e4e4656e9aa710f0617dab8746ab6116c0506ceb',
         'src/third_party/openssl':
             Var('git_url') + '/chromium/deps/openssl.git@3ad826c02b96a42a49c6ce57347f71274176666a',
         'src/third_party/pyelftools':
