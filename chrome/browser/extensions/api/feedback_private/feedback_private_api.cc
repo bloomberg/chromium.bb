@@ -86,6 +86,8 @@ void FeedbackPrivateAPI::RequestFeedback(
 
     scoped_ptr<Event> event(new Event(
         feedback_private::OnFeedbackRequested::kEventName, args.Pass()));
+    event->restrict_to_browser_context = profile_;
+
     // TODO(rkc): Remove logging once crbug.com/284662 is closed.
     LOG(WARNING) << "FEEDBACK_DEBUG: Dispatching onFeedbackRequested event.";
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
