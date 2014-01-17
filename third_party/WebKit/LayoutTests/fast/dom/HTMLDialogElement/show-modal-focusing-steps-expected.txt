@@ -3,9 +3,6 @@ Tests focus when a modal dialog is opened.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS document.activeElement is outerButton
 Test that focus goes to body if the dialog has no focusable elements, including itself
 PASS document.activeElement is document.body

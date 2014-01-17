@@ -610,6 +610,8 @@ public:
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
     void setNeedsFocusedElementCheck();
     void didRunCheckFocusedElementTask() { m_didPostCheckFocusedElementTask = false; }
+    void setAutofocusElement(Element*);
+    Element* autofocusElement() const { return m_autofocusElement.get(); }
 
     void setHoverNode(PassRefPtr<Node>);
     Node* hoverNode() const { return m_hoverNode.get(); }
@@ -1139,6 +1141,7 @@ private:
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
     bool m_didPostCheckFocusedElementTask;
+    RefPtr<Element> m_autofocusElement;
     RefPtr<Element> m_focusedElement;
     RefPtr<Node> m_hoverNode;
     RefPtr<Element> m_activeElement;

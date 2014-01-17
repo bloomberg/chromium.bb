@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
 <script>
-if (window.testRunner)
-	testRunner.dumpAsText();
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
 
 function crash() {
-	document.body.innerHTML = "PASS. WebKit didn't crash.";
+    document.body.innerHTML = "PASS. WebKit didn't crash.";
+    testRunner.notifyDone();
 }
 </script>
 <object>

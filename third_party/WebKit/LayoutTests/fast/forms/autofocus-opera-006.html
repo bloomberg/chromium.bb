@@ -5,6 +5,7 @@
  input, input#test:focus { background:lime }
  input:focus, input#test { background:red }
 </style>
+<script src="resources/common.js"></script>
 <script language="JavaScript" type="text/javascript">
     function log(message) {
         document.getElementById("console").innerHTML += "<li>"+message+"</li>";
@@ -18,10 +19,14 @@
             log("SUCCESS");
         else
             log("FAILURE");
+        if (window.testRunner)
+            testRunner.notifyDone();
     }
+
+    waitUntilLoadedAndAutofocused(test);
 </script>
 </head>
-<body onload="test()">
+<body>
 <p>All form controls below should have a green background:</p>
 <p><input autofocus>
 <p><input autofocus>

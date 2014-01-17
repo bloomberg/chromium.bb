@@ -6,7 +6,7 @@ if (window.testRunner)
 </script>
 <ul>
     <li>basic <input type="week"> <input type="week" value="1982-W25"></li>
-    <li>focus <input autofocus type="week"> <input type="week" value="1982-W25"></li>
+    <li>focus <input type="week"> <input type="week" value="1982-W25"></li>
     <li>disabled <input type="week" disabled> <input type="week" value="1982-W25" disabled></li>
     <li>readonly <input type="week" readonly> <input type="week" value="1982-W25" readonly></li>
     <li>RTL <input type="week" dir="rtl"> <input type="week" value="1982-W25" dir="rtl"></li>
@@ -23,5 +23,6 @@ if (window.testRunner)
     <li>-webkit-appearance:none: <input type="week" value="1982-W25" style="-webkit-appearance: none;"></li>
     <li>padding: <input type="week" value="1982-W25" style="padding: 20px"></li>
 </ul>
+<script>document.querySelectorAll('input')[2].focus();</script>
 </body>
 </html>

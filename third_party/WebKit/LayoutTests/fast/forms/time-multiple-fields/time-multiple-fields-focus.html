@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <body>
 <script src="../../../resources/js-test.js"></script>
-<input id="timeInput" type="time" value="01:01" style="font-size:20px" autofocus>
+<input id="timeInput" type="time" value="01:01" style="font-size:20px">
 <script>
 function dispatchKeyEventTo(type, key, target) {
     var event = document.createEvent('KeyboardEvent');
@@ -15,11 +15,9 @@ function shadowPseudoIdOfFocused() {
 
 description('Check if focus() for focused input does not change focused sub-field.');
 
-// Trigger a recalc style so autofocus is handled.
-document.body.offsetTop;
-
 debug('Move focus to the second sub-field:');
 var timeInput = document.getElementById('timeInput');
+timeInput.focus();
 shouldBe('document.activeElement', 'timeInput');
 dispatchKeyEventTo('keydown', 'Right', timeInput);
 shouldBeEqualToString('shadowPseudoIdOfFocused(timeInput)', '-webkit-datetime-edit-minute-field');

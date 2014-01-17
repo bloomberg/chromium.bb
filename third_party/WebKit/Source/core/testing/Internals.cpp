@@ -734,6 +734,18 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
     toHTMLInputElement(element)->selectColorInColorChooser(color);
 }
 
+bool Internals::hasAutofocusRequest(Document* document)
+{
+    if (!document)
+        document = contextDocument();
+    return document->autofocusElement();
+}
+
+bool Internals::hasAutofocusRequest()
+{
+    return hasAutofocusRequest(0);
+}
+
 Vector<String> Internals::formControlStateOfHistoryItem(ExceptionState& exceptionState)
 {
     HistoryItem* mainItem = frame()->loader().currentItem();

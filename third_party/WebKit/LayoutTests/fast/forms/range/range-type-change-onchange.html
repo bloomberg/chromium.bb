@@ -2,7 +2,7 @@
 <body>
 <script src="../../../resources/js-test.js"></script>
 
-<input id="range1" type="range" onchange="updateType(this)" autofocus>
+<input id="range1" type="range" onchange="updateType(this)">
 <script>
 description('Check if no problem happens by type change in onchange handler.');
 
@@ -17,6 +17,7 @@ function finish() {
 }
 
 jsTestIsAsync = true;
+document.getElementById('range1').focus();
 eventSender.keyDown('upArrow');
 </script>
 </body>

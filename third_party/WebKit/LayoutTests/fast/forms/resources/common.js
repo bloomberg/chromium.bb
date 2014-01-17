@@ -179,3 +179,32 @@ function getElementByPseudoId(root, pseudoId) {
     }
     return null;
 }
+
+function doneLater() {
+    setTimeout(function() {
+        testRunner.notifyDone();
+    }, 0);
+}
+
+function waitUntilLoadedAndAutofocused(callback) {
+    var loaded = false;
+    var autofocused = false;
+    // Use doneLater() because some rendering tests need repaint after focus.
+    callback  = callback || doneLater;
+    // Does both of waitUntilDone and jsTestIsAsync because we want to support
+    // tests with/without js-test.js.
+    testRunner.waitUntilDone();
+    window.jsTestIsAsync = true;
+    window.addEventListener('load', function() {
+        loaded = true;
+        if (autofocused)
+            callback();
+    }, false);
+    document.addEventListener('focusin', function() {
+        if (internals.hasAutofocusRequest(document))
+            return;
+        autofocused = true;
+        if (loaded)
+            callback();
+    }, false);
+}

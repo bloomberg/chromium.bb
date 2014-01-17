@@ -83,6 +83,8 @@
 
     void selectColorInColorChooser(Element element, DOMString colorValue);
 
+    // If the argument is omitted, the top-level document is used.
+    boolean hasAutofocusRequest(optional Document document);
     [RaisesException] DOMString[] formControlStateOfHistoryItem();
     [RaisesException] void setFormControlStateOfHistoryItem(sequence<DOMString> values);
     [RaisesException] void setEnableMockPagePopup(boolean enabled);

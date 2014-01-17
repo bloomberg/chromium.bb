@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="../../forms/resources/common.js"></script>
 <script>
 description('Tests autofocus when a modal dialog is opened.');
 
@@ -38,10 +39,15 @@ function test() {
     dialog.showModal();
     shouldBe('document.activeElement', 'autofocusButton');
     dialog.close();
+
+    finishJSTest();
 }
+
+jsTestIsAsync = true;
+waitUntilLoadedAndAutofocused(test);
 </script>
 </head>
-<body onload="test();">
+<body>
 <button id="outer-button" autofocus></button>
 <dialog id="dialog">
     <button></button>

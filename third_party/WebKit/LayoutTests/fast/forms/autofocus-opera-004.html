@@ -19,9 +19,9 @@
         var p = document.getElementsByTagName('p')[0];
         var input = p.removeChild(input);
         input.setAttribute('autofocus','false');
+        input.addEventListener('focus', check, false);
         p.appendChild(input);
-
-        setTimeout(check, 0);
+        setTimeout(check, 1000);
     }
     
     function check() {

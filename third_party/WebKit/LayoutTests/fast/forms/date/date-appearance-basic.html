@@ -34,6 +34,7 @@ if (testRunner)
 var input = document.getElementById('hovered');
 if (window.eventSender)
     eventSender.mouseMoveTo(input.offsetLeft + input.offsetWidth / 2, input.offsetTop + input.offsetHeight / 2);
+document.querySelector('input[autofocus]').focus();
 </script>
 </body>
 </html>

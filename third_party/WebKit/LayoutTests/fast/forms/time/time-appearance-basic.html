@@ -5,7 +5,7 @@ if (window.testRunner)
     testRunner.dumpAsTextWithPixelResults();
 </script>
 <ul>
-    <li>step=none <input autofocus type="time"> <input type="time" value="12:34"></li>
+    <li>step=none <input type="time"> <input type="time" value="12:34"></li>
     <li>step=1 <input type="time" step="1"> <input step="1" type="time" value="12:34:56"></li>
     <li>step=0.0001 <input type="time" step="0.001"> <input step="0.001" type="time" value="12:34:56.789"></li>
     <li>step=60 <input type="time" step="60"> <input step="60" type="time" value="12:34"></li>
@@ -31,6 +31,7 @@ if (window.testRunner)
 var input = document.querySelector('input:read-only');
 if (window.eventSender)
     eventSender.mouseMoveTo(input.offsetLeft + input.offsetWidth / 2, input.offsetTop + input.offsetHeight / 2);
+document.querySelectorAll('input')[0].focus();
 </script>
 </body>
 </html>

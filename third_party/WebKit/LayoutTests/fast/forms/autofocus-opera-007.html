@@ -6,6 +6,11 @@
  input:focus { background:red }
 </style>
 <script language="JavaScript" type="text/javascript">
+    if (window.testRunner) {
+       testRunner.dumpAsText();
+       testRunner.waitUntilDone();
+    }
+
     var gotBlur = false;
 
     function log(message) {
@@ -17,19 +22,18 @@
     }
     
     function test() {
-        if (window.testRunner)
-            testRunner.dumpAsText();
-
         if (gotBlur)
             log("SUCCESS");
         else
             log("FAILURE");
+        if (window.testRunner)
+            testRunner.notifyDone();
     }
 </script>
 </head>
-<body onload="test()">
+<body>
 <p>The form control below should have a green background:
-<p><input autofocus onfocus="this.blur()" onblur="switchBlur()">
+<p><input autofocus onfocus="this.blur(); test();" onblur="switchBlur()">
 <hr/>
 <ol id="console"></ol>
 </body>

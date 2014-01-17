@@ -372,6 +372,27 @@ private:
     }
 };
 
+// This class doesn't work with non-Document ExecutionContext.
+class AutofocusTask FINAL : public ExecutionContextTask {
+public:
+    static PassOwnPtr<AutofocusTask> create()
+    {
+        return adoptPtr(new AutofocusTask());
+    }
+    virtual ~AutofocusTask() { }
+
+private:
+    AutofocusTask() { }
+    virtual void performTask(ExecutionContext* context) OVERRIDE
+    {
+        Document* document = toDocument(context);
+        if (Element* element = document->autofocusElement()) {
+            document->setAutofocusElement(0);
+            element->focus();
+        }
+    }
+};
+
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(this)
@@ -2002,6 +2023,7 @@ void Document::detach(const AttachContext& context)
     m_hoverNode = 0;
     m_focusedElement = 0;
     m_activeElement = 0;
+    m_autofocusElement = 0;
 
     ContainerNode::detach(context);
 
@@ -5253,6 +5275,17 @@ FastTextAutosizer* Document::fastTextAutosizer()
     if (!m_fastTextAutosizer && RuntimeEnabledFeatures::fastTextAutosizingEnabled())
         m_fastTextAutosizer = FastTextAutosizer::create(this);
     return m_fastTextAutosizer.get();
+}
+
+void Document::setAutofocusElement(Element* element)
+{
+    if (!element) {
+        m_autofocusElement = 0;
+        return;
+    }
+    if (!m_autofocusElement)
+        m_taskRunner->postTask(AutofocusTask::create());
+    m_autofocusElement = element;
 }
 
 } // namespace WebCore

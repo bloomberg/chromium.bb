@@ -131,6 +131,8 @@ public:
 
     String visiblePlaceholder(Element*);
     void selectColorInColorChooser(Element*, const String& colorValue);
+    bool hasAutofocusRequest(Document*);
+    bool hasAutofocusRequest();
     Vector<String> formControlStateOfHistoryItem(ExceptionState&);
     void setFormControlStateOfHistoryItem(const Vector<String>&, ExceptionState&);
     void setEnableMockPagePopup(bool, ExceptionState&);

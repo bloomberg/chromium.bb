@@ -180,12 +180,6 @@ void HTMLFormControlElement::requiredAttributeChanged()
     setNeedsStyleRecalc();
 }
 
-static void focusPostAttach(Node* element)
-{
-    toElement(element)->focus();
-    element->deref();
-}
-
 bool HTMLFormControlElement::isAutofocusable() const
 {
     if (!fastHasAttribute(autofocusAttr))
@@ -219,6 +213,8 @@ static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element)
 {
     if (!element->isAutofocusable())
         return false;
+    // FIXME: hasAutofocused should be moved to Document according to the
+    // specification.
     if (element->hasAutofocused())
         return false;
     if (element->document().isSandboxed(SandboxAutomaticFeatures)) {
@@ -242,10 +238,11 @@ void HTMLFormControlElement::attach(const AttachContext& context)
     // on the renderer.
     renderer()->updateFromElement();
 
+    // FIXME: Autofocus handling should be moved to insertedInto according to
+    // the standard.
     if (shouldAutofocusOnAttach(this)) {
         setAutofocused();
-        ref();
-        PostAttachCallbacks::queueCallback(focusPostAttach, this);
+        document().setAutofocusElement(this);
     }
 }
 

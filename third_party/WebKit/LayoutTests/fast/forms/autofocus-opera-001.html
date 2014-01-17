@@ -5,6 +5,7 @@
  input { background:red }
  input:focus { background:lime }
 </style>
+<script src="resources/common.js"></script>
 <script language="JavaScript" type="text/javascript">
     function log(message) {
         document.getElementById("console").innerHTML += "<li>"+message+"</li>";
@@ -18,10 +19,14 @@
             log("SUCCESS");
         else
             log("FAILURE");
+        if (window.testRunner)
+            testRunner.notifyDone();
     }
+
+    waitUntilLoadedAndAutofocused(test);
 </script>
 </head>
-<body onload="test()">
+<body>
 <p>This form control should have a green background and active state: <input autofocus>
 <hr>
 <ol id="console"></ol>
