@@ -604,12 +604,21 @@ ManagementUninstallFunction::~ManagementUninstallFunction() {
 bool ManagementUninstallFunction::RunImpl() {
   scoped_ptr<management::Uninstall::Params> params(
       management::Uninstall::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(extension_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool show_confirm_dialog = false;
-  if (params->options.get() && params->options->show_confirm_dialog.get())
-    show_confirm_dialog = *params->options->show_confirm_dialog;
-
+  bool show_confirm_dialog = true;
+  // By default confirmation dialog isn't shown when uninstalling self, but this
+  // can be overridden with showConfirmDialog.
+  if (params->id == extension_->id()) {
+    show_confirm_dialog = params->options.get() &&
+                          params->options->show_confirm_dialog.get() &&
+                          *params->options->show_confirm_dialog;
+  }
+  if (show_confirm_dialog && !user_gesture()) {
+    error_ = keys::kGestureNeededForUninstallError;
+    return false;
+  }
   return Uninstall(params->id, show_confirm_dialog);
 }
 

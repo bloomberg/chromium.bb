@@ -90,7 +90,9 @@ function installAndCleanUp(installOptions, whileInstalled) {
 
               whileInstalled();
 
-              chrome.management.uninstall(extensionId, {}, callbackPass());
+              chrome.test.runWithUserGesture(callbackPass(function() {
+                chrome.management.uninstall(extensionId, {}, callbackPass());
+              }));
             }));
       }));
 }

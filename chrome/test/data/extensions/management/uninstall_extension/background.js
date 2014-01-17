@@ -11,11 +11,13 @@ chrome.management.getAll(function(items) {
     if (item.name != EXPECTED_NAME) continue;
     var id = item.id;
     chrome.test.assertEq(false, item.mayDisable);
-    chrome.management.uninstall(id, function() {
-      // Check that the right error occured.
-      var expectedError = 'Extension ' + id + ' cannot be modified by user';
-      chrome.test.assertEq(expectedError, chrome.runtime.lastError.message);
-      chrome.test.sendMessage('ready');
+    chrome.test.runWithUserGesture(function() {
+      chrome.management.uninstall(id, function() {
+        // Check that the right error occured.
+        var expectedError = 'Extension ' + id + ' cannot be modified by user.';
+        chrome.test.assertEq(expectedError, chrome.runtime.lastError.message);
+        chrome.test.sendMessage('ready');
+      });
     });
   }
 });

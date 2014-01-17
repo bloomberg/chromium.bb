@@ -64,10 +64,12 @@ var tests = [
       chrome.test.assertEq(true, item.mayDisable);
 
       var id = item.id;
-      chrome.management.uninstall(id, callback(function() {
-        chrome.test.assertNoLastError();
-        // The calling api test will verify that the item was uninstalled.
-      }));
+      chrome.test.runWithUserGesture(function() {
+        chrome.management.uninstall(id, callback(function() {
+          chrome.test.assertNoLastError();
+          // The calling api test will verify that the item was uninstalled.
+        }));
+      });
     }));
   }
 ];

@@ -16,6 +16,7 @@ extern const char kDisabledReasonPermissionsIncrease[];
 // Error messages.
 extern const char kExtensionCreateError[];
 extern const char kGestureNeededForEscalationError[];
+extern const char kGestureNeededForUninstallError[];
 extern const char kManifestParseError[];
 extern const char kNoExtensionError[];
 extern const char kNotAnAppError[];

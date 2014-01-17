@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -28,6 +29,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUnprivileged) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
+  // Auto-confirm the uninstall dialog.
+  extensions::ManagementUninstallFunction::SetAutoConfirmForTest(true);
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("runtime").AppendASCII("uninstall_url").
           AppendASCII("sets_uninstall_url")));

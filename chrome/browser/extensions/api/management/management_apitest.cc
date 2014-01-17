@@ -5,6 +5,7 @@
 #include <map>
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -125,6 +126,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, NoPermission) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_Uninstall) {
   LoadExtensions();
+  // Confirmation dialog will be shown for uninstallations except for self.
+  extensions::ManagementUninstallFunction::SetAutoConfirmForTest(true);
   ASSERT_TRUE(RunExtensionSubtest("management/test", "uninstall.html"));
 }
 
@@ -138,6 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_Uninstall) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                        MAYBE_ManagementPolicyAllowed) {
   LoadExtensions();
+  extensions::ManagementUninstallFunction::SetAutoConfirmForTest(true);
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],

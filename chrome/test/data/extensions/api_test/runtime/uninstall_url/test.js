@@ -12,13 +12,14 @@ var uninstalled = false;
 chrome.test.runTests([
   function uninstallURL() {
     chrome.management.getAll(function(results) {
-      for(var i = 0;i<results.length;i++)
-      {
+      for(var i = 0; i < results.length; i++) {
         if (results[i].name == sets_uninstall_url) {
-          chrome.management.uninstall(results[i].id, pass(function() {
-            chrome.tabs.query({'url': uninstall_url}, pass(function(tabs) {
-              chrome.test.assertEq(tabs.length, 1);
-              chrome.test.assertEq(tabs[0].url, uninstall_url);
+          chrome.test.runWithUserGesture(pass(function() {
+            chrome.management.uninstall(results[i].id, pass(function() {
+              chrome.tabs.query({'url': uninstall_url}, pass(function(tabs) {
+                chrome.test.assertEq(tabs.length, 1);
+                chrome.test.assertEq(tabs[0].url, uninstall_url);
+              }));
             }));
           }));
           uninstalled = true;

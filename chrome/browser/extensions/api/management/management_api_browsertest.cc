@@ -111,9 +111,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 
   const std::string id = extension->id();
 
+  scoped_refptr<Extension> empty_extension(
+      extension_function_test_utils::CreateEmptyExtension());
   // Uninstall, then cancel via the confirm dialog.
   scoped_refptr<ManagementUninstallFunction> uninstall_function(
       new ManagementUninstallFunction());
+  uninstall_function->set_extension(empty_extension);
+  uninstall_function->set_user_gesture(true);
   ManagementUninstallFunction::SetAutoConfirmForTest(false);
 
   EXPECT_TRUE(MatchPattern(
@@ -129,8 +133,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 
   // Uninstall, then accept via the confirm dialog.
   uninstall_function = new ManagementUninstallFunction();
+  uninstall_function->set_extension(empty_extension);
   ManagementUninstallFunction::SetAutoConfirmForTest(true);
-
+  uninstall_function->set_user_gesture(true);
   util::RunFunctionAndReturnSingleResult(
       uninstall_function.get(),
       base::StringPrintf("[\"%s\", {\"showConfirmDialog\": true}]", id.c_str()),

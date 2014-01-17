@@ -9,7 +9,7 @@ var ENABLED_NAME = 'enabled_extension';
 var DISABLED_NAME = 'disabled_extension';
 var UNINSTALL_NAME = 'enabled_extension';
 
-var EXPECTED_ERROR = 'Extension * cannot be modified by user';
+var EXPECTED_ERROR = 'Extension * cannot be modified by user.';
 
 // Given a list of extension items, finds the one with the given name.
 function findByName(items, name) {
@@ -69,8 +69,10 @@ var tests = [
 
       var id = item.id;
       var expectedError = EXPECTED_ERROR.replace('*', id);
-      chrome.management.uninstall(id,
-          callback(function() { checkEnabled(id, true); }, expectedError));
+      chrome.test.runWithUserGesture(function() {
+        chrome.management.uninstall(id,
+            callback(function() { checkEnabled(id, true); }, expectedError));
+      });
     }));
   }
 ];

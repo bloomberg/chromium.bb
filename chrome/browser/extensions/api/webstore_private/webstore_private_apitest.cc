@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -126,6 +127,8 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   // Navigates to |page| and runs the Extension API test there. Any downloads
   // of extensions will return the contents of |crx_file|.
   bool RunInstallTest(const std::string& page, const std::string& crx_file) {
+    // Auto-confirm the uninstallation dialog.
+    ManagementUninstallFunction::SetAutoConfirmForTest(true);
 #if defined(OS_WIN) && !defined(NDEBUG)
     // See http://crbug.com/177163 for details.
     return true;
