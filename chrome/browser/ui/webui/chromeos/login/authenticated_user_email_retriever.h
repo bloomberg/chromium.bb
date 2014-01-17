@@ -8,16 +8,17 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
-#include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 
 class GaiaAuthFetcher;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace chromeos {
 
@@ -27,30 +28,23 @@ class AuthenticatedUserEmailRetriever : public GaiaAuthConsumer {
   typedef base::Callback<void(const std::string&)>
       AuthenticatedUserEmailCallback;
 
-  // Extracts the GAIA cookies from |url_request_context_getter|, retrieves the
-  // authenticated user's e-mail address from GAIA and passes it to |callback|.
-  // If the e-mail address cannot be retrieved, an empty string is passed to
-  // the |callback|.
+  // Retrieves the authenticated user's e-mail address from GAIA and passes it
+  // to |callback|. Requires that |url_request_context_getter| contain the GAIA
+  // cookies for exactly one user. If the e-mail address cannot be retrieved, an
+  // empty string is passed to the |callback|.
   AuthenticatedUserEmailRetriever(
       const AuthenticatedUserEmailCallback& callback,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
   virtual ~AuthenticatedUserEmailRetriever();
 
   // GaiaAuthConsumer:
-  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
-  virtual void OnGetUserInfoFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
+  virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
 
  private:
-  void ExtractCookies(scoped_refptr<net::CookieStore> cookie_store);
-  void ExtractLSIDFromCookies(const net::CookieList& cookies);
-
-  AuthenticatedUserEmailCallback callback_;
-
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
-
-  base::WeakPtrFactory<AuthenticatedUserEmailRetriever> weak_factory_;
+  const AuthenticatedUserEmailCallback callback_;
+  GaiaAuthFetcher gaia_auth_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatedUserEmailRetriever);
 };

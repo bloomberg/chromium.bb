@@ -72,7 +72,7 @@ class FakeGaia {
     std::string session_sid_cookie;
     std::string session_lsid_cookie;
 
-    // The e-mail address returned by /GetUserInfo.
+    // The e-mail address returned by /ListAccounts.
     std::string email;
   };
 
@@ -148,8 +148,8 @@ class FakeGaia {
                        net::test_server::BasicHttpResponse* http_response);
   void HandleIssueToken(const net::test_server::HttpRequest& request,
                         net::test_server::BasicHttpResponse* http_response);
-  void HandleGetUserInfo(const net::test_server::HttpRequest& request,
-                         net::test_server::BasicHttpResponse* http_response);
+  void HandleListAccounts(const net::test_server::HttpRequest& request,
+                          net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first

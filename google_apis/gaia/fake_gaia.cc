@@ -47,6 +47,9 @@ const base::FilePath::CharType kServiceLogin[] =
 const char kAuthHeaderBearer[] = "Bearer ";
 const char kAuthHeaderOAuth[] = "OAuth ";
 
+const char kListAccountsResponseFormat[] =
+    "[\"gaia.l.a.r\",[[\"gaia.l.a\",1,\"\",\"%s\",\"\",1,1,0]]]";
+
 typedef std::map<std::string, std::string> CookieMap;
 
 // Parses cookie name-value map our of |request|.
@@ -169,9 +172,9 @@ void FakeGaia::Initialize() {
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->oauth2_issue_token_url(), HandleIssueToken);
 
-  // Handles /GetUserInfo GAIA call.
+  // Handles /ListAccounts GAIA call.
   REGISTER_RESPONSE_HANDLER(
-      gaia_urls->get_user_info_url(), HandleGetUserInfo);
+      gaia_urls->list_accounts_url(), HandleListAccounts);
 }
 
 scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
@@ -519,20 +522,9 @@ void FakeGaia::HandleIssueToken(const HttpRequest& request,
   }
 }
 
-void FakeGaia::HandleGetUserInfo(const HttpRequest& request,
+void FakeGaia::HandleListAccounts(const HttpRequest& request,
                                  BasicHttpResponse* http_response) {
-  std::string lsid;
-  if (!GetQueryParameter(request.content, "LSID", &lsid)) {
-    http_response->set_code(net::HTTP_BAD_REQUEST);
-    LOG(ERROR) << "/GetUserInfo missing LSID";
-    return;
-  }
-  if (lsid != merge_session_params_.auth_lsid_cookie) {
-    http_response->set_code(net::HTTP_BAD_REQUEST);
-    LOG(ERROR) << "/GetUserInfo contains unknown LSID";
-    return;
-  }
   http_response->set_content(base::StringPrintf(
-      "email=%s", merge_session_params_.email.c_str()));
+      kListAccountsResponseFormat, merge_session_params_.email.c_str()));
   http_response->set_code(net::HTTP_OK);
 }
