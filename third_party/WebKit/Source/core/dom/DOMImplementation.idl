@@ -24,6 +24,7 @@
 
     // DOM Level 1
 
+    [ImplementedAs=hasFeatureForBindings, MeasureAs=DOMImplementationHasFeature]
     boolean hasFeature(DOMString feature, [TreatNullAs=NullString] DOMString version);
 
     // DOM Level 2

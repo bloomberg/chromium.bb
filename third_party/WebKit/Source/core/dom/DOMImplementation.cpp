@@ -46,6 +46,7 @@
 #include "core/html/TextDocument.h"
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
+#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGDocument.h"
 #include "platform/ContentType.h"
@@ -173,6 +174,15 @@ bool DOMImplementation::hasFeature(const String& feature, const String& version)
     || feature.startsWith("org.w3c.svg", false)) {
         // FIXME: SVG 2.0 support?
         return isSupportedSVG10Feature(feature, version) || isSupportedSVG11Feature(feature, version);
+    }
+    return true;
+}
+
+bool DOMImplementation::hasFeatureForBindings(const String& feature, const String& version)
+{
+    if (!hasFeature(feature, version)) {
+        UseCounter::count(m_document, UseCounter::DOMImplementationHasFeatureReturnFalse);
+        return false;
     }
     return true;
 }
