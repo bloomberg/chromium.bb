@@ -462,12 +462,12 @@ deps_os = {
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/mtpd/source":
       Var("chromiumos_git") + "/platform/mtpd.git" +
-      "@5be739c938a0a229ba9479b00b180e1f9c843e81",
+      "@e4e4656e9aa710f0617dab8746ab6116c0506ceb",
 
     # Used on Linux only. CrOS already has a copy.
     "src/third_party/cros_dbus_cplusplus/source":
       Var("chromiumos_git") + "/third_party/dbus-cplusplus.git" +
-      "@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900",
+      "@e4120532bbf3ca9f743b0be1f539381a54d16867",
 
     # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
