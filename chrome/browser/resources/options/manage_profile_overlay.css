@@ -23,6 +23,10 @@
   margin-top: 5px;
 }
 
+#create-profile-name-input-container {
+  margin-bottom: 5px;
+}
+
 #create-profile-name,
 #manage-profile-name {
   margin-left: 10px;
@@ -131,7 +135,7 @@ html[dir='rtl'] #delete-profile-icon {
 }
 
 #create-profile-managed-content-area {
-  padding-top: 10;
+  padding-top: 5px;
 }
 
 #import-existing-managed-user-link {
