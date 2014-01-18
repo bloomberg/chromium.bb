@@ -30,7 +30,6 @@
 
 #if OS(MACOSX)
 #import "platform/fonts/harfbuzz/HarfBuzzFace.h"
-#include "third_party/skia/include/ports/SkTypeface_mac.h"
 #endif
 
 namespace WebCore {
@@ -53,7 +52,7 @@ FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool isPrinterFon
 
     CGFontRef cgFont = 0;
     loadFont(nsFont, size, m_font, cgFont);
-
+    
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
     // FIXME: Chromium: The following code isn't correct for the Chromium port since the sandbox might
     // have blocked font loading, in which case we'll only have the real loaded font file after the call to loadFont().
@@ -129,11 +128,11 @@ void FontPlatformData::setFont(NSFont *font)
         CFRelease(m_font);
     m_font = font;
     m_size = [font pointSize];
-
+    
     CGFontRef cgFont = 0;
     NSFont* loadedFont = 0;
     loadFont(m_font, m_size, loadedFont, cgFont);
-
+    
 #if OS(MACOSX)
     // If loadFont replaced m_font with a fallback font, then release the
     // previous font to counter the retain above. Then retain the new font.
@@ -143,7 +142,7 @@ void FontPlatformData::setFont(NSFont *font)
         m_font = loadedFont;
     }
 #endif
-
+    
     m_cgFont.adoptCF(cgFont);
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
     {
@@ -277,14 +276,6 @@ CTFontRef FontPlatformData::ctFont() const
     }
 
     return m_CTFont.get();
-}
-
-SkTypeface* FontPlatformData::typeface() const{
-    if (m_typeface)
-        return m_typeface.get();
-
-    m_typeface = SkCreateTypefaceFromCTFont(ctFont());
-    return m_typeface.get();
 }
 
 #if OS(MACOSX)

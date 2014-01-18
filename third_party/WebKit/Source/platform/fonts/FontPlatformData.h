@@ -56,7 +56,6 @@ typedef const struct __CTFont* CTFontRef;
 
 #if OS(MACOSX)
 #include "platform/fonts/mac/MemoryActivatedFont.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 #endif
 
 #if OS(MACOSX)
@@ -104,7 +103,6 @@ public:
 #if OS(MACOSX)
     CGFontRef cgFont() const { return m_cgFont.get(); }
     CTFontRef ctFont() const;
-    SkTypeface* typeface() const;
 
     bool roundsGlyphAdvances() const;
     bool allowsLigatures() const;
@@ -200,7 +198,6 @@ private:
 
     RefPtr<MemoryActivatedFont> m_inMemoryFont;
     RefPtr<HarfBuzzFace> m_harfBuzzFace;
-    mutable RefPtr<SkTypeface> m_typeface;
 #endif
 
     bool m_isColorBitmapFont;
