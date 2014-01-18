@@ -288,7 +288,11 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
         dst = src
       elif sfx:
         dst += '.%s' % sfx
-      ctx.Copy(os.path.join(src_path, src), os.path.join(dst_path, dst))
+      try:
+        ctx.Copy(os.path.join(src_path, src), os.path.join(dst_path, dst))
+      except gs.GSNoSuchKey:
+        cros_build_lib.Warning('Skipping %s as it does not exist', src)
+        continue
 
       if image_type:
         dst_base = dst[:-(len(sfx) + 1)]
