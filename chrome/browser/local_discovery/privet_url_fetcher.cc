@@ -114,8 +114,7 @@ void PrivetURLFetcher::SetUploadFilePath(
 }
 
 void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      source->GetResponseCode() == net::HTTP_SERVICE_UNAVAILABLE) {
+  if (source->GetResponseCode() == net::HTTP_SERVICE_UNAVAILABLE) {
     ScheduleRetry(kPrivetTimeoutOnError);
     return;
   }

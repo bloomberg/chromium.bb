@@ -108,30 +108,6 @@ TEST_F(PrivetURLFetcherTest, FetchSuccess) {
   EXPECT_EQ(2, hello_value);
 }
 
-TEST_F(PrivetURLFetcherTest, URLFetcherErrorRetry) {
-  privet_urlfetcher_->Start();
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
-  fetcher->SetResponseString(kSampleParsableJSON);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                            net::ERR_TIMED_OUT));
-  fetcher->set_response_code(-1);
-
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-
-  RunFor(base::TimeDelta::FromSeconds(7));
-  fetcher = fetcher_factory_.GetFetcherByID(0);
-
-  ASSERT_TRUE(fetcher != NULL);
-  fetcher->SetResponseString(kSampleParsableJSON);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                            net::OK));
-  fetcher->set_response_code(200);
-
-  EXPECT_CALL(delegate_, OnParsedJsonInternal(false));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-}
-
 TEST_F(PrivetURLFetcherTest, HTTP503Retry) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
