@@ -1765,6 +1765,7 @@ rpi_renderer_create(struct weston_compositor *compositor,
 						   EGL_EXTENSIONS);
 	if (!extensions) {
 		weston_log("Retrieving EGL extension string failed.\n");
+		eglTerminate(renderer->egl_display);
 		free(renderer);
 		return -1;
 	}
