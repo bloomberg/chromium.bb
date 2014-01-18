@@ -11,4 +11,4 @@ SVGZoomEvents ImplementedAs=SVGZoomEvent
 UIEvents ImplementedAs=UIEvent
 WebKitTransitionEvent ImplementedAs=TransitionEvent
 
-core/dom/TouchEvent RuntimeEnabled=touchEnabled
+core/events/TouchEvent RuntimeEnabled=touchEnabled

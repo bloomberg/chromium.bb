@@ -69,10 +69,29 @@ class Writer(in_generator.Writer):
         self.namespace = self.in_file.parameters['namespace'].strip('"')
         self._entries_by_conditional = {}
         self._unconditional_entries = []
+        self._validate_entries()
         self._sort_entries_by_conditional()
         self._outputs = {(self.namespace + "Headers.h"): self.generate_headers_header,
                          (self.namespace + "Interfaces.h"): self.generate_interfaces_header,
                         }
+
+    def _validate_entries(self):
+        # If there is more than one entry with the same script name, only the first one will ever
+        # be hit in practice, and so we'll silently ignore any properties requested for the second
+        # (like RuntimeEnabled - see crbug.com/332588).
+        entries_by_script_name = dict()
+        for entry in self.in_file.name_dictionaries:
+            script_name = name_utilities.script_name(entry)
+            if script_name in entries_by_script_name:
+                self._fatal('Multiple entries with script_name=%(script_name)s: %(name1)s %(name2)s' % {
+                    'script_name': script_name,
+                    'name1': entry['name'],
+                    'name2': entries_by_script_name[script_name]['name']})
+            entries_by_script_name[script_name] = entry
+
+    def _fatal(self, message):
+        print 'FATAL ERROR: ' + message
+        exit(1)
 
     def _sort_entries_by_conditional(self):
         unconditional_names = set()
