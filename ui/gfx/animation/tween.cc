@@ -131,11 +131,10 @@ int Tween::IntValueBetween(double value, int start, int target) {
   else
     delta++;
 #if defined(OS_WIN)
-  value *= _nextafter(delta, 0);
+  return start + static_cast<int>(value * _nextafter(delta, 0));
 #else
-  value *= nextafter(delta, 0);
+  return start + static_cast<int>(value * nextafter(delta, 0));
 #endif
-  return start + static_cast<int>(value);
 }
 
 //static
