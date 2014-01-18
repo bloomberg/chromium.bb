@@ -45,6 +45,7 @@ class PermissionBubbleManager
   virtual void SetView(PermissionBubbleView* view);
 
  private:
+  friend class PermissionBubbleManagerTest;
   friend class content::WebContentsUserData<PermissionBubbleManager>;
 
   explicit PermissionBubbleManager(content::WebContents* web_contents);

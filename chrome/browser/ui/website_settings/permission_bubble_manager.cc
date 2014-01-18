@@ -41,11 +41,21 @@ void PermissionBubbleManager::RemovePermissionBubbleDelegate(
 }
 
 void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
+  if (view == NULL && view_ != NULL) {
+    view_->SetDelegate(NULL);
+    view_->Hide();
+  }
+
   view_ = view;
   if (view_ == NULL)
     return;
 
   if (bubble_showing_) {
+    view_->SetDelegate(this);
+    view_->Show(delegates_, accept_state_);
+  } else if (!delegates_.empty()) {
+    bubble_showing_ = true;
+    view_->SetDelegate(this);
     view_->Show(delegates_, accept_state_);
   } else {
     view_->Hide();
