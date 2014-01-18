@@ -901,6 +901,8 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^remoting[\\\/]base[\\\/]logging\.h$",
                  r"^remoting[\\\/]host[\\\/].*",
                  r"^sandbox[\\\/]linux[\\\/].*",
+                 r"^tools[\\\/]telemetry[\\\/]telemetry[\\\/]core[\\\/]"
+                     r"bitmaptools.cc$",
                  r"^ui[\\\/]aura[\\\/]bench[\\\/]bench_main\.cc$",))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=(file_inclusion_pattern,), black_list=black_list)
