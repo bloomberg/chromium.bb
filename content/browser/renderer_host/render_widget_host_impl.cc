@@ -724,8 +724,7 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
         gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
     view_->CopyFromCompositingSurface(accelerated_copy_rect,
                                       accelerated_dst_size,
-                                      callback,
-                                      false);
+                                      callback);
     return;
   }
 

@@ -1047,12 +1047,7 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
 void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& /* dst_size */,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
-    bool readback_config_rgb565) {
-  if (readback_config_rgb565) {
-    NOTIMPLEMENTED();
-    callback.Run(false, SkBitmap());
-  }
+    const base::Callback<void(bool, const SkBitmap&)>& callback) {
   // Grab the snapshot from the renderer as that's the only reliable way to
   // readback from the GPU for this platform right now.
   GetRenderWidgetHost()->GetSnapshotFromRenderer(src_subrect, callback);

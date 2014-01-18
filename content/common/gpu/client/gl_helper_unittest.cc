@@ -662,8 +662,7 @@ class GLHelperTest : public testing::Test {
     helper_->ReadbackTextureSync(
         dst_texture,
         gfx::Rect(0, 0, scaled_xsize, scaled_ysize),
-        static_cast<unsigned char*>(output_pixels.getPixels()),
-        SkBitmap::kARGB_8888_Config);
+        static_cast<unsigned char*>(output_pixels.getPixels()));
     if (flip) {
       // Flip the pixels back.
       FlipSKBitmap(&output_pixels);
@@ -840,128 +839,6 @@ class GLHelperTest : public testing::Test {
         }
       }
     }
-  }
-
-  bool ColorComponentsClose(SkColor component1,
-                            SkColor component2,
-                            SkBitmap::Config config) {
-    int c1 = static_cast<int>(component1);
-    int c2 = static_cast<int>(component2);
-    bool result = false;
-    switch (config) {
-      case SkBitmap::kARGB_8888_Config:
-        result = (std::abs(c1 - c2) == 0);
-        break;
-      case SkBitmap::kRGB_565_Config:
-        result = (std::abs(c1 - c2) <= 7);
-        break;
-      default:
-        break;
-    }
-    return result;
-  }
-
-  bool ColorsClose(SkColor color1, SkColor color2, SkBitmap::Config config) {
-    bool red = ColorComponentsClose(SkColorGetR(color1),
-                                    SkColorGetR(color2), config);
-    bool green = ColorComponentsClose(SkColorGetG(color1),
-                                        SkColorGetG(color2), config);
-    bool blue = ColorComponentsClose(SkColorGetB(color1),
-                                     SkColorGetB(color2), config);
-    bool alpha = ColorComponentsClose(SkColorGetA(color1),
-                                      SkColorGetA(color2), config);
-    if (config == SkBitmap::kRGB_565_Config) {
-      return red && blue && green;
-    }
-    return red && blue && green && alpha;
-  }
-
-  bool IsEqual(const SkBitmap& bmp1, const SkBitmap& bmp2) {
-    if (bmp1.isNull() && bmp2.isNull())
-      return true;
-    if (bmp1.width() != bmp2.width() ||
-        bmp1.height() != bmp2.height()) {
-        LOG(ERROR) << "Bitmap geometry check failure";
-        return false;
-    }
-    if (bmp1.getConfig() != bmp2.getConfig())
-      return false;
-
-    SkAutoLockPixels lock1(bmp1);
-    SkAutoLockPixels lock2(bmp2);
-    if (!bmp1.getPixels() || !bmp2.getPixels()) {
-      LOG(ERROR) << "Empty Bitmap!";
-      return false;
-    }
-    for (int y = 0; y < bmp1.height(); ++y) {
-      for (int x = 0; x < bmp1.width(); ++x) {
-        if (!ColorsClose(bmp1.getColor(x,y),
-                         bmp2.getColor(x,y),
-                         bmp1.getConfig())) {
-          LOG(ERROR) << "Bitmap color comparision failure";
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  // Test basic format readback.
-  bool TestTextureFormatReadback(const gfx::Size& src_size,
-                         SkBitmap::Config bitmap_config) {
-    DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
-           (bitmap_config == SkBitmap::kARGB_8888_Config));
-    bool rgb565_format = (bitmap_config == SkBitmap::kRGB_565_Config);
-    if (rgb565_format && !helper_->CanUseRgb565Readback()) {
-      LOG(INFO) << "RGB565 Format Not supported on this platform";
-      LOG(INFO) << "Skipping RGB565ReadBackTest";
-      return true;
-    }
-    WebGLId src_texture = context_->createTexture();
-    SkBitmap input_pixels;
-    input_pixels.setConfig(bitmap_config, src_size.width(),
-                           src_size.height());
-    input_pixels.allocPixels();
-    SkAutoLockPixels lock1(input_pixels);
-    // Erase the input bitmap with red color.
-    input_pixels.eraseColor(SK_ColorRED);
-    context_->bindTexture(GL_TEXTURE_2D, src_texture);
-    GLenum format = (bitmap_config == SkBitmap::kRGB_565_Config) ?
-                    GL_RGB : GL_RGBA;
-    GLenum type = (bitmap_config == SkBitmap::kRGB_565_Config) ?
-                  GL_UNSIGNED_SHORT_5_6_5 : GL_UNSIGNED_BYTE;
-    context_->texImage2D(GL_TEXTURE_2D,
-                         0,
-                         format,
-                         src_size.width(),
-                         src_size.height(),
-                         0,
-                         format,
-                         type,
-                         input_pixels.getPixels());
-    SkBitmap output_pixels;
-    output_pixels.setConfig(bitmap_config, src_size.width(),
-                           src_size.height());
-    output_pixels.allocPixels();
-    SkAutoLockPixels lock2(output_pixels);
-    // Initialize the output bitmap with Green color.
-    // When the readback is over output bitmap should have the red color.
-    output_pixels.eraseColor(SK_ColorGREEN);
-    uint8* pixels = static_cast<uint8*>(output_pixels.getPixels());
-    helper_->ReadbackTextureSync(src_texture,
-                                 gfx::Rect(src_size),
-                                 pixels,
-                                 bitmap_config);
-    bool result = IsEqual(input_pixels, output_pixels);
-    if (!result) {
-      LOG(ERROR) << "Bitmap comparision failure";
-      return false;
-    }
-    context_->deleteTexture(src_texture);
-    if (HasFailure()) {
-      return false;
-    }
-    return true;
   }
 
   // YUV readback test. Create a test pattern, convert to YUV
@@ -1338,20 +1215,6 @@ class GLHelperTest : public testing::Test {
   scoped_ptr<content::GLHelperScaling> helper_scaling_;
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
-
-TEST_F(GLHelperTest, RGBAReadBackTest) {
-  const int kTestSize = 64;
-  bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
-                                          SkBitmap::kARGB_8888_Config);
-  EXPECT_EQ(result, true);
-}
-
-TEST_F(GLHelperTest, RGB565ReadBackTest) {
-  const int kTestSize = 64;
-  bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
-                                          SkBitmap::kRGB_565_Config);
-  EXPECT_EQ(result, true);
-}
 
 TEST_F(GLHelperTest, YUVReadbackOptTest) {
   // This test uses the cb_command tracing events to detect how many

@@ -347,8 +347,7 @@ bool CompositorImpl::CopyTextureToBitmap(GLuint texture_id,
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
   helper->ReadbackTextureSync(texture_id,
                               sub_rect,
-                              static_cast<unsigned char*> (bitmap.pixels()),
-                              SkBitmap::kARGB_8888_Config);
+                              static_cast<unsigned char*> (bitmap.pixels()));
   return true;
 }
 
