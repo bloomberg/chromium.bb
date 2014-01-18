@@ -158,6 +158,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
  private:
   friend class BubbleBorderDelegate;
+  friend class BubbleWindowTargeter;
 
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);

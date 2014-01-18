@@ -50,11 +50,12 @@ class KeyboardContainerTargeter : public wm::MaskedWindowTargeter {
 
  private:
   // wm::MaskedWindowTargeter:
-  virtual void GetHitTestMask(aura::Window* window,
+  virtual bool GetHitTestMask(aura::Window* window,
                               gfx::Path* mask) const OVERRIDE {
     gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
         KeyboardBoundsFromWindowBounds(window->bounds());
     mask->addRect(RectToSkRect(keyboard_bounds));
+    return true;
   }
 
   keyboard::KeyboardControllerProxy* proxy_;

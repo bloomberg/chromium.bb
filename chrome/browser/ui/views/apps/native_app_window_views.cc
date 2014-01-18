@@ -65,6 +65,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/wm/public/masked_window_targeter.h"
 #endif
 
 using apps::ShellWindow;
@@ -203,6 +204,29 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowStateDelegate);
 };
 #endif  // USE_ASH
+
+class ShapedNativeAppWindowTargeter : public wm::MaskedWindowTargeter {
+ public:
+  ShapedNativeAppWindowTargeter(aura::Window* window,
+                                NativeAppWindowViews* app_window)
+      : wm::MaskedWindowTargeter(window),
+        app_window_(app_window) {
+  }
+
+  virtual ~ShapedNativeAppWindowTargeter() {}
+
+ private:
+  // wm::MaskedWindowTargeter:
+  virtual bool GetHitTestMask(aura::Window* window,
+                              gfx::Path* mask) const OVERRIDE {
+    SkRegion* shape = app_window_->shape();
+    return shape ? shape->getBoundaryPath(mask) : false;
+  }
+
+  NativeAppWindowViews* app_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShapedNativeAppWindowTargeter);
+};
 
 }  // namespace
 

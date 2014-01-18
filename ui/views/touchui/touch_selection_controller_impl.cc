@@ -127,7 +127,7 @@ class TouchHandleWindowTargeter : public wm::MaskedWindowTargeter {
 
  private:
   // wm::MaskedWindowTargeter:
-  virtual void GetHitTestMask(aura::Window* window,
+  virtual bool GetHitTestMask(aura::Window* window,
                               gfx::Path* mask) const OVERRIDE;
 
   EditingHandleView* handle_view_;
@@ -300,7 +300,7 @@ TouchHandleWindowTargeter::TouchHandleWindowTargeter(
       handle_view_(handle_view) {
 }
 
-void TouchHandleWindowTargeter::GetHitTestMask(aura::Window* window,
+bool TouchHandleWindowTargeter::GetHitTestMask(aura::Window* window,
                                                gfx::Path* mask) const {
   const gfx::Rect& selection_rect = handle_view_->selection_rect();
   gfx::Size image_size = GetHandleImageSize();
@@ -308,6 +308,7 @@ void TouchHandleWindowTargeter::GetHitTestMask(aura::Window* window,
       SkIntToScalar(image_size.width()) + 2 * kSelectionHandleHorizPadding,
       SkIntToScalar(selection_rect.height() + image_size.height() +
                     kSelectionHandleVertPadding));
+  return true;
 }
 
 TouchSelectionControllerImpl::TouchSelectionControllerImpl(

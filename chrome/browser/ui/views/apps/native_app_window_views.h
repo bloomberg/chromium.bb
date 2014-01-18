@@ -64,6 +64,8 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   void Init(apps::ShellWindow* shell_window,
             const apps::ShellWindow::CreateParams& create_params);
 
+  SkRegion* shape() { return shape_.get(); }
+
  protected:
   // Called before views::Widget::Init() to allow subclasses to customize
   // the InitParams that would be passed.

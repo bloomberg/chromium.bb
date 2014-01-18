@@ -27,6 +27,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -308,11 +309,14 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   SetBubbleArrow(arrow);
 
 #if defined(USE_AURA)
-  GetWidget()->GetNativeWindow()->layer()->SetMasksToBounds(true);
+  aura::Window* window = GetWidget()->GetNativeWindow();
+  window->layer()->SetMasksToBounds(true);
   GetBubbleFrameView()->set_background(new AppListBackground(
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
       app_list_main_view_));
   set_background(NULL);
+  window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+      new views::BubbleWindowTargeter(this)));
 #else
   set_background(new AppListBackground(
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),

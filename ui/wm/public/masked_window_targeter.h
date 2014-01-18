@@ -20,8 +20,8 @@ class MaskedWindowTargeter : public aura::WindowTargeter {
 
  protected:
   // Sets the hit-test mask for |window| in |mask| (in |window|'s local
-  // coordinate system).
-  virtual void GetHitTestMask(aura::Window* window, gfx::Path* mask) const = 0;
+  // coordinate system). Returns whether a valid mask has been set in |mask|.
+  virtual bool GetHitTestMask(aura::Window* window, gfx::Path* mask) const = 0;
 
   // aura::WindowTargeter:
   virtual bool EventLocationInsideBounds(

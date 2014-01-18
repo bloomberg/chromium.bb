@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -22,6 +23,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble/bubble_window_targeter.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -354,6 +356,8 @@ void TrayBubbleView::InitializeAndShowBubble() {
     layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
 
   GetWidget()->Show();
+  GetWidget()->GetNativeWindow()->set_event_targeter(
+      scoped_ptr<ui::EventTargeter>(new BubbleWindowTargeter(this)));
   UpdateBubble();
 }
 

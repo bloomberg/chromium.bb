@@ -145,6 +145,7 @@
             '../events/events.gyp:events',
             '../views/controls/webview/webview.gyp:webview',
             '../views/views.gyp:views',
+            '../wm/wm.gyp:wm_public',
           ],
         }, {  # toolkit_views==0
           'sources/': [

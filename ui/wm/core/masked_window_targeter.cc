@@ -20,7 +20,8 @@ bool MaskedWindowTargeter::EventLocationInsideBounds(
     const ui::LocatedEvent& event) const {
   if (window == masked_window_) {
     gfx::Path mask;
-    GetHitTestMask(window, &mask);
+    if (!GetHitTestMask(window, &mask))
+      return WindowTargeter::EventLocationInsideBounds(window, event);
 
     gfx::Size size = window->bounds().size();
     SkRegion clip_region;
