@@ -306,7 +306,9 @@ if __name__ == '__main__':
   # TODO(bradnelson): take this out once this issue is fixed:
   #    http://code.google.com/p/gyp/issues/detail?id=177
   if sys.platform == 'cygwin':
-    python_dir = os.path.join(chrome_src, 'third_party', 'python_26')
+    depot_tools_path = find_depot_tools.add_depot_tools_to_path()
+    python_dir = sorted(glob.glob(os.path.join(depot_tools_path,
+                                               'python2*_bin')))[-1]
     env = os.environ.copy()
     env['PATH'] = python_dir + os.pathsep + env.get('PATH', '')
     p = subprocess.Popen(
