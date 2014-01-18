@@ -187,8 +187,9 @@ struct CaseFoldingTestData {
 // \xC4\xB0 = U+0130 (capital dotted I)
 // \xC4\xB1 = U+0131 (lowercase dotless I)
 const char* turkicInput = "Isi\xC4\xB0 \xC4\xB0s\xC4\xB1I";
-const char* greekInput = "ΟΔΌΣ Οδός Σο ΣΟ oΣ ΟΣ σ ἕξ";
-const char* lithuanianInput = "I Ï J J̈ Į Į̈ Ì Í Ĩ xi̇̈ xj̇̈ xį̇̈ xi̇̀ xi̇́ xi̇̃ XI XÏ XJ XJ̈ XĮ XĮ̈";
+const char* greekInput = "\xCE\x9F\xCE\x94\xCE\x8C\xCE\xA3 \xCE\x9F\xCE\xB4\xCF\x8C\xCF\x82 \xCE\xA3\xCE\xBF \xCE\xA3\xCE\x9F o\xCE\xA3 \xCE\x9F\xCE\xA3 \xCF\x83 \xE1\xBC\x95\xCE\xBE";
+const char* lithuanianInput = "I \xC3\x8F J J\xCC\x88 \xC4\xAE \xC4\xAE\xCC\x88 \xC3\x8C \xC3\x8D \xC4\xA8 xi\xCC\x87\xCC\x88 xj\xCC\x87\xCC\x88 x\xC4\xAF\xCC\x87\xCC\x88 xi\xCC\x87\xCC\x80 xi\xCC\x87\xCC\x81 xi\xCC\x87\xCC\x83 XI X\xC3\x8F XJ XJ\xCC\x88 X\xC4\xAE X\xC4\xAE\xCC\x88";
+
 
 const char* turkicLocales[] = {
     "tr", "tr-TR", "tr_TR", "tr@foo=bar", "tr-US", "TR", "tr-tr", "tR",
@@ -229,25 +230,25 @@ TEST(WTF, StringToUpperLocale)
             greekInput,
             greekLocales,
             sizeof(greekLocales) / sizeof(const char*),
-            "ΟΔΟΣ ΟΔΟΣ ΣΟ ΣΟ OΣ ΟΣ Σ ΕΞ",
+            "\xCE\x9F\xCE\x94\xCE\x9F\xCE\xA3 \xCE\x9F\xCE\x94\xCE\x9F\xCE\xA3 \xCE\xA3\xCE\x9F \xCE\xA3\xCE\x9F \x4F\xCE\xA3 \xCE\x9F\xCE\xA3 \xCE\xA3 \xCE\x95\xCE\x9E",
         }, {
             "Greek input",
             greekInput,
             nonGreekLocales,
             sizeof(nonGreekLocales) / sizeof(const char*),
-            "ΟΔΌΣ ΟΔΌΣ ΣΟ ΣΟ OΣ ΟΣ Σ ἝΞ",
+            "\xCE\x9F\xCE\x94\xCE\x8C\xCE\xA3 \xCE\x9F\xCE\x94\xCE\x8C\xCE\xA3 \xCE\xA3\xCE\x9F \xCE\xA3\xCE\x9F \x4F\xCE\xA3 \xCE\x9F\xCE\xA3 \xCE\xA3 \xE1\xBC\x9D\xCE\x9E",
         }, {
             "Lithuanian input",
             lithuanianInput,
             lithuanianLocales,
             sizeof(lithuanianLocales) / sizeof(const char*),
-            "I Ï J J̈ Į Į̈ Ì Í Ĩ XÏ XJ̈ XĮ̈ XÌ XÍ XĨ XI XÏ XJ XJ̈ XĮ XĮ̈",
+            "I \xC3\x8F J J\xCC\x88 \xC4\xAE \xC4\xAE\xCC\x88 \xC3\x8C \xC3\x8D \xC4\xA8 XI\xCC\x88 XJ\xCC\x88 X\xC4\xAE\xCC\x88 XI\xCC\x80 XI\xCC\x81 XI\xCC\x83 XI X\xC3\x8F XJ XJ\xCC\x88 X\xC4\xAE X\xC4\xAE\xCC\x88",
         }, {
             "Lithuanian input",
             lithuanianInput,
             nonLithuanianLocales,
             sizeof(nonLithuanianLocales) / sizeof(const char*),
-            "I Ï J J̈ Į Į̈ Ì Í Ĩ Xİ̈ XJ̇̈ XĮ̇̈ Xİ̀ Xİ́ Xİ̃ XI XÏ XJ XJ̈ XĮ XĮ̈",
+            "I \xC3\x8F J J\xCC\x88 \xC4\xAE \xC4\xAE\xCC\x88 \xC3\x8C \xC3\x8D \xC4\xA8 XI\xCC\x87\xCC\x88 XJ\xCC\x87\xCC\x88 X\xC4\xAE\xCC\x87\xCC\x88 XI\xCC\x87\xCC\x80 XI\xCC\x87\xCC\x81 XI\xCC\x87\xCC\x83 XI X\xC3\x8F XJ XJ\xCC\x88 X\xC4\xAE X\xC4\xAE\xCC\x88",
         },
     };
 
@@ -269,7 +270,7 @@ TEST(WTF, StringToLowerLocale)
             turkicInput,
             turkicLocales,
             sizeof(turkicLocales) / sizeof(const char*),
-            "ısii isıı",
+            "\xC4\xB1sii is\xC4\xB1\xC4\xB1",
         }, {
             "Turkic input",
             turkicInput,
@@ -282,25 +283,25 @@ TEST(WTF, StringToLowerLocale)
             greekInput,
             greekLocales,
             sizeof(greekLocales) / sizeof(const char*),
-            "οδός οδός σο σο oς ος σ ἕξ",
+            "\xCE\xBF\xCE\xB4\xCF\x8C\xCF\x82 \xCE\xBF\xCE\xB4\xCF\x8C\xCF\x82 \xCF\x83\xCE\xBF \xCF\x83\xCE\xBF \x6F\xCF\x82 \xCE\xBF\xCF\x82 \xCF\x83 \xE1\xBC\x95\xCE\xBE",
         }, {
             "Greek input",
             greekInput,
             nonGreekLocales,
             sizeof(greekLocales) / sizeof(const char*),
-            "οδός οδός σο σο oς ος σ ἕξ",
+            "\xCE\xBF\xCE\xB4\xCF\x8C\xCF\x82 \xCE\xBF\xCE\xB4\xCF\x8C\xCF\x82 \xCF\x83\xCE\xBF \xCF\x83\xCE\xBF \x6F\xCF\x82 \xCE\xBF\xCF\x82 \xCF\x83 \xE1\xBC\x95\xCE\xBE",
         }, {
             "Lithuanian input",
             lithuanianInput,
             lithuanianLocales,
             sizeof(lithuanianLocales) / sizeof(const char*),
-            "i ï j j̇̈ į į̇̈ i̇̀ i̇́ i̇̃ xi̇̈ xj̇̈ xį̇̈ xi̇̀ xi̇́ xi̇̃ xi xï xj xj̇̈ xį xį̇̈",
+            "i \xC3\xAF j j\xCC\x87\xCC\x88 \xC4\xAF \xC4\xAF\xCC\x87\xCC\x88 i\xCC\x87\xCC\x80 i\xCC\x87\xCC\x81 i\xCC\x87\xCC\x83 xi\xCC\x87\xCC\x88 xj\xCC\x87\xCC\x88 x\xC4\xAF\xCC\x87\xCC\x88 xi\xCC\x87\xCC\x80 xi\xCC\x87\xCC\x81 xi\xCC\x87\xCC\x83 xi x\xC3\xAF xj xj\xCC\x87\xCC\x88 x\xC4\xAF x\xC4\xAF\xCC\x87\xCC\x88",
         }, {
             "Lithuanian input",
             lithuanianInput,
             nonLithuanianLocales,
             sizeof(nonLithuanianLocales) / sizeof(const char*),
-            "i ï j j̈ į į̈ ì í ĩ xi̇̈ xj̇̈ xį̇̈ xi̇̀ xi̇́ xi̇̃ xi xï xj xj̈ xį xį̈",
+            "\x69 \xC3\xAF \x6A \x6A\xCC\x88 \xC4\xAF \xC4\xAF\xCC\x88 \xC3\xAC \xC3\xAD \xC4\xA9 \x78\x69\xCC\x87\xCC\x88 \x78\x6A\xCC\x87\xCC\x88 \x78\xC4\xAF\xCC\x87\xCC\x88 \x78\x69\xCC\x87\xCC\x80 \x78\x69\xCC\x87\xCC\x81 \x78\x69\xCC\x87\xCC\x83 \x78\x69 \x78\xC3\xAF \x78\x6A \x78\x6A\xCC\x88 \x78\xC4\xAF \x78\xC4\xAF\xCC\x88",
         },
     };
 
