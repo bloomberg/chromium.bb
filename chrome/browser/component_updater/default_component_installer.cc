@@ -131,8 +131,14 @@ void DefaultComponentInstaller::StartRegistration(
        !path.value().empty();
        path = file_enumerator.Next()) {
     base::Version version(path.BaseName().MaybeAsASCII());
+    // Ignore folders that don't have valid version names. These folders are not
+    // managed by component installer so do not try to remove them.
     if (!version.IsValid())
       continue;
+    if (!installer_traits_->VerifyInstallation(path)) {
+      older_dirs.push_back(path);
+      continue;
+    }
     if (found) {
       if (version.CompareTo(latest_version) > 0) {
         older_dirs.push_back(latest_dir);
