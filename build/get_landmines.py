@@ -45,6 +45,9 @@ def print_landmines(target):
       gyp_defines().get('target_arch') == 'x64' and
       gyp_defines().get('dcheck_always_on') == '1'):
     print "Switched win x64 trybots from VS2010 to VS2012."
+  if (platform() == 'win' and builder() == 'ninja' and
+      gyp_msvs_version() == '2013'):
+    print "Switched win from VS2010 to VS2013."
   print 'Need to clobber everything due to an IDL change in r154579 (blink)'
 
 
