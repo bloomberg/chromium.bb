@@ -995,7 +995,6 @@
           'actions': [
             {
               'action_name': 'Instrument content_shell with SyzyAsan',
-              'msvs_cygwin_shell': 0,
               'inputs': [
                 '<(PRODUCT_DIR)/content_shell.exe',
               ],

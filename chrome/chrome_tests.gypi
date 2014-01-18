@@ -885,8 +885,6 @@
       # Executable that runs each browser test in a new process.
       'target_name': 'browser_tests',
       'type': 'executable',
-      'msvs_cygwin_shell': 0,
-      'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
       'dependencies': [
         'browser',
         'chrome_resources.gyp:chrome_resources',
@@ -2047,8 +2045,6 @@
       # Executable that runs each perf browser test in a new process.
       'target_name': 'performance_browser_tests',
       'type': 'executable',
-      'msvs_cygwin_shell': 0,
-      'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
       'dependencies': [
         'browser',
         'chrome_resources.gyp:chrome_resources',

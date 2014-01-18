@@ -66,12 +66,11 @@
           ],
           'action': ['<@(grit_cmd)',
                      '-i', '<(grit_grd_file)', 'build',
-                     '-f', 'GRIT_DIR/../gritsettings/resource_ids',
+                     '-f', '<(DEPTH)/tools/gritsettings/resource_ids',
                      '-o', '<(grit_out_dir)',
                      '-D', 'SHARED_INTERMEDIATE_DIR=<(SHARED_INTERMEDIATE_DIR)',
                      '<@(grit_defines)' ],
           'message': 'Generating resources from <(grit_grd_file)',
-          'msvs_cygwin_shell': 1,
         }
       ],
       'includes': [ '../../../build/grit_target.gypi' ]

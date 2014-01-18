@@ -1399,7 +1399,6 @@
               ],
               'process_outputs_as_sources': 1,
               'message': 'Generating <@(_outputs)',
-              'msvs_cygwin_shell': 0,
             },
           ],
         },  # end of target 'remoting_lib_idl'
@@ -1454,7 +1453,6 @@
                 'echo 1 typelib "remoting/host/chromoting_lib.tlb" > <@(_outputs)',
               ],
               'message': 'Generating <@(_outputs)',
-              'msvs_cygwin_shell': 0,
             },
           ],
         },  # end of target 'remoting_lib_rc'
@@ -1834,7 +1832,6 @@
               'outputs': [
                 '<(PRODUCT_DIR)/chromoting.msi',
               ],
-              'msvs_cygwin_shell': 0,
               'action': [
                 'python', 'tools/zip2msi.py',
                 '--wix_path', '<(wix_path)',
@@ -2061,7 +2058,6 @@
                 '<(_output_dir)/remoting_host_messages.h',
                 '<(_output_dir)/remoting_host_messages.rc',
               ],
-              'msvs_cygwin_shell': 0,
               'action': [
                 'mc.exe',
                 '-h', '<(_output_dir)',
@@ -2149,7 +2145,6 @@
             '--locales',
             '<@(_locale_files)',
           ],
-          'msvs_cygwin_shell': 0,
         },
       ],
       'target_conditions': [
@@ -2203,7 +2198,6 @@
                 '--patches',
                 '<@(remoting_webapp_patch_files)',
               ],
-              'msvs_cygwin_shell': 0,
             },
           ],
         }],

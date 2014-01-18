@@ -45,7 +45,6 @@
                   'action': ['tools\\build\\win\\hardlink_failsafe.bat',
                              '$(OutDir)\\initial\\chrome.dll',
                              '$(OutDir)\\chrome.dll'],
-                  'msvs_cygwin_shell': 0,
                 },
               ],
               'conditions': [
@@ -64,7 +63,6 @@
                       'action': ['tools\\build\\win\\hardlink_failsafe.bat',
                                  '$(OutDir)\\initial\\chrome.dll.pdb',
                                  '$(OutDir)\\chrome.dll.pdb'],
-                      'msvs_cygwin_shell': 0,
                     }
                   ]
                 }]

@@ -44,7 +44,6 @@
               '--output_cc_file', '<(cc_file)',
               '--input_hlsl_file', '<(RULE_INPUT_PATH)',
             ],
-            'msvs_cygwin_shell': 0,
             'message': 'Generating shaders from <(RULE_INPUT_PATH)',
             'process_outputs_as_sources': 1,
           },
