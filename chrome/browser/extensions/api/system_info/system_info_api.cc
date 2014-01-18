@@ -43,6 +43,11 @@ bool IsDisplayChangedEvent(const std::string& event_name) {
 }
 #endif
 
+bool IsSystemStorageEvent(const std::string& event_name) {
+  return (event_name == system_storage::OnAttached::kEventName ||
+          event_name == system_storage::OnDetached::kEventName);
+}
+
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
 class SystemInfoEventRouter : public gfx::DisplayObserver,
@@ -78,6 +83,8 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   // Used to record the event names being watched.
   std::multiset<std::string> watching_event_set_;
 
+  bool has_storage_monitor_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemInfoEventRouter);
 };
 
@@ -89,14 +96,16 @@ SystemInfoEventRouter* SystemInfoEventRouter::GetInstance() {
   return g_system_info_event_router.Pointer();
 }
 
-SystemInfoEventRouter::SystemInfoEventRouter() {
-  StorageMonitor::GetInstance()->AddObserver(this);
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Closure());
+SystemInfoEventRouter::SystemInfoEventRouter()
+    : has_storage_monitor_observer_(false) {
 }
 
 SystemInfoEventRouter::~SystemInfoEventRouter() {
-  if (StorageMonitor* storage_monitor = StorageMonitor::GetInstance())
-    storage_monitor->RemoveObserver(this);
+  if (has_storage_monitor_observer_) {
+    StorageMonitor* storage_monitor = StorageMonitor::GetInstance();
+    if (storage_monitor)
+      storage_monitor->RemoveObserver(this);
+  }
 }
 
 void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
@@ -111,10 +120,17 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
   if (IsDisplayChangedEvent(event_name))
     ash::Shell::GetScreen()->AddObserver(this);
 #endif
+
+  if (IsSystemStorageEvent(event_name)) {
+    if (!has_storage_monitor_observer_) {
+      has_storage_monitor_observer_ = true;
+      DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+      StorageMonitor::GetInstance()->AddObserver(this);
+    }
+  }
 }
 
-void SystemInfoEventRouter::RemoveEventListener(
-    const std::string& event_name) {
+void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::multiset<std::string>::iterator it =
@@ -129,6 +145,17 @@ void SystemInfoEventRouter::RemoveEventListener(
   if (IsDisplayChangedEvent(event_name))
     ash::Shell::GetScreen()->RemoveObserver(this);
 #endif
+
+  if (IsSystemStorageEvent(event_name)) {
+    const std::string& other_event_name =
+        (event_name == system_storage::OnDetached::kEventName) ?
+            system_storage::OnAttached::kEventName :
+            system_storage::OnDetached::kEventName;
+    if (watching_event_set_.count(other_event_name) == 0) {
+      StorageMonitor::GetInstance()->RemoveObserver(this);
+      has_storage_monitor_observer_ = false;
+    }
+  }
 }
 
 void SystemInfoEventRouter::OnRemovableStorageAttached(
@@ -175,6 +202,14 @@ void SystemInfoEventRouter::DispatchEvent(const std::string& event_name,
       BroadcastEventToRenderers(event_name, args.Pass(), GURL());
 }
 
+void AddEventListener(const std::string& event_name) {
+  SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
+}
+
+void RemoveEventListener(const std::string& event_name) {
+  SystemInfoEventRouter::GetInstance()->RemoveEventListener(event_name);
+}
+
 }  // namespace
 
 static base::LazyInstance<ProfileKeyedAPIFactory<SystemInfoAPI> >
@@ -200,11 +235,21 @@ void SystemInfoAPI::Shutdown() {
 }
 
 void SystemInfoAPI::OnListenerAdded(const EventListenerInfo& details) {
-  SystemInfoEventRouter::GetInstance()->AddEventListener(details.event_name);
+  if (IsSystemStorageEvent(details.event_name)) {
+    StorageMonitor::GetInstance()->EnsureInitialized(
+        base::Bind(&AddEventListener, details.event_name));
+  } else {
+    AddEventListener(details.event_name);
+  }
 }
 
 void SystemInfoAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  SystemInfoEventRouter::GetInstance()->RemoveEventListener(details.event_name);
+  if (IsSystemStorageEvent(details.event_name)) {
+    StorageMonitor::GetInstance()->EnsureInitialized(
+        base::Bind(&RemoveEventListener, details.event_name));
+  } else {
+    RemoveEventListener(details.event_name);
+  }
 }
 
 }  // namespace extensions
