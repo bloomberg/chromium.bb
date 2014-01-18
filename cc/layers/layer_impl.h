@@ -95,7 +95,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   LayerImpl* child_at(size_t index) const { return children_[index]; }
   void AddChild(scoped_ptr<LayerImpl> child);
   scoped_ptr<LayerImpl> RemoveChild(LayerImpl* child);
-  void set_parent(LayerImpl* parent) { parent_ = parent; }
+  void SetParent(LayerImpl* parent);
+
   // Warning: This does not preserve tree structure invariants.
   void ClearChildList();
 
@@ -443,9 +444,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool TransformIsAnimatingOnImplOnly() const;
 
   // Note this rect is in layer space (not content space).
-  void set_update_rect(const gfx::RectF& update_rect) {
-    update_rect_ = update_rect;
-  }
+  void SetUpdateRect(const gfx::RectF& update_rect);
+
   const gfx::RectF& update_rect() const { return update_rect_; }
 
   virtual base::DictionaryValue* LayerTreeAsJson() const;
@@ -500,9 +500,17 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   scoped_ptr<base::Value> AsValue() const;
   virtual size_t GPUMemoryUsageInBytes() const;
 
-  // TODO(danakj): Be true only if needed. crbug.com/259511
-  bool needs_push_properties() const { return true; }
-  bool descendant_needs_push_properties() const { return true; }
+  void SetNeedsPushProperties();
+  void AddDependentNeedsPushProperties();
+  void RemoveDependentNeedsPushProperties();
+  bool parent_should_know_need_push_properties() const {
+    return needs_push_properties() || descendant_needs_push_properties();
+  }
+
+  bool needs_push_properties() const { return needs_push_properties_; }
+  bool descendant_needs_push_properties() const {
+    return num_dependents_need_push_properties_ > 0;
+  }
 
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
@@ -533,6 +541,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void NoteLayerPropertyChangedForDescendants();
 
  private:
+  void NoteLayerPropertyChangedForDescendantsInternal();
+
   void UpdateScrollbarPositions();
 
   virtual const char* LayerTypeAsString() const;
@@ -620,6 +630,17 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   FilterOperations background_filters_;
 
  protected:
+  friend class TreeSynchronizer;
+
+  // This flag is set when the layer needs to push properties to the active
+  // side.
+  bool needs_push_properties_;
+
+  // The number of direct children or dependent layers that need to be recursed
+  // to in order for them or a descendent of them to push properties to the
+  // active side.
+  int num_dependents_need_push_properties_;
+
   DrawMode current_draw_mode_;
 
  private:

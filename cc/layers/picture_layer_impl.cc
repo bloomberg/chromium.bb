@@ -115,6 +115,10 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->invalidation_.Swap(&invalidation_);
   invalidation_.Clear();
   needs_post_commit_initialization_ = true;
+
+  // We always need to push properties.
+  // See http://crbug.com/303943
+  needs_push_properties_ = true;
 }
 
 void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,

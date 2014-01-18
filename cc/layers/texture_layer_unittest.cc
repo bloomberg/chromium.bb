@@ -1211,7 +1211,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
         host_impl_.output_surface()->context_provider();
     GLuint texture = 0;
     context_provider->ContextGL()->GenTextures(1, &texture);
-    impl_layer->set_texture_id(texture);
+    impl_layer->SetTextureId(texture);
     EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
@@ -1219,7 +1219,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
     impl_layer->SetDrawsContent(true);
-    impl_layer->set_texture_id(0);
+    impl_layer->SetTextureId(0);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
@@ -1262,7 +1262,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
         host_impl_.output_surface()->context_provider();
     GLuint texture = 0;
     context_provider->ContextGL()->GenTextures(1, &texture);
-    impl_layer->set_texture_id(texture);
+    impl_layer->SetTextureId(texture);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
 
@@ -1270,7 +1270,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
     impl_layer->SetDrawsContent(true);
-    impl_layer->set_texture_id(0);
+    impl_layer->SetTextureId(0);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
 
@@ -1293,7 +1293,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
         host_impl_.output_surface()->context_provider();
     GLuint texture = 0;
     context_provider->ContextGL()->GenTextures(1, &texture);
-    impl_layer->set_texture_id(texture);
+    impl_layer->SetTextureId(texture);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_RESOURCELESS_SOFTWARE));
   }
 }

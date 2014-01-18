@@ -254,12 +254,12 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
 
   TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
-  texture_layer->set_flipped(flipped_);
-  texture_layer->set_uv_top_left(uv_top_left_);
-  texture_layer->set_uv_bottom_right(uv_bottom_right_);
-  texture_layer->set_vertex_opacity(vertex_opacity_);
-  texture_layer->set_premultiplied_alpha(premultiplied_alpha_);
-  texture_layer->set_blend_background_color(blend_background_color_);
+  texture_layer->SetFlipped(flipped_);
+  texture_layer->SetUVTopLeft(uv_top_left_);
+  texture_layer->SetUVBottomRight(uv_bottom_right_);
+  texture_layer->SetVertexOpacity(vertex_opacity_);
+  texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
+  texture_layer->SetBlendBackgroundColor(blend_background_color_);
   if (uses_mailbox_ && needs_set_mailbox_) {
     TextureMailbox texture_mailbox;
     scoped_ptr<SingleReleaseCallback> release_callback;
@@ -271,7 +271,7 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
     texture_layer->SetTextureMailbox(texture_mailbox, release_callback.Pass());
     needs_set_mailbox_ = false;
   } else {
-    texture_layer->set_texture_id(texture_id_);
+    texture_layer->SetTextureId(texture_id_);
     content_committed_ = DrawsContent();
   }
 }

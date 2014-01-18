@@ -22,6 +22,9 @@ namespace {
 #define EXECUTE_AND_VERIFY_SUBTREE_CHANGED(code_to_test)                       \
   root->ResetAllChangeTrackingForSubtree();                                    \
   code_to_test;                                                                \
+  EXPECT_TRUE(root->needs_push_properties());                                  \
+  EXPECT_FALSE(child->needs_push_properties());                                \
+  EXPECT_FALSE(grand_child->needs_push_properties());                          \
   EXPECT_TRUE(root->LayerPropertyChanged());                                   \
   EXPECT_TRUE(child->LayerPropertyChanged());                                  \
   EXPECT_TRUE(grand_child->LayerPropertyChanged());
@@ -29,6 +32,20 @@ namespace {
 #define EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(code_to_test)                \
   root->ResetAllChangeTrackingForSubtree();                                    \
   code_to_test;                                                                \
+  EXPECT_FALSE(root->needs_push_properties());                                 \
+  EXPECT_FALSE(child->needs_push_properties());                                \
+  EXPECT_FALSE(grand_child->needs_push_properties());                          \
+  EXPECT_FALSE(root->LayerPropertyChanged());                                  \
+  EXPECT_FALSE(child->LayerPropertyChanged());                                 \
+  EXPECT_FALSE(grand_child->LayerPropertyChanged());
+
+#define EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(   \
+      code_to_test)                                                            \
+  root->ResetAllChangeTrackingForSubtree();                                    \
+  code_to_test;                                                                \
+  EXPECT_TRUE(root->needs_push_properties());                                  \
+  EXPECT_FALSE(child->needs_push_properties());                                \
+  EXPECT_FALSE(grand_child->needs_push_properties());                          \
   EXPECT_FALSE(root->LayerPropertyChanged());                                  \
   EXPECT_FALSE(child->LayerPropertyChanged());                                 \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
@@ -36,6 +53,9 @@ namespace {
 #define EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(code_to_test)                    \
   root->ResetAllChangeTrackingForSubtree();                                    \
   code_to_test;                                                                \
+  EXPECT_TRUE(root->needs_push_properties());                                  \
+  EXPECT_FALSE(child->needs_push_properties());                                \
+  EXPECT_FALSE(grand_child->needs_push_properties());                          \
   EXPECT_TRUE(root->LayerPropertyChanged());                                   \
   EXPECT_FALSE(child->LayerPropertyChanged());                                 \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
@@ -43,6 +63,9 @@ namespace {
 #define EXECUTE_AND_VERIFY_ONLY_DESCENDANTS_CHANGED(code_to_test)              \
   root->ResetAllChangeTrackingForSubtree();                                    \
   code_to_test;                                                                \
+  EXPECT_TRUE(root->needs_push_properties());                                  \
+  EXPECT_FALSE(child->needs_push_properties());                                \
+  EXPECT_FALSE(grand_child->needs_push_properties());                          \
   EXPECT_FALSE(root->LayerPropertyChanged());                                  \
   EXPECT_TRUE(child->LayerPropertyChanged());                                  \
   EXPECT_TRUE(grand_child->LayerPropertyChanged());
@@ -72,9 +95,24 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   FakeLayerTreeHostImpl host_impl(&proxy);
   EXPECT_TRUE(host_impl.InitializeRenderer(CreateFakeOutputSurface()));
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
-  root->AddChild(LayerImpl::Create(host_impl.active_tree(), 2));
+
+  scoped_ptr<LayerImpl> scroll_parent =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  LayerImpl* scroll_child = LayerImpl::Create(host_impl.active_tree(), 3).get();
+  std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>();
+  scroll_children->insert(scroll_child);
+  scroll_children->insert(root.get());
+
+  scoped_ptr<LayerImpl> clip_parent =
+      LayerImpl::Create(host_impl.active_tree(), 4);
+  LayerImpl* clip_child = LayerImpl::Create(host_impl.active_tree(), 5).get();
+  std::set<LayerImpl*>* clip_children = new std::set<LayerImpl*>();
+  clip_children->insert(clip_child);
+  clip_children->insert(root.get());
+
+  root->AddChild(LayerImpl::Create(host_impl.active_tree(), 6));
   LayerImpl* child = root->children()[0];
-  child->AddChild(LayerImpl::Create(host_impl.active_tree(), 3));
+  child->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
   LayerImpl* grand_child = child->children()[0];
 
   root->SetScrollable(true);
@@ -102,9 +140,9 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 
   // These properties are internal, and should not be considered "change" when
   // they are used.
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->set_update_rect(arbitrary_rect_f));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetUpdateRect(arbitrary_rect_f));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetMaxScrollOffset(arbitrary_vector2d));
 
   // Changing these properties affects the entire subtree of layers.
@@ -113,11 +151,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetFilters(FilterOperations()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 4)));
+      root->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 8)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMasksToBounds(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetContentsOpaque(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 5)));
+      root->SetReplicaLayer(LayerImpl::Create(host_impl.active_tree(), 9)));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetPosition(arbitrary_point_f));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetPreserves3d(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
@@ -154,8 +192,24 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // changed.
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
 
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+  // Changing this property does not cause the layer to be marked as changed
+  // but does cause the layer to need to push properties.
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
       root->SetIsRootForIsolatedGroup(true));
+
+  // Changing these properties should cause the layer to need to push properties
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetScrollParent(scroll_parent.get()));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetScrollChildren(scroll_children));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->RemoveScrollChild(scroll_child));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetClipParent(clip_parent.get()));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->SetClipChildren(clip_children));
+  EXECUTE_AND_VERIFY_NEEDS_PUSH_PROPERTIES_AND_SUBTREE_DID_NOT_CHANGE(
+      root->RemoveClipChild(clip_child));
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
@@ -189,6 +243,14 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetSublayerTransform(arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(arbitrary_size));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetScrollParent(scroll_parent.get()));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetScrollChildren(scroll_children));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetClipParent(clip_parent.get()));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetClipChildren(clip_children));
 }
 
 TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {

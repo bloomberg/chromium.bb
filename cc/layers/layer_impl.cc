@@ -63,6 +63,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_depth_(0.f),
+      needs_push_properties_(false),
+      num_dependents_need_push_properties_(0),
       current_draw_mode_(DRAW_MODE_NONE),
       horizontal_scrollbar_layer_(NULL),
       vertical_scrollbar_layer_(NULL) {
@@ -75,6 +77,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
   layer_animation_controller_->AddValueObserver(this);
   if (IsActive())
     layer_animation_controller_->set_value_provider(this);
+  SetNeedsPushProperties();
 }
 
 LayerImpl::~LayerImpl() {
@@ -107,7 +110,7 @@ LayerImpl::~LayerImpl() {
 }
 
 void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
-  child->set_parent(this);
+  child->SetParent(this);
   DCHECK_EQ(layer_tree_impl(), child->layer_tree_impl());
   children_.push_back(child.Pass());
   layer_tree_impl()->set_needs_update_draw_properties();
@@ -125,6 +128,16 @@ scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
     }
   }
   return scoped_ptr<LayerImpl>();
+}
+
+void LayerImpl::SetParent(LayerImpl* parent) {
+  if (parent_should_know_need_push_properties()) {
+    if (parent_)
+      parent_->RemoveDependentNeedsPushProperties();
+    if (parent)
+      parent->AddDependentNeedsPushProperties();
+  }
+  parent_ = parent;
 }
 
 void LayerImpl::ClearChildList() {
@@ -158,17 +171,20 @@ void LayerImpl::SetScrollParent(LayerImpl* parent) {
     scroll_parent_->RemoveScrollChild(this);
 
   scroll_parent_ = parent;
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetDebugInfo(
     scoped_refptr<base::debug::ConvertableToTraceFormat> other) {
   debug_info_ = other;
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetScrollChildren(std::set<LayerImpl*>* children) {
   if (scroll_children_.get() == children)
     return;
   scroll_children_.reset(children);
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::RemoveScrollChild(LayerImpl* child) {
@@ -176,6 +192,7 @@ void LayerImpl::RemoveScrollChild(LayerImpl* child) {
   scroll_children_->erase(child);
   if (scroll_children_->empty())
     scroll_children_.reset();
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetClipParent(LayerImpl* ancestor) {
@@ -186,12 +203,14 @@ void LayerImpl::SetClipParent(LayerImpl* ancestor) {
     clip_parent_->RemoveClipChild(this);
 
   clip_parent_ = ancestor;
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetClipChildren(std::set<LayerImpl*>* children) {
   if (clip_children_.get() == children)
     return;
   clip_children_.reset(children);
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::RemoveClipChild(LayerImpl* child) {
@@ -199,6 +218,7 @@ void LayerImpl::RemoveClipChild(LayerImpl* child) {
   clip_children_->erase(child);
   if (clip_children_->empty())
     clip_children_.reset();
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
@@ -574,15 +594,16 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
   // union) any update changes that have occurred on the main thread.
   update_rect_.Union(layer->update_rect());
-  layer->set_update_rect(update_rect_);
+  layer->SetUpdateRect(update_rect_);
 
   layer->SetStackingOrderChanged(stacking_order_changed_);
+  layer->SetDebugInfo(debug_info_);
 
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
   update_rect_ = gfx::RectF();
-
-  layer->SetDebugInfo(debug_info_);
+  needs_push_properties_ = false;
+  num_dependents_need_push_properties_ = 0;
 }
 
 base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
@@ -639,17 +660,28 @@ void LayerImpl::SetStackingOrderChanged(bool stacking_order_changed) {
 void LayerImpl::NoteLayerPropertyChanged() {
   layer_property_changed_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::NoteLayerPropertyChangedForSubtree() {
-  NoteLayerPropertyChanged();
-  NoteLayerPropertyChangedForDescendants();
+  layer_property_changed_ = true;
+  layer_tree_impl()->set_needs_update_draw_properties();
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->NoteLayerPropertyChangedForDescendantsInternal();
+  SetNeedsPushProperties();
+}
+
+void LayerImpl::NoteLayerPropertyChangedForDescendantsInternal() {
+  layer_property_changed_ = true;
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->NoteLayerPropertyChangedForDescendantsInternal();
 }
 
 void LayerImpl::NoteLayerPropertyChangedForDescendants() {
   layer_tree_impl()->set_needs_update_draw_properties();
   for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->NoteLayerPropertyChangedForSubtree();
+    children_[i]->NoteLayerPropertyChangedForDescendantsInternal();
+  SetNeedsPushProperties();
 }
 
 const char* LayerImpl::LayerTypeAsString() const {
@@ -674,6 +706,9 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
 
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->ResetAllChangeTrackingForSubtree();
+
+  needs_push_properties_ = false;
+  num_dependents_need_push_properties_ = 0;
 }
 
 bool LayerImpl::LayerIsAlwaysDamaged() const {
@@ -739,7 +774,7 @@ void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {
   mask_layer_ = mask_layer.Pass();
   mask_layer_id_ = new_layer_id;
   if (mask_layer_)
-    mask_layer_->set_parent(this);
+    mask_layer_->SetParent(this);
   NoteLayerPropertyChangedForSubtree();
 }
 
@@ -761,7 +796,7 @@ void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
   replica_layer_ = replica_layer.Pass();
   replica_layer_id_ = new_layer_id;
   if (replica_layer_)
-    replica_layer_->set_parent(this);
+    replica_layer_->SetParent(this);
   NoteLayerPropertyChangedForSubtree();
 }
 
@@ -907,6 +942,7 @@ void LayerImpl::SetIsRootForIsolatedGroup(bool root) {
     return;
 
   is_root_for_isolated_group_ = root;
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetPosition(const gfx::PointF& position) {
@@ -951,6 +987,11 @@ bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
   Animation* transform_animation =
       layer_animation_controller_->GetAnimation(Animation::Transform);
   return transform_animation && transform_animation->is_impl_only();
+}
+
+void LayerImpl::SetUpdateRect(const gfx::RectF& update_rect) {
+  update_rect_ = update_rect;
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetContentBounds(gfx::Size content_bounds) {
@@ -1134,6 +1175,7 @@ void LayerImpl::SetMaxScrollOffset(gfx::Vector2d max_scroll_offset) {
 
   layer_tree_impl()->set_needs_update_draw_properties();
   UpdateScrollbarPositions();
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::DidBecomeActive() {
@@ -1176,6 +1218,7 @@ void LayerImpl::DidBecomeActive() {
     break;
   }
 }
+
 void LayerImpl::SetHorizontalScrollbarLayer(
     ScrollbarLayerImplBase* scrollbar_layer) {
   horizontal_scrollbar_layer_ = scrollbar_layer;
@@ -1188,6 +1231,31 @@ void LayerImpl::SetVerticalScrollbarLayer(
   vertical_scrollbar_layer_ = scrollbar_layer;
   if (vertical_scrollbar_layer_)
     vertical_scrollbar_layer_->set_scroll_layer_id(id());
+}
+
+void LayerImpl::SetNeedsPushProperties() {
+  if (needs_push_properties_)
+    return;
+  if (!parent_should_know_need_push_properties() && parent_)
+    parent_->AddDependentNeedsPushProperties();
+  needs_push_properties_ = true;
+}
+
+void LayerImpl::AddDependentNeedsPushProperties() {
+  DCHECK_GE(num_dependents_need_push_properties_, 0);
+
+  if (!parent_should_know_need_push_properties() && parent_)
+    parent_->AddDependentNeedsPushProperties();
+
+  num_dependents_need_push_properties_++;
+}
+
+void LayerImpl::RemoveDependentNeedsPushProperties() {
+  num_dependents_need_push_properties_--;
+  DCHECK_GE(num_dependents_need_push_properties_, 0);
+
+  if (!parent_should_know_need_push_properties() && parent_)
+      parent_->RemoveDependentNeedsPushProperties();
 }
 
 void LayerImpl::AsValueInto(base::DictionaryValue* state) const {

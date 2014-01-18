@@ -148,7 +148,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
   gfx::Size frame_size = new_root_pass->output_rect.size();
   gfx::RectF damage_in_layer = MathUtil::MapClippedRect(
       DelegatedFrameToLayerSpaceTransform(frame_size), damage_in_frame);
-  set_update_rect(gfx::IntersectRects(
+  SetUpdateRect(gfx::IntersectRects(
       gfx::UnionRects(update_rect(), damage_in_layer), gfx::Rect(bounds())));
 
   SetRenderPasses(&render_pass_list);

@@ -49,6 +49,7 @@ void TextureLayerImpl::SetTextureMailbox(
   release_callback_ = release_callback.Pass();
   own_mailbox_ = true;
   valid_texture_copy_ = false;
+  SetNeedsPushProperties();
 }
 
 scoped_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
@@ -61,18 +62,18 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
 
   TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
-  texture_layer->set_flipped(flipped_);
-  texture_layer->set_uv_top_left(uv_top_left_);
-  texture_layer->set_uv_bottom_right(uv_bottom_right_);
-  texture_layer->set_vertex_opacity(vertex_opacity_);
-  texture_layer->set_premultiplied_alpha(premultiplied_alpha_);
-  texture_layer->set_blend_background_color(blend_background_color_);
+  texture_layer->SetFlipped(flipped_);
+  texture_layer->SetUVTopLeft(uv_top_left_);
+  texture_layer->SetUVBottomRight(uv_bottom_right_);
+  texture_layer->SetVertexOpacity(vertex_opacity_);
+  texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
+  texture_layer->SetBlendBackgroundColor(blend_background_color_);
   if (uses_mailbox_ && own_mailbox_) {
     texture_layer->SetTextureMailbox(texture_mailbox_,
                                      release_callback_.Pass());
     own_mailbox_ = false;
   } else {
-    texture_layer->set_texture_id(texture_id_);
+    texture_layer->SetTextureId(texture_id_);
   }
 }
 
@@ -219,6 +220,47 @@ void TextureLayerImpl::ReleaseResources() {
   texture_id_ = 0;
   external_texture_resource_ = 0;
   valid_texture_copy_ = false;
+}
+
+void TextureLayerImpl::SetTextureId(unsigned id) {
+  texture_id_ = id;
+  SetNeedsPushProperties();
+}
+
+void TextureLayerImpl::SetPremultipliedAlpha(bool premultiplied_alpha) {
+  premultiplied_alpha_ = premultiplied_alpha;
+  SetNeedsPushProperties();
+}
+
+void TextureLayerImpl::SetBlendBackgroundColor(bool blend) {
+  blend_background_color_ = blend;
+  SetNeedsPushProperties();
+}
+
+void TextureLayerImpl::SetFlipped(bool flipped) {
+  flipped_ = flipped;
+  SetNeedsPushProperties();
+}
+
+void TextureLayerImpl::SetUVTopLeft(const gfx::PointF top_left) {
+  uv_top_left_ = top_left;
+  SetNeedsPushProperties();
+}
+
+void TextureLayerImpl::SetUVBottomRight(const gfx::PointF bottom_right) {
+  uv_bottom_right_ = bottom_right;
+  SetNeedsPushProperties();
+}
+
+// 1--2
+// |  |
+// 0--3
+void TextureLayerImpl::SetVertexOpacity(const float vertex_opacity[4]) {
+  vertex_opacity_[0] = vertex_opacity[0];
+  vertex_opacity_[1] = vertex_opacity[1];
+  vertex_opacity_[2] = vertex_opacity[2];
+  vertex_opacity_[3] = vertex_opacity[3];
+  SetNeedsPushProperties();
 }
 
 const char* TextureLayerImpl::LayerTypeAsString() const {

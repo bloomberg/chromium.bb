@@ -187,17 +187,6 @@ void UpdateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap* new_layers,
 }
 
 // static
-void TreeSynchronizer::SetNumDependentsNeedPushProperties(
-    Layer* layer, size_t num) {
-  layer->num_dependents_need_push_properties_ = num;
-}
-
-// static
-void TreeSynchronizer::SetNumDependentsNeedPushProperties(
-    LayerImpl* layer, size_t num) {
-}
-
-// static
 template <typename LayerType>
 void TreeSynchronizer::PushPropertiesInternal(
     LayerType* layer,
@@ -240,8 +229,8 @@ void TreeSynchronizer::PushPropertiesInternal(
     // every PushProperties tree walk. Here we keep track of those layers, and
     // ensure that their ancestors know about them for the next PushProperties
     // tree walk.
-    SetNumDependentsNeedPushProperties(
-        layer, num_dependents_need_push_properties);
+    layer->num_dependents_need_push_properties_ =
+        num_dependents_need_push_properties;
   }
 
   bool add_self_to_parent = num_dependents_need_push_properties > 0 ||

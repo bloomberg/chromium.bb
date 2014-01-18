@@ -3180,6 +3180,43 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestUIResource);
 
+class PushPropertiesCountingLayerImpl : public LayerImpl {
+ public:
+  static scoped_ptr<PushPropertiesCountingLayerImpl> Create(
+      LayerTreeImpl* tree_impl, int id) {
+    return make_scoped_ptr(new PushPropertiesCountingLayerImpl(tree_impl, id));
+  }
+
+  virtual ~PushPropertiesCountingLayerImpl() {}
+
+  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE {
+    LayerImpl::PushPropertiesTo(layer);
+    push_properties_count_++;
+    // Push state to the active tree because we can only access it from there.
+    static_cast<PushPropertiesCountingLayerImpl*>(
+        layer)->push_properties_count_ = push_properties_count_;
+  }
+
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE {
+    return PushPropertiesCountingLayerImpl::Create(tree_impl, id()).
+        PassAs<LayerImpl>();
+  }
+
+  size_t push_properties_count() const { return push_properties_count_; }
+  void reset_push_properties_count() { push_properties_count_ = 0; }
+
+ private:
+  size_t push_properties_count_;
+
+  PushPropertiesCountingLayerImpl(LayerTreeImpl* tree_impl, int id)
+      : LayerImpl(tree_impl, id),
+        push_properties_count_(0) {
+    SetAnchorPoint(gfx::PointF());
+    SetBounds(gfx::Size(1, 1));
+  }
+};
+
 class PushPropertiesCountingLayer : public Layer {
  public:
   static scoped_refptr<PushPropertiesCountingLayer> Create() {
@@ -3191,6 +3228,12 @@ class PushPropertiesCountingLayer : public Layer {
     push_properties_count_++;
     if (persist_needs_push_properties_)
       needs_push_properties_ = true;
+  }
+
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE {
+    return PushPropertiesCountingLayerImpl::Create(tree_impl, id()).
+        PassAs<LayerImpl>();
   }
 
   size_t push_properties_count() const { return push_properties_count_; }
@@ -3404,6 +3447,206 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestLayersPushProperties);
+
+class LayerTreeHostTestImplLayersPushProperties
+    : public LayerTreeHostTestLayersPushProperties {
+ protected:
+  virtual void BeginTest() OVERRIDE {
+    expected_push_properties_root_impl_ = 0;
+    expected_push_properties_child_impl_ = 0;
+    expected_push_properties_grandchild_impl_ = 0;
+    expected_push_properties_child2_impl_ = 0;
+    expected_push_properties_grandchild2_impl_ = 0;
+    LayerTreeHostTestLayersPushProperties::BeginTest();
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // These commits are in response to the changes made in
+    // LayerTreeHostTestLayersPushProperties::DidCommitAndDrawFrame()
+    switch (num_commits_) {
+      case 0:
+        // Tree hasn't been setup yet don't bother to check anything.
+        return;
+      case 1:
+        // Root gets set up, Everyone is initialized.
+        ++expected_push_properties_root_impl_;
+        ++expected_push_properties_child_impl_;
+        ++expected_push_properties_grandchild_impl_;
+        ++expected_push_properties_child2_impl_;
+        ++expected_push_properties_grandchild2_impl_;
+        break;
+      case 2:
+        // Tree doesn't change but the one leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild2_impl_;
+        break;
+      case 3:
+        // Root is swapped here.
+        // Clear the expected push properties the tree will be rebuilt.
+        expected_push_properties_root_impl_ = 0;
+        expected_push_properties_child_impl_ = 0;
+        expected_push_properties_grandchild_impl_ = 0;
+        expected_push_properties_child2_impl_ = 0;
+        expected_push_properties_grandchild2_impl_ = 0;
+
+        // Make sure the new root is pushed.
+        EXPECT_EQ(1u, static_cast<PushPropertiesCountingLayerImpl*>(
+                host_impl->RootLayer())->push_properties_count());
+        return;
+      case 4:
+        // Root is swapped back all of the layers in the tree get pushed.
+        ++expected_push_properties_root_impl_;
+        ++expected_push_properties_child_impl_;
+        ++expected_push_properties_grandchild_impl_;
+        ++expected_push_properties_child2_impl_;
+        ++expected_push_properties_grandchild2_impl_;
+        break;
+      case 5:
+        // Tree doesn't change but the one leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild2_impl_;
+        break;
+      case 6:
+        // First child is removed. Structure of the tree changes here so swap
+        // some of the values. child_impl becomes child2_impl.
+        expected_push_properties_child_impl_ =
+            expected_push_properties_child2_impl_;
+        expected_push_properties_child2_impl_ = 0;
+        // grandchild_impl becomes grandchild2_impl.
+        expected_push_properties_grandchild_impl_ =
+            expected_push_properties_grandchild2_impl_;
+        expected_push_properties_grandchild2_impl_ = 0;
+
+        // grandchild_impl is now the leaf that always pushes. It is pushed.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+      case 7:
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+
+        // Child is added back. New layers are initialized.
+        ++expected_push_properties_grandchild2_impl_;
+        ++expected_push_properties_child2_impl_;
+        break;
+      case 8:
+        // Leaf is removed.
+        expected_push_properties_grandchild2_impl_ = 0;
+
+        // Always pushing.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+      case 9:
+        // Leaf is added back
+        ++expected_push_properties_grandchild2_impl_;
+
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+      case 10:
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+      case 11:
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+      case 12:
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+
+        // This child position was changed.
+        ++expected_push_properties_child2_impl_;
+        break;
+      case 13:
+        // The position of this child was changed.
+        ++expected_push_properties_child_impl_;
+
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+      case 14:
+        // Second child is removed from tree. Don't discard counts because
+        // they are added back before commit.
+
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+
+        // Second child added back.
+        ++expected_push_properties_child2_impl_;
+        ++expected_push_properties_grandchild2_impl_;
+
+        break;
+      case 15:
+        // The position of this child was changed.
+        ++expected_push_properties_grandchild2_impl_;
+
+        // The leaf that always pushes is pushed.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+      case 16:
+        // Second child is invalidated with SetNeedsDisplay
+        ++expected_push_properties_child2_impl_;
+
+        // The leaf that always pushed is pushed.
+        ++expected_push_properties_grandchild_impl_;
+        break;
+    }
+
+    PushPropertiesCountingLayerImpl* root_impl_ = NULL;
+    PushPropertiesCountingLayerImpl* child_impl_ = NULL;
+    PushPropertiesCountingLayerImpl* child2_impl_ = NULL;
+    PushPropertiesCountingLayerImpl* grandchild_impl_ = NULL;
+    PushPropertiesCountingLayerImpl* leaf_always_pushing_layer_impl_ = NULL;
+
+    // Pull the layers that we need from the tree assuming the same structure
+    // as LayerTreeHostTestLayersPushProperties
+    root_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
+        host_impl->RootLayer());
+
+    if (root_impl_ && root_impl_->children().size() > 0) {
+      child_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
+          root_impl_->children()[0]);
+
+      if (child_impl_ && child_impl_->children().size() > 0)
+        grandchild_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
+            child_impl_->children()[0]);
+    }
+
+    if (root_impl_ && root_impl_->children().size() > 1) {
+      child2_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
+          root_impl_->children()[1]);
+
+      if (child2_impl_ && child2_impl_->children().size() > 0)
+        leaf_always_pushing_layer_impl_ =
+            static_cast<PushPropertiesCountingLayerImpl*>(
+                child2_impl_->children()[0]);
+    }
+
+    if (root_impl_)
+      EXPECT_EQ(expected_push_properties_root_impl_,
+                root_impl_->push_properties_count());
+    if (child_impl_)
+      EXPECT_EQ(expected_push_properties_child_impl_,
+                child_impl_->push_properties_count());
+    if (grandchild_impl_)
+      EXPECT_EQ(expected_push_properties_grandchild_impl_,
+                grandchild_impl_->push_properties_count());
+    if (child2_impl_)
+      EXPECT_EQ(expected_push_properties_child2_impl_,
+                child2_impl_->push_properties_count());
+    if (leaf_always_pushing_layer_impl_)
+      EXPECT_EQ(expected_push_properties_grandchild2_impl_,
+                leaf_always_pushing_layer_impl_->push_properties_count());
+  }
+
+  size_t expected_push_properties_root_impl_;
+  size_t expected_push_properties_child_impl_;
+  size_t expected_push_properties_child2_impl_;
+  size_t expected_push_properties_grandchild_impl_;
+  size_t expected_push_properties_grandchild2_impl_;
+};
+
+TEST_F(LayerTreeHostTestImplLayersPushProperties, DelegatingRenderer) {
+  RunTestWithImplSidePainting();
+}
 
 class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     : public LayerTreeHostTest {

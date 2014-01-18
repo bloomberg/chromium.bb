@@ -37,28 +37,21 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   virtual void ReleaseResources() OVERRIDE;
 
   unsigned texture_id() const { return texture_id_; }
-  void set_texture_id(unsigned id) { texture_id_ = id; }
-  void set_premultiplied_alpha(bool premultiplied_alpha) {
-    premultiplied_alpha_ = premultiplied_alpha;
-  }
-  void set_blend_background_color(bool blend) {
-    blend_background_color_ = blend;
-  }
-  void set_flipped(bool flipped) { flipped_ = flipped; }
-  void set_uv_top_left(const gfx::PointF& top_left) { uv_top_left_ = top_left; }
-  void set_uv_bottom_right(const gfx::PointF& bottom_right) {
-    uv_bottom_right_ = bottom_right;
-  }
+
+  // These setter methods don't cause any implicit damage, so the texture client
+  // must explicitly invalidate if they intend to cause a visible change in the
+  // layer's output.
+  void SetTextureId(unsigned id);
+  void SetPremultipliedAlpha(bool premultiplied_alpha);
+  void SetBlendBackgroundColor(bool blend);
+  void SetFlipped(bool flipped);
+  void SetUVTopLeft(const gfx::PointF top_left);
+  void SetUVBottomRight(const gfx::PointF bottom_right);
 
   // 1--2
   // |  |
   // 0--3
-  void set_vertex_opacity(const float vertex_opacity[4]) {
-    vertex_opacity_[0] = vertex_opacity[0];
-    vertex_opacity_[1] = vertex_opacity[1];
-    vertex_opacity_[2] = vertex_opacity[2];
-    vertex_opacity_[3] = vertex_opacity[3];
-  }
+  void SetVertexOpacity(const float vertex_opacity[4]);
 
   void SetTextureMailbox(const TextureMailbox& mailbox,
                          scoped_ptr<SingleReleaseCallback> release_callback);

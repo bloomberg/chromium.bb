@@ -983,7 +983,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
   // union) any update changes that have occurred on the main thread.
   update_rect_.Union(layer->update_rect());
-  layer->set_update_rect(update_rect_);
+  layer->SetUpdateRect(update_rect_);
 
   layer->SetStackingOrderChanged(stacking_order_changed_);
 
