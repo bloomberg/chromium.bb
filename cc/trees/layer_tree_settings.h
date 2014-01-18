@@ -55,7 +55,6 @@ class CC_EXPORT LayerTreeSettings {
   double refresh_rate;
   size_t max_partial_texture_updates;
   gfx::Size default_tile_size;
-  gfx::Size default_tile_size_gpu_rasterization;
   gfx::Size max_untiled_layer_size;
   gfx::Size minimum_occlusion_tracking_size;
   bool use_pinch_zoom_scrollbars;

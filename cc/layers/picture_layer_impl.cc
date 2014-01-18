@@ -526,10 +526,6 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
       layer_tree_impl()->resource_provider()->max_texture_size();
 
   gfx::Size default_tile_size = layer_tree_impl()->settings().default_tile_size;
-  if (should_use_gpu_rasterization()) {
-    default_tile_size =
-        layer_tree_impl()->settings().default_tile_size_gpu_rasterization;
-  }
   default_tile_size.SetToMin(gfx::Size(max_texture_size, max_texture_size));
 
   gfx::Size max_untiled_content_size =
