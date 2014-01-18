@@ -13,6 +13,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -86,7 +87,7 @@ std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
 
 // Return Volume UUID property of disk mounted as "/".
 void GetVolumeUUID(const extensions::api::DeviceId::IdCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::string result;
   std::string bsd_name = FindBSDNameOfSystemDisk();
@@ -105,9 +106,8 @@ void GetVolumeUUID(const extensions::api::DeviceId::IdCallback& callback) {
 namespace extensions {
 namespace api {
 
-// MacOS: Return Volume UUID property of disk mounted as "/".
-/* static */
-void DeviceId::GetMachineId(const IdCallback& callback) {
+// static
+void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::BrowserThread::PostTask(

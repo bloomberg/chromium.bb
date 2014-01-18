@@ -9,9 +9,8 @@
 namespace extensions {
 namespace api {
 
-// ChromeOS: Use the System Salt.
-/* static */
-void DeviceId::GetMachineId(const IdCallback& callback) {
+// static
+void DeviceId::GetRawDeviceId(const IdCallback& callback) {
   chromeos::SystemSaltGetter::Get()->GetSystemSalt(callback);
 }
 
