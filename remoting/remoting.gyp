@@ -2344,11 +2344,6 @@
             '-x', '<(copy_output_dir)/.',
             '<@(remoting_locales)',
           ],
-          # Without this, the /. in the -x command above fails, but only in VS
-          # builds (because VS puts the command in to a batch file and then
-          # the normalization and substitution of "...\Release\" cause the
-          # trailing " to be escaped.
-          'msvs_cygwin_shell': 1,
         }
       ],
       'includes': [ '../build/grit_target.gypi' ],
