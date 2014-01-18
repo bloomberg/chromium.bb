@@ -101,6 +101,7 @@ public:
     HistoryItem* value() { return m_value.get(); }
     void updateValue(PassRefPtr<HistoryItem> item) { m_value = item; }
     const Vector<OwnPtr<HistoryNode> >& children() const { return m_children; }
+    void removeChildren() { m_children.clear(); }
 
 private:
     HistoryNode(HistoryEntry*, HistoryItem*);
@@ -147,6 +148,7 @@ public:
     PassRefPtr<HistoryItem> currentItemForExport();
     PassRefPtr<HistoryItem> previousItemForExport();
     HistoryItem* itemForNewChildFrame(Frame*) const;
+    void removeChildrenForRedirect(Frame*);
 
     void setDefersLoading(bool);
 

@@ -277,6 +277,14 @@ HistoryItem* HistoryController::itemForNewChildFrame(Frame* frame) const
     return m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
 }
 
+void HistoryController::removeChildrenForRedirect(Frame* frame)
+{
+    if (!m_provisionalEntry)
+        return;
+    if (HistoryNode* node = m_provisionalEntry->historyNodeForFrame(frame))
+        node->removeChildren();
+}
+
 void HistoryController::createNewBackForwardItem(Frame* targetFrame, HistoryItem* item, bool clipAtTarget)
 {
     RefPtr<HistoryItem> newItem = item;
