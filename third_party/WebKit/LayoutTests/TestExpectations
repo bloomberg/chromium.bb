@@ -439,6 +439,9 @@ crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-tran
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/keyframe-timing-functions-transform.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/move-after-transition.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
+crbug.com/332958 fast/text/webfont-synthetic-bold.html [ NeedsRebaseline ]
+crbug.com/332958 fast/css/font-face-synthetic-bold-italic.html [ NeedsRebaseline ]
+crbug.com/332958 fast/css/font-face-weight-matching.html [ NeedsRebaseline ]
 
 crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
