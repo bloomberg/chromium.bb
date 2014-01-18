@@ -630,7 +630,6 @@
         '<(output)',
         '<(PRODUCT_DIR)',
         ],
-        'msvs_cygwin_shell': 1,
       },
      ]
     }],
