@@ -76,9 +76,8 @@ class WebMStreamParser : public StreamParser {
   base::Closure end_of_segment_cb_;
   LogCB log_cb_;
 
-  // True if a new cluster id has been seen, but no audio or video buffers have
-  // been parsed yet.
-  bool waiting_for_buffers_;
+  // True if a new cluster id has been seen and its end has not yet been parsed.
+  bool parsing_cluster_;
 
   scoped_ptr<WebMClusterParser> cluster_parser_;
   ByteQueue byte_queue_;

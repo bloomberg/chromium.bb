@@ -2649,6 +2649,42 @@ TEST_F(ChunkDemuxerTest, TimestampOffsetMidMediaSegment) {
       kSourceId, base::TimeDelta::FromSeconds(25)));
 }
 
+TEST_F(ChunkDemuxerTest, WebMParsingMediaSegmentDetection) {
+  // TODO(wolenetz): Also test 'unknown' sized clusters.
+  // See http://crbug.com/335676.
+  const uint8 kBuffer[] = {
+    0x1F, 0x43, 0xB6, 0x75, 0x83,  // CLUSTER (size = 3)
+    0xE7, 0x81, 0x01,                // Cluster TIMECODE (value = 1)
+  };
+
+  // Setting timestamp offset or append mode is allowed only while not
+  // parsing a media segment. This array indicates whether or not these
+  // operations are allowed following each incrementally appended byte in
+  // |kBuffer|.
+  const bool kExpectedReturnValues[] = {
+    true, true, true, true, false,
+    false, false, true,
+  };
+
+  COMPILE_ASSERT(arraysize(kBuffer) == arraysize(kExpectedReturnValues),
+      test_arrays_out_of_sync);
+  COMPILE_ASSERT(arraysize(kBuffer) == sizeof(kBuffer), not_one_byte_per_index);
+
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+
+  for (size_t i = 0; i < sizeof(kBuffer); i++) {
+    DVLOG(3) << "Appending and testing index " << i;
+    AppendData(kBuffer + i, 1);
+    bool expected_return_value = kExpectedReturnValues[i];
+    EXPECT_EQ(expected_return_value, demuxer_->SetTimestampOffset(
+        kSourceId, base::TimeDelta::FromSeconds(25)));
+    EXPECT_EQ(expected_return_value, demuxer_->SetSequenceMode(
+        kSourceId, true));
+    EXPECT_EQ(expected_return_value, demuxer_->SetSequenceMode(
+        kSourceId, false));
+  }
+}
+
 TEST_F(ChunkDemuxerTest, SetSequenceModeMidMediaSegment) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 

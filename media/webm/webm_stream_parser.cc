@@ -19,7 +19,7 @@ namespace media {
 
 WebMStreamParser::WebMStreamParser()
     : state_(kWaitingForInit),
-      waiting_for_buffers_(false) {
+      parsing_cluster_(false) {
 }
 
 WebMStreamParser::~WebMStreamParser() {
@@ -57,6 +57,7 @@ void WebMStreamParser::Flush() {
   DCHECK_NE(state_, kWaitingForInit);
 
   byte_queue_.Reset();
+  parsing_cluster_ = false;
 
   if (state_ != kParsingClusters)
     return;
@@ -232,11 +233,10 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
   if (result <= 0)
     return result;
 
-  if (id == kWebMIdCluster)
-    waiting_for_buffers_ = true;
-
   // TODO(matthewjheaney): implement support for chapters
   if (id == kWebMIdCues || id == kWebMIdChapters) {
+    // TODO(wolenetz): Handle unknown-sized cluster parse completion correctly.
+    // See http://crbug.com/335676.
     if (size < (result + element_size)) {
       // We don't have the whole element yet. Signal we need more data.
       return 0;
@@ -246,6 +246,8 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
   }
 
   if (id == kWebMIdEBMLHeader) {
+    // TODO(wolenetz): Handle unknown-sized cluster parse completion correctly.
+    // See http://crbug.com/335676.
     ChangeState(kParsingHeaders);
     return 0;
   }
@@ -255,15 +257,16 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
   if (bytes_parsed <= 0)
     return bytes_parsed;
 
+  // If cluster detected, immediately notify new segment if we have not already
+  // done this.
+  if (id == kWebMIdCluster && !parsing_cluster_) {
+    parsing_cluster_ = true;
+    new_segment_cb_.Run();
+  }
+
   const BufferQueue& audio_buffers = cluster_parser_->audio_buffers();
   const BufferQueue& video_buffers = cluster_parser_->video_buffers();
   bool cluster_ended = cluster_parser_->cluster_ended();
-
-  if (waiting_for_buffers_ &&
-      cluster_parser_->cluster_start_time() != kNoTimestamp()) {
-    new_segment_cb_.Run();
-    waiting_for_buffers_ = false;
-  }
 
   if ((!audio_buffers.empty() || !video_buffers.empty()) &&
       !new_buffers_cb_.Run(audio_buffers, video_buffers)) {
@@ -281,8 +284,10 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
       return -1;
   }
 
-  if (cluster_ended)
+  if (cluster_ended) {
+    parsing_cluster_ = false;
     end_of_segment_cb_.Run();
+  }
 
   return bytes_parsed;
 }
