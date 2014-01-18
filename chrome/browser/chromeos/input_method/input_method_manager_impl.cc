@@ -146,6 +146,19 @@ size_t InputMethodManagerImpl::GetNumActiveInputMethods() const {
   return active_input_method_ids_.size();
 }
 
+const InputMethodDescriptor* InputMethodManagerImpl::GetInputMethodFromId(
+    const std::string& input_method_id) const {
+  const InputMethodDescriptor* ime = util_.GetInputMethodDescriptorFromId(
+      input_method_id);
+  if (!ime) {
+    std::map<std::string, InputMethodDescriptor>::const_iterator ix =
+        extra_input_methods_.find(input_method_id);
+    if (ix != extra_input_methods_.end())
+      ime = &ix->second;
+  }
+  return ime;
+}
+
 void InputMethodManagerImpl::EnableLayouts(const std::string& language_code,
                                            const std::string& initial_layout) {
   if (state_ == STATE_TERMINATING)

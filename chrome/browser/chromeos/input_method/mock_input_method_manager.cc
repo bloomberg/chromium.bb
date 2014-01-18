@@ -60,6 +60,18 @@ size_t MockInputMethodManager::GetNumActiveInputMethods() const {
   return 1;
 }
 
+const InputMethodDescriptor* MockInputMethodManager::GetInputMethodFromId(
+    const std::string& input_method_id) const {
+  static const InputMethodDescriptor defaultInputMethod =
+      InputMethodUtil::GetFallbackInputMethodDescriptor();
+  for (size_t i = 0; i < active_input_method_ids_.size(); i++) {
+    if (input_method_id == active_input_method_ids_[i]) {
+      return &defaultInputMethod;
+    }
+  }
+  return NULL;
+}
+
 void MockInputMethodManager::EnableLayouts(const std::string& language_code,
                                            const std::string& initial_layout) {
 }

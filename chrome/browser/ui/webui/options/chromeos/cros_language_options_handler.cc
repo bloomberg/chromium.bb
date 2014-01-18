@@ -24,6 +24,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
@@ -354,16 +356,25 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
       extension_ime_util::GetExtensionIDFromInputMethodID(input_method_id);
   if (extension_id.empty())
     return;
-  const extensions::Extension* extension =
-      extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
-          extension_service()->extensions()->GetByID(extension_id);
-  if (!extension ||
-      extensions::ManifestURL::GetOptionsPage(extension).is_empty()) {
+
+  const input_method::InputMethodDescriptor* ime =
+      input_method::InputMethodManager::Get()->GetInputMethodFromId(
+          input_method_id);
+  if (!ime)
     return;
-  }
-  extensions::ExtensionTabUtil::OpenOptionsPage(
-      extension,
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
+
+  Browser* browser = chrome::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
+  content::OpenURLParams params(ime->options_page_url(),
+      content::Referrer(),
+      SINGLETON_TAB,
+      content::PAGE_TRANSITION_LINK,
+      false);
+  browser->OpenURL(params);
+  browser->window()->Show();
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
 void CrosLanguageOptionsHandler::OnInitialized() {

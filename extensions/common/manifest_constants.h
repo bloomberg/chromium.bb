@@ -53,6 +53,7 @@ extern const char kHideBookmarkButton[];
 extern const char kHomepageURL[];
 extern const char kIcons[];
 extern const char kId[];
+extern const char kImeOptionsPage[];
 extern const char kImport[];
 extern const char kIncognito[];
 extern const char kIncludeGlobs[];

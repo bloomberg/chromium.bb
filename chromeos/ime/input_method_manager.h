@@ -105,6 +105,11 @@ class CHROMEOS_EXPORT InputMethodManager {
   // methods.
   virtual size_t GetNumActiveInputMethods() const = 0;
 
+  // Returns the input method descriptor from the given input method id string.
+  // If the given input method id is invalid, returns NULL.
+  virtual const InputMethodDescriptor* GetInputMethodFromId(
+      const std::string& input_method_id) const = 0;
+
   // Changes the current input method to |input_method_id|. If |input_method_id|
   // is not active, switch to the first one in the active input method list.
   virtual void ChangeInputMethod(const std::string& input_method_id) = 0;

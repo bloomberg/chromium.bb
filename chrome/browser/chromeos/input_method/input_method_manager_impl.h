@@ -57,6 +57,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual const std::vector<std::string>& GetActiveInputMethodIds() const
       OVERRIDE;
   virtual size_t GetNumActiveInputMethods() const OVERRIDE;
+  virtual const InputMethodDescriptor* GetInputMethodFromId(
+      const std::string& input_method_id) const OVERRIDE;
   virtual void EnableLayouts(const std::string& language_code,
                              const std::string& initial_layout) OVERRIDE;
   virtual bool EnableInputMethods(
