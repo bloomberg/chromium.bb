@@ -77,6 +77,7 @@ EXTRA_ENV = {
                        # if it's explicitly set or not when the driver
                        # is only used for linking + translating.
   'CC_FLAGS'    : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0} ' +
+                  '-fno-vectorize -fno-slp-vectorize ' +
                   '-fno-common ${PTHREAD ? -pthread} ' +
                   '-nostdinc ${BIAS_%BIAS%} ' +
                   # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2345
