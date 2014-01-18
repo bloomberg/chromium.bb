@@ -217,11 +217,11 @@ static inline RenderStyle* renderStyleForLengthResolving(const SVGElement* conte
         return 0;
 
     const ContainerNode* currentContext = context;
-    while (currentContext) {
+    do {
         if (currentContext->renderer())
             return currentContext->renderer()->style();
         currentContext = currentContext->parentNode();
-    }
+    } while (currentContext);
 
     // There must be at least a RenderSVGRoot renderer, carrying a style.
     ASSERT_NOT_REACHED();

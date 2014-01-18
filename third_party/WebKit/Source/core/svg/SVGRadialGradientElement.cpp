@@ -130,73 +130,78 @@ RenderObject* SVGRadialGradientElement::createRenderer(RenderStyle*)
     return new RenderSVGResourceRadialGradient(this);
 }
 
+static void setGradientAttributes(SVGGradientElement* element, RadialGradientAttributes& attributes, bool isRadial = true)
+{
+    if (!attributes.hasSpreadMethod() && element->hasAttribute(SVGNames::spreadMethodAttr))
+        attributes.setSpreadMethod(element->spreadMethodCurrentValue());
+
+    if (!attributes.hasGradientUnits() && element->hasAttribute(SVGNames::gradientUnitsAttr))
+        attributes.setGradientUnits(element->gradientUnitsCurrentValue());
+
+    if (!attributes.hasGradientTransform() && element->hasAttribute(SVGNames::gradientTransformAttr)) {
+        AffineTransform transform;
+        element->gradientTransformCurrentValue().concatenate(transform);
+        attributes.setGradientTransform(transform);
+    }
+
+    if (!attributes.hasStops()) {
+        const Vector<Gradient::ColorStop>& stops(element->buildStops());
+        if (!stops.isEmpty())
+            attributes.setStops(stops);
+    }
+
+    if (isRadial) {
+        SVGRadialGradientElement* radial = toSVGRadialGradientElement(element);
+
+        if (!attributes.hasCx() && element->hasAttribute(SVGNames::cxAttr))
+            attributes.setCx(radial->cx()->currentValue());
+
+        if (!attributes.hasCy() && element->hasAttribute(SVGNames::cyAttr))
+            attributes.setCy(radial->cy()->currentValue());
+
+        if (!attributes.hasR() && element->hasAttribute(SVGNames::rAttr))
+            attributes.setR(radial->r()->currentValue());
+
+        if (!attributes.hasFx() && element->hasAttribute(SVGNames::fxAttr))
+            attributes.setFx(radial->fx()->currentValue());
+
+        if (!attributes.hasFy() && element->hasAttribute(SVGNames::fyAttr))
+            attributes.setFy(radial->fy()->currentValue());
+
+        if (!attributes.hasFr() && element->hasAttribute(SVGNames::frAttr))
+            attributes.setFr(radial->fr()->currentValue());
+    }
+}
+
 bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttributes& attributes)
 {
-    HashSet<SVGGradientElement*> processedGradients;
+    if (!renderer())
+        return false;
 
-    bool isRadial = true;
+    HashSet<SVGGradientElement*> processedGradients;
     SVGGradientElement* current = this;
 
-    while (current) {
-        if (!current->renderer())
-            return false;
+    setGradientAttributes(current, attributes);
+    processedGradients.add(current);
 
-        if (!attributes.hasSpreadMethod() && current->hasAttribute(SVGNames::spreadMethodAttr))
-            attributes.setSpreadMethod(current->spreadMethodCurrentValue());
-
-        if (!attributes.hasGradientUnits() && current->hasAttribute(SVGNames::gradientUnitsAttr))
-            attributes.setGradientUnits(current->gradientUnitsCurrentValue());
-
-        if (!attributes.hasGradientTransform() && current->hasAttribute(SVGNames::gradientTransformAttr)) {
-            AffineTransform transform;
-            current->gradientTransformCurrentValue().concatenate(transform);
-            attributes.setGradientTransform(transform);
-        }
-
-        if (!attributes.hasStops()) {
-            const Vector<Gradient::ColorStop>& stops(current->buildStops());
-            if (!stops.isEmpty())
-                attributes.setStops(stops);
-        }
-
-        if (isRadial) {
-            SVGRadialGradientElement* radial = toSVGRadialGradientElement(current);
-
-            if (!attributes.hasCx() && current->hasAttribute(SVGNames::cxAttr))
-                attributes.setCx(radial->cx()->currentValue());
-
-            if (!attributes.hasCy() && current->hasAttribute(SVGNames::cyAttr))
-                attributes.setCy(radial->cy()->currentValue());
-
-            if (!attributes.hasR() && current->hasAttribute(SVGNames::rAttr))
-                attributes.setR(radial->r()->currentValue());
-
-            if (!attributes.hasFx() && current->hasAttribute(SVGNames::fxAttr))
-                attributes.setFx(radial->fx()->currentValue());
-
-            if (!attributes.hasFy() && current->hasAttribute(SVGNames::fyAttr))
-                attributes.setFy(radial->fy()->currentValue());
-
-            if (!attributes.hasFr() && current->hasAttribute(SVGNames::frAttr))
-                attributes.setFr(radial->fr()->currentValue());
-        }
-
-        processedGradients.add(current);
-
+    while (true) {
         // Respect xlink:href, take attributes from referenced element
         Node* refNode = SVGURIReference::targetElementFromIRIString(current->hrefCurrentValue(), document());
-        if (refNode && (refNode->hasTagName(SVGNames::radialGradientTag) || refNode->hasTagName(SVGNames::linearGradientTag))) {
+        if (refNode && isSVGGradientElement(*refNode)) {
             current = toSVGGradientElement(refNode);
 
             // Cycle detection
-            if (processedGradients.contains(current)) {
-                current = 0;
+            if (processedGradients.contains(current))
                 break;
-            }
 
-            isRadial = current->hasTagName(SVGNames::radialGradientTag);
-        } else
-            current = 0;
+            if (!current->renderer())
+                return false;
+
+            setGradientAttributes(current, attributes, current->hasTagName(SVGNames::radialGradientTag));
+            processedGradients.add(current);
+        } else {
+            break;
+        }
     }
 
     // Handle default values for fx/fy
@@ -205,6 +210,7 @@ bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
 
     if (!attributes.hasFy())
         attributes.setFy(attributes.cy());
+
     return true;
 }
 
