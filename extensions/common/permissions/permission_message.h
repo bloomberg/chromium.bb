@@ -79,7 +79,7 @@ class PermissionMessage {
     kStartupPages,
     kMediaGalleriesAllGalleriesDelete,
     kScreenlockPrivate,
-    kHideBookmarkButton,
+    kOverrideBookmarksUI,
     kEnumBoundary,
   };
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,

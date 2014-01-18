@@ -15,6 +15,21 @@
 
 namespace extensions {
 
+namespace {
+
+PermissionMessages::iterator FindMessageByID(PermissionMessages& messages,
+                                             int id) {
+  for (PermissionMessages::iterator it = messages.begin();
+       it != messages.end(); ++it) {
+    if (it->id() == id)
+      return it;
+  }
+
+  return messages.end();
+}
+
+}  // namespace
+
 ChromePermissionMessageProvider::ChromePermissionMessageProvider() {
 }
 
@@ -43,6 +58,16 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   messages.insert(messages.end(), api_msgs.begin(), api_msgs.end());
   messages.insert(messages.end(), manifest_permission_msgs.begin(),
                   manifest_permission_msgs.end());
+
+  // Special hack: bookmarks permission message supersedes override bookmarks UI
+  // permission message if both permissions are specified.
+  PermissionMessages::iterator override_bookmarks_ui =
+      FindMessageByID(messages, PermissionMessage::kOverrideBookmarksUI);
+  if (override_bookmarks_ui != messages.end() &&
+      FindMessageByID(messages, PermissionMessage::kBookmarks) !=
+          messages.end()) {
+    messages.erase(override_bookmarks_ui);
+  }
 
   return messages;
 }
