@@ -36,6 +36,8 @@ class FeedbackUploaderFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory overrides:
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderFactory);
 };

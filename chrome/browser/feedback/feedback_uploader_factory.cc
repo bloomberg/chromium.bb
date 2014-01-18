@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/feedback/feedback_uploader.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 namespace feedback {
@@ -32,6 +33,11 @@ FeedbackUploaderFactory::~FeedbackUploaderFactory() {}
 BrowserContextKeyedService* FeedbackUploaderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new FeedbackUploader(context);
+}
+
+content::BrowserContext* FeedbackUploaderFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 }  // namespace feedback
