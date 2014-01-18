@@ -13,6 +13,7 @@
 
 #include "fake_core_interface.h"
 #include "fake_var_interface.h"
+#include "fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
 #include "sdk_util/macros.h"
 
@@ -148,7 +149,8 @@ class FakeFileRefInterface : public nacl_io::FileRefInterface {
 
  private:
   FakeCoreInterface* core_interface_;  // Weak reference.
-  FakeVarInterface* var_interface_;    // Weak reference.
+  FakeVarInterface* var_interface_;  // Weak reference.
+  FakeVarManager* var_manager_;  // Weak reference
 
   DISALLOW_COPY_AND_ASSIGN(FakeFileRefInterface);
 };
@@ -188,6 +190,7 @@ class FakePepperInterfaceHtml5Fs : public nacl_io::PepperInterfaceDummy {
 
   FakeCoreInterface core_interface_;
   FakeVarInterface var_interface_;
+  FakeVarManager var_manager_;
   FakeHtml5FsFilesystem filesystem_template_;
   FakeFileSystemInterface file_system_interface_;
   FakeFileRefInterface file_ref_interface_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LIBRARIES_NACL_IO_TEST_MOCK_FS_H_
-#define LIBRARIES_NACL_IO_TEST_MOCK_FS_H_
+#ifndef TESTS_NACL_IO_TEST_MOCK_FS_H_
+#define TESTS_NACL_IO_TEST_MOCK_FS_H_
 
 #include "gmock/gmock.h"
 
@@ -33,4 +33,4 @@ class MockFs : public nacl_io::Filesystem {
   MOCK_METHOD2(Rename, Error(const Path&, const Path&));
 };
 
-#endif  // LIBRARIES_NACL_IO_TEST_MOCK_FS_H_
+#endif  // TESTS_NACL_IO_TEST_MOCK_FS_H_

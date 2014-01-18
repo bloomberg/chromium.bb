@@ -3,72 +3,28 @@
 // found in the LICENSE file.
 
 #include "fake_var_interface.h"
+#include "fake_var_manager.h"
 #include "gtest/gtest.h"
 
-FakeVarInterface::FakeVarInterface() : next_id_(1) {}
+FakeVarInterface::FakeVarInterface(FakeVarManager* manager)
+    : manager_(manager) {}
 
-FakeVarInterface::~FakeVarInterface() {
-  // The ref counts for all vars should be zero.
-  for (VarMap::const_iterator iter = var_map_.begin(); iter != var_map_.end();
-       ++iter) {
-    const FakeStringVar& string_var = iter->second;
-    EXPECT_EQ(0, string_var.ref_count) << "Non-zero refcount on string var "
-                                       << iter->first << " with value \""
-                                       << string_var.value << "\"";
-  }
+PP_Var FakeVarInterface::VarFromUtf8(const char* data, uint32_t len) {
+  FakeVarData* var_data = manager_->CreateVarData();
+  var_data->type = PP_VARTYPE_STRING;
+  var_data->string_value.assign(data, len);
+
+  struct PP_Var result = {PP_VARTYPE_STRING, 0, {PP_FALSE}};
+  result.value.as_id = var_data->id;
+  return result;
 }
 
 void FakeVarInterface::AddRef(PP_Var var) {
-  // From ppb_var.h:
-  //   AddRef() adds a reference to the given var. If this is not a refcounted
-  //   object, this function will do nothing so you can always call it no matter
-  //   what the type.
-  if (var.type != PP_VARTYPE_STRING)
-    return;
-
-  VarMap::iterator iter = var_map_.find(var.value.as_id);
-  if (iter == var_map_.end())
-    return;
-
-  FakeStringVar& string_var = iter->second;
-  EXPECT_LT(0, string_var.ref_count) << "AddRefing freed string var "
-                                     << var.value.as_id << " with value \""
-                                     << string_var.value << "\"";
-  string_var.ref_count++;
+  manager_->AddRef(var);
 }
 
 void FakeVarInterface::Release(PP_Var var) {
-  // From ppb_var.h:
-  //   Release() removes a reference to given var, deleting it if the internal
-  //   reference count becomes 0. If the given var is not a refcounted object,
-  //   this function will do nothing so you can always call it no matter what
-  //   the type.
-  if (var.type != PP_VARTYPE_STRING)
-    return;
-
-  VarMap::iterator iter = var_map_.find(var.value.as_id);
-  if (iter == var_map_.end())
-    return;
-
-  FakeStringVar& string_var = iter->second;
-  EXPECT_LT(0, string_var.ref_count) << "Releasing freed string var "
-                                     << var.value.as_id << " with value \""
-                                     << string_var.value << "\"";
-  string_var.ref_count--;
-}
-
-PP_Var FakeVarInterface::VarFromUtf8(const char* data, uint32_t len) {
-  Id id = next_id_++;
-
-  FakeStringVar string_var;
-  string_var.value.assign(data, len);
-  string_var.ref_count = 1;
-
-  var_map_[id] = string_var;
-
-  struct PP_Var result = {PP_VARTYPE_STRING, 0, {PP_FALSE}};
-  result.value.as_id = id;
-  return result;
+  manager_->Release(var);
 }
 
 const char* FakeVarInterface::VarToUtf8(PP_Var var, uint32_t* out_len) {
@@ -77,17 +33,15 @@ const char* FakeVarInterface::VarToUtf8(PP_Var var, uint32_t* out_len) {
     return NULL;
   }
 
-  VarMap::const_iterator iter = var_map_.find(var.value.as_id);
-  if (iter == var_map_.end()) {
+  FakeVarData* var_data = manager_->GetVarData(var);
+  if (!var_data) {
     *out_len = 0;
     return NULL;
   }
 
-  const FakeStringVar& string_var = iter->second;
-  EXPECT_LT(0, string_var.ref_count) << "VarToUtf8 on freed string var "
-                                     << var.value.as_id << " with value \""
-                                     << string_var.value << "\"";
+  EXPECT_LT(0, var_data->ref_count) << "VarToUtf8 on freed "
+                                    << manager_->Describe(*var_data);
 
-  *out_len = string_var.value.length();
-  return string_var.value.c_str();
+  *out_len = var_data->string_value.length();
+  return var_data->string_value.c_str();
 }

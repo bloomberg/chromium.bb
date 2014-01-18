@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LIBRARIES_NACL_IO_TEST_MOCK_NODE_H_
-#define LIBRARIES_NACL_IO_TEST_MOCK_NODE_H_
+#ifndef TESTS_NACL_IO_TEST_MOCK_NODE_H_
+#define TESTS_NACL_IO_TEST_MOCK_NODE_H_
 
 #include "gmock/gmock.h"
 
@@ -44,4 +44,4 @@ class MockNode : public nacl_io::Node {
   MOCK_METHOD0(Unlink, void());
 };
 
-#endif  // LIBRARIES_NACL_IO_TEST_MOCK_NODE_H_
+#endif  // TESTS_NACL_IO_TEST_MOCK_NODE_H_

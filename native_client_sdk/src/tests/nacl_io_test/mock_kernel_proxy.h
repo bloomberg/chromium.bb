@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LIBRARIES_NACL_IO_TEST_MOCK_KERNEL_PROXY_H_
-#define LIBRARIES_NACL_IO_TEST_MOCK_KERNEL_PROXY_H_
+#ifndef TESTS_NACL_IO_TEST_MOCK_KERNEL_PROXY_H_
+#define TESTS_NACL_IO_TEST_MOCK_KERNEL_PROXY_H_
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -99,4 +99,4 @@ class MockKernelProxy : public nacl_io::KernelProxy {
 
 };
 
-#endif  // LIBRARIES_NACL_IO_TEST_MOCK_KERNEL_PROXY_H_
+#endif  // TESTS_NACL_IO_TEST_MOCK_KERNEL_PROXY_H_

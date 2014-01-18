@@ -27,6 +27,8 @@
 #include <ppapi/c/ppb_url_response_info.h>
 #include <ppapi/c/ppb_udp_socket.h>
 #include <ppapi/c/ppb_var.h>
+#include <ppapi/c/ppb_var_array.h>
+#include <ppapi/c/ppb_var_array_buffer.h>
 
 #include <sdk_util/macros.h>
 

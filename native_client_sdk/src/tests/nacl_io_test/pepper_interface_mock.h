@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LIBRARIES_NACL_IO_TEST_PEPPER_INTERFACE_MOCK_H_
-#define LIBRARIES_NACL_IO_TEST_PEPPER_INTERFACE_MOCK_H_
+#ifndef TESTS_NACL_IO_TEST_PEPPER_INTERFACE_MOCK_H_
+#define TESTS_NACL_IO_TEST_PEPPER_INTERFACE_MOCK_H_
 
 #include "gmock/gmock.h"
 #include "nacl_io/pepper_interface.h"
@@ -61,4 +61,4 @@ class PepperInterfaceMock : public nacl_io::PepperInterface {
 };
 
 
-#endif  // LIBRARIES_NACL_IO_TEST_PEPPER_INTERFACE_MOCK_H_
+#endif  // TESTS_NACL_IO_TEST_PEPPER_INTERFACE_MOCK_H_

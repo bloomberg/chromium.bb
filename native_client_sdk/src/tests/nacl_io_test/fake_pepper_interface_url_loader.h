@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LIBRARIES_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_URL_LOADER_H_
-#define LIBRARIES_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_URL_LOADER_H_
+#ifndef TESTS_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_URL_LOADER_H_
+#define TESTS_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_URL_LOADER_H_
 
 #include <map>
 #include <string>
@@ -11,6 +11,7 @@
 
 #include "fake_core_interface.h"
 #include "fake_var_interface.h"
+#include "fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
 #include "sdk_util/macros.h"
 
@@ -139,6 +140,7 @@ class FakePepperInterfaceURLLoader : public nacl_io::PepperInterfaceDummy {
 
   FakeCoreInterface core_interface_;
   FakeVarInterface var_interface_;
+  FakeVarManager var_manager_;
   FakeURLLoaderServer server_template_;
   FakeURLLoaderInterface url_loader_interface_;
   FakeURLRequestInfoInterface url_request_info_interface_;
@@ -148,4 +150,4 @@ class FakePepperInterfaceURLLoader : public nacl_io::PepperInterfaceDummy {
   DISALLOW_COPY_AND_ASSIGN(FakePepperInterfaceURLLoader);
 };
 
-#endif  // LIBRARIES_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_URL_LOADER_H_
+#endif  // TESTS_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_URL_LOADER_H_
