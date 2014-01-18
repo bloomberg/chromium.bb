@@ -48,7 +48,6 @@ def DictDiff(d1, d2):
 def GetEnvironment(host_obj, testing, extra_env_vars=None):
   init_env = dict(os.environ)
   init_env['GYP_GENERATORS'] = 'ninja'
-  init_env['GOMA_DIR'] = bb_utils.GOMA_DIR
   if extra_env_vars:
     init_env.update(extra_env_vars)
   envsetup_cmd = '. build/android/envsetup.sh'
@@ -70,7 +69,8 @@ def GetEnvironment(host_obj, testing, extra_env_vars=None):
     print >> sys.stderr, envsetup_output
     sys.exit(1)
   env = json.loads(json_env)
-  env['GYP_DEFINES'] = env.get('GYP_DEFINES', '') + ' fastbuild=1'
+  env['GYP_DEFINES'] = env.get('GYP_DEFINES', '') + \
+      ' fastbuild=1 use_goma=1 gomadir=%s' % bb_utils.GOMA_DIR
   extra_gyp = host_obj.extra_gyp_defines
   if extra_gyp:
     env['GYP_DEFINES'] += ' %s' % extra_gyp

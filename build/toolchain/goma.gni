@@ -6,26 +6,11 @@
 #
 # This is currently designed to match the GYP build exactly, so as not to break
 # people during the transition.
-#
-# TODO(brettw) make Android work like normal Linux. It's silly that Android has
-# completely different logic for configuring Goma.
 
 declare_args() {
   use_goma = false
 
   goma_dir = ""
-}
-
-# The Android GYP build has some logic that automatically turns on goma when
-# the directory is set, but this isn't done for other platforms.
-# TODO(brettw) rationalize all Linux-y platforms.
-if (is_android) {
-  if (goma_dir == "") {
-    goma_dir = exec_script("android/default_goma_for_android.py", [], "value")
-  }
-  if (goma_dir != "") {
-    use_goma = true
-  }
 }
 
 if (use_goma && goma_dir == "") {

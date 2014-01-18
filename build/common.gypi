@@ -116,12 +116,6 @@
               'use_ozone%': 1,
             }],
 
-            ['OS=="android"', {
-              'android_goma_dir%': '<!(echo "${GOMA_DIR}")',
-            }, {
-              'android_goma_dir%': ''
-            }],
-
             ['embedded==1', {
               'use_system_fontconfig%': 0,
             }, {
@@ -228,12 +222,7 @@
           # Set default gomadir.
           ['OS=="win"', {
             'gomadir': 'c:\\goma\\goma-win',
-          }],
-          ['android_goma_dir!=""', {
-            'use_goma': 1,
-            'gomadir': '<(android_goma_dir)',
-          }],
-          ['OS!="win" and android_goma_dir==""', {
+          }, {
             'gomadir': '<!(/bin/echo -n ${HOME}/goma)',
           }],
         ],

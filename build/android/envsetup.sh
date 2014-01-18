@@ -119,15 +119,10 @@ fi
 # Source a bunch of helper functions
 . ${CHROME_SRC}/build/android/adb_device_functions.sh
 
+# TODO(thakis), Jan 18 2014: Remove this after two weeks or so, after telling
+# everyone to set use_goma in GYP_DEFINES instead of a GOMA_DIR env var.
 if [[ -d $GOMA_DIR ]]; then
-  num_cores="$(grep --count ^processor /proc/cpuinfo)"
-# Goma is IO-ish you want more threads than you have cores.
-  let "goma_threads=num_cores*2"
-  if [ -z "${GOMA_COMPILER_PROXY_THREADS}" -a "${goma_threads}" -gt 16 ]; then
-# The default is 16 threads, if the machine has many cores we crank it up a bit
-    GOMA_COMPILER_PROXY_THREADS="${goma_threads}"
-    export GOMA_COMPILER_PROXY_THREADS
-  fi
+  DEFINES+=" use_goma=1 gomadir=$GOMA_DIR"
 fi
 
 # Declare Android are cross compile.
