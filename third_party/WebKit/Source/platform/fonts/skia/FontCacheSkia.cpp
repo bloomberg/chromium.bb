@@ -61,19 +61,19 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     // Changes weight and/or italic of given FontDescription depends on
     // the result of fontconfig so that keeping the correct font mapping
     // of the given character. See http://crbug.com/32109 for details.
-    bool shouldSetFakeBold = false;
-    bool shouldSetFakeItalic = false;
+    bool shouldSetSyntheticBold = false;
+    bool shouldSetSyntheticItalic = false;
     FontDescription description(fontDescription);
     if (family.isBold && description.weight() < FontWeightBold)
         description.setWeight(FontWeightBold);
     if (!family.isBold && description.weight() >= FontWeightBold) {
-        shouldSetFakeBold = true;
+        shouldSetSyntheticBold = true;
         description.setWeight(FontWeightNormal);
     }
     if (family.isItalic && description.italic() == FontItalicOff)
         description.setItalic(FontItalicOn);
     if (!family.isItalic && description.italic() == FontItalicOn) {
-        shouldSetFakeItalic = true;
+        shouldSetSyntheticItalic = true;
         description.setItalic(FontItalicOff);
     }
 
@@ -81,8 +81,8 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     if (!substitutePlatformData)
         return 0;
     FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
-    platformData.setFakeBold(shouldSetFakeBold);
-    platformData.setFakeItalic(shouldSetFakeItalic);
+    platformData.setSyntheticBold(shouldSetSyntheticBold);
+    platformData.setSyntheticItalic(shouldSetSyntheticItalic);
     return fontDataFromFontPlatformData(&platformData, DoNotRetain);
 }
 

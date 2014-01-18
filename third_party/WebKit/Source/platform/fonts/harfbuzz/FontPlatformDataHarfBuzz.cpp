@@ -80,8 +80,8 @@ void FontPlatformData::setSubpixelRendering(bool useSubpixelRendering)
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     : m_textSize(0)
     , m_emSizeInFontUnits(0)
-    , m_fakeBold(false)
-    , m_fakeItalic(false)
+    , m_syntheticBold(false)
+    , m_syntheticItalic(false)
     , m_orientation(Horizontal)
     , m_isHashTableDeletedValue(true)
 {
@@ -90,18 +90,18 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 FontPlatformData::FontPlatformData()
     : m_textSize(0)
     , m_emSizeInFontUnits(0)
-    , m_fakeBold(false)
-    , m_fakeItalic(false)
+    , m_syntheticBold(false)
+    , m_syntheticItalic(false)
     , m_orientation(Horizontal)
     , m_isHashTableDeletedValue(false)
 {
 }
 
-FontPlatformData::FontPlatformData(float textSize, bool fakeBold, bool fakeItalic)
+FontPlatformData::FontPlatformData(float textSize, bool syntheticBold, bool syntheticItalic)
     : m_textSize(textSize)
     , m_emSizeInFontUnits(0)
-    , m_fakeBold(fakeBold)
-    , m_fakeItalic(fakeItalic)
+    , m_syntheticBold(syntheticBold)
+    , m_syntheticItalic(syntheticItalic)
     , m_orientation(Horizontal)
     , m_isHashTableDeletedValue(false)
 {
@@ -112,8 +112,8 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
     , m_family(src.m_family)
     , m_textSize(src.m_textSize)
     , m_emSizeInFontUnits(src.m_emSizeInFontUnits)
-    , m_fakeBold(src.m_fakeBold)
-    , m_fakeItalic(src.m_fakeItalic)
+    , m_syntheticBold(src.m_syntheticBold)
+    , m_syntheticItalic(src.m_syntheticItalic)
     , m_orientation(src.m_orientation)
     , m_style(src.m_style)
     , m_harfBuzzFace(0)
@@ -121,13 +121,13 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
 {
 }
 
-FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation, bool subpixelTextPosition)
+FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, bool subpixelTextPosition)
     : m_typeface(tf)
     , m_family(family)
     , m_textSize(textSize)
     , m_emSizeInFontUnits(0)
-    , m_fakeBold(fakeBold)
-    , m_fakeItalic(fakeItalic)
+    , m_syntheticBold(syntheticBold)
+    , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
     , m_isHashTableDeletedValue(false)
 {
@@ -139,8 +139,8 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_family(src.m_family)
     , m_textSize(textSize)
     , m_emSizeInFontUnits(src.m_emSizeInFontUnits)
-    , m_fakeBold(src.m_fakeBold)
-    , m_fakeItalic(src.m_fakeItalic)
+    , m_syntheticBold(src.m_syntheticBold)
+    , m_syntheticItalic(src.m_syntheticItalic)
     , m_orientation(src.m_orientation)
     , m_harfBuzzFace(0)
     , m_isHashTableDeletedValue(false)
@@ -166,8 +166,8 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
     m_typeface = src.m_typeface;
     m_family = src.m_family;
     m_textSize = src.m_textSize;
-    m_fakeBold = src.m_fakeBold;
-    m_fakeItalic = src.m_fakeItalic;
+    m_syntheticBold = src.m_syntheticBold;
+    m_syntheticItalic = src.m_syntheticItalic;
     m_harfBuzzFace = 0;
     m_orientation = src.m_orientation;
     m_style = src.m_style;
@@ -201,8 +201,8 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
     const float ts = m_textSize >= 0 ? m_textSize : 12;
     paint->setTextSize(SkFloatToScalar(ts));
     paint->setTypeface(m_typeface.get());
-    paint->setFakeBoldText(m_fakeBold);
-    paint->setTextSkewX(m_fakeItalic ? -SK_Scalar1 / 4 : 0);
+    paint->setFakeBoldText(m_syntheticBold);
+    paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
 }
 
 SkFontID FontPlatformData::uniqueID() const
@@ -234,8 +234,8 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
 
     return typefacesEqual
         && m_textSize == a.m_textSize
-        && m_fakeBold == a.m_fakeBold
-        && m_fakeItalic == a.m_fakeItalic
+        && m_syntheticBold == a.m_syntheticBold
+        && m_syntheticItalic == a.m_syntheticItalic
         && m_orientation == a.m_orientation
         && m_style == a.m_style
         && m_isHashTableDeletedValue == a.m_isHashTableDeletedValue;

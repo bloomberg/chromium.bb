@@ -65,9 +65,9 @@ public:
     // set everything to 0.
     FontPlatformData(WTF::HashTableDeletedValueType);
     FontPlatformData();
-    FontPlatformData(float textSize, bool fakeBold, bool fakeItalic);
+    FontPlatformData(float textSize, bool syntheticBold, bool syntheticItalic);
     FontPlatformData(const FontPlatformData&);
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal, bool subpixelTextPosition = FontDescription::subpixelPositioning());
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, bool subpixelTextPosition = FontDescription::subpixelPositioning());
     FontPlatformData(const FontPlatformData& src, float textSize);
     ~FontPlatformData();
 
@@ -97,8 +97,8 @@ public:
 
     FontOrientation orientation() const { return m_orientation; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
-    void setFakeBold(bool fakeBold) { m_fakeBold = fakeBold; }
-    void setFakeItalic(bool fakeItalic) { m_fakeItalic = fakeItalic; }
+    void setSyntheticBold(bool syntheticBold) { m_syntheticBold = syntheticBold; }
+    void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }
     bool operator==(const FontPlatformData&) const;
     FontPlatformData& operator=(const FontPlatformData&);
     bool isHashTableDeletedValue() const { return m_isHashTableDeletedValue; }
@@ -134,8 +134,8 @@ private:
     CString m_family;
     float m_textSize;
     mutable int m_emSizeInFontUnits;
-    bool m_fakeBold;
-    bool m_fakeItalic;
+    bool m_syntheticBold;
+    bool m_syntheticItalic;
     FontOrientation m_orientation;
     FontRenderStyle m_style;
     mutable RefPtr<HarfBuzzFace> m_harfBuzzFace;
