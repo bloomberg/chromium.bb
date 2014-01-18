@@ -26,6 +26,7 @@
 #ifndef CanvasRenderingContext2D_h
 #define CanvasRenderingContext2D_h
 
+#include "core/css/CSSFontSelectorClient.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
@@ -240,14 +241,15 @@ public:
     bool drawCustomFocusRing(Element*);
 
 private:
-    struct State FINAL : FontSelectorClient {
+    struct State FINAL : CSSFontSelectorClient {
         State();
         virtual ~State();
 
         State(const State&);
         State& operator=(const State&);
 
-        virtual void fontsNeedUpdate(FontSelector*) OVERRIDE;
+        // CSSFontSelectorClient implementation
+        virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
 
         String m_unparsedStrokeColor;
         String m_unparsedFillColor;

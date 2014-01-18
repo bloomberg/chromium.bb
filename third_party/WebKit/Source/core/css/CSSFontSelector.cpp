@@ -125,19 +125,19 @@ CSSFontSelector::~CSSFontSelector()
     FontCache::fontCache()->removeClient(this);
 }
 
-void CSSFontSelector::registerForInvalidationCallbacks(FontSelectorClient* client)
+void CSSFontSelector::registerForInvalidationCallbacks(CSSFontSelectorClient* client)
 {
     m_clients.add(client);
 }
 
-void CSSFontSelector::unregisterForInvalidationCallbacks(FontSelectorClient* client)
+void CSSFontSelector::unregisterForInvalidationCallbacks(CSSFontSelectorClient* client)
 {
     m_clients.remove(client);
 }
 
 void CSSFontSelector::dispatchInvalidationCallbacks()
 {
-    Vector<FontSelectorClient*> clients;
+    Vector<CSSFontSelectorClient*> clients;
     copyToVector(m_clients, clients);
     for (size_t i = 0; i < clients.size(); ++i)
         clients[i]->fontsNeedUpdate(this);

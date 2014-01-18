@@ -39,6 +39,7 @@ namespace WebCore {
 
 class CSSFontFace;
 class CSSFontFaceRule;
+class CSSFontSelectorClient;
 class CSSSegmentedFontFace;
 class FontResource;
 class Document;
@@ -78,10 +79,12 @@ public:
     void clearDocument();
 
     void fontLoaded();
+
+    // FontCacheClient implementation
     virtual void fontCacheInvalidated() OVERRIDE;
 
-    virtual void registerForInvalidationCallbacks(FontSelectorClient*) OVERRIDE;
-    virtual void unregisterForInvalidationCallbacks(FontSelectorClient*) OVERRIDE;
+    void registerForInvalidationCallbacks(CSSFontSelectorClient*);
+    void unregisterForInvalidationCallbacks(CSSFontSelectorClient*);
 
     Document* document() const { return m_document; }
     CSSSegmentedFontFaceCache* fontFaceCache() { return &m_cssSegmentedFontFaceCache; }
@@ -99,7 +102,7 @@ private:
     Document* m_document;
     // FIXME: Move to Document or StyleEngine.
     CSSSegmentedFontFaceCache m_cssSegmentedFontFaceCache;
-    HashSet<FontSelectorClient*> m_clients;
+    HashSet<CSSFontSelectorClient*> m_clients;
 
     FontLoader m_fontLoader;
     GenericFontFamilySettings m_genericFontFamilySettings;

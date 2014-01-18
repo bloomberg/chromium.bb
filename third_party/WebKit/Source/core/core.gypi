@@ -651,6 +651,7 @@
             'css/CSSFontFeatureValue.h',
             'css/CSSFontSelector.cpp',
             'css/CSSFontSelector.h',
+            'css/CSSFontSelectorClient.h',
             'css/CSSFontValue.cpp',
             'css/CSSFontValue.h',
             'css/CSSFunctionValue.cpp',

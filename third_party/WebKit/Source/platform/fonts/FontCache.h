@@ -54,10 +54,10 @@ class SkTypeface;
 
 namespace WebCore {
 
+class FontCacheClient;
 class FontPlatformData;
 class FontData;
 class FontDescription;
-class FontSelector;
 class OpenTypeVerticalData;
 class SimpleFontData;
 
@@ -85,8 +85,8 @@ public:
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
 
-    void addClient(FontSelector*);
-    void removeClient(FontSelector*);
+    void addClient(FontCacheClient*);
+    void removeClient(FontCacheClient*);
 
     unsigned short generation();
     void invalidate();

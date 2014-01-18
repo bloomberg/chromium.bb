@@ -34,12 +34,12 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "platform/fonts/AlternateFontFamily.h"
+#include "platform/fonts/FontCacheClient.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDataCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/FontSelector.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
@@ -237,18 +237,18 @@ void FontCache::purge(PurgeSeverity PurgeSeverity)
     purgeFontVerticalDataCache();
 }
 
-static HashSet<FontSelector*>* gClients;
+static HashSet<FontCacheClient*>* gClients;
 
-void FontCache::addClient(FontSelector* client)
+void FontCache::addClient(FontCacheClient* client)
 {
     if (!gClients)
-        gClients = new HashSet<FontSelector*>;
+        gClients = new HashSet<FontCacheClient*>;
 
     ASSERT(!gClients->contains(client));
     gClients->add(client);
 }
 
-void FontCache::removeClient(FontSelector* client)
+void FontCache::removeClient(FontCacheClient* client)
 {
     ASSERT(gClients);
     ASSERT(gClients->contains(client));
@@ -277,11 +277,11 @@ void FontCache::invalidate()
 
     gGeneration++;
 
-    Vector<RefPtr<FontSelector> > clients;
+    Vector<RefPtr<FontCacheClient> > clients;
     size_t numClients = gClients->size();
     clients.reserveInitialCapacity(numClients);
-    HashSet<FontSelector*>::iterator end = gClients->end();
-    for (HashSet<FontSelector*>::iterator it = gClients->begin(); it != end; ++it)
+    HashSet<FontCacheClient*>::iterator end = gClients->end();
+    for (HashSet<FontCacheClient*>::iterator it = gClients->begin(); it != end; ++it)
         clients.append(*it);
 
     ASSERT(numClients == clients.size());

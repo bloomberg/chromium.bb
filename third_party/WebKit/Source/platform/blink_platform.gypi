@@ -311,6 +311,7 @@
       'fonts/FontBaseline.h',
       'fonts/FontCache.cpp',
       'fonts/FontCache.h',
+      'fonts/FontCacheClient.h',
       'fonts/FontCacheKey.h',
       'fonts/FontCustomPlatformData.h',
       'fonts/FontData.cpp',

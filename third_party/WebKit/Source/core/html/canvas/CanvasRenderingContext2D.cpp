@@ -152,7 +152,7 @@ CanvasRenderingContext2D::State::State()
 }
 
 CanvasRenderingContext2D::State::State(const State& other)
-    : FontSelectorClient()
+    : CSSFontSelectorClient()
     , m_unparsedStrokeColor(other.m_unparsedStrokeColor)
     , m_unparsedFillColor(other.m_unparsedFillColor)
     , m_strokeStyle(other.m_strokeStyle)
@@ -178,7 +178,7 @@ CanvasRenderingContext2D::State::State(const State& other)
     , m_realizedFont(other.m_realizedFont)
 {
     if (m_realizedFont)
-        m_font.fontSelector()->registerForInvalidationCallbacks(this);
+        static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
 }
 
 CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(const State& other)
@@ -187,7 +187,7 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
         return *this;
 
     if (m_realizedFont)
-        m_font.fontSelector()->unregisterForInvalidationCallbacks(this);
+        static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
 
     m_unparsedStrokeColor = other.m_unparsedStrokeColor;
     m_unparsedFillColor = other.m_unparsedFillColor;
@@ -213,7 +213,7 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
     m_realizedFont = other.m_realizedFont;
 
     if (m_realizedFont)
-        m_font.fontSelector()->registerForInvalidationCallbacks(this);
+        static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
 
     return *this;
 }
@@ -221,10 +221,10 @@ CanvasRenderingContext2D::State& CanvasRenderingContext2D::State::operator=(cons
 CanvasRenderingContext2D::State::~State()
 {
     if (m_realizedFont)
-        m_font.fontSelector()->unregisterForInvalidationCallbacks(this);
+        static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
 }
 
-void CanvasRenderingContext2D::State::fontsNeedUpdate(FontSelector* fontSelector)
+void CanvasRenderingContext2D::State::fontsNeedUpdate(CSSFontSelector* fontSelector)
 {
     ASSERT_ARG(fontSelector, fontSelector == m_font.fontSelector());
     ASSERT(m_realizedFont);
@@ -2096,7 +2096,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     styleResolver.applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), newStyle.get());
 
     if (state().m_realizedFont)
-        state().m_font.fontSelector()->unregisterForInvalidationCallbacks(&modifiableState());
+        static_cast<CSSFontSelector*>(state().m_font.fontSelector())->unregisterForInvalidationCallbacks(&modifiableState());
     modifiableState().m_font = newStyle->font();
     modifiableState().m_font.update(canvas()->document().styleEngine()->fontSelector());
     modifiableState().m_realizedFont = true;

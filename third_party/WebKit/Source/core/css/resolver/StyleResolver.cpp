@@ -353,7 +353,7 @@ void StyleResolver::clearStyleSharingList()
     m_styleSharingList.clear();
 }
 
-void StyleResolver::fontsNeedUpdate(FontSelector* fontSelector)
+void StyleResolver::fontsNeedUpdate(CSSFontSelector* fontSelector)
 {
     invalidateMatchedPropertiesCache();
     m_document.setNeedsStyleRecalc();
