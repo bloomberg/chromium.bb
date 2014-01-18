@@ -112,6 +112,51 @@ class MediaGalleriesAddUserSelectedFolderFunction
   void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
 };
 
+class MediaGalleriesStartMediaScanFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.startMediaScan",
+                             MEDIAGALLERIES_STARTMEDIASCAN)
+
+ protected:
+  virtual ~MediaGalleriesStartMediaScanFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  void OnPreferencesInit();
+};
+
+class MediaGalleriesCancelMediaScanFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.cancelMediaScan",
+                             MEDIAGALLERIES_CANCELMEDIASCAN)
+
+ protected:
+  virtual ~MediaGalleriesCancelMediaScanFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  void OnPreferencesInit();
+};
+
+class MediaGalleriesAddScanResultsFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.addScanResults",
+                             MEDIAGALLERIES_ADDSCANRESULTS)
+
+ protected:
+  virtual ~MediaGalleriesAddScanResultsFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  void OnPreferencesInit();
+};
+
 class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.getMetadata",

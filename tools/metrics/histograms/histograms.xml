@@ -24855,6 +24855,9 @@ other types of suffix sets.
   <int value="650" label="INPUT_IME_SENDKEYEVENTS"/>
   <int value="651" label="INPUT_IME_HIDEINPUTVIEW"/>
   <int value="652" label="MEDIAGALLERIES_ADDUSERSELECTEDFOLDER"/>
+  <int value="653" label="MEDIAGALLERIES_STARTMEDIASCAN"/>
+  <int value="654" label="MEDIAGALLERIES_CANCELMEDIASCAN"/>
+  <int value="655" label="MEDIAGALLERIES_ADDSCANRESULTS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -499,6 +499,47 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
       render_view_host(), GetExtension(), cb);
 }
 
+MediaGalleriesStartMediaScanFunction::~MediaGalleriesStartMediaScanFunction() {}
+
+bool MediaGalleriesStartMediaScanFunction::RunImpl() {
+  media_galleries::UsageCount(media_galleries::START_MEDIA_SCAN);
+  return Setup(GetProfile(), &error_, base::Bind(
+      &MediaGalleriesStartMediaScanFunction::OnPreferencesInit, this));
+}
+
+void MediaGalleriesStartMediaScanFunction::OnPreferencesInit() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  SendResponse(true);
+}
+
+MediaGalleriesCancelMediaScanFunction::
+    ~MediaGalleriesCancelMediaScanFunction() {
+}
+
+bool MediaGalleriesCancelMediaScanFunction::RunImpl() {
+  media_galleries::UsageCount(media_galleries::CANCEL_MEDIA_SCAN);
+  return Setup(GetProfile(), &error_, base::Bind(
+      &MediaGalleriesCancelMediaScanFunction::OnPreferencesInit, this));
+}
+
+void MediaGalleriesCancelMediaScanFunction::OnPreferencesInit() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  SendResponse(true);
+}
+
+MediaGalleriesAddScanResultsFunction::~MediaGalleriesAddScanResultsFunction() {}
+
+bool MediaGalleriesAddScanResultsFunction::RunImpl() {
+  media_galleries::UsageCount(media_galleries::ADD_SCAN_RESULTS);
+  return Setup(GetProfile(), &error_, base::Bind(
+      &MediaGalleriesAddScanResultsFunction::OnPreferencesInit, this));
+}
+
+void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  SendResponse(true);
+}
+
 MediaGalleriesGetMetadataFunction::~MediaGalleriesGetMetadataFunction() {}
 
 bool MediaGalleriesGetMetadataFunction::RunImpl() {
