@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "third_party/WebKit/public/platform/WebAnimationCurve.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebTransformOperations.h"
@@ -43,6 +44,12 @@ class WebCompositorSupportImpl : public blink::WebCompositorSupport {
       int animation_id);
   virtual blink::WebFilterAnimationCurve* createFilterAnimationCurve();
   virtual blink::WebFloatAnimationCurve* createFloatAnimationCurve();
+#if WEB_SCROLL_OFFSET_ANIMATION_CURVE_IS_DEFINED
+  virtual blink::WebScrollOffsetAnimationCurve*
+      createScrollOffsetAnimationCurve(
+          blink::WebFloatPoint target_value,
+          blink::WebAnimationCurve::TimingFunctionType timing_function);
+#endif
   virtual blink::WebTransformAnimationCurve* createTransformAnimationCurve();
   virtual blink::WebTransformOperations* createTransformOperations();
   virtual blink::WebFilterOperations* createFilterOperations();
