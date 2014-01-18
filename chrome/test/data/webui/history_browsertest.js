@@ -566,7 +566,7 @@ TEST_F('HistoryWebUITest', 'multipleSelect', function() {
   testDone();
 });
 
-TEST_F('HistoryWebUITest', 'searchHistory', function() {
+TEST_F('HistoryWebUITest', 'DISABLED_searchHistory', function() {
   var getResultCount = function() {
     return document.querySelectorAll('.entry').length;
   };
