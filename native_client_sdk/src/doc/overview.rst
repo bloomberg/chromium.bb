@@ -22,7 +22,7 @@ the key benefits and common use cases of Native Client.
 Google has implemented the open-source `Native Client project
 <http://www.chromium.org/nativeclient>`_ in the Chrome browser on Windows, Mac,
 Linux, and Chrome OS. The :doc:`Native Client Software Development Kit (SDK)
-<sdk/index>`, itself an open-source project, lets developers create web
+<sdk/download>`, itself an open-source project, lets developers create web
 applications that use NaCl and run in Chrome across multiple platforms.
 
 A web application that uses Native Client generally consists of a combination of

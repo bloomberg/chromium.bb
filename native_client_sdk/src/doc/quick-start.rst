@@ -18,7 +18,7 @@ To get started with Native Client:
    of the examples. You can learn how to build and run the example applications
    on the :doc:`Running the SDK Examples <sdk/examples>` page.
 #. Browse through the :doc:`Developer's Guide <devguide/index>` and the
-   :doc:`Pepper API <peppercpp/index>` reference documentation. The
+   :doc:`Pepper API <pepper_stable/index>` reference documentation. The
    :doc:`Glossary <glossary>` defines some terms and names commonly used
    throughout the documentation.
 

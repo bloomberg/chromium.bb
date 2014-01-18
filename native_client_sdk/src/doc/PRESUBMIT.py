@@ -14,7 +14,9 @@ def _CheckSphinxBuild(input_api, output_api):
   """
 
   try:
-    subprocess.check_output(['make', 'SPHINXOPTS=-Wa'],
+    # Don't do a full chromesite build (takes about a minute...), just build
+    # the ReST.
+    subprocess.check_output(['make', 'chromesite_rst', 'SPHINXOPTS=-Wa'],
                             stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError as e:
     return [output_api.PresubmitNotifyResult('sphinx_build failed:\n' +

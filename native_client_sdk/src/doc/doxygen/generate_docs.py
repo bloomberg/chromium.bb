@@ -158,16 +158,17 @@ def RunRstIndex(kind, channel, pepper_version, out_dirname, out_rst_filename):
 def GenerateDocs(channel, pepper_version, branch):
   Trace('Generating docs for %s (branch %s)' % (channel, branch))
   pepper_dirname = 'pepper_%s' % channel
-  # i.e. ../_build/chromesite/pepper_beta
-  chromesite_dir = os.path.join(DOC_DIR, '_build', 'chromesite', pepper_dirname)
-
-  CheckoutPepperDocs(branch, pepper_dirname)
-  GenerateCHeaders(pepper_version, pepper_dirname)
-
-  doxyfile_c = ''
-  doxyfile_cpp = ''
+  # i.e. ../_developer.chrome.com_generated/pepper_beta
+  chromesite_dir = os.path.join(DOC_DIR, '_developer.chrome.com_generated',
+                                pepper_dirname)
 
   try:
+    CheckoutPepperDocs(branch, pepper_dirname)
+    GenerateCHeaders(pepper_version, pepper_dirname)
+
+    doxyfile_c = ''
+    doxyfile_cpp = ''
+
     # Generate Root index
     rst_index_root = os.path.join(DOC_DIR, pepper_dirname, 'index.rst')
     RunRstIndex('root', channel, pepper_version, chromesite_dir, rst_index_root)
@@ -206,6 +207,8 @@ def main(argv):
 
   if options.verbose:
     Trace.verbose = True
+
+  os.chdir(SCRIPT_DIR)
 
   channel_info = GetChannelInfo()
   for channel, info in channel_info.iteritems():

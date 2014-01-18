@@ -6,6 +6,7 @@ SPHINXOPTS    = -W
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
+CHROMESITE_BUILDDIR = _developer.chrome.com_generated
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -49,9 +50,10 @@ help:
 	@echo "  doctest      to run all doctests embedded in the documentation (if enabled)"
 	@echo "  devsite      build locally viewable version of docs for developers.google.com"
 	@echo "  devsite-prod build production docs for developers.google.com"
-	@echo "  chromesite   build locally viewable version of docs for developer.chrome.com"
-	@echo "  chromesite-prod build production docs for developer.chrome.com"
 	@echo "  serve        start python web server on port server 8009"
+	@echo "  chromesite   build docs for developer.chrome.com"
+	@echo "  chromesite_rst    only build .rst docs; no doxygen"
+	@echo "  serve_chromesite  start python web server for chromesite docs"
 
 clean:
 	rm -rf $(BUILDDIR)/*
@@ -205,10 +207,17 @@ devsite:
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/devsite."
 
 chromesite:
-	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(BUILDDIR)/chromesite
+	doxygen/generate_docs.py
+	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(CHROMESITE_BUILDDIR)
 	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/chromesite."
+	@echo "Build finished. The HTML pages are in $(CHROMESITE_BUILDDIR)"
+
+chromesite_rst:
+	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(CHROMESITE_BUILDDIR)
 
 
 serve:
 	cd _build/devsite && python -m SimpleHTTPServer 8009
+
+serve_chromesite:
+	../../../chrome/common/extensions/docs/server2/preview.py
