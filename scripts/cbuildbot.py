@@ -70,6 +70,7 @@ def _PrintValidConfigs(display_all=False):
             config_name)
 
   COLUMN_WIDTH = 45
+  print
   print 'config'.ljust(COLUMN_WIDTH), 'description'
   print '------'.ljust(COLUMN_WIDTH), '-----------'
   config_names = cbuildbot_config.config.keys()
@@ -80,18 +81,13 @@ def _PrintValidConfigs(display_all=False):
       desc = desc if desc else ''
       print name.ljust(COLUMN_WIDTH), desc
 
+  print
+
 
 def _GetConfig(config_name):
-  """Gets the configuration for the build"""
-  if not cbuildbot_config.config.has_key(config_name):
-    print 'Non-existent configuration %s specified.' % config_name
-    print 'Please specify one of:'
-    _PrintValidConfigs()
-    sys.exit(1)
-
-  result = cbuildbot_config.config[config_name]
-
-  return result
+  """Gets the configuration for the build if it exists, None otherwise."""
+  if cbuildbot_config.config.has_key(config_name):
+    return cbuildbot_config.config[config_name]
 
 
 def AcquirePoolFromOptions(options):
@@ -942,7 +938,7 @@ class CustomParser(commandline.FilteringParser):
 def _CreateParser():
   """Generate and return the parser with all the options."""
   # Parse options
-  usage = "usage: %prog [options] buildbot_config"
+  usage = "usage: %prog [options] buildbot_config [buildbot_config ...]"
   parser = CustomParser(usage=usage, caching=FindCacheDir)
 
   # Main options
@@ -1411,25 +1407,41 @@ def _PostParseCheck(parser, options, args):
       cros_build_lib.Die("CBUILDBOT_DEFAULT_MODE value %s isn't supported. "
                          % default)
 
+  # Ensure that all args are legitimate config targets.
+  invalid_target = False
+  for arg in args:
+    if not _GetConfig(arg):
+      cros_build_lib.Error('No such configuraton target: "%s".', arg)
+      invalid_target = True
+
+  if invalid_target:
+    print 'Please specify one of:'
+    _PrintValidConfigs()
+    cros_build_lib.Die('One or more invalid configuration targets specified.')
+
 
 def _ParseCommandLine(parser, argv):
   """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
 
+  # Strip out null arguments.
+  # TODO(rcui): Remove when buildbot is fixed
+  args = [arg for arg in args if arg]
+
+  # A couple options, like --list, trigger a quick exit.
   if options.output_api_version:
     print constants.REEXEC_API_VERSION
     sys.exit(0)
 
   if options.list:
+    if args:
+      cros_build_lib.Die('No arguments expected with the --list options.')
     _PrintValidConfigs(options.print_all)
     sys.exit(0)
 
-  # Strip out null arguments.
-  # TODO(rcui): Remove when buildbot is fixed
-  args = [arg for arg in args if arg]
   if not args:
-    parser.error('Invalid usage.  Use -h to see usage.  Use -l to list '
-                 'supported configs.')
+    parser.error('Invalid usage: no configuration targets provided.'
+                 'Use -h to see usage.  Use -l to list supported configs.')
 
   _FinishParsing(options, args)
   return options, args
