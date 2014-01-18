@@ -230,9 +230,8 @@ class DevServerWrapper(multiprocessing.Process):
     if self.src_image:
       cmd.append('--src_image=%s' % ToChrootPath(self.src_image))
 
-    enter_chroot = not cros_build_lib.IsInsideChroot()
     result = self._RunCommand(
-        cmd, enter_chroot=enter_chroot,
+        cmd, enter_chroot=True,
         cwd=constants.SOURCE_ROOT, error_code_ok=True,
         redirect_stdout=True, combine_stdout_stderr=True)
     if result.returncode != 0:

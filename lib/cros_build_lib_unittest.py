@@ -312,7 +312,9 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     """--enter_chroot=True and --cmd is an array of strings."""
     self.proc_mock.returncode = 0
     cmd_list = ['foo', 'bar', 'roger']
-    real_cmd = ['cros_sdk', '--'] + cmd_list
+    real_cmd = cmd_list
+    if not cros_build_lib.IsInsideChroot():
+      real_cmd = ['cros_sdk', '--'] + cmd_list
     self._TestCmd(cmd_list, real_cmd, rc_kv=dict(enter_chroot=True))
 
   @_ForceLoggingLevel

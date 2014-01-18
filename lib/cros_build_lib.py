@@ -368,7 +368,8 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     cwd: the working directory to run this cmd.
     input: input to pipe into this command through stdin.
     enter_chroot: this command should be run from within the chroot.  If set,
-      cwd must point to the scripts directory.
+      cwd must point to the scripts directory. If we are already inside the
+      chroot, this command will be run as if enter_chroot is False.
     shell: Controls whether we add a shell as a command interpreter.  See cmd
       since it has to agree as to the type.
     env: If non-None, this is the environment for the new process.  If
@@ -465,7 +466,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.
   env = env.copy() if env is not None else os.environ.copy()
-  if enter_chroot:
+  if enter_chroot and not IsInsideChroot():
     wrapper = ['cros_sdk']
 
     if chroot_args:
