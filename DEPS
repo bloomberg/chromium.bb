@@ -741,6 +741,18 @@ hooks = [
                 "-s", "src/third_party/clang_format/bin/linux/clang-format.sha1",
     ],
   },
+  # Pull eu-strip binaries using checked-in hashes.
+  {
+    "name": "eu-strip",
+    "pattern": "src/build/linux/bin/eu-strip.sha1",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-eu-strip",
+                "-s", "src/build/linux/bin/eu-strip.sha1",
+    ],
+  },
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "name": "gyp",

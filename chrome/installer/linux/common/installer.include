@@ -115,7 +115,7 @@ stage_install_common() {
   # We need to add the debug link so gdb knows to look for the symbols.
   DEBUGFILE="${BUILDDIR}/${PROGNAME}.debug"
   STRIPPEDFILE="${BUILDDIR}/${PROGNAME}.stripped"
-  eu-strip -o "${STRIPPEDFILE}" -f "${DEBUGFILE}" "${BUILDDIR}/${PROGNAME}"
+  "${BUILDDIR}/installer/common/eu-strip" -o "${STRIPPEDFILE}" -f "${DEBUGFILE}" "${BUILDDIR}/${PROGNAME}"
   install -m 755 "${STRIPPEDFILE}" "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}"
   rm "${DEBUGFILE}" "${STRIPPEDFILE}"
 
@@ -186,7 +186,7 @@ stage_install_common() {
     if [ -f "${buildfile}" ]; then
       strippedfile="${buildfile}.stripped"
       debugfile="${buildfile}.debug"
-      eu-strip -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
+      "${BUILDDIR}/installer/common/eu-strip" -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
       install -m 755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
     fi
   done

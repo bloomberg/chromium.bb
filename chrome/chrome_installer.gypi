@@ -567,6 +567,9 @@
               '<(PRODUCT_DIR)/libwidevinecdmadapter.so',
               '<(PRODUCT_DIR)/libwidevinecdm.so',
             ],
+            'packaging_files_common': [
+              '<(DEPTH)/build/linux/bin/eu-strip',
+            ],
           }],
           ['target_arch=="x64"', {
             'deb_arch': 'amd64',
@@ -575,6 +578,9 @@
               '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
               '<(PRODUCT_DIR)/libwidevinecdmadapter.so',
               '<(PRODUCT_DIR)/libwidevinecdm.so',
+            ],
+            'packaging_files_common': [
+              '<!(which eu-strip)',
             ],
           }],
           ['target_arch=="arm"', {

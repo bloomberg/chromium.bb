@@ -56,6 +56,7 @@ v8.log
 /build/util/LASTCHANGE*
 /build/util/support
 /build/x64/
+/build/linux/bin/eu-strip
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
 /c
 /ceee/internal/
