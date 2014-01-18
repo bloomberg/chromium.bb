@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstdlib>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
@@ -23,13 +24,19 @@ class SeekableBufferTest : public testing::Test {
   static const int kWriteSize = 512;
 
   virtual void SetUp() {
+    // Note: We use srand() and rand() rather than base::RandXXX() to improve
+    // unit test performance.  We don't need good random numbers, just
+    // something that generates "mixed data."
+    const unsigned int kKnownSeed = 0x98765432;
+    srand(kKnownSeed);
+
     // Create random test data samples.
     for (int i = 0; i < kDataSize; i++)
-      data_[i] = static_cast<char>(base::RandInt(0, 255));
+      data_[i] = static_cast<char>(rand());
   }
 
   int GetRandomInt(int maximum) {
-    return base::RandInt(0, maximum);
+    return rand() % (maximum + 1);
   }
 
   SeekableBuffer buffer_;
