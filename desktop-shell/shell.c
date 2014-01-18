@@ -4492,6 +4492,11 @@ idle_handler(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, idle_listener);
+	struct weston_seat *seat;
+
+	wl_list_for_each(seat, &shell->compositor->seat_list, link)
+		if (seat->pointer)
+			popup_grab_end(seat->pointer);
 
 	shell_fade(shell, FADE_OUT);
 	/* lock() is called from shell_fade_done() */
