@@ -14,7 +14,7 @@ import sys
 import landmine_utils
 
 
-builder = landmine_utils.platform
+builder = landmine_utils.builder
 distributor = landmine_utils.distributor
 gyp_defines = landmine_utils.gyp_defines
 gyp_msvs_version = landmine_utils.gyp_msvs_version
