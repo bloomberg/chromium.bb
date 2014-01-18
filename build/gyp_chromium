@@ -201,7 +201,7 @@ def GetArgsStringForGN(supplemental_files):
       gn_args += ' ' + i[2]
 
   # These string arguments get passed directly as GN strings.
-  for v in ['android_src', 'windows_sdk_path']:
+  for v in ['android_src', 'windows_sdk_path', 'arm_float_abi']:
     if v in vars_dict:
       gn_args += ' ' + v + '=' + EscapeStringForGN(vars_dict[v])
 
