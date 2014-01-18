@@ -2965,9 +2965,11 @@ verify-object-arm() {
     "${PNACL_READELF}" -A $1 | grep Tag_Advanced_SIMD_arch
   fi
 
-  if ! grep -q "Tag_ABI_HardFP_use: SP and DP" <<< ${arch_info} ; then
-    echo "FAIL bad $1 Tag_ABI_HardFP_use"
-    "${PNACL_READELF}" -A $1 | grep Tag_ABI_HardFP_use
+  # Check that the file uses the ARM hard-float ABI (where VFP
+  # registers D0-D7 (s0-s15) are used to pass arguments and results).
+  if ! grep -q "Tag_ABI_VFP_args: VFP registers" <<< ${arch_info} ; then
+    echo "FAIL bad $1 Tag_ABI_VFP_args"
+    "${PNACL_READELF}" -A $1 | grep Tag_ABI_VFP_args
   fi
 }
 
