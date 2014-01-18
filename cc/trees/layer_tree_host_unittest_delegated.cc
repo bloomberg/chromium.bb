@@ -135,7 +135,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                                ResourceProvider::ResourceId resource_id) {
     TransferableResource resource;
     resource.id = resource_id;
-    resource.target = GL_TEXTURE_2D;
+    resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
     frame->resource_list.push_back(resource);
   }
 

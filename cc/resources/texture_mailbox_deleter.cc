@@ -17,7 +17,7 @@ namespace cc {
 static void DeleteTextureOnImplThread(
     const scoped_refptr<ContextProvider>& context_provider,
     unsigned texture_id,
-    unsigned sync_point,
+    uint32 sync_point,
     bool is_lost) {
   if (sync_point)
     context_provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point);

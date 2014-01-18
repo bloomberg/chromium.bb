@@ -32,10 +32,9 @@ class CC_EXPORT TextureMailboxDeleter {
  private:
   // Runs the |impl_callback| to delete the texture and removes the callback
   // from the |impl_callbacks_| list.
-  void RunDeleteTextureOnImplThread(
-      SingleReleaseCallback* impl_callback,
-      unsigned sync_point,
-      bool is_lost);
+  void RunDeleteTextureOnImplThread(SingleReleaseCallback* impl_callback,
+                                    uint32 sync_point,
+                                    bool is_lost);
 
   ScopedPtrVector<SingleReleaseCallback> impl_callbacks_;
   base::WeakPtrFactory<TextureMailboxDeleter> weak_ptr_factory_;

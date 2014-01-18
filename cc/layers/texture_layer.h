@@ -21,22 +21,22 @@ class TextureLayerClient;
 // A Layer containing a the rendered output of a plugin instance.
 class CC_EXPORT TextureLayer : public Layer {
  public:
-  class CC_EXPORT MailboxHolder
-      : public base::RefCountedThreadSafe<MailboxHolder> {
+  class CC_EXPORT TextureMailboxHolder
+      : public base::RefCountedThreadSafe<TextureMailboxHolder> {
    public:
     class CC_EXPORT MainThreadReference {
      public:
-      explicit MainThreadReference(MailboxHolder* holder);
+      explicit MainThreadReference(TextureMailboxHolder* holder);
       ~MainThreadReference();
-      MailboxHolder* holder() { return holder_.get(); }
+      TextureMailboxHolder* holder() { return holder_.get(); }
 
      private:
-      scoped_refptr<MailboxHolder> holder_;
+      scoped_refptr<TextureMailboxHolder> holder_;
       DISALLOW_COPY_AND_ASSIGN(MainThreadReference);
     };
 
     const TextureMailbox& mailbox() const { return mailbox_; }
-    void Return(unsigned sync_point, bool is_lost);
+    void Return(uint32 sync_point, bool is_lost);
 
     // Gets a ReleaseCallback that can be called from another thread. Note: the
     // caller must ensure the callback is called.
@@ -49,17 +49,18 @@ class CC_EXPORT TextureLayer : public Layer {
     static scoped_ptr<MainThreadReference> Create(
         const TextureMailbox& mailbox,
         scoped_ptr<SingleReleaseCallback> release_callback);
-    virtual ~MailboxHolder();
+    virtual ~TextureMailboxHolder();
 
    private:
-    friend class base::RefCountedThreadSafe<MailboxHolder>;
+    friend class base::RefCountedThreadSafe<TextureMailboxHolder>;
     friend class MainThreadReference;
-    explicit MailboxHolder(const TextureMailbox& mailbox,
-                           scoped_ptr<SingleReleaseCallback> release_callback);
+    explicit TextureMailboxHolder(
+        const TextureMailbox& mailbox,
+        scoped_ptr<SingleReleaseCallback> release_callback);
 
     void InternalAddRef();
     void InternalRelease();
-    void ReturnAndReleaseOnImplThread(unsigned sync_point, bool is_lost);
+    void ReturnAndReleaseOnImplThread(uint32 sync_point, bool is_lost);
 
     // This member is thread safe, and is accessed on main and impl threads.
     const scoped_refptr<BlockingTaskRunner> message_loop_;
@@ -75,9 +76,9 @@ class CC_EXPORT TextureLayer : public Layer {
     // values of these fields are well-ordered such that the last call to
     // ReturnAndReleaseOnImplThread() defines their values.
     base::Lock arguments_lock_;
-    unsigned sync_point_;
+    uint32 sync_point_;
     bool is_lost_;
-    DISALLOW_COPY_AND_ASSIGN(MailboxHolder);
+    DISALLOW_COPY_AND_ASSIGN(TextureMailboxHolder);
   };
 
   // If this texture layer requires special preparation logic for each frame
@@ -165,7 +166,7 @@ class CC_EXPORT TextureLayer : public Layer {
   bool content_committed_;
 
   unsigned texture_id_;
-  scoped_ptr<MailboxHolder::MainThreadReference> holder_ref_;
+  scoped_ptr<TextureMailboxHolder::MainThreadReference> holder_ref_;
   bool needs_set_mailbox_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureLayer);

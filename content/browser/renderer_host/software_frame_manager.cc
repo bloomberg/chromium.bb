@@ -13,7 +13,7 @@
 namespace {
 
 void ReleaseMailbox(scoped_refptr<content::SoftwareFrame> frame,
-                    unsigned sync_point,
+                    uint32 sync_point,
                     bool lost_resource) {}
 
 }  // namespace

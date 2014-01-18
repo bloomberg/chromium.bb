@@ -246,7 +246,7 @@ TEST_F(ScrollingLayerTreePerfTest, LongScrollablePageThreadedImplSide) {
   RunTestWithImplSidePainting();
 }
 
-static void EmptyReleaseCallback(unsigned sync_point, bool lost_resource) {}
+static void EmptyReleaseCallback(uint32 sync_point, bool lost_resource) {}
 
 // Simulates main-thread scrolling on each frame.
 class BrowserCompositorInvalidateLayerTreePerfTest
@@ -274,7 +274,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
         reinterpret_cast<const int8*>(name_stream.str().c_str()));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(&EmptyReleaseCallback));
-    TextureMailbox mailbox(gpu_mailbox, next_sync_point_);
+    TextureMailbox mailbox(gpu_mailbox, GL_TEXTURE_2D, next_sync_point_);
     next_sync_point_++;
 
     tab_contents_->SetTextureMailbox(mailbox, callback.Pass());

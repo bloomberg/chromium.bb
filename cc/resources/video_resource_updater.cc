@@ -313,7 +313,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     };
 
     external_resources.mailboxes.push_back(
-        TextureMailbox(plane_resources[i].mailbox));
+        TextureMailbox(plane_resources[i].mailbox, GL_TEXTURE_2D, 0));
     external_resources.release_callbacks.push_back(
         base::Bind(&RecycleResource, AsWeakPtr(), recycle_data));
   }
@@ -323,9 +323,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 }
 
 static void ReturnTexture(const scoped_refptr<media::VideoFrame>& frame,
-                          unsigned sync_point,
+                          uint32 sync_point,
                           bool lost_resource) {
-  frame->texture_mailbox()->Resync(sync_point);
+  frame->mailbox_holder()->sync_point = sync_point;
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -339,8 +339,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   if (!context_provider_)
     return VideoFrameExternalResources();
 
+  gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
   VideoFrameExternalResources external_resources;
-  switch (video_frame->texture_target()) {
+  switch (mailbox_holder->texture_target) {
     case GL_TEXTURE_2D:
       external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
       break;
@@ -356,13 +357,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       return VideoFrameExternalResources();
   }
 
-  media::VideoFrame::MailboxHolder* mailbox_holder =
-      video_frame->texture_mailbox();
-
   external_resources.mailboxes.push_back(
-      TextureMailbox(mailbox_holder->mailbox(),
-                     video_frame->texture_target(),
-                     mailbox_holder->sync_point()));
+      TextureMailbox(mailbox_holder->mailbox,
+                     mailbox_holder->texture_target,
+                     mailbox_holder->sync_point));
   external_resources.release_callbacks.push_back(
       base::Bind(&ReturnTexture, video_frame));
   return external_resources;
@@ -372,7 +370,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 void VideoResourceUpdater::RecycleResource(
     base::WeakPtr<VideoResourceUpdater> updater,
     RecycleResourceData data,
-    unsigned sync_point,
+    uint32 sync_point,
     bool lost_resource) {
   if (!updater.get()) {
     // Resource was already deleted.

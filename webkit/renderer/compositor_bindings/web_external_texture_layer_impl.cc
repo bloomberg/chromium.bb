@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "webkit/renderer/compositor_bindings/web_external_bitmap_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
@@ -82,10 +83,12 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
   }
   gpu::Mailbox name;
   name.SetName(client_mailbox.name);
-  if (bitmap)
+  if (bitmap) {
     *mailbox = cc::TextureMailbox(bitmap->shared_memory(), bitmap->size());
-  else
-    *mailbox = cc::TextureMailbox(name, client_mailbox.syncPoint);
+  } else {
+    *mailbox =
+        cc::TextureMailbox(name, GL_TEXTURE_2D, client_mailbox.syncPoint);
+  }
 
   if (mailbox->IsValid()) {
     *release_callback = cc::SingleReleaseCallback::Create(base::Bind(

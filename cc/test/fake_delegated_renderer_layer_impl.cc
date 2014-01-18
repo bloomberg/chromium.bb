@@ -30,7 +30,8 @@ static ResourceProvider::ResourceId AddResourceToFrame(
     ResourceProvider::ResourceId resource_id) {
   TransferableResource resource;
   resource.id = resource_id;
-  resource.target = resource_provider->TargetForTesting(resource_id);
+  resource.mailbox_holder.texture_target =
+      resource_provider->TargetForTesting(resource_id);
   frame->resource_list.push_back(resource);
   return resource_id;
 }

@@ -11,9 +11,9 @@
 namespace content {
 
 OwnedMailbox::OwnedMailbox(GLHelper* gl_helper)
-    : texture_id_(0), sync_point_(0), gl_helper_(gl_helper) {
+    : texture_id_(0), gl_helper_(gl_helper) {
   texture_id_ = gl_helper_->CreateTexture();
-  mailbox_ = gl_helper_->ProduceMailboxFromTexture(texture_id_, &sync_point_);
+  mailbox_holder_ = gl_helper_->ProduceMailboxHolderFromTexture(texture_id_);
   ImageTransportFactory::GetInstance()->AddObserver(this);
 }
 
@@ -24,16 +24,15 @@ OwnedMailbox::~OwnedMailbox() {
 
 void OwnedMailbox::UpdateSyncPoint(uint32 sync_point) {
   if (sync_point)
-    sync_point_ = sync_point;
+    mailbox_holder_.sync_point = sync_point;
 }
 
 void OwnedMailbox::Destroy() {
   ImageTransportFactory::GetInstance()->RemoveObserver(this);
-  gl_helper_->WaitSyncPoint(sync_point_);
+  gl_helper_->WaitSyncPoint(mailbox_holder_.sync_point);
   gl_helper_->DeleteTexture(texture_id_);
   texture_id_ = 0;
-  mailbox_ = gpu::Mailbox();
-  sync_point_ = 0;
+  mailbox_holder_ = gpu::MailboxHolder();
   gl_helper_ = NULL;
 }
 

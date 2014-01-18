@@ -23,6 +23,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "grit/content_resources.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
@@ -63,12 +64,12 @@ namespace content {
 void WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture(
     const scoped_refptr<base::MessageLoopProxy>& main_loop,
     const base::WeakPtr<WebMediaPlayerAndroid>& player,
-    uint32 sync_point) {
+    const gpu::MailboxHolder* mailbox_holder) {
   main_loop->PostTask(
       FROM_HERE,
       base::Bind(&WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture,
                  player,
-                 sync_point));
+                 mailbox_holder->sync_point));
 }
 
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
@@ -934,19 +935,16 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
   GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
 
   scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-      make_scoped_ptr(new VideoFrame::MailboxHolder(
-          texture_mailbox,
-          texture_mailbox_sync_point,
-          base::Bind(&WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture,
-                     main_loop_,
-                     weak_factory_.GetWeakPtr()))),
-      texture_target,
+      make_scoped_ptr(new gpu::MailboxHolder(
+          texture_mailbox, texture_target, texture_mailbox_sync_point)),
+      base::Bind(&WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture,
+                 main_loop_,
+                 weak_factory_.GetWeakPtr()),
       canvas_size /* coded_size */,
       gfx::Rect(canvas_size) /* visible_rect */,
       canvas_size /* natural_size */,
       base::TimeDelta() /* timestamp */,
-      VideoFrame::ReadPixelsCB(),
-      base::Closure() /* no_longer_needed_cb */);
+      VideoFrame::ReadPixelsCB());
   SetCurrentFrameInternal(new_frame);
 }
 
@@ -966,17 +964,15 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
 #endif  // defined(VIDEO_HOLE)
   } else if (!is_remote_ && texture_id_) {
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new VideoFrame::MailboxHolder(
-            texture_mailbox_,
-            texture_mailbox_sync_point_,
-            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback())),
-        kGLTextureExternalOES,
+        make_scoped_ptr(new gpu::MailboxHolder(texture_mailbox_,
+                                               kGLTextureExternalOES,
+                                               texture_mailbox_sync_point_)),
+        media::VideoFrame::ReleaseMailboxCB(),
         natural_size_,
         gfx::Rect(natural_size_),
         natural_size_,
         base::TimeDelta(),
-        VideoFrame::ReadPixelsCB(),
-        base::Closure());
+        VideoFrame::ReadPixelsCB());
     SetCurrentFrameInternal(new_frame);
   }
 }
