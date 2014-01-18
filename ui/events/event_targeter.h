@@ -32,7 +32,6 @@ class EVENTS_EXPORT EventTargeter {
   virtual EventTarget* FindTargetForLocatedEvent(EventTarget* root,
                                                  LocatedEvent* event);
 
- protected:
   // Returns true of |target| or one of its descendants can be a target of
   // |event|. Note that the location etc. of |event| is in |target|'s parent's
   // coordinate system.

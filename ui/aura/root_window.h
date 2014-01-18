@@ -281,9 +281,6 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   virtual const RootWindow* AsRootWindow() const OVERRIDE;
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
-  ui::EventDispatchDetails OnHostMouseEventImpl(ui::MouseEvent* event)
-      WARN_UNUSED_RESULT;
-
   // We hold and aggregate mouse drags and touch moves as a way of throttling
   // resizes when HoldMouseMoves() is called. The following methods are used to
   // dispatch held and newly incoming mouse and touch events, typically when an
@@ -291,13 +288,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   // ReleaseMouseMoves()/ReleaseTouchMoves() is called.  NOTE: because these
   // methods dispatch events from WindowTreeHost the coordinates are in terms of
   // the root.
-  ui::EventDispatchDetails DispatchMouseEventImpl(ui::MouseEvent* event)
-      WARN_UNUSED_RESULT;
-  ui::EventDispatchDetails DispatchMouseEventRepost(ui::MouseEvent* event)
-      WARN_UNUSED_RESULT;
-  ui::EventDispatchDetails DispatchMouseEventToTarget(ui::MouseEvent* event,
-                                                      Window* target)
-      WARN_UNUSED_RESULT;
+
   ui::EventDispatchDetails DispatchHeldEvents() WARN_UNUSED_RESULT;
   // Creates and dispatches synthesized mouse move event using the
   // current mouse location.
@@ -310,6 +301,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   void PostMouseMoveEventAfterWindowChange();
 
   void PreDispatchLocatedEvent(Window* target, ui::LocatedEvent* event);
+  void PreDispatchMouseEvent(Window* target, ui::MouseEvent* event);
   void PreDispatchTouchEvent(Window* target, ui::TouchEvent* event);
 
   // TODO(beng): evaluate the ideal ownership model.

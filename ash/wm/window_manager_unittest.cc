@@ -597,7 +597,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(
-      CreateTestWindowInShellWithDelegate(&wd, 1, gfx::Rect(0, 10, 50, 50)));
+      CreateTestWindowInShellWithDelegate(&wd, 1, gfx::Rect(0, 15, 50, 50)));
   d1.SetWindow(w1.get());
   w1->Show();
 
