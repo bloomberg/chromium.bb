@@ -104,6 +104,15 @@ TEST(CoreTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }
 
+// Defined in core_unittest_pure_c.c.
+extern "C" const char* MinimalCTest(void);
+
+// This checks that things actually work in C (not C++).
+TEST(CoreTest, MinimalCTest) {
+  const char* failure = MinimalCTest();
+  EXPECT_TRUE(failure == NULL) << failure;
+}
+
 // TODO(vtl): Add multi-threaded tests.
 
 }  // namespace

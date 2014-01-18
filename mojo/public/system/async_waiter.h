@@ -20,7 +20,7 @@ struct MojoAsyncWaiter {
   // of MojoWait to the given MojoAsyncWaitCallback on the current thread.
   // Returns a non-zero MojoAsyncWaitID that can be used with CancelWait to
   // stop waiting. This identifier becomes invalid once the callback runs.
-  MojoAsyncWaitID (*AsyncWait)(MojoAsyncWaiter* waiter,
+  MojoAsyncWaitID (*AsyncWait)(struct MojoAsyncWaiter* waiter,
                                MojoHandle handle,
                                MojoWaitFlags flags,
                                MojoDeadline deadline,
@@ -29,7 +29,7 @@ struct MojoAsyncWaiter {
 
   // Cancel an existing call to AsyncWait with the given MojoAsyncWaitID. The
   // corresponding MojoAsyncWaitCallback will not be called in this case.
-  void (*CancelWait)(MojoAsyncWaiter* waiter,
+  void (*CancelWait)(struct MojoAsyncWaiter* waiter,
                      MojoAsyncWaitID wait_id);
 };
 

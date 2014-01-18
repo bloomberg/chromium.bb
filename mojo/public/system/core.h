@@ -139,7 +139,7 @@ typedef uint64_t MojoDeadline;
 #ifdef __cplusplus
 const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 #else
-#define MOJO_DEADLINE_INDEFINITE = ((MojoDeadline) -1);
+#define MOJO_DEADLINE_INDEFINITE ((MojoDeadline) -1)
 #endif
 
 // |MojoWaitFlags|: Used to specify the state of a handle to wait on (e.g., the

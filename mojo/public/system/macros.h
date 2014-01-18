@@ -25,6 +25,8 @@
 #define MOJO_WARN_UNUSED_RESULT
 #endif
 
+// C++-only macros -------------------------------------------------------------
+
 #ifdef __cplusplus
 
 // Annotate a virtual method indicating it must be overriding a virtual method
