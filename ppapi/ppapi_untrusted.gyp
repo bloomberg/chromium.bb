@@ -168,7 +168,6 @@
               '--output=>(nmf_glibc)',
               '--stage-dependencies=<(PRODUCT_DIR)',
             ],
-            'msvs_cygwin_shell': 1,
           },
         ],
         }],
