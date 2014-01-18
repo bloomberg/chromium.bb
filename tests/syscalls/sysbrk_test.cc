@@ -36,9 +36,6 @@ void* kSysbrkErrorAddress = reinterpret_cast<void*>(-1);
 // modules.
 void* kIllegalBreakAddress = reinterpret_cast<void*>(~0U);
 
-// The amount to increment/decrement sbrk
-const intptr_t kAddrDelta = 65536;
-
 // Make sure the current break address is non-0 when using sysbrk().
 int TestCurrentBreakAddr() {
   START_TEST("TestCurrentBreakAddr");
