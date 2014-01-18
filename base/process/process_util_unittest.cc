@@ -517,7 +517,7 @@ int ProcessUtilTest::CountOpenFDsInChild() {
       HANDLE_EINTR(read(fds[0], &num_open_files, sizeof(num_open_files)));
   CHECK_EQ(bytes_read, static_cast<ssize_t>(sizeof(num_open_files)));
 
-#if defined(THREAD_SANITIZER) || defined(USE_HEAPCHECKER)
+#if defined(THREAD_SANITIZER)
   // Compiler-based ThreadSanitizer makes this test slow.
   CHECK(base::WaitForSingleProcess(handle, base::TimeDelta::FromSeconds(3)));
 #else
