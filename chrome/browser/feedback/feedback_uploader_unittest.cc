@@ -104,8 +104,13 @@ TEST_F(FeedbackUploaderTest, QueueMultiple) {
   EXPECT_EQ(dispatched_reports_[3], kReportFour);
 }
 
+#if defined(OS_WIN)
 // crbug.com/330547
-TEST_F(FeedbackUploaderTest, DISABLED_QueueMultipleWithFailures) {
+#define MAYBE_QueueMultipleWithFailures DISABLED_QueueMultipleWithFailures
+#else
+#define MAYBE_QueueMultipleWithFailures QueueMultipleWithFailures
+#endif
+TEST_F(FeedbackUploaderTest, MAYBE_QueueMultipleWithFailures) {
   dispatched_reports_.clear();
   QueueReport(kReportOne);
   QueueReport(kReportTwo);
