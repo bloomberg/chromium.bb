@@ -26,6 +26,7 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/widevine_cdm_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -52,6 +53,10 @@ const uint8 kSha2Hash[] = { 0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49,
 
 // File name of the Widevine CDM component manifest on different platforms.
 const char kWidevineCdmManifestName[] = "WidevineCdm";
+
+// File name of the Widevine CDM adapter version file. The CDM adapter shares
+// the same version number with Chromium version.
+const char kCdmAdapterVersionName[] = "CdmAdapterVersion";
 
 // Name of the Widevine CDM OS in the component manifest.
 const char kWidevineCdmPlatform[] =
@@ -212,8 +217,8 @@ void GetAdditionalParams(const base::DictionaryValue& manifest,
   }
 }
 
-void RegisterWidevineCdmWithChrome(const base::Version& version,
-                                   const base::FilePath& path,
+void RegisterWidevineCdmWithChrome(const base::Version& cdm_version,
+                                   const base::FilePath& adapter_install_path,
                                    scoped_ptr<base::DictionaryValue> manifest) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<base::string16> additional_param_names;
@@ -221,8 +226,8 @@ void RegisterWidevineCdmWithChrome(const base::Version& version,
   GetAdditionalParams(
       *manifest, &additional_param_names, &additional_param_values);
   content::PepperPluginInfo plugin_info;
-  if (!MakeWidevineCdmPluginInfo(version,
-                                 path,
+  if (!MakeWidevineCdmPluginInfo(cdm_version,
+                                 adapter_install_path,
                                  additional_param_names,
                                  additional_param_values,
                                  &plugin_info)) {
@@ -256,6 +261,16 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
   virtual base::FilePath GetBaseDirectory() const OVERRIDE;
   virtual void GetHash(std::vector<uint8>* hash) const OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
+
+  // Checks and updates CDM adapter if necessary to make sure the latest CDM
+  // adapter is always used.
+  // Note: The component is ready when CDM is present, but the CDM won't be
+  // registered until the adapter is copied by this function (see
+  // VerifyInstallation).
+  void UpdateCdmAdapter(const base::Version& cdm_version,
+                        const base::FilePath& cdm_install_dir,
+                        scoped_ptr<base::DictionaryValue> manifest);
+
   DISALLOW_COPY_AND_ASSIGN(WidevineCdmComponentInstallerTraits);
 };
 
@@ -266,18 +281,13 @@ bool WidevineCdmComponentInstallerTraits::CanAutoUpdate() const {
   return true;
 }
 
-// The adapter is copied into the install directory as part of the installation.
 bool WidevineCdmComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
-    const base::FilePath& install_path) {
-  base::FilePath adapter_install_path = GetPlatformDirectory(install_path)
-      .AppendASCII(kWidevineCdmAdapterFileName);
-  base::FilePath adapter_source_path;
-  PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &adapter_source_path);
-  return base::CopyFile(adapter_source_path, adapter_install_path);
+    const base::FilePath& install_dir) {
+  return true;
 }
 
-// Once the component is installed, register the new version with Chrome.
+// Once the CDM is ready, check the CDM adapter.
 void WidevineCdmComponentInstallerTraits::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
@@ -287,19 +297,17 @@ void WidevineCdmComponentInstallerTraits::ComponentReady(
     return;
   }
 
-  base::FilePath adapter_install_path = GetPlatformDirectory(path)
-      .AppendASCII(kWidevineCdmAdapterFileName);
-  RegisterWidevineCdmWithChrome(version,
-                                adapter_install_path,
-                                manifest.Pass());
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&WidevineCdmComponentInstallerTraits::UpdateCdmAdapter,
+                 base::Unretained(this),
+                 version, path, base::Passed(&manifest)));
 }
 
 bool WidevineCdmComponentInstallerTraits::VerifyInstallation(
     const base::FilePath& install_dir) const {
-  return base::PathExists(GetPlatformDirectory(install_dir)
-          .AppendASCII(kWidevineCdmFileName))
-      && base::PathExists(GetPlatformDirectory(install_dir)
-          .AppendASCII(kWidevineCdmAdapterFileName));
+  return base::PathExists(
+      GetPlatformDirectory(install_dir).AppendASCII(kWidevineCdmFileName));
 }
 
 // The base directory on Windows looks like:
@@ -317,6 +325,46 @@ void WidevineCdmComponentInstallerTraits::GetHash(
 
 std::string WidevineCdmComponentInstallerTraits::GetName() const {
   return kWidevineCdmManifestName;
+}
+
+void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
+    const base::Version& cdm_version,
+    const base::FilePath& cdm_install_dir,
+    scoped_ptr<base::DictionaryValue> manifest) {
+  const base::FilePath adapter_version_path =
+      GetPlatformDirectory(cdm_install_dir).AppendASCII(kCdmAdapterVersionName);
+  const base::FilePath adapter_install_path =
+      GetPlatformDirectory(cdm_install_dir)
+          .AppendASCII(kWidevineCdmAdapterFileName);
+
+  const std::string chrome_version = chrome::VersionInfo().Version();
+  DCHECK(!chrome_version.empty());
+  std::string adapter_version;
+  if (!base::ReadFileToString(adapter_version_path, &adapter_version) ||
+      adapter_version != chrome_version ||
+      !base::PathExists(adapter_install_path)) {
+    int bytes_written = file_util::WriteFile(
+        adapter_version_path, chrome_version.data(), chrome_version.size());
+    if (bytes_written < 0 ||
+        static_cast<size_t>(bytes_written) != chrome_version.size()) {
+      DLOG(WARNING) << "Failed to write Widevine CDM adapter version file.";
+      // Ignore version file writing failure and try to copy the CDM adapter.
+    }
+
+    base::FilePath adapter_source_path;
+    PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &adapter_source_path);
+    if (!base::CopyFile(adapter_source_path, adapter_install_path)) {
+      DLOG(WARNING) << "Failed to copy Widevine CDM adapter.";
+      return;
+    }
+  }
+
+  BrowserThread::PostTask(content::BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&RegisterWidevineCdmWithChrome,
+                                     cdm_version,
+                                     adapter_install_path,
+                                     base::Passed(&manifest)));
 }
 
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
