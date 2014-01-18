@@ -374,10 +374,6 @@ def _AddToolsToPath(platform_name):
       return
     os.environ['PATH'] += os.pathsep + os.pathsep.join(paths)
 
-  # Add a "cleanup" step so that errors from runtest.py or bb_device_steps.py
-  # (which invoke this script) are kept in thier own build step.
-  util.MarkBuildStepStart('cleanup')
-
 
 def main():
   parser = optparse.OptionParser()

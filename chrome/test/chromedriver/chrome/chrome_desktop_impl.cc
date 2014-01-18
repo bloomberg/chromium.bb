@@ -31,7 +31,7 @@ bool KillProcess(base::ProcessHandle process_id) {
 #if defined(OS_POSIX)
   kill(process_id, SIGKILL);
   base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(5);
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(30);
   while (base::TimeTicks::Now() < deadline) {
     pid_t pid = HANDLE_EINTR(waitpid(process_id, NULL, WNOHANG));
     if (pid == process_id)

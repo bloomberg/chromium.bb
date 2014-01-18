@@ -160,7 +160,7 @@ Status WaitForDevToolsAndCheckVersion(
   scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
       address, context_getter, socket_factory));
   base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(20);
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
   Status status = client->Init(deadline - base::TimeTicks::Now());
   if (status.IsError())
     return status;
