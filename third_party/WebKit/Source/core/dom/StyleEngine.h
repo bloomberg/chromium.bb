@@ -170,7 +170,6 @@ public:
     CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
     void resetFontSelector();
 
-    void didAttach();
     void didDetach();
     bool shouldClearResolver() const;
     StyleResolverChange resolverChanged(RecalcStyleTime, StyleResolverUpdateMode);
@@ -188,7 +187,6 @@ private:
     StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
     StyleSheetCollection* styleSheetCollectionFor(TreeScope&);
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
-    void resolverThrowawayTimerFired(Timer<StyleEngine>*);
 
     void markTreeScopeDirty(TreeScope&);
 
@@ -239,8 +237,6 @@ private:
 
     bool m_ignorePendingStylesheets;
     bool m_didCalculateResolver;
-    unsigned m_lastResolverAccessCount;
-    Timer<StyleEngine> m_resolverThrowawayTimer;
     OwnPtr<StyleResolver> m_resolver;
 
     RefPtr<CSSFontSelector> m_fontSelector;
