@@ -22,9 +22,8 @@ class CastUdpTransport : public content::P2PSocketClientDelegate {
   explicit CastUdpTransport(const scoped_refptr<CastSession>& session);
   virtual ~CastUdpTransport();
 
-  // Begin the transport by specifying the remote IP address.
-  // The transport will use UDP.
-  void Start(const net::IPEndPoint& remote_address);
+  // Specify the remote IP address and port.
+  void SetDestination(const net::IPEndPoint& remote_address);
 
  protected:
   // content::P2PSocketClient::Delegate Implementation

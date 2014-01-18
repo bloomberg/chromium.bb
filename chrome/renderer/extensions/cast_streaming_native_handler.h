@@ -34,7 +34,7 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void CreateParamsCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  void GetCapsCastRtpStream(
+  void GetSupportedParamsCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void StartCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -43,7 +43,7 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
 
   void DestroyCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  void StartCastUdpTransport(
+  void SetDestinationCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void StopCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);

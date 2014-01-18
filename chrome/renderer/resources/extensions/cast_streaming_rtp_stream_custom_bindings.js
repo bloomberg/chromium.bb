@@ -14,9 +14,9 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       function(transportId) {
         natives.DestroyCastRtpStream(transportId);
   });
-  apiFunctions.setHandleRequest('getCaps',
+  apiFunctions.setHandleRequest('getSupportedParams',
       function(transportId) {
-        return natives.GetCapsCastRtpStream(transportId);
+        return natives.GetSupportedParamsCastRtpStream(transportId);
   });
   apiFunctions.setHandleRequest('start',
       function(transportId, params) {

@@ -13,9 +13,9 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest('destroy', function(transportId) {
     natives.DestroyCastUdpTransport(transportId);
   });
-  apiFunctions.setHandleRequest('start',
-    function(transportId, remoteParams) {
-      natives.StartCastUdpTransport(transportId, remoteParams);
+  apiFunctions.setHandleRequest('setDestination',
+    function(transportId, destination) {
+      natives.SetDestinationCastUdpTransport(transportId, destination);
   });
 });
 

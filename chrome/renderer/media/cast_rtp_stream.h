@@ -69,19 +69,19 @@ struct CastRtpPayloadParams {
   ~CastRtpPayloadParams();
 };
 
-// Defines the capabilities of the transport.
-struct CastRtpCaps {
-  // Defines a list of supported payloads.
-  std::vector<CastRtpPayloadParams> payloads;
+// Defines the parameters of a RTP stream.
+struct CastRtpParams {
+  explicit CastRtpParams(const CastRtpPayloadParams& payload_params);
+
+  // Payload parameters.
+  CastRtpPayloadParams payload;
 
   // Names of supported RTCP features.
   std::vector<std::string> rtcp_features;
 
-  CastRtpCaps();
-  ~CastRtpCaps();
+  CastRtpParams();
+  ~CastRtpParams();
 };
-
-typedef CastRtpCaps CastRtpParams;
 
 // This object represents a RTP stream that encodes and optionally
 // encrypt audio or video data from a WebMediaStreamTrack.
@@ -94,10 +94,10 @@ class CastRtpStream {
                 const scoped_refptr<CastSession>& session);
   ~CastRtpStream();
 
-  // Return capabilities currently supported by this transport.
-  CastRtpCaps GetCaps();
+  // Return parameters currently supported by this stream.
+  std::vector<CastRtpParams> GetSupportedParams();
 
-  // Return parameters set to this transport.
+  // Return parameters set to this stream.
   CastRtpParams GetParams();
 
   // Begin encoding of media stream and then submit the encoded streams

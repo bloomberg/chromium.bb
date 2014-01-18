@@ -39,14 +39,13 @@ void CastSessionDelegate::StartAudio(
   audio_configured_ = true;
   audio_config_ = config;
   frame_input_available_callbacks_.push_back(callback);
+  StartSendingInternal();
 }
 
 void CastSessionDelegate::StartSending(const SendPacketCallback& callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   send_packet_callback_ = callback;
-  if (!audio_configured_ || !video_configured_)
-    return;
   StartSendingInternal();
 }
 
@@ -58,12 +57,15 @@ void CastSessionDelegate::StartVideo(
   video_configured_ = true;
   video_config_ = config;
   frame_input_available_callbacks_.push_back(callback);
+  StartSendingInternal();
 }
 
 void CastSessionDelegate::StartSendingInternal() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (cast_environment_)
+    return;
+  if (!audio_configured_ || !video_configured_)
     return;
 
   audio_encode_thread_.Start();
@@ -102,6 +104,8 @@ void CastSessionDelegate::StartSendingInternal() {
 // media::cast::PacketSender Implementation
 bool CastSessionDelegate::SendPacket(
     const media::cast::Packet& packet) {
+  if (send_packet_callback_.is_null())
+    return false;
   send_packet_callback_.Run(
       *reinterpret_cast<const std::vector<char> *>(&packet));
   return true;

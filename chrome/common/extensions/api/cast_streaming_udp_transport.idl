@@ -8,7 +8,7 @@
 // It is used to configure the UDP transport used in Cast session.
 namespace cast.streaming.udpTransport {
   // The UDP socket address and port.
-  dictionary UdpParams {
+  dictionary IPEndPoint {
     DOMString address;
     long port;
   };
@@ -18,9 +18,11 @@ namespace cast.streaming.udpTransport {
     // |transportId| : The transport ID.
     [nocompile] static void destroy(long transportId);
 
-    // Starts to use the transport by providing remote UDP info.
+    // Sets parameters for this UDP transport. This can only be called
+    // once per transport.
     // |transportId| : The transport ID.
-    // |remoteParams| : The address and port to send packets to.
-    [nocompile] static void start(long transportId, UdpParams remoteParams);
+    // |destination| : The address and port to send packets to.
+    [nocompile] static void setDestination(long transportId,
+                                           IPEndPoint destination);
   };
 };

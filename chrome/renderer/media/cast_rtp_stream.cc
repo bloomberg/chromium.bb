@@ -52,36 +52,33 @@ CastRtpPayloadParams DefaultVp8Payload() {
   return payload;
 }
 
-CastRtpCaps DefaultAudioCaps() {
-  CastRtpCaps caps;
-  caps.payloads.push_back(DefaultOpusPayload());
-  // TODO(hclam): Fill in |rtcp_features|.
-  return caps;
+std::vector<CastRtpParams> SupportedAudioParams() {
+  // TODO(hclam): Fill in more codecs here.
+  std::vector<CastRtpParams> supported_params;
+  supported_params.push_back(CastRtpParams(DefaultOpusPayload()));
+  return supported_params;
 }
 
-CastRtpCaps DefaultVideoCaps() {
-  CastRtpCaps caps;
-  caps.payloads.push_back(DefaultVp8Payload());
-  // TODO(hclam): Fill in |rtcp_features|.
-  return caps;
+std::vector<CastRtpParams> SupportedVideoParams() {
+  // TODO(hclam): Fill in H264 here.
+  std::vector<CastRtpParams> supported_params;
+  supported_params.push_back(CastRtpParams(DefaultVp8Payload()));
+  return supported_params;
 }
 
 bool ToAudioSenderConfig(const CastRtpParams& params,
                          AudioSenderConfig* config) {
-  if (params.payloads.empty())
-    return false;
-  const CastRtpPayloadParams& payload_params = params.payloads[0];
-  config->sender_ssrc = payload_params.ssrc;
-  config->incoming_feedback_ssrc = payload_params.feedback_ssrc;
-  config->rtp_payload_type = payload_params.payload_type;
+  config->sender_ssrc = params.payload.ssrc;
+  config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
+  config->rtp_payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
-  config->frequency = payload_params.clock_rate;
-  config->channels = payload_params.channels;
-  config->bitrate = payload_params.max_bitrate;
-  config->aes_key = payload_params.aes_key;
-  config->aes_iv_mask = payload_params.aes_iv_mask;
+  config->frequency = params.payload.clock_rate;
+  config->channels = params.payload.channels;
+  config->bitrate = params.payload.max_bitrate;
+  config->aes_key = params.payload.aes_key;
+  config->aes_iv_mask = params.payload.aes_iv_mask;
   config->codec = media::cast::transport::kPcm16;
-  if (payload_params.codec_name == kCodecNameOpus)
+  if (params.payload.codec_name == kCodecNameOpus)
     config->codec = media::cast::transport::kOpus;
   else
     return false;
@@ -90,20 +87,17 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
 
 bool ToVideoSenderConfig(const CastRtpParams& params,
                          VideoSenderConfig* config) {
-  if (params.payloads.empty())
-    return false;
-  const CastRtpPayloadParams& payload_params = params.payloads[0];
-  config->sender_ssrc = payload_params.ssrc;
-  config->incoming_feedback_ssrc = payload_params.feedback_ssrc;
-  config->rtp_payload_type = payload_params.payload_type;
+  config->sender_ssrc = params.payload.ssrc;
+  config->incoming_feedback_ssrc = params.payload.feedback_ssrc;
+  config->rtp_payload_type = params.payload.payload_type;
   config->use_external_encoder = false;
-  config->width = payload_params.width;
-  config->height = payload_params.height;
-  config->min_bitrate = config->start_bitrate = payload_params.min_bitrate;
-  config->max_bitrate = payload_params.max_bitrate;
-  config->aes_key = payload_params.aes_key;
-  config->aes_iv_mask = payload_params.aes_iv_mask;
-  if (payload_params.codec_name == kCodecNameVp8)
+  config->width = params.payload.width;
+  config->height = params.payload.height;
+  config->min_bitrate = config->start_bitrate = params.payload.min_bitrate;
+  config->max_bitrate = params.payload.max_bitrate;
+  config->aes_key = params.payload.aes_key;
+  config->aes_iv_mask = params.payload.aes_iv_mask;
+  if (params.payload.codec_name == kCodecNameVp8)
     config->codec = media::cast::transport::kVp8;
   else
     return false;
@@ -217,6 +211,10 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   DISALLOW_COPY_AND_ASSIGN(CastAudioSink);
 };
 
+CastRtpParams::CastRtpParams(const CastRtpPayloadParams& payload_params)
+  : payload(payload_params) {
+}
+
 CastCodecSpecificParams::CastCodecSpecificParams() {
 }
 
@@ -238,10 +236,10 @@ CastRtpPayloadParams::CastRtpPayloadParams()
 CastRtpPayloadParams::~CastRtpPayloadParams() {
 }
 
-CastRtpCaps::CastRtpCaps() {
+CastRtpParams::CastRtpParams() {
 }
 
-CastRtpCaps::~CastRtpCaps() {
+CastRtpParams::~CastRtpParams() {
 }
 
 CastRtpStream::CastRtpStream(
@@ -254,11 +252,11 @@ CastRtpStream::CastRtpStream(
 CastRtpStream::~CastRtpStream() {
 }
 
-CastRtpCaps CastRtpStream::GetCaps() {
+std::vector<CastRtpParams> CastRtpStream::GetSupportedParams() {
   if (IsAudio())
-    return DefaultAudioCaps();
+    return SupportedAudioParams();
   else
-    return DefaultVideoCaps();
+    return SupportedVideoParams();
 }
 
 CastRtpParams CastRtpStream::GetParams() {

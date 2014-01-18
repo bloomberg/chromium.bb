@@ -48,18 +48,10 @@ namespace cast.streaming.rtpStream {
     CodecSpecificParams[] codecSpecificParams;
   };
 
-  // Cast RTP capabilities.
-  dictionary RtpCaps {
-    // RTP payload params.
-    RtpPayloadParams[] payloads;
-
-    DOMString[] rtcpFeatures;
-  };
-
   // Cast RTP parameters.
   dictionary RtpParams {
     // RTP payload params.
-    RtpPayloadParams[] payloads;
+    RtpPayloadParams payload;
 
     DOMString[] rtcpFeatures;
   };
@@ -73,9 +65,11 @@ namespace cast.streaming.rtpStream {
     // |streamId| : The RTP stream ID.
     [nocompile] static void destroy(long streamId);
 
-    // Returns capabilities of the RTP stream.
+    // Returns an array of supported parameters with default values.
+    // This includes a list of supported codecs on this platform and
+    // corresponding encoding and RTP parameters.
     // |streamId| : The RTP stream ID.
-    [nocompile] static RtpCaps getCaps(long streamId);
+    [nocompile] static RtpParams[] getSupportedParams(long streamId);
 
     // Activates the RTP stream by providing the parameters.
     // |streamId| : The RTP stream ID.

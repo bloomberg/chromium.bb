@@ -19,11 +19,12 @@ chrome.test.runTests([
                     stream.getVideoTracks()[0],
                     pass(function(stream, audioId, videoId, udpId) {
         console.log("Starting.");
-        var audioParams = rtpStream.getCaps(audioId);
-        var videoParams = rtpStream.getCaps(videoId);
+        var audioParams = rtpStream.getSupportedParams(audioId)[0];
+        var videoParams = rtpStream.getSupportedParams(videoId)[0];
+        udpTransport.setDestination(udpId,
+                                    {address: "127.0.0.1", port: 2344});
         rtpStream.start(audioId, audioParams);
         rtpStream.start(videoId, videoParams);
-        udpTransport.start(udpId, {address: "127.0.0.1", port: 2344});
         window.setTimeout(pass(function() {
           console.log("Stopping.");
           rtpStream.stop(audioId);
@@ -32,8 +33,8 @@ chrome.test.runTests([
           rtpStream.destroy(videoId);
           udpTransport.destroy(udpId);
           stream.stop();
-          chrome.test.assertEq(audioParams.payloads[0].codecName, "OPUS");
-          chrome.test.assertEq(videoParams.payloads[0].codecName, "VP8");
+          chrome.test.assertEq(audioParams.payload.codecName, "OPUS");
+          chrome.test.assertEq(videoParams.payload.codecName, "VP8");
           chrome.test.succeed();
         }), 0);
       }.bind(null, stream)));
@@ -49,10 +50,10 @@ chrome.test.runTests([
                     pass(function(stream, audioId, videoId, udpId) {
         // AES key is invalid and exception is expected.
         try {
-          var audioParams = rtpStream.getCaps(audioId);
-          var videoParams = rtpStream.getCaps(videoId);
-          audioParams.payloads[0].aesKey = "google";
-          videoParams.payloads[0].aesIvMask = "chrome";
+          var audioParams = rtpStream.getSupportedParams(audioId)[0];
+          var videoParams = rtpStream.getSupportedParams(videoId)[0];
+          audioParams.payload.aesKey = "google";
+          videoParams.payload.aesIvMask = "chrome";
           rtpStream.start(audioId, audioParams);
           rtpStream.start(videoId, videoParams);
         } catch (e) {

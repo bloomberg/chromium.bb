@@ -22,7 +22,7 @@ CastUdpTransport::~CastUdpTransport() {
     socket_->Close();
 }
 
-void CastUdpTransport::Start(const net::IPEndPoint& remote_address) {
+void CastUdpTransport::SetDestination(const net::IPEndPoint& remote_address) {
   remote_address_ = remote_address;
   // TODO(hclam): This code binds to a fixed port for now. P2P socket will be
   // deprecated once we move packet sending to the browser and this code
