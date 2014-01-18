@@ -18,7 +18,7 @@
 namespace {
 
 const int kMaxRestartAttempts = 10;
-const char kPrivetDeviceTypeDnsString[] = "\x07_privet\x04_tcp\x05local";
+const char kPrivetDeviceTypeDnsString[] = "\x07_privet";
 
 void GetNetworkListOnFileThread(
     const base::Callback<void(const net::NetworkInterfaceList&)> callback) {
@@ -156,7 +156,7 @@ bool PrivetTrafficDetector::IsPrivetPacket(int rv) const {
     return false;
   const char* substring_begin = kPrivetDeviceTypeDnsString;
   const char* substring_end = substring_begin +
-                              arraysize(kPrivetDeviceTypeDnsString);
+                              arraysize(kPrivetDeviceTypeDnsString) - 1;
   // Check for expected substring, any Privet device must include this.
   return std::search(buffer_begin, buffer_end, substring_begin,
                      substring_end) != buffer_end;
