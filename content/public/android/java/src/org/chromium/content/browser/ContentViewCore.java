@@ -780,6 +780,19 @@ public class ContentViewCore
             viewAndroidNativePointer = mViewAndroid.getNativePointer();
         }
 
+        // Note ContentViewGestureHandler initialization must occur before nativeInit
+        // because nativeInit may callback into hasTouchEventHandlers.
+        mZoomManager = new ZoomManager(mContext, this);
+        mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager);
+        mZoomControlsDelegate = new ZoomControlsDelegate() {
+            @Override
+            public void invokeZoomPicker() {}
+            @Override
+            public void dismissZoomPicker() {}
+            @Override
+            public void updateZoomControls() {}
+        };
+
         mNativeContentViewCore = nativeInit(mHardwareAccelerated,
                 nativeWebContents, viewAndroidNativePointer, windowNativePointer);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
@@ -834,17 +847,6 @@ public class ContentViewCore
 
         mContainerView.setWillNotDraw(false);
         mContainerView.setClickable(true);
-
-        mZoomManager = new ZoomManager(mContext, this);
-        mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager);
-        mZoomControlsDelegate = new ZoomControlsDelegate() {
-            @Override
-            public void invokeZoomPicker() {}
-            @Override
-            public void dismissZoomPicker() {}
-            @Override
-            public void updateZoomControls() {}
-        };
 
         mRenderCoordinates.reset();
         onRenderCoordinatesUpdated();

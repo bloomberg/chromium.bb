@@ -498,6 +498,9 @@ void InputRouterImpl::OnSelectRangeAck() {
 }
 
 void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
+  TRACE_EVENT1("input", "InputRouterImpl::OnHasTouchEventHandlers",
+               "has_handlers", has_handlers);
+
   if (has_handlers == touch_event_queue_->has_handlers())
     return;
   touch_event_queue_->OnHasTouchEventHandlers(has_handlers);

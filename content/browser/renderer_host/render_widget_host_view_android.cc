@@ -1328,6 +1328,11 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     if (content_view_core_ && !using_synchronous_compositor_)
       content_view_core_->GetWindowAndroid()->AddObserver(this);
   }
+
+  // Ensure ContentsViewCore is aware of the current touch handling state, eg.
+  // in case we've already been running JS for the page as part of preload.
+  if (content_view_core_ && host_)
+    content_view_core_->HasTouchEventHandlers(host_->has_touch_handler());
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
