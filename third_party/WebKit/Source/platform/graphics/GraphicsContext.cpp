@@ -465,6 +465,9 @@ bool GraphicsContext::concat(const SkMatrix& matrix)
     if (paintingDisabled())
         return false;
 
+    if (matrix.isIdentity())
+        return true;
+
     realizeSave(SkCanvas::kMatrix_SaveFlag);
 
     return m_canvas->concat(matrix);
@@ -1587,6 +1590,9 @@ void GraphicsContext::translate(float w, float h)
     if (paintingDisabled())
         return;
 
+    if (!w && !h)
+        return;
+
     realizeSave(SkCanvas::kMatrix_SaveFlag);
 
     m_canvas->translate(WebCoreFloatToSkScalar(w), WebCoreFloatToSkScalar(h));
@@ -1595,6 +1601,9 @@ void GraphicsContext::translate(float w, float h)
 void GraphicsContext::scale(const FloatSize& size)
 {
     if (paintingDisabled())
+        return;
+
+    if (size.width() == 1.0f && size.height() == 1.0f)
         return;
 
     realizeSave(SkCanvas::kMatrix_SaveFlag);
