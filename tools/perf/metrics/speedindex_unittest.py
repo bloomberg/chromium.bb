@@ -37,7 +37,8 @@ class FakeBitmap(object):
   def __init__(self, histogram):
     self._histogram = histogram
 
-  def ColorHistogram(self):
+  # pylint: disable=W0613
+  def ColorHistogram(self, ignore_color=None, tolerance=None):
     return self._histogram
 
 
@@ -70,10 +71,13 @@ class FakeTab(object):
     assert self.video_capture_supported
     return self._video_capture_result
 
+  def Highlight(self, _):
+    pass
+
 
 class IncludedPaintEventsTest(unittest.TestCase):
   def testNumberPaintEvents(self):
-    impl = speedindex.PaintRectSpeedIndexImpl(None)
+    impl = speedindex.PaintRectSpeedIndexImpl()
     # In the sample data, there's one event that occurs before the layout event,
     # and one paint event that's not a leaf paint event.
     events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
@@ -82,7 +86,7 @@ class IncludedPaintEventsTest(unittest.TestCase):
 
 class SpeedIndexImplTest(unittest.TestCase):
   def testAdjustedAreaDict(self):
-    impl = speedindex.PaintRectSpeedIndexImpl(None)
+    impl = speedindex.PaintRectSpeedIndexImpl()
     paint_events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
     viewport = 1000, 1000
     time_area_dict = impl._TimeAreaDict(paint_events, viewport)
@@ -101,10 +105,11 @@ class SpeedIndexImplTest(unittest.TestCase):
       (0.2, FakeBitmap([60, 0, 40])),
       (0.3, FakeBitmap([0, 10, 90]))
     ]
-    impl = speedindex.VideoSpeedIndexImpl(FakeTab(frames))
-    impl.Start()
-    impl.Stop()
-    time_completeness = impl.GetTimeCompletenessList()
+    tab = FakeTab(frames)
+    impl = speedindex.VideoSpeedIndexImpl()
+    impl.Start(tab)
+    impl.Stop(tab)
+    time_completeness = impl.GetTimeCompletenessList(tab)
     self.assertEquals(len(time_completeness), 4)
     self.assertEquals(time_completeness[0], (0.0, 0.0))
     self.assertEquals(time_completeness[1], (0.1, 0.425))
@@ -115,7 +120,7 @@ class SpeedIndexImplTest(unittest.TestCase):
 class SpeedIndexTest(unittest.TestCase):
   def testWithSampleData(self):
     tab = FakeTab()
-    impl = speedindex.PaintRectSpeedIndexImpl(tab)
+    impl = speedindex.PaintRectSpeedIndexImpl()
     viewport = 1000, 1000
     # Add up the parts of the speed index for each time interval.
     # Each part is the time interval multiplied by the proportion of the
@@ -128,7 +133,7 @@ class SpeedIndexTest(unittest.TestCase):
     expected = sum(parts)  # 330.0
     tab.timeline_model.SetAllEvents(_SAMPLE_EVENTS)
     tab.SetEvaluateJavaScriptResult(viewport)
-    actual = impl.CalculateSpeedIndex()
+    actual = impl.CalculateSpeedIndex(tab)
     self.assertEqual(actual, expected)
 
 
@@ -148,14 +153,14 @@ class WPTComparisonTest(unittest.TestCase):
       expected: The result expected based on the WPT result.
     """
     tab = FakeTab()
-    impl = speedindex.PaintRectSpeedIndexImpl(tab)
+    impl = speedindex.PaintRectSpeedIndexImpl()
     file_path = os.path.join(_TEST_DIR, filename)
     with open(file_path) as json_file:
       raw_events = json.load(json_file)
       tab.timeline_model.SetAllEvents(
           model.TimelineModel(event_data=raw_events).GetAllEvents())
       tab.SetEvaluateJavaScriptResult(viewport)
-      actual = impl.CalculateSpeedIndex()
+      actual = impl.CalculateSpeedIndex(tab)
       # The result might differ by 1 or more milliseconds due to rounding,
       # so compare to the nearest 10 milliseconds.
       self.assertAlmostEqual(actual, expected, places=-1)

@@ -35,9 +35,9 @@ class SpeedIndexMetric(Metric):
     a PageMeasurement, so that all the events can be captured. If it's called
     in DidNavigateToPage, that will be too late.
     """
-    self._impl = (VideoSpeedIndexImpl(tab) if tab.video_capture_supported else
-                  PaintRectSpeedIndexImpl(tab))
-    self._impl.Start()
+    self._impl = (VideoSpeedIndexImpl() if tab.video_capture_supported else
+                  PaintRectSpeedIndexImpl())
+    self._impl.Start(tab)
     self._script_is_loaded = False
     self._is_finished = False
 
@@ -45,13 +45,13 @@ class SpeedIndexMetric(Metric):
     """Stop timeline recording."""
     assert self._impl, 'Must call Start() before Stop()'
     assert self.IsFinished(tab), 'Must wait for IsFinished() before Stop()'
-    self._impl.Stop()
+    self._impl.Stop(tab)
 
   # Optional argument chart_name is not in base class Metric.
   # pylint: disable=W0221
   def AddResults(self, tab, results, chart_name=None):
     """Calculate the speed index and add it to the results."""
-    index = self._impl.CalculateSpeedIndex()
+    index = self._impl.CalculateSpeedIndex(tab)
     # Release the tab so that it can be disconnected.
     self._impl = None
     results.Add('speed_index', 'ms', index, chart_name=chart_name)
@@ -95,28 +95,20 @@ class SpeedIndexMetric(Metric):
 
 class SpeedIndexImpl(object):
 
-  def __init__(self, tab):
-    """Constructor.
-
-    Args:
-      tab: The telemetry.core.Tab object for which to calculate SpeedIndex.
-    """
-    self.tab = tab
-
-  def Start(self):
+  def Start(self, tab):
     raise NotImplementedError()
 
-  def Stop(self):
+  def Stop(self, tab):
     raise NotImplementedError()
 
-  def GetTimeCompletenessList(self):
+  def GetTimeCompletenessList(self, tab):
     """Returns a list of time to visual completeness tuples.
 
     In the WPT PHP implementation, this is also called 'visual progress'.
     """
     raise NotImplementedError()
 
-  def CalculateSpeedIndex(self):
+  def CalculateSpeedIndex(self, tab):
     """Calculate the speed index.
 
     The speed index number conceptually represents the number of milliseconds
@@ -128,7 +120,7 @@ class SpeedIndexImpl(object):
     Returns:
       A single number, milliseconds of visual incompleteness.
     """
-    time_completeness_list = self.GetTimeCompletenessList()
+    time_completeness_list = self.GetTimeCompletenessList(tab)
     prev_completeness = 0.0
     speed_index = 0.0
     prev_time = time_completeness_list[0][0]
@@ -146,20 +138,20 @@ class SpeedIndexImpl(object):
 
 class VideoSpeedIndexImpl(SpeedIndexImpl):
 
-  def __init__(self, tab):
-    super(VideoSpeedIndexImpl, self).__init__(tab)
-    assert self.tab.video_capture_supported
+  def __init__(self):
+    super(VideoSpeedIndexImpl, self).__init__()
     self._time_completeness_list = None
 
-  def Start(self):
+  def Start(self, tab):
+    assert tab.video_capture_supported
     # Blank out the current page so it doesn't count towards the new page's
     # completeness.
-    self.tab.Highlight(bitmap.WHITE)
+    tab.Highlight(bitmap.WHITE)
     # TODO(tonyg): Bitrate is arbitrary here. Experiment with screen capture
     # overhead vs. speed index accuracy and set the bitrate appropriately.
-    self.tab.StartVideoCapture(min_bitrate_mbps=4)
+    tab.StartVideoCapture(min_bitrate_mbps=4)
 
-  def Stop(self):
+  def Stop(self, tab):
     # Ignore white because Chrome may blank out the page during load and we want
     # that to count as 0% complete. Relying on this fact, we also blank out the
     # previous page to white. The tolerance of 8 experimentally does well with
@@ -167,7 +159,7 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
     # supported video compression settings.
     histograms = [(time, bmp.ColorHistogram(ignore_color=bitmap.WHITE,
                                             tolerance=8))
-                  for time, bmp in self.tab.StopVideoCapture()]
+                  for time, bmp in tab.StopVideoCapture()]
 
     start_histogram = histograms[0][1]
     final_histogram = histograms[-1][1]
@@ -187,25 +179,25 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
     self._time_completeness_list = [(time, FrameProgress(hist) / total)
                                     for time, hist in histograms]
 
-  def GetTimeCompletenessList(self):
+  def GetTimeCompletenessList(self, tab):
     assert self._time_completeness_list, 'Must call Stop() first.'
     return self._time_completeness_list
 
 
 class PaintRectSpeedIndexImpl(SpeedIndexImpl):
 
-  def __init__(self, tab):
-    super(PaintRectSpeedIndexImpl, self).__init__(tab)
+  def __init__(self):
+    super(PaintRectSpeedIndexImpl, self).__init__()
 
-  def Start(self):
-    self.tab.StartTimelineRecording()
+  def Start(self, tab):
+    tab.StartTimelineRecording()
 
-  def Stop(self):
-    self.tab.StopTimelineRecording()
+  def Stop(self, tab):
+    tab.StopTimelineRecording()
 
-  def GetTimeCompletenessList(self):
-    events = self.tab.timeline_model.GetAllEvents()
-    viewport = self._GetViewportSize()
+  def GetTimeCompletenessList(self, tab):
+    events = tab.timeline_model.GetAllEvents()
+    viewport = self._GetViewportSize(tab)
     paint_events = self._IncludedPaintEvents(events)
     time_area_dict = self._TimeAreaDict(paint_events, viewport)
     total_area = sum(time_area_dict.values())
@@ -219,7 +211,7 @@ class PaintRectSpeedIndexImpl(SpeedIndexImpl):
     # probably assume the completeness is 0 until the first paint and add the
     # time of navigationStart as the start. We need to confirm what WPT does.
     time_completeness_list.append(
-        (self.tab.timeline_model.GetAllEvents()[0].start, completeness))
+        (tab.timeline_model.GetAllEvents()[0].start, completeness))
 
     for time, area in sorted(time_area_dict.items()):
       completeness += float(area) / total_area
@@ -227,10 +219,9 @@ class PaintRectSpeedIndexImpl(SpeedIndexImpl):
       time_completeness_list.append((time, round(completeness, 2)))
     return time_completeness_list
 
-  def _GetViewportSize(self):
+  def _GetViewportSize(self, tab):
     """Returns dimensions of the viewport."""
-    return self.tab.EvaluateJavaScript(
-        '[ window.innerWidth, window.innerHeight ]')
+    return tab.EvaluateJavaScript('[ window.innerWidth, window.innerHeight ]')
 
   def _IncludedPaintEvents(self, events):
     """Get all events that are counted in the calculation of the speed index.
