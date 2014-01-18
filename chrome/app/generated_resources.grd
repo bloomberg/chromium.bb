@@ -5081,7 +5081,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_DETAILS" desc="Tooltip for the button next to an extension that toggles showing details">
         Details
       </message>
-      
+
       <!-- Strings for the extensions permission dialog experiment -->
       <!-- TODO(meacer): Remove these once the experiments are completed. -->
       <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_EXPLANATION1">
@@ -5099,7 +5099,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_EXPLANATION5">
         Do you trust this extension to perform these actions?
       </message>
-      
+
       <message name="IDS_EXTENSION_PROMPT_EXPERIMENT_INSTALL_BUTTON_TRUST" desc="Text for the install button on the extension install prompt (for experiment group 1)">
         Yes, I trust this extension!
       </message>
@@ -5511,12 +5511,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_DISABLE_PRIVET_LOCAL_PRINTING_DESCRIPTION">
         Disable printing to printers on the local network using the Privet protocol.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
-        Enable Print Preview Registration Promos
-      </message>
-      <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION">
-        Enable registering unregistered cloud printers from print preview.
       </message>
       <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME" desc="Title of the touch-optimized UI flag." >
         Touch Optimized UI

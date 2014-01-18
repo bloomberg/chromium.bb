@@ -714,10 +714,6 @@ const char kEnableOriginChipLeadingMenuButton[] =
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
 
-// Enables showing unregistered printers in print preview
-const char kEnablePrintPreviewRegisterPromos[] =
-    "enable-print-preview-register-promos";
-
 // Enable Privet storage.
 const char kEnablePrivetStorage[]     = "enable-privet-storage";
 
