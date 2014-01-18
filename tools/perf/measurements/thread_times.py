@@ -8,7 +8,7 @@ from telemetry.page import page_measurement
 class ThreadTimes(page_measurement.PageMeasurement):
   def __init__(self):
     super(ThreadTimes, self).__init__('smoothness')
-    self._metric = timeline.ThreadTimesTimelineMetric()
+    self._metric = None
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--report-silk-results', action='store_true',
@@ -24,11 +24,15 @@ class ThreadTimes(page_measurement.PageMeasurement):
     return False
 
   def WillRunActions(self, page, tab):
+    self._metric = timeline.ThreadTimesTimelineMetric()
     self._metric.Start(page, tab)
     if self.options.report_silk_results:
       self._metric.results_to_report = timeline.SilkResults
     if self.options.report_silk_details:
       self._metric.details_to_report = timeline.SilkDetails
+
+  def DidRunAction(self, page, tab, action):
+    self._metric.AddActionToIncludeInMetric(action)
 
   def DidRunActions(self, page, tab):
     self._metric.Stop(page, tab)

@@ -5,6 +5,7 @@
 import unittest
 
 from metrics import timeline
+from telemetry.core.timeline import bounds
 from telemetry.core.timeline import model as model_module
 from telemetry.page import page as page_module
 from telemetry.page import page_measurement_results
@@ -103,15 +104,23 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     cc_main.BeginSlice('cc_cat', timeline.CompositorFrameTraceName, 12, 12)
     cc_main.EndSlice(13, 13)
 
-    # [      X       ]
+    # [      X       ]   [ Z ]
     #      [  Y  ]
     renderer_main.BeginSlice('cat1', 'X', 10, 0)
     renderer_main.BeginSlice('cat2', 'Y', 15, 5)
-    renderer_main.EndSlice(16, 0.5)
+    renderer_main.EndSlice(16, 5.5)
     renderer_main.EndSlice(30, 19.5)
+    renderer_main.BeginSlice('cat1', 'Z', 31, 20)
+    renderer_main.BeginSlice('cat1', 'Z', 33, 21)
     model.FinalizeImport()
 
+    # Exclude Z using an action-range.
+    action_range = bounds.Bounds()
+    action_range.AddValue(10)
+    action_range.AddValue(30)
+
     metric = timeline.ThreadTimesTimelineMetric()
+    metric._action_ranges = [action_range]
     metric.details_to_report = timeline.MainThread
     results = self.GetResultsForModel(metric, model)
 

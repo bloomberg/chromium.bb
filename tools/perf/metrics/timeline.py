@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import collections
+import itertools
 
 from metrics import Metric
+from telemetry.core.timeline import bounds
 from telemetry.page import page_measurement
 
 TRACING_MODE = 'tracing-mode'
@@ -23,6 +25,8 @@ class TimelineMetric(Metric):
     self._mode = mode
     self._model = None
     self._renderer_process = None
+    self._actions = []
+    self._action_ranges = []
 
   def Start(self, page, tab):
     """Starts gathering timeline data.
@@ -43,10 +47,18 @@ class TimelineMetric(Metric):
       trace_result = tab.browser.StopTracing()
       self._model = trace_result.AsTimelineModel()
       self._renderer_process = self._model.GetRendererProcessFromTab(tab)
+      self._action_ranges = [ action.GetActiveRangeOnTimeline(self._model)
+                              for action in self._actions ]
+      # Make sure no action ranges overlap
+      for combo in itertools.combinations(self._action_ranges, 2):
+        assert not combo[0].Intersects(combo[1])
     else:
       tab.StopTimelineRecording()
       self._model = tab.timeline_model
       self._renderer_process = self._model.GetAllProcesses()[0]
+
+  def AddActionToIncludeInMetric(self, action):
+    self._actions.append(action)
 
   @property
   def model(self):
@@ -140,14 +152,14 @@ TimelineThreadCategories =  {
 }
 
 MatchBySubString = ["IOThread", "CompositorRasterWorker"]
-FastPath = ["GPU",
-            "browser_main",
-            "browser_compositor",
-            "renderer_compositor",
-            "IO"]
 
 AllThreads = TimelineThreadCategories.values()
 NoThreads = []
+FastPathThreads = ["GPU",
+                   "browser_main",
+                   "browser_compositor",
+                   "renderer_compositor",
+                   "IO"]
 MainThread = ["renderer_main"]
 FastPathResults = AllThreads
 FastPathDetails = NoThreads
@@ -174,14 +186,15 @@ def ThreadCpuTimeResultName(thread_category):
   return "thread_" + thread_category + "_cpu_time_per_frame"
 
 def ThreadDetailResultName(thread_category, detail):
-  return "thread_" +  thread_category + "|" + detail
+  return "thread_" + thread_category + "|" + detail
 
 class ResultsForThread(object):
-  def __init__(self, model, name):
+  def __init__(self, model, action_ranges, name):
     self.model = model
     self.toplevel_slices = []
     self.all_slices = []
     self.name = name
+    self.action_ranges = action_ranges
 
   @property
   def clock_time(self):
@@ -195,14 +208,26 @@ class ResultsForThread(object):
       #
       # A thread_duration of 0 is valid, so this only returns 0 if it is None.
       if x.thread_duration == None:
-        return 0
+        if not x.duration:
+          continue
+        else:
+          return 0
       else:
         res += x.thread_duration
     return res
 
+  def ActionSlices(self, slices):
+    slices_in_actions = []
+    for event in slices:
+      for action_range in self.action_ranges:
+        if action_range.Contains(bounds.Bounds.CreateFromEvent(event)):
+          slices_in_actions.append(event)
+          break
+    return slices_in_actions
+
   def AppendThreadSlices(self, thread):
-    self.all_slices.extend(thread.all_slices)
-    self.toplevel_slices.extend(thread.toplevel_slices)
+    self.all_slices.extend(self.ActionSlices(thread.all_slices))
+    self.toplevel_slices.extend(self.ActionSlices(thread.toplevel_slices))
 
   def AddResults(self, num_frames, results):
     clock_report_name = ThreadTimeResultName(self.name)
@@ -224,7 +249,8 @@ class ResultsForThread(object):
       results.Add(ThreadDetailResultName(self.name, category),
                   'ms', self_time_result)
     all_measured_time = sum(all_self_times)
-    idle_time = max(0, self.model.bounds.bounds - all_measured_time)
+    all_action_time = sum([action.bounds for action in self.action_ranges])
+    idle_time = max(0, all_action_time - all_measured_time)
     idle_time_result = (float(idle_time) / num_frames) if num_frames else 0
     results.Add(ThreadDetailResultName(self.name, "idle"),
                 'ms', idle_time_result)
@@ -243,10 +269,15 @@ class ThreadTimesTimelineMetric(TimelineMetric):
     return count
 
   def AddResults(self, tab, results):
+    # We need at least one action or we won't count any slices.
+    assert len(self._action_ranges) > 0
+
     # Set up each thread category for consistant results.
     thread_category_results = {}
     for name in TimelineThreadCategories.values():
-      thread_category_results[name] = ResultsForThread(self.model, name)
+      thread_category_results[name] = ResultsForThread(self._model,
+                                                       self._action_ranges,
+                                                       name)
 
     # Group the slices by their thread category.
     for thread in self._model.GetAllThreads():
@@ -259,7 +290,7 @@ class ThreadTimesTimelineMetric(TimelineMetric):
 
     # Also group fast-path threads.
     for thread in self._model.GetAllThreads():
-      if ThreadCategoryName(thread.name) in FastPath:
+      if ThreadCategoryName(thread.name) in FastPathThreads:
         thread_category_results['total_fast_path'].AppendThreadSlices(thread)
 
     # Calculate the number of frames from the CC thread.
