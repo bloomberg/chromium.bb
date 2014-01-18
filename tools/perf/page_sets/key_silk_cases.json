@@ -207,6 +207,7 @@
       ]
     },
     {
+      "disabled": "Android Chrome freezes; crbug.com/335772",
       "url": "file://key_silk_cases/old_inbox_app.html?slide_drawer",
       "navigate_steps" : [
         { "action": "navigate" },
@@ -396,6 +397,7 @@
       }
     },
     {
+      "disabled": "Android Chrome freezes; crbug.com/335772",
       "url": "http://s.codepen.io/befamous/fullpage/pFsqb?flip",
       "why": "famo.us twitter demo",
       "navigate_steps" : [
@@ -409,6 +411,7 @@
       }
     },
     {
+      "disabled": "Android Chrome freezes; crbug.com/335772",
       "url": "http://s.codepen.io/befamous/fullpage/kbxnH?scroll",
       "why": "famo.us lightbox demo",
       "smoothness": {
@@ -417,6 +420,7 @@
       }
     },
     {
+      "disabled": "Android Chrome freezes; crbug.com/335772",
       "url": "http://s.codepen.io/befamous/fullpage/kbxnH?select",
       "why": "famo.us lightbox demo",
       "smoothness": {
