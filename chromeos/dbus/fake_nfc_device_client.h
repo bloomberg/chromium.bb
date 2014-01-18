@@ -56,8 +56,8 @@ class CHROMEOS_EXPORT FakeNfcDeviceClient : public NfcDeviceClient {
   // Simulates the appearance of a device. The fake device will show up after
   // exactly |visibility_delay| milliseconds, and will simulate pushing a single
   // record to the local fake adapter after exactly |record_push_delay|
-  // milliseconds after the the device appears. If |visibility_delay| has a
-  // negative value, it will be treated as 0. If |record_push_delay| has a
+  // milliseconds after the the device appears. |visibility_delay| must have a
+  // non-negative value. |record_push_delay| CAN be negative: if it has a
   // negative value, the record push step will not be simulated. The
   // side-effects of this method occur asynchronously, i.e. even with arguments
   // with value 0, the pairing won't take place until after this method has
@@ -72,8 +72,9 @@ class CHROMEOS_EXPORT FakeNfcDeviceClient : public NfcDeviceClient {
 
   // Enables or disables automatic unpairing. When enabled, a pairing
   // simulation will end |simulation_timeout| milliseconds after records have
-  // been exposed. This is enabled by default and the timeout is set to
-  // |kDefaultSimulationTimeoutMilliseconds|.
+  // been exposed (or after the tag has been exposed, if |record_push_delay| was
+  // given as a negative value to BeginPairingSimulation) This is enabled by
+  // default and the timeout is set to |kDefaultSimulationTimeoutMilliseconds|.
   void EnableSimulationTimeout(int simulation_timeout);
   void DisableSimulationTimeout();
 

@@ -219,12 +219,14 @@ bool RecordPropertiesToNfcNdefRecord(
       text_attributes->SetString(NfcNdefRecord::kFieldLanguageCode,
                                  properties->language.value());
     }
-    if (type == NfcNdefRecord::kTypeSmartPoster) {
-      base::ListValue* titles = new base::ListValue();
-      titles->Append(text_attributes.release());
-      attributes.Set(NfcNdefRecord::kFieldTitles, titles);
-    } else {
-      attributes.MergeDictionary(text_attributes.get());
+    if (!text_attributes->empty()) {
+      if (type == NfcNdefRecord::kTypeSmartPoster) {
+        base::ListValue* titles = new base::ListValue();
+        titles->Append(text_attributes.release());
+        attributes.Set(NfcNdefRecord::kFieldTitles, titles);
+      } else {
+        attributes.MergeDictionary(text_attributes.get());
+      }
     }
   }
 

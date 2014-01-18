@@ -11,17 +11,22 @@
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
 #include "chromeos/dbus/fake_nfc_record_client.h"
+#include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "device/nfc/nfc_adapter_chromeos.h"
 #include "device/nfc/nfc_ndef_record.h"
 #include "device/nfc/nfc_ndef_record_utils_chromeos.h"
 #include "device/nfc/nfc_peer.h"
+#include "device/nfc/nfc_tag.h"
+#include "device/nfc/nfc_tag_technology.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::NfcAdapter;
 using device::NfcNdefMessage;
 using device::NfcNdefRecord;
+using device::NfcNdefTagTechnology;
 using device::NfcPeer;
+using device::NfcTag;
 
 namespace chromeos {
 
@@ -36,14 +41,18 @@ void OnSet(bool success) {
 }
 
 class TestObserver : public NfcAdapter::Observer,
-                     public NfcPeer::Observer {
+                     public NfcPeer::Observer,
+                     public NfcTag::Observer,
+                     public NfcNdefTagTechnology::Observer {
  public:
   TestObserver(scoped_refptr<NfcAdapter> adapter)
       : present_changed_count_(0),
         powered_changed_count_(0),
         polling_changed_count_(0),
-        records_received_count_(0),
+        peer_records_received_count_(0),
+        tag_records_received_count_(0),
         peer_count_(0),
+        tag_count_(0),
         adapter_(adapter) {
   }
 
@@ -80,23 +89,51 @@ class TestObserver : public NfcAdapter::Observer,
   // NfcAdapter::Observer override.
   virtual void PeerLost(NfcAdapter* adapter, NfcPeer* peer) OVERRIDE {
     EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(peer_identifier_, peer->GetIdentifier());
     peer_count_--;
     peer_identifier_.clear();
   }
 
+  // NfcAdapter::Observer override.
+  virtual void TagFound(NfcAdapter* adapter, NfcTag* tag) OVERRIDE {
+    EXPECT_EQ(adapter_, adapter);
+    tag_count_++;
+    tag_identifier_ = tag->GetIdentifier();
+  }
+
+  // NfcAdapter::Observer override.
+  virtual void TagLost(NfcAdapter* adapter, NfcTag* tag) OVERRIDE {
+    EXPECT_EQ(adapter_, adapter);
+    EXPECT_EQ(tag_identifier_, tag->GetIdentifier());
+    tag_count_--;
+    tag_identifier_.clear();
+  }
+
   // NfcPeer::Observer override.
-  virtual void RecordsReceived(
+  virtual void RecordReceived(
       NfcPeer* peer, const NfcNdefRecord* record) OVERRIDE {
     EXPECT_EQ(peer, adapter_->GetPeer(peer_identifier_));
-    records_received_count_++;
+    EXPECT_EQ(peer_identifier_, peer->GetIdentifier());
+    peer_records_received_count_++;
+  }
+
+  // NfcNdefTagTechnology::Observer override.
+  virtual void RecordReceived(
+        NfcTag* tag, const NfcNdefRecord* record) OVERRIDE {
+    EXPECT_EQ(tag, adapter_->GetTag(tag_identifier_));
+    EXPECT_EQ(tag_identifier_, tag->GetIdentifier());
+    tag_records_received_count_++;
   }
 
   int present_changed_count_;
   int powered_changed_count_;
   int polling_changed_count_;
-  int records_received_count_;
+  int peer_records_received_count_;
+  int tag_records_received_count_;
   int peer_count_;
+  int tag_count_;
   std::string peer_identifier_;
+  std::string tag_identifier_;
   scoped_refptr<NfcAdapter> adapter_;
 };
 
@@ -112,9 +149,12 @@ class NfcChromeOSTest : public testing::Test {
         DBusThreadManager::Get()->GetNfcDeviceClient());
     fake_nfc_record_client_ = static_cast<FakeNfcRecordClient*>(
         DBusThreadManager::Get()->GetNfcRecordClient());
+    fake_nfc_tag_client_ = static_cast<FakeNfcTagClient*>(
+        DBusThreadManager::Get()->GetNfcTagClient());
 
     fake_nfc_adapter_client_->EnablePairingOnPoll(false);
     fake_nfc_device_client_->DisableSimulationTimeout();
+    fake_nfc_tag_client_->DisableSimulationTimeout();
     success_callback_count_ = 0;
     error_callback_count_ = 0;
   }
@@ -164,6 +204,7 @@ class NfcChromeOSTest : public testing::Test {
   FakeNfcAdapterClient* fake_nfc_adapter_client_;
   FakeNfcDeviceClient* fake_nfc_device_client_;
   FakeNfcRecordClient* fake_nfc_record_client_;
+  FakeNfcTagClient* fake_nfc_tag_client_;
 };
 
 // Tests that the adapter updates correctly to reflect the current "default"
@@ -309,8 +350,8 @@ TEST_F(NfcChromeOSTest, PeersInitializedWhenAdapterCreated) {
   // Observer shouldn't have received any calls, as it got created AFTER the
   // notifications were sent.
   EXPECT_EQ(0, observer.present_changed_count_);
-  EXPECT_EQ(0, observer.present_changed_count_);
-  EXPECT_EQ(0, observer.present_changed_count_);
+  EXPECT_EQ(0, observer.powered_changed_count_);
+  EXPECT_EQ(0, observer.polling_changed_count_);
   EXPECT_EQ(0, observer.peer_count_);
 
   EXPECT_TRUE(adapter_->IsPresent());
@@ -324,6 +365,75 @@ TEST_F(NfcChromeOSTest, PeersInitializedWhenAdapterCreated) {
   NfcPeer* peer = peers[0];
   const NfcNdefMessage& message = peer->GetNdefMessage();
   EXPECT_EQ(static_cast<size_t>(3), message.records().size());
+}
+
+// Tests that tag and record objects are created for all tags and records that
+// already exist when the adapter is created.
+TEST_F(NfcChromeOSTest, TagsInitializedWhenAdapterCreated) {
+  const char kTestURI[] = "fake://path/for/testing";
+
+  // Set up the adapter client.
+  NfcAdapterClient::Properties* properties =
+      fake_nfc_adapter_client_->GetProperties(
+          dbus::ObjectPath(FakeNfcAdapterClient::kAdapterPath0));
+  properties->powered.Set(true, base::Bind(&OnSet));
+
+  fake_nfc_adapter_client_->StartPollLoop(
+      dbus::ObjectPath(FakeNfcAdapterClient::kAdapterPath0),
+      nfc_adapter::kModeInitiator,
+      base::Bind(&NfcChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&NfcChromeOSTest::ErrorCallbackWithParameters,
+                 base::Unretained(this)));
+  EXPECT_EQ(1, success_callback_count_);
+  EXPECT_TRUE(properties->powered.value());
+  EXPECT_TRUE(properties->polling.value());
+
+  // Add the fake tag.
+  fake_nfc_tag_client_->BeginPairingSimulation(0);
+  base::RunLoop().RunUntilIdle();
+
+  // Create a fake record.
+  base::DictionaryValue test_record_data;
+  test_record_data.SetString(nfc_record::kTypeProperty, nfc_record::kTypeUri);
+  test_record_data.SetString(nfc_record::kUriProperty, kTestURI);
+  fake_nfc_tag_client_->Write(
+      dbus::ObjectPath(FakeNfcTagClient::kTagPath),
+      test_record_data,
+      base::Bind(&NfcChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&NfcChromeOSTest::ErrorCallbackWithParameters,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+
+  // Create the adapter.
+  SetAdapter();
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  // Observer shouldn't have received any calls, as it got created AFTER the
+  // notifications were sent.
+  EXPECT_EQ(0, observer.present_changed_count_);
+  EXPECT_EQ(0, observer.powered_changed_count_);
+  EXPECT_EQ(0, observer.polling_changed_count_);
+  EXPECT_EQ(0, observer.peer_count_);
+
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_FALSE(adapter_->IsPolling());
+
+  NfcAdapter::TagList tags;
+  adapter_->GetTags(&tags);
+  EXPECT_EQ(static_cast<size_t>(1), tags.size());
+
+  NfcTag* tag = tags[0];
+  const NfcNdefMessage& message = tag->GetNdefTagTechnology()->GetNdefMessage();
+  EXPECT_EQ(static_cast<size_t>(1), message.records().size());
+
+  const NfcNdefRecord* record = message.records()[0];
+  std::string uri;
+  EXPECT_TRUE(record->data().GetString(NfcNdefRecord::kFieldURI, &uri));
+  EXPECT_EQ(kTestURI, uri);
 }
 
 // Tests that the adapter correctly updates its state when polling is started
@@ -433,14 +543,14 @@ TEST_F(NfcChromeOSTest, PeerTest) {
 
   // Peer should have no records on it.
   EXPECT_TRUE(peer->GetNdefMessage().records().empty());
-  EXPECT_EQ(0, observer.records_received_count_);
+  EXPECT_EQ(0, observer.peer_records_received_count_);
 
   // Make records visible.
-  fake_nfc_record_client_->SetRecordsVisible(true);
-  EXPECT_EQ(3, observer.records_received_count_);
+  fake_nfc_record_client_->SetDeviceRecordsVisible(true);
+  EXPECT_EQ(3, observer.peer_records_received_count_);
   EXPECT_EQ(static_cast<size_t>(3), peer->GetNdefMessage().records().size());
 
-  // End the simulation. Record should have been removed.
+  // End the simulation. Peer should get removed.
   fake_nfc_device_client_->EndPairingSimulation();
   EXPECT_EQ(0, observer.peer_count_);
   EXPECT_TRUE(observer.peer_identifier_.empty());
@@ -449,7 +559,104 @@ TEST_F(NfcChromeOSTest, PeerTest) {
   EXPECT_FALSE(peer);
 
   // No record related notifications will be sent when a peer gets removed.
-  EXPECT_EQ(3, observer.records_received_count_);
+  EXPECT_EQ(3, observer.peer_records_received_count_);
+}
+
+// Tests a simple tag pairing simulation.
+TEST_F(NfcChromeOSTest, TagTest) {
+  const char kTestURI[] = "fake://path/for/testing";
+
+  SetAdapter();
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  adapter_->SetPowered(
+      true,
+      base::Bind(&NfcChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&NfcChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  adapter_->StartPolling(
+      base::Bind(&NfcChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&NfcChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(2, success_callback_count_);
+
+  EXPECT_TRUE(adapter_->IsPowered());
+  EXPECT_TRUE(adapter_->IsPolling());
+  EXPECT_EQ(0, observer.tag_count_);
+
+  // Add the fake tag.
+  fake_nfc_tag_client_->BeginPairingSimulation(0);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, observer.tag_count_);
+  EXPECT_EQ(FakeNfcTagClient::kTagPath, observer.tag_identifier_);
+
+  NfcTag* tag = adapter_->GetTag(observer.tag_identifier_);
+  CHECK(tag);
+  tag->AddObserver(&observer);
+  EXPECT_TRUE(tag->IsReady());
+  CHECK(tag->GetNdefTagTechnology());
+  tag->GetNdefTagTechnology()->AddObserver(&observer);
+
+  NfcNdefTagTechnology* tag_technology = tag->GetNdefTagTechnology();
+  EXPECT_TRUE(tag_technology->IsSupportedByTag());
+
+  // Tag should have no records on it.
+  EXPECT_TRUE(tag_technology->GetNdefMessage().records().empty());
+  EXPECT_EQ(0, observer.tag_records_received_count_);
+
+  // Set the tag record visible. By default the record has no content, so no
+  // NfcNdefMessage should be received.
+  fake_nfc_record_client_->SetTagRecordsVisible(true);
+  EXPECT_TRUE(tag_technology->GetNdefMessage().records().empty());
+  EXPECT_EQ(0, observer.tag_records_received_count_);
+  fake_nfc_record_client_->SetTagRecordsVisible(false);
+
+  // Write an NDEF record to the tag.
+  EXPECT_EQ(2, success_callback_count_);  // 2 for SetPowered and StartPolling.
+  EXPECT_EQ(0, error_callback_count_);
+
+  base::DictionaryValue record_data;
+  record_data.SetString(NfcNdefRecord::kFieldURI, kTestURI);
+  NfcNdefRecord written_record;
+  written_record.Populate(NfcNdefRecord::kTypeURI, &record_data);
+  NfcNdefMessage written_message;
+  written_message.AddRecord(&written_record);
+
+  tag_technology->WriteNdef(
+      written_message,
+      base::Bind(&NfcChromeOSTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&NfcChromeOSTest::ErrorCallback,
+                 base::Unretained(this)));
+  EXPECT_EQ(3, success_callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  EXPECT_EQ(static_cast<size_t>(1),
+            tag_technology->GetNdefMessage().records().size());
+  EXPECT_EQ(1, observer.tag_records_received_count_);
+
+  NfcNdefRecord* received_record =
+      tag_technology->GetNdefMessage().records()[0];
+  EXPECT_EQ(NfcNdefRecord::kTypeURI, received_record->type());
+  std::string uri;
+  EXPECT_TRUE(received_record->data().GetString(
+      NfcNdefRecord::kFieldURI, &uri));
+  EXPECT_EQ(kTestURI, uri);
+
+  // End the simulation. Tag should get removed.
+  fake_nfc_tag_client_->EndPairingSimulation();
+  EXPECT_EQ(0, observer.tag_count_);
+  EXPECT_TRUE(observer.tag_identifier_.empty());
+
+  tag = adapter_->GetTag(observer.tag_identifier_);
+  EXPECT_FALSE(tag);
+
+  // No record related notifications will be sent when a tag gets removed.
+  EXPECT_EQ(1, observer.tag_records_received_count_);
 }
 
 // Unit tests for nfc_ndef_record_utils methods.

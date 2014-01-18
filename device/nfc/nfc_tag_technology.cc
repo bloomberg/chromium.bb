@@ -29,11 +29,4 @@ NfcNdefTagTechnology::NfcNdefTagTechnology(NfcTag* tag)
 NfcNdefTagTechnology::~NfcNdefTagTechnology() {
 }
 
-// static
-NfcNdefTagTechnology* NfcNdefTagTechnology::Create(NfcTag* tag) {
-  // TODO(armansito): Create and return platform-specific implementation
-  // instances here.
-  return NULL;
-}
-
 }  // namespace device

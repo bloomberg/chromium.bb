@@ -31,7 +31,8 @@ class NfcTag {
     kTagType1,
     kTagType2,
     kTagType3,
-    kTagType4
+    kTagType4,
+    kTagTypeUnknown,
   };
 
   // NFC protocols that a tag can support. A tag will usually support only one
@@ -41,7 +42,8 @@ class NfcTag {
     kProtocolIsoDep,
     kProtocolJewel,
     kProtocolMifare,
-    kProtocolNfcDep
+    kProtocolNfcDep,
+    kProtocolUnknown
   };
 
   // Interface for observing changes from NFC tags.
@@ -49,12 +51,18 @@ class NfcTag {
    public:
     virtual ~Observer() {}
 
-    // This method will be called when an NDEF message |message|, stored on the
-    // NFC tag |tag| has been read. Although NDEF is the most common record
-    // storage format for NFC tags, not all tags support it. This method won't
-    // be called if there are no records on an NDEF compliant tag or if the tag
-    // doesn't support NDEF.
-    virtual void RecordsReceived(NfcTag* tag, const NfcNdefMessage& message) {}
+    // Called when the tag type has been determined.
+    virtual void TagTypeChanged(NfcTag* tag, TagType type) {}
+
+    // Called when the write access to the tag has been determined or changed.
+    virtual void TagWritePermissionChanged(NfcTag* tag, bool read_only) {}
+
+    // Called when the underlying NFC protocol has been determined.
+    virtual void TagSupportedProtocolChanged(NfcTag* tag, Protocol protocol) {}
+
+    // Called when all initial values of the tag properties have been received
+    // from the remote tag and |tag| is ready to use.
+    virtual void TagReady(NfcTag* tag) {}
   };
 
   virtual ~NfcTag();
@@ -80,6 +88,17 @@ class NfcTag {
   // Returns a bitmask of the tag I/O technologies supported by this tag.
   virtual NfcTagTechnology::TechnologyTypeMask
       GetSupportedTechnologies() const = 0;
+
+  // Returns true, if all tag properties have been received from the remote tag
+  // and this object is ready to use.
+  virtual bool IsReady() const = 0;
+
+  // Returns a pointer to the NDEF technology object that allows I/O on NDEF
+  // records. If NDEF is not supported by this tag, operations that are
+  // performed on the returned instance may not succeed. Users can determine
+  // support by calling NfcTagTechnology::IsSupportedByTag. The returned
+  // instance is owned by this tag.
+  virtual NfcNdefTagTechnology* GetNdefTagTechnology() = 0;
 
  protected:
   NfcTag();

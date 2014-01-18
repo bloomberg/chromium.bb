@@ -181,10 +181,27 @@ class NfcAdapter : public base::RefCounted<NfcAdapter> {
   typedef std::map<const std::string, NfcPeer*> PeersMap;
   typedef std::map<const std::string, NfcTag*> TagsMap;
 
+  // Set the given tag or peer for |identifier|. If a tag or peer for
+  // |identifier| already exists, these methods won't do anything.
+  void SetTag(const std::string& identifier, NfcTag* tag);
+  void SetPeer(const std::string& identifier, NfcPeer* peer);
+
+  // Removes the tag or peer for |identifier| and returns the removed object.
+  // Returns NULL, if no tag or peer for |identifier| was found.
+  NfcTag* RemoveTag(const std::string& identifier);
+  NfcPeer* RemovePeer(const std::string& identifier);
+
+  // Clear the peer and tag maps. These methods won't delete the tag and peer
+  // objects, however after the call to these methods, the peers and tags won't
+  // be returned via calls to GetPeers and GetTags.
+  void ClearTags();
+  void ClearPeers();
+
+ private:
+  // Peers and tags that are managed by this adapter.
   PeersMap peers_;
   TagsMap tags_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(NfcAdapter);
 };
 

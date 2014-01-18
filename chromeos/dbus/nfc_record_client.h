@@ -96,8 +96,9 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
     // have been received. This method will be called after
     // Observer::RecordPropertyChanged has been called for all properties that
     // were received through the initial property fetch that is done when the
-    // object proxy is first created. Observers can use this method to be
-    // notified when all existing properties of a record are available for use.
+    // object proxy is first created or after a call to
+    // dbus::PropertySet::GetAll Observers can use this method to be notified
+    // when all existing properties of a record are available for use.
     virtual void RecordPropertiesReceived(
         const dbus::ObjectPath& object_path) {}
   };
@@ -114,6 +115,11 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
   // identified by the D-Bus object path |device_path|.
   virtual std::vector<dbus::ObjectPath> GetRecordsForDevice(
       const dbus::ObjectPath& device_path) = 0;
+
+  // Returns the list of record object paths associated with the given tag
+  // identified by the D-Bus object path |tag_path|.
+  virtual std::vector<dbus::ObjectPath> GetRecordsForTag(
+      const dbus::ObjectPath& tag_path) = 0;
 
   // Obtain the properties for the NFC record with object path |object_path|;
   // any values should be copied if needed.

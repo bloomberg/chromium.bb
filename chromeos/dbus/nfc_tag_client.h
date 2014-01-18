@@ -66,6 +66,15 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
     // object path |object_path| has acquired a new value.
     virtual void TagPropertyChanged(const dbus::ObjectPath& object_path,
                                     const std::string& property_name) {}
+
+    // Called when all properties for the tag with object path |object_path|
+    // have been received. This method will be called after
+    // Observer::TagPropertyChanged has been called for all properties that
+    // were received through the initial property fetch that is done when the
+    // object proxy is first created or after a call to
+    // dbus::PropertySet::GetAll. Observers can use this method to be notified
+    // when all existing properties of a tag are available for use.
+    virtual void TagPropertiesReceived(const dbus::ObjectPath& object_path) {}
   };
 
   virtual ~NfcTagClient();
@@ -75,6 +84,11 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
   // issuing the event.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Returns the list of tag object paths associated with the given adapter
+  // identified by the D-Bus object path |adapter_path|.
+  virtual std::vector<dbus::ObjectPath> GetTagsForAdapter(
+      const dbus::ObjectPath& adapter_path) = 0;
 
   // Obtain the properties for the NFC tag with object path |object_path|; any
   // values should be copied if needed.

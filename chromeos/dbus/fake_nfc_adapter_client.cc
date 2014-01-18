@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
+#include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "chromeos/dbus/nfc_client_helpers.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -81,7 +82,8 @@ void FakeNfcAdapterClient::Properties::Set(
 FakeNfcAdapterClient::FakeNfcAdapterClient()
     : present_(true),
       second_present_(false),
-      start_pairing_on_poll_(true) {
+      start_pairing_on_poll_(true),
+      device_pairing_(false) {
   VLOG(1) << "Creating FakeNfcAdapterClient";
 
   std::vector<std::string> protocols;
@@ -147,28 +149,37 @@ void FakeNfcAdapterClient::StartPollLoop(
     return;
   }
   if (!properties_->powered.value()) {
-    error_callback.Run("org.neard.Error.Failed", "Adapter not powered.");
+    error_callback.Run(nfc_error::kFailed, "Adapter not powered.");
     return;
   }
   if (properties_->polling.value()) {
-    error_callback.Run("org.neard.Error.Failed", "Already polling.");
+    error_callback.Run(nfc_error::kFailed, "Already polling.");
     return;
   }
   if (!properties_->devices.value().empty() ||
       !properties_->tags.value().empty()) {
-    error_callback.Run("org.neard.Error.Failed", "Adapter busy.");
+    error_callback.Run(nfc_error::kFailed, "Adapter busy.");
     return;
   }
   properties_->polling.ReplaceValue(true);
   properties_->mode.ReplaceValue(mode);
   callback.Run();
 
-  FakeNfcDeviceClient* device_client =
-      static_cast<FakeNfcDeviceClient*>(
-          DBusThreadManager::Get()->GetNfcDeviceClient());
+  if (!start_pairing_on_poll_)
+    return;
 
-  if (start_pairing_on_poll_)
+  if (device_pairing_) {
+    FakeNfcDeviceClient* device_client =
+        static_cast<FakeNfcDeviceClient*>(
+            DBusThreadManager::Get()->GetNfcDeviceClient());
     device_client->BeginPairingSimulation(3000, 2000);
+  } else {
+    FakeNfcTagClient* tag_client =
+        static_cast<FakeNfcTagClient*>(
+            DBusThreadManager::Get()->GetNfcTagClient());
+    tag_client->BeginPairingSimulation(2000);
+  }
+  device_pairing_ = !device_pairing_;
 }
 
 void FakeNfcAdapterClient::StopPollLoop(
@@ -188,6 +199,10 @@ void FakeNfcAdapterClient::StopPollLoop(
       static_cast<FakeNfcDeviceClient*>(
           DBusThreadManager::Get()->GetNfcDeviceClient());
   device_client->EndPairingSimulation();
+  FakeNfcTagClient* tag_client =
+      static_cast<FakeNfcTagClient*>(
+          DBusThreadManager::Get()->GetNfcTagClient());
+  tag_client->EndPairingSimulation();
   properties_->polling.ReplaceValue(false);
   callback.Run();
 }
@@ -221,7 +236,7 @@ void FakeNfcAdapterClient::SetSecondAdapterPresent(bool present) {
 void FakeNfcAdapterClient::SetDevice(const dbus::ObjectPath& device_path) {
   LOG(INFO) << "Add device path to the fake adapter: " << device_path.value();
   if (!properties_->polling.value()) {
-    LOG(ERROR) << "Device not polling, cannot set device.";
+    LOG(ERROR) << "Adapter not polling, cannot set device.";
     return;
   }
   const ObjectPathVector& devices(properties_->devices.value());
@@ -240,8 +255,31 @@ void FakeNfcAdapterClient::SetDevice(const dbus::ObjectPath& device_path) {
   properties_->devices.ReplaceValue(new_devices);
 }
 
+void FakeNfcAdapterClient::SetTag(const dbus::ObjectPath& tag_path) {
+  LOG(INFO) << "Add tag path to the fake adapter: " << tag_path.value();
+  if (!properties_->polling.value()) {
+    LOG(ERROR) << "Adapter not polling, cannot set tag.";
+    return;
+  }
+  const ObjectPathVector& tags(properties_->tags.value());
+  for (ObjectPathVector::const_iterator iter = tags.begin();
+       iter != tags.end(); ++iter) {
+    if (*iter == tag_path) {
+      LOG(WARNING) << "Tag path already in list of tags.";
+      return;
+    }
+  }
+  // Mark as not polling.
+  properties_->polling.ReplaceValue(false);
+
+  ObjectPathVector new_tags = tags;
+  new_tags.push_back(tag_path);
+  properties_->tags.ReplaceValue(new_tags);
+}
+
 void FakeNfcAdapterClient::UnsetDevice(const dbus::ObjectPath& device_path) {
-  LOG(INFO) << "Add device path to the fake adapter: " << device_path.value();
+  LOG(INFO) << "Remove device path from the fake adapter: "
+            << device_path.value();
   ObjectPathVector new_devices = properties_->devices.value();
   for (ObjectPathVector::iterator iter = new_devices.begin();
        iter != new_devices.end(); ++iter) {
@@ -256,6 +294,24 @@ void FakeNfcAdapterClient::UnsetDevice(const dbus::ObjectPath& device_path) {
     }
   }
   LOG(WARNING) << "Device path not in list of devices.";
+}
+
+void FakeNfcAdapterClient::UnsetTag(const dbus::ObjectPath& tag_path) {
+  LOG(INFO) << "Add tag path to the fake adapter: " << tag_path.value();
+  ObjectPathVector new_tags = properties_->tags.value();
+  for (ObjectPathVector::iterator iter = new_tags.begin();
+       iter != new_tags.end(); ++iter) {
+    if (*iter == tag_path) {
+      new_tags.erase(iter);
+      properties_->tags.ReplaceValue(new_tags);
+
+      // Mark as polling.
+      DCHECK(!properties_->polling.value());
+      properties_->polling.ReplaceValue(true);
+      return;
+    }
+  }
+  LOG(WARNING) << "Tag path not in list of tags.";
 }
 
 void FakeNfcAdapterClient::EnablePairingOnPoll(bool enabled) {

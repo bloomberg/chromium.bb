@@ -63,6 +63,16 @@ class NfcTagClientImpl : public NfcTagClient,
   }
 
   // NfcTagClient override.
+  virtual std::vector<dbus::ObjectPath> GetTagsForAdapter(
+      const dbus::ObjectPath& adapter_path) OVERRIDE {
+    DBusObjectMap* object_map =
+        adapters_to_object_maps_.GetObjectMap(adapter_path);
+    if (!object_map)
+      return std::vector<dbus::ObjectPath>();
+    return object_map->GetObjectPaths();
+  }
+
+  // NfcTagClient override.
   virtual Properties* GetProperties(
       const dbus::ObjectPath& object_path) OVERRIDE {
     return static_cast<Properties*>(
@@ -182,11 +192,16 @@ class NfcTagClientImpl : public NfcTagClient,
   // nfc_client_helpers::DBusObjectMap::Delegate override.
   virtual NfcPropertySet* CreateProperties(
       dbus::ObjectProxy* object_proxy) OVERRIDE {
-    return new Properties(
+    Properties* properties = new Properties(
         object_proxy,
         base::Bind(&NfcTagClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(),
                    object_proxy->object_path()));
+    properties->SetAllPropertiesReceivedCallback(
+        base::Bind(&NfcTagClientImpl::OnPropertiesReceived,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   object_proxy->object_path()));
+    return properties;
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
@@ -208,6 +223,14 @@ class NfcTagClientImpl : public NfcTagClient,
             << " Property: " << property_name;
     FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
                       TagPropertyChanged(object_path, property_name));
+  }
+
+  // Called by NfcPropertySet when all properties have been processed as a
+  // result of a call to GetAll.
+  void OnPropertiesReceived(const dbus::ObjectPath& object_path) {
+    VLOG(1) << "All tag properties received; Path: " << object_path.value();
+    FOR_EACH_OBSERVER(NfcTagClient::Observer, observers_,
+                      TagPropertiesReceived(object_path));
   }
 
   // We maintain a pointer to the bus to be able to request proxies for

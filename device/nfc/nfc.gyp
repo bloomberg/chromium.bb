@@ -31,8 +31,12 @@
         'nfc_peer_chromeos.h',
         'nfc_tag.cc',
         'nfc_tag.h',
+        'nfc_tag_chromeos.cc',
+        'nfc_tag_chromeos.h',
         'nfc_tag_technology.cc',
-        'nfc_tag_technology.h'
+        'nfc_tag_technology.h',
+        'nfc_tag_technology_chromeos.cc',
+        'nfc_tag_technology_chromeos.h'
       ],
       'conditions': [
         ['chromeos==1', {

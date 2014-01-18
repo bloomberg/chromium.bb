@@ -1,18 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/nfc/nfc_peer_chromeos.h"
+#include "device/nfc/nfc_tag_technology_chromeos.h"
 
-#include <string>
-#include <vector>
-
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/nfc_device_client.h"
 #include "device/nfc/nfc_ndef_record_utils_chromeos.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "device/nfc/nfc_tag_chromeos.h"
 
 using device::NfcNdefMessage;
 using device::NfcNdefRecord;
@@ -25,13 +20,15 @@ typedef std::vector<dbus::ObjectPath> ObjectPathVector;
 
 }  // namespace
 
-NfcPeerChromeOS::NfcPeerChromeOS(const dbus::ObjectPath& object_path)
-    : object_path_(object_path),
+NfcNdefTagTechnologyChromeOS::NfcNdefTagTechnologyChromeOS(NfcTagChromeOS* tag)
+    : NfcNdefTagTechnology(tag),
+      object_path_(tag->object_path()),
       weak_ptr_factory_(this) {
+  DCHECK(tag);
   // Create record objects for all records that were received before.
   const ObjectPathVector& records =
       DBusThreadManager::Get()->GetNfcRecordClient()->
-          GetRecordsForDevice(object_path_);
+          GetRecordsForTag(object_path_);
   for (ObjectPathVector::const_iterator iter = records.begin();
        iter != records.end(); ++iter) {
     AddRecord(*iter);
@@ -39,42 +36,44 @@ NfcPeerChromeOS::NfcPeerChromeOS(const dbus::ObjectPath& object_path)
   DBusThreadManager::Get()->GetNfcRecordClient()->AddObserver(this);
 }
 
-NfcPeerChromeOS::~NfcPeerChromeOS() {
+NfcNdefTagTechnologyChromeOS::~NfcNdefTagTechnologyChromeOS() {
   DBusThreadManager::Get()->GetNfcRecordClient()->RemoveObserver(this);
   STLDeleteValues(&records_);
 }
 
-void NfcPeerChromeOS::AddObserver(device::NfcPeer::Observer* observer) {
-  DCHECK(observer);
+void NfcNdefTagTechnologyChromeOS::AddObserver(
+    NfcNdefTagTechnology::Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void NfcPeerChromeOS::RemoveObserver(device::NfcPeer::Observer* observer) {
-  DCHECK(observer);
+void NfcNdefTagTechnologyChromeOS::RemoveObserver(
+    NfcNdefTagTechnology::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-std::string NfcPeerChromeOS::GetIdentifier() const {
-  return object_path_.value();
-}
-
-const NfcNdefMessage& NfcPeerChromeOS::GetNdefMessage() const {
+const NfcNdefMessage& NfcNdefTagTechnologyChromeOS::GetNdefMessage() const {
   return message_;
 }
 
-void NfcPeerChromeOS::PushNdef(const NfcNdefMessage& message,
-                               const base::Closure& callback,
-                               const ErrorCallback& error_callback) {
+void NfcNdefTagTechnologyChromeOS::WriteNdef(
+    const device::NfcNdefMessage& message,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
   if (message.records().empty()) {
-    LOG(ERROR) << "Given NDEF message is empty. Cannot push it.";
+    LOG(ERROR) << "Given NDEF message is empty. Cannot write it.";
     error_callback.Run();
     return;
   }
-  // TODO(armansito): neard currently supports pushing only one NDEF record
-  // to a remote device and won't support multiple records until 0.15. Until
-  // then, report failure if |message| contains more than one record.
+  if (!tag()->IsReady()) {
+    LOG(ERROR) << "The tag is not ready yet: " << tag()->GetIdentifier();
+    error_callback.Run();
+    return;
+  }
+  // TODO(armansito): neard currently supports writing only one NDEF record
+  // to a tag and won't support multiple records until 0.15. Until then, report
+  // failure if |message| contains more than one record.
   if (message.records().size() > 1) {
-    LOG(ERROR) << "Currently, pushing only 1 NDEF record is supported.";
+    LOG(ERROR) << "Currently, writing only 1 NDEF record is supported.";
     error_callback.Run();
     return;
   }
@@ -86,35 +85,26 @@ void NfcPeerChromeOS::PushNdef(const NfcNdefMessage& message,
     error_callback.Run();
     return;
   }
-  DBusThreadManager::Get()->GetNfcDeviceClient()->Push(
+  DBusThreadManager::Get()->GetNfcTagClient()->Write(
       object_path_,
       attributes,
-      base::Bind(&NfcPeerChromeOS::OnPushNdef,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback),
-      base::Bind(&NfcPeerChromeOS::OnPushNdefError,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 error_callback));
+      base::Bind(&NfcNdefTagTechnologyChromeOS::OnWriteNdefMessage,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&NfcNdefTagTechnologyChromeOS::OnWriteNdefMessageError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void NfcPeerChromeOS::StartHandover(HandoverType handover_type,
-                                    const base::Closure& callback,
-                                    const ErrorCallback& error_callback) {
-  // TODO(armansito): Initiating handover with a peer is currently not
-  // supported. For now, return an error immediately.
-  LOG(ERROR) << "NFC Handover currently not supported.";
-  error_callback.Run();
-}
-
-void NfcPeerChromeOS::RecordAdded(const dbus::ObjectPath& object_path) {
+void NfcNdefTagTechnologyChromeOS::RecordAdded(
+    const dbus::ObjectPath& object_path) {
   // Don't create the record object yet. Instead, wait until all record
-  // properties have been received and contruct the object and notify observers
+  // properties have been received and construct the object and notify observers
   // then.
   VLOG(1) << "Record added: " << object_path.value() << ". Waiting until "
-          << "all properties have been fetched to create record object.";
+          "all properties have been fetched to create record object.";
 }
 
-void NfcPeerChromeOS::RecordRemoved(const dbus::ObjectPath& object_path) {
+void NfcNdefTagTechnologyChromeOS::RecordRemoved(
+    const dbus::ObjectPath& object_path) {
   NdefRecordMap::iterator iter = records_.find(object_path);
   if (iter == records_.end())
     return;
@@ -126,15 +116,15 @@ void NfcPeerChromeOS::RecordRemoved(const dbus::ObjectPath& object_path) {
   records_.erase(iter);
 }
 
-void NfcPeerChromeOS::RecordPropertiesReceived(
+void NfcNdefTagTechnologyChromeOS::RecordPropertiesReceived(
     const dbus::ObjectPath& object_path) {
   VLOG(1) << "Record properties received for: " << object_path.value();
 
-  // Check if the found record belongs to this device.
+  // Check if the found record belongs to this tag.
   bool record_found = false;
   const ObjectPathVector& records =
       DBusThreadManager::Get()->GetNfcRecordClient()->
-          GetRecordsForDevice(object_path_);
+          GetRecordsForTag(object_path_);
   for (ObjectPathVector::const_iterator iter = records.begin();
        iter != records.end(); ++iter) {
     if (*iter == object_path) {
@@ -144,26 +134,28 @@ void NfcPeerChromeOS::RecordPropertiesReceived(
   }
   if (!record_found) {
     VLOG(1) << "Record \"" << object_path.value() << "\" doesn't belong to this"
-            << " device. Ignoring.";
+            << " tag. Ignoring.";
     return;
   }
-
   AddRecord(object_path);
 }
 
-void NfcPeerChromeOS::OnPushNdef(const base::Closure& callback) {
+void NfcNdefTagTechnologyChromeOS::OnWriteNdefMessage(
+    const base::Closure& callback) {
   callback.Run();
 }
 
-void NfcPeerChromeOS::OnPushNdefError(const ErrorCallback& error_callback,
-                                      const std::string& error_name,
-                                      const std::string& error_message) {
+void NfcNdefTagTechnologyChromeOS::OnWriteNdefMessageError(
+    const ErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
   LOG(ERROR) << object_path_.value() << ": Failed to Push NDEF message: "
              << error_name << ": " << error_message;
   error_callback.Run();
 }
 
-void NfcPeerChromeOS::AddRecord(const dbus::ObjectPath& object_path) {
+void NfcNdefTagTechnologyChromeOS::AddRecord(
+    const dbus::ObjectPath& object_path) {
   // Ignore this call if an entry for this record already exists.
   if (records_.find(object_path) != records_.end()) {
     VLOG(1) << "Record object for remote \"" << object_path.value()
@@ -187,8 +179,8 @@ void NfcPeerChromeOS::AddRecord(const dbus::ObjectPath& object_path) {
 
   message_.AddRecord(record);
   records_[object_path] = record;
-  FOR_EACH_OBSERVER(NfcPeer::Observer, observers_,
-                    RecordReceived(this, record));
+  FOR_EACH_OBSERVER(NfcNdefTagTechnology::Observer, observers_,
+                    RecordReceived(tag(), record));
 }
 
 }  // namespace chromeos

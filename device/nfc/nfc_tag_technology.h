@@ -15,7 +15,8 @@ class NfcTag;
 // NfcTagTechnology represents an NFC technology that allows a certain type of
 // I/O operation on an NFC tag. NFC tags can support a wide array of protocols.
 // The NfcTagTechnology hierarchy allows both raw and high-level I/O operations
-// on NFC tags.
+// on NFC tags. Do not create instances of these objects directly. Instead,
+// obtain a handle directly from an NfcTag object.
 class NfcTagTechnology {
  public:
   // The various I/O technologies that an NFC tag can support.
@@ -56,13 +57,40 @@ class NfcTagTechnology {
 };
 
 // NfcNdefTagTechnology allows reading and writing NDEF messages to a tag. This
-// is the most commonly used data exchange format in NFC.
+// is the most commonly used data exchange format in NFC. NDEF is a data
+// exchange format and is the top most layer of the protocol stack. NDEF itself
+// is not a protocol; data is typically formatted in a way that is defined by
+// the NDEF format and then transmitted via one of the underlying protocols.
+// Hence all tags are capable of NDEF data exchange, however, all tags don't
+// necessarily use NDEF to operate (e.g. a tag may contain a smart chip that
+// does data processing on ISO-DEP based APDUs and ignores NDEF). This is why,
+// even if a tag inherently supports NDEF, operations done via this class may
+// not necessarily succeed.
 class NfcNdefTagTechnology : public NfcTagTechnology {
  public:
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Closure ErrorCallback;
 
   virtual ~NfcNdefTagTechnology();
+
+  // Interface for observing changes from NFC tags related to NDEF records.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // This method will be called when an NDEF record |record|, stored on the
+    // NFC tag |tag| has been read. This method will be called multiple times
+    // as records are read from the tag or when the tag's records change (e.g.
+    // when the tag has been rewritten). All received records can be accessed by
+    // calling GetNdefMessage().
+    virtual void RecordReceived(NfcTag* tag, const NfcNdefRecord* record) {}
+  };
+
+  // Adds and removes observers for events on this NFC tag. If monitoring
+  // multiple tags, check the |tag| parameter of observer methods to determine
+  // which tag is issuing the event.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // NfcTagTechnology override.
   virtual bool IsSupportedByTag() const OVERRIDE;
@@ -72,22 +100,17 @@ class NfcNdefTagTechnology : public NfcTagTechnology {
   // means that no records have yet been received from the tag. Users should
   // use this method in conjunction with the NfcTag::Observer::RecordsReceived
   // method to be notified when the records are ready.
-  virtual NfcNdefMessage GetNdefMessage() const = 0;
+  virtual const NfcNdefMessage& GetNdefMessage() const = 0;
 
   // Writes the given NDEF message to the underlying tag, overwriting any
   // existing NDEF message on it. On success, |callback| will be invoked. On
   // failure, |error_callback| will be invoked. This method can fail, if the
   // underlying tag does not support NDEF as a technology.
-  virtual void WriteNdefMessage(const NfcNdefMessage& message,
-                                const base::Closure& callback,
-                                const ErrorCallback& error_callback) = 0;
+  virtual void WriteNdef(const NfcNdefMessage& message,
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) = 0;
 
-  // Static factory method for constructing an instance. The ownership of the
-  // returned instance belongs to the caller. Returns NULL, if NFC is not
-  // supported on the current platform.
-  static NfcNdefTagTechnology* Create(NfcTag* tag);
-
- private:
+ protected:
   // Constructs a technology instance, where |tag| is the NFC tag that this
   // instance will operate on.
   explicit NfcNdefTagTechnology(NfcTag* tag);

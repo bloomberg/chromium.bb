@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/nfc/nfc_peer_chromeos.h"
-#include "device/nfc/nfc_tag.h"
+#include "device/nfc/nfc_tag_chromeos.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -164,11 +164,8 @@ void NfcAdapterChromeOS::DeviceAdded(const dbus::ObjectPath& object_path) {
   if (!IsPresent())
     return;
 
-  if (peers_.find(object_path.value()) != peers_.end()) {
-    VLOG(1) << "Peer object for device \"" << object_path.value()
-            << "\" already exists.";
+  if (GetPeer(object_path.value()))
     return;
-  }
 
   VLOG(1) << "NFC device found: " << object_path.value();
 
@@ -191,40 +188,64 @@ void NfcAdapterChromeOS::DeviceAdded(const dbus::ObjectPath& object_path) {
 
   // Create the peer object.
   NfcPeerChromeOS* peer_chromeos = new NfcPeerChromeOS(object_path);
-  peers_[object_path.value()] = peer_chromeos;
+  SetPeer(object_path.value(), peer_chromeos);
   FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
                     PeerFound(this, peer_chromeos));
 }
 
 void NfcAdapterChromeOS::DeviceRemoved(const dbus::ObjectPath& object_path) {
   VLOG(1) << "NFC device lost: " << object_path.value();
-  PeersMap::iterator iter = peers_.find(object_path.value());
-  if (iter == peers_.end()) {
+  device::NfcPeer* peer = RemovePeer(object_path.value());
+  if (!peer) {
     VLOG(1) << "Removed peer device does not belong to the current adapter.";
     return;
   }
-
-  // Remove the peer.
-  device::NfcPeer* peer = iter->second;
-  peers_.erase(iter);
   FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_, PeerLost(this, peer));
   delete peer;
 }
 
 void NfcAdapterChromeOS::TagAdded(const dbus::ObjectPath& object_path) {
+  if (!IsPresent())
+    return;
+
+  if (GetTag(object_path.value()))
+    return;
+
   VLOG(1) << "NFC tag found: " << object_path.value();
-  // TODO(armansito): Implement tag logic.
+
+  // Check to see if the tag belongs to this adapter.
+  const std::vector<dbus::ObjectPath>& tags =
+      DBusThreadManager::Get()->GetNfcTagClient()->
+          GetTagsForAdapter(object_path_);
+  bool tag_found = false;
+  for (std::vector<dbus::ObjectPath>::const_iterator iter = tags.begin();
+       iter != tags.end(); ++iter) {
+    if (*iter == object_path) {
+      tag_found = true;
+      break;
+    }
+  }
+  if (!tag_found) {
+    VLOG(1) << "Found tag does not belong to the current adapter.";
+    return;
+  }
+
+  // Create the tag object.
+  NfcTagChromeOS* tag_chromeos = new NfcTagChromeOS(object_path);
+  SetTag(object_path.value(), tag_chromeos);
+  FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
+                    TagFound(this, tag_chromeos));
 }
 
 void NfcAdapterChromeOS::TagRemoved(const dbus::ObjectPath& object_path) {
-  VLOG(1) << "NFC tag found: " << object_path.value();
-  // TODO(armansito): Implement tag logic.
-}
-
-void NfcAdapterChromeOS::TagPropertyChanged(
-    const dbus::ObjectPath& object_path,
-    const std::string& property_name) {
-  // TODO(armansito): Implement tag logic.
+  VLOG(1) << "NFC tag lost : " << object_path.value();
+  device::NfcTag* tag = RemoveTag(object_path.value());
+  if (!tag) {
+    VLOG(1) << "Removed tag does not belong to the current adapter.";
+    return;
+  }
+  FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_, TagLost(this, tag));
+  delete tag;
 }
 
 void NfcAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
@@ -248,16 +269,28 @@ void NfcAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
   for (ObjectPathVector::const_iterator iter = devices.begin();
        iter != devices.end(); ++iter) {
     const dbus::ObjectPath& object_path = *iter;
-    if (peers_.find(object_path.value()) != peers_.end())
+    if (GetPeer(object_path.value()))
       continue;
     NfcPeerChromeOS* peer_chromeos = new NfcPeerChromeOS(object_path);
-    peers_[object_path.value()] = peer_chromeos;
+    SetPeer(object_path.value(), peer_chromeos);
     FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
                       PeerFound(this, peer_chromeos));
   }
 
-  // TODO(armansito): Create device::NfcTag instances for all tags that exist,
-  // once they have been implemented for ChromeOS.
+  // Create tag objects for tags that were added before the adapter was set.
+  const std::vector<dbus::ObjectPath>& tags =
+      DBusThreadManager::Get()->GetNfcTagClient()->
+          GetTagsForAdapter(object_path_);
+  for (std::vector<dbus::ObjectPath>::const_iterator iter = tags.begin();
+       iter != tags.end(); ++iter) {
+    const dbus::ObjectPath& object_path = *iter;
+    if (GetTag(object_path.value()))
+      continue;
+    NfcTagChromeOS* tag_chromeos = new NfcTagChromeOS(object_path);
+    SetTag(object_path.value(), tag_chromeos);
+    FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
+                      TagFound(this, tag_chromeos));
+  }
 }
 
 void NfcAdapterChromeOS::RemoveAdapter() {
@@ -274,22 +307,26 @@ void NfcAdapterChromeOS::RemoveAdapter() {
 
   // Copy the tags and peers here and clear the original containers so that
   // GetPeers and GetTags return no values during the *Removed observer calls.
-  PeersMap peers = peers_;
-  TagsMap tags = tags_;
-  peers_.clear();
-  tags_.clear();
+  PeerList peers;
+  TagList tags;
+  GetPeers(&peers);
+  GetTags(&tags);
+  ClearPeers();
+  ClearTags();
 
-  for (PeersMap::iterator iter = peers_.begin();
-       iter != peers_.end(); ++iter) {
+  for (PeerList::iterator iter = peers.begin();
+       iter != peers.end(); ++iter) {
+    device::NfcPeer* peer = *iter;
     FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
-                      PeerLost(this, iter->second));
-    delete iter->second;
+                      PeerLost(this, peer));
+    delete peer;
   }
-  for (TagsMap::iterator iter = tags_.begin();
-       iter != tags_.end(); ++iter) {
+  for (TagList::iterator iter = tags.begin();
+       iter != tags.end(); ++iter) {
+    device::NfcTag* tag = *iter;
     FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
-                      TagLost(this, iter->second));
-    delete iter->second;
+                      TagLost(this, tag));
+    delete tag;
   }
 
   object_path_ = dbus::ObjectPath("");
@@ -325,7 +362,7 @@ void NfcAdapterChromeOS::OnSetPowered(const base::Closure& callback,
     }
     callback.Run();
   } else {
-    LOG(WARNING) << "Failed to power up the NFC antenna radio.";
+    LOG(ERROR) << "Failed to power up the NFC antenna radio.";
     error_callback.Run();
   }
 }
@@ -338,8 +375,8 @@ void NfcAdapterChromeOS::OnStartPollingError(
     const ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(WARNING) << object_path_.value() << ": Failed to start polling: "
-               << error_name << ": " << error_message;
+  LOG(ERROR) << object_path_.value() << ": Failed to start polling: "
+             << error_name << ": " << error_message;
   error_callback.Run();
 }
 
@@ -351,8 +388,8 @@ void NfcAdapterChromeOS::OnStopPollingError(
     const ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  LOG(WARNING) << object_path_.value() << ": Failed to stop polling: "
-               << error_name << ": " << error_message;
+  LOG(ERROR) << object_path_.value() << ": Failed to stop polling: "
+             << error_name << ": " << error_message;
   error_callback.Run();
 }
 

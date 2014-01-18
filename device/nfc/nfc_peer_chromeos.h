@@ -38,7 +38,7 @@ class NfcPeerChromeOS : public device::NfcPeer,
   // Mapping from D-Bus object paths to NfcNdefRecord objects.
   typedef std::map<dbus::ObjectPath, device::NfcNdefRecord*> NdefRecordMap;
 
-  NfcPeerChromeOS(const dbus::ObjectPath& object_path);
+  explicit NfcPeerChromeOS(const dbus::ObjectPath& object_path);
   virtual ~NfcPeerChromeOS();
 
   // NfcRecordClient::Observer overrides.

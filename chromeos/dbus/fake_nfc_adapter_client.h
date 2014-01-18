@@ -60,22 +60,29 @@ class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
   void SetAdapterPresent(bool present);
   void SetSecondAdapterPresent(bool present);
 
-  // Tells the FakeNfcAdapterClient to add the device with path |device_path|
-  // to its list of devices exposed for |kAdapterPath0|, if it is not already in
+  // Tells the FakeNfcAdapterClient to add the device or tag with the given path
+  // to its corresponding list for |kAdapterPath0|, if it is not already in
   // the list and promptly triggers a property changed signal. This method will
   // also fail, if the polling property of the adapter is false and will set it
   // to false on success.
   void SetDevice(const dbus::ObjectPath& device_path);
+  void SetTag(const dbus::ObjectPath& tag_path);
 
-  // Talls the FakeNfcAdapterClient to remove the device with path
-  // |device_path| from its list of devices exposed for |kAdapterPath0|, if it
-  // is in its list of devices. On success, this method will mark the polling
-  // property of the adapter to true.
+  // Tells the FakeNfcAdapterClient to remove the device or tag with the given
+  // path from its corresponding list exposed for |kAdapterPath0|, if it
+  // is in the list. On success, this method will mark the polling property of
+  // the adapter to true.
   void UnsetDevice(const dbus::ObjectPath& device_path);
+  void UnsetTag(const dbus::ObjectPath& tag_path);
 
   // Sets a flag that determines whether FakeNfcAdapterClient should notify
-  // FakeNfcDeviceClient to start a pairing simulation as a result of a call
-  // to StartPollLoop(). This is enabled by default.
+  // FakeNfcDeviceClient or FakeNfcTagClient to start a pairing simulation as a
+  // result of a call to StartPollLoop(). This is enabled by default. If
+  // enabled, the first call to StartPollLoop, will initiate a tag pairing
+  // simulation. The simulation will alternate between device and tag pairing on
+  // each successive call to StartPollLoop. This behavior, which is meant for
+  // feature development based on fake classes, can be disabled to allow manual
+  // control for unit tests.
   void EnablePairingOnPoll(bool enabled);
 
  private:
@@ -97,6 +104,10 @@ class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
   // If true, a pairing simulation is initiated on a successful call to
   // StartPollLoop().
   bool start_pairing_on_poll_;
+
+  // If true, device pairing will be simulated on the next call to
+  // StartPollLoop. Otherwise, tag pairing will be simulated.
+  bool device_pairing_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNfcAdapterClient);
 };

@@ -13,6 +13,7 @@
 #include "chromeos/dbus/fake_nfc_record_client.h"
 #include "chromeos/dbus/nfc_client_helpers.h"
 #include "dbus/object_path.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -77,7 +78,7 @@ std::vector<dbus::ObjectPath> FakeNfcDeviceClient::GetDevicesForAdapter(
       const dbus::ObjectPath& adapter_path) {
   std::vector<dbus::ObjectPath> device_paths;
   if (device_visible_ &&
-      adapter_path == dbus::ObjectPath(FakeNfcAdapterClient::kAdapterPath0))
+      adapter_path.value() == FakeNfcAdapterClient::kAdapterPath0)
     device_paths.push_back(dbus::ObjectPath(kDevicePath));
   return device_paths;
 }
@@ -97,6 +98,11 @@ void FakeNfcDeviceClient::Push(
   VLOG(1) << "FakeNfcDeviceClient::Write called.";
 
   // Success!
+  if (!device_visible_) {
+    LOG(ERROR) << "Device not visible. Cannot push record.";
+    error_callback.Run(nfc_error::kDoesNotExist, "No such device.");
+    return;
+  }
   callback.Run();
 }
 
@@ -107,10 +113,7 @@ void FakeNfcDeviceClient::BeginPairingSimulation(int visibility_delay,
     return;
   }
   DCHECK(!device_visible_);
-
-  // Cap the |visibility_delay| value at zero. Leave |record_push_delay| as is,
-  // as a negative value has a special meaning for it.
-  visibility_delay = visibility_delay < 0 ? 0 : visibility_delay;
+  DCHECK(visibility_delay >= 0);
 
   pairing_started_ = true;
 
@@ -133,7 +136,7 @@ void FakeNfcDeviceClient::EndPairingSimulation() {
       FakeNfcRecordClient* record_client =
           static_cast<FakeNfcRecordClient*>(
               DBusThreadManager::Get()->GetNfcRecordClient());
-      record_client->SetRecordsVisible(false);
+      record_client->SetDeviceRecordsVisible(false);
     }
     // Remove the device.
     FOR_EACH_OBSERVER(Observer, observers_,
@@ -218,7 +221,7 @@ void FakeNfcDeviceClient::MakeRecordsVisible() {
   FakeNfcRecordClient* record_client =
       static_cast<FakeNfcRecordClient*>(
           DBusThreadManager::Get()->GetNfcRecordClient());
-  record_client->SetRecordsVisible(true);
+  record_client->SetDeviceRecordsVisible(true);
 
   if (simulation_timeout_ < 0)
     return;

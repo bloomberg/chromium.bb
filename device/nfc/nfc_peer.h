@@ -42,7 +42,7 @@ class NfcPeer {
     // new records on the device and when the initial set of records are
     // received from it, if any. All records received from |peer| can be
     // accessed by calling |peer->GetNdefMessage()|.
-    virtual void RecordsReceived(NfcPeer* peer, const NfcNdefRecord* record) {}
+    virtual void RecordReceived(NfcPeer* peer, const NfcNdefRecord* record) {}
   };
 
   // The ErrorCallback is used by methods to asynchronously report errors.

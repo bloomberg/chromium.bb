@@ -80,6 +80,11 @@ class NfcRecordClientImpl : public NfcRecordClient,
     return object_map->GetObjectPaths();
   }
 
+  virtual std::vector<dbus::ObjectPath> GetRecordsForTag(
+      const dbus::ObjectPath& tag_path) OVERRIDE {
+    return GetRecordsForDevice(tag_path);
+  }
+
   // NfcRecordClient override.
   virtual Properties* GetProperties(
       const dbus::ObjectPath& object_path) OVERRIDE {
