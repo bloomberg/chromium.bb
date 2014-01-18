@@ -3892,8 +3892,12 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
 void RenderLayer::filterNeedsRepaint()
 {
     toElement(renderer()->node())->scheduleLayerUpdate();
-    if (renderer()->view())
-        renderer()->repaint();
+    if (renderer()->view()) {
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && renderer()->frameView()->isInLayout())
+            renderer()->setShouldDoFullRepaintAfterLayout(true);
+        else
+            renderer()->repaint();
+    }
 }
 
 void RenderLayer::addLayerHitTestRects(LayerHitTestRects& rects) const
