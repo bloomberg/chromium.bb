@@ -3660,8 +3660,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNewNavigationEntry) {
 }
 
 // Attempt a swap-in in a new tab, verifying that session storage namespace
-// merging works.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
+// merging works. Flaky - http://crbug.com/335835.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderPageNewTab) {
   // Mock out some URLs and count the number of requests to one of them. Both
   // prerender_session_storage.html and init_session_storage.html need to be
   // mocked so they are same-origin.
