@@ -62,6 +62,25 @@ class LoadTimesTimelineMetric(unittest.TestCase):
     results.AssertHasPageSpecificScalarValue(
       'CrRendererMain|x_y_avg', 'ms', 10)
 
+  def testCounterSanitizing(self):
+    model = model_module.TimelineModel()
+    renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
+    renderer_main.name = 'CrRendererMain'
+
+    x_counter = renderer_main.parent.GetOrCreateCounter('cat', 'x.y')
+    x_counter.samples += [1, 2]
+    x_counter.series_names += ['a']
+    x_counter.timestamps += [0, 1]
+    model.FinalizeImport()
+
+    metric = timeline.LoadTimesTimelineMetric(timeline.TRACING_MODE)
+    metric.renderer_process = renderer_main.parent
+    results = self.GetResultsForModel(metric, model)
+    results.AssertHasPageSpecificScalarValue(
+      'cat_x_y', 'count', 3)
+    results.AssertHasPageSpecificScalarValue(
+      'cat_x_y_avg', 'count', 1.5)
+
 
 class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
   def GetResultsForModel(self, metric, model):

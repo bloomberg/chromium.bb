@@ -110,8 +110,13 @@ class LoadTimesTimelineMetric(TimelineMetric):
 
     for counter_name, counter in self.renderer_process.counters.iteritems():
       total = sum(counter.totals)
-      results.Add(counter_name, 'count', total)
-      results.Add(counter_name + '_avg', 'count', total / len(counter.totals))
+
+      # Results objects cannot contain the '.' character, so remove that here.
+      sanitized_counter_name = counter_name.replace('.', '_')
+
+      results.Add(sanitized_counter_name, 'count', total)
+      results.Add(sanitized_counter_name + '_avg', 'count',
+                  total / float(len(counter.totals)))
 
 
 # We want to generate a consistant picture of our thread usage, despite
