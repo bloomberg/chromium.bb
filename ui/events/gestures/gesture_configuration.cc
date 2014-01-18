@@ -6,7 +6,7 @@
 
 namespace ui {
 
-int GestureConfiguration::default_radius_ = 15;
+int GestureConfiguration::default_radius_ = 25;
 int GestureConfiguration::fling_max_cancel_to_down_time_in_ms_ = 400;
 int GestureConfiguration::fling_max_tap_gap_time_in_ms_ = 200;
 float GestureConfiguration::fling_velocity_cap_ = 17000.0f;
