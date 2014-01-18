@@ -556,9 +556,8 @@
               'outputs': [
                   '<(PRODUCT_DIR)/First Run',
               ],
-              'action': ['cp', '-f', '<@(_inputs)', '<@(_outputs)'],
+              'action': ['python', '../build/cp.py', '<@(_inputs)', '<@(_outputs)'],
               'message': 'Copy first run complete sentinel file',
-              'msvs_cygwin_shell': 1,
             },
             {
               'action_name': 'chrome_exe_manifest',
