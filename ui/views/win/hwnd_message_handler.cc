@@ -1888,8 +1888,23 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const CPoint& point) {
 
   // Otherwise, we let Windows do all the native frame non-client handling for
   // us.
+#if defined(USE_AURA)
+  LRESULT hit_test_code = DefWindowProc(hwnd(), WM_NCHITTEST, 0,
+                                        MAKELPARAM(point.x, point.y));
+  // If we faked the WS_VSCROLL and WS_HSCROLL styles for this window, then
+  // Windows returns the HTVSCROLL or HTHSCROLL hit test codes if we hover or
+  // click on the non client portions of the window where the OS scrollbars
+  // would be drawn. These hittest codes are returned even when the scrollbars
+  // are hidden, which is the case in Aura. We fake the hittest code as
+  // HTCLIENT in this case to ensure that we receive client mouse messages as
+  // opposed to non client mouse messages.
+  if (needs_scroll_styles_ && (hit_test_code == HTVSCROLL ||
+      hit_test_code == HTHSCROLL))
+    hit_test_code = HTCLIENT;
+  return hit_test_code;
+#else
   SetMsgHandled(FALSE);
-  return 0;
+#endif
 }
 
 void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
