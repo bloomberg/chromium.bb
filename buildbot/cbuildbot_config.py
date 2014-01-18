@@ -1289,7 +1289,6 @@ internal_nowithdebug_paladin.add_config('amd64-generic-nowithdebug-paladin',
 internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
   boards=['x86-mario'],
   paladin_builder_name='x86-mario nowithdebug-paladin',
-  important=False,
 )
 
 internal_pre_cq = internal_paladin.derive(
@@ -1590,7 +1589,6 @@ internal_arm_paladin.add_config('peach_pit-paladin',
 internal_arm_paladin.add_config('nyan-paladin',
   boards=['nyan'],
   paladin_builder_name='nyan paladin',
-  important=False,
 )
 
 internal_brillo_paladin = internal_paladin.derive(brillo)
