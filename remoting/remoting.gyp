@@ -805,7 +805,6 @@
                 '--template', 'host/plugin/host_plugin-InfoPlist.strings.jinja2',
                 '--locale_output',
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
                 '<@(remoting_locales)',
               ],
             },
@@ -827,7 +826,6 @@
                 '--template', 'host/remoting_me2me_host-InfoPlist.strings.jinja2',
                 '--locale_output',
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/host_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
                 '<@(remoting_locales)',
               ],
             },
@@ -849,7 +847,6 @@
                 '--template', 'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
                 '--locale_output',
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/preference_pane_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
                 '<@(remoting_locales)',
               ],
             },
@@ -871,7 +868,6 @@
                 '--template', 'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
                 '--locale_output',
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/uninstaller_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '--encoding', 'utf-8',
                 '<@(remoting_locales)',
               ],
             },
@@ -1637,11 +1633,11 @@
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/core.rc'
               ],
               'action': [
-                'python',
-                '<(remoting_localize_path)',
+                'python', '<(remoting_localize_path)',
                 '--locale_dir', '<(webapp_locale_dir)',
                 '--template', '<(RULE_INPUT_PATH)',
                 '--output', '<@(_outputs)',
+                '--encoding', 'utf-16',
                 '<@(remoting_locales)',
               ],
               'message': 'Localizing the dialogs and strings'
@@ -1740,11 +1736,11 @@
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.mc',
               ],
               'action': [
-                'python',
-                '<(remoting_localize_path)',
+                'python', '<(remoting_localize_path)',
                 '--locale_dir', '<(webapp_locale_dir)',
                 '--template', '<(RULE_INPUT_PATH)',
                 '--output', '<@(_outputs)',
+                '--encoding', 'utf-16',
                 '<@(remoting_locales)',
               ],
               'message': 'Localizing the event log messages'
@@ -1791,8 +1787,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
               ],
               'action': [
-                'python',
-                '<(remoting_localize_path)',
+                'python', '<(remoting_localize_path)',
                 '--variables', '<(chrome_version_path)',
                 # |remoting_version_path| must be after |chrome_version_path|
                 # because it can contain overrides for the version numbers.
@@ -1801,6 +1796,7 @@
                 '--locale_dir', '<(webapp_locale_dir)',
                 '--template', '<(RULE_INPUT_PATH)',
                 '--output', '<@(_outputs)',
+                '--encoding', 'utf-16',
                 '<@(remoting_locales)',
               ],
               'message': 'Localizing the version information'
@@ -2265,7 +2261,6 @@
                 '--template', '<(input)',
                 '--locale_output',
                 '<(output)',
-                '--encoding', 'utf-8',
                 'en',
               ],
             },
