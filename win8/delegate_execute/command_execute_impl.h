@@ -102,7 +102,6 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
   INTERNET_SCHEME launch_scheme_;
 
   base::IntegrityLevel integrity_level_;
-  EC_HOST_UI_MODE chrome_mode_;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(CommandExecuteImpl), CommandExecuteImpl)
