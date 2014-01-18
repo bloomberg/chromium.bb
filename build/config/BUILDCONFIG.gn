@@ -77,6 +77,9 @@ declare_args() {
 
   # Compile for Thread Sanitizer to find threading bugs.
   is_tsan = false
+
+  # When running in gyp-generating mode, this is the root of the build tree.
+  gyp_output_dir = "out"
 }
 
 # =============================================================================

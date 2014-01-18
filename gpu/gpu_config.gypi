@@ -4,8 +4,8 @@
 
 {
   'dependencies': [
+    '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
     '../base/base.gyp:base',
-    '../out/gn_gyp/third_party/re2/re2.gyp:re2',
     '../ui/gl/gl.gyp:gl',
   ],
   'include_dirs': [

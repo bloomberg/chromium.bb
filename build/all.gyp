@@ -35,6 +35,7 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
+            '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
             '../cc/cc_tests.gyp:*',
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',
@@ -47,11 +48,11 @@
             '../media/cast/cast.gyp:*',
             '../media/media.gyp:*',
             '../mojo/mojo.gyp:*',
-            '../out/gn_gyp/third_party/re2/re2.gyp:re2',
             '../ppapi/ppapi.gyp:*',
             '../ppapi/ppapi_internal.gyp:*',
             '../printing/printing.gyp:*',
             '../skia/skia.gyp:*',
+            '../third_party/WebKit/public/all.gyp:*',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:*',
             '../third_party/codesighs/codesighs.gyp:*',
             '../third_party/ffmpeg/ffmpeg.gyp:*',
@@ -66,7 +67,6 @@
             '../third_party/npapi/npapi.gyp:*',
             '../third_party/ots/ots.gyp:*',
             '../third_party/qcms/qcms.gyp:*',
-            '../third_party/WebKit/public/all.gyp:*',
             '../tools/gn/gn.gyp:*',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',

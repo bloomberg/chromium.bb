@@ -4,11 +4,11 @@
 
 {
   'dependencies': [
+    '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
     '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
     '../google_apis/google_apis.gyp:google_apis',
     '../net/net.gyp:net',
-    '../out/gn_gyp/third_party/re2/re2.gyp:re2',
     '../skia/skia.gyp:skia',
     '../sql/sql.gyp:sql',
     '../third_party/zlib/google/zip.gyp:zip',

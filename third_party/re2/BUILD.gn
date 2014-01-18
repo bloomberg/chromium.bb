@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-gyp_file = "//out/gn_gyp/third_party/re2/re2.gyp"
+gyp_file = "//$gyp_output_dir/gn_gyp/third_party/re2/re2.gyp"
 
 config("re2_config") {
   include_dirs = [ "." ]

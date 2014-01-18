@@ -12,6 +12,7 @@
     ],
   },
   'dependencies': [
+    '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../crypto/crypto.gyp:crypto',
@@ -23,7 +24,6 @@
     '../third_party/khronos/khronos.gyp:khronos_headers',
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/smhasher/smhasher.gyp:cityhash',
-    '../out/gn_gyp/third_party/re2/re2.gyp:re2',
   ],
   'sources': [
     'command_buffer/service/async_pixel_transfer_delegate.cc',
