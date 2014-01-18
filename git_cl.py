@@ -2358,7 +2358,7 @@ def CMDformat(parser, args):
     if not files:
       print "Nothing to format."
       return 0
-    RunCommand([clang_format_tool, '-i', '-style', 'Chromium'] + files,
+    RunCommand([clang_format_tool, '-i'] + files,
                cwd=top_dir)
   else:
     env = os.environ.copy()
@@ -2370,7 +2370,7 @@ def CMDformat(parser, args):
     except clang_format.NotFoundError, e:
       DieWithError(e)
 
-    cmd = [sys.executable, script, '-p0', '-style', 'Chromium', '-i']
+    cmd = [sys.executable, script, '-p0', '-i']
 
     RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
 
