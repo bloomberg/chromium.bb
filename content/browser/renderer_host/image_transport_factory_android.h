@@ -12,8 +12,10 @@ namespace gfx {
 class GLShareGroup;
 }
 
-namespace blink {
-class WebGraphicsContext3D;
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
 }
 
 namespace content {
@@ -39,7 +41,7 @@ class ImageTransportFactoryAndroid {
   virtual void AcquireTexture(
       uint32 texture_id, const signed char* mailbox_name) = 0;
 
-  virtual blink::WebGraphicsContext3D* GetContext3D() = 0;
+  virtual gpu::gles2::GLES2Interface* GetContextGL() = 0;
   virtual GLHelper* GetGLHelper() = 0;
   virtual uint32 GetChannelID() = 0;
 

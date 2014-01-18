@@ -46,6 +46,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -294,22 +295,22 @@ bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
 
   GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
 
-  blink::WebGLId texture = helper->CopyAndScaleTexture(
+  GLuint texture = helper->CopyAndScaleTexture(
       texture_id_in_layer_,
       texture_size_in_layer_,
       bitmap.size(),
       true,
       GLHelper::SCALER_QUALITY_FAST);
-  if (texture == 0)
+  if (texture == 0u)
     return false;
 
   helper->ReadbackTextureSync(texture,
                               gfx::Rect(bitmap.size()),
                               static_cast<unsigned char*> (bitmap.pixels()));
 
-  blink::WebGraphicsContext3D* context =
-      ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  context->deleteTexture(texture);
+  gpu::gles2::GLES2Interface* gl =
+      ImageTransportFactoryAndroid::GetInstance()->GetContextGL();
+  gl->DeleteTextures(1, &texture);
 
   return true;
 }

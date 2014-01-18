@@ -44,8 +44,8 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual void DeleteTexture(uint32_t id) OVERRIDE;
   virtual void AcquireTexture(
       uint32 texture_id, const signed char* mailbox_name) OVERRIDE;
-  virtual blink::WebGraphicsContext3D* GetContext3D() OVERRIDE {
-    return context_.get();
+  virtual gpu::gles2::GLES2Interface* GetContextGL() OVERRIDE {
+    return context_->GetImplementation();
   }
   virtual GLHelper* GetGLHelper() OVERRIDE;
   virtual uint32 GetChannelID() OVERRIDE {

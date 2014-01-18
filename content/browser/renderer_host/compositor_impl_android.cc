@@ -36,7 +36,6 @@
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/base/android/window_android.h"
@@ -284,65 +283,61 @@ void CompositorImpl::DeleteUIResource(cc::UIResourceId resource_id) {
     ui_resource_map_.erase(it);
 }
 
-blink::WebGLId CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
+GLuint CompositorImpl::GenerateTexture(gfx::JavaBitmap& bitmap) {
   unsigned int texture_id = BuildBasicTexture();
-  blink::WebGraphicsContext3D* context =
-      ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (texture_id == 0 || context->isContextLost() ||
-      !context->makeContextCurrent())
-    return 0;
-  blink::WebGLId format = GetGLFormatForBitmap(bitmap);
-  blink::WebGLId type = GetGLTypeForBitmap(bitmap);
+  gpu::gles2::GLES2Interface* gl =
+      ImageTransportFactoryAndroid::GetInstance()->GetContextGL();
+  if (texture_id == 0u)
+    return 0u;
+  GLenum format = GetGLFormatForBitmap(bitmap);
+  GLenum type = GetGLTypeForBitmap(bitmap);
 
-  context->texImage2D(GL_TEXTURE_2D,
-                      0,
-                      format,
-                      bitmap.size().width(),
-                      bitmap.size().height(),
-                      0,
-                      format,
-                      type,
-                      bitmap.pixels());
-  context->shallowFlushCHROMIUM();
+  gl->TexImage2D(GL_TEXTURE_2D,
+                 0,
+                 format,
+                 bitmap.size().width(),
+                 bitmap.size().height(),
+                 0,
+                 format,
+                 type,
+                 bitmap.pixels());
+  gl->ShallowFlushCHROMIUM();
   return texture_id;
 }
 
-blink::WebGLId CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
-                                                          int data_size,
-                                                          void* data) {
+GLuint CompositorImpl::GenerateCompressedTexture(gfx::Size& size,
+                                                 int data_size,
+                                                 void* data) {
   unsigned int texture_id = BuildBasicTexture();
-  blink::WebGraphicsContext3D* context =
-        ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (texture_id == 0 || context->isContextLost() ||
-      !context->makeContextCurrent())
-    return 0;
-  context->compressedTexImage2D(GL_TEXTURE_2D,
-                                0,
-                                GL_ETC1_RGB8_OES,
-                                size.width(),
-                                size.height(),
-                                0,
-                                data_size,
-                                data);
-  context->shallowFlushCHROMIUM();
+  gpu::gles2::GLES2Interface* gl =
+      ImageTransportFactoryAndroid::GetInstance()->GetContextGL();
+  if (texture_id == 0u)
+    return 0u;
+  gl->CompressedTexImage2D(GL_TEXTURE_2D,
+                           0,
+                           GL_ETC1_RGB8_OES,
+                           size.width(),
+                           size.height(),
+                           0,
+                           data_size,
+                           data);
+  gl->ShallowFlushCHROMIUM();
   return texture_id;
 }
 
-void CompositorImpl::DeleteTexture(blink::WebGLId texture_id) {
-  blink::WebGraphicsContext3D* context =
-      ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (context->isContextLost() || !context->makeContextCurrent())
-    return;
-  context->deleteTexture(texture_id);
-  context->shallowFlushCHROMIUM();
+void CompositorImpl::DeleteTexture(GLuint texture_id) {
+  gpu::gles2::GLES2Interface* gl =
+      ImageTransportFactoryAndroid::GetInstance()->GetContextGL();
+  gl->DeleteTextures(1, &texture_id);
+  gl->ShallowFlushCHROMIUM();
 }
 
-bool CompositorImpl::CopyTextureToBitmap(blink::WebGLId texture_id,
+bool CompositorImpl::CopyTextureToBitmap(GLuint texture_id,
                                          gfx::JavaBitmap& bitmap) {
   return CopyTextureToBitmap(texture_id, gfx::Rect(bitmap.size()), bitmap);
 }
 
-bool CompositorImpl::CopyTextureToBitmap(blink::WebGLId texture_id,
+bool CompositorImpl::CopyTextureToBitmap(GLuint texture_id,
                                          const gfx::Rect& sub_rect,
                                          gfx::JavaBitmap& bitmap) {
   // The sub_rect should match the bitmap size.
@@ -447,22 +442,20 @@ void CompositorImpl::DidAbortSwapBuffers() {
   client_->OnSwapBuffersCompleted();
 }
 
-blink::WebGLId CompositorImpl::BuildBasicTexture() {
-  blink::WebGraphicsContext3D* context =
-            ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
-  if (context->isContextLost() || !context->makeContextCurrent())
-    return 0;
-  blink::WebGLId texture_id = context->createTexture();
-  context->bindTexture(GL_TEXTURE_2D, texture_id);
-  context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  context->texParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+GLuint CompositorImpl::BuildBasicTexture() {
+  gpu::gles2::GLES2Interface* gl =
+      ImageTransportFactoryAndroid::GetInstance()->GetContextGL();
+  GLuint texture_id = 0u;
+  gl->GenTextures(1, &texture_id);
+  gl->BindTexture(GL_TEXTURE_2D, texture_id);
+  gl->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   return texture_id;
 }
 
-blink::WGC3Denum CompositorImpl::GetGLFormatForBitmap(
-    gfx::JavaBitmap& bitmap) {
+GLenum CompositorImpl::GetGLFormatForBitmap(gfx::JavaBitmap& bitmap) {
   switch (bitmap.format()) {
     case ANDROID_BITMAP_FORMAT_A_8:
       return GL_ALPHA;
@@ -479,7 +472,7 @@ blink::WGC3Denum CompositorImpl::GetGLFormatForBitmap(
   }
 }
 
-blink::WGC3Denum CompositorImpl::GetGLTypeForBitmap(gfx::JavaBitmap& bitmap) {
+GLenum CompositorImpl::GetGLTypeForBitmap(gfx::JavaBitmap& bitmap) {
   switch (bitmap.format()) {
     case ANDROID_BITMAP_FORMAT_A_8:
       return GL_UNSIGNED_BYTE;

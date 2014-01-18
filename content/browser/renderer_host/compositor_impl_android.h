@@ -14,8 +14,8 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/browser/android/compositor.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 struct ANativeWindow;
 
@@ -61,13 +61,13 @@ class CONTENT_EXPORT CompositorImpl
   virtual cc::UIResourceId GenerateUIResource(
       const cc::UIResourceBitmap& bitmap) OVERRIDE;
   virtual void DeleteUIResource(cc::UIResourceId resource_id) OVERRIDE;
-  virtual blink::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
-  virtual blink::WebGLId GenerateCompressedTexture(
+  virtual GLuint GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
+  virtual GLuint GenerateCompressedTexture(
       gfx::Size& size, int data_size, void* data) OVERRIDE;
-  virtual void DeleteTexture(blink::WebGLId texture_id) OVERRIDE;
-  virtual bool CopyTextureToBitmap(blink::WebGLId texture_id,
+  virtual void DeleteTexture(GLuint texture_id) OVERRIDE;
+  virtual bool CopyTextureToBitmap(GLuint texture_id,
                                    gfx::JavaBitmap& bitmap) OVERRIDE;
-  virtual bool CopyTextureToBitmap(blink::WebGLId texture_id,
+  virtual bool CopyTextureToBitmap(GLuint texture_id,
                                    const gfx::Rect& sub_rect,
                                    gfx::JavaBitmap& bitmap) OVERRIDE;
 
@@ -98,9 +98,9 @@ class CONTENT_EXPORT CompositorImpl
   virtual void OnLostResources() OVERRIDE;
 
  private:
-  blink::WebGLId BuildBasicTexture();
-  blink::WGC3Denum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
-  blink::WGC3Denum GetGLTypeForBitmap(gfx::JavaBitmap& bitmap);
+  GLuint BuildBasicTexture();
+  GLenum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
+  GLenum GetGLTypeForBitmap(gfx::JavaBitmap& bitmap);
 
   scoped_refptr<cc::Layer> root_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
