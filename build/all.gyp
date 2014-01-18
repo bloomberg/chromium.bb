@@ -910,7 +910,6 @@
                 '../chrome/chrome.gyp:pack_policy_templates',
                 '../chrome/chrome.gyp:performance_ui_tests',
                 '../chrome/chrome.gyp:pyautolib',
-                '../chrome/chrome.gyp:unit_tests',
                 '../chrome/installer/mini_installer.gyp:mini_installer',
                 '../cloud_print/cloud_print.gyp:cloud_print',
                 '../content/content_shell_and_tests.gyp:content_browsertests',
