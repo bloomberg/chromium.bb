@@ -66,9 +66,12 @@ void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,
                            scoped_refptr<ThumbnailingAlgorithm> algorithm,
                            bool succeeded,
                            const SkBitmap& bitmap) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!succeeded)
     return;
+
+  // On success, we must be on the UI thread (on failure because of shutdown we
+  // are not on the UI thread).
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   algorithm->ProcessBitmap(context, base::Bind(&UpdateThumbnail), bitmap);
 }
