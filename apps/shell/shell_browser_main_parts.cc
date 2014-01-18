@@ -15,16 +15,20 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_paths.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/extension_paths.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/test/wm_test_helper.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_paths.h"
+#endif
 
 using content::BrowserContext;
 using extensions::Extension;
@@ -70,7 +74,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
   // Set up all the paths to load files.
   chrome::RegisterPathProvider();
+#if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();
+#endif
   extensions::RegisterPathProvider();
 
   // The extensions system needs manifest data from the Chrome PAK file.
@@ -142,6 +148,8 @@ void ShellBrowserMainParts::CreateRootWindow() {
   test_screen_.reset(aura::TestScreen::Create());
   // TODO(jamescook): Replace this with a real Screen implementation.
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
+  // TODO(jamescook): Initialize a real input method.
+  ui::InitializeInputMethodForTesting();
   // Set up basic pieces of views::corewm.
   wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.
@@ -154,6 +162,7 @@ void ShellBrowserMainParts::DestroyRootWindow() {
   wm_test_helper_->root_window()->RemoveRootWindowObserver(this);
   wm_test_helper_->root_window()->PrepareForShutdown();
   wm_test_helper_.reset();
+  ui::ShutdownInputMethodForTesting();
 }
 
 void ShellBrowserMainParts::CreateExtensionSystem() {

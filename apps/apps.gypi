@@ -97,7 +97,7 @@
     },
   ],  # targets
   'conditions': [
-    ['chromeos==1', {
+    ['chromeos==1 or (OS=="linux" and use_aura==1)', {
       'targets': [
         {
           'target_name': 'app_shell',
