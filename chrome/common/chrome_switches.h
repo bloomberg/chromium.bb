@@ -278,6 +278,7 @@ extern const char kLoadExtension[];
 extern const char kMakeDefaultBrowser[];
 extern const char kManagedUserId[];
 extern const char kManagedUserSyncToken[];
+extern const char kManualEnhancedBookmarks[];
 extern const char kMediaCacheSize[];
 extern const char kMemoryProfiling[];
 extern const char kMessageLoopHistogrammer[];

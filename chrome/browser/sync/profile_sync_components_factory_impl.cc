@@ -214,6 +214,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new PasswordDataTypeController(this, profile_, pss));
   }
   // Article sync is disabled by default.  Register only if explicitly enabled.
+  ExtensionService* extension_service = extension_system_->extension_service();
+  if (extension_service) {
+    OptInIntoBookmarksExperimentIfHasExtension(
+        extension_service->extensions()->GetIDs());
+  }
   if (IsEnableSyncArticlesSet()) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::ARTICLES, this, profile_, pss));

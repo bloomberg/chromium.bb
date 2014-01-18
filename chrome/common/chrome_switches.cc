@@ -1013,6 +1013,9 @@ const char kManagedUserId[]                 = "managed-user-id";
 // this switch also causes Sync to be set up for a managed user.
 const char kManagedUserSyncToken[]          = "managed-user-sync-token";
 
+// Use to opt-in user into Finch experiment group.
+const char kManualEnhancedBookmarks[] = "manual-enhanced-bookmarks";
+
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 

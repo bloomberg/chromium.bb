@@ -7,6 +7,14 @@
 
 #include <string>
 
+#include "extensions/common/extension.h"
+
+// If user not in Finch experiment then check if extension was installed
+// manually and then opt-in user into experiment.
+// Returns true if user was opt-in.
+bool OptInIntoBookmarksExperimentIfHasExtension(
+    const extensions::ExtensionIdSet& extension_ids);
+
 // Returns true if enhanced bookmarks experiment is enabled.
 bool IsEnhancedBookmarksExperimentEnabled();
 
