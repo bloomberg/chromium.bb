@@ -317,6 +317,8 @@ static bool evalResolution(CSSValue* value, Frame* frame, MediaFeaturePrefix op)
 
 static bool devicePixelRatioMediaFeatureEval(CSSValue *value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
+    UseCounter::count(frame->document(), UseCounter::PrefixedDevicePixelRatioMediaFeature);
+
     return (!value || toCSSPrimitiveValue(value)->isNumber()) && evalResolution(value, frame, op);
 }
 
@@ -474,11 +476,15 @@ static bool maxDeviceAspectRatioMediaFeatureEval(CSSValue* value, RenderStyle* s
 
 static bool minDevicePixelRatioMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix)
 {
+    UseCounter::count(frame->document(), UseCounter::PrefixedMinDevicePixelRatioMediaFeature);
+
     return devicePixelRatioMediaFeatureEval(value, style, frame, MinPrefix);
 }
 
 static bool maxDevicePixelRatioMediaFeatureEval(CSSValue* value, RenderStyle* style, Frame* frame, MediaFeaturePrefix)
 {
+    UseCounter::count(frame->document(), UseCounter::PrefixedMaxDevicePixelRatioMediaFeature);
+
     return devicePixelRatioMediaFeatureEval(value, style, frame, MaxPrefix);
 }
 
@@ -532,8 +538,10 @@ static bool maxResolutionMediaFeatureEval(CSSValue* value, RenderStyle* style, F
     return resolutionMediaFeatureEval(value, style, frame, MaxPrefix);
 }
 
-static bool animationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, MediaFeaturePrefix op)
+static bool animationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
+    UseCounter::count(frame->document(), UseCounter::PrefixedAnimationMediaFeature);
+
     if (value) {
         float number;
         return numberValue(value, number) && compareValue(1, static_cast<int>(number), op);
@@ -541,8 +549,10 @@ static bool animationMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, Med
     return true;
 }
 
-static bool transform2dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, MediaFeaturePrefix op)
+static bool transform2dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
+    UseCounter::count(frame->document(), UseCounter::PrefixedTransform2dMediaFeature);
+
     if (value) {
         float number;
         return numberValue(value, number) && compareValue(1, static_cast<int>(number), op);
@@ -552,6 +562,8 @@ static bool transform2dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame*, M
 
 static bool transform3dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)
 {
+    UseCounter::count(frame->document(), UseCounter::PrefixedTransform3dMediaFeature);
+
     bool returnValueIfNoParameter;
     int have3dRendering;
 
@@ -571,6 +583,8 @@ static bool transform3dMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* fr
 
 static bool viewModeMediaFeatureEval(CSSValue* value, RenderStyle*, Frame* frame, MediaFeaturePrefix)
 {
+    UseCounter::count(frame->document(), UseCounter::PrefixedViewModeMediaFeature);
+
     if (!value)
         return true;
 
