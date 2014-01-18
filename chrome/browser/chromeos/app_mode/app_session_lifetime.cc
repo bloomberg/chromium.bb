@@ -8,14 +8,22 @@
 #include "apps/shell_window_registry.h"
 #include "ash/wm/window_state.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/web_contents.h"
 
 using apps::ShellWindowRegistry;
 
@@ -65,12 +73,54 @@ class AppWindowHandler : public ShellWindowRegistry::Observer {
 base::LazyInstance<AppWindowHandler> app_window_handler
     = LAZY_INSTANCE_INITIALIZER;
 
+// BrowserWindowHandler monitors Browser object being created during
+// a kiosk session, log info such as URL so that the code path could be
+// fixed and closes the just opened browser window.
+class BrowserWindowHandler : public chrome::BrowserListObserver {
+ public:
+  BrowserWindowHandler() {
+    BrowserList::AddObserver(this);
+  }
+  virtual ~BrowserWindowHandler() {
+    BrowserList::RemoveObserver(this);
+  }
+
+ private:
+  void HandleBrowser(Browser* browser) {
+    content::WebContents* active_tab =
+        browser->tab_strip_model()->GetActiveWebContents();
+    std::string url_string =
+        active_tab ? active_tab->GetURL().spec() : std::string();
+    LOG(WARNING) << "Browser opened in kiosk session"
+                 << ", url=" << url_string;
+
+    browser->window()->Close();
+  }
+
+  // chrome::BrowserListObserver overrides:
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserWindowHandler::HandleBrowser,
+                   base::Unretained(this),  // LazyInstance, always valid
+                   browser));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserWindowHandler);
+};
+
+base::LazyInstance<BrowserWindowHandler> browser_window_handler
+    = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 void InitAppSession(Profile* profile, const std::string& app_id) {
   // Binds the session lifetime with app window counts.
   CHECK(app_window_handler == NULL);
   app_window_handler.Get().Init(profile);
+
+  CHECK(browser_window_handler == NULL);
+  browser_window_handler.Get();
 
   // Set the app_id for the current instance of KioskAppUpdateService.
   KioskAppUpdateService* update_service =

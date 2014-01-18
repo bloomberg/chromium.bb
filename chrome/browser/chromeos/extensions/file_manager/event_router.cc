@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -640,10 +641,11 @@ void EventRouter::DispatchDirectoryChangeEvent(
 void EventRouter::ShowRemovableDeviceInFileManager(
     const base::FilePath& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
-  // the screen is locked and make sure the file manager is opened only for the
-  // active user.
+  // the screen is locked or running in kiosk app mode and make sure the file
+  // manager is opened only for the active user.
   if (chromeos::LoginDisplayHostImpl::default_host() ||
       chromeos::ScreenLocker::default_screen_locker() ||
+      chrome::IsRunningInForcedAppMode() ||
       profile_ != ProfileManager::GetActiveUserProfile())
     return;
 
