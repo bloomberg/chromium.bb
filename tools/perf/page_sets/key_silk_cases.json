@@ -231,6 +231,14 @@
       ]
     },
     {
+      "url": "file://key_silk_cases/infinite_scrolling.html",
+      "smoothness": {
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('container')); }",
+        "speed": 5000
+      }
+    },
+    {
       "disabled": "The page isn't scrollable on large screen sizes (e.g. tablets); crbug.com/333923",
       "url": "http://forecast.io?scroll",
       "navigate_steps": [
