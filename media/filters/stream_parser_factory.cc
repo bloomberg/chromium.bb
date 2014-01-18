@@ -141,11 +141,6 @@ static const CodecInfo kMPEG2AACLCCodecInfo = { "mp4a.67", CodecInfo::AUDIO,
                                                 NULL,
                                                 CodecInfo::HISTOGRAM_MPEG2AAC };
 
-#if defined(ENABLE_EAC3_PLAYBACK)
-static const CodecInfo kEAC3CodecInfo = { "mp4a.a6", CodecInfo::AUDIO, NULL,
-                                          CodecInfo::HISTOGRAM_EAC3 };
-#endif
-
 static const CodecInfo* kVideoMP4Codecs[] = {
   &kH264AVC1CodecInfo,
   &kH264AVC3CodecInfo,
@@ -157,9 +152,6 @@ static const CodecInfo* kVideoMP4Codecs[] = {
 static const CodecInfo* kAudioMP4Codecs[] = {
   &kMPEG4AACCodecInfo,
   &kMPEG2AACLCCodecInfo,
-#if defined(ENABLE_EAC3_PLAYBACK)
-  &kEAC3CodecInfo,
-#endif
   NULL
 };
 
@@ -168,10 +160,6 @@ static StreamParser* BuildMP4Parser(
   std::set<int> audio_object_types;
 
   bool has_sbr = false;
-#if defined(ENABLE_EAC3_PLAYBACK)
-  bool enable_eac3 = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableEac3Playback);
-#endif
   for (size_t i = 0; i < codecs.size(); ++i) {
     std::string codec_id = codecs[i];
     if (MatchPattern(codec_id, kMPEG2AACLCCodecInfo.pattern)) {
@@ -186,10 +174,6 @@ static StreamParser* BuildMP4Parser(
         has_sbr = true;
         break;
       }
-#if defined(ENABLE_EAC3_PLAYBACK)
-    } else if (enable_eac3 && MatchPattern(codec_id, kEAC3CodecInfo.pattern)) {
-      audio_object_types.insert(mp4::kEAC3);
-#endif
     }
   }
 

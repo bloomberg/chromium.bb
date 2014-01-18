@@ -9,9 +9,6 @@ namespace switches {
 // Allow users to specify a custom buffer size for debugging purpose.
 const char kAudioBufferSize[] = "audio-buffer-size";
 
-// Enable EAC3 playback in MSE.
-const char kEnableEac3Playback[] = "enable-eac3-playback";
-
 // Disables Opus playback in media elements.
 const char kDisableOpusPlayback[] = "disable-opus-playback";
 

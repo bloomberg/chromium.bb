@@ -1013,7 +1013,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDeadlineScheduling,
     switches::kEnableDeferredImageDecoding,
     switches::kEnableDelegatedRenderer,
-    switches::kEnableEac3Playback,
     switches::kEnableEncryptedMedia,
     switches::kEnableExperimentalCanvasFeatures,
     switches::kEnableExperimentalWebPlatformFeatures,

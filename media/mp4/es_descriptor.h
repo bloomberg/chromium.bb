@@ -21,8 +21,7 @@ namespace mp4 {
 enum ObjectType {
   kForbidden = 0,
   kISO_14496_3 = 0x40,  // MPEG4 AAC
-  kISO_13818_7_AAC_LC = 0x67,  // MPEG2 AAC-LC
-  kEAC3 = 0xa6  // Dolby Digital Plus
+  kISO_13818_7_AAC_LC = 0x67  // MPEG2 AAC-LC
 };
 
 // This class parse object type and decoder specific information from an

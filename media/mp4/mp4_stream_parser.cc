@@ -197,7 +197,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       const AudioSampleEntry& entry = samp_descr.audio_entries[desc_idx];
       const AAC& aac = entry.esds.aac;
 
-      if (!(entry.format == FOURCC_MP4A || entry.format == FOURCC_EAC3 ||
+      if (!(entry.format == FOURCC_MP4A ||
             (entry.format == FOURCC_ENCA &&
              entry.sinf.format.format == FOURCC_MP4A))) {
         MEDIA_LOG(log_cb_) << "Unsupported audio format 0x"
@@ -207,9 +207,6 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       uint8 audio_type = entry.esds.object_type;
       DVLOG(1) << "audio_type " << std::hex << audio_type;
-      if (audio_type == kForbidden && entry.format == FOURCC_EAC3) {
-        audio_type = kEAC3;
-      }
       if (audio_object_types_.find(audio_type) == audio_object_types_.end()) {
         MEDIA_LOG(log_cb_) << "audio object type 0x" << std::hex << audio_type
                            << " does not match what is specified in the"
@@ -230,10 +227,6 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 #if defined(OS_ANDROID)
         extra_data = aac.codec_specific_data();
 #endif
-      } else if (audio_type == kEAC3) {
-        codec = kCodecEAC3;
-        channel_layout = GuessChannelLayout(entry.channelcount);
-        sample_per_second = entry.samplerate;
       } else {
         MEDIA_LOG(log_cb_) << "Unsupported audio object type 0x" << std::hex
                            << audio_type << " in esds.";
