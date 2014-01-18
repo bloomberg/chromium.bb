@@ -527,11 +527,8 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
                                                   base::TimeDelta());
   } else {
     // If this is the first window that got docked by a move update alignment.
-    if (alignment_ == DOCKED_ALIGNMENT_NONE) {
-      alignment_ = GetAlignmentOfWindow(dragged_window_);
-      DCHECK(action == DOCKED_ACTION_NONE ||
-             alignment_ != DOCKED_ALIGNMENT_NONE);
-    }
+    if (alignment_ == DOCKED_ALIGNMENT_NONE)
+      alignment_ = GetEdgeNearestWindow(dragged_window_);
     // A window is no longer dragged and is a child.
     // When a window becomes a child at drag start this is
     // the only opportunity we will have to enforce a window
@@ -666,13 +663,11 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   if (child == dragged_window_)
     return;
   // If this is the first window getting docked - update alignment.
-  // TODO(oshima|varkha): A window can be added without proper bounds when
-  // window is moved to another display via API or due to display configuration
-  // change, so the the alignment may not be valid.
-  if (alignment_ == DOCKED_ALIGNMENT_NONE) {
-    alignment_ = GetAlignmentOfWindow(child);
-    DCHECK_NE(DOCKED_ALIGNMENT_NONE, alignment_);
-  }
+  // A window can be added without proper bounds when window is moved to another
+  // display via API or due to display configuration change, so the alignment
+  // is set based on which edge is closer in the new display.
+  if (alignment_ == DOCKED_ALIGNMENT_NONE)
+    alignment_ = GetEdgeNearestWindow(child);
   MaybeMinimizeChildrenExcept(child);
   child->AddObserver(this);
   wm::GetWindowState(child)->AddObserver(this);
@@ -1008,6 +1003,15 @@ void DockedWindowLayoutManager::OnDraggedWindowUndocked() {
 
 bool DockedWindowLayoutManager::IsAnyWindowDocked() {
   return CalculateAlignment() != DOCKED_ALIGNMENT_NONE;
+}
+
+DockedAlignment DockedWindowLayoutManager::GetEdgeNearestWindow(
+    const aura::Window* window) const {
+  const gfx::Rect& bounds(window->GetBoundsInScreen());
+  const gfx::Rect container_bounds = dock_container_->GetBoundsInScreen();
+  return (abs(bounds.x() - container_bounds.x()) <
+          abs(bounds.right() - container_bounds.right())) ?
+              DOCKED_ALIGNMENT_LEFT : DOCKED_ALIGNMENT_RIGHT;
 }
 
 void DockedWindowLayoutManager::Relayout() {

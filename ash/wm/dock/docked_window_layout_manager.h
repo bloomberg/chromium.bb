@@ -206,6 +206,12 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Returns true if there are any windows currently docked.
   bool IsAnyWindowDocked();
 
+  // Returns DOCKED_ALIGNMENT_LEFT if the |window|'s left edge is closer to
+  // the |dock_container_|'s left edge than the |window|'s right edge to
+  // the |dock_container_|'s right edge. Returns DOCKED_ALIGNMENT_RIGHT
+  // otherwise.
+  DockedAlignment GetEdgeNearestWindow(const aura::Window* window) const;
+
   // Called whenever the window layout might change.
   void Relayout();
 

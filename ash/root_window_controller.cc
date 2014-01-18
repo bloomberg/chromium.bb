@@ -120,8 +120,8 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
   gfx::Rect restore_bounds;
   bool has_restore_bounds = state->HasRestoreBounds();
 
-  // TODO(oshima): snapped state should be handled by the layout manager.
-  bool update_bounds = state->IsNormalShowState() || state->IsMinimized();
+  bool update_bounds = (state->IsNormalShowState() || state->IsMinimized()) &&
+      new_parent->id() != internal::kShellWindowId_DockedContainer;
   gfx::Rect local_bounds;
   if (update_bounds) {
     local_bounds = state->window()->bounds();
@@ -135,6 +135,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 
   new_parent->AddChild(window);
 
+  // Docked windows have bounds handled by the layout manager in AddChild().
   if (update_bounds)
     window->SetBounds(local_bounds);
 

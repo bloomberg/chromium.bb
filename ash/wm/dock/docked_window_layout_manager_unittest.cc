@@ -343,7 +343,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   if (!SupportsMultipleDisplays() || !SupportsHostWindowResize())
     return;
 
-  // Create two screen layout.
+  // Create a dual screen layout.
   UpdateDisplay("600x600,600x600");
 
   gfx::Rect bounds(600, 0, 201, 201);
@@ -801,6 +801,34 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsHeightRestrictions) {
       Shell::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
   EXPECT_GT(w1->GetBoundsInScreen().height(), work_area.height() / 2 + 10);
   EXPECT_LT(w2->GetBoundsInScreen().height(), work_area.height() / 2 - 10);
+}
+
+// Tests that a docked window is moved to primary display when secondary display
+// is disconnected and that it stays docked and properly positioned.
+TEST_P(DockedWindowLayoutManagerTest, DisplayDisconnectionMovesDocked) {
+  if (!SupportsMultipleDisplays() || !SupportsHostWindowResize())
+    return;
+
+  // Create a dual screen layout.
+  UpdateDisplay("600x700,800x600");
+
+  gfx::Rect bounds(600, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  // Drag pointer to the right edge of the second screen.
+  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
+
+  // Simulate disconnection of the secondary display.
+  UpdateDisplay("600x700");
+
+  // The window should be still docked at the right edge.
+  // Its height should grow to match the new work area.
+  EXPECT_EQ(window->GetRootWindow()->bounds().right(),
+            window->GetBoundsInScreen().right());
+  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(ideal_width(), window->bounds().width());
+  gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(window.get()).work_area();
+  EXPECT_EQ(work_area.height(), window->GetBoundsInScreen().height());
 }
 
 // Tests run twice - on both panels and normal windows
