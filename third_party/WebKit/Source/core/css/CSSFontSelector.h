@@ -77,9 +77,6 @@ public:
 
     void clearDocument();
 
-    void addFontFaceRule(const StyleRuleFontFace*, PassRefPtr<CSSFontFace>);
-    void removeFontFaceRule(const StyleRuleFontFace*);
-
     void fontLoaded();
     virtual void fontCacheInvalidated() OVERRIDE;
 
@@ -87,7 +84,7 @@ public:
     virtual void unregisterForInvalidationCallbacks(FontSelectorClient*) OVERRIDE;
 
     Document* document() const { return m_document; }
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache() { return &m_cssSegmentedFontFaceCache; }
+    CSSSegmentedFontFaceCache* fontFaceCache() { return &m_cssSegmentedFontFaceCache; }
 
     const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
 

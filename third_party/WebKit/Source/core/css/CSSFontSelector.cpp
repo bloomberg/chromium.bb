@@ -153,16 +153,6 @@ void CSSFontSelector::fontCacheInvalidated()
     dispatchInvalidationCallbacks();
 }
 
-void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule, PassRefPtr<CSSFontFace> cssFontFace)
-{
-    m_cssSegmentedFontFaceCache.add(this, fontFaceRule, cssFontFace);
-}
-
-void CSSFontSelector::removeFontFaceRule(const StyleRuleFontFace* fontFaceRule)
-{
-    m_cssSegmentedFontFaceCache.remove(fontFaceRule);
-}
-
 static AtomicString familyNameFromSettings(const GenericFontFamilySettings& settings, const FontDescription& fontDescription, const AtomicString& genericFamilyName)
 {
     UScriptCode script = fontDescription.script();

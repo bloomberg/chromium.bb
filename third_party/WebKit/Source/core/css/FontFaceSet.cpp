@@ -261,7 +261,7 @@ bool FontFaceSet::has(FontFace* fontFace, ExceptionState& exceptionState) const
         return false;
     }
     flushPendingStyleChanges(document());
-    return document()->styleEngine()->fontSelector()->cssSegmentedFontFaceCache()->cssFontFaceList().contains(fontFace->cssFontFace());
+    return document()->styleEngine()->fontSelector()->fontFaceCache()->cssFontFaceList().contains(fontFace->cssFontFace());
 }
 
 void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue& thisArg) const
@@ -277,7 +277,7 @@ void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback) const
 void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue* thisArg) const
 {
     flushPendingStyleChanges(document());
-    const ListHashSet<RefPtr<CSSFontFace> >& faces = document()->styleEngine()->fontSelector()->cssSegmentedFontFaceCache()->cssFontFaceList();
+    const ListHashSet<RefPtr<CSSFontFace> >& faces = document()->styleEngine()->fontSelector()->fontFaceCache()->cssFontFaceList();
     Vector<RefPtr<FontFace> > fontFaces;
     fontFaces.reserveInitialCapacity(faces.size());
     for (ListHashSet<RefPtr<CSSFontFace> >::const_iterator it = faces.begin(); it != faces.end(); ++it)
@@ -295,7 +295,7 @@ void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callbac
 unsigned long FontFaceSet::size() const
 {
     flushPendingStyleChanges(document());
-    return document()->styleEngine()->fontSelector()->cssSegmentedFontFaceCache()->cssFontFaceList().size();
+    return document()->styleEngine()->fontSelector()->fontFaceCache()->cssFontFaceList().size();
 }
 
 void FontFaceSet::fireDoneEventIfPossible()
@@ -350,7 +350,7 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
         return matchedFonts;
     }
 
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->cssSegmentedFontFaceCache();
+    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
         if (face)
@@ -367,7 +367,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
         return ScriptPromise();
     }
 
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->cssSegmentedFontFaceCache();
+    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     ScriptPromise promise = ScriptPromise::createPending(executionContext());
     RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.family(), promise, executionContext());
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
@@ -389,7 +389,7 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
         return false;
     }
 
-    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->cssSegmentedFontFaceCache();
+    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = cssSegmentedFontFaceCache->get(font.fontDescription(), f->family());
         if (!face || !face->checkFont(nullToSpace(text)))

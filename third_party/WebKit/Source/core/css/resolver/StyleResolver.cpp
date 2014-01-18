@@ -125,7 +125,7 @@ static void addFontFaceRule(Document* document, CSSFontSelector* cssFontSelector
 {
     RefPtr<CSSFontFace> cssFontFace = CSSFontFace::createFromStyleRule(document, fontFaceRule);
     if (cssFontFace)
-        cssFontSelector->addFontFaceRule(fontFaceRule, cssFontFace);
+        cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, cssFontFace);
 }
 
 StyleResolver::StyleResolver(Document& document)
