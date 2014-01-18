@@ -130,6 +130,9 @@ class BrowserTestBase : public testing::Test {
   // instead.
   void UseSoftwareCompositing();
 
+  // Returns true if the test will be using GL acceleration via OSMesa.
+  bool UsingOSMesa() const;
+
  private:
   void ProxyRunTestOnMainThreadLoop();
 

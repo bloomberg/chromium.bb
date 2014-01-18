@@ -302,4 +302,10 @@ void BrowserTestBase::UseSoftwareCompositing() {
   use_software_compositing_ = true;
 }
 
+bool BrowserTestBase::UsingOSMesa() const {
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  return cmd->GetSwitchValueASCII(switches::kUseGL) ==
+         gfx::kGLImplementationOSMesaName;
+}
+
 }  // namespace content

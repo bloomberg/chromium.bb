@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
 }
 
 // http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if !defined(NDEBUG)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
@@ -103,6 +103,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
     return;
   }
 #endif
+  // This test is too slow to succeed with OSMesa on the bots.
+  if (UsingOSMesa())
+    return;
 
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "end_to_end.html"))
