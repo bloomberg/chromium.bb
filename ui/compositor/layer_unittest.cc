@@ -15,8 +15,6 @@
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/layer.h"
-#include "cc/output/copy_output_request.h"
-#include "cc/output/copy_output_result.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -128,29 +126,8 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   bool ReadPixels(SkBitmap* bitmap) {
-    return ReadPixels(bitmap, gfx::Rect(GetCompositor()->size()));
-  }
-
-  bool ReadPixels(SkBitmap* bitmap, gfx::Rect source_rect) {
-    scoped_refptr<ReadbackHolder> holder(new ReadbackHolder);
-    scoped_ptr<cc::CopyOutputRequest> request =
-        cc::CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&ReadbackHolder::OutputRequestCallback, holder));
-    request->set_area(source_rect);
-
-    GetCompositor()->root_layer()->RequestCopyOfOutput(request.Pass());
-
-    // Wait for copy response.
-    WaitForDraw();
-
-    if (holder->completed()) {
-      *bitmap = holder->result();
-      return true;
-    }
-
-    // Callback never called.
-    NOTREACHED();
-    return false;
+    return GetCompositor()->ReadPixels(bitmap,
+                                       gfx::Rect(GetCompositor()->size()));
   }
 
   void WaitForDraw() {
@@ -172,29 +149,6 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
  private:
-  class ReadbackHolder : public base::RefCountedThreadSafe<ReadbackHolder> {
-   public:
-    ReadbackHolder() : completed_(false) {}
-
-    void OutputRequestCallback(scoped_ptr<cc::CopyOutputResult> result) {
-      DCHECK(!completed_);
-      result_ = result->TakeBitmap();
-      completed_ = true;
-    }
-    bool completed() const {
-      return completed_;
-    };
-    const SkBitmap& result() const { return *result_; }
-
-   private:
-    friend class base::RefCountedThreadSafe<ReadbackHolder>;
-
-    virtual ~ReadbackHolder() {}
-
-    scoped_ptr<SkBitmap> result_;
-    bool completed_;
-  };
-
   scoped_ptr<TestCompositorHost> window_;
 
   // The root directory for test files.
@@ -829,7 +783,7 @@ TEST_F(LayerWithRealCompositorTest, DrawPixels) {
   DrawTree(layer.get());
 
   SkBitmap bitmap;
-  ASSERT_TRUE(ReadPixels(&bitmap, gfx::Rect(viewport_size)));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap, gfx::Rect(viewport_size)));
   ASSERT_FALSE(bitmap.empty());
 
   SkAutoLockPixels lock(bitmap);
