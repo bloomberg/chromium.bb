@@ -101,7 +101,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   QuicTime ReleaseNextPacket();
 
   // A single packet which will be sent at the supplied send_time.
-  class DelayedWrite {
+  struct DelayedWrite {
    public:
     DelayedWrite(const char* buffer,
                  size_t buf_len,

@@ -13,8 +13,7 @@ const QuicPriority QuicWriteBlockedList::kLowestPriority =
 
 QuicWriteBlockedList::QuicWriteBlockedList()
     : crypto_stream_blocked_(false),
-      headers_stream_blocked_(false) {
-}
+      headers_stream_blocked_(false) {}
 
 QuicWriteBlockedList::~QuicWriteBlockedList() {}
 

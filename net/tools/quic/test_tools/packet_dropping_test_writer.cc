@@ -189,8 +189,7 @@ PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
     : buffer(buffer, buf_len),
       self_address(self_address),
       peer_address(peer_address),
-      send_time(send_time) {
-}
+      send_time(send_time) {}
 
 PacketDroppingTestWriter::DelayedWrite::~DelayedWrite() {}
 
