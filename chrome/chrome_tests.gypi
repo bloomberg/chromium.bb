@@ -2756,7 +2756,6 @@
                           'test/pyautolib/pyautolib.i',
               ],
               'message': 'Generating swig wrappers for pyautolib',
-              'msvs_cygwin_shell': 1,
             },
           ],  # actions
         }, {
