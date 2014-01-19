@@ -27,11 +27,11 @@
                 '<(version_path)',
               ],
               'action': [
-                'cp',
+                'python',
+                '../build/cp.py',
                 '<@(_inputs)',
                 '<@(_outputs)',
               ],
-              'msvs_cygwin_shell': 1,
             },
             {
               # Add all the templates generated at the previous step into
@@ -80,7 +80,6 @@
                 '<@(grit_defines)',
               ],
               'message': 'Packing generated templates into <(_outputs)',
-              'msvs_cygwin_shell': 1,
             },
           ],
         }],
