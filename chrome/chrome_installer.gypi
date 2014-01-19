@@ -175,7 +175,6 @@
                          '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
                          '<(branding)',],
               'message': 'Generating resources from <(RULE_INPUT_PATH)',
-              'msvs_cygwin_shell': 1,
             },
           ],
           'sources': [
@@ -352,7 +351,6 @@
                 #'--distribution=$(CHROMIUM_BUILD)',
                 '--distribution=_google_chrome',
               ],
-              'msvs_cygwin_shell': 1,
             },
           ],
           'conditions': [
@@ -457,7 +455,6 @@
                 #'--distribution=$(CHROMIUM_BUILD)',
                 '--distribution=_google_chrome',
               ],
-              'msvs_cygwin_shell': 1,
             },
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

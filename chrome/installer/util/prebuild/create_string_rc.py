@@ -31,13 +31,12 @@ import os
 import sys
 from xml.dom import minidom
 
-# We are expected to use ../../../../third_party/python_24/python.exe
-from google import path_utils
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(BASEDIR, '../../../../tools/grit'))
+sys.path.append(os.path.join(BASEDIR, '../../../../tools/python'))
 
-# Quick hack to fix the path.
-sys.path.append(os.path.abspath('../../tools/grit'))
-sys.path.append(os.path.abspath('../tools/grit'))
 from grit.extern import tclib
+from google import path_utils
 
 # The IDs of strings we want to import from generated_resources.grd and include
 # in setup.exe's resources.
