@@ -1946,8 +1946,9 @@
 	parent surface. Using any other surface, including this sub-surface,
 	will cause a protocol error.
 
-	The z-order is double-buffered state, and will be applied on the
-	next commit of the parent surface.
+	The z-order is double-buffered. Requests are handled in order and
+	applied immediately to a pending state, then committed to the active
+	state on the next commit of the parent surface.
 	See wl_surface.commit and wl_subcompositor.get_subsurface.
 
 	A new sub-surface is initially added as the top-most in the stack
