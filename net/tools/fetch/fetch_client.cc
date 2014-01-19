@@ -2,37 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "base/at_exit.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "net/base/completion_callback.h"
-#include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
-#include "net/base/request_priority.h"
-#include "net/cert/cert_verifier.h"
-#include "net/dns/host_resolver.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_cache.h"
-#include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_request_info.h"
-#include "net/http/http_server_properties_impl.h"
-#include "net/http/http_stream_factory.h"
-#include "net/http/http_transaction.h"
-#include "net/http/transport_security_state.h"
-#include "net/proxy/proxy_service.h"
-#include "net/ssl/ssl_config_service_defaults.h"
+#include "build/build_config.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
+
+using net::URLFetcher;
+using net::URLFetcherDelegate;
+using net::URLRequestContextGetter;
 
 void usage(const char* program_name) {
-  printf("usage: %s --url=<url>  [--n=<clients>] [--stats] [--use_cache]\n",
+  printf("usage: %s --url=<url> [--n=<clients>] [--stats] [--use_cache] "
+         "[--v]\n",
          program_name);
   exit(1);
 }
@@ -54,73 +45,93 @@ class Driver {
   int clients_;
 };
 
+scoped_ptr<net::URLRequestContext>
+BuildURLRequestContext(bool use_cache) {
+  net::URLRequestContextBuilder builder;
+  builder.set_file_enabled(true);
+  builder.set_data_enabled(true);
+  builder.set_ftp_enabled(true);
+  if (!use_cache)
+    builder.DisableHttpCache();
+  scoped_ptr<net::URLRequestContext> context(builder.Build());
+  return context.Pass();
+}
+
+// Builds a URLRequestContext assuming there's only a single message loop.
+class SingleThreadRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  // Since there's only a single thread, there's no need to worry
+  // about when |context_| gets created.
+  SingleThreadRequestContextGetter(
+      bool use_cache,
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
+      : context_(BuildURLRequestContext(use_cache)),
+        main_task_runner_(main_task_runner) {}
+
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+    return context_.get();
+  }
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const OVERRIDE {
+    return main_task_runner_;
+  }
+
+ private:
+  virtual ~SingleThreadRequestContextGetter() {}
+
+  const scoped_ptr<net::URLRequestContext> context_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+};
+
 static base::LazyInstance<Driver> g_driver = LAZY_INSTANCE_INITIALIZER;
 
 // A network client
-class Client {
+class Client : public URLFetcherDelegate {
  public:
-  Client(net::HttpTransactionFactory* factory, const std::string& url) :
-      url_(url),
-      buffer_(new net::IOBuffer(kBufferSize)) {
-    int rv = factory->CreateTransaction(net::DEFAULT_PRIORITY, &transaction_);
-    DCHECK_EQ(net::OK, rv);
-    buffer_->AddRef();
+  Client(const std::string& url,
+         URLRequestContextGetter* getter) :
+      url_(url), getter_(getter), last_current_(0) {
+  }
+
+  void Start() {
+    fetcher_.reset(net::URLFetcher::Create(
+        url_, net::URLFetcher::GET, this));
+    if (!fetcher_.get())
+      return;
     g_driver.Get().ClientStarted();
-    request_info_.url = url_;
-    request_info_.method = "GET";
-    int state = transaction_->Start(
-        &request_info_,
-        base::Bind(&Client::OnConnectComplete, base::Unretained(this)),
-        net::BoundNetLog());
-    DCHECK(state == net::ERR_IO_PENDING);
+    fetcher_->SetRequestContext(getter_);
+    fetcher_->Start();
   };
 
  private:
-  void OnConnectComplete(int result) {
-    // Do work here.
-    int state = transaction_->Read(
-        buffer_.get(), kBufferSize,
-        base::Bind(&Client::OnReadComplete, base::Unretained(this)));
-    if (state == net::ERR_IO_PENDING)
-      return;  // IO has started.
-    if (state < 0)
-      return;  // ERROR!
-    OnReadComplete(state);
-  }
 
-  void OnReadComplete(int result) {
-    if (result == 0) {
-      OnRequestComplete(result);
-      return;
-    }
-
-    // Deal with received data here.
-    base::StatsCounter bytes_read("FetchClient.bytes_read");
-    bytes_read.Add(result);
-
-    // Issue a read for more data.
-    int state = transaction_->Read(
-        buffer_.get(), kBufferSize,
-        base::Bind(&Client::OnReadComplete, base::Unretained(this)));
-    if (state == net::ERR_IO_PENDING)
-      return;  // IO has started.
-    if (state < 0)
-      return;  // ERROR!
-    OnReadComplete(state);
-  }
-
-  void OnRequestComplete(int result) {
+  // URLFetcherDelegate overrides.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
     base::StatsCounter requests("FetchClient.requests");
     requests.Increment();
     g_driver.Get().ClientStopped();
     printf(".");
   }
 
-  static const int kBufferSize = (16 * 1024);
+  virtual void OnURLFetchDownloadProgress(const URLFetcher* source,
+                                          int64 current, int64 total) OVERRIDE {
+    base::StatsCounter bytes_read("FetchClient.bytes_read");
+    DCHECK(current >= last_current_);
+    int64 delta = current - last_current_;
+    bytes_read.Add(delta);
+    last_current_ = current;
+  }
+
+  virtual void OnURLFetchUploadProgress(const URLFetcher* source,
+                                        int64 current, int64 total) OVERRIDE {
+    CHECK(false);
+  }
+
   GURL url_;
-  net::HttpRequestInfo request_info_;
-  scoped_ptr<net::HttpTransaction> transaction_;
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_ptr<URLFetcher> fetcher_;
+  URLRequestContextGetter* getter_;
+  int64 last_current_;
 };
 
 int main(int argc, char** argv) {
@@ -139,52 +150,26 @@ int main(int argc, char** argv) {
                       &client_limit);
   }
   bool use_cache = parsed_command_line.HasSwitch("use-cache");
+  if (parsed_command_line.HasSwitch("v")) {
+    logging::SetMinLogLevel(-10);
+  }
 
   // Do work here.
   base::MessageLoopForIO loop;
 
-  net::HttpStreamFactory::EnableNpnHttp2Draft04();
-
-  scoped_ptr<net::HostResolver> host_resolver(
-      net::HostResolver::CreateDefaultResolver(NULL));
-  scoped_ptr<net::CertVerifier> cert_verifier(
-      net::CertVerifier::CreateDefault());
-  scoped_ptr<net::TransportSecurityState> transport_security_state(
-      new net::TransportSecurityState);
-  scoped_ptr<net::ProxyService> proxy_service(
-      net::ProxyService::CreateDirect());
-  scoped_refptr<net::SSLConfigService> ssl_config_service(
-      new net::SSLConfigServiceDefaults);
-  net::HttpTransactionFactory* factory = NULL;
-  scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory(
-      net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
-  net::HttpServerPropertiesImpl http_server_properties;
-
-  net::HttpNetworkSession::Params session_params;
-  session_params.host_resolver = host_resolver.get();
-  session_params.cert_verifier = cert_verifier.get();
-  session_params.transport_security_state = transport_security_state.get();
-  session_params.proxy_service = proxy_service.get();
-  session_params.http_auth_handler_factory = http_auth_handler_factory.get();
-  session_params.http_server_properties = http_server_properties.GetWeakPtr();
-  session_params.ssl_config_service = ssl_config_service.get();
-
-  scoped_refptr<net::HttpNetworkSession> network_session(
-      new net::HttpNetworkSession(session_params));
-  if (use_cache) {
-    factory = new net::HttpCache(network_session.get(),
-                                 net::HttpCache::DefaultBackend::InMemory(0));
-  } else {
-    factory = new net::HttpNetworkLayer(network_session.get());
-  }
+  scoped_refptr<SingleThreadRequestContextGetter> context_getter(
+      new SingleThreadRequestContextGetter(use_cache,
+                                           loop.message_loop_proxy()));
 
   {
     base::StatsCounterTimer driver_time("FetchClient.total_time");
     base::StatsScope<base::StatsCounterTimer> scope(driver_time);
 
     Client** clients = new Client*[client_limit];
-    for (int i = 0; i < client_limit; i++)
-      clients[i] = new Client(factory, url);
+    for (int i = 0; i < client_limit; i++) {
+      clients[i] = new Client(url, context_getter);
+      clients[i]->Start();
+    }
 
     base::MessageLoop::current()->Run();
   }

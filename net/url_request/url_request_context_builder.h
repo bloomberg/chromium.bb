@@ -113,10 +113,12 @@ class NET_EXPORT URLRequestContextBuilder {
 
   // By default HttpCache is enabled with a default constructed HttpCacheParams.
   void EnableHttpCache(const HttpCacheParams& params) {
+    http_cache_enabled_ = true;
     http_cache_params_ = params;
   }
 
   void DisableHttpCache() {
+    http_cache_enabled_ = false;
     http_cache_params_ = HttpCacheParams();
   }
 
