@@ -259,7 +259,7 @@ void LocallyManagedUserCreationScreenHandler::HandleManagerSelected(
     const std::string& manager_id) {
   if (!delegate_)
     return;
-  WallpaperManager::Get()->SetUserWallpaperNow(manager_id);
+  WallpaperManager::Get()->SetUserWallpaper(manager_id);
 }
 
 void LocallyManagedUserCreationScreenHandler::HandleImportUserSelected(
