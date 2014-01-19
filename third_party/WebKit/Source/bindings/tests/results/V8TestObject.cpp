@@ -35,7 +35,6 @@
 
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "V8Attr.h"
 #include "V8DOMStringList.h"
 #include "V8Document.h"
 #include "V8MessagePort.h"
@@ -5062,10 +5061,6 @@ static void variadicNodeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 static void variadicNodeMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    if (V8DOMWrapper::isWrapperOfType(info[0], &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
-    if (V8DOMWrapper::isWrapperOfType(info[1], &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
     TestObjV8Internal::variadicNodeMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }

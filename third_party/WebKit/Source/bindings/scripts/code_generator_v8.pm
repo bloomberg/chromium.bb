@@ -1427,7 +1427,6 @@ sub GenerateNormalAttributeGetterCallback
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMGetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
-    $code .= GenerateAttrUsedAsNodeReceiverCheck($interface);
     if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Getter")) {
         $code .= GenerateActivityLogging("Getter", $interface, "${attrName}");
     }
@@ -1890,8 +1889,6 @@ sub GenerateNormalAttributeSetterCallback
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMSetter\");\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
-    $code .= GenerateAttrUsedAsNodeReceiverCheck($interface);
-    $code .= GenerateAttrUsedAsNodeParameterCheckForSetter($attribute->type);
     if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Setter")) {
         $code .= GenerateActivityLogging("Setter", $interface, "${attrName}");
     }
@@ -2261,62 +2258,6 @@ sub GenerateFunctionParametersCheck
     return ($numMandatoryParams, join(" || ", @orExpression));
 }
 
-sub GenerateAttrUsedAsNodeReceiverCheck
-{
-    my $interface = shift;
-
-    if ($interface->name eq "Node") {
-        AddToImplIncludes("core/frame/UseCounter.h");
-        AddToImplIncludes("V8Attr.h");
-        return <<END;
-    if (V8DOMWrapper::isWrapperOfType(info.Holder(), &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeReceiver);
-END
-    }
-
-    return "";
-}
-
-sub GenerateAttrUsedAsNodeParameterCheck
-{
-    my $function = shift;
-
-    my $code = "";
-    my $paramIndex = 0;
-
-    foreach my $parameter (@{$function->parameters}) {
-        if ($parameter->type eq "Node") {
-            $code .= "    if (V8DOMWrapper::isWrapperOfType(info[$paramIndex], &V8Attr::wrapperTypeInfo))\n";
-            $code .= "        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);\n";
-        }
-
-        $paramIndex += 1;
-    }
-
-    if ($code) {
-        AddToImplIncludes("core/frame/UseCounter.h");
-        AddToImplIncludes("V8Attr.h");
-    }
-
-    return $code;
-}
-
-sub GenerateAttrUsedAsNodeParameterCheckForSetter
-{
-    my $type = shift;
-
-    if ($type eq "Node") {
-        AddToImplIncludes("core/frame/UseCounter.h");
-        AddToImplIncludes("V8Attr.h");
-        return <<END;
-    if (V8DOMWrapper::isWrapperOfType(jsValue, &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
-END
-    }
-
-    return "";
-}
-
 sub GenerateOverloadedFunction
 {
     my $function = shift;
@@ -2344,10 +2285,8 @@ static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8
 END
     $code .= GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
-    $code .= GenerateAttrUsedAsNodeReceiverCheck($interface);
 
     foreach my $overload (@{$function->{overloads}}) {
-        $code .= GenerateAttrUsedAsNodeParameterCheck($overload);
         my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($overload);
         $leastNumMandatoryParams = $numMandatoryParams if ($numMandatoryParams < $leastNumMandatoryParams);
         $code .= "    if ($parametersCheck) {\n";
@@ -2401,8 +2340,6 @@ END
     $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"Blink\", \"DOMMethod\");\n";
     $code .= GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     $code .= GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
-    $code .= GenerateAttrUsedAsNodeReceiverCheck($interface);
-    $code .= GenerateAttrUsedAsNodeParameterCheck($function);
     if (HasActivityLogging($forMainWorldSuffix, $function->extendedAttributes, "Access")) {
         $code .= GenerateActivityLogging("Method", $interface, "${name}");
     }
@@ -3800,7 +3737,6 @@ sub GenerateImplementationIndexedPropertySetter
 
     my $code = "static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    $code .= GenerateAttrUsedAsNodeParameterCheckForSetter($type);
 
     my $extraArguments = "";
     if ($raisesExceptions || IsIntegerType($type)) {
@@ -4111,7 +4047,6 @@ sub GenerateImplementationNamedPropertySetter
 
     my $code = "static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    $code .= GenerateAttrUsedAsNodeParameterCheckForSetter($type);
     if (!$namedSetterFunction->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
         $code .= "        return;\n";

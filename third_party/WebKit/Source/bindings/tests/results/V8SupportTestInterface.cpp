@@ -34,7 +34,6 @@
 #include "V8SupportTestInterface.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Attr.h"
 #include "V8Node.h"
 #include "V8TestObject.h"
 #include "bindings/tests/idls/testing/SupportTestPartialInterface.h"
@@ -43,7 +42,6 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -225,8 +223,6 @@ static void supplementalNodeAttributeSetter(v8::Local<v8::Value> jsValue, const 
 static void supplementalNodeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    if (V8DOMWrapper::isWrapperOfType(jsValue, &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
     SupportTestInterfaceV8Internal::supplementalNodeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -262,8 +258,6 @@ static void Node13AttributeSetter(v8::Local<v8::Value> jsValue, const v8::Proper
 static void Node13AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    if (V8DOMWrapper::isWrapperOfType(jsValue, &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
     SupportTestInterfaceV8Internal::Node13AttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -299,8 +293,6 @@ static void Node14AttributeSetter(v8::Local<v8::Value> jsValue, const v8::Proper
 static void Node14AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    if (V8DOMWrapper::isWrapperOfType(jsValue, &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
     SupportTestInterfaceV8Internal::Node14AttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }

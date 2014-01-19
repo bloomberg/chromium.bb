@@ -34,14 +34,12 @@
 #include "V8TestEventTarget.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8Attr.h"
 #include "V8Node.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -131,8 +129,6 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (V8DOMWrapper::isWrapperOfType(jsValue, &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
     TestEventTarget* collection = V8TestEventTarget::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, propertyValue, V8Node::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     bool result = collection->anonymousIndexedSetter(index, propertyValue);

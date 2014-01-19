@@ -285,8 +285,8 @@ public:
         ElementSetPrefix, // Element.prefix is readonly in DOM4.
         CSSStyleDeclarationGetPropertyCSSValue,
         SVGElementGetPresentationAttribute,
-        AttrUsedAsNodeParameter,
-        AttrUsedAsNodeReceiver,
+        REMOVEDAttrUsedAsNodeParameter,
+        REMOVEDAttrUsedAsNodeReceiver,
         PrefixedMediaCancelKeyRequest,
         DOMImplementationHasFeature,
         DOMImplementationHasFeatureReturnFalse,
