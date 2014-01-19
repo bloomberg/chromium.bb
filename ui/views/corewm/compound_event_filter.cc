@@ -160,7 +160,7 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
       aura::client::GetCursorClient(root_window);
   if (cursor_client) {
     gfx::NativeCursor cursor = target->GetCursor(event->location());
-    if (event->flags() & ui::EF_IS_NON_CLIENT) {
+    if ((event->flags() & ui::EF_IS_NON_CLIENT) && target->delegate()) {
       int window_component =
           target->delegate()->GetNonClientComponent(event->location());
       cursor = CursorForWindowComponent(window_component);
