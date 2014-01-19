@@ -75,6 +75,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual bool ParentIsMainFrame() const OVERRIDE;
   virtual int64 GetParentFrameID() const OVERRIDE;
   virtual ResourceType::Type GetResourceType() const OVERRIDE;
+  virtual int GetProcessType() const OVERRIDE;
   virtual blink::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
   virtual PageTransition GetPageTransition() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;

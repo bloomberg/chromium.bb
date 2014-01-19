@@ -177,7 +177,7 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ExtensionRendererState::GetInstance()->GetTabAndWindowId(
-      info->GetChildID(), info->GetRouteID(), tab_id, window_id);
+      info, tab_id, window_id);
   *frame_id = info->GetFrameID();
   *is_main_frame = info->IsMainFrame();
   *parent_frame_id = info->GetParentFrameID();

@@ -1203,7 +1203,8 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
     delegate_->FetchURL(resource_id, notify_id, complete_url,
                         first_party_for_cookies, method, buf, len, referrer,
                         notify_redirects, is_plugin_src_load, 0,
-                        render_frame_->GetRoutingID());
+                        render_frame_->GetRoutingID(),
+                        render_view_->GetRoutingID());
   } else {
     WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
         resource_id, complete_url, notify_id);

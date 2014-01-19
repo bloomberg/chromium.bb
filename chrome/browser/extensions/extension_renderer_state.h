@@ -15,6 +15,10 @@
 
 class WebViewGuest;
 
+namespace content {
+class ResourceRequestInfo;
+}
+
 // This class keeps track of renderer state for use on the IO thread. All
 // methods should be called on the IO thread except for Init and Shutdown.
 class ExtensionRendererState {
@@ -39,10 +43,10 @@ class ExtensionRendererState {
   bool GetWebViewInfo(int guest_process_id, int guest_routing_id,
                       WebViewInfo* webview_info);
 
-  // Looks up the tab and window ID for a given render view. Returns true
-  // if we have the IDs in our map. Called on the IO thread.
+  // Looks up the tab and window ID for a given request. Returns true if we have
+  // the IDs in our map. Called on the IO thread.
   bool GetTabAndWindowId(
-      int render_process_host_id, int routing_id, int* tab_id, int* window_id);
+      const content::ResourceRequestInfo* info, int* tab_id, int* window_id);
 
   // Returns true if the given renderer is used by webviews.
   bool IsWebViewRenderer(int render_process_id);

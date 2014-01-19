@@ -182,6 +182,10 @@ ResourceType::Type ResourceRequestInfoImpl::GetResourceType() const {
   return resource_type_;
 }
 
+int ResourceRequestInfoImpl::GetProcessType() const {
+  return process_type_;
+}
+
 blink::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
   return referrer_policy_;
 }

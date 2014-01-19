@@ -17,8 +17,10 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/process_type.h"
 
 using content::BrowserThread;
 using content::RenderProcessHost;
@@ -200,9 +202,16 @@ void ExtensionRendererState::ClearTabAndWindowId(
 }
 
 bool ExtensionRendererState::GetTabAndWindowId(
-    int render_process_host_id, int routing_id, int* tab_id, int* window_id) {
+    const  content::ResourceRequestInfo* info, int* tab_id, int* window_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  RenderId render_id(render_process_host_id, routing_id);
+  int render_process_id;
+  if (info->GetProcessType() == content::PROCESS_TYPE_PLUGIN) {
+    render_process_id = info->GetOriginPID();
+  } else {
+    render_process_id = info->GetChildID();
+  }
+  int render_view_id = info->GetRouteID();
+  RenderId render_id(render_process_id, render_view_id);
   TabAndWindowIdMap::iterator iter = map_.find(render_id);
   if (iter != map_.end()) {
     *tab_id = iter->second.first;

@@ -442,7 +442,8 @@ void WebPluginDelegateStub::OnFetchURL(
                       params.notify_redirect,
                       params.is_plugin_src_load,
                       channel_->renderer_id(),
-                      params.render_frame_id);
+                      params.render_frame_id,
+                      webplugin_->host_render_view_routing_id());
 }
 
 }  // namespace content

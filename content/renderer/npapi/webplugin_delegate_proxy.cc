@@ -1128,7 +1128,8 @@ void WebPluginDelegateProxy::FetchURL(unsigned long resource_id,
                                       bool notify_redirects,
                                       bool is_plugin_src_load,
                                       int origin_pid,
-                                      int render_frame_id) {
+                                      int render_frame_id,
+                                      int render_view_id) {
   PluginMsg_FetchURL_Params params;
   params.resource_id = resource_id;
   params.notify_id = notify_id;

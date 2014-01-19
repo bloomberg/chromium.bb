@@ -138,7 +138,8 @@ class WebPluginDelegateProxy
                         bool notify_redirects,
                         bool is_plugin_src_load,
                         int origin_pid,
-                        int render_frame_id) OVERRIDE;
+                        int render_frame_id,
+                        int render_view_id) OVERRIDE;
 
   gfx::PluginWindowHandle GetPluginWindowHandle();
 

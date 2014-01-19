@@ -12,6 +12,7 @@
 #include "content/child/npapi/plugin_stream_url.h"
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
+#include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -81,6 +82,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
                                    bool is_plugin_src_load,
                                    int origin_pid,
                                    int render_frame_id,
+                                   int render_view_id,
                                    unsigned long resource_id,
                                    bool copy_stream_data)
     : plugin_stream_(plugin_stream),
@@ -102,7 +104,24 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   request_info.load_flags = net::LOAD_NORMAL;
   request_info.requestor_pid = origin_pid;
   request_info.request_type = ResourceType::OBJECT;
-  request_info.routing_id = render_frame_id;
+  request_info.routing_id = render_view_id;
+
+  RequestExtraData extra_data(blink::WebReferrerPolicyDefault,
+                              base::string16(),
+                              false,
+                              render_frame_id,
+                              false,
+                              -1,
+                              GURL(),
+                              false,
+                              -1,
+                              true,
+                              PAGE_TRANSITION_LINK,
+                              false,
+                              -1,
+                              -1);
+
+  request_info.extra_data = &extra_data;
 
   std::vector<char> body;
   if (method == "POST") {

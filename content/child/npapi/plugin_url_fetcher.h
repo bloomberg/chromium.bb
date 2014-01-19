@@ -33,6 +33,7 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
                    bool is_plugin_src_load,
                    int origin_pid,
                    int render_frame_id,
+                   int render_view_id,
                    unsigned long resource_id,
                    bool copy_stream_data);
   virtual ~PluginURLFetcher();
