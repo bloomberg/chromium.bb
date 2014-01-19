@@ -277,7 +277,7 @@ void ChromeLauncherControllerUserSwitchObserverChromeOS::ActiveUserChanged(
   // TODO(skuhne): At the moment the login screen does the wallpaper management
   // and wallpapers are not synchronized across multiple desktops.
   if (chromeos::WallpaperManager::Get())
-    chromeos::WallpaperManager::Get()->SetUserWallpaper(user_email);
+    chromeos::WallpaperManager::Get()->SetUserWallpaperDelayed(user_email);
 }
 
 void ChromeLauncherControllerUserSwitchObserverChromeOS::UserAddedToSession(

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
@@ -296,12 +297,9 @@ SigninScreenHandler::SigninScreenHandler(
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
-
-  WallpaperManager::Get()->AddObserver(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  WallpaperManager::Get()->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
   SystemKeyEventListener* key_event_listener =
       SystemKeyEventListener::GetInstance();
@@ -1098,11 +1096,6 @@ void SigninScreenHandler::HandleLoadWallpaper(const std::string& email) {
     delegate_->LoadWallpaper(email);
 }
 
-void SigninScreenHandler::OnWallpaperAnimationFinished(
-    const std::string& email) {
-  CallJS("login.AccountPickerScreen.onWallpaperLoaded", email);
-}
-
 void SigninScreenHandler::HandleRebootSystem() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
@@ -1439,6 +1432,7 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id);
+  WallpaperManager::Get()->SetUserWallpaperDelayed(user_id);
 }
 
 void SigninScreenHandler::HandleCustomButtonClicked(
