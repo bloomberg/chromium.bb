@@ -490,7 +490,6 @@
                              '<@(_inputs)',
                   ],
                   'message': 'Generating FFmpeg export definitions',
-                  'msvs_cygwin_shell': 1,
                 },
               ],
             }],
