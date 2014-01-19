@@ -24,8 +24,7 @@
  */
 
 interface SVGScriptElement : SVGElement {
-             [TreatNullAs=NullString] attribute DOMString type;
+    attribute DOMString type;
 };
 
 SVGScriptElement implements SVGURIReference;
-
