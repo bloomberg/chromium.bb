@@ -1931,6 +1931,10 @@
 	The next wl_surface.commit on the parent surface will reset
 	the sub-surface's position to the scheduled coordinates.
 
+	If more than one set_position request is invoked by the client before
+	the commit of the parent surface, the position of a new request always
+	replaces the scheduled position from any previous request.
+
 	The initial position is 0, 0.
       </description>
 
