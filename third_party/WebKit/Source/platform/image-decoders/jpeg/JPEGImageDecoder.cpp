@@ -266,7 +266,7 @@ public:
 
         decoder_source_mgr* src = 0;
         if (!m_info.src) {
-            src = (decoder_source_mgr*)fastCalloc(sizeof(decoder_source_mgr), 1);
+            src = (decoder_source_mgr*)fastZeroedMalloc(sizeof(decoder_source_mgr));
             if (!src) {
                 m_state = JPEG_ERROR;
                 return;

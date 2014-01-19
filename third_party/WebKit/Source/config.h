@@ -103,7 +103,7 @@
  * some object are allocated by WebKit and deallocated by the embedder. */
 #else /* !OS(MACOSX) */
 /* On non-OS(MACOSX), the "system malloc" is actually TCMalloc anyway, so there's
- * no need to use WebKit's copy of TCMalloc. */
+ * no need to use Blink's fast PartitionAlloc allocator. */
 #define WTF_USE_SYSTEM_MALLOC 1
 #endif /* OS(MACOSX) */
 

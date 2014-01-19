@@ -32,6 +32,7 @@
 #include "WTF.h"
 
 #include "wtf/DefaultAllocator.h"
+#include "wtf/FastMalloc.h"
 #include "wtf/QuantizedAllocation.h"
 
 #ifndef NDEBUG
@@ -78,16 +79,17 @@ void Partitions::initialize()
     static int lock = 0;
     // Guard against two threads hitting here in parallel.
     spinLockLock(&lock);
-    if (s_initialized)
-        return;
-    s_initialized = true;
+    if (!s_initialized) {
+        s_initialized = true;
+        QuantizedAllocation::init();
+        m_bufferAllocator.init();
+    }
     spinLockUnlock(&lock);
-    QuantizedAllocation::init();
-    m_bufferAllocator.init();
 }
 
 void Partitions::shutdown()
 {
+    fastMallocShutdown();
     m_bufferAllocator.shutdown();
 }
 
