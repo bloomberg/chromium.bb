@@ -28,7 +28,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -87,10 +86,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   // The find bar textfield has a background image instead of a border.
-  const gfx::Insets insets = find_text_->GetInsets();
-  find_text_->set_border(
-      views::Border::CreateEmptyBorder(insets.top(), 0, insets.bottom(), 2));
-
+  find_text_->set_border(NULL);
   AddChildView(find_text_);
 
   match_count_text_ = new views::Label();
