@@ -527,7 +527,8 @@ class BuildSpecsManager(object):
 
   def PublishManifest(self, manifest, version):
     """Publishes the manifest as the manifest for the version to others."""
-    logging.info('Publishing build spec for: %s', version)
+    logging.info('Publishing build spec for: %s\n%s', version,
+                 osutils.ReadFile(manifest))
 
     # Note: This commit message is used by master.cfg for figuring out when to
     #       trigger slave builders.

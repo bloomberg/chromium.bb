@@ -268,7 +268,10 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         manifest_node.removeChild(commit_element)
 
     with os.fdopen(temp_fd, 'w') as manifest_file:
-      manifest_dom.writexml(manifest_file)
+      # Filter out empty lines.
+      filtered_manifest_noempty = filter(
+          str.strip, manifest_dom.toxml('utf-8').splitlines())
+      manifest_file.write(os.linesep.join(filtered_manifest_noempty))
 
     return new_path
 
@@ -372,6 +375,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         git.CreatePushBranch(manifest_version.PUSH_BRANCH, self.manifest_dir,
                              sync=False)
         version = os.path.splitext(os.path.basename(manifest))[0]
+        logging.info('Publishing filtered build spec')
         self.PublishManifest(new_manifest, version)
         self.SetInFlight(version)
         self.current_version = version
