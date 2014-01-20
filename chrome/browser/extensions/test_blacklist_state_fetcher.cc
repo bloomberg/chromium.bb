@@ -4,7 +4,9 @@
 
 #include "chrome/browser/extensions/test_blacklist_state_fetcher.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "net/url_request/url_request_test_util.h"
 
 namespace extensions {
 namespace {
@@ -32,6 +34,10 @@ SafeBrowsingProtocolConfig CreateSafeBrowsingProtocolConfig() {
 TestBlacklistStateFetcher::TestBlacklistStateFetcher(
     BlacklistStateFetcher* fetcher) : fetcher_(fetcher) {
   fetcher_->SetSafeBrowsingConfig(CreateSafeBrowsingProtocolConfig());
+  scoped_refptr<net::TestURLRequestContextGetter> context =
+        new net::TestURLRequestContextGetter(
+            base::MessageLoopProxy::current());
+  fetcher_->SetURLRequestContextForTest(context);
 }
 
 TestBlacklistStateFetcher::~TestBlacklistStateFetcher() {

@@ -12,18 +12,67 @@
 #include "chrome/common/safe_browsing/crx_info.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
 
+namespace {
+
+class BlacklistRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  explicit BlacklistRequestContextGetter(
+      net::URLRequestContextGetter* parent_context_getter) :
+          network_task_runner_(
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    url_request_context_.reset(new net::URLRequestContext());
+    url_request_context_->CopyFrom(
+        parent_context_getter->GetURLRequestContext());
+  }
+
+  static void Create(
+      scoped_refptr<net::URLRequestContextGetter> parent_context_getter,
+      base::Callback<void(scoped_refptr<net::URLRequestContextGetter>)>
+          callback) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+    scoped_refptr<net::URLRequestContextGetter> context_getter =
+        new BlacklistRequestContextGetter(parent_context_getter);
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(callback, context_getter));
+  }
+
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    return url_request_context_.get();
+  }
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const OVERRIDE {
+    return network_task_runner_;
+  }
+
+ protected:
+  virtual ~BlacklistRequestContextGetter() {
+    url_request_context_->AssertNoURLRequests();
+  }
+
+ private:
+  scoped_ptr<net::URLRequestContext> url_request_context_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+};
+
+}  // namespace
+
 namespace extensions {
 
 BlacklistStateFetcher::BlacklistStateFetcher()
-    : safe_browsing_config_initialized_(false),
-      url_fetcher_id_(0) {
-}
+    : url_fetcher_id_(0),
+      weak_ptr_factory_(this) {}
 
 BlacklistStateFetcher::~BlacklistStateFetcher() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -34,13 +83,11 @@ BlacklistStateFetcher::~BlacklistStateFetcher() {
 void BlacklistStateFetcher::Request(const std::string& id,
                                     const RequestCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!safe_browsing_config_initialized_) {
+  if (!safe_browsing_config_) {
     if (g_browser_process && g_browser_process->safe_browsing_service()) {
       SetSafeBrowsingConfig(
           g_browser_process->safe_browsing_service()->GetProtocolConfig());
     } else {
-      // If safe browsing is not initialized, then it is probably turned off
-      // completely.
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE, base::Bind(callback, BLACKLISTED_UNKNOWN));
       return;
@@ -52,8 +99,41 @@ void BlacklistStateFetcher::Request(const std::string& id,
   if (request_already_sent)
     return;
 
-  ClientCRXListInfoRequest request;
+  if (url_request_context_getter_ ||
+      !g_browser_process || !g_browser_process->safe_browsing_service()) {
+    SendRequest(id);
+  } else {
+    scoped_refptr<net::URLRequestContextGetter> parent_request_context;
+    if (g_browser_process && g_browser_process->safe_browsing_service()) {
+      parent_request_context = g_browser_process->safe_browsing_service()
+                                                ->url_request_context();
+    } else {
+      parent_request_context = parent_request_context_for_test_;
+    }
 
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BlacklistRequestContextGetter::Create,
+                   parent_request_context,
+                   base::Bind(&BlacklistStateFetcher::SaveRequestContext,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              id)));
+  }
+}
+
+void BlacklistStateFetcher::SaveRequestContext(
+    const std::string& id,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!url_request_context_getter_)
+    url_request_context_getter_ = request_context_getter;
+  SendRequest(id);
+}
+
+void BlacklistStateFetcher::SendRequest(const std::string& id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ClientCRXListInfoRequest request;
   request.set_id(id);
   std::string request_str;
   request.SerializeToString(&request_str);
@@ -65,29 +145,28 @@ void BlacklistStateFetcher::Request(const std::string& id,
                                                      this);
   requests_[fetcher] = id;
   fetcher->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
-  if (g_browser_process && g_browser_process->safe_browsing_service()) {
-    // Unless we are in unit test, safebrowsing service should be initialized.
-    scoped_refptr<net::URLRequestContextGetter> request_context(
-        g_browser_process->safe_browsing_service()->url_request_context());
-    fetcher->SetRequestContext(request_context.get());
-  }
+  fetcher->SetRequestContext(url_request_context_getter_);
   fetcher->SetUploadData("application/octet-stream", request_str);
   fetcher->Start();
 }
 
 void BlacklistStateFetcher::SetSafeBrowsingConfig(
     const SafeBrowsingProtocolConfig& config) {
-  safe_browsing_config_ = config;
-  safe_browsing_config_initialized_ = true;
+  safe_browsing_config_.reset(new SafeBrowsingProtocolConfig(config));
+}
+
+void BlacklistStateFetcher::SetURLRequestContextForTest(
+      net::URLRequestContextGetter* parent_request_context) {
+  parent_request_context_for_test_ = parent_request_context;
 }
 
 GURL BlacklistStateFetcher::RequestUrl() const {
   std::string url = base::StringPrintf(
       "%s/%s?client=%s&appver=%s&pver=2.2",
-      safe_browsing_config_.url_prefix.c_str(),
+      safe_browsing_config_->url_prefix.c_str(),
       "clientreport/crx-list-info",
-      safe_browsing_config_.client_name.c_str(),
-      safe_browsing_config_.version.c_str());
+      safe_browsing_config_->client_name.c_str(),
+      safe_browsing_config_->version.c_str());
   std::string api_key = google_apis::GetAPIKey();
   if (!api_key.empty()) {
     base::StringAppendF(&url, "&key=%s",
