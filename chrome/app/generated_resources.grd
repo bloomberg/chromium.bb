@@ -6705,6 +6705,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Reset the app launcher install state on every restart. While this flag is set, Chrome will forget the launcher has been installed each time it starts. This is used for testing the app launcher install flow.
       </message>
       <if expr="pp_ifdef('enable_app_list')">
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_NAME" desc="Name of the flag to enable the app launcher.">
+          Enable the app launcher.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to enable app launcher.">
+          Enable the app launcher. Upon enabling, creates operating system shortcuts to the app launcher.
+        </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_NAME" desc="Name of the flag to enable the start page of app launcher.">
           Enable the app launcher start page.
         </message>

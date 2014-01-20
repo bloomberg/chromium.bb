@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/app_list/linux/app_list_service_linux.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_factory.h"
 #include "chrome/browser/ui/app_list/app_list_shower.h"
@@ -12,7 +14,12 @@
 #include "chrome/browser/ui/app_list/keep_alive_service_impl.h"
 #include "chrome/browser/ui/views/app_list/linux/app_list_controller_delegate_linux.h"
 #include "chrome/browser/ui/views/app_list/linux/app_list_linux.h"
+#include "content/public/browser/browser_thread.h"
+#include "grit/chromium_strings.h"
+#include "grit/google_chrome_strings.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/views/app_list_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
 
 namespace {
@@ -48,6 +55,17 @@ class AppListFactoryLinux : public AppListFactory {
 
   DISALLOW_COPY_AND_ASSIGN(AppListFactoryLinux);
 };
+
+void CreateShortcuts() {
+  std::string app_list_title =
+      l10n_util::GetStringUTF8(IDS_APP_LIST_SHORTCUT_NAME);
+
+  if (!ShellIntegrationLinux::CreateAppListDesktopShortcut(
+           app_list::kAppListWMClass,
+           app_list_title)) {
+    LOG(WARNING) << "Unable to create App Launcher shortcut.";
+  }
+}
 
 }  // namespace
 
@@ -111,7 +129,8 @@ AppListControllerDelegate* AppListServiceLinux::GetControllerDelegate() {
 }
 
 void AppListServiceLinux::CreateShortcut() {
-  NOTIMPLEMENTED();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE, base::Bind(&CreateShortcuts));
 }
 
 AppListServiceLinux::AppListServiceLinux()

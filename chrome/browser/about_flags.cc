@@ -1723,7 +1723,7 @@ const Experiment kExperiments[] = {
     "reset-app-list-install-state",
     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME,
     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION,
-    kOsMac | kOsWin,
+    kOsMac | kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kResetAppListInstallState)
   },
 #if defined(ENABLE_APP_LIST)
@@ -1734,6 +1734,18 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kShowAppListStartPage)
   },
+#if defined(OS_LINUX)
+  {
+    // This is compiled out on non-Linux platforms because otherwise it would be
+    // visible on Win/Mac/CrOS but not on Linux GTK, which would be confusing.
+    // TODO(mgiuca): Remove the #if when Aura is the default on Linux.
+    "enable-app-list",
+    IDS_FLAGS_ENABLE_APP_LIST_NAME,
+    IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION,
+    kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kEnableAppList)
+  },
+#endif
   {
     "enable-app-list-folder",
     IDS_FLAGS_ENABLE_APP_LIST_FOLDER,

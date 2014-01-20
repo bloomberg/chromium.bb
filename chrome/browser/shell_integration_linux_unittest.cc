@@ -576,8 +576,34 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             base::ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name,
             base::FilePath(),
-            test_cases[i].nodisplay));
+            test_cases[i].nodisplay,
+            false));
   }
+}
+
+TEST(ShellIntegrationTest, GetDesktopFileContentsAppList) {
+  const base::FilePath kChromeExePath("/opt/google/chrome/google-chrome");
+  EXPECT_EQ(
+      "#!/usr/bin/env xdg-open\n"
+      "[Desktop Entry]\n"
+      "Version=1.0\n"
+      "Terminal=false\n"
+      "Type=Application\n"
+      "Name=Chrome App Launcher\n"
+      "Exec=/opt/google/chrome/google-chrome --show-app-list\n"
+      "Icon=chrome_app_list\n"
+      "StartupWMClass=chrome-app-list\n",
+      ShellIntegrationLinux::GetDesktopFileContents(
+          kChromeExePath,
+          "chrome-app-list",
+          GURL(),
+          std::string(),
+          base::FilePath(),
+          base::ASCIIToUTF16("Chrome App Launcher"),
+          "chrome_app_list",
+          base::FilePath(),
+          false,
+          true));
 }
 
 TEST(ShellIntegrationTest, GetDirectoryFileContents) {

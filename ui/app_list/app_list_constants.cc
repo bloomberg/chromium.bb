@@ -57,4 +57,12 @@ const size_t kNumFolderTopItems = 4;
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =
     ui::ResourceBundle::SmallBoldFont;
 
+#if defined(OS_LINUX)
+#if defined(GOOGLE_CHROME_BUILD)
+const char kAppListWMClass[] = "chrome_app_list";
+#else  // CHROMIUM_BUILD
+const char kAppListWMClass[] = "chromium_app_list";
+#endif
+#endif
+
 }  // namespace app_list

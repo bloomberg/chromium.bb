@@ -45,6 +45,11 @@ APP_LIST_EXPORT extern const size_t kNumFolderTopItems;
 
 APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 
+#if defined(OS_LINUX)
+// The WM_CLASS name for the app launcher window on Linux.
+APP_LIST_EXPORT extern const char kAppListWMClass[];
+#endif
+
 }  // namespace app_list
 
 #endif  // UI_APP_LIST_APP_LIST_CONSTANTS_H_

@@ -85,6 +85,8 @@ std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
 
 // Returns contents for .desktop file based on |url| and |title|. If
 // |no_display| is true, the shortcut will not be visible to the user in menus.
+// If |show_app_list| is true, creates a shortcut to the app list, and ignores
+// |url|, |extension_id| and |profile_path|.
 std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
                                    const std::string& app_name,
                                    const GURL& url,
@@ -93,7 +95,8 @@ std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
                                    const base::string16& title,
                                    const std::string& icon_name,
                                    const base::FilePath& profile_path,
-                                   bool no_display);
+                                   bool no_display,
+                                   bool show_app_list);
 
 // Returns contents for .directory file named |title| with icon |icon_name|. If
 // |icon_name| is empty, will use the Chrome icon.
@@ -107,6 +110,12 @@ std::string GetDirectoryFileContents(const base::string16& title,
 bool CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations);
+
+// Create shortcuts in the application menu for the app launcher. Duplicate
+// shortcuts are avoided, so if a requested shortcut already exists it is
+// deleted first. Also creates the icon required by the shortcut.
+bool CreateAppListDesktopShortcut(const std::string& wm_class,
+                                  const std::string& title);
 
 // Delete any desktop shortcuts on desktop or in the application menu that have
 // been added for the extension with |extension_id| in |profile_path|.
