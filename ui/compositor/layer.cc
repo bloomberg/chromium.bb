@@ -660,7 +660,7 @@ class LayerDebugInfo : public base::debug::ConvertableToTraceFormat {
  public:
   explicit LayerDebugInfo(std::string name) : name_(name) { }
   virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
-    out->append("{'layer_name', '" + name_ + "'}");
+    out->append("{\"layer_name\": \"" + name_ + "\"}");
   }
 
  private:
