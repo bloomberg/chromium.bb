@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@75f0fa86b053cca550b7f8f26ab40c358646c951'
+         '@513b30358b46ff2a7d52e83aea23360411b24e69'
 }
 
 deps = {
@@ -152,7 +152,7 @@ deps = {
     'src/tools/swarming_client':
         Var('git_url') + '/external/swarming.client.git@e4a780b1541594fb93be947d077712708f0a7f95',
     'src/v8':
-        Var('git_url') + '/external/v8.git@5c88bc39690cc94affe78cf5777eb8180c4af8a4',
+        Var('git_url') + '/external/v8.git@43c51e51fafad9405752a3d7e953367531469575',
 }
 
 deps_os = {
