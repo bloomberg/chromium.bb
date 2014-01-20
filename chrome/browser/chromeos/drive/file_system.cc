@@ -559,44 +559,12 @@ void FileSystem::GetResourceEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  ResourceEntry* entry_ptr = entry.get();
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&GetLocallyStoredResourceEntry,
-                 resource_metadata_,
-                 cache_,
-                 file_path,
-                 entry_ptr),
-      base::Bind(&FileSystem::GetResourceEntryAfterGetEntry,
+  change_list_loader_->LoadDirectoryIfNeeded(
+      file_path.DirName(),
+      base::Bind(&FileSystem::GetResourceEntryAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
-                 callback,
-                 base::Passed(&entry)));
-}
-
-void FileSystem::GetResourceEntryAfterGetEntry(
-    const base::FilePath& file_path,
-    const GetResourceEntryCallback& callback,
-    scoped_ptr<ResourceEntry> entry,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error == FILE_ERROR_NOT_FOUND) {
-    // If the information about the path is not in the local ResourceMetadata,
-    // try fetching information of the directory and retry.
-    change_list_loader_->LoadDirectoryIfNeeded(
-        file_path.DirName(),
-        base::Bind(&FileSystem::GetResourceEntryAfterLoad,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   file_path,
-                   callback));
-    return;
-  }
-
-  callback.Run(error, entry.Pass());
+                 callback));
 }
 
 void FileSystem::GetResourceEntryAfterLoad(

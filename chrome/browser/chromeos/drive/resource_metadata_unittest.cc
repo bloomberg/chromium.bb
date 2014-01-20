@@ -24,8 +24,6 @@ namespace drive {
 namespace internal {
 namespace {
 
-const char kTestRootResourceId[] = "test_root";
-
 // The changestamp of the resource metadata used in
 // ResourceMetadataTest.
 const int64 kTestChangestamp = 100;
@@ -95,10 +93,9 @@ ResourceEntry CreateFileEntry(const std::string& title,
 // drive/root/dir1/dir3/file9
 // drive/root/dir1/dir3/file10
 void SetUpEntries(ResourceMetadata* resource_metadata) {
-  // Create mydrive root directory.
   std::string local_id;
-  ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
-      util::CreateMyDriveRootEntry(kTestRootResourceId), &local_id));
+  ASSERT_EQ(FILE_ERROR_OK, resource_metadata->GetIdByPath(
+      util::GetDriveMyDriveRootPath(), &local_id));
   const std::string root_local_id = local_id;
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(
@@ -727,11 +724,11 @@ TEST_F(ResourceMetadataTest, Reset) {
   ASSERT_TRUE(entry.file_info().is_directory());
   EXPECT_EQ(util::kDriveGrandRootLocalId, entry.local_id());
 
-  // There are "other" and "trash" under "drive".
+  // There are "other", "trash" and "root" under "drive".
   ASSERT_EQ(FILE_ERROR_OK,
             resource_metadata_->ReadDirectoryByPath(
                 base::FilePath::FromUTF8Unsafe("drive"), &entries));
-  EXPECT_EQ(2U, entries.size());
+  EXPECT_EQ(3U, entries.size());
 
   // The "other" directory should be empty.
   ASSERT_EQ(FILE_ERROR_OK,

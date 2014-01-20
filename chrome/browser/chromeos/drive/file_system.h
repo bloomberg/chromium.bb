@@ -207,13 +207,8 @@ class FileSystem : public FileSystemInterface,
   // ChangeListLoader::CheckForUpdates() is complete.
   void OnUpdateChecked(FileError error);
 
-  // Part of GetResourceEntry()
-  // 1) Called when GetLocallyStoredResourceEntry() is complete.
-  // 2) Called when LoadDirectoryIfNeeded() is complete.
-  void GetResourceEntryAfterGetEntry(const base::FilePath& file_path,
-                                     const GetResourceEntryCallback& callback,
-                                     scoped_ptr<ResourceEntry> entry,
-                                     FileError error);
+  // Part of GetResourceEntry().
+  // Called when LoadDirectoryIfNeeded() is complete.
   void GetResourceEntryAfterLoad(const base::FilePath& file_path,
                                  const GetResourceEntryCallback& callback,
                                  FileError error);

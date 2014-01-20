@@ -284,25 +284,17 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
   DISALLOW_COPY_AND_ASSIGN(FastFetchFeedFetcher);
 };
 
-FileError AddMyDriveIfNeeded(
+FileError RefreshMyDriveIfNeeded(
     ResourceMetadata* resource_metadata,
-    const google_apis::AboutResource& about_resource,
-    base::FilePath* changed_directory_path) {
+    const google_apis::AboutResource& about_resource) {
   ResourceEntry entry;
   FileError error = resource_metadata->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath(), &entry);
-  if (error != FILE_ERROR_NOT_FOUND)
+  if (error != FILE_ERROR_OK || !entry.resource_id().empty())
     return error;
 
-  std::string local_id;
-  error = resource_metadata->AddEntry(
-      util::CreateMyDriveRootEntry(about_resource.root_folder_id()),
-      &local_id);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  *changed_directory_path = util::GetDriveGrandRootPath();
-  return FILE_ERROR_OK;
+  entry.set_resource_id(about_resource.root_folder_id());
+  return resource_metadata->RefreshEntry(entry);
 }
 
 }  // namespace
@@ -423,7 +415,12 @@ void ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == FILE_ERROR_NOT_FOUND &&
+  // Should load grand root first if My Drive's resource ID is not set.
+  const bool mydrive_resource_id_is_empty =
+      directory_path == util::GetDriveMyDriveRootPath() &&
+      error == FILE_ERROR_OK &&
+      entry->resource_id().empty();
+  if ((error == FILE_ERROR_NOT_FOUND || mydrive_resource_id_is_empty) &&
       should_try_loading_parent &&
       util::GetDriveGrandRootPath().IsParent(directory_path)) {
     // This entry may be found after loading the parent.
@@ -445,8 +442,10 @@ void ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry(
     return;
   }
 
-  // drive/other does not exist on the server.
-  if (entry->local_id() == util::kDriveOtherDirLocalId) {
+  // This entry does not exist on the server. Grand root is excluded as it's
+  // specially handled in LoadDirectoryFromServer().
+  if (entry->resource_id().empty() &&
+      entry->local_id() != util::kDriveGrandRootLocalId) {
     callback.Run(FILE_ERROR_OK);
     return;
   }
@@ -810,17 +809,14 @@ void ChangeListLoader::LoadDirectoryFromServer(
 
   if (directory_fetch_info.local_id() == util::kDriveGrandRootLocalId) {
     // Load for a grand root directory means slightly different from other
-    // directories. It should have two directories; <other> and mydrive root.
-    // <other> directory should always exist, but mydrive root should be
-    // created by root resource id retrieved from the server.
+    // directories. It means filling resource ID of mydrive root.
     base::FilePath* changed_directory_path = new base::FilePath;
     base::PostTaskAndReplyWithResult(
         blocking_task_runner_,
         FROM_HERE,
-        base::Bind(&AddMyDriveIfNeeded,
+        base::Bind(&RefreshMyDriveIfNeeded,
                    resource_metadata_,
-                   google_apis::AboutResource(*cached_about_resource_),
-                   changed_directory_path),
+                   google_apis::AboutResource(*cached_about_resource_)),
         base::Bind(&ChangeListLoader::LoadDirectoryFromServerAfterRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    directory_fetch_info,

@@ -207,19 +207,19 @@ class FileSystemTest : public testing::Test {
               resource_metadata->SetLargestChangestamp(changestamp));
 
     // drive/root
-    const std::string root_resource_id =
-        fake_drive_service_->GetRootResourceId();
+    ResourceEntry root;
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->GetResourceEntryByPath(
+        util::GetDriveMyDriveRootPath(), &root));
+    root.set_resource_id(fake_drive_service_->GetRootResourceId());
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->RefreshEntry(root));
+
     std::string local_id;
-    ASSERT_EQ(FILE_ERROR_OK,
-              resource_metadata->AddEntry(util::CreateMyDriveRootEntry(
-                  root_resource_id), &local_id));
-    const std::string root_local_id = local_id;
 
     // drive/root/File1
     ResourceEntry file1;
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
-    file1.set_parent_local_id(root_local_id);
+    file1.set_parent_local_id(root.local_id());
     file1.mutable_file_specific_info()->set_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
@@ -229,7 +229,7 @@ class FileSystemTest : public testing::Test {
     ResourceEntry dir1;
     dir1.set_title("Dir1");
     dir1.set_resource_id("resource_id:Dir1");
-    dir1.set_parent_local_id(root_local_id);
+    dir1.set_parent_local_id(root.local_id());
     dir1.mutable_file_info()->set_is_directory(true);
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(dir1, &local_id));
     const std::string dir1_local_id = local_id;
@@ -301,11 +301,6 @@ TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_EQ(2, counter);
 
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
-
-  // "Fast fetch" will fire an OnirectoryChanged event.
-  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive")),
-            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, GetGrandRootEntry) {
@@ -313,10 +308,6 @@ TEST_F(FileSystemTest, GetGrandRootEntry) {
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(util::kDriveGrandRootLocalId, entry->local_id());
-
-  // Getting the grand root entry should not cause the resource load to happen.
-  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
-  EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 }
 
 TEST_F(FileSystemTest, GetOtherDirEntry) {
@@ -324,11 +315,6 @@ TEST_F(FileSystemTest, GetOtherDirEntry) {
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
   EXPECT_EQ(util::kDriveOtherDirLocalId, entry->local_id());
-
-  // Getting the "other" directory entry should not cause the resource load to
-  // happen.
-  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
-  EXPECT_EQ(0, fake_drive_service_->resource_list_load_count());
 }
 
 TEST_F(FileSystemTest, GetMyDriveRoot) {
@@ -341,11 +327,6 @@ TEST_F(FileSystemTest, GetMyDriveRoot) {
 
   // After "fast fetch" is done, full resource list is fetched.
   EXPECT_EQ(1, fake_drive_service_->resource_list_load_count());
-
-  // "Fast fetch" will fire an OnirectoryChanged event.
-  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive")),
-            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, GetExistingFile) {
@@ -427,10 +408,6 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
   EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveMyDriveRootDirName)));
   EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveOtherDirName)));
   EXPECT_EQ(1U, found.count(base::FilePath(util::kDriveTrashDirName)));
-
-  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
-  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("drive")),
-            mock_directory_observer_->changed_directories()[0]);
 }
 
 TEST_F(FileSystemTest, ReadDirectory_NonRootDirectory) {
@@ -520,17 +497,6 @@ TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
   EXPECT_EQ(1, fake_drive_service_->directory_load_count());
 
   ASSERT_LE(1u, mock_directory_observer_->changed_directories().size());
-}
-
-TEST_F(FileSystemTest, GetResourceEntryExistingWhileRefreshing) {
-  // Enter the "refreshing" state.
-  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
-  file_system_->CheckForUpdates();
-
-  // If an entry is already found in local metadata, no directory fetch happens.
-  EXPECT_TRUE(GetResourceEntrySync(base::FilePath(
-      FILE_PATH_LITERAL("drive/root/Dir1/File2"))));
-  EXPECT_EQ(0, fake_drive_service_->directory_load_count());
 }
 
 TEST_F(FileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {

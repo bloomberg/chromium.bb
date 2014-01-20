@@ -227,7 +227,7 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
             metadata_->GetResourceEntryByPath(file_path, &entry));
 }
 
-TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_MyDrive) {
+TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_GrandRoot) {
   TestChangeListLoaderObserver observer(change_list_loader_.get());
 
   // Emulate the slowness of GetAllResourceList().
@@ -240,25 +240,35 @@ TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_MyDrive) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(1U, observer.changed_directories().count(
-      util::GetDriveGrandRootPath()));
+  EXPECT_EQ(0U, observer.changed_directories().size());
   observer.clear_changed_directories();
 
   // GetAllResourceList() was called.
   EXPECT_EQ(1, drive_service_->blocked_resource_list_load_count());
 
-  // My Drive is present in the local metadata, but its child is not.
+  // My Drive has resource ID.
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
                                               &entry));
+  EXPECT_EQ(drive_service_->GetRootResourceId(), entry.resource_id());
+}
 
-  base::FilePath file_path =
-      util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            metadata_->GetResourceEntryByPath(file_path, &entry));
+TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_MyDrive) {
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
+
+  // My Drive does not have resource ID yet.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
+                                              &entry));
+  EXPECT_TRUE(entry.resource_id().empty());
+
+  // Emulate the slowness of GetAllResourceList().
+  drive_service_->set_never_return_all_resource_list(true);
 
   // Load My Drive.
+  FileError error = FILE_ERROR_FAILED;
   change_list_loader_->LoadDirectoryIfNeeded(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -267,7 +277,18 @@ TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_MyDrive) {
   EXPECT_EQ(1U, observer.changed_directories().count(
       util::GetDriveMyDriveRootPath()));
 
-  // Now the file is present.
+  // GetAllResourceList() was called.
+  EXPECT_EQ(1, drive_service_->blocked_resource_list_load_count());
+
+  // My Drive has resource ID.
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
+                                              &entry));
+  EXPECT_EQ(drive_service_->GetRootResourceId(), entry.resource_id());
+
+  // My Drive's child is present.
+  base::FilePath file_path =
+      util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetResourceEntryByPath(file_path, &entry));
 }

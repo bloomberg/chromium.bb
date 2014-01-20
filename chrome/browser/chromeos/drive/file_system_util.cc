@@ -175,15 +175,6 @@ DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
   return integration_service ? integration_service->drive_service() : NULL;
 }
 
-ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id) {
-  ResourceEntry mydrive_root;
-  mydrive_root.mutable_file_info()->set_is_directory(true);
-  mydrive_root.set_resource_id(root_resource_id);
-  mydrive_root.set_parent_local_id(util::kDriveGrandRootLocalId);
-  mydrive_root.set_title(util::kDriveMyDriveRootDirName);
-  return mydrive_root;
-}
-
 const std::string& GetDriveMountPointPathAsString() {
   CR_DEFINE_STATIC_LOCAL(std::string, drive_mount_path_string,
       (kDriveMountPointPath));

@@ -84,9 +84,6 @@ DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile);
 // or disabled), returns NULL.
 DriveServiceInterface* GetDriveServiceByProfile(Profile* profile);
 
-// Returns a ResourceEntry for "/drive/root" directory.
-ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id);
-
 // Returns the Drive mount path as string.
 const std::string& GetDriveMountPointPathAsString();
 

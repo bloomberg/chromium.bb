@@ -114,7 +114,7 @@ ResourceMetadata::~ResourceMetadata() {
 bool ResourceMetadata::SetUpDefaultEntries() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // Initialize "/drive", "/drive/other" and "drive/trash".
+  // Initialize "/drive", "/drive/other", "drive/trash" and "drive/root".
   ResourceEntry entry;
   if (!storage_->GetEntry(util::kDriveGrandRootLocalId, &entry)) {
     ResourceEntry root;
@@ -151,6 +151,17 @@ bool ResourceMetadata::SetUpDefaultEntries() {
     trash_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
     trash_dir.set_title(util::kDriveTrashDirName);
     if (!PutEntryUnderDirectory(trash_dir))
+      return false;
+  }
+  if (storage_->GetChild(util::kDriveGrandRootLocalId,
+                         util::kDriveMyDriveRootDirName).empty()) {
+    ResourceEntry mydrive;
+    mydrive.mutable_file_info()->set_is_directory(true);
+    mydrive.set_parent_local_id(util::kDriveGrandRootLocalId);
+    mydrive.set_title(util::kDriveMyDriveRootDirName);
+
+    std::string local_id;
+    if (AddEntry(mydrive, &local_id) != FILE_ERROR_OK)
       return false;
   }
   return true;
