@@ -432,7 +432,7 @@ FileTransferController.prototype = {
     if (item === this.dropTarget_)
       return;
 
-    var entry = item && list.dataModel.item(item.listIndex).getCachedEntry();
+    var entry = item && list.dataModel.item(item.listIndex).entry;
     if (entry)
       this.setDropTarget_(item, event.dataTransfer, entry);
     else

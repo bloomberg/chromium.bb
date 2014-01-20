@@ -41,27 +41,34 @@ NavigationListItem.prototype.decorate = function() {
 };
 
 /**
- * Associate a path with this item.
+ * Associate a model with this item.
  * @param {NavigationModelItem} modelItem NavigationModelItem of this item.
- * @param {string=} opt_deviceType The type of the device. Available iff the
- *     path represents removable storage.
  */
-NavigationListItem.prototype.setModelItem =
-    function(modelItem, opt_deviceType) {
+NavigationListItem.prototype.setModelItem = function(modelItem) {
   if (this.modelItem_)
     console.warn('NavigationListItem.setModelItem should be called only once.');
 
   this.modelItem_ = modelItem;
 
-  var rootType = PathUtil.getRootType(modelItem.path);
-  this.iconDiv_.setAttribute('volume-type-icon', rootType);
-  if (opt_deviceType) {
-    this.iconDiv_.setAttribute('volume-subtype', opt_deviceType);
+  var typeIcon;
+  if (modelItem.isVolume) {
+    typeIcon = modelItem.volumeInfo.volumeType;
+  } else if (modelItem.isShortcut) {
+    // Shortcuts are available for Drive only.
+    typeIcon = util.VolumeType.DRIVE;
+  }
+  this.iconDiv_.setAttribute('volume-type-icon', typeIcon);
+
+  if (modelItem.isVolume) {
+    this.iconDiv_.setAttribute(
+        'volume-subtype', modelItem.volumeInfo.deviceType);
   }
 
   this.label_.textContent = modelItem.label;
 
-  if (rootType === RootType.ARCHIVE || rootType === RootType.REMOVABLE) {
+  if (modelItem.isVolume &&
+      (modelItem.volumeInfo.volumeType === util.VolumeType.ARCHIVE ||
+       modelItem.volumeInfo.volumeType === util.VolumeType.REMOVABLE)) {
     this.eject_ = cr.doc.createElement('div');
     // Block other mouse handlers.
     this.eject_.addEventListener(
@@ -84,20 +91,21 @@ NavigationListItem.prototype.setModelItem =
  * @param {cr.ui.Menu} menu Menu this item.
  */
 NavigationListItem.prototype.maybeSetContextMenu = function(menu) {
-  if (!this.modelItem_.path) {
+  if (!this.modelItem_) {
     console.error('NavigationListItem.maybeSetContextMenu must be called ' +
                   'after setModelItem().');
     return;
   }
 
-  var isRoot = PathUtil.isRootPath(this.modelItem_.path);
-  var rootType = PathUtil.getRootType(this.modelItem_.path);
   // The context menu is shown on the following items:
   // - Removable and Archive volumes
   // - Folder shortcuts
-  if (!isRoot ||
-      (rootType != RootType.DRIVE && rootType != RootType.DOWNLOADS))
+  if (this.modelItem_.isVolume &&
+      (this.modelItem_.volumeInfo.volumeType === util.VolumeType.REMOVABLE ||
+       this.modelItem_.volumeInfo.volumeType === util.VolumeType.ARCHIVE) ||
+      this.modelItem_.isShortcut) {
     cr.ui.contextMenuHandler.setContextMenu(this, menu);
+  }
 };
 
 /**
@@ -211,20 +219,12 @@ NavigationList.prototype.measureItem = function(opt_item) {
  */
 NavigationList.prototype.renderRoot_ = function(modelItem) {
   var item = new NavigationListItem();
-  var volumeInfo =
-      PathUtil.isRootPath(modelItem.path) &&
-      this.volumeManager_.getVolumeInfo(modelItem.path);
-  item.setModelItem(modelItem, volumeInfo && volumeInfo.deviceType);
+  item.setModelItem(modelItem);
 
   var handleClick = function() {
-    // TODO(mtomasz, yoshiki): Do not use fullPath here, but Entry.
-    if (item.selected &&
-        (!this.directoryModel_.getCurrentDirEntry() ||
-         modelItem.path !==
-             this.directoryModel_.getCurrentDirEntry().fullPath)) {
-      metrics.recordUserAction('FolderShortcut.Navigate');
-      this.changeDirectory_(modelItem);
-    }
+    if (!item.selected)
+      return;
+    this.activateModelItem_(item.modelItem);
   }.bind(this);
   item.addEventListener('click', handleClick);
 
@@ -244,23 +244,6 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
 };
 
 /**
- * Changes the current directory to the given path.
- * If the given path is not found, a 'shortcut-target-not-found' event is
- * fired.
- *
- * @param {NavigationModelItem} modelItem Directory to be chagned to.
- * @private
- */
-NavigationList.prototype.changeDirectory_ = function(modelItem) {
-  var onErrorCallback = function(error) {
-    if (error.code === FileError.NOT_FOUND_ERR)
-      this.dataModel.onItemNotFoundError(modelItem);
-  }.bind(this);
-
-  this.directoryModel_.changeDirectory(modelItem.path, onErrorCallback);
-};
-
-/**
  * Sets a context menu. Context menu is enabled only on archive and removable
  * volumes as of now.
  *
@@ -276,7 +259,6 @@ NavigationList.prototype.setContextMenu = function(menu) {
 
 /**
  * Selects the n-th item from the list.
- *
  * @param {number} index Item index.
  * @return {boolean} True for success, otherwise false.
  */
@@ -284,21 +266,45 @@ NavigationList.prototype.selectByIndex = function(index) {
   if (index < 0 || index > this.dataModel.length - 1)
     return false;
 
-  var newModelItem = this.dataModel.item(index);
-  var newPath = newModelItem.path;
-  if (!newPath)
-    return false;
-
-  // Prevents double-moving to the current directory.
-  // eg. When user clicks the item, changing directory has already been done in
-  //     click handler.
-  var entry = this.directoryModel_.getCurrentDirEntry();
-  if (entry && entry.fullPath == newPath)
-    return false;
-
-  metrics.recordUserAction('FolderShortcut.Navigate');
-  this.changeDirectory_(newModelItem);
+  this.activateModelItem_(this.dataModel.item(index));
   return true;
+};
+
+
+/**
+ * Selects the passed item of the model.
+ * @param {NavigationModelItem} modelItem Model item to be activated.
+ * @private
+ */
+NavigationList.prototype.activateModelItem_ = function(modelItem) {
+  var onEntryResolved = function(entry) {
+    if (util.isSameEntry(this.directoryModel_.getCurrentDirEntry(), entry))
+      return;
+    metrics.recordUserAction('FolderShortcut.Navigate');
+    this.directoryModel_.changeDirectoryEntry(entry);
+  }.bind(this);
+
+  if (modelItem.isVolume) {
+    modelItem.volumeInfo.resolveDisplayRoot(
+        onEntryResolved,
+        function() {
+          // Error, the display root is not available. It may happen on Drive.
+          this.dataModel.onItemNotFoundError(modelItem);
+        }.bind(this));
+  } else if (modelItem.isShortcut) {
+    // For shortcuts we already have an Entry, but it has to be resolved again
+    // in case, it points to a non-existing directory.
+    var url = modelItem.entry.toURL();
+    webkitResolveLocalFileSystemURL(
+        url,
+        onEntryResolved,
+        function() {
+          // Error, the entry can't be re-resolved. It may happen for shotrcuts
+          // which targets got removed after resolving the Entry during
+          // initialization.
+          this.dataModel.onItemNotFoundError(modelItem);
+        }.bind(this));
+  }
 };
 
 /**
@@ -350,24 +356,30 @@ NavigationList.prototype.onListContentChanged_ = function(event) {
  */
 NavigationList.prototype.selectBestMatchItem_ = function() {
   var entry = this.directoryModel_.getCurrentDirEntry();
-  var path = entry && entry.fullPath;
-  if (!path)
+  // It may happen that the current directory is not set yet, for update events.
+  if (!entry)
     return;
 
-  // (1) Select the nearest parent directory (including the shortcut folders).
+  // (1) Select the nearest shortcut directory.
+  var entryURL = entry.toURL();
   var bestMatchIndex = -1;
   var bestMatchSubStringLen = 0;
   for (var i = 0; i < this.dataModel.length; i++) {
-    var itemPath = this.dataModel.item(i).path;
-    if (path.indexOf(itemPath) == 0) {
-      if (bestMatchSubStringLen < itemPath.length) {
+    var modelItem = this.dataModel.item(i);
+    if (!modelItem.isShortcut)
+      continue;
+    var modelItemURL = modelItem.entry.toURL();
+    // Relying on URL's format is risky and should be avoided. However, there is
+    // no other way to quickly check if an entry is an ancestor of another one.
+    if (entryURL.indexOf(modelItemURL) === 0) {
+      if (bestMatchSubStringLen < modelItemURL.length) {
         bestMatchIndex = i;
-        bestMatchSubStringLen = itemPath.length;
+        bestMatchSubStringLen = modelItemURL.length;
       }
     }
   }
   if (bestMatchIndex != -1) {
-    // Not to invoke the handler of this instance, sets the guard.
+    // Don't to invoke the handler of this instance, sets the guard.
     this.dontHandleSelectionEvent_ = true;
     this.selectionModel.selectedIndex = bestMatchIndex;
     this.dontHandleSelectionEvent_ = false;
@@ -375,11 +387,15 @@ NavigationList.prototype.selectBestMatchItem_ = function() {
   }
 
   // (2) Selects the volume of the current directory.
-  var newRootPath = PathUtil.getRootPath(path);
+  var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+  if (!volumeInfo)
+    return;
   for (var i = 0; i < this.dataModel.length; i++) {
-    var itemPath = this.dataModel.item(i).path;
-    if (PathUtil.getRootPath(itemPath) == newRootPath) {
-      // Not to invoke the handler of this instance, sets the guard.
+    var modelItem = this.dataModel.item(i);
+    if (!modelItem.isVolume)
+      continue;
+    if (modelItem.volumeInfo === volumeInfo) {
+      // Don't to invoke the handler of this instance, sets the guard.
       this.dontHandleSelectionEvent_ = true;
       this.selectionModel.selectedIndex = i;
       this.dontHandleSelectionEvent_ = false;

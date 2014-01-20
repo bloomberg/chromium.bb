@@ -929,7 +929,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.metadataCache_,
         this.volumeManager_);
 
-    this.folderShortcutsModel_ = new FolderShortcutsDataModel();
+    this.folderShortcutsModel_ = new FolderShortcutsDataModel(
+        this.volumeManager_);
 
     this.selectionHandler_ = new FileSelectionHandler(this);
 
@@ -1995,30 +1996,30 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Creates a folder shortcut.
-   * @param {string} path A shortcut which refers to |path| to be created.
+   * @param {Entry} entry A shortcut which refers to |entry| to be created.
    */
-  FileManager.prototype.createFolderShortcut = function(path) {
+  FileManager.prototype.createFolderShortcut = function(entry) {
     // Duplicate entry.
-    if (this.folderShortcutExists(path))
+    if (this.folderShortcutExists(entry))
       return;
 
-    this.folderShortcutsModel_.add(path);
+    this.folderShortcutsModel_.add(entry);
   };
 
   /**
    * Checkes if the shortcut which refers to the given folder exists or not.
-   * @param {string} path Path of the folder to be checked.
+   * @param {Entry} entry Entry of the folder to be checked.
    */
-  FileManager.prototype.folderShortcutExists = function(path) {
-    return this.folderShortcutsModel_.exists(path);
+  FileManager.prototype.folderShortcutExists = function(entry) {
+    return this.folderShortcutsModel_.exists(entry);
   };
 
   /**
    * Removes the folder shortcut.
-   * @param {string} path The shortcut which refers to |path| is to be removed.
+   * @param {Entry} entry The shortcut which refers to |entry| is to be removed.
    */
-  FileManager.prototype.removeFolderShortcut = function(path) {
-    this.folderShortcutsModel_.remove(path);
+  FileManager.prototype.removeFolderShortcut = function(entry) {
+    this.folderShortcutsModel_.remove(entry);
   };
 
   /**

@@ -17,13 +17,18 @@ function MockVolumeManager() {
 
 /**
  * Returns the corresponding VolumeInfo.
- * @param {string} path Path to be looking for with.
+ * TODO(mtomasz): Remove support for fullpaths.
+ *
+ * @param {string|MockFileEntry} target Path or MockFileEntry pointing anywhere
+ *     on a volume.
  * @return {VolumeInfo} Corresponding VolumeInfo.
  */
-MockVolumeManager.prototype.getVolumeInfo = function(path) {
+MockVolumeManager.prototype.getVolumeInfo = function(target) {
+  // TODO(mtomasz): Compare filesystem instances instead.
+  var fullPath = target.fullPath || target;
   for (var i = 0; i < this.volumeInfoList.length; i++) {
-    if (this.volumeInfoList.item(i).mountPath === path ||
-        path.indexOf(this.volumeInfoList.item(i).mountPath) === 0)
+    if (this.volumeInfoList.item(i).mountPath === fullPath ||
+        fullPath.indexOf(this.volumeInfoList.item(i).mountPath) === 0)
       return this.volumeInfoList.item(i);
   }
   return null;
@@ -37,9 +42,7 @@ MockVolumeManager.prototype.getVolumeInfo = function(path) {
  */
 MockVolumeManager.prototype.resolveAbsolutePath = function(
     path, successCallback, errorCallback) {
-  var mockFileEntry = new MockFileEntry();
-  mockFileEntry.fullPath = path;
-  successCallback(mockFileEntry);
+  successCallback(new MockFileEntry(path));
 };
 
 /**

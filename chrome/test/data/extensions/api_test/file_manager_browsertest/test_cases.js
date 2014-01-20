@@ -1557,7 +1557,7 @@ testcase.traverseNavigationList = function() {
       var appState = {defaultPath: '/drive/root'};
       setupAndWaitUntilReady(appState, this.next);
     },
-    // Wait for the navigation list.
+    // Wait until Google Drive is selected.
     function(inAppId) {
       appId = inAppId;
       callRemoteTestUtil(
@@ -1567,16 +1567,8 @@ testcase.traverseNavigationList = function() {
                '.volume-icon[volume-type-icon="drive"]'],
           this.next);
     },
-    // Ensure that the 'Gogole Drive' is selected.
+    // Ensure that the current directory is changed to Google Drive.
     function() {
-      callRemoteTestUtil('checkSelectedVolume',
-                         appId,
-                         ['Google Drive', '/drive/root'],
-                         this.next);
-    },
-    // Ensure that the current directory is changed to 'Gogole Drive'.
-    function(result) {
-      chrome.test.assertTrue(result);
       callRemoteTestUtil('waitForFiles',
                          appId,
                          [TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET),
@@ -1584,41 +1576,41 @@ testcase.traverseNavigationList = function() {
                          this.next);
     },
     // Press the UP key.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       callRemoteTestUtil('fakeKeyDown',
                          appId,
                          ['#navigation-list', 'Up', true],
                          this.next);
     },
-    // Ensure that the 'Gogole Drive' is still selected since it is the first
-    // item.
+    // Ensure that Gogole Drive is selected since it is the first item.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('checkSelectedVolume',
-                         appId,
-                         ['Google Drive', '/drive/root'],
-                         this.next);
+      callRemoteTestUtil(
+          'waitForElement',
+          appId,
+          ['#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="drive"]'],
+          this.next);
     },
     // Press the DOWN key.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       callRemoteTestUtil('fakeKeyDown',
                          appId,
                          ['#navigation-list', 'Down', true],
                          this.next);
     },
-    // Ensure that the 'Download' is selected.
+    // Ensure that Downloads is selected.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('checkSelectedVolume',
-                         appId,
-                         ['Downloads', '/Downloads'],
-                         this.next);
+      callRemoteTestUtil(
+          'waitForElement',
+          appId,
+          ['#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="downloads"]'],
+          this.next);
     },
-    // Ensure that the current directory is changed to 'Downloads'.
-    function(result) {
-      chrome.test.assertTrue(result);
+    // Ensure that the current directory is changed to Downloads.
+    function() {
       callRemoteTestUtil('waitForFiles',
                          appId,
                          [TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET),
@@ -1626,24 +1618,24 @@ testcase.traverseNavigationList = function() {
                          this.next);
     },
     // Press the DOWN key again.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       callRemoteTestUtil('fakeKeyDown',
                          appId,
                          ['#navigation-list', 'Down', true],
                          this.next);
     },
-    // Ensure that the 'Downloads' is still selected since it is the last item.
+    // Ensure that Downloads is still selected since it is the last item.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('checkSelectedVolume',
-                         appId,
-                         ['Downloads', '/Downloads'],
-                         this.next);
+      callRemoteTestUtil(
+          'waitForElement',
+          appId,
+          ['#navigation-list > .root-item > ' +
+               '.volume-icon[volume-type-icon="downloads"]'],
+          this.next);
     },
     // Check for errors.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);

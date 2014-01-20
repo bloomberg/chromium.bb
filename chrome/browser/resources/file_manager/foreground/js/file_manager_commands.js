@@ -51,7 +51,7 @@ CommandUtil.getCommandEntry = function(element) {
 
     /** @type {NavigationModelItem} */
     var selectedItem = element.selectedItem;
-    return selectedItem && selectedItem.getCachedEntry();
+    return selectedItem && selectedItem.entry;
   } else if (element instanceof NavigationListItem) {
     // element is a subitem of NavigationList.
     /** @type {NavigationList} */
@@ -59,15 +59,12 @@ CommandUtil.getCommandEntry = function(element) {
     var index = navigationList.getIndexOfListItem(element);
     /** @type {NavigationModelItem} */
     var item = (index != -1) ? navigationList.dataModel.item(index) : null;
-    return item && item.getCachedEntry();
+    return item && item.entry;
   } else if (element instanceof DirectoryTree) {
     // element is a DirectoryTree.
-    return element.selectedItem;
+    return element.selectedItem.entry;
   } else if (element instanceof DirectoryItem) {
     // element is a sub item in DirectoryTree.
-
-    // DirectoryItem.fullPath is set on initialization, but entry is lazily.
-    // We may use fullPath just in case that the entry has not been set yet.
     return element.entry;
   } else if (element instanceof cr.ui.List) {
     // element is a normal List (eg. the file list on the right panel).
@@ -744,7 +741,7 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = {
   execute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
     if (entry)
-      fileManager.createFolderShortcut(entry.fullPath);
+      fileManager.createFolderShortcut(entry);
   },
 
   /**
@@ -754,7 +751,7 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = {
   canExecute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
     var folderShortcutExists = entry &&
-                               fileManager.folderShortcutExists(entry.fullPath);
+                               fileManager.folderShortcutExists(entry);
 
     var onlyOneFolderSelected = true;
     // Only on list, user can select multiple files. The command is enabled only
@@ -785,7 +782,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = {
   execute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
     if (entry && entry.fullPath)
-      fileManager.removeFolderShortcut(entry.fullPath);
+      fileManager.removeFolderShortcut(entry);
   },
 
   /**
@@ -794,11 +791,10 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = {
    */
   canExecute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
-    var path = entry && entry.fullPath;
     var location = entry && fileManager.volumeManager.getLocationInfo(entry);
 
     var eligible = location && location.isEligibleForFolderShortcut;
-    var isShortcut = path && fileManager.folderShortcutExists(path);
+    var isShortcut = entry && fileManager.folderShortcutExists(entry);
     event.canExecute = isShortcut && eligible;
     event.command.setHidden(!event.canExecute);
   }

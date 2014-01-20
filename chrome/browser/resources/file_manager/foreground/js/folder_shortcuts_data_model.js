@@ -5,74 +5,94 @@
 /**
  * Model for the folder shortcuts. This object is cr.ui.ArrayDataModel-like
  * object with additional methods for the folder shortcut feature.
- * This uses chrome.storage as backend. Items are always sorted by file path.
+ * This uses chrome.storage as backend. Items are always sorted by URL.
  *
+ * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function FolderShortcutsDataModel() {
+function FolderShortcutsDataModel(volumeManager) {
+  this.volumeManager_ = volumeManager;
   this.array_ = [];
+  this.pendingPaths_ = {};  // Hash map for easier deleting.
+  this.unresolvablePaths_ = {};
 
-  /**
-   * Eliminate unsupported folders from the list.
-   *
-   * @param {Array.<string>} array Folder array which may contain the
-   *     unsupported folders.
-   * @return {Array.<string>} Folder list without unsupported folder.
-   */
-  var filter = function(array) {
-    return array.filter(PathUtil.isEligibleForFolderShortcut);
-  };
+  // Process changes only after initial loading is finished.
+  var queue = new AsyncUtil.Queue();
+
+  // Processes list of paths and converts them to Entry, then adds to the model.
+  var processPaths = function(list, completionCallback) {
+    for (var index = 0; index < list.length; index++) {
+      this.pendingPaths_[list[index]] = true;
+    }
+    // Resolve the items all at once, in parallel.
+    var group = new AsyncUtil.Group();
+    for (var index = 0; index < list.length; index++) {
+      var path = list[index];
+      group.add(function(path, callback) {
+        // TODO(mtomasz): Migrate to URL.
+        volumeManager.resolveAbsolutePath(path, function(entry) {
+          if (entry.fullPath in this.pendingPaths_)
+            delete this.pendingPaths_[entry.fullPath];
+          this.addInternal_(entry);
+          callback();
+        }.bind(this), function(error) {
+          if (path in this.pendingPaths_)
+            delete this.pendingPaths_[path];
+          // Remove the shortcut on error, only if Drive is fully online.
+          // Only then we can be sure, that the error means that the directory
+          // does not exist anymore.
+          if (volumeManager.getDriveConnectionState().type !==
+              util.DriveConnectionType.ONLINE) {
+            // TODO(mtomasz): Add support for multi-profile.
+            this.unresolvablePaths_.push(path);
+          }
+          // Not adding to the model nor to the |unresolvablePaths_| means
+          // that it will be removed from the storage permanently after the
+          // next call to save_().
+          callback();
+        }.bind(this));
+      }.bind(this, path));
+    }
+    // Save the model after finishing.
+    group.run(function() {
+      this.save_();
+      completionCallback();
+    }.bind(this));
+  }.bind(this);
 
   // Loads the contents from the storage to initialize the array.
-  chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
-    if (!(FolderShortcutsDataModel.NAME in value))
-      return;
+  queue.run(function(queueCallback) {
+    chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+      if (!(FolderShortcutsDataModel.NAME in value)) {
+        queueCallback();
+        return;
+      }
 
-    // Since the value comes from outer resource, we have to check it just in
-    // case.
-    var list = value[FolderShortcutsDataModel.NAME];
-    if (list instanceof Array) {
-      list = filter(list);
+      // Since the value comes from outer resource, we have to check it just in
+      // case.
+      var list = value[FolderShortcutsDataModel.NAME];
 
       // Record metrics.
       metrics.recordSmallCount('FolderShortcut.Count', list.length);
 
-      var permutation = this.calculatePermutation_(this.array_, list);
-      this.array_ = list;
-      this.firePermutedEvent_(permutation);
-    }
+      // Convert the paths to Entries and add to the model.
+      processPaths(list, queueCallback);
+    }.bind(this));
   }.bind(this));
 
-  // Listening for changes in the storage.
+  // Listening for changes in the storage. Process only after initial load is
+  // finished.
   chrome.storage.onChanged.addListener(function(changes, namespace) {
-    if (!(FolderShortcutsDataModel.NAME in changes) || namespace != 'sync')
-      return;
-
-    var list = changes[FolderShortcutsDataModel.NAME].newValue;
-    // Since the value comes from outer resource, we have to check it just in
-    // case.
-    if (list instanceof Array) {
-      list = filter(list);
-
-      // If the list is not changed, do nothing and just return.
-      if (this.array_.length == list.length) {
-        var changed = false;
-        for (var i = 0; i < this.array_.length; i++) {
-          // Same item check: must be exact match.
-          if (this.array_[i] != list[i]) {
-            changed = true;
-            break;
-          }
-        }
-        if (!changed)
-          return;
+    queue.run(function(queueCallback) {
+      if (!(FolderShortcutsDataModel.NAME in changes) || namespace != 'sync') {
+        queueCallback();
+        return;
       }
 
-      var permutation = this.calculatePermutation_(this.array_, list);
-      this.array_ = list;
-      this.firePermutedEvent_(permutation);
-    }
+      var list = changes[FolderShortcutsDataModel.NAME].newValue;
+      processPaths(list, queueCallback);
+    }.bind(this));
   }.bind(this));
 }
 
@@ -94,12 +114,12 @@ FolderShortcutsDataModel.prototype = {
   },
 
   /**
-   * Returns the paths in the given range as a new array instance. The
+   * Returns the entries in the given range as a new array instance. The
    * arguments and return value are compatible with Array.slice().
    *
    * @param {number} start Where to start the selection.
    * @param {number=} opt_end Where to end the selection.
-   * @return {Array.<string>} Paths in the selected range.
+   * @return {Array.<Entry>} Entries in the selected range.
    */
   slice: function(begin, opt_end) {
     return this.array_.slice(begin, opt_end);
@@ -107,39 +127,39 @@ FolderShortcutsDataModel.prototype = {
 
   /**
    * @param {number} index Index of the element to be retrieved.
-   * @return {string} The value of the |index|-th element.
+   * @return {Entry} The value of the |index|-th element.
    */
   item: function(index) {
     return this.array_[index];
   },
 
   /**
-   * @param {string} value Value of the element to be retrieved.
+   * @param {Entry} value Value of the element to be retrieved.
    * @return {number} Index of the element with the specified |value|.
    */
   getIndex: function(value) {
     for (var i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (this.array_[i] == value) {
+      if (util.isSameEntry(this.array_[i], value))
         return i;
-      }
     }
     return -1;
   },
 
   /**
-   * Compares 2 strings and returns a number indicating one string comes before
-   * or after or is the same as the other string in sort order.
+   * Compares 2 entries and returns a number indicating one entry comes before
+   * or after or is the same as the other entry in sort order.
    *
-   * @param {string} a String1.
-   * @param {string} b String2.
-   * @return {boolean} Return -1, if String1 < String2. Return 0, if String1 ==
-   *     String2. Otherwise, return 1.
+   * @param {Entry} a First entry.
+   * @param {Entry} b Second entry.
+   * @return {boolean} Returns -1, if |a| < |b|. Returns 0, if |a| === |b|.
+   *     Otherwise, returns 1.
    */
   compare: function(a, b) {
-    return a.localeCompare(b,
-                           undefined,  // locale parameter, use default locale.
-                           {usage: 'sort', numeric: true});
+    return a.toURL().localeCompare(
+        b.toURL(),
+        undefined,  // locale parameter, use default locale.
+        {usage: 'sort', numeric: true});
   },
 
   /**
@@ -147,15 +167,30 @@ FolderShortcutsDataModel.prototype = {
    * list, return the index of the existing item without adding a duplicate
    * item.
    *
-   * @param {string} value Value to be added into the array.
+   * @param {Entry} value Value to be added into the array.
    * @return {number} Index in the list which the element added to.
    */
   add: function(value) {
+    var result = this.addInternal_(value);
+    metrics.recordUserAction('FolderShortcut.Add');
+    return result;
+  },
+
+  /**
+   * Adds the given item to the array. If there were already same item in the
+   * list, return the index of the existing item without adding a duplicate
+   * item.
+   *
+   * @param {Entry} value Value to be added into the array.
+   * @return {number} Index in the list which the element added to.
+   * @private
+   */
+  addInternal_: function(value) {
     var oldArray = this.array_.slice(0);  // Shallow copy.
     var addedIndex = -1;
     for (var i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (this.array_[i] == value)
+      if (util.isSameEntry(this.array_[i], value))
         return i;
 
       // Since the array is sorted, new item will be added just before the first
@@ -181,7 +216,7 @@ FolderShortcutsDataModel.prototype = {
 
   /**
    * Removes the given item from the array.
-   * @param {string} value Value to be removed from the array.
+   * @param {Entry} value Value to be removed from the array.
    * @return {number} Index in the list which the element removed from.
    */
   remove: function(value) {
@@ -189,7 +224,7 @@ FolderShortcutsDataModel.prototype = {
     var oldArray = this.array_.slice(0);  // Shallow copy.
     for (var i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
-      if (this.array_[i] == value) {
+      if (util.isSameEntry(this.array_[i], value)) {
         this.array_.splice(i, 1);
         removedIndex = i;
         break;
@@ -209,12 +244,12 @@ FolderShortcutsDataModel.prototype = {
   },
 
   /**
-   * @param {string} path Path to be checked.
-   * @return {boolean} True if the given |path| exists in the array. False
+   * @param {Entry} entry Entry to be checked.
+   * @return {boolean} True if the given |entry| exists in the array. False
    *     otherwise.
    */
-  exists: function(path) {
-    var index = this.getIndex(path);
+  exists: function(entry) {
+    var index = this.getIndex(entry);
     return (index >= 0);
   },
 
@@ -223,9 +258,26 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   save_: function() {
-    var obj = {};
-    obj[FolderShortcutsDataModel.NAME] = this.array_;
-    chrome.storage.sync.set(obj, function() {});
+    // The current implementation doesn't rely on sort order in prefs, however
+    // older versions do. Therefore, we need to sort the paths before saving.
+    // TODO(mtomasz): Remove sorting prefs after M-34 is stable.
+    // crbug.com/333148
+    var compareByPath = function(a, b) {
+      return a.localeCompare(
+          b,
+          undefined,  // locale parameter, use default locale.
+          {usage: 'sort', numeric: true});
+    };
+
+    // TODO(mtomasz): Migrate to URL.
+    var paths = this.array_.map(function(entry) {
+      return entry.fullPath;
+    }).concat(Object.keys(this.pendingPaths_)).concat(
+        Object.keys(this.unresolvablePaths_)).sort(compareByPath);
+
+    var prefs = {};
+    prefs[FolderShortcutsDataModel.NAME] = paths;
+    chrome.storage.sync.set(prefs, function() {});
   },
 
   /**
@@ -253,7 +305,7 @@ FolderShortcutsDataModel.prototype = {
       while (newIndex < newArray.length) {
         // Unchanged item, which exists in both new and old array. But the
         // index may be changed.
-        if (oldArray[oldIndex] == newArray[newIndex]) {
+        if (util.isSameEntry(oldArray[oldIndex], newArray[newIndex])) {
           permutation[oldIndex] = newIndex;
           newIndex++;
           break;
@@ -289,5 +341,20 @@ FolderShortcutsDataModel.prototype = {
     // 2) 'splice' and 'sorted' events are not implemented. These events are
     //    not used in NavigationListModel. We have to implement them when
     //    necessary.
+  },
+
+  /**
+   * Called externally when one od the items is not found on the filesystem.
+   * @param {Entry} entry The entry which is not found.
+   */
+  onItemNotFoundError: function(entry) {
+    // If Drive is online, then delete the shortcut permanently. Otherwise,
+    // delete from model and add to |unresolvablePaths_|.
+    if (this.volumeManager_.getDriveConnectionState().type !==
+        util.DriveConnectionType.ONLINE) {
+      // TODO(mtomasz): Add support for multi-profile.
+      this.unresolvablePaths_.push(path);
+    }
+    this.remove(entry);
   }
 };

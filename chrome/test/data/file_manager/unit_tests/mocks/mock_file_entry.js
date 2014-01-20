@@ -4,8 +4,9 @@
 
 /**
  * Mock class for FileEntry.
+ * @param {string} fullPath Full path for the entry.
  * @constructor
  */
-function MockFileEntry() {
-  this.fullPath = null;
+function MockFileEntry(fullPath) {
+  this.fullPath = fullPath;
 }

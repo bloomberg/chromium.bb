@@ -626,6 +626,8 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
 
 /**
  * Changes directory. Causes 'directory-change' event.
+ * TODO(mtomasz): Deprecated. Use changeDirectoryEntry() or specialSearch()
+ *     instead.
  *
  * The directory will not be changed, if another request is started before it is
  * finished. The error callback will not be called, and the event for the first
@@ -636,9 +638,6 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  *     directory failed.
  */
 DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
-  // Increment the sequence value.
-  this.changeDirectorySequence_++;
-
   // If the entry is fake, start special search.
   if (PathUtil.isSpecialSearchRoot(path)) {
     this.specialSearch(path, '');
@@ -741,6 +740,9 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
+  // Increment the sequence value.
+  this.changeDirectorySequence_++;
+
   this.fileWatcher_.changeWatchedDirectory(dirEntry, function(sequence) {
     if (this.changeDirectorySequence_ !== sequence)
       return;
@@ -969,6 +971,9 @@ DirectoryModel.prototype.search = function(query,
  */
 DirectoryModel.prototype.specialSearch = function(path, opt_query) {
   var query = opt_query || '';
+
+  // Increment the sequence value.
+  this.changeDirectorySequence_++;
 
   this.clearSearch_();
   this.onSearchCompleted_ = null;
