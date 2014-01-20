@@ -39,7 +39,7 @@ namespace blink {
 
 class WebViewImpl;
 
-class ValidationMessageClientImpl : public WebCore::ValidationMessageClient {
+class ValidationMessageClientImpl FINAL : public WebCore::ValidationMessageClient {
 public:
     static PassOwnPtr<ValidationMessageClientImpl> create(WebViewImpl&);
     virtual ~ValidationMessageClientImpl();

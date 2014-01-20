@@ -59,7 +59,7 @@ class WebSharedWorkerClient;
 // It can't use it directly since it uses WebKit types, so this class converts the data types.
 // When the WebCore::SharedWorker object wants to call WebCore::WorkerReportingProxy, this class will
 // convert to Chrome data types first and then call the supplied WebCommonWorkerClient.
-class WebSharedWorkerImpl
+class WebSharedWorkerImpl FINAL
     : public WebCore::WorkerReportingProxy
     , public WebCore::WorkerLoaderProxy
     , public WebFrameClient
@@ -69,36 +69,36 @@ public:
 
     // WebCore::WorkerReportingProxy methods:
     virtual void reportException(
-        const WTF::String&, int, int, const WTF::String&);
+        const WTF::String&, int, int, const WTF::String&) OVERRIDE;
     virtual void reportConsoleMessage(
         WebCore::MessageSource, WebCore::MessageLevel,
-        const WTF::String&, int, const WTF::String&);
-    virtual void postMessageToPageInspector(const WTF::String&);
-    virtual void updateInspectorStateCookie(const WTF::String&);
-    virtual void workerGlobalScopeStarted(WebCore::WorkerGlobalScope*);
-    virtual void workerGlobalScopeClosed();
-    virtual void workerGlobalScopeDestroyed();
+        const WTF::String&, int, const WTF::String&) OVERRIDE;
+    virtual void postMessageToPageInspector(const WTF::String&) OVERRIDE;
+    virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
+    virtual void workerGlobalScopeStarted(WebCore::WorkerGlobalScope*) OVERRIDE;
+    virtual void workerGlobalScopeClosed() OVERRIDE;
+    virtual void workerGlobalScopeDestroyed() OVERRIDE;
 
     // WebCore::WorkerLoaderProxy methods:
-    virtual void postTaskToLoader(PassOwnPtr<WebCore::ExecutionContextTask>);
+    virtual void postTaskToLoader(PassOwnPtr<WebCore::ExecutionContextTask>) OVERRIDE;
     virtual bool postTaskForModeToWorkerGlobalScope(
-        PassOwnPtr<WebCore::ExecutionContextTask>, const WTF::String& mode);
+        PassOwnPtr<WebCore::ExecutionContextTask>, const WTF::String& mode) OVERRIDE;
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
-    virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*);
+    virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*) OVERRIDE;
 
     // WebSharedWorker methods:
-    virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& userAgent, const WebString& sourceCode, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, long long cacheId);
-    virtual void connect(WebMessagePortChannel*);
-    virtual void terminateWorkerContext();
-    virtual void clientDestroyed();
+    virtual void startWorkerContext(const WebURL&, const WebString& name, const WebString& userAgent, const WebString& sourceCode, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, long long cacheId) OVERRIDE;
+    virtual void connect(WebMessagePortChannel*) OVERRIDE;
+    virtual void terminateWorkerContext() OVERRIDE;
+    virtual void clientDestroyed() OVERRIDE;
 
-    virtual void pauseWorkerContextOnStart();
-    virtual void resumeWorkerContext();
-    virtual void attachDevTools();
-    virtual void reattachDevTools(const WebString& savedState);
-    virtual void detachDevTools();
-    virtual void dispatchDevToolsMessage(const WebString&);
+    virtual void pauseWorkerContextOnStart() OVERRIDE;
+    virtual void resumeWorkerContext() OVERRIDE;
+    virtual void attachDevTools() OVERRIDE;
+    virtual void reattachDevTools(const WebString& savedState) OVERRIDE;
+    virtual void detachDevTools() OVERRIDE;
+    virtual void dispatchDevToolsMessage(const WebString&) OVERRIDE;
 
 private:
     virtual ~WebSharedWorkerImpl();

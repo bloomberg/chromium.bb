@@ -37,19 +37,19 @@ class GeolocationPosition;
 namespace blink {
 class WebGeolocationClient;
 
-class GeolocationClientProxy : public WebCore::GeolocationClient {
+class GeolocationClientProxy FINAL : public WebCore::GeolocationClient {
 public:
     GeolocationClientProxy(WebGeolocationClient* client);
-    ~GeolocationClientProxy();
+    virtual ~GeolocationClientProxy();
     void setController(WebCore::GeolocationController *controller);
-    virtual void geolocationDestroyed();
-    virtual void startUpdating();
-    virtual void stopUpdating();
-    virtual void setEnableHighAccuracy(bool);
-    virtual WebCore::GeolocationPosition* lastPosition();
+    virtual void geolocationDestroyed() OVERRIDE;
+    virtual void startUpdating() OVERRIDE;
+    virtual void stopUpdating() OVERRIDE;
+    virtual void setEnableHighAccuracy(bool) OVERRIDE;
+    virtual WebCore::GeolocationPosition* lastPosition() OVERRIDE;
 
-    virtual void requestPermission(WebCore::Geolocation*);
-    virtual void cancelPermissionRequest(WebCore::Geolocation*);
+    virtual void requestPermission(WebCore::Geolocation*) OVERRIDE;
+    virtual void cancelPermissionRequest(WebCore::Geolocation*) OVERRIDE;
 
 private:
     WebGeolocationClient* m_client;

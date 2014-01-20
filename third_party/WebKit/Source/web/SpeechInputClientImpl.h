@@ -49,7 +49,7 @@ namespace blink {
 class WebSpeechInputController;
 class WebViewClient;
 
-class SpeechInputClientImpl
+class SpeechInputClientImpl FINAL
     : public WebCore::SpeechInputClient,
       public WebSpeechInputListener {
 public:
@@ -57,15 +57,15 @@ public:
     virtual ~SpeechInputClientImpl();
 
     // SpeechInputClient methods.
-    void setListener(WebCore::SpeechInputListener*);
-    bool startRecognition(int requestId, const WebCore::IntRect& elementRect, const AtomicString& language, const String& grammar, WebCore::SecurityOrigin*);
-    void stopRecording(int);
-    void cancelRecognition(int);
+    virtual void setListener(WebCore::SpeechInputListener*) OVERRIDE;
+    virtual bool startRecognition(int requestId, const WebCore::IntRect& elementRect, const AtomicString& language, const String& grammar, WebCore::SecurityOrigin*) OVERRIDE;
+    virtual void stopRecording(int) OVERRIDE;
+    virtual void cancelRecognition(int) OVERRIDE;
 
     // WebSpeechInputListener methods.
-    void didCompleteRecording(int);
-    void setRecognitionResult(int, const WebSpeechInputResultArray&);
-    void didCompleteRecognition(int);
+    virtual void didCompleteRecording(int) OVERRIDE;
+    virtual void setRecognitionResult(int, const WebSpeechInputResultArray&) OVERRIDE;
+    virtual void didCompleteRecognition(int) OVERRIDE;
 
 private:
     SpeechInputClientImpl(WebViewClient*);

@@ -35,11 +35,11 @@ namespace WebCore {
 
 // Instances of StorageNamespaceProxy are only used to interact with
 // SessionStorage, never LocalStorage.
-class StorageNamespaceProxy : public StorageNamespace {
+class StorageNamespaceProxy FINAL : public StorageNamespace {
 public:
     explicit StorageNamespaceProxy(PassOwnPtr<blink::WebStorageNamespace>);
     virtual ~StorageNamespaceProxy();
-    virtual PassOwnPtr<StorageArea> storageArea(SecurityOrigin*);
+    virtual PassOwnPtr<StorageArea> storageArea(SecurityOrigin*) OVERRIDE;
 
     bool isSameNamespace(const blink::WebStorageNamespace&);
 

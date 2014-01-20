@@ -57,7 +57,7 @@ class WebServiceWorkerContextClient;
 // An instance of this class is supposed to outlive until
 // workerGlobalScopeDestroyed() is called by its corresponding
 // WorkerGlobalScope.
-class ServiceWorkerGlobalScopeProxy :
+class ServiceWorkerGlobalScopeProxy FINAL :
     public WebServiceWorkerContextProxy,
     public WebCore::WorkerReportingProxy {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);

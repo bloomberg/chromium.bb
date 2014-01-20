@@ -39,7 +39,7 @@ namespace blink {
 
 class EditorClientImpl;
 
-class WebTextCheckingCompletionImpl : public WebTextCheckingCompletion {
+class WebTextCheckingCompletionImpl FINAL : public WebTextCheckingCompletion {
 public:
     explicit WebTextCheckingCompletionImpl(WTF::PassRefPtr<WebCore::TextCheckingRequest> request)
         : m_request(request)

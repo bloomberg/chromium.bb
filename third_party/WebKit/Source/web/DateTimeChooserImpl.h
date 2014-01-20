@@ -44,7 +44,7 @@ namespace blink {
 
 class ChromeClientImpl;
 
-class DateTimeChooserImpl : public WebCore::DateTimeChooser, public WebCore::PagePopupClient {
+class DateTimeChooserImpl FINAL : public WebCore::DateTimeChooser, public WebCore::PagePopupClient {
 public:
     static PassRefPtr<DateTimeChooserImpl> create(ChromeClientImpl*, WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&);
     virtual ~DateTimeChooserImpl();

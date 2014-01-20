@@ -55,8 +55,7 @@ class WebMouseEvent;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class ExternalPopupMenu : public WebCore::PopupMenu,
-                          public WebExternalPopupMenuClient {
+class ExternalPopupMenu FINAL : public WebCore::PopupMenu, public WebExternalPopupMenuClient {
 public:
     ExternalPopupMenu(WebCore::Frame&, WebCore::PopupMenuClient*, WebViewImpl&);
     virtual ~ExternalPopupMenu();
@@ -69,10 +68,10 @@ private:
     virtual void disconnectClient() OVERRIDE;
 
     // WebExternalPopupClient methods:
-    virtual void didChangeSelection(int index);
-    virtual void didAcceptIndex(int index);
-    virtual void didAcceptIndices(const WebVector<int>& indices);
-    virtual void didCancel();
+    virtual void didChangeSelection(int index) OVERRIDE;
+    virtual void didAcceptIndex(int index) OVERRIDE;
+    virtual void didAcceptIndices(const WebVector<int>& indices) OVERRIDE;
+    virtual void didCancel() OVERRIDE;
 
     void dispatchEvent(WebCore::Timer<ExternalPopupMenu>*);
     // Fills |info| with the popup menu information contained in the

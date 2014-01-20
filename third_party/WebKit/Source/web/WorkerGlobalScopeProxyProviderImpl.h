@@ -42,7 +42,7 @@ class WorkerGlobalScopeProxy;
 
 namespace blink {
 
-class WorkerGlobalScopeProxyProviderImpl : public WebCore::WorkerGlobalScopeProxyProvider {
+class WorkerGlobalScopeProxyProviderImpl FINAL : public WebCore::WorkerGlobalScopeProxyProvider {
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
 public:
     static PassOwnPtr<WorkerGlobalScopeProxyProviderImpl> create()

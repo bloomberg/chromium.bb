@@ -38,10 +38,10 @@ namespace blink {
 
 class WebPluginScrollbarImpl;
 
-class ScrollbarGroup : public WebCore::ScrollableArea {
+class ScrollbarGroup FINAL : public WebCore::ScrollableArea {
 public:
     ScrollbarGroup(WebCore::FrameView*, const WebCore::IntRect& frameRect);
-    ~ScrollbarGroup();
+    virtual ~ScrollbarGroup();
 
     void scrollbarCreated(WebPluginScrollbarImpl*);
     void scrollbarDestroyed(WebPluginScrollbarImpl*);

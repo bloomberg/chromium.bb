@@ -139,11 +139,6 @@ void WebSettingsImpl::setDeviceSupportsMouse(bool deviceSupportsMouse)
     m_settings->setDeviceSupportsMouse(deviceSupportsMouse);
 }
 
-bool WebSettingsImpl::deviceSupportsTouch()
-{
-    return m_settings->deviceSupportsTouch();
-}
-
 void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(bool autoZoomFocusedNodeToLegibleScale)
 {
     m_autoZoomFocusedNodeToLegibleScale = autoZoomFocusedNodeToLegibleScale;
@@ -528,10 +523,6 @@ void WebSettingsImpl::setAntialiased2dCanvasEnabled(bool enabled)
     m_settings->setAntialiased2dCanvasEnabled(enabled);
 }
 
-void WebSettingsImpl::setDeferred2dCanvasEnabled(bool enabled)
-{
-}
-
 void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 {
     DeferredImageDecoder::setEnabled(enabled);
@@ -666,21 +657,6 @@ bool WebSettingsImpl::viewportMetaEnabled() const
 bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const
 {
     return m_mainFrameResizesAreOrientationChanges;
-}
-
-void WebSettingsImpl::setShouldDisplaySubtitles(bool enabled)
-{
-    m_settings->setShouldDisplaySubtitles(enabled);
-}
-
-void WebSettingsImpl::setShouldDisplayCaptions(bool enabled)
-{
-    m_settings->setShouldDisplayCaptions(enabled);
-}
-
-void WebSettingsImpl::setShouldDisplayTextDescriptions(bool enabled)
-{
-    m_settings->setShouldDisplayTextDescriptions(enabled);
 }
 
 void WebSettingsImpl::setShouldRespectImageOrientation(bool enabled)

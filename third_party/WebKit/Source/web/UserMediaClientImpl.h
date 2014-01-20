@@ -44,13 +44,13 @@ namespace blink {
 class WebUserMediaClient;
 class WebViewImpl;
 
-class UserMediaClientImpl : public WebCore::UserMediaClient {
+class UserMediaClientImpl FINAL : public WebCore::UserMediaClient {
 public:
     UserMediaClientImpl(WebViewImpl*);
 
     // WebCore::UserMediaClient ----------------------------------------------
-    virtual void requestUserMedia(PassRefPtr<WebCore::UserMediaRequest>);
-    virtual void cancelUserMediaRequest(WebCore::UserMediaRequest*);
+    virtual void requestUserMedia(PassRefPtr<WebCore::UserMediaRequest>) OVERRIDE;
+    virtual void cancelUserMediaRequest(WebCore::UserMediaRequest*) OVERRIDE;
 
 private:
     UserMediaClientImpl();

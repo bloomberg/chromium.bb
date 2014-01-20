@@ -40,10 +40,10 @@ namespace blink {
 
 class ScrollbarGroup;
 
-class WebPluginScrollbarImpl : public WebPluginScrollbar {
+class WebPluginScrollbarImpl FINAL : public WebPluginScrollbar {
 public:
     WebPluginScrollbarImpl(Orientation, ScrollbarGroup*, WebPluginScrollbarClient*);
-    ~WebPluginScrollbarImpl();
+    virtual ~WebPluginScrollbarImpl();
 
     void setScrollOffset(int);
     void invalidateScrollbarRect(const WebCore::IntRect&);

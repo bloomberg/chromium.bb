@@ -124,21 +124,21 @@ const HTTPHeaderSet& HTTPResponseHeaderValidator::blockedHeaders()
 
 // This class bridges the interface differences between WebCore and WebKit loader clients.
 // It forwards its ThreadableLoaderClient notifications to a WebURLLoaderClient.
-class AssociatedURLLoader::ClientAdapter : public DocumentThreadableLoaderClient {
+class AssociatedURLLoader::ClientAdapter FINAL : public DocumentThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(ClientAdapter);
 public:
     static PassOwnPtr<ClientAdapter> create(AssociatedURLLoader*, WebURLLoaderClient*, const WebURLLoaderOptions&);
 
-    virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/);
-    virtual void willSendRequest(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/);
+    virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) OVERRIDE;
+    virtual void willSendRequest(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/) OVERRIDE;
 
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&);
-    virtual void didDownloadData(int /*dataLength*/);
-    virtual void didReceiveData(const char*, int /*dataLength*/);
-    virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/);
-    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/);
-    virtual void didFail(const ResourceError&);
-    virtual void didFailRedirectCheck();
+    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
+    virtual void didDownloadData(int /*dataLength*/) OVERRIDE;
+    virtual void didReceiveData(const char*, int /*dataLength*/) OVERRIDE;
+    virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) OVERRIDE;
+    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) OVERRIDE;
+    virtual void didFail(const ResourceError&) OVERRIDE;
+    virtual void didFailRedirectCheck() OVERRIDE;
 
     // Sets an error to be reported back to the client, asychronously.
     void setDelayedError(const ResourceError&);

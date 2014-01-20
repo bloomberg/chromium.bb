@@ -51,10 +51,10 @@ class WebLayerTreeView;
 class WebScrollbarLayer;
 class WebViewImpl;
 
-class PinchViewports : WebCore::GraphicsLayerClient {
+class PinchViewports FINAL : WebCore::GraphicsLayerClient {
 public:
     static PassOwnPtr<PinchViewports> create(WebViewImpl* owner);
-    ~PinchViewports();
+    virtual ~PinchViewports();
 
     void setOverflowControlsHostLayer(WebCore::GraphicsLayer*);
     WebCore::GraphicsLayer* rootGraphicsLayer()

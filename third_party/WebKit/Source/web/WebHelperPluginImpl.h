@@ -50,8 +50,7 @@ class WebWidgetClient;
 
 // Hosts a simple page that instantiates a plugin using an <object> tag.
 // The widget is offscreen, and the plugin will not receive painting, resize, etc. events.
-class WebHelperPluginImpl : public WebHelperPlugin,
-                            public RefCounted<WebHelperPluginImpl> {
+class WebHelperPluginImpl FINAL : public WebHelperPlugin, public RefCounted<WebHelperPluginImpl> {
     WTF_MAKE_NONCOPYABLE(WebHelperPluginImpl);
     WTF_MAKE_FAST_ALLOCATED;
 

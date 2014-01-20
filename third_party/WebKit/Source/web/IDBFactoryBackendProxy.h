@@ -38,12 +38,12 @@ class ExecutionContext;
 namespace blink {
 
 // FIXME: This is just a permission client at this point. Rename/refactor.
-class IDBFactoryBackendProxy : public WebCore::IDBFactoryBackendInterface {
+class IDBFactoryBackendProxy FINAL : public WebCore::IDBFactoryBackendInterface {
 public:
     static PassRefPtr<WebCore::IDBFactoryBackendInterface> create();
     virtual ~IDBFactoryBackendProxy() { }
 
-    virtual bool allowIndexedDB(WebCore::ExecutionContext*, const String& name);
+    virtual bool allowIndexedDB(WebCore::ExecutionContext*, const String& name) OVERRIDE;
 
 private:
     IDBFactoryBackendProxy() { }

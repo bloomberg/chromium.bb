@@ -46,7 +46,7 @@ class WebDocument;
 class WebString;
 class WebURL;
 
-class WebSocketImpl : public WebSocket, public WebCore::WebSocketChannelClient {
+class WebSocketImpl FINAL : public WebSocket, public WebCore::WebSocketChannelClient {
 public:
     WebSocketImpl(const WebDocument&, WebSocketClient*);
     virtual ~WebSocketImpl();

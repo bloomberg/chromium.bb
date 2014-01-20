@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class ContextFeaturesClientImpl : public WebCore::ContextFeaturesClient {
+class ContextFeaturesClientImpl FINAL : public WebCore::ContextFeaturesClient {
 public:
     ContextFeaturesClientImpl() { }
 

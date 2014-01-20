@@ -42,7 +42,7 @@ class ChromeClient;
 class FrameView;
 class PopupMenuClient;
 
-class PopupContainer : public FramelessScrollView {
+class PopupContainer FINAL : public FramelessScrollView {
 public:
     enum PopupType {
         Select, // HTML select popup.
@@ -118,7 +118,7 @@ private:
     friend class WTF::RefCounted<PopupContainer>;
 
     PopupContainer(PopupMenuClient*, PopupType, bool deviceSupportsTouch);
-    ~PopupContainer();
+    virtual ~PopupContainer();
 
     // Paint the border.
     void paintBorder(GraphicsContext*, const IntRect&);

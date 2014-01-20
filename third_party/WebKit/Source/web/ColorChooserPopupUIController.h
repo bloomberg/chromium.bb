@@ -37,7 +37,7 @@ class PagePopup;
 
 namespace blink {
 
-class ColorChooserPopupUIController : public ColorChooserUIController, public WebCore::PagePopupClient  {
+class ColorChooserPopupUIController FINAL : public ColorChooserUIController, public WebCore::PagePopupClient  {
 
 public:
     ColorChooserPopupUIController(ChromeClientImpl*, WebCore::ColorChooserClient*);

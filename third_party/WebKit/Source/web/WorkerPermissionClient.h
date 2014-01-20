@@ -44,7 +44,7 @@ class WebFrame;
 class WebString;
 class WebWorkerPermissionClientProxy;
 
-class WorkerPermissionClient : public WebCore::Supplement<WebCore::WorkerClients> {
+class WorkerPermissionClient FINAL : public WebCore::Supplement<WebCore::WorkerClients> {
 public:
     static PassOwnPtr<WorkerPermissionClient> create(PassOwnPtr<WebWorkerPermissionClientProxy>);
 

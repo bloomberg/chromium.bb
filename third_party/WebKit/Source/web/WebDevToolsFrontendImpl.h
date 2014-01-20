@@ -47,7 +47,7 @@ struct WebDevToolsMessageData;
 
 using WTF::String;
 
-class WebDevToolsFrontendImpl : public blink::WebDevToolsFrontend {
+class WebDevToolsFrontendImpl FINAL : public blink::WebDevToolsFrontend {
     WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 public:
     WebDevToolsFrontendImpl(
@@ -57,7 +57,7 @@ public:
     virtual ~WebDevToolsFrontendImpl();
 
     // WebDevToolsFrontend implementation.
-    virtual void dispatchOnInspectorFrontend(const WebString& message);
+    virtual void dispatchOnInspectorFrontend(const WebString& message) OVERRIDE;
 
 private:
     class InspectorFrontendResumeObserver;

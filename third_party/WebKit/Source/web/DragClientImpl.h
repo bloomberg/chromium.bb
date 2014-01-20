@@ -45,18 +45,18 @@ class KURL;
 namespace blink {
 class WebViewImpl;
 
-class DragClientImpl : public WebCore::DragClient {
+class DragClientImpl FINAL : public WebCore::DragClient {
 public:
     DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 
-    virtual WebCore::DragDestinationAction actionMaskForDrag(WebCore::DragData*);
+    virtual WebCore::DragDestinationAction actionMaskForDrag(WebCore::DragData*) OVERRIDE;
     virtual void startDrag(
         WebCore::DragImage*,
         const WebCore::IntPoint& dragImageOrigin,
         const WebCore::IntPoint& eventPos,
         WebCore::Clipboard* clipboard,
         WebCore::Frame* frame,
-        bool isLinkDrag = false);
+        bool isLinkDrag = false) OVERRIDE;
 
 private:
     WebViewImpl* m_webView;

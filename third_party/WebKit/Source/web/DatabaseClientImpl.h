@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class DatabaseClientImpl : public WebCore::DatabaseClient {
+class DatabaseClientImpl FINAL : public WebCore::DatabaseClient {
 public:
     static PassOwnPtr<DatabaseClientImpl> create();
 

@@ -44,7 +44,7 @@ namespace blink {
 
 class WebPrerendererClient;
 
-class PrerendererClientImpl : public WebCore::PrerendererClient {
+class PrerendererClientImpl FINAL : public WebCore::PrerendererClient {
     WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
 public:
     explicit PrerendererClientImpl(WebPrerendererClient*);

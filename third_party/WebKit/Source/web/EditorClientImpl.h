@@ -42,7 +42,7 @@ class HTMLInputElement;
 namespace blink {
 class WebViewImpl;
 
-class EditorClientImpl : public WebCore::EditorClient {
+class EditorClientImpl FINAL : public WebCore::EditorClient {
 public:
     EditorClientImpl(WebViewImpl*);
 

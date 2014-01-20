@@ -42,7 +42,7 @@ class HTMLInputElement;
 namespace blink {
 class WebViewImpl;
 
-class SpellCheckerClientImpl : public WebCore::SpellCheckerClient, public WebCore::TextCheckerClient {
+class SpellCheckerClientImpl FINAL : public WebCore::SpellCheckerClient, public WebCore::TextCheckerClient {
 public:
     SpellCheckerClientImpl(WebViewImpl*);
 
@@ -61,7 +61,7 @@ public:
     virtual bool spellingUIIsShowing() OVERRIDE;
     virtual void requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest>) OVERRIDE;
 
-    virtual WebCore::TextCheckerClient& textChecker() { return *this; }
+    virtual WebCore::TextCheckerClient& textChecker() OVERRIDE { return *this; }
 
 private:
     // Returns whether or not the focused control needs spell-checking.

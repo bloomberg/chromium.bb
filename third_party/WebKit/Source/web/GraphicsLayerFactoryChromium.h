@@ -31,7 +31,7 @@
 namespace blink {
 class WebViewImpl;
 
-class GraphicsLayerFactoryChromium : public WebCore::GraphicsLayerFactory {
+class GraphicsLayerFactoryChromium FINAL : public WebCore::GraphicsLayerFactory {
 public:
     explicit GraphicsLayerFactoryChromium(WebViewImpl*);
 

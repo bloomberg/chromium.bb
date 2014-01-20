@@ -39,7 +39,7 @@ class ChromeClientImpl;
 class WebString;
 class WebViewClient;
 
-class ExternalDateTimeChooser : public WebCore::DateTimeChooser {
+class ExternalDateTimeChooser FINAL : public WebCore::DateTimeChooser {
 public:
     static PassRefPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&);
     virtual ~ExternalDateTimeChooser();

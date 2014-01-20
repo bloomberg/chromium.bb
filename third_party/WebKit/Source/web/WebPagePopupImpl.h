@@ -48,10 +48,11 @@ namespace blink {
 class PagePopupChromeClient;
 class WebViewImpl;
 
-class WebPagePopupImpl : public WebPagePopup,
-                         public PageWidgetEventHandler,
-                         public WebCore::PagePopup,
-                         public RefCounted<WebPagePopupImpl> {
+class WebPagePopupImpl FINAL :
+    public WebPagePopup,
+    public PageWidgetEventHandler,
+    public WebCore::PagePopup,
+    public RefCounted<WebPagePopupImpl> {
     WTF_MAKE_NONCOPYABLE(WebPagePopupImpl);
     WTF_MAKE_FAST_ALLOCATED;
 

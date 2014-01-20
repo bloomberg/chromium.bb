@@ -47,7 +47,7 @@ class GeolocationPosition;
 namespace blink {
 
 // Provides a mock object for the geolocation client.
-class GeolocationClientMock : public WebCore::GeolocationClient {
+class GeolocationClientMock FINAL : public WebCore::GeolocationClient {
 public:
     GeolocationClientMock();
     virtual ~GeolocationClientMock();

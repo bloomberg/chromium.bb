@@ -40,7 +40,7 @@ namespace blink {
 
 class WebSharedWorkerRepositoryClient;
 
-class SharedWorkerRepositoryClientImpl : public WebCore::SharedWorkerRepositoryClient {
+class SharedWorkerRepositoryClientImpl FINAL : public WebCore::SharedWorkerRepositoryClient {
     WTF_MAKE_NONCOPYABLE(SharedWorkerRepositoryClientImpl);
 public:
     static PassOwnPtr<SharedWorkerRepositoryClientImpl> create(WebSharedWorkerRepositoryClient* client)

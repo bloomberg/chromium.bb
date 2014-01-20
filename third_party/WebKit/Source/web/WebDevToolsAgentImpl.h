@@ -65,65 +65,66 @@ struct WebMemoryUsageInfo;
 struct WebURLError;
 struct WebDevToolsMessageData;
 
-class WebDevToolsAgentImpl : public WebDevToolsAgentPrivate,
-                             public WebCore::InspectorClient,
-                             public WebCore::InspectorFrontendChannel,
-                             public WebPageOverlay,
-                             private WebThread::TaskObserver {
+class WebDevToolsAgentImpl FINAL :
+    public WebDevToolsAgentPrivate,
+    public WebCore::InspectorClient,
+    public WebCore::InspectorFrontendChannel,
+    public WebPageOverlay,
+    private WebThread::TaskObserver {
 public:
     WebDevToolsAgentImpl(WebViewImpl* webViewImpl, WebDevToolsAgentClient* client);
     virtual ~WebDevToolsAgentImpl();
 
     // WebDevToolsAgentPrivate implementation.
-    virtual void didCreateScriptContext(WebFrameImpl*, int worldId);
-    virtual void webViewResized(const WebSize&);
-    virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&);
+    virtual void didCreateScriptContext(WebFrameImpl*, int worldId) OVERRIDE;
+    virtual void webViewResized(const WebSize&) OVERRIDE;
+    virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) OVERRIDE;
 
     // WebDevToolsAgent implementation.
-    virtual void attach();
-    virtual void reattach(const WebString& savedState);
-    virtual void detach();
-    virtual void didNavigate();
-    virtual void didBeginFrame(int frameId);
-    virtual void didCancelFrame();
-    virtual void willComposite();
-    virtual void didComposite();
-    virtual void dispatchOnInspectorBackend(const WebString& message);
-    virtual void inspectElementAt(const WebPoint& point);
-    virtual void evaluateInWebInspector(long callId, const WebString& script);
-    virtual void setProcessId(long);
-    virtual void setLayerTreeId(int);
+    virtual void attach() OVERRIDE;
+    virtual void reattach(const WebString& savedState) OVERRIDE;
+    virtual void detach() OVERRIDE;
+    virtual void didNavigate() OVERRIDE;
+    virtual void didBeginFrame(int frameId) OVERRIDE;
+    virtual void didCancelFrame() OVERRIDE;
+    virtual void willComposite() OVERRIDE;
+    virtual void didComposite() OVERRIDE;
+    virtual void dispatchOnInspectorBackend(const WebString& message) OVERRIDE;
+    virtual void inspectElementAt(const WebPoint&) OVERRIDE;
+    virtual void evaluateInWebInspector(long callId, const WebString& script) OVERRIDE;
+    virtual void setProcessId(long) OVERRIDE;
+    virtual void setLayerTreeId(int) OVERRIDE;
     // FIXME: remove it once the client side stops firing these.
     virtual void processGPUEvent(double timestamp, int phase, bool foreign) OVERRIDE;
     virtual void processGPUEvent(const GPUEvent&) OVERRIDE;
 
     // InspectorClient implementation.
-    virtual void highlight();
-    virtual void hideHighlight();
-    virtual void updateInspectorStateCookie(const WTF::String&);
-    virtual bool sendMessageToFrontend(const WTF::String&);
+    virtual void highlight() OVERRIDE;
+    virtual void hideHighlight() OVERRIDE;
+    virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
+    virtual bool sendMessageToFrontend(const WTF::String&) OVERRIDE;
 
-    virtual void clearBrowserCache();
-    virtual void clearBrowserCookies();
+    virtual void clearBrowserCache() OVERRIDE;
+    virtual void clearBrowserCookies() OVERRIDE;
 
-    virtual void overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow);
+    virtual void overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow) OVERRIDE;
 
-    virtual void getAllocatedObjects(HashSet<const void*>&);
-    virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
-    virtual void setTraceEventCallback(TraceEventCallback);
+    virtual void getAllocatedObjects(HashSet<const void*>&) OVERRIDE;
+    virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) OVERRIDE;
+    virtual void setTraceEventCallback(TraceEventCallback) OVERRIDE;
     virtual void startGPUEventsRecording() OVERRIDE;
     virtual void stopGPUEventsRecording() OVERRIDE;
 
-    virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&);
-    virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&);
+    virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&) OVERRIDE;
+    virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&) OVERRIDE;
 
     // WebPageOverlay
-    virtual void paintPageOverlay(WebCanvas*);
+    virtual void paintPageOverlay(WebCanvas*) OVERRIDE;
 
 private:
     // WebThread::TaskObserver
-    virtual void willProcessTask();
-    virtual void didProcessTask();
+    virtual void willProcessTask() OVERRIDE;
+    virtual void didProcessTask() OVERRIDE;
 
     void enableViewportEmulation();
     void disableViewportEmulation();

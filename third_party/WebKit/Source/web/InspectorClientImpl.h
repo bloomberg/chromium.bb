@@ -42,40 +42,39 @@ class WebDevToolsAgentClient;
 class WebDevToolsAgentImpl;
 class WebViewImpl;
 
-class InspectorClientImpl : public WebCore::InspectorClient,
-                            public WebCore::InspectorFrontendChannel {
+class InspectorClientImpl FINAL : public WebCore::InspectorClient, public WebCore::InspectorFrontendChannel {
 public:
     explicit InspectorClientImpl(WebViewImpl*);
-    ~InspectorClientImpl();
+    virtual ~InspectorClientImpl();
 
     // InspectorClient methods:
-    virtual void highlight();
-    virtual void hideHighlight();
+    virtual void highlight() OVERRIDE;
+    virtual void hideHighlight() OVERRIDE;
 
-    virtual bool sendMessageToFrontend(const WTF::String&);
+    virtual bool sendMessageToFrontend(const WTF::String&) OVERRIDE;
 
-    virtual void updateInspectorStateCookie(const WTF::String&);
+    virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
 
-    virtual void clearBrowserCache();
-    virtual void clearBrowserCookies();
+    virtual void clearBrowserCache() OVERRIDE;
+    virtual void clearBrowserCookies() OVERRIDE;
 
-    virtual void overrideDeviceMetrics(int, int, float, bool, bool);
+    virtual void overrideDeviceMetrics(int, int, float, bool, bool) OVERRIDE;
 
-    virtual bool overridesShowPaintRects();
-    virtual void setShowPaintRects(bool);
-    virtual void setShowDebugBorders(bool);
-    virtual void setShowFPSCounter(bool);
-    virtual void setContinuousPaintingEnabled(bool);
-    virtual void setShowScrollBottleneckRects(bool);
-    virtual void requestPageScaleFactor(float scale, const WebCore::IntPoint& origin);
+    virtual bool overridesShowPaintRects() OVERRIDE;
+    virtual void setShowPaintRects(bool) OVERRIDE;
+    virtual void setShowDebugBorders(bool) OVERRIDE;
+    virtual void setShowFPSCounter(bool) OVERRIDE;
+    virtual void setContinuousPaintingEnabled(bool) OVERRIDE;
+    virtual void setShowScrollBottleneckRects(bool) OVERRIDE;
+    virtual void requestPageScaleFactor(float scale, const WebCore::IntPoint& origin) OVERRIDE;
 
-    virtual void getAllocatedObjects(HashSet<const void*>&);
-    virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
+    virtual void getAllocatedObjects(HashSet<const void*>&) OVERRIDE;
+    virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) OVERRIDE;
 
-    virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&);
-    virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&);
+    virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&) OVERRIDE;
+    virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&) OVERRIDE;
 
-    virtual void setTraceEventCallback(TraceEventCallback);
+    virtual void setTraceEventCallback(TraceEventCallback) OVERRIDE;
 
     virtual void startGPUEventsRecording() OVERRIDE;
     virtual void stopGPUEventsRecording() OVERRIDE;

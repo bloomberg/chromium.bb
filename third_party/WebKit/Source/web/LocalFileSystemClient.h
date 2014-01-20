@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class LocalFileSystemClient : public WebCore::FileSystemClient {
+class LocalFileSystemClient FINAL : public WebCore::FileSystemClient {
 public:
     static PassOwnPtr<FileSystemClient> create();
 

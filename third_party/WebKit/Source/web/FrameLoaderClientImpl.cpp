@@ -234,14 +234,6 @@ bool FrameLoaderClientImpl::hasWebView() const
     return m_webFrame->viewImpl();
 }
 
-bool FrameLoaderClientImpl::hasFrameView() const
-{
-    // The Mac port has this notion of a WebFrameView, which seems to be
-    // some wrapper around an NSView.  Since our equivalent is HWND, I guess
-    // we have a "frameview" whenever we have the toplevel HWND.
-    return m_webFrame->viewImpl();
-}
-
 void FrameLoaderClientImpl::detachedFromParent()
 {
     // Alert the client that the frame is being detached. This is the last

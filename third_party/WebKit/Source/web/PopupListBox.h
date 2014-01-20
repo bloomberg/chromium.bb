@@ -84,7 +84,7 @@ struct PopupItem {
 
 // This class uses WebCore code to paint and handle events for a drop-down list
 // box ("combobox" on Windows).
-class PopupListBox : public FramelessScrollView, public PopupContent {
+class PopupListBox FINAL : public FramelessScrollView, public PopupContent {
 public:
     static PassRefPtr<PopupListBox> create(PopupMenuClient* client, bool deviceSupportsTouch)
     {

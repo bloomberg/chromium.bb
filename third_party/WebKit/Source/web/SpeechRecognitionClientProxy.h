@@ -37,9 +37,9 @@ namespace blink {
 class WebSpeechRecognizer;
 class WebString;
 
-class SpeechRecognitionClientProxy : public WebCore::SpeechRecognitionClient, public WebSpeechRecognizerClient {
+class SpeechRecognitionClientProxy FINAL : public WebCore::SpeechRecognitionClient, public WebSpeechRecognizerClient {
 public:
-    ~SpeechRecognitionClientProxy();
+    virtual ~SpeechRecognitionClientProxy();
 
     // Constructing a proxy object with a 0 WebSpeechRecognizer is safe in
     // itself, but attempting to call start/stop/abort on it will crash.

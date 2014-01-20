@@ -59,39 +59,40 @@ class WebMediaPlayer;
 
 // This class serves as a bridge between WebCore::MediaPlayer and
 // blink::WebMediaPlayer.
-class WebMediaPlayerClientImpl : public WebCore::MediaPlayer, public WebMediaPlayerClient {
+class WebMediaPlayerClientImpl FINAL : public WebCore::MediaPlayer, public WebMediaPlayerClient {
 
 public:
     static PassOwnPtr<WebCore::MediaPlayer> create(WebCore::MediaPlayerClient*);
+
+    virtual ~WebMediaPlayerClientImpl();
 
     // Returns the encapsulated blink::WebMediaPlayer.
     WebMediaPlayer* mediaPlayer() const;
 
     // WebMediaPlayerClient methods:
-    virtual ~WebMediaPlayerClientImpl();
-    virtual void networkStateChanged();
-    virtual void readyStateChanged();
-    virtual void timeChanged();
-    virtual void repaint();
-    virtual void durationChanged();
-    virtual void sizeChanged();
-    virtual void setOpaque(bool);
-    virtual double volume() const;
-    virtual void playbackStateChanged();
-    virtual WebMediaPlayer::Preload preload() const;
-    virtual void keyAdded(const WebString& keySystem, const WebString& sessionId);
-    virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode);
-    virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL);
-    virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength);
-    virtual WebPlugin* createHelperPlugin(const WebString& pluginType, WebFrame*);
-    virtual void closeHelperPluginSoon(WebFrame*);
-    virtual bool needsWebLayerForVideo() const;
-    virtual void setWebLayer(WebLayer*);
-    virtual void addTextTrack(WebInbandTextTrack*);
-    virtual void removeTextTrack(WebInbandTextTrack*);
-    virtual void mediaSourceOpened(WebMediaSource*);
-    virtual void requestFullscreen();
-    virtual void requestSeek(double);
+    virtual void networkStateChanged() OVERRIDE;
+    virtual void readyStateChanged() OVERRIDE;
+    virtual void timeChanged() OVERRIDE;
+    virtual void repaint() OVERRIDE;
+    virtual void durationChanged() OVERRIDE;
+    virtual void sizeChanged() OVERRIDE;
+    virtual void setOpaque(bool) OVERRIDE;
+    virtual double volume() const OVERRIDE;
+    virtual void playbackStateChanged() OVERRIDE;
+    virtual WebMediaPlayer::Preload preload() const OVERRIDE;
+    virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) OVERRIDE;
+    virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
+    virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) OVERRIDE;
+    virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
+    virtual WebPlugin* createHelperPlugin(const WebString& pluginType, WebFrame*) OVERRIDE;
+    virtual void closeHelperPluginSoon(WebFrame*) OVERRIDE;
+    virtual bool needsWebLayerForVideo() const OVERRIDE;
+    virtual void setWebLayer(WebLayer*) OVERRIDE;
+    virtual void addTextTrack(WebInbandTextTrack*) OVERRIDE;
+    virtual void removeTextTrack(WebInbandTextTrack*) OVERRIDE;
+    virtual void mediaSourceOpened(WebMediaSource*) OVERRIDE;
+    virtual void requestFullscreen() OVERRIDE;
+    virtual void requestSeek(double) OVERRIDE;
 
     // MediaPlayer methods:
     virtual void load(WebMediaPlayer::LoadType, const WTF::String& url) OVERRIDE;
@@ -171,7 +172,7 @@ private:
     // AudioClientImpl wraps an AudioSourceProviderClient.
     // When the audio format is known, Chromium calls setFormat() which then dispatches into WebCore.
 
-    class AudioClientImpl : public blink::WebAudioSourceProviderClient {
+    class AudioClientImpl FINAL : public blink::WebAudioSourceProviderClient {
     public:
         AudioClientImpl(WebCore::AudioSourceProviderClient* client)
             : m_client(client)
@@ -181,7 +182,7 @@ private:
         virtual ~AudioClientImpl() { }
 
         // WebAudioSourceProviderClient
-        virtual void setFormat(size_t numberOfChannels, float sampleRate);
+        virtual void setFormat(size_t numberOfChannels, float sampleRate) OVERRIDE;
 
     private:
         WebCore::AudioSourceProviderClient* m_client;
@@ -190,7 +191,7 @@ private:
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider.
     // provideInput() calls into Chromium to get a rendered audio stream.
 
-    class AudioSourceProviderImpl : public WebCore::AudioSourceProvider {
+    class AudioSourceProviderImpl FINAL : public WebCore::AudioSourceProvider {
     public:
         AudioSourceProviderImpl()
             : m_webAudioSourceProvider(0)
@@ -203,8 +204,8 @@ private:
         void wrap(WebAudioSourceProvider*);
 
         // WebCore::AudioSourceProvider
-        virtual void setClient(WebCore::AudioSourceProviderClient*);
-        virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess);
+        virtual void setClient(WebCore::AudioSourceProviderClient*) OVERRIDE;
+        virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess) OVERRIDE;
 
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;

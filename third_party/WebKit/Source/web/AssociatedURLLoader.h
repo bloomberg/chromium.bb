@@ -44,17 +44,17 @@ namespace blink {
 class WebFrameImpl;
 
 // This class is used to implement WebFrame::createAssociatedURLLoader.
-class AssociatedURLLoader : public WebURLLoader {
+class AssociatedURLLoader FINAL : public WebURLLoader {
     WTF_MAKE_NONCOPYABLE(AssociatedURLLoader);
 public:
     AssociatedURLLoader(PassRefPtr<WebFrameImpl>, const WebURLLoaderOptions&);
     ~AssociatedURLLoader();
 
     // WebURLLoader methods:
-    virtual void loadSynchronously(const WebURLRequest&, WebURLResponse&, WebURLError&, WebData&);
-    virtual void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*);
-    virtual void cancel();
-    virtual void setDefersLoading(bool);
+    virtual void loadSynchronously(const WebURLRequest&, WebURLResponse&, WebURLError&, WebData&) OVERRIDE;
+    virtual void loadAsynchronously(const WebURLRequest&, WebURLLoaderClient*) OVERRIDE;
+    virtual void cancel() OVERRIDE;
+    virtual void setDefersLoading(bool) OVERRIDE;
 
 private:
 

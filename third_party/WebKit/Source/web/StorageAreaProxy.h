@@ -42,23 +42,23 @@ class Page;
 class SecurityOrigin;
 class Storage;
 
-class StorageAreaProxy : public StorageArea {
+class StorageAreaProxy FINAL : public StorageArea {
 public:
     StorageAreaProxy(PassOwnPtr<blink::WebStorageArea>, StorageType);
     virtual ~StorageAreaProxy();
 
     // The HTML5 DOM Storage API
-    virtual unsigned length(ExceptionState&, Frame* sourceFrame);
-    virtual String key(unsigned index, ExceptionState&, Frame* sourceFrame);
-    virtual String getItem(const String& key, ExceptionState&, Frame* sourceFrame);
-    virtual void setItem(const String& key, const String& value, ExceptionState&, Frame* sourceFrame);
-    virtual void removeItem(const String& key, ExceptionState&, Frame* sourceFrame);
-    virtual void clear(ExceptionState&, Frame* sourceFrame);
-    virtual bool contains(const String& key, ExceptionState&, Frame* sourceFrame);
+    virtual unsigned length(ExceptionState&, Frame* sourceFrame) OVERRIDE;
+    virtual String key(unsigned index, ExceptionState&, Frame* sourceFrame) OVERRIDE;
+    virtual String getItem(const String& key, ExceptionState&, Frame* sourceFrame) OVERRIDE;
+    virtual void setItem(const String& key, const String& value, ExceptionState&, Frame* sourceFrame) OVERRIDE;
+    virtual void removeItem(const String& key, ExceptionState&, Frame* sourceFrame) OVERRIDE;
+    virtual void clear(ExceptionState&, Frame* sourceFrame) OVERRIDE;
+    virtual bool contains(const String& key, ExceptionState&, Frame* sourceFrame) OVERRIDE;
 
-    virtual bool canAccessStorage(Frame*);
+    virtual bool canAccessStorage(Frame*) OVERRIDE;
 
-    virtual size_t memoryBytesUsedByCache();
+    virtual size_t memoryBytesUsedByCache() OVERRIDE;
 
     static void dispatchLocalStorageEvent(
             const String& key, const String& oldValue, const String& newValue,

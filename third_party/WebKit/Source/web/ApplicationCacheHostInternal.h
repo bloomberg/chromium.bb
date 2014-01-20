@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class ApplicationCacheHostInternal : public blink::WebApplicationCacheHostClient {
+class ApplicationCacheHostInternal FINAL : public blink::WebApplicationCacheHostClient {
 public:
     ApplicationCacheHostInternal(ApplicationCacheHost* host)
         : m_innerHost(host)
@@ -47,17 +47,17 @@ public:
         m_outerHost = adoptPtr(webFrame->client()->createApplicationCacheHost(webFrame, this));
     }
 
-    virtual void didChangeCacheAssociation()
+    virtual void didChangeCacheAssociation() OVERRIDE
     {
         // FIXME: Prod the inspector to update it's notion of what cache the page is using.
     }
 
-    virtual void notifyEventListener(blink::WebApplicationCacheHost::EventID eventID)
+    virtual void notifyEventListener(blink::WebApplicationCacheHost::EventID eventID) OVERRIDE
     {
         m_innerHost->notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0);
     }
 
-    virtual void notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone)
+    virtual void notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone) OVERRIDE
     {
         m_innerHost->notifyApplicationCache(ApplicationCacheHost::PROGRESS_EVENT, progressTotal, progressDone);
     }

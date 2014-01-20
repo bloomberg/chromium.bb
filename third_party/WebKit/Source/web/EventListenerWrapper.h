@@ -43,13 +43,13 @@ class WebDOMEventListener;
 
 // FIXME: Remove the DeprecatedEventListenerWrapper class below once Chromium
 // switched to using WebDOMEvent.
-class EventListenerWrapper : public WebCore::EventListener {
+class EventListenerWrapper FINAL : public WebCore::EventListener {
 public:
     EventListenerWrapper(WebDOMEventListener*);
-    ~EventListenerWrapper();
+    virtual ~EventListenerWrapper();
 
-    virtual bool operator==(const WebCore::EventListener&);
-    virtual void handleEvent(WebCore::ExecutionContext*, WebCore::Event*);
+    virtual bool operator==(const WebCore::EventListener&) OVERRIDE;
+    virtual void handleEvent(WebCore::ExecutionContext*, WebCore::Event*) OVERRIDE;
 
     void webDOMEventListenerDeleted();
 

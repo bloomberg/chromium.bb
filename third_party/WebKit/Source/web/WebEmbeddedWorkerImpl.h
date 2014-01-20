@@ -46,7 +46,7 @@ namespace blink {
 class ServiceWorkerGlobalScopeProxy;
 class WebView;
 
-class WebEmbeddedWorkerImpl :
+class WebEmbeddedWorkerImpl FINAL :
     public WebEmbeddedWorker,
     public WebFrameClient {
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
