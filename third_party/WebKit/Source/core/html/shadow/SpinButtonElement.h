@@ -49,6 +49,7 @@ public:
         virtual bool shouldSpinButtonRespondToWheelEvents() = 0;
         virtual void spinButtonStepDown() = 0;
         virtual void spinButtonStepUp() = 0;
+        virtual void spinButtonDidReleaseMouseCapture() = 0;
     };
 
     // The owner of SpinButtonElement must call removeSpinButtonOwner

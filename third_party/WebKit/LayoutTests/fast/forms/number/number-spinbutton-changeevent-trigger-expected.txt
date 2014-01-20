@@ -1,0 +1,10 @@
+Only input event occurs on mouse down
+PASS inputEventCounter is 1
+PASS changeEventCounter is 0
+Only change event occurs on mouse up
+PASS inputEventCounter is 1
+PASS changeEventCounter is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
