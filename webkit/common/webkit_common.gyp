@@ -84,21 +84,16 @@
             'cursors/webcursor_null.cc',
           ],
         }],
-        ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
-        }, {  # else: OS=="mac"
+        ['OS=="mac"', {
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
             ],
           },
         }],
-        ['OS!="win"', {
-          'sources/': [['exclude', '_win\\.cc$']],
-        }, {  # else: OS=="win"
+        ['OS=="win"', {
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4800, 4267 ],
-          'sources/': [['exclude', '_posix\\.cc$']],
         }],
       ],
     },

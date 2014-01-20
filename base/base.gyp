@@ -792,12 +792,6 @@
           'dependencies': [
             '../third_party/libevent/libevent.gyp:libevent'
           ],
-          'sources/': [
-            ['exclude', '^win/'],
-          ],
-          'sources!': [
-            'win/win_util_unittest.cc',
-          ],
         }],
         ['use_aura==1 and use_x11==1',  {
           'sources': [

@@ -861,11 +861,6 @@
               ['exclude', '(^|/)ios/'],
             ]
           }],
-          ['OS != "mac" or >(nacl_untrusted_build)==1', {
-              'sources!': [
-                'mac/scoped_aedesc.h'
-              ],
-          }],
           # For now, just test the *BSD platforms enough to exclude them.
           # Subsequent changes will include them further.
           ['OS != "freebsd" or >(nacl_untrusted_build)==1', {
@@ -874,14 +869,6 @@
           ],
           ['OS != "openbsd" or >(nacl_untrusted_build)==1', {
               'sources/': [ ['exclude', '_openbsd\\.cc$'] ],
-            },
-          ],
-          ['OS != "win" or >(nacl_untrusted_build)==1', {
-              'sources/': [ ['exclude', '^win/'] ],
-            },
-          ],
-          ['OS != "android" or >(nacl_untrusted_build)==1', {
-              'sources/': [ ['exclude', '^android/'] ],
             },
           ],
           ['OS == "win" and >(nacl_untrusted_build)==0', {
@@ -930,11 +917,6 @@
               ['exclude', '^file_util_linux\\.cc$'],
               ['exclude', '^process/process_linux\\.cc$'],
               ['exclude', '^sys_info_linux\\.cc$'],
-            ],
-          }],
-          ['<(chromeos)!=1 or >(nacl_untrusted_build)==1', {
-            'sources/': [
-              ['exclude', '^chromeos/'],
             ],
           }],
           # Remove all unnecessary files for build_nexe.py to avoid exceeding

@@ -647,7 +647,6 @@
           ],
         }, { # else: chromeos!=1
           'sources/': [
-            ['exclude', '/chromeos/'],
             ['exclude', 'display/output_configurator_animation.cc'],
             ['exclude', 'display/output_configurator_animation.h'],
           ],

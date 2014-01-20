@@ -104,13 +104,7 @@
         }], 
         ['toolkit_uses_gtk == 0',{
             'sources/': [['exclude', '_cairo\\.cc$']]
-        }],
-        ['OS!="mac"', {'sources/': [['exclude', '_mac\\.(cc|mm?)$']]}],
-        ['OS!="win"', {'sources/': [['exclude', '_win\\.cc$']]
-          }, {  # else: OS=="win"
-            'sources/': [['exclude', '_posix\\.cc$']]
-        }],
-        ['toolkit_uses_gtk == 1', {
+          }, {  # else: toolkit_uses_gtk == 1
           'dependencies': [
             # For FT_Init_FreeType and friends.
             '../build/linux/system.gyp:freetype2',

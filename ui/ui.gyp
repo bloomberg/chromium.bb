@@ -503,9 +503,6 @@
             'base/dragdrop/drag_drop_types.h',
             'base/dragdrop/os_exchange_data.cc',
           ],
-          'sources/': [
-            ['exclude', '^base/win/'],
-          ],
         }],
         ['OS=="mac"', {
           'dependencies': [
