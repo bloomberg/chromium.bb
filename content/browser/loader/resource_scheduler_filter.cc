@@ -20,6 +20,13 @@ ResourceSchedulerFilter::~ResourceSchedulerFilter() {
 
 bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message,
                                                 bool* message_was_ok) {
+  ResourceScheduler* scheduler =
+      ResourceDispatcherHostImpl::Get()->scheduler();
+  // scheduler can be NULL during shutdown, in which case it's ok to ignore the
+  // renderer's messages.
+  if (!scheduler)
+    return false;
+
   switch (message.type()) {
     case ViewHostMsg_FrameNavigate::ID: {
       PickleIterator iter(message);
@@ -30,15 +37,13 @@ bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message,
       }
       if (PageTransitionIsMainFrame(params.transition) &&
           !params.was_within_same_page) {
-        ResourceDispatcherHostImpl::Get()->scheduler()->OnNavigate(
-            child_id_, message.routing_id());
+        scheduler->OnNavigate(child_id_, message.routing_id());
       }
       break;
     }
 
     case ViewHostMsg_WillInsertBody::ID:
-      ResourceDispatcherHostImpl::Get()->scheduler()->OnWillInsertBody(
-          child_id_, message.routing_id());
+      scheduler->OnWillInsertBody(child_id_, message.routing_id());
       break;
 
     default:
