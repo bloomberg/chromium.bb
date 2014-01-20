@@ -55,6 +55,7 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
+    static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline void* toInternalPointer(TestInterfacePythonImplementation* impl)

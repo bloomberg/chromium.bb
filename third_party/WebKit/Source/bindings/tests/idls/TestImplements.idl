@@ -26,25 +26,23 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This IDL file is for testing the bindings code generator and for tracking
-// changes in its ouput.
-interface TestImplements {
-    static readonly attribute long implementsStaticReadOnlyAttr;
-    static attribute DOMString implementsStaticAttr;
-    readonly attribute DOMString implementsStr1;
-    attribute DOMString implementsStr2;
-    [Custom] attribute DOMString implementsStr3;
-    attribute Node implementsNode;
-    attribute EventHandler eventHandlerAttribute;
+[
+    NoInterfaceObject,  // Always used on target of 'implements'
+] interface TestImplements {
+    static readonly attribute long implementsStaticReadOnlyLongAttribute;
+    static attribute DOMString implementsStaticStringAttribute;
+    readonly attribute DOMString implementsReadonlyStringAttribute;
+    attribute DOMString implementsStringAttribute;
+    attribute Node implementsNodeAttribute;
+    attribute EventHandler implementsEventHandlerAttribute;
 
-    void implementsMethod1();
-    [CallWith=ExecutionContext, RaisesException] TestObject implementsMethod2(DOMString strArg, TestObject objArg);
-    [Custom] void implementsMethod3();
-    static void implementsMethod4();
+    void implementsVoidMethod();
+    [CallWith=ExecutionContext, RaisesException] TestInterfaceEmpty implementsComplexMethod(DOMString strArg, TestInterfaceEmpty testInterfaceEmptyArg);
+    [Custom] void implementsCustomVoidMethod();
+    static void implementsStaticVoidMethod();
 
-    const unsigned short IMPLEMENTSCONSTANT1 = 1;
-    [Reflect=CONST_IMPL] const unsigned short IMPLEMENTSCONSTANT2 = 2;
+    const unsigned short IMPLEMENTS_CONSTANT_1 = 1;
+    [Reflect=IMPLEMENTS_REFLECT_CONSTANT] const unsigned short IMPLEMENTS_CONSTANT_2 = 2;
 
-    [RuntimeEnabled=FeatureName23] attribute Node Node23;
-    [PerContextEnabled=FeatureName24] attribute Node Node24;
+    [RuntimeEnabled=ImplementsFeatureName] attribute Node implementsRuntimeEnabledNodeAttribute;
 };

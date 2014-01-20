@@ -166,10 +166,10 @@ def cpp_value(interface, method, number_of_arguments):
     # Truncate omitted optional arguments
     arguments = method.arguments[:number_of_arguments]
     cpp_arguments = v8_utilities.call_with_arguments(method)
-    cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
     if ('ImplementedBy' in method.extended_attributes and
         not method.is_static):
         cpp_arguments.append('imp')
+    cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
     if 'RaisesException' in method.extended_attributes:
         cpp_arguments.append('exceptionState')
 
@@ -185,7 +185,11 @@ def v8_set_return_value(interface_name, method, cpp_value):
     # [CallWith=ScriptState], [RaisesException]
     if (has_extended_attribute_value(method, 'CallWith', 'ScriptState') or
         'RaisesException' in extended_attributes):
-        cpp_value = 'result'  # use local variable for value
+        # use local variable for value
+        if v8_types.is_interface_type(idl_type):
+            cpp_value = 'result.release()'
+        else:
+            cpp_value = 'result'
     script_wrappable = 'imp' if v8_types.inherits_interface(interface_name, 'Node') else ''
     return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable)
 

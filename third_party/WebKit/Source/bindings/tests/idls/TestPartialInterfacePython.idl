@@ -40,5 +40,6 @@
 
     void partialVoidMethod();
     static void partialStaticVoidMethod();
+    void partialVoidMethodLongArg(long longArg);
     [CallWith=ExecutionContext, RaisesException] void partialCallWithExecutionContextRaisesExceptionVoidMethod();
 };

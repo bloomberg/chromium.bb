@@ -44,3 +44,5 @@
     [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
     [PerWorldBindings] void voidMethod();
 };
+
+TestInterfacePython implements TestImplements;

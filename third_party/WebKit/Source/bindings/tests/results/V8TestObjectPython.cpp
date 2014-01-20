@@ -6422,6 +6422,23 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallb
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void raisesExceptionTestInterfaceEmptyVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionTestInterfaceEmptyVoidMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    RefPtr<TestInterfaceEmpty> result = imp->raisesExceptionTestInterfaceEmptyVoidMethod(exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    v8SetReturnValue(info, result.release());
+}
+
+static void raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::raisesExceptionTestInterfaceEmptyVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void readOnlyVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -6851,6 +6868,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"raisesExceptionVoidMethodOptionalLongArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalLongArgMethodCallback, 0, 0},
     {"raisesExceptionVoidMethodTestCallbackInterfaceArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback, 0, 1},
     {"raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0},
+    {"raisesExceptionTestInterfaceEmptyVoidMethod", TestObjectPythonV8Internal::raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback, 0, 0},
     {"strictTypeCheckingVoidMethodTestInterfaceEmptyArg", TestObjectPythonV8Internal::strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArg", TestObjectPythonV8Internal::strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"treatReturnedNullStringAsNullStringMethod", TestObjectPythonV8Internal::treatReturnedNullStringAsNullStringMethodMethodCallback, 0, 0},

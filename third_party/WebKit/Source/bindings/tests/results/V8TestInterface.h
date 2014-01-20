@@ -54,7 +54,7 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
-    static void implementsMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #if ENABLE(CONDITION_PARTIAL)
     static void supplementalMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #endif // ENABLE(CONDITION_PARTIAL)

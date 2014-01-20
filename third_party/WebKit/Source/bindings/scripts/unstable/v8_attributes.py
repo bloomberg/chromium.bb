@@ -261,8 +261,11 @@ def setter_expression(interface, attribute, contents):
     if idl_type == 'EventHandler':
         # FIXME: pass the isolate instead of the isolated world
         isolated_world = 'isolatedWorldForIsolate(info.GetIsolate())'
+        getter_name = v8_utilities.scoped_name(interface, attribute, cpp_name(attribute))
+        getter_arguments = arguments + [isolated_world]
+        contents['event_handler_getter_expression'] = '%s(%s)' % (
+            getter_name, ', '.join(getter_arguments))
         arguments.extend(['V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)', isolated_world])
-        contents['event_handler_getter_expression'] = 'imp->%s(%s)' % (cpp_name(attribute), isolated_world)
     elif v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
         # FIXME: should be able to eliminate WTF::getPtr in most or all cases
         arguments.append('WTF::getPtr(cppValue)')
