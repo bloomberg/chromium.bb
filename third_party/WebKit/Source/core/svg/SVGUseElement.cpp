@@ -167,10 +167,10 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
     if (!m_wasInsertedByParser) {
         buildPendingResource();
 
-        m_haveFiredLoadEvent = true;
-        sendSVGLoadEventIfPossibleAsynchronously();
+        if (!isStructurallyExternal()) {
+            sendSVGLoadEventIfPossibleAsynchronously();
+        }
     }
-
     return InsertionDone;
 }
 
@@ -934,10 +934,14 @@ void SVGUseElement::notifyFinished(Resource* resource)
     if (resource->errorOccurred())
         dispatchEvent(Event::create(EventTypeNames::error));
     else if (!resource->wasCanceled()) {
-        if (!m_wasInsertedByParser)
-            ASSERT(m_haveFiredLoadEvent);
-        else if (m_haveFiredLoadEvent)
+        if (m_wasInsertedByParser && m_haveFiredLoadEvent)
             return;
+        if (!isStructurallyExternal())
+            return;
+
+        ASSERT(!m_haveFiredLoadEvent);
+        m_haveFiredLoadEvent = true;
+        sendSVGLoadEventIfPossible();
     }
 }
 
@@ -964,7 +968,6 @@ bool SVGUseElement::instanceTreeIsLoading(SVGElementInstance* targetElementInsta
 void SVGUseElement::finishParsingChildren()
 {
     SVGGraphicsElement::finishParsingChildren();
-    m_haveFiredLoadEvent = true;
     if (m_wasInsertedByParser) {
         buildPendingResource();
         m_wasInsertedByParser = false;

@@ -120,7 +120,10 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
         SVGSVGElement* outerSVG = (*it).get();
         if (!outerSVG->isOutermostSVGSVGElement())
             continue;
-        outerSVG->sendSVGLoadEventIfPossible();
+
+        // don't dispatch the load event document is not wellformed (for XML/standalone svg)
+        if (outerSVG->document().wellFormed() || !outerSVG->document().isSVGDocument())
+            outerSVG->sendSVGLoadEventIfPossible();
     }
 }
 

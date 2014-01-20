@@ -58,7 +58,8 @@ public:
 private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
-    virtual bool isStructurallyExternal() const OVERRIDE { return isExternalURIReference(hrefCurrentValue(), document()); }
+    virtual bool isStructurallyExternal() const OVERRIDE { return !hrefCurrentValue().isNull() && isExternalURIReference(hrefCurrentValue(), document()); }
+
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
@@ -76,8 +77,7 @@ private:
     void detachInstance();
 
     void scheduleShadowTreeRecreation();
-
-    virtual bool haveLoadedRequiredResources() OVERRIDE { return m_haveFiredLoadEvent; }
+    virtual bool haveLoadedRequiredResources() OVERRIDE { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
 
     virtual void finishParsingChildren() OVERRIDE;
     virtual bool selfHasRelativeLengths() const OVERRIDE;
