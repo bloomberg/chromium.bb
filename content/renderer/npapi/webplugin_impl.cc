@@ -475,6 +475,50 @@ bool WebPluginImpl::isPlaceholder() {
   return false;
 }
 
+WebPluginImpl::LoaderClient::LoaderClient(WebPluginImpl* parent)
+    : parent_(parent) {}
+
+void WebPluginImpl::LoaderClient::willSendRequest(
+    blink::WebURLLoader* loader, blink::WebURLRequest& newRequest,
+    const blink::WebURLResponse& redirectResponse) {
+  parent_->willSendRequest(loader, newRequest, redirectResponse);
+}
+
+void WebPluginImpl::LoaderClient::didSendData(
+    blink::WebURLLoader* loader, unsigned long long bytesSent,
+    unsigned long long totalBytesToBeSent) {
+  parent_->didSendData(loader, bytesSent, totalBytesToBeSent);
+}
+
+void WebPluginImpl::LoaderClient::didReceiveResponse(
+    blink::WebURLLoader* loader, const blink::WebURLResponse& response) {
+  parent_->didReceiveResponse(loader, response);
+}
+
+void WebPluginImpl::LoaderClient::didDownloadData(
+    blink::WebURLLoader* loader, int dataLength, int encodedDataLength) {
+}
+
+void WebPluginImpl::LoaderClient::didReceiveData(
+    blink::WebURLLoader* loader, const char* data,
+    int dataLength, int encodedDataLength) {
+  parent_->didReceiveData(loader, data, dataLength, encodedDataLength);
+}
+
+void WebPluginImpl::LoaderClient::didReceiveCachedMetadata(
+    blink::WebURLLoader* loader, const char* data, int dataLength) {
+}
+
+void WebPluginImpl::LoaderClient::didFinishLoading(
+    blink::WebURLLoader* loader, double finishTime) {
+  parent_->didFinishLoading(loader, finishTime);
+}
+
+void WebPluginImpl::LoaderClient::didFail(
+    blink::WebURLLoader* loader, const blink::WebURLError& error) {
+  parent_->didFail(loader, error);
+}
+
 // -----------------------------------------------------------------------------
 
 WebPluginImpl::WebPluginImpl(
@@ -498,7 +542,8 @@ WebPluginImpl::WebPluginImpl(
       ignore_response_error_(false),
       file_path_(file_path),
       mime_type_(UTF16ToASCII(params.mimeType)),
-      weak_factory_(this) {
+      weak_factory_(this),
+      loader_client_(this) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
   StringToLowerASCII(&mime_type_);
 
@@ -1275,7 +1320,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
   info.loader.reset(webframe_->createAssociatedURLLoader(options));
   if (!info.loader.get())
     return false;
-  info.loader->loadAsynchronously(info.request, this);
+  info.loader->loadAsynchronously(info.request, &loader_client_);
 
   clients_.push_back(info);
   return true;
