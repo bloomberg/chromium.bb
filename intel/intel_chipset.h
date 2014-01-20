@@ -165,6 +165,22 @@
 #define PCI_CHIP_CHERRYVIEW_2		0x22b2
 #define PCI_CHIP_CHERRYVIEW_3		0x22b3
 
+#define PCI_CHIP_SKYLAKE_ULT_GT2	0x1916
+#define PCI_CHIP_SKYLAKE_ULT_GT1	0x1906
+#define PCI_CHIP_SKYLAKE_ULT_GT3	0x1926
+#define PCI_CHIP_SKYLAKE_ULT_GT2F	0x1921
+#define PCI_CHIP_SKYLAKE_ULX_GT1	0x190E
+#define PCI_CHIP_SKYLAKE_ULX_GT2	0x191E
+#define PCI_CHIP_SKYLAKE_DT_GT2		0x1912
+#define PCI_CHIP_SKYLAKE_DT_GT1		0x1902
+#define PCI_CHIP_SKYLAKE_HALO_GT2	0x191B
+#define PCI_CHIP_SKYLAKE_HALO_GT3	0x192B
+#define PCI_CHIP_SKYLAKE_HALO_GT1 	0x190B
+#define PCI_CHIP_SKYLAKE_SRV_GT2	0x191A
+#define PCI_CHIP_SKYLAKE_SRV_GT3	0x192A
+#define PCI_CHIP_SKYLAKE_SRV_GT1	0x190A
+#define PCI_CHIP_SKYLAKE_WKS_GT2 	0x191D
+
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
 				 (devid) == PCI_CHIP_I945_GM || \
@@ -324,12 +340,37 @@
 #define IS_GEN8(devid)		(IS_BROADWELL(devid) || \
 				 IS_CHERRYVIEW(devid))
 
+#define IS_SKL_GT1(devid)	((devid) == PCI_CHIP_SKYLAKE_ULT_GT1	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_ULX_GT1	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_DT_GT1	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT1	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_SRV_GT1)
+
+#define IS_SKL_GT2(devid)	((devid) == PCI_CHIP_SKYLAKE_ULT_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_ULT_GT2F	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_ULX_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_DT_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_SRV_GT2	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_WKS_GT2)
+
+#define IS_SKL_GT3(devid)	((devid) == PCI_CHIP_SKYLAKE_ULT_GT3	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_HALO_GT3	|| \
+				 (devid) == PCI_CHIP_SKYLAKE_SRV_GT3)
+
+#define IS_SKYLAKE(devid)	(IS_SKL_GT1(devid) || \
+				 IS_SKL_GT2(devid) || \
+				 IS_SKL_GT3(devid))
+
+#define IS_GEN9(devid)		IS_SKYLAKE(devid)
+
 #define IS_9XX(dev)		(IS_GEN3(dev) || \
 				 IS_GEN4(dev) || \
 				 IS_GEN5(dev) || \
 				 IS_GEN6(dev) || \
 				 IS_GEN7(dev) || \
-				 IS_GEN8(dev))
+				 IS_GEN8(dev) || \
+				 IS_GEN9(dev))
 
 
 #endif /* _INTEL_CHIPSET_H */
