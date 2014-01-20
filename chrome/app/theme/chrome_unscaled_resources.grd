@@ -80,14 +80,14 @@
         <!-- App Launcher icons for .app shim, dock icon. Unscaled, because the
              icon file built does not depend on UI scale factor. -->
         <if expr="pp_ifdef('_google_chrome')">
-          <include name="IDR_APP_LIST_16" file="google_chrome/mac/app_list_16.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_32" file="google_chrome/mac/app_list_32.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_128" file="google_chrome/mac/app_list_128.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_256" file="google_chrome/mac/app_list_256.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_CANARY_16" file="google_chrome/mac/app_list_canary_16.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_CANARY_32" file="google_chrome/mac/app_list_canary_32.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_CANARY_128" file="google_chrome/mac/app_list_canary_128.png" type="BINDATA" />
-          <include name="IDR_APP_LIST_CANARY_256" file="google_chrome/mac/app_list_canary_256.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_16" file="google_chrome/app_list_16.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_32" file="google_chrome/app_list_32.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_128" file="google_chrome/app_list_128.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_256" file="google_chrome/app_list_256.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_CANARY_16" file="google_chrome/app_list_canary_16.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_CANARY_32" file="google_chrome/app_list_canary_32.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_CANARY_128" file="google_chrome/app_list_canary_128.png" type="BINDATA" />
+          <include name="IDR_APP_LIST_CANARY_256" file="google_chrome/app_list_canary_256.png" type="BINDATA" />
         </if>
         <if expr="not pp_ifdef('_google_chrome')">
           <include name="IDR_APP_LIST_16" file="chromium/mac/app_list_16.png" type="BINDATA" />

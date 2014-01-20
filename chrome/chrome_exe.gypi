@@ -218,8 +218,8 @@
           'conditions': [
             ['branding=="Chrome"', {
               'mac_bundle_resources': [
-                'app/theme/google_chrome/mac/app.icns',
-                'app/theme/google_chrome/mac/document.icns',
+                'app/theme/google_chrome/app.icns',
+                'app/theme/google_chrome/document.icns',
                 'browser/ui/cocoa/applescript/scripting.sdef',
               ],
             }, {  # else: 'branding!="Chrome"
