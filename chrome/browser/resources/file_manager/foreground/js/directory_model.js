@@ -878,14 +878,15 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
     }
   }
 
-  // When the volume where we are is unmounted, fallback to
-  // DEFAULT_MOUNT_POINT. If current directory path is empty, stop the fallback
+  // When the volume where we are is unmounted, fallback to the default volume's
+  // root. If current directory path is empty, stop the fallback
   // since the current directory is initializing now.
-  // TODO(mtomasz): DEFAULT_MOUNT_POINT is deprecated. Use VolumeManager::
-  // getDefaultVolume() after it is implemented.
   if (this.getCurrentDirEntry() &&
-      !this.volumeManager_.getVolumeInfo(this.getCurrentDirEntry()))
-    this.changeDirectory(PathUtil.DEFAULT_MOUNT_POINT);
+      !this.volumeManager_.getVolumeInfo(this.getCurrentDirEntry())) {
+    this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
+      this.changeDirectoryEntry(displayRoot);
+    }.bind(this));
+  }
 };
 
 /**

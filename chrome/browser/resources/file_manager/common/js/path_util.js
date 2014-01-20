@@ -59,14 +59,6 @@ var RootDirectory = Object.freeze({
 var PathUtil = {};
 
 /**
- * The default mount point.
- * TODO(mtomasz): Deprecated. Use the volume manager instead.
- * @type {string}
- * @const
- */
-PathUtil.DEFAULT_MOUNT_POINT = '/Downloads';
-
-/**
  * Checks if the given path represents a special search. Fake entries in
  * RootDirectory correspond to special searches.
  * @param {string} path Path to check.

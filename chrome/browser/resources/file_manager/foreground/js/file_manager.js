@@ -1412,6 +1412,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.volumeManager_.ensureInitialized(callback);
     }.bind(this));
 
+    // Obtains the fallback path.
+    var defaultDisplayRoot;
+    queue.run(function(callback) {
+      this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
+        defaultDisplayRoot = displayRoot;
+        callback();
+      }.bind(this));
+    }.bind(this));
+
     // Resolve the default path.
     var defaultFullPath;
     var candidateFullPath;
@@ -1426,19 +1435,21 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // Resolve the absolute path in case only the file name or an empty string
       // is passed.
       if (!this.defaultPath) {
-        defaultFullPath = PathUtil.DEFAULT_MOUNT_POINT;
+        // TODO(mtomasz): that in this case we can directly jump to #1540
+        // and avoid fullPath conversion -> Entry.
+        defaultFullPath = defaultDisplayRoot.fullPath;
       } else if (this.defaultPath.indexOf('/') === -1) {
         // Path is a file name.
-        defaultFullPath = PathUtil.DEFAULT_MOUNT_POINT + '/' + this.defaultPath;
+        defaultFullPath = defaultDisplayRoot.fullPath + '/' + this.defaultPath;
       } else {
         defaultFullPath = this.defaultPath;
       }
 
       // If Drive is disabled but the path points to Drive's entry, fallback to
-      // DEFAULT_MOUNT_POINT.
+      // defaultDisplayRootPath.
       if (PathUtil.isDriveBasedPath(defaultFullPath) &&
           !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
-        candidateFullPath = PathUtil.DEFAULT_MOUNT_POINT + '/' +
+        candidateFullPath = defaultDisplayRoot.fullPath + '/' +
             PathUtil.basename(defaultFullPath);
       } else {
         candidateFullPath = defaultFullPath;
@@ -1528,27 +1539,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // If the directory is not set at this stage, fallback to the default
     // mount point.
     queue.run(function(callback) {
-      // Cancel this sequence if the current directory has already changed,
-      // or the next current directory is already set.
-      if (tracker.hasChanged || nextCurrentDirEntry) {
-        callback();
-        return;
-      }
-      this.volumeManager_.resolveAbsolutePath(
-          PathUtil.DEFAULT_MOUNT_POINT,
-          function(fallbackEntry) {
-            nextCurrentDirEntry = fallbackEntry;
-            callback();
-          },
-          function() {
-            // Fallback directory not available? Throw an error.
-            error = new Error('Unable to resolve the fallback directory: ' +
-                PathUtil.DEFAULT_MOUNT_POINT);
-            callback();
-          });
-    }.bind(this));
-
-    queue.run(function(callback) {
       // Check error.
       if (error) {
         callback();
@@ -1562,7 +1552,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
       // Finish setup current directory.
       this.finishSetupCurrentDirectory_(
-          nextCurrentDirEntry, selectionEntry, suggestedName);
+          nextCurrentDirEntry || defaultDisplayRoot,
+          selectionEntry,
+          suggestedName);
       callback();
     }.bind(this));
   };

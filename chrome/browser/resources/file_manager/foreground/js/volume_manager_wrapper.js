@@ -235,7 +235,7 @@ VolumeManagerWrapper.prototype.getVolumeInfoByURL = function(url) {
 };
 
 /**
- * Obtains a volume infomration of the current profile.
+ * Obtains a volume information of the current profile.
  *
  * @param {util.VolumeType} volumeType Volume type.
  * @return {VolumeInfo} Found volume info.
@@ -245,6 +245,23 @@ VolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo =
   return this.filterDisabledDriveVolume_(
       this.volumeManager_ &&
       this.volumeManager_.getCurrentProfileVolumeInfo(volumeType));
+};
+
+/**
+ * Obtains the default display root entry.
+ * @param {function(Entry)} callback Callback passed the default display root.
+ */
+VolumeManagerWrapper.prototype.getDefaultDisplayRoot =
+    function(callback) {
+  this.ensureInitialized(function() {
+    var defaultVolume = this.getCurrentProfileVolumeInfo(
+        util.VolumeType.DOWNLOADS);
+    defaultVolume.resolveDisplayRoot(callback, function() {
+      // defaultVolume is DOWNLOADS and resolveDisplayRoot should succeed.
+      throw new Error(
+          'Unexpectedly failed to obtain the default display root.');
+    });
+  }.bind(this));
 };
 
 /**
