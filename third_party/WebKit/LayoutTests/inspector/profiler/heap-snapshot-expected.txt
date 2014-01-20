@@ -28,8 +28,6 @@ Running: heapSnapshotPageOwnedTest
 Running: heapSnapshotRetainersTest
 
 Running: heapSnapshotOrphanNodesTest
-log: Error: Corrupted snapshot. 1 nodes are unreachable from the root:
-log: {"id":2,"name":"Orphan","distance":-5,"nodeIndex":4,"selfSize":0,"type":"object"}
 
 Running: heapSnapshotAggregatesTest
 
@@ -40,4 +38,6 @@ Running: heapSnapshotArraySliceTest
 Running: heapSnapshotNodesProviderTest
 
 Running: heapSnapshotEdgesProviderTest
+
+Running: heapSnapshotLoaderTest
 
