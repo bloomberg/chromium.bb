@@ -979,7 +979,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
 
-  views::corewm::SetWindowHideAnimationDuration(
+  views::corewm::SetWindowVisibilityAnimationDuration(
       login_window_->GetNativeView(),
       base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
   views::corewm::SetWindowVisibilityAnimationTransition(

@@ -70,27 +70,9 @@ VIEWS_EXPORT bool HasWindowVisibilityAnimationTransition(
     aura::Window* window,
     WindowVisibilityAnimationTransition transition);
 
-// Sets the duration of |window|'s show animation.
-VIEWS_EXPORT void SetWindowShowAnimationDuration(
+VIEWS_EXPORT void SetWindowVisibilityAnimationDuration(
     aura::Window* window,
     const base::TimeDelta& duration);
-
-// Sets the duration of |window|'s hide animation.
-VIEWS_EXPORT void SetWindowHideAnimationDuration(
-    aura::Window* window,
-    const base::TimeDelta& duration);
-
-// Returns the duration of |window|'s show animation if it is set and
-// |default_duration| otherwise.
-VIEWS_EXPORT base::TimeDelta GetWindowShowAnimationDuration(
-    aura::Window* window,
-    const base::TimeDelta& default_duration);
-
-// Returns the duration of |window|'s hide animation duration if it is set and
-// |default_duration| otherwise.
-VIEWS_EXPORT base::TimeDelta GetWindowHideAnimationDuration(
-    aura::Window* window,
-    const base::TimeDelta& default_duration);
 
 VIEWS_EXPORT void SetWindowVisibilityAnimationVerticalPosition(
     aura::Window* window,

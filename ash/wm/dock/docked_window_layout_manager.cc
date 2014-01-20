@@ -522,9 +522,6 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
     wm::GetWindowState(dragged_window_)->RemoveObserver(this);
     if (last_active_window_ == dragged_window_)
       last_active_window_ = NULL;
-
-    views::corewm::SetWindowShowAnimationDuration(dragged_window_,
-                                                  base::TimeDelta());
   } else {
     // If this is the first window that got docked by a move update alignment.
     if (alignment_ == DOCKED_ALIGNMENT_NONE)
@@ -534,9 +531,6 @@ void DockedWindowLayoutManager::FinishDragging(DockedAction action,
     // the only opportunity we will have to enforce a window
     // count limit so do it here.
     MaybeMinimizeChildrenExcept(dragged_window_);
-
-    views::corewm::SetWindowShowAnimationDuration(dragged_window_,
-        base::TimeDelta::FromMilliseconds(kFadeDurationMs));
   }
   dragged_window_ = NULL;
   dragged_bounds_ = gfx::Rect();
@@ -673,8 +667,6 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   wm::GetWindowState(child)->AddObserver(this);
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
-  views::corewm::SetWindowShowAnimationDuration(child,
-      base::TimeDelta::FromMilliseconds(kFadeDurationMs));
 }
 
 void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
@@ -696,7 +688,6 @@ void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   wm::GetWindowState(child)->RemoveObserver(this);
   Relayout();
   UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
-  views::corewm::SetWindowShowAnimationDuration(child, base::TimeDelta());
 }
 
 void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
@@ -835,6 +826,21 @@ void DockedWindowLayoutManager::OnWindowBoundsChanged(
     Relayout();
 }
 
+void DockedWindowLayoutManager::OnWindowVisibilityChanging(
+    aura::Window* window, bool visible) {
+  if (IsPopupOrTransient(window))
+    return;
+  int animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
+  if (visible) {
+    animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
+    views::corewm::SetWindowVisibilityAnimationDuration(
+        window, base::TimeDelta::FromMilliseconds(kFadeDurationMs));
+  } else if (wm::GetWindowState(window)->IsMinimized()) {
+    animation_type = WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
+  }
+  views::corewm::SetWindowVisibilityAnimationType(window, animation_type);
+}
+
 void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
   if (dragged_window_ == window) {
     FinishDragging(DOCKED_ACTION_NONE, DOCKED_ACTION_SOURCE_UNKNOWN);
@@ -893,25 +899,21 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
     if (available_room > room_needed) {
       available_room -= room_needed;
     } else {
-      // Slow down the minimize animation.
-      views::corewm::SetWindowHideAnimationDuration(
-          window,
+      // Slow down minimizing animations. Lock duration so that it is not
+      // overridden by other ScopedLayerAnimationSettings down the stack.
+      ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+      settings.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kMinimizeDurationMs));
+      settings.LockTransitionDuration();
       wm::GetWindowState(window)->Minimize();
-      views::corewm::SetWindowHideAnimationDuration(window, base::TimeDelta());
     }
   }
 }
 
 void DockedWindowLayoutManager::MinimizeDockedWindow(
     wm::WindowState* window_state) {
-  aura::Window* window = window_state->window();
-  DCHECK(!IsPopupOrTransient(window));
-  views::corewm::SetWindowVisibilityAnimationType(window,
-      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
-  window->Hide();
-  views::corewm::SetWindowVisibilityAnimationType(window,
-      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+  DCHECK(!IsPopupOrTransient(window_state->window()));
+  window_state->window()->Hide();
   if (window_state->IsActive())
     window_state->Deactivate();
   RecordUmaAction(DOCKED_ACTION_MINIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);

@@ -56,8 +56,7 @@ const float kWindowAnimation_Vertical_TranslateY = 15.f;
 DEFINE_WINDOW_PROPERTY_KEY(int,
                            kWindowVisibilityAnimationTypeKey,
                            WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
-DEFINE_WINDOW_PROPERTY_KEY(int, kWindowShowAnimationDurationKey, 0);
-DEFINE_WINDOW_PROPERTY_KEY(int, kWindowHideAnimationDurationKey, 0);
+DEFINE_WINDOW_PROPERTY_KEY(int, kWindowVisibilityAnimationDurationKey, 0);
 DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationTransition,
                            kWindowVisibilityAnimationTransitionKey,
                            ANIMATE_BOTH);
@@ -67,7 +66,6 @@ DEFINE_WINDOW_PROPERTY_KEY(float,
 
 namespace {
 
-const int kDefaultAnimationDurationMS = 200;
 const int kDefaultAnimationDurationForMenuMS = 150;
 
 const float kWindowAnimation_HideOpacity = 0.f;
@@ -86,11 +84,14 @@ const float kWindowAnimation_Bounce_Scale = 1.02f;
 const int kWindowAnimation_Bounce_DurationMS = 180;
 const int kWindowAnimation_Bounce_GrowShrinkDurationPercent = 40;
 
-base::TimeDelta GetDefaultWindowVisibilityAnimationDuration(
-    aura::Window* window) {
-  int duration_ms = (window->type() == ui::wm::WINDOW_TYPE_MENU) ?
-      kDefaultAnimationDurationForMenuMS : kDefaultAnimationDurationMS;
-  return base::TimeDelta::FromMilliseconds(duration_ms);
+base::TimeDelta GetWindowVisibilityAnimationDuration(aura::Window* window) {
+  int duration =
+      window->GetProperty(kWindowVisibilityAnimationDurationKey);
+  if (duration == 0 && window->type() == ui::wm::WINDOW_TYPE_MENU) {
+    return base::TimeDelta::FromMilliseconds(
+        kDefaultAnimationDurationForMenuMS);
+  }
+  return TimeDelta::FromInternalValue(duration);
 }
 
 // Gets/sets the WindowVisibilityAnimationType associated with a window.
@@ -254,9 +255,9 @@ void AnimateShowWindowCommon(aura::Window* window,
   {
     // Property sets within this scope will be implicitly animated.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    base::TimeDelta duration = GetWindowShowAnimationDuration(window,
-        GetDefaultWindowVisibilityAnimationDuration(window));
-    settings.SetTransitionDuration(duration);
+    base::TimeDelta duration = GetWindowVisibilityAnimationDuration(window);
+    if (duration.ToInternalValue() > 0)
+      settings.SetTransitionDuration(duration);
 
     window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
@@ -272,10 +273,11 @@ void AnimateHideWindowCommon(aura::Window* window,
 
   // Property sets within this scope will be implicitly animated.
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  settings.AddObserver(CreateHidingWindowAnimationObserver(window));
-  base::TimeDelta duration = GetWindowHideAnimationDuration(window,
-      GetDefaultWindowVisibilityAnimationDuration(window));
-  settings.SetTransitionDuration(duration);
+  settings.AddObserver(new HidingWindowAnimationObserver(window));
+
+  base::TimeDelta duration = GetWindowVisibilityAnimationDuration(window);
+  if (duration.ToInternalValue() > 0)
+    settings.SetTransitionDuration(duration);
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(end_transform);
@@ -368,26 +370,17 @@ void AnimateBounce(aura::Window* window) {
 
 void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
   window->layer()->set_delegate(window);
-  if (show) {
+  if (show)
     window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
-    window->layer()->SetVisible(true);
-  }
 
-  base::TimeDelta default_duration = base::TimeDelta::FromMilliseconds(
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
       kWindowAnimation_Rotate_DurationMS);
-  base::TimeDelta duration = show ?
-      GetWindowShowAnimationDuration(window, default_duration) :
-      GetWindowHideAnimationDuration(window, default_duration);
-
-  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  settings.SetTransitionDuration(duration);
 
   if (!show) {
-    settings.AddObserver(CreateHidingWindowAnimationObserver(window));
+    new HidingWindowAnimationObserver(window);
     window->layer()->GetAnimator()->SchedulePauseForProperties(
         duration * (100 - kWindowAnimation_Rotate_OpacityDurationPercent) / 100,
         ui::LayerAnimationElement::OPACITY);
-    window->layer()->SetVisible(false);
   }
   scoped_ptr<ui::LayerAnimationElement> opacity(
       ui::LayerAnimationElement::CreateOpacityElement(
@@ -529,32 +522,10 @@ bool HasWindowVisibilityAnimationTransition(
   return (prop & transition) != 0;
 }
 
-void SetWindowShowAnimationDuration(aura::Window* window,
-                                    const base::TimeDelta& duration) {
-  window->SetProperty(kWindowShowAnimationDurationKey,
+void SetWindowVisibilityAnimationDuration(aura::Window* window,
+                                          const TimeDelta& duration) {
+  window->SetProperty(kWindowVisibilityAnimationDurationKey,
                       static_cast<int>(duration.ToInternalValue()));
-}
-
-void SetWindowHideAnimationDuration(aura::Window* window,
-                                    const base::TimeDelta& duration) {
-  window->SetProperty(kWindowHideAnimationDurationKey,
-                      static_cast<int>(duration.ToInternalValue()));
-}
-
-base::TimeDelta GetWindowShowAnimationDuration(
-    aura::Window* window,
-    const base::TimeDelta& default_duration) {
-  int duration = window->GetProperty(kWindowShowAnimationDurationKey);
-  return (duration == 0) ?
-      default_duration : base::TimeDelta::FromInternalValue(duration);
-}
-
-base::TimeDelta GetWindowHideAnimationDuration(
-    aura::Window* window,
-    const base::TimeDelta& default_duration) {
-  int duration = window->GetProperty(kWindowHideAnimationDurationKey);
-  return (duration == 0) ?
-      default_duration : base::TimeDelta::FromInternalValue(duration);
 }
 
 void SetWindowVisibilityAnimationVerticalPosition(aura::Window* window,

@@ -235,19 +235,14 @@ class TouchSelectionControllerImpl::EditingHandleView
   void SetWidgetVisible(bool visible, bool quick) {
     if (widget_->IsVisible() == visible)
       return;
-    if (visible) {
-      corewm::SetWindowShowAnimationDuration(
-          widget_->GetNativeView(),
-          base::TimeDelta::FromMilliseconds(
-              quick ? kSelectionHandleQuickFadeDurationMs : 0));
+    corewm::SetWindowVisibilityAnimationDuration(
+        widget_->GetNativeView(),
+        base::TimeDelta::FromMilliseconds(
+            quick ? kSelectionHandleQuickFadeDurationMs : 0));
+    if (visible)
       widget_->Show();
-    } else {
-      corewm::SetWindowHideAnimationDuration(
-          widget_->GetNativeView(),
-          base::TimeDelta::FromMilliseconds(
-              quick ? kSelectionHandleQuickFadeDurationMs : 0));
+    else
       widget_->Hide();
-    }
   }
 
   void SetSelectionRectInScreen(const gfx::Rect& rect) {

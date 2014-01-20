@@ -71,9 +71,7 @@ int64 Round64(float f) {
 
 const int kCrossFadeDurationMS = 200;
 
-void AddLayerAnimationsForMinimize(aura::Window* window,
-                                   const base::TimeDelta& duration,
-                                   bool show) {
+void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // Recalculate the transform at restore time since the launcher item may have
   // moved while the window was minimized.
   gfx::Rect bounds = window->bounds();
@@ -107,6 +105,9 @@ void AddLayerAnimationsForMinimize(aura::Window* window,
 
   rotation_about_pivot->SetReversed(show);
 
+  base::TimeDelta duration = window->layer()->GetAnimator()->
+      GetTransitionDuration();
+
   scoped_ptr<ui::LayerAnimationElement> transition(
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
           rotation_about_pivot.release(), duration));
@@ -136,11 +137,10 @@ void AnimateShowWindow_Minimize(aura::Window* window) {
   window->layer()->set_delegate(window);
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  base::TimeDelta duration = views::corewm::GetWindowShowAnimationDuration(
-      window,
-      base::TimeDelta::FromMilliseconds(kLayerAnimationsForMinimizeDurationMS));
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
+      kLayerAnimationsForMinimizeDurationMS);
   settings.SetTransitionDuration(duration);
-  AddLayerAnimationsForMinimize(window, duration, true);
+  AddLayerAnimationsForMinimize(window, true);
 
   // Now that the window has been restored, we need to clear its animation style
   // to default so that normal animation applies.
@@ -153,15 +153,14 @@ void AnimateHideWindow_Minimize(aura::Window* window) {
 
   // Property sets within this scope will be implicitly animated.
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-  base::TimeDelta duration = views::corewm::GetWindowHideAnimationDuration(
-      window,
-      base::TimeDelta::FromMilliseconds(kLayerAnimationsForMinimizeDurationMS));
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
+      kLayerAnimationsForMinimizeDurationMS);
   settings.SetTransitionDuration(duration);
   settings.AddObserver(
       views::corewm::CreateHidingWindowAnimationObserver(window));
   window->layer()->SetVisible(false);
 
-  AddLayerAnimationsForMinimize(window, duration, false);
+  AddLayerAnimationsForMinimize(window, false);
 }
 
 void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
@@ -184,11 +183,8 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
     window->layer()->SetVisible(true);
   }
 
-  base::TimeDelta default_duration =
+  base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kBrightnessGrayscaleFadeDurationMs);
-  base::TimeDelta duration = show ?
-      views::corewm::GetWindowShowAnimationDuration(window, default_duration) :
-      views::corewm::GetWindowHideAnimationDuration(window, default_duration);
 
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.SetTransitionDuration(duration);

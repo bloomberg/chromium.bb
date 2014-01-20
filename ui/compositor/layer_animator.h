@@ -88,6 +88,10 @@ class COMPOSITOR_EXPORT LayerAnimator
   virtual void SetColor(SkColor color);
   SkColor GetTargetColor() const;
 
+  // Returns the default length of animations, including adjustment for slow
+  // animation mode if set.
+  base::TimeDelta GetTransitionDuration() const;
+
   // Sets the layer animation delegate the animator is associated with. The
   // animator does not own the delegate. The layer animator expects a non-NULL
   // delegate for most of its operations, so do not call any methods without
@@ -293,11 +297,7 @@ class COMPOSITOR_EXPORT LayerAnimator
   // starting the animation or adding to the queue.
   void OnScheduled(LayerAnimationSequence* sequence);
 
-  // Returns the default length of animations, including adjustment for slow
-  // animation mode if set.
-  base::TimeDelta GetTransitionDuration() const;
-
-  // Sets |transition_duration_|.
+  // Sets |transition_duration_| unless |is_transition_duration_locked_| is set.
   void SetTransitionDuration(base::TimeDelta duration);
 
   // Clears the animation queues and notifies any running animations that they
@@ -318,6 +318,10 @@ class COMPOSITOR_EXPORT LayerAnimator
 
   // Determines how animations are replaced.
   PreemptionStrategy preemption_strategy_;
+
+  // Whether the length of animations is locked. While it is locked
+  // SetTransitionDuration does not set |transition_duration_|.
+  bool is_transition_duration_locked_;
 
   // The default length of animations.
   base::TimeDelta transition_duration_;
