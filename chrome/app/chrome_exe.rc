@@ -36,13 +36,13 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // icons.  To avoid breaking existing shortcuts, add new icons at the end
 // (following the ordering described above).
 #if defined(GOOGLE_CHROME_BUILD)
-IDR_MAINFRAME           ICON                    "theme\google_chrome\chrome.ico"
-IDR_MAINFRAME_2         ICON                    "theme\google_chrome\chrome2.ico"
-IDR_MAINFRAME_3         ICON                    "theme\google_chrome\chrome3.ico"
-IDR_MAINFRAME_4         ICON                    "theme\google_chrome\chrome4.ico"
+IDR_MAINFRAME           ICON                    "theme\google_chrome\win\chrome.ico"
+IDR_MAINFRAME_2         ICON                    "theme\google_chrome\win\chrome2.ico"
+IDR_MAINFRAME_3         ICON                    "theme\google_chrome\win\chrome3.ico"
+IDR_MAINFRAME_4         ICON                    "theme\google_chrome\win\chrome4.ico"
 // The SXS icon must have an index of 4, the constant is used in Chrome code to
 // identify it.
-IDR_SXS                 ICON                    "theme\google_chrome\chrome_sxs.ico"
+IDR_SXS                 ICON                    "theme\google_chrome\win\chrome_sxs.ico"
 #else
 IDR_MAINFRAME           ICON                    "theme\chromium\win\chromium.ico"
 #endif
@@ -51,8 +51,8 @@ IDR_MAINFRAME           ICON                    "theme\chromium\win\chromium.ico
 // alphabetically after IDR_SXS.
 #if defined(GOOGLE_CHROME_BUILD)
 // The App Launcher icon must have an index of 5 in Chrome, and 6 for SXS.
-IDR_X_APP_LIST          ICON                    "theme\\google_chrome\\app_list.ico"
-IDR_X_APP_LIST_SXS      ICON                    "theme\\google_chrome\\app_list_sxs.ico"
+IDR_X_APP_LIST          ICON                    "theme\\google_chrome\\win\\app_list.ico"
+IDR_X_APP_LIST_SXS      ICON                    "theme\\google_chrome\\win\\app_list_sxs.ico"
 #else
 // The App Launcher icon must have an index of 1 for Chromium.
 IDR_X_APP_LIST          ICON                    "theme\\chromium\\win\\app_list.ico"
