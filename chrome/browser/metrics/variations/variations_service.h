@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
+#include "chrome/browser/metrics/variations/variations_seed_store.h"
 #include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 #include "chrome/common/chrome_version_info.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -103,22 +104,13 @@ class VariationsService
   // ResourceRequestAllowedNotifier::Observer implementation:
   virtual void OnResourceRequestsAllowed() OVERRIDE;
 
-  // Store the given seed data to the given local prefs. Note that |seed_data|
-  // is assumed to be the raw serialized protobuf data stored in a string. It
-  // will be Base64Encoded for storage. If the string is invalid or the encoding
-  // fails, the existing prefs are left as is and the function returns false.
-  bool StoreSeedData(const std::string& seed_data, const base::Time& seed_date);
-
-  // Loads the variations seed data from local state into |seed|. If there is a
-  // problem with loading, the pref value is cleared and false is returned. If
-  // successful, |seed| will contain the loaded data and true is returned.
-  bool LoadVariationsSeedFromPref(VariationsSeed* seed);
-
   // Record the time of the most recent successful fetch.
   void RecordLastFetchTime();
 
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;
+
+  VariationsSeedStore seed_store_;
 
   // Contains the scheduler instance that handles timing for requests to the
   // server. Initially NULL and instantiated when the initial fetch is
@@ -131,9 +123,6 @@ class VariationsService
 
   // The URL to use for querying the Variations server.
   GURL variations_server_url_;
-
-  // Cached serial number from the most recently fetched Variations seed.
-  std::string variations_serial_number_;
 
   // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that
   // it gets called prior to |StartRepeatedVariationsSeedFetch|.

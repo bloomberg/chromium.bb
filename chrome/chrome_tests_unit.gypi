@@ -1042,6 +1042,7 @@
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',
         'browser/metrics/variations/variations_http_header_provider_unittest.cc',
+        'browser/metrics/variations/variations_seed_store_unittest.cc',
         'browser/metrics/variations/variations_service_unittest.cc',
         'browser/metrics/variations/variations_request_scheduler_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',

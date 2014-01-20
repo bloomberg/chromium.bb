@@ -1215,6 +1215,8 @@
         'browser/metrics/variations/variations_request_scheduler_mobile.h',
         'browser/metrics/variations/variations_service.cc',
         'browser/metrics/variations/variations_service.h',
+        'browser/metrics/variations/variations_seed_store.cc',
+        'browser/metrics/variations/variations_seed_store.h',
         'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.cc',
         'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h',
         'browser/native_window_notification_source.h',
