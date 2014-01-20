@@ -45,10 +45,8 @@ class SQLiteStatement;
 class SQLiteTransaction;
 
 extern const int SQLResultDone;
-extern const int SQLResultError;
 extern const int SQLResultOk;
 extern const int SQLResultRow;
-extern const int SQLResultSchema;
 extern const int SQLResultFull;
 extern const int SQLResultInterrupt;
 extern const int SQLResultConstraint;

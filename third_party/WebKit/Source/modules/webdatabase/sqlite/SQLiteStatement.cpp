@@ -250,17 +250,6 @@ String SQLiteStatement::getColumnText(int col)
     return StringImpl::create8BitIfPossible(string, sqlite3_column_bytes16(m_statement, col) / sizeof(UChar));
 }
 
-double SQLiteStatement::getColumnDouble(int col)
-{
-    ASSERT(col >= 0);
-    if (!m_statement)
-        if (prepareAndStep() != SQLITE_ROW)
-            return 0.0;
-    if (columnCount() <= col)
-        return 0.0;
-    return sqlite3_column_double(m_statement, col);
-}
-
 int SQLiteStatement::getColumnInt(int col)
 {
     ASSERT(col >= 0);
@@ -281,28 +270,6 @@ int64_t SQLiteStatement::getColumnInt64(int col)
     if (columnCount() <= col)
         return 0;
     return sqlite3_column_int64(m_statement, col);
-}
-
-bool SQLiteStatement::returnTextResults(int col, Vector<String>& v)
-{
-    ASSERT(col >= 0);
-
-    v.clear();
-
-    if (m_statement)
-        finalize();
-    if (prepare() != SQLITE_OK)
-        return false;
-
-    while (step() == SQLITE_ROW)
-        v.append(getColumnText(col));
-    bool result = true;
-    if (m_database.lastError() != SQLITE_DONE) {
-        result = false;
-        WTF_LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
-    }
-    finalize();
-    return result;
 }
 
 } // namespace WebCore

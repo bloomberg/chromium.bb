@@ -64,11 +64,8 @@ public:
     String getColumnName(int col);
     SQLValue getColumnValue(int col);
     String getColumnText(int col);
-    double getColumnDouble(int col);
     int getColumnInt(int col);
     int64_t getColumnInt64(int col);
-
-    bool returnTextResults(int col, Vector<String>&);
 
 private:
     SQLiteDatabase& m_database;

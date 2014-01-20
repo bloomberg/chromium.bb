@@ -92,7 +92,6 @@ public:
 
     void disable();
     void enable();
-    void setReadOnly();
     void setPermissions(int permissions);
 
     void reset();

@@ -36,10 +36,8 @@
 namespace WebCore {
 
 const int SQLResultDone = SQLITE_DONE;
-const int SQLResultError = SQLITE_ERROR;
 const int SQLResultOk = SQLITE_OK;
 const int SQLResultRow = SQLITE_ROW;
-const int SQLResultSchema = SQLITE_SCHEMA;
 const int SQLResultFull = SQLITE_FULL;
 const int SQLResultInterrupt = SQLITE_INTERRUPT;
 const int SQLResultConstraint = SQLITE_CONSTRAINT;

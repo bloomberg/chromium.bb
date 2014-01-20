@@ -395,11 +395,6 @@ bool DatabaseAuthorizer::allowWrite()
     return !(m_securityEnabled && (m_permissions & ReadOnlyMask || m_permissions & NoAccessMask));
 }
 
-void DatabaseAuthorizer::setReadOnly()
-{
-    m_permissions |= ReadOnlyMask;
-}
-
 void DatabaseAuthorizer::setPermissions(int permissions)
 {
     m_permissions = permissions;

@@ -57,7 +57,6 @@ public:
     DatabaseThread* databaseThread();
 
     void setHasOpenDatabases() { m_hasOpenDatabases = true; }
-    bool hasOpenDatabases() { return m_hasOpenDatabases; }
 
     // When the database cleanup is done, cleanupSync will be signalled.
     bool stopDatabases(DatabaseTaskSynchronizer*);

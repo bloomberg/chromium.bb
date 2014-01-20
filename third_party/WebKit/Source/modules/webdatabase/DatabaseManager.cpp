@@ -265,14 +265,6 @@ PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* con
     return database.release();
 }
 
-bool DatabaseManager::hasOpenDatabases(ExecutionContext* context)
-{
-    RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
-    if (!databaseContext)
-        return false;
-    return databaseContext->hasOpenDatabases();
-}
-
 void DatabaseManager::stopDatabases(ExecutionContext* context, DatabaseTaskSynchronizer* synchronizer)
 {
     RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
