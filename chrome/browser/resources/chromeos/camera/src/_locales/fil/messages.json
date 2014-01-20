@@ -8,7 +8,7 @@
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy",
+    "message": "Andy ",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "Pahayagan",
+    "message": "Newspaper",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -67,6 +67,14 @@
     "message": "Retro '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Photo Lab",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderno",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "I-swirl",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -83,6 +91,10 @@
     "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "Multo",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
     "message": "Kasalukuyang hindi available ang iyong camera. ",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
@@ -92,7 +104,7 @@
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Hndi ma-save ang larawan sa gallery.",
+    "message": "Hindi ma-save ang larawan sa gallery.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Kumuha ng larawan",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "I-toggle ang orasan",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "I-toggle ang maramihang pagkuha",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Aktibo ang orasan",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Di-aktibo ang orasan",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Aktibo ang maramihang pagkuha",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Di-aktibo ang maramihang pagkuha",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Oo",

@@ -67,6 +67,14 @@
     "message": "Retro 60-an",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Makmal Foto",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moden",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Pusar",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -83,6 +91,10 @@
     "message": "Vintaj",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "Bebayang",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
     "message": "Kamera anda tidak tersedia pada masa ini.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
@@ -96,11 +108,11 @@
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Tidak dapat memuatkan galeri.",
+    "message": "Tidak dapat memuatkan galeri",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Tidak dapat memadam gambar yang dipilih.",
+    "message": "Tidak dapat memadamkan gambar yang dipilih.",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Ambil gambar",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Togol pemasa",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Togol berbilang syot",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Pemasa aktif",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Pemasa tidak aktif",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Berbilang syot aktif",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Berbilang syot tidak aktif",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Ya",

@@ -9,6 +9,7 @@ CHROME=google-chrome
 SRC_RESOURCES= \
 	src/_locales/ar/messages.json \
 	src/_locales/bg/messages.json \
+	src/_locales/bn/messages.json \
 	src/_locales/ca/messages.json \
 	src/_locales/cs/messages.json \
 	src/_locales/da/messages.json \
@@ -23,6 +24,7 @@ SRC_RESOURCES= \
 	src/_locales/fi/messages.json \
 	src/_locales/fil/messages.json \
 	src/_locales/fr/messages.json \
+	src/_locales/gu/messages.json \
 	src/_locales/he/messages.json \
 	src/_locales/hi/messages.json \
 	src/_locales/hr/messages.json \
@@ -30,9 +32,12 @@ SRC_RESOURCES= \
 	src/_locales/id/messages.json \
 	src/_locales/it/messages.json \
 	src/_locales/ja/messages.json \
+	src/_locales/kn/messages.json \
 	src/_locales/ko/messages.json \
 	src/_locales/lt/messages.json \
 	src/_locales/lv/messages.json \
+	src/_locales/ml/messages.json \
+	src/_locales/mr/messages.json \
 	src/_locales/ms/messages.json \
 	src/_locales/nl/messages.json \
 	src/_locales/no/messages.json \
@@ -45,6 +50,8 @@ SRC_RESOURCES= \
 	src/_locales/sl/messages.json \
 	src/_locales/sr/messages.json \
 	src/_locales/sv/messages.json \
+	src/_locales/ta/messages.json \
+	src/_locales/te/messages.json \
 	src/_locales/th/messages.json \
 	src/_locales/tr/messages.json \
 	src/_locales/uk/messages.json \

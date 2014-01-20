@@ -1,210 +1,210 @@
 {
   "name": {
-    "message": "Cameră foto",
+    "message": "कॅमेरा",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Faceți fotografii trăsnite utilizând camera web.",
+    "message": "आपल्या वेब कॅमेर्‍यासह विलक्षण चित्रे घ्या.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
-    "message": "Andy",
+    "message": "अँडी",
     "description": "Andy effect's name."
   },
   "bigEyesEffect": {
-    "message": "Ochi mari",
+    "message": "मोठे डोळे",
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "Înfrumusețare",
+    "message": "सौंदर्य",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Colorizare",
+    "message": "रंगीत करा",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Îndrăzneț",
+    "message": "घाबरट",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "Tonuri de gri",
+    "message": "ग्रेस्केल",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "Ziar",
+    "message": "वृत्तपत्र",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
-    "message": "Normal",
+    "message": "सामान्य",
     "description": "Name of the normal effect, which means that no effect will be applied."
   },
   "bigHeadEffect": {
-    "message": "Cap mare",
+    "message": "बढाईखोर",
     "description": "Big Head effect's name."
   },
   "bigJawEffect": {
-    "message": "Falcă mare",
+    "message": "मोठा जबडा",
     "description": "Big Jaw effect's name."
   },
   "bunnyHeadEffect": {
-    "message": "Cap de iepure",
+    "message": "सशाचे डोके",
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
-    "message": "Sepia",
+    "message": "दाट तपकिरी रंग",
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "Retro '30",
+    "message": "रेट्रो '30",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "Retro '50",
+    "message": "रेट्रो '50",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "Retro '60",
+    "message": "रेट्रो '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
   "photoLabEffect": {
-    "message": "Laborator foto",
+    "message": "फोटो लॅब",
     "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
   },
   "modernEffect": {
-    "message": "Modern",
+    "message": "आधुनिक",
     "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
-    "message": "Vârtej",
+    "message": "फिरवणे",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Descentrare",
+    "message": "टिल्ट शिफ्ट",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Cinema ",
+    "message": "सिनेमा",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
-    "message": "Vintage",
+    "message": "व्‍हिन्‍टेज",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
   "ghostEffect": {
-    "message": "Fantomă",
+    "message": "भूत",
     "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
-    "message": "Camera foto este indisponibilă momentan.",
+    "message": "आपला कॅमेरा सध्या अनुपलब्ध आहे.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
-    "message": "Este posibil să fie utilizată de altă aplicație.",
+    "message": "दुसरा अॅप कदाचित याचा वापर करत असावा.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Fotografia nu poate fi salvată în galerie.",
+    "message": "गॅलरीमध्ये चित्र जतन करण्यात अक्षम.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Galeria nu poate fi încărcată.",
+    "message": "गॅलरी लोड करण्यात अक्षम.",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Fotografia selectată nu poate fi ștearsă.",
+    "message": "निवडलेले चित्र हटविण्यात अक्षम.",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Fotografia selectată nu poate fi salvată.",
+    "message": "निवडलेले चित्र जतन करण्यात अक्षम.",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
-    "message": "Accelerarea hardware nu este disponibilă.",
+    "message": "हार्डवेअर प्रवेग उपलब्ध नाही.",
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Este posibil ca placa grafică a computerului să fie incompatibilă sau ca driverele să fie vechi.",
+    "message": "आपल्‍या संगणकाकडे विसंगत ग्राफिक्‍स कार्ड किंवा जुने ड्राइव्‍हर असू शकतात.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "Deschideți galeria",
+    "message": "गॅलरीवर जा",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Activați/dezactivați filtrele",
+    "message": "फिल्टर टॉगल करा",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
-    "message": "Ștergeți",
+    "message": "हटवा",
     "description": "Label for the delete button."
   },
   "exportButton": {
-    "message": "Salvați pe disc",
+    "message": "डिस्कवर जतन करा",
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "Printați",
+    "message": "मुद्रण करा",
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Înapoi",
+    "message": "परत जा",
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Maximizați",
+    "message": "मोठे करा",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
-    "message": "Închideți",
+    "message": "बंद करा",
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "Imagini din galerie",
+    "message": "गॅलरी प्रतिमा",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "Faceți o fotografie",
+    "message": "एक चित्र घ्या",
     "description": "Label for the red picture taking button."
   },
   "toggleTimerButton": {
-    "message": "Activați/dezactivați cronometrul",
+    "message": "टाइमर टॉगल करा",
     "description": "Label for the button to toggle the countdown timer."
   },
   "toggleMultiButton": {
-    "message": "Activați/dezactivați fotografierea multiplă",
+    "message": "मल्‍टि-शॉट टॉगल करा",
     "description": "Label for the button to toggle the multi-shot feature."
   },
   "toggleTimerActiveMessage": {
-    "message": "Cronometru activ",
+    "message": "टाइमर सक्रिय",
     "description": "Message shown when activating the timer."
   },
   "toggleTimerInactiveMessage": {
-    "message": "Cronometru inactiv",
+    "message": "टाइमर निष्क्रिय",
     "description": "Message shown when inactivating the timer."
   },
   "toggleMultiActiveMessage": {
-    "message": "Fotografiere multiplă activă",
+    "message": "मल्टी-शॉट सक्रिय",
     "description": "Message shown when activating the multi-shot feature."
   },
   "toggleMultiInactiveMessage": {
-    "message": "Fotografiere multiplă inactivă",
+    "message": "मल्टी-शॉट निष्क्रिय",
     "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
-    "message": "Da",
+    "message": "होय",
     "description": "Label for the accepting button in the confirmation dialog."
   },
   "dialogNoButton": {
-    "message": "Nu",
+    "message": "नाही",
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "ठीक",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Sigur doriți să eliminați această fotografie din galerie?",
+    "message": "आपण गॅलरीमधून हे चित्र खरोखर काढू इच्छिता?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

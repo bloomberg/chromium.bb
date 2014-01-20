@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Tag skøre billeder med dit webkamera.",
+    "message": "Tag sjove billeder med dit webkamera.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -67,12 +67,20 @@
     "message": "Retro – 60'erne",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Mørkekammer",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderne",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Hvirvel",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Tilt/shift",
+    "message": "Miniature",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Spøgelse",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Dit kamera er ikke tilgængeligt i øjeblikket.",
@@ -96,7 +108,7 @@
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
-    "message": "Galleriet kunne ikke indlæses.",
+    "message": "Galleriet kan ikke indlæses.",
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
@@ -120,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Juster filtre",
+    "message": "Filtre til/fra",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -148,12 +160,36 @@
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
-    "message": "Billeder i galleriet",
+    "message": "Galleribilleder",
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
     "message": "Tag et billede",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Timer til/fra",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Sekvensfoto til/fra",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Timeren er aktiveret",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Timeren er deaktiveret",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Sekvensfoto er aktiveret",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Sekvensfoto er deaktiveret",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Ja",

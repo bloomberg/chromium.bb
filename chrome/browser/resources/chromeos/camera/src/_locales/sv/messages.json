@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "Dagstidning",
+    "message": "Tidning",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -67,6 +67,14 @@
     "message": "60-talsretro",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotolabb",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Modern",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Virvel",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Patinering",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Spöke",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Kameran är inte tillgänglig för närvarande.",
@@ -100,7 +112,7 @@
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Det gick inte att ta bort den valda bilden.",
+    "message": "Det gick inte att ta bort den valda bilden",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Ta en bild",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Timer på/av",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Seriebildsläge på/av",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Timer aktiverad",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Timer inaktiverad",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Seriebildsläge aktiverat",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Seriebildsläge inaktiverat",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Ja",

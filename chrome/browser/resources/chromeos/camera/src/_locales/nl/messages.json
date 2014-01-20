@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Maak te gekke foto's met je webcam.",
+    "message": "Maak te gekke foto's met uw webcam.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -67,6 +67,14 @@
     "message": "Retro '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotolab",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Modern",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Draaikolk",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -76,15 +84,19 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Cinema",
+    "message": "Bioscoop",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
     "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "Mysterieus",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
-    "message": "Je camera is momenteel niet beschikbaar.",
+    "message": "Uw camera is momenteel niet beschikbaar.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
@@ -92,7 +104,7 @@
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
-    "message": "Kan de afbeelding niet opslaan in de galerij.",
+    "message": "Kan de foto niet opslaan in de galerij.",
     "description": "Error message shown when saving a picture to the gallery failed."
   },
   "errorMsgGalleryLoadFailed": {
@@ -100,11 +112,11 @@
     "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryDeleteFailed": {
-    "message": "Kan de geselecteerde afbeelding niet verwijderen.",
+    "message": "Kan de geselecteerde foto niet verwijderen.",
     "description": "Error message shown when deleting the selected file from gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Kan de geselecteerde afbeelding niet opslaan.",
+    "message": "Kan de geselecteerde foto niet opslaan.",
     "description": "Error message shown when saving the selected file to an external directory failed."
   },
   "errorMsgNoWebGL": {
@@ -112,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "Je computer bevat misschien een niet-compatibele grafische kaart of verouderde stuurprogramma's.",
+    "message": "Uw computer bevat misschien een niet-compatibele grafische kaart of verouderde stuurprogramma's.",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -136,7 +148,7 @@
     "description": "Label for the printing button."
   },
   "backButton": {
-    "message": "Teruggaan",
+    "message": "Ga terug",
     "description": "Label for the back button."
   },
   "maximizeButton": {
@@ -155,6 +167,30 @@
     "message": "Een foto maken",
     "description": "Label for the red picture taking button."
   },
+  "toggleTimerButton": {
+    "message": "Timer in-/uitschakelen",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Meervoudige opname in-/uitschakelen",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Timer actief",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Timer inactief",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Meervoudige opname actief",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Meervoudige opname inactief",
+    "description": "Message shown when inactivating the multi-shot feature."
+  },
   "dialogYesButton": {
     "message": "Ja",
     "description": "Label for the accepting button in the confirmation dialog."
@@ -168,7 +204,7 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Wil je deze afbeelding uit de galerij verwijderen?",
+    "message": "Wilt u deze foto uit de galerij verwijderen?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

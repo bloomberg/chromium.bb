@@ -67,6 +67,14 @@
     "message": "Ретро от 60-те",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Фотолаборатория",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Разноцветно",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Спирала",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Класика",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Призрак",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Понастоящем няма достъп до камерата ви.",
@@ -140,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "Максимално увеличаване",
+    "message": "Увеличаване",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Правене на снимка",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Превключване на таймера",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Превключване на функцията за няколко снимки",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Таймерът е активен",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Таймерът не е активен",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Функцията за няколко снимки е активна",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Функцията за няколко снимки не е активна",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Да",

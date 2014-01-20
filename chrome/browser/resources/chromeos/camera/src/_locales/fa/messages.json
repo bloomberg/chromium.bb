@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "روزنامه‌ای",
+    "message": "روزنامه",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -52,7 +52,7 @@
     "description": "Bunny Head effect's name."
   },
   "sepiaEffect": {
-    "message": "قرمز قهوه‌ای",
+    "message": "سپیا",
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
@@ -67,6 +67,14 @@
     "message": "سبک دهه ۶۰",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "آزمایشگاه عکس",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "مدرن",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "چرخشی",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -76,12 +84,16 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "سینمایی",
+    "message": "سینما",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
     "message": "قدیمی",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "شبح",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "در حال حاضر دوربین شما در دسترس نیست.",
@@ -120,7 +132,7 @@
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "فعال و غیرفعال کردن فیلترها",
+    "message": "فعال یا غیرفعال کردن فیلترها",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -140,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "بیشینه کردن",
+    "message": "بزرگ کردن",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -152,8 +164,32 @@
     "description": "Text to speech label for the gallery list."
   },
   "takePictureButton": {
-    "message": "عکسی بگیرید",
+    "message": "گرفتن عکس",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "فعال یا غیرفعال کردن تایمر",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "فعال یا غیرفعال کردن ویژگی گرفتن چند عکس",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "تایمر فعال",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "تایمر غیرفعال",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "ویژگی چند عکس فعال",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "ویژگی چند عکس غیرفعال",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "بله",

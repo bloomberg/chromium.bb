@@ -67,6 +67,14 @@
     "message": "Septintojo dešimtmečio retro",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotolaboratorija",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Modernu",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Sūkurys",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Vintažas",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Vaiduoklis",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Žiniatinklio kamera šiuo metu negalima.",
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Fotografuoti",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Perjungti laikmatį",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Perjungti kelių nuotraukų funkciją",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Laikmatis aktyvus",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Laikmatis neaktyvus",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Kelių nuotraukų funkcija aktyvi",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Kelių nuotraukų funkcija neaktyvi",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Taip",

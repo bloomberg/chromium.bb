@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "صحف",
+    "message": "صحيفة",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -67,6 +67,14 @@
     "message": "رجوع '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "معمل الصورة",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "حديث",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "دوامة",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "قديم",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "شبح",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "الكاميرا غير متاحة حاليًا.",
@@ -140,7 +152,7 @@
     "description": "Label for the back button."
   },
   "maximizeButton": {
-    "message": "الرفع إلى الحد الأقصى",
+    "message": "تكبير",
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "التقاط صورة",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "تبديل المؤقت",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "تبديل اللقطات المتعددة",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "المؤقت نشط",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "المؤقت غير نشط",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "اللقطات المتعددة نشطة",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "اللقطات المتعددة غير نشطة",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "نعم",

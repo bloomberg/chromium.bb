@@ -67,6 +67,14 @@
     "message": "Retro '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotolaboratórium",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderné",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Vír",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Starosvetské",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Duch",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Vaša kamera je momentálne nedostupná.",
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Odfotiť snímku",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Prepnúť časovač",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Prepnúť režim viacerých snímok",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Časovač je aktívny",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Časovač je neaktívny",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Režim viacerých snímok je aktívny",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Režim viacerých snímok je neaktívny",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Áno",

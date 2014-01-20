@@ -16,7 +16,7 @@
     "description": "Big Eyes effect's name."
   },
   "beautyEffect": {
-    "message": "Güzellik Salonu",
+    "message": "Güzellik",
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
@@ -67,6 +67,14 @@
     "message": "Retro 60'lar",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotoğraf Laboratuvarı",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Modern",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Girdap",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Klasik",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Hayalet",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Kameranız şu anda kullanılamıyor.",
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Fotoğraf çek",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Zamanlayıcıyı aç/kapat",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Çoklu çekimi aç/kapat",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Zamanlayıcı etkin",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Zamanlayıcı devre dışı",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Çoklu çekim etkin",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Çoklu çekim devre dışı",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Evet",

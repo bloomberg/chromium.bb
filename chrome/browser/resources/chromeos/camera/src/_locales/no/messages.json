@@ -67,6 +67,14 @@
     "message": "Retro – 60-talls",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotolab",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderne",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Virvel",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Klassisk",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Spøkelse",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Kameraet er for øyeblikket utilgjengelig.",
@@ -132,7 +144,7 @@
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "Utskrift",
+    "message": "Skriv ut",
     "description": "Label for the printing button."
   },
   "backButton": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Ta et bilde",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Slå tidtaker av eller på",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Slå flerbildefunksjonen av eller på",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Tidtakeren er aktiv",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Tidtakeren er inaktiv",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Flerbildefunksjonen er aktiv",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Flerbildefunksjonen er inaktiv",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Ja",

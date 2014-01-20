@@ -28,7 +28,7 @@
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
-    "message": "Abu-abu",
+    "message": "Skala abu-abu",
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
@@ -67,12 +67,20 @@
     "message": "Kuno era '60-an",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Lab Foto",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Modern",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Berpusar",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Miring Geser",
+    "message": "Miring",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Antik",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Berhantu",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Kamera Anda tidak tersedia untuk saat ini.",
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Ambil gambar",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Aktifkan/nonaktifkan pewaktu",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Beralih multi-jepret",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Pewaktu aktif",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Pewaktu tidak aktif",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Multi-jepret aktif",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Multi-jepret tidak aktif",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Ya",

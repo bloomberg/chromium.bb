@@ -1,6 +1,6 @@
 {
   "name": {
-    "message": "Fényképezőgép",
+    "message": "Kamera",
     "description": "Name of the Camera App."
   },
   "description": {
@@ -67,6 +67,14 @@
     "message": "60-as évek retró stílusa",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotólabor",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Modern",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Örvény",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Klasszikus",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Szellem",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "A kamera jelenleg nem érhető el.",
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Képkészítés",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Időzítő állítása",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Több felvétel készítésének be-/kikapcsolása",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Az időzítő aktív",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Az időzítő inaktív",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "A „Több felvétel készítése” funkció aktív",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "A „Több felvétel készítése” funkció inaktív",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Igen",

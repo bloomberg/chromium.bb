@@ -67,6 +67,14 @@
     "message": "Ρετρό '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Σκοτεινός θάλαμος",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Μοντέρνο",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Δίνη",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Αντίκα",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Φάντασμα",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Η φωτογραφική μηχανή δεν είναι διαθέσιμη προς το παρόν.",
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Τραβήξτε μια φωτογραφία",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Εναλλαγή χρονόμετρου",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Εναλλαγή πολλαπλής λήψης",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Χρονόμετρο ενεργό",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Χρονόμετρο ανενεργό",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Πολλαπλή λήψη ενεργή",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Πολλαπλή λήψη ανενεργή",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Ναι",
