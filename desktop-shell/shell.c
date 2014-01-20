@@ -5548,6 +5548,9 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	weston_compositor_add_touch_binding(ec, mod, touch_move_binding, shell);
 	weston_compositor_add_button_binding(ec, BTN_MIDDLE, mod,
 					     resize_binding, shell);
+	weston_compositor_add_button_binding(ec, BTN_LEFT,
+					     mod | MODIFIER_SHIFT,
+					     resize_binding, shell);
 
 	if (ec->capabilities & WESTON_CAP_ROTATION_ANY)
 		weston_compositor_add_button_binding(ec, BTN_RIGHT, mod,
