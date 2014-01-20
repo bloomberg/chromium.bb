@@ -32,6 +32,7 @@
 #define NewSVGListPropertyHelper_h
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/properties/NewSVGProperty.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"

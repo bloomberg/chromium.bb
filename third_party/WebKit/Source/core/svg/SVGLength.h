@@ -23,15 +23,11 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGLengthContext.h"
-#include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/NewSVGProperty.h"
 
 namespace WebCore {
 
-/* use SVGLength.h decls */
 class CSSPrimitiveValue;
 class ExceptionState;
 class QualifiedName;

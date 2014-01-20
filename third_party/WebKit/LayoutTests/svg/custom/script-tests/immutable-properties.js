@@ -18,10 +18,7 @@ var zoomEvent = svgDoc.createEvent("SVGZoomEvents");
 var zoomRectScreen = zoomEvent.zoomRectScreen;
 
 shouldBe("zoomRectScreen.x", "0");
-zoomRectScreen.x = 100;
-
-shouldBe("zoomRectScreen.x", "100");
-shouldBe("zoomEvent.zoomRectScreen.x", "0");
+shouldThrow("zoomRectScreen.x = 100;");
 
 // 'previousScale' property
 shouldBe("zoomEvent.previousScale", "0")

@@ -122,6 +122,7 @@ public:
     SVGAnimatedLength* refY() const { return m_refY.get(); }
     SVGAnimatedLength* markerWidth() const { return m_markerWidth.get(); }
     SVGAnimatedLength* markerHeight() const { return m_markerHeight.get(); }
+    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
 
     // Custom 'orientType' property.
     static void synchronizeOrientType(SVGElement* contextElement);
@@ -155,11 +156,11 @@ private:
     RefPtr<SVGAnimatedLength> m_refY;
     RefPtr<SVGAnimatedLength> m_markerWidth;
     RefPtr<SVGAnimatedLength> m_markerHeight;
+    RefPtr<SVGAnimatedRect> m_viewBox;
     mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMarkerElement)
         DECLARE_ANIMATED_ENUMERATION(MarkerUnits, markerUnits, SVGMarkerUnitsType)
         DECLARE_ANIMATED_ANGLE(OrientAngle, orientAngle)
-        DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 };

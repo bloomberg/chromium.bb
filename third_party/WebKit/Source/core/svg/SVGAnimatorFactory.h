@@ -73,8 +73,6 @@ public:
             return adoptPtr(new SVGAnimatedPointListAnimator(animationElement, contextElement));
         case AnimatedPreserveAspectRatio:
             return adoptPtr(new SVGAnimatedPreserveAspectRatioAnimator(animationElement, contextElement));
-        case AnimatedRect:
-            return adoptPtr(new SVGAnimatedRectAnimator(animationElement, contextElement));
         case AnimatedString:
             return adoptPtr(new SVGAnimatedStringAnimator(animationElement, contextElement));
         case AnimatedTransformList:
@@ -83,6 +81,7 @@ public:
         case AnimatedBoolean:
         case AnimatedLength:
         case AnimatedLengthList:
+        case AnimatedRect:
             return adoptPtr(new SVGAnimatedNewPropertyAnimator(attributeType, animationElement, contextElement));
         case AnimatedUnknown:
             break;

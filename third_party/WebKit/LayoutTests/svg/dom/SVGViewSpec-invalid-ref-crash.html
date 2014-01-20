@@ -20,7 +20,7 @@
     shouldBeNull("viewPreserveAspectRatio = svgView.preserveAspectRatio;");
     shouldBeNull("viewTransform = svgView.transform;");
     shouldBeNull("viewViewTarget = svgView.viewTarget;");
-    shouldBeNull("viewViewBox = svgView.viewBox;");
+    shouldNotThrow("viewViewBox = svgView.viewBox;");
 
     successfullyParsed = true;
 

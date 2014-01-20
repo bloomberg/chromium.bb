@@ -67,9 +67,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedPreserveAspectRatio:
         delete m_data.preserveAspectRatio;
         break;
-    case AnimatedRect:
-        delete m_data.rect;
-        break;
     case AnimatedString:
         delete m_data.string;
         break;
@@ -80,6 +77,7 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedBoolean:
     case AnimatedLength:
     case AnimatedLengthList:
+    case AnimatedRect:
         // handled by RefPtr
         break;
     case AnimatedUnknown:
@@ -176,14 +174,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPreserveAspectRatio(SVGPreser
     return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createRect(SVGRect* rect)
-{
-    ASSERT(rect);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedRect));
-    animatedType->m_data.rect = rect;
-    return animatedType.release();
-}
-
 PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createString(String* string)
 {
     ASSERT(string);
@@ -217,10 +207,6 @@ String SVGAnimatedType::valueAsString()
     case AnimatedNumber:
         ASSERT(m_data.number);
         return String::number(*m_data.number);
-    case AnimatedRect:
-        ASSERT(m_data.rect);
-        return String::number(m_data.rect->x()) + ' ' + String::number(m_data.rect->y()) + ' '
-             + String::number(m_data.rect->width()) + ' ' + String::number(m_data.rect->height());
     case AnimatedString:
         ASSERT(m_data.string);
         return *m_data.string;
@@ -228,6 +214,7 @@ String SVGAnimatedType::valueAsString()
     // Below properties have migrated to new property implementation.
     case AnimatedLength:
     case AnimatedLengthList:
+    case AnimatedRect:
         return m_newProperty->valueAsString();
 
     // These types don't appear in the table in SVGElement::cssPropertyToTypeMap() and thus don't need valueAsString() support.
@@ -262,10 +249,6 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
         ASSERT(m_data.number);
         parseNumberFromString(value, *m_data.number);
         break;
-    case AnimatedRect:
-        ASSERT(m_data.rect);
-        parseRect(value, *m_data.rect);
-        break;
     case AnimatedString:
         ASSERT(m_data.string);
         *m_data.string = value;
@@ -274,6 +257,7 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     // Below properties have migrated to new property implementation.
     case AnimatedLength:
     case AnimatedLengthList:
+    case AnimatedRect:
         // Always use createForAnimation call path for these implementations.
         return false;
 

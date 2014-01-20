@@ -23,6 +23,8 @@
 
 #include "SVGNames.h"
 #include "core/dom/QualifiedName.h"
+#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGRect.h"
 #include "wtf/HashSet.h"
@@ -44,12 +46,19 @@ public:
     {
         ASSERT(target);
         if (name == SVGNames::viewBoxAttr) {
-            FloatRect viewBox;
-            bool valueIsValid = !value.isNull() && parseViewBox(&target->document(), value, viewBox);
-            if (valueIsValid)
-                target->setViewBoxBaseValue(viewBox);
-            else
-                target->setViewBoxBaseValue(SVGRect(SVGRect::InvalidSVGRectTag()));
+            SVGParsingError parseError = NoError;
+            target->viewBox()->setBaseValueAsString(value, parseError);
+            target->reportAttributeParsingError(parseError, name, value);
+            if (target->viewBox()->baseValue()->width() < 0.0f) {
+                target->document().accessSVGExtensions()->reportError("A negative value for ViewBox width is not allowed");
+                target->viewBox()->baseValue()->setInvalid();
+                return true;
+            }
+            if (target->viewBox()->baseValue()->height() < 0.0f) {
+                target->document().accessSVGExtensions()->reportError("A negative value for ViewBox height is not allowed");
+                target->viewBox()->baseValue()->setInvalid();
+                return true;
+            }
             return true;
         }
 
@@ -62,12 +71,6 @@ public:
 
         return false;
     }
-
-    static bool parseViewBox(Document*, const LChar*& start, const LChar* end, FloatRect& viewBox, bool validate = true);
-    static bool parseViewBox(Document*, const UChar*& start, const UChar* end, FloatRect& viewBox, bool validate = true);
-
-private:
-    static bool parseViewBox(Document*, const String&, FloatRect&);
 };
 
 } // namespace WebCore

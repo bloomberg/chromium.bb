@@ -34,6 +34,8 @@ class SVGSymbolElement FINAL : public SVGElement,
 public:
     static PassRefPtr<SVGSymbolElement> create(Document&);
 
+    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
+
 private:
     explicit SVGSymbolElement(Document&);
 
@@ -47,8 +49,8 @@ private:
 
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 
+    RefPtr<SVGAnimatedRect> m_viewBox;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSymbolElement)
-        DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 };

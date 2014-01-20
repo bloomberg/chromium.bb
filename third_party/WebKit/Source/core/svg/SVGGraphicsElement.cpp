@@ -223,26 +223,36 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const
     return farthest;
 }
 
-SVGRect SVGGraphicsElement::getBBox()
+FloatRect SVGGraphicsElement::getBBox()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support getBBox for detached elements.
     if (!renderer())
-        return SVGRect();
+        return FloatRect();
 
     return renderer()->objectBoundingBox();
 }
 
-SVGRect SVGGraphicsElement::getStrokeBBox()
+PassRefPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript()
+{
+    return SVGRectTearOff::create(SVGRect::create(getBBox()), 0, PropertyIsNotAnimVal);
+}
+
+FloatRect SVGGraphicsElement::getStrokeBBox()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support getStrokeBBox for detached elements.
     if (!renderer())
-        return SVGRect();
+        return FloatRect();
 
     return renderer()->strokeBoundingBox();
+}
+
+PassRefPtr<SVGRectTearOff> SVGGraphicsElement::getStrokeBBoxFromJavascript()
+{
+    return SVGRectTearOff::create(SVGRect::create(getStrokeBBox()), 0, PropertyIsNotAnimVal);
 }
 
 RenderObject* SVGGraphicsElement::createRenderer(RenderStyle*)

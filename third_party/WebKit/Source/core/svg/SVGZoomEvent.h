@@ -33,7 +33,7 @@ public:
     static PassRefPtr<SVGZoomEvent> create() { return adoptRef(new SVGZoomEvent); }
 
     // 'SVGZoomEvent' functions
-    SVGRect zoomRectScreen() const;
+    PassRefPtr<SVGRectTearOff> zoomRectScreen() const;
 
     float previousScale() const;
     void setPreviousScale(float);
@@ -52,8 +52,6 @@ private:
 
     float m_newScale;
     float m_previousScale;
-
-    SVGRect m_zoomRectScreen;
 
     SVGPoint m_newTranslate;
     SVGPoint m_previousTranslate;

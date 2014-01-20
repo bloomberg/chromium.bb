@@ -47,6 +47,7 @@
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
+#include "core/svg/SVGRectTearOff.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/SVGViewElement.h"
@@ -62,10 +63,8 @@ namespace WebCore {
 
 // Animated property definitions
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGSVGElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
-DEFINE_ANIMATED_RECT(SVGSVGElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGSVGElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(viewBox)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
@@ -76,6 +75,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
+    , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
     , m_useCurrentView(false)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
@@ -90,6 +90,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
+    addToPropertyMap(m_viewBox);
     registerAnimatedPropertiesForSVGSVGElement();
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
@@ -133,11 +134,11 @@ void SVGSVGElement::setContentStyleType(const AtomicString& type)
     setAttribute(SVGNames::contentStyleTypeAttr, type);
 }
 
-SVGRect SVGSVGElement::viewport() const
+PassRefPtr<SVGRectTearOff> SVGSVGElement::viewport() const
 {
     // FIXME: This method doesn't follow the spec and is basically untested. Parent documents are not considered here.
     // As we have no test coverage for this, we're going to disable it completly for now.
-    return SVGRect();
+    return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
 }
 
 float SVGSVGElement::pixelUnitToMillimeterX() const
@@ -322,7 +323,7 @@ void SVGSVGElement::forceRedraw()
     // FIXME: Implement me (see bug 11275)
 }
 
-PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const SVGRect& rect, SVGElement* referenceElement, CollectIntersectionOrEnclosure collect) const
+PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect, SVGElement* referenceElement, CollectIntersectionOrEnclosure collect) const
 {
     Vector<RefPtr<Node> > nodes;
     Element* element = ElementTraversal::next(*(referenceElement ? referenceElement : this));
@@ -330,10 +331,10 @@ PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const SVG
         if (element->isSVGElement()) {
             SVGElement* svgElement = toSVGElement(element);
             if (collect == CollectIntersectionList) {
-                if (checkIntersection(svgElement, rect))
+                if (RenderSVGModelObject::checkIntersection(svgElement->renderer(), rect))
                     nodes.append(element);
             } else {
-                if (checkEnclosure(svgElement, rect))
+                if (RenderSVGModelObject::checkEnclosure(svgElement->renderer(), rect))
                     nodes.append(element);
             }
         }
@@ -343,28 +344,32 @@ PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const SVG
     return StaticNodeList::adopt(nodes);
 }
 
-PassRefPtr<NodeList> SVGSVGElement::getIntersectionList(const SVGRect& rect, SVGElement* referenceElement) const
+PassRefPtr<NodeList> SVGSVGElement::getIntersectionList(PassRefPtr<SVGRectTearOff> passRect, SVGElement* referenceElement) const
 {
-    return collectIntersectionOrEnclosureList(rect, referenceElement, CollectIntersectionList);
+    RefPtr<SVGRectTearOff> rect = passRect;
+    return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CollectIntersectionList);
 }
 
-PassRefPtr<NodeList> SVGSVGElement::getEnclosureList(const SVGRect& rect, SVGElement* referenceElement) const
+PassRefPtr<NodeList> SVGSVGElement::getEnclosureList(PassRefPtr<SVGRectTearOff> passRect, SVGElement* referenceElement) const
 {
-    return collectIntersectionOrEnclosureList(rect, referenceElement, CollectEnclosureList);
+    RefPtr<SVGRectTearOff> rect = passRect;
+    return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CollectEnclosureList);
 }
 
-bool SVGSVGElement::checkIntersection(SVGElement* element, const SVGRect& rect) const
+bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtr<SVGRectTearOff> passRect) const
 {
     if (!element)
         return false;
-    return RenderSVGModelObject::checkIntersection(element->renderer(), rect);
+    RefPtr<SVGRectTearOff> rect = passRect;
+    return RenderSVGModelObject::checkIntersection(element->renderer(), rect->target()->value());
 }
 
-bool SVGSVGElement::checkEnclosure(SVGElement* element, const SVGRect& rect) const
+bool SVGSVGElement::checkEnclosure(SVGElement* element, PassRefPtr<SVGRectTearOff> passRect) const
 {
     if (!element)
         return false;
-    return RenderSVGModelObject::checkEnclosure(element->renderer(), rect);
+    RefPtr<SVGRectTearOff> rect = passRect;
+    return RenderSVGModelObject::checkEnclosure(element->renderer(), rect->target()->value());
 }
 
 void SVGSVGElement::deselectAll()
@@ -398,9 +403,9 @@ SVGMatrix SVGSVGElement::createSVGMatrix()
     return SVGMatrix();
 }
 
-SVGRect SVGSVGElement::createSVGRect()
+PassRefPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
 {
-    return SVGRect();
+    return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
 }
 
 SVGTransform SVGSVGElement::createSVGTransform()
@@ -543,27 +548,27 @@ bool SVGSVGElement::selfHasRelativeLengths() const
         || hasAttribute(SVGNames::viewBoxAttr);
 }
 
-SVGRect SVGSVGElement::currentViewBoxRect() const
+FloatRect SVGSVGElement::currentViewBoxRect() const
 {
     if (m_useCurrentView)
-        return m_viewSpec ? m_viewSpec->viewBoxCurrentValue() : SVGRect();
+        return m_viewSpec ? m_viewSpec->viewBox()->currentValue()->value() : FloatRect();
 
-    FloatRect useViewBox = viewBoxCurrentValue();
+    FloatRect useViewBox = m_viewBox->currentValue()->value();
     if (!useViewBox.isEmpty())
         return useViewBox;
     if (!renderer() || !renderer()->isSVGRoot())
-        return SVGRect();
+        return FloatRect();
     if (!toRenderSVGRoot(renderer())->isEmbeddedThroughSVGImage())
-        return SVGRect();
+        return FloatRect();
 
     Length intrinsicWidth = this->intrinsicWidth();
     Length intrinsicHeight = this->intrinsicHeight();
     if (!intrinsicWidth.isFixed() || !intrinsicHeight.isFixed())
-        return SVGRect();
+        return FloatRect();
 
     // If no viewBox is specified but non-relative width/height values, then we
     // should always synthesize a viewBox if we're embedded through a SVGImage.
-    return SVGRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0)));
+    return FloatRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0)));
 }
 
 FloatSize SVGSVGElement::currentViewportSize() const
@@ -736,9 +741,9 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
     m_useCurrentView = true;
 
     if (viewElement->hasAttribute(SVGNames::viewBoxAttr))
-        view->setViewBoxBaseValue(viewElement->viewBoxCurrentValue());
+        view->viewBox()->baseValue()->setValue(viewElement->viewBox()->currentValue()->value());
     else
-        view->setViewBoxBaseValue(viewBoxCurrentValue());
+        view->viewBox()->baseValue()->setValue(m_viewBox->currentValue()->value());
 
     if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr))
         view->setPreserveAspectRatioBaseValue(viewElement->preserveAspectRatioBaseValue());

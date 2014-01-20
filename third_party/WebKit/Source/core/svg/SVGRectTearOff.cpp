@@ -28,28 +28,63 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedRect_h
-#define SVGAnimatedRect_h
+#include "config.h"
 
 #include "core/svg/SVGRectTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 
-class SVGAnimatedRect : public NewSVGAnimatedProperty<SVGRect> {
-public:
-    static PassRefPtr<SVGAnimatedRect> create(SVGElement* contextElement, const QualifiedName& attributeName)
-    {
-        return adoptRef(new SVGAnimatedRect(contextElement, attributeName));
+SVGRectTearOff::SVGRectTearOff(PassRefPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+    : NewSVGPropertyTearOff<SVGRect>(target, contextElement, propertyIsAnimVal, attributeName)
+{
+    ScriptWrappable::init(this);
+}
+
+void SVGRectTearOff::setX(float f, ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
     }
 
-protected:
-    SVGAnimatedRect(SVGElement* contextElement, const QualifiedName& attributeName)
-        : NewSVGAnimatedProperty<SVGRect>(contextElement, attributeName, SVGRect::create(SVGRect::InvalidSVGRectTag()))
-    {
+    target()->setX(f);
+    commitChange();
+}
+
+void SVGRectTearOff::setY(float f, ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
     }
-};
 
-} // namespace WebCore
+    target()->setY(f);
+    commitChange();
+}
 
-#endif // SVGAnimatedRect_h
+void SVGRectTearOff::setWidth(float f, ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
+    }
+
+    target()->setWidth(f);
+    commitChange();
+}
+
+void SVGRectTearOff::setHeight(float f, ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
+    }
+
+    target()->setHeight(f);
+    commitChange();
+}
+
+}

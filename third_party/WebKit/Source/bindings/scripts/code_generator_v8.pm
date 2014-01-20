@@ -237,6 +237,7 @@ my %svgAttributesInHTMLHash = ("class" => 1, "id" => 1, "onabort" => 1, "onclick
 my %svgTypeNewPropertyImplementation = (
     "SVGLength" => 1,
     "SVGLengthList" => 1,
+    "SVGRect" => 1,
 );
 
 my %svgTypeNeedingTearOff = (
@@ -248,7 +249,6 @@ my %svgTypeNeedingTearOff = (
     "SVGPoint" => "SVGPropertyTearOff<SVGPoint>",
     "SVGPointList" => "SVGListPropertyTearOff<SVGPointList>",
     "SVGPreserveAspectRatio" => "SVGPropertyTearOff<SVGPreserveAspectRatio>",
-    "SVGRect" => "SVGPropertyTearOff<SVGRect>",
     "SVGStringList" => "SVGStaticListPropertyTearOff<SVGStringList>",
     "SVGTransform" => "SVGPropertyTearOff<SVGTransform>",
     "SVGTransformList" => "SVGTransformListPropertyTearOff"

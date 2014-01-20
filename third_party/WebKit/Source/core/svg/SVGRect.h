@@ -20,55 +20,82 @@
 #ifndef SVGRect_h
 #define SVGRect_h
 
-#include "core/svg/properties/SVGPropertyTraits.h"
+#include "core/svg/properties/NewSVGProperty.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-class SVGRect : public FloatRect {
+class SVGRectTearOff;
+
+class SVGRect : public NewSVGPropertyBase {
 public:
+    typedef SVGRectTearOff TearOffType;
+
     struct InvalidSVGRectTag { };
 
-    SVGRect()
-        : m_isValid(true) { }
-    SVGRect(InvalidSVGRectTag)
-        : m_isValid(false) { }
-    SVGRect(const FloatRect& rect)
-        : FloatRect(rect), m_isValid(true) { }
-    SVGRect(const FloatPoint& location, const FloatSize& size)
-        : FloatRect(location, size), m_isValid(true) { }
-    SVGRect(float x, float y, float width, float height)
-        : FloatRect(x, y, width, height), m_isValid(true) { }
-    SVGRect(const IntRect& intRect)
-        : FloatRect(intRect), m_isValid(true) { }
-    SVGRect(const LayoutRect& layoutRect)
-        : FloatRect(layoutRect), m_isValid(true) { }
-    SVGRect(const SkRect& skRect)
-        : FloatRect(skRect), m_isValid(true) { }
+    static PassRefPtr<SVGRect> create()
+    {
+        return adoptRef(new SVGRect());
+    }
+
+    static PassRefPtr<SVGRect> create(InvalidSVGRectTag)
+    {
+        return adoptRef(new SVGRect(InvalidSVGRectTag()));
+    }
+
+    static PassRefPtr<SVGRect> create(const FloatRect& rect)
+    {
+        return adoptRef(new SVGRect(rect));
+    }
+
+    PassRefPtr<SVGRect> clone() const;
+    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+
+    const FloatRect& value() const { return m_value; }
+    void setValue(const FloatRect& v) { m_value = v; }
+
+    float x() const { return m_value.x(); }
+    float y() const { return m_value.y(); }
+    float width() const { return m_value.width(); }
+    float height() const { return m_value.height(); }
+    void setX(float f) { m_value.setX(f); }
+    void setY(float f) { m_value.setY(f); }
+    void setWidth(float f) { m_value.setWidth(f); }
+    void setHeight(float f) { m_value.setHeight(f); }
+
+    bool operator==(const SVGRect&) const;
+    bool operator!=(const SVGRect& other) const { return !operator==(other); }
+
+    virtual String valueAsString() const OVERRIDE;
+    void setValueAsString(const String&, ExceptionState&);
+
+    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
     bool isValid() const { return m_isValid; }
+    void setInvalid();
+
+    static AnimatedPropertyType classType() { return AnimatedRect; }
 
 private:
+    SVGRect();
+    SVGRect(InvalidSVGRectTag);
+    SVGRect(const FloatRect&);
+
+    template<typename CharType>
+    void parse(const CharType*& ptr, const CharType* end, ExceptionState&);
+
     bool m_isValid;
+    FloatRect m_value;
 };
 
-template<>
-struct SVGPropertyTraits<SVGRect> {
-    static SVGRect initialValue() { return SVGRect(SVGRect::InvalidSVGRectTag()); }
-    static String toString(const SVGRect& type)
-    {
-        StringBuilder builder;
-        builder.append(String::number(type.x()));
-        builder.append(' ');
-        builder.append(String::number(type.y()));
-        builder.append(' ');
-        builder.append(String::number(type.width()));
-        builder.append(' ');
-        builder.append(String::number(type.height()));
-        return builder.toString();
-    }
-};
+inline PassRefPtr<SVGRect> toSVGRect(PassRefPtr<NewSVGPropertyBase> passBase)
+{
+    RefPtr<NewSVGPropertyBase> base = passBase;
+    ASSERT(base->type() == SVGRect::classType());
+    return static_pointer_cast<SVGRect>(base.release());
+}
 
 } // namespace WebCore
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Samsung Electronics. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,17 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGGraphicsElement : SVGElement {
-    readonly attribute SVGAnimatedTransformList transform;
+#ifndef SVGRectTearOff_h
+#define SVGRectTearOff_h
 
-    [MeasureAs=SVGLocatableNearestViewportElement] readonly attribute SVGElement nearestViewportElement;
-    [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/svg/SVGRect.h"
+#include "core/svg/properties/NewSVGPropertyTearOff.h"
 
-    [ImplementedAs=getBBoxFromJavascript] SVGRect getBBox();
-    [ImplementedAs=getStrokeBBoxFromJavascript] SVGRect getStrokeBBox();
-    SVGMatrix getCTM();
-    SVGMatrix getScreenCTM();
-    [RaisesException] SVGMatrix getTransformToElement([Default=Undefined] optional SVGElement element);
+namespace WebCore {
+
+class SVGRectTearOff : public NewSVGPropertyTearOff<SVGRect>, public ScriptWrappable {
+public:
+    static PassRefPtr<SVGRectTearOff> create(PassRefPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    {
+        return adoptRef(new SVGRectTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+    }
+
+    void setX(float, ExceptionState&);
+    void setY(float, ExceptionState&);
+    void setWidth(float, ExceptionState&);
+    void setHeight(float, ExceptionState&);
+    float x() { return target()->x(); }
+    float y() { return target()->y(); }
+    float width() { return target()->width(); }
+    float height() { return target()->height(); }
+
+private:
+    SVGRectTearOff(PassRefPtr<SVGRect>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
 };
 
-SVGGraphicsElement implements SVGTests;
+} // namespace WebCore
+
+#endif // SVGRectTearOff_h_

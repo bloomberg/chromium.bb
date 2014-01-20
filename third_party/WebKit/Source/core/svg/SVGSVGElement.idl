@@ -47,15 +47,15 @@ interface SVGSVGElement : SVGGraphicsElement {
     void unpauseAnimations();
     boolean animationsPaused();
     float getCurrentTime();
-    void setCurrentTime([Default=Undefined] optional float seconds);
-    NodeList getIntersectionList([Default=Undefined] optional SVGRect rect,
-                                 [Default=Undefined] optional SVGElement referenceElement);
-    NodeList getEnclosureList([Default=Undefined] optional SVGRect rect,
-                              [Default=Undefined] optional SVGElement referenceElement);
-    boolean checkIntersection([Default=Undefined] optional SVGElement element,
-                              [Default=Undefined] optional SVGRect rect);
-    boolean checkEnclosure([Default=Undefined] optional SVGElement element,
-                           [Default=Undefined] optional SVGRect rect);
+    void setCurrentTime(float seconds);
+    NodeList getIntersectionList([StrictTypeChecking] SVGRect rect,
+                                 [StrictTypeChecking] SVGElement referenceElement);
+    NodeList getEnclosureList([StrictTypeChecking] SVGRect rect,
+                              [StrictTypeChecking] SVGElement referenceElement);
+    boolean checkIntersection([StrictTypeChecking] SVGElement element,
+                              [StrictTypeChecking] SVGRect rect);
+    boolean checkEnclosure([StrictTypeChecking] SVGElement element,
+                           [StrictTypeChecking] SVGRect rect);
     void deselectAll();
 
     SVGNumber createSVGNumber();

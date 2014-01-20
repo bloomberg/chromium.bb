@@ -137,7 +137,6 @@ public:
         TrackExceptionState es;
 
         m_baseValue->setValueAsString(value, es);
-        commitChange();
 
         if (es.hadException())
             parseError = ParsingAttributeFailedError;
@@ -213,8 +212,11 @@ public:
     // Use currentValue() from C++ code.
     virtual TearOffType* baseVal()
     {
-        if (!m_baseValTearOff)
+        if (!m_baseValTearOff) {
             m_baseValTearOff = TearOffType::create(this->baseValue(), this->contextElement(), PropertyIsNotAnimVal, this->attributeName());
+            if (this->isReadOnly())
+                m_baseValTearOff->setIsReadOnlyProperty();
+        }
 
         return m_baseValTearOff.get();
     }

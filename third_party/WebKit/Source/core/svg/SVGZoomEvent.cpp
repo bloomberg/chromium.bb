@@ -23,6 +23,7 @@
 #include "core/svg/SVGZoomEvent.h"
 
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/svg/SVGRectTearOff.h"
 
 namespace WebCore {
 
@@ -33,9 +34,11 @@ SVGZoomEvent::SVGZoomEvent()
     ScriptWrappable::init(this);
 }
 
-SVGRect SVGZoomEvent::zoomRectScreen() const
+PassRefPtr<SVGRectTearOff> SVGZoomEvent::zoomRectScreen() const
 {
-    return m_zoomRectScreen;
+    RefPtr<SVGRectTearOff> rectTearOff = SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
+    rectTearOff->setIsReadOnlyProperty();
+    return rectTearOff.release();
 }
 
 float SVGZoomEvent::previousScale() const

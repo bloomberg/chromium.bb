@@ -26,7 +26,6 @@
 #include "core/svg/SVGNumberList.h"
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
-#include "core/svg/SVGRect.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/NewSVGAnimatedProperty.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
@@ -51,7 +50,6 @@ public:
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
     static PassOwnPtr<SVGAnimatedType> createPointList(SVGPointList*);
     static PassOwnPtr<SVGAnimatedType> createPreserveAspectRatio(SVGPreserveAspectRatio*);
-    static PassOwnPtr<SVGAnimatedType> createRect(SVGRect*);
     static PassOwnPtr<SVGAnimatedType> createString(String*);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
     // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
@@ -126,12 +124,6 @@ public:
         return *m_data.preserveAspectRatio;
     }
 
-    SVGRect& rect()
-    {
-        ASSERT(m_type == AnimatedRect);
-        return *m_data.rect;
-    }
-
     String& string()
     {
         ASSERT(m_type == AnimatedString);
@@ -174,7 +166,6 @@ private:
         SVGPathByteStream* path;
         SVGPreserveAspectRatio* preserveAspectRatio;
         SVGPointList* pointList;
-        SVGRect* rect;
         String* string;
         SVGTransformList* transformList;
     } m_data;

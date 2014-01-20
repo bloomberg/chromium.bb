@@ -134,16 +134,17 @@ SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, Exception
     return SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
 }
 
-SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
+PassRefPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
-        return SVGRect();
+        return 0;
     }
 
-    return SVGTextQuery(renderer()).extentOfCharacter(charnum);
+    FloatRect rect = SVGTextQuery(renderer()).extentOfCharacter(charnum);
+    return SVGRectTearOff::create(SVGRect::create(rect), 0, PropertyIsNotAnimVal);
 }
 
 float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState& exceptionState)

@@ -92,7 +92,7 @@ void RenderSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, d
     //   aspect ratio is calculated from the width and height values of the ‘viewBox’ specified for the current SVG document
     //   fragment. If the ‘viewBox’ is not correctly specified, or set to 'none', the intrinsic aspect ratio cannot be
     //   calculated and is considered unspecified.
-    intrinsicSize = svg->viewBoxCurrentValue().size();
+    intrinsicSize = svg->viewBox()->currentValue()->value().size();
     if (!intrinsicSize.isEmpty()) {
         // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
         intrinsicRatio = intrinsicSize.width() / static_cast<double>(intrinsicSize.height());

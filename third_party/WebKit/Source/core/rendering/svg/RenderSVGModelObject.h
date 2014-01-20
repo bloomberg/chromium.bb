@@ -34,7 +34,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGRect.h"
+#include "platform/geometry/FloatRect.h"
 
 namespace WebCore {
 
@@ -60,8 +60,8 @@ public:
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE FINAL;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
-    static bool checkIntersection(RenderObject*, const SVGRect&);
-    static bool checkEnclosure(RenderObject*, const SVGRect&);
+    static bool checkIntersection(RenderObject*, const FloatRect&);
+    static bool checkEnclosure(RenderObject*, const FloatRect&);
 
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const OVERRIDE FINAL;
 

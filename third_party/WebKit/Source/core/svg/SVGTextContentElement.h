@@ -81,7 +81,7 @@ public:
     float getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState&);
     SVGPoint getStartPositionOfChar(unsigned charnum, ExceptionState&);
     SVGPoint getEndPositionOfChar(unsigned charnum, ExceptionState&);
-    SVGRect getExtentOfChar(unsigned charnum, ExceptionState&);
+    PassRefPtr<SVGRectTearOff> getExtentOfChar(unsigned charnum, ExceptionState&);
     float getRotationOfChar(unsigned charnum, ExceptionState&);
     int getCharNumAtPosition(const SVGPoint&);
     void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);

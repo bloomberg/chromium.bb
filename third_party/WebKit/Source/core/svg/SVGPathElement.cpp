@@ -376,7 +376,7 @@ void SVGPathElement::pathSegListChanged(SVGPathSegRole role, ListModification li
     RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
 }
 
-SVGRect SVGPathElement::getBBox()
+FloatRect SVGPathElement::getBBox()
 {
     // By default, getBBox() returns objectBoundingBox but that will include
     // markers so we override it to return just the path's bounding rect.
@@ -385,7 +385,7 @@ SVGRect SVGPathElement::getBBox()
 
     // FIXME: Eventually we should support getBBox for detached elements.
     if (!renderer())
-        return SVGRect();
+        return FloatRect();
 
     RenderSVGPath* renderer = toRenderSVGPath(this->renderer());
     return renderer->path().boundingRect();

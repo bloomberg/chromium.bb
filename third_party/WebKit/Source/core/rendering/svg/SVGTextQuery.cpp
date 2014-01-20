@@ -499,10 +499,10 @@ bool SVGTextQuery::extentOfCharacterCallback(Data* queryData, const SVGTextFragm
     return true;
 }
 
-SVGRect SVGTextQuery::extentOfCharacter(unsigned position) const
+FloatRect SVGTextQuery::extentOfCharacter(unsigned position) const
 {
     if (m_textBoxes.isEmpty())
-        return SVGRect();
+        return FloatRect();
 
     ExtentOfCharacterData data(position);
     executeQuery(&data, &SVGTextQuery::extentOfCharacterCallback);

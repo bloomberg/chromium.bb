@@ -20,10 +20,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface SVGRect {
-    [StrictTypeChecking] attribute float x;
-    [StrictTypeChecking] attribute float y;
-    [StrictTypeChecking] attribute float width;
-    [StrictTypeChecking] attribute float height;
+[
+    ImplementedAs=SVGRectTearOff,
+    SetReference(SVGElement contextElement)
+] interface SVGRect {
+    [StrictTypeChecking, RaisesException=Setter] attribute float x;
+    [StrictTypeChecking, RaisesException=Setter] attribute float y;
+    [StrictTypeChecking, RaisesException=Setter] attribute float width;
+    [StrictTypeChecking, RaisesException=Setter] attribute float height;
 };
 

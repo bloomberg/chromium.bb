@@ -23,6 +23,7 @@
 
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGRectTearOff.h"
 #include "core/svg/SVGTests.h"
 
 namespace WebCore {
@@ -46,8 +47,11 @@ public:
     virtual AffineTransform animatedLocalTransform() const;
     virtual AffineTransform* supplementalTransform() OVERRIDE;
 
-    virtual SVGRect getBBox();
-    SVGRect getStrokeBBox();
+    virtual FloatRect getBBox();
+    FloatRect getStrokeBBox();
+
+    PassRefPtr<SVGRectTearOff> getBBoxFromJavascript();
+    PassRefPtr<SVGRectTearOff> getStrokeBBoxFromJavascript();
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);

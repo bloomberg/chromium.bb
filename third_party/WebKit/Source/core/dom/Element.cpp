@@ -98,6 +98,7 @@
 #include "wtf/BitVector.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
 
 namespace WebCore {

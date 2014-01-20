@@ -43,6 +43,7 @@ class SVGCursorElement;
 class SVGDocumentExtensions;
 class SVGElementInstance;
 class SVGElementRareData;
+class SVGFitToViewBox;
 class SVGSVGElement;
 
 void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName);
@@ -179,6 +180,8 @@ protected:
     void setHasSVGRareData() { m_hasSVGRareData = true; }
     void clearHasSVGRareData() { m_hasSVGRareData = false; }
 
+    // SVGFitToViewBox::parseAttribute uses reportAttributeParsingError.
+    friend class SVGFitToViewBox;
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
 

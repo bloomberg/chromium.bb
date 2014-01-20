@@ -58,7 +58,7 @@ public:
     const AtomicString& contentStyleType() const;
     void setContentStyleType(const AtomicString& type);
 
-    SVGRect viewport() const;
+    PassRefPtr<SVGRectTearOff> viewport() const;
 
     float pixelUnitToMillimeterX() const;
     float pixelUnitToMillimeterY() const;
@@ -77,7 +77,7 @@ public:
     Length intrinsicWidth(ConsiderCSSMode = RespectCSSProperties) const;
     Length intrinsicHeight(ConsiderCSSMode = RespectCSSProperties) const;
     FloatSize currentViewportSize() const;
-    SVGRect currentViewBoxRect() const;
+    FloatRect currentViewBoxRect() const;
 
     float currentScale() const;
     void setCurrentScale(float scale);
@@ -102,10 +102,10 @@ public:
     void unsuspendRedrawAll();
     void forceRedraw();
 
-    PassRefPtr<NodeList> getIntersectionList(const SVGRect&, SVGElement* referenceElement) const;
-    PassRefPtr<NodeList> getEnclosureList(const SVGRect&, SVGElement* referenceElement) const;
-    bool checkIntersection(SVGElement*, const SVGRect&) const;
-    bool checkEnclosure(SVGElement*, const SVGRect&) const;
+    PassRefPtr<NodeList> getIntersectionList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
+    PassRefPtr<NodeList> getEnclosureList(PassRefPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
+    bool checkIntersection(SVGElement*, PassRefPtr<SVGRectTearOff>) const;
+    bool checkEnclosure(SVGElement*, PassRefPtr<SVGRectTearOff>) const;
     void deselectAll();
 
     static float createSVGNumber();
@@ -113,7 +113,7 @@ public:
     static SVGAngle createSVGAngle();
     static SVGPoint createSVGPoint();
     static SVGMatrix createSVGMatrix();
-    static SVGRect createSVGRect();
+    static PassRefPtr<SVGRectTearOff> createSVGRect();
     static SVGTransform createSVGTransform();
     static SVGTransform createSVGTransformFromMatrix(const SVGMatrix&);
 
@@ -129,12 +129,13 @@ public:
     SVGZoomAndPanType zoomAndPan() const { return m_zoomAndPan; }
     void setZoomAndPan(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
 
-    bool hasEmptyViewBox() const { return viewBoxCurrentValue().isValid() && viewBoxCurrentValue().isEmpty(); }
+    bool hasEmptyViewBox() const { return m_viewBox->currentValue()->isValid() && m_viewBox->currentValue()->value().isEmpty(); }
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
+    SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
 
 private:
     explicit SVGSVGElement(Document&);
@@ -161,14 +162,14 @@ private:
         CollectEnclosureList
     };
 
-    PassRefPtr<NodeList> collectIntersectionOrEnclosureList(const SVGRect&, SVGElement*, CollectIntersectionOrEnclosure) const;
+    PassRefPtr<NodeList> collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CollectIntersectionOrEnclosure) const;
 
     RefPtr<SVGAnimatedLength> m_x;
     RefPtr<SVGAnimatedLength> m_y;
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
+    RefPtr<SVGAnimatedRect> m_viewBox;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSVGElement)
-        DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 

@@ -841,3 +841,6 @@ crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_pro
 crbug.com/334242 [ Win ] inspector-protocol/stylesheet-tracking-restart.html [ Pass Failure ]
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
+
+crbug.com/308818 html5lib/generated/run-tests11-write.html [ NeedsRebaseline ]
+crbug.com/308818 html5lib/generated/run-tests11-data.html [ NeedsRebaseline ]

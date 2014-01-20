@@ -7,8 +7,7 @@ PASS viewport.x is 0
 PASS viewport.x is 100
 PASS svgDoc.documentElement.viewport.x is 0
 PASS zoomRectScreen.x is 0
-PASS zoomRectScreen.x is 100
-PASS zoomEvent.zoomRectScreen.x is 0
+PASS zoomRectScreen.x = 100; threw exception NoModificationAllowedError: Failed to set the 'x' property on 'SVGRect': The attribute is read-only..
 PASS zoomEvent.previousScale is 0
 PASS zoomEvent.previousScale is 0
 PASS previousTranslate.x is 0
