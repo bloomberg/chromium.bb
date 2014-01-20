@@ -874,23 +874,6 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
     return fragment.release();
 }
 
-PassRefPtr<DocumentFragment> createFragmentFromNodes(Document *document, const Vector<Node*>& nodes)
-{
-    if (!document)
-        return 0;
-
-    RefPtr<DocumentFragment> fragment = document->createDocumentFragment();
-
-    size_t size = nodes.size();
-    for (size_t i = 0; i < size; ++i) {
-        RefPtr<Element> element = createDefaultParagraphElement(*document);
-        element->appendChild(nodes[i]);
-        fragment->appendChild(element.release());
-    }
-
-    return fragment.release();
-}
-
 String createFullMarkup(const Node* node)
 {
     if (!node)
@@ -907,23 +890,6 @@ String createFullMarkup(const Node* node)
         markupString = frame->documentTypeString() + markupString;
 
     return markupString;
-}
-
-String createFullMarkup(const Range* range)
-{
-    if (!range)
-        return String();
-
-    Node* node = range->startContainer();
-    if (!node)
-        return String();
-
-    Frame* frame = node->document().frame();
-    if (!frame)
-        return String();
-
-    // FIXME: This is always "for interchange". Is that right? See the previous method.
-    return frame->documentTypeString() + createMarkup(range, 0, AnnotateForInterchange);
 }
 
 String urlToMarkup(const KURL& url, const String& title)

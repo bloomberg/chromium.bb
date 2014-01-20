@@ -704,11 +704,6 @@ VisiblePosition nextWordPosition(const VisiblePosition &c)
     return c.honorEditingBoundaryAtOrAfter(next);
 }
 
-bool isStartOfWord(const VisiblePosition& p)
-{
-    return p.isNotNull() && p == startOfWord(p, RightWordIfOnBoundary);
-}
-
 // ---------
 
 enum LineEndpointComputationMode { UseLogicalOrdering, UseInlineBoxOrdering };
@@ -1357,20 +1352,6 @@ VisiblePosition endOfDocument(const Node* node)
 VisiblePosition endOfDocument(const VisiblePosition &c)
 {
     return endOfDocument(c.deepEquivalent().deprecatedNode());
-}
-
-bool inSameDocument(const VisiblePosition &a, const VisiblePosition &b)
-{
-    Position ap = a.deepEquivalent();
-    Node* an = ap.deprecatedNode();
-    if (!an)
-        return false;
-    Position bp = b.deepEquivalent();
-    Node* bn = bp.deprecatedNode();
-    if (an == bn)
-        return true;
-
-    return an->document() == bn->document();
 }
 
 bool isStartOfDocument(const VisiblePosition &p)

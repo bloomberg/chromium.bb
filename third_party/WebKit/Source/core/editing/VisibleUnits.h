@@ -43,7 +43,6 @@ VisiblePosition previousWordPosition(const VisiblePosition &);
 VisiblePosition nextWordPosition(const VisiblePosition &);
 VisiblePosition rightWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovingRight);
 VisiblePosition leftWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovingRight);
-bool isStartOfWord(const VisiblePosition&);
 
 // sentences
 VisiblePosition startOfSentence(const VisiblePosition &);
@@ -86,7 +85,6 @@ VisiblePosition startOfDocument(const Node*);
 VisiblePosition endOfDocument(const Node*);
 VisiblePosition startOfDocument(const VisiblePosition &);
 VisiblePosition endOfDocument(const VisiblePosition &);
-bool inSameDocument(const VisiblePosition &, const VisiblePosition &);
 bool isStartOfDocument(const VisiblePosition &);
 bool isEndOfDocument(const VisiblePosition &);
 

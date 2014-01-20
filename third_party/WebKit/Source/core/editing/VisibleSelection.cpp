@@ -230,11 +230,6 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
     return searchRange.release();
 }
 
-bool VisibleSelection::isAll(EditingBoundaryCrossingRule rule) const
-{
-    return !nonBoundaryShadowTreeRootNode() && visibleStart().previous(rule).isNull() && visibleEnd().next(rule).isNull();
-}
-
 void VisibleSelection::appendTrailingWhitespace()
 {
     RefPtr<Range> searchRange = makeSearchRange(m_end);

@@ -90,11 +90,6 @@ public:
         m_deepPosition.getInlineBoxAndOffset(m_affinity, inlineBox, caretOffset);
     }
 
-    void getInlineBoxAndOffset(TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
-    {
-        m_deepPosition.getInlineBoxAndOffset(m_affinity, primaryDirection, inlineBox, caretOffset);
-    }
-
     // Rect is local to the returned renderer
     LayoutRect localCaretRect(RenderObject*&) const;
     // Bounds of (possibly transformed) caret in absolute coords
@@ -135,7 +130,6 @@ PassRefPtr<Range> makeRange(const VisiblePosition&, const VisiblePosition&);
 bool setStart(Range*, const VisiblePosition&);
 bool setEnd(Range*, const VisiblePosition&);
 VisiblePosition startVisiblePosition(const Range*, EAffinity);
-VisiblePosition endVisiblePosition(const Range*, EAffinity);
 
 Element* enclosingBlockFlowElement(const VisiblePosition&);
 

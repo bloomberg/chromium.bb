@@ -83,8 +83,6 @@ public:
     bool isDirectional() const { return m_isDirectional; }
     void setIsDirectional(bool isDirectional) { m_isDirectional = isDirectional; }
 
-    bool isAll(EditingBoundaryCrossingRule) const;
-
     void appendTrailingWhitespace();
 
     bool expandUsingGranularity(TextGranularity granularity);

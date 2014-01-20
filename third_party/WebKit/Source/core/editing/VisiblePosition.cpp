@@ -738,11 +738,6 @@ VisiblePosition startVisiblePosition(const Range *r, EAffinity affinity)
     return VisiblePosition(r->startPosition(), affinity);
 }
 
-VisiblePosition endVisiblePosition(const Range *r, EAffinity affinity)
-{
-    return VisiblePosition(r->endPosition(), affinity);
-}
-
 bool setStart(Range *r, const VisiblePosition &visiblePosition)
 {
     if (!r)
