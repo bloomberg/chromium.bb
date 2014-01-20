@@ -162,7 +162,7 @@ deps = {
     (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
 
   "src/third_party/ots":
-    (Var("googlecode_url") % "ots") + "/trunk@108",
+    (Var("googlecode_url") % "ots") + "/trunk@110",
 
   "src/third_party/brotli/src":
     Var("chromium_git") +
