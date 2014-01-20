@@ -233,7 +233,6 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
 
   // The GetThemePartSize call below returns the default size without
   // accounting for user customization (crbug/218291).
-  SIZE size;
   switch (part) {
     case kScrollbarDownArrow:
     case kScrollbarLeftArrow:
@@ -242,14 +241,18 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:
     case kScrollbarHorizontalTrack:
-    case kScrollbarVerticalTrack:
-      size.cx = size.cy = gfx::win::GetSystemMetricsInDIP(SM_CXVSCROLL);
-      return gfx::Size(size.cx, size.cy);
+    case kScrollbarVerticalTrack: {
+      int size = gfx::win::GetSystemMetricsInDIP(SM_CXVSCROLL);
+      if (size == 0)
+        size = 17;
+      return gfx::Size(size, size);
+    }
   }
 
   int part_id = GetWindowsPart(part, state, extra);
   int state_id = GetWindowsState(part, state, extra);
 
+  SIZE size;
   HDC hdc = GetDC(NULL);
   HRESULT hr = GetThemePartSize(GetThemeName(part), hdc, part_id, state_id,
                                 NULL, TS_TRUE, &size);

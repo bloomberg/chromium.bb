@@ -234,6 +234,8 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       // Windows needs resources for the default/null plugin.
       // Mac needs them for the plugin process name.
       process_type == switches::kPluginProcess ||
+      // Needed for scrollbar related images.
+      process_type == switches::kWorkerProcess ||
 #endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
       // The zygote process opens the resources for the renderers.
@@ -242,7 +244,6 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
 #if defined(OS_MACOSX)
       // Mac needs them too for scrollbar related images and for sandbox
       // profiles.
-      process_type == switches::kWorkerProcess ||
       process_type == switches::kNaClLoaderProcess ||
       process_type == switches::kPpapiPluginProcess ||
       process_type == switches::kPpapiBrokerProcess ||

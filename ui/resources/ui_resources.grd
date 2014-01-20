@@ -384,7 +384,18 @@
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux/linux-progress-border-left.png" />
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux/linux-progress-border-right.png" />
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux/linux-progress-value.png" />
-
+      </if>
+      <if expr="pp_ifdef('desktop_linux')">
+        <structure type="chrome_scaled_image" name="IDR_RESTORE" file="linux/linux_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="linux/linux_restore_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="linux/linux_restore_pressed.png" />
+      </if>
+      <if expr="not pp_ifdef('desktop_linux') and pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_RESTORE" file="restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="restore_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="restore_pressed.png" />
+      </if>
+      <if expr="pp_ifdef('use_aura') and not is_win">
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="cros/aura_scrollbar_base_horizontal_hover_center.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="cros/aura_scrollbar_base_horizontal_hover_left.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="cros/aura_scrollbar_base_horizontal_hover_right.png" />
@@ -410,15 +421,70 @@
         <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="cros/aura_scrollbar_thumb_vertical_hover_top.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="cros/aura_scrollbar_thumb_vertical_pressed_top.png" />
       </if>
-      <if expr="pp_ifdef('desktop_linux')">
-        <structure type="chrome_scaled_image" name="IDR_RESTORE" file="linux/linux_restore.png" />
-        <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="linux/linux_restore_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="linux/linux_restore_pressed.png" />
-      </if>
-      <if expr="not pp_ifdef('desktop_linux') and pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_RESTORE" file="restore.png" />
-        <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="restore_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="restore_pressed.png" />
+      <if expr="is_win">
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_BOTTOM" file="win/aura_scrollbar_arrow_button_base_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_BOTTOM_LEFT" file="win/aura_scrollbar_arrow_button_base_hover_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_BOTTOM_RIGHT" file="win/aura_scrollbar_arrow_button_base_hover_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_CENTER" file="win/aura_scrollbar_arrow_button_base_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_LEFT" file="win/aura_scrollbar_arrow_button_base_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_RIGHT" file="win/aura_scrollbar_arrow_button_base_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_TOP" file="win/aura_scrollbar_arrow_button_base_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_TOP_LEFT" file="win/aura_scrollbar_arrow_button_base_hover_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER_TOP_RIGHT" file="win/aura_scrollbar_arrow_button_base_hover_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_BOTTOM" file="win/aura_scrollbar_arrow_button_base_normal_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_BOTTOM_LEFT" file="win/aura_scrollbar_arrow_button_base_normal_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_BOTTOM_RIGHT" file="win/aura_scrollbar_arrow_button_base_normal_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_CENTER" file="win/aura_scrollbar_arrow_button_base_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_LEFT" file="win/aura_scrollbar_arrow_button_base_normal_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_RIGHT" file="win/aura_scrollbar_arrow_button_base_normal_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_TOP" file="win/aura_scrollbar_arrow_button_base_normal_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_TOP_LEFT" file="win/aura_scrollbar_arrow_button_base_normal_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL_TOP_RIGHT" file="win/aura_scrollbar_arrow_button_base_normal_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_BOTTOM" file="win/aura_scrollbar_arrow_button_base_pressed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_BOTTOM_LEFT" file="win/aura_scrollbar_arrow_button_base_pressed_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_BOTTOM_RIGHT" file="win/aura_scrollbar_arrow_button_base_pressed_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_CENTER" file="win/aura_scrollbar_arrow_button_base_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_LEFT" file="win/aura_scrollbar_arrow_button_base_pressed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_RIGHT" file="win/aura_scrollbar_arrow_button_base_pressed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_TOP" file="win/aura_scrollbar_arrow_button_base_pressed_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_TOP_LEFT" file="win/aura_scrollbar_arrow_button_base_pressed_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED_TOP_RIGHT" file="win/aura_scrollbar_arrow_button_base_pressed_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_BOTTOM" file="win/aura_scrollbar_base_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_BOTTOM_LEFT" file="win/aura_scrollbar_base_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_BOTTOM_RIGHT" file="win/aura_scrollbar_base_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_CENTER" file="win/aura_scrollbar_base_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_LEFT" file="win/aura_scrollbar_base_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_RIGHT" file="win/aura_scrollbar_base_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_TOP" file="win/aura_scrollbar_base_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_TOP_LEFT" file="win/aura_scrollbar_base_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_BASE_TOP_RIGHT" file="win/aura_scrollbar_base_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_BOTTOM" file="win/aura_scrollbar_thumb_base_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_BOTTOM_LEFT" file="win/aura_scrollbar_thumb_base_hover_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_BOTTOM_RIGHT" file="win/aura_scrollbar_thumb_base_hover_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_CENTER" file="win/aura_scrollbar_thumb_base_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_LEFT" file="win/aura_scrollbar_thumb_base_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_RIGHT" file="win/aura_scrollbar_thumb_base_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_TOP" file="win/aura_scrollbar_thumb_base_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_TOP_LEFT" file="win/aura_scrollbar_thumb_base_hover_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_HOVER_TOP_RIGHT" file="win/aura_scrollbar_thumb_base_hover_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_BOTTOM" file="win/aura_scrollbar_thumb_base_normal_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_BOTTOM_LEFT" file="win/aura_scrollbar_thumb_base_normal_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_BOTTOM_RIGHT" file="win/aura_scrollbar_thumb_base_normal_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_CENTER" file="win/aura_scrollbar_thumb_base_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_LEFT" file="win/aura_scrollbar_thumb_base_normal_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_RIGHT" file="win/aura_scrollbar_thumb_base_normal_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_TOP" file="win/aura_scrollbar_thumb_base_normal_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_TOP_LEFT" file="win/aura_scrollbar_thumb_base_normal_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_NORMAL_TOP_RIGHT" file="win/aura_scrollbar_thumb_base_normal_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_BOTTOM" file="win/aura_scrollbar_thumb_base_pressed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_BOTTOM_LEFT" file="win/aura_scrollbar_thumb_base_pressed_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_BOTTOM_RIGHT" file="win/aura_scrollbar_thumb_base_pressed_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_CENTER" file="win/aura_scrollbar_thumb_base_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_LEFT" file="win/aura_scrollbar_thumb_base_pressed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_RIGHT" file="win/aura_scrollbar_thumb_base_pressed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP" file="win/aura_scrollbar_thumb_base_pressed_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP_LEFT" file="win/aura_scrollbar_thumb_base_pressed_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP_RIGHT" file="win/aura_scrollbar_thumb_base_pressed_top_right.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="common/textbutton_hover_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM_LEFT" file="common/textbutton_hover_bottom_left.png" />

@@ -13,6 +13,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/nine_image_painter.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
@@ -173,117 +174,34 @@ class VIEWS_EXPORT ImagePainter : public Painter {
 
   virtual ~ImagePainter();
 
-  // Returns true if the images are empty.
-  bool IsEmpty() const;
-
   // Painter:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE;
 
  private:
-  // Stretches the given image over the specified canvas area.
-  static void Fill(gfx::Canvas* c,
-                   const gfx::ImageSkia& i,
-                   int x,
-                   int y,
-                   int w,
-                   int h);
-
-  // Images are numbered as depicted below.
-  //  ____________________
-  // |__i0__|__i1__|__i2__|
-  // |__i3__|__i4__|__i5__|
-  // |__i6__|__i7__|__i8__|
-  gfx::ImageSkia images_[9];
+  scoped_ptr<gfx::NineImagePainter> nine_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ImagePainter);
 };
 
-ImagePainter::ImagePainter(const int image_ids[]) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  for (size_t i = 0; i < 9; ++i)
-    if (image_ids[i] != 0)
-      images_[i] = *rb.GetImageSkiaNamed(image_ids[i]);
+ImagePainter::ImagePainter(const int image_ids[])
+    : nine_painter_(ui::CreateNineImagePainter(image_ids)) {
 }
 
 ImagePainter::ImagePainter(const gfx::ImageSkia& image,
-                           const gfx::Insets& insets) {
-  DCHECK_GE(image.width(), insets.width());
-  DCHECK_GE(image.height(), insets.height());
-
-  // Extract subsets of the original image to match the |images_| format.
-  const int x[] =
-      { 0, insets.left(), image.width() - insets.right(), image.width() };
-  const int y[] =
-      { 0, insets.top(), image.height() - insets.bottom(), image.height() };
-
-  for (size_t j = 0; j < 3; ++j) {
-    for (size_t i = 0; i < 3; ++i) {
-      images_[i + j * 3] = gfx::ImageSkiaOperations::ExtractSubset(image,
-          gfx::Rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]));
-    }
-  }
+                           const gfx::Insets& insets)
+    : nine_painter_(new gfx::NineImagePainter(image, insets)) {
 }
 
 ImagePainter::~ImagePainter() {
 }
 
-bool ImagePainter::IsEmpty() const {
-  return images_[0].isNull();
-}
-
 gfx::Size ImagePainter::GetMinimumSize() const {
-  return IsEmpty() ? gfx::Size() : gfx::Size(
-      images_[0].width() + images_[1].width() + images_[2].width(),
-      images_[0].height() + images_[3].height() + images_[6].height());
+  return nine_painter_->GetMinimumSize();
 }
 
 void ImagePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  if (IsEmpty())
-    return;
-
-  // In case the corners and edges don't all have the same width/height, we draw
-  // the center first, and extend it out in all directions to the edges of the
-  // images with the smallest widths/heights.  This way there will be no
-  // unpainted areas, though some corners or edges might overlap the center.
-  int w = size.width();
-  int i0w = images_[0].width();
-  int i2w = images_[2].width();
-  int i3w = images_[3].width();
-  int i5w = images_[5].width();
-  int i6w = images_[6].width();
-  int i8w = images_[8].width();
-  int i4x = std::min(std::min(i0w, i3w), i6w);
-  int i4w = w - i4x - std::min(std::min(i2w, i5w), i8w);
-  int h = size.height();
-  int i0h = images_[0].height();
-  int i1h = images_[1].height();
-  int i2h = images_[2].height();
-  int i6h = images_[6].height();
-  int i7h = images_[7].height();
-  int i8h = images_[8].height();
-  int i4y = std::min(std::min(i0h, i1h), i2h);
-  int i4h = h - i4y - std::min(std::min(i6h, i7h), i8h);
-  if (!images_[4].isNull())
-    Fill(canvas, images_[4], i4x, i4y, i4w, i4h);
-  canvas->DrawImageInt(images_[0], 0, 0);
-  Fill(canvas, images_[1], i0w, 0, w - i0w - i2w, i1h);
-  canvas->DrawImageInt(images_[2], w - i2w, 0);
-  Fill(canvas, images_[3], 0, i0h, i3w, h - i0h - i6h);
-  Fill(canvas, images_[5], w - i5w, i2h, i5w, h - i2h - i8h);
-  canvas->DrawImageInt(images_[6], 0, h - i6h);
-  Fill(canvas, images_[7], i6w, h - i7h, w - i6w - i8w, i7h);
-  canvas->DrawImageInt(images_[8], w - i8w, h - i8h);
-}
-
-// static
-void ImagePainter::Fill(gfx::Canvas* c,
-                        const gfx::ImageSkia& i,
-                        int x,
-                        int y,
-                        int w,
-                        int h) {
-  c->DrawImageInt(i, 0, 0, i.width(), i.height(), x, y, w, h, false);
+  nine_painter_->Paint(canvas, gfx::Rect(size));
 }
 
 }  // namespace

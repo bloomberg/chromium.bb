@@ -17,6 +17,7 @@
 
 namespace ui {
 
+#if !defined(OS_WIN)
 // static
 NativeTheme* NativeTheme::instance() {
   return NativeThemeAura::instance();
@@ -27,6 +28,7 @@ NativeThemeAura* NativeThemeAura::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeAura, s_native_theme, ());
   return &s_native_theme;
 }
+#endif
 
 NativeThemeAura::NativeThemeAura() {
   // We don't draw scrollbar buttons.

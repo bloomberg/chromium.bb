@@ -222,6 +222,8 @@
         'linux_font_delegate.h',
         'mac/scoped_ns_disable_screen_updates.h',
         'native_widget_types.h',
+        'nine_image_painter.cc',
+        'nine_image_painter.h',
         'ozone/dri/dri_skbitmap.cc',
         'ozone/dri/dri_skbitmap.h',
         'ozone/dri/dri_surface.cc',
@@ -402,6 +404,12 @@
               '-ljnigraphics',
             ],
           },
+        }],
+        ['use_aura==0', {
+          'sources!': [
+            'nine_image_painter.cc',
+            'nine_image_painter.h',
+          ],
         }],
         ['OS=="android" and use_aura==0', {
           'sources!': [
