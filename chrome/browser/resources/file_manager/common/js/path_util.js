@@ -56,17 +56,6 @@ var RootDirectory = Object.freeze({
   DRIVE_RECENT: '/drive_recent'  // A fake root.
 });
 
-/**
- * Sub root directory for Drive. "root" and "other". This is not used now.
- * TODO(haruki): Add namespaces support. http://crbug.com/174233.
- * @enum {string}
- * @const
- */
-var DriveSubRootDirectory = Object.freeze({
-  ROOT: 'root',
-  OTHER: 'other',
-});
-
 var PathUtil = {};
 
 /**
@@ -272,104 +261,32 @@ PathUtil.isRootPath = function(path) {
 };
 
 /**
- * TODO(mtomasz): Obsolete. Remove once getRootLabel is cleaned up.
- * @param {string} parent_path The parent path.
- * @param {string} child_path The child path.
- * @return {boolean} True if |parent_path| is parent file path of |child_path|.
- */
-PathUtil.isParentPath = function(parent_path, child_path) {
-  if (!parent_path || parent_path.length == 0 ||
-      !child_path || child_path.length == 0)
-    return false;
-
-  if (parent_path[parent_path.length - 1] != '/')
-    parent_path += '/';
-
-  if (child_path[child_path.length - 1] != '/')
-    child_path += '/';
-
-  return child_path.indexOf(parent_path) == 0;
-};
-
-/**
- * Return the localized name for the root.
- * TODO(hirono): Support all RootTypes and stop to use paths.
+ * Returns the localized name for the root type. If not available, then returns
+ * null.
  *
- * @param {string|RootType} path The full path of the root (starting with slash)
- *     or root type.
- * @return {string} The localized name.
+ * @param {RootType} rootType The root type.
+ * @return {?string} The localized name, or null if not available.
  */
-PathUtil.getRootLabel = function(path) {
+PathUtil.getRootTypeLabel = function(rootType) {
   var str = function(id) {
     return loadTimeData.getString(id);
   };
 
-  if (path === RootDirectory.DOWNLOADS)
-    return str('DOWNLOADS_DIRECTORY_LABEL');
+  switch (rootType) {
+    case RootType.DOWNLOADS:
+      return str('DOWNLOADS_DIRECTORY_LABEL');
+    case RootType.DRIVE:
+      return str('DRIVE_MY_DRIVE_LABEL');
+    case RootType.DRIVE_OFFLINE:
+      return str('DRIVE_OFFLINE_COLLECTION_LABEL');
+    case RootType.DRIVE_SHARED_WITH_ME:
+      return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
+    case RootType.DRIVE_RECENT:
+      return str('DRIVE_RECENT_COLLECTION_LABEL');
+  }
 
-  if (path === RootDirectory.ARCHIVE)
-    return str('ARCHIVE_DIRECTORY_LABEL');
-  if (PathUtil.isParentPath(RootDirectory.ARCHIVE, path))
-    return path.substring(RootDirectory.ARCHIVE.length + 1);
-
-  if (path === RootDirectory.REMOVABLE)
-    return str('REMOVABLE_DIRECTORY_LABEL');
-  if (PathUtil.isParentPath(RootDirectory.REMOVABLE, path))
-    return path.substring(RootDirectory.REMOVABLE.length + 1);
-
-  // TODO(haruki): Add support for "drive/root" and "drive/other".
-  if (path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT ||
-      path === RootType.DRIVE)
-    return str('DRIVE_MY_DRIVE_LABEL');
-
-  if (path === RootDirectory.DRIVE_OFFLINE || path === RootType.DRIVE_OFFLINE)
-    return str('DRIVE_OFFLINE_COLLECTION_LABEL');
-
-  if (path === RootDirectory.DRIVE_SHARED_WITH_ME ||
-      path === RootType.DRIVE_SHARED_WITH_ME)
-    return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
-
-  if (path === RootDirectory.DRIVE_RECENT || path === RootType.DRIVE_RECENT)
-    return str('DRIVE_RECENT_COLLECTION_LABEL');
-
-  return path;
-};
-
-/**
- * Return the label of the folder to be shown. Eg.
- *  - '/foo/bar/baz' -> 'baz'
- *  - '/hoge/fuga/ -> 'fuga'
- * If the directory is root, returns the root label, which is same as
- * PathUtil.getRootLabel().
- *
- * @param {string} directoryPath The full path of the folder.
- * @return {string} The label to be shown.
- */
-PathUtil.getFolderLabel = function(directoryPath) {
-  var label = '';
-  if (PathUtil.isRootPath(directoryPath))
-    label = PathUtil.getRootLabel(directoryPath);
-
-  if (label && label != directoryPath)
-    return label;
-
-  var matches = directoryPath.match(/([^\/]*)[\/]?$/);
-  if (matches[1])
-    return matches[1];
-
-  return directoryPath;
-};
-
-/**
- * Returns if the given path can be a target path of folder shortcut.
- *
- * @param {string} directoryPath Directory path to be checked.
- * @return {boolean} True if the path can be a target path of the shortcut.
- */
-PathUtil.isEligibleForFolderShortcut = function(directoryPath) {
-  return !PathUtil.isSpecialSearchRoot(directoryPath) &&
-         !PathUtil.isRootPath(directoryPath) &&
-         PathUtil.isDriveBasedPath(directoryPath);
+  // Translation not found.
+  return null;
 };
 
 /**

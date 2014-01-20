@@ -33,7 +33,7 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
     var locationInfo = tree.volumeManager_.getLocationInfo(currentEntry);
     var label;
     if (locationInfo && locationInfo.isRootEntry)
-      label = PathUtil.getRootLabel(locationInfo.rootType);
+      label = PathUtil.getRootTypeLabel(locationInfo.rootType);
     else
       label = currentEntry.name;
 

@@ -116,7 +116,9 @@ BreadcrumbsController.prototype.show = function(entry) {
 
 /**
  * Updates the breadcrumb display.
- * @param {Array.<Entry|RootType>} entries Location information of target path.
+ * TODO(mtomasz): Simplify by passing always Entries (or a fake).
+ * @param {Array.<Entry|RootType>} entries Enries or root types on the target
+ *     path.
  * @private
  */
 BreadcrumbsController.prototype.updateInternal_ = function(entries) {
@@ -128,11 +130,12 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
     var div = doc.createElement('div');
     div.className = 'breadcrumb-path';
     if (entry === RootType.DRIVE_SHARED_WITH_ME) {
-      div.textContent = PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME);
+      div.textContent = PathUtil.getRootTypeLabel(
+          RootType.DRIVE_SHARED_WITH_ME);
     } else {
-      var location = this.volumeManager_.getLocationInfo(entry);
-      div.textContent = (location && location.isRootEntry) ?
-          PathUtil.getRootLabel(entry.fullPath) : entry.name;
+      var locationInfo = this.volumeManager_.getLocationInfo(entry);
+      div.textContent = (locationInfo && locationInfo.isRootEntry) ?
+          PathUtil.getRootTypeLabel(locationInfo.rootType) : entry.name;
     }
     div.entry = entry;
     this.bc_.appendChild(div);

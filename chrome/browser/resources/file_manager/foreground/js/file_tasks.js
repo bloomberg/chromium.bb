@@ -669,10 +669,15 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
     var downloadsDir = downloadsVolume && downloadsVolume.root;
     var readonlyDirName = null;
     if (readonly && currentDir) {
-      var rootPath = PathUtil.getRootPath(currentDir.fullPath);
-      readonlyDirName = fm.isOnDrive() ?
-          PathUtil.getRootLabel(rootPath) :
-          PathUtil.basename(rootPath);
+      // TODO(mtomasz): Pass Entry instead of localized name. Conversion to a
+      //     display string should be done in gallery.js.
+      var locationInfo = fm.volumeManager.getLocationInfo(currentDir);
+      if (locationInfo && locationInfo.isRootEntry) {
+        readonlyDirName = PathUtil.getRootTypeLabel(currentDir.rootType) ||
+            currentDir.name;
+      } else {
+        readonlyDirName = currentDir.name;
+      }
     }
 
     var context = {

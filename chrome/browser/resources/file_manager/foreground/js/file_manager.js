@@ -2203,11 +2203,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogType != DialogType.FULL_PAGE)
       return;
 
-    // TODO(mtomasz): Use VolumeInfo.root instead.
-    var path = this.getCurrentDirectoryEntry().fullPath;
-    var rootPath = PathUtil.getRootPath(path);
-    this.document_.title = PathUtil.getRootLabel(rootPath) +
-                           path.substring(rootPath.length);
+    if (!this.currentVolumeInfo_)
+      return;
+
+    this.document_.title = this.currentVolumeInfo_.getLabel();
   };
 
   /**

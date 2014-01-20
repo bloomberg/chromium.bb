@@ -157,8 +157,10 @@ VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
 VolumeInfo.prototype.getLabel = function() {
   if (this.volumeType === util.VolumeType.DRIVE)
     return str('DRIVE_DIRECTORY_LABEL');
-  else
-    return PathUtil.getFolderLabel(this.mountPath);
+
+  // TODO(mtomasz): We are assuming that root is available. Root may not be
+  // available only for Drive, and we should fix it. crbug.com/335460
+  return this.root.name;
 };
 
 /**
