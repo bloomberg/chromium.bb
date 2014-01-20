@@ -728,18 +728,27 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
 };
 
 /**
- * Change the current directory to the directory represented by a
- * DirectoryEntry.
+ * Change the current directory to the directory represented by
+ * a DirectoryEntry or a fake entry.
  *
  * Dispatches the 'directory-changed' event when the directory is successfully
  * changed.
  *
- * @param {DirectoryEntry} dirEntry The entry of the new directory.
+ * @param {DirectoryEntry|Object} dirEntry The entry of the new directory to
+ *     be opened.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */
 DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
+  if (util.isFakeEntry(dirEntry)) {
+    // TODO(mtomasz): Pass the fake entry instead of a full path.
+    this.specialSearch(dirEntry.fullPath);
+    if (opt_callback)
+      opt_callback();
+    return;
+  }
+
   // Increment the sequence value.
   this.changeDirectorySequence_++;
 

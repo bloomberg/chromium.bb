@@ -1034,9 +1034,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
 
     var driveVolume = this.volumeManager_.getVolumeInfo(entry);
-    var visible =
-        DirectoryTreeUtil.isEligiblePathForDirectoryTree(entry.fullPath) &&
-        driveVolume && !driveVolume.error;
+    var visible = driveVolume && !driveVolume.error &&
+        driveVolume.volumeType === util.VolumeType.DRIVE;
     this.dialogDom_.
         querySelector('.dialog-middlebar-contents').hidden = !visible;
     this.dialogDom_.querySelector('#middlebar-splitter').hidden = !visible;

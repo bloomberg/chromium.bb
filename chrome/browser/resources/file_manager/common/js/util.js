@@ -1111,21 +1111,6 @@ util.isSameEntry = function(entry1, entry2) {
 };
 
 /**
- * TODO(mtomasz, yoshiki): Deprecated. Only used in directory_tree.js. Will
- *     be removed soon.
- *
- * @param {Entry|Object} parent The parent entry. Can be a fake.
- * @param {Entry|Object} child The child entry. Can be a fake.
- * @return {boolean} True if parent entry is actualy the parent of the child
- *     entry.
- */
-util.isParentEntry = function(parent, child) {
-  // Currently, we can assume there is only one root.
-  // When we support multi-file system, we need to look at filesystem, too.
-  return PathUtil.isParentPath(parent.fullPath, child.fullPath);
-};
-
-/**
  * Views files in the browser.
  *
  * @param {Array.<string>} urls URLs of files to view.
@@ -1134,6 +1119,29 @@ util.isParentEntry = function(parent, child) {
 util.viewFilesInBrowser = function(urls, callback) {
   var taskId = chrome.runtime.id + '|file|view-in-browser';
   chrome.fileBrowserPrivate.executeTask(taskId, urls, callback);
+};
+
+/**
+ * Checks if the child entry is a descendant of another entry. If the entries
+ * point to the same file or directory, then returns false.
+ *
+ * @param {DirectoryEntry|Object} ancestorEntry The ancestor directory entry.
+ *     Can be a fake.
+ * @param {Entry|Object} childEntry The child entry. Can be a fake.
+ * @return {boolean} True if the child entry is contained in the ancestor path.
+ */
+util.isDescendantEntry = function(ancestorEntry, childEntry) {
+  if (!ancestorEntry.isDirectory)
+    return false;
+
+  // TODO(mtomasz): Do not work on URLs. Instead consider comparing file systems
+  // and paths.
+  if (util.isSameEntry(ancestorEntry, childEntry))
+    return false;
+  if (childEntry.toURL().indexOf(ancestorEntry.toURL() + '/') !== 0)
+    return false;
+
+  return true;
 };
 
 /**
