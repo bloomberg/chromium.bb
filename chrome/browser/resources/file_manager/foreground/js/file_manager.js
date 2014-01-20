@@ -1594,8 +1594,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         return;
 
       var task = null;
-      // Handle restoring after crash.
-      if (this.params_.gallery) {
+      // Handle restoring after crash, or the gallery action.
+      if (this.params_.gallery || this.params_.action === 'gallery') {
         if (!opt_selectionEntry) {
           // Non-existent file or a directory.
           // Reloading while the Gallery is open with empty or multiple
