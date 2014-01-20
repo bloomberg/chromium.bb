@@ -46,6 +46,10 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
 
+  virtual blink::WebWaitableEvent* createWaitableEvent();
+  virtual blink::WebWaitableEvent* waitMultipleEvents(
+      const blink::WebVector<blink::WebWaitableEvent*>& events);
+
   virtual void didStartWorkerRunLoop(
       const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
   virtual void didStopWorkerRunLoop(

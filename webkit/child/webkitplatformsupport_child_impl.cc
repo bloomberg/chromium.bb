@@ -5,6 +5,9 @@
 #include "webkit/child/webkitplatformsupport_child_impl.h"
 
 #include "base/memory/discardable_memory.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
+#include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
 #include "webkit/child/web_discardable_memory_impl.h"
@@ -19,6 +22,27 @@ using blink::WebFallbackThemeEngine;
 using blink::WebThemeEngine;
 
 namespace webkit_glue {
+
+namespace {
+
+class WebWaitableEventImpl : public blink::WebWaitableEvent {
+ public:
+  WebWaitableEventImpl() : impl_(new base::WaitableEvent(false, false)) {}
+  virtual ~WebWaitableEventImpl() {}
+
+  virtual void wait() { impl_->Wait(); }
+  virtual void signal() { impl_->Signal(); }
+
+  base::WaitableEvent* impl() {
+    return impl_.get();
+  }
+
+ private:
+  scoped_ptr<base::WaitableEvent> impl_;
+  DISALLOW_COPY_AND_ASSIGN(WebWaitableEventImpl);
+};
+
+}  // namespace
 
 WebKitPlatformSupportChildImpl::WebKitPlatformSupportChildImpl()
     : current_thread_slot_(&DestroyCurrentThread),
@@ -77,6 +101,20 @@ blink::WebThread* WebKitPlatformSupportChildImpl::currentThread() {
   thread = new WebThreadImplForMessageLoop(message_loop.get());
   current_thread_slot_.Set(thread);
   return thread;
+}
+
+blink::WebWaitableEvent* WebKitPlatformSupportChildImpl::createWaitableEvent() {
+  return new WebWaitableEventImpl();
+}
+
+blink::WebWaitableEvent* WebKitPlatformSupportChildImpl::waitMultipleEvents(
+    const blink::WebVector<blink::WebWaitableEvent*>& web_events) {
+  base::WaitableEvent** events = new base::WaitableEvent*[web_events.size()];
+  for (size_t i = 0; i < web_events.size(); ++i)
+    events[i] = static_cast<WebWaitableEventImpl*>(web_events[i])->impl();
+  size_t idx = base::WaitableEvent::WaitMany(events, web_events.size());
+  DCHECK_LT(idx, web_events.size());
+  return web_events[idx];
 }
 
 void WebKitPlatformSupportChildImpl::didStartWorkerRunLoop(
