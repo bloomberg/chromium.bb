@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Неординарний",
+    "message": "Оригінально",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -67,6 +67,14 @@
     "message": "Ретро 1960-х",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Фотолабораторія",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Модерн",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Криве дзеркало",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Вінтаж",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Привид",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Камера зараз недоступна.",
@@ -132,7 +144,7 @@
     "description": "Label for the exporting button."
   },
   "printButton": {
-    "message": "Друк",
+    "message": "Друкувати",
     "description": "Label for the printing button."
   },
   "backButton": {
@@ -155,6 +167,30 @@
     "message": "Зробити знімок",
     "description": "Label for the red picture taking button."
   },
+  "toggleTimerButton": {
+    "message": "Увімкнути/вимкнути таймер",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Увімкнути/вимкнути серійну зйомку",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Таймер активний",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Таймер неактивний",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Серійна зйомка активна",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Серійна зйомка неактивна",
+    "description": "Message shown when inactivating the multi-shot feature."
+  },
   "dialogYesButton": {
     "message": "Так",
     "description": "Label for the accepting button in the confirmation dialog."
@@ -164,7 +200,7 @@
     "description": "Label for the dismissing button in the confirmation dialog."
   },
   "dialogOKButton": {
-    "message": "OK",
+    "message": "ОК",
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {

@@ -20,7 +20,7 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Colorit",
+    "message": "Color",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -67,6 +67,14 @@
     "message": "Retro anys 60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Laboratori de fotos",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Modern",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Espiral",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -83,12 +91,16 @@
     "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "Fantasma",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
     "message": "La càmera no està disponible en aquest moment.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
-    "message": "Pot ser que una altra aplicació l'estigui fent servir.",
+    "message": "És possible que una altra aplicació l'estigui fent servir.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Fes una foto",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Commuta el cronometrador",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Commuta el disparament múltiple",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Cronometrador actiu",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Cronometrador inactiu",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Disparament múltiple actiu",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Disparament múltiple inactiu",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Sí",

@@ -67,12 +67,20 @@
     "message": "Retro – 60. léta",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotolaboratoř",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderní",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Vír",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Tilt shift",
+    "message": "Tilt Shift",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Stará klasika",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Duch",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Váš fotoaparát momentálně není dostupný.",
@@ -155,6 +167,30 @@
     "message": "Vyfotit",
     "description": "Label for the red picture taking button."
   },
+  "toggleTimerButton": {
+    "message": "Přepnout časovač",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Přepnout režim několika snímků",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Časovač je aktivní",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Časovač je neaktivní",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Režim několika snímků je aktivní",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Režim několika snímků je neaktivní",
+    "description": "Message shown when inactivating the multi-shot feature."
+  },
   "dialogYesButton": {
     "message": "Ano",
     "description": "Label for the accepting button in the confirmation dialog."
@@ -168,7 +204,7 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Opravdu chcete tuto fotku z galerie odstranit?",
+    "message": "Opravdu tuto fotku chcete odstranit z galerie?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

@@ -67,6 +67,14 @@
     "message": "Retro anni '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Laboratorio fotografico",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderno",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Vortice",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Fantasma",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "La tua fotocamera non è attualmente disponibile.",
@@ -155,6 +167,30 @@
     "message": "Scatta una foto",
     "description": "Label for the red picture taking button."
   },
+  "toggleTimerButton": {
+    "message": "Attiva/disattiva timer",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Attiva/disattiva scatto multiplo",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Timer attivo",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Timer non attivo",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Scatto multiplo attivo",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Scatto multiplo non attivo",
+    "description": "Message shown when inactivating the multi-shot feature."
+  },
   "dialogYesButton": {
     "message": "Sì",
     "description": "Label for the accepting button in the confirmation dialog."
@@ -168,7 +204,7 @@
     "description": "Label for the OK button in the alert dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Vuoi rimuovere questa immagine dalla galleria?",
+    "message": "Vuoi davvero rimuovere questa immagine dalla galleria?",
     "description": "Confirmation message before removing a picture from the gallery."
   }
 }

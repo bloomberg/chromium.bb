@@ -354,7 +354,7 @@ canvas {
 #effects li {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
+  -webkit-box-pack: start;
   -webkit-margin-end: 10px;
   display: -webkit-box;
   padding: 0;
@@ -404,7 +404,10 @@ canvas {
 #effects li span {
   -webkit-padding-before: 5px;
   color: white;
-  display: -webkit-box;
+  display: block;
+  font-size: 90%;
+  text-align: center;
+  width: 80px;
 }
 
 #buttons {

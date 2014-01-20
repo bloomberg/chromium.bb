@@ -56,16 +56,24 @@
     "description": "Sepia effect's name. Makes the image look like an old picture."
   },
   "retro30Effect": {
-    "message": "Retro 30-te",
+    "message": "Retro tridesete",
     "description": "Retro '30 effect's name. Makes the image look like a retro picture."
   },
   "retro50Effect": {
-    "message": "Retro 50-te",
+    "message": "Retro pedesete",
     "description": "Retro '50 effect's name. Makes the image look like a retro picture."
   },
   "retro60Effect": {
-    "message": "Retro 60-te",
+    "message": "Retro šezdesete",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "photoLabEffect": {
+    "message": "Fotografski laboratorij",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderno",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
   },
   "swirlEffect": {
     "message": "Vrtlog",
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Starinski",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Duh",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Vaš fotoaparat trenutačno nije dostupan.",
@@ -116,11 +128,11 @@
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
-    "message": "Idi u galeriju",
+    "message": "Idi na galeriju",
     "description": "Label for the gallery button."
   },
   "filtersButton": {
-    "message": "Izmjenjuj filtre",
+    "message": "Prikaži/sakrij filtre",
     "description": "Label for the toggle filters button."
   },
   "deleteButton": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Snimi sliku",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Prikaži/sakrij odbrojavanje",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Prikaži/sakrij višestruko snimanje",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Odbrojavanje je aktivno",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Odbrojavanje nije aktivno",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Višestruko je snimanje aktivno",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Višestruko snimanje nije aktivno",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Da",

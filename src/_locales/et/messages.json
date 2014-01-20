@@ -20,7 +20,7 @@
     "description": "Beauty effect's name. Smooths skin and increases brightness."
   },
   "colorizeEffect": {
-    "message": "Värvi",
+    "message": "Toonimine",
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
@@ -67,6 +67,14 @@
     "message": "Retro '60-ndad",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Fotolabor",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moodne",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Keerlev",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -76,19 +84,23 @@
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
-    "message": "Film",
+    "message": "Kinolik",
     "description": "Cinema effect's name. Makes the image look like from a movie."
   },
   "vintageEffect": {
     "message": "Vana",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "Kummitus",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
     "message": "Teie kaamera pole praegu saadaval.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
-    "message": "Seda võib kasutada mõni teine rakendus.",
+    "message": "Võimalik, et seda kasutab teine rakendus.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Pildista",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Taimer sisse/välja",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Mitme pildi funktsioon sisse/välja",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Taimer on aktiivne",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Taimer pole aktiivne",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Mitme pildi funktsioon on aktiivne",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Mitme pildi funktsioon pole aktiivne",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Jah",

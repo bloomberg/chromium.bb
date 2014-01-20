@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "กล้อง",
+    "message": "กล้องถ่ายรูป",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "ถ่ายรูปภาพสนุกๆ ด้วยเว็บแคมของคุณ",
+    "message": "ถ่ายภาพสนุกๆ ด้วยเว็บแคมของคุณ",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -67,8 +67,16 @@
     "message": "เรโทร '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "โฟโต้แล็บ",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "สมัยใหม่",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
-    "message": "หมุนรอบ",
+    "message": "หมุนวน",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "วินเทจ",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "วิญญาณ",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "กล้องของคุณยังไม่สามารถใช้งานได้ในขณะนี้",
@@ -112,7 +124,7 @@
     "description": "Error message shown when WebGL is not available."
   },
   "errorMsgNoWebGLHint": {
-    "message": "คอมพิวเตอร์ของคุณอาจมีการ์ดกราฟิกที่ไม่สามารถใช้ร่วมกันได้ หรือมีไดรเวอร์เก่า",
+    "message": "คอมพิวเตอร์ของคุณอาจมีการ์ดจอที่ไม่สามารถใช้ร่วมกันได้ หรือมีไดรเวอร์เก่า",
     "description": "Hint shown below the main error message, when WebGL is not detected."
   },
   "galleryButton": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "ถ่ายภาพ",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "สลับเครื่องจับเวลา",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "สลับมัลติช็อต",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "ใช้เครื่องจับเวลา",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "ไม่ใช้เครื่องจับเวลา",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "ใช้มัลติช็อต",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "ไม่ใช้มัลติช็อต",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "ใช่",

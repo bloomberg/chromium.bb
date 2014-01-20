@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "अपने वेब कैमरे से आकर्षक चित्र लें.",
+    "message": "अपने वेब कैमरे से आकर्षक फ़ोटो लें.",
     "description": "Short description of the Camera App."
   },
   "andyEffect": {
@@ -32,7 +32,7 @@
     "description": "Grayscale effect's name. Makes the images in grayscale."
   },
   "newspaperEffect": {
-    "message": "न्यूज़पेपर",
+    "message": "अख़बार",
     "description": "Newspaper effect's name. Makes the image look like in a newspaper."
   },
   "normalEffect": {
@@ -67,12 +67,20 @@
     "message": "रेट्रो '60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "फ़ोटो लैब",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "मॉर्डन",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "स्वर्ल",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "टिल्ट-शिफ़्ट",
+    "message": "टिल्टशिफ़्ट",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -83,8 +91,12 @@
     "message": "विंटेज",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "घोस्ट",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
-    "message": "वर्तमान मेंआपका कैमरा उपलब्ध नहीं है.",
+    "message": "वर्तमान में आपका कैमरा उपलब्ध नहीं है.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "कोई चित्र लें",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "टाइमर टॉगल करें",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "मल्टी-शॉट टॉगल करें",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "टाइमर सक्रिय",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "टाइमर निष्क्रिय",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "मल्टी-शॉट सक्रिय",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "मल्टी-शॉट निष्क्रिय",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "हां",

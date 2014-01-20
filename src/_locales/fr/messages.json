@@ -24,7 +24,7 @@
     "description": "Colorize effect's name."
   },
   "funkyEffect": {
-    "message": "Funky",
+    "message": "Funk",
     "description": "Funky effect's name."
   },
   "grayscaleEffect": {
@@ -67,12 +67,20 @@
     "message": "Rétro/années 60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Labo photo",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Moderne",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Tourbillon",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
   },
   "tiltShiftEffect": {
-    "message": "Inclinaison et décentrement",
+    "message": "Maquette",
     "description": "Tils Shift effect's name."
   },
   "cinemaEffect": {
@@ -83,12 +91,16 @@
     "message": "Vintage",
     "description": "Vintage effect's name. Makes the image look vintage."
   },
+  "ghostEffect": {
+    "message": "Fantôme",
+    "description": "Ghost effect's name. Duplicates face when moving."
+  },
   "errorMsgNoCamera": {
-    "message": "Votre appareil photo est actuellement indisponible.",
+    "message": "Votre caméra est actuellement indisponible.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
   },
   "errorMsgNoCameraHint": {
-    "message": "Une autre application l'utilise peut-être",
+    "message": "Une autre application l'utilise peut-être.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
   "errorMsgGallerySaveFailed": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Prendre une photo",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Activer/Désactiver le retardateur",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Activer/Désactiver le mode rafale",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Retardateur activé",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Retardateur désactivé",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Mode rafale activé",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Mode rafale désactivé",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Oui",

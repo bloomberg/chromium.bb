@@ -67,6 +67,14 @@
     "message": "Trở về những năm 60",
     "description": "Retro '60 effect's name. Makes the image look like a retro picture."
   },
+  "photoLabEffect": {
+    "message": "Photo Lab",
+    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
+  },
+  "modernEffect": {
+    "message": "Hiện đại",
+    "description": "Modern effect's name. Colorizes parts of the image with different colors."
+  },
   "swirlEffect": {
     "message": "Xoáy nước",
     "description": "Swirl effect's name. Makes the image look like a whirlpool."
@@ -82,6 +90,10 @@
   "vintageEffect": {
     "message": "Cổ điển",
     "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "ghostEffect": {
+    "message": "Ma",
+    "description": "Ghost effect's name. Duplicates face when moving."
   },
   "errorMsgNoCamera": {
     "message": "Máy ảnh của bạn hiện không khả dụng.",
@@ -144,7 +156,7 @@
     "description": "Text to speech Label for the maximize button."
   },
   "closeButton": {
-    "message": "Đóng",
+    "message": "Đóng",
     "description": "Text to speech label for the close button."
   },
   "galleryImages": {
@@ -154,6 +166,30 @@
   "takePictureButton": {
     "message": "Chụp ảnh",
     "description": "Label for the red picture taking button."
+  },
+  "toggleTimerButton": {
+    "message": "Chuyển đổi bộ tính giờ",
+    "description": "Label for the button to toggle the countdown timer."
+  },
+  "toggleMultiButton": {
+    "message": "Chuyển đổi tính năng chụp nhiều ảnh",
+    "description": "Label for the button to toggle the multi-shot feature."
+  },
+  "toggleTimerActiveMessage": {
+    "message": "Bộ tính giờ hoạt động",
+    "description": "Message shown when activating the timer."
+  },
+  "toggleTimerInactiveMessage": {
+    "message": "Bộ tính giờ không hoạt động",
+    "description": "Message shown when inactivating the timer."
+  },
+  "toggleMultiActiveMessage": {
+    "message": "Tính năng chụp nhiều ảnh hoạt động",
+    "description": "Message shown when activating the multi-shot feature."
+  },
+  "toggleMultiInactiveMessage": {
+    "message": "Tính năng chụp nhiều ảnh không hoạt động",
+    "description": "Message shown when inactivating the multi-shot feature."
   },
   "dialogYesButton": {
     "message": "Có",
