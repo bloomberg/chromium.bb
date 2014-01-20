@@ -499,7 +499,7 @@ bool WallpaperPrivateResetWallpaperFunction::RunImpl() {
   bool is_persistent =
       !user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
   wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
-  wallpaper_manager->SetDefaultWallpaper();
+  wallpaper_manager->SetDefaultWallpaperNow();
   return true;
 }
 
