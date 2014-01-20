@@ -4412,13 +4412,22 @@ shell_fade(struct desktop_shell *shell, enum fade_type type)
 		weston_view_update_transform(shell->fade.view);
 	}
 
-	if (shell->fade.animation)
+	if (shell->fade.view->output == NULL) {
+		/* If the black view gets a NULL output, we lost the
+		 * last output and we'll just cancel the fade.  This
+		 * happens when you close the last window under the
+		 * X11 or Wayland backends. */
+		shell->locked = false;
+		weston_surface_destroy(shell->fade.view->surface);
+		shell->fade.view = NULL;
+	} else if (shell->fade.animation) {
 		weston_fade_update(shell->fade.animation, tint);
-	else
+	} else {
 		shell->fade.animation =
 			weston_fade_run(shell->fade.view,
 					1.0 - tint, tint, 300.0,
 					shell_fade_done, shell);
+	}
 }
 
 static void
