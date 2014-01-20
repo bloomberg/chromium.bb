@@ -78,12 +78,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   // The state of the part.
   enum State {
-    // IDs defined as specific values for use in arrays.
-    kDisabled = 0,
-    kHovered  = 1,
-    kNormal   = 2,
-    kPressed  = 3,
-    kMaxState = 4,
+    kDisabled,
+    kHovered,
+    kNormal,
+    kPressed,
+    kMaxState,
   };
 
   // Each structure below holds extra information needed when painting a given

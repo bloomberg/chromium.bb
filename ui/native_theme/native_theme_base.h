@@ -7,12 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace gfx {
-class Canvas;
 class ImageSkia;
 class Rect;
 class Size;
@@ -36,9 +34,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
  protected:
   NativeThemeBase();
   virtual ~NativeThemeBase();
-
-  // Creates a gfx::Canvas wrapping an SkCanvas.
-  static scoped_ptr<gfx::Canvas> CreateCanvas(SkCanvas* sk_canvas);
 
   // Draw the arrow. Used by scrollbar and inner spin button.
   virtual void PaintArrowButton(
@@ -126,6 +121,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       const gfx::Rect& rect,
       const ProgressBarExtraParams& progress_bar) const;
 
+ protected:
   void set_scrollbar_button_length(unsigned int length) {
     scrollbar_button_length_ = length;
   }
@@ -146,16 +142,6 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   SkColor SaturateAndBrighten(SkScalar* hsv,
                               SkScalar saturate_amount,
                               SkScalar brighten_amount) const;
-
-  // Paints the arrow used on the scrollbar and spinner.
-  void PaintArrow(SkCanvas* canvas,
-                  const gfx::Rect& rect,
-                  Part direction,
-                  SkColor color) const;
-
-  // Returns the color used to draw the arrow.
-  SkColor GetArrowColor(State state) const;
-
  private:
   void DrawVertLine(SkCanvas* canvas,
                     int x,

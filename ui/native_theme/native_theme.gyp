@@ -33,8 +33,6 @@
         'native_theme_android.h',
         'native_theme_aura.cc',
         'native_theme_aura.h',
-        'native_theme_aurawin.cc',
-        'native_theme_aurawin.h',
         'native_theme_base.cc',
         'native_theme_base.h',
         'native_theme_gtk.cc',

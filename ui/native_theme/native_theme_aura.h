@@ -16,7 +16,7 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
  public:
   static NativeThemeAura* instance();
 
- protected:
+ private:
   NativeThemeAura();
   virtual ~NativeThemeAura();
 
