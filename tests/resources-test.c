@@ -107,9 +107,6 @@ TEST(destroy_res_tst)
 	wl_resource_set_implementation(res, NULL, &destroyed, res_destroy_func);
 	wl_resource_add_destroy_listener(res, &destroy_listener);
 
-	/* without implementation this should be ignored .. */
-	wl_resource_post_event(res, 0);
-
 	id = wl_resource_get_id(res);
 	link = wl_resource_get_link(res);
 	assert(link);
