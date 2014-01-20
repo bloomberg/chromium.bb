@@ -134,6 +134,9 @@ race:IPC::SyncChannel::ReceivedSyncMsgQueue::lazy_tls_ptr_
 # http://crbug.com/280466
 race:content::WebRtcAudioCapturer::SetCapturerSource
 
+# http://crbug.com/285242
+race:media::PulseAudioOutputStream::SetVolume
+
 # http://crbug.com/290964
 race:PostponeInterruptsScope
 race:v8::internal::StackGuard::RequestInstallCode
@@ -191,3 +194,4 @@ race:v8::internal::KeyedStoreFastElementStub::InitializeInterfaceDescriptor
 race:v8::internal::LoadStubCompiler::registers
 race:v8::internal::StoreStubCompiler::registers
 race:v8::internal::HValue::LoopWeight
+
