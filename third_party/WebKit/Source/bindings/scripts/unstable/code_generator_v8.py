@@ -110,6 +110,7 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
     template_contents = generate_contents(interface)
     template_contents['header_includes'].add(interface_info['include_path'])
     template_contents['header_includes'] = sorted(template_contents['header_includes'])
+    includes.update(interface_info.get('dependencies_include_paths', []))
     template_contents['cpp_includes'] = sorted(includes)
 
     # Render Jinja templates and write files
