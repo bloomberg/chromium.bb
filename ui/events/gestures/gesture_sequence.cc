@@ -16,7 +16,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/gestures/gesture_configuration.h"
-#include "ui/events/gestures/gesture_util.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -1464,8 +1463,7 @@ void GestureSequence::StopTimersIfRequired(const TouchEvent& event) {
 
   // Since a timer is running, there should be a non-NULL point.
   const GesturePoint* point = GetPointByPointId(0);
-  if (!ui::gestures::IsInsideManhattanSquare(point->first_touch_position(),
-                                             event.location())) {
+  if (!point->IsInsideManhattanSquare(event)) {
     GetLongPressTimer()->Stop();
     GetShowPressTimer()->Stop();
   }

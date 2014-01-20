@@ -18,7 +18,6 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/gestures/gesture_configuration.h"
-#include "ui/events/gestures/gesture_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"

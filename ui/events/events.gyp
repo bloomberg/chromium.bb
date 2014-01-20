@@ -110,8 +110,6 @@
         'gestures/gesture_sequence.h',
         'gestures/gesture_types.cc',
         'gestures/gesture_types.h',
-        'gestures/gesture_util.cc',
-        'gestures/gesture_util.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
         'ozone/evdev/event_device_info.cc',

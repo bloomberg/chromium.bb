@@ -11,7 +11,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/gestures/gesture_types.h"
-#include "ui/events/gestures/gesture_util.h"
 
 namespace ui {
 
@@ -183,8 +182,11 @@ bool GesturePoint::IsInClickAggregateTimeWindow(double before,
 }
 
 bool GesturePoint::IsInsideManhattanSquare(const TouchEvent& event) const {
-  return ui::gestures::IsInsideManhattanSquare(event.location(),
-                                               first_touch_position_);
+  const gfx::Point& p1 = event.location();
+  const gfx::Point& p2 = first_touch_position_;
+  int manhattan_distance = abs(p1.x() - p2.x()) + abs(p1.y() - p2.y());
+  return manhattan_distance <
+      GestureConfiguration::max_touch_move_in_pixels_for_click();
 }
 
 bool GesturePoint::IsPointInsideManhattanSquare(gfx::Point p1,
