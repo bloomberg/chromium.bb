@@ -11,6 +11,7 @@
 #include "google_apis/drive/auth_service_interface.h"
 
 namespace google_apis {
+class AboutResource;
 class ChangeResource;
 class FileResource;
 }
@@ -66,9 +67,10 @@ class FakeDriveService : public DriveServiceInterface {
   // Changes the quota fields returned from GetAboutResource().
   void SetQuotaValue(int64 used, int64 total);
 
-  // Returns the largest changestamp, which starts from 0 by default. See
-  // also comments at LoadAccountMetadataForWapi().
-  int64 largest_changestamp() const { return largest_changestamp_; }
+  // Returns the AboutResource.
+  const google_apis::AboutResource& about_resource() const {
+    return *about_resource_;
+  }
 
   // Returns the number of times the resource list is successfully loaded by
   // GetAllResourceList().
@@ -299,10 +301,9 @@ class FakeDriveService : public DriveServiceInterface {
 
   typedef std::map<std::string, EntryInfo*> EntryInfoMap;
   EntryInfoMap entries_;
-  scoped_ptr<base::DictionaryValue> account_metadata_value_;
+  scoped_ptr<google_apis::AboutResource> about_resource_;
   scoped_ptr<base::DictionaryValue> app_info_value_;
   std::map<GURL, UploadSession> upload_sessions_;
-  int64 largest_changestamp_;
   int64 published_date_seq_;
   int64 next_upload_sequence_number_;
   int default_max_results_;

@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,7 +81,8 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   EXPECT_EQ(FILE_ERROR_OK, StoreAndMarkDirty(local_id, kTestFileContent));
 
-  int64 original_changestamp = fake_service()->largest_changestamp();
+  int64 original_changestamp =
+      fake_service()->about_resource().largest_change_id();
 
   // The callback will be called upon completion of UpdateFileByLocalId().
   FileError error = FILE_ERROR_FAILED;
@@ -93,7 +95,8 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Check that the server has received an update.
-  EXPECT_LT(original_changestamp, fake_service()->largest_changestamp());
+  EXPECT_LT(original_changestamp,
+            fake_service()->about_resource().largest_change_id());
 
   // Check that the file size is updated to that of the updated content.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
@@ -144,7 +147,8 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   EXPECT_EQ(FILE_ERROR_OK, StoreAndMarkDirty(local_id, kTestFileContent));
 
-  int64 original_changestamp = fake_service()->largest_changestamp();
+  int64 original_changestamp =
+      fake_service()->about_resource().largest_change_id();
 
   // The callback will be called upon completion of UpdateFileByLocalId().
   FileError error = FILE_ERROR_FAILED;
@@ -157,7 +161,8 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Check that the server has received an update.
-  EXPECT_LT(original_changestamp, fake_service()->largest_changestamp());
+  EXPECT_LT(original_changestamp,
+            fake_service()->about_resource().largest_change_id());
 
   // Check that the file size is updated to that of the updated content.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
@@ -203,7 +208,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // And call UpdateFileByLocalId again.
   // In this case, although the file is marked as dirty, but the content
   // hasn't been changed. Thus, the actual uploading should be skipped.
-  original_changestamp = fake_service()->largest_changestamp();
+  original_changestamp = fake_service()->about_resource().largest_change_id();
   error = FILE_ERROR_FAILED;
   operation_->UpdateFileByLocalId(
       local_id,
@@ -213,7 +218,8 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  EXPECT_EQ(original_changestamp, fake_service()->largest_changestamp());
+  EXPECT_EQ(original_changestamp,
+            fake_service()->about_resource().largest_change_id());
 
   // Make sure that the cache is no longer dirty.
   success = false;
@@ -245,7 +251,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // And call UpdateFileByLocalId again.
   // In this case, NO_CONTENT_CHECK is set, so the actual uploading should run
   // no matter the content is changed or not.
-  original_changestamp = fake_service()->largest_changestamp();
+  original_changestamp = fake_service()->about_resource().largest_change_id();
   error = FILE_ERROR_FAILED;
   operation_->UpdateFileByLocalId(
       local_id,
@@ -256,7 +262,8 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Make sure that the server is receiving a change.
-  EXPECT_LE(original_changestamp, fake_service()->largest_changestamp());
+  EXPECT_LE(original_changestamp,
+            fake_service()->about_resource().largest_change_id());
 }
 
 TEST_F(UpdateOperationTest, UpdateFileByLocalId_OpenedForWrite) {

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -213,7 +214,7 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_EQ(1, observer.initial_load_complete_count());
 
   // Update should be checked by Load().
-  EXPECT_EQ(drive_service_->largest_changestamp(),
+  EXPECT_EQ(drive_service_->about_resource().largest_change_id(),
             metadata_->GetLargestChangestamp());
   EXPECT_EQ(1, drive_service_->change_list_load_count());
   EXPECT_EQ(1, observer.load_from_server_complete_count());

@@ -367,7 +367,7 @@ TEST_F(FileSystemTest, GetExistingDirectory) {
   ASSERT_EQ("folder:1_folder_resource_id", entry->resource_id());
 
   // The changestamp should be propagated to the directory.
-  EXPECT_EQ(fake_drive_service_->largest_changestamp(),
+  EXPECT_EQ(fake_drive_service_->about_resource().largest_change_id(),
             entry->directory_specific_info().changestamp());
 }
 

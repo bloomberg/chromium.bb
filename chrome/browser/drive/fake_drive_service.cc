@@ -164,7 +164,7 @@ struct FakeDriveService::UploadSession {
 };
 
 FakeDriveService::FakeDriveService()
-    : largest_changestamp_(0),
+    : about_resource_(new AboutResource),
       published_date_seq_(0),
       next_upload_sequence_number_(0),
       default_max_results_(0),
@@ -238,23 +238,23 @@ bool FakeDriveService::LoadAccountMetadataForWapi(
     const std::string& relative_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Load JSON data, which must be a dictionary.
   scoped_ptr<base::Value> value = test_util::LoadJSONFile(relative_path);
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
-  account_metadata_value_.reset(
-      static_cast<base::DictionaryValue*>(value.release()));
+  if (!value)
+    return false;
 
-  // Update the largest_changestamp_.
-  scoped_ptr<AccountMetadata> account_metadata =
-      AccountMetadata::CreateFrom(*account_metadata_value_);
-  largest_changestamp_ = account_metadata->largest_changestamp();
+  about_resource_ = util::ConvertAccountMetadataToAboutResource(
+      *AccountMetadata::CreateFrom(*value), GetRootResourceId());
+  if (!about_resource_)
+    return false;
 
   // Add the largest changestamp to the existing entries.
   // This will be used to generate change lists in GetResourceList().
-  for (EntryInfoMap::iterator it = entries_.begin(); it != entries_.end(); ++it)
-    it->second->change_resource.set_change_id(largest_changestamp_);
-
-  return account_metadata_value_;
+  for (EntryInfoMap::iterator it = entries_.begin(); it != entries_.end();
+       ++it) {
+    it->second->change_resource.set_change_id(
+        about_resource_->largest_change_id());
+  }
+  return true;
 }
 
 bool FakeDriveService::LoadAppListForDriveApi(
@@ -271,12 +271,9 @@ bool FakeDriveService::LoadAppListForDriveApi(
 
 void FakeDriveService::SetQuotaValue(int64 used, int64 total) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(account_metadata_value_);
 
-  account_metadata_value_->SetString("entry.gd$quotaBytesUsed.$t",
-                                     base::Int64ToString16(used));
-  account_metadata_value_->SetString("entry.gd$quotaBytesTotal.$t",
-                                     base::Int64ToString16(total));
+  about_resource_->set_quota_bytes_used(used);
+  about_resource_->set_quota_bytes_total(total);
 }
 
 GURL FakeDriveService::GetFakeLinkUrl(const std::string& resource_id) {
@@ -521,12 +518,7 @@ CancelCallback FakeDriveService::GetAboutResource(
   }
 
   ++about_resource_load_count_;
-  scoped_ptr<AboutResource> about_resource(
-      util::ConvertAccountMetadataToAboutResource(
-          *AccountMetadata::CreateFrom(*account_metadata_value_),
-          GetRootResourceId()));
-  // Overwrite the change id.
-  about_resource->set_largest_change_id(largest_changestamp_);
+  scoped_ptr<AboutResource> about_resource(new AboutResource(*about_resource_));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
@@ -1354,12 +1346,14 @@ std::string FakeDriveService::GetNewResourceId() {
 }
 
 void FakeDriveService::UpdateETag(google_apis::FileResource* file) {
-  file->set_etag("etag_" + base::Int64ToString(largest_changestamp_));
+  file->set_etag(
+      "etag_" + base::Int64ToString(about_resource_->largest_change_id()));
 }
 
 void FakeDriveService::AddNewChangestamp(google_apis::ChangeResource* change) {
-  ++largest_changestamp_;
-  change->set_change_id(largest_changestamp_);
+  about_resource_->set_largest_change_id(
+      about_resource_->largest_change_id() + 1);
+  change->set_change_id(about_resource_->largest_change_id());
 }
 
 const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
@@ -1513,8 +1507,10 @@ void FakeDriveService::GetResourceListInternal(
   }
 
   scoped_ptr<ResourceList> resource_list(new ResourceList);
-  if (start_changestamp > 0 && start_offset == 0)
-    resource_list->set_largest_changestamp(largest_changestamp_);
+  if (start_changestamp > 0 && start_offset == 0) {
+    resource_list->set_largest_changestamp(
+        about_resource_->largest_change_id());
+  }
 
   // If |max_results| is set, trim the entries if the number exceeded the max
   // results.
