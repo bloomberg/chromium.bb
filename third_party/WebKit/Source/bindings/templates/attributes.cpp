@@ -203,10 +203,6 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
     {% if attribute.measure_as %}
     UseCounter::count(activeExecutionContext(), UseCounter::{{attribute.measure_as}});
     {% endif %}
-    {% if attribute.idl_type == 'Node' %}
-    if (V8DOMWrapper::isWrapperOfType(jsValue, &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
-    {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {

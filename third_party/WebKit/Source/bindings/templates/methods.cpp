@@ -246,10 +246,6 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% if method.deprecate_as %}
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{method.deprecate_as}});
     {% endif %}
-    {% for argument in method.arguments if argument.idl_type == 'Node' %}
-    if (V8DOMWrapper::isWrapperOfType(info[{{argument.index}}], &V8Attr::wrapperTypeInfo))
-        UseCounter::count(activeExecutionContext(), UseCounter::AttrUsedAsNodeParameter);
-    {% endfor %}
     {% if world_suffix in method.activity_logging_world_list %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {

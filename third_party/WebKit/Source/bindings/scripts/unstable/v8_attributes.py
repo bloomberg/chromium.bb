@@ -76,10 +76,6 @@ def generate_attribute(interface, attribute):
         attribute.name == 'onerror'):
         includes.add('bindings/v8/V8ErrorHandler.h')
 
-    if idl_type == 'Node' and not attribute.is_read_only:
-        # Counter for setter
-        includes.update(['core/frame/UseCounter.h', 'V8Attr.h'])
-
     contents = {
         'access_control_list': access_control_list(attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
