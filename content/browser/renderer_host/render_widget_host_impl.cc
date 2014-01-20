@@ -2456,7 +2456,7 @@ void RenderWidgetHostImpl::WindowSnapshotAsyncCallback(
 }
 
 void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
-  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 
   std::vector<unsigned char> png;
 

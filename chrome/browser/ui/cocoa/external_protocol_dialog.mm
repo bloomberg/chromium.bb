@@ -40,7 +40,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 - (id)initWithGURL:(const GURL*)url
     renderProcessHostId:(int)renderProcessHostId
     routingId:(int)routingId {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 
   if (!(self = [super init]))
     return nil;

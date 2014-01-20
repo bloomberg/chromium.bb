@@ -31,7 +31,7 @@ DesktopProcess::DesktopProcess(
       input_task_runner_(input_task_runner),
       daemon_channel_name_(daemon_channel_name) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 }
 
 DesktopProcess::~DesktopProcess() {

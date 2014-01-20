@@ -103,7 +103,7 @@ class ExternalDefaultProtocolObserver
 
   virtual void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) OVERRIDE {
-    DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+    DCHECK(base::MessageLoopForUI::IsCurrent());
 
     // If we are still working out if we're the default, or we've found
     // out we definately are the default, we end here.
@@ -256,7 +256,7 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
                                                     int render_process_host_id,
                                                     int tab_contents_id,
                                                     Delegate* delegate) {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 
   // Escape the input scheme to be sure that the command does not
   // have parameters unexpected by the external program.
@@ -311,6 +311,6 @@ void ExternalProtocolHandler::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void ExternalProtocolHandler::PermitLaunchUrl() {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   g_accept_requests = true;
 }

@@ -63,7 +63,7 @@ bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
 
 PowerMonitorDeviceSource::PowerMessageWindow::PowerMessageWindow()
     : instance_(NULL), message_hwnd_(NULL) {
-  if (MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
+  if (!MessageLoopForUI::IsCurrent()) {
     // Creating this window in (e.g.) a renderer inhibits shutdown on Windows.
     // See http://crbug.com/230122. TODO(vandebo): http://crbug.com/236031
     DLOG(ERROR)

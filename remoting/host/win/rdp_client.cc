@@ -128,7 +128,7 @@ void RdpClient::Core::Connect(const webrtc::DesktopSize& screen_size,
     return;
   }
 
-  DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(!rdp_client_window_);
   DCHECK(!self_);
 

@@ -37,8 +37,7 @@ BOOL SingletonHwnd::ProcessWindowMessage(HWND window,
 }
 
 SingletonHwnd::SingletonHwnd() {
-  if (!base::MessageLoop::current() ||
-      base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {
+  if (!base::MessageLoopForUI::IsCurrent()) {
     // Creating this window in (e.g.) a renderer inhibits shutdown on
     // Windows. See http://crbug.com/230122 and http://crbug.com/236039.
     DLOG(ERROR) << "Cannot create windows on non-UI thread!";

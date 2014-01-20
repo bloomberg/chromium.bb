@@ -280,14 +280,14 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   // attach to the current thread, so this function can be invoked on another
   // thread to attach it.
   void AttachToCurrentThread() {
-    DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+    DCHECK(base::MessageLoopForUI::IsCurrent());
     base::MessageLoopForUI::current()->AddObserver(this);
     base::MessageLoop::current()->AddTaskObserver(this);
   }
 
   // Detaches the observer to the current thread's message loop.
   void DetachFromCurrentThread() {
-    DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_UI);
+    DCHECK(base::MessageLoopForUI::IsCurrent());
     base::MessageLoop::current()->RemoveTaskObserver(this);
     base::MessageLoopForUI::current()->RemoveObserver(this);
   }

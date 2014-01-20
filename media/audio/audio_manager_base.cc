@@ -97,7 +97,7 @@ AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableMainThreadAudio) &&
       base::MessageLoopProxy::current().get() &&
-      base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI)) {
+      base::MessageLoopForUI::IsCurrent()) {
     task_runner_ = base::MessageLoopProxy::current();
     return;
   }

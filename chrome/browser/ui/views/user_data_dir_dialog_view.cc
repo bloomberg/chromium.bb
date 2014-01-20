@@ -103,7 +103,7 @@ void UserDataDirDialogView::FileSelectionCanceled(void* params) {
 namespace chrome {
 
 base::FilePath ShowUserDataDirDialog(const base::FilePath& user_data_dir) {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   // When the window closes, it will delete itself.
   UserDataDirDialogView* dialog = new UserDataDirDialogView(user_data_dir);
   views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();

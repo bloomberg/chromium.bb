@@ -20,7 +20,7 @@ PrinterQuery::PrinterQuery()
       is_print_dialog_box_shown_(false),
       cookie_(PrintSettings::NewCookie()),
       last_status_(PrintingContext::FAILED) {
-  DCHECK_EQ(io_message_loop_->type(), base::MessageLoop::TYPE_IO);
+  DCHECK(base::MessageLoopForIO::IsCurrent());
 }
 
 PrinterQuery::~PrinterQuery() {

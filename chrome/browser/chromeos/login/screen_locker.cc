@@ -247,7 +247,7 @@ void ScreenLocker::OnLoginSuccess(const UserContext& user_context) {
 }
 
 void ScreenLocker::UnlockOnLoginSuccess() {
-  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   if (!authentication_capture_.get()) {
     LOG(WARNING) << "Call to UnlockOnLoginSuccess without previous " <<
       "authentication success.";
@@ -339,7 +339,7 @@ void ScreenLocker::SetLoginStatusConsumer(
 // static
 void ScreenLocker::Show() {
   content::RecordAction(UserMetricsAction("ScreenLocker_Show"));
-  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 
   // Check whether the currently logged in user is a guest account and if so,
   // refuse to lock the screen (crosbug.com/23764).
@@ -376,7 +376,7 @@ void ScreenLocker::Show() {
 
 // static
 void ScreenLocker::Hide() {
-  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   // For a guest/demo user, screen_locker_ would have never been initialized.
   if (UserManager::Get()->IsLoggedInAsGuest() ||
       UserManager::Get()->IsLoggedInAsDemoUser()) {
@@ -413,7 +413,7 @@ void ScreenLocker::InitClass() {
 
 ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
-  DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 
   if (authenticator_.get())
     authenticator_->SetConsumer(NULL);

@@ -204,7 +204,7 @@ bool Clipboard::FormatType::operator<(const FormatType& other) const {
 }
 
 Clipboard::Clipboard() {
-  if (base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI)
+  if (base::MessageLoopForUI::IsCurrent())
     clipboard_owner_.reset(new base::win::MessageWindow());
 }
 

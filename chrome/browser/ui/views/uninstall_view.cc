@@ -169,7 +169,7 @@ base::string16 UninstallView::GetItemAt(int index) {
 namespace chrome {
 
 int ShowUninstallBrowserPrompt(bool show_delete_profile) {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   int result = content::RESULT_CODE_NORMAL_EXIT;
   views::AcceleratorHandler accelerator_handler;
 

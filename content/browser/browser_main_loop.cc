@@ -1070,7 +1070,7 @@ void BrowserMainLoop::MainMessageLoopRun() {
   // Android's main message loop is the Java message loop.
   NOTREACHED();
 #else
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   if (parameters_.ui_task)
     base::MessageLoopForUI::current()->PostTask(FROM_HERE,
                                                 *parameters_.ui_task);

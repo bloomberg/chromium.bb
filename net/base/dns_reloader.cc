@@ -47,7 +47,7 @@ class DnsReloader : public net::NetworkChangeNotifier::DNSObserver {
 
   // NetworkChangeNotifier::DNSObserver:
   virtual void OnDNSChanged() OVERRIDE {
-    DCHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_IO);
+    DCHECK(base::MessageLoopForIO::IsCurrent());
     base::AutoLock l(lock_);
     resolver_generation_++;
   }

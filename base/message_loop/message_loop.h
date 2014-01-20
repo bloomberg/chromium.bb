@@ -565,6 +565,11 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
     return static_cast<MessageLoopForUI*>(loop);
   }
 
+  static bool IsCurrent() {
+    MessageLoop* loop = MessageLoop::current();
+    return loop && loop->type() == MessageLoop::TYPE_UI;
+  }
+
 #if defined(OS_IOS)
   // On iOS, the main message loop cannot be Run().  Instead call Attach(),
   // which connects this MessageLoop to the UI thread's CFRunLoop and allows
@@ -662,6 +667,11 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
     MessageLoop* loop = MessageLoop::current();
     DCHECK_EQ(MessageLoop::TYPE_IO, loop->type());
     return static_cast<MessageLoopForIO*>(loop);
+  }
+
+  static bool IsCurrent() {
+    MessageLoop* loop = MessageLoop::current();
+    return loop && loop->type() == MessageLoop::TYPE_IO;
   }
 
   void AddIOObserver(IOObserver* io_observer) {

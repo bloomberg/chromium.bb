@@ -141,7 +141,7 @@ TSFBridgeDelegate::TSFBridgeDelegate()
 }
 
 TSFBridgeDelegate::~TSFBridgeDelegate() {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   if (!IsInitialized())
     return;
   for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
@@ -160,7 +160,7 @@ TSFBridgeDelegate::~TSFBridgeDelegate() {
 }
 
 bool TSFBridgeDelegate::Initialize() {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   if (client_id_ != TF_CLIENTID_NULL) {
     DVLOG(1) << "Already initialized.";
     return false;
@@ -208,7 +208,7 @@ bool TSFBridgeDelegate::Initialize() {
 }
 
 void TSFBridgeDelegate::OnTextInputTypeChanged(const TextInputClient* client) {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(IsInitialized());
 
   if (client != client_) {
@@ -235,7 +235,7 @@ void TSFBridgeDelegate::OnTextLayoutChanged() {
 }
 
 bool TSFBridgeDelegate::CancelComposition() {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(IsInitialized());
 
   TSFDocument* document = GetAssociatedDocument();
@@ -248,7 +248,7 @@ bool TSFBridgeDelegate::CancelComposition() {
 }
 
 bool TSFBridgeDelegate::ConfirmComposition() {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(IsInitialized());
 
   TSFDocument* document = GetAssociatedDocument();
@@ -262,7 +262,7 @@ bool TSFBridgeDelegate::ConfirmComposition() {
 
 void TSFBridgeDelegate::SetFocusedClient(HWND focused_window,
                                          TextInputClient* client) {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(client);
   DCHECK(IsInitialized());
   if (attached_window_handle_ != focused_window)
@@ -283,7 +283,7 @@ void TSFBridgeDelegate::SetFocusedClient(HWND focused_window,
 }
 
 void TSFBridgeDelegate::RemoveFocusedClient(TextInputClient* client) {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(IsInitialized());
   if (client_ != client)
     return;
@@ -303,7 +303,7 @@ TextInputClient* TSFBridgeDelegate::GetFocusedTextInputClient() const {
 }
 
 base::win::ScopedComPtr<ITfThreadMgr> TSFBridgeDelegate::GetThreadManager() {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
   DCHECK(IsInitialized());
   return thread_manager_;
 }
@@ -497,7 +497,7 @@ TSFBridge::~TSFBridge() {
 
 // static
 bool TSFBridge::Initialize() {
-  if (base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {
+  if (!base::MessageLoopForUI::IsCurrent()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return false;
   }
@@ -515,7 +515,7 @@ bool TSFBridge::Initialize() {
 
 // static
 TSFBridge* TSFBridge::ReplaceForTesting(TSFBridge* bridge) {
-  if (base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {
+  if (!base::MessageLoopForUI::IsCurrent()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return NULL;
   }
@@ -526,7 +526,7 @@ TSFBridge* TSFBridge::ReplaceForTesting(TSFBridge* bridge) {
 
 // static
 void TSFBridge::Shutdown() {
-  if (base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {
+  if (!base::MessageLoopForUI::IsCurrent()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
   }
   if (tls_tsf_bridge.initialized()) {
@@ -539,7 +539,7 @@ void TSFBridge::Shutdown() {
 
 // static
 TSFBridge* TSFBridge::GetInstance() {
-  if (base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {
+  if (!base::MessageLoopForUI::IsCurrent()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return NULL;
   }

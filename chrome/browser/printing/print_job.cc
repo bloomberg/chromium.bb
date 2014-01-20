@@ -44,7 +44,7 @@ PrintJob::PrintJob()
   DCHECK(ui_message_loop_);
   // This is normally a UI message loop, but in unit tests, the message loop is
   // of the 'default' type.
-  DCHECK(ui_message_loop_->type() == base::MessageLoop::TYPE_UI ||
+  DCHECK(base::MessageLoopForUI::IsCurrent() ||
          ui_message_loop_->type() == base::MessageLoop::TYPE_DEFAULT);
   ui_message_loop_->AddDestructionObserver(this);
 }

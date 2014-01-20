@@ -111,7 +111,7 @@ SocketStream::SocketStream(const GURL& url, Delegate* delegate)
       metrics_(new SocketStreamMetrics(url)) {
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
-  DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
+  DCHECK(base::MessageLoopForIO::IsCurrent())
       << "The current base::MessageLoop must be TYPE_IO";
   DCHECK(delegate_);
 }
@@ -170,7 +170,7 @@ void SocketStream::CheckPrivacyMode() {
 void SocketStream::Connect() {
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
-  DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
+  DCHECK(base::MessageLoopForIO::IsCurrent())
       << "The current base::MessageLoop must be TYPE_IO";
   if (context_) {
     context_->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
@@ -203,7 +203,7 @@ size_t SocketStream::GetTotalSizeOfPendingWriteBufs() const {
 bool SocketStream::SendData(const char* data, int len) {
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
-  DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
+  DCHECK(base::MessageLoopForIO::IsCurrent())
       << "The current base::MessageLoop must be TYPE_IO";
   DCHECK_GT(len, 0);
 
@@ -250,7 +250,7 @@ bool SocketStream::SendData(const char* data, int len) {
 void SocketStream::Close() {
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
-  DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
+  DCHECK(base::MessageLoopForIO::IsCurrent())
       << "The current base::MessageLoop must be TYPE_IO";
   // If next_state_ is STATE_NONE, the socket was not opened, or already
   // closed.  So, return immediately.
@@ -265,7 +265,7 @@ void SocketStream::Close() {
 void SocketStream::RestartWithAuth(const AuthCredentials& credentials) {
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
-  DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
+  DCHECK(base::MessageLoopForIO::IsCurrent())
       << "The current base::MessageLoop must be TYPE_IO";
   DCHECK(proxy_auth_controller_.get());
   if (!connection_->socket()) {
@@ -358,7 +358,7 @@ void SocketStream::DoClose() {
 void SocketStream::Finish(int result) {
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
-  DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
+  DCHECK(base::MessageLoopForIO::IsCurrent())
       << "The current base::MessageLoop must be TYPE_IO";
   DCHECK_LE(result, OK);
   if (result == OK)

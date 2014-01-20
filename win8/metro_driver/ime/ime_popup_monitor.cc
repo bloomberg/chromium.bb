@@ -25,7 +25,7 @@ void CALLBACK ImeEventCallback(HWINEVENTHOOK win_event_hook_handle,
                                DWORD event_time) {
   // This function is registered to SetWinEventHook to be called back on the UI
   // thread.
-  DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 
   if (!g_observer_)
     return;

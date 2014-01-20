@@ -44,7 +44,7 @@ ProtocolDialogGtk::ProtocolDialogGtk(
     scoped_ptr<const ProtocolDialogDelegate> delegate)
     : delegate_(delegate.Pass()),
       creation_time_(base::TimeTicks::Now()) {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(base::MessageLoopForUI::IsCurrent());
 
   dialog_ = gtk_dialog_new_with_buttons(
       base::UTF16ToUTF8(delegate_->GetTitleText()).c_str(),
