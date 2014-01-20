@@ -107,6 +107,8 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('chrome/tools/test/reference_build')
   # blink style copy right headers.
   excluded_dirs_list.append('content/shell/renderer/test_runner')
+  # blink style copy right headers.
+  excluded_dirs_list.append('content/shell/tools/plugin')
   # This is tests directory, doesn't exist in the snapshot
   excluded_dirs_list.append('content/test/data')
   # This is a tests directory that doesn't exist in the shipped product.
