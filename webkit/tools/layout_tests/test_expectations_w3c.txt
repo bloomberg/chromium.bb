@@ -2,5 +2,3 @@
 # tests from the W3C until they can be moved to
 # src/third_party/WebKit/LayoutTests/TestExpectations and dealt with.
 #
-
-crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
