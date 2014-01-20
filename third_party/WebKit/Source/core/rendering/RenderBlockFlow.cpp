@@ -251,7 +251,7 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
     layoutBlockFlow(relayoutChildren);
 }
 
-void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit pageLogicalHeight)
+inline void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit pageLogicalHeight)
 {
     ASSERT(needsLayout());
     ASSERT(isInlineBlockOrInlineTable() || !isInline());
