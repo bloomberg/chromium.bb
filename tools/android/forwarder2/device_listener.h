@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "tools/android/forwarder2/forwarders_manager.h"
 #include "tools/android/forwarder2/pipe_notifier.h"
 #include "tools/android/forwarder2/self_deleter_helper.h"
 #include "tools/android/forwarder2/socket.h"
@@ -59,8 +60,7 @@ class DeviceListener {
   int listener_port() const { return listener_port_; }
 
  private:
-  DeviceListener(scoped_ptr<PipeNotifier> pipe_notifier,
-                 scoped_ptr<Socket> listener_socket,
+  DeviceListener(scoped_ptr<Socket> listener_socket,
                  scoped_ptr<Socket> host_socket,
                  int port,
                  const ErrorCallback& error_callback);
@@ -81,24 +81,24 @@ class DeviceListener {
   // notifier per Listener thread since each Listener thread may be requested to
   // exit for different reasons independently from each other and independent
   // from the main program, ex. when the host requests to forward/listen the
-  // same port again.  Both the |host_socket_| and |listener_socket_|
-  // must share the same receiver file descriptor from |exit_notifier_| and it
-  // is set in the constructor.
-  const scoped_ptr<PipeNotifier> exit_notifier_;
+  // same port again.  Both the |host_socket_| and |listener_socket_| must share
+  // the same receiver file descriptor from |deletion_notifier_| and it is set
+  // in the constructor.
+  PipeNotifier deletion_notifier_;
   // The local device listener socket for accepting connections from the local
   // port (listener_port_).
   const scoped_ptr<Socket> listener_socket_;
   // The listener socket for sending control commands.
   const scoped_ptr<Socket> host_socket_;
   scoped_ptr<Socket> device_data_socket_;
-  // This is the adb connection to transport the actual data, used for creating
-  // the forwarder. Ownership transferred to the Forwarder.
-  scoped_ptr<Socket> adb_data_socket_;
   const int listener_port_;
   // Task runner used for deletion set at construction time (i.e. the object is
   // deleted on the same thread it is created on).
   scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;
+  // See host_controller.h for explanations about lifetime and threading
+  // interactions between this thread and the ForwardersManager below.
   base::Thread thread_;
+  ForwardersManager forwarders_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceListener);
 };

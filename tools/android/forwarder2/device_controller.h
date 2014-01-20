@@ -49,13 +49,13 @@ class DeviceController {
       const base::WeakPtr<DeviceController>& device_controller_ptr,
       scoped_ptr<DeviceListener> device_listener);
 
+  base::WeakPtrFactory<DeviceController> weak_ptr_factory_;
   const scoped_ptr<Socket> host_socket_;
   // Used to notify the controller to exit.
   const int exit_notifier_fd_;
   // Lets ensure DeviceListener instances are deleted on the thread they were
   // created on.
   const scoped_refptr<base::SingleThreadTaskRunner> construction_task_runner_;
-  base::WeakPtrFactory<DeviceController> weak_ptr_factory_;
   ListenersMap listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceController);

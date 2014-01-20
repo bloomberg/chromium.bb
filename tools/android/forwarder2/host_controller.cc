@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -56,10 +57,6 @@ scoped_ptr<HostController> HostController::Create(
 HostController::~HostController() {
   DCHECK(deletion_task_runner_->RunsTasksOnCurrentThread());
   delete_controller_notifier_->Notify();
-  // Note that the Forwarder instance (that also received a delete notification)
-  // might still be running on its own thread at this point. This is not a
-  // problem since it will self-delete once the socket that it is operating on
-  // is closed.
 }
 
 void HostController::Start() {
@@ -101,7 +98,7 @@ void HostController::ReadCommandOnInternalThread() {
     return;
   }
   // Try to connect to host server.
-  scoped_ptr<Socket> host_server_data_socket(CreateSocket());
+  scoped_ptr<Socket> host_server_data_socket(new Socket());
   if (!host_server_data_socket->ConnectTcp(std::string(), host_port_)) {
     LOG(ERROR) << "Could not Connect HostServerData socket on port: "
                << host_port_;
@@ -114,7 +111,6 @@ void HostController::ReadCommandOnInternalThread() {
       ReadNextCommandSoon();
       return;
     }
-    LOG(ERROR) << "Will delete host controller: " << host_port_;
     OnInternalThreadError();
     return;
   }
@@ -127,7 +123,7 @@ void HostController::ReadCommandOnInternalThread() {
 
 void HostController::StartForwarder(
     scoped_ptr<Socket> host_server_data_socket) {
-  scoped_ptr<Socket> adb_data_socket(CreateSocket());
+  scoped_ptr<Socket> adb_data_socket(new Socket());
   if (!adb_data_socket->ConnectTcp("", adb_port_)) {
     LOG(ERROR) << "Could not connect AdbDataSocket on port: " << adb_port_;
     OnInternalThreadError();
@@ -146,15 +142,8 @@ void HostController::StartForwarder(
     OnInternalThreadError();
     return;
   }
-  forwarder2::StartForwarder(
+  forwarders_manager_.CreateAndStartNewForwarder(
       host_server_data_socket.Pass(), adb_data_socket.Pass());
-}
-
-scoped_ptr<Socket> HostController::CreateSocket() {
-  scoped_ptr<Socket> socket(new Socket());
-  socket->AddEventFd(global_exit_notifier_fd_);
-  socket->AddEventFd(delete_controller_notifier_->receiver_fd());
-  return socket.Pass();
 }
 
 void HostController::OnInternalThreadError() {

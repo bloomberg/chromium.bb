@@ -35,15 +35,14 @@ scoped_ptr<DeviceListener> DeviceListener::Create(
   listener_port = listener_socket->GetPort();
   SendCommand(command::BIND_SUCCESS, listener_port, host_socket.get());
   device_listener.reset(
-      new DeviceListener(
-          scoped_ptr<PipeNotifier>(new PipeNotifier()), listener_socket.Pass(),
-          host_socket.Pass(), listener_port, error_callback));
+      new DeviceListener(listener_socket.Pass(), host_socket.Pass(),
+                         listener_port, error_callback));
   return device_listener.Pass();
 }
 
 DeviceListener::~DeviceListener() {
   DCHECK(deletion_task_runner_->RunsTasksOnCurrentThread());
-  exit_notifier_->Notify();
+  deletion_notifier_.Notify();
 }
 
 void DeviceListener::Start() {
@@ -58,13 +57,11 @@ void DeviceListener::SetAdbDataSocket(scoped_ptr<Socket> adb_data_socket) {
                  base::Unretained(this), base::Passed(&adb_data_socket)));
 }
 
-DeviceListener::DeviceListener(scoped_ptr<PipeNotifier> pipe_notifier,
-                               scoped_ptr<Socket> listener_socket,
+DeviceListener::DeviceListener(scoped_ptr<Socket> listener_socket,
                                scoped_ptr<Socket> host_socket,
                                int port,
                                const ErrorCallback& error_callback)
     : self_deleter_helper_(this, error_callback),
-      exit_notifier_(pipe_notifier.Pass()),
       listener_socket_(listener_socket.Pass()),
       host_socket_(host_socket.Pass()),
       listener_port_(port),
@@ -72,9 +69,8 @@ DeviceListener::DeviceListener(scoped_ptr<PipeNotifier> pipe_notifier,
       thread_("DeviceListener") {
   CHECK(host_socket_.get());
   DCHECK(deletion_task_runner_.get());
-  DCHECK(exit_notifier_.get());
-  host_socket_->AddEventFd(exit_notifier_->receiver_fd());
-  listener_socket_->AddEventFd(exit_notifier_->receiver_fd());
+  host_socket_->AddEventFd(deletion_notifier_.receiver_fd());
+  listener_socket_->AddEventFd(deletion_notifier_.receiver_fd());
 }
 
 void DeviceListener::AcceptNextClientSoon() {
@@ -119,11 +115,11 @@ void DeviceListener::AcceptClientOnInternalThread() {
 
 void DeviceListener::OnAdbDataSocketReceivedOnInternalThread(
     scoped_ptr<Socket> adb_data_socket) {
-  adb_data_socket_.swap(adb_data_socket);
+  DCHECK(adb_data_socket);
   SendCommand(command::ADB_DATA_SOCKET_SUCCESS, listener_port_,
               host_socket_.get());
-  CHECK(adb_data_socket_.get());
-  StartForwarder(device_data_socket_.Pass(), adb_data_socket_.Pass());
+  forwarders_manager_.CreateAndStartNewForwarder(
+      device_data_socket_.Pass(), adb_data_socket.Pass());
   AcceptNextClientSoon();
 }
 

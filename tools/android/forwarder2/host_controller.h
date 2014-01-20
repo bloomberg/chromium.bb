@@ -11,7 +11,9 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "tools/android/forwarder2/forwarders_manager.h"
 #include "tools/android/forwarder2/pipe_notifier.h"
 #include "tools/android/forwarder2/self_deleter_helper.h"
 #include "tools/android/forwarder2/socket.h"
@@ -65,10 +67,6 @@ class HostController {
 
   void StartForwarder(scoped_ptr<Socket> host_server_data_socket);
 
-  // Helper method that creates a socket and adds the appropriate event file
-  // descriptors.
-  scoped_ptr<Socket> CreateSocket();
-
   // Note that this gets also called when ~HostController() is invoked.
   void OnInternalThreadError();
 
@@ -81,13 +79,22 @@ class HostController {
   // Used to notify the controller when the process is killed.
   const int global_exit_notifier_fd_;
   scoped_ptr<Socket> adb_control_socket_;
-  scoped_ptr<PipeNotifier> delete_controller_notifier_;
   // Used to cancel the pending blocking IO operations when the host controller
   // instance is deleted.
-  // Task runner used for deletion set at construction time (i.e. the object is
+  scoped_ptr<PipeNotifier> delete_controller_notifier_;
+  // Task runner used for deletion set at deletion time (i.e. the object is
   // deleted on the same thread it is created on).
   const scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;
+  // Note that this thread must outlive |forwarders_manager_| below. The
+  // ForwardersManager's internal delegate (outliving ForwardersManager) may
+  // post a task to this thread when it gets deleted. Also note that
+  // base::Thread joins on destruction which means that ~Thread() will only
+  // return after it executed all the tasks enqueued in its message loop. This
+  // also means that it is guaranteed that all the Forwarder instances owned by
+  // the ForwardersManager's internal delegate are destructed before
+  // ~HostController() returns.
   base::Thread thread_;
+  ForwardersManager forwarders_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(HostController);
 };
