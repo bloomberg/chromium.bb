@@ -36,6 +36,8 @@ function DriveSyncHandler(progressCenter) {
   // Register events.
   chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
       this.onFileTransfersUpdated_.bind(this));
+  chrome.fileBrowserPrivate.onDriveSyncError.addListener(
+      this.onDriveSyncError_.bind(this));
 }
 
 /**
@@ -143,4 +145,30 @@ DriveSyncHandler.prototype.removeItem_ = function(status) {
  */
 DriveSyncHandler.prototype.requestCancel_ = function(entry) {
   chrome.fileBrowserPrivate.cancelFileTransfers([entry.toURL()], function() {});
+};
+
+/**
+ * Handles drive's sync errors.
+ * @param {DriveSyncErrorEvent} event Drive sync error event.
+ * @private
+ */
+DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
+  webkitResolveLocalFileSystemURL(event.fileUrl, function(entry) {
+    var item;
+    item = new ProgressCenterItem();
+    item.id = DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX + (this.idCounter_++);
+    item.type = ProgressItemType.SYNC;
+    item.quiet = true;
+    item.state = ProgressItemState.ERROR;
+    switch (event.type) {
+      case 'delete_without_permission':
+        item.message =
+            strf('SYNC_DELETE_WITHOUT_PERMISSION_ERROR', entry.name);
+        break;
+      case 'service_unavailable':
+        item.message = str('SYNC_SERVICE_UNAVAILABLE_ERROR');
+        break;
+    }
+    this.progressCenter_.updateItem(item);
+  }.bind(this));
 };

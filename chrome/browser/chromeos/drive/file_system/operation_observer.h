@@ -15,7 +15,9 @@ namespace file_system {
 // Error type of sync client.
 enum DriveSyncErrorType {
   // Request to delete a file without permission.
-  DELETE_WITHOUT_PERMISSION
+  DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION,
+  // Google Drive is temporary unavailable.
+  DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
 };
 
 // Passes notifications from Drive operations back to the file system.
@@ -35,7 +37,9 @@ class OperationObserver {
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) {}
 
   // Sent when a specific drive sync error occurred.
-  virtual void OnDriveSyncError(DriveSyncErrorType type) {}
+  // |local_id| is the local ID of the resource entry.
+  virtual void OnDriveSyncError(DriveSyncErrorType type,
+                                const std::string& local_id) {}
 };
 
 }  // namespace file_system

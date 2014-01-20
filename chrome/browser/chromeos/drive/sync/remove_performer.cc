@@ -136,7 +136,8 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
   if (status == google_apis::HTTP_FORBIDDEN) {
     // Editing this entry is not allowed, revert local changes.
     entry_revert_performer_->RevertEntry(local_id, callback);
-    observer_->OnDriveSyncError(file_system::DELETE_WITHOUT_PERMISSION);
+    observer_->OnDriveSyncError(
+        file_system::DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION, local_id);
     return;
   }
 

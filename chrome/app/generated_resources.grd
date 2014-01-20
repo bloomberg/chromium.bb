@@ -12477,6 +12477,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SYNC_FILE_NAME" desc="File Manager status message.">
         Syncing <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
       </message>
+      <message name="IDS_FILE_BROWSER_SYNC_DELETE_WITHOUT_PERMISSION_ERROR" desc="File Manager status message shown when the drive sync is failed because a user try to remove shared files that the user does not own.">
+        "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" has been shared with you. You cannot delete it because you do not own it.
+      </message>
+      <message name="IDS_FILE_BROWSER_SYNC_SERVICE_UNAVAILABLE_ERROR" desc="File Manager status message shown when the drive sync is failed because Google Drive is temporary unavailable.">
+        Google Drive is not available right now. Uploading will automatically restart once Google Drive is back.
+      </message>
       <message name="IDS_FILE_BROWSER_SHARE_ERROR" desc="File Manager error message when sharing a file or a directory on Drive fails because of internet connection problems.">
         Sharing failed. Check your connection and try again later.
       </message>

@@ -25,7 +25,9 @@ class FileSystemObserver {
   virtual void OnDirectoryChanged(const base::FilePath& directory_path) {}
 
   // Triggared when a specific drive error occurred.
-  virtual void OnDriveSyncError(file_system::DriveSyncErrorType type) {}
+  // |type| is a type of the error. |file_name| is a virtual path of the entry.
+  virtual void OnDriveSyncError(file_system::DriveSyncErrorType type,
+                                const base::FilePath& file_path) {}
 
  protected:
   virtual ~FileSystemObserver() {}

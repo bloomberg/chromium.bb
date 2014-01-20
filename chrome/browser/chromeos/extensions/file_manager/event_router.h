@@ -99,7 +99,8 @@ class EventRouter
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
   virtual void OnDriveSyncError(
-      drive::file_system::DriveSyncErrorType type) OVERRIDE;
+      drive::file_system::DriveSyncErrorType type,
+      const base::FilePath& file_path) OVERRIDE;
 
   // VolumeManagerObserver overrides.
   virtual void OnDiskAdded(

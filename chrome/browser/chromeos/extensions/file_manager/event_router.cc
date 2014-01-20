@@ -565,16 +565,20 @@ void EventRouter::OnDirectoryChanged(const base::FilePath& directory_path) {
 }
 
 void EventRouter::OnDriveSyncError(
-    drive::file_system::DriveSyncErrorType type) {
+    drive::file_system::DriveSyncErrorType type,
+    const base::FilePath& file_path) {
   file_browser_private::DriveSyncErrorEvent event;
-  event.type = file_browser_private::DRIVE_SYNC_ERROR_TYPE_NONE;
   switch (type) {
-    case drive::file_system::DELETE_WITHOUT_PERMISSION:
+    case drive::file_system::DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION:
       event.type =
           file_browser_private::DRIVE_SYNC_ERROR_TYPE_DELETE_WITHOUT_PERMISSION;
       break;
+    case drive::file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE:
+      event.type =
+          file_browser_private::DRIVE_SYNC_ERROR_TYPE_SERVICE_UNAVAILABLE;
   }
-  DCHECK_NE(file_browser_private::DRIVE_SYNC_ERROR_TYPE_NONE, event.type);
+  event.file_url = util::ConvertRelativeFilePathToFileSystemUrl(
+      file_path, kFileManagerAppId).spec();
   BroadcastEvent(
       profile_,
       file_browser_private::OnDriveSyncError::kEventName,

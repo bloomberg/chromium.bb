@@ -103,7 +103,9 @@ enum DeviceEventType {
 // Drive sync error type.
 enum DriveSyncErrorType {
   // Request to delete a file without permission.
-  delete_without_permission
+  delete_without_permission,
+  // Google Drive is temporarily unavailable.
+  service_unavailable
 };
 
 // A file task represents an action that the file manager can perform over the
@@ -251,8 +253,13 @@ dictionary FileTransferStatus {
   double? total;
 };
 
+// Error during the drive sync.
 dictionary DriveSyncErrorEvent {
+  // Error type.
   DriveSyncErrorType type;
+
+  // File URL of the entry that the error happens to.
+  DOMString fileUrl;
 };
 
 // Payload data for copy status progress updates.

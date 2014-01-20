@@ -158,6 +158,7 @@ class SyncClient {
   void OnUpdateComplete(const std::string& local_id, FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  file_system::OperationObserver* operation_observer_;
   ResourceMetadata* metadata_;
   FileCache* cache_;
 

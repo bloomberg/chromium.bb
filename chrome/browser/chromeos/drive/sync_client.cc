@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
@@ -138,6 +139,7 @@ SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
                        FileCache* cache,
                        const base::FilePath& temporary_file_directory)
     : blocking_task_runner_(blocking_task_runner),
+      operation_observer_(observer),
       metadata_(metadata),
       cache_(cache),
       download_operation_(new file_system::DownloadOperation(
@@ -411,6 +413,9 @@ void SyncClient::OnFetchFileComplete(const std::string& local_id,
       case FILE_ERROR_SERVICE_UNAVAILABLE:
         // Add the task again so that we'll retry once the service is back.
         AddFetchTaskInternal(local_id, long_delay_);
+        operation_observer_->OnDriveSyncError(
+            file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
+            local_id);
         break;
       default:
         LOG(WARNING) << "Failed to fetch " << local_id
@@ -441,6 +446,9 @@ void SyncClient::OnUploadFileComplete(const std::string& local_id,
         AddUploadTaskInternal(ClientContext(BACKGROUND), local_id,
                               file_system::UpdateOperation::NO_CONTENT_CHECK,
                               long_delay_);
+        operation_observer_->OnDriveSyncError(
+            file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
+            local_id);
         break;
       default:
         LOG(WARNING) << "Failed to upload " << local_id << ": "
@@ -467,6 +475,9 @@ void SyncClient::OnUpdateComplete(const std::string& local_id,
       case FILE_ERROR_SERVICE_UNAVAILABLE:
         // Add the task again so that we'll retry once the service is back.
         AddUpdateTaskInternal(local_id, long_delay_);
+        operation_observer_->OnDriveSyncError(
+            file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
+            local_id);
         break;
       default:
         LOG(WARNING) << "Failed to update " << local_id << ": "

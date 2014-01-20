@@ -160,7 +160,8 @@ class FileSystem : public FileSystemInterface,
   virtual void OnCacheFileUploadNeededByOperation(
       const std::string& local_id) OVERRIDE;
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE;
-  virtual void OnDriveSyncError(file_system::DriveSyncErrorType type) OVERRIDE;
+  virtual void OnDriveSyncError(file_system::DriveSyncErrorType type,
+                                const std::string& local_id) OVERRIDE;
 
   // ChangeListLoader::Observer overrides.
   // Used to propagate events from ChangeListLoader.
@@ -241,6 +242,11 @@ class FileSystem : public FileSystemInterface,
       const GetShareUrlCallback& callback,
       google_apis::GDataErrorCode status,
       const GURL& share_url);
+
+  // Part of OnDriveSyncError().
+  virtual void OnDriveSyncErrorAfterGetFilePath(
+      file_system::DriveSyncErrorType type,
+      const base::FilePath& fiepath);
 
   // Used to get Drive related preferences.
   PrefService* pref_service_;

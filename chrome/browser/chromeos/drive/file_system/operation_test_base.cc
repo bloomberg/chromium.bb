@@ -42,7 +42,7 @@ void OperationTestBase::LoggingObserver::OnEntryUpdatedByOperation(
 }
 
 void OperationTestBase::LoggingObserver::OnDriveSyncError(
-    DriveSyncErrorType type) {
+    DriveSyncErrorType type, const std::string& local_id) {
   drive_sync_errors_.push_back(type);
 }
 

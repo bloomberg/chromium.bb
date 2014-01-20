@@ -819,10 +819,27 @@ void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
   sync_client_->AddUpdateTask(local_id);
 }
 
-void FileSystem::OnDriveSyncError(file_system::DriveSyncErrorType type) {
+void FileSystem::OnDriveSyncError(file_system::DriveSyncErrorType type,
+                                  const std::string& local_id) {
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::GetFilePath,
+                 base::Unretained(resource_metadata_),
+                 local_id),
+      base::Bind(&FileSystem::OnDriveSyncErrorAfterGetFilePath,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 type));
+}
+
+void FileSystem::OnDriveSyncErrorAfterGetFilePath(
+    file_system::DriveSyncErrorType type,
+    const base::FilePath& path) {
+  if (path.empty())
+    return;
   FOR_EACH_OBSERVER(FileSystemObserver,
                     observers_,
-                    OnDriveSyncError(type));
+                    OnDriveSyncError(type, path));
 }
 
 void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
