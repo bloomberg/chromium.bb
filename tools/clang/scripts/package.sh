@@ -59,6 +59,7 @@ cp "${LLVM_BIN_DIR}/llvm-symbolizer" $PDIR/bin/
 # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we
 # care about.
 cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
+cp "${LLVM_LIB_DIR}/libBlinkGCPlugin.${SO_EXT}" $PDIR/lib
 
 # Copy built-in headers (lib/clang/3.2/include).
 # libcompiler-rt puts all kinds of libraries there too, but we want only some.

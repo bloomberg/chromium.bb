@@ -311,8 +311,12 @@ done
 
 if [[ -n "$run_tests" ]]; then
   # Run a few tests.
-  PLUGIN_SRC_DIR="${THIS_DIR}/../plugins"
-  "${PLUGIN_SRC_DIR}/tests/test.sh" "${LLVM_BUILD_DIR}/Release+Asserts"
+  for CHROME_TOOL_DIR in ${chrome_tools}; do
+    TOOL_SRC_DIR="${THIS_DIR}/../${CHROME_TOOL_DIR}"
+    if [[ -f "${TOOL_SRC_DIR}/tests/test.sh" ]]; then
+      "${TOOL_SRC_DIR}/tests/test.sh" "${LLVM_BUILD_DIR}/Release+Asserts"
+    fi
+  done
   cd "${LLVM_BUILD_DIR}"
   make check-all
   cd -
