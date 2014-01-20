@@ -202,6 +202,12 @@ void AppListView::Paint(gfx::Canvas* canvas) {
   }
 }
 
+void AppListView::OnThemeChanged() {
+#if defined(USE_AURA) && defined(OS_WIN)
+  GetWidget()->Close();
+#endif
+}
+
 bool AppListView::ShouldHandleSystemCommands() const {
   return true;
 }

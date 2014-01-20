@@ -52,16 +52,6 @@ gfx::NativeWindow AppListShower::GetWindow() {
 }
 
 void AppListShower::CreateViewForProfile(Profile* requested_profile) {
-  // Aura has problems with layered windows and bubble delegates. The app
-  // launcher has a trick where it only hides the window when it is dismissed,
-  // reshowing it again later. This does not work with win aura for some
-  // reason. This change temporarily makes it always get recreated, only on
-  // win aura. See http://crbug.com/176186.
-#if !defined(USE_AURA)
-  if (requested_profile == profile_)
-    return;
-#endif
-
   profile_ = requested_profile;
   app_list_.reset(factory_->CreateAppList(
       profile_,
@@ -79,6 +69,7 @@ void AppListShower::DismissAppList() {
 void AppListShower::CloseAppList() {
   app_list_.reset();
   profile_ = NULL;
+  can_close_app_list_ = true;
 
   // We may end up here as the result of the OS deleting the AppList's
   // widget (WidgetObserver::OnWidgetDestroyed). If this happens and there
