@@ -225,12 +225,10 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createAnimationFrameData(int callb
     return data.release();
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createGPUTaskData(bool foreign, size_t usedGPUMemoryBytes)
+PassRefPtr<JSONObject> TimelineRecordFactory::createGPUTaskData(bool foreign)
 {
     RefPtr<JSONObject> data = JSONObject::create();
     data->setBoolean("foreign", foreign);
-    if (!foreign)
-        data->setNumber("usedGPUMemoryBytes", usedGPUMemoryBytes);
     return data.release();
 }
 

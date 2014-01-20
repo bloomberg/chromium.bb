@@ -74,7 +74,7 @@ public:
     static PassRefPtr<JSONObject> createNodeData(long long nodeId);
     static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
     static PassRefPtr<JSONObject> createFrameData(int frameId);
-    static PassRefPtr<JSONObject> createGPUTaskData(bool foreign, size_t usedGPUMemoryBytes);
+    static PassRefPtr<JSONObject> createGPUTaskData(bool foreign);
 
     static void setNodeData(JSONObject* data, long long nodeId);
     static void setLayerData(JSONObject* data, long long layerRootNodeId);
