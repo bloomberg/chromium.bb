@@ -48,10 +48,9 @@ class MockUbertokenConsumer : public UbertokenConsumer {
 class UbertokenFetcherTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    OAuth2TokenService* token_service = new FakeOAuth2TokenService();
     request_context_getter_ = new net::TestURLRequestContextGetter(
         base::MessageLoopProxy::current());
-    fetcher_.reset(new UbertokenFetcher(token_service,
+    fetcher_.reset(new UbertokenFetcher(&token_service_,
                                         &consumer_,
                                         request_context_getter_.get()));
   }
@@ -63,6 +62,7 @@ class UbertokenFetcherTest : public testing::Test {
  protected:
   base::MessageLoop message_loop_;
   net::TestURLFetcherFactory factory_;
+  FakeOAuth2TokenService token_service_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   MockUbertokenConsumer consumer_;
   scoped_ptr<UbertokenFetcher> fetcher_;
