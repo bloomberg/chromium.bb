@@ -72,6 +72,7 @@ bool AudioManagerAndroid::HasAudioInputDevices() {
 void AudioManagerAndroid::GetAudioInputDeviceNames(
     AudioDeviceNames* device_names) {
   // Always add default device parameters as first element.
+  DCHECK(device_names->empty());
   AddDefaultDevice(device_names);
 
   JNIEnv* env = AttachCurrentThread();
