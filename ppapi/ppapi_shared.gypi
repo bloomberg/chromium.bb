@@ -21,6 +21,8 @@
           'shared_impl/dictionary_var.h',
           'shared_impl/file_io_state_manager.cc',
           'shared_impl/file_io_state_manager.h',
+          'shared_impl/file_growth.cc',
+          'shared_impl/file_growth.h',
           'shared_impl/file_path.cc',
           'shared_impl/file_path.h',
           'shared_impl/file_ref_create_info.cc',
