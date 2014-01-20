@@ -24,7 +24,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     EXTERNAL_API: [
       'loadUsers',
       'updateUserImage',
-      'updateUserGaiaNeeded',
+      'forceOnlineSignin',
       'setCapsLockState',
       'forceLockedUserPodFocus',
       'onWallpaperLoaded',
@@ -198,11 +198,12 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
-     * Updates user to use gaia login.
-     * @param {string} username User for which to state the state.
+     * Indicates that the given user must authenticate against GAIA during the
+     * next sign-in.
+     * @param {string} username User for whom to enforce GAIA sign-in.
      */
-    updateUserGaiaNeeded: function(username) {
-      $('pod-row').resetUserOAuthTokenStatus(username);
+    forceOnlineSignin: function(username) {
+      $('pod-row').forceOnlineSigninForUser(username);
     },
 
     /**

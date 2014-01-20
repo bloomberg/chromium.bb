@@ -62,19 +62,6 @@ cr.define('login', function() {
   var HELP_TOPIC_PUBLIC_SESSION = 3041033;
 
   /**
-   * Oauth token status. These must match UserManager::OAuthTokenStatus.
-   * @enum {number}
-   * @const
-   */
-  var OAuthTokenStatus = {
-    UNKNOWN: 0,
-    INVALID_OLD: 1,
-    VALID_OLD: 2,
-    INVALID_NEW: 3,
-    VALID_NEW: 4
-  };
-
-  /**
    * Tab order for user pods. Update these when adding new controls.
    * @enum {number}
    * @const
@@ -383,9 +370,9 @@ cr.define('login', function() {
       this.nameElement.textContent = this.user_.displayName;
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
-      var needSignin = this.needSignin;
-      this.passwordElement.hidden = needSignin;
-      this.signinButtonElement.hidden = !needSignin;
+      var forceOnlineSignin = this.forceOnlineSignin;
+      this.passwordElement.hidden = forceOnlineSignin;
+      this.signinButtonElement.hidden = !forceOnlineSignin;
 
       this.updateActionBoxArea();
     },
@@ -428,14 +415,10 @@ cr.define('login', function() {
     },
 
     /**
-     * Whether signin is required for this user.
+     * Whether this user must authenticate against GAIA.
      */
-    get needSignin() {
-      // Signin is performed if the user has an invalid oauth token and is
-      // not currently signed in (i.e. not the lock screen).
-      return this.user.oauthTokenStatus != OAuthTokenStatus.VALID_OLD &&
-          this.user.oauthTokenStatus != OAuthTokenStatus.VALID_NEW &&
-          !this.user.signedIn;
+    get forceOnlineSignin() {
+      return this.user.forceOnlineSignin && !this.user.signedIn;
     },
 
     /**
@@ -508,9 +491,9 @@ cr.define('login', function() {
      * Focuses on input element.
      */
     focusInput: function() {
-      var needSignin = this.needSignin;
-      this.signinButtonElement.hidden = !needSignin;
-      this.passwordElement.hidden = needSignin;
+      var forceOnlineSignin = this.forceOnlineSignin;
+      this.signinButtonElement.hidden = !forceOnlineSignin;
+      this.passwordElement.hidden = forceOnlineSignin;
 
       // Move tabIndex from the whole pod to the main input.
       this.tabIndex = -1;
@@ -775,7 +758,7 @@ cr.define('login', function() {
     },
 
     /** @override */
-    get needSignin() {
+    get forceOnlineSignin() {
       return false;
     },
 
@@ -1520,16 +1503,17 @@ cr.define('login', function() {
     },
 
     /**
-     * Resets OAuth token status (invalidates it).
-     * @param {string} username User for which to reset the status.
+     * Indicates that the given user must authenticate against GAIA during the
+     * next sign-in.
+     * @param {string} username User for whom to enforce GAIA sign-in.
      */
-    resetUserOAuthTokenStatus: function(username) {
+    forceOnlineSigninForUser: function(username) {
       var pod = this.getPodWithUsername_(username);
       if (pod) {
-        pod.user.oauthTokenStatus = OAuthTokenStatus.INVALID_OLD;
+        pod.user.forceOnlineSignin = true;
         pod.update();
       } else {
-        console.log('Failed to update Gaia state for: ' + username);
+        console.log('Failed to update GAIA state for: ' + username);
       }
     },
 

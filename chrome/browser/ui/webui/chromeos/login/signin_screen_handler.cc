@@ -83,7 +83,7 @@ const char kKeyLocallyManagedUser[] = "locallyManagedUser";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
-const char kKeyOauthTokenStatus[] = "oauthTokenStatus";
+const char kKeyForceOnlineSignin[] = "forceOnlineSignin";
 
 // Max number of users to show.
 const size_t kMaxUsers = 18;
@@ -835,7 +835,7 @@ void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   email_ = username;
   password_changed_for_.insert(email_);
   core_oobe_actor_->ShowSignInUI(email_);
-  CallJS("login.AccountPickerScreen.updateUserGaiaNeeded", email_);
+  CallJS("login.AccountPickerScreen.forceOnlineSignin", email_);
 }
 
 void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
@@ -1174,21 +1174,22 @@ void SigninScreenHandler::FillUserDictionary(User* user,
       user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
   bool is_locally_managed_user =
       user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
-  User::OAuthTokenStatus token_status = user->oauth_token_status();
+  const User::OAuthTokenStatus token_status = user->oauth_token_status();
 
-  // If supervised user has unknown token status consider that as valid token.
-  // It will be invalidated inside session in case it has been revoked.
-  if (is_locally_managed_user &&
-      token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN) {
-    token_status = User::OAUTH2_TOKEN_STATUS_VALID;
-  }
+  // Allow offline sign-in if the oauth token is valid. For supervised users,
+  // allow offline sign-in if the token status is unknown as well. The token
+  // will be invalidated inside the session in case it has been revoked.
+  const bool allow_offline_signin =
+      token_status == User::OAUTH2_TOKEN_STATUS_VALID ||
+      (is_locally_managed_user &&
+           token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN);
 
   user_dict->SetString(kKeyUsername, email);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
   user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
   user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
-  user_dict->SetInteger(kKeyOauthTokenStatus, token_status);
+  user_dict->SetInteger(kKeyForceOnlineSignin, !allow_offline_signin);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
 
