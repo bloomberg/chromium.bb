@@ -191,19 +191,31 @@ void VTTRegion::updateParametersFromRegion(VTTRegion* region)
     setScroll(region->scroll(), ASSERT_NO_EXCEPTION);
 }
 
-void VTTRegion::setRegionSettings(const String& input)
+void VTTRegion::setRegionSettings(const String& inputString)
 {
-    m_settings = input;
-    unsigned position = 0;
+    m_settings = inputString;
 
-    while (position < input.length()) {
-        while (position < input.length() && VTTParser::isValidSettingDelimiter(input[position]))
-            position++;
+    VTTScanner input(inputString);
 
-        if (position >= input.length())
+    while (!input.isAtEnd()) {
+        input.skipWhile<VTTParser::isValidSettingDelimiter>();
+
+        if (input.isAtEnd())
             break;
 
-        parseSetting(input, &position);
+        // Scan the name part.
+        RegionSetting name = scanSettingName(input);
+
+        // Verify that we're looking at a '='.
+        if (name == None || !input.scan('=')) {
+            input.skipUntil<VTTParser::isASpace>();
+            continue;
+        }
+
+        // Scan the value part.
+        VTTScanner::Run valueRun = input.collectUntil<VTTParser::isASpace>();
+        parseSettingValue(name, input.extractString(valueRun));
+        input.skipRun(valueRun);
     }
 }
 
@@ -268,25 +280,6 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
     case None:
         break;
     }
-}
-
-void VTTRegion::parseSetting(const String& inputString, unsigned* position)
-{
-    VTTLegacyScanner input(inputString, position);
-
-    // Scan the name part.
-    RegionSetting name = scanSettingName(input);
-
-    // Verify that we're looking at a '='.
-    if (!input.scan('=')) {
-        input.skipUntil<VTTParser::isASpace>();
-        return;
-    }
-
-    // Scan the value part.
-    VTTScanner::Run valueRun = input.collectUntil<VTTParser::isASpace>();
-    parseSettingValue(name, input.extractString(valueRun));
-    input.skipRun(valueRun);
 }
 
 const AtomicString& VTTRegion::textTrackCueContainerShadowPseudoId()

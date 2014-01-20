@@ -115,7 +115,6 @@ private:
     };
     RegionSetting scanSettingName(VTTScanner&);
     void parseSettingValue(RegionSetting, const String&);
-    void parseSetting(const String&, unsigned*);
 
     static const AtomicString& textTrackCueContainerShadowPseudoId();
     static const AtomicString& textTrackCueContainerScrollingClass();
