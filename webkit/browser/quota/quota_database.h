@@ -160,8 +160,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaDatabase {
       const IndexSchema* indexes, size_t indexes_size);
 
   // |callback| may return false to stop reading data.
-  bool DumpQuotaTable(QuotaTableCallback* callback);
-  bool DumpOriginInfoTable(OriginInfoTableCallback* callback);
+  bool DumpQuotaTable(const QuotaTableCallback& callback);
+  bool DumpOriginInfoTable(const OriginInfoTableCallback& callback);
 
   base::FilePath db_file_path_;
 

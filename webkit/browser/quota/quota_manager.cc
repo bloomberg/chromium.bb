@@ -185,7 +185,7 @@ bool UpdateModifiedTimeOnDBThread(const GURL& origin,
 
 int64 CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
   // Ensure the profile path exists.
-  if(!base::CreateDirectory(profile_path)) {
+  if (!base::CreateDirectory(profile_path)) {
     LOG(WARNING) << "Create directory failed for path" << profile_path.value();
     return 0;
   }
@@ -311,7 +311,7 @@ class UsageAndQuotaCallbackDispatcher
     : public QuotaTask,
       public base::SupportsWeakPtr<UsageAndQuotaCallbackDispatcher> {
  public:
-  UsageAndQuotaCallbackDispatcher(QuotaManager* manager)
+  explicit UsageAndQuotaCallbackDispatcher(QuotaManager* manager)
       : QuotaTask(manager),
         has_usage_(false),
         has_global_limited_usage_(false),
@@ -451,9 +451,6 @@ class UsageAndQuotaCallbackDispatcher
 };
 
 class QuotaManager::GetUsageInfoTask : public QuotaTask {
- private:
-  typedef QuotaManager::GetUsageInfoTask self_type;
-
  public:
   GetUsageInfoTask(
       QuotaManager* manager,
@@ -574,6 +571,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
     DeleteSoon();
   }
 
+ private:
   void DidDeleteOriginData(QuotaStatusCode status) {
     DCHECK_GT(remaining_clients_, 0);
 
@@ -644,6 +642,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
     DeleteSoon();
   }
 
+ private:
   void DidGetOriginsForHost(const std::set<GURL>& origins) {
     DCHECK_GT(remaining_clients_, 0);
 
@@ -729,8 +728,7 @@ class QuotaManager::DumpQuotaTableHelper {
   bool DumpQuotaTableOnDBThread(QuotaDatabase* database) {
     DCHECK(database);
     return database->DumpQuotaTable(
-        new TableCallback(base::Bind(&DumpQuotaTableHelper::AppendEntry,
-                                     base::Unretained(this))));
+        base::Bind(&DumpQuotaTableHelper::AppendEntry, base::Unretained(this)));
   }
 
   void DidDumpQuotaTable(const base::WeakPtr<QuotaManager>& manager,
@@ -746,8 +744,6 @@ class QuotaManager::DumpQuotaTableHelper {
   }
 
  private:
-  typedef QuotaDatabase::QuotaTableCallback TableCallback;
-
   bool AppendEntry(const QuotaTableEntry& entry) {
     entries_.push_back(entry);
     return true;
@@ -761,8 +757,8 @@ class QuotaManager::DumpOriginInfoTableHelper {
   bool DumpOriginInfoTableOnDBThread(QuotaDatabase* database) {
     DCHECK(database);
     return database->DumpOriginInfoTable(
-        new TableCallback(base::Bind(&DumpOriginInfoTableHelper::AppendEntry,
-                                     base::Unretained(this))));
+        base::Bind(&DumpOriginInfoTableHelper::AppendEntry,
+                   base::Unretained(this)));
   }
 
   void DidDumpOriginInfoTable(const base::WeakPtr<QuotaManager>& manager,
@@ -778,8 +774,6 @@ class QuotaManager::DumpOriginInfoTableHelper {
   }
 
  private:
-  typedef QuotaDatabase::OriginInfoTableCallback TableCallback;
-
   bool AppendEntry(const OriginInfoTableEntry& entry) {
     entries_.push_back(entry);
     return true;

@@ -5,6 +5,7 @@
 #include "webkit/browser/quota/quota_database.h"
 
 #include <string>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -573,9 +574,10 @@ bool QuotaDatabase::UpgradeSchema(int current_version) {
   if (current_version == 2) {
     QuotaTableImporter importer;
     typedef std::vector<QuotaTableEntry> QuotaTableEntries;
-    if (!DumpQuotaTable(new QuotaTableCallback(base::Bind(
-        &QuotaTableImporter::Append, base::Unretained(&importer)))))
+    if (!DumpQuotaTable(base::Bind(&QuotaTableImporter::Append,
+                                   base::Unretained(&importer)))) {
       return false;
+    }
     ResetSchema();
     for (QuotaTableEntries::const_iterator iter = importer.entries.begin();
          iter != importer.entries.end(); ++iter) {
@@ -588,8 +590,7 @@ bool QuotaDatabase::UpgradeSchema(int current_version) {
   return false;
 }
 
-bool QuotaDatabase::DumpQuotaTable(QuotaTableCallback* callback) {
-  scoped_ptr<QuotaTableCallback> callback_deleter(callback);
+bool QuotaDatabase::DumpQuotaTable(const QuotaTableCallback& callback) {
   if (!LazyOpen(true))
     return false;
 
@@ -602,7 +603,7 @@ bool QuotaDatabase::DumpQuotaTable(QuotaTableCallback* callback) {
       static_cast<StorageType>(statement.ColumnInt(1)),
       statement.ColumnInt64(2));
 
-    if (!callback->Run(entry))
+    if (!callback.Run(entry))
       return true;
   }
 
@@ -610,8 +611,7 @@ bool QuotaDatabase::DumpQuotaTable(QuotaTableCallback* callback) {
 }
 
 bool QuotaDatabase::DumpOriginInfoTable(
-    OriginInfoTableCallback* callback) {
-  scoped_ptr<OriginInfoTableCallback> callback_deleter(callback);
+    const OriginInfoTableCallback& callback) {
 
   if (!LazyOpen(true))
     return false;
@@ -627,7 +627,7 @@ bool QuotaDatabase::DumpOriginInfoTable(
       base::Time::FromInternalValue(statement.ColumnInt64(3)),
       base::Time::FromInternalValue(statement.ColumnInt64(4)));
 
-    if (!callback->Run(entry))
+    if (!callback.Run(entry))
       return true;
   }
 
@@ -654,4 +654,4 @@ bool operator<(const QuotaDatabase::OriginInfoTableEntry& lhs,
   return lhs.last_access_time < rhs.last_access_time;
 }
 
-}  // quota namespace
+}  // namespace quota
