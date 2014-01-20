@@ -145,16 +145,6 @@ std::string CodeFromNative(const base::NativeEvent& native_event) {
   return ui::CodeFromNSEvent(native_event);
 }
 
-bool IsMouseEvent(const base::NativeEvent& native_event) {
-  EventType type = EventTypeFromNative(native_event);
-  return type == ET_MOUSE_PRESSED ||
-         type == ET_MOUSE_DRAGGED ||
-         type == ET_MOUSE_RELEASED ||
-         type == ET_MOUSE_MOVED ||
-         type == ET_MOUSE_ENTERED ||
-         type == ET_MOUSE_EXITED;
-}
-
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   // TODO(dhollowa): Come back to this once comparisons can be made with other
   // platforms.

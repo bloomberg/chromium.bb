@@ -490,23 +490,6 @@ const char* CodeFromNative(const base::NativeEvent& native_event) {
   return CodeFromXEvent(native_event);
 }
 
-bool IsMouseEvent(const base::NativeEvent& native_event) {
-  if (native_event->type == EnterNotify ||
-      native_event->type == LeaveNotify ||
-      native_event->type == ButtonPress ||
-      native_event->type == ButtonRelease ||
-      native_event->type == MotionNotify)
-    return true;
-  if (native_event->type == GenericEvent) {
-    XIDeviceEvent* xievent =
-        static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-    return xievent->evtype == XI_ButtonPress ||
-           xievent->evtype == XI_ButtonRelease ||
-           xievent->evtype == XI_Motion;
-  }
-  return false;
-}
-
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   switch (native_event->type) {

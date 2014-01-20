@@ -48,11 +48,6 @@ int EventButtonFromNative(const base::NativeEvent& native_event) {
   return 0;
 }
 
-bool IsMouseEvent(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();

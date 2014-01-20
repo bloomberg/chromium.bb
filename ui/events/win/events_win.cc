@@ -77,6 +77,11 @@ bool IsNonClientMouseEvent(const base::NativeEvent& native_event) {
          native_event.message <= WM_NCXBUTTONDBLCLK);
 }
 
+bool IsMouseEvent(const base::NativeEvent& native_event) {
+  return IsClientMouseEvent(native_event) ||
+         IsNonClientMouseEvent(native_event);
+}
+
 bool IsMouseWheelEvent(const base::NativeEvent& native_event) {
   return native_event.message == WM_MOUSEWHEEL ||
          native_event.message == WM_MOUSEHWHEEL;
@@ -245,11 +250,6 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
 const char* CodeFromNative(const base::NativeEvent& native_event) {
   const uint16 scan_code = GetScanCodeFromLParam(native_event.lParam);
   return CodeForWindowsScanCode(scan_code);
-}
-
-bool IsMouseEvent(const base::NativeEvent& native_event) {
-  return IsClientMouseEvent(native_event) ||
-         IsNonClientMouseEvent(native_event);
 }
 
 int GetChangedMouseButtonFlagsFromNative(
