@@ -111,9 +111,9 @@ void SpinButtonElement::defaultEventHandler(Event* event)
             }
             event->setDefaultHandled();
         }
-    } else if (mouseEvent->type() == EventTypeNames::mouseup && mouseEvent->button() == LeftButton) {
-        releaseCapture();
-    } else if (event->type() == EventTypeNames::mousemove) {
+    } else if (mouseEvent->type() == EventTypeNames::mouseup && mouseEvent->button() == LeftButton)
+        stopRepeatingTimer();
+    else if (event->type() == EventTypeNames::mousemove) {
         if (box->pixelSnappedBorderBoxRect().contains(local)) {
             if (!m_capturing) {
                 if (Frame* frame = document().frame()) {
@@ -198,8 +198,6 @@ void SpinButtonElement::releaseCapture()
             if (Page* page = document().page())
                 page->chrome().unregisterPopupOpeningObserver(this);
         }
-        if (m_spinButtonOwner)
-            m_spinButtonOwner->spinButtonDidReleaseMouseCapture();
     }
 }
 
