@@ -278,7 +278,8 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
     {% endif %}
     {% if reachable_node_function %}
     if (Node* owner = impl->{{reachable_node_function}}()) {
-        setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
+        Node* root = V8GCController::opaqueRootForGC(owner, isolate);
+        isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
     {% endif %}
