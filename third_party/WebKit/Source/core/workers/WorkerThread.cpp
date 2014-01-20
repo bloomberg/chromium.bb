@@ -125,7 +125,7 @@ void WorkerThread::workerThread()
     blink::Platform::current()->didStartWorkerRunLoop(blink::WebWorkerRunLoop(&m_runLoop));
 
     // Notify proxy that a new WorkerGlobalScope has been created and started.
-    m_workerReportingProxy.workerGlobalScopeStarted();
+    m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
 
     WorkerScriptController* script = m_workerGlobalScope->script();
     InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);

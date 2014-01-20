@@ -71,8 +71,10 @@ void ServiceWorkerGlobalScopeProxy::updateInspectorStateCookie(const String& mes
     m_client->saveDevToolsAgentState(message);
 }
 
-void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted()
+void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
 {
+    ASSERT(!m_workerGlobalScope);
+    m_workerGlobalScope = workerGlobalScope;
     m_client->workerContextStarted(this);
 }
 
@@ -83,6 +85,7 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeDestroyed()
 {
+    m_workerGlobalScope = 0;
     m_client->workerContextDestroyed();
 }
 
@@ -90,6 +93,7 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerIm
     : m_embeddedWorker(embeddedWorker)
     , m_executionContext(executionContext)
     , m_client(client)
+    , m_workerGlobalScope(0)
 {
     ASSERT(m_client);
 }

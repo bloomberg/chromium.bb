@@ -44,7 +44,6 @@
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 
-
 namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -55,6 +54,7 @@ class WebURL;
 class WebView;
 class WebWorker;
 class WebSharedWorkerClient;
+
 // This class is used by the worker process code to talk to the WebCore::SharedWorker implementation.
 // It can't use it directly since it uses WebKit types, so this class converts the data types.
 // When the WebCore::SharedWorker object wants to call WebCore::WorkerReportingProxy, this class will
@@ -75,7 +75,7 @@ public:
         const WTF::String&, int, const WTF::String&);
     virtual void postMessageToPageInspector(const WTF::String&);
     virtual void updateInspectorStateCookie(const WTF::String&);
-    virtual void workerGlobalScopeStarted();
+    virtual void workerGlobalScopeStarted(WebCore::WorkerGlobalScope*);
     virtual void workerGlobalScopeClosed();
     virtual void workerGlobalScopeDestroyed();
 

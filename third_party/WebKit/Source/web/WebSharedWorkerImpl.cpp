@@ -183,7 +183,7 @@ void WebSharedWorkerImpl::workerGlobalScopeClosedOnMainThread()
     stopWorkerThread();
 }
 
-void WebSharedWorkerImpl::workerGlobalScopeStarted()
+void WebSharedWorkerImpl::workerGlobalScopeStarted(WorkerGlobalScope*)
 {
 }
 

@@ -38,41 +38,41 @@
 
 namespace WebCore {
 
-    class ExecutionContext;
-    class WorkerMessagingProxy;
+class ExecutionContext;
+class WorkerMessagingProxy;
 
-    // A proxy to talk to the worker object. This object is created on the
-    // worker object thread (i.e. usually the main thread), passed on to
-    // the worker thread, and used just to proxy messages to the
-    // WorkerMessagingProxy on the worker object thread.
-    //
-    // Used only by Dedicated Worker.
-    class WorkerObjectProxy FINAL : public WorkerReportingProxy {
-    public:
-        static PassOwnPtr<WorkerObjectProxy> create(ExecutionContext*, WorkerMessagingProxy*);
-        virtual ~WorkerObjectProxy() { }
+// A proxy to talk to the worker object. This object is created on the
+// worker object thread (i.e. usually the main thread), passed on to
+// the worker thread, and used just to proxy messages to the
+// WorkerMessagingProxy on the worker object thread.
+//
+// Used only by Dedicated Worker.
+class WorkerObjectProxy FINAL : public WorkerReportingProxy {
+public:
+    static PassOwnPtr<WorkerObjectProxy> create(ExecutionContext*, WorkerMessagingProxy*);
+    virtual ~WorkerObjectProxy() { }
 
-        void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
+    void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
 
-        void confirmMessageFromWorkerObject(bool hasPendingActivity);
-        void reportPendingActivity(bool hasPendingActivity);
+    void confirmMessageFromWorkerObject(bool hasPendingActivity);
+    void reportPendingActivity(bool hasPendingActivity);
 
-        // WorkerReportingProxy overrides.
-        virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
-        virtual void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;
-        virtual void postMessageToPageInspector(const String&) OVERRIDE;
-        virtual void updateInspectorStateCookie(const String&) OVERRIDE;
-        virtual void workerGlobalScopeStarted() OVERRIDE { }
-        virtual void workerGlobalScopeClosed() OVERRIDE;
-        virtual void workerGlobalScopeDestroyed() OVERRIDE;
+    // WorkerReportingProxy overrides.
+    virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
+    virtual void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;
+    virtual void postMessageToPageInspector(const String&) OVERRIDE;
+    virtual void updateInspectorStateCookie(const String&) OVERRIDE;
+    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) OVERRIDE { }
+    virtual void workerGlobalScopeClosed() OVERRIDE;
+    virtual void workerGlobalScopeDestroyed() OVERRIDE;
 
-    private:
-        WorkerObjectProxy(ExecutionContext*, WorkerMessagingProxy*);
+private:
+    WorkerObjectProxy(ExecutionContext*, WorkerMessagingProxy*);
 
-        // These objects always outlive this proxy.
-        ExecutionContext* m_executionContext;
-        WorkerMessagingProxy* m_messagingProxy;
-    };
+    // These objects always outlive this proxy.
+    ExecutionContext* m_executionContext;
+    WorkerMessagingProxy* m_messagingProxy;
+};
 
 } // namespace WebCore
 
