@@ -386,7 +386,7 @@ private:
     virtual void performTask(ExecutionContext* context) OVERRIDE
     {
         Document* document = toDocument(context);
-        if (Element* element = document->autofocusElement()) {
+        if (RefPtr<Element> element = document->autofocusElement()) {
             document->setAutofocusElement(0);
             element->focus();
         }
