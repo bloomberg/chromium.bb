@@ -63,7 +63,6 @@ const char kUserSelectPage[] = "user-select.html";
 const char kCrashPage[] = "crash_1341577.html";
 const char kTooFewMatchesPage[] = "bug_1155639.html";
 const char kLongTextareaPage[] = "large_textarea.html";
-const char kEndState[] = "end_state.html";
 const char kPrematureEnd[] = "premature_end.html";
 const char kMoveIfOver[] = "move_if_obscuring.html";
 const char kBitstackCrash[] = "crash_14491.html";
@@ -483,68 +482,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
   EXPECT_EQ(1,
             FindInPageWchar(web_contents, search_string.c_str(),
                             false, false, NULL));
-}
-
-// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool FocusedOnPage(WebContents* web_contents, std::string* result)
-    WARN_UNUSED_RESULT;
-
-bool FocusedOnPage(WebContents* web_contents, std::string* result) {
-  return content::ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send(getFocusedElement());",
-      result);
-}
-
-// This tests the FindInPage end-state, in other words: what is focused when you
-// close the Find box (ie. if you find within a link the link should be
-// focused).
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
-  // First we navigate to our special focus tracking page.
-  GURL url = GetURL(kEndState);
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(NULL != web_contents);
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(web_contents);
-
-  // Verify that nothing has focus.
-  std::string result;
-  ASSERT_TRUE(FocusedOnPage(web_contents, &result));
-  ASSERT_STREQ("{nothing focused}", result.c_str());
-
-  // Search for a text that exists within a link on the page.
-  int ordinal = 0;
-  EXPECT_EQ(1, FindInPageWchar(web_contents, L"nk",
-                               kFwd, kIgnoreCase, &ordinal));
-  EXPECT_EQ(1, ordinal);
-
-  // End the find session, which should set focus to the link.
-  find_tab_helper->StopFinding(FindBarController::kKeepSelectionOnPage);
-
-  // Verify that the link is focused.
-  ASSERT_TRUE(FocusedOnPage(web_contents, &result));
-  EXPECT_STREQ("link1", result.c_str());
-
-  // Search for a text that exists within a link on the page.
-  EXPECT_EQ(1, FindInPageWchar(web_contents, L"Google",
-                               kFwd, kIgnoreCase, &ordinal));
-  EXPECT_EQ(1, ordinal);
-
-  // Move the selection to link 1, after searching.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send(selectLink1());",
-      &result));
-
-  // End the find session.
-  find_tab_helper->StopFinding(FindBarController::kKeepSelectionOnPage);
-
-  // Verify that link2 is not focused.
-  ASSERT_TRUE(FocusedOnPage(web_contents, &result));
-  EXPECT_STREQ("", result.c_str());
 }
 
 // This test loads a single-frame page and makes sure the ordinal returned makes
