@@ -9,6 +9,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
@@ -32,7 +33,8 @@ TestScreen::~TestScreen() {
 
 RootWindow* TestScreen::CreateRootWindowForPrimaryDisplay() {
   DCHECK(!root_window_);
-  root_window_ = new RootWindow(RootWindow::CreateParams(display_.bounds()));
+  root_window_ = new RootWindow(
+      RootWindow::CreateParams(gfx::Rect(display_.GetSizeInPixel())));
   root_window_->window()->AddObserver(this);
   root_window_->Init();
   return root_window_;
@@ -98,7 +100,8 @@ bool TestScreen::IsDIPEnabled() {
 void TestScreen::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
   DCHECK_EQ(root_window_->window(), window);
-  display_.SetSize(new_bounds.size());
+  display_.SetSize(gfx::ToFlooredSize(
+      gfx::ScaleSize(new_bounds.size(), display_.device_scale_factor())));
 }
 
 void TestScreen::OnWindowDestroying(Window* window) {
