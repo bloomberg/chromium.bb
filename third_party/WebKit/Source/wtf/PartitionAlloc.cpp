@@ -762,6 +762,13 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return realloc(ptr, newSize);
 #else
+    if (UNLIKELY(!ptr))
+        return partitionAllocGeneric(root, newSize);
+    if (UNLIKELY(!newSize)) {
+        partitionFreeGeneric(root, ptr);
+        return 0;
+    }
+
     // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
     // new size is a significant percentage smaller. We could do the same if we
     // determine it is a win.

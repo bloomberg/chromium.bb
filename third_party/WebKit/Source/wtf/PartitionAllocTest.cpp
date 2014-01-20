@@ -574,6 +574,23 @@ TEST(WTF_PartitionAlloc, GenericAllocSizes)
     TestShutdown();
 }
 
+// Test the realloc() contract.
+TEST(WTF_PartitionAlloc, Realloc)
+{
+    TestSetup();
+
+    // realloc(0, size) should be equivalent to malloc().
+    void* ptr = partitionReallocGeneric(genericAllocator.root(), 0, kTestAllocSize);
+    memset(ptr, 'A', kTestAllocSize);
+    WTF::PartitionPage* page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
+    // realloc(ptr, 0) should be equivalent to free().
+    void* ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, 0);
+    EXPECT_EQ(0, ptr2);
+    EXPECT_EQ(WTF::partitionCookieFreePointerAdjust(ptr), page->freelistHead);
+
+    TestShutdown();
+}
+
 // Tests the handing out of freelists for partial pages.
 TEST(WTF_PartitionAlloc, PartialPageFreelists)
 {
