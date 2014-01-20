@@ -39,9 +39,9 @@ namespace WebCore {
 
 class DOMFileSystem;
 
-class DraggedIsolatedFileSystem : public Supplement<DataObject> {
+class DraggedIsolatedFileSystem FINAL : public Supplement<DataObject> {
 public:
-    ~DraggedIsolatedFileSystem();
+    virtual ~DraggedIsolatedFileSystem();
 
     static PassOwnPtr<DraggedIsolatedFileSystem> create(const String& filesystemId)
     {

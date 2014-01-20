@@ -36,7 +36,7 @@ class DeviceRotationRate;
 
 class DeviceMotionEvent FINAL : public Event {
 public:
-    ~DeviceMotionEvent();
+    virtual ~DeviceMotionEvent();
     static PassRefPtr<DeviceMotionEvent> create()
     {
         return adoptRef(new DeviceMotionEvent);

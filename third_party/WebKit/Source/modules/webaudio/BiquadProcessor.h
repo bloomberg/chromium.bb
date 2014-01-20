@@ -53,7 +53,7 @@ public:
 
     virtual ~BiquadProcessor();
 
-    virtual PassOwnPtr<AudioDSPKernel> createKernel();
+    virtual PassOwnPtr<AudioDSPKernel> createKernel() OVERRIDE;
 
     virtual void process(const AudioBus* source, AudioBus* destination, size_t framesToProcess) OVERRIDE;
 

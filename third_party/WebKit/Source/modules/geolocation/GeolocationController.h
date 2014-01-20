@@ -43,7 +43,7 @@ class Page;
 class GeolocationController FINAL : public Supplement<Page>, public PageLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:
-    ~GeolocationController();
+    virtual ~GeolocationController();
 
     static PassOwnPtr<GeolocationController> create(Page*, GeolocationClient*);
 

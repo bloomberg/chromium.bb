@@ -34,7 +34,7 @@ class DeviceOrientationData;
 
 class DeviceOrientationEvent FINAL : public Event {
 public:
-    ~DeviceOrientationEvent();
+    virtual ~DeviceOrientationEvent();
     static PassRefPtr<DeviceOrientationEvent> create()
     {
         return adoptRef(new DeviceOrientationEvent);

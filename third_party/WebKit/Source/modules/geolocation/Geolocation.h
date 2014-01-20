@@ -50,7 +50,7 @@ class Geolocation FINAL : public ScriptWrappable, public RefCounted<Geolocation>
 {
 public:
     static PassRefPtr<Geolocation> create(ExecutionContext*);
-    ~Geolocation();
+    virtual ~Geolocation();
 
     virtual void stop() OVERRIDE;
     Document* document() const;
