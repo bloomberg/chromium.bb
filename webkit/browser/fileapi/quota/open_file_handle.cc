@@ -21,9 +21,23 @@ void OpenFileHandle::UpdateMaxWrittenOffset(int64 offset) {
     reservation_->ConsumeReservation(growth);
 }
 
+void OpenFileHandle::AddAppendModeWriteAmount(int64 amount) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  if (amount <= 0)
+    return;
+
+  context_->AddAppendModeWriteAmount(amount);
+  reservation_->ConsumeReservation(amount);
+}
+
 int64 OpenFileHandle::GetEstimatedFileSize() const {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return context_->GetEstimatedFileSize();
+}
+
+const base::FilePath& OpenFileHandle::platform_path() const {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return context_->platform_path();
 }
 
 OpenFileHandle::OpenFileHandle(QuotaReservation* reservation,

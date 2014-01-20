@@ -10,6 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace fileapi {
 
 class QuotaReservation;
@@ -24,9 +28,17 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OpenFileHandle {
   ~OpenFileHandle();
 
   // Updates cached file size and consumes quota for that.
-  // This should be called for each modified file before calling
-  // QuotaReservation::RefreshQuota and before closing the file.
+  // Both this and AddAppendModeWriteAmount should be called for each modified
+  // file before calling QuotaReservation::RefreshQuota and before closing the
+  // file.
   void UpdateMaxWrittenOffset(int64 offset);
+
+  // Notifies that |amount| of data is written to the file in append mode, and
+  // consumes quota for that.
+  // Both this and UpdateMaxWrittenOffset should be called for each modified
+  // file before calling QuotaReservation::RefreshQuota and before closing the
+  // file.
+  void AddAppendModeWriteAmount(int64 amount);
 
   // Returns the estimated file size for the quota consumption calculation.
   // The client must consume its reserved quota when it writes data to the file
@@ -35,6 +47,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OpenFileHandle {
   // all clients report their file usage,  and is monotonically increasing over
   // OpenFileHandle object life cycle, so that client may cache the value.
   int64 GetEstimatedFileSize() const;
+
+  const base::FilePath& platform_path() const;
 
  private:
   friend class QuotaReservationBuffer;

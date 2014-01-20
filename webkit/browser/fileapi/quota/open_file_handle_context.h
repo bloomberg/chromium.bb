@@ -32,6 +32,8 @@ class OpenFileHandleContext : public base::RefCounted<OpenFileHandleContext> {
   // Updates the max written offset and returns the amount of growth.
   int64 UpdateMaxWrittenOffset(int64 offset);
 
+  void AddAppendModeWriteAmount(int64 amount);
+
   const base::FilePath& platform_path() const {
     return platform_path_;
   }
@@ -44,6 +46,7 @@ class OpenFileHandleContext : public base::RefCounted<OpenFileHandleContext> {
 
   int64 initial_file_size_;
   int64 maximum_written_offset_;
+  int64 append_mode_write_amount_;
   base::FilePath platform_path_;
 
   scoped_refptr<QuotaReservationBuffer> reservation_buffer_;

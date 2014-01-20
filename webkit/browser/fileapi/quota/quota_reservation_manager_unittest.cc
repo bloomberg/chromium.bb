@@ -20,15 +20,33 @@ namespace {
 
 const char kOrigin[] = "http://example.com";
 const FileSystemType kType = kFileSystemTypeTemporary;
-const int64 kInitialFileSize = 30;
+const int64 kInitialFileSize = 1;
 
 typedef QuotaReservationManager::ReserveQuotaCallback ReserveQuotaCallback;
+
+int64 GetFileSize(const base::FilePath& path) {
+  int64 size = 0;
+  base::GetFileSize(path, &size);
+  return size;
+}
+
+void SetFileSize(const base::FilePath& path, int64 size) {
+  bool created = false;
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::PlatformFile file = CreatePlatformFile(
+      path,
+      base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE,
+      &created, &error);
+  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+  ASSERT_TRUE(base::TruncatePlatformFile(file, size));
+  ASSERT_TRUE(base::ClosePlatformFile(file));
+}
 
 class FakeBackend : public QuotaReservationManager::QuotaBackend {
  public:
   FakeBackend()
-      : on_memory_usage_(0),
-        on_disk_usage_(0) {}
+      : on_memory_usage_(kInitialFileSize),
+        on_disk_usage_(kInitialFileSize) {}
   virtual ~FakeBackend() {}
 
   virtual void ReserveQuota(const GURL& origin,
@@ -58,6 +76,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_disk_usage_ += delta;
+    on_memory_usage_ += delta;
   }
 
   virtual void IncrementDirtyCount(const GURL& origin,
@@ -75,13 +94,79 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   DISALLOW_COPY_AND_ASSIGN(FakeBackend);
 };
 
+class FakeWriter {
+ public:
+  explicit FakeWriter(scoped_ptr<OpenFileHandle> handle)
+      : handle_(handle.Pass()),
+        path_(handle_->platform_path()),
+        max_written_offset_(handle_->GetEstimatedFileSize()),
+        append_mode_write_amount_(0),
+        dirty_(false) {
+  }
+
+  ~FakeWriter() {
+    if (handle_)
+      EXPECT_FALSE(dirty_);
+  }
+
+  int64 Truncate(int64 length) {
+    int64 consumed = 0;
+
+    if (max_written_offset_ < length) {
+      consumed = length - max_written_offset_;
+      max_written_offset_ = length;
+    }
+    SetFileSize(path_, length);
+    return consumed;
+  }
+
+  int64 Write(int64 max_offset) {
+    dirty_ = true;
+
+    int64 consumed = 0;
+    if (max_written_offset_ < max_offset) {
+      consumed = max_offset - max_written_offset_;
+      max_written_offset_ = max_offset;
+    }
+    if (GetFileSize(path_) < max_offset)
+      SetFileSize(path_, max_offset);
+    return consumed;
+  }
+
+  int64 Append(int64 amount) {
+    dirty_ = true;
+    append_mode_write_amount_ += amount;
+    SetFileSize(path_, GetFileSize(path_) + amount);
+    return amount;
+  }
+
+  void ReportUsage() {
+    handle_->UpdateMaxWrittenOffset(max_written_offset_);
+    handle_->AddAppendModeWriteAmount(append_mode_write_amount_);
+    max_written_offset_ = handle_->GetEstimatedFileSize();
+    append_mode_write_amount_ = 0;
+    dirty_ = false;
+  }
+
+  void ClearWithoutUsageReport() {
+    handle_.reset();
+  }
+
+ private:
+  scoped_ptr<OpenFileHandle> handle_;
+  base::FilePath path_;
+  int64 max_written_offset_;
+  int64 append_mode_write_amount_;
+  bool dirty_;
+};
+
 void ExpectSuccess(bool* done, base::PlatformFileError error) {
   EXPECT_FALSE(*done);
   *done = true;
   EXPECT_EQ(base::PLATFORM_FILE_OK, error);
 }
 
-void RefreshQuota(QuotaReservation* reservation, int64 size) {
+void RefreshReservation(QuotaReservation* reservation, int64 size) {
   DCHECK(reservation);
 
   bool done = false;
@@ -100,7 +185,7 @@ class QuotaReservationManagerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(work_dir_.CreateUniqueTempDir());
     file_path_ = work_dir_.path().Append(FILE_PATH_LITERAL("hoge"));
-    SetFileSize(kInitialFileSize);
+    SetFileSize(file_path_, kInitialFileSize);
 
     scoped_ptr<QuotaReservationManager::QuotaBackend> backend(new FakeBackend);
     reservation_manager_.reset(new QuotaReservationManager(backend.Pass()));
@@ -108,29 +193,6 @@ class QuotaReservationManagerTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     reservation_manager_.reset();
-  }
-
-  int64 GetFileSize() {
-    int64 size = 0;
-    base::GetFileSize(file_path_, &size);
-    return size;
-  }
-
-  void SetFileSize(int64 size) {
-    bool created = false;
-    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-    base::PlatformFile file = CreatePlatformFile(
-        file_path_,
-        base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE,
-        &created, &error);
-    ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-    ASSERT_TRUE(base::TruncatePlatformFile(file, size));
-    ASSERT_TRUE(base::ClosePlatformFile(file));
-  }
-
-  void ExtendFileTo(int64 size) {
-    if (GetFileSize() < size)
-      SetFileSize(size);
   }
 
   FakeBackend* fake_backend() {
@@ -155,204 +217,151 @@ class QuotaReservationManagerTest : public testing::Test {
 };
 
 TEST_F(QuotaReservationManagerTest, BasicTest) {
-  GURL origin(kOrigin);
-  FileSystemType type = kType;
-
-  // Create Reservation channel for the origin and type.
-  // Reservation holds remaining quota reservation and provides a method to
-  // refresh it.
   scoped_refptr<QuotaReservation> reservation =
-      reservation_manager()->CreateReservation(origin, type);
-  EXPECT_EQ(0, reservation->remaining_quota());
-
-  RefreshQuota(reservation, 100);
-  EXPECT_EQ(100, reservation->remaining_quota());
+      reservation_manager()->CreateReservation(GURL(kOrigin), kType);
 
   {
-    // For each open file for write, the client should create OpenFileHandle
-    // object.
-    // It's OK to create multiple OpenFileHandle for single file.
-    scoped_ptr<OpenFileHandle> open_file =
-        reservation->GetOpenFileHandle(file_path());
+    RefreshReservation(reservation.get(), 10 + 20 + 3);
+    int64 cached_reserved_quota = reservation->remaining_quota();
+    FakeWriter writer(reservation->GetOpenFileHandle(file_path()));
 
-    // Before reserved quota ran out, the client can perform any number of
-    // operation for the file.
-    // The client should calculate how much quota is consumed by itself.
-    int64 remaining_quota = reservation->remaining_quota();
-    int64 base_file_size = open_file->GetEstimatedFileSize();
-    int64 max_written_offset = base_file_size;
-    ExtendFileTo(90);
-    max_written_offset = 90;
-    remaining_quota -= max_written_offset - base_file_size;
+    cached_reserved_quota -= writer.Write(kInitialFileSize + 10);
+    EXPECT_LE(0, cached_reserved_quota);
+    cached_reserved_quota -= writer.Append(20);
+    EXPECT_LE(0, cached_reserved_quota);
 
-    // When the reserved quota ran out, the client can request quota refresh
-    // through Reservation.  Before requesting another portion of quota, the
-    // client should report maximum written offset for each modified files.
-    open_file->UpdateMaxWrittenOffset(max_written_offset);
-    EXPECT_EQ(remaining_quota, reservation->remaining_quota());
-
-    RefreshQuota(reservation, 100);
-    EXPECT_EQ(100, reservation->remaining_quota());
+    writer.ReportUsage();
   }
 
-  EXPECT_EQ(90, GetFileSize());
-  EXPECT_EQ(100, fake_backend()->on_memory_usage());
-  EXPECT_EQ(90 - kInitialFileSize, fake_backend()->on_disk_usage());
+  EXPECT_EQ(3, reservation->remaining_quota());
+  EXPECT_EQ(kInitialFileSize + 10 + 20, GetFileSize(file_path()));
+  EXPECT_EQ(kInitialFileSize + 10 + 20, fake_backend()->on_disk_usage());
+  EXPECT_EQ(kInitialFileSize + 10 + 20 + 3, fake_backend()->on_memory_usage());
+
+  {
+    RefreshReservation(reservation.get(), 5);
+    FakeWriter writer(reservation->GetOpenFileHandle(file_path()));
+
+    EXPECT_EQ(0, writer.Truncate(3));
+
+    writer.ReportUsage();
+  }
+
+  EXPECT_EQ(5, reservation->remaining_quota());
+  EXPECT_EQ(3, GetFileSize(file_path()));
+  EXPECT_EQ(3, fake_backend()->on_disk_usage());
+  EXPECT_EQ(3 + 5, fake_backend()->on_memory_usage());
 
   reservation = NULL;
 
-  EXPECT_EQ(90, GetFileSize());
-  EXPECT_EQ(0, fake_backend()->on_memory_usage());
-  EXPECT_EQ(90 - kInitialFileSize, fake_backend()->on_disk_usage());
+  EXPECT_EQ(3, fake_backend()->on_memory_usage());
 }
 
 TEST_F(QuotaReservationManagerTest, MultipleWriter) {
-  GURL origin(kOrigin);
-  FileSystemType type = kType;
-
   scoped_refptr<QuotaReservation> reservation =
-      reservation_manager()->CreateReservation(origin, type);
-  EXPECT_EQ(0, reservation->remaining_quota());
-
-  RefreshQuota(reservation, 100);
-  EXPECT_EQ(100, reservation->remaining_quota());
+      reservation_manager()->CreateReservation(GURL(kOrigin), kType);
 
   {
-    scoped_ptr<OpenFileHandle> open_file1 =
-        reservation->GetOpenFileHandle(file_path());
-    scoped_ptr<OpenFileHandle> open_file2 =
-        reservation->GetOpenFileHandle(file_path());
+    RefreshReservation(reservation.get(), 10 + 20 + 30 + 40 + 5);
+    int64 cached_reserved_quota = reservation->remaining_quota();
+    FakeWriter writer1(reservation->GetOpenFileHandle(file_path()));
+    FakeWriter writer2(reservation->GetOpenFileHandle(file_path()));
+    FakeWriter writer3(reservation->GetOpenFileHandle(file_path()));
 
-    int64 remaining_quota = reservation->remaining_quota();
+    cached_reserved_quota -= writer1.Write(kInitialFileSize + 10);
+    EXPECT_LE(0, cached_reserved_quota);
+    cached_reserved_quota -= writer2.Write(kInitialFileSize + 20);
+    cached_reserved_quota -= writer3.Append(30);
+    EXPECT_LE(0, cached_reserved_quota);
+    cached_reserved_quota -= writer3.Append(40);
+    EXPECT_LE(0, cached_reserved_quota);
 
-    int64 base_file_size_for_file1 = open_file1->GetEstimatedFileSize();
-    int64 max_written_offset_for_file1 = base_file_size_for_file1;
-
-    int64 base_file_size_for_file2 = open_file2->GetEstimatedFileSize();
-    int64 max_written_offset_for_file2 = base_file_size_for_file2;
-
-    // Each writer should maintain max_written_offset and base_file_size
-    // independently even if there are multiple writers for the same file.
-    max_written_offset_for_file1 = 50;
-    ExtendFileTo(max_written_offset_for_file1);
-    remaining_quota -= max_written_offset_for_file1 - base_file_size_for_file1;
-    base_file_size_for_file1 = max_written_offset_for_file1;
-
-    max_written_offset_for_file2 = 90;
-    ExtendFileTo(max_written_offset_for_file2);
-    remaining_quota -= max_written_offset_for_file2 - base_file_size_for_file2;
-    base_file_size_for_file2 = max_written_offset_for_file2;
-
-    // Before requesting quota refresh, each writer should report their
-    // maximum_written_offset.  UpdateMaxWrittenOffset returns updated
-    // base_file_size that the writer should calculate quota consumption based
-    // on that.
-    open_file1->UpdateMaxWrittenOffset(max_written_offset_for_file1);
-    base_file_size_for_file1 = open_file1->GetEstimatedFileSize();
-    max_written_offset_for_file1 = base_file_size_for_file1;
-    EXPECT_EQ(100 - (50 - kInitialFileSize), reservation->remaining_quota());
-
-    open_file2->UpdateMaxWrittenOffset(max_written_offset_for_file2);
-    base_file_size_for_file2 = open_file2->GetEstimatedFileSize();
-    max_written_offset_for_file2 = base_file_size_for_file2;
-    EXPECT_EQ(100 - (50 - kInitialFileSize) - (90 - 50),
-              reservation->remaining_quota());
-
-    RefreshQuota(reservation, 100);
-    EXPECT_EQ(100, reservation->remaining_quota());
+    writer1.ReportUsage();
+    writer2.ReportUsage();
+    writer3.ReportUsage();
   }
 
-  EXPECT_EQ(90, GetFileSize());
-  EXPECT_EQ(100, fake_backend()->on_memory_usage());
-  EXPECT_EQ(90 - kInitialFileSize, fake_backend()->on_disk_usage());
+  EXPECT_EQ(kInitialFileSize + 20 + 30 + 40, GetFileSize(file_path()));
+  EXPECT_EQ(kInitialFileSize + 10 + 20 + 30 + 40 + 5,
+            fake_backend()->on_memory_usage());
+  EXPECT_EQ(kInitialFileSize + 20 + 30 + 40, fake_backend()->on_disk_usage());
 
   reservation = NULL;
 
-  EXPECT_EQ(90, GetFileSize());
-  EXPECT_EQ(0, fake_backend()->on_memory_usage());
-  EXPECT_EQ(90 - kInitialFileSize, fake_backend()->on_disk_usage());
+  EXPECT_EQ(kInitialFileSize + 20 + 30 + 40, fake_backend()->on_disk_usage());
 }
 
 TEST_F(QuotaReservationManagerTest, MultipleClient) {
-  GURL origin(kOrigin);
-  FileSystemType type = kType;
-
   scoped_refptr<QuotaReservation> reservation1 =
-      reservation_manager()->CreateReservation(origin, type);
-  EXPECT_EQ(0, reservation1->remaining_quota());
-  RefreshQuota(reservation1, 100);
-  EXPECT_EQ(100, reservation1->remaining_quota());
+      reservation_manager()->CreateReservation(GURL(kOrigin), kType);
+  RefreshReservation(reservation1, 10);
+  int64 cached_reserved_quota1 = reservation1->remaining_quota();
 
   scoped_refptr<QuotaReservation> reservation2 =
-      reservation_manager()->CreateReservation(origin, type);
-  EXPECT_EQ(0, reservation2->remaining_quota());
-  RefreshQuota(reservation2, 500);
-  EXPECT_EQ(500, reservation2->remaining_quota());
+      reservation_manager()->CreateReservation(GURL(kOrigin), kType);
+  RefreshReservation(reservation2, 20);
+  int64 cached_reserved_quota2 = reservation2->remaining_quota();
 
-  // Attach a file to both of two reservations.
-  scoped_ptr<OpenFileHandle> open_file1 =
-      reservation1->GetOpenFileHandle(file_path());
-  scoped_ptr<OpenFileHandle> open_file2 =
-      reservation2->GetOpenFileHandle(file_path());
+  scoped_ptr<FakeWriter> writer1(
+      new FakeWriter(reservation1->GetOpenFileHandle(file_path())));
 
-  // Each client should manage reserved quota and its consumption separately.
-  int64 remaining_quota1 = reservation1->remaining_quota();
-  int64 base_file_size1 = open_file1->GetEstimatedFileSize();
-  int64 max_written_offset1 = base_file_size1;
+  scoped_ptr<FakeWriter> writer2(
+      new FakeWriter(reservation2->GetOpenFileHandle(file_path())));
 
-  int64 remaining_quota2 = reservation2->remaining_quota();
-  int64 base_file_size2 = open_file2->GetEstimatedFileSize();
-  int64 max_written_offset2 = base_file_size2;
+  cached_reserved_quota1 -= writer1->Write(kInitialFileSize + 10);
+  EXPECT_LE(0, cached_reserved_quota1);
 
-  max_written_offset1 = 50;
-  remaining_quota1 -= max_written_offset1 - base_file_size1;
-  base_file_size1 = max_written_offset1;
-  ExtendFileTo(max_written_offset1);
+  cached_reserved_quota2 -= writer2->Append(20);
+  EXPECT_LE(0, cached_reserved_quota2);
 
-  max_written_offset2 = 400;
-  remaining_quota2 -= max_written_offset2 - base_file_size2;
-  base_file_size2 = max_written_offset2;
-  ExtendFileTo(max_written_offset2);
+  writer1->ReportUsage();
+  RefreshReservation(reservation1.get(), 2);
+  cached_reserved_quota1 = reservation1->remaining_quota();
 
-  // For multiple Reservation case, RefreshQuota needs usage report only from
-  // associated OpenFile's.
-  open_file1->UpdateMaxWrittenOffset(max_written_offset1);
-  base_file_size1 = open_file1->GetEstimatedFileSize();
-  max_written_offset1 = base_file_size1;
-  EXPECT_EQ(100 - (50 - kInitialFileSize), reservation1->remaining_quota());
+  writer2->ReportUsage();
+  RefreshReservation(reservation2.get(), 3);
+  cached_reserved_quota2 = reservation2->remaining_quota();
 
-  RefreshQuota(reservation1, 200);
-  EXPECT_EQ(200, reservation1->remaining_quota());
+  writer1.reset();
+  writer2.reset();
 
-  open_file2->UpdateMaxWrittenOffset(max_written_offset2);
-  base_file_size2 = open_file2->GetEstimatedFileSize();
-  max_written_offset2 = base_file_size2;
-  EXPECT_EQ(500 - (400 - 50), reservation2->remaining_quota());
-
-  RefreshQuota(reservation2, 150);
-  EXPECT_EQ(150, reservation2->remaining_quota());
-
-  open_file1.reset();
-  open_file2.reset();
-
-  EXPECT_EQ(400, GetFileSize());
-  EXPECT_EQ(200 + 150, fake_backend()->on_memory_usage());
-  EXPECT_EQ(400 - kInitialFileSize, fake_backend()->on_disk_usage());
+  EXPECT_EQ(kInitialFileSize + 10 + 20, GetFileSize(file_path()));
+  EXPECT_EQ(kInitialFileSize + 10 + 20 + 2 + 3,
+            fake_backend()->on_memory_usage());
+  EXPECT_EQ(kInitialFileSize + 10 + 20, fake_backend()->on_disk_usage());
 
   reservation1 = NULL;
-
-  EXPECT_EQ(400, GetFileSize());
-  EXPECT_EQ(150, fake_backend()->on_memory_usage());
-  EXPECT_EQ(400 - kInitialFileSize, fake_backend()->on_disk_usage());
+  EXPECT_EQ(kInitialFileSize + 10 + 20 + 3, fake_backend()->on_memory_usage());
 
   reservation2 = NULL;
-
-  EXPECT_EQ(400, GetFileSize());
-  EXPECT_EQ(0, fake_backend()->on_memory_usage());
-  EXPECT_EQ(400 - kInitialFileSize, fake_backend()->on_disk_usage());
+  EXPECT_EQ(kInitialFileSize + 10 + 20, fake_backend()->on_memory_usage());
 }
 
-// TODO(tzik): Add Truncate test.
-// TODO(tzik): Add PluginCrash test and DropReservationManager test.
+TEST_F(QuotaReservationManagerTest, ClientCrash) {
+  scoped_refptr<QuotaReservation> reservation1 =
+      reservation_manager()->CreateReservation(GURL(kOrigin), kType);
+  RefreshReservation(reservation1.get(), 15);
+
+  scoped_refptr<QuotaReservation> reservation2 =
+      reservation_manager()->CreateReservation(GURL(kOrigin), kType);
+  RefreshReservation(reservation2.get(), 20);
+
+  {
+    FakeWriter writer(reservation1->GetOpenFileHandle(file_path()));
+
+    writer.Write(kInitialFileSize + 10);
+
+    reservation1->OnClientCrash();
+    writer.ClearWithoutUsageReport();
+  }
+  reservation1 = NULL;
+
+  EXPECT_EQ(kInitialFileSize + 10, GetFileSize(file_path()));
+  EXPECT_EQ(kInitialFileSize + 15 + 20, fake_backend()->on_memory_usage());
+  EXPECT_EQ(kInitialFileSize + 10, fake_backend()->on_disk_usage());
+
+  reservation2 = NULL;
+  EXPECT_EQ(kInitialFileSize + 10, fake_backend()->on_memory_usage());
+}
 
 }  // namespace fileapi
