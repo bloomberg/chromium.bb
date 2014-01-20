@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Security-Policy" content="style-src 'sha1-pfeR5wMA6np45oqDTP6Pj3tLpJo='">
+    </head>
+    <body>
+        <p>This tests the result of a valid style hash. It passes if this text is green, and a "PASS" alert is fired.</p> 
+        <style>p { color: green; }</style>
+        <script>
+            if (window.testRunner)
+                testRunner.dumpAsText();
+
+            var color = window.getComputedStyle(document.querySelector('p')).color;
+            if (color === "rgb(0, 128, 0)")
+                alert("PASS: The 'p' element's text is green, which means the style was correctly applied.");
+            else
+                alert("FAIL: The 'p' element's text is " + color + ", which means the style was incorrectly applied.");
+        </script>
+    </body>
+</html>

@@ -109,8 +109,10 @@ public:
     bool allowScriptNonce(const String& nonce) const;
     bool allowStyleNonce(const String& nonce) const;
     bool allowScriptHash(const String& source) const;
+    bool allowStyleHash(const String& source) const;
 
     void usesScriptHashAlgorithms(uint8_t HashAlgorithms);
+    void usesStyleHashAlgorithms(uint8_t HashAlgorithms);
 
     ReflectedXSSDisposition reflectedXSSDisposition() const;
 
@@ -161,9 +163,10 @@ private:
     HashSet<unsigned, AlreadyHashed> m_violationReportsSent;
 
     // We put the hash functions used on the policy object so that we only need
-    // to calculate a script hash once and then distribute it to all of the
-    // directives for validation.
-    uint8_t m_sourceHashAlgorithmsUsed;
+    // to calculate a hash once and then distribute it to all of the directives
+    // for validation.
+    uint8_t m_scriptHashAlgorithmsUsed;
+    uint8_t m_styleHashAlgorithmsUsed;
 };
 
 }

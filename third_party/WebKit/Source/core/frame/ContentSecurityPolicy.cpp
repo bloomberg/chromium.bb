@@ -883,6 +883,7 @@ public:
     bool allowScriptNonce(const String&) const;
     bool allowStyleNonce(const String&) const;
     bool allowScriptHash(const SourceHashValue&) const;
+    bool allowStyleHash(const SourceHashValue&) const;
 
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
     ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
@@ -1259,6 +1260,11 @@ bool CSPDirectiveList::allowScriptHash(const SourceHashValue& hashValue) const
     return checkHash(operativeDirective(m_scriptSrc.get()), hashValue);
 }
 
+bool CSPDirectiveList::allowStyleHash(const SourceHashValue& hashValue) const
+{
+    return checkHash(operativeDirective(m_styleSrc.get()), hashValue);
+}
+
 // policy            = directive-list
 // directive-list    = [ directive *( ";" [ directive ] ) ]
 //
@@ -1459,6 +1465,7 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         setCSPDirective<SourceListDirective>(name, value, m_imgSrc);
     } else if (equalIgnoringCase(name, styleSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_styleSrc);
+        m_policy->usesStyleHashAlgorithms(m_styleSrc->hashAlgorithmsUsed());
     } else if (equalIgnoringCase(name, fontSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_fontSrc);
     } else if (equalIgnoringCase(name, mediaSrc)) {
@@ -1488,7 +1495,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
 ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContextClient* client)
     : m_client(client)
     , m_overrideInlineStyleAllowed(false)
-    , m_sourceHashAlgorithmsUsed(HashAlgorithmsNone)
+    , m_scriptHashAlgorithmsUsed(HashAlgorithmsNone)
+    , m_styleHashAlgorithmsUsed(HashAlgorithmsNone)
 {
 }
 
@@ -1700,11 +1708,12 @@ bool ContentSecurityPolicy::allowStyleNonce(const String& nonce) const
     return isAllowedByAllWithNonce<&CSPDirectiveList::allowStyleNonce>(m_policies, nonce);
 }
 
+// TODO(jww) We don't currently have a WTF SHA256 implementation. Once we
+// have that, we should implement a proper check for sha256 hash values in
+// both allowScriptHash and allowStyleHash.
 bool ContentSecurityPolicy::allowScriptHash(const String& source) const
 {
-    // TODO(jww) We don't currently have a WTF SHA256 implementation. Once we
-    // have that, we should implement a proper check for sha256 hash values here.
-    if (HashAlgorithmsSha1 & m_sourceHashAlgorithmsUsed) {
+    if (HashAlgorithmsSha1 & m_scriptHashAlgorithmsUsed) {
         Vector<uint8_t, 20> digest;
         SHA1 sourceSha1;
         sourceSha1.addBytes(UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables));
@@ -1717,9 +1726,29 @@ bool ContentSecurityPolicy::allowScriptHash(const String& source) const
     return false;
 }
 
+bool ContentSecurityPolicy::allowStyleHash(const String& source) const
+{
+    if (HashAlgorithmsSha1 & m_styleHashAlgorithmsUsed) {
+        Vector<uint8_t, 20> digest;
+        SHA1 sourceSha1;
+        sourceSha1.addBytes(UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables));
+        sourceSha1.computeHash(digest);
+
+        if (isAllowedByAllWithHash<&CSPDirectiveList::allowStyleHash>(m_policies, SourceHashValue(HashAlgorithmsSha1, Vector<uint8_t>(digest))))
+            return true;
+    }
+
+    return false;
+}
+
 void ContentSecurityPolicy::usesScriptHashAlgorithms(uint8_t algorithms)
 {
-    m_sourceHashAlgorithmsUsed |= algorithms;
+    m_scriptHashAlgorithmsUsed |= algorithms;
+}
+
+void ContentSecurityPolicy::usesStyleHashAlgorithms(uint8_t algorithms)
+{
+    m_styleHashAlgorithmsUsed |= algorithms;
 }
 
 bool ContentSecurityPolicy::allowObjectFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const

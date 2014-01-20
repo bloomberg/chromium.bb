@@ -128,7 +128,7 @@ void StyleElement::createSheet(Element* e, const String& text)
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
-    bool passesContentSecurityPolicyChecks = document.contentSecurityPolicy()->allowStyleNonce(e->fastGetAttribute(HTMLNames::nonceAttr)) || document.contentSecurityPolicy()->allowInlineStyle(e->document().url(), m_startPosition.m_line);
+    bool passesContentSecurityPolicyChecks = document.contentSecurityPolicy()->allowStyleHash(text) || document.contentSecurityPolicy()->allowStyleNonce(e->fastGetAttribute(HTMLNames::nonceAttr)) || document.contentSecurityPolicy()->allowInlineStyle(e->document().url(), m_startPosition.m_line);
     if (isCSS(e, type) && passesContentSecurityPolicyChecks) {
         RefPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
 
