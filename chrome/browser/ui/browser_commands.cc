@@ -1125,8 +1125,9 @@ void ViewSelectedSource(Browser* browser) {
 }
 
 bool CanViewSource(const Browser* browser) {
-  return browser->tab_strip_model()->GetActiveWebContents()->
-      GetController().CanViewSource();
+  return !browser->is_devtools() &&
+      browser->tab_strip_model()->GetActiveWebContents()->GetController().
+          CanViewSource();
 }
 
 void CreateApplicationShortcuts(Browser* browser) {
