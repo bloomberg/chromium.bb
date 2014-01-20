@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="wallpaper_loader.js"></include>
+
 /**
  * @fileoverview User pod row implementation.
  */
@@ -1008,6 +1010,9 @@ cr.define('login', function() {
     // Pod that was most recently focused, if any.
     lastFocusedPod_: undefined,
 
+    // Note: created only in decorate() !
+    wallpaperLoader_: undefined,
+
     // Pods whose initial images haven't been loaded yet.
     podsWithPendingImages_: [],
 
@@ -1021,6 +1026,7 @@ cr.define('login', function() {
         mousemove: [this.handleMouseMove_.bind(this), false],
         keydown: [this.handleKeyDown.bind(this), false]
       };
+      this.wallpaperLoader_ = new login.WallpaperLoader();
     },
 
     /**
@@ -1351,6 +1357,7 @@ cr.define('login', function() {
       }
       this.insideFocusPod_ = true;
 
+      this.wallpaperLoader_.reset();
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         if (!this.isSinglePod) {
           pod.isActionBoxMenuActive = false;
@@ -1373,8 +1380,9 @@ cr.define('login', function() {
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
         podToFocus.reset(true);  // Reset and give focus.
-        // focusPod() automatically loads wallpaper
         chrome.send('focusPod', [podToFocus.user.username]);
+
+        this.wallpaperLoader_.scheduleLoad(podToFocus.user.username, opt_force);
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
       }
@@ -1398,7 +1406,16 @@ cr.define('login', function() {
      */
     loadLastWallpaper: function() {
       if (this.lastFocusedPod_)
-        chrome.send('loadWallpaper', [this.lastFocusedPod_.user.username]);
+        this.wallpaperLoader_.scheduleLoad(this.lastFocusedPod_.user.username,
+                                           true /* force */);
+    },
+
+    /**
+     * Handles 'onWallpaperLoaded' event. Recalculates statistics and
+     * [re]schedules next wallpaper load.
+     */
+    onWallpaperLoaded: function(username) {
+      this.wallpaperLoader_.onWallpaperLoaded(username);
     },
 
     /**
@@ -1668,7 +1685,8 @@ cr.define('login', function() {
             focusedPod.reset(true);
             // Notify screen that it is ready.
             screen.onShow();
-            chrome.send('loadWallpaper', [focusedPod.user.username]);
+            self.wallpaperLoader_.scheduleLoad(focusedPod.user.username,
+                                               true /* force */);
           }
         });
         // Guard timer for 1 second -- it would conver all possible animations.

@@ -344,7 +344,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
     // Reset the new user flag if the user already exists.
     is_current_user_new_ = false;
     // Set active user wallpaper back.
-    WallpaperManager::Get()->SetUserWallpaperNow(active_user_->email());
+    WallpaperManager::Get()->SetUserWallpaper(active_user_->email());
     NotifyUserAddedToSession(user);
     return;
   }
@@ -1228,7 +1228,8 @@ void UserManagerImpl::GuestUserLoggedIn() {
   // http://crosbug.com/230859
   active_user_->SetStubImage(User::kInvalidImageIndex, false);
   // Initializes wallpaper after active_user_ is set.
-  WallpaperManager::Get()->SetUserWallpaperNow(UserManager::kGuestUserName);
+  WallpaperManager::Get()->SetInitialUserWallpaper(UserManager::kGuestUserName,
+                                                   false);
 }
 
 void UserManagerImpl::AddUserRecord(User* user) {
@@ -1250,7 +1251,7 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& user_id) {
     active_user_->set_oauth_token_status(LoadUserOAuthStatus(user_id));
     SaveUserDisplayName(active_user_->email(),
                         base::UTF8ToUTF16(active_user_->GetAccountName(true)));
-    WallpaperManager::Get()->SetUserWallpaperNow(user_id);
+    WallpaperManager::Get()->SetInitialUserWallpaper(user_id, true);
   }
 
   AddUserRecord(active_user_);
@@ -1270,7 +1271,7 @@ void UserManagerImpl::RegularUserLoggedInAsEphemeral(
   is_current_user_ephemeral_regular_user_ = true;
   active_user_ = User::CreateRegularUser(user_id);
   GetUserImageManager(user_id)->UserLoggedIn(is_current_user_new_, false);
-  WallpaperManager::Get()->SetUserWallpaperNow(user_id);
+  WallpaperManager::Get()->SetInitialUserWallpaper(user_id, false);
 }
 
 void UserManagerImpl::LocallyManagedUserLoggedIn(
@@ -1284,11 +1285,11 @@ void UserManagerImpl::LocallyManagedUserLoggedIn(
     is_current_user_new_ = true;
     active_user_ = User::CreateLocallyManagedUser(user_id);
     // Leaving OAuth token status at the default state = unknown.
-    WallpaperManager::Get()->SetUserWallpaperNow(user_id);
+    WallpaperManager::Get()->SetInitialUserWallpaper(user_id, true);
   } else {
     if (supervised_user_manager_->CheckForFirstRun(user_id)) {
       is_current_user_new_ = true;
-      WallpaperManager::Get()->SetUserWallpaperNow(user_id);
+      WallpaperManager::Get()->SetInitialUserWallpaper(user_id, true);
     } else {
       is_current_user_new_ = false;
     }
@@ -1333,8 +1334,7 @@ void UserManagerImpl::KioskAppLoggedIn(const std::string& app_id) {
 
   active_user_ = User::CreateKioskAppUser(app_id);
   active_user_->SetStubImage(User::kInvalidImageIndex, false);
-
-  WallpaperManager::Get()->SetUserWallpaperNow(app_id);
+  WallpaperManager::Get()->SetInitialUserWallpaper(app_id, false);
 
   // TODO(bartfab): Add KioskAppUsers to the users_ list and keep metadata like
   // the kiosk_app_id in these objects, removing the need to re-parse the
@@ -1375,8 +1375,8 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
   GetUserImageManager(UserManager::kRetailModeUserName)->UserLoggedIn(
       is_current_user_new_,
       true);
-  WallpaperManager::Get()->SetUserWallpaperNow(
-      UserManager::kRetailModeUserName);
+  WallpaperManager::Get()->SetInitialUserWallpaper(
+      UserManager::kRetailModeUserName, false);
 }
 
 void UserManagerImpl::NotifyOnLogin() {

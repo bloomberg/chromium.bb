@@ -82,10 +82,6 @@ class WallpaperManagerTest : public test::AshTestBase {
     WallpaperManager::Get()->set_command_line_for_testing(&command_line_);
   }
 
-  void WaitAsyncWallpaperLoad() {
-    base::MessageLoop::current()->RunUntilIdle();
-  }
-
  protected:
   CommandLine command_line_;
 
@@ -127,7 +123,6 @@ TEST_F(WallpaperManagerTest, GuestUserUseGuestWallpaper) {
   EXPECT_TRUE(test_api->current_wallpaper_path().empty());
   UserManager::Get()->UserLoggedIn(UserManager::kGuestUserName,
                                    UserManager::kGuestUserName, false);
-  WaitAsyncWallpaperLoad();
   EXPECT_FALSE(ash::Shell::GetInstance()->desktop_background_controller()->
       SetDefaultWallpaper(true));
 }
