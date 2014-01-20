@@ -102,6 +102,60 @@ class WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
     return TraceAnalyzer::Create("[" + recorded_trace_data_->data() + "]");
   }
 
+  void RunGetUserMediaAndCollectMeasures(const int time_to_sample_secs,
+                                         const std::string& measure_filter,
+                                         const std::string& graph_name) {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+    GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+    NavigateToURL(shell(), url);
+    // Put getUserMedia to work and let it run for a couple of seconds.
+    DCHECK(time_to_sample_secs);
+    ASSERT_TRUE(
+        ExecuteJavascript(base::StringPrintf("%s({video: true}, %d);",
+                                             kGetUserMediaAndWaitAndStop,
+                                             time_to_sample_secs)));
+
+    // Make sure the stream is up and running, then start collecting traces.
+    ExpectTitle("Running...");
+    StartTracing();
+
+    // Wait until the page title changes to "OK". Do not sleep() here since that
+    // would stop both this code and the browser underneath.
+    ExpectTitle("OK");
+    StopTracing();
+
+    scoped_ptr<TraceAnalyzer> analyzer(CreateTraceAnalyzer());
+    analyzer->AssociateBeginEndEvents();
+    trace_analyzer::TraceEventVector events;
+    DCHECK(measure_filter.size());
+    analyzer->FindEvents(
+        Query::EventNameIs(measure_filter),
+        &events);
+    ASSERT_GT(events.size(), 0u)
+        << "Could not collect any samples during test, this is bad";
+
+    std::string duration_us;
+    std::string interarrival_us;
+    for (size_t i = 0; i != events.size(); ++i) {
+      duration_us.append(
+          base::StringPrintf("%d,", static_cast<int>(events[i]->duration)));
+    }
+
+    for (size_t i = 1; i < events.size(); ++i) {
+      // The event |timestamp| comes in ns, divide to get us like |duration|.
+      interarrival_us.append(base::StringPrintf("%d,",
+          static_cast<int>((events[i]->timestamp - events[i - 1]->timestamp) /
+                           base::Time::kNanosecondsPerMicrosecond)));
+    }
+
+    perf_test::PrintResultList(
+        graph_name, "", "sample_duration", duration_us, "us", true);
+
+    perf_test::PrintResultList(
+        graph_name, "", "interarrival_time", interarrival_us, "us", true);
+  }
+
   void GetSources(std::vector<std::string>* audio_ids,
                   std::vector<std::string>* video_ids) {
     GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -296,54 +350,30 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, TwoGetUserMediaAndStop) {
 
 // This test will make a simple getUserMedia page, verify that video is playing
 // in a simple local <video>, and for a couple of seconds, collect some
-// performance traces.
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       TracePerformanceDuringGetUserMedia) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
-  NavigateToURL(shell(), url);
-  // Put getUserMedia to work and let it run for a couple of seconds.
-  ASSERT_TRUE(ExecuteJavascript(base::StringPrintf(
-      "%s({video: true}, 10);", kGetUserMediaAndWaitAndStop)));
-
-  // Make sure the stream is up and running, then start collecting traces.
-  ExpectTitle("Running...");
-  StartTracing();
-
-  // Wait until the page title changes to "OK". Do not sleep() here since that
-  // would stop both this code and the browser underneath.
-  ExpectTitle("OK");
-  StopTracing();
-
-  scoped_ptr<TraceAnalyzer> analyzer(CreateTraceAnalyzer());
-  analyzer->AssociateBeginEndEvents();
-  trace_analyzer::TraceEventVector events;
-  analyzer->FindEvents(
-      Query::EventNameIs("VideoCaptureController::OnIncomingCapturedFrame"),
-      &events);
-  ASSERT_GT(events.size(), 0u)
-      << "Could not collect any samples during test, this is bad";
-
-  std::string duration_us;
-  std::string interarrival_us;
-  for (size_t i = 0; i != events.size(); ++i) {
-    duration_us.append(
-        base::StringPrintf("%d,", static_cast<int>(events[i]->duration)));
-  }
-
-  for (size_t i = 1; i < events.size(); ++i) {
-    interarrival_us.append(base::StringPrintf(
-        "%d,",
-        static_cast<int>(events[i]->timestamp - events[i - 1]->timestamp)));
-  }
-
-  perf_test::PrintResultList(
-      "video_capture", "", "sample_duration", duration_us, "us", true);
-
-  perf_test::PrintResultList(
-      "video_capture", "", "interarrival_time", interarrival_us, "us", true);
+// performance traces from VideoCaptureController colorspace conversion and
+// potential resizing.
+IN_PROC_BROWSER_TEST_F(
+    WebRtcGetUserMediaBrowserTest,
+    TraceVideoCaptureControllerPerformanceDuringGetUserMedia) {
+  RunGetUserMediaAndCollectMeasures(
+      10,
+      "VideoCaptureController::OnIncomingCapturedFrame",
+      "VideoCaptureController");
 }
+
+// This test will make a simple getUserMedia page, verify that video is playing
+// in a simple local <video>, and for a couple of seconds, collect some
+// performance traces. Only for Android.
+#if defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(
+    WebRtcGetUserMediaBrowserTest,
+    TraceVideoCaptureDeviceAndroidPerformanceDuringGetUserMedia) {
+  RunGetUserMediaAndCollectMeasures(
+      10,
+      "VideoCaptureDeviceAndroid::OnFrameAvailable",
+      "VideoCaptureDeviceAndroid");
+}
+#endif
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
