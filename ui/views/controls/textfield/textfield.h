@@ -131,6 +131,9 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_text_color_ = color;
   }
 
+  // Displays a virtual keyboard or alternate input view if enabled.
+  void ShowImeIfNeeded();
+
   // Returns whether or not an IME is composing text.
   bool IsIMEComposing() const;
 

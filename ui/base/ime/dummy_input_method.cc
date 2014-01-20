@@ -79,6 +79,9 @@ bool DummyInputMethod::IsCandidatePopupOpen() const {
   return false;
 }
 
+void DummyInputMethod::ShowImeIfNeeded() {
+}
+
 void DummyInputMethod::AddObserver(InputMethodObserver* observer) {
 }
 

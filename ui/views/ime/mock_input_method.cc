@@ -130,6 +130,9 @@ bool MockInputMethod::IsCandidatePopupOpen() const {
   return false;
 }
 
+void MockInputMethod::ShowImeIfNeeded() {
+}
+
 bool MockInputMethod::IsMock() const {
   return true;
 }

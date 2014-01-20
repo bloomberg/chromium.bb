@@ -52,6 +52,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // KeyboardController.
   aura::Window* GetContainerWindow();
 
+  // Whether the container window for the keyboard has been initialized.
+  bool keyboard_container_initialized() const {
+    return container_.get() != NULL;
+  }
+
   // Sets the override content url. This is used by for input view for extension
   // IMEs.
   void SetOverrideContentUrl(const GURL& url);
@@ -92,6 +97,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
       const ui::TextInputClient* client) OVERRIDE;
   virtual void OnInputMethodDestroyed(
       const ui::InputMethod* input_method) OVERRIDE;
+  virtual void OnShowImeIfNeeded() OVERRIDE;
 
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;

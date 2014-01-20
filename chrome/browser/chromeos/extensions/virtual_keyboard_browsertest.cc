@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -16,6 +17,9 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 
 namespace {
@@ -67,7 +71,16 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(ExecuteWebUIResourceTest(rvh, resource_ids));
   }
 
+  void showVirtualKeyboard() {
+    aura::Window *window = ash::Shell::GetPrimaryRootWindow();
+    ui::InputMethod* input_method = window->GetProperty(
+        aura::client::kRootWindowInputMethodKey);
+    ASSERT_TRUE(input_method);
+    input_method->ShowImeIfNeeded();
+  }
+
   content::RenderViewHost* GetKeyboardRenderViewHost() {
+    showVirtualKeyboard();
     std::string kVirtualKeyboardURL =
         "chrome-extension://mppnpdlheglhdfmldimlhpnegondlapf/";
     scoped_ptr<content::RenderWidgetHostIterator> widgets(

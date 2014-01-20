@@ -1198,6 +1198,12 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // of a processed touch end event.
   if (input_event->type == WebInputEvent::TouchEnd && processed)
     UpdateTextInputState(true, true);
+#elif defined(USE_AURA)
+  // Show the virtual keyboard if enabled and a user gesture triggers a focus
+  // change.
+  if (processed && (input_event->type == WebInputEvent::TouchEnd ||
+      input_event->type == WebInputEvent::MouseUp))
+    UpdateTextInputState(true, false);
 #endif
 
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
@@ -2503,7 +2509,7 @@ void RenderWidget::UpdateTextInputType() {
   }
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(USE_AURA)
 void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
                                         bool send_ime_ack) {
   if (handling_ime_event_)
@@ -2526,6 +2532,9 @@ void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
       || text_input_info_ != new_info
       || can_compose_inline_ != new_can_compose_inline)) {
     ViewHostMsg_TextInputState_Params p;
+#if defined(USE_AURA)
+    p.require_ack = false;
+#endif
     p.type = new_type;
     p.value = new_info.value.utf8();
     p.selection_start = new_info.selectionStart;
@@ -2534,9 +2543,11 @@ void RenderWidget::UpdateTextInputState(bool show_ime_if_needed,
     p.composition_end = new_info.compositionEnd;
     p.can_compose_inline = new_can_compose_inline;
     p.show_ime_if_needed = show_ime_if_needed;
+#if defined(OS_ANDROID)
     p.require_ack = send_ime_ack;
     if (p.require_ack)
       IncrementOutstandingImeEventAcks();
+#endif
     Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
 
     text_input_info_ = new_info;
@@ -2712,7 +2723,7 @@ void RenderWidget::resetInputMethod() {
 void RenderWidget::didHandleGestureEvent(
     const WebGestureEvent& event,
     bool event_cancelled) {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(USE_AURA)
   if (event_cancelled)
     return;
   if (event.type == WebInputEvent::GestureTap ||

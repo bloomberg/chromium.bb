@@ -230,6 +230,10 @@ base::string16 Textfield::GetPlaceholderText() const {
   return placeholder_text_;
 }
 
+void Textfield::ShowImeIfNeeded() {
+  GetInputMethod()->ShowImeIfNeeded();
+}
+
 bool Textfield::IsIMEComposing() const {
   return model_->HasCompositionText();
 }
@@ -463,8 +467,10 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
   TrackMouseClicks(event);
 
   if (!controller_ || !controller_->HandleMouseEvent(this, event)) {
-    if (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton())
+    if (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) {
       RequestFocus();
+      ShowImeIfNeeded();
+    }
 
     if (event.IsOnlyLeftMouseButton()) {
       initiating_drag_ = false;
@@ -634,6 +640,8 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP_DOWN:
       OnBeforeUserAction();
       RequestFocus();
+      ShowImeIfNeeded();
+
       // We don't deselect if the point is in the selection
       // because TAP_DOWN may turn into a LONG_PRESS.
       if (!GetRenderText()->IsPointInSelection(event->location()) &&

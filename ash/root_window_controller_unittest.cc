@@ -621,6 +621,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   aura::Window* keyboard_window = Shell::GetInstance()->keyboard_controller()->
       proxy()->GetKeyboardWindow();
   keyboard_container->AddChild(keyboard_window);
+  keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(gfx::Rect());
   keyboard_window->Show();
 

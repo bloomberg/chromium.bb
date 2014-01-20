@@ -178,13 +178,8 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
 }
 
 KeyboardController::~KeyboardController() {
-  if (container_) {
+  if (container_)
     container_->RemoveObserver(this);
-    // Remove the keyboard window from the children because the keyboard window
-    // is owned by proxy and it should be destroyed by proxy.
-    if (container_->Contains(proxy_->GetKeyboardWindow()))
-      container_->RemoveChild(proxy_->GetKeyboardWindow());
-  }
   if (input_method_)
     input_method_->RemoveObserver(this);
 }
@@ -249,50 +244,15 @@ void KeyboardController::OnTextInputStateChanged(
   if (!container_.get())
     return;
 
-  bool was_showing = keyboard_visible_;
-  bool should_show = was_showing;
-  ui::TextInputType type =
-      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
-  if (type == ui::TEXT_INPUT_TYPE_NONE &&
-      !IsKeyboardUsabilityExperimentEnabled() &&
-      !lock_keyboard_) {
-    should_show = false;
-  } else {
-    if (container_->children().empty()) {
-      keyboard::MarkKeyboardLoadStarted();
-      aura::Window* keyboard = proxy_->GetKeyboardWindow();
-      keyboard->Show();
-      container_->AddChild(keyboard);
-    }
-    if (type != ui::TEXT_INPUT_TYPE_NONE)
-      proxy_->SetUpdateInputType(type);
-    container_->parent()->StackChildAtTop(container_.get());
-    should_show = true;
+  if (IsKeyboardUsabilityExperimentEnabled()) {
+    OnShowImeIfNeeded();
+    return;
   }
 
-  if (was_showing != should_show) {
-    if (should_show) {
-      keyboard_visible_ = true;
-
-      // If the controller is in the process of hiding the keyboard, do not log
-      // the stat here since the keyboard will not actually be shown.
-      if (!WillHideKeyboard())
-        keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
-
-      weak_factory_.InvalidateWeakPtrs();
-      // If |container_| has hide animation, its visibility is set to false when
-      // hide animation finished. So even if the container is visible at this
-      // point, it may in the process of hiding. We still need to show keyboard
-      // container in this case.
-      if (container_->IsVisible() &&
-          !container_->layer()->GetAnimator()->is_animating()) {
-        return;
-      }
-
-      NotifyKeyboardBoundsChanging(container_->children()[0]->bounds());
-
-      proxy_->ShowKeyboardContainer(container_.get());
-    } else {
+  ui::TextInputType type =
+      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
+  if (type == ui::TEXT_INPUT_TYPE_NONE && !lock_keyboard_) {
+    if (keyboard_visible_) {
       // Set the visibility state here so that any queries for visibility
       // before the timer fires returns the correct future value.
       keyboard_visible_ = false;
@@ -302,6 +262,18 @@ void KeyboardController::OnTextInputStateChanged(
                      weak_factory_.GetWeakPtr(), HIDE_REASON_AUTOMATIC),
           base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
     }
+  } else {
+    // Abort a pending keyboard hide.
+    if (WillHideKeyboard()) {
+      weak_factory_.InvalidateWeakPtrs();
+      keyboard_visible_ = true;
+    }
+    proxy_->SetUpdateInputType(type);
+    // Do not explicitly show the Virtual keyboard unless it is in the process
+    // of hiding. Instead, the virtual keyboard is shown in response to a user
+    // gesture (mouse or touch) that is received while an element has input
+    // focus. Showing the keyboard requires an explicit call to
+    // OnShowImeIfNeeded.
   }
   // TODO(bryeung): whenever the TextInputClient changes we need to notify the
   // keyboard (with the TextInputType) so that it can reset it's state (e.g.
@@ -312,6 +284,43 @@ void KeyboardController::OnInputMethodDestroyed(
     const ui::InputMethod* input_method) {
   DCHECK_EQ(input_method_, input_method);
   input_method_ = NULL;
+}
+
+void KeyboardController::OnShowImeIfNeeded() {
+  if (!container_.get())
+    return;
+
+  if (container_->children().empty()) {
+    keyboard::MarkKeyboardLoadStarted();
+    aura::Window* keyboard = proxy_->GetKeyboardWindow();
+    keyboard->Show();
+    container_->AddChild(keyboard);
+    keyboard->set_owned_by_parent(false);
+  }
+  if (keyboard_visible_)
+    return;
+
+  keyboard_visible_ = true;
+
+  // If the controller is in the process of hiding the keyboard, do not log
+  // the stat here since the keyboard will not actually be shown.
+  if (!WillHideKeyboard())
+    keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
+
+  weak_factory_.InvalidateWeakPtrs();
+
+  // If |container_| has hide animation, its visibility is set to false when
+  // hide animation finished. So even if the container is visible at this
+  // point, it may in the process of hiding. We still need to show keyboard
+  // container in this case.
+  if (container_->IsVisible() &&
+      !container_->layer()->GetAnimator()->is_animating()) {
+    return;
+  }
+
+  NotifyKeyboardBoundsChanging(container_->children()[0]->bounds());
+
+  proxy_->ShowKeyboardContainer(container_.get());
 }
 
 bool KeyboardController::WillHideKeyboard() const {

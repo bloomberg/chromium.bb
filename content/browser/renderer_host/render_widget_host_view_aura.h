@@ -155,6 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   }
 
   // RenderWidgetHostView implementation.
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
@@ -348,6 +349,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE;
 
   bool CanCopyToBitmap() const;
+
+  void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
 
 #if defined(OS_WIN)
   // Sets the cutout rects from constrained windows. These are rectangles that

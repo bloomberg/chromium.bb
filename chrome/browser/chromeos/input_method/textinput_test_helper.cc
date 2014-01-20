@@ -78,6 +78,9 @@ void TextInputTestHelper::OnTextInputTypeChanged(
     base::MessageLoop::current()->Quit();
 }
 
+void TextInputTestHelper::OnShowImeIfNeeded() {
+}
+
 void TextInputTestHelper::OnInputMethodDestroyed(
     const ui::InputMethod* input_method) {
 }

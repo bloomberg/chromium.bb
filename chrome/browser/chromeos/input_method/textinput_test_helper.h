@@ -78,6 +78,7 @@ class TextInputTestHelper : public ui::InputMethodObserver {
   virtual void OnCaretBoundsChanged(const ui::TextInputClient* client) OVERRIDE;
   virtual void OnTextInputStateChanged(
       const ui::TextInputClient* client) OVERRIDE;
+  virtual void OnShowImeIfNeeded() OVERRIDE;
   virtual void OnInputMethodDestroyed(
       const ui::InputMethod* input_method) OVERRIDE;
 

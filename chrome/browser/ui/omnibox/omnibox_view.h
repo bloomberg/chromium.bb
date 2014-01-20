@@ -209,6 +209,9 @@ class OmniboxView {
   // which may overlap the omnibox's popup window.
   virtual bool IsImeShowingPopup() const;
 
+  // Display a virtual keybaord or alternate input view if enabled.
+  virtual void ShowImeIfNeeded();
+
   // Returns true if the view is displaying UI that indicates that query
   // refinement will take place when the user selects the current match.  For
   // search matches, this will cause the omnibox to search over the existing

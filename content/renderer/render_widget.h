@@ -448,7 +448,7 @@ class CONTENT_EXPORT RenderWidget
   void set_next_paint_is_restore_ack();
   void set_next_paint_is_repaint_ack();
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(USE_AURA)
   // |show_ime_if_needed| should be true iff the update may cause the ime to be
   // displayed, e.g. after a tap on an input field on mobile.
   // |send_ime_ack| should be true iff the browser side is required to

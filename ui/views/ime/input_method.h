@@ -114,6 +114,9 @@ class VIEWS_EXPORT InputMethod {
   // of IME popups is not supported.
   virtual bool IsCandidatePopupOpen() const = 0;
 
+  // Displays an on screen keyboard if enabled.
+  virtual void ShowImeIfNeeded() = 0;
+
   // Returns true if the input method is a mock instance used for testing.
   virtual bool IsMock() const = 0;
 

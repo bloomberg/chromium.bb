@@ -47,6 +47,7 @@ class InputMethodBridge : public InputMethodBase,
   virtual std::string GetInputLocale() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
   virtual bool IsCandidatePopupOpen() const OVERRIDE;
+  virtual void ShowImeIfNeeded() OVERRIDE;
 
   // Overridden from TextInputClient:
   virtual void SetCompositionText(

@@ -101,6 +101,10 @@ bool MockInputMethod::IsCandidatePopupOpen() const {
   return false;
 }
 
+void MockInputMethod::ShowImeIfNeeded() {
+  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnShowImeIfNeeded());
+}
+
 void MockInputMethod::AddObserver(InputMethodObserver* observer) {
   observer_list_.AddObserver(observer);
 }

@@ -277,6 +277,9 @@ class RemoteInputMethodWin : public InputMethod,
     return is_candidate_popup_open_;
   }
 
+  virtual void ShowImeIfNeeded() OVERRIDE {
+  }
+
   virtual void AddObserver(InputMethodObserver* observer) OVERRIDE {
     observer_list_.AddObserver(observer);
   }

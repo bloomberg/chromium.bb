@@ -33,6 +33,7 @@ class InputMethodBridge::HostObserver : public ui::InputMethodObserver {
       const ui::TextInputClient* client) OVERRIDE {}
   virtual void OnInputMethodDestroyed(
       const ui::InputMethod* input_method) OVERRIDE;
+  virtual void OnShowImeIfNeeded() OVERRIDE {}
 
  private:
   InputMethodBridge* bridge_;
@@ -169,6 +170,11 @@ bool InputMethodBridge::IsCandidatePopupOpen() const {
   DCHECK(host_);
 
   return host_->IsCandidatePopupOpen();
+}
+
+void InputMethodBridge::ShowImeIfNeeded() {
+  DCHECK(host_);
+  host_->ShowImeIfNeeded();
 }
 
 // Overridden from TextInputClient. Forward an event from the system-wide IME

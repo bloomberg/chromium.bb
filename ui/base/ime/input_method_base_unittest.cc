@@ -205,6 +205,8 @@ class MockInputMethodObserver : public InputMethodObserver {
   virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE {
     verifier_->OnTextInputStateChanged(client);
   }
+  virtual void OnShowImeIfNeeded() OVERRIDE {
+  }
   virtual void OnInputMethodDestroyed(const InputMethod* client) OVERRIDE {
   }
 

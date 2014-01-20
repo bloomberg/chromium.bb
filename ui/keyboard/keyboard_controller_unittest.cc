@@ -218,10 +218,17 @@ class KeyboardControllerTest : public testing::Test {
 
   void ShowKeyboard() {
     TestTextInputClient test_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-    controller_->OnTextInputStateChanged(&test_text_input_client);
+    SetFocus(&test_text_input_client);
   }
 
  protected:
+  void SetFocus(ui::TextInputClient* client) {
+    ui::InputMethod* input_method = proxy()->GetInputMethod();
+    input_method->SetFocusedTextInputClient(client);
+    if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
+      input_method->ShowImeIfNeeded();
+  }
+
   bool WillHideKeyboard() {
     return controller_->WillHideKeyboard();
   }
@@ -339,13 +346,11 @@ TEST_F(KeyboardControllerTest, EventHitTestingInContainer) {
 TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   const gfx::Rect& root_bounds = root_window()->bounds();
 
-  ui::InputMethod* input_method = proxy()->GetInputMethod();
   TestTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   TestTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   TestTextInputClient input_client_2(ui::TEXT_INPUT_TYPE_TEXT);
   TestTextInputClient no_input_client_0(ui::TEXT_INPUT_TYPE_NONE);
   TestTextInputClient no_input_client_1(ui::TEXT_INPUT_TYPE_NONE);
-  input_method->SetFocusedTextInputClient(&input_client_0);
 
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
@@ -353,9 +358,11 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   keyboard_container->SetBounds(root_bounds);
   root_window()->AddChild(keyboard_container);
 
+  SetFocus(&input_client_0);
+
   EXPECT_TRUE(keyboard_container->IsVisible());
 
-  input_method->SetFocusedTextInputClient(&no_input_client_0);
+  SetFocus(&no_input_client_0);
   // Keyboard should not immediately hide itself. It is delayed to avoid layout
   // flicker when the focus of input field quickly change.
   EXPECT_TRUE(keyboard_container->IsVisible());
@@ -364,14 +371,14 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   base::MessageLoop::current()->Run();
   EXPECT_FALSE(keyboard_container->IsVisible());
 
-  input_method->SetFocusedTextInputClient(&input_client_1);
+  SetFocus(&input_client_1);
   EXPECT_TRUE(keyboard_container->IsVisible());
 
   // Schedule to hide keyboard.
-  input_method->SetFocusedTextInputClient(&no_input_client_1);
+  SetFocus(&no_input_client_1);
   EXPECT_TRUE(WillHideKeyboard());
   // Cancel keyboard hide.
-  input_method->SetFocusedTextInputClient(&input_client_2);
+  SetFocus(&input_client_2);
 
   EXPECT_FALSE(WillHideKeyboard());
   EXPECT_TRUE(keyboard_container->IsVisible());
@@ -380,12 +387,10 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   const gfx::Rect& root_bounds = root_window()->bounds();
 
-  ui::InputMethod* input_method = proxy()->GetInputMethod();
   TestTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   TestTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   TestTextInputClient no_input_client_0(ui::TEXT_INPUT_TYPE_NONE);
   TestTextInputClient no_input_client_1(ui::TEXT_INPUT_TYPE_NONE);
-  input_method->SetFocusedTextInputClient(&input_client_0);
 
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
@@ -393,24 +398,26 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   keyboard_container->SetBounds(root_bounds);
   root_window()->AddChild(keyboard_container);
 
+  SetFocus(&input_client_0);
+
   EXPECT_TRUE(keyboard_container->IsVisible());
 
   // Lock keyboard.
   controller()->set_lock_keyboard(true);
 
-  input_method->SetFocusedTextInputClient(&no_input_client_0);
+  SetFocus(&no_input_client_0);
   // Keyboard should not try to hide itself as it is locked.
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_FALSE(WillHideKeyboard());
 
-  input_method->SetFocusedTextInputClient(&input_client_1);
+  SetFocus(&input_client_1);
   EXPECT_TRUE(keyboard_container->IsVisible());
 
   // Unlock keyboard.
   controller()->set_lock_keyboard(false);
 
   // Keyboard should hide when focus on no input client.
-  input_method->SetFocusedTextInputClient(&no_input_client_1);
+  SetFocus(&no_input_client_1);
   EXPECT_TRUE(WillHideKeyboard());
 
   // Wait for hide keyboard to finish.
@@ -464,18 +471,17 @@ class KeyboardControllerUsabilityTest : public KeyboardControllerTest {
 TEST_F(KeyboardControllerUsabilityTest, KeyboardAlwaysVisibleInUsabilityTest) {
   const gfx::Rect& root_bounds = root_window()->bounds();
 
-  ui::InputMethod* input_method = proxy()->GetInputMethod();
   TestTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   TestTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
-  input_method->SetFocusedTextInputClient(&input_client);
 
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   keyboard_container->SetBounds(root_bounds);
   root_window()->AddChild(keyboard_container);
 
+  SetFocus(&input_client);
   EXPECT_TRUE(keyboard_container->IsVisible());
 
-  input_method->SetFocusedTextInputClient(&no_input_client);
+  SetFocus(&no_input_client);
   // Keyboard should not hide itself after lost focus.
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_FALSE(WillHideKeyboard());

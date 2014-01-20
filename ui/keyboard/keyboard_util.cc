@@ -166,6 +166,11 @@ const void MarkKeyboardLoadStarted() {
 }
 
 const void MarkKeyboardLoadFinished() {
+  // Possible to get a load finished without a start if navigating directly to
+  // chrome://keyboard.
+  if (!g_keyboard_load_time_start.Get().ToInternalValue())
+    return;
+
   // It should not be possible to finish loading the keyboard without starting
   // to load it first.
   DCHECK(g_keyboard_load_time_start.Get().ToInternalValue());

@@ -49,6 +49,7 @@ class UI_BASE_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual TextInputMode GetTextInputMode() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
   virtual bool IsCandidatePopupOpen() const OVERRIDE;
+  virtual void ShowImeIfNeeded() OVERRIDE;
   virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
   virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
 

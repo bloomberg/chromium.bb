@@ -50,6 +50,7 @@ class UI_BASE_EXPORT InputMethodBase
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual TextInputMode GetTextInputMode() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
+  virtual void ShowImeIfNeeded() OVERRIDE;
 
   virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
   virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;

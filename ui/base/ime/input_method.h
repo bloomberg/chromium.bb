@@ -154,6 +154,9 @@ class InputMethod {
   // of IME popups is not supported.
   virtual bool IsCandidatePopupOpen() const = 0;
 
+  // Displays an on screen keyboard if enabled.
+  virtual void ShowImeIfNeeded() = 0;
+
   // Management of the observer list.
   virtual void AddObserver(InputMethodObserver* observer) = 0;
   virtual void RemoveObserver(InputMethodObserver* observer) = 0;

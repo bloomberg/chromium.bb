@@ -39,6 +39,10 @@ class UI_BASE_EXPORT InputMethodObserver {
 
   // Called when the observed InputMethod is being destroyed.
   virtual void OnInputMethodDestroyed(const InputMethod* input_method) = 0;
+
+  // Called when a user gesture should trigger showing the virtual keyboard
+  // or alternate input view (e.g. handwriting palette). Used in ChromeOS.
+  virtual void OnShowImeIfNeeded() = 0;
 };
 
 }  // namespace ui

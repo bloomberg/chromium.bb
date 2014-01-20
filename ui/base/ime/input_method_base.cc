@@ -80,6 +80,10 @@ bool InputMethodBase::CanComposeInline() const {
   return client ? client->CanComposeInline() : true;
 }
 
+void InputMethodBase::ShowImeIfNeeded() {
+  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnShowImeIfNeeded());
+}
+
 void InputMethodBase::AddObserver(InputMethodObserver* observer) {
   observer_list_.AddObserver(observer);
 }

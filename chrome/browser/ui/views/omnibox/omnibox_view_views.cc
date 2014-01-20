@@ -696,6 +696,10 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 #endif
 }
 
+void OmniboxViewViews::ShowImeIfNeeded() {
+  GetInputMethod()->ShowImeIfNeeded();
+}
+
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_APP_PASTE)
     return !read_only() && !GetClipboardText().empty();

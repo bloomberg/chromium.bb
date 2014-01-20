@@ -110,6 +110,7 @@ class OmniboxViewViews
   virtual int GetWidth() const OVERRIDE;
   virtual bool IsImeComposing() const OVERRIDE;
   virtual bool IsImeShowingPopup() const OVERRIDE;
+  virtual void ShowImeIfNeeded() OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
   virtual base::string16 GetLabelForCommandId(int command_id) const OVERRIDE;
