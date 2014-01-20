@@ -938,7 +938,7 @@ void GestureSequence::AppendEndGestureEvent(const GesturePoint& point,
                                               Gestures* gestures) {
   gestures->push_back(CreateGestureEvent(
       GestureEventDetails(ui::ET_GESTURE_END, 0, 0),
-      point.first_touch_position(),
+      point.last_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       1 << point.touch_id()));

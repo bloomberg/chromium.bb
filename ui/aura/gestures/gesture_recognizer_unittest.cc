@@ -131,6 +131,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
 
     scroll_begin_position_.SetPoint(0, 0);
     tap_location_.SetPoint(0, 0);
+    gesture_end_location_.SetPoint(0, 0);
 
     scroll_x_ = 0;
     scroll_y_ = 0;
@@ -172,12 +173,16 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool swipe_up() const { return swipe_up_; }
   bool swipe_down() const { return swipe_down_; }
 
-  const gfx::Point scroll_begin_position() const {
+  const gfx::Point& scroll_begin_position() const {
     return scroll_begin_position_;
   }
 
-  const gfx::Point tap_location() const {
+  const gfx::Point& tap_location() const {
     return tap_location_;
+  }
+
+  const gfx::Point& gesture_end_location() const {
+    return gesture_end_location_;
   }
 
   float scroll_x() const { return scroll_x_; }
@@ -225,6 +230,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         break;
       case ui::ET_GESTURE_END:
         end_ = true;
+        gesture_end_location_ = gesture->location();
         break;
       case ui::ET_GESTURE_SCROLL_BEGIN:
         scroll_begin_ = true;
@@ -322,6 +328,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
 
   gfx::Point scroll_begin_position_;
   gfx::Point tap_location_;
+  gfx::Point gesture_end_location_;
 
   float scroll_x_;
   float scroll_y_;
@@ -2397,6 +2404,24 @@ TEST_F(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
   delegate->ReceivedAckPreventDefaulted();
   EXPECT_TRUE(delegate->scroll_end());
   EXPECT_TRUE(delegate->end());
+}
+
+TEST_F(GestureRecognizerTest, GestureEndLocation) {
+  GestureEventConsumeDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, -1234, gfx::Rect(10, 10, 300, 300), root_window()));
+  EventGenerator generator(root_window(), window.get());
+  const gfx::Point begin(20, 20);
+  const gfx::Point end(150, 150);
+  const gfx::Vector2d window_offset =
+      window->bounds().origin().OffsetFromOrigin();
+  generator.GestureScrollSequence(begin, end,
+                                  base::TimeDelta::FromMilliseconds(20),
+                                  10);
+  EXPECT_EQ((begin - window_offset).ToString(),
+            delegate.scroll_begin_position().ToString());
+  EXPECT_EQ((end - window_offset).ToString(),
+            delegate.gesture_end_location().ToString());
 }
 
 TEST_F(GestureRecognizerTest, CaptureSendsGestureEnd) {
