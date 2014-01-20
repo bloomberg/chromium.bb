@@ -122,14 +122,14 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
 
         // params is passed to action, and released in action's destructor
         ASSERT(imp->frame());
-        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContextOrMainWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), info.GetIsolate()));
     } else {
         if (imp->document() && !imp->document()->contentSecurityPolicy()->allowEval()) {
             v8SetReturnValue(info, 0);
             return;
         }
         ASSERT(imp->frame());
-        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContext(), functionString, KURL(), info.GetIsolate()));
+        action = adoptPtr(new ScheduledAction(imp->frame()->script().currentWorldContextOrMainWorldContext(), functionString, KURL(), info.GetIsolate()));
     }
 
     int32_t timeout = argumentCount >= 2 ? info[1]->Int32Value() : 0;
@@ -159,7 +159,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
     }
 
     ASSERT(frame);
-    v8::Local<v8::Context> context = frame->script().currentWorldContext();
+    v8::Local<v8::Context> context = frame->script().currentWorldContextOrMainWorldContext();
     if (context.IsEmpty())
         return;
 
@@ -180,7 +180,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
     }
 
     ASSERT(frame);
-    v8::Local<v8::Context> context = frame->script().currentWorldContext();
+    v8::Local<v8::Context> context = frame->script().currentWorldContextOrMainWorldContext();
     if (context.IsEmpty())
         return;
 
@@ -317,7 +317,7 @@ private:
 
 inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame, v8::Isolate* isolate)
 {
-    m_dialogContext = dialogFrame->frame() ? dialogFrame->frame()->script().currentWorldContext() : v8::Local<v8::Context>();
+    m_dialogContext = dialogFrame->frame() ? dialogFrame->frame()->script().currentWorldContextOrMainWorldContext() : v8::Local<v8::Context>();
     if (m_dialogContext.IsEmpty())
         return;
     if (m_dialogArguments.IsEmpty())
@@ -547,7 +547,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     }
 
     // Otherwise, return the global object associated with this frame.
-    v8::Handle<v8::Context> context = frame->script().currentWorldContext();
+    v8::Handle<v8::Context> context = frame->script().currentWorldContextOrMainWorldContext();
     if (context.IsEmpty())
         return v8Undefined();
 

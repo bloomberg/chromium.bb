@@ -279,7 +279,7 @@ static inline v8::Local<v8::Context> contextForWorld(ScriptController& scriptCon
     return scriptController.windowShell(world)->context();
 }
 
-v8::Local<v8::Context> ScriptController::currentWorldContext()
+v8::Local<v8::Context> ScriptController::currentWorldContextOrMainWorldContext()
 {
     if (!isolate()->InContext())
         return contextForWorld(*this, mainThreadNormalWorld());
