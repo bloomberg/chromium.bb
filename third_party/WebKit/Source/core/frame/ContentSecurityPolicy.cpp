@@ -302,6 +302,8 @@ public:
     bool allowHash(const SourceHashValue& hashValue) const { return m_hashes.contains(hashValue); }
     uint8_t hashAlgorithmsUsed() const { return m_hashAlgorithmsUsed; }
 
+    bool isHashOrNoncePresent() const { return !m_nonces.isEmpty() || m_hashAlgorithmsUsed != ContentSecurityPolicy::HashAlgorithmsNone; }
+
 private:
     bool parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, bool& hostHasWildcard, bool& portHasWildcard);
     bool parseScheme(const UChar* begin, const UChar* end, String& scheme);
@@ -846,6 +848,7 @@ public:
     bool allowEval() const { return m_sourceList.allowEval(); }
     bool allowNonce(const String& nonce) const { return m_sourceList.allowNonce(nonce.stripWhiteSpace()); }
     bool allowHash(const SourceHashValue& hashValue) const { return m_sourceList.allowHash(hashValue); }
+    bool isHashOrNoncePresent() const { return m_sourceList.isHashOrNoncePresent(); }
 
     uint8_t hashAlgorithmsUsed() const { return m_sourceList.hashAlgorithmsUsed(); }
 
@@ -1006,7 +1009,7 @@ bool CSPDirectiveList::checkEval(SourceListDirective* directive) const
 
 bool CSPDirectiveList::checkInline(SourceListDirective* directive) const
 {
-    return !directive || directive->allowInline();
+    return !directive || (directive->allowInline() && !directive->isHashOrNoncePresent());
 }
 
 bool CSPDirectiveList::checkNonce(SourceListDirective* directive, const String& nonce) const
@@ -1074,8 +1077,12 @@ bool CSPDirectiveList::checkInlineAndReportViolation(SourceListDirective* direct
         return true;
 
     String suffix = String();
-    if (directive == m_defaultSrc)
+    if (directive->allowInline() && directive->isHashOrNoncePresent()) {
+        // If inline is allowed, but a hash or nonce is present, we ignore 'unsafe-inline'. Throw a reasonable error.
+        suffix = " Note that 'unsafe-inline' is ignored if either a hash or nonce value is present in the source list.";
+    } else if (directive == m_defaultSrc) {
         suffix = " Note that '" + String(isScript ? "script" : "style") + "-src' was not explicitly set, so 'default-src' is used as a fallback.";
+    }
 
     reportViolationWithLocation(directive->text(), isScript ? scriptSrc : styleSrc, consoleMessage + "\"" + directive->text() + "\"." + suffix + "\n", KURL(), contextURL, contextLine);
 
