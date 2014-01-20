@@ -54,6 +54,10 @@ namespace {
 const int kDefaultWidth = 512;
 const int kDefaultHeight = 384;
 
+bool IsFullscreen(int fullscreen_types) {
+  return fullscreen_types != apps::ShellWindow::FULLSCREEN_TYPE_NONE;
+}
+
 }  // namespace
 
 namespace apps {
@@ -365,6 +369,17 @@ void ShellWindow::OnNativeClose() {
 
 void ShellWindow::OnNativeWindowChanged() {
   SaveWindowPosition();
+
+#if defined(OS_WIN)
+  if (native_app_window_ &&
+      cached_always_on_top_ &&
+      !IsFullscreen(fullscreen_types_) &&
+      !native_app_window_->IsMaximized() &&
+      !native_app_window_->IsMinimized()) {
+    UpdateNativeAlwaysOnTop();
+  }
+#endif
+
   if (shell_window_contents_ && native_app_window_)
     shell_window_contents_->NativeWindowChanged(native_app_window_.get());
 }
@@ -448,7 +463,7 @@ void ShellWindow::Fullscreen() {
     return;
 #endif
   fullscreen_types_ |= FULLSCREEN_TYPE_WINDOW_API;
-  SetNativeWindowFullscreen(fullscreen_types_);
+  SetNativeWindowFullscreen();
 }
 
 void ShellWindow::Maximize() {
@@ -460,9 +475,9 @@ void ShellWindow::Minimize() {
 }
 
 void ShellWindow::Restore() {
-  if (fullscreen_types_ != FULLSCREEN_TYPE_NONE) {
+  if (IsFullscreen(fullscreen_types_)) {
     fullscreen_types_ = FULLSCREEN_TYPE_NONE;
-    SetNativeWindowFullscreen(fullscreen_types_);
+    SetNativeWindowFullscreen();
   } else {
     GetBaseWindow()->Restore();
   }
@@ -475,12 +490,12 @@ void ShellWindow::OSFullscreen() {
     return;
 #endif
   fullscreen_types_ |= FULLSCREEN_TYPE_OS;
-  SetNativeWindowFullscreen(fullscreen_types_);
+  SetNativeWindowFullscreen();
 }
 
 void ShellWindow::ForcedFullscreen() {
   fullscreen_types_ |= FULLSCREEN_TYPE_FORCED;
-  SetNativeWindowFullscreen(fullscreen_types_);
+  SetNativeWindowFullscreen();
 }
 
 void ShellWindow::SetMinimumSize(const gfx::Size& min_size) {
@@ -529,10 +544,10 @@ void ShellWindow::SetAlwaysOnTop(bool always_on_top) {
 
   cached_always_on_top_ = always_on_top;
 
-  // As a security measure, do not allow fullscreen windows to be on top.
-  // The property will be applied when the window exits fullscreen.
-  bool fullscreen = (fullscreen_types_ != FULLSCREEN_TYPE_NONE);
-  if (!fullscreen)
+  // As a security measure, do not allow fullscreen windows or windows that
+  // overlap the taskbar to be on top. The property will be applied when the
+  // window exits fullscreen and moves away from the taskbar.
+  if (!IsFullscreen(fullscreen_types_) && !IntersectsWithTaskbar())
     native_app_window_->SetAlwaysOnTop(always_on_top);
 
   OnNativeWindowChanged();
@@ -600,19 +615,47 @@ void ShellWindow::OnSizeConstraintsChanged() {
   OnNativeWindowChanged();
 }
 
-void ShellWindow::SetNativeWindowFullscreen(int fullscreen_types) {
-  native_app_window_->SetFullscreen(fullscreen_types);
+void ShellWindow::SetNativeWindowFullscreen() {
+  native_app_window_->SetFullscreen(fullscreen_types_);
 
-  if (!cached_always_on_top_)
-    return;
+  if (cached_always_on_top_)
+    UpdateNativeAlwaysOnTop();
+}
 
+bool ShellWindow::IntersectsWithTaskbar() const {
+#if defined(OS_WIN)
+  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  gfx::Rect window_bounds = native_app_window_->GetRestoredBounds();
+  std::vector<gfx::Display> displays = screen->GetAllDisplays();
+
+  for (std::vector<gfx::Display>::const_iterator it = displays.begin();
+       it != displays.end(); ++it) {
+    gfx::Rect taskbar_bounds = it->bounds();
+    taskbar_bounds.Subtract(it->work_area());
+    if (taskbar_bounds.IsEmpty())
+      continue;
+
+    if (window_bounds.Intersects(taskbar_bounds))
+      return true;
+  }
+#endif
+
+  return false;
+}
+
+void ShellWindow::UpdateNativeAlwaysOnTop() {
+  DCHECK(cached_always_on_top_);
   bool is_on_top = native_app_window_->IsAlwaysOnTop();
-  bool fullscreen = (fullscreen_types != FULLSCREEN_TYPE_NONE);
-  if (fullscreen && is_on_top) {
-    // When entering fullscreen, ensure windows are not always-on-top.
+  bool fullscreen = IsFullscreen(fullscreen_types_);
+  bool intersects_taskbar = IntersectsWithTaskbar();
+
+  if (is_on_top && (fullscreen || intersects_taskbar)) {
+    // When entering fullscreen or overlapping the taskbar, ensure windows are
+    // not always-on-top.
     native_app_window_->SetAlwaysOnTop(false);
-  } else if (!fullscreen && !is_on_top) {
-    // When exiting fullscreen, reinstate always-on-top.
+  } else if (!is_on_top && !fullscreen && !intersects_taskbar) {
+    // When exiting fullscreen and moving away from the taskbar, reinstate
+    // always-on-top.
     native_app_window_->SetAlwaysOnTop(true);
   }
 }
@@ -684,7 +727,7 @@ void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
     fullscreen_types_ |= FULLSCREEN_TYPE_HTML_API;
   else
     fullscreen_types_ &= ~FULLSCREEN_TYPE_HTML_API;
-  SetNativeWindowFullscreen(fullscreen_types_);
+  SetNativeWindowFullscreen();
 }
 
 bool ShellWindow::IsFullscreenForTabOrPending(

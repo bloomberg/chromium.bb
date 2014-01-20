@@ -341,7 +341,7 @@ class ShellWindow : public content::NotificationObserver,
 
   // Whether the always-on-top property has been set by the chrome.app.window
   // API. Note that the actual value of this property in the native app window
-  // will be false in fullscreen mode.
+  // may be false if the bit is silently switched off for security reasons.
   bool IsAlwaysOnTop() const;
 
  protected:
@@ -437,7 +437,14 @@ class ShellWindow : public content::NotificationObserver,
   void OnSizeConstraintsChanged();
 
   // Set the fullscreen state in the native app window.
-  void SetNativeWindowFullscreen(int fullscreen_types);
+  void SetNativeWindowFullscreen();
+
+  // Returns true if there is any overlap between the window and the taskbar
+  // (Windows only).
+  bool IntersectsWithTaskbar() const;
+
+  // Update the always-on-top bit in the native app window.
+  void UpdateNativeAlwaysOnTop();
 
   // extensions::ExtensionKeybindingRegistry::Delegate implementation.
   virtual extensions::ActiveTabPermissionGranter*
@@ -504,8 +511,10 @@ class ShellWindow : public content::NotificationObserver,
   ShowType delayed_show_type_;
 
   // Cache the desired value of the always-on-top property. When windows enter
-  // fullscreen, this property will be automatically switched off for security
-  // reasons. It is reinstated when the window exits fullscreen.
+  // fullscreen or overlap the Windows taskbar, this property will be
+  // automatically and silently switched off for security reasons. It is
+  // reinstated when the window exits fullscreen and moves away from the
+  // taskbar.
   bool cached_always_on_top_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
