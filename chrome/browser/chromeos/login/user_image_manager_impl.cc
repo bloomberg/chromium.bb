@@ -548,7 +548,6 @@ void UserImageManagerImpl::LoadUserImage() {
     // * The profile image is to be used but has not been downloaded yet. The
     //   profile image will be downloaded after login.
     // * The image needs migration. Migration will be performed after login.
-    user->SetStubImage(image_index, true);
     return;
   }
 
