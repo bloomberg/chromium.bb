@@ -10,19 +10,25 @@ import shutil
 import subprocess
 import sys
 
-def reorder_imports(input_dir, output_dir):
+def reorder_imports(input_dir, output_dir, architecture):
   """Run swapimports.exe on the initial chrome.exe, and write to the output
   directory. Also copy over any related files that might be needed
   (pdbs, manifests etc.).
   """
-  input_image = '--input-image=%s' % (os.path.join(input_dir, 'chrome.exe'))
-  output_image = '--output-image=%s' % (os.path.join(output_dir, 'chrome.exe'))
 
-  swap_exe = os.path.join(
-      __file__,
-      '..\\..\\..\\third_party\\syzygy\\binaries\\exe\\swapimport.exe')
-  subprocess.call(
-      [swap_exe, input_image, output_image, '--overwrite', 'chrome_elf.dll'])
+  input_image = os.path.join(input_dir, 'chrome.exe')
+  output_image = os.path.join(output_dir, 'chrome.exe')
+
+  # TODO(caitkp): Remove this once swapimport works on x64 builds.
+  if architecture == 'x64':
+    shutil.copy(input_image, output_image)
+  else:
+    swap_exe = os.path.join(
+        __file__,
+        '..\\..\\..\\third_party\\syzygy\\binaries\\exe\\swapimport.exe')
+    subprocess.call(
+        [swap_exe, '--input-image=%s' % input_image,
+         '--output-image=%s' % output_image, '--overwrite', 'chrome_elf.dll'])
 
   for fname in glob.iglob(os.path.join(input_dir, 'chrome.exe.*')):
     shutil.copy(fname, os.path.join(output_dir, os.path.basename(fname)))
@@ -30,17 +36,19 @@ def reorder_imports(input_dir, output_dir):
 
 
 def main(argv):
-  usage = 'reorder_imports.py -i <input_dir> -o <output_dir>'
+  usage = 'reorder_imports.py -i <input_dir> -o <output_dir> -a <target_arch>'
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('-i', '--input', help='reorder chrome.exe in DIR',
       metavar='DIR')
   parser.add_option('-o', '--output', help='write new chrome.exe to DIR',
       metavar='DIR')
+  parser.add_option('-a', '--arch', help='architecture of build (optional)',
+      default='ia32')
   opts, args = parser.parse_args()
 
   if not opts.input or not opts.output:
     parser.error('Please provide and input and output directory')
-  return reorder_imports(opts.input, opts.output)
+  return reorder_imports(opts.input, opts.output, opts.arch)
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv[1:]))

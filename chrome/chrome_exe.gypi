@@ -30,6 +30,7 @@
                 '<(reorder_py_path)',
                 '-i', '<(exe_input_path)',
                 '-o', '<(exe_output_path)',
+                '-a', '<(target_arch)',
               ],
               'message': 'Reordering Imports',
             },
