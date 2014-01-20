@@ -93,18 +93,6 @@ Font::Font(const FontDescription& fd, float letterSpacing, float wordSpacing)
 {
 }
 
-Font::Font(const FontPlatformData& fontData, bool isPrinterFont, FontSmoothingMode fontSmoothingMode)
-    : m_fontFallbackList(FontFallbackList::create())
-    , m_letterSpacing(0)
-    , m_wordSpacing(0)
-    , m_isPlatformFont(true)
-    , m_typesettingFeatures(computeTypesettingFeatures())
-{
-    m_fontDescription.setUsePrinterFont(isPrinterFont);
-    m_fontDescription.setFontSmoothing(fontSmoothingMode);
-    m_fontFallbackList->setPlatformFont(fontData);
-}
-
 Font::Font(const Font& other)
     : m_fontDescription(other.m_fontDescription)
     , m_fontFallbackList(other.m_fontFallbackList)

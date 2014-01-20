@@ -102,8 +102,6 @@ private:
     const FontData* primaryFontData(const FontDescription&) const;
     const FontData* fontDataAt(const FontDescription&, unsigned index) const;
 
-    void setPlatformFont(const FontPlatformData&);
-
     void releaseFontData();
 
     mutable Vector<RefPtr<FontData>, 1> m_fontList;

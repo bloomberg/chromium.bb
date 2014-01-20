@@ -100,7 +100,10 @@ public:
     virtual bool itemIsEnabled(unsigned listIndex) const { return m_disabledIndexSet.find(listIndex) == m_disabledIndexSet.end(); }
     virtual PopupMenuStyle itemStyle(unsigned listIndex) const
     {
-        Font font(FontPlatformData(12.0, false, false), false);
+        FontDescription fontDescription;
+        fontDescription.setComputedSize(12.0);
+        Font font(fontDescription, 0, 0);
+        font.update(0);
         return PopupMenuStyle(Color::black, Color::white, font, true, false, Length(), TextDirection(), false /* has text direction override */);
     }
     virtual PopupMenuStyle menuStyle() const { return itemStyle(0); }

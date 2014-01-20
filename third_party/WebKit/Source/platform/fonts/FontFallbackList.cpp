@@ -196,11 +196,4 @@ const FontData* FontFallbackList::fontDataAt(const FontDescription& fontDescript
     return result.get();
 }
 
-void FontFallbackList::setPlatformFont(const FontPlatformData& platformData)
-{
-    m_familyIndex = cAllFamiliesScanned;
-    RefPtr<FontData> fontData = FontCache::fontCache()->fontDataFromFontPlatformData(&platformData);
-    m_fontList.append(fontData);
-}
-
 }

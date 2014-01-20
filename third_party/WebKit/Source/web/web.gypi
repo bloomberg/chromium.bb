@@ -300,6 +300,7 @@
       'tests/PageSerializerTest.cpp',
       'tests/PaintAggregatorTest.cpp',
       'tests/PopupContainerTest.cpp',
+      'tests/PopupMenuTest.cpp',
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
       'tests/RenderTableCellTest.cpp',
@@ -331,8 +332,6 @@
         {
           'web_unittest_files': [
             'tests/LocaleWinTest.cpp',
-            # FIXME: Port PopupMenuTest to Linux and Mac.
-            'tests/PopupMenuTest.cpp',
             'tests/TransparencyWinTest.cpp',
             'tests/WebPageNewSerializerTest.cpp',
             'tests/WebPageSerializerTest.cpp',

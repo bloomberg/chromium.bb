@@ -80,8 +80,6 @@ class PLATFORM_EXPORT Font {
 public:
     Font();
     Font(const FontDescription&, float letterSpacing, float wordSpacing);
-    // This constructor is only used if the platform wants to start with a native font.
-    Font(const FontPlatformData&, bool isPrinting, FontSmoothingMode = AutoSmoothing);
     ~Font();
 
     Font(const Font&);
