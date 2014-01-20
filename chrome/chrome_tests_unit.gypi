@@ -1924,6 +1924,9 @@
         'utility/importer/bookmark_html_reader_unittest.cc',
         'utility/importer/bookmarks_file_importer_unittest.cc',
         'utility/importer/firefox_importer_unittest.cc',
+        'utility/importer/firefox_importer_unittest_messages_internal.h',
+        'utility/importer/firefox_importer_unittest_utils.h',
+        'utility/importer/firefox_importer_unittest_utils_mac.cc',
         'utility/importer/safari_importer_unittest.mm',
 
         # Duplicate these tests here because PathService has more items in
