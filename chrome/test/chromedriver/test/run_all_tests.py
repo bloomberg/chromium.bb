@@ -10,6 +10,7 @@ import os
 import platform
 import sys
 import tempfile
+import traceback
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
@@ -104,7 +105,12 @@ def RunCppTests(cpp_tests):
 
 def DownloadChrome(version_name, revision, download_site):
   util.MarkBuildStepStart('download %s' % version_name)
-  return archive.DownloadChrome(revision, util.MakeTempDir(), download_site)
+  try:
+    return archive.DownloadChrome(revision, util.MakeTempDir(), download_site)
+  except Exception:
+    traceback.print_exc()
+    util.AddBuildStepText('Skip Java and Python tests')
+    util.MarkBuildStepError()
 
 
 def main():
@@ -130,7 +136,12 @@ def main():
   required_build_outputs = [server_name]
   if not options.android_packages:
     required_build_outputs += [cpp_tests_name]
-  build_dir = chrome_paths.GetBuildDir(required_build_outputs)
+  try:
+    build_dir = chrome_paths.GetBuildDir(required_build_outputs)
+  except RuntimeError:
+    util.MarkBuildStepStart('check required binaries')
+    traceback.print_exc()
+    util.MarkBuildStepError()
   constants.SetBuildType(os.path.basename(build_dir))
   print 'Using build outputs from', build_dir
 
@@ -177,6 +188,9 @@ def main():
         version_name = version[1]
         download_site = archive.Site.SNAPSHOT
       chrome_path = DownloadChrome(version_name, version[1], download_site)
+      if not chrome_path:
+        code = 1
+        continue
       code1 = RunPythonTests(chromedriver,
                              ref_chromedriver,
                              chrome=chrome_path,

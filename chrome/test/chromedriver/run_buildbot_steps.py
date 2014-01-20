@@ -430,6 +430,12 @@ def main():
     _ArchiveGoodBuild(platform, options.revision)
     _MaybeRelease(platform)
 
+  if not passed:
+    # Make sure the build is red if there is some uncaught exception during
+    # running run_all_tests.py.
+    util.MarkBuildStepStart('run_all_tests.py')
+    util.MarkBuildStepError()
+
   # Add a "cleanup" step so that errors from runtest.py or bb_device_steps.py
   # (which invoke this script) are kept in thier own build step.
   util.MarkBuildStepStart('cleanup')
