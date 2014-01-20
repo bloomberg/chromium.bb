@@ -5600,7 +5600,7 @@ sub IsCallbackInterface
     close FILE;
 
     my $fileContents = join('', @lines);
-    return ($fileContents =~ /callback\s+interface\s+(\w+)/gs);
+    return ($fileContents =~ /callback\s+interface\s+(\w+)\s*{/gs);
 }
 
 sub GetNativeTypeOfTypedArray
