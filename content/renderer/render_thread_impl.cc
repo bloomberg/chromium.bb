@@ -332,6 +332,7 @@ void RenderThreadImpl::Init() {
   // In single process the single process is all there is.
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
+  webkit_shared_timer_suspended_ = false;
   widget_count_ = 0;
   hidden_widget_count_ = 0;
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
@@ -820,7 +821,13 @@ void RenderThreadImpl::IdleHandler() {
 
   base::allocator::ReleaseFreeMemory();
 
-  v8::V8::IdleNotification();
+  // Continue the idle timer if the webkit shared timer is not suspended or
+  // something is left to do.
+  bool continue_timer = !webkit_shared_timer_suspended_;
+
+  if (!v8::V8::IdleNotification()) {
+    continue_timer = true;
+  }
 
   // Schedule next invocation.
   // Dampen the delay using the algorithm (if delay is in seconds):
@@ -833,8 +840,13 @@ void RenderThreadImpl::IdleHandler() {
   //    delay_ms = delay_ms + 1000*1000 / (delay_ms + 2000).
   // Note that idle_notification_delay_in_ms_ would be reset to
   // kInitialIdleHandlerDelayMs in RenderThreadImpl::WidgetHidden.
-  ScheduleIdleHandler(idle_notification_delay_in_ms_ +
-                      1000000 / (idle_notification_delay_in_ms_ + 2000));
+  if (continue_timer) {
+    ScheduleIdleHandler(idle_notification_delay_in_ms_ +
+                        1000000 / (idle_notification_delay_in_ms_ + 2000));
+
+  } else {
+    idle_timer_.Stop();
+  }
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
 }
@@ -1310,6 +1322,7 @@ void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
     } else {
       webkit_platform_support_->ResumeSharedTimer();
     }
+    webkit_shared_timer_suspended_ = suspend;
   }
 }
 #endif

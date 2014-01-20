@@ -449,6 +449,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;
+  bool webkit_shared_timer_suspended_;
 
   // The following flag is used to control layout test specific behavior.
   bool layout_test_mode_;
