@@ -42,7 +42,7 @@ def main():
           'check',
           '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
-          '--config-variable', 'OS', common.OSES[options.os],
+          '--config-variable', 'OS', options.isolate_os,
         ], options.verbose)
 
     common.note(
@@ -56,7 +56,7 @@ def main():
           'run',
           '--swarming', options.swarming,
           '--isolate-server', options.isolate_server,
-          '--os', options.os,
+          '--dimension', 'os', options.swarming_os,
           '--task-name', task_name,
           isolated,
         ], options.verbose)

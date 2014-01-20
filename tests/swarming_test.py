@@ -675,7 +675,7 @@ class MainTest(TestCase):
         '--shards', '1',
         '--priority', '101',
         '--env', 'foo', 'bar',
-        '--os', 'darwin',
+        '--dimension', 'os', 'Mac',
         '--task-name', TEST_NAME,
         FILE_HASH,
       ])
@@ -711,7 +711,7 @@ class MainTest(TestCase):
         '--shards', '1',
         '--priority', '101',
         '--dimension', 'foo', 'bar',
-        '--os', 'darwin',
+        '--dimension', 'os', 'Mac',
         '--task-name', TEST_NAME,
         FILE_HASH,
       ])

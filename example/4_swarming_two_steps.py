@@ -41,7 +41,7 @@ def main():
             '--isolate', os.path.join('payload', 'hello_world.isolate'),
             '--isolated', isolated,
             '--outdir', options.isolate_server,
-            '--config-variable', 'OS', common.OSES[options.os],
+            '--config-variable', 'OS', options.isolate_os,
           ], options.verbose)
       with open(isolated, 'rb') as f:
         hashval = hashlib.sha1(f.read()).hexdigest()
@@ -59,7 +59,7 @@ def main():
           'trigger',
           '--swarming', options.swarming,
           '--isolate-server', options.isolate_server,
-          '--os', options.os,
+          '--dimension', 'os', options.swarming_os,
           '--task-name', task_name,
           hashval,
         ], options.verbose)

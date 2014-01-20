@@ -16,8 +16,20 @@ sys.path.append(os.path.join(ROOT_DIR, '..', 'third_party'))
 import colorama
 
 
-# Mapping of the sys.platform value into Swarm OS value.
-OSES = {'win32': 'win', 'linux2': 'linux', 'darwin': 'mac'}
+CHROMIUM_SWARMING_OSES = {
+    'darwin': 'Mac',
+    'cygwin': 'Win',
+    'linux2': 'Linux',
+    'win32': 'Win',
+}
+
+
+ISOLATE_OSES = {
+    'darwin': 'mac',
+    'cygwin': 'win',
+    'linux2': 'linux',
+    'win32': 'win',
+}
 
 
 def parse_args(use_isolate_server, use_swarming):
@@ -48,8 +60,13 @@ def parse_args(use_isolate_server, use_swarming):
     parser.error('Unsupported argument %s' % args)
   if use_isolate_server and not options.isolate_server:
     parser.error('--isolate-server is required.')
-  if use_swarming and not options.swarming:
-    parser.error('--swarming is required.')
+  if use_swarming:
+    if not options.swarming:
+      parser.error('--swarming is required.')
+    options.isolate_os = ISOLATE_OSES[options.os]
+    options.swarming_os = CHROMIUM_SWARMING_OSES[options.os]
+    del options.os
+
   return options
 
 

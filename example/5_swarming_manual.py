@@ -74,7 +74,7 @@ def main():
           'run',
           '--swarming', options.swarming,
           '--isolate-server', options.isolate_server,
-          '--os', options.os,
+          '--dimension', 'os', options.swarming_os,
           '--task-name', task_name,
           isolated_sha1,
         ], options.verbose)

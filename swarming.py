@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 import hashlib
 import json
@@ -41,22 +41,6 @@ DEFAULT_SHARD_WAIT_TIME = 80 * 60.
 NO_OUTPUT_FOUND = (
   'No output produced by the task, it may have failed to run.\n'
   '\n')
-
-
-# TODO(maruel): cygwin != Windows. If a swarm_bot is running in cygwin, it's
-# different from running in native python.
-PLATFORM_MAPPING_SWARMING = {
-  'cygwin': 'Windows',
-  'darwin': 'Mac',
-  'linux2': 'Linux',
-  'win32': 'Windows',
-}
-
-PLATFORM_MAPPING_ISOLATE = {
-  'linux2': 'linux',
-  'darwin': 'mac',
-  'win32': 'win',
-}
 
 
 class Failure(Exception):
@@ -499,13 +483,8 @@ def add_trigger_options(parser):
       help='Isolate server to use')
 
   parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
-  # TODO(maruel): Remove, 'os' is like any other dimension.
   parser.filter_group.add_option(
-      '-o', '--os', default=sys.platform,
-      help='Slave OS to request. Should be one of the valid sys.platform '
-           'values like darwin, linux2 or win32 default: %default.')
-  parser.filter_group.add_option(
-      '-d', '--dimensions', default=[], action='append', nargs=2,
+      '-d', '--dimension', default=[], action='append', nargs=2,
       dest='dimensions', metavar='FOO bar',
       help='dimension to filter on')
   parser.add_option_group(parser.filter_group)
@@ -538,15 +517,13 @@ def process_trigger_options(parser, options, args):
   options.isolate_server = options.isolate_server.rstrip('/')
   if not options.isolate_server:
     parser.error('--isolate-server is required.')
-  if options.os in ('', 'None'):
-    # Use the current OS.
-    options.os = sys.platform
-  if not options.os in PLATFORM_MAPPING_SWARMING:
-    parser.error('Invalid --os option.')
   if len(args) != 1:
     parser.error('Must pass one .isolated file or its hash (sha1).')
-  options.dimensions.append(('os', PLATFORM_MAPPING_SWARMING[options.os]))
   options.dimensions = dict(options.dimensions)
+  if not options.dimensions.get('os'):
+    parser.error(
+        'Please at least specify the dimension of the swarming bot OS with '
+        '--dimension os <something>.')
 
 
 def add_collect_options(parser):
