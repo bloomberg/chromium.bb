@@ -57,7 +57,7 @@ test(function() {
 
 test(function() {
     assert_throws(
-        'INVALID_CHARACTER_ERR',
+        'NOT_SUPPORTED_ERR',
         function() {
             var p = Object.create(HTMLElement.prototype);
             document.registerElement('x-bespoke', {extends: 'x-spoke', prototype: p});

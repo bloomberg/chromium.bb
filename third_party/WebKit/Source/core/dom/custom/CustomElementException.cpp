@@ -65,15 +65,15 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         return;
 
     case ExtendsIsInvalidName:
-        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + "The tag name specified in 'extends' is not a valid tag name.");
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The tag name specified in 'extends' is not a valid tag name.");
         return;
 
     case ExtendsIsCustomElementName:
-        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + "The tag name specified in 'extends' is a custom element name. Use inheritance instead.");
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The tag name specified in 'extends' is a custom element name. Use inheritance instead.");
         return;
 
     case InvalidName:
-        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + "The type name is invalid.");
+        exceptionState.throwDOMException(SyntaxError, preamble(type) + "The type name is invalid.");
         return;
 
     case PrototypeInUse:
@@ -81,11 +81,11 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         return;
 
     case PrototypeNotAnObject:
-        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "The prototype option is not an object.");
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The prototype option is not an object.");
         return;
 
     case TypeAlreadyRegistered:
-        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "A type with that name is already registered.");
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "A type with that name is already registered.");
         return;
     }
 
