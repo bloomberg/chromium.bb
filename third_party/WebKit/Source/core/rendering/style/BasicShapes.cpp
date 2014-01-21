@@ -213,7 +213,7 @@ bool DeprecatedBasicShapeEllipse::operator==(const BasicShape& o) const
     if (!isSameType(o))
         return false;
     const DeprecatedBasicShapeEllipse& other = toDeprecatedBasicShapeEllipse(o);
-    return m_centerX == other.m_centerX && m_centerY == other.m_centerY && m_radiusX == other.m_radiusX && m_radiusY == m_radiusY;
+    return m_centerX == other.m_centerX && m_centerY == other.m_centerY && m_radiusX == other.m_radiusX && m_radiusY == other.m_radiusY;
 }
 
 PassRefPtr<BasicShape> DeprecatedBasicShapeEllipse::blend(const BasicShape* other, double progress) const

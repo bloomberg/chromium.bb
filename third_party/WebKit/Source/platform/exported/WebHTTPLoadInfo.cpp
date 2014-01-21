@@ -55,8 +55,8 @@ void WebHTTPLoadInfo::assign(const WebHTTPLoadInfo& r)
 }
 
 WebHTTPLoadInfo::WebHTTPLoadInfo(WTF::PassRefPtr<WebCore::ResourceLoadInfo> value)
+    : m_private(value)
 {
-    m_private = value;
 }
 
 WebHTTPLoadInfo::operator WTF::PassRefPtr<WebCore::ResourceLoadInfo>() const

@@ -115,7 +115,6 @@ private:
 
 private:
     FloatRect m_repaintBoundingBox;
-    FloatRect m_repaintBoundingBoxExcludingShadow;
     AffineTransform m_localTransform;
     OwnPtr<Path> m_path;
     Vector<MarkerPosition> m_markerPositions;

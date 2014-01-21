@@ -68,10 +68,10 @@ WebPopupMenu* WebPopupMenu::create(WebWidgetClient* client)
 
 WebPopupMenuImpl::WebPopupMenuImpl(WebWidgetClient* client)
     : m_client(client)
+    // Set to impossible point so we always get the first mouse position.
+    , m_lastMousePosition(WebPoint(-1, -1))
     , m_widget(0)
 {
-    // Set to impossible point so we always get the first mouse position.
-    m_lastMousePosition = WebPoint(-1, -1);
 }
 
 WebPopupMenuImpl::~WebPopupMenuImpl()

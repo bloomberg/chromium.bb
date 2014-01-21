@@ -300,7 +300,7 @@ void Function::setArguments(Vector<OwnPtr<Expression> >& args)
         setIsContextNodeSensitive(false);
 
     Vector<OwnPtr<Expression> >::iterator end = args.end();
-    for (Vector<OwnPtr<Expression> >::iterator it = args.begin(); it != end; it++)
+    for (Vector<OwnPtr<Expression> >::iterator it = args.begin(); it != end; ++it)
         addSubExpression(it->release());
 }
 

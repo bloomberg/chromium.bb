@@ -621,7 +621,7 @@ template<size_t inlineCapacity>
 inline void String::appendTo(Vector<UChar, inlineCapacity>& result, unsigned pos, unsigned len) const
 {
     unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
-    if (numberOfCharactersToCopy <= 0)
+    if (!numberOfCharactersToCopy)
         return;
     result.reserveCapacity(result.size() + numberOfCharactersToCopy);
     if (is8Bit()) {
@@ -638,7 +638,7 @@ template<typename BufferType>
 inline void String::appendTo(BufferType& result, unsigned pos, unsigned len) const
 {
     unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
-    if (numberOfCharactersToCopy <= 0)
+    if (!numberOfCharactersToCopy)
         return;
     if (is8Bit())
         result.append(m_impl->characters8() + pos, numberOfCharactersToCopy);
@@ -650,7 +650,7 @@ template<size_t inlineCapacity>
 inline void String::prependTo(Vector<UChar, inlineCapacity>& result, unsigned pos, unsigned len) const
 {
     unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
-    if (numberOfCharactersToCopy <= 0)
+    if (!numberOfCharactersToCopy)
         return;
     if (is8Bit()) {
         size_t oldSize = result.size();

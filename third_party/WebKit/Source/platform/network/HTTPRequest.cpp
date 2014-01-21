@@ -60,7 +60,6 @@ PassRefPtr<HTTPRequest> HTTPRequest::parseHTTPRequestFromBuffer(const char* data
 
     // 3. Parse HTTP Data.
     size_t dataLength = request->parseRequestBody(pos, remainingLength);
-    pos += dataLength;
     remainingLength -= dataLength;
 
     // We should have processed the entire input.

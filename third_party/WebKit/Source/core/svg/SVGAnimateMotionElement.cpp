@@ -277,11 +277,10 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
 
     ASSERT(!m_animationPath.isEmpty());
 
-    bool ok = false;
     float positionOnPath = m_animationPath.length() * percentage;
     FloatPoint position;
     float angle;
-    ok = m_animationPath.pointAndNormalAtLength(positionOnPath, position, angle);
+    bool ok = m_animationPath.pointAndNormalAtLength(positionOnPath, position, angle);
     if (!ok)
         return;
 

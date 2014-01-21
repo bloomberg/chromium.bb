@@ -497,7 +497,6 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             || rareInheritedData->textEmphasisMark != other->rareInheritedData->textEmphasisMark
             || rareInheritedData->textEmphasisPosition != other->rareInheritedData->textEmphasisPosition
             || rareInheritedData->textEmphasisCustomMark != other->rareInheritedData->textEmphasisCustomMark
-            || rareInheritedData->m_textAlignLast != other->rareInheritedData->m_textAlignLast
             || rareInheritedData->m_textJustify != other->rareInheritedData->m_textJustify
             || rareInheritedData->m_textOrientation != other->rareInheritedData->m_textOrientation
             || rareInheritedData->m_tabSize != other->rareInheritedData->m_tabSize

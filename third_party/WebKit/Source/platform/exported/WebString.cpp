@@ -121,8 +121,8 @@ bool WebString::equals(const WebString& s) const
 }
 
 WebString::WebString(const WTF::String& s)
+    : m_private(s.impl())
 {
-    m_private = s.impl();
 }
 
 WebString& WebString::operator=(const WTF::String& s)

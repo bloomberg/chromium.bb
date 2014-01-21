@@ -101,7 +101,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     ASSERT(m_destructionInProgress);
     m_layer.clear();
     Vector<MailboxInfo>::iterator mailboxInfo;
-    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
+    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); ++mailboxInfo) {
         ASSERT(mailboxInfo->m_status != MailboxInUse);
         if (mailboxInfo->m_status == MailboxReleased) {
             if (mailboxInfo->m_mailbox.syncPoint) {
@@ -281,7 +281,7 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     webContext->makeContextCurrent();
     flush();
     Vector<MailboxInfo>::iterator mailboxInfo;
-    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
+    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); ++mailboxInfo) {
         if (mailboxInfo->m_status == MailboxReleased) {
             if (mailboxInfo->m_mailbox.syncPoint) {
                 webContext->waitSyncPoint(mailboxInfo->m_mailbox.syncPoint);
@@ -359,7 +359,7 @@ Canvas2DLayerBridge::MailboxInfo* Canvas2DLayerBridge::createMailboxInfo() {
 void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox)
 {
     Vector<MailboxInfo>::iterator mailboxInfo;
-    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); mailboxInfo++) {
+    for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); ++mailboxInfo) {
         if (!memcmp(mailboxInfo->m_mailbox.name, mailbox.name, sizeof(mailbox.name))) {
             mailboxInfo->m_mailbox.syncPoint = mailbox.syncPoint;
             ASSERT(mailboxInfo->m_status == MailboxInUse);

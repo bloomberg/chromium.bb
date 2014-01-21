@@ -382,7 +382,7 @@ void ContainerNode::willRemoveChildren()
     getChildNodes(*this, children);
 
     ChildListMutationScope mutation(*this);
-    for (NodeVector::const_iterator it = children.begin(); it != children.end(); it++) {
+    for (NodeVector::const_iterator it = children.begin(); it != children.end(); ++it) {
         ASSERT(*it);
         Node& child = **it;
         mutation.willRemoveChild(child);

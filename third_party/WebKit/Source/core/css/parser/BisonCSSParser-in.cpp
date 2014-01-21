@@ -3941,7 +3941,7 @@ void BisonCSSParser::parseFillPosition(CSSParserValueList* valueList, RefPtr<CSS
     if (!value1)
         return;
 
-    value = valueList->next();
+    valueList->next();
 
     // In case we are parsing more than two values, relax the check inside of parseFillPositionComponent. top 20px is
     // a valid start for <position>.
