@@ -23,31 +23,68 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+/** This class implements the listener interface for receiving copies of preview
+ * frames from the camera, plus a series of methods to manipulate camera and its
+ * capture from the C++ side. Objects of this class are created via
+ * createVideoCapture() and are explicitly owned by the creator. All methods
+ * are invoked by this owner, including the callback OnPreviewFrame().
+ **/
 @JNINamespace("media")
 public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     static class CaptureCapability {
-        public int mWidth = 0;
-        public int mHeight = 0;
-        public int mDesiredFps = 0;
+        public int mWidth;
+        public int mHeight;
+        public int mDesiredFps;
     }
 
-    // Some devices with OS older than JELLY_BEAN don't support YV12 format correctly.
-    // Some devices don't support YV12 format correctly even with JELLY_BEAN or newer OS.
-    // To work around the issues on those devices, we'd have to request NV21.
-    // This is a temporary hack till device manufacturers fix the problem or
-    // we don't need to support those devices any more.
-    private static class DeviceImageFormatHack {
-        private static final String[] sBUGGY_DEVICE_LIST = {
+    // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
+    // newer OS. To work around the issues on those devices, we have to request
+    // NV21. Some other devices have troubles with certain capture resolutions
+    // under a given one: for those, the resolution is swapped with a known
+    // good. Both are supposed to be temporary hacks.
+    private static class BuggyDeviceHack {
+        private static class IdAndSizes {
+            IdAndSizes(String model, String device, int minWidth, int minHeight) {
+                mModel = model;
+                mDevice = device;
+                mMinWidth = minWidth;
+                mMinHeight = minHeight;
+            }
+            public final String mModel;
+            public final String mDevice;
+            public final int mMinWidth;
+            public final int mMinHeight;
+        }
+        private static final IdAndSizes s_CAPTURESIZE_BUGGY_DEVICE_LIST[] = {
+            new IdAndSizes("Nexus 7", "flo", 640, 480)
+        };
+
+        private static final String[] s_COLORSPACE_BUGGY_DEVICE_LIST = {
             "SAMSUNG-SGH-I747",
             "ODROID-U2",
         };
+
+        static void applyMinDimensions(CaptureCapability capability) {
+            // NOTE: this can discard requested aspect ratio considerations.
+            for (IdAndSizes buggyDevice : s_CAPTURESIZE_BUGGY_DEVICE_LIST) {
+                if (buggyDevice.mModel.contentEquals(android.os.Build.MODEL) &&
+                        buggyDevice.mDevice.contentEquals(android.os.Build.DEVICE)) {
+                    capability.mWidth = (buggyDevice.mMinWidth > capability.mWidth)
+                                        ? buggyDevice.mMinWidth
+                                        : capability.mWidth;
+                    capability.mHeight = (buggyDevice.mMinHeight > capability.mHeight)
+                                         ? buggyDevice.mMinHeight
+                                         : capability.mHeight;
+                }
+            }
+        }
 
         static int getImageFormat() {
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
                 return ImageFormat.NV21;
             }
 
-            for (String buggyDevice : sBUGGY_DEVICE_LIST) {
+            for (String buggyDevice : s_COLORSPACE_BUGGY_DEVICE_LIST) {
                 if (buggyDevice.contentEquals(android.os.Build.MODEL)) {
                     return ImageFormat.NV21;
                 }
@@ -176,10 +213,14 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             }
             mCurrentCapability.mWidth = matchedWidth;
             mCurrentCapability.mHeight = matchedHeight;
-            Log.d(TAG, "allocate: matched width=" + matchedWidth +
-                  ", height=" + matchedHeight);
+            // Hack to avoid certain capture resolutions under a minimum one,
+            // see http://crbug.com/305294
+            BuggyDeviceHack.applyMinDimensions(mCurrentCapability);
 
-            calculateImageFormat(matchedWidth, matchedHeight);
+            Log.d(TAG, "allocate: matched width=" + mCurrentCapability.mWidth +
+                  ", height=" + mCurrentCapability.mHeight);
+
+            mImageFormat = BuggyDeviceHack.getImageFormat();
 
             if (parameters.isVideoStabilizationSupported()) {
                 Log.d(TAG, "Image stabilization supported, currently: "
@@ -189,7 +230,8 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
                 Log.d(TAG, "Image stabilization not supported.");
             }
 
-            parameters.setPreviewSize(matchedWidth, matchedHeight);
+            parameters.setPreviewSize(mCurrentCapability.mWidth,
+                                      mCurrentCapability.mHeight);
             parameters.setPreviewFormat(mImageFormat);
             parameters.setPreviewFpsRange(fpsMin, fpsMax);
             mCamera.setParameters(parameters);
@@ -215,7 +257,8 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
 
             mCamera.setPreviewTexture(mSurfaceTexture);
 
-            int bufSize = matchedWidth * matchedHeight *
+            int bufSize = mCurrentCapability.mWidth *
+                          mCurrentCapability.mHeight *
                           ImageFormat.getBitsPerPixel(mImageFormat) / 8;
             for (int i = 0; i < NUM_CAPTURE_BUFFERS; i++) {
                 byte[] buffer = new byte[bufSize];
@@ -430,9 +473,5 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
             }
         }
         return orientation;
-    }
-
-    private void calculateImageFormat(int width, int height) {
-        mImageFormat = DeviceImageFormatHack.getImageFormat();
     }
 }
