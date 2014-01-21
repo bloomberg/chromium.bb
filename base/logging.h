@@ -52,10 +52,6 @@
 //
 //   LOG_IF(INFO, num_cookies > 10) << "Got lots of cookies";
 //
-// The above will cause log messages to be output on the 1st, 11th, 21st, ...
-// times it is executed.  Note that the special COUNTER value is used to
-// identify which repetition is happening.
-//
 // The CHECK(condition) macro is active in both debug and release builds and
 // effectively performs a LOG(FATAL) which terminates the process and
 // generates a crashdump unless a debugger is attached.
