@@ -357,13 +357,7 @@ LRESULT CALLBACK WndProc(HWND wnd,
   PAINTSTRUCT ps;
   HDC hdc;
 
-#pragma warning(push)
-#pragma warning(disable:4312)
-  // Disable warning C4312: 'type cast' : conversion from 'LONG' to
-  // 'HINSTANCE' of greater size.
-  // The value returned by GetwindowLong in the case below returns unsigned.
-  HINSTANCE instance = (HINSTANCE)GetWindowLong(wnd, GWL_HINSTANCE);
-#pragma warning(pop)
+  HINSTANCE instance = (HINSTANCE)GetWindowLongPtr(wnd, GWLP_HINSTANCE);
 
   switch (message) {
     case WM_COMMAND:
