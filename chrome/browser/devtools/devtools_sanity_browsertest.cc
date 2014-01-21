@@ -670,16 +670,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   CloseDevToolsPopupWindow(devtools_window);
 }
 
-// FLaky on Windows bots: see crbug.com/323847, Linux crbug.com/333554
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_TestDevToolsOnDevTools DISABLED_TestDevToolsOnDevTools
-#else
-#define MAYBE_TestDevToolsOnDevTools TestDevToolsOnDevTools
-#endif
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       MAYBE_TestDevToolsOnDevTools) {
+                       TestDevToolsOnDevTools) {
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
 
@@ -725,6 +719,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
     content::WindowedNotificationObserver close_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         content::Source<Browser>(browser()));
+    chrome::StartKeepAlive();
     chrome::CloseAllBrowsers();
     AcceptModalDialog();
     AcceptModalDialog();
