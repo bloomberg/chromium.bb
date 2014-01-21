@@ -61,8 +61,6 @@ class RenderText;
 class StyleResolver;
 class UpdateRegionLayoutTask;
 
-typedef HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > CSSStyleSheetToInspectorStyleSheet;
-
 class InspectorCSSAgent FINAL
     : public InspectorBaseAgent<InspectorCSSAgent>
     , public InspectorDOMAgent::DOMListener
@@ -169,7 +167,6 @@ private:
 
     typedef HashMap<String, RefPtr<InspectorStyleSheet> > IdToInspectorStyleSheet;
     typedef HashMap<Node*, RefPtr<InspectorStyleSheetForInlineStyle> > NodeToInspectorStyleSheet; // bogus "stylesheets" with elements' inline styles
-    typedef HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > DocumentToViaInspectorStyleSheet; // "via inspector" stylesheets
     typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
     void wasEnabled(PassRefPtr<EnableCallback>);
@@ -181,7 +178,8 @@ private:
     void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
     void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
 
-    void updateActiveStyleSheets(Document*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
+    void updateActiveStyleSheetsForDocument(Document*, StyleSheetsUpdateType);
+    void updateActiveStyleSheets(Frame*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
 
     void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 
@@ -217,9 +215,11 @@ private:
     InspectorResourceAgent* m_resourceAgent;
 
     IdToInspectorStyleSheet m_idToInspectorStyleSheet;
-    CSSStyleSheetToInspectorStyleSheet m_cssStyleSheetToInspectorStyleSheet;
+    HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > m_cssStyleSheetToInspectorStyleSheet;
+    HashMap<Frame*, OwnPtr<HashSet<CSSStyleSheet*> > > m_frameToCSSStyleSheets;
+
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
-    DocumentToViaInspectorStyleSheet m_documentToInspectorStyleSheet;
+    HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
     HashSet<int> m_namedFlowCollectionsRequested;
     OwnPtr<UpdateRegionLayoutTask> m_updateRegionLayoutTask;

@@ -49,6 +49,11 @@ function addIframeStyleSheets()
     iframe().contentWindow.postMessage("addStyleSheets", "*");
 }
 
+function navigateIframe()
+{
+    iframe().src = iframe().src;
+}
+
 function removeIframeStyleSheets()
 {
     iframe().contentWindow.postMessage("removeStyleSheets", "*");
@@ -83,8 +88,27 @@ function test()
         function iframeAdded()
         {
             InspectorTest.addResult("=== Adding iframe stylesheet... ===");
-            waitStyleSheetAdded(2, removeIframeStyleSheets);
+            waitStyleSheetAdded(2, navigateIframe);
             InspectorTest.evaluateInPage("addIframeStyleSheets()");
+        }
+
+        function navigateIframe()
+        {
+            InspectorTest.addResult("=== Navigating iframe... ===");
+            waitStyleSheetRemoved(3, frameNavigated);
+            InspectorTest.evaluateInPage("navigateIframe()");
+            
+            function frameNavigated()
+            {
+                waitStyleSheetAdded(1, styleSheetsAdded);
+            }
+
+            function styleSheetsAdded()
+            {
+                InspectorTest.addResult("=== Adding iframe stylesheet... ===");
+                waitStyleSheetAdded(2, removeIframeStyleSheets);
+                InspectorTest.evaluateInPage("addIframeStyleSheets()");
+            }
         }
 
         function removeIframeStyleSheets()

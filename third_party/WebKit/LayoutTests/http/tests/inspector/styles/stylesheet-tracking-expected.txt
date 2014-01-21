@@ -26,6 +26,35 @@ Stylesheets added:
     origin=regular
     isInline=false
     hasSourceURL=true
+=== Navigating iframe... ===
+Stylesheets removed:
+    URL=
+    origin=regular
+    isInline=false
+    hasSourceURL=false
+    URL=.../inspector/styles/resources/stylesheet-tracking-iframe.html
+    origin=regular
+    isInline=true
+    hasSourceURL=false
+    URL=stylesheet-added-in-iframe.css
+    origin=regular
+    isInline=false
+    hasSourceURL=true
+Stylesheets added:
+    URL=.../inspector/styles/resources/stylesheet-tracking-iframe.html
+    origin=regular
+    isInline=true
+    hasSourceURL=false
+=== Adding iframe stylesheet... ===
+Stylesheets added:
+    URL=
+    origin=regular
+    isInline=false
+    hasSourceURL=false
+    URL=stylesheet-added-in-iframe.css
+    origin=regular
+    isInline=false
+    hasSourceURL=true
 === Removing iframe stylesheet... ===
 Stylesheets removed:
     URL=
