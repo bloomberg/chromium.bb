@@ -207,7 +207,7 @@ function test()
             dumpSelection(panel.visibleView.textEditor, "Before searching");
             InspectorTest.typeIn("generate_");
             for (var i = 0; i < 3; ++i)
-                searchableView.handleFindPreviousShortcut();
+                searchableView.handleFindNextShortcut();
             searchableView.closeSearch();
             dumpSelection(panel.visibleView.textEditor, "After searching");
             rollback();
