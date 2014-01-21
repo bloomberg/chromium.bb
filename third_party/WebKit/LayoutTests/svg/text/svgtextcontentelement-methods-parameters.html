@@ -53,12 +53,12 @@ shouldThrow("svgText.selectSubString()", '"TypeError: Failed to execute \'select
 shouldThrow("svgText.selectSubString(2)", '"TypeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': 2 arguments required, but only 1 present."');
 
 // Should throw an IndexSizeError if charnum is greater than or equal to the number of characters at this node.
-shouldThrow("svgText.getSubStringLength(999, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getStartPositionOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getEndPositionOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getExtentOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getRotationOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.selectSubString(999, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getSubStringLength(999, 2)", '"IndexSizeError: Failed to execute \'getSubStringLength\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getStartPositionOfChar(999)", '"IndexSizeError: Failed to execute \'getStartPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getEndPositionOfChar(999)", '"IndexSizeError: Failed to execute \'getEndPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getExtentOfChar(999)", '"IndexSizeError: Failed to execute \'getExtentOfChar\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getRotationOfChar(999)", '"IndexSizeError: Failed to execute \'getRotationOfChar\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
+shouldThrow("svgText.selectSubString(999, 2)", '"IndexSizeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
 
 // Should not throw if charnum is negative and wraps to a valid positive index (-4294967294 wraps to 2).
 shouldBe("svgText.getSubStringLength(-4294967294, 2)", "svgText.getSubStringLength(2, 2)");
@@ -69,12 +69,12 @@ shouldBe("svgText.getRotationOfChar(-4294967294)", "svgText.getRotationOfChar(2)
 shouldNotThrow("svgText.selectSubString(-4294967294, 2)");
 
 // Should throw an IndexSizeError if charnum is negative and wraps to an invalid positive index.
-shouldThrow("svgText.getSubStringLength(-1, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getStartPositionOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getEndPositionOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getExtentOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.getRotationOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
-shouldThrow("svgText.selectSubString(-1, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getSubStringLength(-1, 2)", '"IndexSizeError: Failed to execute \'getSubStringLength\' on \'SVGTextContentElement\': The charnum provided (4294967295) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getStartPositionOfChar(-1)", '"IndexSizeError: Failed to execute \'getStartPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (4294967295) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getEndPositionOfChar(-1)", '"IndexSizeError: Failed to execute \'getEndPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (4294967295) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getExtentOfChar(-1)", '"IndexSizeError: Failed to execute \'getExtentOfChar\' on \'SVGTextContentElement\': The charnum provided (4294967295) is greater than the maximum bound (7)."');
+shouldThrow("svgText.getRotationOfChar(-1)", '"IndexSizeError: Failed to execute \'getRotationOfChar\' on \'SVGTextContentElement\': The charnum provided (4294967295) is greater than the maximum bound (7)."');
+shouldThrow("svgText.selectSubString(-1, 2)", '"IndexSizeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': The charnum provided (4294967295) is greater than the maximum bound (7)."');
 
 // We should not throw if nchars is negative or too large.
 // If nchars specifies more characters than are available, then the substring will consist of all characters

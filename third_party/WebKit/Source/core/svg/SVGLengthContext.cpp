@@ -109,7 +109,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
 
     switch (fromUnit) {
     case LengthTypeUnknown:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The fromUnit provided is invalid.");
         return 0;
     case LengthTypeNumber:
         return value;
@@ -141,7 +141,7 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 {
     switch (toUnit) {
     case LengthTypeUnknown:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The toUnit provided is invalid.");
         return 0;
     case LengthTypeNumber:
         return value;
@@ -173,7 +173,7 @@ float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLe
 {
     FloatSize viewportSize;
     if (!determineViewport(viewportSize)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The viewport could not be determined.");
         return 0;
     }
 
@@ -194,7 +194,7 @@ float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLe
 {
     FloatSize viewportSize;
     if (!determineViewport(viewportSize)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The viewport could not be determined.");
         return 0;
     }
 
@@ -232,13 +232,13 @@ float SVGLengthContext::convertValueFromUserUnitsToEMS(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No context could be found.");
         return 0;
     }
 
     float fontSize = style->specifiedFontSize();
     if (!fontSize) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No font-size could be determined.");
         return 0;
     }
 
@@ -249,7 +249,7 @@ float SVGLengthContext::convertValueFromEMSToUserUnits(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No context could be found.");
         return 0;
     }
 
@@ -260,7 +260,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No context could be found.");
         return 0;
     }
 
@@ -268,7 +268,7 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value, ExceptionSta
     // if this causes problems in real world cases maybe it would be best to remove this
     float xHeight = ceilf(style->fontMetrics().xHeight());
     if (!xHeight) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No x-height could be determined.");
         return 0;
     }
 
@@ -279,7 +279,7 @@ float SVGLengthContext::convertValueFromEXSToUserUnits(float value, ExceptionSta
 {
     RenderStyle* style = renderStyleForLengthResolving(m_context);
     if (!style) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No context could be found.");
         return 0;
     }
 

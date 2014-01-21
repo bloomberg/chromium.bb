@@ -57,7 +57,7 @@ AffineTransform SVGGraphicsElement::getTransformToElement(SVGElement* target, Ex
     if (target && target->isSVGGraphicsElement()) {
         AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(AllowStyleUpdate);
         if (!targetCTM.isInvertible()) {
-            exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+            exceptionState.throwDOMException(InvalidStateError, "The target transformation is not invertable.");
             return ctm;
         }
         ctm = targetCTM.inverse() * ctm;

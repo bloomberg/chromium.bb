@@ -20,6 +20,7 @@
 #ifndef SVGListProperty_h
 #define SVGListProperty_h
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
@@ -52,7 +53,7 @@ public:
     bool canAlterList(ExceptionState& exceptionState) const
     {
         if (m_role == AnimValRole) {
-            exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+            exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly("the property is an animation value"));
             return false;
         }
 
@@ -172,7 +173,7 @@ public:
     bool canGetItem(unsigned index, ExceptionState& exceptionState)
     {
         if (index >= m_values->size()) {
-            exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values->size()));
             return false;
         }
 
@@ -274,7 +275,7 @@ public:
             return false;
 
         if (index >= m_values->size()) {
-            exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values->size()));
             return false;
         }
 
@@ -295,7 +296,7 @@ public:
 
         if (m_values->isEmpty()) {
             // 'newItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
-            exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+            exceptionState.throwDOMException(IndexSizeError, "The new item lived in this list, and has been removed.");
             return ListItemType();
         }
 
@@ -329,7 +330,7 @@ public:
         if (m_values->isEmpty()) {
             ASSERT(m_wrappers->isEmpty());
             // 'passNewItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
-            exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+            exceptionState.throwDOMException(IndexSizeError, "The new item lived in this list, and has been removed.");
             return 0;
         }
 
@@ -353,7 +354,7 @@ public:
             return false;
 
         if (index >= m_values->size()) {
-            exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values->size()));
             return false;
         }
 

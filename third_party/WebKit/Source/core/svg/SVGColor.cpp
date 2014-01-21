@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/svg/SVGColor.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/RGBColor.h"
@@ -59,17 +60,17 @@ void SVGColor::setRGBColor(const String&, ExceptionState& exceptionState)
 {
     // The whole SVGColor interface is deprecated in SVG 1.1 (2nd edition).
     // The setters are the most problematic part so we remove the support for those first.
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 void SVGColor::setRGBColorICCColor(const String&, const String&, ExceptionState& exceptionState)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 void SVGColor::setColor(unsigned short, const String&, const String&, ExceptionState& exceptionState)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 String SVGColor::customCSSText() const

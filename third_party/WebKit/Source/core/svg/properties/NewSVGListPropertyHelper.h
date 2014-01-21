@@ -31,6 +31,7 @@
 #ifndef NewSVGListPropertyHelper_h
 #define NewSVGListPropertyHelper_h
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/properties/NewSVGProperty.h"
@@ -206,7 +207,7 @@ template<typename Derived, typename ItemProperty>
 PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::removeItem(size_t index, ExceptionState& exceptionState)
 {
     if (index >= m_values.size()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
         return 0;
     }
     RefPtr<ItemPropertyType> oldItem = m_values.at(index);

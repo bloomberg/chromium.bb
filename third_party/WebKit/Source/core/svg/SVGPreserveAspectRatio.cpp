@@ -40,7 +40,7 @@ SVGPreserveAspectRatio::SVGPreserveAspectRatio()
 void SVGPreserveAspectRatio::setAlign(unsigned short align, ExceptionState& exceptionState)
 {
     if (align == SVG_PRESERVEASPECTRATIO_UNKNOWN || align > SVG_PRESERVEASPECTRATIO_XMAXYMAX) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The alignment provided is invalid.");
         return;
     }
 
@@ -50,7 +50,7 @@ void SVGPreserveAspectRatio::setAlign(unsigned short align, ExceptionState& exce
 void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& exceptionState)
 {
     if (meetOrSlice == SVG_MEETORSLICE_UNKNOWN || meetOrSlice > SVG_MEETORSLICE_SLICE) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The meetOrSlice provided is invalid.");
         return;
     }
 

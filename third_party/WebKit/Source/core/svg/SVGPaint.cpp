@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/svg/SVGPaint.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 
 namespace WebCore {
@@ -64,7 +65,7 @@ void SVGPaint::setUri(const String&)
 
 void SVGPaint::setPaint(unsigned short, const String&, const String&, const String&, ExceptionState& exceptionState)
 {
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 String SVGPaint::customCSSText() const

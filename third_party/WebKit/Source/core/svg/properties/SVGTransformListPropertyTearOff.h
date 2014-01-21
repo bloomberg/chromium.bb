@@ -43,7 +43,7 @@ public:
     {
         ASSERT(m_values);
         if (!matrix) {
-            exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+            exceptionState.throwDOMException(TypeMismatchError, "The matrix provided is invalid.");
             return 0;
         }
         return SVGPropertyTearOff<SVGTransform>::create(m_values->createSVGTransformFromMatrix(matrix->propertyReference()));

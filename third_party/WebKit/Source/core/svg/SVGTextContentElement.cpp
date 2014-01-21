@@ -25,6 +25,7 @@
 #include "CSSValueKeywords.h"
 #include "SVGNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/editing/FrameSelection.h"
@@ -100,7 +101,7 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
 
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return 0.0f;
     }
 
@@ -115,7 +116,7 @@ SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, Excepti
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return FloatPoint();
     }
 
@@ -127,7 +128,7 @@ SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, Exception
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return FloatPoint();
     }
 
@@ -139,7 +140,7 @@ PassRefPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(unsigned charn
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return 0;
     }
 
@@ -152,7 +153,7 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return 0.0f;
     }
 
@@ -169,7 +170,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, E
 {
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return;
     }
 

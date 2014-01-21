@@ -57,6 +57,10 @@ public:
 
     static String notEnoughArguments(unsigned expected, unsigned providedleastNumMandatoryParams);
 
+    static String readOnly(const char* detail = 0);
+
+    static String indexExceedsMaximumBound(const char* name, unsigned given, unsigned bound);
+
 private:
     static String ordinalNumber(int number);
 };

@@ -123,4 +123,16 @@ String ExceptionMessages::ordinalNumber(int number)
     return String::number(number) + suffix;
 }
 
+String ExceptionMessages::readOnly(const char* detail)
+{
+    DEFINE_STATIC_LOCAL(String, readOnly, ("This object is read-only."));
+    return detail ? String::format("This object is read-only, because %s.", detail) : readOnly;
+}
+
+String ExceptionMessages::indexExceedsMaximumBound(const char* name, unsigned given, unsigned bound)
+{
+    bool eq = given == bound;
+    return String::format("The %s provided (%u) is greater than %sthe maximum bound (%u).", name, given, eq ? "or equal to " : "", bound);
+}
+
 } // namespace WebCore

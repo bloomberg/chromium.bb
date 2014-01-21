@@ -21,6 +21,7 @@
 #include "core/svg/SVGViewSpec.h"
 
 #include "SVGNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimatedTransformList.h"
@@ -90,7 +91,7 @@ const AtomicString& SVGViewSpec::transformIdentifier()
 void SVGViewSpec::setZoomAndPan(unsigned short, ExceptionState& exceptionState)
 {
     // SVGViewSpec and all of its content is read-only.
-    exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::readOnly());
 }
 
 void SVGViewSpec::setTransformString(const String& transform)
