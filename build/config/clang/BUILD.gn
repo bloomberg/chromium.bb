@@ -15,7 +15,7 @@ config("find_bad_constructs") {
       "-Xclang",
     ]
 
-    if (is_mac || is_ios) {
+    if (is_mac) {
       cflags += [ rebase_path(
         "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib",
         ".", root_build_dir) ]
