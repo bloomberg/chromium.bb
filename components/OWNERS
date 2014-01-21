@@ -48,6 +48,10 @@ per-file policy*=dconnelly@chromium.org
 per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org
 
+per-file signin*=atwilson@chromium.org
+per-file signin*=tim@chromium.org
+per-file signin*=rogerta@chromium.org
+
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
 
