@@ -89,9 +89,15 @@ ImageBuffer::~ImageBuffer()
 GraphicsContext* ImageBuffer::context() const
 {
     m_surface->willUse();
+    ASSERT(m_context.get());
     return m_context.get();
 }
 
+const SkBitmap& ImageBuffer::bitmap() const
+{
+    m_surface->willUse();
+    return m_surface->bitmap();
+}
 
 bool ImageBuffer::isValid() const
 {

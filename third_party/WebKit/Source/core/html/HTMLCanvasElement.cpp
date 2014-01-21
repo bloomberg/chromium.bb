@@ -523,6 +523,16 @@ ImageBuffer* HTMLCanvasElement::buffer() const
     return m_imageBuffer.get();
 }
 
+void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
+{
+    if ((hasImageBuffer() && !m_imageBuffer->isAccelerated()) || m_didFailToCreateImageBuffer)
+        return;
+    m_imageBuffer.clear();
+    OpacityMode opacityMode = !m_context || m_context->hasAlpha() ? NonOpaque : Opaque;
+    m_imageBuffer = ImageBuffer::create(size(), opacityMode);
+    m_didFailToCreateImageBuffer = !m_imageBuffer;
+}
+
 Image* HTMLCanvasElement::copiedImage() const
 {
     if (!m_copiedImage && buffer()) {

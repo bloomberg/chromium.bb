@@ -104,6 +104,7 @@ public:
 
     CanvasRenderingContext* renderingContext() const { return m_context.get(); }
 
+    void ensureUnacceleratedImageBuffer();
     ImageBuffer* buffer() const;
     Image* copiedImage() const;
     void clearCopiedImage();

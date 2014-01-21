@@ -79,8 +79,11 @@ public:
     ~ImageBuffer();
 
     const IntSize& size() const { return m_surface->size(); }
+    bool isAccelerated() const { return m_surface->isAccelerated(); }
 
     GraphicsContext* context() const;
+
+    const SkBitmap& bitmap() const;
 
     PassRefPtr<Image> copyImage(BackingStoreCopy = CopyBackingStore, ScaleBehavior = Scaled) const;
     // Give hints on the faster copyImage Mode, return DontCopyBackingStore if it supports the DontCopyBackingStore behavior

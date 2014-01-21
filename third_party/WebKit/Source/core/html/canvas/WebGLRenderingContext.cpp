@@ -916,8 +916,11 @@ void WebGLRenderingContext::paintRenderingResultsToCanvas()
     m_markedCanvasDirty = false;
 
     m_drawingBuffer->commit();
-    if (!(canvas()->buffer())->copyRenderingResultsFromDrawingBuffer(m_drawingBuffer.get()))
-        m_drawingBuffer->paintRenderingResultsToCanvas(canvas()->buffer());
+    if (!(canvas()->buffer())->copyRenderingResultsFromDrawingBuffer(m_drawingBuffer.get())) {
+        canvas()->ensureUnacceleratedImageBuffer();
+        if (canvas()->hasImageBuffer())
+            m_drawingBuffer->paintRenderingResultsToCanvas(canvas()->buffer());
+    }
 
     if (m_framebufferBinding)
         m_context->bindFramebuffer(GL_FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));

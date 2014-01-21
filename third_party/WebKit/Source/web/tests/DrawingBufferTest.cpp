@@ -33,6 +33,8 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
 #include "platform/graphics/GraphicsContext3D.h"
+#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "web/tests/MockWebGraphicsContext3D.h"
@@ -125,6 +127,20 @@ protected:
 };
 
 namespace {
+
+TEST_F(DrawingBufferTest, testPaintRenderingResultsToCanvas)
+{
+    OwnPtr<ImageBufferSurface> imageBufferSurface = adoptPtr(new UnacceleratedImageBufferSurface(IntSize(initialWidth, initialHeight)));
+    EXPECT_FALSE(!imageBufferSurface);
+    EXPECT_TRUE(imageBufferSurface->isValid());
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageBufferSurface.release());
+    EXPECT_FALSE(!imageBuffer);
+    EXPECT_FALSE(imageBuffer->isAccelerated());
+    EXPECT_FALSE(imageBuffer->bitmap().isNull());
+    m_drawingBuffer->paintRenderingResultsToCanvas(imageBuffer.get());
+    EXPECT_FALSE(imageBuffer->isAccelerated());
+    EXPECT_FALSE(imageBuffer->bitmap().isNull());
+}
 
 TEST_F(DrawingBufferTest, verifyNoNewBuffersAfterContextLostWithMailboxes)
 {
