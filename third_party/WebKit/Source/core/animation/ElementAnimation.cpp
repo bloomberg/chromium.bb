@@ -59,22 +59,22 @@ CSSPropertyID ElementAnimation::camelCaseCSSPropertyNameToID(const String& prope
     return id;
 }
 
-void ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
+Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
     // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
     // animation application time.
     if (!element->inActiveDocument())
-        return;
+        return 0;
     element->document().updateStyleIfNeeded();
     if (!element->renderer())
-        return;
+        return 0;
 
-    startAnimation(element, keyframeDictionaryVector, duration);
+    return startAnimation(element, keyframeDictionaryVector, duration);
 }
 
-void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
+Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
 {
     KeyframeEffectModel::KeyframeVector keyframes;
     Vector<RefPtr<MutableStylePropertySet> > propertySetVector;
@@ -94,7 +94,7 @@ void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyfr
             // keyframes without specified offsets. This check can be removed when
             // that funcitonality is implemented.
             ASSERT_NOT_REACHED();
-            return;
+            return 0;
         }
 
         String compositeString;
@@ -139,6 +139,8 @@ void ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyfr
     DocumentTimeline* timeline = element->document().timeline();
     ASSERT(timeline);
     timeline->play(animation.get());
+
+    return animation.get();
 }
 
 } // namespace WebCore

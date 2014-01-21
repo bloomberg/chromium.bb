@@ -2,6 +2,9 @@
     'variables': {
         # Files for which bindings (.cpp and .h files) will be generated
         'core_idl_files': [
+            'animation/Animation.idl',
+            'animation/Player.idl',
+            'animation/TimedItem.idl',
             'css/CSS.idl',
             'css/CSSCharsetRule.idl',
             'css/CSSFontFaceLoadEvent.idl',

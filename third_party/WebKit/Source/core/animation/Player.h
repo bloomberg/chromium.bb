@@ -68,6 +68,7 @@ public:
     void setStartTime(double);
 
     TimedItem* source() { return m_content.get(); }
+    TimedItem* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
 
     // Pausing via this method is not reflected in the value returned by
     // paused() and must never overlap with pausing via setPaused().

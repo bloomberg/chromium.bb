@@ -72,14 +72,14 @@ protected:
     RefPtr<Document> document;
     RefPtr<Element> element;
 
-    void startAnimation(Element* element, Vector<Dictionary> keyframesDictionaryVector)
+    Animation* startAnimation(Element* element, Vector<Dictionary> keyframesDictionaryVector)
     {
-        ElementAnimation::startAnimation(element, keyframesDictionaryVector);
+        return ElementAnimation::startAnimation(element, keyframesDictionaryVector);
     }
 
-    void startAnimationWithSpecifiedDuration(Element* element, Vector<Dictionary> keyframesDictionaryVector, double duration)
+    Animation* startAnimationWithSpecifiedDuration(Element* element, Vector<Dictionary> keyframesDictionaryVector, double duration)
     {
-        ElementAnimation::startAnimation(element, keyframesDictionaryVector, duration);
+        return ElementAnimation::startAnimation(element, keyframesDictionaryVector, duration);
     }
 };
 
@@ -110,11 +110,10 @@ TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
     ASSERT_TRUE(jsKeyframes[1].get("width", value2));
     ASSERT_EQ("0px", value2);
 
-    startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, 0);
+    Animation* animation = startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, 0);
 
     Player* player = document->timeline()->players().at(0).get();
-
-    Animation* animation = toAnimation(player->source());
+    EXPECT_EQ(animation, player->source());
 
     Element* target = animation->target();
     EXPECT_EQ(*element.get(), *target);
@@ -159,10 +158,11 @@ TEST_F(AnimationElementAnimationTest, CanSetDuration)
     Vector<Dictionary, 0> jsKeyframes;
     double duration = 2;
 
-    startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, duration);
+    Animation* animation = startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, duration);
 
     Player* player = document->timeline()->players().at(0).get();
 
+    EXPECT_EQ(animation, player->source());
     EXPECT_TRUE(player->source()->specified().hasIterationDuration);
     EXPECT_EQ(duration, player->source()->specified().iterationDuration);
 }
@@ -176,9 +176,10 @@ TEST_F(AnimationElementAnimationTest, CanOmitSpecifiedDuration)
 
     Vector<Dictionary, 0> jsKeyframes;
 
-    startAnimation(element.get(), jsKeyframes);
+    Animation* animation = startAnimation(element.get(), jsKeyframes);
 
     Player* player = document->timeline()->players().at(0).get();
+    EXPECT_EQ(animation, player->source());
 
     // FIXME: This is correct for the moment, as using c++ default arguments means
     // there is no way to tell whether a duration has been specified by the user.
@@ -198,9 +199,10 @@ TEST_F(AnimationElementAnimationTest, ClipNegativeDurationToZero)
     Vector<Dictionary, 0> jsKeyframes;
     double duration = -2;
 
-    startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, duration);
+    Animation* animation = startAnimationWithSpecifiedDuration(element.get(), jsKeyframes, duration);
 
     Player* player = document->timeline()->players().at(0).get();
+    EXPECT_EQ(animation, player->source());
 
     EXPECT_TRUE(player->source()->specified().hasIterationDuration);
     EXPECT_EQ(0, player->source()->specified().iterationDuration);

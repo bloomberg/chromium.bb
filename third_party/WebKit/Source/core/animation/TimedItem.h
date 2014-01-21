@@ -84,6 +84,7 @@ public:
     double startTime() const { return m_startTime; }
     const Player* player() const { return m_player; }
     Player* player() { return m_player; }
+    Player* player(bool& isNull) { isNull = !m_player; return m_player; }
     const Timing& specified() const { return m_specified; }
 
 protected:

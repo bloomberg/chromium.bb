@@ -28,28 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ElementAnimation_h
-#define ElementAnimation_h
-
-#include "CSSPropertyNames.h" // For CSSPropertyID.
-
-namespace WebCore {
-
-class Animation;
-class Dictionary;
-class Element;
-
-class ElementAnimation {
-public:
-    static CSSPropertyID camelCaseCSSPropertyNameToID(const String& propertyName);
-    static Animation* animate(Element*, Vector<Dictionary> keyframesDictionaryVector, double duration = 0);
-
-private:
-    static Animation* startAnimation(Element*, Vector<Dictionary> keyframesDictionaryVector, double duration = 0);
-
-    friend class AnimationElementAnimationTest;
+[
+    RuntimeEnabled=WebAnimationsAPI,
+] interface Player {
+    readonly attribute TimedItem? source;
 };
-
-} // namespace WebCore
-
-#endif // ElementAnimation_h
