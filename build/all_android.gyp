@@ -167,21 +167,9 @@
       ],
     },  # target_name: android_builder_chromium_webrtc
     {
-      # Experimental / in-progress targets that are expected to fail
-      # but we still try to compile them on bots (turning the stage
-      # orange, not red).
+      # TODO: Remove this target once bots no longer reference it.
       'target_name': 'android_experimental',
       'type': 'none',
-      'dependencies': [
-      ],
-    },
-    {
-      # In-progress targets that are expected to fail and are NOT run
-      # on any bot.
-      'target_name': 'android_in_progress',
-      'type': 'none',
-      'dependencies': [
-      ],
     },
     {
       # Build the java portions of the binary size analysis tool.
