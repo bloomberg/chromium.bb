@@ -4,8 +4,25 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
-Object.prototype.foo = "Object's foo";
+// Used to interfere into InjectedScript._propertyDescriptors()
+Object.prototype.get = function() { return "FAIL"; };
+Object.prototype.set = function() { return "FAIL"; };
+Object.prototype.value = "FAIL";
+Object.prototype.getter = "FAIL";
+Object.prototype.setter = "FAIL";
+Object.prototype.isOwn = true;
+// Used to interfere into InjectedScript.primitiveTypes
+Object.prototype.object = true;
+// Used to interfere into InjectedScript.getEventListeners()
+Object.prototype.nullValue = null;
+Object.prototype.undefValue = undefined;
+
 var foo = "bar";
+var testObj = {
+    get getter() { },
+    set setter() { },
+    baz: "baz"
+};
 
 function test()
 {
@@ -28,28 +45,54 @@ function test()
         return text.substring(begin);
     }
 
-    InspectorTest.evaluateInPage(bodyText(snippet1), step1);
-
-    function step1()
+    function dumpAndClearConsoleMessages(next)
     {
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.runAfterPendingDispatches(function() {
+            InspectorTest.dumpConsoleMessages();
+            WebInspector.console.requestClearMessages();
+            InspectorTest.runAfterPendingDispatches(next);
+        });
     }
 
-    function step2()
-    {
-        InspectorTest.evaluateInPage(bodyText(snippet2), step3);
-    }
+    InspectorTest.runTestSuite([
+        function testSnippet1(next)
+        {
+            InspectorTest.evaluateInPage(bodyText(snippet1), dumpAndClearConsoleMessages.bind(null, next));
+        },
 
-    function step3()
-    {
-        InspectorTest.evaluateInConsole("foo", step4);
-    }
+        function testSnippet2(next)
+        {
+            InspectorTest.evaluateInPage(bodyText(snippet2), dumpAndClearConsoleMessages.bind(null, next));
+        },
 
-    function step4()
-    {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    }
+        function testConsoleEvalPrimitiveValue(next)
+        {
+            InspectorTest.evaluateInConsole("foo", dumpAndClearConsoleMessages.bind(null, next));
+        },
+
+        function testConsoleEvalObject(next)
+        {
+            RuntimeAgent.evaluate("testObj", step1);
+
+            function step1(error, result)
+            {
+                RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ true, step2);
+            }
+
+            function step2(error, properties)
+            {
+                for (var i = 0; i < properties.length; i++)
+                    InspectorTest.dump(properties[i], { objectId: "formatAsTypeName" });
+
+                next();
+            }
+        },
+
+        function testGetEventListenersDoesNotThrow(next)
+        {
+            InspectorTest.evaluateInConsole("getEventListeners(document.body.firstChild)", dumpAndClearConsoleMessages.bind(null, next));
+        }
+    ]);
 }
 </script>
 </head>
