@@ -5,8 +5,11 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/strings/string_split.h"
 #include "third_party/re2/re2/re2.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 #include "tools/ipc_fuzzer/message_lib/message_names.h"
@@ -38,8 +41,8 @@ const char kStartSwitchHelp[] =
     "output messages after |n|th message in file (inclusive).";
 
 void usage() {
-  std::cerr << "ipc_message_util: Copy a subset of message file |infile|"
-            << " to |outfile|.\n";
+  std::cerr << "ipc_message_util: Concatenate all |infile| message files and "
+            << "copy a subset of the result to |outfile|.\n";
 
   std::cerr << "Usage:\n"
             << "  ipc_message_util"
@@ -49,7 +52,7 @@ void usage() {
             << " [--" << kInvertSwitch << "]"
             << " [--" << kDumpSwitch << "]"
             << " [--" << kHelpSwitch << "]"
-            << " infile [outfile]\n";
+            << " infile,infile,... [outfile]\n";
 
   std::cerr << "    --" << kStartSwitch << "  - " << kStartSwitchHelp << "\n"
             << "    --" << kEndSwitch << "    - " << kEndSwitchHelp << "\n"
@@ -99,8 +102,9 @@ int main(int argc, char** argv) {
   bool invert = cmd->HasSwitch(kInvertSwitch);
   bool perform_dump = cmd->HasSwitch(kDumpSwitch);
 
-  std::string input_file_name = args[0];
+  std::vector<std::string> input_file_names;
   std::string output_file_name;
+  base::SplitString(args[0], ',', &input_file_names);
 
   if (!perform_dump) {
     if (args.size() < 2) {
@@ -111,11 +115,15 @@ int main(int argc, char** argv) {
   }
 
   ipc_fuzzer::MessageVector input_message_vector;
-  if (!ipc_fuzzer::MessageFile::Read(
-          base::FilePath(input_file_name), &input_message_vector)) {
-    return EXIT_FAILURE;
+  for (std::vector<std::string>::iterator it = input_file_names.begin();
+      it != input_file_names.end(); ++it) {
+    ipc_fuzzer::MessageVector message_vector;
+    if (!ipc_fuzzer::MessageFile::Read(base::FilePath(*it), &message_vector))
+      return EXIT_FAILURE;
+    input_message_vector.insert(input_message_vector.end(),
+                                message_vector.begin(), message_vector.end());
+    message_vector.weak_clear();
   }
-
 
   ipc_fuzzer::MessageVector output_message_vector;
   std::vector<size_t> remap_vector;

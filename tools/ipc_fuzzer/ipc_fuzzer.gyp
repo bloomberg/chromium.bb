@@ -12,6 +12,8 @@
       'type': 'none',
       'dependencies': [
         'mutate/mutate.gyp:ipc_fuzzer_mutate',
+        'mutate/mutate.gyp:ipc_fuzzer_generate',
+        'mutate/mutate.gyp:ipc_message_util',
         'replay/replay.gyp:ipc_fuzzer_replay',
       ],
     },
