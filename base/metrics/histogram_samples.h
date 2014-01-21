@@ -39,7 +39,9 @@ class BASE_EXPORT HistogramSamples {
 
   // Accessor fuctions.
   int64 sum() const { return sum_; }
-  HistogramBase::Count redundant_count() const { return redundant_count_; }
+  HistogramBase::Count redundant_count() const {
+    return subtle::NoBarrier_Load(&redundant_count_);
+  }
 
  protected:
   // Based on |op| type, add or subtract sample counts data from the iterator.
@@ -59,7 +61,7 @@ class BASE_EXPORT HistogramSamples {
   // types, there might be races during histogram accumulation and snapshotting
   // that we choose to accept. In this case, the tallies might mismatch even
   // when no memory corruption has happened.
-  HistogramBase::Count redundant_count_;
+  HistogramBase::AtomicCount redundant_count_;
 };
 
 class BASE_EXPORT SampleCountIterator {

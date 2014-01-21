@@ -64,7 +64,10 @@ HistogramSamples::~HistogramSamples() {}
 
 void HistogramSamples::Add(const HistogramSamples& other) {
   sum_ += other.sum();
-  redundant_count_ += other.redundant_count();
+  HistogramBase::Count old_redundant_count =
+      subtle::NoBarrier_Load(&redundant_count_);
+  subtle::NoBarrier_Store(&redundant_count_,
+      old_redundant_count + other.redundant_count());
   bool success = AddSubtractImpl(other.Iterator().get(), ADD);
   DCHECK(success);
 }
@@ -76,7 +79,10 @@ bool HistogramSamples::AddFromPickle(PickleIterator* iter) {
   if (!iter->ReadInt64(&sum) || !iter->ReadInt(&redundant_count))
     return false;
   sum_ += sum;
-  redundant_count_ += redundant_count;
+  HistogramBase::Count old_redundant_count =
+      subtle::NoBarrier_Load(&redundant_count_);
+  subtle::NoBarrier_Store(&redundant_count_,
+                          old_redundant_count + redundant_count);
 
   SampleCountPickleIterator pickle_iter(iter);
   return AddSubtractImpl(&pickle_iter, ADD);
@@ -84,13 +90,17 @@ bool HistogramSamples::AddFromPickle(PickleIterator* iter) {
 
 void HistogramSamples::Subtract(const HistogramSamples& other) {
   sum_ -= other.sum();
-  redundant_count_ -= other.redundant_count();
+  HistogramBase::Count old_redundant_count =
+      subtle::NoBarrier_Load(&redundant_count_);
+  subtle::NoBarrier_Store(&redundant_count_,
+                          old_redundant_count - other.redundant_count());
   bool success = AddSubtractImpl(other.Iterator().get(), SUBTRACT);
   DCHECK(success);
 }
 
 bool HistogramSamples::Serialize(Pickle* pickle) const {
-  if (!pickle->WriteInt64(sum_) || !pickle->WriteInt(redundant_count_))
+  if (!pickle->WriteInt64(sum_) ||
+      !pickle->WriteInt(subtle::NoBarrier_Load(&redundant_count_)))
     return false;
 
   HistogramBase::Sample min;
@@ -113,8 +123,8 @@ void HistogramSamples::IncreaseSum(int64 diff) {
 }
 
 void HistogramSamples::IncreaseRedundantCount(HistogramBase::Count diff) {
-  base::subtle::NoBarrier_Store(&redundant_count_,
-      base::subtle::NoBarrier_Load(&redundant_count_) + diff);
+  subtle::NoBarrier_Store(&redundant_count_,
+      subtle::NoBarrier_Load(&redundant_count_) + diff);
 }
 
 SampleCountIterator::~SampleCountIterator() {}

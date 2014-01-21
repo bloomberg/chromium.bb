@@ -46,7 +46,7 @@ class BASE_EXPORT_PRIVATE SampleVector : public HistogramSamples {
  private:
   FRIEND_TEST_ALL_PREFIXES(HistogramTest, CorruptSampleCounts);
 
-  std::vector<HistogramBase::Count> counts_;
+  std::vector<HistogramBase::AtomicCount> counts_;
 
   // Shares the same BucketRanges with Histogram object.
   const BucketRanges* const bucket_ranges_;
@@ -56,7 +56,7 @@ class BASE_EXPORT_PRIVATE SampleVector : public HistogramSamples {
 
 class BASE_EXPORT_PRIVATE SampleVectorIterator : public SampleCountIterator {
  public:
-  SampleVectorIterator(const std::vector<HistogramBase::Count>* counts,
+  SampleVectorIterator(const std::vector<HistogramBase::AtomicCount>* counts,
                        const BucketRanges* bucket_ranges);
   virtual ~SampleVectorIterator();
 
@@ -73,7 +73,7 @@ class BASE_EXPORT_PRIVATE SampleVectorIterator : public SampleCountIterator {
  private:
   void SkipEmptyBuckets();
 
-  const std::vector<HistogramBase::Count>* counts_;
+  const std::vector<HistogramBase::AtomicCount>* counts_;
   const BucketRanges* bucket_ranges_;
 
   size_t index_;

@@ -32,20 +32,20 @@ void SampleVector::Accumulate(Sample value, Count count) {
 
 Count SampleVector::GetCount(Sample value) const {
   size_t bucket_index = GetBucketIndex(value);
-  return counts_[bucket_index];
+  return subtle::NoBarrier_Load(&counts_[bucket_index]);
 }
 
 Count SampleVector::TotalCount() const {
   Count count = 0;
   for (size_t i = 0; i < counts_.size(); i++) {
-    count += counts_[i];
+    count += subtle::NoBarrier_Load(&counts_[i]);
   }
   return count;
 }
 
 Count SampleVector::GetCountAtIndex(size_t bucket_index) const {
   DCHECK(bucket_index < counts_.size());
-  return counts_[bucket_index];
+  return subtle::NoBarrier_Load(&counts_[bucket_index]);
 }
 
 scoped_ptr<SampleCountIterator> SampleVector::Iterator() const {
@@ -66,7 +66,10 @@ bool SampleVector::AddSubtractImpl(SampleCountIterator* iter,
     if (min == bucket_ranges_->range(index) &&
         max == bucket_ranges_->range(index + 1)) {
       // Sample matches this bucket!
-      counts_[index] += (op ==  HistogramSamples::ADD) ? count : -count;
+      HistogramBase::Count old_counts =
+          subtle::NoBarrier_Load(&counts_[index]);
+      subtle::NoBarrier_Store(&counts_[index],
+          old_counts + ((op ==  HistogramSamples::ADD) ? count : -count));
       iter->Next();
     } else if (min > bucket_ranges_->range(index)) {
       // Sample is larger than current bucket range. Try next.
@@ -138,7 +141,7 @@ void SampleVectorIterator::Get(HistogramBase::Sample* min,
   if (max != NULL)
     *max = bucket_ranges_->range(index_ + 1);
   if (count != NULL)
-    *count = (*counts_)[index_];
+    *count = subtle::NoBarrier_Load(&(*counts_)[index_]);
 }
 
 bool SampleVectorIterator::GetBucketIndex(size_t* index) const {
@@ -153,7 +156,7 @@ void SampleVectorIterator::SkipEmptyBuckets() {
     return;
 
   while (index_ < counts_->size()) {
-    if ((*counts_)[index_] != 0)
+    if (subtle::NoBarrier_Load(&(*counts_)[index_]) != 0)
       return;
     index_++;
   }

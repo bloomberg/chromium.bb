@@ -49,7 +49,8 @@ BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(
 class BASE_EXPORT HistogramBase {
  public:
   typedef int Sample;                   // Used for samples.
-  typedef subtle::Atomic32 Count;     // Used to count samples.
+  typedef subtle::Atomic32 AtomicCount; // Used to count samples.
+  typedef int32 Count;  // Used to manipulate counts in temporaries.
 
   static const Sample kSampleType_MAX;  // INT_MAX
 
