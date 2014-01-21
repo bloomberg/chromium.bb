@@ -807,8 +807,7 @@ class LayerTreeHostCopyRequestTestProvideTexture
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
     sync_point_ = gl->InsertSyncPointCHROMIUM();
-    request->SetTextureMailbox(
-        TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point_));
+    request->SetTextureMailbox(TextureMailbox(mailbox, sync_point_));
     EXPECT_TRUE(request->has_texture_mailbox());
 
     copy_layer_->RequestCopyOfOutput(request.Pass());

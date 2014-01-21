@@ -31,16 +31,12 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "ui/gfx/rect_f.h"
 
-namespace blink {
-class WebFrame;
-}
-
-namespace gpu {
-struct MailboxHolder;
-}
-
 namespace media {
 class MediaLog;
+}
+
+namespace blink {
+class WebFrame;
 }
 
 namespace webkit {
@@ -227,7 +223,7 @@ class WebMediaPlayerAndroid
   static void OnReleaseRemotePlaybackTexture(
       const scoped_refptr<base::MessageLoopProxy>& main_loop,
       const base::WeakPtr<WebMediaPlayerAndroid>& player,
-      const gpu::MailboxHolder* mailbox_holder);
+      uint32 sync_point);
 
  protected:
   // Helper method to update the playing state.

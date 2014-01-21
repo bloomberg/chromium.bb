@@ -620,7 +620,7 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
 }
 
 void ReleaseCallback(scoped_ptr<base::SharedMemory> memory,
-                     uint32 sync_point,
+                     unsigned sync_point,
                      bool lost_resource) {}
 
 bool PepperGraphics2DHost::PrepareTextureMailbox(

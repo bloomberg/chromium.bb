@@ -2213,7 +2213,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
         return;
       }
     } else {
-      mailbox = request->texture_mailbox().mailbox();
+      mailbox = request->texture_mailbox().name();
       DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
                 request->texture_mailbox().target());
       DCHECK(!mailbox.IsZero());

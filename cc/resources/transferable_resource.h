@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
@@ -29,10 +29,12 @@ struct CC_EXPORT TransferableResource {
                               ReturnedResourceArray* output);
 
   unsigned id;
+  unsigned sync_point;
   ResourceFormat format;
+  uint32 target;
   uint32 filter;
   gfx::Size size;
-  gpu::MailboxHolder mailbox_holder;
+  gpu::Mailbox mailbox;
   bool is_software;
 };
 

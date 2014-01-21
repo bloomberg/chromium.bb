@@ -19,7 +19,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -716,15 +715,18 @@ void GLHelper::WaitSyncPoint(uint32 sync_point) {
   gl_->WaitSyncPointCHROMIUM(sync_point);
 }
 
-gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
-    GLuint texture_id) {
+gpu::Mailbox GLHelper::ProduceMailboxFromTexture(GLuint texture_id,
+                                                 uint32* sync_point) {
   gpu::Mailbox mailbox;
   gl_->GenMailboxCHROMIUM(mailbox.name);
-  if (mailbox.IsZero())
-    return gpu::MailboxHolder();
+  if (mailbox.IsZero()) {
+    *sync_point = 0;
+    return mailbox;
+  }
   content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture_id);
   gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-  return gpu::MailboxHolder(mailbox, GL_TEXTURE_2D, InsertSyncPoint());
+  *sync_point = InsertSyncPoint();
+  return mailbox;
 }
 
 GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,

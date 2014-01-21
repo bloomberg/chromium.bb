@@ -105,8 +105,7 @@ class MEDIA_EXPORT GpuVideoDecoder
       const scoped_refptr<VideoFrame>& frame);
 
   // Indicate the picture buffer can be reused by the decoder.
-  void ReusePictureBuffer(int64 picture_buffer_id,
-                          const gpu::MailboxHolder* mailbox_holder);
+  void ReusePictureBuffer(int64 picture_buffer_id, uint32 sync_point);
 
   void RecordBufferData(
       const BitstreamBuffer& bitstream_buffer, const DecoderBuffer& buffer);

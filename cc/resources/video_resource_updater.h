@@ -104,7 +104,7 @@ class CC_EXPORT VideoResourceUpdater
   };
   static void RecycleResource(base::WeakPtr<VideoResourceUpdater> updater,
                               RecycleResourceData data,
-                              uint32 sync_point,
+                              unsigned sync_point,
                               bool lost_resource);
 
   ContextProvider* context_provider_;

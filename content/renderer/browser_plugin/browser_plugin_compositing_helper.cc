@@ -141,9 +141,10 @@ void BrowserPluginCompositingHelper::CheckSizeAndAdjustLayerProperties(
     background_layer_->SetIsDrawable(false);
 }
 
-void BrowserPluginCompositingHelper::MailboxReleased(SwapBuffersInfo mailbox,
-                                                     uint32 sync_point,
-                                                     bool lost_resource) {
+void BrowserPluginCompositingHelper::MailboxReleased(
+    SwapBuffersInfo mailbox,
+    unsigned sync_point,
+    bool lost_resource) {
   if (mailbox.type == SOFTWARE_COMPOSITOR_FRAME) {
     delete mailbox.shared_memory;
     mailbox.shared_memory = NULL;
@@ -228,7 +229,7 @@ void BrowserPluginCompositingHelper::OnContainerDestroy() {
 
 void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
     const SwapBuffersInfo& mailbox,
-    uint32 sync_point,
+    unsigned sync_point,
     float device_scale_factor) {
   DCHECK(!delegated_layer_.get());
   // If these mismatch, we are either just starting up, GPU process crashed or
@@ -291,12 +292,10 @@ void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
         base::Bind(&BrowserPluginCompositingHelper::MailboxReleased,
                    scoped_refptr<BrowserPluginCompositingHelper>(this),
                    mailbox)).Pass();
-    if (is_software_frame) {
+    if (is_software_frame)
       texture_mailbox = cc::TextureMailbox(mailbox.shared_memory, mailbox.size);
-    } else {
-      texture_mailbox =
-          cc::TextureMailbox(mailbox.name, GL_TEXTURE_2D, sync_point);
-    }
+    else
+      texture_mailbox = cc::TextureMailbox(mailbox.name, sync_point);
   }
 
   texture_layer_->SetFlipped(!is_software_frame);

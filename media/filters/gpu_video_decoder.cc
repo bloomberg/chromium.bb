@@ -13,7 +13,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
@@ -443,11 +442,13 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(decoder_texture_target_);
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      make_scoped_ptr(new gpu::MailboxHolder(
-          pb.texture_mailbox(), decoder_texture_target_, 0 /* sync_point */)),
-      BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReusePictureBuffer,
-                                   weak_this_,
-                                   picture.picture_buffer_id())),
+      make_scoped_ptr(new VideoFrame::MailboxHolder(
+          pb.texture_mailbox(),
+          0,  // sync_point
+          BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReusePictureBuffer,
+                                       weak_this_,
+                                       picture.picture_buffer_id())))),
+      decoder_texture_target_,
       pb.size(),
       visible_rect,
       natural_size,
@@ -455,7 +456,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
       base::Bind(&GpuVideoAcceleratorFactories::ReadPixels,
                  factories_,
                  pb.texture_id(),
-                 gfx::Size(visible_rect.width(), visible_rect.height()))));
+                 gfx::Size(visible_rect.width(), visible_rect.height())),
+      base::Closure()));
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
   bool inserted =
@@ -487,9 +489,8 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
   ready_video_frames_.pop_front();
 }
 
-void GpuVideoDecoder::ReusePictureBuffer(
-    int64 picture_buffer_id,
-    const gpu::MailboxHolder* mailbox_holder) {
+void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id,
+                                         uint32 sync_point) {
   DVLOG(3) << "ReusePictureBuffer(" << picture_buffer_id << ")";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
@@ -513,7 +514,7 @@ void GpuVideoDecoder::ReusePictureBuffer(
     return;
   }
 
-  factories_->WaitSyncPoint(mailbox_holder->sync_point);
+  factories_->WaitSyncPoint(sync_point);
   ++available_pictures_;
 
   vda_->ReusePictureBuffer(picture_buffer_id);

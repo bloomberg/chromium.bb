@@ -9,7 +9,8 @@
 
 namespace cc {
 
-typedef base::Callback<void(uint32 sync_point, bool is_lost)> ReleaseCallback;
+typedef base::Callback<void(unsigned sync_point, bool is_lost)>
+    ReleaseCallback;
 
 }  // namespace cc
 
