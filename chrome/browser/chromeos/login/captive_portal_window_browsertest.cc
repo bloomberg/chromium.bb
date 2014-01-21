@@ -74,7 +74,8 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    CHECK(LoginDisplayHostImpl::default_host());
+    host_ = LoginDisplayHostImpl::default_host();
+    CHECK(host_);
     content::WebContents* web_contents =
         LoginDisplayHostImpl::default_host()->GetWebUILoginView()->
             GetWebContents();
@@ -82,10 +83,22 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
         new CaptivePortalWindowProxy(&delegate_, web_contents));
   }
 
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    captive_portal_window_proxy_.reset();
+    base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
+    base::MessageLoopForUI::current()->RunUntilIdle();
+  }
+
  private:
   scoped_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;
   CaptivePortalWindowProxyStubDelegate delegate_;
+
+  LoginDisplayHost* host_;
 };
+
+IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, Show) {
+  Show();
+}
 
 IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, ShowClose) {
   CheckState(false, 0);

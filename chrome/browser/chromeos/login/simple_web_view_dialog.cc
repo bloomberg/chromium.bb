@@ -137,18 +137,13 @@ SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
 }
 
 SimpleWebViewDialog::~SimpleWebViewDialog() {
-  if (web_view_container_.get()) {
-    // WebView can't be deleted immediately, because it could be on the stack.
-    web_view_->web_contents()->SetDelegate(NULL);
-    base::MessageLoop::current()->DeleteSoon(
-        FROM_HERE, web_view_container_.release());
-  }
 }
 
 void SimpleWebViewDialog::StartLoad(const GURL& url) {
   if (!web_view_container_.get())
     web_view_container_.reset(new views::WebView(profile_));
   web_view_ = web_view_container_.get();
+  web_view_->set_owned_by_client();
   web_view_->GetWebContents()->SetDelegate(this);
   web_view_->LoadInitialURL(url);
 
@@ -223,7 +218,7 @@ void SimpleWebViewDialog::Init() {
   layout->AddPaddingRow(0, kInnerMargin);
 
   layout->StartRow(1, 1);
-  layout->AddView(web_view_container_.release());
+  layout->AddView(web_view_container_.get());
   layout->AddPaddingRow(0, kInnerMargin);
 
   LoadImages();
