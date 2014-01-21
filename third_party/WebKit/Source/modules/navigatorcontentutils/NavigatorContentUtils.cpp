@@ -67,7 +67,7 @@ static void initProtocolHandlerWhitelist()
         protocolWhitelist->add(protocols[i]);
 }
 
-static bool verifyCustomHandlerURL(const String& baseURL, const String& url, ExceptionState& exceptionState)
+static bool verifyCustomHandlerURL(const KURL& baseURL, const String& url, ExceptionState& exceptionState)
 {
     // The specification requires that it is a SyntaxError if the "%s" token is
     // not present.
@@ -83,11 +83,10 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     String newURL = url;
     newURL.remove(index, WTF_ARRAY_LENGTH(token) - 1);
 
-    KURL base(ParsedURLString, baseURL);
-    KURL kurl(base, newURL);
+    KURL kurl(baseURL, newURL);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + baseURL + "' is invalid.");
+        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + baseURL.string() + "' is invalid.");
         return false;
     }
 
@@ -143,7 +142,7 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
     if (!document)
         return;
 
-    String baseURL = document->baseURL().baseAsString();
+    KURL baseURL = document->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
         return;
@@ -151,7 +150,7 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
     if (!verifyProtocolHandlerScheme(scheme, "registerProtocolHandler", exceptionState))
         return;
 
-    NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, url, title);
+    NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url), title);
 }
 
 static String customHandlersStateString(const NavigatorContentUtilsClient::CustomHandlersState state)
@@ -181,7 +180,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, 
         return declined;
 
     Document* document = navigator->frame()->document();
-    String baseURL = document->baseURL().baseAsString();
+    KURL baseURL = document->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
         return declined;
@@ -189,7 +188,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, 
     if (!verifyProtocolHandlerScheme(scheme, "isProtocolHandlerRegistered", exceptionState))
         return declined;
 
-    return customHandlersStateString(NavigatorContentUtils::from(navigator->frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, url));
+    return customHandlersStateString(NavigatorContentUtils::from(navigator->frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, KURL(ParsedURLString, url)));
 }
 
 void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
@@ -198,7 +197,7 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, cons
         return;
 
     Document* document = navigator->frame()->document();
-    String baseURL = document->baseURL().baseAsString();
+    KURL baseURL = document->baseURL();
 
     if (!verifyCustomHandlerURL(baseURL, url, exceptionState))
         return;
@@ -206,7 +205,7 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, cons
     if (!verifyProtocolHandlerScheme(scheme, "unregisterProtocolHandler", exceptionState))
         return;
 
-    NavigatorContentUtils::from(navigator->frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, url);
+    NavigatorContentUtils::from(navigator->frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, KURL(ParsedURLString, url));
 }
 
 const char* NavigatorContentUtils::supplementName()

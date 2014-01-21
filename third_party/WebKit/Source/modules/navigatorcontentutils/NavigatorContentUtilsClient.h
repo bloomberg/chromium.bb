@@ -26,6 +26,7 @@
 #ifndef NavigatorContentUtilsClient_h
 #define NavigatorContentUtilsClient_h
 
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -35,7 +36,7 @@ class Page;
 class NavigatorContentUtilsClient {
 public:
     virtual ~NavigatorContentUtilsClient() { }
-    virtual void registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title) = 0;
+    virtual void registerProtocolHandler(const String& scheme, const KURL& baseURL, const KURL&, const String& title) = 0;
 
     enum CustomHandlersState {
         CustomHandlersNew,
@@ -43,8 +44,8 @@ public:
         CustomHandlersDeclined
     };
 
-    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const String& baseURL, const String& url) = 0;
-    virtual void unregisterProtocolHandler(const String& scheme, const String& baseURL, const String& url) = 0;
+    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const KURL& baseURL, const KURL&) = 0;
+    virtual void unregisterProtocolHandler(const String& scheme, const KURL& baseURL, const KURL&) = 0;
 };
 
 void provideNavigatorContentUtilsTo(Page*, NavigatorContentUtilsClient*);

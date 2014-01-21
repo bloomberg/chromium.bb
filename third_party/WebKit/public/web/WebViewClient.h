@@ -352,16 +352,37 @@ public:
     // action that wasn't initiated by the client.
     virtual void zoomLevelChanged() { }
 
+    // Navigator Content Utils  --------------------------------------------
+
     // Registers a new URL handler for the given protocol.
     virtual void registerProtocolHandler(const WebString& scheme,
-                                         const WebString& baseUrl,
-                                         const WebString& url,
-                                         const WebString& title) { }
+        const WebURL& baseUrl,
+        const WebURL& url,
+        const WebString& title)
+    {
+        registerProtocolHandler(scheme, baseUrl.string(), url.string(), title);
+    }
 
     // Unregisters a given URL handler for the given protocol.
-    virtual void unregisterProtocolHandler(const WebString& scheme, const WebString& baseUrl, const WebString& url) { }
+    virtual void unregisterProtocolHandler(const WebString& scheme, const WebURL& baseUrl, const WebURL& url)
+    {
+        unregisterProtocolHandler(scheme, baseUrl.string(), url.string());
+    }
 
     // Check if a given URL handler is registered for the given protocol.
+    virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebURL& baseUrl, const WebURL& url)
+    {
+        return isProtocolHandlerRegistered(scheme, baseUrl.string(), url.string());
+    }
+
+    // These old version APIs need to be removed after synching with chrome side.
+    virtual void registerProtocolHandler(const WebString& scheme,
+        const WebString& baseUrl,
+        const WebString& url,
+        const WebString& title) { }
+
+    virtual void unregisterProtocolHandler(const WebString& scheme, const WebString& baseUrl, const WebString& url) { }
+
     virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebString& baseUrl, const WebString& url)
     {
         return WebCustomHandlersNew;

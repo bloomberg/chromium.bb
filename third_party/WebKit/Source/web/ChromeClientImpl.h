@@ -36,6 +36,7 @@
 #include "core/page/ChromeClient.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/PopupMenu.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/WebColor.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -217,9 +218,9 @@ public:
     static PassOwnPtr<NavigatorContentUtilsClientImpl> create(WebViewImpl*);
     virtual ~NavigatorContentUtilsClientImpl() { }
 
-    virtual void registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title) OVERRIDE;
-    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const String& baseURL, const String& url) OVERRIDE;
-    virtual void unregisterProtocolHandler(const String& scheme, const String& baseURL, const String& url) OVERRIDE;
+    virtual void registerProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&, const String& title) OVERRIDE;
+    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&) OVERRIDE;
+    virtual void unregisterProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&) OVERRIDE;
 
 private:
     explicit NavigatorContentUtilsClientImpl(WebViewImpl*);
