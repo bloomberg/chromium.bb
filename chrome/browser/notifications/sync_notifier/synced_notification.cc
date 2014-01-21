@@ -13,7 +13,6 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
@@ -24,6 +23,13 @@
 namespace {
 const char kExtensionScheme[] = "synced-notification://";
 const char kDefaultSyncedNotificationScheme[] = "https:";
+
+// The name of our first synced notification service.
+// TODO(petewil): remove this hardcoding once we have the synced notification
+// signalling sync data type set up to provide this.
+// crbug.com/248337
+const char kFirstSyncedNotificationServiceId[] = "Google+";
+
 
 // Today rich notifications only supports two buttons, make sure we don't
 // try to supply them with more than this number of buttons.
@@ -233,11 +239,6 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     DVLOG(2) << "Dismissed or read notification arrived"
              << GetHeading() << " " << GetText();
     return;
-  }
-
-  // |notifier_service| can be NULL in tests.
-  if (UseRichNotifications() && notifier_service) {
-    notifier_service->ShowWelcomeToastIfNecessary(this, notification_manager);
   }
 
   // Set up the fields we need to send and create a Notification object.
@@ -719,10 +720,6 @@ std::string SyncedNotification::GetSendingServiceId() const {
   // hardcoded to the name of our first service using synced notifications.
   // Once the new protocol is built, remove this hardcoding.
   return kFirstSyncedNotificationServiceId;
-}
-
-const gfx::Image& SyncedNotification::GetAppIcon() const {
-  return app_icon_bitmap_;
 }
 
 void SyncedNotification::SetToastState(bool toast_state) {

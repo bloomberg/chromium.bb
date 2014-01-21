@@ -59,7 +59,6 @@ using content::WebContents;
 using message_center::NotifierId;
 using blink::WebTextDirection;
 
-const char kChromeNowExtensionID[] = "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
 
 // NotificationPermissionInfoBarDelegate --------------------------------------
 
@@ -209,7 +208,7 @@ void DesktopNotificationService::RegisterProfilePrefs(
   registry->RegisterListPref(
       prefs::kMessageCenterEnabledSyncNotifierIds,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
+  WelcomeNotification::RegisterProfilePrefs(registry);
 }
 
 // static
@@ -622,16 +621,13 @@ void DesktopNotificationService::SetNotifierEnabled(
 
 void DesktopNotificationService::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
-  if (!chrome_now_welcome_notification_ &&
-      message_center::IsRichNotificationEnabled()) {
-    chrome_now_welcome_notification_.reset(new ExtensionWelcomeNotification(
-        kChromeNowExtensionID, profile_, g_browser_process->message_center()));
+  if (!welcome_notification && message_center::IsRichNotificationEnabled()) {
+    welcome_notification.reset(
+        new WelcomeNotification(profile_, g_browser_process->message_center()));
   }
 
-  if (chrome_now_welcome_notification_) {
-    chrome_now_welcome_notification_->ShowWelcomeNotificationIfNecessary(
-        notification);
-  }
+  if (welcome_notification)
+    welcome_notification->ShowWelcomeNotificationIfNecessary(notification);
 }
 
 void DesktopNotificationService::OnStringListPrefChanged(

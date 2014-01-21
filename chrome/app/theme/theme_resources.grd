@@ -498,7 +498,6 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_ICON" file="common/notification_welcome_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_LEARN_MORE" file="common/notification_welcome_learn_more.png" />
-      <structure type="chrome_scaled_image" name="IDR_NOTIFIER_BLOCK_BUTTON" file="common/block_notifier.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM" file="common/omnibox_border_and_shadow_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_LEFT" file="common/omnibox_border_and_shadow_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_RIGHT" file="common/omnibox_border_and_shadow_bottom_right.png" />

@@ -61,9 +61,7 @@ class StubNotificationUIManager : public NotificationUIManager {
                       GURL(),
                       base::string16(),
                       base::string16(),
-                      new MockNotificationDelegate("stub")),
-        welcomed_(false),
-        added_notifications_(0U) {}
+                      new MockNotificationDelegate("stub")) {}
   virtual ~StubNotificationUIManager() {}
 
   // Adds a notification to be displayed. Virtual for unit test override.
@@ -72,10 +70,6 @@ class StubNotificationUIManager : public NotificationUIManager {
     // Make a deep copy of the notification that we can inspect.
     notification_ = notification;
     profile_ = profile;
-    ++added_notifications_;
-
-    if (notification.origin_url() == GURL(kSyncedNotificationsWelcomeOrigin))
-      welcomed_ = true;
   }
 
   virtual bool Update(const Notification& notification, Profile* profile)
@@ -132,16 +126,11 @@ class StubNotificationUIManager : public NotificationUIManager {
   // Test hook to check the ID of the last notification cancelled.
   std::string& dismissed_id() { return dismissed_id_; }
 
-  size_t added_notifications() const { return added_notifications_; }
-  bool welcomed() const { return welcomed_; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
   Notification notification_;
   Profile* profile_;
   std::string dismissed_id_;
-  bool welcomed_;
-  size_t added_notifications_;
 };
 
 // Dummy SyncChangeProcessor used to help review what SyncChanges are pushed
@@ -670,120 +659,50 @@ TEST_F(ChromeNotifierServiceTest, ServiceEnabledTest) {
 
 }
 
-TEST_F(ChromeNotifierServiceTest, AddNewSendingServicesTest) {
-  // This test will see if we get a new sending service after the first
-  // notification for that service.
+TEST_F(ChromeNotifierServiceTest, InitializePrefsTest) {
   StubNotificationUIManager notification_manager;
+  // The CTOR will call InitializePrefs().
   ChromeNotifierService notifier(profile_.get(), &notification_manager);
-  notifier.set_avoid_bitmap_fetching_for_test(true);
 
-  notifier.MergeDataAndStartSyncing(
-      SYNCED_NOTIFICATIONS,
-      SyncDataList(),
-      PassProcessor(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+  // Verify the first synced notification service ID is set to enabled in
+  // preferences.
+  std::string service_name(kFirstSyncedNotificationServiceId);
+  base::StringValue service_name_value(service_name);
+  const base::ListValue* enabled_set = notifier.profile()->GetPrefs()->GetList(
+      prefs::kEnabledSyncedNotificationSendingServices);
+  base::ValueVector::const_iterator iter =
+      enabled_set->Find(service_name_value);
+  EXPECT_NE(enabled_set->end(), iter);
 
-  // We initially have no data.
-  EXPECT_EQ(0U, notifier.enabled_sending_services_.size());
-  EXPECT_EQ(0U, notifier.GetAllSyncData(SYNCED_NOTIFICATIONS).size());
+  // Verify the first synced notification service ID is set to initialized in
+  // preferences.
+  const base::ListValue* initialized_set =
+      notifier.profile()->GetPrefs()->GetList(
+          prefs::kInitializedSyncedNotificationSendingServices);
+  iter = initialized_set->Find(service_name_value);
+  EXPECT_NE(initialized_set->end(), iter);
 
-  // Set up an ADD.
-  SyncChangeList changes;
-  changes.push_back(
-      CreateSyncChange(SyncChange::ACTION_ADD,
-                       CreateNotification(kTitle1,
-                                          kText1,
-                                          kIconUrl1,
-                                          kImageUrl1,
-                                          kFirstSyncedNotificationServiceId,
-                                          kKey1,
-                                          kUnread)));
+  // Verify that synced notification first run pref is set to "true".
+  bool first_run = notifier.profile()->GetPrefs()->GetBoolean(
+      prefs::kSyncedNotificationFirstRun);
+  EXPECT_EQ(true, first_run);
+}
 
-  notifier.ProcessSyncChanges(FROM_HERE, changes);
-
-  EXPECT_EQ(1U, notifier.GetAllSyncData(SYNCED_NOTIFICATIONS).size());
+TEST_F(ChromeNotifierServiceTest,
+       AddNewSendingServicesTest) {
+  StubNotificationUIManager notification_manager;
+  std::string first_synced_notification_service_id(
+      kFirstSyncedNotificationServiceId);
+  // The CTOR will call AddnewSendingServices()
+  ChromeNotifierService notifier(profile_.get(), &notification_manager);
 
   // Verify that the first synced notification service is enabled in memory.
   std::set<std::string>::iterator iter;
-  std::string first_notification_service_id(kFirstSyncedNotificationServiceId);
   iter = find(notifier.enabled_sending_services_.begin(),
               notifier.enabled_sending_services_.end(),
-              first_notification_service_id);
+              first_synced_notification_service_id);
 
   EXPECT_NE(notifier.enabled_sending_services_.end(), iter);
-
-  // We should have gotten the synced notification and a welcome notification.
-  EXPECT_EQ(2U, notification_manager.added_notifications());
-  EXPECT_TRUE(notification_manager.welcomed());
-
-  changes.clear();
-  changes.push_back(
-      CreateSyncChange(SyncChange::ACTION_ADD,
-                       CreateNotification(kTitle2,
-                                          kText2,
-                                          kIconUrl2,
-                                          kImageUrl2,
-                                          kFirstSyncedNotificationServiceId,
-                                          kKey2,
-                                          kUnread)));
-  notifier.ProcessSyncChanges(FROM_HERE, changes);
-
-  // But adding another notification should not cause another welcome.
-  EXPECT_EQ(3U, notification_manager.added_notifications());
-}
-
-TEST_F(ChromeNotifierServiceTest, CheckInitializedServicesTest) {
-  // This test will see if we get a new sending service after the first
-  // notification for that service.
-  StubNotificationUIManager notification_manager;
-  ChromeNotifierService notifier(profile_.get(), &notification_manager);
-  notifier.set_avoid_bitmap_fetching_for_test(true);
-
-  // Initialize but do not enable the sending service.
-  notifier.initialized_sending_services_.insert(
-      kFirstSyncedNotificationServiceId);
-  ASSERT_EQ(0U, notifier.enabled_sending_services_.size());
-  ASSERT_EQ(1U, notifier.initialized_sending_services_.size());
-
-  notifier.MergeDataAndStartSyncing(
-      SYNCED_NOTIFICATIONS,
-      SyncDataList(),
-      PassProcessor(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
-
-  // We initially have no data.
-  EXPECT_EQ(0U, notifier.enabled_sending_services_.size());
-  EXPECT_EQ(0U, notifier.GetAllSyncData(SYNCED_NOTIFICATIONS).size());
-
-  // Set up an ADD.
-  std::string first_synced_notification_service_id(
-      kFirstSyncedNotificationServiceId);
-
-  SyncChangeList changes;
-  changes.push_back(
-      CreateSyncChange(SyncChange::ACTION_ADD,
-                       CreateNotification(kTitle1,
-                                          kText1,
-                                          kIconUrl1,
-                                          kImageUrl1,
-                                          kFirstSyncedNotificationServiceId,
-                                          kKey1,
-                                          kUnread)));
-
-  notifier.ProcessSyncChanges(FROM_HERE, changes);
-
-  EXPECT_EQ(0U, notifier.enabled_sending_services_.size());
-  EXPECT_EQ(0U, notification_manager.added_notifications());
-}
-
-TEST_F(ChromeNotifierServiceTest, CheckFindAppInfo) {
-  StubNotificationUIManager notification_manager;
-  ChromeNotifierService notifier(profile_.get(), &notification_manager);
-  notifier.set_avoid_bitmap_fetching_for_test(true);
-
-  SyncedNotificationAppInfo* app_info =
-      notifier.FindAppInfo(kFirstSyncedNotificationServiceId);
-  EXPECT_TRUE(app_info != NULL);
 }
 
 }  // namespace notifier

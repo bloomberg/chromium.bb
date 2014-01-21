@@ -13584,15 +13584,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
           <ph name="product_name">$1<ex>Chrome</ex></ph> Notifications
         </message>
       </if>
-      <message name="IDS_NOTIFIER_WELCOME_TITLE" desc="Notification title for when a new notifier service is introduced.">
-        <ph name="service_name">$1<ex>Google+</ex></ph> notifications
-      </message>
-      <message name="IDS_NOTIFIER_WELCOME_BODY" desc="Notification body for when a new notifier service is introduced.">
-        Now on your desktop
-      </message>
-      <message name="IDS_NOTIFIER_WELCOME_BUTTON" desc="Notification body for when a new notifier service is introduced.">
-        Turn off these notifications
-      </message>
 
       <!-- Mac AppleScript -->
       <if expr="is_macosx">

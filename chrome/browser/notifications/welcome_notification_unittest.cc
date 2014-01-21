@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/extension_welcome_notification.h"
+#include "chrome/browser/notifications/welcome_notification.h"
 
 #include <string>
 
@@ -25,9 +25,9 @@ const char kChromeNowExtensionID[] = "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter()
-      : add_notification_calls_(0),
-        remove_notification_calls_(0),
-        notifications_with_shown_as_popup_(0) {};
+    : add_notification_calls_(0),
+      remove_notification_calls_(0),
+      notifications_with_shown_as_popup_(0) {};
 
   int add_notification_calls() { return add_notification_calls_; }
   int remove_notification_calls() { return remove_notification_calls_; }
@@ -37,7 +37,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 
   // message_center::FakeMessageCenter Overrides
   virtual bool HasNotification(const std::string& id) OVERRIDE {
-    return last_notification.get() && (last_notification->id() == id);
+    return last_notification.get() &&
+        (last_notification->id() == id);
   }
 
   virtual void AddNotification(
@@ -49,8 +50,8 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
       notifications_with_shown_as_popup_++;
   }
 
-  virtual void RemoveNotification(const std::string& id,
-                                  bool by_user) OVERRIDE {
+  virtual void RemoveNotification(const std::string& id, bool by_user)
+      OVERRIDE {
     EXPECT_TRUE(last_notification.get());
     last_notification.reset();
     remove_notification_calls_++;
@@ -76,26 +77,26 @@ class TestSyncProcessor : public syncer::SyncChangeProcessor {
     return syncer::SyncError();
   }
 
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const OVERRIDE {
+  virtual syncer::SyncDataList GetAllSyncData(
+      syncer::ModelType type) const OVERRIDE {
     return syncer::SyncDataList();
   }
 };
 
-class ExtensionWelcomeNotificationTest : public testing::Test {
+class WelcomeNotificationTest : public testing::Test {
  protected:
-  ExtensionWelcomeNotificationTest() {
+  WelcomeNotificationTest() {
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry(
         new user_prefs::PrefRegistrySyncable());
-    ExtensionWelcomeNotification::RegisterProfilePrefs(pref_registry.get());
+    WelcomeNotification::RegisterProfilePrefs(pref_registry.get());
   }
 
   virtual void SetUp() {
     message_loop_.reset(new base::MessageLoop());
     profile_.reset(new TestingProfile());
     message_center_.reset(new MockMessageCenter());
-    welcome_notification_.reset(new ExtensionWelcomeNotification(
-        kChromeNowExtensionID, profile_.get(), message_center_.get()));
+    welcome_notification_.reset(
+        new WelcomeNotification(profile_.get(), message_center_.get()));
   }
 
   virtual void TearDown() {
@@ -106,31 +107,34 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
   }
 
   void StartPreferenceSyncing() {
-    PrefServiceSyncable::FromProfile(profile())
-        ->GetSyncableService(syncer::PREFERENCES)
-        ->MergeDataAndStartSyncing(
-              syncer::PREFERENCES,
-              syncer::SyncDataList(),
-              scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessor),
-              scoped_ptr<syncer::SyncErrorFactory>(
-                  new syncer::SyncErrorFactoryMock()));
+    PrefServiceSyncable::FromProfile(profile())->GetSyncableService(
+        syncer::PREFERENCES)->MergeDataAndStartSyncing(
+            syncer::PREFERENCES,
+            syncer::SyncDataList(),
+            scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessor),
+            scoped_ptr<syncer::SyncErrorFactory>(
+                new syncer::SyncErrorFactoryMock()));
   }
 
   void ShowChromeNowNotification() {
     ShowNotification(
         "ChromeNowNotification",
-        message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                   kChromeNowExtensionID));
+        message_center::NotifierId(
+            message_center::NotifierId::APPLICATION,
+            kChromeNowExtensionID));
   }
 
   void ShowRegularNotification() {
     ShowNotification(
         "RegularNotification",
-        message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                   "aaaabbbbccccddddeeeeffffggghhhhi"));
+        message_center::NotifierId(
+            message_center::NotifierId::APPLICATION,
+            "aaaabbbbccccddddeeeeffffggghhhhi"));
   }
 
-  void FlushMessageLoop() { message_loop_->RunUntilIdle(); }
+  void FlushMessageLoop() {
+    message_loop_->RunUntilIdle();
+  }
 
   TestingProfile* profile() { return profile_.get(); }
   MockMessageCenter* message_center() { return message_center_.get(); }
@@ -138,7 +142,8 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
  private:
   class TestNotificationDelegate : public NotificationDelegate {
    public:
-    explicit TestNotificationDelegate(const std::string& id) : id_(id) {}
+    explicit TestNotificationDelegate(const std::string& id)
+        : id_(id) {}
 
     // Overridden from NotificationDelegate:
     virtual void Display() OVERRIDE {}
@@ -161,38 +166,41 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     DISALLOW_COPY_AND_ASSIGN(TestNotificationDelegate);
   };
 
-  void ShowNotification(std::string notification_id,
-                        const message_center::NotifierId& notifier_id) {
+  void ShowNotification(
+      std::string notification_id,
+      const message_center::NotifierId& notifier_id) {
     message_center::RichNotificationData rich_notification_data;
     rich_notification_data.priority = 0;
-    Notification notification(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
-                              GURL("http://tests.url"),
-                              base::UTF8ToUTF16("Title"),
-                              base::UTF8ToUTF16("Body"),
-                              gfx::Image(),
-                              blink::WebTextDirectionDefault,
-                              notifier_id,
-                              base::UTF8ToUTF16("Source"),
-                              base::UTF8ToUTF16(notification_id),
-                              rich_notification_data,
-                              new TestNotificationDelegate("TestNotification"));
+    Notification notification(
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+        GURL("http://tests.url"),
+        base::UTF8ToUTF16("Title"),
+        base::UTF8ToUTF16("Body"),
+        gfx::Image(),
+        blink::WebTextDirectionDefault,
+        notifier_id,
+        base::UTF8ToUTF16("Source"),
+        base::UTF8ToUTF16(notification_id),
+        rich_notification_data,
+        new TestNotificationDelegate("TestNotification"));
     welcome_notification_->ShowWelcomeNotificationIfNecessary(notification);
   }
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MockMessageCenter> message_center_;
-  scoped_ptr<ExtensionWelcomeNotification> welcome_notification_;
+  scoped_ptr<WelcomeNotification> welcome_notification_;
   scoped_ptr<base::MessageLoop> message_loop_;
 };
 
 // Show a regular notification. Expect that WelcomeNotification will
 // not show a welcome notification.
-TEST_F(ExtensionWelcomeNotificationTest, FirstRunShowRegularNotification) {
+TEST_F(WelcomeNotificationTest, FirstRunShowRegularNotification) {
   StartPreferenceSyncing();
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowRegularNotification();
 
@@ -201,18 +209,20 @@ TEST_F(ExtensionWelcomeNotificationTest, FirstRunShowRegularNotification) {
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
 
 // Show a Chrome Now notification. Expect that WelcomeNotification will
 // show a welcome notification.
-TEST_F(ExtensionWelcomeNotificationTest, FirstRunChromeNowNotification) {
+TEST_F(WelcomeNotificationTest, FirstRunChromeNowNotification) {
   StartPreferenceSyncing();
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowChromeNowNotification();
 
@@ -221,19 +231,21 @@ TEST_F(ExtensionWelcomeNotificationTest, FirstRunChromeNowNotification) {
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
 
 // Show a Chrome Now notification that was already shown before.
-TEST_F(ExtensionWelcomeNotificationTest, ShowWelcomeNotificationAgain) {
+TEST_F(WelcomeNotificationTest, ShowWelcomeNotificationAgain) {
   StartPreferenceSyncing();
   profile()->GetPrefs()->SetBoolean(
       prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowChromeNowNotification();
 
@@ -242,19 +254,20 @@ TEST_F(ExtensionWelcomeNotificationTest, ShowWelcomeNotificationAgain) {
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 1);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
 
 // Don't show a welcome notification if it was previously dismissed
-TEST_F(ExtensionWelcomeNotificationTest,
-       WelcomeNotificationPreviouslyDismissed) {
+TEST_F(WelcomeNotificationTest, WelcomeNotificationPreviouslyDismissed) {
   StartPreferenceSyncing();
   profile()->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissed, true);
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowChromeNowNotification();
 
@@ -263,18 +276,20 @@ TEST_F(ExtensionWelcomeNotificationTest,
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
 
 // Show a Chrome Now notification and dismiss it.
 // Expect welcome toast dismissed to be true.
-TEST_F(ExtensionWelcomeNotificationTest, DismissWelcomeNotification) {
+TEST_F(WelcomeNotificationTest, DismissWelcomeNotification) {
   StartPreferenceSyncing();
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowChromeNowNotification();
   message_center()->CloseCurrentNotification();
@@ -285,18 +300,20 @@ TEST_F(ExtensionWelcomeNotificationTest, DismissWelcomeNotification) {
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
 
 // Show a Chrome Now notification and dismiss it via a synced preference change.
 // Expect welcome toast dismissed to be true.
-TEST_F(ExtensionWelcomeNotificationTest, SyncedDismissalWelcomeNotification) {
+TEST_F(WelcomeNotificationTest, SyncedDismissalWelcomeNotification) {
   StartPreferenceSyncing();
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowChromeNowNotification();
   profile()->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissed, true);
@@ -306,19 +323,20 @@ TEST_F(ExtensionWelcomeNotificationTest, SyncedDismissalWelcomeNotification) {
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
 
 // Simulate a delayed preference sync when the welcome notification was
 // previously dismissed.
-TEST_F(ExtensionWelcomeNotificationTest,
-       DelayedPreferenceSyncPreviouslyDismissed) {
+TEST_F(WelcomeNotificationTest, DelayedPreferenceSyncPreviouslyDismissed) {
   // Show a notification while the preference system is not syncing.
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowChromeNowNotification();
 
@@ -327,15 +345,17 @@ TEST_F(ExtensionWelcomeNotificationTest,
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   // Now start the preference syncing with a previously dismissed welcome.
   profile()->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissed, true);
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   StartPreferenceSyncing();
 
@@ -344,18 +364,20 @@ TEST_F(ExtensionWelcomeNotificationTest,
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
 
 // Simulate a delayed preference sync when the welcome notification was
 // never shown.
-TEST_F(ExtensionWelcomeNotificationTest, DelayedPreferenceSyncNeverShown) {
+TEST_F(WelcomeNotificationTest, DelayedPreferenceSyncNeverShown) {
   // Show a notification while the preference system is not syncing.
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   ShowChromeNowNotification();
 
@@ -364,14 +386,16 @@ TEST_F(ExtensionWelcomeNotificationTest, DelayedPreferenceSyncNeverShown) {
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   // Now start the preference syncing with the default preference values.
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 
   StartPreferenceSyncing();
 
@@ -380,6 +404,7 @@ TEST_F(ExtensionWelcomeNotificationTest, DelayedPreferenceSyncNeverShown) {
   EXPECT_TRUE(message_center()->notifications_with_shown_as_popup() == 0);
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed));
-  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp));
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(
+          prefs::kWelcomeNotificationPreviouslyPoppedUp));
 }
