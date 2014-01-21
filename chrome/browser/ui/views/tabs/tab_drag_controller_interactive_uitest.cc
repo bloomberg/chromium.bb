@@ -2058,10 +2058,19 @@ IN_PROC_BROWSER_TEST_F(
       ui_controls::LEFT, ui_controls::UP));
 }
 
+#if defined(OS_CHROMEOS)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_CancelDragTabToWindowIn1stDisplay \
+  DISABLED_CancelDragTabToWindowIn1stDisplay
+#else
+#define MAYBE_CancelDragTabToWindowIn1stDisplay \
+  CancelDragTabToWindowIn1stDisplay
+#endif
 // Drags from browser from a second display to primary and releases input.
 IN_PROC_BROWSER_TEST_F(
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
-    CancelDragTabToWindowIn1stDisplay) {
+    MAYBE_CancelDragTabToWindowIn1stDisplay) {
   aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
 
