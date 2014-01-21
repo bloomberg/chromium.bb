@@ -59,13 +59,13 @@ namespace sockets.udp {
   // |sendInfo| : Result of the <code>send</code> method.
   callback SendCallback = void (SendInfo sendInfo);
 
-  // Callback from the <code>close<code> method.
+  // Callback from the <code>close</code> method.
   callback CloseCallback = void ();
 
   // Callback from the <code>update</code> method.
   callback UpdateCallback = void ();
 
-  // Callback from the <code>setPaused<code> method.
+  // Callback from the <code>setPaused</code> method.
   callback SetPausedCallback = void ();
 
   // Result of the <code>getInfo</code> method.

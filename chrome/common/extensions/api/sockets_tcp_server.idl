@@ -44,13 +44,13 @@ namespace sockets.tcpServer {
   // Callback from the <code>disconnect</code> method.
   callback DisconnectCallback = void ();
 
-  // Callback from the <code>close<code> method.
+  // Callback from the <code>close</code> method.
   callback CloseCallback = void ();
 
   // Callback from the <code>update</code> method.
   callback UpdateCallback = void ();
 
-  // Callback from the <code>setPaused<code> method.
+  // Callback from the <code>setPaused</code> method.
   callback SetPausedCallback = void ();
 
   // Result of the <code>getInfo</code> method.
@@ -67,9 +67,9 @@ namespace sockets.tcpServer {
     DOMString? name;
 
     // Flag indicating whether connection requests on a listening socket are
-    // dispatched through the <code>onAccept<code> event or queued up in the
+    // dispatched through the <code>onAccept</code> event or queued up in the
     // listen queue backlog.
-    // See <code>setPaused<code>. The default value is "false".
+    // See <code>setPaused</code>. The default value is "false".
     boolean paused;
 
     // If the socket is listening, contains its local IPv4/6 address.
@@ -94,7 +94,7 @@ namespace sockets.tcpServer {
 
     // The client socket identifier, i.e. the socket identifier of the newly
     // established connection. This socket identifier should be used only with
-    // functions from the <code>chrome.sockets.tcp<code> namespace. Note the
+    // functions from the <code>chrome.sockets.tcp</code> namespace. Note the
     // client socket is initially paused and must be explictly un-paused by the
     // application to start receiving data.
     long clientSocketId;
@@ -126,8 +126,8 @@ namespace sockets.tcpServer {
 
     // Enables or disables a listening socket from accepting new connections.
     // When paused, a listening socket accepts new connections until its backlog
-    // (see <code>listen<code> function) is full then refuses additional
-    // connection requests. <code>onAccept<code> events are raised only when
+    // (see <code>listen</code> function) is full then refuses additional
+    // connection requests. <code>onAccept</code> events are raised only when
     // the socket is un-paused.
     static void setPaused(long socketId,
                           boolean paused,
@@ -150,7 +150,7 @@ namespace sockets.tcpServer {
 
     // Disconnects the listening socket, i.e. stops accepting new connections
     // and releases the address/port the socket is bound to. The socket
-    // identifier remains valid, e.g. it can be used with <code>listen<code> to
+    // identifier remains valid, e.g. it can be used with <code>listen</code> to
     // accept connections on a new port and address.
     // |socketId| : The socket identifier.
     // |callback| : Called when the disconnect attempt is complete.

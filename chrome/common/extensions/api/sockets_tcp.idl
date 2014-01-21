@@ -61,21 +61,21 @@ namespace sockets.tcp {
   // |sendInfo| : Result of the <code>send</code> method.
   callback SendCallback = void (SendInfo sendInfo);
 
-  // Callback from the <code>close<code> method.
+  // Callback from the <code>close</code> method.
   callback CloseCallback = void ();
 
   // Callback from the <code>update</code> method.
   callback UpdateCallback = void ();
 
-  // Callback from the <code>setPaused<code> method.
+  // Callback from the <code>setPaused</code> method.
   callback SetPausedCallback = void ();
 
-  // Callback from the <code>setKeepAliveCallback<code> method.
+  // Callback from the <code>setKeepAliveCallback</code> method.
   // |result| : The result code returned from the underlying network call.
   // A negative value indicates an error.
   callback SetKeepAliveCallback = void (long result);
 
-  // Callback from the <code>setNodeDelay<code> method.
+  // Callback from the <code>setNodeDelay</code> method.
   // |result| : The result code returned from the underlying network call.
   // A negative value indicates an error.
   callback SetNoDelayCallback = void (long result);
@@ -160,8 +160,8 @@ namespace sockets.tcp {
     // Enables or disables the application from receiving messages from its
     // peer. The default value is "false". Pausing a socket is typically used
     // by an application to throttle data sent by its peer. When a socket is
-    // paused, no <code>onReceive<code> event is raised. When a socket is
-    // connected and un-paused, <code>onReceive<code> events are raised again
+    // paused, no <code>onReceive</code> event is raised. When a socket is
+    // connected and un-paused, <code>onReceive</code> events are raised again
     // when messages are received.
     static void setPaused(long socketId,
                           boolean paused,
