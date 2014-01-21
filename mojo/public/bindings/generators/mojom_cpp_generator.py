@@ -120,6 +120,7 @@ class CppGenerator(mojom_generator.Generator):
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "interfaces": self.module.interfaces,
+      "include_prefix": self.GetIncludePrefix(),
     }
 
   @UseJinja("cpp_templates/module_internal.h.tmpl", filters=cpp_filters)
@@ -130,6 +131,7 @@ class CppGenerator(mojom_generator.Generator):
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "interfaces": self.module.interfaces,
+      "include_prefix": self.GetIncludePrefix(),
     }
 
   @UseJinja("cpp_templates/module.cc.tmpl", filters=cpp_filters)
@@ -140,6 +142,7 @@ class CppGenerator(mojom_generator.Generator):
       "enums": self.module.enums,
       "structs": self.GetStructs(),
       "interfaces": self.module.interfaces,
+      "include_prefix": self.GetIncludePrefix(),
     }
 
   def GenerateFiles(self):
@@ -147,3 +150,10 @@ class CppGenerator(mojom_generator.Generator):
     self.Write(self.GenerateModuleInternalHeader(),
         "%s_internal.h" % self.module.name)
     self.Write(self.GenerateModuleSource(), "%s.cc" % self.module.name)
+
+  def GetIncludePrefix(self):
+    if not self.header_dir:
+      return ""
+    if self.header_dir[-1] == "/":
+      return self.header_dir
+    return self.header_dir + "/"
