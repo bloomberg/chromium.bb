@@ -61,6 +61,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+static inline bool isShadowInsertionPointFocusScopeOwner(Node& node)
+{
+    return isActiveShadowInsertionPoint(node) && toHTMLShadowElement(node).olderShadowRoot();
+}
+
 // FIXME: Some of Node* return values and Node* arguments should be Element*.
 
 FocusNavigationScope::FocusNavigationScope(TreeScope* treeScope)
@@ -102,7 +107,7 @@ FocusNavigationScope FocusNavigationScope::ownedByNonFocusableFocusScopeOwner(No
     ASSERT(node);
     if (isShadowHost(node))
         return FocusNavigationScope::ownedByShadowHost(node);
-    ASSERT(isActiveShadowInsertionPoint(*node));
+    ASSERT(isShadowInsertionPointFocusScopeOwner(*node));
     return FocusNavigationScope::ownedByShadowInsertionPoint(toHTMLShadowElement(node));
 }
 
@@ -120,7 +125,7 @@ FocusNavigationScope FocusNavigationScope::ownedByIFrame(HTMLFrameOwnerElement* 
 
 FocusNavigationScope FocusNavigationScope::ownedByShadowInsertionPoint(HTMLShadowElement* shadowInsertionPoint)
 {
-    ASSERT(shadowInsertionPoint->isActive());
+    ASSERT(isShadowInsertionPointFocusScopeOwner(*shadowInsertionPoint));
     return FocusNavigationScope(shadowInsertionPoint->olderShadowRoot());
 }
 
@@ -196,7 +201,7 @@ static inline bool isKeyboardFocusableShadowHost(Node* node)
 static inline bool isNonFocusableFocusScopeOwner(Node* node)
 {
     ASSERT(node);
-    return isNonKeyboardFocusableShadowHost(node) || isActiveShadowInsertionPoint(*node);
+    return isNonKeyboardFocusableShadowHost(node) || isShadowInsertionPointFocusScopeOwner(*node);
 }
 
 static inline int adjustedTabIndex(Node* node)
