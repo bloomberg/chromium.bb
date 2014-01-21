@@ -66,6 +66,13 @@ void WebStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long grant
         m_quotaCallback->handleEvent(grantedQuotaInBytes);
 }
 
+void WebStorageQuotaCallbacksImpl::didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes)
+{
+    OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
+    if (m_quotaCallback)
+        m_quotaCallback->handleEvent(grantedQuotaInBytes);
+}
+
 void WebStorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
 {
     OwnPtr<WebStorageQuotaCallbacksImpl> deleter = adoptPtr(this);
