@@ -125,34 +125,22 @@ void GetNetworkListOnFileThread(
 
 #else
 
-IPAddressNumber GetBestBindAddressByType(
-    const chromeos::NetworkTypePattern& type) {
+// Finds the IP address of the preferred interface of network type |type|
+// to bind the socket and inserts the address into |bind_address_list|. This
+// ChromeOS version can prioritize wifi and ethernet interfaces.
+void InsertBestBindAddressChromeOS(
+    const chromeos::NetworkTypePattern& type,
+    std::vector<IPAddressNumber>* bind_address_list) {
   const chromeos::NetworkState* state = chromeos::NetworkHandler::Get()
       ->network_state_handler()->ConnectedNetworkByType(type);
   IPAddressNumber bind_ip_address;
-  if (!state ||
-      !net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)) {
-    return IPAddressNumber();
+  if (state
+      && net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)
+      && bind_ip_address.size() == net::kIPv4AddressSize) {
+    DVLOG(1) << "Found " << state->type() << ", " << state->name() << ": "
+             << state->ip_address();
+    bind_address_list->push_back(bind_ip_address);
   }
-  if (bind_ip_address.size() != net::kIPv4AddressSize) {
-    return IPAddressNumber();
-  }
-
-  DVLOG(1) << "Found " << state->type() << ", " << state->name() << ":"
-           << state->ip_address();
-  return bind_ip_address;
-}
-
-// Returns the IP address of the preferred interface to bind the socket. This
-// ChromeOS version can prioritize wifi and ethernet interfaces.
-IPAddressNumber GetBestBindAddressChromeOS() {
-  IPAddressNumber bind_ip_address =
-      GetBestBindAddressByType(chromeos::NetworkTypePattern::Ethernet());
-  if (bind_ip_address.empty()) {
-    bind_ip_address =
-        GetBestBindAddressByType(chromeos::NetworkTypePattern::WiFi());
-  }
-  return bind_ip_address;
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -452,13 +440,10 @@ void DialServiceImpl::StartDiscovery() {
   // require trampolining to another thread, and contains additional interface
   // information such as interface types (i.e. wifi vs cellular).
   std::vector<IPAddressNumber> chrome_os_address_list;
-  IPAddressNumber chrome_os_best_address =
-      GetBestBindAddressChromeOS();
-  VLOG(2) << "Got best bind address "
-             << net::IPAddressToString(chrome_os_best_address);
-  if (chrome_os_best_address.size() == net::kIPv4AddressSize) {
-    chrome_os_address_list.push_back(chrome_os_best_address);
-  }
+  InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::Ethernet(),
+                                &chrome_os_address_list);
+  InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::WiFi(),
+                                &chrome_os_address_list);
   DiscoverOnAddresses(chrome_os_address_list);
 
 #else
