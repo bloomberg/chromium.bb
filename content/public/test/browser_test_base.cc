@@ -120,7 +120,6 @@ extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
     : allow_test_contexts_(true),
-      allow_osmesa_(true),
       use_software_compositing_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
@@ -176,37 +175,36 @@ void BrowserTestBase::SetUp() {
 
   // Use test contexts for browser tests unless they override and force us to
   // use a real context.
-  if (allow_test_contexts_ && !use_software_compositing_) {
-    content::ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ui::ContextFactory>(new ui::TestContextFactory));
-  }
+  if (allow_test_contexts_ && !use_software_compositing_)
+    command_line->AppendSwitch(switches::kDisableGLDrawingForTests);
 #endif
 
-  // When using real GL contexts, we usually use OSMesa as this works on all
-  // bots. The command line can override this behaviour to use a real GPU.
-  if (command_line->HasSwitch(switches::kUseGpuInTests))
-    allow_osmesa_ = false;
+  bool use_osmesa = true;
 
-  // Some bots pass this flag when they want to use a real GPU.
+  // We usually use OSMesa as this works on all bots. The command line can
+  // override this behaviour to use hardware GL.
+  if (command_line->HasSwitch(switches::kUseGpuInTests))
+    use_osmesa = false;
+
+  // Some bots pass this flag when they want to use hardware GL.
   if (command_line->HasSwitch("enable-gpu"))
-    allow_osmesa_ = false;
+    use_osmesa = false;
 
 #if defined(OS_MACOSX)
-  // On Mac we always use a real GPU.
-  allow_osmesa_ = false;
+  // On Mac we always use hardware GL.
+  use_osmesa = false;
 #endif
 
 #if defined(OS_ANDROID)
-  // On Android we always use a real GPU.
-  allow_osmesa_ = false;
+  // On Android we always use hardware GL.
+  use_osmesa = false;
 #endif
 
 #if defined(OS_CHROMEOS)
   // If the test is running on the chromeos envrionment (such as
-  // device or vm bots), the compositor will use real GL contexts, and
-  // we should use real GL bindings with it.
+  // device or vm bots), we use hardware GL.
   if (base::SysInfo::IsRunningOnChromeOS())
-    allow_osmesa_ = false;
+    use_osmesa = false;
 #endif
 
   if (command_line->HasSwitch(switches::kUseGL)) {
@@ -214,7 +212,7 @@ void BrowserTestBase::SetUp() {
         "kUseGL should not be used with tests. Try kUseGpuInTests instead.";
   }
 
-  if (allow_osmesa_ && !use_software_compositing_) {
+  if (use_osmesa && !use_software_compositing_) {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
   }
@@ -286,19 +284,11 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
 
 void BrowserTestBase::UseRealGLContexts() { allow_test_contexts_ = false; }
 
-void BrowserTestBase::UseRealGLBindings() {
-  DCHECK(!use_software_compositing_)
-      << "Can't use GL with software compositing";
-  allow_osmesa_ = false;
-}
-
 void BrowserTestBase::UseSoftwareCompositing() {
 #if !defined(USE_AURA) && !defined(OS_MACOSX)
   // TODO(danakj): Remove when GTK linux is no more.
   NOTREACHED();
 #endif
-
-  DCHECK(allow_osmesa_) << "Can't use GL with software compositing";
   use_software_compositing_ = true;
 }
 

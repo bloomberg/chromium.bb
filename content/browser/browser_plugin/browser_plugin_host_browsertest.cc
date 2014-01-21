@@ -225,11 +225,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
         TestBrowserPluginHostFactory::GetInstance());
     content::BrowserPluginGuestManager::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
-
-    // We need real contexts, otherwise the embedder doesn't composite, but the
-    // guest does, and that isn't an expected configuration.
-    UseRealGLContexts();
-
     ContentBrowserTest::SetUp();
   }
   virtual void TearDown() OVERRIDE {
@@ -818,7 +813,19 @@ class BrowserPluginThreadedCompositorTest : public BrowserPluginHostTest {
   virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
     BrowserPluginHostTest::SetUpCommandLine(cmd);
     cmd->AppendSwitch(switches::kEnableThreadedCompositing);
+  }
+};
 
+class BrowserPluginThreadedCompositorPixelTest
+    : public BrowserPluginThreadedCompositorTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    UseRealGLContexts();
+    BrowserPluginThreadedCompositorTest::SetUp();
+  }
+
+  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
+    BrowserPluginThreadedCompositorTest::SetUpCommandLine(cmd);
     // http://crbug.com/327035
     cmd->AppendSwitch(switches::kDisableDelegatedRenderer);
   }
@@ -894,7 +901,7 @@ static void CompareSkBitmapAndRun(const base::Closure& callback,
 #else
 #define MAYBE_GetBackingStore GetBackingStore
 #endif
-IN_PROC_BROWSER_TEST_F(BrowserPluginThreadedCompositorTest,
+IN_PROC_BROWSER_TEST_F(BrowserPluginThreadedCompositorPixelTest,
                        MAYBE_GetBackingStore) {
   const char kEmbedderURL[] = "/browser_plugin_embedder.html";
   const char kHTMLForGuest[] =

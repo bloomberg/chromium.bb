@@ -26,14 +26,6 @@ const char MediaBrowserTest::kEnded[] = "ENDED";
 const char MediaBrowserTest::kError[] = "ERROR";
 const char MediaBrowserTest::kFailed[] = "FAILED";
 
-void MediaBrowserTest::SetUp() {
-  // TODO(danakj): The GPU Video Decoder needs real GL bindings.
-  // crbug.com/269087
-  UseRealGLBindings();
-
-  ContentBrowserTest::SetUp();
-}
-
 void MediaBrowserTest::RunMediaTestPage(
     const char* html_page, std::vector<StringPair>* query_params,
     const char* expected, bool http) {

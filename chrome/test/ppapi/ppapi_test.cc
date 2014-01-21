@@ -129,6 +129,13 @@ void PPAPITestBase::InfoBarObserver::VerifyInfoBarState() {
 PPAPITestBase::PPAPITestBase() {
 }
 
+void PPAPITestBase::SetUp() {
+  // Some of these tests require pixel output.
+  UseRealGLContexts();
+
+  InProcessBrowserTest::SetUp();
+}
+
 void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
   // The test sends us the result via a cookie.
   command_line->AppendSwitch(switches::kEnableFileCookies);

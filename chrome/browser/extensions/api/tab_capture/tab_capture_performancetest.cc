@@ -99,6 +99,12 @@ class TabCapturePerformanceTest
     return suffix;
   }
 
+  virtual void SetUp() OVERRIDE {
+    // These tests needs pixel results.
+    UseRealGLContexts();
+    ExtensionApiTest::SetUp();
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (!ScalingMethod().empty()) {
       command_line->AppendSwitchASCII(switches::kTabCaptureUpscaleQuality,
@@ -124,8 +130,6 @@ class TabCapturePerformanceTest
     } else {
       command_line->AppendSwitchASCII(switches::kWindowSize, "2000,1500");
     }
-
-    UseRealGLContexts();
 
     if (!HasFlag(kUseGpu)) {
       command_line->AppendSwitch(switches::kDisableGpu);

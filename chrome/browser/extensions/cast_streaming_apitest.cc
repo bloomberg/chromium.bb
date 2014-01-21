@@ -18,21 +18,6 @@ class CastStreamingApiTest : public ExtensionApiTest {
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
     command_line->AppendSwitch(switches::kDisableP2PSocketSTUNFilter);
   }
-
-  virtual void SetUp() OVERRIDE {
-    // TODO(danakj): The GPU Video Decoder needs real GL bindings.
-    // crbug.com/269087
-    UseRealGLBindings();
-
-    // These test should be using OSMesa on CrOS, which would make this
-    // unneeded.
-    // crbug.com/313128
-#if !defined(OS_CHROMEOS)
-    UseRealGLContexts();
-#endif
-
-    ExtensionApiTest::SetUp();
-  }
 };
 
 // Test running the test extension for Cast Mirroring API.

@@ -34,26 +34,17 @@ const char kExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
 
 class TabCaptureApiTest : public ExtensionApiTest {
  public:
-  TabCaptureApiTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    // TODO(danakj): The GPU Video Decoder needs real GL bindings.
-    // crbug.com/269087
-    UseRealGLBindings();
-
-    // These test should be using OSMesa on CrOS, which would make this
-    // unneeded.
-    // crbug.com/313128
-#if !defined(OS_CHROMEOS)
-    UseRealGLContexts();
-#endif
-
-    ExtensionApiTest::SetUp();
-  }
-
   void AddExtensionToCommandLineWhitelist() {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kWhitelistedExtensionID, kExtensionId);
+  }
+};
+
+class TabCaptureApiPixelTest : public TabCaptureApiTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    UseRealGLContexts();
+    TabCaptureApiTest::SetUp();
   }
 };
 
@@ -96,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
 #else
 #define MAYBE_EndToEnd EndToEnd
 #endif
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_EndToEnd) {
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
