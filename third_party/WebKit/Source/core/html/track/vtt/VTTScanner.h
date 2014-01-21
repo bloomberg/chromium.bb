@@ -126,6 +126,9 @@ public:
     // Note: Does not handle sign.
     unsigned scanDigits(int& number);
 
+    // Scan a floating point value on one of the forms: \d+\.? \d+\.\d+ \.\d+
+    bool scanFloat(float& number);
+
 protected:
     Position position() const { return m_data.characters8; }
     Position end() const { return m_end.characters8; }

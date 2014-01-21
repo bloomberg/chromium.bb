@@ -248,7 +248,8 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
         break;
     case Width: {
         float floatWidth;
-        if (VTTParser::parseFloatPercentageValue(value, floatWidth))
+        VTTScanner valueScanner(value);
+        if (VTTParser::parseFloatPercentageValue(valueScanner, floatWidth) && valueScanner.isAtEnd())
             m_width = floatWidth;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Width");

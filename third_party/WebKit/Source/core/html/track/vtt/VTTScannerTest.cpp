@@ -304,6 +304,49 @@ TEST(VTTScanner, ScanDigits)
     TEST_WITH(scanDigits2, "-654 1000000000000000000");
 }
 
+void scanFloatValue(const String& input)
+{
+    VTTScanner scanner(input);
+    float value;
+    // "1."
+    EXPECT_TRUE(scanner.scanFloat(value));
+    EXPECT_EQ(value, 1.0f);
+    EXPECT_TRUE(scanner.scan(' '));
+
+    // "1.0"
+    EXPECT_TRUE(scanner.scanFloat(value));
+    EXPECT_EQ(value, 1.0f);
+    EXPECT_TRUE(scanner.scan(' '));
+
+    // ".0"
+    EXPECT_TRUE(scanner.scanFloat(value));
+    EXPECT_EQ(value, 0.0f);
+    EXPECT_TRUE(scanner.scan(' '));
+
+    // "." (invalid)
+    EXPECT_FALSE(scanner.scanFloat(value));
+    EXPECT_TRUE(scanner.match('.'));
+    EXPECT_TRUE(scanner.scan('.'));
+    EXPECT_TRUE(scanner.scan(' '));
+
+    // "1.0000"
+    EXPECT_TRUE(scanner.scanFloat(value));
+    EXPECT_EQ(value, 1.0f);
+    EXPECT_TRUE(scanner.scan(' '));
+
+    // "01.000"
+    EXPECT_TRUE(scanner.scanFloat(value));
+    EXPECT_EQ(value, 1.0f);
+
+    EXPECT_TRUE(scanner.isAtEnd());
+}
+
+// Tests scanFloat().
+TEST(VTTScanner, ScanFloat)
+{
+    TEST_WITH(scanFloatValue, "1. 1.0 .0 . 1.0000 01.000");
+}
+
 #undef TEST_WITH
 
 } // namespace

@@ -95,7 +95,7 @@ public:
     static bool collectTimeStamp(const String&, double& timeStamp);
 
     // Useful functions for parsing percentage settings.
-    static bool parseFloatPercentageValue(const String&, float&);
+    static bool parseFloatPercentageValue(VTTScanner& valueScanner, float& percentage);
     static bool parseFloatPercentageValuePair(const String&, char, FloatPoint&);
 
     // Create the DocumentFragment representation of the WebVTT cue text.

@@ -48,62 +48,42 @@ const double secondsPerMinute = 60;
 const double secondsPerMillisecond = 0.001;
 const unsigned fileIdentifierLength = 6;
 
-static unsigned scanDigits(const String& input, unsigned* position)
-{
-    unsigned startPosition = *position;
-    while (*position < input.length() && isASCIIDigit(input[*position]))
-        (*position)++;
-    return *position - startPosition;
-}
-
 unsigned VTTParser::collectDigitsToInt(const String& input, unsigned* position, int& number)
 {
     VTTLegacyScanner inputScanner(input, position);
     return inputScanner.scanDigits(number);
 }
 
-bool VTTParser::parseFloatPercentageValue(const String& value, float& percentage)
+bool VTTParser::parseFloatPercentageValue(VTTScanner& valueScanner, float& percentage)
 {
+    float number;
+    if (!valueScanner.scanFloat(number))
+        return false;
     // '%' must be present and at the end of the setting value.
-    if (value.isEmpty() || value[value.length() - 1] != '%')
+    if (!valueScanner.scan('%'))
         return false;
-
-    unsigned position = 0;
-    unsigned digitsBeforeDot = scanDigits(value, &position);
-    unsigned digitsAfterDot = 0;
-    if (value[position] == '.') {
-        position++;
-
-        digitsAfterDot = scanDigits(value, &position);
-    }
-
-    // At least one digit required.
-    if (!digitsBeforeDot && !digitsAfterDot)
-        return false;
-
-    float number = value.toFloat();
     if (number < 0 || number > 100)
         return false;
-
     percentage = number;
     return true;
 }
 
 bool VTTParser::parseFloatPercentageValuePair(const String& value, char delimiter, FloatPoint& valuePair)
 {
-    // The delimiter can't be the first or second value because a pair of
-    // percentages (x%,y%) implies that at least the first two characters
-    // are the first percentage value.
-    size_t delimiterOffset = value.find(delimiter, 2);
-    if (delimiterOffset == kNotFound || delimiterOffset == value.length() - 1)
-        return false;
+    VTTScanner valueScanner(value);
 
     float firstCoord;
-    if (!parseFloatPercentageValue(value.substring(0, delimiterOffset), firstCoord))
+    if (!parseFloatPercentageValue(valueScanner, firstCoord))
+        return false;
+
+    if (!valueScanner.scan(delimiter))
         return false;
 
     float secondCoord;
-    if (!parseFloatPercentageValue(value.substring(delimiterOffset + 1, value.length() - 1), secondCoord))
+    if (!parseFloatPercentageValue(valueScanner, secondCoord))
+        return false;
+
+    if (!valueScanner.isAtEnd())
         return false;
 
     valuePair = FloatPoint(firstCoord, secondCoord);

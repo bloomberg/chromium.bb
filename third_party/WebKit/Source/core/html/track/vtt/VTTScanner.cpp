@@ -139,4 +139,33 @@ unsigned VTTScanner::scanDigits(int& number)
     return numDigits;
 }
 
+bool VTTScanner::scanFloat(float& number)
+{
+    Run integerRun = collectWhile<isASCIIDigit>();
+    seekTo(integerRun.end());
+    Run decimalRun(position(), position(), m_is8Bit);
+    if (scan('.')) {
+        decimalRun = collectWhile<isASCIIDigit>();
+        seekTo(decimalRun.end());
+    }
+
+    // At least one digit required.
+    if (integerRun.isEmpty() && decimalRun.isEmpty()) {
+        // Restore to starting position.
+        seekTo(integerRun.start());
+        return false;
+    }
+
+    size_t lengthOfFloat = Run(integerRun.start(), position(), m_is8Bit).length();
+    bool validNumber;
+    if (m_is8Bit)
+        number = charactersToFloat(integerRun.start(), lengthOfFloat, &validNumber);
+    else
+        number = charactersToFloat(reinterpret_cast<const UChar*>(integerRun.start()), lengthOfFloat, &validNumber);
+
+    if (!validNumber)
+        number = std::numeric_limits<float>::max();
+    return true;
+}
+
 }
