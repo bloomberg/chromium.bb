@@ -34,18 +34,18 @@ namespace WebCore {
 
 class SVGFilter FINAL : public Filter {
 public:
-    static PassRefPtr<SVGFilter> create(const AffineTransform&, const FloatRect&, const FloatRect&, const FloatRect&, bool);
+    static PassRefPtr<SVGFilter> create(const AffineTransform&, const IntRect&, const FloatRect&, const FloatRect&, bool);
 
     virtual float applyHorizontalScale(float value) const OVERRIDE;
     virtual float applyVerticalScale(float value) const OVERRIDE;
 
-    virtual FloatRect sourceImageRect() const OVERRIDE { return m_absoluteSourceDrawingRegion; }
+    virtual IntRect sourceImageRect() const OVERRIDE { return m_absoluteSourceDrawingRegion; }
     FloatRect targetBoundingBox() const { return m_targetBoundingBox; }
 
 private:
-    SVGFilter(const AffineTransform& absoluteTransform, const FloatRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode);
+    SVGFilter(const AffineTransform& absoluteTransform, const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode);
 
-    FloatRect m_absoluteSourceDrawingRegion;
+    IntRect m_absoluteSourceDrawingRegion;
     FloatRect m_targetBoundingBox;
     bool m_effectBBoxMode;
 };

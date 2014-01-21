@@ -43,16 +43,9 @@ const AtomicString& SourceAlpha::effectName()
     return s_effectName;
 }
 
-static FloatRect sourceImageRectInResolution(Filter* filter)
-{
-    FloatRect srcRect = filter->sourceImageRect();
-    srcRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
-    return srcRect;
-}
-
 FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect)
 {
-    FloatRect srcRect = sourceImageRectInResolution(filter());
+    FloatRect srcRect = filter()->sourceImageRect();
     srcRect.intersect(requestedRect);
     addAbsolutePaintRect(srcRect);
     return srcRect;
@@ -71,11 +64,10 @@ void SourceAlpha::applySoftware()
     GraphicsContext* filterContext = resultImage->context();
     filterContext->fillRect(imageRect, Color::black);
 
-    FloatRect srcRect = sourceImageRectInResolution(filter);
-    IntRect srcIntRect = enclosingIntRect(srcRect);
+    IntRect srcRect = filter->sourceImageRect();
     filterContext->drawImageBuffer(
         filter->sourceImage(),
-        IntPoint(srcIntRect.location() - absolutePaintRect().location()),
+        IntPoint(srcRect.location() - absolutePaintRect().location()),
         CompositeDestinationIn);
 }
 

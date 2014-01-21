@@ -82,9 +82,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
     if (clipsToBounds())
         requestedRect.intersect(maxEffectRect());
 
-    FloatRect destRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
-    FloatSize filterResolution = filter()->filterResolution();
-    destRect.scale(filterResolution.width(), filterResolution.height());
+    FloatRect destRect = filter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
     FloatRect srcRect;
     if (renderer) {
         srcRect = getRendererRepaintRect(renderer);
@@ -98,7 +96,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
                 srcRect = makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect).mapRect(srcRect);
             }
         } else {
-            srcRect = filter()->absoluteTransform().mapRect(srcRect);
+            srcRect = filter()->mapLocalRectToAbsoluteRect(srcRect);
             srcRect.move(destRect.x(), destRect.y());
         }
         destRect.intersect(srcRect);
@@ -137,9 +135,7 @@ void FEImage::applySoftware()
     // FEImage results are always in ColorSpaceDeviceRGB
     setResultColorSpace(ColorSpaceDeviceRGB);
 
-    FloatRect destRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
-    FloatSize filterResolution = filter()->filterResolution();
-    destRect.scale(filterResolution.width(), filterResolution.height());
+    FloatRect destRect = filter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
     FloatRect srcRect;
 
     if (!renderer) {

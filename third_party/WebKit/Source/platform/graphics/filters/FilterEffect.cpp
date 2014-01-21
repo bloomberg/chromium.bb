@@ -110,7 +110,7 @@ FloatRect FilterEffect::getSourceRect(const FloatRect& destRect, const FloatRect
     FloatRect sourceRect = mapRect(destRect, false);
     FloatRect sourceClipRect = mapRect(destClipRect, false);
 
-    FloatRect boundaries = effectBoundaries();
+    FloatRect boundaries = filter()->mapLocalRectToAbsoluteRect(effectBoundaries());
     if (hasX())
         sourceClipRect.setX(boundaries.x());
     if (hasY())
@@ -484,7 +484,8 @@ TextStream& FilterEffect::externalRepresentation(TextStream& ts, int) const
 
 FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlags flags)
 {
-    ASSERT(filter());
+    Filter* filter = this->filter();
+    ASSERT(filter);
 
     // FETile, FETurbulence, FEFlood don't have input effects, take the filter region as unite rect.
     FloatRect subregion;
@@ -492,15 +493,19 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlag
         subregion = inputEffect(0)->determineFilterPrimitiveSubregion(flags);
         for (unsigned i = 1; i < numberOfInputEffects; ++i)
             subregion.unite(inputEffect(i)->determineFilterPrimitiveSubregion(flags));
-    } else
-        subregion = filter()->filterRegion();
+    } else {
+        subregion = filter->filterRegion();
+    }
 
     // After calling determineFilterPrimitiveSubregion on the target effect, reset the subregion again for <feTile>.
     if (filterEffectType() == FilterEffectTypeTile)
-        subregion = filter()->filterRegion();
+        subregion = filter->filterRegion();
 
-    if (flags & MapRectForward)
-        subregion = mapRect(subregion);
+    if (flags & MapRectForward) {
+        // mapRect works on absolute rectangles.
+        subregion = filter->mapAbsoluteRectToLocalRect(mapRect(
+            filter->mapLocalRectToAbsoluteRect(subregion)));
+    }
 
     FloatRect boundaries = effectBoundaries();
     if (hasX())
@@ -514,15 +519,11 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlag
 
     setFilterPrimitiveSubregion(subregion);
 
-    FloatRect absoluteSubregion = filter()->absoluteTransform().mapRect(subregion);
-    FloatSize filterResolution = filter()->filterResolution();
-    absoluteSubregion.scale(filterResolution.width(), filterResolution.height());
+    FloatRect absoluteSubregion = filter->mapLocalRectToAbsoluteRect(subregion);
 
     // Clip every filter effect to the filter region.
     if (flags & ClipToFilterRegion) {
-        FloatRect absoluteScaledFilterRegion = filter()->absoluteFilterRegion();
-        absoluteScaledFilterRegion.scale(filterResolution.width(), filterResolution.height());
-        absoluteSubregion.intersect(absoluteScaledFilterRegion);
+        absoluteSubregion.intersect(filter->absoluteFilterRegion());
     }
 
     setMaxEffectRect(absoluteSubregion);
@@ -539,8 +540,6 @@ SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) c
     SkRect rect = filter()->filterRegion();
     uint32_t flags = 0;
     FloatRect boundaries = effectBoundaries();
-    FloatSize resolution = filter()->filterResolution();
-    boundaries.scale(resolution.width(), resolution.height());
     boundaries.move(cropOffset);
     if (hasX()) {
         rect.fLeft = boundaries.x();
@@ -558,6 +557,7 @@ SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) c
         rect.fBottom = rect.fTop + boundaries.height();
         flags |= SkImageFilter::CropRect::kHasBottom_CropEdge;
     }
+    rect = filter()->mapLocalRectToAbsoluteRect(rect);
     return SkImageFilter::CropRect(rect, flags);
 }
 

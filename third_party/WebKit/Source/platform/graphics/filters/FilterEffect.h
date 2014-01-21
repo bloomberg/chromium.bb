@@ -129,6 +129,7 @@ public:
 
     // This is a recursive version of a backwards mapRect(), which also takes
     // into account the filter primitive subregion of each effect.
+    // Note: This works in absolute coordinates!
     FloatRect getSourceRect(const FloatRect& destRect, const FloatRect& clipRect);
 
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeUnknown; }

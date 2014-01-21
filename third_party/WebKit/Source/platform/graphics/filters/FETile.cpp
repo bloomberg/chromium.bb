@@ -69,7 +69,6 @@ void FETile::applySoftware()
     if (in->filterEffectType() == FilterEffectTypeSourceInput) {
         Filter* filter = this->filter();
         tileRect = filter->absoluteFilterRegion();
-        tileRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
     }
 
     OwnPtr<ImageBufferSurface> surface;

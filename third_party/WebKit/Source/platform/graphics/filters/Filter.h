@@ -33,48 +33,64 @@ class FilterEffect;
 
 class PLATFORM_EXPORT Filter : public RefCounted<Filter> {
 public:
-    Filter(const AffineTransform& absoluteTransform) : m_isAccelerated(false), m_absoluteTransform(absoluteTransform) { }
+    Filter(const AffineTransform& absoluteTransform)
+    : m_isAccelerated(false)
+    , m_absoluteTransform(absoluteTransform)
+    , m_inverseTransform(absoluteTransform.inverse())
+    {
+        // Filters can only accept scaling and translating transformations, as coordinates
+        // in most primitives are given in horizontal and vertical directions.
+        ASSERT(!absoluteTransform.b() && !absoluteTransform.c());
+    }
     virtual ~Filter() { }
 
     void setSourceImage(PassOwnPtr<ImageBuffer> sourceImage) { m_sourceImage = sourceImage; }
     ImageBuffer* sourceImage() { return m_sourceImage.get(); }
 
-    FloatSize filterResolution() const { return m_filterResolution; }
-    void setFilterResolution(const FloatSize& filterResolution) { m_filterResolution = filterResolution; }
-
     const AffineTransform& absoluteTransform() const { return m_absoluteTransform; }
-    void setAbsoluteTransform(const AffineTransform& absoluteTransform) { m_absoluteTransform = absoluteTransform; }
-    FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint& point) const { return m_absoluteTransform.inverse().mapPoint(point); }
+
+    void setAbsoluteTransform(const AffineTransform& absoluteTransform)
+    {
+        // Filters can only accept scaling and translating transformations, as coordinates
+        // in most primitives are given in horizontal and vertical directions.
+        ASSERT(!absoluteTransform.b() && !absoluteTransform.c());
+        m_absoluteTransform = absoluteTransform;
+        m_inverseTransform = absoluteTransform.inverse();
+        m_absoluteFilterRegion = m_absoluteTransform.mapRect(m_filterRegion);
+    }
+    FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint& point) const { return m_inverseTransform.mapPoint(point); }
+    FloatRect mapLocalRectToAbsoluteRect(const FloatRect& rect) const { return m_absoluteTransform.mapRect(rect); }
+    FloatRect mapAbsoluteRectToLocalRect(const FloatRect& rect) const { return m_inverseTransform.mapRect(rect); }
 
     bool isAccelerated() const { return m_isAccelerated; }
     void setIsAccelerated(bool isAccelerated) { m_isAccelerated = isAccelerated; }
 
     virtual float applyHorizontalScale(float value) const
     {
-        float filterRegionScale = absoluteFilterRegion().isEmpty() || filterRegion().isEmpty() ?
-            1.0f : absoluteFilterRegion().width() / filterRegion().width();
-        return value * m_filterResolution.width() * filterRegionScale;
+        return value * m_absoluteTransform.a();
     }
     virtual float applyVerticalScale(float value) const
     {
-        float filterRegionScale = absoluteFilterRegion().isEmpty() || filterRegion().isEmpty() ?
-            1.0f : absoluteFilterRegion().height() / filterRegion().height();
-        return value * m_filterResolution.height() * filterRegionScale;
+        return value * m_absoluteTransform.d();
     }
 
-    virtual FloatRect sourceImageRect() const = 0;
+    virtual IntRect sourceImageRect() const = 0;
 
     FloatRect absoluteFilterRegion() const { return m_absoluteFilterRegion; }
-    void setAbsoluteFilterRegion(const FloatRect& rect) { m_absoluteFilterRegion = rect; }
 
     FloatRect filterRegion() const { return m_filterRegion; }
-    void setFilterRegion(const FloatRect& rect) { m_filterRegion = rect; }
+    void setFilterRegion(const FloatRect& rect)
+    {
+        m_filterRegion = rect;
+        m_absoluteFilterRegion = m_absoluteTransform.mapRect(m_filterRegion);
+    }
+
 
 private:
     OwnPtr<ImageBuffer> m_sourceImage;
-    FloatSize m_filterResolution;
     bool m_isAccelerated;
     AffineTransform m_absoluteTransform;
+    AffineTransform m_inverseTransform;
     FloatRect m_absoluteFilterRegion;
     FloatRect m_filterRegion;
 };

@@ -41,8 +41,6 @@ ReferenceFilter::ReferenceFilter()
     : Filter(AffineTransform())
     , m_sourceGraphic(SourceGraphic::create(this))
 {
-    // FIXME: This should come from the filter DOM node's filterRes attribute.
-    setFilterResolution(FloatSize(1, 1));
 }
 
 void ReferenceFilter::setLastEffect(PassRefPtr<FilterEffect> effect)

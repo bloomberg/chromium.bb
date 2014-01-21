@@ -364,8 +364,6 @@ void FETurbulence::applySoftware()
 
     PaintingData paintingData(m_seed, roundedIntSize(filterPrimitiveSubregion().size()));
     initPaint(paintingData);
-    float baseFrequencyX = 1.0f / filter()->applyHorizontalScale(1.0f / m_baseFrequencyX);
-    float baseFrequencyY = 1.0f / filter()->applyVerticalScale(1.0f / m_baseFrequencyY);
 
     int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
     if (optimalThreadNumber > 1) {
@@ -389,8 +387,8 @@ void FETurbulence::applySoftware()
                 params.startY = startY;
                 startY += i < jobsWithExtra ? stepY + 1 : stepY;
                 params.endY = startY;
-                params.baseFrequencyX = baseFrequencyX;
-                params.baseFrequencyY = baseFrequencyY;
+                params.baseFrequencyX = m_baseFrequencyX;
+                params.baseFrequencyY = m_baseFrequencyY;
             }
 
             // Execute parallel jobs
@@ -400,7 +398,7 @@ void FETurbulence::applySoftware()
     }
 
     // Fallback to single threaded mode if there is no room for a new thread or the paint area is too small.
-    fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height(), baseFrequencyX, baseFrequencyY);
+    fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height(), m_baseFrequencyX, m_baseFrequencyY);
 }
 
 SkShader* FETurbulence::createShader(const IntRect& filterRegion)

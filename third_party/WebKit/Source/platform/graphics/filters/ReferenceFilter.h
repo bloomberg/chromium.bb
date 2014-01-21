@@ -48,7 +48,7 @@ public:
         return adoptRef(new ReferenceFilter());
     }
 
-    virtual FloatRect sourceImageRect() const OVERRIDE { return FloatRect(); }
+    virtual IntRect sourceImageRect() const OVERRIDE { return IntRect(); };
 
     void setLastEffect(PassRefPtr<FilterEffect>);
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }

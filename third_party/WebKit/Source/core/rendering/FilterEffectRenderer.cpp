@@ -80,7 +80,6 @@ FilterEffectRenderer::FilterEffectRenderer()
     , m_hasFilterThatMovesPixels(false)
     , m_hasCustomShaderFilter(false)
 {
-    setFilterResolution(FloatSize(1, 1));
     m_sourceGraphic = SourceGraphic::create(this);
 }
 
@@ -264,9 +263,10 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
     return true;
 }
 
-bool FilterEffectRenderer::updateBackingStoreRect(const FloatRect& filterRect)
+bool FilterEffectRenderer::updateBackingStoreRect(const FloatRect& floatFilterRect)
 {
-    if (!filterRect.isZero() && isFilterSizeValid(filterRect)) {
+    IntRect filterRect = enclosingIntRect(floatFilterRect);
+    if (!filterRect.isEmpty() && isFilterSizeValid(filterRect)) {
         FloatRect currentSourceRect = sourceImageRect();
         if (filterRect != currentSourceRect) {
             setSourceImageRect(filterRect);
@@ -319,11 +319,9 @@ LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const Layout
     }
     // The result of this function is the area in the "filterBoxRect" that needs to be repainted, so that we fully cover the "dirtyRect".
     FloatRect rectForRepaint = dirtyRect;
-    rectForRepaint.move(-filterBoxRect.location().x(), -filterBoxRect.location().y());
     float inf = std::numeric_limits<float>::infinity();
     FloatRect clipRect = FloatRect(FloatPoint(-inf, -inf), FloatSize(inf, inf));
     rectForRepaint = lastEffect()->getSourceRect(rectForRepaint, clipRect);
-    rectForRepaint.move(filterBoxRect.location().x(), filterBoxRect.location().y());
     rectForRepaint.intersect(filterBoxRect);
     return LayoutRect(rectForRepaint);
 }
@@ -334,7 +332,20 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     m_renderLayer = renderLayer;
     m_repaintRect = dirtyRect;
 
+    // Get the zoom factor to scale the filterSourceRect input
+    const RenderLayerModelObject* renderer = renderLayer->renderer();
+    const RenderStyle* style = renderer ? renderer->style() : 0;
+    float zoom = style ? style->effectiveZoom() : 1.0f;
+
+    // Prepare a transformation that brings the coordinates into the space
+    // filter coordinates are defined in.
+    AffineTransform absoluteTransform;
+    absoluteTransform.translate(filterBoxRect.x(), filterBoxRect.y());
+    absoluteTransform.scale(zoom, zoom);
+
     FilterEffectRenderer* filter = renderLayer->filterRenderer();
+    filter->setAbsoluteTransform(absoluteTransform);
+
     IntRect filterSourceRect = pixelSnappedIntRect(filter->computeSourceImageRectForDirtyRect(filterBoxRect, dirtyRect));
 
     if (filterSourceRect.isEmpty()) {
@@ -343,16 +354,7 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
         return false;
     }
 
-    // Get the zoom factor to scale the filterSourceRect input
-    const RenderLayerModelObject* renderer = renderLayer->renderer();
-    const RenderStyle* style = renderer ? renderer->style() : 0;
-    float zoom = style ? style->effectiveZoom() : 1.0f;
-
-    AffineTransform absoluteTransform;
-    absoluteTransform.translate(filterBoxRect.x(), filterBoxRect.y());
-    filter->setAbsoluteTransform(absoluteTransform);
-    filter->setAbsoluteFilterRegion(AffineTransform().scale(zoom).mapRect(filterSourceRect));
-    filter->setFilterRegion(absoluteTransform.inverse().mapRect(filterSourceRect));
+    filter->setFilterRegion(filter->mapAbsoluteRectToLocalRect(filterSourceRect));
     filter->lastEffect()->determineFilterPrimitiveSubregion(MapRectForward);
 
     bool hasUpdatedBackingStore = filter->updateBackingStoreRect(filterSourceRect);
