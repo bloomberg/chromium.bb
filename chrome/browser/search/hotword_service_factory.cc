@@ -14,7 +14,9 @@
 
 // static
 HotwordService* HotwordServiceFactory::GetForProfile(Profile* profile) {
-  if (!profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled) ||
+  if (!profile ||
+      (profile->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled) &&
+       !profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled)) ||
       (profile->IsOffTheRecord() &&
        !profile->GetPrefs()->GetBoolean(prefs::kHotwordSearchIncognitoEnabled)))
     return NULL;
@@ -26,6 +28,12 @@ HotwordService* HotwordServiceFactory::GetForProfile(Profile* profile) {
 // static
 HotwordServiceFactory* HotwordServiceFactory::GetInstance() {
   return Singleton<HotwordServiceFactory>::get();
+}
+
+// static
+bool HotwordServiceFactory::ShouldShowOptInPopup(Profile* profile) {
+  HotwordService* hotword_service = GetForProfile(profile);
+  return hotword_service && hotword_service->ShouldShowOptInPopup();
 }
 
 HotwordServiceFactory::HotwordServiceFactory()
@@ -45,6 +53,9 @@ void HotwordServiceFactory::RegisterProfilePrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kHotwordSearchIncognitoEnabled,
                              false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kHotwordOptInPopupTimesShown,
+                             0,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

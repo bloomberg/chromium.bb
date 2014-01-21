@@ -17,6 +17,16 @@ class HotwordService : public BrowserContextKeyedService {
   explicit HotwordService(Profile* profile);
   virtual ~HotwordService();
 
+  bool ShouldShowOptInPopup();
+
+  // Used in testing to ensure that the popup is not shown more than this
+  // maximum number of times.
+  int MaxNumberTimesToShowOptInPopup();
+
+  // In addition to showing the popup, the preferences
+  // kHotwordOptInPopupTimesShown is also incremented.
+  void ShowOptInPopup();
+
  private:
   Profile* profile_;
 

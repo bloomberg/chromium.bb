@@ -20,6 +20,9 @@ class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static HotwordServiceFactory* GetInstance();
 
+  // Returns true to show the opt in pop up for that profile.
+  static bool ShouldShowOptInPopup(Profile* profile);
+
  private:
   friend struct DefaultSingletonTraits<HotwordServiceFactory>;
 
