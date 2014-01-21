@@ -11,7 +11,7 @@
     if (storage.counter) {
       oldCounter = parseInt(storage.counter);
     } else {
-      AddPrerender('REPLACE_WITH_DESTINATION_URL', 0);
+      AddPrerender('REPLACE_WITH_PRERENDER_URL', 0);
     }
     storage.counter = oldCounter + 1;
   }
@@ -22,6 +22,5 @@
 
   window.onload = loader;
 </script>
-<a id="toClick" href="REPLACE_WITH_DESTINATION_URL">Link to click</a>
 </body>
 </html>

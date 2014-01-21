@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -275,10 +276,13 @@ void NetInternalsTest::MessageHandler::PrerenderPage(
 
 void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const base::ListValue* list_value) {
+  std::string url;
+  ASSERT_TRUE(list_value->GetString(0, &url));
   content::RenderViewHost* host =
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetRenderViewHost();
-  host->ExecuteJavascriptInWebFrame(base::string16(),
-                                    base::ASCIIToUTF16("Click()"));
+  host->ExecuteJavascriptInWebFrame(
+      base::string16(),
+      base::ASCIIToUTF16(base::StringPrintf("Click('%s')", url.c_str())));
 }
 
 void NetInternalsTest::MessageHandler::CreateIncognitoBrowser(
@@ -407,8 +411,6 @@ GURL NetInternalsTest::CreatePrerenderLoaderUrl(
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
       make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
-  replacement_text.push_back(
-      make_pair("REPLACE_WITH_DESTINATION_URL", prerender_url.spec()));
   std::string replacement_path;
   EXPECT_TRUE(net::SpawnedTestServer::GetFilePathWithReplacements(
       "files/prerender/prerender_loader.html",

@@ -353,7 +353,7 @@ class PrerenderContents : public content::NotificationObserver,
     return prerendering_has_been_cancelled_;
   }
 
-  virtual content::WebContents* CreateWebContents(
+  content::WebContents* CreateWebContents(
       content::SessionStorageNamespace* session_storage_namespace);
 
   bool prerendering_has_started_;

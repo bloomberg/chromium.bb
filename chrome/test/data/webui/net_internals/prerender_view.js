@@ -146,7 +146,7 @@ PrerenderTask.prototype = {
     assertEquals(1, prerenderInfo.active.length);
     expectEquals(this.url_, prerenderInfo.active[0].url);
     expectTrue(this.shouldSucceed_);
-    chrome.send('navigateToPrerender');
+    chrome.send('navigateToPrerender', [this.url_]);
     this.state_ = STATE.HISTORY_WAIT;
   },
 

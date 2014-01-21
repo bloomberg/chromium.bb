@@ -62,8 +62,17 @@ function AddPrerender(url, index) {
   return link;
 }
 
-function Click() {
-  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+function AddAnchor(href, target) {
+  var a = document.createElement('a');
+  a.href = href;
+  if (target)
+    a.target = target;
+  document.body.appendChild(a);
+  return a;
+}
+
+function Click(url) {
+  AddAnchor(url).dispatchEvent(new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -71,18 +80,18 @@ function Click() {
   }));
 }
 
-function ClickTarget() {
+function ClickTarget(url) {
   var eventObject = new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
     detail: 1
   });
-  document.getElementById('toClickTarget').dispatchEvent(eventObject);
+  AddAnchor(url, '_blank').dispatchEvent(eventObject);
 }
 
-function ShiftClick() {
-  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+function ShiftClick(url) {
+  AddAnchor(url).dispatchEvent(new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -91,8 +100,8 @@ function ShiftClick() {
   }));
 }
 
-function CtrlClick() {
-  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+function CtrlClick(url) {
+  AddAnchor(url).dispatchEvent(new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -101,8 +110,8 @@ function CtrlClick() {
   }));
 }
 
-function CtrlShiftClick() {
-  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+function CtrlShiftClick(url) {
+  AddAnchor(url).dispatchEvent(new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -112,8 +121,8 @@ function CtrlShiftClick() {
   }));
 }
 
-function MetaClick() {
-  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+function MetaClick(url) {
+  AddAnchor(url).dispatchEvent(new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -122,8 +131,8 @@ function MetaClick() {
   }));
 }
 
-function MetaShiftClick() {
-  document.getElementById('toClick').dispatchEvent(new MouseEvent('click', {
+function MetaShiftClick(url) {
+  AddAnchor(url).dispatchEvent(new MouseEvent('click', {
     view: window,
     bubbles: true,
     cancelable: true,
@@ -133,6 +142,6 @@ function MetaShiftClick() {
   }));
 }
 
-function WindowOpen() {
-  window.open(document.getElementById('toClick').href);
+function WindowOpen(url) {
+  window.open(url);
 }
