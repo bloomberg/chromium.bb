@@ -91,12 +91,11 @@ public:
         // U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
         return c == ' ' || c == '\t';
     }
-    static unsigned collectDigitsToInt(const String& input, unsigned* position, int& number);
     static bool collectTimeStamp(const String&, double& timeStamp);
 
     // Useful functions for parsing percentage settings.
     static bool parseFloatPercentageValue(VTTScanner& valueScanner, float& percentage);
-    static bool parseFloatPercentageValuePair(const String&, char, FloatPoint&);
+    static bool parseFloatPercentageValuePair(VTTScanner&, char, FloatPoint&);
 
     // Create the DocumentFragment representation of the WebVTT cue text.
     static PassRefPtr<DocumentFragment> createDocumentFragmentFromCueText(Document&, const String&);

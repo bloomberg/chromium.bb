@@ -256,22 +256,32 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
         break;
     }
     case Height: {
-        unsigned position = 0;
         int number;
-        if (VTTParser::collectDigitsToInt(value, &position, number) && position == value.length())
+        VTTScanner valueScanner(value);
+        if (valueScanner.scanDigits(number) && valueScanner.isAtEnd())
             m_heightInLines = number;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
         break;
     }
-    case RegionAnchor:
-        if (!VTTParser::parseFloatPercentageValuePair(value, ',', m_regionAnchor))
+    case RegionAnchor: {
+        VTTScanner valueScanner(value);
+        FloatPoint anchor;
+        if (VTTParser::parseFloatPercentageValuePair(valueScanner, ',', anchor) && valueScanner.isAtEnd())
+            m_regionAnchor = anchor;
+        else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
         break;
-    case ViewportAnchor:
-        if (!VTTParser::parseFloatPercentageValuePair(value, ',', m_viewportAnchor))
+    }
+    case ViewportAnchor: {
+        VTTScanner valueScanner(value);
+        FloatPoint anchor;
+        if (VTTParser::parseFloatPercentageValuePair(valueScanner, ',', anchor) && valueScanner.isAtEnd())
+            m_viewportAnchor = anchor;
+        else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid ViewportAnchor");
         break;
+    }
     case Scroll:
         if (value == scrollUpValueKeyword)
             m_scroll = true;

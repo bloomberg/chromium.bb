@@ -228,39 +228,6 @@ inline void VTTScanner::advance(unsigned amount)
         m_data.characters16 += amount;
 }
 
-// Wrapper of VTTScanner that allows easy interaction with a parsing model
-// where a <String, index> tuple is used.
-class VTTLegacyScanner : public VTTScanner {
-    WTF_MAKE_NONCOPYABLE(VTTLegacyScanner);
-public:
-    VTTLegacyScanner(const String& line, unsigned* outPosition)
-        : VTTScanner(line)
-        , m_outPosition(outPosition)
-    {
-        ASSERT(outPosition && *outPosition <= line.length());
-        // Adjust state according to |*outPosition|.
-        advance(*outPosition);
-        // Save the start position to allow adjusting |*outPosition|.
-        if (m_is8Bit)
-            m_start.characters8 = m_data.characters8;
-        else
-            m_start.characters16 = m_data.characters16;
-    }
-    ~VTTLegacyScanner()
-    {
-        // "Export" the updated position.
-        unsigned advancedChars = m_is8Bit ? m_data.characters8 - m_start.characters8 : m_data.characters16 - m_start.characters16;
-        *m_outPosition += advancedChars;
-    }
-
-private:
-    unsigned* m_outPosition;
-    union {
-        const LChar* characters8;
-        const UChar* characters16;
-    } m_start;
-};
-
 }
 
 #endif

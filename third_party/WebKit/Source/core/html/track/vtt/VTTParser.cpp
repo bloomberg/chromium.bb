@@ -48,12 +48,6 @@ const double secondsPerMinute = 60;
 const double secondsPerMillisecond = 0.001;
 const unsigned fileIdentifierLength = 6;
 
-unsigned VTTParser::collectDigitsToInt(const String& input, unsigned* position, int& number)
-{
-    VTTLegacyScanner inputScanner(input, position);
-    return inputScanner.scanDigits(number);
-}
-
 bool VTTParser::parseFloatPercentageValue(VTTScanner& valueScanner, float& percentage)
 {
     float number;
@@ -68,10 +62,8 @@ bool VTTParser::parseFloatPercentageValue(VTTScanner& valueScanner, float& perce
     return true;
 }
 
-bool VTTParser::parseFloatPercentageValuePair(const String& value, char delimiter, FloatPoint& valuePair)
+bool VTTParser::parseFloatPercentageValuePair(VTTScanner& valueScanner, char delimiter, FloatPoint& valuePair)
 {
-    VTTScanner valueScanner(value);
-
     float firstCoord;
     if (!parseFloatPercentageValue(valueScanner, firstCoord))
         return false;
@@ -81,9 +73,6 @@ bool VTTParser::parseFloatPercentageValuePair(const String& value, char delimite
 
     float secondCoord;
     if (!parseFloatPercentageValue(valueScanner, secondCoord))
-        return false;
-
-    if (!valueScanner.isAtEnd())
         return false;
 
     valuePair = FloatPoint(firstCoord, secondCoord);
