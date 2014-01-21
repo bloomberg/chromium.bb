@@ -94,7 +94,7 @@ deps = {
     'src/third_party/libwebm/source':
         Var('git_url') + '/webm/libwebm.git@0f7815b036651e242ec8c2fcfb59fe54f69be1a8',
     'src/third_party/libyuv':
-        Var('git_url') + '/external/libyuv.git@dd4995805827539ee2c5b4b65c7514e62df2d358',
+        Var('git_url') + '/external/libyuv.git@9a46283c6d1ffa2cc932bae5cfdbb6def8ed1544',
     'src/third_party/mesa/src':
         Var('git_url') + '/chromium/deps/mesa.git@ff34f1e559362fbff2c693ed16effb3046dba8e9',
     'src/third_party/openmax_dl':
