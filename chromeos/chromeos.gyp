@@ -338,6 +338,8 @@
         'system/name_value_pairs_parser.h',
         'system/statistics_provider.cc',
         'system/statistics_provider.h',
+        'tpm_token_loader.cc',
+        'tpm_token_loader.h'
       ],
       'conditions': [
         ['use_x11 == 1', {

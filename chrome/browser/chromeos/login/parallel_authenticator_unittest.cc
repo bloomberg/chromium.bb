@@ -317,11 +317,11 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
             SetAndResolveState(auth_.get(), state_.release()));
   EXPECT_TRUE(LoginState::Get()->IsInSafeMode());
 
-  // Simulate certificates load event. The exact certificates loaded are not
-  // actually used by the DeviceSettingsService, so it is OK to pass an empty
-  // list.
-  DeviceSettingsService::Get()->OnCertificatesLoaded(net::CertificateList(),
-                                                     true);
+  // Simulate TPM token ready event. The tpm token parameters are not
+  // actually used by the DeviceSettingsService, so it is OK to pass arbitrary
+  // values.
+  DeviceSettingsService::Get()->OnTPMTokenReady("pin", "token_name", 0);
+
   // Flush all the pending operations. The operations should induce an owner
   // verification.
   device_settings_test_helper_.Flush();

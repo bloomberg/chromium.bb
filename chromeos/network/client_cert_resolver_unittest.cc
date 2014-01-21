@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -20,6 +21,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/tpm_token_loader.h"
 #include "crypto/nss_util.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
@@ -62,11 +64,14 @@ class ClientCertResolverTest : public testing::Test {
     service_test_->ClearServices();
     message_loop_.RunUntilIdle();
 
+    TPMTokenLoader::Initialize();
+    TPMTokenLoader* tpm_token_loader = TPMTokenLoader::Get();
+    tpm_token_loader->InitializeTPMForTest();
+    tpm_token_loader->SetCryptoTaskRunner(message_loop_.message_loop_proxy());
+
     CertLoader::Initialize();
-    CertLoader* cert_loader = CertLoader::Get();
-    cert_loader->InitializeTPMForTest();
-    cert_loader->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
-    cert_loader->SetCryptoTaskRunner(message_loop_.message_loop_proxy());
+    CertLoader::Get()->SetSlowTaskRunnerForTest(
+        message_loop_.message_loop_proxy());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -76,6 +81,7 @@ class ClientCertResolverTest : public testing::Test {
     network_profile_handler_.reset();
     network_state_handler_.reset();
     CertLoader::Shutdown();
+    TPMTokenLoader::Shutdown();
     DBusThreadManager::Shutdown();
     LoginState::Shutdown();
     CleanupSlotContents();

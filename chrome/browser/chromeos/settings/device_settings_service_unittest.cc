@@ -323,7 +323,7 @@ TEST_F(DeviceSettingsServiceTest, OwnershipStatus) {
   EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN, ownership_status_);
 }
 
-TEST_F(DeviceSettingsServiceTest, OnCertificatesLoadedForNonOwner) {
+TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForNonOwner) {
   owner_key_util_->Clear();
 
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
@@ -349,9 +349,7 @@ TEST_F(DeviceSettingsServiceTest, OnCertificatesLoadedForNonOwner) {
             device_settings_service_.GetOwnershipStatus());
   EXPECT_FALSE(is_owner_set_);
 
-  // Simulate CertLoader reporting a new set of certificates. The passed
-  // certificates are ignored.
-  device_settings_service_.OnCertificatesLoaded(net::CertificateList(), true);
+  device_settings_service_.OnTPMTokenReady("tpm_pin", "tpm_token", 0);
   FlushDeviceSettings();
 
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
@@ -366,7 +364,7 @@ TEST_F(DeviceSettingsServiceTest, OnCertificatesLoadedForNonOwner) {
   EXPECT_FALSE(is_owner_);
 }
 
-TEST_F(DeviceSettingsServiceTest, OnCertificatesLoadedForOwner) {
+TEST_F(DeviceSettingsServiceTest, OnTPMTokenReadyForOwner) {
   owner_key_util_->Clear();
 
   EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
@@ -394,9 +392,7 @@ TEST_F(DeviceSettingsServiceTest, OnCertificatesLoadedForOwner) {
 
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
   device_settings_service_.SetUsername(device_policy_.policy_data().username());
-  // Simulate CertLoader reporting a new set of certificates. The passed
-  // certificates are ignored.
-  device_settings_service_.OnCertificatesLoaded(net::CertificateList(), true);
+  device_settings_service_.OnTPMTokenReady("tpm_pin", "tpm_token_name", 0);
   FlushDeviceSettings();
 
   EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());
@@ -424,9 +420,7 @@ TEST_F(DeviceSettingsServiceTest, IsCurrentUserOwnerAsyncWithLoadedCerts) {
   device_settings_service_.SetUsername(device_policy_.policy_data().username());
   ReloadDeviceSettings();
 
-  // Simulate CertLoader reporting a new set of certificates. The passed
-  // certificates are ignored.
-  device_settings_service_.OnCertificatesLoaded(net::CertificateList(), true);
+  device_settings_service_.OnTPMTokenReady("tpm_pin", "tpm_token_name", 0);
   FlushDeviceSettings();
 
   EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());

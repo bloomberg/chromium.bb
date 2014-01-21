@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/cert_loader.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/tpm_token_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 
 namespace crypto {
@@ -73,7 +73,7 @@ class OwnerKey : public base::RefCountedThreadSafe<OwnerKey> {
 // DeviceSettingsService generates notifications for key and policy update
 // events so interested parties can reload state as appropriate.
 class DeviceSettingsService : public SessionManagerClient::Observer,
-                              public CertLoader::Observer {
+                              public TPMTokenLoader::Observer {
  public:
   // Indicates ownership status of the device.
   enum OwnershipStatus {
@@ -196,9 +196,10 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
   virtual void OwnerKeySet(bool success) OVERRIDE;
   virtual void PropertyChangeComplete(bool success) OVERRIDE;
 
-  // CertLoader::Observer:
-  virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
-                                    bool initial_load) OVERRIDE;
+  // TPMTokenLoader::Observer:
+  virtual void OnTPMTokenReady(const std::string& tpm_user_pin,
+                               const std::string& tpm_token_name,
+                               int tpm_token_slot_id) OVERRIDE;
 
  private:
   // Enqueues a new operation. Takes ownership of |operation| and starts it
@@ -224,8 +225,6 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
   SessionManagerClient* session_manager_client_;
   scoped_refptr<OwnerKeyUtil> owner_key_util_;
 
-  base::WeakPtrFactory<DeviceSettingsService> weak_factory_;
-
   Status store_status_;
 
   std::vector<OwnershipStatusCallback> pending_ownership_status_callbacks_;
@@ -234,11 +233,11 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
 
   std::string username_;
   scoped_refptr<OwnerKey> owner_key_;
-  // Whether certificates have been loaded by CertLoader.
-  bool certificates_loaded_;
-  // Whether certificates were loaded when the current owner key was set.
+  // Whether TPM token still needs to be initialized.
+  bool waiting_for_tpm_token_;
+  // Whether TPM token was ready when the current owner key was set.
   // Implies that the current user is owner iff the private owner key is set.
-  bool owner_key_loaded_with_certificates_;
+  bool owner_key_loaded_with_tpm_token_;
 
   scoped_ptr<enterprise_management::PolicyData> policy_data_;
   scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> device_settings_;
@@ -251,6 +250,8 @@ class DeviceSettingsService : public SessionManagerClient::Observer,
 
   // For recoverable load errors how many retries are left before we give up.
   int load_retries_left_;
+
+  base::WeakPtrFactory<DeviceSettingsService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsService);
 };

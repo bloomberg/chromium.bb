@@ -77,6 +77,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -93,6 +94,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/power/power_data_collector.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm_token_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -266,6 +268,7 @@ class DBusServices {
 
     LoginState::Initialize();
     SystemSaltGetter::Initialize();
+    TPMTokenLoader::Initialize();
     CertLoader::Initialize();
 
     // This function and SystemKeyEventListener use InputMethodManager.
@@ -314,6 +317,8 @@ class DBusServices {
 
     SystemSaltGetter::Shutdown();
     LoginState::Shutdown();
+    CertLoader::Shutdown();
+    TPMTokenLoader::Shutdown();
 
     CrosDBusService::Shutdown();
 
@@ -410,7 +415,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Set the crypto thread after the IO thread has been created/started.
-  CertLoader::Get()->SetCryptoTaskRunner(
+  TPMTokenLoader::Get()->SetCryptoTaskRunner(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO));
 

@@ -7,6 +7,7 @@
 #include <cert.h>
 #include <string>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

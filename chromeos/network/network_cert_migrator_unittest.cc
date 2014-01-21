@@ -9,10 +9,12 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "chromeos/cert_loader.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/tpm_token_loader.h"
 #include "crypto/nss_util.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
@@ -53,16 +55,21 @@ class NetworkCertMigratorTest : public testing::Test {
     service_test_->ClearServices();
     message_loop_.RunUntilIdle();
 
+    TPMTokenLoader::Initialize();
+    TPMTokenLoader* tpm_token_loader = TPMTokenLoader::Get();
+    tpm_token_loader->InitializeTPMForTest();
+    tpm_token_loader->SetCryptoTaskRunner(message_loop_.message_loop_proxy());
+
     CertLoader::Initialize();
     CertLoader::Get()->SetSlowTaskRunnerForTest(
         message_loop_.message_loop_proxy());
-    CertLoader::Get()->SetCryptoTaskRunner(message_loop_.message_loop_proxy());
   }
 
   virtual void TearDown() OVERRIDE {
     network_cert_migrator_.reset();
     network_state_handler_.reset();
     CertLoader::Shutdown();
+    TPMTokenLoader::Shutdown();
     DBusThreadManager::Shutdown();
     LoginState::Shutdown();
     CleanupTestCert();

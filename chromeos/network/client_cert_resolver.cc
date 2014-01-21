@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"

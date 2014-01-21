@@ -72,21 +72,21 @@ DeviceSettingsService* DeviceSettingsService::Get() {
 
 DeviceSettingsService::DeviceSettingsService()
     : session_manager_client_(NULL),
-      weak_factory_(this),
       store_status_(STORE_SUCCESS),
-      certificates_loaded_(false),
-      owner_key_loaded_with_certificates_(false),
-      load_retries_left_(kMaxLoadRetries) {
-  if (CertLoader::IsInitialized()) {
-    certificates_loaded_ = CertLoader::Get()->certificates_loaded();
-    CertLoader::Get()->AddObserver(this);
+      waiting_for_tpm_token_(true),
+      owner_key_loaded_with_tpm_token_(false),
+      load_retries_left_(kMaxLoadRetries),
+      weak_factory_(this) {
+  if (TPMTokenLoader::IsInitialized()) {
+    waiting_for_tpm_token_ = !TPMTokenLoader::Get()->IsTPMTokenReady();
+    TPMTokenLoader::Get()->AddObserver(this);
   }
 }
 
 DeviceSettingsService::~DeviceSettingsService() {
   DCHECK(pending_operations_.empty());
-  if (CertLoader::IsInitialized())
-    CertLoader::Get()->RemoveObserver(this);
+  if (TPMTokenLoader::IsInitialized())
+    TPMTokenLoader::Get()->RemoveObserver(this);
 }
 
 void DeviceSettingsService::SetSessionManager(
@@ -179,7 +179,7 @@ bool DeviceSettingsService::HasPrivateOwnerKey() {
 
 void DeviceSettingsService::IsCurrentUserOwnerAsync(
     const IsCurrentUserOwnerCallback& callback) {
-  if (owner_key_loaded_with_certificates_) {
+  if (owner_key_loaded_with_tpm_token_) {
     // If the current owner key was loaded while the certificates were loaded,
     // or the certificate loader is not initialized, in which case the private
     // key cannot be set, report status immediately.
@@ -235,11 +235,12 @@ void DeviceSettingsService::PropertyChangeComplete(bool success) {
   EnsureReload(false);
 }
 
-void DeviceSettingsService::OnCertificatesLoaded(
-    const net::CertificateList& cert_list,
-    bool initial_load) {
-  certificates_loaded_ = true;
-  // CertLoader initializes the TPM and NSS database which is necessary to
+void DeviceSettingsService::OnTPMTokenReady(const std::string& tpm_user_pin,
+                                            const std::string& tpm_token_name,
+                                            int tpm_token_slot_id) {
+  waiting_for_tpm_token_ = false;
+
+  // TPMTokenLoader initializes the TPM and NSS database which is necessary to
   // determine ownership. Force a reload once we know these are initialized.
   EnsureReload(true);
 }
@@ -338,8 +339,8 @@ void DeviceSettingsService::HandleCompletedOperation(
     iter->Run(ownership_status);
   }
 
-  if (certificates_loaded_) {
-    owner_key_loaded_with_certificates_ = true;
+  if (!waiting_for_tpm_token_) {
+    owner_key_loaded_with_tpm_token_ = true;
     std::vector<IsCurrentUserOwnerCallback> is_owner_callbacks;
     is_owner_callbacks.swap(pending_is_current_user_owner_callbacks_);
     for (std::vector<IsCurrentUserOwnerCallback>::iterator iter(
