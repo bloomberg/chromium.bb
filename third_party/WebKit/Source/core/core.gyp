@@ -100,7 +100,6 @@
             '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
           'message': 'Generating Inspector protocol backend sources from protocol.json',
-          'msvs_cygwin_shell': 1,
         },
       ]
     },
@@ -133,7 +132,6 @@
             '--output_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
           'message': 'Generating Inspector instrumentation code from InspectorInstrumentation.idl',
-          'msvs_cygwin_shell': 1,
         }
       ]
     },
