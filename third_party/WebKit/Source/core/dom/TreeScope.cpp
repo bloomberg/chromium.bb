@@ -200,38 +200,32 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const
     return toHTMLMapElement(m_imageMapsByName->getElementByMapName(AtomicString(name).impl(), this));
 }
 
-RenderObject* rendererFromPoint(Document* document, int x, int y, LayoutPoint* localPoint)
+HitTestResult hitTestInDocument(const Document* document, int x, int y)
 {
     Frame* frame = document->frame();
 
     if (!frame)
-        return 0;
+        return HitTestResult();
     FrameView* frameView = frame->view();
     if (!frameView)
-        return 0;
+        return HitTestResult();
 
     float scaleFactor = frame->pageZoomFactor();
     IntPoint point = roundedIntPoint(FloatPoint(x * scaleFactor  + frameView->scrollX(), y * scaleFactor + frameView->scrollY()));
 
     if (!frameView->visibleContentRect().contains(point))
-        return 0;
+        return HitTestResult();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
     HitTestResult result(point);
     document->renderView()->hitTest(request, result);
-
-    if (localPoint)
-        *localPoint = result.localPoint();
-
-    return result.renderer();
+    return result;
 }
 
 Element* TreeScope::elementFromPoint(int x, int y) const
 {
-    RenderObject* renderer = rendererFromPoint(&rootNode()->document(), x, y);
-    if (!renderer)
-        return 0;
-    Node* node = renderer->node();
+    HitTestResult result = hitTestInDocument(&rootNode()->document(), x, y);
+    Node* node = result.innerNode();
     if (!node || node->isDocumentNode())
         return 0;
     if (node->isPseudoElement() || node->isTextNode())

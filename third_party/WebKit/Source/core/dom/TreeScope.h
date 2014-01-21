@@ -39,6 +39,7 @@ class Document;
 class Element;
 class HTMLLabelElement;
 class HTMLMapElement;
+class HitTestResult;
 class LayoutPoint;
 class IdTargetObserverRegistry;
 class Node;
@@ -184,7 +185,7 @@ inline bool operator!=(const TreeScope& a, const TreeScope& b) { return !(a == b
 inline bool operator!=(const TreeScope& a, const TreeScope* b) { return !(a == b); }
 inline bool operator!=(const TreeScope* a, const TreeScope& b) { return !(a == b); }
 
-RenderObject* rendererFromPoint(Document*, int x, int y, LayoutPoint* localPoint = 0);
+HitTestResult hitTestInDocument(const Document*, int x, int y);
 TreeScope* commonTreeScope(Node*, Node*);
 
 } // namespace WebCore
