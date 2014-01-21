@@ -100,8 +100,6 @@ public:
     bool isReadOnly() const { return m_isReadOnly; }
     bool isDisabledOrReadOnly() const { return isDisabledFormControl() || m_isReadOnly; }
 
-    bool hasAutofocused() const { return m_hasAutofocused; }
-    void setAutofocused() { m_hasAutofocused = true; }
     bool isAutofocusable() const;
 
     bool isAutofilled() const { return m_isAutofilled; }
@@ -179,7 +177,6 @@ private:
 
     bool m_wasChangedSinceLastFormControlChangeEvent : 1;
     bool m_wasFocusedByMouse : 1;
-    bool m_hasAutofocused : 1;
 };
 
 inline bool isHTMLFormControlElement(const Node& node)

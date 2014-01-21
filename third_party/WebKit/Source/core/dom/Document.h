@@ -1144,6 +1144,7 @@ private:
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
     bool m_didPostCheckFocusedElementTask;
+    bool m_hasAutofocused;
     RefPtr<Element> m_autofocusElement;
     RefPtr<Element> m_focusedElement;
     RefPtr<Node> m_hoverNode;

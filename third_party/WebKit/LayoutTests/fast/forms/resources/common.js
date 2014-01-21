@@ -203,6 +203,8 @@ function waitUntilLoadedAndAutofocused(callback) {
     document.addEventListener('focusin', function() {
         if (internals.hasAutofocusRequest(document))
             return;
+        if (autofocused)
+            return;
         autofocused = true;
         if (loaded)
             callback();

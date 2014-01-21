@@ -411,6 +411,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_compatibilityMode(NoQuirksMode)
     , m_compatibilityModeLocked(false)
     , m_didPostCheckFocusedElementTask(false)
+    , m_hasAutofocused(false)
     , m_domTreeVersion(++s_globalTreeVersion)
     , m_listenerTypes(0)
     , m_mutationObserverTypes(0)
@@ -5313,9 +5314,12 @@ void Document::setAutofocusElement(Element* element)
         m_autofocusElement = 0;
         return;
     }
-    if (!m_autofocusElement)
-        m_taskRunner->postTask(AutofocusTask::create());
+    if (m_hasAutofocused)
+        return;
+    m_hasAutofocused = true;
+    ASSERT(!m_autofocusElement);
     m_autofocusElement = element;
+    m_taskRunner->postTask(AutofocusTask::create());
 }
 
 } // namespace WebCore

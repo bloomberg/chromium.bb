@@ -57,7 +57,6 @@ static void setFocusForModalDialog(HTMLDialogElement* dialog)
             HTMLFormControlElement* control = toHTMLFormControlElement(node);
             if (control->isAutofocusable()) {
                 control->focus();
-                control->setAutofocused();
                 return;
             }
         }

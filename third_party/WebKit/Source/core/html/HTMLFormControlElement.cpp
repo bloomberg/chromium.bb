@@ -58,7 +58,6 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
     , m_isValid(true)
     , m_wasChangedSinceLastFormControlChangeEvent(false)
     , m_wasFocusedByMouse(false)
-    , m_hasAutofocused(false)
 {
     setForm(form ? form : findFormAncestor());
     setHasCustomStyleCallbacks();
@@ -203,10 +202,6 @@ static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element)
 {
     if (!element->isAutofocusable())
         return false;
-    // FIXME: hasAutofocused should be moved to Document according to the
-    // specification.
-    if (element->hasAutofocused())
-        return false;
     if (element->document().isSandboxed(SandboxAutomaticFeatures)) {
         // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
         element->document().addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Blocked autofocusing on a form control because the form's frame is sandboxed and the 'allow-scripts' permission is not set.");
@@ -230,10 +225,8 @@ void HTMLFormControlElement::attach(const AttachContext& context)
 
     // FIXME: Autofocus handling should be moved to insertedInto according to
     // the standard.
-    if (shouldAutofocusOnAttach(this)) {
-        setAutofocused();
+    if (shouldAutofocusOnAttach(this))
         document().setAutofocusElement(this);
-    }
 }
 
 void HTMLFormControlElement::didMoveToNewDocument(Document& oldDocument)
