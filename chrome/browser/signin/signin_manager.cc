@@ -23,12 +23,12 @@
 #include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
-#include "chrome/browser/signin/signin_manager_cookie_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
+#include "components/signin/core/signin_manager_cookie_helper.h"
 #include "components/signin/core/signin_manager_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -246,7 +246,10 @@ void SigninManager::StartSignInWithOAuthCode(
 void SigninManager::VerifyGaiaCookiesBeforeSignIn(
     const std::string& session_index) {
   scoped_refptr<SigninManagerCookieHelper> cookie_helper(
-      new SigninManagerCookieHelper(profile_->GetRequestContext()));
+      new SigninManagerCookieHelper(
+          profile_->GetRequestContext(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   cookie_helper->StartFetchingGaiaCookiesOnUIThread(
       base::Bind(&SigninManager::OnGaiaCookiesFetched,
                  weak_pointer_factory_.GetWeakPtr(), session_index));

@@ -1,22 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_manager_cookie_helper.h"
+#include "components/signin/core/signin_manager_cookie_helper.h"
 
 #include <vector>
 
-#include "content/public/browser/browser_thread.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 
-using content::BrowserThread;
-
 SigninManagerCookieHelper::SigninManagerCookieHelper(
-    net::URLRequestContextGetter* request_context_getter)
-    : request_context_getter_(request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::MessageLoopProxy> io_thread)
+    : request_context_getter_(request_context_getter),
+      ui_thread_(ui_thread),
+      io_thread_(io_thread) {
+  DCHECK(ui_thread_->BelongsToCurrentThread());
 }
 
 SigninManagerCookieHelper::~SigninManagerCookieHelper() {
@@ -31,19 +33,19 @@ void SigninManagerCookieHelper::StartFetchingGaiaCookiesOnUIThread(
 void SigninManagerCookieHelper::StartFetchingCookiesOnUIThread(
     const GURL& url,
     const base::Callback<void(const net::CookieList& cookies)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   DCHECK(!callback.is_null());
   DCHECK(completion_callback_.is_null());
 
   completion_callback_ = callback;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SigninManagerCookieHelper::FetchCookiesOnIOThread, this,
+  io_thread_->PostTask(FROM_HERE,
+      base::Bind(&SigninManagerCookieHelper::FetchCookiesOnIOThread,
+                 this,
                  url));
 }
 
 void SigninManagerCookieHelper::FetchCookiesOnIOThread(const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
 
   scoped_refptr<net::CookieMonster> cookie_monster =
       request_context_getter_->GetURLRequestContext()->
@@ -58,14 +60,13 @@ void SigninManagerCookieHelper::FetchCookiesOnIOThread(const GURL& url) {
 
 void SigninManagerCookieHelper::OnCookiesFetched(
     const net::CookieList& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  ui_thread_->PostTask(FROM_HERE,
       base::Bind(&SigninManagerCookieHelper::NotifyOnUIThread, this, cookies));
 }
 
 void SigninManagerCookieHelper::NotifyOnUIThread(
     const net::CookieList& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread_->BelongsToCurrentThread());
   base::ResetAndReturn(&completion_callback_).Run(cookies);
 }
