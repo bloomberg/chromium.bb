@@ -14661,6 +14661,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Power.PowerButtonAcknowledgmentDelay" units="milliseconds">
+  <summary>
+    The amount of time between the user pressing the power button and Chrome
+    acknowledging the button-down event on Chrome OS. Values for this metric are
+    capped to two seconds.
+  </summary>
+</histogram>
+
+<histogram name="Power.PowerButtonDownTime" units="milliseconds">
+  <summary>
+    The amount of time between the user pressing the power button and releasing
+    it on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="Power.RetrySuspendCount">
   <summary>
     The number of times Chrome OS retried suspend due to previous failure.
