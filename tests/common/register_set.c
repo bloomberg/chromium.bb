@@ -128,6 +128,7 @@ const struct RegInfo kRegs[] = {
 
 #undef DEFINE_REG
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 /* Flags readable and writable by untrusted code. */
 const uint8_t kX86FlagBits[5] = { 0, 2, 6, 7, 11 };
 /*
@@ -138,6 +139,7 @@ const uint8_t kX86FlagBits[5] = { 0, 2, 6, 7, 11 };
 static const uint32_t kX86KnownFlagsMask =
     (1<<0) | (1<<2) | (1<<6) | (1<<7) | (1<<11) |
     (1<<8); /* Trap flag */
+#endif
 
 void RegsFillTestValues(struct NaClSignalContext *regs, int seed) {
   unsigned int index;
