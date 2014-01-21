@@ -39,7 +39,7 @@ class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
    public:
     virtual ~Callback() {}
     virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) = 0;
-    virtual void DidGrantStorageQuota(int64 granted_quota) = 0;
+    virtual void DidGrantStorageQuota(int64 usage, int64 granted_quota) = 0;
     virtual void DidFail(quota::QuotaStatusCode status) = 0;
   };
 
@@ -77,6 +77,7 @@ class QuotaDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
                                     int64 current_usage,
                                     int64 current_quota);
   void DidGrantStorageQuota(int request_id,
+                            int64 current_usage,
                             int64 granted_quota);
   void DidFail(int request_id,
                quota::QuotaStatusCode error);
