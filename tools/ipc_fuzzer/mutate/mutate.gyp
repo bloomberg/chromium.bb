@@ -47,7 +47,7 @@
       'target_name': 'ipc_message_util',
       'type': 'executable',
       'dependencies': [
-        '../../../out/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../../../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
         '../message_lib/message_lib.gyp:ipc_message_lib',
       ],
       'sources': [
