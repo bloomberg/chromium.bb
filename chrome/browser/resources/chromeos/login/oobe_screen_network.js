@@ -108,6 +108,7 @@ login.createScreen('NetworkScreen', 'connect', function() {
       messageDiv.className = 'error-message-bubble';
       messageDiv.textContent = message;
       error.appendChild(messageDiv);
+      error.setAttribute('role', 'alert');
 
       $('bubble').showContentForElement($('networks-list'),
                                         cr.ui.Bubble.Attachment.BOTTOM,
