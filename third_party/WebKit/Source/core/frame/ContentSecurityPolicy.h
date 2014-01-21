@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptState.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -116,6 +117,9 @@ public:
 
     ReflectedXSSDisposition reflectedXSSDisposition() const;
 
+    ReferrerPolicy referrerPolicy() const;
+    bool didSetReferrerPolicy() const;
+
     void setOverrideAllowInlineStyle(bool);
 
     bool isActive() const;
@@ -131,6 +135,7 @@ public:
     void reportMissingReportURI(const String&) const;
     void reportUnsupportedDirective(const String&) const;
     void reportInvalidInReportOnly(const String&) const;
+    void reportInvalidReferrer(const String&) const;
     void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;

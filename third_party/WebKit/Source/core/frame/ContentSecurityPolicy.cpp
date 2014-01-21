@@ -151,6 +151,7 @@ static const char baseURI[] = "base-uri";
 static const char formAction[] = "form-action";
 static const char pluginTypes[] = "plugin-types";
 static const char reflectedXSS[] = "reflected-xss";
+static const char referrer[] = "referrer";
 
 bool isDirectiveName(const String& name)
 {
@@ -169,6 +170,7 @@ bool isDirectiveName(const String& name)
         || equalIgnoringCase(name, formAction)
         || equalIgnoringCase(name, pluginTypes)
         || equalIgnoringCase(name, reflectedXSS)
+        || equalIgnoringCase(name, referrer)
     );
 }
 
@@ -185,6 +187,13 @@ UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
 }
 
 } // namespace
+
+static ReferrerPolicy mergeReferrerPolicies(ReferrerPolicy a, ReferrerPolicy b)
+{
+    if (a != b)
+        return ReferrerPolicyNever;
+    return a;
+}
 
 static bool isSourceListNone(const UChar* begin, const UChar* end)
 {
@@ -890,6 +899,8 @@ public:
 
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
     ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
+    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
+    bool didSetReferrerPolicy() const { return m_didSetReferrerPolicy; }
     bool isReportOnly() const { return m_reportOnly; }
     const Vector<KURL>& reportURIs() const { return m_reportURIs; }
 
@@ -900,6 +911,7 @@ private:
     void parseReportURI(const String& name, const String& value);
     void parsePluginTypes(const String& name, const String& value);
     void parseReflectedXSS(const String& name, const String& value);
+    void parseReferrer(const String& name, const String& value);
     void addDirective(const String& name, const String& value);
     void applySandboxPolicy(const String& name, const String& sandboxPolicy);
 
@@ -937,6 +949,9 @@ private:
     bool m_haveSandboxPolicy;
     ReflectedXSSDisposition m_reflectedXSSDisposition;
 
+    bool m_didSetReferrerPolicy;
+    ReferrerPolicy m_referrerPolicy;
+
     OwnPtr<MediaListDirective> m_pluginTypes;
     OwnPtr<SourceListDirective> m_baseURI;
     OwnPtr<SourceListDirective> m_connectSrc;
@@ -961,6 +976,8 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     , m_reportOnly(false)
     , m_haveSandboxPolicy(false)
     , m_reflectedXSSDisposition(ReflectedXSSUnset)
+    , m_didSetReferrerPolicy(false)
+    , m_referrerPolicy(ReferrerPolicyDefault)
 {
     m_reportOnly = type == ContentSecurityPolicy::Report;
 }
@@ -1455,6 +1472,59 @@ void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value
     m_policy->reportInvalidReflectedXSS(value);
 }
 
+void CSPDirectiveList::parseReferrer(const String& name, const String& value)
+{
+    if (m_didSetReferrerPolicy) {
+        m_policy->reportDuplicateDirective(name);
+        m_referrerPolicy = ReferrerPolicyNever;
+        return;
+    }
+
+    m_didSetReferrerPolicy = true;
+
+    if (value.isEmpty()) {
+        m_policy->reportInvalidReferrer(value);
+        m_referrerPolicy = ReferrerPolicyNever;
+        return;
+    }
+
+    Vector<UChar> characters;
+    value.appendTo(characters);
+
+    const UChar* position = characters.data();
+    const UChar* end = position + characters.size();
+
+    skipWhile<UChar, isASCIISpace>(position, end);
+    const UChar* begin = position;
+    skipWhile<UChar, isNotASCIISpace>(position, end);
+
+    // value1
+    //       ^
+    if (equalIgnoringCase("always", begin, position - begin)) {
+        m_referrerPolicy = ReferrerPolicyAlways;
+    } else if (equalIgnoringCase("default", begin, position - begin)) {
+        m_referrerPolicy = ReferrerPolicyDefault;
+    } else if (equalIgnoringCase("never", begin, position - begin)) {
+        m_referrerPolicy = ReferrerPolicyNever;
+    } else if (equalIgnoringCase("origin", begin, position - begin)) {
+        m_referrerPolicy = ReferrerPolicyOrigin;
+    } else {
+        m_referrerPolicy = ReferrerPolicyNever;
+        m_policy->reportInvalidReferrer(value);
+        return;
+    }
+
+    skipWhile<UChar, isASCIISpace>(position, end);
+    if (position == end)
+        return;
+
+    // value1 value2
+    //        ^
+    m_referrerPolicy = ReferrerPolicyNever;
+    m_policy->reportInvalidReferrer(value);
+
+}
+
 void CSPDirectiveList::addDirective(const String& name, const String& value)
 {
     ASSERT(!name.isEmpty());
@@ -1492,6 +1562,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
             setCSPDirective<MediaListDirective>(name, value, m_pluginTypes);
         else if (equalIgnoringCase(name, reflectedXSS))
             parseReflectedXSS(name, value);
+        else if (equalIgnoringCase(name, referrer))
+            parseReferrer(name, value);
         else
             m_policy->reportUnsupportedDirective(name);
     } else {
@@ -1542,8 +1614,9 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType ty
 
 void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, HeaderType type)
 {
+    Document* document = 0;
     if (m_client->isDocument()) {
-        Document* document = static_cast<Document*>(m_client);
+        document = static_cast<Document*>(m_client);
         UseCounter::count(*document, getUseCounterType(type));
     }
 
@@ -1575,6 +1648,9 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Heade
         skipExactly<UChar>(position, end, ',');
         begin = position;
     }
+
+    if (document && type != Report && didSetReferrerPolicy())
+        document->setReferrerPolicy(referrerPolicy());
 }
 
 void ContentSecurityPolicy::setOverrideAllowInlineStyle(bool value)
@@ -1818,6 +1894,30 @@ ReflectedXSSDisposition ContentSecurityPolicy::reflectedXSSDisposition() const
     return disposition;
 }
 
+ReferrerPolicy ContentSecurityPolicy::referrerPolicy() const
+{
+    ReferrerPolicy policy = ReferrerPolicyDefault;
+    bool first = true;
+    for (size_t i = 0; i < m_policies.size(); ++i) {
+        if (m_policies[i]->didSetReferrerPolicy()) {
+            if (first)
+                policy = m_policies[i]->referrerPolicy();
+            else
+                policy = mergeReferrerPolicies(policy, m_policies[i]->referrerPolicy());
+        }
+    }
+    return policy;
+}
+
+bool ContentSecurityPolicy::didSetReferrerPolicy() const
+{
+    for (size_t i = 0; i < m_policies.size(); ++i) {
+        if (m_policies[i]->didSetReferrerPolicy())
+            return true;
+    }
+    return false;
+}
+
 SecurityOrigin* ContentSecurityPolicy::securityOrigin() const
 {
     return m_client->securityContext().securityOrigin();
@@ -1936,6 +2036,11 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
         PingLoader::sendViolationReport(frame, reportURIs[i], report, PingLoader::ContentSecurityPolicyViolationReport);
 
     didSendViolationReport(stringifiedReport);
+}
+
+void ContentSecurityPolicy::reportInvalidReferrer(const String& invalidValue) const
+{
+    logToConsole("The 'referrer' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"always\", \"default\", \"never\", and \"origin\".");
 }
 
 void ContentSecurityPolicy::reportInvalidInReportOnly(const String& name) const

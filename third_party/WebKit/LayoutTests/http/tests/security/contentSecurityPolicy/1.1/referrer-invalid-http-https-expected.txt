@@ -1,0 +1,11 @@
+CONSOLE ERROR: The 'referrer' Content Security Policy directive has the invalid value "invalid". Valid values are "always", "default", "never", and "origin".
+Test that invalid == never works correctly from HTTP to HTTPS.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ReferrerTest.referrerResult is ""
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
