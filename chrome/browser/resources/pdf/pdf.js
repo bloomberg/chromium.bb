@@ -8,8 +8,12 @@ var plugin;
 var sizer;
 
 function onScroll() {
-  var coordinates = [window.pageXOffset, window.pageYOffset];
-  plugin.postMessage(coordinates);
+  var scrollMessage = {
+    type: 'scroll',
+    xOffset: window.pageXOffset,
+    yOffset: window.pageYOffset
+  };
+  plugin.postMessage(scrollMessage);
 }
 
 function handleMessage(message) {
