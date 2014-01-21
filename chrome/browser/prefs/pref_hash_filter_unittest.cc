@@ -21,12 +21,14 @@ namespace {
 
 const char kTestPref[] = "pref";
 const char kTestPref2[] = "pref2";
+const char kTestPref3[] = "pref3";
 const char kReportOnlyPref[] = "report_only";
 
 const PrefHashFilter::TrackedPreference kTestTrackedPrefs[] = {
   { 0, kTestPref, true },
   { 1, kReportOnlyPref, false },
   { 2, kTestPref2, true },
+  { 3, kTestPref3, true },
 };
 
 }  // namespace
@@ -161,18 +163,62 @@ TEST_P(PrefHashFilterTest, EmptyAndUnchanged) {
 }
 
 TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
-  base::StringValue string_value("string value");
-  pref_hash_filter_->FilterUpdate(kTestPref, &string_value);
-  // One path should be stored.
+  base::DictionaryValue root_dict;
+  // Ownership of |string_value| is transfered to |root_dict|.
+  base::Value* string_value = base::Value::CreateStringValue("string value");
+  root_dict.Set(kTestPref, string_value);
+
+  // No path should be stored on FilterUpdate.
+  pref_hash_filter_->FilterUpdate(kTestPref);
+  ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+
+  // One path should be stored on FilterSerializeData.
+  pref_hash_filter_->FilterSerializeData(&root_dict);
   ASSERT_EQ(1u, mock_pref_hash_store_->stored_paths_count());
-  ASSERT_EQ(&string_value, mock_pref_hash_store_->stored_value(kTestPref));
+  ASSERT_EQ(string_value, mock_pref_hash_store_->stored_value(kTestPref));
 }
 
 TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
-  base::StringValue untracked_value("some value");
-  pref_hash_filter_->FilterUpdate("untracked", &untracked_value);
-  // No paths should be stored.
+  base::DictionaryValue root_dict;
+  root_dict.Set("untracked", base::Value::CreateStringValue("some value"));
+  pref_hash_filter_->FilterUpdate("untracked");
+
+  // No paths should be stored on FilterUpdate.
   ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+
+  // Nor on FilterSerializeData.
+  pref_hash_filter_->FilterSerializeData(&root_dict);
+  ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+}
+
+TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
+  base::DictionaryValue root_dict;
+  // Ownership of the following values is transfered to |root_dict|.
+  base::Value* int_value1 = base::Value::CreateIntegerValue(1);
+  base::Value* int_value2 = base::Value::CreateIntegerValue(2);
+  base::Value* int_value3 = base::Value::CreateIntegerValue(3);
+  base::Value* int_value4 = base::Value::CreateIntegerValue(4);
+  root_dict.Set(kTestPref, int_value1);
+  root_dict.Set(kTestPref2, int_value2);
+  root_dict.Set(kTestPref3, int_value3);
+  root_dict.Set("untracked", int_value4);
+
+  // Only update kTestPref and kTestPref3
+  pref_hash_filter_->FilterUpdate(kTestPref);
+  pref_hash_filter_->FilterUpdate(kTestPref3);
+  ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+
+  // Update kTestPref3 again, nothing should be stored still.
+  base::Value* int_value5 = base::Value::CreateIntegerValue(5);
+  root_dict.Set(kTestPref3, int_value5);
+  ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+
+  // On FilterSerializeData, only kTestPref and kTestPref3 should get a new
+  // hash.
+  pref_hash_filter_->FilterSerializeData(&root_dict);
+  ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(int_value1, mock_pref_hash_store_->stored_value(kTestPref));
+  ASSERT_EQ(int_value5, mock_pref_hash_store_->stored_value(kTestPref3));
 }
 
 TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
@@ -328,11 +374,11 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
   mock_pref_hash_store_->SetCheckResult(kReportOnlyPref,
                                         PrefHashStore::CHANGED);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
-  // All prefs should be checked and a new hash should be stored for each.
+  // All prefs should be checked and a new hash should be stored for each tested
+  // pref.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
-  ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(3u, mock_pref_hash_store_->stored_paths_count());
 
   // No matter what the enforcement level is, the report only pref should never
   // be reset.

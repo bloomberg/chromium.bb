@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREFS_PREF_HASH_FILTER_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -62,14 +63,20 @@ class PrefHashFilter : public PrefFilter {
   // PrefFilter implementation.
   virtual void FilterOnLoad(base::DictionaryValue* pref_store_contents)
       OVERRIDE;
-  virtual void FilterUpdate(const std::string& path,
-                            const base::Value* value) OVERRIDE;
+  virtual void FilterUpdate(const std::string& path) OVERRIDE;
+  virtual void FilterSerializeData(
+      const base::DictionaryValue* pref_store_contents) OVERRIDE;
 
  private:
   typedef std::map<std::string, const TrackedPreference> TrackedPreferencesMap;
 
   scoped_ptr<PrefHashStore> pref_hash_store_;
+
   TrackedPreferencesMap tracked_paths_;
+
+  // The set of all paths whose value has changed since the last call to
+  // FilterSerializeData.
+  std::set<std::string> changed_paths_;
 
   size_t reporting_ids_count_;
 

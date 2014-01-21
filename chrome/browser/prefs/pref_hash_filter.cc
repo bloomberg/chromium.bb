@@ -65,13 +65,10 @@ PrefHashFilter::PrefHashFilter(scoped_ptr<PrefHashStore> pref_hash_store,
   }
 }
 
-PrefHashFilter::~PrefHashFilter() {}
-
-// Updates the stored hash to correspond to the updated preference value.
-void PrefHashFilter::FilterUpdate(const std::string& path,
-                                  const base::Value* value) {
-  if (tracked_paths_.find(path) != tracked_paths_.end())
-    pref_hash_store_->StoreHash(path, value);
+PrefHashFilter::~PrefHashFilter() {
+  // Ensure new values for all |changed_paths_| have been flushed to
+  // |pref_hash_store_| already.
+  DCHECK(changed_paths_.empty());
 }
 
 // Validates loaded preference values according to stored hashes, reports
@@ -136,4 +133,26 @@ void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
       pref_hash_store_->StoreHash(pref_path, new_value);
     }
   }
+}
+
+// Marks |path| has having changed if it is part of |tracked_paths_|. A new hash
+// will be stored for it the next time FilterSerializeData() is invoked.
+void PrefHashFilter::FilterUpdate(const std::string& path) {
+  if (tracked_paths_.find(path) != tracked_paths_.end())
+    changed_paths_.insert(path);
+}
+
+// Updates the stored hashes for |changed_paths_| before serializing data to
+// disk. This is required as storing the hash everytime a pref's value changes
+// is too expensive (see perf regression @ http://crbug.com/331273).
+void PrefHashFilter::FilterSerializeData(
+    const base::DictionaryValue* pref_store_contents) {
+  for (std::set<std::string>::const_iterator it = changed_paths_.begin();
+       it != changed_paths_.end(); ++it) {
+    const std::string& changed_path = *it;
+    const base::Value* value = NULL;
+    pref_store_contents->Get(changed_path, &value);
+    pref_hash_store_->StoreHash(changed_path, value);
+  }
+  changed_paths_.clear();
 }
