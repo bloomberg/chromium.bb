@@ -721,6 +721,30 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
                                         request2_devices[1]));
 }
 
+TEST_F(MediaStreamDispatcherHostTest,
+       GenerateTwoStreamsAndStopDeviceWhileWaitingForSecondStream) {
+  StreamOptions options(false, true);
+
+  SetupFakeUI(true);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  EXPECT_EQ(host_->video_devices_.size(), 1u);
+
+  // Generate a second stream.
+  EXPECT_CALL(*host_.get(),
+              OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
+
+  base::RunLoop run_loop1;
+  host_->OnGenerateStream(kRenderId, kPageRequestId + 1, options, origin_,
+                          run_loop1.QuitClosure());
+
+  // Stop the video stream device from stream 1 while waiting for the
+  // second stream to be generated.
+  host_->OnStopStreamDevice(kRenderId, host_->video_devices_[0].device.id);
+  run_loop1.Run();
+
+  EXPECT_EQ(host_->video_devices_.size(), 1u);
+}
+
 TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
   StreamOptions options(false, true);
 

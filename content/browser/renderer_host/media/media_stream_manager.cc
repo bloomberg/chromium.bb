@@ -495,6 +495,11 @@ void MediaStreamManager::StopDevice(MediaStreamType type, int session_id) {
   while (request_it != requests_.end()) {
     DeviceRequest* request = request_it->second;
     StreamDeviceInfoArray* devices = &request->devices;
+    if (devices->empty()) {
+      // There is no device in use yet by this request.
+      ++request_it;
+      continue;
+    }
     StreamDeviceInfoArray::iterator device_it = devices->begin();
     while (device_it != devices->end()) {
       if (device_it->device.type != type ||
@@ -502,11 +507,15 @@ void MediaStreamManager::StopDevice(MediaStreamType type, int session_id) {
         ++device_it;
         continue;
       }
+
       if (request->state(type) == MEDIA_REQUEST_STATE_DONE)
         CloseDevice(type, session_id);
       device_it = devices->erase(device_it);
     }
-    // If this request doesn't have any active devices, remove the request.
+
+    // If this request doesn't have any active devices after a device
+    // has been stopped above, remove the request. Note that the request is
+    // only deleted if a device as been removed from |devices|.
     if (devices->empty()) {
       std::string label = request_it->first;
       ++request_it;
@@ -909,6 +918,7 @@ MediaStreamManager::FindRequest(const std::string& label) const {
 }
 
 void MediaStreamManager::DeleteRequest(const std::string& label) {
+  DVLOG(1) << "DeleteRequest({label= " << label << "})";
   DeviceRequests::iterator it = requests_.find(label);
   scoped_ptr<DeviceRequest> request(it->second);
   requests_.erase(it);
