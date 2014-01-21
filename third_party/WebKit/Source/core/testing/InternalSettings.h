@@ -53,6 +53,7 @@ public:
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalExperimentalWebSocketEnabled;
         bool m_originalStyleScoped;
+        bool m_originalCSP;
         bool m_originalOverlayScrollbarsEnabled;
         EditingBehaviorType m_originalEditingBehavior;
         bool m_originalTextAutosizingEnabled;
@@ -118,6 +119,7 @@ public:
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setOverlayScrollbarsEnabled(bool);
     void setStyleScopedEnabled(bool);
+    void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
 
 private:
     explicit InternalSettings(Page*);

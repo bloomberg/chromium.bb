@@ -63,4 +63,5 @@
     void setLangAttributeAwareFormControlUIEnabled(boolean enabled);
     void setOverlayScrollbarsEnabled(boolean enabled);
     void setStyleScopedEnabled(boolean enabled);
+    void setExperimentalContentSecurityPolicyFeaturesEnabled(boolean enabled);
 };
