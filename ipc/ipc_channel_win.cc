@@ -372,7 +372,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages(
       return false;
     }
     // Message was sent.
-    DCHECK(!output_queue_.empty());
+    CHECK(!output_queue_.empty());
     Message* m = output_queue_.front();
     output_queue_.pop();
     delete m;
