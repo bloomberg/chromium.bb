@@ -30,6 +30,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -66,7 +67,6 @@ std::string DeriveCommandLine(const GURL& start_url,
 
   static const char* kForwardSwitches[] = {
       ::switches::kAllowWebUICompositing,
-      ::switches::kDeviceManagementUrl,
       ::switches::kDisableAccelerated2dCanvas,
       ::switches::kDisableAcceleratedOverflowScroll,
       ::switches::kDisableAcceleratedPlugins,
@@ -205,6 +205,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       chromeos::switches::kNaturalScrollDefault,
       ::switches::kEnableBrowserTextSubpixelPositioning,
       ::switches::kEnableWebkitTextSubpixelPositioning,
+      policy::switches::kDeviceManagementUrl,
       views::corewm::switches::kNoDropShadows,
       views::corewm::switches::kWindowAnimationsDisabled,
   };

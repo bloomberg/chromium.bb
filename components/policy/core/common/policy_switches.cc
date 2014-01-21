@@ -13,6 +13,11 @@ namespace switches {
 // policy which affects many users is changed.
 const char kCloudPolicyInvalidationDelay[]  = "cloud-policy-invalidation-delay";
 
+// Specifies the URL at which to fetch configuration policy from the device
+// management backend. Specifying this switch turns on managed policy from the
+// device management backend.
+const char kDeviceManagementUrl[]           = "device-management-url";
+
 // Disables pushing cloud policy to Chrome using an invalidation service.
 const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
 

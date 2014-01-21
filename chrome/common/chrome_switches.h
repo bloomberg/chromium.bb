@@ -80,7 +80,6 @@ extern const char kDataReductionProxyProbeURL[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
 extern const char kDebugPrint[];
-extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
 extern const char kDiagnosticsRecovery[];

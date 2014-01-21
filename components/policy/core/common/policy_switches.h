@@ -13,6 +13,7 @@ namespace policy {
 namespace switches {
 
 POLICY_EXPORT extern const char kCloudPolicyInvalidationDelay[];
+POLICY_EXPORT extern const char kDeviceManagementUrl[];
 POLICY_EXPORT extern const char kDisableCloudPolicyPush[];
 POLICY_EXPORT extern const char kEnableComponentCloudPolicy[];
 
