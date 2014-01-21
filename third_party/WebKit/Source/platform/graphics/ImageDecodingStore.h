@@ -161,7 +161,6 @@ private:
             : m_generator(generator)
             , m_useCount(useCount)
             , m_isDiscardable(isDiscardable)
-            , m_isAccountingEnabled(true)
             , m_prev(0)
             , m_next(0)
         {
@@ -178,9 +177,6 @@ private:
         void decrementUseCount() { --m_useCount; ASSERT(m_useCount >= 0); }
         bool isDiscardable() const { return m_isDiscardable; }
 
-        void disableAccounting() { m_isAccountingEnabled = false; }
-        bool isAccountingEnabled() const { return m_isAccountingEnabled; }
-
         // FIXME: getSafeSize() returns size in bytes truncated to a 32-bits integer.
         //        Find a way to get the size in 64-bits.
         virtual size_t memoryUsageInBytes() const = 0;
@@ -190,7 +186,6 @@ private:
         const ImageFrameGenerator* m_generator;
         int m_useCount;
         bool m_isDiscardable;
-        bool m_isAccountingEnabled;
 
     private:
         CacheEntry* m_prev;
@@ -288,13 +283,6 @@ private:
     // Helper method to remove cache entry pointers from the LRU list.
     void removeFromCacheListInternal(const Vector<OwnPtr<CacheEntry> >& deletionList);
 
-    void incrementMemoryUsage(size_t size) { m_memoryUsageInBytes += size; }
-    void decrementMemoryUsage(size_t size)
-    {
-        ASSERT(m_memoryUsageInBytes >= size);
-        m_memoryUsageInBytes -= size;
-    }
-
     // A doubly linked list that maintains usage history of cache entries.
     // This is used for eviction of old entries.
     // Head of this list is the least recently used cache entry.
@@ -321,17 +309,18 @@ private:
     typedef HashMap<const ImageFrameGenerator*, DecoderCacheKeySet> DecoderCacheKeyMap;
     DecoderCacheKeyMap m_decoderCacheKeyMap;
 
-    size_t m_discardableEntriesCount;
-    size_t m_cacheLimitInBytes;
-    size_t m_memoryUsageInBytes;
+    size_t m_heapLimitInBytes;
+    size_t m_heapMemoryUsageInBytes;
+    size_t m_discardableMemoryUsageInBytes;
 
     // Protect concurrent access to these members:
     //   m_orderedCacheList
     //   m_imageCacheMap, m_decoderCacheMap and all CacheEntrys stored in it
     //   m_imageCacheKeyMap
     //   m_decoderCacheKeyMap
-    //   m_cacheLimitInBytes
-    //   m_memoryUsageInBytes
+    //   m_heapLimitInBytes
+    //   m_heapMemoryUsageInBytes
+    //   m_discardableMemoryUsageInBytes
     // This mutex also protects calls to underlying skBitmap's
     // lockPixels()/unlockPixels() as they are not threadsafe.
     Mutex m_mutex;
