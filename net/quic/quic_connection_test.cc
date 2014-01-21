@@ -986,8 +986,8 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
               EntropyHash(511)).WillOnce(testing::Return(0));
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(256);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(255);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(255);
   ProcessAckPacket(&frame);
 
   QuicReceivedPacketManager* received_packet_manager =
@@ -998,11 +998,10 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
 
   AckPacket(192, &frame);
 
-  // Removing one missing packet allows us to ack 192 and one more range.
+  // Removing one missing packet allows us to ack 192 and one more range, but
+  // 192 has already been declared lost, so it doesn't register as an ack.
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(1);
   ProcessAckPacket(&frame);
   EXPECT_EQ(num_packets,
             received_packet_manager->peer_largest_observed_packet());
@@ -1868,11 +1867,8 @@ TEST_F(QuicConnectionTest, ResumptionAlarmWhenWriteBlocked) {
   EXPECT_EQ(1u, writer_->packets_write_attempts());
 }
 
-TEST_F(QuicConnectionTest, LimitPacketsPerNack) {
+TEST_F(QuicConnectionTest, NoLimitPacketsPerNack) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(15, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(4);
   int offset = 0;
   // Send packets 1 to 15.
   for (int i = 0; i < 15; ++i) {
@@ -1886,14 +1882,13 @@ TEST_F(QuicConnectionTest, LimitPacketsPerNack) {
     NackPacket(i, &nack);
   }
 
-  // 13 packets have been NACK'd 3 times, but we limit retransmissions to 2.
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-  ProcessAckPacket(&nack);
-
-  // The next call should trigger retransmitting 2 more packets.
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
+  // 14 packets have been NACK'd and lost.  In TCP cubic, PRR limits
+  // the retransmission rate in the case of burst losses.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(15, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(14);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(14);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(14);
   ProcessAckPacket(&nack);
 }
 

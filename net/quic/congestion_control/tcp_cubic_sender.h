@@ -72,8 +72,9 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   QuicByteCount AvailableSendWindow();
   QuicByteCount SendWindow();
   void Reset();
-  void CongestionAvoidance(QuicPacketSequenceNumber ack);
+  void MaybeIncreaseCwnd(QuicPacketSequenceNumber acked_sequence_number);
   bool IsCwndLimited() const;
+  bool InRecovery() const;
   void OnTimeOut();
 
   HybridSlowStart hybrid_slow_start_;
@@ -94,6 +95,14 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Bytes in flight, aka bytes on the wire.
   QuicByteCount bytes_in_flight_;
 
+  // Bytes sent and acked since the last loss event.  Used for PRR.
+  QuicByteCount prr_out_;
+  QuicByteCount prr_delivered_;
+  size_t ack_count_since_loss_;
+
+  // The congestion window before the last loss event.
+  QuicByteCount bytes_in_flight_before_loss_;
+
   // We need to keep track of the end sequence number of each RTT "burst".
   bool update_end_sequence_number_;
   QuicPacketSequenceNumber end_sequence_number_;
@@ -110,7 +119,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Congestion window in packets.
   QuicTcpCongestionWindow congestion_window_;
 
-  // Slow start congestion window in packets.
+  // Slow start congestion window in packets, aka ssthresh.
   QuicTcpCongestionWindow slowstart_threshold_;
 
   // Maximum number of outstanding packets for tcp.

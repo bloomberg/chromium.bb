@@ -132,6 +132,16 @@ TEST_F(PacingSenderTest, VariousSending) {
       .WillRepeatedly(Return(QuicBandwidth::FromBytesAndTimeDelta(
           kMaxPacketSize, QuicTime::Delta::FromMilliseconds(2))));
 
+  // Send a whole pile of packets, and verify that they are not paced.
+  for (int i = 0 ; i < 1000; ++i) {
+    CheckPacketIsSentImmediately();
+  }
+
+  // Now update the RTT and verify that packets are actually paced.
+  QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(1);
+  EXPECT_CALL(*mock_sender_, UpdateRtt(rtt));
+  pacing_sender_->UpdateRtt(rtt);
+
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();
   CheckPacketIsSentImmediately();

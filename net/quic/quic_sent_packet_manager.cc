@@ -41,9 +41,6 @@ static const int kMinRetransmissionTimeMs = 200;
 static const int kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 
-// We retransmit at most 2 packets per ack.
-static const size_t kMaxRetransmissionsPerAck = 2;
-
 // TCP retransmits after 3 nacks.
 static const size_t kNumberOfNacksBeforeRetransmission = 3;
 
@@ -744,13 +741,6 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
     }
 
     if (sent_packet->nack_count() < num_nacks_needed) {
-      ++it;
-      continue;
-    }
-
-    // If the number of retransmissions has maxed out, don't lose or retransmit
-    // any more packets.
-    if (num_retransmitted >= kMaxRetransmissionsPerAck) {
       ++it;
       continue;
     }

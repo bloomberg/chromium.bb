@@ -67,6 +67,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   QuicTime next_packet_send_time_;  // When can the next packet be sent.
   bool was_last_send_delayed_;  // True when the last send was delayed.
   QuicByteCount max_segment_size_;
+  bool updated_rtt_;  // True if we have at least one RTT update.
 
   DISALLOW_COPY_AND_ASSIGN(PacingSender);
 };

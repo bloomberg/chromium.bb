@@ -948,7 +948,7 @@ void QuicConnection::WriteQueuedPackets() {
          packet_iterator != queued_packets_.end()) {
     if (WritePacket(packet_iterator->encryption_level,
                     packet_iterator->sequence_number,
-                    packet_iterator->packet,
+                    *(packet_iterator->packet),
                     packet_iterator->transmission_type,
                     packet_iterator->retransmittable,
                     packet_iterator->handshake,
@@ -1057,7 +1057,7 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
 
 bool QuicConnection::WritePacket(EncryptionLevel level,
                                  QuicPacketSequenceNumber sequence_number,
-                                 QuicPacket* packet,
+                                 const QuicPacket& packet,
                                  TransmissionType transmission_type,
                                  HasRetransmittableData retransmittable,
                                  IsHandshake handshake,
@@ -1086,7 +1086,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   }
 
   QuicEncryptedPacket* encrypted =
-      framer_.EncryptPacket(level, sequence_number, *packet);
+      framer_.EncryptPacket(level, sequence_number, packet);
   if (encrypted == NULL) {
     LOG(DFATAL) << ENDPOINT << "Failed to encrypt packet number "
                 << sequence_number;
@@ -1116,27 +1116,27 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
                 << encrypted->length();
   }
   DVLOG(1) << ENDPOINT << "Sending packet number " << sequence_number
-             << " : " << (packet->is_fec_packet() ? "FEC " :
+             << " : " << (packet.is_fec_packet() ? "FEC " :
                  (retransmittable == HAS_RETRANSMITTABLE_DATA
                       ? "data bearing " : " ack only "))
              << ", encryption level: "
              << QuicUtils::EncryptionLevelToString(level)
-             << ", length:" << packet->length() << ", encrypted length:"
+             << ", length:" << packet.length() << ", encrypted length:"
              << encrypted->length();
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
-           << QuicUtils::StringToHexASCIIDump(packet->AsStringPiece());
+           << QuicUtils::StringToHexASCIIDump(packet.AsStringPiece());
 
   DCHECK(encrypted->length() <= kMaxPacketSize ||
          FLAGS_quic_allow_oversized_packets_for_test)
       << "Packet " << sequence_number << " will not be read; too large: "
-      << packet->length() << " " << encrypted->length() << " "
+      << packet.length() << " " << encrypted->length() << " "
       << " forced: " << (forced == FORCE ? "yes" : "no");
 
   DCHECK(pending_write_.get() == NULL);
   pending_write_.reset(new PendingWrite(sequence_number, transmission_type,
                                         retransmittable, level,
-                                        packet->is_fec_packet(),
-                                        packet->length()));
+                                        packet.is_fec_packet(),
+                                        packet.length()));
 
   WriteResult result =
       writer_->WritePacket(encrypted->data(), encrypted->length(),
@@ -1306,7 +1306,7 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
            HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA;
   sent_entropy_manager_.RecordPacketEntropyHash(packet.sequence_number,
                                                 packet.entropy_hash);
-  if (WritePacket(level, packet.sequence_number, packet.packet,
+  if (WritePacket(level, packet.sequence_number, *(packet.packet),
                   transmission_type, retransmittable, handshake, forced)) {
     delete packet.packet;
     return true;

@@ -437,7 +437,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // sent immediately and the send scheduler will not be consulted.
   bool WritePacket(EncryptionLevel level,
                    QuicPacketSequenceNumber sequence_number,
-                   QuicPacket* packet,
+                   const QuicPacket& packet,
                    TransmissionType transmission_type,
                    HasRetransmittableData retransmittable,
                    IsHandshake handshake,

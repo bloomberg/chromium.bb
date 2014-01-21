@@ -748,15 +748,14 @@ TEST_F(QuicSentPacketManagerTest, EarlyRetransmit1Packet) {
   EXPECT_EQ(1u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
 }
 
-TEST_F(QuicSentPacketManagerTest, DontEarlyRetransmitPacket) {
+TEST_F(QuicSentPacketManagerTest, EarlyRetransmitAllPackets) {
   const size_t kNumSentPackets = 5;
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
     SendDataPacket(i);
   }
 
-  // Fast retransmit when the final packet gets acked, but don't early
-  // retransmit as well, because there are 4 packets outstanding when the ack
-  // arrives.
+  // Early retransmit all packets when the final packet arrives, since we do
+  // not expect to receive any more acks.
   ReceivedPacketInfo received_info;
   received_info.delta_time_largest_observed =
       QuicTime::Delta::FromMilliseconds(5);
@@ -767,39 +766,40 @@ TEST_F(QuicSentPacketManagerTest, DontEarlyRetransmitPacket) {
   received_info.largest_observed = kNumSentPackets;
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(4);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(4);
   manager_.OnIncomingAck(received_info, clock_.Now());
   EXPECT_EQ(
-      2u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
+      4u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
   EXPECT_EQ(4u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
 }
 
 TEST_F(QuicSentPacketManagerTest, NackRetransmit2Packets) {
-  const size_t kNumSentPackets = 20;
-  // Transmit 20 packets.
+  const size_t kNumSentPackets = 25;
+  // Transmit 25 packets.
   for (QuicPacketSequenceNumber i = 1; i <= kNumSentPackets; ++i) {
     SendDataPacket(i);
   }
 
-  // Nack the first 19 packets 3 times.
+  // Nack the first 19 packets 3 times, which does not trigger early retransmit.
+  const size_t kLargestObserved = 20;
   ReceivedPacketInfo received_info;
-  received_info.largest_observed = kNumSentPackets;
+  received_info.largest_observed = kLargestObserved;
   received_info.delta_time_largest_observed =
       QuicTime::Delta::FromMilliseconds(5);
-  for (size_t i = 1; i < kNumSentPackets; ++i) {
+  for (size_t i = 1; i < kLargestObserved; ++i) {
     received_info.missing_packets.insert(i);
   }
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_,
-              OnPacketAcked(kNumSentPackets, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+              OnPacketAcked(kLargestObserved, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(17);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(17);
   manager_.OnIncomingAck(received_info, clock_.Now());
   EXPECT_EQ(
-      2u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
-  for (size_t i = 1; i < kNumSentPackets; ++i) {
-    EXPECT_EQ(kNumSentPackets - i,
+      17u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
+  for (size_t i = 1; i < kLargestObserved; ++i) {
+    EXPECT_EQ(kLargestObserved - i,
               QuicSentPacketManagerPeer::GetNackCount(&manager_, i));
   }
 }
@@ -828,11 +828,11 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
   }
   // We never actually get an ack call, since the kNumSentPackets packet was
   // not saved.
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(14);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(14);
   manager_.OnIncomingAck(received_info, clock_.Now());
   ASSERT_EQ(
-      2u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
+      14u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
   // Only non-ack packets have a nack count.
   for (size_t i = 1; i < kNumSentPackets; i += 2) {
     EXPECT_EQ(kNumSentPackets - i,
@@ -841,9 +841,10 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
 
   // Ensure only the odd packets were retransmitted, since the others were not
   // retransmittable(ie: acks).
-  EXPECT_EQ(1u, manager_.NextPendingRetransmission().sequence_number);
-  manager_.OnRetransmittedPacket(1u, kNumSentPackets + 1);
-  EXPECT_EQ(3u, manager_.NextPendingRetransmission().sequence_number);
+  for (size_t i = 0; i < 13; ++i) {
+    EXPECT_EQ(1 + 2 * i, manager_.NextPendingRetransmission().sequence_number);
+    manager_.OnRetransmittedPacket(1 + 2 * i, kNumSentPackets + 1 + i);
+  }
 }
 
 TEST_F(QuicSentPacketManagerTest, NackTwiceThenAck) {
