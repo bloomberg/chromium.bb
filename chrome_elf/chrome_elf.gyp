@@ -41,7 +41,8 @@
       },
     },
     {
-      'target_name': 'chrome_elf_unittests',
+      'target_name': 'chrome_elf_unittests_exe',
+      'product_name': 'chrome_elf_unittests',
       'type': 'executable',
       'sources': [
         'blacklist/test/blacklist_test.cc',
@@ -64,6 +65,18 @@
         'blacklist_test_dll_2',
         'blacklist_test_dll_3',
         'blacklist_test_main_dll',
+      ],
+    },
+    {
+      # A dummy target to ensure that chrome_elf.dll and chrome.exe gets build
+      # when building chrome_elf_unittests.exe without introducing an
+      # explicit runtime dependency.
+      'target_name': 'chrome_elf_unittests',
+      'type': 'none',
+      'dependencies': [
+        '../chrome/chrome.gyp:chrome',
+        'chrome_elf',
+        'chrome_elf_unittests_exe',
       ],
     },
     {

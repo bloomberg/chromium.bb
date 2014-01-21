@@ -62,6 +62,9 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   static const char* const kValidFilePatterns[] = {
       "KERNEL32.dll",
       "MSVC*",
+#if defined(ADDRESS_SANITIZER)
+      "syzyasan_rtl.dll",
+#endif
       "ADVAPI32.dll"};
 
   // Make sure all of ELF's imports are in the valid imports list.
