@@ -23,6 +23,7 @@
 #include "native_client/src/shared/platform/scoped_ptr_refcount.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/nonnacl_util/launcher_factory.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"

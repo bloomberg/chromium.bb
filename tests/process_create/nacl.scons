@@ -1,0 +1,53 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# This test uses a nexe built by another test.  Nexes do not get
+# staged in pexe mode, so only run this test in nonpexe mode.
+if env.Bit('pnacl_generate_pexe'):
+  Return()
+
+srpc_pc_nexe = env.ComponentProgram('srpc_process_create_test',
+                                    'srpc_process_create_test.c',
+                                    EXTRA_LIBS=[
+                                        'srpc',
+                                        'ldr',
+                                        'platform',
+                                        'gio',
+                                        'imc',
+                                        'imc_syscalls',
+                                        '${NONIRT_LIBS}',
+                                        '${PTHREAD_LIBS}'])
+
+# sel_universal test
+
+hello_world_nexe = env.ComponentProgram('hello_world_subprocess',
+                                        'hello_world_subprocess.c',
+                                        EXTRA_LIBS=['${NONIRT_LIBS}',
+                                                    'srpc',
+                                                    'platform',
+                                                    'imc',
+                                                    'imc_syscalls',
+                                                    '${PTHREAD_LIBS}',
+                                                    '${NONIRT_LIBS}'])
+
+hello_world_nexe = env.GetTranslatedNexe(hello_world_nexe)
+
+node = env.SelUniversalTest(
+    'srpc_process_create_test.out',
+    srpc_pc_nexe,
+    sel_universal_flags=['--uses_reverse_service',
+                         '--no_app_channel',
+                         '--var', 'nexe_file', hello_world_nexe,
+                         '--command_file',
+                         env.File('srpc_process_create_test.stdin')],
+    stdout_golden=env.File('srpc_process_create_test.stdout'),
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'nonpexe_tests'],
+                       'run_srpc_process_create_test',
+                       is_broken=not env.Bit('nacl_static_link'))

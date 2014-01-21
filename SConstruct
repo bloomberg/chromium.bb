@@ -1314,7 +1314,12 @@ def ProgramNameForNmf(env, basename):
 pre_base_env.AddMethod(ProgramNameForNmf)
 
 
-def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
+def SelUniversalTest(env,
+                     name,
+                     nexe,
+                     args=None,
+                     sel_universal_flags=None,
+                     **kwargs):
   # The dynamic linker's ability to receive arguments over IPC at
   # startup currently requires it to reject the plugin's first
   # connection, but this interferes with the sel_universal-based
@@ -1355,6 +1360,7 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
   node = CommandSelLdrTestNacl(env,
                                name,
                                nexe,
+                               args=args,
                                loader=sel_universal,
                                sel_ldr_flags=sel_universal_flags,
                                skip_bootstrap=True,
@@ -3098,6 +3104,7 @@ irt_variant_tests = [
     'tests/performance/nacl.scons',
     'tests/pnacl_abi/nacl.scons',
     'tests/pnacl_native_objects/nacl.scons',
+    'tests/process_create/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
     'tests/sel_ldr/nacl.scons',
