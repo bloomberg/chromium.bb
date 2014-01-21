@@ -5,6 +5,7 @@
 #include "chrome/common/crash_keys.h"
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/command_line.h"
@@ -33,7 +34,10 @@ class CrashKeysTest : public testing::Test {
   }
 
   std::string GetKeyValue(const std::string& key) {
-    return keys_[key];
+    std::map<std::string, std::string>::const_iterator it = keys_.find(key);
+    if (it == keys_.end())
+      return std::string();
+    return it->second;
   }
 
  private:
@@ -84,9 +88,8 @@ TEST_F(CrashKeysTest, Switches) {
   // Set fewer to ensure that old ones are erased.
   {
     CommandLine command_line(CommandLine::NO_PROGRAM);
-    const char kFormat[] = "--fewer-%d";
     for (int i = 1; i <= 5; ++i)
-      command_line.AppendSwitch(base::StringPrintf(kFormat, i));
+      command_line.AppendSwitch(base::StringPrintf("--fewer-%d", i));
     crash_keys::SetSwitchesFromCommandLine(&command_line);
     EXPECT_EQ("--fewer-1", GetKeyValue("switch-1"));
     EXPECT_EQ("--fewer-2", GetKeyValue("switch-2"));
@@ -94,6 +97,67 @@ TEST_F(CrashKeysTest, Switches) {
     EXPECT_EQ("--fewer-4", GetKeyValue("switch-4"));
     EXPECT_EQ("--fewer-5", GetKeyValue("switch-5"));
     for (int i = 6; i < 20; ++i)
-      EXPECT_FALSE(HasCrashKey(base::StringPrintf(kFormat, i)));
+      EXPECT_FALSE(HasCrashKey(base::StringPrintf(crash_keys::kSwitch, i)));
+  }
+}
+
+TEST_F(CrashKeysTest, Extensions) {
+  // Set three extensions.
+  {
+    std::set<std::string> extensions;
+    extensions.insert("ext.1");
+    extensions.insert("ext.2");
+    extensions.insert("ext.3");
+
+    crash_keys::SetActiveExtensions(extensions);
+
+    extensions.erase(GetKeyValue("extension-1"));
+    extensions.erase(GetKeyValue("extension-2"));
+    extensions.erase(GetKeyValue("extension-3"));
+    EXPECT_EQ(0u, extensions.size());
+
+    EXPECT_EQ("3", GetKeyValue("num-extensions"));
+    EXPECT_FALSE(HasCrashKey("extension-4"));
+  }
+
+  // Set more than the max switches.
+  {
+    std::set<std::string> extensions;
+    const int kMax = crash_keys::kExtensionIDMaxCount + 2;
+    EXPECT_GT(kMax, 10);
+    for (int i = 1; i <= kMax; ++i)
+      extensions.insert(base::StringPrintf("ext.%d", i));
+    crash_keys::SetActiveExtensions(extensions);
+
+    for (int i = 1; i <= kMax; ++i) {
+      extensions.erase(
+          GetKeyValue(base::StringPrintf(crash_keys::kExtensionID, i)));
+    }
+    EXPECT_EQ(2u, extensions.size());
+
+    EXPECT_EQ("12", GetKeyValue("num-extensions"));
+    EXPECT_FALSE(HasCrashKey("extension-13"));
+    EXPECT_FALSE(HasCrashKey("extension-14"));
+  }
+
+  // Set fewer to ensure that old ones are erased.
+  {
+    std::set<std::string> extensions;
+    for (int i = 1; i <= 5; ++i)
+      extensions.insert(base::StringPrintf("ext.%d", i));
+    crash_keys::SetActiveExtensions(extensions);
+
+    extensions.erase(GetKeyValue("extension-1"));
+    extensions.erase(GetKeyValue("extension-2"));
+    extensions.erase(GetKeyValue("extension-3"));
+    extensions.erase(GetKeyValue("extension-4"));
+    extensions.erase(GetKeyValue("extension-5"));
+    EXPECT_EQ(0u, extensions.size());
+
+    EXPECT_EQ("5", GetKeyValue("num-extensions"));
+    for (int i = 6; i < 20; ++i) {
+      std::string key = base::StringPrintf(crash_keys::kExtensionID, i);
+      EXPECT_FALSE(HasCrashKey(key)) << key;
+    }
   }
 }

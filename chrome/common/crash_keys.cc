@@ -190,7 +190,7 @@ size_t RegisterChromeCrashKeys() {
     const size_t formatted_key_len = sizeof(formatted_keys[0]);
     for (size_t i = 0; i < kExtensionIDMaxCount; ++i) {
       int n = base::snprintf(
-          formatted_keys[i], formatted_key_len, kExtensionID, i);
+          formatted_keys[i], formatted_key_len, kExtensionID, i + 1);
       DCHECK_GT(n, 0);
       base::debug::CrashKey crash_key = { formatted_keys[i], kSmallSize };
       keys.push_back(crash_key);
@@ -323,7 +323,7 @@ void SetActiveExtensions(const std::set<std::string>& extensions) {
 
   std::set<std::string>::const_iterator it = extensions.begin();
   for (size_t i = 0; i < kExtensionIDMaxCount; ++i) {
-    std::string key = base::StringPrintf(kExtensionID, i);
+    std::string key = base::StringPrintf(kExtensionID, i + 1);
     if (it == extensions.end()) {
       base::debug::ClearCrashKey(key);
     } else {
