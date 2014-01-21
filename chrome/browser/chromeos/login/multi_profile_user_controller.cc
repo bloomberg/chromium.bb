@@ -59,9 +59,15 @@ void MultiProfileUserController::RegisterPrefs(
 // static
 void MultiProfileUserController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // Use "disabled" default if there is no user manager or no logged in user.
+  // This is true for signin proflie (where the value does not matter) or
+  // for the primary user's profile. This essentially disables multiprofile
+  // unless the primary user has a policy to say otherwise.
+  const bool use_disable_default = !UserManager::IsInitialized() ||
+      UserManager::Get()->GetLoggedInUsers().size() == 1;
   registry->RegisterStringPref(
       prefs::kMultiProfileUserBehavior,
-      kBehaviorUnrestricted,
+      use_disable_default ? kBehaviorNotAllowed : kBehaviorUnrestricted,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -101,15 +107,19 @@ bool MultiProfileUserController::IsUserAllowedInSession(
   // If the primary profile already has policy certificates installed but hasn't
   // used them yet then it can become tainted at any time during this session;
   // disable secondary profiles in this case too.
-  Profile* profile =
+  Profile* primary_user_profile =
       primary_user ? user_manager->GetProfileByUser(primary_user) : NULL;
   policy::PolicyCertService* service =
-      profile ? policy::PolicyCertServiceFactory::GetForProfile(profile) : NULL;
+      primary_user_profile ? policy::PolicyCertServiceFactory::GetForProfile(
+                                 primary_user_profile)
+                           : NULL;
   if (service && service->has_policy_certificates())
     return false;
 
   // No user is allowed if the primary user policy forbids it.
-  const std::string primary_user_behavior = GetCachedValue(primary_user_email);
+  const std::string primary_user_behavior =
+      primary_user_profile->GetPrefs()->GetString(
+          prefs::kMultiProfileUserBehavior);
   if (primary_user_behavior == kBehaviorNotAllowed)
     return false;
 
@@ -180,9 +190,18 @@ void MultiProfileUserController::OnUserPrefChanged(
   user_email = gaia::CanonicalizeEmail(user_email);
 
   PrefService* prefs = user_profile->GetPrefs();
-  const std::string behavior =
-      prefs->GetString(prefs::kMultiProfileUserBehavior);
-  SetCachedValue(user_email, behavior);
+  if (prefs->FindPreference(prefs::kMultiProfileUserBehavior)
+          ->IsDefaultValue()) {
+    // Migration code to clear cached default behavior.
+    // TODO(xiyuan): Remove this after M35.
+    DictionaryPrefUpdate update(local_state_,
+                                prefs::kCachedMultiProfileUserBehavior);
+    update->RemoveWithoutPathExpansion(user_email, NULL);
+  } else {
+    const std::string behavior =
+        prefs->GetString(prefs::kMultiProfileUserBehavior);
+    SetCachedValue(user_email, behavior);
+  }
 
   CheckSessionUsers();
 }
