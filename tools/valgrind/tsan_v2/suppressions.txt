@@ -114,10 +114,6 @@ race:base::PowerMonitor::AddObserver
 # http://crbug.com/268941
 race:tracked_objects::ThreadData::tls_index_
 
-# http://crbug.com/268946
-race:CommandLine::HasSwitch
-race:CommandLine::current_process_commandline_
-
 # http://crbug.com/270037
 race:gLibCleanupFunctions
 
@@ -195,3 +191,7 @@ race:v8::internal::LoadStubCompiler::registers
 race:v8::internal::StoreStubCompiler::registers
 race:v8::internal::HValue::LoopWeight
 
+# http://crbug.com/334140
+race:CommandLine::HasSwitch
+race:CommandLine::current_process_commandline_
+race:CommandLine::GetSwitchValueASCII
