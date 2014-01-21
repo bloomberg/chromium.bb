@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/css/resolver/StyleResolverState.h"
 
+#include "core/animation/css/CSSAnimations.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/FrameHost.h"
@@ -52,6 +53,20 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, Ren
     if (!document.isActive())
         return;
     m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());
+}
+
+StyleResolverState::~StyleResolverState()
+{
+}
+
+void StyleResolverState::setAnimationUpdate(PassOwnPtr<CSSAnimationUpdate> update)
+{
+    m_animationUpdate = update;
+}
+
+PassOwnPtr<CSSAnimationUpdate> StyleResolverState::takeAnimationUpdate()
+{
+    return m_animationUpdate.release();
 }
 
 } // namespace WebCore

@@ -33,6 +33,7 @@
 
 #include "bindings/v8/Dictionary.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/resolver/StyleResolver.h"
