@@ -125,7 +125,6 @@
         context_,
         window_rect,
         window_scale_factor,
-        renderWidgetHostView_->frame_subscriber(),
         false)) {
     renderWidgetHostView_->GotAcceleratedCompositingError();
   }

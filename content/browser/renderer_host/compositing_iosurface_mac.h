@@ -50,10 +50,12 @@ class CompositingIOSurfaceMac {
   ~CompositingIOSurfaceMac();
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
-  bool SetIOSurface(uint64 io_surface_handle,
-                    const gfx::Size& size,
-                    float scale_factor,
-                    const std::vector<ui::LatencyInfo>& latency_info);
+  bool SetIOSurfaceWithContextCurrent(
+      scoped_refptr<CompositingIOSurfaceContext> current_context,
+      uint64 io_surface_handle,
+      const gfx::Size& size,
+      float scale_factor,
+      const std::vector<ui::LatencyInfo>& latency_info);
 
   // Get the CGL renderer ID currently associated with this context.
   int GetRendererID();
@@ -62,13 +64,10 @@ class CompositingIOSurfaceMac {
   // with the origin in the lower left corner. If the window rect's size is
   // larger than the IOSurface, the remaining right and bottom edges will be
   // white. |window_scale_factor| is 1 in normal views, 2 in HiDPI views.
-  // |frame_subscriber| listens to this draw event and provides output buffer
-  // for copying this frame into.
   bool DrawIOSurface(
       scoped_refptr<CompositingIOSurfaceContext> drawing_context,
       const gfx::Rect& window_rect,
       float window_scale_factor,
-      RenderWidgetHostViewFrameSubscriber* frame_subscriber,
       bool flush_drawable);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
@@ -223,7 +222,9 @@ class CompositingIOSurfaceMac {
   bool IsVendorIntel();
 
   // Returns true if IOSurface is ready to render. False otherwise.
-  bool MapIOSurfaceToTexture(uint64 io_surface_handle);
+  bool MapIOSurfaceToTextureWithContextCurrent(
+      const scoped_refptr<CompositingIOSurfaceContext>& current_context,
+      uint64 io_surface_handle);
 
   void UnrefIOSurfaceWithContextCurrent();
 
