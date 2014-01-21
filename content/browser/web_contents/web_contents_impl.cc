@@ -2511,6 +2511,9 @@ void WebContentsImpl::OnDidDownloadImage(
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
+  if (bitmaps.size() != original_bitmap_sizes.size())
+    return;
+
   ImageDownloadMap::iterator iter = image_download_map_.find(id);
   if (iter == image_download_map_.end()) {
     // Currently WebContents notifies us of ANY downloads so that it is
