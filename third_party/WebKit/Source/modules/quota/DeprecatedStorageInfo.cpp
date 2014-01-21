@@ -30,31 +30,31 @@
 
 #include "config.h"
 
-#include "modules/quota/StorageInfo.h"
+#include "modules/quota/DeprecatedStorageInfo.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/quota/StorageErrorCallback.h"
-#include "modules/quota/StorageQuota.h"
 #include "modules/quota/StorageQuotaCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
 
 namespace WebCore {
 
-StorageInfo::StorageInfo()
+DeprecatedStorageInfo::DeprecatedStorageInfo()
 {
     ScriptWrappable::init(this);
 }
 
-StorageInfo::~StorageInfo()
+DeprecatedStorageInfo::~DeprecatedStorageInfo()
 {
 }
 
-void StorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
-    // Dispatching the request to StorageQuota, as this interface is deprecated in favor of StorageQuota.
-    StorageQuota* storageQuota = getStorageQuota(storageType);
+    // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
+    DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
         executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
@@ -63,10 +63,10 @@ void StorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int sto
     storageQuota->queryUsageAndQuota(executionContext, successCallback, errorCallback);
 }
 
-void StorageInfo::requestQuota(ExecutionContext* executionContext, int storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext, int storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
-    // Dispatching the request to StorageQuota, as this interface is deprecated in favor of StorageQuota.
-    StorageQuota* storageQuota = getStorageQuota(storageType);
+    // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
+    DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
     if (!storageQuota) {
         // Unknown storage type is requested.
         executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
@@ -75,16 +75,16 @@ void StorageInfo::requestQuota(ExecutionContext* executionContext, int storageTy
     storageQuota->requestQuota(executionContext, newQuotaInBytes, successCallback, errorCallback);
 }
 
-StorageQuota* StorageInfo::getStorageQuota(int storageType)
+DeprecatedStorageQuota* DeprecatedStorageInfo::getStorageQuota(int storageType)
 {
     switch (storageType) {
     case TEMPORARY:
         if (!m_temporaryStorage)
-            m_temporaryStorage = StorageQuota::create(StorageQuota::Temporary);
+            m_temporaryStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Temporary);
         return m_temporaryStorage.get();
     case PERSISTENT:
         if (!m_persistentStorage)
-            m_persistentStorage = StorageQuota::create(StorageQuota::Persistent);
+            m_persistentStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Persistent);
         return m_persistentStorage.get();
     }
     return 0;

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/quota/StorageQuota.h"
+#include "modules/quota/DeprecatedStorageQuota.h"
 
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -45,13 +45,13 @@
 
 namespace WebCore {
 
-StorageQuota::StorageQuota(Type type)
+DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
     : m_type(type)
 {
     ScriptWrappable::init(this);
 }
 
-void StorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
 
@@ -72,7 +72,7 @@ void StorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOw
     blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, WebStorageQuotaCallbacksImpl::createLeakedPtr(successCallback, errorCallback));
 }
 
-void StorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
 
@@ -86,7 +86,7 @@ void StorageQuota::requestQuota(ExecutionContext* executionContext, unsigned lon
     StorageQuotaClient::from(executionContext)->requestQuota(executionContext, storageType, newQuotaInBytes, successCallback, errorCallback);
 }
 
-StorageQuota::~StorageQuota()
+DeprecatedStorageQuota::~DeprecatedStorageQuota()
 {
 }
 

@@ -83,7 +83,7 @@
 #include "modules/indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "modules/notifications/NotificationClient.h"
-#include "modules/quota/StorageQuota.h"
+#include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/speech/SpeechRecognitionError.h"
 #include "platform/Cursor.h"
 #include "platform/FileMetadata.h"
@@ -554,8 +554,8 @@ COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaErrorInvalidModification, InvalidMod
 COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaErrorInvalidAccess, InvalidAccessError);
 COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaErrorAbort, AbortError);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaTypeTemporary, StorageQuota::Temporary);
-COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaTypePersistent, StorageQuota::Persistent);
+COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaTypeTemporary, DeprecatedStorageQuota::Temporary);
+COMPILE_ASSERT_MATCHING_ENUM(WebStorageQuotaTypePersistent, DeprecatedStorageQuota::Persistent);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebPageVisibilityStateVisible, PageVisibilityStateVisible);
 COMPILE_ASSERT_MATCHING_ENUM(WebPageVisibilityStateHidden, PageVisibilityStateHidden);

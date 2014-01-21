@@ -28,49 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StorageInfo_h
-#define StorageInfo_h
+#ifndef DeprecatedStorageQuota_h
+#define DeprecatedStorageQuota_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class ExecutionContext;
 class StorageErrorCallback;
-class StorageQuota;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class StorageInfo : public RefCounted<StorageInfo>, public ScriptWrappable {
+class DeprecatedStorageQuota : public RefCounted<DeprecatedStorageQuota>, public ScriptWrappable {
 public:
-    enum {
-        TEMPORARY,
-        PERSISTENT,
+    enum Type {
+        Temporary,
+        Persistent,
     };
 
-    static PassRefPtr<StorageInfo> create()
+    static PassRefPtr<DeprecatedStorageQuota> create(Type type)
     {
-        return adoptRef(new StorageInfo());
+        return adoptRef(new DeprecatedStorageQuota(type));
     }
 
-    void queryUsageAndQuota(ExecutionContext*, int storageType, PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
+    void queryUsageAndQuota(ExecutionContext*, PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
 
-    void requestQuota(ExecutionContext*, int storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback>, PassOwnPtr<StorageErrorCallback>);
+    void requestQuota(ExecutionContext*, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback>, PassOwnPtr<StorageErrorCallback>);
 
-    ~StorageInfo();
+    ~DeprecatedStorageQuota();
 
 private:
-    StorageInfo();
-
-    StorageQuota* getStorageQuota(int storageType);
-
-    mutable RefPtr<StorageQuota> m_temporaryStorage;
-    mutable RefPtr<StorageQuota> m_persistentStorage;
+    explicit DeprecatedStorageQuota(Type);
+    Type m_type;
 };
 
 } // namespace WebCore
 
-#endif // StorageInfo_h
+#endif // DeprecatedStorageQuota_h

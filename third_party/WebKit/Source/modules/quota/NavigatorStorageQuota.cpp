@@ -32,7 +32,7 @@
 #include "modules/quota/NavigatorStorageQuota.h"
 
 #include "core/frame/Navigator.h"
-#include "modules/quota/StorageQuota.h"
+#include "modules/quota/DeprecatedStorageQuota.h"
 
 namespace WebCore {
 
@@ -60,27 +60,27 @@ NavigatorStorageQuota* NavigatorStorageQuota::from(Navigator* navigator)
     return supplement;
 }
 
-StorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(Navigator* navigator)
+DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage(Navigator* navigator)
 {
     return NavigatorStorageQuota::from(navigator)->webkitTemporaryStorage();
 }
 
-StorageQuota* NavigatorStorageQuota::webkitPersistentStorage(Navigator* navigator)
+DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage(Navigator* navigator)
 {
     return NavigatorStorageQuota::from(navigator)->webkitPersistentStorage();
 }
 
-StorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const
+DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const
 {
     if (!m_temporaryStorage && frame())
-        m_temporaryStorage = StorageQuota::create(StorageQuota::Temporary);
+        m_temporaryStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Temporary);
     return m_temporaryStorage.get();
 }
 
-StorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const
+DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const
 {
     if (!m_persistentStorage && frame())
-        m_persistentStorage = StorageQuota::create(StorageQuota::Persistent);
+        m_persistentStorage = DeprecatedStorageQuota::create(DeprecatedStorageQuota::Persistent);
     return m_persistentStorage.get();
 }
 

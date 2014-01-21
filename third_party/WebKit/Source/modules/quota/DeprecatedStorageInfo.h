@@ -28,43 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StorageQuota_h
-#define StorageQuota_h
+#ifndef DeprecatedStorageInfo_h
+#define DeprecatedStorageInfo_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
+class DeprecatedStorageQuota;
 class ExecutionContext;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class StorageQuota : public RefCounted<StorageQuota>, public ScriptWrappable {
+class DeprecatedStorageInfo : public RefCounted<DeprecatedStorageInfo>, public ScriptWrappable {
 public:
-    enum Type {
-        Temporary,
-        Persistent,
+    enum {
+        TEMPORARY,
+        PERSISTENT,
     };
 
-    static PassRefPtr<StorageQuota> create(Type type)
+    static PassRefPtr<DeprecatedStorageInfo> create()
     {
-        return adoptRef(new StorageQuota(type));
+        return adoptRef(new DeprecatedStorageInfo());
     }
 
-    void queryUsageAndQuota(ExecutionContext*, PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
+    void queryUsageAndQuota(ExecutionContext*, int storageType, PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
 
-    void requestQuota(ExecutionContext*, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback>, PassOwnPtr<StorageErrorCallback>);
+    void requestQuota(ExecutionContext*, int storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback>, PassOwnPtr<StorageErrorCallback>);
 
-    ~StorageQuota();
+    ~DeprecatedStorageInfo();
 
 private:
-    explicit StorageQuota(Type);
-    Type m_type;
+    DeprecatedStorageInfo();
+
+    DeprecatedStorageQuota* getStorageQuota(int storageType);
+
+    mutable RefPtr<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable RefPtr<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace WebCore
 
-#endif // StorageQuota_h
+#endif // DeprecatedStorageInfo_h

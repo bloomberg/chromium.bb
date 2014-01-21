@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
-#include "modules/quota/StorageInfo.h"
+#include "modules/quota/DeprecatedStorageInfo.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -65,15 +65,15 @@ DOMWindowQuota* DOMWindowQuota::from(DOMWindow* window)
 }
 
 // static
-StorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow* window)
+DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow* window)
 {
     return DOMWindowQuota::from(window)->webkitStorageInfo();
 }
 
-StorageInfo* DOMWindowQuota::webkitStorageInfo() const
+DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const
 {
     if (!m_storageInfo && frame())
-        m_storageInfo = StorageInfo::create();
+        m_storageInfo = DeprecatedStorageInfo::create();
     return m_storageInfo.get();
 }
 

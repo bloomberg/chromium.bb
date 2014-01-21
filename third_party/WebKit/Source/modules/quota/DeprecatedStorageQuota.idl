@@ -25,7 +25,7 @@
 
 [
     NoInterfaceObject
-] interface StorageQuota {
+] interface DeprecatedStorageQuota {
     [CallWith=ExecutionContext] void queryUsageAndQuota(StorageUsageCallback usageCallback, optional StorageErrorCallback errorCallback);
     [CallWith=ExecutionContext] void requestQuota(unsigned long long newQuotaInBytes, optional StorageQuotaCallback quotaCallback, optional StorageErrorCallback errorCallback);
 };

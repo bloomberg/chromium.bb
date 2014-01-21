@@ -36,21 +36,21 @@
 
 namespace WebCore {
 
+class DeprecatedStorageInfo;
 class DOMWindow;
-class StorageInfo;
 
 class DOMWindowQuota FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
 public:
     virtual ~DOMWindowQuota();
     static DOMWindowQuota* from(DOMWindow*);
-    static StorageInfo* webkitStorageInfo(DOMWindow*);
-    StorageInfo* webkitStorageInfo() const;
+    static DeprecatedStorageInfo* webkitStorageInfo(DOMWindow*);
+    DeprecatedStorageInfo* webkitStorageInfo() const;
 
 private:
     explicit DOMWindowQuota(DOMWindow*);
     static const char* supplementName();
 
-    mutable RefPtr<StorageInfo> m_storageInfo;
+    mutable RefPtr<DeprecatedStorageInfo> m_storageInfo;
 };
 
 } // namespace WebCore

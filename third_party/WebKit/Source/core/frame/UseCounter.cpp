@@ -620,7 +620,7 @@ String UseCounter::deprecationMessage(Feature feature)
         return "The 'X-WebKit-CSP' headers are no longer supported. Please consider using the canonical 'Content-Security-Policy' header instead.";
 
     // Quota
-    case StorageInfo:
+    case PrefixedStorageInfo:
         return "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.";
 
     // Performance
