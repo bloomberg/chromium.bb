@@ -1041,3 +1041,15 @@ def PanProjectChecks(input_api, output_api,
         input_api, output_api))
   snapshot("done")
   return results
+
+
+def CheckPatchFormatted(input_api, output_api):
+  import git_cl
+  code, _ = git_cl.RunGitWithCode(['cl', 'format', '--dry-run'],
+                                    suppress_stderr=True)
+  if code == 2:
+    return [output_api.PresubmitPromptWarning(
+      'Your patch is not formatted, please run git cl format.')]
+  # As this is just a warning, ignore all other errors if the user
+  # happens to have a broken clang-format, doesn't use git, etc etc.
+  return []

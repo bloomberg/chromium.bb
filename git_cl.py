@@ -80,15 +80,20 @@ def RunGit(args, **kwargs):
   return RunCommand(['git'] + args, **kwargs)
 
 
-def RunGitWithCode(args):
+def RunGitWithCode(args, suppress_stderr=False):
   """Returns return code and stdout."""
   try:
     env = os.environ.copy()
     # 'cat' is a magical git string that disables pagers on all platforms.
     env['GIT_PAGER'] = 'cat'
+    if suppress_stderr:
+      stderr = subprocess2.VOID
+    else:
+      stderr = sys.stderr
     out, code = subprocess2.communicate(['git'] + args,
                                         env=env,
-                                        stdout=subprocess2.PIPE)
+                                        stdout=subprocess2.PIPE,
+                                        stderr=stderr)
     return code, out[0]
   except ValueError:
     # When the subprocess fails, it returns None.  That triggers a ValueError
@@ -2301,7 +2306,10 @@ def CMDowners(parser, args):
 def CMDformat(parser, args):
   """Runs clang-format on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h']
-  parser.add_option('--full', action='store_true', default=False)
+  parser.add_option('--full', action='store_true',
+                    help='Reformat the full content of all touched files')
+  parser.add_option('--dry-run', action='store_true',
+                    help='Don\'t modify any file on disk.')
   opts, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
@@ -2358,8 +2366,10 @@ def CMDformat(parser, args):
     if not files:
       print "Nothing to format."
       return 0
-    RunCommand([clang_format_tool, '-i'] + files,
-               cwd=top_dir)
+    cmd = [clang_format_tool]
+    if not opts.dry_run:
+      cmd.append('-i')
+    stdout = RunCommand(cmd + files, cwd=top_dir)
   else:
     env = os.environ.copy()
     env['PATH'] = os.path.dirname(clang_format_tool)
@@ -2370,9 +2380,13 @@ def CMDformat(parser, args):
     except clang_format.NotFoundError, e:
       DieWithError(e)
 
-    cmd = [sys.executable, script, '-p0', '-i']
+    cmd = [sys.executable, script, '-p0']
+    if not opts.dry_run:
+      cmd.append('-i')
 
-    RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
+    stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
+    if opts.dry_run and len(stdout) > 0:
+      return 2
 
   return 0
 

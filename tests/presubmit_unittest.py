@@ -1752,6 +1752,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckLongLines', 'CheckTreeIsOpen', 'PanProjectChecks',
       'CheckLicense',
       'CheckOwners',
+      'CheckPatchFormatted',
       'CheckRietveldTryJobExecution',
       'CheckSingletonInHeaders',
       'CheckSvnModifiedDirectories',
