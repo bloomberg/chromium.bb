@@ -274,7 +274,7 @@ void VideoSender::SendRtcpReport() {
 
   // TODO(pwestin): When we start pulling out the logging by other means we need
   // to synchronize this.
-  cast_environment_->Logging()->Reset();
+  cast_environment_->Logging()->ResetRaw();
   ScheduleNextRtcpReport();
 }
 

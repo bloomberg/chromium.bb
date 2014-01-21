@@ -70,9 +70,13 @@ class LoggingImpl : public base::NonThreadSafe {
   const PacketStatsMap* GetPacketStatsData(const base::TimeTicks& now);
   const GenericStatsMap* GetGenericStatsData();
 
-  void Reset();
+  // Reset raw logging data.
+  void ResetRaw();
+  // Reset stats logging data.
+  void ResetStats();
 
  private:
+  void InsertGenericUmaEvent(CastLoggingEvent event, int value);
   scoped_refptr<base::TaskRunner> main_thread_proxy_;
   const CastLoggingConfig config_;
   LoggingRaw raw_;

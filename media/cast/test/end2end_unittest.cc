@@ -324,7 +324,8 @@ class TestReceiverVideoCallback :
 
 CastLoggingConfig EnableCastLoggingConfig() {
   CastLoggingConfig config;
-  config.enable_data_collection = true;
+  config.enable_raw_data_collection = true;
+  config.enable_stats_data_collection = true;
   return config;
 }
 // The actual test class, generate synthetic data for both audio and video and

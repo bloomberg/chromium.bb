@@ -10,7 +10,8 @@ namespace media {
 namespace cast {
 
 CastLoggingConfig::CastLoggingConfig()
-    : enable_data_collection(false),
+    : enable_raw_data_collection(false),
+      enable_stats_data_collection(false),
       enable_uma_stats(false),
       enable_tracing(false) {}
 
@@ -39,8 +40,6 @@ std::string CastLoggingToString(CastLoggingEvent event) {
       return "RembBitrate";
     case(kAckSent):
       return "AckSent";
-    case(kLastEvent):
-      return "LastEvent";
     case(kAudioFrameReceived):
       return "AudioFrameReceived";
     case(kAudioFrameCaptured):
@@ -67,7 +66,7 @@ std::string CastLoggingToString(CastLoggingEvent event) {
       return "PacketSentToPacer";
     case(kPacketSentToNetwork):
       return "PacketSentToNetwork";
-    case(kPacketRetransmited):
+    case(kPacketRetransmitted):
       return "PacketRetransmited";
     case(kPacketReceived):
       return "PacketReceived";

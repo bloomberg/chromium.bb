@@ -67,6 +67,7 @@
             'framer/cast_message_builder_unittest.cc',
             'framer/frame_buffer_unittest.cc',
             'framer/framer_unittest.cc',
+            'logging/logging_unittest.cc',
             'rtcp/mock_rtcp_receiver_feedback.cc',
             'rtcp/mock_rtcp_receiver_feedback.h',
             'rtcp/mock_rtcp_sender_feedback.cc',

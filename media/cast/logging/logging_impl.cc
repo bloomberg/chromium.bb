@@ -24,8 +24,10 @@ void LoggingImpl::InsertFrameEvent(const base::TimeTicks& time_of_event,
                                    uint32 rtp_timestamp,
                                    uint32 frame_id) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  if (config_.enable_data_collection) {
+  if (config_.enable_raw_data_collection) {
     raw_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
+  }
+  if (config_.enable_stats_data_collection) {
     stats_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
   }
   if (config_.enable_tracing) {
@@ -42,15 +44,22 @@ void LoggingImpl::InsertFrameEventWithSize(const base::TimeTicks& time_of_event,
                                            uint32 frame_id,
                                            int frame_size) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  if (config_.enable_data_collection) {
+  if (config_.enable_raw_data_collection) {
     raw_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp, frame_id,
                                   frame_size);
+  }
+  if (config_.enable_stats_data_collection) {
     stats_.InsertFrameEventWithSize(time_of_event, event, rtp_timestamp,
                                     frame_id, frame_size);
   }
   if (config_.enable_uma_stats) {
-    UMA_HISTOGRAM_COUNTS(CastLoggingToString(event), frame_size);
+    if (event == kAudioFrameEncoded)
+      UMA_HISTOGRAM_COUNTS("Cast.AudioFrameEncoded", frame_size);
+    else if (event == kVideoFrameEncoded) {
+      UMA_HISTOGRAM_COUNTS("Cast.VideoFrameEncoded", frame_size);
+    }
   }
+
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
     TRACE_EVENT_INSTANT2(event_string.c_str(), "FES",
@@ -66,14 +75,20 @@ void LoggingImpl::InsertFrameEventWithDelay(
     uint32 frame_id,
     base::TimeDelta delay) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  if (config_.enable_data_collection) {
+  if (config_.enable_raw_data_collection) {
     raw_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
                                    frame_id, delay);
+  }
+  if (config_.enable_stats_data_collection) {
     stats_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
                                      frame_id, delay);
   }
   if (config_.enable_uma_stats) {
-    UMA_HISTOGRAM_TIMES(CastLoggingToString(event), delay);
+    if (event == kAudioPlayoutDelay)
+      UMA_HISTOGRAM_TIMES("Cast.AudioPlayoutDelay", delay);
+    else if (event == kVideoRenderDelay) {
+      UMA_HISTOGRAM_TIMES("Cast.VideoRenderDelay", delay);
+    }
   }
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
@@ -112,9 +127,11 @@ void LoggingImpl::InsertPacketEvent(const base::TimeTicks& time_of_event,
                                     uint16 max_packet_id,
                                     size_t size) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  if (config_.enable_data_collection) {
+  if (config_.enable_raw_data_collection) {
     raw_.InsertPacketEvent(time_of_event, event, rtp_timestamp, frame_id,
                            packet_id, max_packet_id, size);
+  }
+  if (config_.enable_stats_data_collection) {
     stats_.InsertPacketEvent(time_of_event, event, rtp_timestamp, frame_id,
                              packet_id, max_packet_id, size);
   }
@@ -129,17 +146,39 @@ void LoggingImpl::InsertPacketEvent(const base::TimeTicks& time_of_event,
 void LoggingImpl::InsertGenericEvent(const base::TimeTicks& time_of_event,
                                      CastLoggingEvent event, int value) {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  if (config_.enable_data_collection) {
+  if (config_.enable_raw_data_collection) {
     raw_.InsertGenericEvent(time_of_event, event, value);
+  }
+  if (config_.enable_stats_data_collection) {
     stats_.InsertGenericEvent(time_of_event, event, value);
   }
   if (config_.enable_uma_stats) {
-    UMA_HISTOGRAM_COUNTS(CastLoggingToString(event), value);
+    InsertGenericUmaEvent(event, value);
   }
   if (config_.enable_tracing) {
     std::string event_string = CastLoggingToString(event);
     TRACE_EVENT_INSTANT1(event_string.c_str(), "GE",
         TRACE_EVENT_SCOPE_THREAD, "value", value);
+  }
+}
+
+void LoggingImpl::InsertGenericUmaEvent(CastLoggingEvent event, int value) {
+  switch(event) {
+    case kRttMs:
+      UMA_HISTOGRAM_COUNTS("Cast.RttMs", value);
+      break;
+    case kPacketLoss:
+      UMA_HISTOGRAM_COUNTS("Cast.PacketLoss", value);
+      break;
+    case kJitterMs:
+      UMA_HISTOGRAM_COUNTS("Cast.JitterMs", value);
+      break;
+    case kRembBitrate:
+      UMA_HISTOGRAM_COUNTS("Cast.RembBitrate", value);
+      break;
+    default:
+      // No-op
+      break;
   }
 }
 
@@ -168,27 +207,73 @@ const FrameStatsMap* LoggingImpl::GetFrameStatsData(
     FrameStatsMap::const_iterator it;
     for (it = stats->begin(); it != stats->end(); ++it) {
       // Check for an active event.
+      // The default frame event implies frame rate.
       if (it->second->framerate_fps > 0) {
-        std::string event_string = CastLoggingToString(it->first);
-        UMA_HISTOGRAM_COUNTS(event_string.append("_framerate_fps"),
-                             it->second->framerate_fps);
+        switch (it->first) {
+          case kAudioFrameReceived:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioFrameReceived",
+                it->second->framerate_fps);
+            break;
+          case kAudioFrameCaptured:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioFrameCaptured",
+                it->second->framerate_fps);
+            break;
+          case kAudioFrameEncoded:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioFrameEncoded",
+                it->second->framerate_fps);
+            break;
+          case kVideoFrameCaptured:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameCaptured",
+                it->second->framerate_fps);
+            break;
+          case kVideoFrameReceived:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameReceived",
+                it->second->framerate_fps);
+            break;
+          case kVideoFrameSentToEncoder:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameSentToEncoder",
+                it->second->framerate_fps);
+            break;
+          case kVideoFrameEncoded:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameEncoded",
+                it->second->framerate_fps);
+            break;
+          case kVideoFrameDecoded:
+            UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoFrameDecoded",
+                it->second->framerate_fps);
+            break;
+          default:
+            // No-op
+            break;
+        }
       } else {
-        // All active frame events trigger framerate computation.
+        // All active frame events trigger frame rate computation.
         continue;
       }
-      if (it->second->bitrate_kbps > 0) {
-        std::string evnt_string = CastLoggingToString(it->first);
-        UMA_HISTOGRAM_COUNTS(evnt_string.append("_bitrate_kbps"),
-                             it->second->framerate_fps);
+      // Bit rate should only be provided following encoding for either audio
+      // or video.
+      if (it->first == kVideoFrameEncoded) {
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoBitrateKbps",
+            it->second->framerate_fps);
+      } else if (it->first == kAudioFrameEncoded) {
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioBitrateKbps",
+            it->second->framerate_fps);
       }
-      if (it->second->avg_delay_ms > 0) {
-        std::string event_string = CastLoggingToString(it->first);
-        UMA_HISTOGRAM_COUNTS(event_string.append("_avg_delay_ms"),
-                             it->second->avg_delay_ms);
-        UMA_HISTOGRAM_COUNTS(event_string.append("_min_delay_ms"),
-                             it->second->min_delay_ms);
-        UMA_HISTOGRAM_COUNTS(event_string.append("_max_delay_ms"),
-                             it->second->max_delay_ms);
+      // Delay events.
+      if (it->first == kAudioPlayoutDelay) {
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioPlayoutDelayAvg",
+            it->second->avg_delay_ms);
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioPlayoutDelayMin",
+            it->second->min_delay_ms);
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.AudioPlayoutDelayMax",
+            it->second->max_delay_ms);
+      } else if (it->first == kVideoRenderDelay) {
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoPlayoutDelayAvg",
+            it->second->avg_delay_ms);
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoPlayoutDelayMin",
+            it->second->min_delay_ms);
+        UMA_HISTOGRAM_COUNTS("Cast.Stats.VideoPlayoutDelayMax",
+            it->second->max_delay_ms);
       }
     }
   }
@@ -203,9 +288,23 @@ const PacketStatsMap* LoggingImpl::GetPacketStatsData(
   if (config_.enable_uma_stats) {
     PacketStatsMap::const_iterator it;
     for (it = stats->begin(); it != stats->end(); ++it) {
-      if (it->second > 0) {
-        std::string event_string = CastLoggingToString(it->first);
-        UMA_HISTOGRAM_COUNTS(event_string.append("_bitrate_kbps"), it->second);
+      switch (it->first) {
+        case kPacketSentToPacer:
+          UMA_HISTOGRAM_COUNTS("Cast.Stats.PacketSentToPacer", it->second);
+          break;
+        case kPacketSentToNetwork:
+          UMA_HISTOGRAM_COUNTS("Cast.Stats.PacketSentToNetwork", it->second);
+          break;
+        case kPacketRetransmitted:
+          UMA_HISTOGRAM_COUNTS("Cast.Stats.PacketRetransmited", it->second);
+          break;
+        case kDuplicatePacketReceived:
+          UMA_HISTOGRAM_COUNTS("Cast.Stats.DuplicatePacketReceived",
+                               it->second);
+          break;
+        default:
+          // No-op.
+          break;
       }
     }
   }
@@ -216,20 +315,16 @@ const GenericStatsMap* LoggingImpl::GetGenericStatsData() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   // Get stats data.
   const GenericStatsMap* stats = stats_.GetGenericStatsData();
-  if (config_.enable_uma_stats) {
-    GenericStatsMap::const_iterator it;
-    for (it = stats->begin(); it != stats->end(); ++it) {
-      if (it->second > 0) {
-        UMA_HISTOGRAM_COUNTS(CastLoggingToString(it->first), it->second);
-      }
-    }
-  }
   return stats;
 }
 
-void LoggingImpl::Reset() {
+void LoggingImpl::ResetRaw() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   raw_.Reset();
+}
+
+void LoggingImpl::ResetStats() {
+  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   stats_.Reset();
 }
 

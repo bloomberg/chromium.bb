@@ -21,7 +21,8 @@ struct CastLoggingConfig {
   CastLoggingConfig();
   ~CastLoggingConfig();
 
-  bool enable_data_collection;
+  bool enable_raw_data_collection;
+  bool enable_stats_data_collection;
   bool enable_uma_stats;
   bool enable_tracing;
 };
@@ -38,7 +39,6 @@ enum CastLoggingEvent {
   kAckReceived,
   kRembBitrate,
   kAckSent,
-  kLastEvent,
   // Audio sender.
   kAudioFrameReceived,
   kAudioFrameCaptured,
@@ -57,7 +57,7 @@ enum CastLoggingEvent {
   // Send-side packet events.
   kPacketSentToPacer,
   kPacketSentToNetwork,
-  kPacketRetransmited,
+  kPacketRetransmitted,
   // Receive-side packet events.
   kPacketReceived,
   kDuplicatePacketReceived,

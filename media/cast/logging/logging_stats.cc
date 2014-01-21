@@ -126,8 +126,8 @@ const FrameStatsMap* LoggingStats::GetFrameStatsData(
     base::TimeDelta time_diff = now - start_time_[it->first];
     it->second->framerate_fps = counts_[it->first] / time_diff.InSecondsF();
     if (it->second->bitrate_kbps > 0) {
-      it->second->bitrate_kbps = (8 / 1000) *
-          it->second->bitrate_kbps / time_diff.InSecondsF();
+      it->second->bitrate_kbps = (8 / 1000) * it->second->bitrate_kbps /
+          time_diff.InSecondsF();
     }
     if (it->second->avg_delay_ms > 0)
       it->second->avg_delay_ms /= counts_[it->first];

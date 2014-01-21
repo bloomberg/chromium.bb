@@ -24,8 +24,11 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 class TestLogging : public ::testing::Test {
  protected:
   TestLogging() {
-    // Enable logging, disable tracing and uma.
-    config_.enable_data_collection = true;
+    // Enable all logging types.
+    config_.enable_raw_data_collection = true;
+    config_.enable_stats_data_collection = true;
+    config_.enable_uma_stats = true;
+    config_.enable_tracing = true;
 
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));

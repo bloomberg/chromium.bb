@@ -92,6 +92,7 @@ void LoggingRaw::InsertPacketEvent(const base::TimeTicks& time_of_event,
     base_info.size = size;
     base_info.timestamp.push_back(time_of_event);
     base_info.type.push_back(event);
+    info.packet_map.insert(std::make_pair(packet_id, base_info));
     packet_map_.insert(std::make_pair(rtp_timestamp, info));
   } else {
     // Is this a new packet?
