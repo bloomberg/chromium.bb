@@ -36,6 +36,7 @@ const size_t kChunkSize = 4 * 1024;
 WebSocketDeflateStream::WebSocketDeflateStream(
     scoped_ptr<WebSocketStream> stream,
     WebSocketDeflater::ContextTakeOverMode mode,
+    int client_window_bits,
     scoped_ptr<WebSocketDeflatePredictor> predictor)
     : stream_(stream.Pass()),
       deflater_(mode),
@@ -46,7 +47,9 @@ WebSocketDeflateStream::WebSocketDeflateStream(
       current_writing_opcode_(WebSocketFrameHeader::kOpCodeText),
       predictor_(predictor.Pass()) {
   DCHECK(stream_);
-  deflater_.Initialize(kWindowBits);
+  DCHECK_GE(client_window_bits, 8);
+  DCHECK_LE(client_window_bits, 15);
+  deflater_.Initialize(client_window_bits);
   inflater_.Initialize(kWindowBits);
 }
 

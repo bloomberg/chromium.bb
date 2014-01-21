@@ -41,6 +41,7 @@ class NET_EXPORT_PRIVATE WebSocketDeflateStream : public WebSocketStream {
  public:
   WebSocketDeflateStream(scoped_ptr<WebSocketStream> stream,
                          WebSocketDeflater::ContextTakeOverMode mode,
+                         int client_window_bits,
                          scoped_ptr<WebSocketDeflatePredictor> predictor);
   virtual ~WebSocketDeflateStream();
 
