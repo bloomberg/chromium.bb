@@ -675,7 +675,13 @@ bool Widget::IsMinimized() const {
 }
 
 void Widget::SetFullscreen(bool fullscreen) {
+  if (IsFullscreen() == fullscreen)
+    return;
+
   native_widget_->SetFullscreen(fullscreen);
+
+  if (non_client_view_)
+    non_client_view_->Layout();
 }
 
 bool Widget::IsFullscreen() const {

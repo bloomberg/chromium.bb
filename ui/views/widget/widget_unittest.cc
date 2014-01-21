@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -2287,8 +2288,68 @@ TEST_F(WidgetTest, InactiveWidgetDoesNotGrabActivation) {
   widget->CloseNow();
   widget2.CloseNow();
 }
-
 #endif
+
+namespace {
+
+class FullscreenAwareFrame : public views::NonClientFrameView {
+ public:
+  explicit FullscreenAwareFrame(views::Widget* widget)
+      : widget_(widget), fullscreen_layout_called_(false) {}
+  virtual ~FullscreenAwareFrame() {}
+
+  // views::NonClientFrameView overrides:
+  virtual gfx::Rect GetBoundsForClientView() const OVERRIDE {
+    return gfx::Rect();
+  }
+  virtual gfx::Rect GetWindowBoundsForClientBounds(
+      const gfx::Rect& client_bounds) const OVERRIDE {
+    return gfx::Rect();
+  }
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE {
+    return HTNOWHERE;
+  }
+  virtual void GetWindowMask(const gfx::Size& size,
+                             gfx::Path* window_mask) OVERRIDE {}
+  virtual void ResetWindowControls() OVERRIDE {}
+  virtual void UpdateWindowIcon() OVERRIDE {}
+  virtual void UpdateWindowTitle() OVERRIDE {}
+
+  // views::View overrides:
+  virtual void Layout() OVERRIDE {
+    if (widget_->IsFullscreen())
+      fullscreen_layout_called_ = true;
+  }
+
+  bool fullscreen_layout_called() const { return fullscreen_layout_called_; }
+
+ private:
+  views::Widget* widget_;
+  bool fullscreen_layout_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullscreenAwareFrame);
+};
+
+}  // namespace
+
+// Tests that frame Layout is called when a widget goes fullscreen without
+// changing its size or title.
+TEST_F(WidgetTest, FullscreenFrameLayout) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+  FullscreenAwareFrame* frame = new FullscreenAwareFrame(widget);
+  widget->non_client_view()->SetFrameView(frame);  // Owns |frame|.
+
+  widget->Maximize();
+  RunPendingMessages();
+
+  EXPECT_FALSE(frame->fullscreen_layout_called());
+  widget->SetFullscreen(true);
+  widget->Show();
+  RunPendingMessages();
+  EXPECT_TRUE(frame->fullscreen_layout_called());
+
+  widget->CloseNow();
+}
 
 }  // namespace test
 }  // namespace views
