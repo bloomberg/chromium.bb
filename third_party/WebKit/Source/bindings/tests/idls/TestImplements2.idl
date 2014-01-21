@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,22 +29,11 @@
  */
 
 [
-    ActiveDOMObject,
-    Conditional=CONDITION,
-    Custom=LegacyCallAsFunction|ToV8,
-    ImplementedAs=TestInterfacePythonImplementation,
-    RuntimeEnabled=FeatureName,
-    SetReference(ReferencedType referencedName),
-] interface TestInterfacePython : TestInterfaceEmpty {
-    // members needed to test [ImplementedAs], as this affect attribute
-    // configuration and method configuration
-    const unsigned long UNSIGNED_LONG = 0;
-    attribute TestInterfacePython testInterfacePythonAttribute;  // Self-referential interface type with [ImplementedAs]
-    static attribute DOMString staticStringAttribute;
-    [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
-    [PerWorldBindings] void voidMethod();
+    ImplementedAs=TestImplements2Implementation,  // Conflicts with default implements class name
+    NoInterfaceObject,
+    RuntimeEnabled=Implements2FeatureName,
+] interface TestImplements2 {
+    static attribute DOMString implements2StaticStringAttribute;
+    attribute DOMString implements2StringAttribute;
+    void implements2VoidMethod();
 };
-
-TestInterfacePython implements TestImplements;
-TestInterfacePython implements TestImplements2;
-TestInterfacePython implements TestImplements3;

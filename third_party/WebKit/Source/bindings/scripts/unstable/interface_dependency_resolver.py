@@ -40,6 +40,17 @@ instead it is just a dependency.
 import os.path
 import cPickle as pickle
 
+# The following extended attributes can be applied to a dependency interface,
+# and are then applied to the individual members when merging.
+# Note that this moves the extended attribute from the interface to the member,
+# which changes the semantics and yields different code than the same extended
+# attribute on the main interface.
+DEPENDENCY_EXTENDED_ATTRIBUTES = set([
+    'Conditional',
+    'PerContextEnabled',
+    'RuntimeEnabled',
+])
+
 
 class InterfaceNotFoundError(Exception):
     """Raised if (partial) interface not found in target IDL file."""
@@ -118,7 +129,7 @@ def merge_interface_dependencies(target_interface, dependency_idl_filenames, rea
     """
     # Sort so order consistent, so can compare output from run to run.
     for dependency_idl_filename in sorted(dependency_idl_filenames):
-        dependency_interface_name, _ = os.path.splitext(os.path.basename(dependency_idl_filename))
+        dependency_interface_basename, _ = os.path.splitext(os.path.basename(dependency_idl_filename))
         definitions = reader.read_idl_file(dependency_idl_filename)
 
         for dependency_interface in definitions.interfaces.itervalues():
@@ -126,25 +137,39 @@ def merge_interface_dependencies(target_interface, dependency_idl_filenames, rea
             # the (single) target interface, in which case the interface names
             # must agree, or interfaces that are implemented by the target
             # interface, in which case the interface names differ.
-            if dependency_interface.is_partial and dependency_interface.name != target_interface.name:
-                raise InvalidPartialInterfaceError('%s is not a partial interface of %s. There maybe a bug in the the dependency generator (compute_depedencies.py).' % (dependency_idl_filename, target_interface.name))
-            if 'ImplementedAs' in dependency_interface.extended_attributes:
-                del dependency_interface.extended_attributes['ImplementedAs']
-            merge_dependency_interface(target_interface, dependency_interface, dependency_interface_name)
+            if (dependency_interface.is_partial and
+                dependency_interface.name != target_interface.name):
+                raise InvalidPartialInterfaceError('%s is not a partial interface of %s. There maybe a bug in the the dependency generator (compute_dependencies.py).' % (dependency_idl_filename, target_interface.name))
+            merge_dependency_interface(target_interface, dependency_interface, dependency_interface_basename)
 
 
-def merge_dependency_interface(target_interface, dependency_interface, dependency_interface_name):
+def merge_dependency_interface(target_interface, dependency_interface, dependency_interface_basename):
     """Merge dependency_interface into target_interface.
 
     No return: modifies target_interface in place.
     """
+    merged_extended_attributes = dict(
+        (key, value)
+        for key, value in dependency_interface.extended_attributes.iteritems()
+        if key in DEPENDENCY_EXTENDED_ATTRIBUTES)
+
+    # C++ class name of the implementation, stored in [ImplementedBy], which
+    # defaults to the basename of dependency IDL file.
+    # This can be overridden by [ImplementedAs] on the dependency interface.
+    # Note that [ImplementedAs] is used with different meanings on interfaces
+    # and members:
+    # for Blink class name and function name (or constant name), respectively.
+    # Thus we do not want to copy this from the interface to the member, but
+    # instead extract it and handle it separately.
+    implemented_by = dependency_interface.extended_attributes.get('ImplementedAs', dependency_interface_basename)
+
     def merge_lists(source_list, target_list):
         for element in source_list:
+            element.extended_attributes.update(merged_extended_attributes)
             # FIXME: remove check for LegacyImplementedInBaseClass when this
             # attribute is removed
             if 'LegacyImplementedInBaseClass' not in dependency_interface.extended_attributes:
-                element.extended_attributes['ImplementedBy'] = dependency_interface_name
-            element.extended_attributes.update(dependency_interface.extended_attributes)
+                element.extended_attributes['ImplementedBy'] = implemented_by
             target_list.append(element)
 
     merge_lists(dependency_interface.attributes, target_interface.attributes)
