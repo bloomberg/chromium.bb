@@ -103,9 +103,6 @@ public:
     {
     }
 
-    // FIXME: Delete once no longer referenced by chromium.
-    unsigned short length() const { return m_lengthBits; }
-
     unsigned short lengthBits() const { return m_lengthBits; }
 
 private:
@@ -143,15 +140,6 @@ public:
 
     bool hasLengthBytes() const { return m_hasLengthBytes; }
 
-    // FIXME: Delete once no longer referenced by chromium.
-    bool getLength(unsigned& length) const
-    {
-        if (!m_hasLengthBytes)
-            return false;
-        length = m_optionalLengthBytes;
-        return true;
-    }
-
     unsigned optionalLengthBytes() const { return m_optionalLengthBytes; }
 
 private:
@@ -183,9 +171,6 @@ public:
         , m_publicExponent(publicExponent, publicExponentSize)
     {
     }
-
-    // FIXME: Delete once no longer referenced by chromium.
-    unsigned modulusLength() const { return m_modulusLengthBits; }
 
     unsigned modulusLengthBits() const { return m_modulusLengthBits; }
     const WebVector<unsigned char>& publicExponent() const { return m_publicExponent; }
