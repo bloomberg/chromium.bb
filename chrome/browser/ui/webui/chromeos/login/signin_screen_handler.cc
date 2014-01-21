@@ -1212,9 +1212,6 @@ void SigninScreenHandler::SendUserList(bool animated) {
   base::ListValue users_list;
   const UserList& users = delegate_->GetUsers();
 
-  // TODO(nkostylev): Show optional intro dialog about multi-profiles feature
-  // based on user preferences. http://crbug.com/230862
-
   // TODO(nkostylev): Move to a separate method in UserManager.
   // http://crbug.com/230852
   bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&

@@ -30,6 +30,13 @@ cr.define('login', function() {
   var MAX_NUMBER_OF_COLUMNS = 6;
 
   /**
+   * Maximal number of rows if sign-in banner is displayed alonside.
+   * @type {number}
+   * @const
+   */
+  var MAX_NUMBER_OF_ROWS_UNDER_SIGNIN_BANNER = 2;
+
+  /**
    * Variables used for pod placement processing.
    * Width and height should be synced with computed CSS sizes of pods.
    */
@@ -1257,6 +1264,10 @@ cr.define('login', function() {
       while (maxWidth < this.columnsToWidth_(columns) && columns > 1)
         --columns;
       var rows = Math.floor((this.pods.length - 1) / columns) + 1;
+      if (getComputedStyle(
+          $('signin-banner'), null).getPropertyValue('display') != 'none') {
+        rows = Math.min(rows, MAX_NUMBER_OF_ROWS_UNDER_SIGNIN_BANNER);
+      }
       var maxHeigth = Oobe.getInstance().clientAreaSize.height;
       while (maxHeigth < this.rowsToHeight_(rows) && rows > 1)
         --rows;
