@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "core/dom/DocumentParser.h"
-#include "core/fetch/TextResourceDecoder.h"
+#include "core/html/parser/TextResourceDecoder.h"
 
 #include "wtf/Assertions.h"
 

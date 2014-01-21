@@ -30,7 +30,7 @@
 #define NetworkResourcesData_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/fetch/TextResourceDecoder.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/KURL.h"

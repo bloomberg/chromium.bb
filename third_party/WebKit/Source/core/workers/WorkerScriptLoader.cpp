@@ -29,7 +29,7 @@
 #include "core/workers/WorkerScriptLoader.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/fetch/TextResourceDecoder.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerScriptLoaderClient.h"

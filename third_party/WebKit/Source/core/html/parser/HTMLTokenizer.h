@@ -174,7 +174,7 @@ public:
     //  * CDATA sections in foreign content will be tokenized as bogus comments
     //    instead of as character tokens.
     //
-    void updateStateFor(const AtomicString& tagName);
+    void updateStateFor(const String& tagName);
 
     bool forceNullCharacterReplacement() const { return m_forceNullCharacterReplacement; }
     void setForceNullCharacterReplacement(bool value) { m_forceNullCharacterReplacement = value; }

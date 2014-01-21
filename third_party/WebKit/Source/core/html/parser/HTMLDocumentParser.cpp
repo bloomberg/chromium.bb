@@ -38,6 +38,7 @@
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/Frame.h"
+#include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "wtf/Functional.h"
 
@@ -314,6 +315,11 @@ void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<Pa
     chunk->preloads.clear(); // We don't need to preload because we're going to parse immediately.
     m_speculations.append(chunk);
     pumpPendingSpeculations();
+}
+
+void HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData& data)
+{
+    document()->setEncodingData(data);
 }
 
 void HTMLDocumentParser::validateSpeculations(PassOwnPtr<ParsedChunk> chunk)
@@ -666,10 +672,11 @@ void HTMLDocumentParser::startBackgroundParser()
     config->xssAuditor = adoptPtr(new XSSAuditor);
     config->xssAuditor->init(document(), &m_xssAuditorDelegate);
     config->preloadScanner = adoptPtr(new TokenPreloadScanner(document()->url().copy(), document()->devicePixelRatio()));
+    config->decoder = takeDecoder();
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
     ASSERT(config->preloadScanner->isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::create, reference.release(), config.release()));
+    HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::start, reference.release(), config.release()));
 }
 
 void HTMLDocumentParser::stopBackgroundParser()
@@ -687,19 +694,9 @@ void HTMLDocumentParser::append(PassRefPtr<StringImpl> inputSource)
     if (isStopped())
         return;
 
-    if (shouldUseThreading()) {
-        if (!m_haveBackgroundParser)
-            startBackgroundParser();
-
-        ASSERT(inputSource->hasOneRef());
-        TRACE_EVENT1("net", "HTMLDocumentParser::append", "size", inputSource->length());
-        // NOTE: Important that the String temporary is destroyed before we post the task
-        // otherwise the String could call deref() on a StringImpl now owned by the background parser.
-        // We would like to ASSERT(closure.arg3()->hasOneRef()) but sadly the args are private.
-        Closure closure = bind(&BackgroundHTMLParser::append, m_backgroundParser, String(inputSource));
-        HTMLParserThread::shared()->postTask(closure);
-        return;
-    }
+    // We should never reach this point if we're using a parser thread,
+    // as appendBytes() will directly ship the data to the thread.
+    ASSERT(!shouldUseThreading());
 
     // pumpTokenizer can cause this parser to be detached from the Document,
     // but we need to ensure it isn't deleted yet.
@@ -963,6 +960,46 @@ void HTMLDocumentParser::resumeScheduledTasks()
 {
     if (m_parserScheduler)
         m_parserScheduler->resume();
+}
+
+void HTMLDocumentParser::appendBytes(const char* data, size_t length)
+{
+    if (!length || isDetached())
+        return;
+
+    if (shouldUseThreading()) {
+        if (!m_haveBackgroundParser)
+            startBackgroundParser();
+
+        OwnPtr<Vector<char> > buffer = adoptPtr(new Vector<char>(length));
+        memcpy(buffer->data(), data, length);
+        TRACE_EVENT1("net", "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
+
+        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::appendBytes, m_backgroundParser, buffer.release()));
+        return;
+    }
+
+    DecodedDataDocumentParser::appendBytes(data, length);
+}
+
+void HTMLDocumentParser::flush()
+{
+    // If we've got no decoder, we never received any data.
+    if (isDetached() || needsDecoder())
+        return;
+
+    if (m_haveBackgroundParser)
+        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::flush, m_backgroundParser));
+    else
+        DecodedDataDocumentParser::flush();
+}
+
+void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
+{
+    DecodedDataDocumentParser::setDecoder(decoder);
+
+    if (m_haveBackgroundParser)
+        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::setDecoder, m_backgroundParser, takeDecoder()));
 }
 
 }

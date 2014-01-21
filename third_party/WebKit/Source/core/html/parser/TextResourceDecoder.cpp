@@ -21,7 +21,7 @@
 
 
 #include "config.h"
-#include "core/fetch/TextResourceDecoder.h"
+#include "core/html/parser/TextResourceDecoder.h"
 
 #include "HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
@@ -91,19 +91,19 @@ static WTF::TextEncoding findTextEncoding(const char* encodingName, int length)
 TextResourceDecoder::ContentType TextResourceDecoder::determineContentType(const String& mimeType)
 {
     if (equalIgnoringCase(mimeType, "text/css"))
-        return CSS;
+        return CSSContent;
     if (equalIgnoringCase(mimeType, "text/html"))
-        return HTML;
+        return HTMLContent;
     if (DOMImplementation::isXMLMIMEType(mimeType))
-        return XML;
-    return PlainText;
+        return XMLContent;
+    return PlainTextContent;
 }
 
 const WTF::TextEncoding& TextResourceDecoder::defaultEncoding(ContentType contentType, const WTF::TextEncoding& specifiedDefaultEncoding)
 {
     // Despite 8.5 "Text/xml with Omitted Charset" of RFC 3023, we assume UTF-8 instead of US-ASCII
     // for text/xml. This matches Firefox.
-    if (contentType == XML)
+    if (contentType == XMLContent)
         return UTF8Encoding();
     if (!specifiedDefaultEncoding.isValid())
         return Latin1Encoding();
@@ -368,12 +368,12 @@ String TextResourceDecoder::decode(const char* data, size_t len)
 
     bool movedDataToBuffer = false;
 
-    if (m_contentType == CSS && !m_checkedForCSSCharset) {
+    if (m_contentType == CSSContent && !m_checkedForCSSCharset) {
         if (!checkForCSSCharset(data, len, movedDataToBuffer))
             return emptyString();
     }
 
-    if ((m_contentType == HTML || m_contentType == XML) && !m_checkedForXMLCharset) {
+    if ((m_contentType == HTMLContent || m_contentType == XMLContent) && !m_checkedForXMLCharset) {
         if (!checkForXMLCharset(data, len, movedDataToBuffer))
             return emptyString();
     }
@@ -392,7 +392,7 @@ String TextResourceDecoder::decode(const char* data, size_t len)
         lengthForDecode = m_buffer.size() - lengthOfBOM;
     }
 
-    if (m_contentType == HTML && !m_checkedForMetaCharset)
+    if (m_contentType == HTMLContent && !m_checkedForMetaCharset)
         checkForMetaCharset(dataForDecode, lengthForDecode);
 
     if (shouldAutoDetect()) {
@@ -406,7 +406,7 @@ String TextResourceDecoder::decode(const char* data, size_t len)
     if (!m_codec)
         m_codec = newTextCodec(m_encoding);
 
-    String result = m_codec->decode(dataForDecode, lengthForDecode, false, m_contentType == XML && !m_useLenientXMLDecoding, m_sawError);
+    String result = m_codec->decode(dataForDecode, lengthForDecode, false, m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
 
     m_buffer.clear();
     return result;
@@ -418,7 +418,7 @@ String TextResourceDecoder::flush()
     // loaded, we need to detect the encoding if other conditions for
     // autodetection is satisfied.
     if (m_buffer.size() && shouldAutoDetect()
-        && ((!m_checkedForXMLCharset && (m_contentType == HTML || m_contentType == XML)) || (!m_checkedForCSSCharset && (m_contentType == CSS)))) {
+        && ((!m_checkedForXMLCharset && (m_contentType == HTMLContent || m_contentType == XMLContent)) || (!m_checkedForCSSCharset && (m_contentType == CSSContent)))) {
         WTF::TextEncoding detectedEncoding;
         if (detectTextEncoding(m_buffer.data(), m_buffer.size(), m_hintEncoding, &detectedEncoding))
             setEncoding(detectedEncoding, EncodingFromContentSniffing);
@@ -427,7 +427,7 @@ String TextResourceDecoder::flush()
     if (!m_codec)
         m_codec = newTextCodec(m_encoding);
 
-    String result = m_codec->decode(m_buffer.data(), m_buffer.size(), true, m_contentType == XML && !m_useLenientXMLDecoding, m_sawError);
+    String result = m_codec->decode(m_buffer.data(), m_buffer.size(), true, m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
     m_buffer.clear();
     m_codec.clear();
     m_checkedForBOM = false; // Skip BOM again when re-decoding.

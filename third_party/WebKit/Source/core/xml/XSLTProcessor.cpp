@@ -92,7 +92,7 @@ PassRefPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourc
     }
 
     DocumentEncodingData data;
-    data.encoding = sourceEncoding.isEmpty() ? UTF8Encoding() : WTF::TextEncoding(sourceEncoding);
+    data.setEncoding(sourceEncoding.isEmpty() ? UTF8Encoding() : WTF::TextEncoding(sourceEncoding));
     result->setEncodingData(data);
     result->setContent(documentSource);
 

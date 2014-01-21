@@ -30,6 +30,10 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
+namespace WTF {
+class TextEncoding;
+}
+
 namespace WebCore {
 
 // Space characters as defined by the HTML specification.
@@ -60,6 +64,10 @@ bool parseHTMLInteger(const String&, int&);
 
 // http://www.whatwg.org/specs/web-apps/current-work/#rules-for-parsing-non-negative-integers
 bool parseHTMLNonNegativeInteger(const String&, unsigned int&);
+
+typedef Vector<pair<String, String> > HTMLAttributeList;
+// The returned encoding might not be valid.
+WTF::TextEncoding encodingFromMetaAttributes(const HTMLAttributeList&);
 
 // Inline implementations of some of the functions declared above.
 

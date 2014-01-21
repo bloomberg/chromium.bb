@@ -492,7 +492,6 @@ public:
     void clearAXObjectCache();
 
     // to get visually ordered hebrew and arabic pages right
-    void setVisuallyOrdered();
     bool visuallyOrdered() const { return m_visuallyOrdered; }
 
     DocumentLoader* loader() const;
@@ -846,10 +845,10 @@ public:
     void finishedParsing();
 
     void setEncodingData(const DocumentEncodingData& newData);
-    const WTF::TextEncoding& encoding() const { return m_encodingData.encoding; }
+    const WTF::TextEncoding& encoding() const { return m_encodingData.encoding(); }
 
-    bool encodingWasDetectedHeuristically() const { return m_encodingData.wasDetectedHeuristically; }
-    bool sawDecodingError() const { return m_encodingData.sawDecodingError; }
+    bool encodingWasDetectedHeuristically() const { return m_encodingData.wasDetectedHeuristically(); }
+    bool sawDecodingError() const { return m_encodingData.sawDecodingError(); }
 
     void setAnnotatedRegionsDirty(bool f) { m_annotatedRegionsDirty = f; }
     bool annotatedRegionsDirty() const { return m_annotatedRegionsDirty; }

@@ -64,6 +64,8 @@ public:
     PassOwnPtr<XSSInfo> filterToken(const FilterTokenRequest&);
     bool isSafeToSendToAnotherThread() const;
 
+    void setEncoding(const WTF::TextEncoding&);
+
 private:
     static const size_t kMaximumFragmentLengthTarget = 100;
 
@@ -115,6 +117,7 @@ private:
 
     String m_decodedURL;
     String m_decodedHTTPBody;
+    String m_httpBodyAsString;
     OwnPtr<SuffixTree<ASCIICodebook> > m_decodedHTTPBodySuffixTree;
 
     State m_state;

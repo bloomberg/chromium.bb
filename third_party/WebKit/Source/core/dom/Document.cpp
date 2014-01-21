@@ -109,7 +109,6 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/TextResourceDecoder.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
@@ -140,6 +139,7 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -1144,7 +1144,7 @@ void Document::setCharset(const String& charset)
     if (!encoding.isValid())
         return;
     DocumentEncodingData newEncodingData = m_encodingData;
-    newEncodingData.encoding = encoding;
+    newEncodingData.setEncoding(encoding);
     setEncodingData(newEncodingData);
 }
 
@@ -2144,15 +2144,6 @@ AXObjectCache* Document::axObjectCache() const
     if (!topDocument->m_axObjectCache)
         topDocument->m_axObjectCache = adoptPtr(new AXObjectCache(topDocument));
     return topDocument->m_axObjectCache.get();
-}
-
-void Document::setVisuallyOrdered()
-{
-    m_visuallyOrdered = true;
-    // FIXME: How is possible to not have a renderer here?
-    if (renderView())
-        renderView()->style()->setRTLOrdering(VisualOrder);
-    setNeedsStyleRecalc();
 }
 
 PassRefPtr<DocumentParser> Document::createParser()
@@ -4043,18 +4034,28 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
     // document's title so that the user doesn't see an incorrectly decoded title
     // in the title bar.
     if (m_titleElement
-        && encoding() != newData.encoding
+        && encoding() != newData.encoding()
         && !m_titleElement->firstElementChild()
         && encoding() == Latin1Encoding()
         && m_titleElement->textContent().containsOnlyLatin1()) {
 
         CString originalBytes = m_titleElement->textContent().latin1();
-        OwnPtr<TextCodec> codec = newTextCodec(newData.encoding);
+        OwnPtr<TextCodec> codec = newTextCodec(newData.encoding());
         String correctlyDecodedTitle = codec->decode(originalBytes.data(), originalBytes.length(), true);
         m_titleElement->setTextContent(correctlyDecodedTitle);
     }
 
     m_encodingData = newData;
+
+    // FIXME: Should be removed as part of https://code.google.com/p/chromium/issues/detail?id=319643
+    bool shouldUseVisualOrdering = m_encodingData.encoding().usesVisualOrdering();
+    if (shouldUseVisualOrdering != m_visuallyOrdered) {
+        m_visuallyOrdered = shouldUseVisualOrdering;
+        // FIXME: How is possible to not have a renderer here?
+        if (renderView())
+            renderView()->style()->setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
+        setNeedsStyleRecalc();
+    }
 }
 
 KURL Document::completeURL(const String& url) const

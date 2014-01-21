@@ -28,13 +28,13 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentEncodingData.h"
-#include "core/fetch/TextResourceDecoder.h"
+#include "core/html/parser/TextResourceDecoder.h"
 
 namespace WebCore {
 
 DecodedDataDocumentParser::DecodedDataDocumentParser(Document* document)
     : DocumentParser(document)
-    , m_hasAppendedData(false)
+    , m_needsDecoder(true)
 {
 }
 
@@ -44,6 +44,10 @@ DecodedDataDocumentParser::~DecodedDataDocumentParser()
 
 void DecodedDataDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 {
+    // If the decoder is explicitly unset rather than having ownership
+    // transferred away by takeDecoder(), we need to make sure it's recreated
+    // next time data is appended.
+    m_needsDecoder = !decoder;
     m_decoder = decoder;
 }
 
@@ -52,9 +56,9 @@ TextResourceDecoder* DecodedDataDocumentParser::decoder()
     return m_decoder.get();
 }
 
-void DecodedDataDocumentParser::setHasAppendedData()
+PassOwnPtr<TextResourceDecoder> DecodedDataDocumentParser::takeDecoder()
 {
-    m_hasAppendedData = true;
+    return m_decoder.release();
 }
 
 void DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
@@ -91,22 +95,10 @@ void DecodedDataDocumentParser::flush()
 
 void DecodedDataDocumentParser::updateDocument(String& decodedData)
 {
-    DocumentEncodingData encodingData;
-    encodingData.encoding = m_decoder->encoding();
-    encodingData.wasDetectedHeuristically = m_decoder->encodingWasDetectedHeuristically();
-    encodingData.sawDecodingError = m_decoder->sawError();
-    document()->setEncodingData(encodingData);
+    document()->setEncodingData(DocumentEncodingData(*m_decoder.get()));
 
-    if (decodedData.isEmpty())
-        return;
-
-    append(decodedData.releaseImpl());
-    // FIXME: Should be removed as part of https://code.google.com/p/chromium/issues/detail?id=319643
-    if (!m_hasAppendedData) {
-        m_hasAppendedData = true;
-        if (m_decoder->encoding().usesVisualOrdering())
-            document()->setVisuallyOrdered();
-    }
+    if (!decodedData.isEmpty())
+        append(decodedData.releaseImpl());
 }
 
 };

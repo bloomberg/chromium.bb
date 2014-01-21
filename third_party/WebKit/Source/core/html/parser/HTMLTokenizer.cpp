@@ -30,6 +30,7 @@
 
 #include "HTMLNames.h"
 #include "core/html/parser/HTMLEntityParser.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "platform/NotImplemented.h"
 #include "core/xml/parser/MarkupTokenizerInlines.h"
@@ -1596,20 +1597,20 @@ String HTMLTokenizer::bufferedCharacters() const
     return characters.toString();
 }
 
-void HTMLTokenizer::updateStateFor(const AtomicString& tagName)
+void HTMLTokenizer::updateStateFor(const String& tagName)
 {
-    if (tagName == textareaTag || tagName == titleTag)
+    if (threadSafeMatch(tagName, textareaTag) || threadSafeMatch(tagName, titleTag))
         setState(HTMLTokenizer::RCDATAState);
-    else if (tagName == plaintextTag)
+    else if (threadSafeMatch(tagName, plaintextTag))
         setState(HTMLTokenizer::PLAINTEXTState);
-    else if (tagName == scriptTag)
+    else if (threadSafeMatch(tagName, scriptTag))
         setState(HTMLTokenizer::ScriptDataState);
-    else if (tagName == styleTag
-        || tagName == iframeTag
-        || tagName == xmpTag
-        || (tagName == noembedTag && m_options.pluginsEnabled)
-        || tagName == noframesTag
-        || (tagName == noscriptTag && m_options.scriptEnabled))
+    else if (threadSafeMatch(tagName, styleTag)
+        || threadSafeMatch(tagName, iframeTag)
+        || threadSafeMatch(tagName, xmpTag)
+        || (threadSafeMatch(tagName, noembedTag) && m_options.pluginsEnabled)
+        || threadSafeMatch(tagName, noframesTag)
+        || (threadSafeMatch(tagName, noscriptTag) && m_options.scriptEnabled))
         setState(HTMLTokenizer::RAWTEXTState);
 }
 

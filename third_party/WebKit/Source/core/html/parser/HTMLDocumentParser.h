@@ -40,6 +40,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "platform/text/SegmentedString.h"
@@ -96,6 +97,11 @@ public:
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
     };
     void didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
+    void didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);
+
+    virtual void appendBytes(const char* bytes, size_t length) OVERRIDE;
+    virtual void flush() OVERRIDE FINAL;
+    virtual void setDecoder(PassOwnPtr<TextResourceDecoder>) OVERRIDE FINAL;
 
     UseCounter* useCounter() { return UseCounter::getFrom(contextForParsingSession()); }
 
