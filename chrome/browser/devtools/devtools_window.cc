@@ -1016,7 +1016,9 @@ void DevToolsWindow::SetIsDockedAndShowImmediatelyForTest(bool is_docked) {
     SetIsDocked(is_docked);
   } else {
     is_docked_ = is_docked;
-    load_state_ = load_state_ == kNotLoaded ? kIsDockedSet : kLoadCompleted;
+    // Load is completed when both kIsDockedSet and kOnLoadFired happened.
+    // Note that kIsDockedSet may be already set when can_dock_ is false.
+    load_state_ = load_state_ == kOnLoadFired ? kLoadCompleted : kIsDockedSet;
     // Note that action_on_load_ will be performed after the load is actually
     // completed. For now, just show the window.
     Show(DevToolsToggleAction::Show());
@@ -1044,7 +1046,7 @@ void DevToolsWindow::SetIsDocked(bool dock_requested) {
 
   if (load_state_ != kLoadCompleted) {
     // This is a first time call we waited for to initialize.
-    load_state_ = load_state_ == kNotLoaded ? kIsDockedSet : kLoadCompleted;
+    load_state_ = load_state_ == kOnLoadFired ? kLoadCompleted : kIsDockedSet;
     if (load_state_ == kLoadCompleted)
       LoadCompleted();
     return;
@@ -1473,7 +1475,9 @@ content::WebContents* DevToolsWindow::GetInspectedWebContents() {
 }
 
 void DevToolsWindow::DocumentOnLoadCompletedInMainFrame() {
-  load_state_ = load_state_ == kNotLoaded ? kOnLoadFired : kLoadCompleted;
+  // Load is completed when both kIsDockedSet and kOnLoadFired happened.
+  // Here we set kOnLoadFired.
+  load_state_ = load_state_ == kIsDockedSet ? kLoadCompleted : kOnLoadFired;
   if (load_state_ == kLoadCompleted)
     LoadCompleted();
 }
