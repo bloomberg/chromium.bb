@@ -253,21 +253,18 @@ void NativeImageSkia::drawResampledBitmap(GraphicsContext* context, SkPaint& pai
 }
 
 NativeImageSkia::NativeImageSkia()
-    : m_resolutionScale(1)
-    , m_resizeRequests(0)
+    : m_resizeRequests(0)
 {
 }
 
-NativeImageSkia::NativeImageSkia(const SkBitmap& other, float resolutionScale)
+NativeImageSkia::NativeImageSkia(const SkBitmap& other)
     : m_image(other)
-    , m_resolutionScale(resolutionScale)
     , m_resizeRequests(0)
 {
 }
 
-NativeImageSkia::NativeImageSkia(const SkBitmap& image, float resolutionScale, const SkBitmap& resizedImage, const ImageResourceInfo& cachedImageInfo, int resizeRequests)
+NativeImageSkia::NativeImageSkia(const SkBitmap& image, const SkBitmap& resizedImage, const ImageResourceInfo& cachedImageInfo, int resizeRequests)
     : m_image(image)
-    , m_resolutionScale(resolutionScale)
     , m_resizedImage(resizedImage)
     , m_cachedImageInfo(cachedImageInfo)
     , m_resizeRequests(resizeRequests)

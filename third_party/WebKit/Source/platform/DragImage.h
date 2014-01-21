@@ -39,7 +39,7 @@ class KURL;
 
 class PLATFORM_EXPORT DragImage {
 public:
-    static PassOwnPtr<DragImage> create(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
+    static PassOwnPtr<DragImage> create(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation, float deviceScaleFactor = 1);
     static PassOwnPtr<DragImage> create(const KURL&, const String& label, const FontDescription& systemFont, float deviceScaleFactor);
     ~DragImage();
 

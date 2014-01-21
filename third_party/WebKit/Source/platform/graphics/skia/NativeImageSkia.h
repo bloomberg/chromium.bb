@@ -79,9 +79,9 @@ public:
     // This factory method does a shallow copy of the passed-in SkBitmap
     // (ie., it references the same pixel data and bumps the refcount). Use
     // only when you want sharing semantics.
-    static PassRefPtr<NativeImageSkia> create(const SkBitmap& bitmap, float resolutionScale = 1)
+    static PassRefPtr<NativeImageSkia> create(const SkBitmap& bitmap)
     {
-        return adoptRef(new NativeImageSkia(bitmap, resolutionScale));
+        return adoptRef(new NativeImageSkia(bitmap));
     }
 
     // This method does a shallow copy of the internal SkBitmap (ie., it
@@ -89,7 +89,7 @@ public:
     // you want sharing semantics.
     PassRefPtr<NativeImageSkia> clone() const
     {
-        return adoptRef(new NativeImageSkia(m_image, m_resolutionScale, m_resizedImage, m_cachedImageInfo, m_resizeRequests));
+        return adoptRef(new NativeImageSkia(m_image, m_resizedImage, m_cachedImageInfo, m_resizeRequests));
     }
 
     ~NativeImageSkia();
@@ -110,8 +110,6 @@ public:
     // Get reference to the internal SkBitmap representing this image.
     const SkBitmap& bitmap() const { return m_image; }
     SkBitmap& bitmap() { return m_image; }
-
-    float resolutionScale() const { return m_resolutionScale; }
 
     // We can keep a resized version of the bitmap cached on this object.
     // This function will return true if there is a cached version of the given
@@ -142,7 +140,7 @@ public:
 private:
     NativeImageSkia();
 
-    NativeImageSkia(const SkBitmap&, float resolutionScale);
+    NativeImageSkia(const SkBitmap&);
 
     // ImageResourceInfo is used to uniquely identify cached or requested image
     // resizes.
@@ -158,7 +156,7 @@ private:
         SkIRect rectInSubset(const SkIRect& otherScaledImageRect);
     };
 
-    NativeImageSkia(const SkBitmap& image, float resolutionScale, const SkBitmap& resizedImage, const ImageResourceInfo&, int resizeRequests);
+    NativeImageSkia(const SkBitmap& image, const SkBitmap& resizedImage, const ImageResourceInfo&, int resizeRequests);
 
     // Returns true if the given resize operation should either resize the whole
     // image and cache it, or resize just the part it needs and throw the result
@@ -181,7 +179,6 @@ private:
 
     // The original image.
     SkBitmap m_image;
-    float m_resolutionScale;
 
     // The cached bitmap fragment. This is a subset of the scaled version of
     // |m_image|. empty() returns true if there is no cached image.
