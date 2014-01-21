@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/signin/signin_account_id_helper.h"
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
@@ -19,7 +21,17 @@ BrowserContextKeyedService* FakeProfileOAuth2TokenService::Build(
   return service;
 }
 
-FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService() {
+BrowserContextKeyedService*
+FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService(
+    content::BrowserContext* profile) {
+  FakeProfileOAuth2TokenService* service = new FakeProfileOAuth2TokenService();
+  service->set_auto_post_fetch_response_on_message_loop(true);
+  service->Initialize(reinterpret_cast<Profile*>(profile));
+  return service;
+}
+
+FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
+    : auto_post_fetch_response_on_message_loop_(false) {
   SigninAccountIdHelper::SetDisableForTest(true);
 }
 
@@ -165,6 +177,15 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
   pending_request.scopes = scopes;
   pending_request.request = request->AsWeakPtr();
   pending_requests_.push_back(pending_request);
+
+  if (auto_post_fetch_response_on_message_loop_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &FakeProfileOAuth2TokenService::IssueAllTokensForAccount,
+        base::Unretained(this),
+        account_id,
+        "access_token",
+        base::Time::Max()));
+  }
 }
 
 void FakeProfileOAuth2TokenService::InvalidateOAuth2Token(

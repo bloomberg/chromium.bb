@@ -17,11 +17,11 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/fake_oauth2_token_service_for_sync.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/ui_data_type_controller.h"
@@ -125,8 +125,9 @@ class ProfileSyncServicePreferenceTest
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              FakeOAuth2TokenServiceForSync::BuildTokenService);
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
     profile_ = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);

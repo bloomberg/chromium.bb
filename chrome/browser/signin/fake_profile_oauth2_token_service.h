@@ -104,9 +104,20 @@ class FakeProfileOAuth2TokenService
 
   void IssueErrorForAllPendingRequests(const GoogleServiceAuthError& error);
 
+  void set_auto_post_fetch_response_on_message_loop(bool auto_post_response) {
+    auto_post_fetch_response_on_message_loop_ = auto_post_response;
+  }
+
   // Helper function to be used with
   // BrowserContextKeyedService::SetTestingFactory().
   static BrowserContextKeyedService* Build(content::BrowserContext* profile);
+
+  // Helper function to be used with
+  // BrowserContextKeyedService::SetTestingFactory() that creates a
+  // FakeProfileOAuth2TokenService object that posts fetch responses on the
+  // current message loop.
+  static BrowserContextKeyedService* BuildAutoIssuingTokenService(
+      content::BrowserContext* profile);
 
  protected:
   // OAuth2TokenService overrides.
@@ -141,6 +152,11 @@ class FakeProfileOAuth2TokenService
 
   // Maps account ids to their refresh token strings.
   std::map<std::string, std::string> refresh_tokens_;
+
+  // If true, then this fake service will post responses to
+  // |FetchOAuth2Token| on the current run loop. There is no need to call
+  // |IssueTokenForScope| in this case.
+  bool auto_post_fetch_response_on_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenService);
 };

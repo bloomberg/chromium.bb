@@ -19,12 +19,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/fake_oauth2_token_service_for_sync.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
@@ -130,8 +130,9 @@ class ProfileSyncServiceSessionTest
  protected:
   virtual TestingProfile* CreateProfile() OVERRIDE {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              FakeOAuth2TokenServiceForSync::BuildTokenService);
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
     // Don't want the profile to create a real ProfileSyncService.
     builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(), NULL);
     scoped_ptr<TestingProfile> profile(builder.Build());

@@ -18,12 +18,12 @@
 #include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
-#include "chrome/browser/sync/fake_oauth2_token_service_for_sync.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
@@ -162,8 +162,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              FakeOAuth2TokenServiceForSync::BuildTokenService);
+    builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);
     profile_ = builder.Build().Pass();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);

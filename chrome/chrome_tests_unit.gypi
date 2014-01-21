@@ -1272,8 +1272,6 @@
         'browser/sync/abstract_profile_sync_service_test.cc',
         'browser/sync/abstract_profile_sync_service_test.h',
         'browser/sync/backend_migrator_unittest.cc',
-        'browser/sync/fake_oauth2_token_service_for_sync.cc',
-        'browser/sync/fake_oauth2_token_service_for_sync.h',
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
         'browser/sync/glue/browser_thread_model_worker_unittest.cc',
