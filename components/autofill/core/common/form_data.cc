@@ -24,7 +24,7 @@ bool ReadGURL(PickleIterator* iter, GURL* url) {
   return true;
 }
 
-void SerializeFormFieldDataVector(const std::vector<FormFieldData> fields,
+void SerializeFormFieldDataVector(const std::vector<FormFieldData>& fields,
                                   Pickle* pickle) {
   pickle->WriteInt(static_cast<int>(fields.size()));
   for (size_t i = 0; i < fields.size(); ++i) {
