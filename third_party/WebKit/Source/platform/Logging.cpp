@@ -32,40 +32,40 @@
 
 namespace WebCore {
 
-WTFLogChannel LogNotYetImplemented =  { 0x00000001, WTFLogChannelOff };
+WTFLogChannel LogNotYetImplemented =  { WTFLogChannelOff };
 
-WTFLogChannel LogFrames =             { 0x00000010, WTFLogChannelOff };
-WTFLogChannel LogLoading =            { 0x00000020, WTFLogChannelOff };
-WTFLogChannel LogPopupBlocking =      { 0x00000040, WTFLogChannelOff };
-WTFLogChannel LogEvents =             { 0x00000080, WTFLogChannelOff };
+WTFLogChannel LogFrames =             { WTFLogChannelOff };
+WTFLogChannel LogLoading =            { WTFLogChannelOff };
+WTFLogChannel LogPopupBlocking =      { WTFLogChannelOff };
+WTFLogChannel LogEvents =             { WTFLogChannelOff };
 
-WTFLogChannel LogEditing =            { 0x00000100, WTFLogChannelOff };
-WTFLogChannel LogLiveConnect =        { 0x00000200, WTFLogChannelOff };
-WTFLogChannel LogIconDatabase =       { 0x00000400, WTFLogChannelOff };
-WTFLogChannel LogSQLDatabase =        { 0x00000800, WTFLogChannelOff };
+WTFLogChannel LogEditing =            { WTFLogChannelOff };
+WTFLogChannel LogLiveConnect =        { WTFLogChannelOff };
+WTFLogChannel LogIconDatabase =       { WTFLogChannelOff };
+WTFLogChannel LogSQLDatabase =        { WTFLogChannelOff };
 
-WTFLogChannel LogSpellingAndGrammar = { 0x00001000, WTFLogChannelOff };
-WTFLogChannel LogBackForward =        { 0x00002000, WTFLogChannelOff };
-WTFLogChannel LogHistory =            { 0x00004000, WTFLogChannelOff };
+WTFLogChannel LogSpellingAndGrammar = { WTFLogChannelOff };
+WTFLogChannel LogBackForward =        { WTFLogChannelOff };
+WTFLogChannel LogHistory =            { WTFLogChannelOff };
 
-WTFLogChannel LogPlatformLeaks =      { 0x00010000, WTFLogChannelOff };
-WTFLogChannel LogResourceLoading =    { 0x00020000, WTFLogChannelOff };
+WTFLogChannel LogPlatformLeaks =      { WTFLogChannelOff };
+WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
 
-WTFLogChannel LogNetwork =            { 0x00100000, WTFLogChannelOff };
-WTFLogChannel LogFTP =                { 0x00200000, WTFLogChannelOff };
-WTFLogChannel LogThreading =          { 0x00400000, WTFLogChannelOff };
-WTFLogChannel LogStorageAPI =         { 0x00800000, WTFLogChannelOff };
+WTFLogChannel LogNetwork =            { WTFLogChannelOff };
+WTFLogChannel LogFTP =                { WTFLogChannelOff };
+WTFLogChannel LogThreading =          { WTFLogChannelOff };
+WTFLogChannel LogStorageAPI =         { WTFLogChannelOff };
 
-WTFLogChannel LogMedia =              { 0x01000000, WTFLogChannelOff };
-WTFLogChannel LogPlugins =            { 0x02000000, WTFLogChannelOff };
-WTFLogChannel LogArchives =           { 0x04000000, WTFLogChannelOff };
-WTFLogChannel LogProgress =           { 0x08000000, WTFLogChannelOff };
+WTFLogChannel LogMedia =              { WTFLogChannelOff };
+WTFLogChannel LogPlugins =            { WTFLogChannelOff };
+WTFLogChannel LogArchives =           { WTFLogChannelOff };
+WTFLogChannel LogProgress =           { WTFLogChannelOff };
 
-WTFLogChannel LogFileAPI =            { 0x10000000, WTFLogChannelOff };
+WTFLogChannel LogFileAPI =            { WTFLogChannelOff };
 
-WTFLogChannel LogWebAudio =           { 0x20000000, WTFLogChannelOff };
-WTFLogChannel LogCompositing =        { 0x40000000, WTFLogChannelOff };
-WTFLogChannel LogGamepad =            { 0x80000000, WTFLogChannelOff };
+WTFLogChannel LogWebAudio =           { WTFLogChannelOff };
+WTFLogChannel LogCompositing =        { WTFLogChannelOff };
+WTFLogChannel LogGamepad =            { WTFLogChannelOff };
 
 
 WTFLogChannel* getChannelFromName(const String& channelName)
