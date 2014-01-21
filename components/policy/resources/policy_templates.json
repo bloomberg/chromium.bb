@@ -2669,7 +2669,7 @@
               'caption': '''Use <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> by default''',
             },
           ],
-          'supported_on': ['chrome_frame:8-'],
+          'supported_on': ['chrome_frame:8-32'],
           'features': {
             'dynamic_refresh': False,
           },
@@ -2686,7 +2686,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome_frame:8-'],
+          'supported_on': ['chrome_frame:8-32'],
           'features': {
             'dynamic_refresh': False,
           },
@@ -2706,7 +2706,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome_frame:8-'],
+          'supported_on': ['chrome_frame:8-32'],
           'features': {
             'dynamic_refresh': False,
           },
@@ -2723,7 +2723,7 @@
           'name': 'AdditionalLaunchParameters',
           'type': 'string',
           'schema': { 'type': 'string' },
-          'supported_on': ['chrome_frame:19-'],
+          'supported_on': ['chrome_frame:19-32'],
           'features': {
             'dynamic_refresh': False,
           },
@@ -2738,7 +2738,7 @@
           'name': 'SkipMetadataCheck',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome_frame:31-'],
+          'supported_on': ['chrome_frame:31-32'],
           'features': {
             'dynamic_refresh': False,
           },
@@ -2768,7 +2768,7 @@
             'type': 'array',
             'items': { 'type': 'string' },
           },
-          'supported_on': ['chrome_frame:8-'],
+          'supported_on': ['chrome_frame:8-32'],
           'features': {
             'dynamic_refresh': False,
           },
@@ -3006,7 +3006,7 @@
       'name': 'GCFUserDataDir',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_frame:12-'],
+      'supported_on': ['chrome_frame:12-32'],
       'features': {
         'dynamic_refresh': False,
       },
@@ -5608,7 +5608,7 @@
       'desc': '''Suppresses the turndown prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_frame:29-'],
+      'supported_on': ['chrome_frame:29-32'],
       'features': {
         'dynamic_refresh': False,
       },
