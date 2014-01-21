@@ -89,11 +89,12 @@ void HTMLTitleElement::setText(const String &value)
     ChildListMutationScope mutation(*this);
 
     // Avoid calling Document::setTitleElement() during intermediate steps.
-    m_ignoreTitleUpdatesWhenChildrenChange = true;
+    m_ignoreTitleUpdatesWhenChildrenChange = !value.isEmpty();
     removeChildren();
     m_ignoreTitleUpdatesWhenChildrenChange = false;
 
-    appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
+    if (!value.isEmpty())
+        appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
 }
 
 }
