@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Test the remote_access module."""
+
 import os
 import re
 import sys
@@ -20,7 +22,7 @@ from chromite.lib import remote_access
 
 
 class RemoteShMock(partial_mock.PartialCmdMock):
-
+  """Mocks the RemoteSh function."""
   TARGET = 'chromite.lib.remote_access.RemoteAccess'
   ATTRS = ('RemoteSh',)
   DEFAULT_ATTR =  'RemoteSh'
@@ -41,25 +43,32 @@ class RemoteShMock(partial_mock.PartialCmdMock):
 
 
 class RemoteAccessTest(cros_test_lib.MockTempDirTestCase):
-
+  """Base class with RemoteSh mocked out for testing RemoteAccess."""
   def setUp(self):
     self.rsh_mock = self.StartPatcher(RemoteShMock())
     self.host = remote_access.RemoteAccess('foon', self.tempdir)
 
 
 class RemoteShTest(RemoteAccessTest):
-
+  """Tests of basic RemoteSh functions"""
   TEST_CMD = 'ls'
   RETURN_CODE = 0
   OUTPUT = 'witty'
   ERROR = 'error'
 
   def assertRemoteShRaises(self, **kwargs):
+    """Asserts that RunCommandError is rasied when running TEST_CMD."""
     self.assertRaises(cros_build_lib.RunCommandError, self.host.RemoteSh,
+                      self.TEST_CMD, **kwargs)
+
+  def assertRemoteShRaisesSSHConnectionError(self, **kwargs):
+    """Asserts that SSHConnectionError is rasied when running TEST_CMD."""
+    self.assertRaises(remote_access.SSHConnectionError, self.host.RemoteSh,
                       self.TEST_CMD, **kwargs)
 
   def SetRemoteShResult(self, returncode=RETURN_CODE, output=OUTPUT,
                         error=ERROR):
+    """Sets the RemoteSh command results."""
     self.rsh_mock.AddCmdResult(self.TEST_CMD, returncode=returncode,
                                output=output, error=error)
 
@@ -82,13 +91,14 @@ class RemoteShTest(RemoteAccessTest):
   def testSshFailure(self):
     """Test failure in ssh commad."""
     self.SetRemoteShResult(returncode=remote_access.SSH_ERROR_CODE)
-    self.assertRemoteShRaises()
-    self.assertRemoteShRaises(error_code_ok=True)
+    self.assertRemoteShRaisesSSHConnectionError()
+    self.assertRemoteShRaisesSSHConnectionError(error_code_ok=True)
     self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True)
     self.host.RemoteSh(self.TEST_CMD, ssh_error_ok=True, error_code_ok=True)
 
 
 class CheckIfRebootedTest(RemoteAccessTest):
+  """Tests of the _CheckIfRebooted function."""
 
   def MockCheckReboot(self, returncode):
     self.rsh_mock.AddCmdResult(

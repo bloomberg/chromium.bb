@@ -32,7 +32,7 @@ DEFAULT_SSH_PORT = 22
 SSH_ERROR_CODE = 255
 
 
-def CompileSSHConnectSettings(ConnectTimeout=30, ConnectionAttempts=4):
+def CompileSSHConnectSettings(ConnectTimeout=10, ConnectionAttempts=2):
   return ['-o', 'ConnectTimeout=%s' % ConnectTimeout,
           '-o', 'ConnectionAttempts=%s' % ConnectionAttempts,
           '-o', 'NumberOfPasswordPrompts=0',
@@ -41,6 +41,10 @@ def CompileSSHConnectSettings(ConnectTimeout=30, ConnectionAttempts=4):
           '-o', 'ServerAliveCountMax=3',
           '-o', 'StrictHostKeyChecking=no',
           '-o', 'UserKnownHostsFile=/dev/null', ]
+
+
+class SSHConnectionError(Exception):
+  """Raised when SSH connection has failed."""
 
 
 class RemoteAccess(object):
@@ -105,8 +109,10 @@ class RemoteAccess(object):
       interrupted, etc.)
 
     Raises:
-      RunCommandError when error is not ignored through error_code_ok and
-      ssh_error_ok flags.
+      RunCommandError when error is not ignored through the error_code_ok flag.
+      SSHConnectionError when ssh command error is not ignored through
+      the ssh_error_ok flag.
+
     """
     kwargs.setdefault('debug_level', self.debug_level)
 
@@ -124,6 +130,8 @@ class RemoteAccess(object):
           (e.result.returncode and e.result.returncode != SSH_ERROR_CODE
            and error_code_ok)):
         result = e.result
+      elif e.result.returncode == SSH_ERROR_CODE:
+        raise SSHConnectionError(e.result.error)
       else:
         raise
 
@@ -398,7 +406,11 @@ class RemoteDevice(object):
         env_file = os.path.join(self.work_dir, os.path.basename(f.name))
         cmd = ['source', '%s;' % env_file] + cmd
 
-    return self.agent.RemoteSh(cmd, **kwargs)
+    try:
+      return self.agent.RemoteSh(cmd, **kwargs)
+    except SSHConnectionError:
+      logging.error('Error connecting to device %s', self.hostname)
+      raise
 
 
 class ChromiumOSDevice(RemoteDevice):
@@ -468,9 +480,14 @@ class ChromiumOSDevice(RemoteDevice):
     """Grab the board reported by the remote device.
 
     In the case of multiple matches, uses the first one.  In the case of no
-    entry, returns an empty string.
+    entry or if the command failed, returns an empty string.
     """
-    result = self.RunCommand(self.GET_BOARD_CMD)
+    try:
+      result = self.RunCommand(self.GET_BOARD_CMD)
+    except cros_build_lib.RunCommandError:
+      logging.warning('Error detecting the board.')
+      return ''
+
     # In the case of multiple matches, use the first one.
     output = result.output.splitlines()
     if len(output) > 1:
