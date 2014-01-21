@@ -143,9 +143,7 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_groups) {
  */
 ProgressCenterItemGroup.shouldAnimate_ = function(
     previousAnimated, previousItem, item) {
-  if (!previousItem)
-    return false;
-  if (!item)
+  if (!previousItem || !item || previousItem.quiet || item.quiet)
     return false;
   if (previousItem.progressRateInPercent < item.progressRateInPercent)
     return true;
