@@ -848,6 +848,7 @@ void RootWindowController::CreateContainersInRootWindow(
       non_lock_screen_containers);
   views::corewm::SetChildWindowVisibilityChangesAnimated(docked_container);
   SetUsesScreenCoordinates(docked_container);
+  SetUsesEasyResizeTargeter(docked_container);
 
   aura::Window* shelf_container =
       CreateContainer(kShellWindowId_ShelfContainer,

@@ -16,6 +16,8 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
+#include "ash/test/test_shelf_delegate.h"
+#include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -113,6 +115,25 @@ class WorkspaceControllerTest : public test::AshTestBase {
   aura::Window* CreatePopupLikeWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithBounds(bounds);
     window->Show();
+    return window;
+  }
+
+  aura::Window* CreateTestPanel(aura::WindowDelegate* delegate,
+                                const gfx::Rect& bounds) {
+    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
+        delegate,
+        ui::wm::WINDOW_TYPE_PANEL,
+        0,
+        bounds);
+    test::TestShelfDelegate* shelf_delegate =
+        test::TestShelfDelegate::instance();
+    shelf_delegate->AddLauncherItem(window);
+    PanelLayoutManager* manager =
+        static_cast<PanelLayoutManager*>(
+            Shell::GetContainer(window->GetRootWindow(),
+                                internal::kShellWindowId_PanelContainer)->
+                                layout_manager());
+    manager->Relayout();
     return window;
   }
 
@@ -1345,13 +1366,13 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
   ui::EventTarget* root = first->GetRootWindow();
   ui::EventTargeter* targeter = root->GetEventTargeter();
 
-  // The windows overlap, and |second| is on top of |first|. Events targetted
-  // slightly outside the edges of the |second| window should still be targetted
+  // The windows overlap, and |second| is on top of |first|. Events targeted
+  // slightly outside the edges of the |second| window should still be targeted
   // to |second| to allow resizing the windows easily.
 
   const int kNumPoints = 4;
   struct {
-    const char *direction;
+    const char* direction;
     gfx::Point location;
   } points[kNumPoints] = {
     { "left", gfx::Point(28, 45) },  // outside the left edge.
@@ -1361,7 +1382,7 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
   };
   // Do two iterations, first without any transform on |second|, and the second
   // time after applying some transform on |second| so that it doesn't get
-  // targetted.
+  // targeted.
   for (int times = 0; times < 2; ++times) {
     SCOPED_TRACE(times == 0 ? "Without transform" : "With transform");
     aura::Window* expected_target = times == 0 ? second.get() : first.get();
@@ -1379,10 +1400,102 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
       EXPECT_EQ(expected_target, target);
     }
     // Apply a transform on |second|. After the transform is applied, the window
-    // should no longer be targetted.
+    // should no longer be targeted.
     gfx::Transform transform;
     transform.Translate(70, 40);
     second->SetTransform(transform);
+  }
+}
+
+// Verifies events targeting just outside the window edges for panels.
+TEST_F(WorkspaceControllerTest, WindowEdgeHitTestPanel) {
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<Window> window(CreateTestPanel(&delegate,
+                                           gfx::Rect(20, 10, 100, 50)));
+  ui::EventTarget* root = window->GetRootWindow();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+  const gfx::Rect bounds = window->bounds();
+  const int kNumPoints = 5;
+  struct {
+    const char* direction;
+    gfx::Point location;
+    bool is_target_hit;
+  } points[kNumPoints] = {
+    { "left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true },
+    { "top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true },
+    { "right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true },
+    { "bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true },
+    { "outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false },
+  };
+  for (int i = 0; i < kNumPoints; ++i) {
+    SCOPED_TRACE(points[i].direction);
+    const gfx::Point& location = points[i].location;
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
+                         ui::EF_NONE);
+    ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
+    if (points[i].is_target_hit)
+      EXPECT_EQ(window.get(), target);
+    else
+      EXPECT_NE(window.get(), target);
+
+    ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location, 0,
+                         ui::EventTimeForNow());
+    target = targeter->FindTargetForEvent(root, &touch);
+    if (points[i].is_target_hit)
+      EXPECT_EQ(window.get(), target);
+    else
+      EXPECT_NE(window.get(), target);
+  }
+}
+
+// Verifies events targeting just outside the window edges for docked windows.
+TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
+  if (!switches::UseDockedWindows())
+    return;
+  aura::test::TestWindowDelegate delegate;
+  // Make window smaller than the minimum docked area so that the window edges
+  // are exposed.
+  delegate.set_maximum_size(gfx::Size(180, 200));
+  scoped_ptr<Window> window(aura::test::CreateTestWindowWithDelegate(&delegate,
+      123, gfx::Rect(20, 10, 100, 50), NULL));
+  ParentWindowInPrimaryRootWindow(window.get());
+  aura::Window* docked_container = Shell::GetContainer(
+      window->GetRootWindow(), internal::kShellWindowId_DockedContainer);
+  docked_container->AddChild(window.get());
+  window->Show();
+  ui::EventTarget* root = window->GetRootWindow();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+  const gfx::Rect bounds = window->bounds();
+  const int kNumPoints = 5;
+  struct {
+    const char* direction;
+    gfx::Point location;
+    bool is_target_hit;
+  } points[kNumPoints] = {
+    { "left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true },
+    { "top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true },
+    { "right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true },
+    { "bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true },
+    { "outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false },
+  };
+  for (int i = 0; i < kNumPoints; ++i) {
+    SCOPED_TRACE(points[i].direction);
+    const gfx::Point& location = points[i].location;
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
+                         ui::EF_NONE);
+    ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
+    if (points[i].is_target_hit)
+      EXPECT_EQ(window.get(), target);
+    else
+      EXPECT_NE(window.get(), target);
+
+    ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location, 0,
+                         ui::EventTimeForNow());
+    target = targeter->FindTargetForEvent(root, &touch);
+    if (points[i].is_target_hit)
+      EXPECT_EQ(window.get(), target);
+    else
+      EXPECT_NE(window.get(), target);
   }
 }
 
