@@ -59,7 +59,38 @@
 
 #include "net/android/network_change_notifier_android.h"
 
+#include "base/threading/thread.h"
+#include "net/dns/dns_config_service.h"
+
 namespace net {
+
+// Thread on which we can run DnsConfigService, which requires a TYPE_IO
+// message loop to monitor /system/etc/hosts.
+class NetworkChangeNotifierAndroid::DnsConfigServiceThread
+    : public base::Thread {
+ public:
+  DnsConfigServiceThread() : base::Thread("DnsConfigService") {}
+
+  virtual ~DnsConfigServiceThread() {
+    Stop();
+  }
+
+  virtual void Init() OVERRIDE {
+    dns_config_service_ = DnsConfigService::CreateSystemService();
+    dns_config_service_->WatchConfig(
+        base::Bind(&NetworkChangeNotifier::SetDnsConfig));
+  }
+
+  virtual void CleanUp() OVERRIDE {
+    dns_config_service_.reset();
+  }
+
+ private:
+  scoped_ptr<DnsConfigService> dns_config_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(DnsConfigServiceThread);
+};
+
 
 NetworkChangeNotifierAndroid::~NetworkChangeNotifierAndroid() {
   delegate_->RemoveObserver(this);
@@ -83,8 +114,11 @@ bool NetworkChangeNotifierAndroid::Register(JNIEnv* env) {
 NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
     NetworkChangeNotifierDelegateAndroid* delegate)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsAndroid()),
-      delegate_(delegate) {
+      delegate_(delegate),
+      dns_config_service_thread_(new DnsConfigServiceThread()) {
   delegate_->AddObserver(this);
+  dns_config_service_thread_->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
 
 // static

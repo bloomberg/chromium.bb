@@ -22,5 +22,5 @@ class DnsConfigWatcher {
   NotifyWatcherMac watcher_;
 };
 
-}  // naespace internal
+}  // namespace internal
 }  // namespace net

@@ -56,12 +56,15 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   friend class NetworkChangeNotifierAndroidTest;
   friend class NetworkChangeNotifierFactoryAndroid;
 
+  class DnsConfigServiceThread;
+
   explicit NetworkChangeNotifierAndroid(
       NetworkChangeNotifierDelegateAndroid* delegate);
 
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsAndroid();
 
   NetworkChangeNotifierDelegateAndroid* const delegate_;
+  scoped_ptr<DnsConfigServiceThread> dns_config_service_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierAndroid);
 };

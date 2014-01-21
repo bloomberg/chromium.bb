@@ -25,15 +25,24 @@
 #include "net/dns/dns_config_watcher_mac.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include <sys/system_properties.h>
+#include "net/base/network_change_notifier.h"
+#endif
+
 namespace net {
 
-#if !defined(OS_ANDROID)
 namespace internal {
 
 namespace {
 
+#if !defined(OS_ANDROID)
 const base::FilePath::CharType* kFilePathHosts =
     FILE_PATH_LITERAL("/etc/hosts");
+#else
+const base::FilePath::CharType* kFilePathHosts =
+    FILE_PATH_LITERAL("/system/etc/hosts");
+#endif
 
 #if defined(OS_IOS)
 
@@ -47,6 +56,32 @@ class DnsConfigWatcher {
   }
 };
 
+#elif defined(OS_ANDROID)
+// On Android, assume DNS config may have changed on every network change.
+class DnsConfigWatcher : public NetworkChangeNotifier::NetworkChangeObserver {
+ public:
+  DnsConfigWatcher() {
+    NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  }
+
+  virtual ~DnsConfigWatcher() {
+    NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  }
+
+  bool Watch(const base::Callback<void(bool succeeded)>& callback) {
+    callback_ = callback;
+    return true;
+  }
+
+  virtual void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type)
+      OVERRIDE {
+    if (!callback_.is_null() && type != NetworkChangeNotifier::CONNECTION_NONE)
+      callback_.Run(true);
+  }
+
+ private:
+  base::Callback<void(bool succeeded)> callback_;
+};
 #elif !defined(OS_MACOSX)
 // DnsConfigWatcher for OS_MACOSX is in dns_config_watcher_mac.{hh,cc}.
 
@@ -78,6 +113,7 @@ class DnsConfigWatcher {
 };
 #endif
 
+#if !defined(OS_ANDROID)
 ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
   ConfigParsePosixResult result;
   config->unhandled_options = false;
@@ -122,6 +158,44 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
   config->timeout = base::TimeDelta::FromSeconds(kDnsTimeoutSeconds);
   return result;
 }
+#else  // defined(OS_ANDROID)
+// Theoretically, this is bad. __system_property_get is not a supported API
+// (but it's currently visible to anyone using Bionic), and the properties
+// are implementation details that may disappear in future Android releases.
+// Practically, libcutils provides property_get, which is a public API, and the
+// DNS code (and its clients) are already robust against failing to get the DNS
+// config for whatever reason, so the properties can disappear and the world
+// won't end.
+// TODO(ttuttle): Depend on libcutils, then switch this (and other uses of
+//                __system_property_get) to property_get.
+ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
+   std::string dns1_string, dns2_string;
+  char property_value[PROP_VALUE_MAX];
+  __system_property_get("net.dns1", property_value);
+  dns1_string = property_value;
+  __system_property_get("net.dns2", property_value);
+  dns2_string = property_value;
+  if (dns1_string.length() == 0 && dns2_string.length() == 0)
+    return CONFIG_PARSE_POSIX_NO_NAMESERVERS;
+
+  IPAddressNumber dns1_number, dns2_number;
+  bool parsed1 = ParseIPLiteralToNumber(dns1_string, &dns1_number);
+  bool parsed2 = ParseIPLiteralToNumber(dns2_string, &dns2_number);
+  if (!parsed1 && !parsed2)
+    return CONFIG_PARSE_POSIX_BAD_ADDRESS;
+
+  if (parsed1) {
+    IPEndPoint dns1(dns1_number, dns_protocol::kDefaultPort);
+    dns_config->nameservers.push_back(dns1);
+  }
+  if (parsed2) {
+    IPEndPoint dns2(dns2_number, dns_protocol::kDefaultPort);
+    dns_config->nameservers.push_back(dns2);
+  }
+
+  return CONFIG_PARSE_POSIX_OK;
+}
+#endif
 
 }  // namespace
 
@@ -181,7 +255,8 @@ class DnsConfigServicePosix::Watcher {
 };
 
 // A SerialWorker that uses libresolv to initialize res_state and converts
-// it to DnsConfig.
+// it to DnsConfig (except on Android, where it reads system properties
+// net.dns1 and net.dns2; see #if around ReadDnsConfig above.)
 class DnsConfigServicePosix::ConfigReader : public SerialWorker {
  public:
   explicit ConfigReader(DnsConfigServicePosix* service)
@@ -311,6 +386,7 @@ void DnsConfigServicePosix::OnHostsChanged(bool succeeded) {
   }
 }
 
+#if !defined(OS_ANDROID)
 ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
                                                   DnsConfig* dns_config) {
   CHECK(dns_config != NULL);
@@ -410,6 +486,7 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
   }
   return CONFIG_PARSE_POSIX_OK;
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace internal
 
@@ -417,21 +494,5 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
 scoped_ptr<DnsConfigService> DnsConfigService::CreateSystemService() {
   return scoped_ptr<DnsConfigService>(new internal::DnsConfigServicePosix());
 }
-
-#else  // defined(OS_ANDROID)
-// Android NDK provides only a stub <resolv.h> header.
-class StubDnsConfigService : public DnsConfigService {
- public:
-  StubDnsConfigService() {}
-  virtual ~StubDnsConfigService() {}
- private:
-  virtual void ReadNow() OVERRIDE {}
-  virtual bool StartWatching() OVERRIDE { return false; }
-};
-// static
-scoped_ptr<DnsConfigService> DnsConfigService::CreateSystemService() {
-  return scoped_ptr<DnsConfigService>(new StubDnsConfigService());
-}
-#endif
 
 }  // namespace net

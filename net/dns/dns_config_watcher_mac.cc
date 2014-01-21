@@ -102,5 +102,5 @@ ConfigParsePosixResult DnsConfigWatcher::CheckDnsConfig() {
   return CONFIG_PARSE_POSIX_OK;
 }
 
-}  // naespace internal
+}  // namespace internal
 }  // namespace net

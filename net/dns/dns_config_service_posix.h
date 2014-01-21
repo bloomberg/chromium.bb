@@ -5,9 +5,11 @@
 #ifndef NET_DNS_DNS_CONFIG_SERVICE_POSIX_H_
 #define NET_DNS_DNS_CONFIG_SERVICE_POSIX_H_
 
+#if !defined(OS_ANDROID)
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <resolv.h>
+#endif
 
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
@@ -57,9 +59,11 @@ enum ConfigParsePosixResult {
   CONFIG_PARSE_POSIX_MAX  // Bounding values for enumeration.
 };
 
+#if !defined(OS_ANDROID)
 // Fills in |dns_config| from |res|.
 ConfigParsePosixResult NET_EXPORT_PRIVATE ConvertResStateToDnsConfig(
     const struct __res_state& res, DnsConfig* dns_config);
+#endif
 
 }  // namespace internal
 

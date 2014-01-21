@@ -9,6 +9,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(OS_ANDROID)
+
 namespace net {
 namespace {
 
@@ -154,3 +156,5 @@ TEST(DnsConfigServicePosixTest, RejectEmptyNameserver) {
 
 }  // namespace
 }  // namespace net
+
+#endif  // !OS_ANDROID
