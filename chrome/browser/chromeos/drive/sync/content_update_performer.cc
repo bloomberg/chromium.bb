@@ -1,13 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
+#include "chrome/browser/chromeos/drive/sync/content_update_performer.h"
 
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -18,7 +17,7 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-struct UpdateOperation::LocalState {
+struct ContentUpdatePerformer::LocalState {
   LocalState() : should_upload(false) {
   }
 
@@ -34,7 +33,7 @@ namespace {
 // Gets locally stored information about the specified file.
 FileError GetFileLocalState(internal::ResourceMetadata* metadata,
                             internal::FileCache* cache,
-                            UpdateOperation::LocalState* local_state) {
+                            ContentUpdatePerformer::LocalState* local_state) {
   FileError error = metadata->GetResourceEntryById(local_state->local_id,
                                                    &local_state->entry);
   if (error != FILE_ERROR_OK)
@@ -82,8 +81,7 @@ FileError UpdateFileLocalState(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const std::string& local_id,
-    scoped_ptr<google_apis::ResourceEntry> resource_entry,
-    base::FilePath* drive_file_path) {
+    scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   ResourceEntry existing_entry;
   FileError error = metadata->GetResourceEntryById(local_id, &existing_entry);
   if (error != FILE_ERROR_OK)
@@ -101,10 +99,6 @@ FileError UpdateFileLocalState(
   if (error != FILE_ERROR_OK)
     return error;
 
-  *drive_file_path = metadata->GetFilePath(local_id);
-  if (drive_file_path->empty())
-    return FILE_ERROR_NOT_FOUND;
-
   FileCacheEntry cache_entry;
   if (!cache->GetCacheEntry(local_id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
@@ -117,14 +111,12 @@ FileError UpdateFileLocalState(
 
 }  // namespace
 
-UpdateOperation::UpdateOperation(
+ContentUpdatePerformer::ContentUpdatePerformer(
     base::SequencedTaskRunner* blocking_task_runner,
-    OperationObserver* observer,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache)
     : blocking_task_runner_(blocking_task_runner),
-      observer_(observer),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
@@ -132,11 +124,11 @@ UpdateOperation::UpdateOperation(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-UpdateOperation::~UpdateOperation() {
+ContentUpdatePerformer::~ContentUpdatePerformer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void UpdateOperation::UpdateFileByLocalId(
+void ContentUpdatePerformer::UpdateFileByLocalId(
     const std::string& local_id,
     const ClientContext& context,
     const FileOperationCallback& callback) {
@@ -152,14 +144,14 @@ void UpdateOperation::UpdateFileByLocalId(
                  metadata_,
                  cache_,
                  local_state),
-      base::Bind(&UpdateOperation::UpdateFileAfterGetLocalState,
+      base::Bind(&ContentUpdatePerformer::UpdateFileAfterGetLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  context,
                  callback,
                  base::Owned(local_state)));
 }
 
-void UpdateOperation::UpdateFileAfterGetLocalState(
+void ContentUpdatePerformer::UpdateFileAfterGetLocalState(
     const ClientContext& context,
     const FileOperationCallback& callback,
     const LocalState* local_state,
@@ -179,13 +171,13 @@ void UpdateOperation::UpdateFileAfterGetLocalState(
       local_state->entry.file_specific_info().content_mime_type(),
       "",  // etag
       context,
-      base::Bind(&UpdateOperation::UpdateFileAfterUpload,
+      base::Bind(&ContentUpdatePerformer::UpdateFileAfterUpload,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  local_state->local_id));
 }
 
-void UpdateOperation::UpdateFileAfterUpload(
+void ContentUpdatePerformer::UpdateFileAfterUpload(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::GDataErrorCode error,
@@ -199,7 +191,6 @@ void UpdateOperation::UpdateFileAfterUpload(
     return;
   }
 
-  base::FilePath* drive_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -207,27 +198,8 @@ void UpdateOperation::UpdateFileAfterUpload(
                  metadata_,
                  cache_,
                  local_id,
-                 base::Passed(&resource_entry),
-                 drive_file_path),
-      base::Bind(&UpdateOperation::UpdateFileAfterUpdateLocalState,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 base::Owned(drive_file_path)));
-}
-
-void UpdateOperation::UpdateFileAfterUpdateLocalState(
-    const FileOperationCallback& callback,
-    const base::FilePath* drive_file_path,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-  observer_->OnDirectoryChangedByOperation(drive_file_path->DirName());
-  callback.Run(FILE_ERROR_OK);
+                 base::Passed(&resource_entry)),
+      callback);
 }
 
 }  // namespace file_system

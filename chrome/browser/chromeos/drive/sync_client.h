@@ -29,7 +29,7 @@ struct ClientContext;
 namespace file_system {
 class DownloadOperation;
 class OperationObserver;
-class UpdateOperation;
+class ContentUpdatePerformer;
 }
 
 namespace internal {
@@ -163,7 +163,7 @@ class SyncClient {
   scoped_ptr<file_system::DownloadOperation> download_operation_;
 
   // Used to upload committed files.
-  scoped_ptr<file_system::UpdateOperation> update_operation_;
+  scoped_ptr<file_system::ContentUpdatePerformer> content_update_performer_;
 
   // Used to update entry metadata.
   scoped_ptr<EntryUpdatePerformer> entry_update_performer_;

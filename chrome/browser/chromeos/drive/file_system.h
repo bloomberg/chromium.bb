@@ -54,7 +54,6 @@ class RemoveOperation;
 class SearchOperation;
 class TouchOperation;
 class TruncateOperation;
-class UpdateOperation;
 }  // namespace file_system
 
 // The production implementation of FileSystemInterface.
@@ -279,7 +278,6 @@ class FileSystem : public FileSystemInterface,
   scoped_ptr<file_system::TouchOperation> touch_operation_;
   scoped_ptr<file_system::TruncateOperation> truncate_operation_;
   scoped_ptr<file_system::DownloadOperation> download_operation_;
-  scoped_ptr<file_system::UpdateOperation> update_operation_;
   scoped_ptr<file_system::SearchOperation> search_operation_;
   scoped_ptr<file_system::GetFileForSavingOperation>
       get_file_for_saving_operation_;

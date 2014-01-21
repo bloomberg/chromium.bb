@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
+#include "chrome/browser/chromeos/drive/sync/content_update_performer.h"
 
 #include "base/callback_helpers.h"
 #include "base/file_util.h"
@@ -20,15 +20,14 @@
 namespace drive {
 namespace file_system {
 
-class UpdateOperationTest : public OperationTestBase {
+class ContentUpdatePerformerTest : public OperationTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
     OperationTestBase::SetUp();
-    operation_.reset(new UpdateOperation(blocking_task_runner(),
-                                         observer(),
-                                         scheduler(),
-                                         metadata(),
-                                         cache()));
+    performer_.reset(new ContentUpdatePerformer(blocking_task_runner(),
+                                                scheduler(),
+                                                metadata(),
+                                                cache()));
   }
 
   // Stores |content| to the cache and mark it as dirty.
@@ -68,10 +67,10 @@ class UpdateOperationTest : public OperationTestBase {
     return error;
   }
 
-  scoped_ptr<UpdateOperation> operation_;
+  scoped_ptr<ContentUpdatePerformer> performer_;
 };
 
-TEST_F(UpdateOperationTest, UpdateFileByLocalId) {
+TEST_F(ContentUpdatePerformerTest, UpdateFileByLocalId) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   const std::string kResourceId("file:2_file_resource_id");
 
@@ -86,7 +85,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId) {
 
   // The callback will be called upon completion of UpdateFileByLocalId().
   FileError error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByLocalId(
+  performer_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -125,9 +124,9 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId) {
   EXPECT_FALSE(cache_entry.is_dirty());
 }
 
-TEST_F(UpdateOperationTest, UpdateFileByLocalId_NonexistentFile) {
+TEST_F(ContentUpdatePerformerTest, UpdateFileByLocalId_NonexistentFile) {
   FileError error = FILE_ERROR_OK;
-  operation_->UpdateFileByLocalId(
+  performer_->UpdateFileByLocalId(
       "nonexistent_local_id",
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -135,7 +134,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_NonexistentFile) {
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }
 
-TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
+TEST_F(ContentUpdatePerformerTest, UpdateFileByLocalId_Md5) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   const std::string kResourceId("file:2_file_resource_id");
 
@@ -150,7 +149,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
 
   // The callback will be called upon completion of UpdateFileByLocalId().
   FileError error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByLocalId(
+  performer_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -208,7 +207,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   // hasn't been changed. Thus, the actual uploading should be skipped.
   original_changestamp = fake_service()->about_resource().largest_change_id();
   error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByLocalId(
+  performer_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -233,7 +232,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   EXPECT_FALSE(cache_entry.is_dirty());
 }
 
-TEST_F(UpdateOperationTest, UpdateFileByLocalId_OpenedForWrite) {
+TEST_F(ContentUpdatePerformerTest, UpdateFileByLocalId_OpenedForWrite) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   const std::string kResourceId("file:2_file_resource_id");
 
@@ -259,7 +258,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_OpenedForWrite) {
 
   // Update. This should not clear the dirty bit.
   error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByLocalId(
+  performer_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -286,7 +285,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_OpenedForWrite) {
 
   // Update. This should clear the dirty bit.
   error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByLocalId(
+  performer_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));

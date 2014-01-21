@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/sync/content_update_performer.h"
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
@@ -149,11 +149,11 @@ SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
           metadata,
           cache,
           temporary_file_directory)),
-      update_operation_(new file_system::UpdateOperation(blocking_task_runner,
-                                                         observer,
-                                                         scheduler,
-                                                         metadata,
-                                                         cache)),
+      content_update_performer_(
+          new file_system::ContentUpdatePerformer(blocking_task_runner,
+                                                  scheduler,
+                                                  metadata,
+                                                  cache)),
       entry_update_performer_(new EntryUpdatePerformer(blocking_task_runner,
                                                        observer,
                                                        scheduler,
@@ -258,8 +258,8 @@ void SyncClient::AddUploadTaskInternal(const ClientContext& context,
 
   SyncTask task;
   task.task = base::Bind(
-      &file_system::UpdateOperation::UpdateFileByLocalId,
-      base::Unretained(update_operation_.get()),
+      &file_system::ContentUpdatePerformer::UpdateFileByLocalId,
+      base::Unretained(content_update_performer_.get()),
       local_id,
       context,
       base::Bind(&SyncClient::OnUploadFileComplete,

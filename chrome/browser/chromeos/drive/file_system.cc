@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/drive/file_system/search_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/touch_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/truncate_operation.h"
-#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -298,12 +297,6 @@ void FileSystem::ResetComponents() {
                                          resource_metadata_,
                                          cache_,
                                          temporary_file_directory_));
-  update_operation_.reset(
-      new file_system::UpdateOperation(blocking_task_runner_.get(),
-                                       observer,
-                                       scheduler_,
-                                       resource_metadata_,
-                                       cache_));
   search_operation_.reset(new file_system::SearchOperation(
       blocking_task_runner_.get(), scheduler_, resource_metadata_));
   get_file_for_saving_operation_.reset(
