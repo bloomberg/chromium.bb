@@ -420,7 +420,7 @@ class Manifest(object):
       # we need to push changes (e.g., the overlays).
       # TODO(davidjames): Either fix the repo bug, or update our logic here to
       # check the manifest repository to find the right tracking branch.
-      upstream = self.default['revision']
+      upstream = self.default.get('revision', 'refs/heads/master')
 
     attrs['tracking_branch'] = 'refs/remotes/%s/%s' % (
         remote_name, StripRefs(upstream),

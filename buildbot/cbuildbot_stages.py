@@ -1894,6 +1894,8 @@ class BranchUtilStage(bs.BuilderStage):
       else:
         # We can't branch this repository. Just use TOT of the repository.
         node.attrib['revision'] = checkout['revision']
+        # Can not use the default version of get() here since
+        # 'upstream' can be a valid key with a None value.
         upstream = checkout.get('upstream')
         if upstream is not None:
           node.attrib['upstream'] = upstream
@@ -1906,10 +1908,9 @@ class BranchUtilStage(bs.BuilderStage):
   def _FixUpManifests(self, repo_manifest):
     """Points the checkouts at the new branch in the manifests.
 
-    The 'master' branch manifest (full.xml) contains checkouts that are checked
-    out to branches other than 'refs/heads/master'.  But in the new branch,
-    these should all be checked out to 'refs/heads/<new_branch>', so we go
-    through the manifest and fix those checkouts.
+    Within the branch, make sure all manifests with projects that are
+    "branchable" are checked out to "refs/heads/<new_branch>".  Do this
+    by updating all manifests in the known manifest projects.
     """
     assert not self._run.options.delete_branch, 'Cannot fix a deleted branch.'
 
@@ -1920,8 +1921,6 @@ class BranchUtilStage(bs.BuilderStage):
     for project in constants.MANIFEST_PROJECTS:
       manifest_checkout = repo_manifest.FindCheckout(project)
       manifest_dir = manifest_checkout['local_path']
-      manifest_path = os.path.join(manifest_dir, 'full.xml')
-
       push_remote = manifest_checkout['push_remote']
 
       # Checkout revision can be either a sha1 or a branch ref.
@@ -1931,7 +1930,14 @@ class BranchUtilStage(bs.BuilderStage):
 
       git.CreateBranch(
           manifest_dir, manifest_version.PUSH_BRANCH, src_ref)
-      self._UpdateManifest(manifest_path)
+
+      # Look for all manifest files in manifest_dir.
+      for manifest_path in glob.glob(os.path.join(manifest_dir, '*.xml')):
+        # Accept only non-symlink xml files directly in manifest_dir.
+        if not os.path.islink(manifest_path):
+          cros_build_lib.Debug('Fixing manifest at %s.', manifest_path)
+          self._UpdateManifest(manifest_path)
+
       git.RunGit(manifest_dir, ['add', '-A'], print_cmd=True)
       message = 'Fix up manifest after branching %s.' % branch_ref
       git.RunGit(manifest_dir, ['commit', '-m', message], print_cmd=True)
