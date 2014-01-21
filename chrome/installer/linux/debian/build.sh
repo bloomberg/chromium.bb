@@ -97,24 +97,6 @@ stage_install_debian() {
   process_template "${BUILDDIR}/installer/debian/postrm" \
     "${STAGEDIR}/DEBIAN/postrm"
   chmod 755 "${STAGEDIR}/DEBIAN/postrm"
-
-  # Compatibility symlinks to avoid breaking Chrome on update.
-  # TODO(phajdan.jr): Remove before enabling SxS (obvious file collisions).
-  # See http://crbug.com/295103 , and ultimately http://crbug.com/22703 .
-  # Also see https://groups.google.com/a/chromium.org/d/msg/chromium-dev/DBEqOORaRiw/pE0bNI6h0kcJ .
-  if [ "${CHANNEL}" != "stable" ] && \
-     [ "${CHANNEL}" != "trunk" ] && \
-     [ "${CHANNEL}" != "asan" ]; then
-    mkdir -p "${STAGEDIR}/opt/google/chrome"
-    for x in chrome chrome-sandbox locales; do
-      ln -s "${INSTALLDIR}/${x}" "${STAGEDIR}/opt/google/chrome/${x}"
-    done
-    pushd "${STAGEDIR}/${INSTALLDIR}"
-    for x in *.pak; do
-      ln -s "${INSTALLDIR}/${x}" "${STAGEDIR}/opt/google/chrome/${x}"
-    done
-    popd
-  fi
 }
 
 # Actually generate the package file.
