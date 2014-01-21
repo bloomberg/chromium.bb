@@ -155,6 +155,8 @@ VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
  * @return {string} Label for the volume.
  */
 VolumeInfo.prototype.getLabel = function() {
+  if (this.volumeType === util.VolumeType.DOWNLOADS)
+    return str('DOWNLOADS_DIRECTORY_LABEL');
   if (this.volumeType === util.VolumeType.DRIVE)
     return str('DRIVE_DIRECTORY_LABEL');
 
