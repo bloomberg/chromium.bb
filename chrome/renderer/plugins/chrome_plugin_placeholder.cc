@@ -197,7 +197,6 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
                         OnErrorDownloadingPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_CancelledDownloadingPlugin,
                         OnCancelledDownloadingPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -209,6 +208,7 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
   // objects have an interest in them.
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
     IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
   IPC_END_MESSAGE_MAP()
 
   return false;
