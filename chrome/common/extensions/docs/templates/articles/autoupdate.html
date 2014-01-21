@@ -9,6 +9,22 @@
 You should also read <a href="hosting.html">Hosting</a> and
 <a href="packaging.html">Packaging</a>.</p>
 
+<p class="warning"><b>Warning:</b>
+As of M33,
+Windows stable/beta channel users can only download extensions hosted
+in the Chrome Web Store (see
+<a href="http://blog.chromium.org/2013/11/protecting-windows-users-from-malicious.html">Protecting Windows users from malicious extensions</a>).
+</p>
+ 
+<p>
+Previously when off-store extensions were supported,
+it was possible to have the native binaries and the extension be updated in lock step.
+However, extensions hosted on the Chrome Web Store are updated
+via the Chrome update mechanism which developers do not control.
+Extension developers should be careful about updating extensions
+that have a dependency on the native binary
+(for example, legacy extensions using <a href="npapi.html">NPAPI</a>).
+</p>
 
 <h2 id="overview">Overview</h2>
 <ul><li>A manifest may contain an "update_url" field, pointing to a location for doing update checks.</li>

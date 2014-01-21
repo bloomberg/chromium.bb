@@ -1,6 +1,5 @@
 <h1>Other Deployment Options</h1>
 
-
 <p>
 Usually, users install their own extensions.
 But sometimes you might want an extension
@@ -30,33 +29,63 @@ installing external extensions:
 </p>
 
 <ul>
-  <li> Using a preferences JSON file </li>
+  <li> Using a preferences JSON file (Mac OS X and Linux only)</li>
   <li> Using the Windows registry (Windows only) </li>
 </ul>
 
 <p>
-Both ways support installing an extension from a <code>.crx</code> extension
-file on the user's computer.  The preferences JSON file also supports installing
-an extension hosted at an
-<a href="autoupdate.html#update_url">update URL</a>.
-See <a href="hosting.html">hosting</a> for details on hosting an extension.
+Both ways support installing an extension hosted at an
+<code>update_URL</code>.
+In the Windows registry,
+the <code>update_URL</code> must point to the Chrome Web Store
+where the extension is hosted.
+</p>
+
+<p>
+In the preferences file,
+it can point to your own server where you are hosting the extension
+(see <a href="autoupdate.html#update_url">autoupdating</a>).
+The preferences JSON file also supports installing
+an extension from a <code>.crx</code> extension
+file on the user's computer
+(see <a href="hosting.html">hosting</a>).
+</p>
+
+
+<p class="note">
+<b>Install extensions from your website:</b>
+The safest option for your users is to publish your extension
+in the Chrome Web Store.
+Instead of hosting your own extension,
+publish it in the store, and link to the store install using
+<a href="https://developers.google.com/chrome/web-store/docs/inline_installation">inline installation</a>.
 </p>
 
 <h2 id="prereqs">Before you begin</h2>
 
 <p>
-First, package a
-<a href="packaging.html"><code>.crx</code> file</a>
+First, <a href="/webstore/publish.html">publish</a>
+the extension in the Chrome Web Store,
+or package a <a href="packaging.html"><code>.crx</code> file</a>
 and make sure that it installs successfully.
 </p>
+
+
+<p class="warning">
+<b>Windows installs must come from Chrome Web Store:</b><br>
+As of Chrome 33,
+no external installs are allowed from a path to a local <code>.crx</code>
+(see <a href="http://blog.chromium.org/2013/11/protecting-windows-users-from-malicious.html">Protecting Windows users from malicious extensions</a>).
+</p>
+
 <p>
-If you wish to install from an
+If installing from an
  <a href="autoupdate.html#update_url">update URL</a>, ensure that the extension
 is properly <a href="hosting.html">hosted</a>.
 </p>
 
 <p>
-Then, before you edit the preferences file or the registry,
+Before you edit the preferences file or the registry,
 make a note of the following:
 </p>
 
@@ -77,19 +106,12 @@ and the ID is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
 
 <h2 id="preferences">Using a preferences file</h2>
 
-<p class="note">
-<b>Windows note:</b>
-Until <a href="http://crbug.com/41902">bug 41902</a> is fixed,
-you might want to use the <a href="#registry">Windows registry</a>
-instead of the preferences file.
-</p>
+<br>
 
 <p class="note">
-<b>Note:</b>
-Previous versions of Google Chrome used an
-<code>external_extensions.json</code> file to specify which extensions to
-install. This file has been deprecated in favor of individual <code>.json</code>
-files, one per extension.
+<b>Mac OS X and Linux only:</b>
+Do not use the preferences file for Windows.
+Use <a href="#registry">Windows registry</a> instead.
 </p>
 
 <ol>
@@ -105,11 +127,6 @@ or <code>/home/share/extension.crx</code>.)
   corresponds to your extension's ID.
   The location depends on the operating system.
   <dl>
-  <dt> Windows: </dt>
-    <dd> <code><em>chrome_root</em>\Application\<em>chrome_version</em>\Extensions\</code>
-    <br />
-    Example: <code>c:\Users\Me\AppData\Local\Google\Chrome\Application\6.0.422.0\Extensions\</code>
-    </dd>
   <dt> Mac OS X:</dt>
     <dd>For a specific user: <code>~USERNAME/Library/Application Support/Google/Chrome/External Extensions/</code><br>
         For all users: <code>/Library/Application Support/Google/Chrome/External Extensions/</code>
@@ -174,10 +191,18 @@ Example:
   "supported_locales": [ "en", "fr", "de" ]
 }</pre>
 </li>
-<li>Save the JSON file. </li>
+<li>Save the JSON file.</li>
 <li>Launch Google Chrome and go to <b>chrome://extensions</b>;
 you should see the extension listed. </li>
 </ol>
+
+<p class="note">
+<b>Note:</b>
+Previous versions of Google Chrome used an
+<code>external_extensions.json</code> file to specify which extensions to
+install. This file has been deprecated in favor of individual <code>.json</code>
+files, one per extension.
+</p>
 
 <h3 id="troubleshooting">Troubleshooting Mac OS permissions problems</h3>
 
@@ -195,11 +220,6 @@ you should see the extension listed. </li>
 <h2 id="registry">Using the Windows registry</h2>
 
 <ol>
-<li>Make the <code>.crx</code> extension file available
-to the machine you want to install the extension on.
-(Copy it to a local directory or to a network share &mdash;
-for example, <code>\\server\share\extension.crx</code>.)
-</li>
 <li>Find or create the following key in the
 registry:
 <ul>
@@ -213,13 +233,13 @@ under the <b>Extensions</b> key with the
 same name as the ID of your extension
 (for example, <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>).
 </li>
-<li>Create two string values (<code>REG_SZ</code>) named "path" and "version",
-  and set them to the extension's location and version.
-  For example:
-<ul>
-  <li>path: <code>\\server\share\extension.crx</code> </li>
-  <li>version: <code>1.0</code> </li>
-</ul>
+<li>In your extension key,
+create a property, "update_url", and set it to the value:
+"https://clients2.google.com/service/update2/crx"
+(this points to your extension's crx in the Chrome Web Store):
+<pre>{
+  "update_url": "https://clients2.google.com/service/update2/crx"
+}</pre>
 </li>
 <li>Launch the browser and go to
 <b>chrome://extensions</b>; you should
@@ -249,16 +269,23 @@ or the metadata from the registry. </p>
 This section answers common questions about external extensions.
 </p>
 
-<br>
+<p><b>Will the methodology for allowing a “pre-install” still be supported
+by Google Chrome from M33 onwards?</b></p>
+<p>Yes, but only as an install from a Chrome Web Store
+<code>update_URL</code>,
+not from a local file path.</p> 
 
 <p><b>Can I specify a URL as a path to the external extension?</b> </p>
-<p>Yes, if you use a <a href="#preferences">preferences JSON</a> file. The
-extension must be hosted as explained in <a href="hosting.html">hosting</a>.
-Use the "external_update_url" property to point to an
+<p>Yes, use the <a href="#preferences">preferences JSON</a> file
+for Mac OS X and Linux; the <a href=#"registry">registry</a> for Windows.
+The extension must be hosted as explained in
+<a href="hosting.html">hosting</a>.
+In the preferences file,
+use the "external_update_url" property to point to an
 <a href="autoupdate.html#update_manifest">update manifest</a> that has the URL for your
-extension.</p>
-
-<br>
+extension.
+In the Windows registry,
+use the "update_url" property.</p>
 
 <p><b>What are some common mistakes when installing with the preferences
 file?</b></p>
@@ -284,26 +311,30 @@ file?</b></p>
     Permissions problems on a network share </li>
 </ul>
 
-<br>
-
 <p><b>What are some common mistakes when installing with the registry?</b> </p>
 <ul>
   <li>Not specifying the same id/version
-    as the one listed in the <code>.crx</code> </li>
+    as the one listed in the Chrome Web Store </li>
   <li>Key created in the wrong location in the registry </li>
-  <li>Registry entry points to the wrong path to the <code>.crx</code> file
-    (or path specified but no filename) </li>
+  <li>Registry entry points to the wrong path
+to the <code>.crx</code> file in the Chrome Web Store</li>
   <li>Permissions problems on a network share </li>
 </ul>
 
-<br>
+<p><b>How do I update my native binaries and extension in-step?</b></p>
+<p>Previously when off-store extensions were supported,
+it was possible to have the native binaries and the extension be updated in lock step.
+However, extensions hosted on the Chrome Web Store are updated
+via the Chrome update mechanism which developers do not control.
+Extension developers should be careful about updating extensions
+that have a dependency on the native binary
+(for example, legacy extensions using <a href="npapi.html">NPAPI</a>).
+</p>
 
 <p><b>What if the user uninstalls the extension?</b> </p>
 <p>If the user uninstalls the extension through the UI, it will no
 longer be installed or updated on each startup. In other words, the
 external extension is blacklisted. </p>
-
-<br>
 
 <p><b>How do I get off the blacklist?</b> </p>
 <p>If the user uninstalls your extension, you should respect that
@@ -312,3 +343,4 @@ your extension through the UI,
 you can remove the blacklist tag
 by installing the extension normally
 through the UI, and then uninstalling it. </p>
+
