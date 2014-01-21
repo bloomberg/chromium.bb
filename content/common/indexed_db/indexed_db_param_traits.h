@@ -16,11 +16,6 @@ class IndexedDBKeyRange;
 
 namespace IPC {
 
-// These datatypes are used by utility_messages.h and render_messages.h.
-// Unfortunately we can't move it to common: MSVC linker complains about
-// WebKit datatypes that are not linked on npchrome_frame (even though it's
-// never actually used by that target).
-
 template <>
 struct ParamTraits<content::IndexedDBKey> {
   typedef content::IndexedDBKey param_type;
