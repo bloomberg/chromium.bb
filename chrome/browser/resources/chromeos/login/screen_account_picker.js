@@ -27,7 +27,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'forceOnlineSignin',
       'setCapsLockState',
       'forceLockedUserPodFocus',
-      'onWallpaperLoaded',
       'removeUser',
       'showBannerMessage',
       'showUserPodButton',
@@ -221,13 +220,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       var row = $('pod-row');
       if (row.lockedPod)
         row.focusPod(row.lockedPod, true);
-    },
-
-    /**
-     * Mark wallpaper loaded
-     */
-    onWallpaperLoaded: function(username) {
-      $('pod-row').onWallpaperLoaded(username);
     },
 
     /**
