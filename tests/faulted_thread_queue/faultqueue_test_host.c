@@ -37,7 +37,7 @@ static const int kBreakInstructionSize = 1;
 static const int kBreakInstructionSignal = NACL_ABI_SIGSEGV;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 static const int kBreakInstructionSize = 4;
-static const int kBreakInstructionSignal = NACL_ABI_SIGTRAP;
+static const int kBreakInstructionSignal = NACL_ABI_SIGILL;
 #else
 # error Unsupported architecture
 #endif

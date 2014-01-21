@@ -762,7 +762,6 @@ tests_to_disable_qemu = set([
     # under QEMU.
     'run_debug_stub_test',
     'run_egyptian_cotton_test',  # still broken with qemu 2012/06/12
-    'run_faulted_thread_queue_test',
     'run_many_threads_sequential_test',
     'run_mmap_atomicity_test',   # still broken with qemu 2012/06/12
     # http://code.google.com/p/nativeclient/issues/detail?id=2142

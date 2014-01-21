@@ -148,7 +148,9 @@ void Target::CopyFaultSignalFromAppThread(IThread *thread) {
     // reported as SIGTRAP rather than SIGSEGV.  This is necessary
     // because we use HLT (which produces SIGSEGV) rather than the
     // more usual INT3 (which produces SIGTRAP) on x86, in order to
-    // work around a Mac OS X bug.
+    // work around a Mac OS X bug.  Similarly, on ARM we use an
+    // illegal instruction (which produces SIGILL) rather than the
+    // more usual BKPT (which produces SIGTRAP).
     //
     // We need to check each thread to see whether it hit a
     // breakpoint.  We record this on the thread object because:
@@ -158,7 +160,10 @@ void Target::CopyFaultSignalFromAppThread(IThread *thread) {
     //    whether a thread hit a breakpoint.
     //  * Although we deliver fault events to GDB one by one, we might
     //    have multiple threads that have hit breakpoints.
-    if (signal == NACL_ABI_SIGSEGV) {
+    if ((NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+         signal == NACL_ABI_SIGSEGV) ||
+        (NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm &&
+         signal == NACL_ABI_SIGILL)) {
       // Casting to uint32_t is necessary to drop the top 32 bits of
       // %rip on x86-64.
       uint32_t prog_ctr = (uint32_t) thread->GetContext()->prog_ctr;

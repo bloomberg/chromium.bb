@@ -18,6 +18,7 @@ else:
   RETURNCODE_KILL = -9 & 0xff
 
 
+NACL_SIGILL = 4
 NACL_SIGTRAP = 5
 NACL_SIGSEGV = 11
 
@@ -459,7 +460,9 @@ class DebugStubTest(unittest.TestCase):
       # Tell the process to continue, because it starts at the
       # breakpoint set at its start address.
       reply = connection.RspRequest('c')
-      if ARCH == 'arm' or ARCH == 'mips32':
+      if ARCH == 'arm':
+        AssertReplySignal(reply, NACL_SIGILL)
+      elif ARCH == 'mips32':
         # The process should have stopped on a BKPT instruction.
         AssertReplySignal(reply, NACL_SIGTRAP)
       else:
@@ -772,7 +775,7 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
       # Skip past the single-byte HLT instruction.
       regs[IP_REG[ARCH]] += 1
     elif ARCH == 'arm':
-      AssertReplySignal(stop_reply, NACL_SIGTRAP)
+      AssertReplySignal(stop_reply, NACL_SIGILL)
       bundle_size = 16
       assert regs['r15'] % bundle_size == 0, regs['r15']
       regs['r15'] += bundle_size

@@ -35,7 +35,7 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
 #elif defined(__arm__)
 __asm__(".pushsection .text, \"ax\", %progbits\n"
         "fault_addr:\n"
-        ".word " NACL_TO_STRING(NACL_INSTR_ARM_BREAKPOINT) "\n"
+        ".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n"
         ".popsection\n");
 #elif defined(__mips__)
 __asm__(".pushsection .text, \"ax\", %progbits\n"
@@ -222,7 +222,7 @@ void breakpoint(void) {
    * because BKPTs guard data literals in the ARM sandbox.
    */
   __asm__(".p2align 4\n"
-          ".word " NACL_TO_STRING(NACL_INSTR_ARM_BREAKPOINT) "\n"
+          ".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n"
           ".p2align 4\n");
 #elif defined(__mips__)
   __asm__(".p2align 4\n"

@@ -46,6 +46,7 @@ struct NaClExceptionFrame;
  * exposed through NaCl's GDB debug stub.  We need to find a directory
  * to place such headers.
  */
+#define NACL_ABI_SIGILL 4
 #define NACL_ABI_SIGTRAP 5
 #define NACL_ABI_SIGKILL 9
 #define NACL_ABI_SIGSEGV 11
