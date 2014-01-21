@@ -1164,7 +1164,7 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_EQ(0, ws.GetBufferedAmount());
   ASSERT_EQ(0, ws.GetCloseCode());
   ASSERT_TRUE(AreEqualWithString(ws.GetCloseReason().pp_var(), std::string()));
-  ASSERT_EQ(false, ws.GetCloseWasClean());
+  ASSERT_FALSE(ws.GetCloseWasClean());
   ASSERT_TRUE(AreEqualWithString(ws.GetExtensions().pp_var(), std::string()));
   ASSERT_TRUE(AreEqualWithString(ws.GetProtocol().pp_var(), std::string()));
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_INVALID, ws.GetReadyState());

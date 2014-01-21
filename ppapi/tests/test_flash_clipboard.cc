@@ -173,7 +173,8 @@ std::string TestFlashClipboard::TestReadWriteCustomData() {
   std::copy(custom_data.begin(), custom_data.end(), bytes);
   uint32_t format_id =
       pp::flash::Clipboard::RegisterCustomFormat(instance_, "my-format");
-  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_INVALID);
+  ASSERT_NE(static_cast<uint32_t>(PP_FLASH_CLIPBOARD_FORMAT_INVALID),
+            format_id);
 
   std::vector<uint32_t> formats_vector(1, format_id);
   std::vector<pp::Var> data_vector(1, array_buffer);
@@ -254,15 +255,20 @@ std::string TestFlashClipboard::TestRegisterCustomFormat() {
   // Test an empty name is rejected.
   uint32_t format_id =
       pp::flash::Clipboard::RegisterCustomFormat(instance_, std::string());
-  ASSERT_EQ(format_id, PP_FLASH_CLIPBOARD_FORMAT_INVALID);
+  ASSERT_EQ(static_cast<uint32_t>(PP_FLASH_CLIPBOARD_FORMAT_INVALID),
+            format_id);
 
   // Test a valid format name.
   format_id = pp::flash::Clipboard::RegisterCustomFormat(instance_, "a-b");
-  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_INVALID);
+  ASSERT_NE(static_cast<uint32_t>(PP_FLASH_CLIPBOARD_FORMAT_INVALID),
+            format_id);
   // Make sure the format doesn't collide with predefined formats.
-  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT);
-  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_HTML);
-  ASSERT_NE(format_id, PP_FLASH_CLIPBOARD_FORMAT_RTF);
+  ASSERT_NE(static_cast<uint32_t>(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT),
+            format_id);
+  ASSERT_NE(static_cast<uint32_t>(PP_FLASH_CLIPBOARD_FORMAT_HTML),
+            format_id);
+  ASSERT_NE(static_cast<uint32_t>(PP_FLASH_CLIPBOARD_FORMAT_RTF),
+            format_id);
 
   // Check that if the same name is registered, the same id comes out.
   uint32_t format_id2 =

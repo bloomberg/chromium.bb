@@ -39,7 +39,7 @@ std::string TestPDF::TestGetResourceImage() {
   for (int i = 0; i < data.size().width(); ++i) {
     for (int j = 0; j < data.size().height(); ++j) {
       pp::Point point(i, j);
-      ASSERT_NE(*data.GetAddr32(point), 0);
+      ASSERT_NE(0, *data.GetAddr32(point));
     }
   }
   PASS();

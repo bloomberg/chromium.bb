@@ -578,40 +578,38 @@ std::string TestURLLoader::TestUntrustedHttpRequests() {
   // valid token (containing special characters like CR, LF).
   // http://www.w3.org/TR/XMLHttpRequest/
   {
-    ASSERT_EQ(OpenUntrusted("cOnNeCt", std::string()), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("tRaCk", std::string()), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("tRaCe", std::string()), PP_ERROR_NOACCESS);
-    ASSERT_EQ(
-        OpenUntrusted("POST\x0d\x0ax-csrf-token:\x20test1234", std::string()),
-        PP_ERROR_NOACCESS);
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("cOnNeCt", std::string()));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("tRaCk", std::string()));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("tRaCe", std::string()));
+    ASSERT_EQ(PP_ERROR_NOACCESS,
+        OpenUntrusted("POST\x0d\x0ax-csrf-token:\x20test1234", std::string()));
   }
   // HTTP methods are restricted only for untrusted loaders. Try all headers
   // that are forbidden by http://www.w3.org/TR/XMLHttpRequest/.
   {
-    ASSERT_EQ(OpenUntrusted("GET", "Accept-Charset:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Accept-Encoding:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Connection:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Content-Length:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Cookie:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Cookie2:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted(
-        "GET", "Content-Transfer-Encoding:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Date:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Expect:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Host:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Keep-Alive:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Referer:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "TE:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Trailer:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted(
-        "GET", "Transfer-Encoding:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Upgrade:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "User-Agent:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Via:\n"), PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted(
-        "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"),
-            PP_ERROR_NOACCESS);
-    ASSERT_EQ(OpenUntrusted("GET", "Sec-foo:\n"), PP_ERROR_NOACCESS);
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Accept-Charset:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Accept-Encoding:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Connection:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Content-Length:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Cookie:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Cookie2:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS,
+              OpenUntrusted("GET", "Content-Transfer-Encoding:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Date:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Expect:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Host:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Keep-Alive:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Referer:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "TE:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Trailer:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS,
+              OpenUntrusted("GET", "Transfer-Encoding:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Upgrade:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "User-Agent:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Via:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted(
+        "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Sec-foo:\n"));
   }
   // Untrusted requests with custom referrer should fail.
   {
@@ -640,34 +638,34 @@ std::string TestURLLoader::TestUntrustedHttpRequests() {
 std::string TestURLLoader::TestTrustedHttpRequests() {
   // Trusted requests can use restricted methods.
   {
-    ASSERT_EQ(OpenTrusted("cOnNeCt", std::string()), PP_OK);
-    ASSERT_EQ(OpenTrusted("tRaCk", std::string()), PP_OK);
-    ASSERT_EQ(OpenTrusted("tRaCe", std::string()), PP_OK);
+    ASSERT_EQ(PP_OK, OpenTrusted("cOnNeCt", std::string()));
+    ASSERT_EQ(PP_OK, OpenTrusted("tRaCk", std::string()));
+    ASSERT_EQ(PP_OK, OpenTrusted("tRaCe", std::string()));
   }
   // Trusted requests can use restricted headers.
   {
-    ASSERT_EQ(OpenTrusted("GET", "Accept-Charset:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Accept-Encoding:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Connection:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Content-Length:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Cookie:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Cookie2:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted(
-        "GET", "Content-Transfer-Encoding:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Date:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Expect:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Host:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Keep-Alive:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Referer:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "TE:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Trailer:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Transfer-Encoding:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Upgrade:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "User-Agent:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Via:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted(
-        "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"), PP_OK);
-    ASSERT_EQ(OpenTrusted("GET", "Sec-foo:\n"), PP_OK);
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Accept-Charset:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Accept-Encoding:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Connection:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Content-Length:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Cookie:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Cookie2:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Content-Transfer-Encoding:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Date:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Expect:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Host:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Keep-Alive:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Referer:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "TE:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Trailer:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Transfer-Encoding:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Upgrade:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "User-Agent:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Via:\n"));
+    ASSERT_EQ(PP_OK,
+              OpenTrusted("GET",
+                  "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"));
+    ASSERT_EQ(PP_OK, OpenTrusted("GET", "Sec-foo:\n"));
   }
   // Trusted requests with custom referrer should succeed.
   {
