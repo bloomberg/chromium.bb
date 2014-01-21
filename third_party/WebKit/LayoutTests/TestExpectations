@@ -846,7 +846,6 @@ crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ 
 crbug.com/333882 [ Win7 ] inspector/styles/styles-change-node-while-editing.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/styles/undo-add-rule-crash.html [ Pass Timeout ]
 crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
-crbug.com/336217 [ Win ] inspector/jump-to-previous-editing-location.html [ Pass Timeout ]
 
 crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_progress.html [ Pass Failure ]
 

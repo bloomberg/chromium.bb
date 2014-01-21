@@ -132,3 +132,5 @@ crbug.com/243249 http/tests/misc/submit-post-keygen.html [ Slow ]
 crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Slow ]
 crbug.com/246749 inspector/extensions/extensions-panel.html [ Slow ]
 crbug.com/248969 [ Debug ] printing/page-count-with-one-word.html [ Slow ]
+
+crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
