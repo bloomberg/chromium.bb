@@ -339,9 +339,9 @@ WebMouseWheelEventBuilder::Build(HWND hwnd, UINT message,
     // for key state since we are synthesizing the input event.
     get_key_state_func = GetAsyncKeyState;
     key_state = 0;
-    if (get_key_state_func(VK_SHIFT))
+    if (get_key_state_func(VK_SHIFT) & 0x8000)
       key_state |= MK_SHIFT;
-    if (get_key_state_func(VK_CONTROL))
+    if (get_key_state_func(VK_CONTROL) & 0x8000)
       key_state |= MK_CONTROL;
     // NOTE: There doesn't seem to be a way to query the mouse button state
     // in this case.
