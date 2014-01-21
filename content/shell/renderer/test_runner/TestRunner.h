@@ -102,6 +102,7 @@ public:
     bool shouldDumpChildFrameScrollPositions() const;
     bool shouldDumpChildFramesAsText() const;
     void showDevTools();
+    void clearDevToolsLocalStorage();
     void setShouldDumpAsText(bool);
     void setShouldDumpAsMarkup(bool);
     void setShouldGeneratePixelResults(bool);

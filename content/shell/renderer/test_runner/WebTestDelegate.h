@@ -85,6 +85,9 @@ public:
     virtual void enableAutoResizeMode(const blink::WebSize& minSize, const blink::WebSize& maxSize) = 0;
     virtual void disableAutoResizeMode(const blink::WebSize&) = 0;
 
+    // Clears DevTools' localStorage when an inspector test is started.
+    virtual void clearDevToolsLocalStorage() = 0;
+
     // Opens and closes the inspector.
     virtual void showDevTools() = 0;
     virtual void closeDevTools() = 0;

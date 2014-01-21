@@ -115,6 +115,9 @@ void TestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generat
         m_testRunner->setShouldDumpAsText(true);
         m_testRunner->setShouldGeneratePixelResults(false);
     }
+    if (spec.find("/inspector/") != string::npos
+        || spec.find("/inspector-enabled/") != string::npos)
+        m_testRunner->clearDevToolsLocalStorage();
     if (spec.find("/inspector/") != string::npos)
         m_testRunner->showDevTools();
     if (spec.find("/viewsource/") != string::npos) {

@@ -378,6 +378,10 @@ void WebKitTestRunner::disableAutoResizeMode(const WebSize& new_size) {
     ForceResizeRenderView(render_view(), new_size);
 }
 
+void WebKitTestRunner::clearDevToolsLocalStorage() {
+  Send(new ShellViewHostMsg_ClearDevToolsLocalStorage(routing_id()));
+}
+
 void WebKitTestRunner::showDevTools() {
   Send(new ShellViewHostMsg_ShowDevTools(routing_id()));
 }

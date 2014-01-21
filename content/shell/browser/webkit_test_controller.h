@@ -164,6 +164,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
   void OnTestFinished();
+  void OnClearDevToolsLocalStorage();
   void OnShowDevTools();
   void OnCloseDevTools();
   void OnGoToOffset(int offset);

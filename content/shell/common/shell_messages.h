@@ -80,6 +80,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(ShellViewHostMsg_ReadFileToString,
                            std::string /* contents */)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_PrintMessage,
                     std::string /* message */)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ClearDevToolsLocalStorage)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ShowDevTools)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseDevTools)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_GoToOffset,

@@ -366,6 +366,8 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_OverridePreferences,
                         OnOverridePreferences)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinished, OnTestFinished)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearDevToolsLocalStorage,
+                        OnClearDevToolsLocalStorage)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowDevTools, OnShowDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseDevTools, OnCloseDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
@@ -565,13 +567,16 @@ void WebKitTestController::OnOverridePreferences(const WebPreferences& prefs) {
   prefs_ = prefs;
 }
 
-void WebKitTestController::OnShowDevTools() {
+void WebKitTestController::OnClearDevToolsLocalStorage() {
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(browser_context, NULL);
   storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
       content::GetDevToolsPathAsURL().GetOrigin());
+}
+
+void WebKitTestController::OnShowDevTools() {
   main_window_->ShowDevTools();
 }
 

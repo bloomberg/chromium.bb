@@ -802,6 +802,11 @@ void TestRunner::didLosePointerLockInternal()
         m_webView->didLosePointerLock();
 }
 
+void TestRunner::clearDevToolsLocalStorage()
+{
+    m_delegate->clearDevToolsLocalStorage();
+}
+
 void TestRunner::showDevTools()
 {
     m_delegate->showDevTools();
