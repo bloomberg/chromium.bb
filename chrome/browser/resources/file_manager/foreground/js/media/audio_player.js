@@ -107,47 +107,50 @@ AudioPlayer.prototype.load = function(playlist) {
   window.appState = JSON.parse(JSON.stringify(playlist));
   util.saveAppState();
 
-  util.URLsToEntries(playlist.items, function(entries) {
-    this.entries_ = entries;
-    this.invalidTracks_ = {};
-    this.cancelAutoAdvance_();
+  // Resolving entries has to be done after the volume manager is initialized.
+  this.volumeManager_.ensureInitialized(function() {
+    util.URLsToEntries(playlist.items, function(entries) {
+      this.entries_ = entries;
+      this.invalidTracks_ = {};
+      this.cancelAutoAdvance_();
 
-    if (this.entries_.length <= 1)
-      this.container_.classList.add('single-track');
-    else
-      this.container_.classList.remove('single-track');
+      if (this.entries_.length <= 1)
+        this.container_.classList.add('single-track');
+      else
+        this.container_.classList.remove('single-track');
 
-    this.syncHeight_();
+      this.syncHeight_();
 
-    this.trackList_.textContent = '';
-    this.trackStack_.textContent = '';
+      this.trackList_.textContent = '';
+      this.trackStack_.textContent = '';
 
-    this.trackListItems_ = [];
-    this.trackStackItems_ = [];
+      this.trackListItems_ = [];
+      this.trackStackItems_ = [];
 
-    if (this.entries_.length == 0)
-      return;
+      if (this.entries_.length == 0)
+        return;
 
-    for (var i = 0; i != this.entries_.length; i++) {
-      var entry = this.entries_[i];
-      var onClick = this.select_.bind(this, i, false /* no restore */);
-      this.trackListItems_.push(
-          new AudioPlayer.TrackInfo(this.trackList_, entry, onClick));
-      this.trackStackItems_.push(
-          new AudioPlayer.TrackInfo(this.trackStack_, entry, onClick));
-    }
+      for (var i = 0; i != this.entries_.length; i++) {
+        var entry = this.entries_[i];
+        var onClick = this.select_.bind(this, i, false /* no restore */);
+        this.trackListItems_.push(
+            new AudioPlayer.TrackInfo(this.trackList_, entry, onClick));
+        this.trackStackItems_.push(
+            new AudioPlayer.TrackInfo(this.trackStack_, entry, onClick));
+      }
 
-    this.select_(playlist.position, !!playlist.time);
+      this.select_(playlist.position, !!playlist.time);
 
-    // This class will be removed if at least one track has art.
-    this.container_.classList.add('noart');
+      // This class will be removed if at least one track has art.
+      this.container_.classList.add('noart');
 
-    // Load the selected track metadata first, then load the rest.
-    this.loadMetadata_(playlist.position);
-    for (i = 0; i != this.entries_.length; i++) {
-      if (i != playlist.position)
-        this.loadMetadata_(i);
-    }
+      // Load the selected track metadata first, then load the rest.
+      this.loadMetadata_(playlist.position);
+      for (i = 0; i != this.entries_.length; i++) {
+        if (i != playlist.position)
+          this.loadMetadata_(i);
+      }
+    }.bind(this));
   }.bind(this));
 };
 
