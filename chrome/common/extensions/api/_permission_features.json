@@ -119,11 +119,11 @@
     }
   ],
   "bluetooth": {
-    "channel": "stable",
+    "channel": "dev",
     "extension_types": ["platform_app"]
   },
   "bluetoothDevices": {
-    "channel": "stable",
+    "channel": "dev",
     "extension_types": ["platform_app"]
   },
   "bookmarkManagerPrivate": {
