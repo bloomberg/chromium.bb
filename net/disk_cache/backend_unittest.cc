@@ -533,10 +533,9 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingFileIO) {
 
 // Here and below, tests that simulate crashes are not compiled in LeakSanitizer
 // builds because they contain a lot of intentional memory leaks.
-// The wrapper scripts used to run tests under Valgrind Memcheck and
-// Heapchecker will also disable these tests under those tools. See:
+// The wrapper scripts used to run tests under Valgrind Memcheck will also
+// disable these tests. See:
 // tools/valgrind/gtest_exclude/net_unittests.gtest-memcheck.txt
-// tools/heapcheck/net_unittests.gtest-heapcheck.txt
 #if !defined(LEAK_SANITIZER)
 // We'll be leaking from this test.
 TEST_F(DiskCacheBackendTest, ShutdownWithPendingFileIO_Fast) {
