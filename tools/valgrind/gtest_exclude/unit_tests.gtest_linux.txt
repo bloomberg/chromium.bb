@@ -29,3 +29,6 @@ HttpPipeliningCompatibilityClientTest.*
 
 # http://crbug.com/238964
 CpuInfoProviderTest.*
+
+# http://crbug.com/336349
+NTPUserDataLoggerTest.TestLogging
