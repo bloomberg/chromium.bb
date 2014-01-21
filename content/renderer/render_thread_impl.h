@@ -12,7 +12,6 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -340,10 +339,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Retrieve current gamepad data.
   void SampleGamepads(blink::WebGamepads* data);
 
-  // DO NOT USE THIS METHOD!
-  // TODO(kbr): remove: crbug.com/333501
-  base::ProcessId renderer_process_id() const;
-
   // Called by a RenderWidget when it is created or destroyed. This
   // allows the process to know when there are no visible widgets.
   void WidgetCreated();
@@ -386,7 +381,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
-  void OnSetRendererProcessID(base::ProcessId process_id);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 #if defined(OS_ANDROID)
@@ -500,8 +494,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<WebRTCIdentityService> webrtc_identity_service_;
 
   scoped_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
-
-  base::ProcessId renderer_process_id_;
 
   // TODO(reveman): Allow AllocateGpuMemoryBuffer to be called from
   // multiple threads. Current allocation mechanism for IOSurface

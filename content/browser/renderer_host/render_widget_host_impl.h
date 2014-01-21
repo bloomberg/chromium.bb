@@ -550,6 +550,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       gfx::Size snapshot_size,
       scoped_refptr<base::RefCountedBytes> png_data);
 
+  // LatencyComponents generated in the renderer must have component IDs
+  // provided to them by the browser process. This function adds the correct
+  // component ID where necessary.
+  void AddLatencyInfoComponentIds(ui::LatencyInfo* latency_info);
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 

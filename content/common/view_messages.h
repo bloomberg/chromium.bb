@@ -821,11 +821,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetHistoryLengthAndPrune,
                     int, /* merge_history_length */
                     int32 /* minimum_page_id */)
 
-// Tells the renderer the browser's notion of its process ID.
-// Some subsystems, like LatencyInfo, require this to be known to the renderer.
-IPC_MESSAGE_CONTROL1(ViewMsg_SetRendererProcessID,
-                     base::ProcessId /* process_id */)
-
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a

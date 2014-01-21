@@ -1128,9 +1128,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   gfx::RectF ClientRectToPhysicalWindowRect(const gfx::RectF& rect) const;
 
-  // Helper for LatencyInfo construction.
-  int64 GetLatencyComponentId();
-
   // RenderFrameImpl accessible state ------------------------------------------
   // The following section is the set of methods that RenderFrameImpl needs
   // to access RenderViewImpl state. The set of state variables are page-level

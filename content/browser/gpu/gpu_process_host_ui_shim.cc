@@ -310,8 +310,15 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   if (swap_delay.ToInternalValue())
     base::PlatformThread::Sleep(swap_delay);
 
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params view_params = params;
+
+  RenderWidgetHostImpl* impl =
+      RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
+  for (size_t i = 0; i < view_params.latency_info.size(); i++)
+    impl->AddLatencyInfoComponentIds(&view_params.latency_info[i]);
+
   // View must send ACK message after next composite.
-  view->AcceleratedSurfaceBuffersSwapped(params, host_id_);
+  view->AcceleratedSurfaceBuffersSwapped(view_params, host_id_);
   view->DidReceiveRendererFrame();
 }
 
@@ -349,8 +356,15 @@ void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
 
   delayed_send.Cancel();
 
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params view_params = params;
+
+  RenderWidgetHostImpl* impl =
+      RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
+  for (size_t i = 0; i < view_params.latency_info.size(); i++)
+    impl->AddLatencyInfoComponentIds(&view_params.latency_info[i]);
+
   // View must send ACK message after next composite.
-  view->AcceleratedSurfacePostSubBuffer(params, host_id_);
+  view->AcceleratedSurfacePostSubBuffer(view_params, host_id_);
   view->DidReceiveRendererFrame();
 }
 

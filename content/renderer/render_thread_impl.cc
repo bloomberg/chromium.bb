@@ -410,8 +410,6 @@ void RenderThreadImpl::Init() {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
 
-  renderer_process_id_ = base::kNullProcessId;
-
   std::vector<base::DiscardableMemoryType> supported_types;
   base::DiscardableMemory::GetSupportedTypes(&supported_types);
   DCHECK(!supported_types.empty());
@@ -1173,7 +1171,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetRendererProcessID, OnSetRendererProcessID)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWebKitSharedTimersSuspended,
                         OnSetWebKitSharedTimersSuspended)
@@ -1309,10 +1306,6 @@ void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
   CHECK(false);
 }
 
-void RenderThreadImpl::OnSetRendererProcessID(base::ProcessId process_id) {
-  renderer_process_id_ = process_id;
-}
-
 #if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
   if (suspend_webkit_shared_timer_) {
@@ -1397,10 +1390,6 @@ void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
   if (!gamepad_shared_memory_reader_)
     gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
   gamepad_shared_memory_reader_->SampleGamepads(*data);
-}
-
-base::ProcessId RenderThreadImpl::renderer_process_id() const {
-  return renderer_process_id_;
 }
 
 void RenderThreadImpl::WidgetCreated() {

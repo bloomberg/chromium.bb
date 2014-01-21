@@ -1500,6 +1500,8 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
   gpu_params.size = params.size;
   gpu_params.scale_factor = params.scale_factor;
   gpu_params.latency_info = params.latency_info;
+  for (size_t i = 0; i < gpu_params.latency_info.size(); i++)
+    AddLatencyInfoComponentIds(&gpu_params.latency_info[i]);
   view_->AcceleratedSurfaceBuffersSwapped(gpu_params,
                                           params.gpu_process_host_id);
   view_->DidReceiveRendererFrame();
@@ -1514,6 +1516,9 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   uint32 output_surface_id = param.a;
   param.b.AssignTo(frame.get());
+
+  for (size_t i = 0; i < frame->metadata.latency_info.size(); i++)
+    AddLatencyInfoComponentIds(&frame->metadata.latency_info[i]);
 
   input_router_->OnViewUpdated(
       GetInputRouterViewFlagsFromCompositorFrameMetadata(frame->metadata));
@@ -1684,9 +1689,17 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 
   // Now paint the view. Watch out: it might be destroyed already.
   if (view_ && !is_accelerated_compositing_active_) {
+
+    std::vector<ui::LatencyInfo> latency_info;
+    for (size_t i = 0; i < params.latency_info.size(); i++) {
+      ui::LatencyInfo info = params.latency_info[i];
+      AddLatencyInfoComponentIds(&info);
+      latency_info.push_back(info);
+    }
+
     view_being_painted_ = true;
     view_->DidUpdateBackingStore(params.scroll_rect, params.scroll_delta,
-                                 params.copy_rects, params.latency_info);
+                                 params.copy_rects, latency_info);
     view_->DidReceiveRendererFrame();
     view_being_painted_ = false;
   }
@@ -2516,6 +2529,32 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
           rwhi->FrameSwapped(latency_info[i]);
       }
     }
+  }
+}
+
+void RenderWidgetHostImpl::AddLatencyInfoComponentIds(
+    ui::LatencyInfo* latency_info) {
+  ui::LatencyInfo::LatencyMap new_components;
+  ui::LatencyInfo::LatencyMap::iterator lc =
+      latency_info->latency_components.begin();
+  while (lc != latency_info->latency_components.end()) {
+    ui::LatencyComponentType component_type = lc->first.first;
+    if (component_type == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+      // Generate a new component entry with the correct component ID
+      ui::LatencyInfo::LatencyMap::key_type key =
+          std::make_pair(component_type, GetLatencyComponentId());
+      new_components[key] = lc->second;
+
+      // Remove the old entry
+      latency_info->latency_components.erase(lc++);
+    } else {
+      ++lc;
+    }
+  }
+
+  // Add newly generated components into the latency info
+  for (lc = new_components.begin(); lc != new_components.end(); ++lc) {
+    latency_info->latency_components[lc->first] = lc->second;
   }
 }
 

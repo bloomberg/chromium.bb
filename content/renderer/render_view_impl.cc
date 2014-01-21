@@ -2181,7 +2181,7 @@ void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
   pending_snapshots_.insert(std::make_pair(id, callback));
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                GetLatencyComponentId(),
+                                0,
                                 id);
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   if (RenderWidgetCompositor* rwc = compositor()) {
@@ -2749,12 +2749,6 @@ gfx::RectF RenderViewImpl::ClientRectToPhysicalWindowRect(
   gfx::RectF window_rect = rect;
   window_rect.Scale(device_scale_factor_ * webview()->pageScaleFactor());
   return window_rect;
-}
-
-int64 RenderViewImpl::GetLatencyComponentId() {
-  // Note: this must match the logic in RenderWidgetHostImpl.
-  return GetRoutingID() | (static_cast<int64>(
-      RenderThreadImpl::current()->renderer_process_id()) << 32);
 }
 
 void RenderViewImpl::StartNavStateSyncTimerIfNecessary() {
