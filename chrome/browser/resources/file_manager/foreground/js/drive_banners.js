@@ -262,7 +262,9 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
     close.className = 'cr-dialog-close';
     box.appendChild(close);
     close.addEventListener('click', function(total) {
-      window.localStorage[WARNING_DISMISSED_KEY] = total;
+      var values = {};
+      values[WARNING_DISMISSED_KEY] = total;
+      chrome.storage.local.set(values);
       box.hidden = true;
       this.requestRelayout_(100);
     }.bind(this, sizeStats.totalSize));
