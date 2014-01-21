@@ -1696,6 +1696,8 @@
         'browser/ui/views/apps/native_app_window_views.h',
         'browser/ui/views/apps/native_app_window_views_win.cc',
         'browser/ui/views/apps/native_app_window_views_win.h',
+        'browser/ui/views/apps/shaped_app_window_targeter.cc',
+        'browser/ui/views/apps/shaped_app_window_targeter.h',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
         'browser/ui/views/ash/tab_scrubber.h',
@@ -2751,6 +2753,7 @@
         ['toolkit_views == 1', {
           'dependencies': [
             '../ui/events/events.gyp:events',
+            '../ui/wm/wm.gyp:wm_public',
           ],
           'sources!': [
             'browser/ui/profile_reset_bubble_stub.cc',

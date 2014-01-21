@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -65,7 +66,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
-#include "ui/wm/public/masked_window_targeter.h"
 #endif
 
 using apps::ShellWindow;
@@ -205,29 +205,6 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 };
 #endif  // USE_ASH
 
-class ShapedNativeAppWindowTargeter : public wm::MaskedWindowTargeter {
- public:
-  ShapedNativeAppWindowTargeter(aura::Window* window,
-                                NativeAppWindowViews* app_window)
-      : wm::MaskedWindowTargeter(window),
-        app_window_(app_window) {
-  }
-
-  virtual ~ShapedNativeAppWindowTargeter() {}
-
- private:
-  // wm::MaskedWindowTargeter:
-  virtual bool GetHitTestMask(aura::Window* window,
-                              gfx::Path* mask) const OVERRIDE {
-    SkRegion* shape = app_window_->shape();
-    return shape ? shape->getBoundaryPath(mask) : false;
-  }
-
-  NativeAppWindowViews* app_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShapedNativeAppWindowTargeter);
-};
-
 }  // namespace
 
 NativeAppWindowViews::NativeAppWindowViews()
@@ -304,6 +281,9 @@ void NativeAppWindowViews::InitializeDefaultWindow(
 
   OnBeforeWidgetInit(&init_params, window_);
   window_->Init(init_params);
+  aura::Window* native_window = window_->GetNativeWindow();
+  native_window->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+      new ShapedAppWindowTargeter(native_window, this)));
 
   gfx::Rect adjusted_bounds = window_bounds;
   adjusted_bounds.Inset(-GetFrameInsets());
