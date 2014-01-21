@@ -455,6 +455,10 @@ bool Extension::force_incognito_enabled() const {
 }
 
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {
+  // Bookmark apps are permissionless.
+  if (from_bookmark())
+    return;
+
   extent_.AddPattern(pattern);
 }
 
