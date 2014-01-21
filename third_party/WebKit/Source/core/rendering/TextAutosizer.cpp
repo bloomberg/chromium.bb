@@ -384,7 +384,7 @@ void TextAutosizer::processContainer(float multiplier, RenderBlock* container, T
     writeDebugInfo(container, "container");
 #endif
 
-    float localMultiplier = containerShouldBeAutosized(container) ? multiplier: 1;
+    float localMultiplier = (multiplier > 1 && containerShouldBeAutosized(container)) ? multiplier: 1;
 
     RenderObject* descendant = nextInPreOrderSkippingDescendantsOfContainers(subtreeRoot, subtreeRoot);
     while (descendant) {
