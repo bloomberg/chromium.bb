@@ -61,7 +61,7 @@ class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(AppListServiceMacInteractiveTest,
-                       DISABLED_ShowAppListUsingShim) {
+                       ShowAppListUsingShim) {
   // Check that AppListService has registered as a shim handler for "app_list".
   EXPECT_TRUE(AppShimHandler::GetForAppMode(app_mode::kAppListModeId));
 

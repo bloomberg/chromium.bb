@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/mac/mac_util.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -569,7 +570,15 @@ void AppListService::InitAll(Profile* initial_profile) {
     [animation_ setAnimationCurve:NSAnimationEaseOut];
     window_.reset();
   }
-  [animation_ setAnimationBlockingMode:NSAnimationNonblockingThreaded];
+  // Threaded animations are buggy on Snow Leopard. See http://crbug.com/335550.
+  // Note that in the non-threaded case, the animation won't start unless the
+  // UI runloop has spun up, so on <= Lion the animation will only animate if
+  // Chrome is already running.
+  if (base::mac::IsOSMountainLionOrLater())
+    [animation_ setAnimationBlockingMode:NSAnimationNonblockingThreaded];
+  else
+    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
+
   [animation_ startAnimation];
 }
 
