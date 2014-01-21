@@ -161,11 +161,6 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-  if (!is_clang) {
-    # Always use clang on iOS when using ninja
-    # (which is always true when using GN).
-    is_clang = true
-  }
 } else if (os == "linux") {
   is_android = false
   is_chromeos = false
