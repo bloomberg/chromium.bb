@@ -45,6 +45,7 @@ TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
 DEPENDENCY_IDL_FILES = set([
     'SupportTestPartialInterface.idl',
     'TestImplements.idl',
+    'TestImplements3.idl',
     'TestPartialInterface.idl',
     'TestPartialInterfacePython.idl',
     'TestPartialInterfacePython2.idl',

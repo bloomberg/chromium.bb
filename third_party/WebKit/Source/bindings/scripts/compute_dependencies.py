@@ -278,7 +278,11 @@ def generate_dependencies(idl_filename, interfaces_info, partial_interface_files
 
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     implemented_as = extended_attributes.get('ImplementedAs')
-    this_include_path = include_path(idl_filename, interface_name, implemented_as)
+    this_include_path = (
+        # implemented interfaces with [LegacyImplementedInBaseClass] have no
+        # header of their own, as they just use the header of the base class
+        include_path(idl_filename, interface_name, implemented_as)
+        if 'LegacyImplementedInBaseClass' not in extended_attributes else None)
 
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
@@ -290,10 +294,11 @@ def generate_dependencies(idl_filename, interfaces_info, partial_interface_files
     # but are removed later if they are implemented by another interface
     interfaces_info[interface_name] = {
         'full_path': full_path,
-        'include_path': this_include_path,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
         'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
     }
+    if this_include_path:
+        interfaces_info[interface_name]['include_path'] = this_include_path
     if implemented_as:
         interfaces_info[interface_name]['implemented_as'] = implemented_as
 
@@ -429,7 +434,8 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
                 for interface in implemented_interfaces]
             implemented_interfaces_include_paths = [
                 interfaces_info[interface]['include_path']
-                for interface in implemented_interfaces]
+                for interface in implemented_interfaces
+                if 'include_path' in interfaces_info[interface]]
         except KeyError as key_name:
             raise IdlInterfaceFileNotFoundError('Could not find the IDL file where the following implemented interface is defined: %s' % key_name)
 
