@@ -999,8 +999,9 @@ public:
 
     void addConsoleMessageWithRequestIdentifier(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier);
 
-    virtual DOMWindow* executingWindow() OVERRIDE FINAL { return domWindow(); }
+    virtual DOMWindow* executingWindow() OVERRIDE FINAL;
     virtual void userEventWasHandled() OVERRIDE FINAL { resetLastHandledUserGestureTimestamp(); }
+    Frame* executingFrame();
 
     DocumentLifecycleNotifier& lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }

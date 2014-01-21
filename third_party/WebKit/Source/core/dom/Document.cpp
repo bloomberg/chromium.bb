@@ -797,6 +797,23 @@ bool Document::haveImportsLoaded() const
     return !m_import || !m_import->isBlockedFromRunningScript();
 }
 
+DOMWindow* Document::executingWindow()
+{
+    if (DOMWindow* owningWindow = domWindow())
+        return owningWindow;
+    if (HTMLImport* import = this->import())
+        return import->master()->domWindow();
+    return 0;
+}
+
+Frame* Document::executingFrame()
+{
+    DOMWindow* window = executingWindow();
+    if (!window)
+        return 0;
+    return window->frame();
+}
+
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()
 {
     return DocumentFragment::create(*this);
@@ -4541,9 +4558,10 @@ bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, con
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#event-handler-attributes
     // Also, if the listening node came from other document, which happens on context-less event dispatching,
     // we also need to ask the owner document of the node.
-    if (!m_frame)
+    Frame* frame = executingFrame();
+    if (!frame)
         return false;
-    if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
+    if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return false;
     if (node && node->document() != this && !node->document().allowInlineEventHandlers(node, listener, contextURL, contextLine))
         return false;
@@ -4556,11 +4574,12 @@ bool Document::allowExecutingScripts(Node* node)
     // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
     // viewless document but this'll do for now.
     // See http://bugs.webkit.org/show_bug.cgi?id=5727
-    if (!frame() && !import())
+    Frame* frame = executingFrame();
+    if (!frame)
         return false;
-    if (!node->document().frame() && !node->document().import())
+    if (!node->document().executingFrame())
         return false;
-    if (!contextDocument().get()->frame()->script().canExecuteScripts(AboutToExecuteScript))
+    if (!frame->script().canExecuteScripts(AboutToExecuteScript))
         return false;
     return true;
 }
