@@ -159,6 +159,10 @@
           ],
         }],
         ['chromeos==1', {
+          'sources': [
+            'core/common/proxy_policy_provider.cc',
+            'core/common/proxy_policy_provider.h',
+          ],
           'sources!': [
             'core/common/cloud/cloud_policy_client_registration_helper.cc',
             'core/common/cloud/cloud_policy_client_registration_helper.h',

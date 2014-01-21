@@ -271,6 +271,9 @@
                   ],
                 }],
                 ['chromeos==1', {
+                  'sources': [
+                    'policy/core/common/proxy_policy_provider_unittest.cc',
+                  ],
                   'sources!': [
                     'policy/core/common/cloud/user_cloud_policy_manager_unittest.cc',
                     'policy/core/common/cloud/user_cloud_policy_store_unittest.cc',

@@ -1,20 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_PROXY_POLICY_PROVIDER_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_PROXY_POLICY_PROVIDER_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_PROXY_POLICY_PROVIDER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_PROXY_POLICY_PROVIDER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
 // A policy provider implementation that acts as a proxy for another policy
 // provider, swappable at any point.
-class ProxyPolicyProvider : public ConfigurationPolicyProvider,
-                            public ConfigurationPolicyProvider::Observer {
+class POLICY_EXPORT ProxyPolicyProvider
+    : public ConfigurationPolicyProvider,
+      public ConfigurationPolicyProvider::Observer {
  public:
   ProxyPolicyProvider();
   virtual ~ProxyPolicyProvider();
@@ -37,4 +38,4 @@ class ProxyPolicyProvider : public ConfigurationPolicyProvider,
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_PROXY_POLICY_PROVIDER_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_PROXY_POLICY_PROVIDER_H_

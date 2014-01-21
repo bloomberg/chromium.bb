@@ -726,8 +726,6 @@
         'browser/chromeos/policy/policy_cert_verifier.h',
         'browser/chromeos/policy/policy_oauth2_token_fetcher.cc',
         'browser/chromeos/policy/policy_oauth2_token_fetcher.h',
-        'browser/chromeos/policy/proxy_policy_provider.cc',
-        'browser/chromeos/policy/proxy_policy_provider.h',
         'browser/chromeos/policy/recommendation_restorer.cc',
         'browser/chromeos/policy/recommendation_restorer.h',
         'browser/chromeos/policy/recommendation_restorer_factory.cc',
