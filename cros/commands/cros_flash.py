@@ -49,7 +49,7 @@ def _CheckBoardMismatch(xbuddy_path, board):
 
 
 # pylint: disable=E1101
-def GenerateXbuddyRequest(path, static_dir, board=None):
+def GenerateXbuddyRequest(path, static_dir, board):
   """Generate an xbuddy request used to retreive payloads.
 
   This function generates a xbuddy request based on |path|. If the
@@ -66,15 +66,14 @@ def GenerateXbuddyRequest(path, static_dir, board=None):
     path: Either a local path to an image or a xbuddy path (xbuddy://)
       or 'latest' for latest local build.
     static_dir: static directory of the local devserver.
-    board: The board to use when no board is specified in |path|.
+    board: Current board.
 
   Returns:
     A xbuddy request.
   """
   if path == 'latest':
     # Use the latest local build.
-    board_to_use = board if board else cros_build_lib.GetDefaultBoard()
-    path = 'xbuddy://local/%s/latest' % board_to_use
+    path = 'xbuddy://local/%s/latest' % board
 
   parsed = urlparse.urlparse(path)
   if parsed.scheme == 'xbuddy':
@@ -339,7 +338,7 @@ following three options.
 
     ds = ds_wrapper.DevServerWrapper(
         static_dir=static_dir, src_image=src_image)
-    req = GenerateXbuddyRequest(path, static_dir, board=board)
+    req = GenerateXbuddyRequest(path, static_dir, board)
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
       ds.Start()
@@ -370,6 +369,10 @@ following three options.
         "'latest')")
 
     advanced = parser.add_argument_group('Advanced options')
+    advanced.add_argument(
+        '--board', default=None, help='The board to use. By default it is '
+        'automatically detected. You can override the detected board with '
+        'this option')
     advanced.add_argument(
         '--no-reboot', action='store_false', dest='reboot', default=True,
         help='Do not reboot after update. Default is always reboot.')
@@ -450,11 +453,8 @@ following three options.
       with remote_access.ChromiumOSDeviceHandler(
           self.options.device, work_dir=self.DEVICE_WORK_DIR) as device:
 
-        if not device.board:
-          logging.warning('Cannot detect the board name.')
-          if not cros_build_lib.BooleanPrompt(default=False):
-            cros_build_lib.Die('Exiting Cros Flash...')
-
+        board = cros_build_lib.GetBoard(device_board=device.board,
+                                        override_board=self.options.board)
         logging.info('Board is %s', device.board)
 
         if self.image_as_payload_dir:
@@ -464,7 +464,7 @@ following three options.
           # Launch a local devserver to generate/serve update payloads.
           payload_dir = self.tempdir
           self.GetUpdatePayloads(self.options.image, payload_dir,
-                                 board=device.board,
+                                 board=board,
                                  src_image=self.options.src_image)
 
         self._CheckPayloads(payload_dir)

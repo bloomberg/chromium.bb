@@ -848,7 +848,7 @@ def GetInput(prompt):
 
 
 def BooleanPrompt(prompt="Do you want to continue?", default=True,
-                  true_value='yes', false_value='no'):
+                  true_value='yes', false_value='no', prolog=None):
   """Helper function for processing boolean choice prompts.
 
   Args:
@@ -856,6 +856,7 @@ def BooleanPrompt(prompt="Do you want to continue?", default=True,
     default: Boolean to return if the user just presses enter.
     true_value: The text to display that represents a True returned.
     false_value: The text to display that represents a False returned.
+    prolog: The text to display before prompt.
 
   Returns:
     True or False.
@@ -872,6 +873,10 @@ def BooleanPrompt(prompt="Do you want to continue?", default=True,
     false_text = false_text[0].upper() + false_text[1:]
 
   prompt = ('\n%s (%s/%s)? ' % (prompt, true_text, false_text))
+
+  if prolog:
+    prompt = ('\n%s\n%s' % (prolog, prompt))
+
   while True:
     response = GetInput(prompt).lower()
     if not response:
@@ -1392,6 +1397,37 @@ def GetDefaultBoard():
     return None
 
   return default_board
+
+
+def GetBoard(device_board, override_board=None):
+  """Gets the board name to use.
+
+  Ask user to confirm when |override_board| and |device_board| are
+  both None.
+
+  Args:
+    device_board: The board detected on the device.
+    override_board: Overrides the board.
+
+  Returns:
+    Returns the first non-None board in the following order:
+    |override_board|, |device_board|, and GetDefaultBoard().
+
+  Raises:
+    DieSystemExit: If user enters no.
+  """
+  if override_board:
+    return override_board
+
+  board = device_board or GetDefaultBoard()
+  if not device_board:
+    msg = 'Cannot detect board name; using default board %s', board
+    if not BooleanPrompt(default=False, prolog=msg):
+      Die('Exiting...')
+
+    logging.info(msg)
+
+  return board
 
 
 class AttributeFrozenError(Exception):
