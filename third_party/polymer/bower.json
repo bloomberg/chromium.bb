@@ -1,0 +1,8 @@
+{
+  "name": "chromium",
+  "dependencies": {
+    "platform": "latest",
+    "polymer": "latest"
+  },
+  "private": true
+}
