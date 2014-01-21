@@ -20,7 +20,7 @@ namespace gcm {
 class GCMStore;
 class UserList;
 
-class GCM_EXPORT GCMClientImpl : public GCMClient {
+class GCMClientImpl : public GCMClient {
  public:
   GCMClientImpl();
   virtual ~GCMClientImpl();

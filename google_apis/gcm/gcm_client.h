@@ -12,6 +12,10 @@
 #include "base/basictypes.h"
 #include "google_apis/gcm/base/gcm_export.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace gcm {
 
 // Interface that encapsulates the network communications with the Google Cloud
@@ -125,10 +129,19 @@ class GCM_EXPORT GCMClient {
     // Called when the loading from the persistent store is done. The loading
     // is triggered asynchronously when GCMClient is created.
     virtual void OnLoadingCompleted() = 0;
+
+    // Returns a task runner for file operations that may block. This is used
+    // in writing to or reading from the persistent store.
+    virtual base::TaskRunner* GetFileTaskRunner() = 0;
   };
 
-  GCMClient();
-  virtual ~GCMClient();
+  // Returns the single instance. Multiple profiles share the same client
+  // that makes use of the same MCS connection.
+  static GCMClient* Get();
+
+  // Passes a mocked instance for testing purpose.
+  typedef GCMClient* (*TestingFactoryFunction)();
+  static void SetTestingFactory(TestingFactoryFunction factory);
 
   // Sets the delegate to interact with related to a specific user.
   // |username|: the username (email address) used to check in with the server.
@@ -176,6 +189,9 @@ class GCM_EXPORT GCMClient {
 
   // Returns true if the loading from the persistent store is still in progress.
   virtual bool IsLoading() const = 0;
+
+ protected:
+  virtual ~GCMClient() {}
 };
 
 }  // namespace gcm

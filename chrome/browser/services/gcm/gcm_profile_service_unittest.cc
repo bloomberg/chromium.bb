@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
@@ -136,7 +135,7 @@ class GCMProfileServiceTest : public testing::Test,
 #endif
 
     // Mock a GCMClient.
-    GCMClientFactory::SetTestingFactory(&GCMProfileServiceTest::BuildGCMClient);
+    GCMClient::SetTestingFactory(&GCMProfileServiceTest::BuildGCMClient);
 
     // Mock a GCMEventRouter.
     gcm_event_router_mock_.reset(new GCMEventRouterMock(this));
@@ -245,7 +244,7 @@ class GCMProfileServiceTest : public testing::Test,
 };
 
 static GCMClientMock* GetGCMClientMock() {
-  return static_cast<GCMClientMock*>(GCMClientFactory::GetClient());
+  return static_cast<GCMClientMock*>(GCMClient::Get());
 }
 
 class ScopedGCMClientMockSimulateServerError {
