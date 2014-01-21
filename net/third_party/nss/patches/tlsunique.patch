@@ -1,7 +1,7 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:39:28.442012014 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:39:45.052283611 -0800
-@@ -12358,6 +12358,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 17:59:03.242109996 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 17:59:45.862816905 -0800
+@@ -12383,6 +12383,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
      PORT_Memcpy(ss->cipherSuites, cipherSuites, sizeof cipherSuites);
  }
  
@@ -71,9 +71,9 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
   * the caller of this function.
   */
 diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-03 19:39:28.442012014 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-03 19:39:45.052283611 -0800
-@@ -252,6 +252,27 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDe
+--- a/nss/lib/ssl/ssl.h	2014-01-17 17:59:03.242109996 -0800
++++ b/nss/lib/ssl/ssl.h	2014-01-17 17:59:45.862816905 -0800
+@@ -282,6 +282,27 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDe
  SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
  SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
  
@@ -102,9 +102,9 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  **
  ** This API should be used to control SSL 3.0 & TLS support instead of the
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-03 19:39:28.452012178 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-03 19:39:45.072283939 -0800
-@@ -1844,6 +1844,11 @@ extern PRBool ssl_GetSessionTicketKeysPK
+--- a/nss/lib/ssl/sslimpl.h	2014-01-17 17:59:03.242109996 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-17 17:59:45.862816905 -0800
+@@ -1853,6 +1853,11 @@ extern PRBool ssl_GetSessionTicketKeysPK
  extern SECStatus ssl3_ValidateNextProtoNego(const unsigned char* data,
  					    unsigned int length);
  
@@ -117,9 +117,9 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  extern PRFileDesc *ssl_NewPRSocket(sslSocket *ss, PRFileDesc *fd);
  extern void ssl_FreePRSocket(PRFileDesc *fd);
 diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2014-01-03 19:39:28.452012178 -0800
-+++ b/nss/lib/ssl/sslsock.c	2014-01-03 19:39:45.092284267 -0800
-@@ -1286,6 +1286,27 @@ NSS_SetFrancePolicy(void)
+--- a/nss/lib/ssl/sslsock.c	2014-01-17 17:59:03.252110162 -0800
++++ b/nss/lib/ssl/sslsock.c	2014-01-17 17:59:45.872817074 -0800
+@@ -1308,6 +1308,27 @@ NSS_SetFrancePolicy(void)
      return NSS_SetDomesticPolicy();
  }
  

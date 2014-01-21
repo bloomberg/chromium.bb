@@ -1,6 +1,6 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:30:40.073373382 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:30:52.653579045 -0800
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 17:52:00.295082288 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 17:52:19.745405758 -0800
 @@ -2471,6 +2471,9 @@ ssl3_ClientAuthTokenPresent(sslSessionID
      PRBool isPresent = PR_TRUE;
  
@@ -11,7 +11,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (!sid || !sid->u.ssl3.clAuthValid) {
  	return PR_TRUE;
      }
-@@ -6080,25 +6083,36 @@ ssl3_SendCertificateVerify(sslSocket *ss
+@@ -6103,25 +6106,36 @@ ssl3_SendCertificateVerify(sslSocket *ss
  
      isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
      isTLS12 = (PRBool)(ss->ssl3.pwSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
@@ -65,7 +65,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (rv != SECSuccess) {
  	goto done;	/* err code was set by ssl3_SignHashes */
      }
-@@ -6177,6 +6191,12 @@ ssl3_HandleServerHello(sslSocket *ss, SS
+@@ -6200,6 +6214,12 @@ ssl3_HandleServerHello(sslSocket *ss, SS
         SECKEY_DestroyPrivateKey(ss->ssl3.clientPrivateKey);
         ss->ssl3.clientPrivateKey = NULL;
      }
@@ -78,7 +78,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      temp = ssl3_ConsumeHandshakeNumber(ss, 2, &b, &length);
      if (temp < 0) {
-@@ -6804,6 +6824,18 @@ ssl3_ExtractClientKeyInfo(sslSocket *ss,
+@@ -6827,6 +6847,18 @@ ssl3_ExtractClientKeyInfo(sslSocket *ss,
  	goto done;
      }
  
@@ -97,7 +97,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      /* If the key is a 1024-bit RSA or DSA key, assume conservatively that
       * it may be unable to sign SHA-256 hashes. This is the case for older
       * Estonian ID cards that have 1024-bit RSA keys. In FIPS 186-2 and
-@@ -6902,6 +6934,10 @@ ssl3_HandleCertificateRequest(sslSocket
+@@ -6925,6 +6957,10 @@ ssl3_HandleCertificateRequest(sslSocket
      SECItem              cert_types  = {siBuffer, NULL, 0};
      SECItem              algorithms  = {siBuffer, NULL, 0};
      CERTDistNames        ca_list;
@@ -108,7 +108,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      SSL_TRC(3, ("%d: SSL3[%d]: handle certificate_request handshake",
  		SSL_GETPID(), ss->fd));
-@@ -6918,6 +6954,7 @@ ssl3_HandleCertificateRequest(sslSocket
+@@ -6941,6 +6977,7 @@ ssl3_HandleCertificateRequest(sslSocket
      PORT_Assert(ss->ssl3.clientCertChain == NULL);
      PORT_Assert(ss->ssl3.clientCertificate == NULL);
      PORT_Assert(ss->ssl3.clientPrivateKey == NULL);
@@ -116,7 +116,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      isTLS = (PRBool)(ss->ssl3.prSpec->version > SSL_LIBRARY_VERSION_3_0);
      isTLS12 = (PRBool)(ss->ssl3.prSpec->version >= SSL_LIBRARY_VERSION_TLS_1_2);
-@@ -6997,6 +7034,18 @@ ssl3_HandleCertificateRequest(sslSocket
+@@ -7020,6 +7057,18 @@ ssl3_HandleCertificateRequest(sslSocket
      desc = no_certificate;
      ss->ssl3.hs.ws = wait_hello_done;
  
@@ -135,7 +135,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (ss->getClientAuthData != NULL) {
  	/* XXX Should pass cert_types and algorithms in this call!! */
  	rv = (SECStatus)(*ss->getClientAuthData)(ss->getClientAuthDataArg,
-@@ -7006,12 +7055,55 @@ ssl3_HandleCertificateRequest(sslSocket
+@@ -7029,12 +7078,55 @@ ssl3_HandleCertificateRequest(sslSocket
      } else {
  	rv = SECFailure; /* force it to send a no_certificate alert */
      }
@@ -191,7 +191,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
          /* check what the callback function returned */
          if ((!ss->ssl3.clientCertificate) || (!ss->ssl3.clientPrivateKey)) {
              /* we are missing either the key or cert */
-@@ -7073,6 +7165,10 @@ loser:
+@@ -7096,6 +7188,10 @@ loser:
  done:
      if (arena != NULL)
      	PORT_FreeArena(arena, PR_FALSE);
@@ -202,7 +202,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      return rv;
  }
  
-@@ -7190,7 +7286,8 @@ ssl3_SendClientSecondRound(sslSocket *ss
+@@ -7213,7 +7309,8 @@ ssl3_SendClientSecondRound(sslSocket *ss
  
      sendClientCert = !ss->ssl3.sendEmptyCert &&
  		     ss->ssl3.clientCertChain  != NULL &&
@@ -212,7 +212,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      if (!sendClientCert &&
  	ss->ssl3.hs.hashType == handshake_hash_single &&
-@@ -12027,6 +12124,10 @@ ssl3_DestroySSL3Info(sslSocket *ss)
+@@ -12052,6 +12149,10 @@ ssl3_DestroySSL3Info(sslSocket *ss)
  
      if (ss->ssl3.clientPrivateKey != NULL)
  	SECKEY_DestroyPrivateKey(ss->ssl3.clientPrivateKey);
@@ -224,8 +224,8 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (ss->ssl3.peerCertArena != NULL)
  	ssl3_CleanupPeerCerts(ss);
 diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
---- a/nss/lib/ssl/ssl3ext.c	2014-01-03 19:28:03.550814608 -0800
-+++ b/nss/lib/ssl/ssl3ext.c	2014-01-03 19:30:52.653579045 -0800
+--- a/nss/lib/ssl/ssl3ext.c	2014-01-17 17:49:26.072517368 -0800
++++ b/nss/lib/ssl/ssl3ext.c	2014-01-17 17:52:19.745405758 -0800
 @@ -10,8 +10,8 @@
  #include "nssrenam.h"
  #include "nss.h"
@@ -237,8 +237,8 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  #ifdef NO_PKCS11_BYPASS
  #include "blapit.h"
 diff -pu a/nss/lib/ssl/sslauth.c b/nss/lib/ssl/sslauth.c
---- a/nss/lib/ssl/sslauth.c	2014-01-03 19:28:03.550814608 -0800
-+++ b/nss/lib/ssl/sslauth.c	2014-01-03 19:30:52.653579045 -0800
+--- a/nss/lib/ssl/sslauth.c	2014-01-17 17:49:26.072517368 -0800
++++ b/nss/lib/ssl/sslauth.c	2014-01-17 17:52:19.755405924 -0800
 @@ -216,6 +216,28 @@ SSL_GetClientAuthDataHook(PRFileDesc *s,
      return SECSuccess;
  }
@@ -269,9 +269,9 @@ diff -pu a/nss/lib/ssl/sslauth.c b/nss/lib/ssl/sslauth.c
  SECStatus 
  SSL_SetPKCS11PinArg(PRFileDesc *s, void *arg)
 diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-03 19:28:03.540814444 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-03 19:30:52.653579045 -0800
-@@ -503,6 +503,48 @@ typedef SECStatus (PR_CALLBACK *SSLGetCl
+--- a/nss/lib/ssl/ssl.h	2014-01-17 17:49:26.062517203 -0800
++++ b/nss/lib/ssl/ssl.h	2014-01-17 17:52:19.755405924 -0800
+@@ -533,6 +533,48 @@ typedef SECStatus (PR_CALLBACK *SSLGetCl
  SSL_IMPORT SECStatus SSL_GetClientAuthDataHook(PRFileDesc *fd, 
  			                       SSLGetClientAuthData f, void *a);
  
@@ -321,8 +321,8 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  /*
  ** SNI extension processing callback function.
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-03 19:30:40.073373382 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-03 19:30:52.653579045 -0800
+--- a/nss/lib/ssl/sslimpl.h	2014-01-17 17:52:00.295082288 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-17 17:52:19.755405924 -0800
 @@ -20,6 +20,7 @@
  #include "sslerr.h"
  #include "ssl3prot.h"
@@ -347,7 +347,7 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  /* to make some of these old enums public without namespace pollution,
  ** it was necessary to prepend ssl_ to the names.
  ** These #defines preserve compatibility with the old code here in libssl.
-@@ -432,6 +442,14 @@ struct sslGatherStr {
+@@ -441,6 +451,14 @@ struct sslGatherStr {
  #define GS_DATA		3
  #define GS_PAD		4
  
@@ -362,7 +362,7 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  
  
  /*
-@@ -944,6 +962,10 @@ struct ssl3StateStr {
+@@ -953,6 +971,10 @@ struct ssl3StateStr {
  
      CERTCertificate *    clientCertificate;  /* used by client */
      SECKEYPrivateKey *   clientPrivateKey;   /* used by client */
@@ -373,7 +373,7 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
      CERTCertificateList *clientCertChain;    /* used by client */
      PRBool               sendEmptyCert;      /* used by client */
  
-@@ -1205,6 +1227,10 @@ const unsigned char *  preferredCipher;
+@@ -1214,6 +1236,10 @@ const unsigned char *  preferredCipher;
      void                     *authCertificateArg;
      SSLGetClientAuthData      getClientAuthData;
      void                     *getClientAuthDataArg;
@@ -384,7 +384,7 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
      SSLSNISocketConfig        sniSocketConfig;
      void                     *sniSocketConfigArg;
      SSLBadCertHandler         handleBadCert;
-@@ -1843,6 +1869,26 @@ extern SECStatus ssl_InitSessionCacheLoc
+@@ -1852,6 +1878,26 @@ extern SECStatus ssl_InitSessionCacheLoc
  
  extern SECStatus ssl_FreeSessionCacheLocks(void);
  
@@ -412,9 +412,9 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  /**************** DTLS-specific functions **************/
  extern void dtls_FreeQueuedMessage(DTLSQueuedMessage *msg);
 diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2014-01-03 19:28:03.560814773 -0800
-+++ b/nss/lib/ssl/sslsock.c	2014-01-03 19:30:52.653579045 -0800
-@@ -261,6 +261,10 @@ ssl_DupSocket(sslSocket *os)
+--- a/nss/lib/ssl/sslsock.c	2014-01-17 17:49:40.942764689 -0800
++++ b/nss/lib/ssl/sslsock.c	2014-01-17 17:52:19.755405924 -0800
+@@ -263,6 +263,10 @@ ssl_DupSocket(sslSocket *os)
  	    ss->authCertificateArg    = os->authCertificateArg;
  	    ss->getClientAuthData     = os->getClientAuthData;
  	    ss->getClientAuthDataArg  = os->getClientAuthDataArg;
@@ -425,7 +425,7 @@ diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
              ss->sniSocketConfig       = os->sniSocketConfig;
              ss->sniSocketConfigArg    = os->sniSocketConfigArg;
  	    ss->handleBadCert         = os->handleBadCert;
-@@ -1645,6 +1649,12 @@ SSL_ReconfigFD(PRFileDesc *model, PRFile
+@@ -1667,6 +1671,12 @@ SSL_ReconfigFD(PRFileDesc *model, PRFile
          ss->getClientAuthData     = sm->getClientAuthData;
      if (sm->getClientAuthDataArg)
          ss->getClientAuthDataArg  = sm->getClientAuthDataArg;
@@ -438,7 +438,7 @@ diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
      if (sm->sniSocketConfig)
          ss->sniSocketConfig       = sm->sniSocketConfig;
      if (sm->sniSocketConfigArg)
-@@ -2899,6 +2909,10 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
+@@ -2921,6 +2931,10 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
          ss->sniSocketConfig    = NULL;
          ss->sniSocketConfigArg = NULL;
  	ss->getClientAuthData  = NULL;

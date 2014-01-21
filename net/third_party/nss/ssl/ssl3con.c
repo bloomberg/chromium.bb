@@ -10671,7 +10671,7 @@ ssl3_SendNextProto(sslSocket *ss)
     static const unsigned char padding[32] = {0};
 
     if (ss->ssl3.nextProto.len == 0 ||
-        ss->ssl3.nextProtoState == SSL_NEXT_PROTO_SELECTED) {
+	ss->ssl3.nextProtoState == SSL_NEXT_PROTO_SELECTED) {
 	return SECSuccess;
     }
 

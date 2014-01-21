@@ -161,9 +161,29 @@ SSL_IMPORT PRFileDesc *DTLS_ImportFD(PRFileDesc *model, PRFileDesc *fd);
  */
 #define SSL_CBC_RANDOM_IV 23
 #define SSL_ENABLE_OCSP_STAPLING       24 /* Request OCSP stapling (client) */
+
+/* SSL_ENABLE_NPN controls whether the NPN extension is enabled for the initial
+ * handshake when protocol negotiation is used. SSL_SetNextProtoCallback
+ * or SSL_SetNextProtoNego must be used to control the protocol negotiation;
+ * otherwise, the NPN extension will not be negotiated. SSL_ENABLE_NPN is
+ * currently enabled by default but this may change in future versions.
+ */
+#define SSL_ENABLE_NPN 25
+
+/* SSL_ENABLE_ALPN controls whether the ALPN extension is enabled for the
+ * initial handshake when protocol negotiation is used. SSL_SetNextProtoNego
+ * (not SSL_SetNextProtoCallback) must be used to control the protocol
+ * negotiation; otherwise, the ALPN extension will not be negotiated. ALPN is
+ * not negotiated for renegotiation handshakes, even though the ALPN
+ * specification defines a way to use ALPN during renegotiations.
+ * SSL_ENABLE_ALPN is currently disabled by default, but this may change in
+ * future versions.
+ */
+#define SSL_ENABLE_ALPN 26
+
 /* Request Signed Certificate Timestamps via TLS extension (client) */
-#define SSL_ENABLE_SIGNED_CERT_TIMESTAMPS 25
-#define SSL_ENABLE_FALLBACK_SCSV       26 /* Send fallback SCSV in
+#define SSL_ENABLE_SIGNED_CERT_TIMESTAMPS 27
+#define SSL_ENABLE_FALLBACK_SCSV       28 /* Send fallback SCSV in
                                            * handshakes. */
 
 #ifdef SSL_DEPRECATED_FUNCTION 

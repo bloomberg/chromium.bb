@@ -1,6 +1,6 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-07 14:31:44.537621503 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-08 15:00:02.814706742 -0800
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 19:01:58.104487211 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 19:02:38.965159506 -0800
 @@ -5211,7 +5211,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBo
       * the lock across the calls to ssl3_CallHelloExtensionSenders.
       */
@@ -184,9 +184,9 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  
      if (ss->xtnData.sentSessionTicketInClientHello) {
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-07 14:31:44.537621503 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-08 15:00:02.804706578 -0800
-@@ -728,7 +728,7 @@ struct sslSessionIDStr {
+--- a/nss/lib/ssl/sslimpl.h	2014-01-17 19:00:52.843413560 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-17 19:02:38.965159506 -0800
+@@ -730,7 +730,7 @@ struct sslSessionIDStr {
  	     * cached. Before then, there is no need to lock anything because
  	     * the sid isn't being shared by anything.
  	     */
@@ -196,9 +196,9 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  	    /* The lock must be held while reading or writing these members
  	     * because they change while the sid is cached.
 diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
---- a/nss/lib/ssl/sslnonce.c	2014-01-07 14:31:44.547621666 -0800
-+++ b/nss/lib/ssl/sslnonce.c	2014-01-08 15:00:02.814706742 -0800
-@@ -138,7 +138,7 @@ ssl_DestroySID(sslSessionID *sid)
+--- a/nss/lib/ssl/sslnonce.c	2014-01-17 19:02:25.844943628 -0800
++++ b/nss/lib/ssl/sslnonce.c	2014-01-17 19:02:38.965159506 -0800
+@@ -136,7 +136,7 @@ ssl_DestroySID(sslSessionID *sid)
          }
  
          if (sid->u.ssl3.lock) {
@@ -207,7 +207,7 @@ diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
          }
      }
  
-@@ -314,7 +314,7 @@ CacheSID(sslSessionID *sid)
+@@ -308,7 +308,7 @@ CacheSID(sslSessionID *sid)
  	PRINT_BUF(8, (0, "sessionID:",
  		      sid->u.ssl3.sessionID, sid->u.ssl3.sessionIDLength));
  
@@ -216,7 +216,7 @@ diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
  	if (!sid->u.ssl3.lock) {
  	    return;
  	}
-@@ -454,7 +454,7 @@ ssl3_SetSIDSessionTicket(sslSessionID *s
+@@ -448,7 +448,7 @@ ssl3_SetSIDSessionTicket(sslSessionID *s
       * yet, so no locking is needed.
       */
      if (sid->u.ssl3.lock) {
@@ -225,7 +225,7 @@ diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
  
  	/* A server might have sent us an empty ticket, which has the
  	 * effect of clearing the previously known ticket.
-@@ -473,6 +473,6 @@ ssl3_SetSIDSessionTicket(sslSessionID *s
+@@ -467,6 +467,6 @@ ssl3_SetSIDSessionTicket(sslSessionID *s
      newSessionTicket->ticket.len = 0;
  
      if (sid->u.ssl3.lock) {

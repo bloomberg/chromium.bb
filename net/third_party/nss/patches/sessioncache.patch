@@ -1,6 +1,6 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:45:10.857611184 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:45:18.457735467 -0800
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 19:00:52.843413560 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 19:01:36.374129696 -0800
 @@ -11318,7 +11318,7 @@ ssl3_FinishHandshake(sslSocket * ss)
          ss->ssl3.hs.receivedNewSessionTicket = PR_FALSE;
      }
@@ -11,9 +11,9 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  	(*ss->sec.cache)(ss->sec.ci.sid);
  	ss->ssl3.hs.cacheSID = PR_FALSE;
 diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-03 19:45:10.857611184 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-03 19:45:18.457735467 -0800
-@@ -872,6 +872,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDes
+--- a/nss/lib/ssl/ssl.h	2014-01-17 19:00:52.843413560 -0800
++++ b/nss/lib/ssl/ssl.h	2014-01-17 19:01:36.374129696 -0800
+@@ -892,6 +892,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDes
  SSL_IMPORT SECStatus SSL_InvalidateSession(PRFileDesc *fd);
  
  /*
@@ -33,8 +33,8 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  */
  SSL_IMPORT SECItem *SSL_GetSessionID(PRFileDesc *fd);
 diff -pu a/nss/lib/ssl/sslsecur.c b/nss/lib/ssl/sslsecur.c
---- a/nss/lib/ssl/sslsecur.c	2014-01-03 19:39:28.452012178 -0800
-+++ b/nss/lib/ssl/sslsecur.c	2014-01-03 19:45:18.467735631 -0800
+--- a/nss/lib/ssl/sslsecur.c	2014-01-17 17:59:03.242109996 -0800
++++ b/nss/lib/ssl/sslsecur.c	2014-01-17 19:01:36.374129696 -0800
 @@ -1469,6 +1469,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
      return rv;
  }

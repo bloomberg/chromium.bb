@@ -312,31 +312,33 @@ typedef struct sslOptionsStr {
      * list of supported protocols. */
     SECItem nextProtoNego;
 
-    unsigned int useSecurity		    : 1;  /*  1 */
-    unsigned int useSocks		    : 1;  /*  2 */
-    unsigned int requestCertificate	    : 1;  /*  3 */
-    unsigned int requireCertificate	    : 2;  /*  4-5 */
-    unsigned int handshakeAsClient	    : 1;  /*  6 */
-    unsigned int handshakeAsServer	    : 1;  /*  7 */
-    unsigned int enableSSL2		    : 1;  /*  8 */
-    unsigned int unusedBit9		    : 1;  /*  9 */
-    unsigned int unusedBit10		    : 1;  /* 10 */
-    unsigned int noCache		    : 1;  /* 11 */
-    unsigned int fdx			    : 1;  /* 12 */
-    unsigned int v2CompatibleHello	    : 1;  /* 13 */
-    unsigned int detectRollBack  	    : 1;  /* 14 */
-    unsigned int noStepDown                 : 1;  /* 15 */
-    unsigned int bypassPKCS11               : 1;  /* 16 */
-    unsigned int noLocks                    : 1;  /* 17 */
-    unsigned int enableSessionTickets       : 1;  /* 18 */
-    unsigned int enableDeflate              : 1;  /* 19 */
-    unsigned int enableRenegotiation        : 2;  /* 20-21 */
-    unsigned int requireSafeNegotiation     : 1;  /* 22 */
-    unsigned int enableFalseStart           : 1;  /* 23 */
-    unsigned int cbcRandomIV                : 1;  /* 24 */
-    unsigned int enableOCSPStapling	    : 1;  /* 25 */
-    unsigned int enableSignedCertTimestamps : 1;  /* 26 */
-    unsigned int enableFallbackSCSV	    : 1;  /* 27 */
+    unsigned int useSecurity		: 1;  /*  1 */
+    unsigned int useSocks		: 1;  /*  2 */
+    unsigned int requestCertificate	: 1;  /*  3 */
+    unsigned int requireCertificate	: 2;  /*  4-5 */
+    unsigned int handshakeAsClient	: 1;  /*  6 */
+    unsigned int handshakeAsServer	: 1;  /*  7 */
+    unsigned int enableSSL2		: 1;  /*  8 */
+    unsigned int unusedBit9		: 1;  /*  9 */
+    unsigned int unusedBit10		: 1;  /* 10 */
+    unsigned int noCache		: 1;  /* 11 */
+    unsigned int fdx			: 1;  /* 12 */
+    unsigned int v2CompatibleHello	: 1;  /* 13 */
+    unsigned int detectRollBack  	: 1;  /* 14 */
+    unsigned int noStepDown             : 1;  /* 15 */
+    unsigned int bypassPKCS11           : 1;  /* 16 */
+    unsigned int noLocks                : 1;  /* 17 */
+    unsigned int enableSessionTickets   : 1;  /* 18 */
+    unsigned int enableDeflate          : 1;  /* 19 */
+    unsigned int enableRenegotiation    : 2;  /* 20-21 */
+    unsigned int requireSafeNegotiation : 1;  /* 22 */
+    unsigned int enableFalseStart       : 1;  /* 23 */
+    unsigned int cbcRandomIV            : 1;  /* 24 */
+    unsigned int enableOCSPStapling     : 1;  /* 25 */
+    unsigned int enableNPN              : 1;  /* 26 */
+    unsigned int enableALPN             : 1;  /* 27 */
+    unsigned int enableSignedCertTimestamps : 1;  /* 28 */
+    unsigned int enableFallbackSCSV     : 1;  /* 29 */
 } sslOptions;
 
 typedef enum { sslHandshakingUndetermined = 0,

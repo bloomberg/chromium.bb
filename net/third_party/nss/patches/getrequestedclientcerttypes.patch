@@ -1,7 +1,7 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:31:09.783859095 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:31:49.664511081 -0800
-@@ -6962,6 +6962,9 @@ ssl3_HandleCertificateRequest(sslSocket
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 17:52:46.705854118 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 17:54:27.087523439 -0800
+@@ -6985,6 +6985,9 @@ ssl3_HandleCertificateRequest(sslSocket
      if (rv != SECSuccess)
      	goto loser;		/* malformed, alert has been sent */
  
@@ -11,7 +11,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (isTLS12) {
  	rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
  	if (rv != SECSuccess)
-@@ -7163,6 +7166,7 @@ loser:
+@@ -7186,6 +7189,7 @@ loser:
      PORT_SetError(errCode);
      rv = SECFailure;
  done:
@@ -20,9 +20,9 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      	PORT_FreeArena(arena, PR_FALSE);
  #ifdef NSS_PLATFORM_CLIENT_AUTH
 diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-03 19:31:36.454295113 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-03 19:31:49.664511081 -0800
-@@ -763,6 +763,16 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWith
+--- a/nss/lib/ssl/ssl.h	2014-01-17 17:53:39.726735852 -0800
++++ b/nss/lib/ssl/ssl.h	2014-01-17 17:54:27.087523439 -0800
+@@ -793,6 +793,16 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWith
                                                  PRBool flushCache,
                                                  PRIntervalTime timeout);
  
@@ -40,9 +40,9 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  #ifdef SSL_DEPRECATED_FUNCTION 
  /* deprecated!
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-03 19:31:09.783859095 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-03 19:31:49.684511406 -0800
-@@ -1220,6 +1220,10 @@ struct sslSocketStr {
+--- a/nss/lib/ssl/sslimpl.h	2014-01-17 17:52:46.715854283 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-17 17:54:27.087523439 -0800
+@@ -1229,6 +1229,10 @@ struct sslSocketStr {
      unsigned int     sizeCipherSpecs;
  const unsigned char *  preferredCipher;
  
@@ -54,9 +54,9 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  
      /* Callbacks */
 diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2014-01-03 19:31:36.454295113 -0800
-+++ b/nss/lib/ssl/sslsock.c	2014-01-03 19:31:49.704511734 -0800
-@@ -1847,6 +1847,20 @@ SSL_HandshakeResumedSession(PRFileDesc *
+--- a/nss/lib/ssl/sslsock.c	2014-01-17 17:53:39.726735852 -0800
++++ b/nss/lib/ssl/sslsock.c	2014-01-17 17:54:27.097523605 -0800
+@@ -1869,6 +1869,20 @@ SSL_HandshakeResumedSession(PRFileDesc *
      return SECSuccess;
  }
  
@@ -77,7 +77,7 @@ diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
  /************************************************************************/
  /* The following functions are the TOP LEVEL SSL functions.
  ** They all get called through the NSPRIOMethods table below.
-@@ -2914,6 +2928,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
+@@ -2936,6 +2950,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
  	    sc->serverKeyBits   = 0;
  	    ss->certStatusArray[i] = NULL;
  	}

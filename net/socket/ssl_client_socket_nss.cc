@@ -1003,7 +1003,13 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
     DCHECK_EQ(dst, wire_protos.get() + wire_length);
     rv = SSL_SetNextProtoNego(nss_fd_, wire_protos.get(), wire_length);
     if (rv != SECSuccess)
-      LogFailedNSSFunction(*weak_net_log_, "SSL_SetNextProtoCallback", "");
+      LogFailedNSSFunction(*weak_net_log_, "SSL_SetNextProtoNego", "");
+    rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_ALPN, PR_TRUE);
+    if (rv != SECSuccess)
+      LogFailedNSSFunction(*weak_net_log_, "SSL_OptionSet", "SSL_ENABLE_ALPN");
+    rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_NPN, PR_TRUE);
+    if (rv != SECSuccess)
+      LogFailedNSSFunction(*weak_net_log_, "SSL_OptionSet", "SSL_ENABLE_NPN");
   }
 
   rv = SSL_AuthCertificateHook(

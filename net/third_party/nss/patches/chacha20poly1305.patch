@@ -1,6 +1,6 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-06 14:58:15.904992214 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-06 14:58:25.635150408 -0800
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 18:06:41.659713513 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 18:07:10.270188062 -0800
 @@ -40,6 +40,21 @@
  #define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
  #endif
@@ -134,8 +134,8 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      }
  
 diff -pu a/nss/lib/ssl/ssl3ecc.c b/nss/lib/ssl/ssl3ecc.c
---- a/nss/lib/ssl/ssl3ecc.c	2014-01-06 14:57:50.984587086 -0800
-+++ b/nss/lib/ssl/ssl3ecc.c	2014-01-06 14:58:25.635150408 -0800
+--- a/nss/lib/ssl/ssl3ecc.c	2014-01-17 18:04:43.127747463 -0800
++++ b/nss/lib/ssl/ssl3ecc.c	2014-01-17 18:07:10.270188062 -0800
 @@ -904,6 +904,7 @@ static const ssl3CipherSuite ecdhe_ecdsa
      TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
@@ -169,8 +169,8 @@ diff -pu a/nss/lib/ssl/ssl3ecc.c b/nss/lib/ssl/ssl3ecc.c
      TLS_ECDHE_RSA_WITH_RC4_128_SHA,
      TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,
 diff -pu a/nss/lib/ssl/sslenum.c b/nss/lib/ssl/sslenum.c
---- a/nss/lib/ssl/sslenum.c	2014-01-06 14:53:43.540566574 -0800
-+++ b/nss/lib/ssl/sslenum.c	2014-01-06 15:11:13.167642594 -0800
+--- a/nss/lib/ssl/sslenum.c	2014-01-17 17:49:26.072517368 -0800
++++ b/nss/lib/ssl/sslenum.c	2014-01-17 18:08:43.791739267 -0800
 @@ -37,17 +37,21 @@
   *
   * Exception: Because some servers ignore the high-order byte of the cipher
@@ -180,7 +180,7 @@ diff -pu a/nss/lib/ssl/sslenum.c b/nss/lib/ssl/sslenum.c
   * suites, with the MSB zeroed, look like:
 + *      TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA { 0x00,0x14 }
 + *      TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA { 0x00,0x13 }
-  *      TLS_KRB5_EXPORT_WITH_RC4_40_MD5 {0x00,0x2B }
+  *      TLS_KRB5_EXPORT_WITH_RC4_40_MD5 { 0x00,0x2B }
   *      TLS_RSA_WITH_AES_128_CBC_SHA { 0x00,0x2F }
   *      TLS_RSA_WITH_3DES_EDE_CBC_SHA { 0x00,0x0A }
   *      TLS_RSA_WITH_DES_CBC_SHA { 0x00,0x09 }
@@ -197,8 +197,8 @@ diff -pu a/nss/lib/ssl/sslenum.c b/nss/lib/ssl/sslenum.c
      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
      /* TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA must appear before
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-06 14:57:46.654516696 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-06 14:58:25.635150408 -0800
+--- a/nss/lib/ssl/sslimpl.h	2014-01-17 18:03:47.906831535 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-17 18:07:10.270188062 -0800
 @@ -65,6 +65,7 @@ typedef SSLSignType     SSL3SignType;
  #define calg_camellia	ssl_calg_camellia
  #define calg_seed	ssl_calg_seed
@@ -207,7 +207,7 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  
  #define mac_null	ssl_mac_null
  #define mac_md5 	ssl_mac_md5
-@@ -292,7 +293,7 @@ typedef struct {
+@@ -299,7 +300,7 @@ typedef struct {
  } ssl3CipherSuiteCfg;
  
  #ifdef NSS_ENABLE_ECC
@@ -216,7 +216,7 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  #else
  #define ssl_V3_SUITES_IMPLEMENTED 37
  #endif /* NSS_ENABLE_ECC */
-@@ -474,6 +475,7 @@ typedef enum {
+@@ -483,6 +484,7 @@ typedef enum {
      cipher_camellia_256,
      cipher_seed,
      cipher_aes_128_gcm,
@@ -225,8 +225,8 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
      /* This enum must match ssl3_cipherName[] in ssl3con.c.  */
  } SSL3BulkCipher;
 diff -pu a/nss/lib/ssl/sslinfo.c b/nss/lib/ssl/sslinfo.c
---- a/nss/lib/ssl/sslinfo.c	2014-01-06 14:57:21.444106895 -0800
-+++ b/nss/lib/ssl/sslinfo.c	2014-01-06 14:58:25.635150408 -0800
+--- a/nss/lib/ssl/sslinfo.c	2014-01-17 18:00:45.503806125 -0800
++++ b/nss/lib/ssl/sslinfo.c	2014-01-17 18:07:10.270188062 -0800
 @@ -110,6 +110,7 @@ SSL_GetChannelInfo(PRFileDesc *fd, SSLCh
  #define C_NULL  "NULL", calg_null
  #define C_SJ 	"SKIPJACK", calg_sj
@@ -251,8 +251,8 @@ diff -pu a/nss/lib/ssl/sslinfo.c b/nss/lib/ssl/sslinfo.c
  {0,CS(TLS_ECDHE_RSA_WITH_NULL_SHA),           S_RSA, K_ECDHE, C_NULL, B_0, M_SHA, 0, 0, 0, },
  {0,CS(TLS_ECDHE_RSA_WITH_RC4_128_SHA),        S_RSA, K_ECDHE, C_RC4, B_128, M_SHA, 0, 0, 0, },
 diff -pu a/nss/lib/ssl/sslproto.h b/nss/lib/ssl/sslproto.h
---- a/nss/lib/ssl/sslproto.h	2014-01-06 14:53:43.540566574 -0800
-+++ b/nss/lib/ssl/sslproto.h	2014-01-06 14:58:25.635150408 -0800
+--- a/nss/lib/ssl/sslproto.h	2014-01-17 17:49:26.072517368 -0800
++++ b/nss/lib/ssl/sslproto.h	2014-01-17 18:07:10.270188062 -0800
 @@ -213,6 +213,9 @@
  #define TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   0xC02F
  #define TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256    0xC031
@@ -264,8 +264,8 @@ diff -pu a/nss/lib/ssl/sslproto.h b/nss/lib/ssl/sslproto.h
  #define SSL_RSA_OLDFIPS_WITH_3DES_EDE_CBC_SHA	0xffe0
  #define SSL_RSA_OLDFIPS_WITH_DES_CBC_SHA	0xffe1
 diff -pu a/nss/lib/ssl/sslt.h b/nss/lib/ssl/sslt.h
---- a/nss/lib/ssl/sslt.h	2014-01-06 14:58:13.034945554 -0800
-+++ b/nss/lib/ssl/sslt.h	2014-01-06 14:58:25.635150408 -0800
+--- a/nss/lib/ssl/sslt.h	2014-01-17 18:03:47.906831535 -0800
++++ b/nss/lib/ssl/sslt.h	2014-01-17 18:07:10.270188062 -0800
 @@ -94,7 +94,8 @@ typedef enum {
      ssl_calg_aes      = 7,
      ssl_calg_camellia = 8,

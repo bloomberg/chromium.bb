@@ -1,7 +1,7 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:02:30.135754914 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:03:07.266361523 -0800
-@@ -5655,7 +5655,6 @@ SSL3_ShutdownServerCache(void)
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 18:10:16.783281701 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 18:11:03.734060469 -0800
+@@ -5678,7 +5678,6 @@ SSL3_ShutdownServerCache(void)
      }
  
      PZ_Unlock(symWrapKeysLock);
@@ -9,7 +9,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      return SECSuccess;
  }
  
-@@ -5707,7 +5706,7 @@ getWrappingKey( sslSocket *       ss,
+@@ -5730,7 +5729,7 @@ getWrappingKey( sslSocket *       ss,
  
      pSymWrapKey = &symWrapKeys[symWrapMechIndex].symWrapKey[exchKeyType];
  
@@ -19,9 +19,9 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      PZ_Lock(symWrapKeysLock);
  
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-03 19:02:30.135754914 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-03 19:03:07.266361523 -0800
-@@ -1904,9 +1904,7 @@ extern SECStatus ssl_InitSymWrapKeysLock
+--- a/nss/lib/ssl/sslimpl.h	2014-01-17 18:10:16.793281867 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-17 18:11:03.734060469 -0800
+@@ -1913,9 +1913,7 @@ extern SECStatus ssl_InitSymWrapKeysLock
  
  extern SECStatus ssl_FreeSymWrapKeysLock(void);
  
@@ -33,8 +33,8 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  /***************** platform client auth ****************/
  
 diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
---- a/nss/lib/ssl/sslnonce.c	2014-01-03 18:54:48.638219358 -0800
-+++ b/nss/lib/ssl/sslnonce.c	2014-01-03 19:03:07.276361687 -0800
+--- a/nss/lib/ssl/sslnonce.c	2014-01-17 17:59:03.242109996 -0800
++++ b/nss/lib/ssl/sslnonce.c	2014-01-17 18:11:03.754060801 -0800
 @@ -35,91 +35,55 @@ static PZLock *      cacheLock = NULL;
  #define LOCK_CACHE 	lock_cache()
  #define UNLOCK_CACHE	PZ_Unlock(cacheLock)
@@ -202,8 +202,8 @@ diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
  }
  
 diff -pu a/nss/lib/ssl/sslsnce.c b/nss/lib/ssl/sslsnce.c
---- a/nss/lib/ssl/sslsnce.c	2014-01-03 18:38:48.402575652 -0800
-+++ b/nss/lib/ssl/sslsnce.c	2014-01-03 19:03:07.276361687 -0800
+--- a/nss/lib/ssl/sslsnce.c	2014-01-17 17:49:26.072517368 -0800
++++ b/nss/lib/ssl/sslsnce.c	2014-01-17 18:11:03.774061133 -0800
 @@ -1353,7 +1353,7 @@ SSL_ConfigServerSessionIDCache(	int
  			       	PRUint32 ssl3_timeout, 
  			  const char *   directory)

@@ -86,6 +86,8 @@ static sslOptions ssl_defaults = {
     PR_FALSE,   /* enableFalseStart   */
     PR_TRUE,    /* cbcRandomIV        */
     PR_FALSE,   /* enableOCSPStapling */
+    PR_TRUE,    /* enableNPN          */
+    PR_FALSE,   /* enableALPN         */
     PR_FALSE,   /* enableSignedCertTimestamps */
     PR_FALSE    /* enableFallbackSCSV */
 };
@@ -779,9 +781,17 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
        ss->opt.enableOCSPStapling = on;
        break;
 
+      case SSL_ENABLE_NPN:
+	ss->opt.enableNPN = on;
+	break;
+
+      case SSL_ENABLE_ALPN:
+	ss->opt.enableALPN = on;
+	break;
+
       case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
-       ss->opt.enableSignedCertTimestamps = on;
-       break;
+	ss->opt.enableSignedCertTimestamps = on;
+	break;
 
       case SSL_ENABLE_FALLBACK_SCSV:
        ss->opt.enableFallbackSCSV = on;
@@ -857,9 +867,11 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 which, PRBool *pOn)
     case SSL_ENABLE_FALSE_START:  on = ss->opt.enableFalseStart;   break;
     case SSL_CBC_RANDOM_IV:       on = ss->opt.cbcRandomIV;        break;
     case SSL_ENABLE_OCSP_STAPLING: on = ss->opt.enableOCSPStapling; break;
+    case SSL_ENABLE_NPN:          on = ss->opt.enableNPN;          break;
+    case SSL_ENABLE_ALPN:         on = ss->opt.enableALPN;         break;
     case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
-       on = ss->opt.enableSignedCertTimestamps;
-       break;
+	on = ss->opt.enableSignedCertTimestamps;
+	break;
     case SSL_ENABLE_FALLBACK_SCSV: on = ss->opt.enableFallbackSCSV; break;
 
     default:
@@ -922,12 +934,14 @@ SSL_OptionGetDefault(PRInt32 which, PRBool *pOn)
     case SSL_ENABLE_OCSP_STAPLING:
        on = ssl_defaults.enableOCSPStapling;
        break;
+    case SSL_ENABLE_NPN:          on = ssl_defaults.enableNPN;          break;
+    case SSL_ENABLE_ALPN:         on = ssl_defaults.enableALPN;         break;
     case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
-       on = ssl_defaults.enableSignedCertTimestamps;
-       break;
+	on = ssl_defaults.enableSignedCertTimestamps;
+	break;
     case SSL_ENABLE_FALLBACK_SCSV:
-       on = ssl_defaults.enableFallbackSCSV;
-       break;
+	on = ssl_defaults.enableFallbackSCSV;
+	break;
 
     default:
 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -1095,9 +1109,17 @@ SSL_OptionSetDefault(PRInt32 which, PRBool on)
        ssl_defaults.enableOCSPStapling = on;
        break;
 
+      case SSL_ENABLE_NPN:
+	ssl_defaults.enableNPN = on;
+	break;
+
+      case SSL_ENABLE_ALPN:
+	ssl_defaults.enableALPN = on;
+	break;
+
       case SSL_ENABLE_SIGNED_CERT_TIMESTAMPS:
-       ssl_defaults.enableSignedCertTimestamps = on;
-       break;
+	ssl_defaults.enableSignedCertTimestamps = on;
+	break;
 
       case SSL_ENABLE_FALLBACK_SCSV:
        ssl_defaults.enableFallbackSCSV = on;

@@ -41,7 +41,7 @@
  * suites, with the MSB zeroed, look like:
  *      TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA { 0x00,0x14 }
  *      TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA { 0x00,0x13 }
- *      TLS_KRB5_EXPORT_WITH_RC4_40_MD5 {0x00,0x2B }
+ *      TLS_KRB5_EXPORT_WITH_RC4_40_MD5 { 0x00,0x2B }
  *      TLS_RSA_WITH_AES_128_CBC_SHA { 0x00,0x2F }
  *      TLS_RSA_WITH_3DES_EDE_CBC_SHA { 0x00,0x0A }
  *      TLS_RSA_WITH_DES_CBC_SHA { 0x00,0x09 }

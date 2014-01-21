@@ -1,7 +1,7 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:32:06.914793097 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:35:08.237757576 -0800
-@@ -7176,6 +7176,85 @@ done:
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 17:55:01.518095989 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 17:55:19.158389328 -0800
+@@ -7199,6 +7199,85 @@ done:
      return rv;
  }
  
@@ -88,9 +88,9 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  ssl3_CheckFalseStart(sslSocket *ss)
  {
 diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-03 19:32:06.914793097 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-03 19:32:19.164993372 -0800
-@@ -369,6 +369,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(
+--- a/nss/lib/ssl/ssl.h	2014-01-17 17:55:01.538096321 -0800
++++ b/nss/lib/ssl/ssl.h	2014-01-17 17:55:19.158389328 -0800
+@@ -399,6 +399,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(
  SSL_IMPORT SECStatus SSL_ForceHandshakeWithTimeout(PRFileDesc *fd,
                                                     PRIntervalTime timeout);
  
@@ -103,9 +103,9 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  ** Query security status of socket. *on is set to one if security is
  ** enabled. *keySize will contain the stream key size used. *issuer will
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-03 19:32:06.914793097 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-03 19:32:19.164993372 -0800
-@@ -1579,16 +1579,17 @@ extern  SECStatus ssl3_MasterKeyDeriveBy
+--- a/nss/lib/ssl/sslimpl.h	2014-01-17 17:55:01.538096321 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-17 17:55:19.158389328 -0800
+@@ -1588,16 +1588,17 @@ extern  SECStatus ssl3_MasterKeyDeriveBy
  /* These functions are called from secnav, even though they're "private". */
  
  extern int ssl2_SendErrorMessage(struct sslSocketStr *ss, int error);
@@ -128,8 +128,8 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  
  /*
 diff -pu a/nss/lib/ssl/sslsecur.c b/nss/lib/ssl/sslsecur.c
---- a/nss/lib/ssl/sslsecur.c	2014-01-03 19:28:03.560814773 -0800
-+++ b/nss/lib/ssl/sslsecur.c	2014-01-03 19:32:19.174993536 -0800
+--- a/nss/lib/ssl/sslsecur.c	2014-01-17 17:49:26.072517368 -0800
++++ b/nss/lib/ssl/sslsecur.c	2014-01-17 17:55:19.158389328 -0800
 @@ -1518,17 +1518,70 @@ SSL_CertDBHandleSet(PRFileDesc *fd, CERT
      return SECSuccess;
  }

@@ -31,15 +31,11 @@ patch -p4 < $patches_dir/secitemarray.patch
 
 patch -p4 < $patches_dir/tls12chromium.patch
 
-patch -p4 < $patches_dir/alpn.patch
-
 patch -p4 < $patches_dir/aesgcmchromium.patch
 
 patch -p4 < $patches_dir/chacha20poly1305.patch
 
 patch -p4 < $patches_dir/cachelocks.patch
-
-patch -p4 < $patches_dir/paddingextension.patch
 
 patch -p4 < $patches_dir/paddingextensionall.patch
 

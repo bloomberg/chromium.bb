@@ -1,6 +1,6 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:42:10.424660677 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:42:18.324789858 -0800
+--- a/nss/lib/ssl/ssl3con.c	2014-01-17 18:04:43.127747463 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-17 18:06:21.919386088 -0800
 @@ -44,6 +44,9 @@
  #ifdef NSS_ENABLE_ZLIB
  #include "zlib.h"
@@ -94,7 +94,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  			  maxout, in, inlen);
      }
      *outlen += (int) uOutLen;
-@@ -5102,6 +5168,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBo
+@@ -5103,6 +5169,10 @@ ssl3_SendClientHello(sslSocket *ss, PRBo
  	ssl3_DisableNonDTLSSuites(ss);
      }
  
@@ -105,7 +105,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      /* how many suites are permitted by policy and user preference? */
      num_suites = count_cipher_suites(ss, ss->ssl3.policy, PR_TRUE);
      if (!num_suites) {
-@@ -8057,6 +8127,10 @@ ssl3_HandleClientHello(sslSocket *ss, SS
+@@ -8080,6 +8150,10 @@ ssl3_HandleClientHello(sslSocket *ss, SS
  	ssl3_DisableNonDTLSSuites(ss);
      }
  
