@@ -34,7 +34,7 @@
 
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/geometry/FloatPoint.h"
-#include "platform/scroll//ScrollbarTheme.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/PassOwnPtr.h"
 
 #include "platform/TraceEvent.h"

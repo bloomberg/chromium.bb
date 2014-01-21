@@ -27,7 +27,7 @@
 #define ScrollableArea_h
 
 #include "platform/PlatformExport.h"
-#include "platform/scroll//ScrollAnimator.h"
+#include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
