@@ -10,3 +10,6 @@ Convolver.SIMDVerification
 
 # SEGV_MAPERR. http://crbug.com/245797
 ClientSideDetectionHostTest.NavigationCancelsShouldClassifyUrl
+
+# http://crbug.com/336349
+NTPUserDataLoggerTest.TestLogging
