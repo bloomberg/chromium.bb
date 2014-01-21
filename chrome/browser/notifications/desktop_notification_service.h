@@ -15,7 +15,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
-#include "chrome/browser/notifications/welcome_notification.h"
+#include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/common/content_settings.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -229,7 +229,7 @@ class DesktopNotificationService : public BrowserContextKeyedService,
   content::NotificationRegistrar registrar_;
 
   // Welcome Notification
-  scoped_ptr<WelcomeNotification> welcome_notification;
+  scoped_ptr<ExtensionWelcomeNotification> chrome_now_welcome_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };

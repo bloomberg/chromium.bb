@@ -5,15 +5,18 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_CHROME_NOTIFIER_SERVICE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_CHROME_NOTIFIER_SERVICE_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_member.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/api/syncable_service.h"
+#include "ui/message_center/notifier_settings.h"
 
 class NotificationUIManager;
 class Profile;
@@ -27,10 +30,16 @@ struct Notifier;
 }
 
 namespace notifier {
+class SyncedNotificationAppInfo;
 
+// The name of our first synced notification service.
+// TODO(petewil): remove this hardcoding once we have the synced notification
+// signalling sync data type set up to provide this.
+// crbug.com/248337
 extern const char kFirstSyncedNotificationServiceId[];
 extern const char kServiceEnabledOnce[];
 extern const char kSyncedNotificationFirstRun[];
+extern const char kSyncedNotificationsWelcomeOrigin[];
 
 enum ChromeNotifierServiceActionType {
   CHROME_NOTIFIER_SERVICE_ACTION_UNKNOWN,
@@ -112,6 +121,10 @@ class ChromeNotifierService : public syncer::SyncableService,
   // Initialize the preferences we use for the ChromeNotificationService.
   void InitializePrefs();
 
+  void ShowWelcomeToastIfNecessary(
+      const SyncedNotification* notification,
+      NotificationUIManager* notification_ui_manager);
+
  private:
   // Add a notification to our list.  This takes ownership of the pointer.
   void Add(scoped_ptr<notifier::SyncedNotification> notification);
@@ -138,9 +151,6 @@ class ChromeNotifierService : public syncer::SyncableService,
   void CollectPerServiceEnablingStatistics(const std::string& notifier_id,
                                            bool enabled);
 
-  // When we start up or hear of a new service, turn it on by default.
-  void AddNewSendingServices();
-
   // Called when the string list pref has been changed.
   void OnEnabledSendingServiceListPrefChanged(std::set<std::string>* ids_field);
 
@@ -155,6 +165,11 @@ class ChromeNotifierService : public syncer::SyncableService,
   // The second param is an outparam which the function fills in.
   void BuildServiceListValueInplace(
       std::set<std::string> services, base::ListValue* list_value);
+
+  SyncedNotificationAppInfo* FindAppInfo(const std::string& app_id) const;
+
+  const Notification CreateWelcomeNotificationForService(
+      SyncedNotificationAppInfo* app_info);
 
   // Preferences for storing which SyncedNotificationServices are enabled
   StringListPrefMember enabled_sending_services_prefs_;
@@ -172,17 +187,20 @@ class ChromeNotifierService : public syncer::SyncableService,
   bool synced_notification_first_run_;
   static bool avoid_bitmap_fetching_for_test_;
 
+  ScopedVector<SyncedNotificationAppInfo> app_info_data_;
   // TODO(petewil): Consider whether a map would better suit our data.
   // If there are many entries, lookup time may trump locality of reference.
-  ScopedVector<notifier::SyncedNotification> notification_data_;
+  ScopedVector<SyncedNotification> notification_data_;
 
   friend class ChromeNotifierServiceTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest, ServiceEnabledTest);
   FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest,
                            AddNewSendingServicesTest);
   FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest,
+                           CheckInitializedServicesTest);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest,
                            GetEnabledSendingServicesFromPreferencesTest);
-
+  FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest, CheckFindAppInfo);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNotifierService);
 };

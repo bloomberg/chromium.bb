@@ -8,18 +8,23 @@
 
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
+#include "chrome/browser/notifications/sync_notifier/welcome_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -41,18 +46,71 @@
 using base::UserMetricsAction;
 
 namespace notifier {
-
 const char kFirstSyncedNotificationServiceId[] = "Google+";
+const char kSyncedNotificationsWelcomeOrigin[] =
+    "synced-notifications://welcome";
+
+// SyncedNotificationAppInfo is a class that contains the information necessary
+// to produce a welcome notification and the app badges for all synced
+// notification.
+// TODO(dewittj): Convert this into a sync protobuf-backed data structure.
+class SyncedNotificationAppInfo {
+ public:
+  explicit SyncedNotificationAppInfo(const std::string& app_id,
+                                     const base::string16& service_name);
+  ~SyncedNotificationAppInfo();
+
+  const std::string& app_id() const { return app_id_; }
+  const base::string16& service_name() const { return service_name_; }
+  const base::string16& title() const { return title_; }
+
+  void set_icon(const gfx::Image& icon) { icon_ = icon; }
+  const gfx::Image& icon() const { return icon_; }
+
+  const message_center::NotifierId GetNotifierId() const;
+
+ private:
+  std::string app_id_;
+  base::string16 service_name_;
+  gfx::Image icon_;
+  base::string16 title_;
+  base::string16 message_;
+};
+
+SyncedNotificationAppInfo::SyncedNotificationAppInfo(
+    const std::string& app_id,
+    const base::string16& service_name)
+    : app_id_(app_id), service_name_(service_name) {
+  title_ =
+      l10n_util::GetStringFUTF16(IDS_NOTIFIER_WELCOME_TITLE, service_name_);
+}
+
+SyncedNotificationAppInfo::~SyncedNotificationAppInfo() {}
+
+const message_center::NotifierId SyncedNotificationAppInfo::GetNotifierId()
+    const {
+  return message_center::NotifierId(
+      message_center::NotifierId::SYNCED_NOTIFICATION_SERVICE, app_id());
+}
 
 bool ChromeNotifierService::avoid_bitmap_fetching_for_test_ = false;
 
 ChromeNotifierService::ChromeNotifierService(Profile* profile,
                                              NotificationUIManager* manager)
-    : profile_(profile), notification_manager_(manager),
+    : profile_(profile),
+      notification_manager_(manager),
       synced_notification_first_run_(false) {
+  // TODO(petewil): Replace this temporary hardcoding with a new sync datatype
+  // to dynamically get the name and icon for each synced notification sending
+  // service.  Until then, we use hardcoded service icons for all services.
+  // crbug.com/248337
+  app_info_data_.push_back(new SyncedNotificationAppInfo(
+      kFirstSyncedNotificationServiceId,
+      l10n_util::GetStringUTF16(IDS_FIRST_SYNCED_NOTIFICATION_SERVICE_NAME)));
+
   InitializePrefs();
-  AddNewSendingServices();
 }
+
 ChromeNotifierService::~ChromeNotifierService() {}
 
 // Methods from BrowserContextKeyedService.
@@ -63,10 +121,10 @@ void ChromeNotifierService::Shutdown() {}
 // This is called at startup to sync with the server.
 // This code is not thread safe.
 syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
-      syncer::ModelType type,
-      const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    syncer::ModelType type,
+    const syncer::SyncDataList& initial_sync_data,
+    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(syncer::SYNCED_NOTIFICATIONS, type);
   syncer::SyncMergeResult merge_result(syncer::SYNCED_NOTIFICATIONS);
@@ -105,7 +163,7 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
         if (incoming->GetReadState() == found->GetReadState()) {
           // Notification matches on the client and the server, nothing to do.
           continue;
-        } else  {
+        } else {
           // If the read state is different, read wins for both places.
           if (incoming->GetReadState() == SyncedNotification::kDismissed) {
             // If it is marked as read on the server, but not the client.
@@ -127,7 +185,6 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
           }
           // If local state changed, notify Notification UI Manager.
         }
-      // For any other conflict besides read state, treat it as an update.
       } else {
         // If different, just replace the local with the remote.
         // TODO(petewil): Someday we may allow changes from the client to
@@ -163,7 +220,7 @@ void ChromeNotifierService::StopSyncing(syncer::ModelType type) {
 }
 
 syncer::SyncDataList ChromeNotifierService::GetAllSyncData(
-      syncer::ModelType type) const {
+    syncer::ModelType type) const {
   DCHECK_EQ(syncer::SYNCED_NOTIFICATIONS, type);
   syncer::SyncDataList sync_data;
 
@@ -179,8 +236,8 @@ syncer::SyncDataList ChromeNotifierService::GetAllSyncData(
 
 // This method is called when there is an incoming sync change from the server.
 syncer::SyncError ChromeNotifierService::ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) {
+    const tracked_objects::Location& from_here,
+    const syncer::SyncChangeList& change_list) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   syncer::SyncError error;
 
@@ -249,8 +306,8 @@ syncer::SyncData ChromeNotifierService::CreateSyncDataFromNotification(
 
 // Static Method.  Convert from SyncData to our internal format.
 scoped_ptr<SyncedNotification>
-    ChromeNotifierService::CreateNotificationFromSyncData(
-        const syncer::SyncData& sync_data) {
+ChromeNotifierService::CreateNotificationFromSyncData(
+    const syncer::SyncData& sync_data) {
   // Get a pointer to our data within the sync_data object.
   sync_pb::SyncedNotificationSpecifics specifics =
       sync_data.GetSpecifics().synced_notification();
@@ -337,43 +394,27 @@ void ChromeNotifierService::GetSyncedNotificationServices(
     std::vector<message_center::Notifier*>* notifiers) {
   // TODO(mukai|petewil): Check the profile's eligibility before adding the
   // sample app.
+  ScopedVector<SyncedNotificationAppInfo>::iterator it = app_info_data_.begin();
+  for (; it != app_info_data_.end(); ++it) {
+    SyncedNotificationAppInfo* app_info = *it;
+    message_center::NotifierId notifier_id = app_info->GetNotifierId();
 
-  // TODO(petewil): Really obtain the list of synced notification sending
-  // services from the server and create the list of ids here.  Until then, we
-  // are hardcoding the service names.  Once that is done, remove this
-  // hardcoding.
-  // crbug.com/248337
-  DesktopNotificationService* desktop_notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile_);
-  message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYNCED_NOTIFICATION_SERVICE,
-      kFirstSyncedNotificationServiceId);
-  message_center::Notifier* notifier_service = new message_center::Notifier(
-      notifier_id,
-      l10n_util::GetStringUTF16(
-          IDS_FIRST_SYNCED_NOTIFICATION_SERVICE_NAME),
-      desktop_notification_service->IsNotifierEnabled(notifier_id));
+    // Enable or disable the sending service per saved settings.
+    bool app_enabled = false;
+    std::set<std::string>::iterator iter;
+    iter = find(enabled_sending_services_.begin(),
+                enabled_sending_services_.end(),
+                notifier_id.id);
+    app_enabled = iter != enabled_sending_services_.end();
 
-  // Add icons for our sending services.
-  // TODO(petewil): Replace this temporary hardcoding with a new sync datatype
-  // to dynamically get the name and icon for each synced notification sending
-  // service.  Until then, we use hardcoded service icons for all services.
-  // crbug.com/248337
-  notifier_service->icon = ui::ResourceBundle::GetSharedInstance().
-      GetImageNamed(IDR_TEMPORARY_GOOGLE_PLUS_ICON);
+    message_center::Notifier* app_info_notifier = new message_center::Notifier(
+        notifier_id, app_info->service_name(), app_enabled);
 
-  // Enable or disable the sending service per saved settings.
-  std::set<std::string>::iterator iter;
+    app_info_notifier->icon = app_info->icon();
 
-  iter = find(enabled_sending_services_.begin(),
-              enabled_sending_services_.end(),
-              notifier_id.id);
-  if (iter != enabled_sending_services_.end())
-    notifier_service->enabled = true;
-  else
-    notifier_service->enabled = false;
-
-  notifiers->push_back(notifier_service);
+    // |notifiers| takes ownership of |app_info_notifier|.
+    notifiers->push_back(app_info_notifier);
+  }
 }
 
 void ChromeNotifierService::MarkNotificationAsRead(
@@ -408,7 +449,11 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
            enabled_sending_services_.end(),
            notification_copy->GetSendingServiceId());
   if (iter == enabled_sending_services_.end()) {
-    return;
+    iter = find(initialized_sending_services_.begin(),
+                initialized_sending_services_.end(),
+                notification_copy->GetSendingServiceId());
+    if (iter != initialized_sending_services_.end())
+      return;
   }
 
   UpdateInMessageCenter(notification_copy);
@@ -439,16 +484,6 @@ void ChromeNotifierService::UpdateInMessageCenter(
 }
 
 void ChromeNotifierService::Display(SyncedNotification* notification) {
-  // Set up to fetch the bitmaps.
-  notification->QueueBitmapFetchJobs(notification_manager_,
-                                     this,
-                                     profile_);
-
-  // Our tests cannot use the network for reliability reasons.
-  if (avoid_bitmap_fetching_for_test_) {
-    return;
-  }
-
   // If this is the first run for the feature, don't surprise the user.
   // Instead, place all backlogged notifications into the notification
   // center.
@@ -456,6 +491,15 @@ void ChromeNotifierService::Display(SyncedNotification* notification) {
     // Setting the toast state to false will prevent toasting the notification.
     notification->SetToastState(false);
   }
+
+  // Our tests cannot use the network for reliability reasons.
+  if (avoid_bitmap_fetching_for_test_) {
+    notification->Show(notification_manager_, this, profile_);
+    return;
+  }
+
+  // Set up to fetch the bitmaps.
+  notification->QueueBitmapFetchJobs(notification_manager_, this, profile_);
 
   // Start the bitmap fetching, Show() will be called when the last bitmap
   // either arrives or times out.
@@ -486,7 +530,7 @@ void ChromeNotifierService::OnSyncedNotificationServiceEnabled(
     // Add this preference to the enabled list.
     profile_->GetPrefs()->Set(prefs::kEnabledSyncedNotificationSendingServices,
                               synced_notification_services);
-  // Remove the notifier_id if it is disabled and present.
+    // Remove the notifier_id if it is disabled and present.
   } else if (iter != enabled_sending_services_.end() && !enabled) {
     enabled_sending_services_.erase(iter);
     BuildServiceListValueInplace(enabled_sending_services_,
@@ -547,7 +591,6 @@ void ChromeNotifierService::BuildServiceListValueInplace(
        ++iter) {
     base::StringValue* string_value(new base::StringValue(*iter));
     list_value->Append(string_value);
-
   }
 }
 
@@ -661,40 +704,109 @@ void ChromeNotifierService::InitializePrefs() {
       profile_->GetPrefs()->GetBoolean(prefs::kSyncedNotificationFirstRun);
 }
 
-void ChromeNotifierService::AddNewSendingServices() {
-  // TODO(petewil): When we have the new sync datatype for senders, use it
-  // instead of hardcoding the service name.
+void ChromeNotifierService::ShowWelcomeToastIfNecessary(
+    const SyncedNotification* synced_notification,
+    NotificationUIManager* notification_ui_manager) {
+  const std::string& sending_service_id =
+      synced_notification->GetSendingServiceId();
 
-  // Check to see if all known services are in the initialized list.
-  // If so, we can exit.
   std::set<std::string>::iterator iter;
-  std::string first_synced_notification_service_id(
-      kFirstSyncedNotificationServiceId);
-
   iter = find(initialized_sending_services_.begin(),
               initialized_sending_services_.end(),
-              first_synced_notification_service_id);
-  if (initialized_sending_services_.end() != iter)
+              sending_service_id);
+
+  // If we already initialized the sending service, then return early since no
+  // welcome toast is necessary.
+  if (iter != initialized_sending_services_.end())
     return;
+
+  // If there is no app info, we can't show a welcome toast.  Ideally all synced
+  // notifications will be delayed until an app_info data structure can be
+  // constructed for them.
+  // TODO(dewittj): Refactor when app_info is populated asynchronously.
+  SyncedNotificationAppInfo* app_info = FindAppInfo(sending_service_id);
+  if (!app_info)
+    return;
+
+  // TODO(dewittj): Ensure that the app info icon is set before this point.
+  if (app_info->icon().IsEmpty()) {
+    gfx::Image notification_app_icon = synced_notification->GetAppIcon();
+    if (!notification_app_icon.IsEmpty()) {
+      app_info->set_icon(notification_app_icon);
+    } else {
+      // This block should only be reached in tests since the downloads are
+      // already finished for |synced_notification|.
+      DVLOG(1) << "Unable to find the app icon for the welcome notification. "
+               << "Service ID: " << sending_service_id;
+    }
+  }
+
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYNCED_NOTIFICATION_SERVICE,
+      sending_service_id);
+
+  Notification notification = CreateWelcomeNotificationForService(app_info);
+  notification_ui_manager->Add(notification, profile_);
+
+  enabled_sending_services_.insert(sending_service_id);
+  initialized_sending_services_.insert(sending_service_id);
 
   // Build a ListValue with the list of services to be enabled.
   base::ListValue enabled_sending_services;
   base::ListValue initialized_sending_services;
 
   // Mark any new services as enabled in preferences.
-  enabled_sending_services_.insert(first_synced_notification_service_id);
   BuildServiceListValueInplace(enabled_sending_services_,
                                &enabled_sending_services);
-  profile_->GetPrefs()->Set(
-      prefs::kEnabledSyncedNotificationSendingServices,
-      enabled_sending_services);
-  // Mark it as having been initialized, so we don't try to turn it on again.
-  initialized_sending_services_.insert(first_synced_notification_service_id);
+  profile_->GetPrefs()->Set(prefs::kEnabledSyncedNotificationSendingServices,
+                            enabled_sending_services);
+  // Mark any new services as initialized in preferences.
   BuildServiceListValueInplace(initialized_sending_services_,
                                &initialized_sending_services);
   profile_->GetPrefs()->Set(
       prefs::kInitializedSyncedNotificationSendingServices,
       initialized_sending_services);
+}
+
+SyncedNotificationAppInfo* ChromeNotifierService::FindAppInfo(
+    const std::string& app_id) const {
+  ScopedVector<SyncedNotificationAppInfo>::const_iterator iter =
+      app_info_data_.begin();
+  while (iter != app_info_data_.end()) {
+    if ((*iter)->app_id() == app_id)
+      return (*iter);
+
+    ++iter;
+  }
+
+  return NULL;
+}
+
+const Notification ChromeNotifierService::CreateWelcomeNotificationForService(
+    SyncedNotificationAppInfo* app_info) {
+  std::string welcome_notification_id = base::GenerateGUID();
+  scoped_refptr<WelcomeDelegate> delegate(new WelcomeDelegate(
+      welcome_notification_id, profile_, app_info->GetNotifierId()));
+
+  message_center::ButtonInfo button_info(
+      l10n_util::GetStringUTF16(IDS_NOTIFIER_WELCOME_BUTTON));
+  button_info.icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_NOTIFIER_BLOCK_BUTTON);
+
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.buttons.push_back(button_info);
+  return Notification(
+      message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+      GURL(kSyncedNotificationsWelcomeOrigin),
+      app_info->title(),
+      l10n_util::GetStringUTF16(IDS_NOTIFIER_WELCOME_BODY),
+      app_info->icon(),
+      blink::WebTextDirectionDefault,
+      app_info->GetNotifierId(),
+      l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_DISPLAY_SOURCE),
+      base::UTF8ToUTF16(welcome_notification_id),
+      rich_notification_data,
+      delegate.get());
 }
 
 }  // namespace notifier
