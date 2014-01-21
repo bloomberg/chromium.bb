@@ -65,10 +65,10 @@
                                        optional any dialogArgs,
                                        optional DOMString featureArgs);
 
-    void alert([Default=Undefined] optional DOMString message);
-    boolean confirm([Default=Undefined] optional DOMString message);
-    [TreatReturnedNullStringAs=Null] DOMString prompt([Default=Undefined] optional DOMString message,
-                                                [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString defaultValue);
+    void alert([Default=NullString] optional DOMString message);
+    boolean confirm([Default=NullString] optional DOMString message);
+    [TreatReturnedNullStringAs=Null] DOMString prompt([Default=NullString] optional DOMString message,
+                                                      [Default=NullString] optional DOMString defaultValue);
 
     boolean find([Default=Undefined] optional DOMString string,
                  [Default=Undefined] optional boolean caseSensitive,
