@@ -118,13 +118,11 @@ void AwContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   new AwPermissionClient(render_frame);
 
-  // TODO(jam): when a RenderFrame is per WebFrame, this can be simplified by
-  // getting a RenderFrame's WebFrame and calling its parent() method.
-  content::RenderFrame* parent_frame =
-      render_frame->GetRenderView()->GetMainRenderFrame();
-  if (parent_frame && parent_frame != render_frame) {
+  if (render_frame->GetWebFrame()->parent()) {
     // Avoid any race conditions from having the browser's UI thread tell the IO
     // thread that a subframe was created.
+    content::RenderFrame* parent_frame = content::RenderFrame::FromWebFrame(
+        render_frame->GetWebFrame()->parent());
     RenderThread::Get()->Send(new AwViewHostMsg_SubFrameCreated(
         parent_frame->GetRoutingID(), render_frame->GetRoutingID()));
   }

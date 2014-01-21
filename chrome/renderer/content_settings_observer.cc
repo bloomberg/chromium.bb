@@ -592,12 +592,9 @@ void ContentSettingsObserver::OnSetAllowRunningInsecureContent(bool allow) {
 }
 
 void ContentSettingsObserver::OnReloadFrame() {
-  // TODO(jam): once --site-per-process is default this will just be
-  // render_frame()->GetWebFrame()->reload().
-  WebFrame* main_frame =
-      render_frame()->GetRenderView()->GetWebView()->mainFrame();
-  if (main_frame)
-    main_frame->reload();
+  DCHECK(!render_frame()->GetWebFrame()->parent()) <<
+      "Should only be called on the main frame";
+  render_frame()->GetWebFrame()->reload();
 }
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {
