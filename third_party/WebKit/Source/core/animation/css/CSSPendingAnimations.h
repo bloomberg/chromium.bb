@@ -31,10 +31,11 @@
 #ifndef CSSPendingAnimations_h
 #define CSSPendingAnimations_h
 
-#include "core/animation/Player.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
+
+class Player;
 
 // Used to synchronize the start of main-thread animations with compositor
 // animations when both classes of CSS Animations are triggered by the same recalc
