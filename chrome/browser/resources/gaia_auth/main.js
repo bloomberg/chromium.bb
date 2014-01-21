@@ -43,6 +43,7 @@ Authenticator.prototype = {
   PARENT_PAGE: 'chrome://oobe/',
   SERVICE_ID: 'chromeoslogin',
   CONTINUE_URL: Authenticator.THIS_EXTENSION_ORIGIN + '/success.html',
+  CONSTRAINED_FLOW_SOURCE: 'chrome',
 
   initialize: function() {
     var params = getUrlSearchParams(location.search);
@@ -88,7 +89,8 @@ Authenticator.prototype = {
       url = appendParam(url, 'hl', this.inputLang_);
     if (this.inputEmail_)
       url = appendParam(url, 'Email', this.inputEmail_);
-
+    if (this.constrained_)
+      url = appendParam(url, 'source', this.CONSTRAINED_FLOW_SOURCE);
     return url;
   },
 
@@ -126,6 +128,11 @@ Authenticator.prototype = {
         // reference to the embedder.
         gaiaFrame.contentWindow.postMessage('', gaiaFrame.src);
       });
+      if (this.constrained_) {
+        var preventContextMenu = 'document.addEventListener("contextmenu", ' +
+                                 'function(e) {e.preventDefault();})';
+        gaiaFrame.executeScript({code: preventContextMenu});
+      }
     }
 
     this.loaded_ || this.onLoginUILoaded();
@@ -168,9 +175,6 @@ Authenticator.prototype = {
           'newwindow', this.onWebviewNewWindow_.bind(this, gaiaFrame));
     }
     if (this.constrained_) {
-      var preventContextMenu = 'document.addEventListener("contextmenu", ' +
-                               'function(e) {e.preventDefault();})';
-      gaiaFrame.executeScript({code: preventContextMenu});
       gaiaFrame.request.onCompleted.addListener(
           this.onWebviewRequestCompleted_.bind(this),
           {urls: ['<all_urls>'], types: ['main_frame']},
