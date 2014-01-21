@@ -541,4 +541,9 @@ bool HTMLTextAreaElement::isInteractiveContent() const
     return true;
 }
 
+bool HTMLTextAreaElement::supportsAutofocus() const
+{
+    return true;
+}
+
 }

@@ -1849,6 +1849,11 @@ bool HTMLInputElement::isInteractiveContent() const
     return m_inputType->isInteractiveContent();
 }
 
+bool HTMLInputElement::supportsAutofocus() const
+{
+    return m_inputType->isInteractiveContent();
+}
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 PassRefPtr<RenderStyle> HTMLInputElement::customStyleForRenderer()
 {

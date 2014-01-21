@@ -54,6 +54,7 @@ private:
 
     virtual bool isEnumeratable() const OVERRIDE { return true; }
     virtual bool isInteractiveContent() const OVERRIDE;
+    virtual bool supportsAutofocus() const OVERRIDE;
     virtual bool supportLabels() const OVERRIDE { return true; }
 
     virtual void resetImpl() OVERRIDE;

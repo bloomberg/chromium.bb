@@ -140,6 +140,7 @@ protected:
     virtual bool recalcWillValidate() const;
 
     virtual void resetImpl() { }
+    virtual bool supportsAutofocus() const;
 
 private:
     virtual void refFormAssociatedElement() OVERRIDE FINAL { ref(); }

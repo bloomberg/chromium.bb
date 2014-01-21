@@ -209,4 +209,9 @@ bool HTMLButtonElement::isInteractiveContent() const
     return true;
 }
 
+bool HTMLButtonElement::supportsAutofocus() const
+{
+    return true;
+}
+
 } // namespace

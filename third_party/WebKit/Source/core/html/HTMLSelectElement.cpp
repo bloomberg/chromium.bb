@@ -1569,4 +1569,9 @@ bool HTMLSelectElement::isInteractiveContent() const
     return true;
 }
 
+bool HTMLSelectElement::supportsAutofocus() const
+{
+    return true;
+}
+
 } // namespace

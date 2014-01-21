@@ -112,4 +112,9 @@ bool HTMLKeygenElement::isInteractiveContent() const
     return true;
 }
 
+bool HTMLKeygenElement::supportsAutofocus() const
+{
+    return true;
+}
+
 } // namespace

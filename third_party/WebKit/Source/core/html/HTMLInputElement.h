@@ -327,6 +327,7 @@ private:
     virtual bool canBeSuccessfulSubmitButton() const OVERRIDE FINAL;
 
     virtual void resetImpl() OVERRIDE FINAL;
+    virtual bool supportsAutofocus() const OVERRIDE FINAL;
 
     virtual void* preDispatchEventHandler(Event*) OVERRIDE FINAL;
     virtual void postDispatchEventHandler(Event*, void* dataFromPreDispatch) OVERRIDE FINAL;
