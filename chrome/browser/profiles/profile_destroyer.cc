@@ -9,16 +9,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-
 
 namespace {
 
 #if defined(OS_ANDROID)
 // Set the render host waiting time to 5s on Android, that's the same
-// as ANR timeout.
+// as an "Application Not Responding" timeout.
 const int64 kTimerDelaySeconds = 5;
 #else
 const int64 kTimerDelaySeconds = 1;
@@ -26,7 +23,7 @@ const int64 kTimerDelaySeconds = 1;
 
 }  // namespace
 
-std::vector<ProfileDestroyer*>* ProfileDestroyer::pending_destroyers_ = NULL;
+ProfileDestroyer::DestroyerSet* ProfileDestroyer::pending_destroyers_ = NULL;
 
 // static
 void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
@@ -35,7 +32,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   DCHECK(profile);
   profile->MaybeSendDestroyedNotification();
 
-  std::vector<content::RenderProcessHost*> hosts;
+  HostSet hosts;
   // Testing profiles can simply be deleted directly. Some tests don't setup
   // RenderProcessHost correctly and don't necessary run on the UI thread
   // anyway, so we can't use the AllHostIterator.
@@ -65,7 +62,7 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   } else {
     // The instance will destroy itself once all render process hosts referring
     // to it are properly terminated.
-    new ProfileDestroyer(profile, hosts);
+    new ProfileDestroyer(profile, &hosts);
   }
 }
 
@@ -76,13 +73,14 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
   DCHECK(profile);
   DCHECK(profile->IsOffTheRecord());
   if (pending_destroyers_) {
-    for (size_t i = 0; i < pending_destroyers_->size(); ++i) {
-      if ((*pending_destroyers_)[i]->profile_ == profile) {
+    for (DestroyerSet::iterator i = pending_destroyers_->begin();
+         i != pending_destroyers_->end(); ++i) {
+      if ((*i)->profile_ == profile) {
         // We want to signal this in debug builds so that we don't lose sight of
         // these potential leaks, but we handle it in release so that we don't
         // crash or corrupt profile data on disk.
         NOTREACHED() << "A render process host wasn't destroyed early enough.";
-        (*pending_destroyers_)[i]->profile_ = NULL;
+        (*i)->profile_ = NULL;
         break;
       }
     }
@@ -91,20 +89,17 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
   profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
 }
 
-ProfileDestroyer::ProfileDestroyer(
-    Profile* const profile,
-    const std::vector<content::RenderProcessHost*>& hosts)
+ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
     : timer_(false, false),
       num_hosts_(0),
       profile_(profile),
       weak_ptr_factory_(this) {
   if (pending_destroyers_ == NULL)
-    pending_destroyers_ = new std::vector<ProfileDestroyer*>;
-  pending_destroyers_->push_back(this);
-  for (size_t i = 0; i < hosts.size(); ++i) {
-    registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                   content::Source<content::RenderProcessHost>(hosts[i]));
-    // For each of the notifications, we bump up our reference count.
+    pending_destroyers_ = new DestroyerSet;
+  pending_destroyers_->insert(this);
+  for (HostSet::iterator i = hosts->begin(); i != hosts->end(); ++i) {
+    (*i)->AddObserver(this);
+    // For each of the observations, we bump up our reference count.
     // It will go back to 0 and free us when all hosts are terminated.
     ++num_hosts_;
   }
@@ -124,34 +119,29 @@ ProfileDestroyer::~ProfileDestroyer() {
   if (profile_)
     DestroyProfileWhenAppropriate(profile_);
 
-  // We shouldn't be deleted with pending notifications.
-  DCHECK(registrar_.IsEmpty());
+  // Don't wait for pending registrations, if any, these hosts are buggy.
+  // Note: this can happen, but if so, it's better to crash here than wait
+  // for the host to dereference a deleted Profile. http://crbug.com/248625
+  CHECK_EQ(0U, num_hosts_) << "Some render process hosts were not "
+                           << "destroyed early enough!";
 
   DCHECK(pending_destroyers_ != NULL);
-  std::vector<ProfileDestroyer*>::iterator iter = std::find(
-      pending_destroyers_->begin(), pending_destroyers_->end(), this);
+  DestroyerSet::iterator iter = pending_destroyers_->find(this);
   DCHECK(iter != pending_destroyers_->end());
   pending_destroyers_->erase(iter);
-  DCHECK(pending_destroyers_->end() == std::find(pending_destroyers_->begin(),
-                                                 pending_destroyers_->end(),
-                                                 this));
   if (pending_destroyers_->empty()) {
     delete pending_destroyers_;
     pending_destroyers_ = NULL;
   }
 }
 
-void ProfileDestroyer::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                    source);
+void ProfileDestroyer::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
   DCHECK(num_hosts_ > 0);
   --num_hosts_;
   if (num_hosts_ == 0) {
-    // Delay the destruction one step further in case other observers of this
-    // notification need to look at the profile attached to the host.
+    // Delay the destruction one step further in case other observers need to
+    // look at the profile attached to the host.
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(
             &ProfileDestroyer::DestroyProfile, weak_ptr_factory_.GetWeakPtr()));
@@ -160,18 +150,15 @@ void ProfileDestroyer::Observe(int type,
 
 void ProfileDestroyer::DestroyProfile() {
   // We might have been cancelled externally before the timer expired.
-  if (profile_ == NULL)
+  if (!profile_) {
+    delete this;
     return;
+  }
+
   DCHECK(profile_->IsOffTheRecord());
   DCHECK(profile_->GetOriginalProfile());
   profile_->GetOriginalProfile()->DestroyOffTheRecordProfile();
   profile_ = NULL;
-
-  // Don't wait for pending registrations, if any, these hosts are buggy.
-  // Note: this can happen, but if so, it's better to crash here than wait
-  // for the host to dereference a deleted Profile. http://crbug.com/248625
-  CHECK(registrar_.IsEmpty()) << "Some render process hosts were not "
-                              << "destroyed early enough!";
 
   // And stop the timer so we can be released early too.
   timer_.Stop();
@@ -181,14 +168,14 @@ void ProfileDestroyer::DestroyProfile() {
 
 // static
 bool ProfileDestroyer::GetHostsForProfile(
-    Profile* const profile, std::vector<content::RenderProcessHost*>* hosts) {
+    Profile* const profile, HostSet* hosts) {
   for (content::RenderProcessHost::iterator iter(
         content::RenderProcessHost::AllHostsIterator());
       !iter.IsAtEnd(); iter.Advance()) {
     content::RenderProcessHost* render_process_host = iter.GetCurrentValue();
-    if (render_process_host && Profile::FromBrowserContext(
-          render_process_host->GetBrowserContext()) == profile) {
-      hosts->push_back(render_process_host);
+    if (render_process_host &&
+            render_process_host->GetBrowserContext() == profile) {
+      hosts->insert(render_process_host);
     }
   }
   return !hosts->empty();
