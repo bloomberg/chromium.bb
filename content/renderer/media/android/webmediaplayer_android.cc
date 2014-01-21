@@ -335,10 +335,6 @@ void WebMediaPlayerAndroid::seek(double seconds) {
   manager_->Seek(player_id_, seek_time_);
 }
 
-bool WebMediaPlayerAndroid::supportsFullscreen() const {
-  return true;
-}
-
 bool WebMediaPlayerAndroid::supportsSave() const {
   return false;
 }

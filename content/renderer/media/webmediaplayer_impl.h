@@ -98,7 +98,6 @@ class WebMediaPlayerImpl
   // Playback controls.
   virtual void play();
   virtual void pause();
-  virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;
   virtual void seek(double seconds);
   virtual void setRate(double rate);

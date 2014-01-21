@@ -167,11 +167,6 @@ void WebMediaPlayerMS::pause() {
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
 }
 
-bool WebMediaPlayerMS::supportsFullscreen() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
-}
-
 bool WebMediaPlayerMS::supportsSave() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return false;

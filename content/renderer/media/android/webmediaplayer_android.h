@@ -88,7 +88,6 @@ class WebMediaPlayerAndroid
   virtual void play();
   virtual void pause();
   virtual void seek(double seconds);
-  virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;
   virtual void setRate(double rate);
   virtual void setVolume(double volume);

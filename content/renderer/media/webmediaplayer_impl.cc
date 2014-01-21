@@ -332,11 +332,6 @@ void WebMediaPlayerImpl::pause() {
     delegate_->DidPause(this);
 }
 
-bool WebMediaPlayerImpl::supportsFullscreen() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  return true;
-}
-
 bool WebMediaPlayerImpl::supportsSave() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
   return supports_save_;
