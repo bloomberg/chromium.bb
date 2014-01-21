@@ -68,6 +68,7 @@
         'FT2_BUILD_LIBRARY',
         'FT_CONFIG_CONFIG_H=<ftconfig.h>',  # See comments in README.chromium.
         'FT_CONFIG_MODULES_H=<ftmodule.h>',  # See comments in README.chromium.
+        'FT_CONFIG_OPTIONS_H=<ftoption.h>',  # See comments in README.chromium.
       ],
       'include_dirs': [
         'include',

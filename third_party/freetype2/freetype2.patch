@@ -26,3 +26,16 @@ index 9ea3546..16f8854 100644
  #endif
  
  #endif /* !FT_EXPORT_DEF */
+diff --git a/include/freetype/config/ftoption.h b/include/freetype/config/ftoption.h
+index 759b3a3..f921a04 100644
+--- a/include/freetype/config/ftoption.h
++++ b/include/freetype/config/ftoption.h
+@@ -495,7 +495,7 @@ FT_BEGIN_HEADER
+   /*   Do not #undef this macro here, since the build system might         */
+   /*   define it for certain configurations only.                          */
+   /*                                                                       */
+-/* #define TT_CONFIG_OPTION_BYTECODE_INTERPRETER */
++#define TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+ 
+ 
+   /*************************************************************************/

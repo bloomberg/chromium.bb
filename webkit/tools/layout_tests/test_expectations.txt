@@ -88,4 +88,6 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-naviga
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/distribution-001.html [ ImageOnlyFailure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/distribution-002.html [ ImageOnlyFailure ]
 
+# FreeType used in layout tests changed.
+Bug(bungeman) [ Linux ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsManualRebaseline ]
 
