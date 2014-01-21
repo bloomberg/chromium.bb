@@ -6,12 +6,14 @@ testRunner.dumpAsText();
 testRunner.waitUntilDone();
 var textarea = document.createElement("textarea");
 textarea.setAttribute("autofocus", "");
-textarea.addEventListener("DOMFocusIn", function () { document.documentElement.innerHTML = ""; }, false);
+textarea.addEventListener("DOMFocusIn", function () {
+    document.documentElement.innerHTML = "";
+    window.setTimeout(function() {
+        document.body.innerHTML = "PASS unless crash.";
+        testRunner.notifyDone();
+    }, 0);
+}, false);
 document.documentElement.appendChild(textarea);
-window.setTimeout(function() {
-    document.body.innerHTML = "PASS unless crash.";
-    testRunner.notifyDone();
-}, 0);
 </script>
 </body>
 </html>
