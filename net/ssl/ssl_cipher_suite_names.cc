@@ -195,7 +195,7 @@ static const struct CipherSuite kCipherSuites[] = {
   {0xc08c, 0xf7f},  // TLS_ECDH_RSA_WITH_CAMELLIA_128_GCM_SHA256
   {0xc08d, 0xf87},  // TLS_ECDH_RSA_WITH_CAMELLIA_256_GCM_SHA384
   {0xcc13, 0x108f},  // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
-  {0xcc14, 0x0d8f},  // TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+  {0xcc14, 0x0e8f},  // TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
 };
 
 static const struct {
