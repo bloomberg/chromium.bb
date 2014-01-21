@@ -124,10 +124,11 @@ def write_pickle_file(pickle_filename, data, only_if_changed):
 #
 # We use regular expressions for parsing; this is incorrect (Web IDL is not a
 # regular language), but simple and sufficient in practice.
+# Leading and trailing context (e.g. following '{') used to avoid false matches.
 ################################################################################
 
 def get_partial_interface_name_from_idl(file_contents):
-    match = re.search(r'partial\s+interface\s+(\w+)', file_contents)
+    match = re.search(r'partial\s+interface\s+(\w+)\s*{', file_contents)
     return match and match.group(1)
 
 
@@ -140,7 +141,11 @@ def get_implemented_interfaces_from_idl(file_contents, interface_name):
             raise IdlBadFilenameError("Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, left_identifier))
         return right_identifier
 
-    implements_re = r'^\s*(\w+)\s+implements\s+(\w+)\s*;'
+    implements_re = (r'^\s*'
+                     r'(\w+)\s+'
+                     r'implements\s+'
+                     r'(\w+)\s*'
+                     r';')
     implements_matches = re.finditer(implements_re, file_contents, re.MULTILINE)
     implements_pairs = [(match.group(1), match.group(2))
                         for match in implements_matches]
@@ -153,12 +158,21 @@ def is_callback_interface_from_idl(file_contents):
 
 
 def get_parent_interface(file_contents):
-    match = re.search(r'interface\s+\w+\s*:\s*(\w+)\s*', file_contents)
+    match = re.search(r'interface\s+'
+                      r'\w+\s*'
+                      r':\s*(\w+)\s*'
+                      r'{',
+                      file_contents)
     return match and match.group(1)
 
 
 def get_interface_extended_attributes_from_idl(file_contents):
-    match = re.search(r'\[(.*)\]\s+(callback\s+)?(interface|exception)\s+(\w+)',
+    match = re.search(r'\[(.*)\]\s+'
+                      r'((callback|partial)\s+)?'
+                      r'(interface|exception)\s+'
+                      r'\w+\s*'
+                      r'(:\s*\w+\s*)?'
+                      r'{',
                       file_contents, flags=re.DOTALL)
     if not match:
         return {}
