@@ -24,10 +24,15 @@ def main():
                       help='ouput directory under src/ directory')
   parser.add_argument('--build-type', dest='build_type', default='Release',
                       help='Debug vs. Release build')
-  parser.add_argument('--chrome-flags', dest='chrome_flags',
-                      help='comma-separated additional flags to pass to chrome')
-  parser.add_argument('testcase');
-  parsed = parser.parse_args();
+  parser.add_argument('--gdb-browser', dest='gdb_browser', default=False,
+                      action='store_true',
+                      help='run browser process inside gdb')
+  parser.add_argument('testcase',
+                      help='IPC file to be replayed')
+  parser.add_argument('chrome_args',
+                      nargs=argparse.REMAINDER,
+                      help='any additional arguments are passed to chrome')
+  args = parser.parse_args()
 
   chrome_binary = 'chrome'
   fuzzer_binary = 'ipc_fuzzer_replay'
@@ -35,8 +40,8 @@ def main():
   script_path = os.path.realpath(__file__)
   ipc_fuzzer_dir = os.path.dirname(script_path)
   src_dir = os.path.abspath(os.path.join(ipc_fuzzer_dir, os.pardir, os.pardir))
-  out_dir =  os.path.join(src_dir, parsed.out_dir);
-  build_dir = os.path.join(out_dir, parsed.build_type)
+  out_dir =  os.path.join(src_dir, args.out_dir)
+  build_dir = os.path.join(out_dir, args.build_type)
 
   chrome_path = os.path.join(build_dir, chrome_binary)
   if not os.path.exists(chrome_path):
@@ -58,32 +63,35 @@ def main():
     '--utility-cmd-prefix',
   }
 
-  args = [
+  chrome_command = [
     chrome_path,
-    '--ipc-fuzzer-testcase=' + sys.argv[-1],
+    '--ipc-fuzzer-testcase=' + args.testcase,
     '--no-sandbox',
     '--disable-kill-after-bad-ipc',
   ]
+
+  if args.gdb_browser:
+    chrome_command = ['gdb', '--args'] + chrome_command
 
   launchers = {}
   for prefix in prefixes:
     launchers[prefix] = fuzzer_path
 
-  if parsed.chrome_flags:
-    for arg in parsed.chrome_flags.split(','):
-      if arg.find('=') != -1:
-        switch, value = arg.split('=', 1)
-        if switch in prefixes:
-          launchers[switch] = value + ' ' + launchers[switch]
-          continue
-      args.append(arg)
+  for arg in args.chrome_args:
+    if arg.find('=') != -1:
+      switch, value = arg.split('=', 1)
+      if switch in prefixes:
+        launchers[switch] = value + ' ' + launchers[switch]
+        continue
+    chrome_command.append(arg)
 
   for switch, value in launchers.items():
-    args.append(switch + '=' + value)
+    chrome_command.append(switch + '=' + value)
 
-  print args
+  command_line = ' '.join(['\'' + arg + '\'' for arg in chrome_command])
+  print 'Executing: ' + command_line
 
-  return subprocess.call(args)
+  return subprocess.call(chrome_command)
 
 
 if __name__ == "__main__":
