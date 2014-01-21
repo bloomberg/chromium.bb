@@ -1529,7 +1529,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
 
 // Do various drag and drop interaction tests between the application list and
 // the launcher.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DragAndDrop) {
+// TODO(skuhne): Test is flaky with a real compositor: crbug.com/331924
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   // Get a number of interfaces we need.
   aura::test::EventGenerator generator(
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
