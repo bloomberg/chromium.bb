@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -47,8 +47,9 @@ void TermsOfServiceScreen::Show() {
     return;
 
   // Set the domain name whose Terms of Service are being shown.
-  actor_->SetDomain(
-      g_browser_process->browser_policy_connector()->GetEnterpriseDomain());
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  actor_->SetDomain(connector->GetEnterpriseDomain());
 
   // Show the screen.
   actor_->Show();

@@ -48,10 +48,10 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -617,7 +617,9 @@ void LoginDisplayHostImpl::StartSignInScreen(
   MobileConfig::GetInstance();
 
   // Initiate device policy fetching.
-  g_browser_process->browser_policy_connector()->ScheduleServiceInitialization(
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  connector->ScheduleServiceInitialization(
       kPolicyServiceInitializationDelayMilliseconds);
 
   CHECK(webui_login_display_);
@@ -1110,10 +1112,12 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     return;
   }
 
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool should_show_enrollment_screen =
       first_screen_name.empty() && oobe_complete &&
       chromeos::WizardController::ShouldAutoStartEnrollment() &&
-      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
+      !connector->IsEnterpriseManaged();
   if (should_show_enrollment_screen) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does

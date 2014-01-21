@@ -14,11 +14,11 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -178,7 +178,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         new StubEnterpriseInstallAttributes();
     attributes->SetDomain("managed.com");
     attributes->SetRegistrationUser("user@managed.com");
-    BrowserPolicyConnector::SetInstallAttributesForTesting(attributes);
+    BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(attributes);
 
     RestartStatusCollector();
   }

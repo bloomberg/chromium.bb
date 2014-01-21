@@ -11,7 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -81,7 +81,9 @@ void KioskAppMenuHandler::SendKioskApps() {
 
 void KioskAppMenuHandler::HandleInitializeKioskApps(
     const base::ListValue* args) {
-  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsEnterpriseManaged()) {
     initialized_ = true;
     SendKioskApps();
     return;

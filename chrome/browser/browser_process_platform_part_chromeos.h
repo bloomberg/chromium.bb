@@ -21,6 +21,11 @@ class AutomaticRebootManager;
 }
 }
 
+namespace policy {
+class BrowserPolicyConnector;
+class BrowserPolicyConnectorChromeOS;
+}
+
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
                                    public base::NonThreadSafe {
  public:
@@ -31,26 +36,31 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   void ShutdownAutomaticRebootManager();
 
   // Returns the out-of-memory priority manager.
+  // Virtual for testing (see TestingBrowserProcessPlatformPart).
   virtual chromeos::OomPriorityManager* oom_priority_manager();
 
   // Returns the ProfileHelper instance that is used to identify
   // users and their profiles in Chrome OS multi user session.
-  virtual chromeos::ProfileHelper* profile_helper();
-
-  // Overridden from BrowserProcessPlatformPartBase:
-  virtual void StartTearDown() OVERRIDE;
+  chromeos::ProfileHelper* profile_helper();
 
   chromeos::system::AutomaticRebootManager* automatic_reboot_manager() {
     return automatic_reboot_manager_.get();
   }
 
- protected:
-  virtual void CreateProfileHelper();
+  policy::BrowserPolicyConnectorChromeOS* browser_policy_connector_chromeos();
+
+  // Overridden from BrowserProcessPlatformPartBase:
+  virtual void StartTearDown() OVERRIDE;
+
+  virtual scoped_ptr<policy::BrowserPolicyConnector>
+      CreateBrowserPolicyConnector() OVERRIDE;
+
+ private:
+  void CreateProfileHelper();
 
   bool created_profile_helper_;
   scoped_ptr<chromeos::ProfileHelper> profile_helper_;
 
- private:
   scoped_ptr<chromeos::OomPriorityManager> oom_priority_manager_;
 
   scoped_ptr<chromeos::system::AutomaticRebootManager>

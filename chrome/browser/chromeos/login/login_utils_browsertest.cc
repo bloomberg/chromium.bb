@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -232,7 +232,8 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetSystemRequestContext(
         new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current()));
-    connector_ = browser_process_->browser_policy_connector();
+    connector_ =
+        browser_process_->platform_part()->browser_policy_connector_chromeos();
     connector_->Init(local_state_.Get(),
                      browser_process_->system_request_context());
 
@@ -472,7 +473,7 @@ class LoginUtilsTest : public testing::Test,
 
   chromeos::system::MockStatisticsProvider mock_statistics_provider_;
 
-  policy::BrowserPolicyConnector* connector_;
+  policy::BrowserPolicyConnectorChromeOS* connector_;
 
   scoped_ptr<ScopedTestDeviceSettingsService> test_device_settings_service_;
   scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;

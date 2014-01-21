@@ -64,6 +64,7 @@
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -73,7 +74,6 @@
 #include "chrome/browser/feedback/tracing_manager.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
@@ -345,8 +345,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         base::Bind(&SystemTrayDelegate::UpdateSessionLengthLimit,
                    base::Unretained(this)));
 
-    policy::BrowserPolicyConnector* policy_connector =
-        g_browser_process->browser_policy_connector();
+    policy::BrowserPolicyConnectorChromeOS* policy_connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
     policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
         policy_connector->GetDeviceCloudPolicyManager();
     if (policy_manager)
@@ -374,9 +374,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // Stop observing Drive operations.
     UnobserveDriveUpdates();
 
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
     policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-        g_browser_process->browser_policy_connector()->
-           GetDeviceCloudPolicyManager();
+        connector->GetDeviceCloudPolicyManager();
     if (policy_manager)
       policy_manager->core()->store()->RemoveObserver(this);
   }
@@ -1279,8 +1280,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void UpdateEnterpriseDomain() {
-    std::string enterprise_domain =
-        g_browser_process->browser_policy_connector()->GetEnterpriseDomain();
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    std::string enterprise_domain = connector->GetEnterpriseDomain();
     if (enterprise_domain_ != enterprise_domain) {
        enterprise_domain_ = enterprise_domain;
        GetSystemTrayNotifier()->NotifyEnterpriseDomainChanged();

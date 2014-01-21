@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -48,6 +47,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -97,7 +97,9 @@ base::string16 GetAllowedConnectionTypesMessage() {
 
 // Returns true if the device is enterprise managed, false otherwise.
 bool IsEnterpriseManaged() {
-  return g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->IsEnterpriseManaged();
 }
 
 // Returns true if current user can change channel, false otherwise.
@@ -117,8 +119,9 @@ bool CanChangeChannel() {
     size_t at_pos = user.find('@');
     if (at_pos != std::string::npos && at_pos + 1 < user.length())
       domain = user.substr(user.find('@') + 1);
-    return domain == g_browser_process->browser_policy_connector()->
-        GetEnterpriseDomain();
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    return domain == connector->GetEnterpriseDomain();
   } else if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
     // On non managed machines we have local owner who is the only one to change
     // anything. Ensure that ReleaseChannelDelegated is false.

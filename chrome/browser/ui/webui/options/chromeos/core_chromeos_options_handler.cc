@@ -13,10 +13,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
@@ -150,7 +150,9 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     dict->Set("value", CreateUsersWhitelist(pref_value));
   else
     dict->Set("value", pref_value->DeepCopy());
-  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsEnterpriseManaged())
     dict->SetString("controlledBy", "policy");
   bool disabled_by_owner = IsSettingOwnerOnly(pref_name) &&
       !UserManager::Get()->IsCurrentUserOwner();

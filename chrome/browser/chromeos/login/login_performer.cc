@@ -21,10 +21,10 @@
 #include "chrome/browser/chromeos/login/managed/supervised_user_login_flow.h"
 #include "chrome/browser/chromeos/login/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -261,9 +261,10 @@ void LoginPerformer::LoginOffTheRecord() {
 
 void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
   // Login is not allowed if policy could not be loaded for the account.
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::DeviceLocalAccountPolicyService* policy_service =
-      g_browser_process->browser_policy_connector()->
-          GetDeviceLocalAccountPolicyService();
+      connector->GetDeviceLocalAccountPolicyService();
   if (!policy_service || !policy_service->IsPolicyAvailableForUser(username)) {
     DCHECK(delegate_);
     if (delegate_)

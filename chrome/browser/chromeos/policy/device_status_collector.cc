@@ -20,8 +20,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -464,8 +464,8 @@ void DeviceStatusCollector::GetNetworkInterfaces(
 }
 
 void DeviceStatusCollector::GetUsers(em::DeviceStatusReportRequest* request) {
-  BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool found_managed_user = false;
   const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
   chromeos::UserList::const_iterator user;

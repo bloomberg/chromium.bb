@@ -102,9 +102,9 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -844,7 +844,9 @@ void BrowserOptionsHandler::InitializePage() {
 
 #if defined(OS_CHROMEOS)
   SetupAccessibilityFeatures();
-  if (!g_browser_process->browser_policy_connector()->IsEnterpriseManaged() &&
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector->IsEnterpriseManaged() &&
       !chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
       !chromeos::UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     web_ui()->CallJavascriptFunction(
@@ -1521,7 +1523,9 @@ void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
 
 void BrowserOptionsHandler::PerformFactoryResetRestart(
     const base::ListValue* args) {
-  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsEnterpriseManaged())
     return;
 
   PrefService* prefs = g_browser_process->local_state();

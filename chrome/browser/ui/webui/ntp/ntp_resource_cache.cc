@@ -19,7 +19,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -58,6 +57,7 @@
 #include "ui/gfx/sys_color_change_listener.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -304,8 +304,9 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
     new_tab_html_idr = IDR_GUEST_SESSION_TAB_HTML;
     new_tab_link = kLearnMoreGuestSessionUrl;
 
-    std::string enterprise_domain =
-        g_browser_process->browser_policy_connector()->GetEnterpriseDomain();
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    std::string enterprise_domain = connector->GetEnterpriseDomain();
     if (!enterprise_domain.empty()) {
       // Device is enterprise enrolled.
       localized_strings.SetString("enterpriseInfoVisible", "true");

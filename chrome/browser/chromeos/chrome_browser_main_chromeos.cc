@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
@@ -65,7 +66,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -211,8 +211,9 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
       InitializeKioskModeScreensaver();
 
     // Reset reboot after update flag when login screen is shown.
-    if (!g_browser_process->browser_policy_connector()->
-        IsEnterpriseManaged()) {
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    if (!connector->IsEnterpriseManaged()) {
       PrefService* local_state = g_browser_process->local_state();
       local_state->ClearPref(prefs::kRebootAfterUpdate);
     }

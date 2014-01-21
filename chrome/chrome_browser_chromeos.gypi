@@ -674,6 +674,8 @@
         'browser/chromeos/policy/app_pack_updater.h',
         'browser/chromeos/policy/auto_enrollment_client.cc',
         'browser/chromeos/policy/auto_enrollment_client.h',
+        'browser/chromeos/policy/browser_policy_connector_chromeos.cc',
+        'browser/chromeos/policy/browser_policy_connector_chromeos.h',
         'browser/chromeos/policy/cloud_external_data_manager_base.cc',
         'browser/chromeos/policy/cloud_external_data_manager_base.h',
         'browser/chromeos/policy/cloud_external_data_policy_observer.cc',

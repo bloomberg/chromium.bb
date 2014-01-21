@@ -44,9 +44,9 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -162,7 +162,9 @@ void WizardController::Init(
   //
   // TODO (ygorshenin@): remove IsEnterpriseManaged() check once
   // crbug.com/241313 will be fixed.
-  if (!g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector->IsEnterpriseManaged()) {
     const PrefService::PrefInitializationStatus status =
         GetLocalState()->GetInitializationStatus();
     if (status == PrefService::INITIALIZATION_STATUS_ERROR) {
@@ -839,13 +841,15 @@ void WizardController::SkipPostLoginScreensForTesting() {
 
 // static
 bool WizardController::ShouldAutoStartEnrollment() {
-  return g_browser_process->browser_policy_connector()->
-      GetDeviceCloudPolicyManager()->ShouldAutoStartEnrollment();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetDeviceCloudPolicyManager()->ShouldAutoStartEnrollment();
 }
 
 bool WizardController::CanExitEnrollment() const {
-  return g_browser_process->browser_policy_connector()->
-      GetDeviceCloudPolicyManager()->CanExitEnrollment();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetDeviceCloudPolicyManager()->CanExitEnrollment();
 }
 
 void WizardController::OnLocalStateInitialized(bool /* succeeded */) {

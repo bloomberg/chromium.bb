@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 
@@ -44,12 +46,24 @@ chromeos::ProfileHelper* BrowserProcessPlatformPart::profile_helper() {
   return profile_helper_.get();
 }
 
-void BrowserProcessPlatformPart::CreateProfileHelper() {
-  DCHECK(!created_profile_helper_ && profile_helper_.get() == NULL);
-  created_profile_helper_ = true;
-  profile_helper_.reset(new chromeos::ProfileHelper());
+policy::BrowserPolicyConnectorChromeOS*
+BrowserProcessPlatformPart::browser_policy_connector_chromeos() {
+  return static_cast<policy::BrowserPolicyConnectorChromeOS*>(
+      g_browser_process->browser_policy_connector());
 }
 
 void BrowserProcessPlatformPart::StartTearDown() {
   profile_helper_.reset();
+}
+
+scoped_ptr<policy::BrowserPolicyConnector>
+BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
+  return scoped_ptr<policy::BrowserPolicyConnector>(
+      new policy::BrowserPolicyConnectorChromeOS());
+}
+
+void BrowserProcessPlatformPart::CreateProfileHelper() {
+  DCHECK(!created_profile_helper_ && profile_helper_.get() == NULL);
+  created_profile_helper_ = true;
+  profile_helper_.reset(new chromeos::ProfileHelper());
 }

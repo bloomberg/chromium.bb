@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -142,8 +142,8 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
     return false;
   }
   if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
-    policy::BrowserPolicyConnector* connector =
-        g_browser_process->browser_policy_connector();
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
     const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
     if (connector->GetUserAffiliation(logged_in_user->email()) ==
         policy::USER_AFFILIATION_MANAGED) {

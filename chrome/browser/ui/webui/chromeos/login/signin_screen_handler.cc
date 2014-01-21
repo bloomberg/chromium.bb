@@ -35,10 +35,10 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -333,11 +333,14 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("errorTpmFailureReboot", IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT);
   builder->Add("errorTpmFailureRebootButton",
                IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON);
-  builder->Add(
-      "disabledAddUserTooltip",
-      g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
-          IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE :
-          IDS_DISABLED_ADD_USER_TOOLTIP);
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  builder->Add("disabledAddUserTooltip",
+               connector->IsEnterpriseManaged()
+                   ? IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE
+                   : IDS_DISABLED_ADD_USER_TOOLTIP);
+
   builder->Add("supervisedUserExpiredTokenWarning",
                IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING);
   builder->Add("signinBannerText", IDS_LOGIN_USER_ADDING_BANNER);
@@ -1125,9 +1128,11 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen() {
 }
 
 void SigninScreenHandler::HandleToggleKioskEnableScreen() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (delegate_ &&
       !wait_for_auto_enrollment_check_ &&
-      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+      !connector->IsEnterpriseManaged()) {
     wait_for_auto_enrollment_check_ = true;
 
     LoginDisplayHostImpl::default_host()->GetAutoEnrollmentCheckResult(
@@ -1137,17 +1142,17 @@ void SigninScreenHandler::HandleToggleKioskEnableScreen() {
 }
 
 void SigninScreenHandler::HandleToggleResetScreen() {
-  if (delegate_ &&
-      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (delegate_ && !connector->IsEnterpriseManaged())
     delegate_->ShowResetScreen();
-  }
 }
 
 void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
-  if (delegate_ &&
-      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (delegate_ && !connector->IsEnterpriseManaged())
     delegate_->ShowKioskAutolaunchScreen();
-  }
 }
 
 void SigninScreenHandler::HandleLaunchHelpApp(double help_topic_id) {
@@ -1187,8 +1192,8 @@ void SigninScreenHandler::FillUserDictionary(User* user,
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
 
   if (is_public_account) {
-    policy::BrowserPolicyConnector* policy_connector =
-        g_browser_process->browser_policy_connector();
+    policy::BrowserPolicyConnectorChromeOS* policy_connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
 
     if (policy_connector->IsEnterpriseManaged()) {
       user_dict->SetString(kKeyEnterpriseDomain,

@@ -12,9 +12,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -118,10 +118,10 @@ void KioskModeSettings::GetScreensaverPath(
   }
 
   if (g_browser_process) {
-    policy::BrowserPolicyConnector* bpc =
-        g_browser_process->browser_policy_connector();
-    if (bpc && bpc->GetAppPackUpdater()) {
-      bpc->GetAppPackUpdater()->SetScreenSaverUpdateCallback(callback);
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    if (connector && connector->GetAppPackUpdater()) {
+      connector->GetAppPackUpdater()->SetScreenSaverUpdateCallback(callback);
       return;
     }
   }
@@ -158,9 +158,9 @@ KioskModeSettings::KioskModeSettings() : is_initialized_(false) {
   // Precache the value as we know it at construction time to avoid serving
   // different values to different users.
   if (g_browser_process) {
-    policy::BrowserPolicyConnector* bpc =
-        g_browser_process->browser_policy_connector();
-    policy::DeviceMode device_mode = bpc->GetDeviceMode();
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    policy::DeviceMode device_mode = connector->GetDeviceMode();
     if (device_mode == policy::DEVICE_MODE_RETAIL_KIOSK) {
       is_kiosk_mode_ = true;
       return;
@@ -182,9 +182,9 @@ void KioskModeSettings::VerifyModeIsKnown(
     return;
 
   if (g_browser_process) {
-    policy::BrowserPolicyConnector* bpc =
-        g_browser_process->browser_policy_connector();
-    policy::DeviceMode device_mode = bpc->GetDeviceMode();
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    policy::DeviceMode device_mode = connector->GetDeviceMode();
     // We retry asking for the mode until it becomes known.
     switch (device_mode) {
       case policy::DEVICE_MODE_PENDING:

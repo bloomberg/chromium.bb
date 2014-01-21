@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/forwarding_policy_provider.h"
@@ -18,6 +18,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
@@ -50,8 +51,13 @@ void ProfilePolicyConnector::Init(
   // result is true, so take care if a provider overrides that.
   std::vector<ConfigurationPolicyProvider*> providers;
 
+#if defined(OS_CHROMEOS)
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+#else
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
+#endif
 
   if (connector->GetPlatformProvider()) {
     forwarding_policy_provider_.reset(
@@ -105,8 +111,10 @@ void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
 
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (is_primary_user_)
-    g_browser_process->browser_policy_connector()->SetUserPolicyDelegate(NULL);
+    connector->SetUserPolicyDelegate(NULL);
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
 #endif
@@ -118,8 +126,8 @@ void ProfilePolicyConnector::Shutdown() {
 void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
     const std::string& username,
     SchemaRegistry* schema_registry) {
-  BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DeviceLocalAccountPolicyService* device_local_account_policy_service =
       connector->GetDeviceLocalAccountPolicyService();
   if (!device_local_account_policy_service)

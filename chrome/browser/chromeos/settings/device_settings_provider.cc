@@ -14,10 +14,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_switches.h"
@@ -828,10 +828,10 @@ void DeviceSettingsProvider::ApplySideEffects(
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
   // First check if the device has been owned already and if not exit
   // immediately.
-  if (g_browser_process->browser_policy_connector()->GetDeviceMode() !=
-          policy::DEVICE_MODE_CONSUMER) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->GetDeviceMode() != policy::DEVICE_MODE_CONSUMER)
     return false;
-  }
 
   // If we are here the policy file were corrupted or missing. This can happen
   // because we are migrating Pre R11 device to the new secure policies or there

@@ -15,8 +15,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/web_ui.h"
@@ -83,8 +83,10 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
 
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   localized_strings->SetBoolean("whitelist_is_managed",
-      g_browser_process->browser_policy_connector()->IsEnterpriseManaged());
+                                connector->IsEnterpriseManaged());
 
   AddAccountUITweaksLocalizedValues(localized_strings);
 }

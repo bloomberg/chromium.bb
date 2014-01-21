@@ -17,13 +17,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -56,6 +56,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -293,7 +294,7 @@ class UserPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
 class DevicePolicyStatusProvider : public CloudPolicyCoreStatusProvider {
  public:
   explicit DevicePolicyStatusProvider(
-      policy::BrowserPolicyConnector* connector);
+      policy::BrowserPolicyConnectorChromeOS* connector);
   virtual ~DevicePolicyStatusProvider();
 
   // CloudPolicyCoreStatusProvider implementation.
@@ -458,7 +459,7 @@ void UserPolicyStatusProvider::GetStatus(base::DictionaryValue* dict) {
 
 #if defined(OS_CHROMEOS)
 DevicePolicyStatusProvider::DevicePolicyStatusProvider(
-    policy::BrowserPolicyConnector* connector)
+    policy::BrowserPolicyConnectorChromeOS* connector)
       : CloudPolicyCoreStatusProvider(
             connector->GetDeviceCloudPolicyManager()->core()) {
   domain_ = connector->GetEnterpriseDomain();
@@ -526,8 +527,8 @@ PolicyUIHandler::~PolicyUIHandler() {
 
 void PolicyUIHandler::RegisterMessages() {
 #if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (connector->IsEnterpriseManaged())
     device_status_provider_.reset(new DevicePolicyStatusProvider(connector));
 

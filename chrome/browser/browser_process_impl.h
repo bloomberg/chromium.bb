@@ -172,12 +172,12 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // Must be destroyed after |local_state_|.
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
-#endif
-
+#else
   // Must be destroyed after |local_state_|.
   // This is a stub when policy is not enabled. Otherwise, the PolicyService
   // is owned by the |browser_policy_connector_| and this is not used.
   scoped_ptr<policy::PolicyService> policy_service_;
+#endif
 
   bool created_profile_manager_;
   scoped_ptr<ProfileManager> profile_manager_;

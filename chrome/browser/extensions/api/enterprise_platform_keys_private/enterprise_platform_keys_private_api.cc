@@ -14,9 +14,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -74,8 +74,9 @@ EPKPChallengeKeyBase::EPKPChallengeKeyBase()
     : cryptohome_client_(
           chromeos::DBusThreadManager::Get()->GetCryptohomeClient()),
       async_caller_(cryptohome::AsyncMethodCaller::GetInstance()),
-      install_attributes_(g_browser_process->browser_policy_connector()->
-                          GetInstallAttributes()) {
+      install_attributes_(g_browser_process->platform_part()
+                              ->browser_policy_connector_chromeos()
+                              ->GetInstallAttributes()) {
   scoped_ptr<chromeos::attestation::ServerProxy> ca_client(
       new chromeos::attestation::AttestationCAClient());
   default_attestation_flow_.reset(

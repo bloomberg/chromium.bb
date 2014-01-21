@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -36,6 +35,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -116,8 +116,10 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
   AddRef();
 
 #if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp() &&
-      g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+      connector->IsEnterpriseManaged()) {
     StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
     return true;
   }
@@ -221,8 +223,10 @@ void IdentityGetAuthTokenFunction::StartMintToken(
         // Always force minting token for ChromeOS kiosk app.
         if (chromeos::UserManager::Get()->IsLoggedInAsKioskApp()) {
           gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
-          if (g_browser_process->browser_policy_connector()->
-                  IsEnterpriseManaged()) {
+          policy::BrowserPolicyConnectorChromeOS* connector =
+              g_browser_process->platform_part()
+                  ->browser_policy_connector_chromeos();
+          if (connector->IsEnterpriseManaged()) {
             StartDeviceLoginAccessTokenRequest();
           } else {
             StartLoginAccessTokenRequest();

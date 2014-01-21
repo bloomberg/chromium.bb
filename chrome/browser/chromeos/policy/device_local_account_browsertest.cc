@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -54,7 +55,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
@@ -867,9 +867,11 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   device_local_account_policy_.payload().mutable_useravatarimage()->set_value(
       policy);
   UploadAndInstallDeviceLocalAccountPolicy();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DeviceLocalAccountPolicyBroker* broker =
-      g_browser_process->browser_policy_connector()->
-          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
+      connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
+          user_id_1_);
   ASSERT_TRUE(broker);
   broker->core()->store()->Load();
 
@@ -980,9 +982,11 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   device_local_account_policy_.payload().mutable_useravatarimage()->set_value(
       policy);
   UploadAndInstallDeviceLocalAccountPolicy();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   DeviceLocalAccountPolicyBroker* broker =
-      g_browser_process->browser_policy_connector()->
-          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
+      connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
+          user_id_1_);
   ASSERT_TRUE(broker);
 
   run_loop_.reset(new base::RunLoop);

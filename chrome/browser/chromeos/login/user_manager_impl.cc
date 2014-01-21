@@ -39,11 +39,11 @@
 #include "chrome/browser/chromeos/login/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -216,11 +216,13 @@ UserManagerImpl::UserManagerImpl()
                  base::Unretained(this)));
   multi_profile_user_controller_.reset(new MultiProfileUserController(
       this, g_browser_process->local_state()));
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
       cros_settings_,
       this,
-      g_browser_process->browser_policy_connector()->
-          GetDeviceLocalAccountPolicyService(),
+      connector->GetDeviceLocalAccountPolicyService(),
       policy::key::kUserAvatarImage,
       this));
   policy_observer_->Init();
@@ -819,9 +821,11 @@ void UserManagerImpl::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED:
       if (!device_local_account_policy_service_) {
+        policy::BrowserPolicyConnectorChromeOS* connector =
+            g_browser_process->platform_part()
+                ->browser_policy_connector_chromeos();
         device_local_account_policy_service_ =
-            g_browser_process->browser_policy_connector()->
-                GetDeviceLocalAccountPolicyService();
+            connector->GetDeviceLocalAccountPolicyService();
         if (device_local_account_policy_service_)
           device_local_account_policy_service_->AddObserver(this);
       }
@@ -1181,9 +1185,10 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
 }
 
 bool UserManagerImpl::AreEphemeralUsersEnabled() const {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return ephemeral_users_enabled_ &&
-      (g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ||
-      !owner_email_.empty());
+         (connector->IsEnterpriseManaged() || !owner_email_.empty());
 }
 
 UserList& UserManagerImpl::GetUsersAndModify() {
@@ -1649,8 +1654,9 @@ bool UserManagerImpl::AreLocallyManagedUsersAllowed() const {
   bool locally_managed_users_allowed = false;
   cros_settings_->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
                              &locally_managed_users_allowed);
-  return locally_managed_users_allowed ||
-         !g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return locally_managed_users_allowed || !connector->IsEnterpriseManaged();
 }
 
 base::FilePath UserManagerImpl::GetUserProfileDir(

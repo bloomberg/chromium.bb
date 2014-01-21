@@ -1101,7 +1101,6 @@
         'browser/plugins/plugin_finder_unittest.cc',
         'browser/plugins/plugin_metadata_unittest.cc',
         'browser/plugins/plugin_prefs_unittest.cc',
-        'browser/policy/browser_policy_connector_unittest.cc',
         'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
         'browser/policy/cloud/user_policy_signin_service_unittest.cc',
         'browser/policy/configuration_policy_handler_unittest.cc',

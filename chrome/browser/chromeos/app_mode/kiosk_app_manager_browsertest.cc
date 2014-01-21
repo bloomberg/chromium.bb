@@ -14,9 +14,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -232,14 +232,14 @@ class KioskAppManagerTest : public InProcessBrowserTest {
             policy::EnterpriseInstallAttributes::LOCK_NOT_READY));
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    g_browser_process->browser_policy_connector()->GetInstallAttributes()->
-        LockDevice(
-            "user@domain.com",
-            policy::DEVICE_MODE_ENTERPRISE,
-            "device-id",
-            base::Bind(&OnEnterpriseDeviceLock,
-                       lock_result.get(),
-                       runner->QuitClosure()));
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    connector->GetInstallAttributes()->LockDevice(
+        "user@domain.com",
+        policy::DEVICE_MODE_ENTERPRISE,
+        "device-id",
+        base::Bind(
+            &OnEnterpriseDeviceLock, lock_result.get(), runner->QuitClosure()));
     runner->Run();
     return *lock_result.get();
   }

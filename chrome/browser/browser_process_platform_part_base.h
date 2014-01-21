@@ -6,8 +6,13 @@
 #define CHROME_BROWSER_BROWSER_PROCESS_PLATFORM_PART_BASE_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 class CommandLine;
+
+namespace policy {
+class BrowserPolicyConnector;
+}
 
 // A base class for platform-specific BrowserProcessPlatformPart
 // implementations. This class itself should never be used verbatim.
@@ -29,6 +34,11 @@ class BrowserProcessPlatformPartBase {
 
   // Called at the end of BrowserProcessImpl::PreMainMessageLoopRun().
   virtual void PreMainMessageLoopRun();
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  virtual scoped_ptr<policy::BrowserPolicyConnector>
+      CreateBrowserPolicyConnector();
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPartBase);

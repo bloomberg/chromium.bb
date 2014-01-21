@@ -39,9 +39,9 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -346,6 +346,8 @@ void ExternalProviderImpl::CreateExternalProviders(
   scoped_refptr<ExternalLoader> external_loader;
   extensions::Manifest::Location crx_location = Manifest::INVALID_LOCATION;
 #if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   bool is_chrome_os_public_session = false;
   const chromeos::User* user =
       chromeos::UserManager::Get()->GetUserByProfile(profile);
@@ -354,9 +356,8 @@ void ExternalProviderImpl::CreateExternalProviders(
     if (account_type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)
       is_chrome_os_public_session = true;
     policy::DeviceLocalAccountPolicyBroker* broker =
-        g_browser_process->browser_policy_connector()->
-            GetDeviceLocalAccountPolicyService()->
-                GetBrokerForUser(user->email());
+        connector->GetDeviceLocalAccountPolicyService()->GetBrokerForUser(
+            user->email());
     if (broker) {
       external_loader = broker->extension_loader();
       crx_location = Manifest::EXTERNAL_POLICY;
@@ -409,8 +410,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   is_chromeos_demo_session =
       user_manager && user_manager->IsLoggedInAsDemoUser() &&
-      g_browser_process->browser_policy_connector()->GetDeviceMode() ==
-          policy::DEVICE_MODE_RETAIL_KIOSK;
+      connector->GetDeviceMode() == policy::DEVICE_MODE_RETAIL_KIOSK;
   bundled_extension_creation_flags = Extension::FROM_WEBSTORE |
       Extension::WAS_INSTALLED_BY_DEFAULT;
 #endif
@@ -448,8 +448,7 @@ void ExternalProviderImpl::CreateExternalProviders(
                 bundled_extension_creation_flags)));
   }
 
-  policy::AppPackUpdater* app_pack_updater =
-      g_browser_process->browser_policy_connector()->GetAppPackUpdater();
+  policy::AppPackUpdater* app_pack_updater = connector->GetAppPackUpdater();
   if (is_chromeos_demo_session && app_pack_updater &&
       !app_pack_updater->created_external_loader()) {
     provider_list->push_back(
