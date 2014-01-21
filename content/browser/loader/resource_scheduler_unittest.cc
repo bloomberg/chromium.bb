@@ -159,7 +159,8 @@ class ResourceSchedulerTest : public testing::Test {
         false,                             // is_stream
         true,                              // allow_download
         false,                             // has_user_gesture
-        blink::WebReferrerPolicyDefault,  // referrer_policy
+        blink::WebReferrerPolicyDefault,   // referrer_policy
+        blink::WebPageVisibilityStateVisible,  // visibility_state
         NULL,                              // context
         base::WeakPtr<ResourceMessageFilter>(),  // filter
         true);                             // is_async

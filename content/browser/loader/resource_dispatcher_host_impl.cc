@@ -938,16 +938,6 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     }
   }
 
-  // Notify the delegate to allow it to update state as well.
-  if (delegate_) {
-    delegate_->WillTransferRequestToNewProcess(old_routing_id.child_id,
-                                               old_routing_id.route_id,
-                                               old_request_id.request_id,
-                                               child_id,
-                                               route_id,
-                                               request_id);
-  }
-
   // We should have a CrossSiteResourceHandler to finish the transfer.
   DCHECK(info->cross_site_handler());
 }
@@ -1097,6 +1087,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
           allow_download,
           request_data.has_user_gesture,
           request_data.referrer_policy,
+          request_data.visiblity_state,
           resource_context,
           filter_->GetWeakPtr(),
           !is_sync_load);
@@ -1293,6 +1284,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       download,  // allow_download
       false,     // has_user_gesture
       blink::WebReferrerPolicyDefault,
+      blink::WebPageVisibilityStateVisible,
       context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
       true);     // is_async

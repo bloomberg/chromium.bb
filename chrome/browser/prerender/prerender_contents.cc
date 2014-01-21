@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +28,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -61,6 +64,14 @@ enum InternalCookieEvent {
   INTERNAL_COOKIE_EVENT_OTHER_CHANGE = 3,
   INTERNAL_COOKIE_EVENT_MAX
 };
+
+void ResumeThrottles(
+    std::vector<base::WeakPtr<PrerenderResourceThrottle> > throttles) {
+  for (size_t i = 0; i < throttles.size(); i++) {
+    if (throttles[i])
+      throttles[i]->Resume();
+  }
+}
 
 }  // namespace
 
@@ -215,6 +226,12 @@ void PrerenderContents::PrepareForUse() {
   prerender_manager_->StartPendingPrerenders(
       child_id_, &pending_prerenders_, session_storage_namespace);
   pending_prerenders_.clear();
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ResumeThrottles, resource_throttles_));
+  resource_throttles_.clear();
 }
 
 PrerenderContents::PrerenderContents(
@@ -343,11 +360,6 @@ void PrerenderContents::StartPrerendering(
   // the event of a mismatch.
   alias_session_storage_namespace->AddTransactionLogProcessId(child_id_);
 
-  // Register this with the ResourceDispatcherHost as a prerender
-  // RenderViewHost. This must be done before the Navigate message to catch all
-  // resource requests, but as it is on the same thread as the Navigate message
-  // (IO) there is no race condition.
-  AddObserver(prerender_manager()->prerender_tracker());
   NotifyPrerenderStart();
 
   // Close ourselves when the application is shutting down.
@@ -832,5 +844,10 @@ void PrerenderContents::RecordCookieEvent(CookieEvent event,
   DCHECK_GE(cookie_status_, 0);
   DCHECK_LT(cookie_status_, kNumCookieStatuses);
 }
+
+ void PrerenderContents::AddResourceThrottle(
+     const base::WeakPtr<PrerenderResourceThrottle>& throttle) {
+   resource_throttles_.push_back(throttle);
+ }
 
 }  // namespace prerender

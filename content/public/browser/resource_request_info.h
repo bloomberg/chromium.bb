@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "webkit/common/resource_type.h"
 
 namespace net {
@@ -91,6 +92,10 @@ class ResourceRequestInfo {
 
   // Returns the associated referrer policy.
   virtual blink::WebReferrerPolicy GetReferrerPolicy() const = 0;
+
+  // Returns the associated visibility state at the time the request was started
+  // in the renderer.
+  virtual blink::WebPageVisibilityState GetVisibilityState() const = 0;
 
   // Returns the associated page transition type.
   virtual PageTransition GetPageTransition() const = 0;

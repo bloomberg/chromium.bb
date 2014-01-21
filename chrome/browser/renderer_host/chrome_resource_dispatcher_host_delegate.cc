@@ -257,8 +257,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     int child_id,
     int route_id,
     ScopedVector<content::ResourceThrottle>* throttles) {
-  bool is_prerendering = prerender_tracker_->IsPrerenderingOnIOThread(
-      child_id, route_id);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  bool is_prerendering =
+      info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender;
   if (is_prerendering) {
     // Requests with the IGNORE_LIMITS flag set (i.e., sync XHRs)
     // should remain at MAXIMUM_PRIORITY.
@@ -334,7 +335,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     io_data->policy_header_helper()->AddPolicyHeaders(request);
 #endif
 
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   signin::AppendMirrorRequestHeaderIfPossible(
       request, GURL() /* redirect_url */,
       io_data, info->GetChildID(), info->GetRouteID());
@@ -349,19 +349,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                     resource_type,
                                     throttles);
   }
-}
-
-void ChromeResourceDispatcherHostDelegate::WillTransferRequestToNewProcess(
-    int old_child_id,
-    int old_route_id,
-    int old_request_id,
-    int new_child_id,
-    int new_route_id,
-    int new_request_id) {
-  // If a prerender, it have should been aborted on cross-process
-  // navigation in PrerenderContents::WebContentsImpl::OpenURLFromTab.
-  DCHECK(!prerender_tracker_->IsPrerenderingOnIOThread(old_child_id,
-                                                       old_route_id));
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
@@ -464,10 +451,8 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     throttles->push_back(throttle);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (prerender_tracker_->IsPrerenderingOnIOThread(info->GetChildID(),
-                                                   info->GetRouteID())) {
-    throttles->push_back(new prerender::PrerenderResourceThrottle(
-        request, prerender_tracker_));
+  if (info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender) {
+    throttles->push_back(new prerender::PrerenderResourceThrottle(request));
   }
   if (prerender_tracker_->IsPendingSwapRequestOnIOThread(
           info->GetChildID(), info->GetRenderFrameID(), request->url())) {

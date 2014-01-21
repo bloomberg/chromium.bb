@@ -44,6 +44,7 @@ namespace prerender {
 
 class PrerenderHandle;
 class PrerenderManager;
+class PrerenderResourceThrottle;
 
 class PrerenderContents : public content::NotificationObserver,
                           public content::WebContentsObserver {
@@ -315,6 +316,12 @@ class PrerenderContents : public content::NotificationObserver,
 
   static const int kNumCookieStatuses;
 
+  // Called when a PrerenderResourceThrottle defers a request. If the prerender
+  // is used it'll be resumed on the IO thread, otherwise they will get
+  // cancelled automatically if prerendering is cancelled.
+  void AddResourceThrottle(
+      const base::WeakPtr<PrerenderResourceThrottle>& throttle);
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
                     Profile* profile,
@@ -466,6 +473,10 @@ class PrerenderContents : public content::NotificationObserver,
   // Indicates what internal cookie events (see prerender_contents.cc) have
   // occurred, using 1 bit for each possible InternalCookieEvent.
   int cookie_status_;
+
+  // Resources that are throttled, pending a prerender use. Can only access a
+  // throttle on the IO thread.
+  std::vector<base::WeakPtr<PrerenderResourceThrottle> > resource_throttles_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

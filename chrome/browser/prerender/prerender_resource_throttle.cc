@@ -6,7 +6,6 @@
 
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -29,24 +28,13 @@ void PrerenderResourceThrottle::OverridePrerenderContentsForTesting(
   g_prerender_contents_for_testing = contents;
 }
 
-PrerenderResourceThrottle::PrerenderResourceThrottle(
-    net::URLRequest* request,
-    PrerenderTracker* tracker)
-    : request_(request),
-      tracker_(tracker) {
+PrerenderResourceThrottle::PrerenderResourceThrottle(net::URLRequest* request)
+    : request_(request) {
 }
 
 void PrerenderResourceThrottle::WillStartRequest(bool* defer) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
-  int child_id = info->GetChildID();
-  int route_id = info->GetRouteID();
-
-  // If the prerender was used since the throttle was added, leave it
-  // alone.
-  if (!tracker_->IsPrerenderingOnIOThread(child_id, route_id))
-    return;
-
   *defer = true;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -60,14 +48,6 @@ void PrerenderResourceThrottle::WillRedirectRequest(const GURL& new_url,
                                                     bool* defer) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
-  int child_id = info->GetChildID();
-  int route_id = info->GetRouteID();
-
-  // If the prerender was used since the throttle was added, leave it
-  // alone.
-  if (!tracker_->IsPrerenderingOnIOThread(child_id, route_id))
-    return;
-
   *defer = true;
   std::string header;
   request_->GetResponseHeaderByName(kFollowOnlyWhenPrerenderShown, &header);
@@ -148,16 +128,8 @@ void PrerenderResourceThrottle::WillRedirectRequestOnUI(
         prerender_contents->Destroy(FINAL_STATUS_BAD_DEFERRED_REDIRECT);
         cancel = true;
       } else {
-        // Defer the redirect until the prerender is used or
-        // canceled. It is possible for the UI thread to used the
-        // prerender at the same time. But then |tracker_| will resume
-        // the request soon in
-        // PrerenderTracker::RemovePrerenderOnIOThread.
-        content::BrowserThread::PostTask(
-            content::BrowserThread::IO,
-            FROM_HERE,
-            base::Bind(&PrerenderResourceThrottle::AddResourceThrottle,
-                       throttle));
+        // Defer the redirect until the prerender is used or canceled.
+        prerender_contents->AddResourceThrottle(throttle);
         return;
       }
     }
@@ -179,14 +151,6 @@ PrerenderContents* PrerenderResourceThrottle::PrerenderContentsFromRenderFrame(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   return PrerenderContents::FromWebContents(web_contents);
-}
-
-void PrerenderResourceThrottle::AddResourceThrottle() {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request_);
-  int child_id = info->GetChildID();
-  int route_id = info->GetRouteID();
-  tracker_->AddResourceThrottleOnIOThread(child_id, route_id, AsWeakPtr());
 }
 
 }  // namespace prerender

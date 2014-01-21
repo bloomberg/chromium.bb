@@ -50,7 +50,8 @@ void ResourceRequestInfo::AllocateForTesting(
           false,                             // is_stream
           true,                              // allow_download
           false,                             // has_user_gesture
-          blink::WebReferrerPolicyDefault,  // referrer_policy
+          blink::WebReferrerPolicyDefault,   // referrer_policy
+          blink::WebPageVisibilityStateVisible,  // visibility_state
           context,                           // context
           base::WeakPtr<ResourceMessageFilter>(),  // filter
           is_async);                         // is_async
@@ -105,6 +106,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool allow_download,
     bool has_user_gesture,
     blink::WebReferrerPolicy referrer_policy,
+    blink::WebPageVisibilityState visibility_state,
     ResourceContext* context,
     base::WeakPtr<ResourceMessageFilter> filter,
     bool is_async)
@@ -130,6 +132,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       transition_type_(transition_type),
       memory_cost_(0),
       referrer_policy_(referrer_policy),
+      visibility_state_(visibility_state),
       context_(context),
       filter_(filter),
       is_async_(is_async) {
@@ -188,6 +191,11 @@ int ResourceRequestInfoImpl::GetProcessType() const {
 
 blink::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
   return referrer_policy_;
+}
+
+blink::WebPageVisibilityState
+ResourceRequestInfoImpl::GetVisibilityState() const {
+  return visibility_state_;
 }
 
 PageTransition ResourceRequestInfoImpl::GetPageTransition() const {

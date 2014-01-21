@@ -121,7 +121,6 @@ void DummyPrerenderContents::StartPrerendering(
   prerender_contents_->GetController().LoadURLWithParams(params);
   SearchTabHelper::CreateForWebContents(prerender_contents_.get());
 
-  AddObserver(prerender_manager()->prerender_tracker());
   prerendering_has_started_ = true;
   DCHECK(session_storage_namespace);
   session_storage_namespace_id_ = session_storage_namespace->id();

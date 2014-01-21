@@ -140,6 +140,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // The referrer policy to use.
   IPC_STRUCT_MEMBER(blink::WebReferrerPolicy, referrer_policy)
 
+  // The frame's visiblity state.
+  IPC_STRUCT_MEMBER(blink::WebPageVisibilityState, visiblity_state)
+
   // Additional HTTP request headers.
   IPC_STRUCT_MEMBER(std::string, headers)
 

@@ -17,7 +17,6 @@ class URLRequest;
 
 namespace prerender {
 class PrerenderContents;
-class PrerenderTracker;
 
 // This class implements policy on resource requests in prerenders.  It cancels
 // prerenders on certain requests.  It also defers certain requests until after
@@ -29,25 +28,24 @@ class PrerenderResourceThrottle
     : public content::ResourceThrottle,
       public base::SupportsWeakPtr<PrerenderResourceThrottle> {
  public:
-  PrerenderResourceThrottle(net::URLRequest* request,
-                            PrerenderTracker* tracker);
+  explicit PrerenderResourceThrottle(net::URLRequest* request);
 
   // content::ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
   virtual const char* GetNameForLogging() const OVERRIDE;
 
-  // Called by the PrerenderTracker when a prerender becomes visible.
+  // Called by the PrerenderContents when a prerender becomes visible.
   // May only be called if currently throttling the resource.
   void Resume();
-
-  // Called by the PrerenderTracker when a prerender is destroyed.
-  // May only be called if currently throttling the resource.
-  void Cancel();
 
   static void OverridePrerenderContentsForTesting(PrerenderContents* contents);
 
  private:
+  // Helper method to cancel the request. May only be called if currently
+  // throttling the resource.
+  void Cancel();
+
   static void WillStartRequestOnUI(
       const base::WeakPtr<PrerenderResourceThrottle>& throttle,
       const std::string& method,
@@ -69,11 +67,7 @@ class PrerenderResourceThrottle
   static PrerenderContents* PrerenderContentsFromRenderFrame(
       int render_process_id, int render_frame_id);
 
-  // Helper method to call tracker_->AddResourceThrottleOnIOThread.
-  void AddResourceThrottle();
-
   net::URLRequest* request_;
-  PrerenderTracker* tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceThrottle);
 };

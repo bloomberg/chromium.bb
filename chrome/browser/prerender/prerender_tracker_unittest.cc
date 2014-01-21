@@ -61,7 +61,6 @@ class TestPrerenderContents : public PrerenderContents {
   }
 
   void Start() {
-    AddObserver(prerender_manager()->prerender_tracker());
     prerendering_has_started_ = true;
     NotifyPrerenderStart();
   }
@@ -213,33 +212,13 @@ class PrerenderTrackerTest : public testing::Test {
   TestPrerenderContents test_contents_;
 };
 
-TEST_F(PrerenderTrackerTest, IsPrerenderingOnIOThread) {
-  EXPECT_FALSE(prerender_tracker()->IsPrerenderingOnIOThread(
-               kDefaultChildId, kDefaultRouteId));
-
-  test_contents()->Start();
-  // This calls AddPrerenderOnIOThreadTask().
-  RunEvents();
-  EXPECT_TRUE(prerender_tracker()->IsPrerenderingOnIOThread(
-              kDefaultChildId, kDefaultRouteId));
-
-  test_contents()->Cancel();
-  // This calls RemovePrerenderOnIOThreadTask().
-  RunEvents();
-  EXPECT_FALSE(prerender_tracker()->IsPrerenderingOnIOThread(
-              kDefaultChildId, kDefaultRouteId));
-}
-
 // Checks that deferred redirects are throttled and resumed correctly.
 TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
   const base::FilePath::CharType kRedirectPath[] =
       FILE_PATH_LITERAL("prerender/image-deferred.png");
 
   test_contents()->Start();
-  // This calls AddPrerenderOnIOThreadTask().
   RunEvents();
-  EXPECT_TRUE(prerender_tracker()->IsPrerenderingOnIOThread(
-      kDefaultChildId, kDefaultRouteId));
 
   // Fake a request.
   net::TestURLRequestContext url_request_context;
@@ -254,7 +233,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
       kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
 
   // Install a prerender throttle.
-  PrerenderResourceThrottle throttle(&request, prerender_tracker());
+  PrerenderResourceThrottle throttle(&request);
   delegate.SetThrottle(&throttle);
 
   // Start the request and wait for a redirect.
@@ -272,58 +251,13 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
   EXPECT_FALSE(delegate.cancel_called());
 }
 
-// Checks that deferred redirects are cancelled on prerender cancel.
-TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectCancel) {
-  const base::FilePath::CharType kRedirectPath[] =
-      FILE_PATH_LITERAL("prerender/image-deferred.png");
-
-  test_contents()->Start();
-  // This calls AddPrerenderOnIOThreadTask().
-  RunEvents();
-  EXPECT_TRUE(prerender_tracker()->IsPrerenderingOnIOThread(
-      kDefaultChildId, kDefaultRouteId));
-
-  // Fake a request.
-  net::TestURLRequestContext url_request_context;
-  DeferredRedirectDelegate delegate;
-  net::URLRequest request(
-      content::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
-      net::DEFAULT_PRIORITY,
-      &delegate,
-      &url_request_context);
-  content::ResourceRequestInfo::AllocateForTesting(
-      &request, ResourceType::IMAGE, NULL,
-      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
-
-  // Install a prerender throttle.
-  PrerenderResourceThrottle throttle(&request, prerender_tracker());
-  delegate.SetThrottle(&throttle);
-
-  // Start the request and wait for a redirect.
-  request.Start();
-  delegate.Run();
-  EXPECT_TRUE(delegate.was_deferred());
-  // This calls WillRedirectRequestOnUI().
-  RunEvents();
-
-  // Display the prerendered RenderView and wait for the throttle to
-  // notice.
-  test_contents()->Cancel();
-  delegate.Run();
-  EXPECT_FALSE(delegate.resume_called());
-  EXPECT_TRUE(delegate.cancel_called());
-}
-
 // Checks that redirects in main frame loads are not deferred.
 TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
   const base::FilePath::CharType kRedirectPath[] =
       FILE_PATH_LITERAL("prerender/image-deferred.png");
 
   test_contents()->Start();
-  // This calls AddPrerenderOnIOThreadTask().
   RunEvents();
-  EXPECT_TRUE(prerender_tracker()->IsPrerenderingOnIOThread(
-      kDefaultChildId, kDefaultRouteId));
 
   // Fake a request.
   net::TestURLRequestContext url_request_context;
@@ -338,7 +272,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
       kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
 
   // Install a prerender throttle.
-  PrerenderResourceThrottle throttle(&request, prerender_tracker());
+  PrerenderResourceThrottle throttle(&request);
   delegate.SetThrottle(&throttle);
 
   // Start the request and wait for a redirect. This time, it should
@@ -360,10 +294,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
       FILE_PATH_LITERAL("prerender/image-deferred.png");
 
   test_contents()->Start();
-  // This calls AddPrerenderOnIOThreadTask().
   RunEvents();
-  EXPECT_TRUE(prerender_tracker()->IsPrerenderingOnIOThread(
-      kDefaultChildId, kDefaultRouteId));
 
   // Fake a request.
   net::TestURLRequestContext url_request_context;
@@ -378,7 +309,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
       kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, false);
 
   // Install a prerender throttle.
-  PrerenderResourceThrottle throttle(&request, prerender_tracker());
+  PrerenderResourceThrottle throttle(&request);
   delegate.SetThrottle(&throttle);
 
   // Start the request and wait for a redirect.

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
+#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "webkit/child/weburlrequest_extradata_impl.h"
 
 namespace content {
@@ -18,6 +19,7 @@ class CONTENT_EXPORT RequestExtraData
     : NON_EXPORTED_BASE(public webkit_glue::WebURLRequestExtraDataImpl) {
  public:
   RequestExtraData(blink::WebReferrerPolicy referrer_policy,
+                   blink::WebPageVisibilityState visibility_state,
                    const blink::WebString& custom_user_agent,
                    bool was_after_preconnect_request,
                    int render_frame_id,
@@ -33,6 +35,9 @@ class CONTENT_EXPORT RequestExtraData
                    int transferred_request_request_id);
   virtual ~RequestExtraData();
 
+  blink::WebPageVisibilityState visibility_state() const {
+    return visibility_state_;
+  }
   int render_frame_id() const { return render_frame_id_; }
   bool is_main_frame() const { return is_main_frame_; }
   int64 frame_id() const { return frame_id_; }
@@ -52,6 +57,7 @@ class CONTENT_EXPORT RequestExtraData
   }
 
  private:
+  blink::WebPageVisibilityState visibility_state_;
   int render_frame_id_;
   bool is_main_frame_;
   int64 frame_id_;

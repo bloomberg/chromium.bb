@@ -173,6 +173,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.appcache_host_id = appcache::kNoHostId;
     request_info.routing_id = 0;
     RequestExtraData extra_data(blink::WebReferrerPolicyDefault,
+                                blink::WebPageVisibilityStateVisible,
                                 blink::WebString(),
                                 false, MSG_ROUTING_NONE, true, 0, GURL(),
                                 false, -1, true,

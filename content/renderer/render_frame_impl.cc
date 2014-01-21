@@ -1120,6 +1120,7 @@ void RenderFrameImpl::willSendRequest(
   }
   request.setExtraData(
       new RequestExtraData(referrer_policy,
+                           render_view_->visibilityState(),
                            custom_user_agent,
                            was_after_preconnect_request,
                            routing_id_,
