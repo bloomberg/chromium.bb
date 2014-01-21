@@ -11,25 +11,18 @@ function test()
     var sourceStringified = JSON.stringify(source);
     var partSize = sourceStringified.length >> 3;
 
-    function injectMockProfile(overrideGetProfile, callback) {
+    function injectMockProfile(callback) {
         var dispatcher = InspectorBackend._domainDispatchers["HeapProfiler"];
         var panel = WebInspector.panels.profiles;
         panel._reset();
 
         var profileType = panel.getProfileType("HEAP");
-        profileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, snapshotLoaded, this);
-        function snapshotLoaded(event)
-        {
-            profileType.removeEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, snapshotLoaded, this);
-            if (overrideGetProfile)
-                InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
-        }
 
         InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
         function getHeapSnapshotMock(uid, callback) {
             for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
                 dispatcher.addHeapSnapshotChunk(uid, sourceStringified.slice(i, i + partSize));
-            callback();
+            setTimeout(callback, 0);
         }
 
         function tempFileReady()
@@ -81,7 +74,7 @@ function test()
                 profileHeader.saveToFile();
             }
 
-            injectMockProfile(true, snapshotLoaded);
+            injectMockProfile(snapshotLoaded);
         },
 
         function heapSnapshotLoadFromFileTest(next)
@@ -136,7 +129,7 @@ function test()
                 profileHeader.saveToFile();
             }
 
-            injectMockProfile(false, snapshotLoaded);
+            injectMockProfile(snapshotLoaded);
         }
     ]);
 }
