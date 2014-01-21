@@ -64,6 +64,8 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "skia/ext/image_operations.h"
+#include "skia/ext/platform_canvas.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image.h"
 
 using content::NavigationController;
@@ -91,10 +93,10 @@ TabHelper::ScriptExecutionObserver::~ScriptExecutionObserver() {
 }
 
 // static
-std::vector<SkBitmap> TabHelper::ConstrainBitmapsToSizes(
+std::map<int, SkBitmap> TabHelper::ConstrainBitmapsToSizes(
     const std::vector<SkBitmap>& bitmaps,
     const std::set<int>& sizes) {
-  std::vector<SkBitmap> output_bitmaps;
+  std::map<int, SkBitmap> output_bitmaps;
   std::map<int, SkBitmap> ordered_bitmaps;
   for (std::vector<SkBitmap>::const_iterator it = bitmaps.begin();
        it != bitmaps.end(); ++it) {
@@ -113,14 +115,76 @@ std::vector<SkBitmap> TabHelper::ConstrainBitmapsToSizes(
     if (bitmaps_it != ordered_bitmaps.end() &&
         (sizes_it == sizes.end() || bitmaps_it->second.width() < *sizes_it)) {
       // Resize the bitmap if it does not exactly match the desired size.
-      output_bitmaps.push_back(bitmaps_it->second.width() == size
+      output_bitmaps[size] = bitmaps_it->second.width() == size
           ? bitmaps_it->second
           : skia::ImageOperations::Resize(
                 bitmaps_it->second, skia::ImageOperations::RESIZE_LANCZOS3,
-                size, size));
+                size, size);
     }
   }
   return output_bitmaps;
+}
+
+// static
+void TabHelper::GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
+                                      int output_size) {
+  std::map<int, SkBitmap>::const_iterator it =
+      bitmaps->lower_bound(output_size);
+  // Do nothing if there is no icon smaller than the desired size or there is
+  // already an icon of |output_size|.
+  if (it == bitmaps->begin() || bitmaps->count(output_size))
+    return;
+
+  --it;
+  // This is the biggest icon smaller than |output_size|.
+  const SkBitmap& base_icon = it->second;
+  scoped_ptr<SkCanvas> canvas(
+      skia::CreateBitmapCanvas(output_size, output_size, false));
+  DCHECK(canvas);
+
+  const size_t kBorderRadius = 5;
+  const size_t kColorStripHeight = 3;
+  const size_t kColorStripRadius = 2;
+  const SkColor kBorderColor = 0xFFD5D5D5;
+
+  // Draw a rounded rect of the |base_icon|'s dominant color.
+  SkPaint color_strip_paint;
+  color_utils::GridSampler sampler;
+  color_strip_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  color_strip_paint.setColor(
+      color_utils::CalculateKMeanColorOfPNG(
+          gfx::Image::CreateFrom1xBitmap(base_icon).As1xPNGBytes(),
+          100, 665, &sampler));
+  canvas->drawRoundRect(
+      SkRect::MakeXYWH(1, 0, output_size - 2, output_size - 1),
+      kColorStripRadius, kColorStripRadius, color_strip_paint);
+
+  // Erase the top of the rounded rect to leave a color strip.
+  SkPaint clear_paint;
+  clear_paint.setColor(SK_ColorTRANSPARENT);
+  clear_paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  canvas->drawRect(
+      SkRect::MakeWH(output_size, output_size - kColorStripHeight - 1),
+      clear_paint);
+
+  // Draw the border.
+  SkPaint border_paint;
+  border_paint.setColor(kBorderColor);
+  border_paint.setStyle(SkPaint::kStroke_Style);
+  border_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  canvas->drawRoundRect(
+      SkRect::MakeWH(output_size, output_size),
+      kBorderRadius, kBorderRadius, border_paint);
+
+  // Draw the centered base icon.
+  canvas->drawBitmap(base_icon,
+                     (output_size - base_icon.width()) / 2,
+                     (output_size - base_icon.height()) / 2);
+
+  const SkBitmap& generated_icon =
+      canvas->getDevice()->accessBitmap(false);
+  generated_icon.deepCopyTo(&(*bitmaps)[output_size],
+                            generated_icon.getConfig());
 }
 
 TabHelper::TabHelper(content::WebContents* web_contents)
@@ -336,6 +400,7 @@ void TabHelper::CreateHostedApp() {
   favicon_downloader_->Start();
 }
 
+// TODO(calamity): Move hosted app generation into its own file.
 void TabHelper::FinishCreateHostedApp(
     bool success,
     const std::map<GURL, std::vector<SkBitmap> >& bitmaps) {
@@ -381,19 +446,46 @@ void TabHelper::FinishCreateHostedApp(
   // If there are icons that don't match the accepted icon sizes, find the
   // closest bigger icon to the accepted sizes and resize the icon to it. An
   // icon will be resized and used for at most one size.
-  std::vector<SkBitmap> resized_bitmaps(
+  std::map<int, SkBitmap> resized_bitmaps(
       TabHelper::ConstrainBitmapsToSizes(downloaded_icons,
                                          allowed_sizes));
-  for (std::vector<SkBitmap>::const_iterator resized_bitmaps_it =
+
+  // Generate container icons from smaller icons.
+  const int kIconSizesToGenerate[] = {
+    extension_misc::EXTENSION_ICON_SMALL,
+    extension_misc::EXTENSION_ICON_MEDIUM,
+  };
+  const std::set<int> generate_sizes(
+      kIconSizesToGenerate,
+      kIconSizesToGenerate + arraysize(kIconSizesToGenerate));
+
+  // Only generate icons if larger icons don't exist. This means the app
+  // launcher and the taskbar will do their best downsizing large icons and
+  // these container icons are only generated as a last resort against upscaling
+  // a smaller icon.
+  if (resized_bitmaps.lower_bound(*generate_sizes.rbegin()) ==
+      resized_bitmaps.end()) {
+    // Generate these from biggest to smallest so we don't end up with
+    // concentric container icons.
+    for (std::set<int>::const_reverse_iterator it = generate_sizes.rbegin();
+         it != generate_sizes.rend(); ++it) {
+      TabHelper::GenerateContainerIcon(&resized_bitmaps, *it);
+    }
+  }
+
+  // Populate a the icon data into the WebApplicationInfo we are using to
+  // install the bookmark app.
+  for (std::map<int, SkBitmap>::const_iterator resized_bitmaps_it =
            resized_bitmaps.begin();
        resized_bitmaps_it != resized_bitmaps.end(); ++resized_bitmaps_it) {
     WebApplicationInfo::IconInfo icon_info;
-    icon_info.data = *resized_bitmaps_it;
+    icon_info.data = resized_bitmaps_it->second;
     icon_info.width = icon_info.data.width();
     icon_info.height = icon_info.data.height();
     install_info.icons.push_back(icon_info);
   }
 
+  // Install the app.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   scoped_refptr<extensions::CrxInstaller> installer(

@@ -53,13 +53,13 @@ TEST_F(TabHelperTest, ConstrainBitmapsToSizes) {
     bitmaps.push_back(CreateSquareBitmapWithColor(48, SK_ColorBLUE));
     bitmaps.push_back(CreateSquareBitmapWithColor(144, SK_ColorYELLOW));
 
-    std::vector<SkBitmap> results(
+    std::map<int, SkBitmap> results(
         extensions::TabHelper::ConstrainBitmapsToSizes(bitmaps, desired_sizes));
 
     EXPECT_EQ(3u, results.size());
-    ValidateBitmapSizeAndColor(results[0], 16, SK_ColorRED);
-    ValidateBitmapSizeAndColor(results[1], 32, SK_ColorGREEN);
-    ValidateBitmapSizeAndColor(results[2], 128, SK_ColorYELLOW);
+    ValidateBitmapSizeAndColor(results[16], 16, SK_ColorRED);
+    ValidateBitmapSizeAndColor(results[32], 32, SK_ColorGREEN);
+    ValidateBitmapSizeAndColor(results[128], 128, SK_ColorYELLOW);
   }
   {
     std::vector<SkBitmap> bitmaps;
@@ -68,12 +68,36 @@ TEST_F(TabHelperTest, ConstrainBitmapsToSizes) {
     bitmaps.push_back(CreateSquareBitmapWithColor(33, SK_ColorBLUE));
     bitmaps.push_back(CreateSquareBitmapWithColor(17, SK_ColorYELLOW));
 
-    std::vector<SkBitmap> results(
+    std::map<int, SkBitmap> results(
         extensions::TabHelper::ConstrainBitmapsToSizes(bitmaps, desired_sizes));
 
     EXPECT_EQ(3u, results.size());
-    ValidateBitmapSizeAndColor(results[0], 16, SK_ColorYELLOW);
-    ValidateBitmapSizeAndColor(results[1], 32, SK_ColorBLUE);
-    ValidateBitmapSizeAndColor(results[2], 256, SK_ColorRED);
+    ValidateBitmapSizeAndColor(results[16], 16, SK_ColorYELLOW);
+    ValidateBitmapSizeAndColor(results[32], 32, SK_ColorBLUE);
+    ValidateBitmapSizeAndColor(results[256], 256, SK_ColorRED);
+  }
+}
+
+TEST_F(TabHelperTest, GenerateIcons) {
+  {
+    // The 32x32 icon should be generated from the 16x16 icon.
+    std::map<int, SkBitmap> bitmaps;
+    bitmaps[16] = CreateSquareBitmapWithColor(16, SK_ColorRED);
+    extensions::TabHelper::GenerateContainerIcon(&bitmaps, 32);
+    EXPECT_EQ(1u, bitmaps.count(32));
+    EXPECT_EQ(32, bitmaps[32].width());
+  }
+  {
+    // The 32x32 icon should not be generated because no smaller icon exists.
+    std::map<int, SkBitmap> bitmaps;
+    bitmaps[48] = CreateSquareBitmapWithColor(48, SK_ColorRED);
+    extensions::TabHelper::GenerateContainerIcon(&bitmaps, 32);
+    EXPECT_EQ(0u, bitmaps.count(32));
+  }
+  {
+    // The 32x32 icon should not be generated with no base icons.
+    std::map<int, SkBitmap> bitmaps;
+    extensions::TabHelper::GenerateContainerIcon(&bitmaps, 32);
+    EXPECT_EQ(0u, bitmaps.count(32));
   }
 }

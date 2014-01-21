@@ -89,12 +89,19 @@ class TabHelper : public content::WebContentsObserver,
   };
 
   // This finds the closest not-smaller bitmap in |bitmaps| for each size in
-  // |sizes| and resizes it to that size. This returns a vector of bitmaps
+  // |sizes| and resizes it to that size. This returns a map of sizes to bitmaps
   // which contains only bitmaps of a size in |sizes| and at most one bitmap of
   // each size.
-  static std::vector<SkBitmap> ConstrainBitmapsToSizes(
+  static std::map<int, SkBitmap> ConstrainBitmapsToSizes(
       const std::vector<SkBitmap>& bitmaps,
       const std::set<int>& sizes);
+
+  // Adds a square container icon of |output_size| pixels to |bitmaps| by
+  // centering the biggest smaller icon in |bitmaps| and drawing a rounded
+  // rectangle with strip of the that icon's dominant color at the bottom.
+  // Does nothing if an icon of |output_size| already exists in |bitmaps|.
+  static void GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
+                                    int output_size);
 
   virtual ~TabHelper();
 
