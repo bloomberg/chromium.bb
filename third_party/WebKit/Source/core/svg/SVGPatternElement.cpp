@@ -166,45 +166,49 @@ RenderObject* SVGPatternElement::createRenderer(RenderStyle*)
     return new RenderSVGResourcePattern(this);
 }
 
+static void setPatternAttributes(const SVGPatternElement* element, PatternAttributes& attributes)
+{
+    if (!attributes.hasX() && element->hasAttribute(SVGNames::xAttr))
+        attributes.setX(element->x()->currentValue());
+
+    if (!attributes.hasY() && element->hasAttribute(SVGNames::yAttr))
+        attributes.setY(element->y()->currentValue());
+
+    if (!attributes.hasWidth() && element->hasAttribute(SVGNames::widthAttr))
+        attributes.setWidth(element->width()->currentValue());
+
+    if (!attributes.hasHeight() && element->hasAttribute(SVGNames::heightAttr))
+        attributes.setHeight(element->height()->currentValue());
+
+    if (!attributes.hasViewBox() && element->hasAttribute(SVGNames::viewBoxAttr) && element->viewBox()->currentValue()->isValid())
+        attributes.setViewBox(element->viewBox()->currentValue()->value());
+
+    if (!attributes.hasPreserveAspectRatio() && element->hasAttribute(SVGNames::preserveAspectRatioAttr))
+        attributes.setPreserveAspectRatio(element->preserveAspectRatioCurrentValue());
+
+    if (!attributes.hasPatternUnits() && element->hasAttribute(SVGNames::patternUnitsAttr))
+        attributes.setPatternUnits(element->patternUnitsCurrentValue());
+
+    if (!attributes.hasPatternContentUnits() && element->hasAttribute(SVGNames::patternContentUnitsAttr))
+        attributes.setPatternContentUnits(element->patternContentUnitsCurrentValue());
+
+    if (!attributes.hasPatternTransform() && element->hasAttribute(SVGNames::patternTransformAttr)) {
+        AffineTransform transform;
+        element->patternTransformCurrentValue().concatenate(transform);
+        attributes.setPatternTransform(transform);
+    }
+
+    if (!attributes.hasPatternContentElement() && element->childElementCount())
+        attributes.setPatternContentElement(element);
+}
+
 void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) const
 {
     HashSet<const SVGPatternElement*> processedPatterns;
-
     const SVGPatternElement* current = this;
-    while (current) {
-        if (!attributes.hasX() && current->hasAttribute(SVGNames::xAttr))
-            attributes.setX(current->x()->currentValue());
 
-        if (!attributes.hasY() && current->hasAttribute(SVGNames::yAttr))
-            attributes.setY(current->y()->currentValue());
-
-        if (!attributes.hasWidth() && current->hasAttribute(SVGNames::widthAttr))
-            attributes.setWidth(current->width()->currentValue());
-
-        if (!attributes.hasHeight() && current->hasAttribute(SVGNames::heightAttr))
-            attributes.setHeight(current->height()->currentValue());
-
-        if (!attributes.hasViewBox() && current->hasAttribute(SVGNames::viewBoxAttr) && current->viewBox()->currentValue()->isValid())
-            attributes.setViewBox(current->viewBox()->currentValue()->value());
-
-        if (!attributes.hasPreserveAspectRatio() && current->hasAttribute(SVGNames::preserveAspectRatioAttr))
-            attributes.setPreserveAspectRatio(current->preserveAspectRatioCurrentValue());
-
-        if (!attributes.hasPatternUnits() && current->hasAttribute(SVGNames::patternUnitsAttr))
-            attributes.setPatternUnits(current->patternUnitsCurrentValue());
-
-        if (!attributes.hasPatternContentUnits() && current->hasAttribute(SVGNames::patternContentUnitsAttr))
-            attributes.setPatternContentUnits(current->patternContentUnitsCurrentValue());
-
-        if (!attributes.hasPatternTransform() && current->hasAttribute(SVGNames::patternTransformAttr)) {
-            AffineTransform transform;
-            current->patternTransformCurrentValue().concatenate(transform);
-            attributes.setPatternTransform(transform);
-        }
-
-        if (!attributes.hasPatternContentElement() && current->childElementCount())
-            attributes.setPatternContentElement(current);
-
+    while (true) {
+        setPatternAttributes(current, attributes);
         processedPatterns.add(current);
 
         // Respect xlink:href, take attributes from referenced element
@@ -213,13 +217,14 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
             current = toSVGPatternElement(const_cast<const Node*>(refNode));
 
             // Cycle detection
-            if (processedPatterns.contains(current)) {
-                current = 0;
-                break;
-            }
-        } else
-            current = 0;
+            if (processedPatterns.contains(current))
+                return;
+        } else {
+            return;
+        }
     }
+
+    ASSERT_NOT_REACHED();
 }
 
 AffineTransform SVGPatternElement::localCoordinateSpaceTransform(SVGElement::CTMScope) const
