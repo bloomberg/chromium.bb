@@ -111,7 +111,7 @@ g_factory = LAZY_INSTANCE_INITIALIZER;
 // static
 ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>*
     MediaGalleriesPrivateAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 // static

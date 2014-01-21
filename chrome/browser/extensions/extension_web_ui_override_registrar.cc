@@ -49,7 +49,7 @@ static base::LazyInstance<
 // static
 ProfileKeyedAPIFactory<ExtensionWebUIOverrideRegistrar>*
 ExtensionWebUIOverrideRegistrar::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 }  // namespace extensions

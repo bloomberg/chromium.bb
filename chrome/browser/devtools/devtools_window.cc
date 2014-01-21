@@ -261,7 +261,7 @@ DevToolsWindow::~DevToolsWindow() {
       frontend_host_.get());
   UpdateBrowserToolbar();
 
-  DevToolsWindows* instances = &g_instances.Get();
+  DevToolsWindows* instances = g_instances.Pointer();
   DevToolsWindows::iterator it(
       std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
@@ -758,7 +758,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
 // static
 DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
     DevToolsAgentHost* agent_host) {
-  DevToolsWindows* instances = &g_instances.Get();
+  DevToolsWindows* instances = g_instances.Pointer();
   content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
        ++it) {
@@ -774,7 +774,7 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
     content::RenderViewHost* window_rvh) {
   if (g_instances == NULL)
     return NULL;
-  DevToolsWindows* instances = &g_instances.Get();
+  DevToolsWindows* instances = g_instances.Pointer();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
        ++it) {
     if ((*it)->web_contents_->GetRenderViewHost() == window_rvh)

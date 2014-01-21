@@ -102,7 +102,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<InputMethodAPI> >
 
 // static
 ProfileKeyedAPIFactory<InputMethodAPI>* InputMethodAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 }  // namespace extensions

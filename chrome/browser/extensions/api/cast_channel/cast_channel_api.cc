@@ -59,7 +59,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<CastChannelAPI> > g_factory =
 
 // static
 ProfileKeyedAPIFactory<CastChannelAPI>* CastChannelAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 scoped_ptr<CastSocket> CastChannelAPI::CreateCastSocket(

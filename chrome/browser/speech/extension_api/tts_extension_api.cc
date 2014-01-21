@@ -365,7 +365,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<TtsAPI> >
 g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ProfileKeyedAPIFactory<TtsAPI>* TtsAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 }  // namespace extensions

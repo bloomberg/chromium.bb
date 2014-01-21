@@ -87,7 +87,7 @@ void ChromeDirectSettingAPI::Shutdown() {}
 // ProfileKeyedAPI implementation.
 ProfileKeyedAPIFactory<ChromeDirectSettingAPI>*
     ChromeDirectSettingAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 // EventRouter::Observer implementation.

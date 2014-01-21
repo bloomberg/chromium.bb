@@ -118,7 +118,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<IncognitoConnectability> >
 // static
 ProfileKeyedAPIFactory<IncognitoConnectability>*
 IncognitoConnectability::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 }  // namespace extensions

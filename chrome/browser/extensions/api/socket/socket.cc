@@ -24,7 +24,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<ApiResourceManager<Socket> > >
 template <>
 ProfileKeyedAPIFactory<ApiResourceManager<Socket> >*
 ApiResourceManager<Socket>::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 Socket::Socket(const std::string& owner_extension_id)

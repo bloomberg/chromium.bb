@@ -25,7 +25,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<
 template <>
 ProfileKeyedAPIFactory<ApiResourceManager<ResumableTCPSocket> >*
 ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<
@@ -36,7 +36,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<
 template <>
 ProfileKeyedAPIFactory<ApiResourceManager<ResumableTCPServerSocket> >*
 ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance() {
-  return &g_server_factory.Get();
+  return g_server_factory.Pointer();
 }
 
 TCPSocket::TCPSocket(const std::string& owner_extension_id)

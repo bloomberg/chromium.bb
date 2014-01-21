@@ -31,7 +31,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<SerialEventDispatcher> >
 // static
 ProfileKeyedAPIFactory<SerialEventDispatcher>*
     SerialEventDispatcher::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 // static

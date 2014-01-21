@@ -72,7 +72,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if !defined(OS_CHROMEOS)
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateWin);
     ui::SelectFileDialog::SetShellDialogsDelegate(
-        &g_shell_dialogs_delegate.Get());
+        g_shell_dialogs_delegate.Pointer());
 #endif
   }
 #if defined(OS_CHROMEOS)

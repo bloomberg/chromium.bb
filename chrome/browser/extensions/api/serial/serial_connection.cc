@@ -30,7 +30,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<
 template <>
 ProfileKeyedAPIFactory<ApiResourceManager<SerialConnection> >*
 ApiResourceManager<SerialConnection>::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 SerialConnection::SerialConnection(const std::string& port,

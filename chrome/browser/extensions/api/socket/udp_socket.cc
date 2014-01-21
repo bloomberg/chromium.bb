@@ -22,7 +22,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<
 template <>
 ProfileKeyedAPIFactory<ApiResourceManager<ResumableUDPSocket> >*
 ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 UDPSocket::UDPSocket(const std::string& owner_extension_id)

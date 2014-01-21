@@ -47,7 +47,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<FeedbackPrivateAPI> >
 // static
 ProfileKeyedAPIFactory<FeedbackPrivateAPI>*
     FeedbackPrivateAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 FeedbackPrivateAPI::FeedbackPrivateAPI(Profile* profile)

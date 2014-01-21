@@ -167,7 +167,7 @@ void InProcessBrowserTest::SetUp() {
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
     content::SetRendererClientForTesting(
-        &g_chrome_content_renderer_client.Get());
+        g_chrome_content_renderer_client.Pointer());
   }
 
 #if defined(OS_CHROMEOS)

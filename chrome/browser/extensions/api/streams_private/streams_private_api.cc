@@ -77,7 +77,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<StreamsPrivateAPI> >
 // static
 ProfileKeyedAPIFactory<StreamsPrivateAPI>*
     StreamsPrivateAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void StreamsPrivateAPI::Observe(int type,

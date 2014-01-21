@@ -207,7 +207,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<OmniboxAPI> >
 
 // static
 ProfileKeyedAPIFactory<OmniboxAPI>* OmniboxAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 // static

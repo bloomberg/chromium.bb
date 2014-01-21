@@ -27,7 +27,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<
 template <>
 ProfileKeyedAPIFactory<ApiResourceManager<UsbDeviceResource> >*
 ApiResourceManager<UsbDeviceResource>::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,

@@ -57,7 +57,7 @@ static base::LazyInstance<
 template <>
 ProfileKeyedAPIFactory<ApiResourceManager<api::cast_channel::CastSocket> >*
 ApiResourceManager<api::cast_channel::CastSocket>::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 namespace api {

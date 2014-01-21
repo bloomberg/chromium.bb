@@ -242,7 +242,7 @@ ExtensionActionAPI::~ExtensionActionAPI() {
 // static
 ProfileKeyedAPIFactory<ExtensionActionAPI>*
 ExtensionActionAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 // static

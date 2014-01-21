@@ -835,7 +835,7 @@ ChromeMainDelegate::CreateContentBrowserClient() {
 #if defined(CHROME_MULTIPLE_DLL_CHILD)
   return NULL;
 #else
-  return &g_chrome_content_browser_client.Get();
+  return g_chrome_content_browser_client.Pointer();
 #endif
 }
 
@@ -843,7 +843,7 @@ content::ContentPluginClient* ChromeMainDelegate::CreateContentPluginClient() {
 #if defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
-  return &g_chrome_content_plugin_client.Get();
+  return g_chrome_content_plugin_client.Pointer();
 #endif
 }
 
@@ -852,7 +852,7 @@ ChromeMainDelegate::CreateContentRendererClient() {
 #if defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
-  return &g_chrome_content_renderer_client.Get();
+  return g_chrome_content_renderer_client.Pointer();
 #endif
 }
 
@@ -861,6 +861,6 @@ ChromeMainDelegate::CreateContentUtilityClient() {
 #if defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
-  return &g_chrome_content_utility_client.Get();
+  return g_chrome_content_utility_client.Pointer();
 #endif
 }

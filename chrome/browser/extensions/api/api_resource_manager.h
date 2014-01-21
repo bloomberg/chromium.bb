@@ -67,7 +67,7 @@ namespace extensions {
 // template <>
 // ProfileKeyedAPIFactory<ApiResourceManager<Resource> >*
 // ApiResourceManager<Resource>::GetFactoryInstance() {
-//   return &g_factory.Get();
+//   return g_factory.Pointer();
 // }
 template <class T>
 class ApiResourceManager : public ProfileKeyedAPI,

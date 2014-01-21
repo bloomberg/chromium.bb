@@ -84,7 +84,7 @@ SettingsOverridesAPI::~SettingsOverridesAPI() {
 
 ProfileKeyedAPIFactory<SettingsOverridesAPI>*
     SettingsOverridesAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void SettingsOverridesAPI::SetPref(const std::string& extension_id,

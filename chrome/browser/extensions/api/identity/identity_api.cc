@@ -734,7 +734,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<IdentityAPI> >
 
 // static
 ProfileKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void IdentityAPI::OnAccountAdded(const AccountIds& ids) {}

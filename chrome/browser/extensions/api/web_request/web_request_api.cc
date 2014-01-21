@@ -425,7 +425,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<WebRequestAPI> >
 
 // static
 ProfileKeyedAPIFactory<WebRequestAPI>* WebRequestAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {

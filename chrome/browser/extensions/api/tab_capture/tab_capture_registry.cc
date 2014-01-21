@@ -131,7 +131,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<TabCaptureRegistry> >
 // static
 ProfileKeyedAPIFactory<TabCaptureRegistry>*
 TabCaptureRegistry::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 const TabCaptureRegistry::RegistryCaptureInfo

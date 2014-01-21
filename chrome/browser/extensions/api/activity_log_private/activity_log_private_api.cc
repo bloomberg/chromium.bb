@@ -31,7 +31,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLogAPI> >
 
 // static
 ProfileKeyedAPIFactory<ActivityLogAPI>* ActivityLogAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 template<>

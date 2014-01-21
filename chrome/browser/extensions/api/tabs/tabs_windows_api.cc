@@ -78,7 +78,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<TabsWindowsAPI> >
 g_factory = LAZY_INSTANCE_INITIALIZER;
 
 ProfileKeyedAPIFactory<TabsWindowsAPI>* TabsWindowsAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void TabsWindowsAPI::OnListenerAdded(const EventListenerInfo& details) {

@@ -40,7 +40,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<PluginManager> >
 
 // static
 ProfileKeyedAPIFactory<PluginManager>* PluginManager::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void PluginManager::Observe(int type,

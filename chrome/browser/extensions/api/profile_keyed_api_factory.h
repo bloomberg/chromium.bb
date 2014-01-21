@@ -49,7 +49,7 @@ class ProfileKeyedAPI : public BrowserContextKeyedService {
   //   // static
   //   ProfileKeyedAPIFactory<ProcessesAPI>*
   //   ProcessesAPI::GetFactoryInstance() {
-  //     return &g_factory.Get();
+  //     return g_factory.Pointer();
   //   }
 };
 

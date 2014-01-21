@@ -52,7 +52,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<MDnsAPI> > g_factory =
 
 // static
 ProfileKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void MDnsAPI::SetDnsSdRegistryForTesting(

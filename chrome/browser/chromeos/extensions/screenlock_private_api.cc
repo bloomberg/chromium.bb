@@ -149,7 +149,7 @@ static base::LazyInstance<extensions::ProfileKeyedAPIFactory<
 // static
 extensions::ProfileKeyedAPIFactory<ScreenlockPrivateEventRouter>*
 ScreenlockPrivateEventRouter::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 void ScreenlockPrivateEventRouter::Shutdown() {

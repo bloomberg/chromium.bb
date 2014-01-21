@@ -258,7 +258,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<OperationManager> >
 
 ProfileKeyedAPIFactory<OperationManager>*
     OperationManager::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 

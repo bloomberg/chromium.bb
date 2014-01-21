@@ -588,7 +588,7 @@ static base::LazyInstance<ProfileKeyedAPIFactory<SessionsAPI> >
 // static
 ProfileKeyedAPIFactory<SessionsAPI>*
     SessionsAPI::GetFactoryInstance() {
-  return &g_factory.Get();
+  return g_factory.Pointer();
 }
 
 }  // namespace extensions
