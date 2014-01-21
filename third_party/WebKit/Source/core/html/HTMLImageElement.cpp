@@ -48,6 +48,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     , m_form(form)
     , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
+    , m_formWasSetByParser(form)
 {
     ScriptWrappable::init(this);
     if (form)
@@ -116,7 +117,28 @@ const AtomicString HTMLImageElement::imageSourceURL() const
 
 HTMLFormElement* HTMLImageElement::formOwner() const
 {
-    return findFormAncestor();
+    return m_form;
+}
+
+void HTMLImageElement::formRemovedFromTree(const Node* formRoot)
+{
+    ASSERT(m_form);
+    if (highestAncestor() != formRoot)
+        resetFormOwner();
+}
+
+void HTMLImageElement::resetFormOwner()
+{
+    m_formWasSetByParser = false;
+    HTMLFormElement* nearestForm = findFormAncestor();
+    if (m_form) {
+        if (nearestForm == m_form)
+            return;
+        m_form->removeImgElement(this);
+    }
+    m_form = nearestForm;
+    if (m_form)
+        m_form->registerImgElement(this);
 }
 
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -201,17 +223,8 @@ void HTMLImageElement::attach(const AttachContext& context)
 
 Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode* insertionPoint)
 {
-    // m_form can be non-null if it was set in constructor.
-    if (m_form && insertionPoint->highestAncestor() != m_form->highestAncestor()) {
-        m_form->removeImgElement(this);
-        m_form = 0;
-    }
-
-    if (!m_form) {
-        m_form = findFormAncestor();
-        if (m_form)
-            m_form->registerImgElement(this);
-    }
+    if (!m_formWasSetByParser || insertionPoint->highestAncestor() != m_form->highestAncestor())
+        resetFormOwner();
 
     // If we have been inserted from a renderer-less document,
     // our loader may have not fetched the image, so do it now.
@@ -223,9 +236,8 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
 
 void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
 {
-    if (m_form)
-        m_form->removeImgElement(this);
-    m_form = 0;
+    if (!m_form || m_form->highestAncestor() != highestAncestor())
+        resetFormOwner();
     HTMLElement::removedFrom(insertionPoint);
 }
 

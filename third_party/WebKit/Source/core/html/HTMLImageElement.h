@@ -82,6 +82,7 @@ public:
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
     virtual HTMLFormElement* formOwner() const OVERRIDE;
+    void formRemovedFromTree(const Node* formRoot);
 
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0);
@@ -111,11 +112,14 @@ private:
     virtual bool isInteractiveContent() const OVERRIDE;
     virtual Image* imageContents() OVERRIDE;
 
+    void resetFormOwner();
+
     HTMLImageLoader m_imageLoader;
     HTMLFormElement* m_form;
     CompositeOperator m_compositeOperator;
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
+    bool m_formWasSetByParser;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLImageElement, hasTagName(HTMLNames::imgTag));

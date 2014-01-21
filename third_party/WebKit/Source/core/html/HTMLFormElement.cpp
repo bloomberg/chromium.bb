@@ -137,6 +137,9 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
     Vector<FormAssociatedElement*> associatedElements(m_associatedElements);
     for (unsigned i = 0; i < associatedElements.size(); ++i)
         associatedElements[i]->formRemovedFromTree(root);
+    Vector<HTMLImageElement*> images(imageElements());
+    for (unsigned i = 0; i < images.size(); ++i)
+        images[i]->formRemovedFromTree(root);
     HTMLElement::removedFrom(insertionPoint);
 }
 

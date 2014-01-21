@@ -46,6 +46,16 @@ function hasFormOwner(shouldHaveOwner, haveIt, event)
 <pre form=topForm onerror="hasFormOwner(false, typeof canary !== 'undefined' && canary, event);"></pre>
 <span form=topForm onerror="hasFormOwner(false, typeof canary !== 'undefined' && canary, event);"></span>
 <img form=topForm onerror="hasFormOwner(false, typeof canary !== 'undefined' && canary, event);"></img>
+
+<!-- Elements associated to a unclosed <form> by the HTML parser -->
+<div id="willBeRemoved">
+<div><form id="form2"></div>
+<input name="input1">
+<img name="image1">
+</div>
+<input name="input-in-document">
+<img name="image-in-document">
+
 </div>
 <script>
 description("Verify that only elements that are 'form associatable' get a form owner.");
@@ -63,8 +73,21 @@ function testFormAssociation()
    }
 }
 testFormAssociation();
-if (window.testRunner)
-    testRunner.dumpAsText();
+
+debug("");
+debug("Tests for association-by-parser:");
+var form2 = document.querySelector("#form2");
+shouldBeDefined("form2['input1']");
+shouldBeDefined("form2['image1']");
+shouldBeDefined("form2['input-in-document']");
+shouldBeDefined("form2['image-in-document']");
+var removed = document.querySelector("#willBeRemoved");
+removed.parentNode.removeChild(removed);
+debug("Detach a form, input1 and image1 from the document");
+shouldBeDefined("form2['input1']");
+shouldBeDefined("form2['image1']");
+shouldBeUndefined("form2['input-in-document']");
+shouldBeUndefined("form2['image-in-document']");
 </script>
 </body>
 </html>
