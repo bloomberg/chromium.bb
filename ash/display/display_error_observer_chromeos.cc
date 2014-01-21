@@ -47,7 +47,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
       kDisplayErrorNotificationId,
       l10n_util::GetStringUTF16(message_id),
       base::string16(),  // message
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
+      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
       base::string16(),  // display_source
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
