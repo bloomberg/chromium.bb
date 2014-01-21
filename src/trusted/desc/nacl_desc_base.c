@@ -17,6 +17,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
 
+#include "native_client/src/public/desc_metadata_types.h"
+
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -83,7 +85,7 @@ int NaClDescCtor(struct NaClDesc *ndp) {
             " multiple of 16\n");
   }
   ndp->flags = 0;
-  ndp->metadata_type = NACL_DESC_METADATA_TYPE_NONE;
+  ndp->metadata_type = NACL_DESC_METADATA_NONE_TYPE;
   ndp->metadata_num_bytes = 0;
   ndp->metadata = NULL;
   return NaClRefCountCtor(&ndp->base);
@@ -635,6 +637,7 @@ int NaClDescSetMetadata(struct NaClDesc *self,
   memcpy(buffer, metadata_bytes, metadata_num_bytes);
   self->metadata_type = metadata_type;
   self->metadata_num_bytes = metadata_num_bytes;
+  free(self->metadata);
   self->metadata = buffer;
   self->flags = self->flags | NACL_DESC_FLAGS_HAS_METADATA;
   rv = 0;
@@ -655,12 +658,12 @@ int32_t NaClDescGetMetadata(struct NaClDesc *self,
   NaClRefCountLock(&self->base);
   if (0 == (NACL_DESC_FLAGS_HAS_METADATA & self->flags)) {
     *metadata_buffer_bytes_in_out = 0;
-    rv = NACL_DESC_METADATA_TYPE_NONE;
+    rv = NACL_DESC_METADATA_NONE_TYPE;
     goto done;
   }
-  if (NACL_DESC_METADATA_TYPE_NONE == self->metadata_type) {
+  if (NACL_DESC_METADATA_NONE_TYPE == self->metadata_type) {
     *metadata_buffer_bytes_in_out = 0;
-    rv = NACL_DESC_METADATA_TYPE_NONE;
+    rv = NACL_DESC_METADATA_NONE_TYPE;
     goto done;
   }
   bytes_to_copy = *metadata_buffer_bytes_in_out;
@@ -697,8 +700,18 @@ uint32_t NaClDescGetFlags(struct NaClDesc *self) {
   return rv;
 }
 
-int NaClDescIsSafeForMmap(struct NaClDesc *vself) {
-  return 0 != (NaClDescGetFlags(vself) & NACL_DESC_FLAGS_MMAP_EXEC_OK);
+int NaClDescIsSafeForMmap(struct NaClDesc *self) {
+  return 0 != (NaClDescGetFlags(self) & NACL_DESC_FLAGS_MMAP_EXEC_OK);
+}
+
+void NaClDescMarkSafeForMmap(struct NaClDesc *self) {
+  NaClDescSetFlags(self,
+                   NACL_DESC_FLAGS_MMAP_EXEC_OK | NaClDescGetFlags(self));
+}
+
+void NaClDescMarkUnsafeForMmap(struct NaClDesc *self) {
+  NaClDescSetFlags(self,
+                   ~NACL_DESC_FLAGS_MMAP_EXEC_OK & NaClDescGetFlags(self));
 }
 
 struct NaClDescVtbl const kNaClDescVtbl = {

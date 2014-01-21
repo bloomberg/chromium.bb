@@ -18,6 +18,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'debug_stub': [
         'sel',
         ],
+    'desc_cacheability': [
+        'nrd_xfer',
+        ],
     'imc': [
         'platform',
         ],
@@ -42,6 +45,7 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'validation_cache',
         ],
     'sel': [
+        'desc_cacheability',
         'nacl_error_code',
         'env_cleanser',
         'manifest_proxy',

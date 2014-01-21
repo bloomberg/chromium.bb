@@ -14,6 +14,9 @@
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
 
+#include "native_client/src/public/desc_metadata_types.h"
+#include "native_client/src/public/secure_service.h"
+
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
@@ -28,6 +31,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
+#include "native_client/src/trusted/desc_cacheability/desc_cacheability.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/fault_injection/test_injection.h"
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
@@ -56,6 +60,7 @@
 #include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
 #include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
+#include "native_client/src/trusted/validator/validation_cache.h"
 
 static int IsEnvironmentVariableSet(char const *env_name) {
   return NULL != getenv(env_name);
@@ -1027,6 +1032,7 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
   NaClLog(4, "Leaving NaClSecureCommandChannel\n");
 }
 
+
 void NaClAppLoadModule(struct NaClApp   *nap,
                        struct NaClDesc  *nexe,
                        void             (*load_cb)(void *instance_data,
@@ -1064,12 +1070,16 @@ void NaClAppLoadModule(struct NaClApp   *nap,
   NaClXMutexLock(&nap->mu);
 
   /*
-   * Check / Mark the nexe binary as OK to attempt memory mapping.
-   *
-   * TODO(bsy): change needed to get NaClFileToken and resolve to file
-   * path information, set NaClRichFileInfo, and stash via
-   * NaClSetFileOriginInfo, then set NACL_DESC_FLAGS_MMAP_EXEC_OK.
+   * Check and possibly mark the nexe binary as OK to attempt memory
+   * mapping.  We first clear the safe-for-mmap flag -- if we do not
+   * trust the renderer to really send us a safe-to-mmap descriptor
+   * and have to query the validation cache, then we also do not want
+   * to trust the metadata flag value that originated from the
+   * renderer.
    */
+  NaClDescMarkUnsafeForMmap(nexe);
+  NaClReplaceDescIfValidationCacheAssertsMappable(&nexe,
+                                                  nap->validation_cache);
 
   status = NACL_FI_VAL("load_module", NaClErrorCode,
                        NaClAppLoadFile(nexe, nap));

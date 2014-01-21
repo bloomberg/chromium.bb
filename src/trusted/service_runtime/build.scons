@@ -327,6 +327,7 @@ if env.Bit('windows'):
 
 sel_ldr_libs = ['sel',
                 'sel_main',
+                'desc_cacheability',
                 'env_cleanser',
                 'nacl_error_code',
                 'manifest_proxy',

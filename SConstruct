@@ -2075,6 +2075,7 @@ def MakeBaseTrustedEnv(platform=None):
       'src/trusted/cpu_features/build.scons',
       'src/trusted/debug_stub/build.scons',
       'src/trusted/desc/build.scons',
+      'src/trusted/desc_cacheability/build.scons',
       'src/trusted/fault_injection/build.scons',
       'src/trusted/generic_container/build.scons',
       'src/trusted/gio/build.scons',

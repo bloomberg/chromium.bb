@@ -14,6 +14,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/desc_cacheability/desc_cacheability.h"
 #include "native_client/src/trusted/reverse_service/manifest_rpc.h"
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -150,47 +151,26 @@ static void NaClManifestNameServiceLookupRpc(
         (struct NaClManifestProxy *) proxy_conn->base.server;
     struct NaClValidationCache *validation_cache =
         proxy->server->nap->validation_cache;
-    int32_t new_fd;
-    char *file_path;
-    uint32_t file_path_length;
+    struct NaClDesc *replacement_desc;
 
+    /*
+     * The cookie is used to release renderer-side pepper file handle.
+     * For now, we leak.  We need on-close callbacks on NaClDesc
+     * objects to do this properly, but even that is insufficient
+     * since the manifest NaClDesc could, in principle, be transferred
+     * to another process -- we would need distributed garbage
+     * protection.  If Pepper could take advantage of host-OS-side
+     * reference counting that is already done, this wouldn't be a
+     * problem.
+     */
     NaClLog(4,
             "NaClManifestNameServiceLookupRpc: got cookie %.*s\n",
             cookie_size, cookie);
-
-    /*
-     * Not all file loading paths will produce a token.  Zero is an invalid
-     * token value that indicates there is nothing to resolve.  In this case,
-     * assume nothing about the providence of the file.
-     */
-    if (!(file_token.lo == 0 && file_token.hi == 0) &&
-        validation_cache->ResolveFileToken != NULL &&
-        validation_cache->ResolveFileToken(validation_cache->handle,
-                                           &file_token,
-                                           &new_fd,
-                                           &file_path,
-                                           &file_path_length)) {
-      struct NaClRichFileInfo info;
-      uint32_t flags;
-      /*
-       * We don't entirely trust the render process, so swap the handle with one
-       * from the browser process that should be equivalent.
-       */
+    replacement_desc = NaClExchangeFileTokenForMappableDesc(&file_token,
+                                                            validation_cache);
+    if (NULL != replacement_desc) {
       NaClDescUnref(desc);
-      desc = NaClDescIoDescFromHandleAllocCtor((NaClHandle) new_fd,
-                                               NACL_ABI_O_RDONLY);
-
-      /* Mark the desc as OK for mmaping. */
-      flags = NaClDescGetFlags(desc);
-      NaClDescSetFlags(desc, flags | NACL_DESC_FLAGS_MMAP_EXEC_OK);
-
-      /* Provide metadata for validation. */
-      NaClRichFileInfoCtor(&info);
-      info.known_file = 1;
-      info.file_path = file_path; /* Takes ownership. */
-      info.file_path_length = file_path_length;
-      NaClSetFileOriginInfo(desc, &info);
-      NaClRichFileInfoDtor(&info);
+      desc = replacement_desc;
     }
 
     out_args[0]->u.ival = status;

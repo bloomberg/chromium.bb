@@ -18,6 +18,8 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/public/desc_metadata_types.h"
+
 /* For NaClHandle */
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
@@ -371,7 +373,7 @@ struct NaClDescVtbl {
    * if it has no metadata.  To do otherwise would expose us to type
    * confusion attacks.
    *
-   * Returns NACL_DESC_METADATA_TYPE_NONE if no metadata is associated
+   * Returns NACL_DESC_METADATA_NONE_TYPE if no metadata is associated
    * with the descriptor.
    */
   int32_t (*GetMetadata)(struct NaClDesc *self,
@@ -474,7 +476,6 @@ int NaClDescSetMetadata(struct NaClDesc *self,
                         int32_t metadata_type,
                         uint32_t metadata_num_bytes,
                         uint8_t const *metadata_bytes) NACL_WUR;
-#define NACL_DESC_METADATA_TYPE_NONE  (-1)
 
 /*
  * USE THE VIRTUAL FUNCTION.  THIS DECLARATION IS FOR SUBCLASSES.
@@ -673,7 +674,18 @@ int NaClDescInternalizeNotImplemented(
 
 int NaClSafeCloseNaClHandle(NaClHandle h);
 
-int NaClDescIsSafeForMmap(struct NaClDesc *vself);
+int NaClDescIsSafeForMmap(struct NaClDesc *self);
+
+void NaClDescMarkSafeForMmap(struct NaClDesc *self);
+
+void NaClDescMarkUnsafeForMmap(struct NaClDesc *self);
+
+struct NaClValidationCache;
+
+int NaClDescValidationCacheResolve(
+    struct NaClDesc **desc_in_out,
+    struct NaClValidationCache *validation_cache);
+
 
 EXTERN_C_END
 

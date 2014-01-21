@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include "native_client/src/public/desc_metadata_types.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -24,9 +25,6 @@
 
 #define ADD_LITERAL(cache, query, data) \
   ((cache)->AddData((query), (uint8_t*)&(data), sizeof(data)))
-
-/* Arbitrary magic value. */
-static int32_t FILE_ORIGIN_INFO_TYPE = 0x0EA7F00D;
 
 int NaClCachingIsInexpensive(struct NaClValidationCache *cache,
                              const struct NaClValidationMetadata *metadata) {
@@ -145,7 +143,7 @@ int NaClSetFileOriginInfo(struct NaClDesc *desc,
   }
   status = NACL_VTBL(NaClDesc, desc)->SetMetadata(
       desc,
-      FILE_ORIGIN_INFO_TYPE,
+      NACL_DESC_METADATA_ORIGIN_INFO_TYPE,
       buffer_length,
       (uint8_t *) buffer);
   free(buffer);
@@ -225,7 +223,7 @@ int NaClGetFileOriginInfo(struct NaClDesc *desc,
       desc,
       &buffer_length,
       NULL);
-  if (metadata_type != FILE_ORIGIN_INFO_TYPE)
+  if (metadata_type != NACL_DESC_METADATA_ORIGIN_INFO_TYPE)
     return 1;
 
   buffer = (uint8_t *) malloc(buffer_length);
@@ -236,7 +234,7 @@ int NaClGetFileOriginInfo(struct NaClDesc *desc,
       desc,
       &buffer_length,
       buffer);
-  if (metadata_type != FILE_ORIGIN_INFO_TYPE)
+  if (metadata_type != NACL_DESC_METADATA_ORIGIN_INFO_TYPE)
     return 1;
 
   status = NaClDeserializeNaClDescMetadata(buffer, buffer_length, info);
