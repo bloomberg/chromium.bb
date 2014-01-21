@@ -320,7 +320,8 @@ void ExtensionProcessResourceProvider::AddToTaskManager(
 
   ExtensionProcessResource* resource =
       new ExtensionProcessResource(render_view_host);
-  CHECK(resources_.find(render_view_host) == resources_.end());
+  if (resources_.find(render_view_host) != resources_.end())
+    return;
   resources_[render_view_host] = resource;
   task_manager_->AddResource(resource);
 }
