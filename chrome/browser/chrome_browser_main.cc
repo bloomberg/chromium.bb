@@ -1025,6 +1025,32 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreProfileInit();
+
+#if !defined(OS_ANDROID)
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // First check if any ephemeral profiles are left behind because of browser
+  // crash and schedule them for deletion and then proceed with getting the set
+  // of profiles to open.
+  ProfileInfoCache& profile_cache = profile_manager->GetProfileInfoCache();
+  size_t profiles_count = profile_cache.GetNumberOfProfiles();
+  std::vector<base::FilePath> profiles_to_delete;
+  for (size_t i = 0;i < profiles_count; ++i) {
+    if (profile_cache.ProfileIsEphemeralAtIndex(i))
+      profiles_to_delete.push_back(profile_cache.GetPathOfProfileAtIndex(i));
+  }
+
+  if (profiles_to_delete.size()) {
+    for (size_t i = 0;i < profiles_to_delete.size(); ++i) {
+      profile_manager->ScheduleProfileForDeletion(
+          profiles_to_delete[i], ProfileManager::CreateCallback());
+    }
+    // Clean up stale profiles immediately after browser start.
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&ProfileManager::CleanUpStaleProfiles, profiles_to_delete));
+  }
+#endif  // OS_ANDROID
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {
