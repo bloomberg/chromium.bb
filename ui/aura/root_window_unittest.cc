@@ -16,6 +16,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_event_handler.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -1616,6 +1617,85 @@ TEST_F(RootWindowTestWithMessageLoop, EventRepostedInNonNestedLoop) {
                            base::Bind(&RootWindowTestWithMessageLoop::RunTest,
                                       base::Unretained(this)));
   message_loop()->Run();
+}
+
+class RootWindowTestInHighDPI : public RootWindowTest {
+ public:
+  RootWindowTestInHighDPI() {}
+  virtual ~RootWindowTestInHighDPI() {}
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    RootWindowTest::SetUp();
+    test_screen()->SetDeviceScaleFactor(2.f);
+  }
+};
+
+TEST_F(RootWindowTestInHighDPI, EventLocationTransform) {
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> child(test::CreateTestWindowWithDelegate(&delegate,
+      1234, gfx::Rect(20, 20, 100, 100), root_window()));
+  child->Show();
+
+  test::TestEventHandler handler_child;
+  test::TestEventHandler handler_root;
+  root_window()->AddPreTargetHandler(&handler_root);
+  child->AddPreTargetHandler(&handler_child);
+
+  {
+    ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                        gfx::Point(30, 30), gfx::Point(30, 30),
+                        ui::EF_NONE, ui::EF_NONE);
+    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
+    EXPECT_EQ(0, handler_child.num_mouse_events());
+    EXPECT_EQ(1, handler_root.num_mouse_events());
+  }
+
+  {
+    ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                        gfx::Point(50, 50), gfx::Point(50, 50),
+                        ui::EF_NONE, ui::EF_NONE);
+    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
+    // The child receives an ENTER, and a MOVED event.
+    EXPECT_EQ(2, handler_child.num_mouse_events());
+    // The root receives both the ENTER and the MOVED events dispatched to
+    // |child|, as well as an EXIT event.
+    EXPECT_EQ(3, handler_root.num_mouse_events());
+  }
+
+  child->RemovePreTargetHandler(&handler_child);
+  root_window()->RemovePreTargetHandler(&handler_root);
+}
+
+TEST_F(RootWindowTestInHighDPI, TouchMovesHeldOnScroll) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);
+  test::TestWindowDelegate delegate;
+  HoldPointerOnScrollHandler handler(dispatcher(), filter);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
+  window->AddPreTargetHandler(&handler);
+
+  test::EventGenerator generator(root_window());
+  generator.GestureScrollSequence(
+      gfx::Point(120, 120), gfx::Point(20, 120),
+      base::TimeDelta::FromMilliseconds(100), 25);
+
+  // |handler| will have reset |filter| and started holding the touch-move
+  // events when scrolling started. At the end of the scroll (i.e. upon
+  // touch-release), the held touch-move event will have been dispatched first,
+  // along with the subsequent events (i.e. touch-release, scroll-end, and
+  // gesture-end).
+  const EventFilterRecorder::Events& events = filter->events();
+  EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_SCROLL_END GESTURE_END",
+            EventTypesToString(events));
+  ASSERT_EQ(2u, filter->touch_locations().size());
+  EXPECT_EQ(gfx::Point(-40, 10).ToString(),
+            filter->touch_locations()[0].ToString());
+  EXPECT_EQ(gfx::Point(-40, 10).ToString(),
+            filter->touch_locations()[1].ToString());
 }
 
 }  // namespace aura

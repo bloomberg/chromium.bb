@@ -549,6 +549,12 @@ ui::EventTarget* RootWindow::GetRootTarget() {
 }
 
 void RootWindow::PrepareEventForDispatch(ui::Event* event) {
+  if (dispatching_held_event_) {
+    // The held events are already in |window()|'s coordinate system. So it is
+    // not necessary to apply the transform to convert from the host's
+    // coordinate system to |window()|'s coordinate system.
+    return;
+  }
   if (event->IsMouseEvent() ||
       event->IsScrollEvent() ||
       event->IsTouchEvent() ||
