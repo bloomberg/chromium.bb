@@ -64,7 +64,7 @@ void GetTranslateLanguages(content::WebContents* web_contents,
 
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
-  *source = translate_tab_helper->language_state().original_language();
+  *source = translate_tab_helper->GetLanguageState().original_language();
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

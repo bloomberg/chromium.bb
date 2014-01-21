@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -35,6 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_error_details.h"
@@ -202,7 +202,7 @@ void TranslateManager::Observe(int type,
       }
 
       if (!load_details->is_main_frame &&
-          translate_tab_helper->language_state().translation_declined()) {
+          translate_tab_helper->GetLanguageState().translation_declined()) {
         // Some sites (such as Google map) may trigger sub-frame navigations
         // when the user interacts with the page.  We don't want to show a new
         // infobar if the user already dismissed one in that case.
@@ -216,7 +216,7 @@ void TranslateManager::Observe(int type,
       // When doing a page reload, TAB_LANGUAGE_DETERMINED is not sent,
       // so the translation needs to be explicitly initiated, but only when the
       // page needs translation.
-      if (!translate_tab_helper->language_state().page_needs_translation())
+      if (!translate_tab_helper->GetLanguageState().page_needs_translation())
         return;
       // Note that we delay it as the TranslateManager gets this notification
       // before the WebContents and the WebContents processing might remove the
@@ -228,7 +228,7 @@ void TranslateManager::Observe(int type,
               weak_method_factory_.GetWeakPtr(),
               controller->GetWebContents()->GetRenderProcessHost()->GetID(),
               controller->GetWebContents()->GetRenderViewHost()->GetRoutingID(),
-              translate_tab_helper->language_state().original_language(), 0));
+              translate_tab_helper->GetLanguageState().original_language(), 0));
       break;
     }
     case chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED: {
@@ -246,7 +246,7 @@ void TranslateManager::Observe(int type,
       if (!translate_tab_helper)
         return;
 
-      LanguageState& language_state = translate_tab_helper->language_state();
+      LanguageState& language_state = translate_tab_helper->GetLanguageState();
       if (language_state.page_needs_translation() &&
           !language_state.translation_pending() &&
           !language_state.translation_declined() &&
@@ -404,7 +404,7 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     }
   }
 
-  LanguageState& language_state = translate_tab_helper->language_state();
+  LanguageState& language_state = translate_tab_helper->GetLanguageState();
   std::string auto_translate_to = language_state.AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
@@ -445,7 +445,7 @@ void TranslateManager::InitiateTranslationPosted(int process_id,
 
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
-  if (translate_tab_helper->language_state().translation_pending())
+  if (translate_tab_helper->GetLanguageState().translation_pending())
     return;
 
   // During a reload we need web content to be available before the
@@ -532,8 +532,8 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
 
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
-  translate_tab_helper->language_state().SetCurrentLanguage(
-      translate_tab_helper->language_state().original_language());
+  translate_tab_helper->GetLanguageState().SetCurrentLanguage(
+      translate_tab_helper->GetLanguageState().original_language());
 }
 
 void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
@@ -558,7 +558,7 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
   report_error_url = net::AppendQueryParameter(
       report_error_url,
       kSourceLanguageQueryName,
-      translate_tab_helper->language_state().original_language());
+      translate_tab_helper->GetLanguageState().original_language());
 
   report_error_url = TranslateURLUtil::AddHostLocaleToUrl(report_error_url);
   report_error_url = TranslateURLUtil::AddApiKeyToUrl(report_error_url);
@@ -590,7 +590,7 @@ void TranslateManager::DoTranslatePage(WebContents* web_contents,
   if (!translate_tab_helper)
     return;
 
-  translate_tab_helper->language_state().set_translation_pending(true);
+  translate_tab_helper->GetLanguageState().set_translation_pending(true);
   web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
       web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID(),
       translate_script, source_lang, target_lang));
@@ -735,7 +735,7 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
     TranslateTabHelper* translate_tab_helper =
         TranslateTabHelper::FromWebContents(web_contents);
     if (!translate_tab_helper ||
-        translate_tab_helper->language_state().InTranslateNavigation()) {
+        translate_tab_helper->GetLanguageState().InTranslateNavigation()) {
       return;
     }
   }

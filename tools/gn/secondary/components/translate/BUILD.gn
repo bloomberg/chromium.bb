@@ -6,10 +6,13 @@ static_library("translate_core_browser") {
   external = true
 
   sources = [
+    "core/browser/language_state.cc",
+    "core/browser/language_state.h",
     "core/browser/page_translated_details.h",
     "core/browser/translate_browser_metrics.cc",
     "core/browser/translate_browser_metrics.h",
     "core/browser/translate_delegate.h",
+    "core/browser/translate_driver.h",
     "core/browser/translate_error_details.h",
     "core/browser/translate_event_details.cc",
     "core/browser/translate_event_details.h",

@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
 
-#include "chrome/browser/tab_contents/language_state.h"
+#include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -18,7 +18,12 @@ class TranslateTabHelper
  public:
   virtual ~TranslateTabHelper();
 
-  LanguageState& language_state() { return language_state_; }
+  // Gets the LanguageState associated with the page.
+  LanguageState& GetLanguageState();
+
+  // Returns the ContentTranslateDriver instance associated with this
+  // WebContents.
+  ContentTranslateDriver& translate_driver() { return translate_driver_; }
 
  private:
   explicit TranslateTabHelper(content::WebContents* web_contents);
@@ -37,8 +42,7 @@ class TranslateTabHelper
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
 
-  // Information about the language the page is in and has been translated to.
-  LanguageState language_state_;
+  ContentTranslateDriver translate_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateTabHelper);
 };

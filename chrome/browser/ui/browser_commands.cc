@@ -696,9 +696,9 @@ void Translate(Browser* browser) {
   TranslateBubbleModel::ViewState view_state =
       TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE;
   if (translate_tab_helper) {
-    if (translate_tab_helper->language_state().translation_pending())
+    if (translate_tab_helper->GetLanguageState().translation_pending())
       view_state = TranslateBubbleModel::VIEW_STATE_TRANSLATING;
-    else if (translate_tab_helper->language_state().IsPageTranslated())
+    else if (translate_tab_helper->GetLanguageState().IsPageTranslated())
       view_state = TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
   }
   browser->window()->ShowTranslateBubble(web_contents, view_state,

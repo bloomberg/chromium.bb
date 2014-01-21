@@ -1229,7 +1229,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       if (!translate_tab_helper)
         return false;
       std::string original_lang =
-          translate_tab_helper->language_state().original_language();
+          translate_tab_helper->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
       target_lang = TranslateManager::GetLanguageCode(target_lang);
       // Note that we intentionally enable the menu even if the original and
@@ -1238,7 +1238,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // language.
       return ((params_.edit_flags & WebContextMenuData::CanTranslate) != 0) &&
              !original_lang.empty() &&  // Did we receive the page language yet?
-             !translate_tab_helper->language_state().IsPageTranslated() &&
+             !translate_tab_helper->GetLanguageState().IsPageTranslated() &&
              !source_web_contents_->GetInterstitialPage() &&
              // There are some application locales which can't be used as a
              // target language for translation.
@@ -1806,12 +1806,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       TranslateTabHelper* translate_tab_helper =
           TranslateTabHelper::FromWebContents(source_web_contents_);
       if (!translate_tab_helper ||
-          translate_tab_helper->language_state().IsPageTranslated() ||
-          translate_tab_helper->language_state().translation_pending()) {
+          translate_tab_helper->GetLanguageState().IsPageTranslated() ||
+          translate_tab_helper->GetLanguageState().translation_pending()) {
         return;
       }
       std::string original_lang =
-          translate_tab_helper->language_state().original_language();
+          translate_tab_helper->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
       target_lang = TranslateManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears

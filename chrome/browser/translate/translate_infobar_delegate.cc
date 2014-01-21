@@ -59,7 +59,7 @@ void TranslateInfoBarDelegate::Create(
     TranslateTabHelper* translate_tab_helper =
         TranslateTabHelper::FromWebContents(web_contents);
     if (!translate_tab_helper ||
-        translate_tab_helper->language_state().InTranslateNavigation())
+        translate_tab_helper->GetLanguageState().InTranslateNavigation())
       return;
   }
 

@@ -17,10 +17,14 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TranslateTabHelper);
 
 TranslateTabHelper::TranslateTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      language_state_(&web_contents->GetController()) {
+      translate_driver_(&web_contents->GetController()) {
 }
 
 TranslateTabHelper::~TranslateTabHelper() {
+}
+
+LanguageState& TranslateTabHelper::GetLanguageState() {
+  return translate_driver_.language_state();
 }
 
 bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {
@@ -39,14 +43,14 @@ void TranslateTabHelper::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   // Let the LanguageState clear its state.
-  language_state_.DidNavigate(details);
+  translate_driver_.DidNavigate(details);
 }
 
 void TranslateTabHelper::OnLanguageDetermined(
     const LanguageDetectionDetails& details,
     bool page_needs_translation) {
-  language_state_.LanguageDetermined(details.adopted_language,
-                                     page_needs_translation);
+  translate_driver_.language_state().LanguageDetermined(
+      details.adopted_language, page_needs_translation);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
@@ -58,8 +62,8 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
                                           const std::string& original_lang,
                                           const std::string& translated_lang,
                                           TranslateErrors::Type error_type) {
-  language_state_.SetCurrentLanguage(translated_lang);
-  language_state_.set_translation_pending(false);
+  translate_driver_.language_state().SetCurrentLanguage(translated_lang);
+  translate_driver_.language_state().set_translation_pending(false);
   PageTranslatedDetails details;
   details.source_language = original_lang;
   details.target_language = translated_lang;

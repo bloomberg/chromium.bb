@@ -17,10 +17,13 @@
         '..',
       ],
       'sources': [
+        'translate/core/browser/language_state.cc',
+        'translate/core/browser/language_state.h',
         'translate/core/browser/page_translated_details.h',
         'translate/core/browser/translate_browser_metrics.cc',
         'translate/core/browser/translate_browser_metrics.h',
         'translate/core/browser/translate_delegate.h',
+        'translate/core/browser/translate_driver.h',
         'translate/core/browser/translate_error_details.h',
         'translate/core/browser/translate_event_details.cc',
         'translate/core/browser/translate_event_details.h',
@@ -80,5 +83,27 @@
         }],
       ],
     },
+  ],
+  'conditions': [
+    ['OS != "ios"', {
+      'targets': [
+        {
+          'target_name': 'translate_content_browser',
+          'type': 'static_library',
+          'dependencies': [
+            'translate_core_browser',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_browser',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'translate/content/browser/content_translate_driver.cc',
+            'translate/content/browser/content_translate_driver.h',
+           ],
+        },
+      ],
+    }],
   ],
 }

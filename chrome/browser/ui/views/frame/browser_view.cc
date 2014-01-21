@@ -1208,7 +1208,7 @@ void BrowserView::ShowTranslateBubble(
     TranslateErrors::Type error_type) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
-  LanguageState& language_state = translate_tab_helper->language_state();
+  LanguageState& language_state = translate_tab_helper->GetLanguageState();
   language_state.SetTranslateEnabled(true);
 
   TranslateBubbleView::ShowBubble(GetToolbarView()->GetTranslateBubbleAnchor(),

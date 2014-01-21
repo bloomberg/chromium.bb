@@ -1528,7 +1528,7 @@ void LocationBarView::RefreshTranslateIcon() {
   if (!web_contents)
     return;
   LanguageState& language_state = TranslateTabHelper::FromWebContents(
-      web_contents)->language_state();
+      web_contents)->GetLanguageState();
   bool enabled = language_state.translate_enabled();
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_icon_view_->SetVisible(enabled);

@@ -1754,12 +1754,12 @@ bool TabsDetectLanguageFunction::RunImpl() {
 
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(contents);
-  if (!translate_tab_helper->language_state().original_language().empty()) {
+  if (!translate_tab_helper->GetLanguageState().original_language().empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &TabsDetectLanguageFunction::GotLanguage, this,
-        translate_tab_helper->language_state().original_language()));
+        translate_tab_helper->GetLanguageState().original_language()));
     return true;
   }
   // The tab contents does not know its language yet.  Let's wait until it

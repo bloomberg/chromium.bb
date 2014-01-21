@@ -1278,12 +1278,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
     LanguageDetectionDetails>
       en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
-  EXPECT_EQ("", translate_tab_helper->language_state().original_language());
+  EXPECT_EQ("", translate_tab_helper->GetLanguageState().original_language());
   en_language_detected_signal.Wait();
   EXPECT_TRUE(en_language_detected_signal.GetDetailsFor(
         source.map_key(), &details));
   EXPECT_EQ("en", details.adopted_language);
-  EXPECT_EQ("en", translate_tab_helper->language_state().original_language());
+  EXPECT_EQ("en", translate_tab_helper->GetLanguageState().original_language());
 
   // Now navigate to a page in French.
   ui_test_utils::WindowedNotificationObserverWithDetails<
@@ -1297,7 +1297,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
         source.map_key(), &details));
   EXPECT_EQ("fr", details.adopted_language);
-  EXPECT_EQ("fr", translate_tab_helper->language_state().original_language());
+  EXPECT_EQ("fr", translate_tab_helper->GetLanguageState().original_language());
 }
 
 // Chromeos defaults to restoring the last session, so this test isn't

@@ -94,11 +94,11 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/browser_content_translate_driver_observer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
-#include "chrome/browser/ui/browser_language_state_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_contents.h"
@@ -350,7 +350,8 @@ Browser::Browser(const CreateParams& params)
       window_has_shown_(false),
       chrome_updater_factory_(this),
       weak_factory_(this),
-      language_state_observer_(new BrowserLanguageStateObserver(this)) {
+      translate_driver_observer_(
+          new BrowserContentTranslateDriverObserver(this)) {
   // If this causes a crash then a window is being opened using a profile type
   // that is disallowed by policy. The crash prevents the disabled window type
   // from opening at all, but the path that triggered it should be fixed.
@@ -2096,8 +2097,8 @@ void Browser::SetAsDelegate(WebContents* web_contents, Browser* delegate) {
   ZoomController::FromWebContents(web_contents)->set_observer(delegate);
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
-  translate_tab_helper->language_state().set_observer(
-      delegate ? delegate->language_state_observer_.get() : NULL);
+  translate_tab_helper->translate_driver().set_observer(
+      delegate ? delegate->translate_driver_observer_.get() : NULL);
 }
 
 void Browser::CloseFrame() {

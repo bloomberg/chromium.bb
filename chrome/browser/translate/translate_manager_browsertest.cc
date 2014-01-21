@@ -353,7 +353,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
     TranslateTabHelper* translate_tab_helper =
         TranslateTabHelper::FromWebContents(web_contents);
     std::string source_language =
-        translate_tab_helper->language_state().original_language();
+        translate_tab_helper->GetLanguageState().original_language();
     std::string target_language = TranslateManager::GetLanguageCode(
         g_browser_process->GetApplicationLocale());
     scoped_ptr<TranslateUIDelegate> ui_delegate(
@@ -1604,7 +1604,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
   EXPECT_TRUE(fr_language_detected_signal.GetDetailsFor(
         source.map_key(), &details));
   EXPECT_EQ("fr", details.adopted_language);
-  EXPECT_EQ("fr", translate_tab_helper->language_state().original_language());
+  EXPECT_EQ("fr", translate_tab_helper->GetLanguageState().original_language());
 }
 
 #if defined (OS_WIN)

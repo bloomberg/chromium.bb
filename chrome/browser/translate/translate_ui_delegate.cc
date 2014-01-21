@@ -181,7 +181,7 @@ void TranslateUIDelegate::TranslationDeclined(bool explicitly_closed) {
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
   TranslateTabHelper::FromWebContents(web_contents())->
-      language_state().set_translation_declined(true);
+      GetLanguageState().set_translation_declined(true);
 
   UMA_HISTOGRAM_BOOLEAN(kDeclineTranslate, true);
 
@@ -199,7 +199,7 @@ void TranslateUIDelegate::SetLanguageBlocked(bool value) {
     TranslateTabHelper* translate_tab_helper =
         TranslateTabHelper::FromWebContents(web_contents());
     DCHECK(translate_tab_helper);
-    translate_tab_helper->language_state().SetTranslateEnabled(false);
+    translate_tab_helper->GetLanguageState().SetTranslateEnabled(false);
   } else {
     prefs_->UnblockLanguage(GetOriginalLanguageCode());
   }
@@ -222,7 +222,7 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
     TranslateTabHelper* translate_tab_helper =
         TranslateTabHelper::FromWebContents(web_contents());
     DCHECK(translate_tab_helper);
-    translate_tab_helper->language_state().SetTranslateEnabled(false);
+    translate_tab_helper->GetLanguageState().SetTranslateEnabled(false);
   } else {
     prefs_->RemoveSiteFromBlacklist(host);
   }

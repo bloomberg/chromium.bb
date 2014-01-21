@@ -22,6 +22,7 @@ include_rules = [
   "+components/sessions",
   "+components/signin",
   "+components/startup_metric_utils",
+  "+components/translate/content/browser",
   "+components/translate/core/browser",
   "+components/translate/core/common",
   "+components/url_matcher",

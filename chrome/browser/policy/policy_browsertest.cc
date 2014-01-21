@@ -1901,7 +1901,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(contents);
   ASSERT_TRUE(translate_tab_helper);
-  LanguageState& language_state = translate_tab_helper->language_state();
+  LanguageState& language_state = translate_tab_helper->GetLanguageState();
   EXPECT_EQ("fr", language_state.original_language());
   EXPECT_TRUE(language_state.page_needs_translation());
   EXPECT_FALSE(language_state.translation_pending());
