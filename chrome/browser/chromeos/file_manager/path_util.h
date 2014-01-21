@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_PATH_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_PATH_UTIL_H_
 
+#include <string>
+
 class Profile;
 
 namespace base {
@@ -43,6 +45,13 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile);
 bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_path,
                               base::FilePath* new_path);
+
+// The canonical mount point name for "Downloads" folder.
+std::string GetDownloadsMountPointName(Profile* profile);
+
+// Register |path| as the "Downloads" folder to the FileSystem API backend.
+// If another folder is already mounted. It revokes and overrides the old one.
+bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path);
 
 }  // namespace util
 }  // namespace file_manager

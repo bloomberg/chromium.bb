@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -194,22 +195,13 @@ class LocalTestVolume {
   // Adds this volume to the file system as a local volume. Returns true on
   // success.
   bool Mount(Profile* profile) {
-    const std::string kDownloads = "Downloads";
-
     if (local_path_.empty()) {
       if (!tmp_dir_.CreateUniqueTempDir())
         return false;
-      local_path_ = tmp_dir_.path().Append(kDownloads);
+      local_path_ = tmp_dir_.path().Append("Downloads");
     }
-    fileapi::ExternalMountPoints* const mount_points =
-        content::BrowserContext::GetMountPoints(profile);
-    mount_points->RevokeFileSystem(kDownloads);
 
-    return mount_points->RegisterFileSystem(
-        kDownloads,
-        fileapi::kFileSystemTypeNativeLocal,
-        fileapi::FileSystemMountOption(),
-        local_path_) &&
+    return util::RegisterDownloadsMountPoint(profile, local_path_) &&
         base::CreateDirectory(local_path_);
   }
 

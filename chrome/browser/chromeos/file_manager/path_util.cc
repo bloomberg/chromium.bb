@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace util {
@@ -64,6 +66,31 @@ bool MigratePathFromOldFormat(Profile* profile,
   }
 
   return false;
+}
+
+std::string GetDownloadsMountPointName(Profile* profile) {
+  // TODO(kinaba): crbug.com/336090.
+  // Make it unique for each profile once Files.app is ready.
+  return kDownloadsFolderName;
+}
+
+bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
+  // TODO(kinaba): crbug.com/336090.
+  // Register to fileapi::ExternalMountPoint::GetSystemInstance rather than the
+  // per-profile instance, because it needs to be reachable from every profile
+  // for enabling cross-profile copies, etc.
+
+  const std::string mount_point_name =
+      file_manager::util::GetDownloadsMountPointName(profile);
+  fileapi::ExternalMountPoints* const mount_points =
+      content::BrowserContext::GetMountPoints(profile);
+
+  // The Downloads mount point already exists so it must be removed before
+  // adding the test mount point (which will also be mapped as Downloads).
+  mount_points->RevokeFileSystem(mount_point_name);
+  return mount_points->RegisterFileSystem(
+      mount_point_name, fileapi::kFileSystemTypeNativeLocal,
+      fileapi::FileSystemMountOption(), path);
 }
 
 }  // namespace util

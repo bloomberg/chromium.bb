@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -20,15 +21,12 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 using content::BrowserContext;
 
@@ -115,15 +113,8 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
   // Creates a file system mount point for a directory.
   void AddMountPoint(const base::FilePath& path) {
-    std::string mount_point_name = path.BaseName().AsUTF8Unsafe();
-    fileapi::ExternalMountPoints* mount_points =
-        BrowserContext::GetMountPoints(browser()->profile());
-    // The Downloads mount point already exists so it must be removed before
-    // adding the test mount point (which will also be mapped as Downloads).
-    mount_points->RevokeFileSystem(mount_point_name);
-    EXPECT_TRUE(mount_points->RegisterFileSystem(
-        mount_point_name, fileapi::kFileSystemTypeNativeLocal,
-        fileapi::FileSystemMountOption(), path));
+    EXPECT_TRUE(file_manager::util::RegisterDownloadsMountPoint(
+        browser()->profile(), path));
   }
 
   void CheckJavascriptErrors() {

@@ -192,17 +192,9 @@ void VolumeManager::Initialize() {
   }
 
   // Register 'Downloads' folder for the profile to the file system.
-  fileapi::ExternalMountPoints* mount_points =
-      content::BrowserContext::GetMountPoints(profile_);
-  DCHECK(mount_points);
-
-  const base::FilePath downloads_folder =
-      file_manager::util::GetDownloadsFolderForProfile(profile_);
-  bool success = mount_points->RegisterFileSystem(
-      downloads_folder.BaseName().AsUTF8Unsafe(),
-      fileapi::kFileSystemTypeNativeLocal,
-      fileapi::FileSystemMountOption(),
-      downloads_folder);
+  bool success = util::RegisterDownloadsMountPoint(
+      profile_,
+      file_manager::util::GetDownloadsFolderForProfile(profile_));
   DCHECK(success);
 
   // Subscribe to DriveIntegrationService.
@@ -258,8 +250,10 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
       content::BrowserContext::GetMountPoints(profile_);
   DCHECK(fileapi_mount_points);
   base::FilePath downloads;
-  if (fileapi_mount_points->GetRegisteredPath("Downloads", &downloads))
+  if (fileapi_mount_points->GetRegisteredPath(
+      util::GetDownloadsMountPointName(profile_), &downloads)) {
     result.push_back(CreateDownloadsVolumeInfo(downloads));
+  }
 
   // Adds disks (both removable disks and zip archives).
   const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
