@@ -213,7 +213,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
                               uint32 delta_window_size) = 0;
 
   // Called when a chunk of payload data for a credential frame is available.
-  // |header_data| A buffer containing the header data chunk received.
+  // |credential_data| A buffer containing the header data chunk received.
   // |len| The length of the header data buffer. A length of zero indicates
   //       that the header data block has been completely sent.
   // When this function returns true the visitor indicates that it accepted
@@ -221,6 +221,15 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // error has occurred, such as bad header data or resource exhaustion.
   virtual bool OnCredentialFrameData(const char* credential_data,
                                      size_t len) = 0;
+
+  // Called when a goaway frame opaque data is available.
+  // |goaway_data| A buffer containing the opaque GOAWAY data chunk received.
+  // |len| The length of the header data buffer. A length of zero indicates
+  //       that the header data block has been completely sent.
+  // When this function returns true the visitor indicates that it accepted
+  // all of the data. Returning false indicates that that an error has
+  // occurred while processing the data. Default implementation returns true.
+  virtual bool OnGoAwayFrameData(const char* goaway_data, size_t len);
 
   // Called when a BLOCKED frame has been parsed.
   virtual void OnBlocked(SpdyStreamId stream_id) {}
@@ -275,6 +284,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK,
     SPDY_CONTROL_FRAME_HEADER_BLOCK,
     SPDY_CREDENTIAL_FRAME_PAYLOAD,
+    SPDY_GOAWAY_FRAME_PAYLOAD,
     SPDY_SETTINGS_FRAME_PAYLOAD,
   };
 
@@ -288,6 +298,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_DECOMPRESS_FAILURE,           // There was an error decompressing.
     SPDY_COMPRESS_FAILURE,             // There was an error compressing.
     SPDY_CREDENTIAL_FRAME_CORRUPT,     // CREDENTIAL frame could not be parsed.
+    SPDY_GOAWAY_FRAME_CORRUPT,         // GOAWAY frame could not be parsed.
     SPDY_INVALID_DATA_FRAME_FLAGS,     // Data frame has invalid flags.
     SPDY_INVALID_CONTROL_FRAME_FLAGS,  // Control frame has invalid flags.
 
@@ -414,7 +425,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // stream_id of the last stream the sender of the frame is willing to process
   // to completion.
   SpdyFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
-                          SpdyGoAwayStatus status) const;
+                          SpdyGoAwayStatus status,
+                          const base::StringPiece& description) const;
   SpdySerializedFrame* SerializeGoAway(const SpdyGoAwayIR& goaway) const;
 
   // Creates and serializes a HEADERS frame. The HEADERS frame is used
@@ -503,7 +515,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetRstStreamSize() const;
   size_t GetSettingsMinimumSize() const;
   size_t GetPingSize() const;
-  size_t GetGoAwaySize() const;
+  size_t GetGoAwayMinimumSize() const;
   size_t GetHeadersMinimumSize() const;
   size_t GetWindowUpdateSize() const;
   size_t GetCredentialMinimumSize() const;
@@ -577,8 +589,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessCredentialFramePayload(const char* data, size_t len);
   size_t ProcessControlFrameBeforeHeaderBlock(const char* data, size_t len);
   size_t ProcessControlFrameHeaderBlock(const char* data, size_t len);
-  size_t ProcessSettingsFramePayload(const char* data, size_t len);
   size_t ProcessDataFramePayload(const char* data, size_t len);
+  size_t ProcessGoAwayFramePayload(const char* data, size_t len);
+  size_t ProcessSettingsFramePayload(const char* data, size_t len);
+
 
   // Helpers for above internal breakouts from ProcessInput.
   void ProcessControlFrameHeader(uint16 control_frame_type_field);
@@ -697,8 +711,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // type SYN_STREAM or SYN_REPLY.
   //
   // If we ever get something which looks like a data frame before we've had a
-  // SYN, we explicitly check to see if it looks like we got an HTTP response to
-  // a SPDY request.  This boolean lets us do that.
+  // SYN, we explicitly check to see if it looks like we got an HTTP response
+  // to a SPDY request.  This boolean lets us do that.
   bool syn_frame_processed_;
 
   // If we ever get a data frame before a SYN frame, we check to see if it

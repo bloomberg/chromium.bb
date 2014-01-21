@@ -355,7 +355,7 @@ enum SpdyGoAwayStatus {
   GOAWAY_OK = 0,
   GOAWAY_PROTOCOL_ERROR = 1,
   GOAWAY_INTERNAL_ERROR = 2,
-  GOAWAY_NUM_STATUS_CODES = 3
+  GOAWAY_NUM_STATUS_CODES = 3  // Must be last.
 };
 
 // A SPDY priority is a number between 0 and 7 (inclusive).
@@ -617,10 +617,9 @@ class NET_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
 
 class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
  public:
-  SpdyGoAwayIR(SpdyStreamId last_good_stream_id, SpdyGoAwayStatus status) {
-    set_last_good_stream_id(last_good_stream_id);
-    set_status(status);
-  }
+  SpdyGoAwayIR(SpdyStreamId last_good_stream_id, SpdyGoAwayStatus status,
+               const base::StringPiece& description);
+  virtual ~SpdyGoAwayIR();
   SpdyStreamId last_good_stream_id() const { return last_good_stream_id_; }
   void set_last_good_stream_id(SpdyStreamId last_good_stream_id) {
     DCHECK_LE(0u, last_good_stream_id);
@@ -633,11 +632,14 @@ class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
     status_ = status;
   }
 
+  const base::StringPiece& description() const;
+
   virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   SpdyStreamId last_good_stream_id_;
   SpdyGoAwayStatus status_;
+  const base::StringPiece description_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyGoAwayIR);
 };

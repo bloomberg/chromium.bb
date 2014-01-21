@@ -279,7 +279,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyPingFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessSpdyGoAwayFrame) {
-  SpdyGoAwayIR data(1, GOAWAY_PROTOCOL_ERROR);
+  SpdyGoAwayIR data(1, GOAWAY_PROTOCOL_ERROR, "go away");
   scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,

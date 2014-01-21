@@ -259,6 +259,68 @@ const size_t kMaxConcurrentStreamLimit = 256;
 
 }  // namespace
 
+SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
+    SpdyFramer::SpdyError err) {
+  switch(err) {
+    case SpdyFramer::SPDY_NO_ERROR:
+      return SPDY_ERROR_NO_ERROR;
+    case SpdyFramer::SPDY_INVALID_CONTROL_FRAME:
+      return SPDY_ERROR_INVALID_CONTROL_FRAME;
+    case SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE:
+      return SPDY_ERROR_CONTROL_PAYLOAD_TOO_LARGE;
+    case SpdyFramer::SPDY_ZLIB_INIT_FAILURE:
+      return SPDY_ERROR_ZLIB_INIT_FAILURE;
+    case SpdyFramer::SPDY_UNSUPPORTED_VERSION:
+      return SPDY_ERROR_UNSUPPORTED_VERSION;
+    case SpdyFramer::SPDY_DECOMPRESS_FAILURE:
+      return SPDY_ERROR_DECOMPRESS_FAILURE;
+    case SpdyFramer::SPDY_COMPRESS_FAILURE:
+      return SPDY_ERROR_COMPRESS_FAILURE;
+    case SpdyFramer::SPDY_CREDENTIAL_FRAME_CORRUPT:
+      return SPDY_ERROR_CREDENTIAL_FRAME_CORRUPT;
+    case SpdyFramer::SPDY_GOAWAY_FRAME_CORRUPT:
+      return SPDY_ERROR_GOAWAY_FRAME_CORRUPT;
+    case SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS:
+      return SPDY_ERROR_INVALID_DATA_FRAME_FLAGS;
+    case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS:
+      return SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS;
+    default:
+      NOTREACHED();
+      return static_cast<SpdyProtocolErrorDetails>(-1);
+  }
+}
+
+SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
+    SpdyRstStreamStatus status) {
+  switch(status) {
+    case RST_STREAM_PROTOCOL_ERROR:
+      return STATUS_CODE_PROTOCOL_ERROR;
+    case RST_STREAM_INVALID_STREAM:
+      return STATUS_CODE_INVALID_STREAM;
+    case RST_STREAM_REFUSED_STREAM:
+      return STATUS_CODE_REFUSED_STREAM;
+    case RST_STREAM_UNSUPPORTED_VERSION:
+      return STATUS_CODE_UNSUPPORTED_VERSION;
+    case RST_STREAM_CANCEL:
+      return STATUS_CODE_CANCEL;
+    case RST_STREAM_INTERNAL_ERROR:
+      return STATUS_CODE_INTERNAL_ERROR;
+    case RST_STREAM_FLOW_CONTROL_ERROR:
+      return STATUS_CODE_FLOW_CONTROL_ERROR;
+    case RST_STREAM_STREAM_IN_USE:
+      return STATUS_CODE_STREAM_IN_USE;
+    case RST_STREAM_STREAM_ALREADY_CLOSED:
+      return STATUS_CODE_STREAM_ALREADY_CLOSED;
+    case RST_STREAM_INVALID_CREDENTIALS:
+      return STATUS_CODE_INVALID_CREDENTIALS;
+    case RST_STREAM_FRAME_TOO_LARGE:
+      return STATUS_CODE_FRAME_TOO_LARGE;
+    default:
+      NOTREACHED();
+      return static_cast<SpdyProtocolErrorDetails>(-1);
+  }
+}
+
 SpdyStreamRequest::SpdyStreamRequest() : weak_ptr_factory_(this) {
   Reset();
 }
@@ -1082,8 +1144,7 @@ void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
       buffered_spdy_framer_->CreateRstStream(stream_id, status));
 
   EnqueueSessionWrite(priority, RST_STREAM, rst_frame.Pass());
-  RecordProtocolErrorHistogram(
-      static_cast<SpdyProtocolErrorDetails>(status + STATUS_CODE_INVALID));
+  RecordProtocolErrorHistogram(MapRstStreamStatusToProtocolError(status));
 }
 
 void SpdySession::PumpReadLoop(ReadState expected_read_state, int result) {
@@ -1779,8 +1840,7 @@ void SpdySession::OnError(SpdyFramer::SpdyError error_code) {
   if (availability_state_ == STATE_CLOSED)
     return;
 
-  RecordProtocolErrorHistogram(
-      static_cast<SpdyProtocolErrorDetails>(error_code));
+  RecordProtocolErrorHistogram(MapFramerErrorToProtocolError(error_code));
   std::string description = base::StringPrintf(
       "SPDY_ERROR error_code: %d.", error_code);
   CloseSessionResult result =

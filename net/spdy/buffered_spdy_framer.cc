@@ -283,7 +283,7 @@ SpdyFrame* BufferedSpdyFramer::CreatePingFrame(
 SpdyFrame* BufferedSpdyFramer::CreateGoAway(
     SpdyStreamId last_accepted_stream_id,
     SpdyGoAwayStatus status) const {
-  return spdy_framer_.CreateGoAway(last_accepted_stream_id, status);
+  return spdy_framer_.CreateGoAway(last_accepted_stream_id, status, "go away");
 }
 
 SpdyFrame* BufferedSpdyFramer::CreateHeaders(

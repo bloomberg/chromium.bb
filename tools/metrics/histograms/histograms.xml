@@ -30277,7 +30277,9 @@ other types of suffix sets.
   <int value="26" label="Syn Reply Not Received"/>
   <int value="27" label="Invalid Window Update Size"/>
   <int value="28" label="Receive Window Size Violation"/>
-  <int value="29" label="(Unused)"/>
+<!-- More SpdyFramer::SpdyErrors -->
+
+  <int value="29" label="GoAway Frame Corrupt"/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">

@@ -114,6 +114,11 @@ void SettingsFlagsAndId::ConvertFlagsAndIdForSpdy2(uint32* val) {
 SpdyCredential::SpdyCredential() : slot(0) {}
 SpdyCredential::~SpdyCredential() {}
 
+bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
+                                                   size_t len) {
+  return true;
+}
+
 SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : current_frame_buffer_(new char[kControlFrameBufferSize]),
       enable_compression_(true),
@@ -228,12 +233,15 @@ size_t SpdyFramer::GetPingSize() const {
   return GetControlFrameHeaderSize() + 4;
 }
 
-size_t SpdyFramer::GetGoAwaySize() const {
+size_t SpdyFramer::GetGoAwayMinimumSize() const {
   // Size, in bytes, of this GOAWAY frame. Calculated as:
-  // control frame header + 4 (last good stream id)
-  size_t size = GetControlFrameHeaderSize() + 4;
+  // 1. Control frame header size
+  size_t size = GetControlFrameHeaderSize();
 
-  // SPDY 3+ GOAWAY frames also contain a status.
+  // 2. Last good stream id (4 bytes)
+  size += 4;
+
+  // 3. SPDY 3+ GOAWAY frames also contain a status (4 bytes)
   if (protocol_version() >= 3) {
     size += 4;
   }
@@ -327,6 +335,8 @@ const char* SpdyFramer::StateToString(int state) {
       return "SPDY_CONTROL_FRAME_HEADER_BLOCK";
     case SPDY_CREDENTIAL_FRAME_PAYLOAD:
       return "SPDY_CREDENTIAL_FRAME_PAYLOAD";
+    case SPDY_GOAWAY_FRAME_PAYLOAD:
+      return "SPDY_GOAWAY_FRAME_PAYLOAD";
     case SPDY_SETTINGS_FRAME_PAYLOAD:
       return "SPDY_SETTINGS_FRAME_PAYLOAD";
   }
@@ -488,6 +498,13 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
 
       case SPDY_CREDENTIAL_FRAME_PAYLOAD: {
         size_t bytes_read = ProcessCredentialFramePayload(data, len);
+        len -= bytes_read;
+        data += bytes_read;
+        break;
+      }
+
+      case SPDY_GOAWAY_FRAME_PAYLOAD: {
+        size_t bytes_read = ProcessGoAwayFramePayload(data, len);
         len -= bytes_read;
         data += bytes_read;
         break;
@@ -727,7 +744,14 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
       break;
     case GOAWAY:
       {
-        if (current_frame_length_ != GetGoAwaySize()) {
+        // For SPDY version < 4, there are only mandatory fields and the header
+        // has a fixed length. For SPDY version >= 4, optional opaque data may
+        // be appended to the GOAWAY frame, thus there is only a minimal length
+        // restriction.
+        if ((current_frame_length_ != GetGoAwayMinimumSize() &&
+             protocol_version() < 4) ||
+            (current_frame_length_ < GetGoAwayMinimumSize() &&
+             protocol_version() >= 4)) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (current_frame_flags_ != 0) {
           set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -808,6 +832,11 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
     DCHECK_EQ(3, protocol_version());
     // TODO(hkhalil): Send GOAWAY for non-SPDY3
     CHANGE_STATE(SPDY_CREDENTIAL_FRAME_PAYLOAD);
+    return;
+  }
+
+  if (current_frame_type_ == GOAWAY) {
+    CHANGE_STATE(SPDY_GOAWAY_FRAME_PAYLOAD);
     return;
   }
 
@@ -1413,8 +1442,8 @@ bool SpdyFramer::ProcessSetting(const char* data) {
 
 size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
   size_t original_len = len;
-  size_t bytes_read =
-      UpdateCurrentFrameBuffer(&data, &len, remaining_data_length_);
+  size_t bytes_read = UpdateCurrentFrameBuffer(&data, &len,
+                                               remaining_data_length_);
   remaining_data_length_ -= bytes_read;
   if (remaining_data_length_ == 0) {
     SpdyFrameReader reader(current_frame_buffer_.get(),
@@ -1451,27 +1480,6 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
           DCHECK(successful_read);
           DCHECK(reader.IsDoneReading());
           visitor_->OnPing(id);
-        }
-        break;
-      case GOAWAY: {
-          bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
-          DCHECK(successful_read);
-          SpdyGoAwayStatus status = GOAWAY_OK;
-          if (spdy_version_ >= 3) {
-            uint32 status_raw = GOAWAY_OK;
-            successful_read = reader.ReadUInt32(&status_raw);
-            DCHECK(successful_read);
-            if (status_raw >= GOAWAY_OK &&
-                status_raw < static_cast<uint32>(GOAWAY_NUM_STATUS_CODES)) {
-              status = static_cast<SpdyGoAwayStatus>(status_raw);
-            } else {
-              // TODO(hkhalil): Probably best to OnError here, depending on
-              // our interpretation of the spec. Keeping with existing liberal
-              // behavior for now.
-            }
-          }
-          DCHECK(reader.IsDoneReading());
-          visitor_->OnGoAway(current_frame_stream_id_, status);
         }
         break;
       case WINDOW_UPDATE: {
@@ -1520,6 +1528,71 @@ size_t SpdyFramer::ProcessCredentialFramePayload(const char* data, size_t len) {
     }
   }
   return len;
+}
+
+size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
+  if (len == 0) {
+    return 0;
+  }
+  // Clamp to the actual remaining payload.
+  if (len > remaining_data_length_) {
+    len = remaining_data_length_;
+  }
+  size_t original_len = len;
+
+  // Check if we had already read enough bytes to parse the GOAWAY header.
+  const size_t header_size = GetGoAwayMinimumSize();
+  size_t unread_header_bytes = header_size - current_frame_buffer_length_;
+  bool already_parsed_header = (unread_header_bytes == 0);
+  if (!already_parsed_header) {
+    // Buffer the new GOAWAY header bytes we got.
+    UpdateCurrentFrameBuffer(&data, &len, unread_header_bytes);
+
+    // Do we have enough to parse the constant size GOAWAY header?
+    if (current_frame_buffer_length_ == header_size) {
+      // Parse out the last good stream id.
+      SpdyFrameReader reader(current_frame_buffer_.get(),
+                             current_frame_buffer_length_);
+      reader.Seek(GetControlFrameHeaderSize());  // Seek past frame header.
+      bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
+      DCHECK(successful_read);
+
+      // In SPDYv3 and up, frames also specify a status code - parse it out.
+      SpdyGoAwayStatus status = GOAWAY_OK;
+      if (spdy_version_ >= 3) {
+        uint32 status_raw = GOAWAY_OK;
+        successful_read = reader.ReadUInt32(&status_raw);
+        DCHECK(successful_read);
+        // We've read an unsigned integer, so it's enough to only check
+        // upper bound to ensure the value is in valid range.
+        if (status_raw < GOAWAY_NUM_STATUS_CODES) {
+          status = static_cast<SpdyGoAwayStatus>(status_raw);
+        } else {
+          // TODO(hkhalil): Probably best to OnError here, depending on
+          // our interpretation of the spec. Keeping with existing liberal
+          // behavior for now.
+          DCHECK(false);
+        }
+      }
+      // Finished parsing the GOAWAY header, call frame handler.
+      visitor_->OnGoAway(current_frame_stream_id_, status);
+    }
+  }
+
+  // Handle remaining data as opaque.
+  bool processed_succesfully = true;
+  if (len > 0) {
+    processed_succesfully = visitor_->OnGoAwayFrameData(data, len);
+  }
+  remaining_data_length_ -= original_len;
+  if (!processed_succesfully) {
+    set_error(SPDY_CREDENTIAL_FRAME_CORRUPT);
+  } else if (remaining_data_length_ == 0) {
+    // Signal that there is not more opaque data.
+    visitor_->OnGoAwayFrameData(NULL, 0);
+    CHANGE_STATE(SPDY_AUTO_RESET);
+  }
+  return original_len;
 }
 
 size_t SpdyFramer::ProcessDataFramePayload(const char* data, size_t len) {
@@ -1912,25 +1985,44 @@ SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
 }
 
 SpdyFrame* SpdyFramer::CreateGoAway(
-    SpdyStreamId last_accepted_stream_id,
-    SpdyGoAwayStatus status) const {
-  SpdyGoAwayIR goaway(last_accepted_stream_id, status);
+    SpdyStreamId last_accepted_stream_id, SpdyGoAwayStatus status,
+    const base::StringPiece& description) const {
+  SpdyGoAwayIR goaway(last_accepted_stream_id, status, description);
   return SerializeGoAway(goaway);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeGoAway(
     const SpdyGoAwayIR& goaway) const {
-  SpdyFrameBuilder builder(GetGoAwaySize());
+
+  // Compute the output buffer size, take opaque data into account.
+  uint16 expected_length = GetGoAwayMinimumSize();
+  if (protocol_version() >= 4) {
+    expected_length += goaway.description().size();
+  }
+  SpdyFrameBuilder builder(expected_length);
+
+  // Serialize the GOAWAY frame.
   if (spdy_version_ < 4) {
     builder.WriteControlFrameHeader(*this, GOAWAY, kNoFlags);
   } else {
     builder.WriteFramePrefix(*this, GOAWAY, 0, 0);
   }
+
+  // GOAWAY frames specify the last good stream id for all SPDY versions.
   builder.WriteUInt32(goaway.last_good_stream_id());
+
+  // In SPDY3 and up, GOAWAY frames also specify the error status code.
   if (protocol_version() >= 3) {
     builder.WriteUInt32(goaway.status());
   }
-  DCHECK_EQ(GetGoAwaySize(), builder.length());
+
+  // In SPDY4 and up, GOAWAY frames may also specify opaque data.
+  if ((protocol_version() >= 4) && (goaway.description().size() > 0)) {
+    builder.WriteBytes(goaway.description().data(),
+                       goaway.description().size());
+  }
+
+  DCHECK_EQ(expected_length, builder.length());
   return builder.take();
 }
 

@@ -874,7 +874,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGoAway() const {
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyGoAway(
     SpdyStreamId last_good_stream_id) const {
-  return CreateFramer()->CreateGoAway(last_good_stream_id, GOAWAY_OK);
+  return CreateFramer()->CreateGoAway(last_good_stream_id, GOAWAY_OK,
+                                      "go away");
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyWindowUpdate(

@@ -49,6 +49,20 @@ void SpdyPingIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitPing(*this);
 }
 
+SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
+                           SpdyGoAwayStatus status,
+                           const base::StringPiece& description)
+    : description_(description) {
+      set_last_good_stream_id(last_good_stream_id);
+  set_status(status);
+}
+
+SpdyGoAwayIR::~SpdyGoAwayIR() {}
+
+const base::StringPiece& SpdyGoAwayIR::description() const {
+  return description_;
+}
+
 void SpdyGoAwayIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitGoAway(*this);
 }

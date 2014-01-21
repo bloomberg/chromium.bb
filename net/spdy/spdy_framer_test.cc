@@ -2647,21 +2647,22 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
     const unsigned char kV2FrameData[] = {
       0x80, spdy_version_ch_, 0x00, 0x07,
       0x00, 0x00, 0x00, 0x04,
-      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,  // Stream Id
     };
     const unsigned char kV3FrameData[] = {
       0x80, spdy_version_ch_, 0x00, 0x07,
       0x00, 0x00, 0x00, 0x08,
-      0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,  // Stream Id
+      0x00, 0x00, 0x00, 0x00,  // Status
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x10, 0x07, 0x00,
+      0x00, 0x12, 0x07, 0x00,
       0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,  // Stream id
+      0x00, 0x00, 0x00, 0x00,  // Status
+      0x47, 0x41,              // Opaque Description
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(0, GOAWAY_OK));
+    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(0, GOAWAY_OK, "GA"));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2676,22 +2677,24 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
     const unsigned char kV2FrameData[] = {
       0x80, spdy_version_ch_, 0x00, 0x07,
       0x00, 0x00, 0x00, 0x04,
-      0x7f, 0xff, 0xff, 0xff,
+      0x7f, 0xff, 0xff, 0xff,  // Stream Id
     };
     const unsigned char kV3FrameData[] = {
       0x80, spdy_version_ch_, 0x00, 0x07,
       0x00, 0x00, 0x00, 0x08,
-      0x7f, 0xff, 0xff, 0xff,
-      0x00, 0x00, 0x00, 0x02,
+      0x7f, 0xff, 0xff, 0xff,  // Stream Id
+      0x00, 0x00, 0x00, 0x02,  // Status
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x10, 0x07, 0x00,
+      0x00, 0x12, 0x07, 0x00,
       0x00, 0x00, 0x00, 0x00,
-      0x7f, 0xff, 0xff, 0xff,
-      0x00, 0x00, 0x00, 0x02,
+      0x7f, 0xff, 0xff, 0xff,  // Stream Id
+      0x00, 0x00, 0x00, 0x02,  // Status
+      0x47, 0x41,              // Opaque Description
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(0x7FFFFFFF,
-                                                    GOAWAY_INTERNAL_ERROR));
+                                                    GOAWAY_INTERNAL_ERROR,
+                                                    "GA"));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -3379,6 +3382,7 @@ TEST_P(SpdyFramerTest, DecompressCorruptHeaderBlock) {
 }
 
 TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
+  SpdyFramer framer(spdy_version_);
   // Create a GoAway frame that has a few extra bytes at the end.
   // We create enough overhead to overflow the framer's control frame buffer.
   ASSERT_GE(250u, SpdyFramer::kControlFrameBufferSize);
@@ -3386,15 +3390,19 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
   const unsigned char kV3FrameData[] = {  // Also applies for V2.
     0x80, spdy_version_ch_, 0x00, 0x07,
     0x00, 0x00, 0x00, length,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,  // Stream ID
+    0x00, 0x00, 0x00, 0x00,  // Status
   };
+
+  // SPDY version 4 and up GOAWAY frames are only bound to a minimal length,
+  // since it may carry opaque data. Verify that minimal length is tested.
+  const unsigned char less_than_min_length =  framer.GetGoAwayMinimumSize() - 1;
   const unsigned char kV4FrameData[] = {
-    0x00, static_cast<uint8>(length + 4), 0x07, 0x00,
+    0x00, static_cast<uint8>(less_than_min_length), 0x07, 0x00,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,  // Stream Id
+    0x00, 0x00, 0x00, 0x00,  // Status
   };
-  SpdyFramer framer(spdy_version_);
   const size_t pad_length =
       length + framer.GetControlFrameHeaderSize() -
       (IsSpdy4() ? sizeof(kV4FrameData) : sizeof(kV3FrameData));
@@ -3772,7 +3780,8 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
   visitor.use_compression_ = false;
   string multiple_frame_data(credential_frame->data(),
                              credential_frame->size());
-  scoped_ptr<SpdyFrame> goaway_frame(framer.CreateGoAway(0, GOAWAY_OK));
+  scoped_ptr<SpdyFrame> goaway_frame(
+      framer.CreateGoAway(0, GOAWAY_OK, "test"));
   multiple_frame_data.append(string(goaway_frame->data(),
                                     goaway_frame->size()));
   visitor.SimulateInFramer(
@@ -3844,7 +3853,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(12u, framer.GetRstStreamSize());
     EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
     EXPECT_EQ(12u, framer.GetPingSize());
-    EXPECT_EQ(16u, framer.GetGoAwaySize());
+    EXPECT_EQ(16u, framer.GetGoAwayMinimumSize());
     EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(12u, framer.GetWindowUpdateSize());
     EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
@@ -3860,7 +3869,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(16u, framer.GetRstStreamSize());
     EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
     EXPECT_EQ(12u, framer.GetPingSize());
-    EXPECT_EQ(IsSpdy2() ? 12u : 16u, framer.GetGoAwaySize());
+    EXPECT_EQ(IsSpdy2() ? 12u : 16u, framer.GetGoAwayMinimumSize());
     EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(16u, framer.GetWindowUpdateSize());
     EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
@@ -4237,7 +4246,7 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(97, GOAWAY_OK));
+    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(97, GOAWAY_OK, "test"));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {

@@ -4141,4 +4141,25 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   EXPECT_TRUE(data.at_write_eof());
 }
 
+TEST(MapFramerErrorToProtocolError, MapsValues) {
+  CHECK_EQ(SPDY_ERROR_INVALID_CONTROL_FRAME,
+           MapFramerErrorToProtocolError(
+               SpdyFramer::SPDY_INVALID_CONTROL_FRAME));
+  CHECK_EQ(SPDY_ERROR_INVALID_DATA_FRAME_FLAGS,
+           MapFramerErrorToProtocolError(
+               SpdyFramer::SPDY_INVALID_DATA_FRAME_FLAGS));
+  CHECK_EQ(SPDY_ERROR_GOAWAY_FRAME_CORRUPT,
+           MapFramerErrorToProtocolError(
+               SpdyFramer::SPDY_GOAWAY_FRAME_CORRUPT));
+}
+
+TEST(MapRstStreamStatusToProtocolError, MapsValues) {
+  CHECK_EQ(STATUS_CODE_PROTOCOL_ERROR,
+           MapRstStreamStatusToProtocolError(
+               RST_STREAM_PROTOCOL_ERROR));
+  CHECK_EQ(STATUS_CODE_FRAME_TOO_LARGE,
+           MapRstStreamStatusToProtocolError(
+               RST_STREAM_FRAME_TOO_LARGE));
+}
+
 }  // namespace net
