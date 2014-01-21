@@ -56,9 +56,10 @@ namespace WebCore {
 
         virtual void didDownloadData(int /*dataLength*/) { }
 
+        virtual ~ThreadableLoaderClient() { }
+
     protected:
         ThreadableLoaderClient() { }
-        virtual ~ThreadableLoaderClient() { }
     };
 
 } // namespace WebCore

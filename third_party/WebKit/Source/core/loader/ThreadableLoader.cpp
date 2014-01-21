@@ -34,9 +34,12 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/DocumentThreadableLoader.h"
+#include "core/loader/ThreadableLoaderClientWrapper.h"
+#include "core/loader/WorkerLoaderClientBridge.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerRunLoop.h"
+#include "core/workers/WorkerThread.h"
 
 namespace WebCore {
 
@@ -45,8 +48,12 @@ PassRefPtr<ThreadableLoader> ThreadableLoader::create(ExecutionContext* context,
     ASSERT(client);
     ASSERT(context);
 
-    if (context->isWorkerGlobalScope())
-        return WorkerThreadableLoader::create(toWorkerGlobalScope(context), client, WorkerRunLoop::defaultMode(), request, options);
+    if (context->isWorkerGlobalScope()) {
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+        RefPtr<ThreadableLoaderClientWrapper> clientWrapper(ThreadableLoaderClientWrapper::create(client));
+        OwnPtr<ThreadableLoaderClient> clientBridge(WorkerLoaderClientBridge::create(clientWrapper, workerGlobalScope->thread()->workerLoaderProxy(), WorkerRunLoop::defaultMode()));
+        return WorkerThreadableLoader::create(workerGlobalScope, clientWrapper, clientBridge.release(), request, options);
+    }
 
     return DocumentThreadableLoader::create(toDocument(context), client, request, options);
 }
