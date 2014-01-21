@@ -49,9 +49,6 @@ class BalloonHost : public content::WebContentsDelegate,
   // Returns whether the associated render view is ready. Used only for testing.
   bool IsRenderViewReady() const;
 
-  // content::WebContentsDelegate implementation:
-  virtual bool CanLoadDataURLsInWebUI() const OVERRIDE;
-
  protected:
   virtual ~BalloonHost();
 

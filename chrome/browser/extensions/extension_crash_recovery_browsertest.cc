@@ -10,7 +10,6 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
-#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +29,12 @@
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_list.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/notifications/notification_ui_manager.h"
+#else
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
+#endif
 
 using content::NavigationController;
 using content::WebContents;
@@ -142,10 +147,12 @@ class MAYBE_ExtensionCrashRecoveryTest
         it++;
       std::string id = (*it)->id();
       message_center->ClickOnNotification(id);
+#if !defined(OS_CHROMEOS)
     } else {
       Balloon* balloon = GetNotificationDelegate(index);
       ASSERT_TRUE(balloon);
       balloon->OnClick();
+#endif
     }
     WaitForExtensionLoad();
   }
@@ -160,11 +167,13 @@ class MAYBE_ExtensionCrashRecoveryTest
       for (size_t i=0; i < index; i++) { it++; }
       ASSERT_TRUE(g_browser_process->notification_ui_manager()->
           CancelById((*it)->id()));
+#if !defined(OS_CHROMEOS)
     } else {
       Balloon* balloon = GetNotificationDelegate(index);
       ASSERT_TRUE(balloon);
       std::string id = balloon->notification().notification_id();
       ASSERT_TRUE(g_browser_process->notification_ui_manager()->CancelById(id));
+#endif
     }
   }
 
@@ -172,18 +181,25 @@ class MAYBE_ExtensionCrashRecoveryTest
     if (message_center::IsRichNotificationEnabled())
       return message_center::MessageCenter::Get()->NotificationCount();
 
+#if defined(OS_CHROMEOS)
+    CHECK(false);
+    return 0;
+#else
     return BalloonNotificationUIManager::GetInstanceForTesting()->
         balloon_collection()->GetActiveBalloons().size();
+#endif
   }
 
-private:
-     Balloon* GetNotificationDelegate(size_t index) {
-       BalloonNotificationUIManager* manager =
-           BalloonNotificationUIManager::GetInstanceForTesting();
-       BalloonCollection::Balloons balloons =
-           manager->balloon_collection()->GetActiveBalloons();
-       return index < balloons.size() ? balloons.at(index) : NULL;
-     }
+ private:
+#if !defined(OS_CHROMEOS)
+  Balloon* GetNotificationDelegate(size_t index) {
+    BalloonNotificationUIManager* manager =
+        BalloonNotificationUIManager::GetInstanceForTesting();
+    BalloonCollection::Balloons balloons =
+        manager->balloon_collection()->GetActiveBalloons();
+    return index < balloons.size() ? balloons.at(index) : NULL;
+  }
+#endif
 };
 
 // Flaky: http://crbug.com/242167.

@@ -23,7 +23,6 @@
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
 #include "chrome/browser/task_manager/extension_process_resource_provider.h"
 #include "chrome/browser/task_manager/guest_resource_provider.h"
-#include "chrome/browser/task_manager/notification_resource_provider.h"
 #include "chrome/browser/task_manager/panel_resource_provider.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/tab_contents_resource_provider.h"
@@ -45,6 +44,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image_skia.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/task_manager/notification_resource_provider.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"
@@ -255,7 +258,7 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       new task_manager::ExtensionProcessResourceProvider(task_manager));
   AddResourceProvider(new task_manager::GuestResourceProvider(task_manager));
 
-#if defined(ENABLE_NOTIFICATIONS)
+#if !defined(OS_CHROMEOS) && defined(ENABLE_NOTIFICATIONS)
   ResourceProvider* provider =
       task_manager::NotificationResourceProvider::Create(task_manager);
   if (provider)

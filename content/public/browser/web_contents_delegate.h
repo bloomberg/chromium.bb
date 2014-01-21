@@ -162,10 +162,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // delegate.
   virtual void OverscrollUpdate(int delta_y) {}
 
-  // Check whether this contents is permitted to load data URLs in WebUI mode.
-  // This is normally disallowed for security.
-  virtual bool CanLoadDataURLsInWebUI() const;
-
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
   virtual gfx::Rect GetRootWindowResizerRect() const;

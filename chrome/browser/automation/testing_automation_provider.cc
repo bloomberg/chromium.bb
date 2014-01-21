@@ -69,7 +69,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
-#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_change.h"
@@ -158,6 +157,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
+#else
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -1826,13 +1827,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::GetSavedPasswords;
 
   browser_handler_map_["FindInPage"] = &TestingAutomationProvider::FindInPage;
-
-  browser_handler_map_["GetAllNotifications"] =
-      &TestingAutomationProvider::GetAllNotifications;
-  browser_handler_map_["CloseNotification"] =
-      &TestingAutomationProvider::CloseNotification;
-  browser_handler_map_["WaitForNotificationCount"] =
-      &TestingAutomationProvider::WaitForNotificationCount;
 
   browser_handler_map_["GetNTPInfo"] =
       &TestingAutomationProvider::GetNTPInfo;
@@ -3951,66 +3945,6 @@ void TestingAutomationProvider::OverrideGeoposition(
   content::GeolocationProvider::OverrideLocationForTesting(
       position,
       base::Bind(&SendSuccessIfAlive, AsWeakPtr(), reply_message));
-}
-
-// Refer to GetAllNotifications() in chrome/test/pyautolib/pyauto.py for
-// sample json input/output.
-void TestingAutomationProvider::GetAllNotifications(
-    Browser* browser,
-    base::DictionaryValue* args,
-    IPC::Message* reply_message) {
-  new GetAllNotificationsObserver(this, reply_message);
-}
-
-// Refer to CloseNotification() in chrome/test/pyautolib/pyauto.py for
-// sample json input.
-// Returns empty json message.
-void TestingAutomationProvider::CloseNotification(
-    Browser* browser,
-    base::DictionaryValue* args,
-    IPC::Message* reply_message) {
-  int index;
-  if (!args->GetInteger("index", &index)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'index' missing or invalid.");
-    return;
-  }
-  BalloonNotificationUIManager* manager =
-      BalloonNotificationUIManager::GetInstanceForTesting();
-  BalloonCollection* collection = manager->balloon_collection();
-  const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
-  int balloon_count = static_cast<int>(balloons.size());
-  if (index < 0 || index >= balloon_count) {
-    AutomationJSONReply(this, reply_message)
-        .SendError(base::StringPrintf("No notification at index %d", index));
-    return;
-  }
-  std::vector<const Notification*> queued_notes;
-  manager->GetQueuedNotificationsForTesting(&queued_notes);
-  if (queued_notes.empty()) {
-    new OnNotificationBalloonCountObserver(
-        this, reply_message, balloon_count - 1);
-  } else {
-    new NewNotificationBalloonObserver(this, reply_message);
-  }
-  manager->CancelById(balloons[index]->notification().notification_id());
-}
-
-// Refer to WaitForNotificationCount() in chrome/test/pyautolib/pyauto.py for
-// sample json input.
-// Returns empty json message.
-void TestingAutomationProvider::WaitForNotificationCount(
-    Browser* browser,
-    base::DictionaryValue* args,
-    IPC::Message* reply_message) {
-  int count;
-  if (!args->GetInteger("count", &count)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'count' missing or invalid.");
-    return;
-  }
-  // This will delete itself when finished.
-  new OnNotificationBalloonCountObserver(this, reply_message, count);
 }
 
 // Sample JSON input: { "command": "GetNTPInfo" }

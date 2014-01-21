@@ -32,8 +32,7 @@ class CONTENT_EXPORT WebUIControllerFactoryRegistry
   // URLs that UseWebUIForURL returns true for, and also URLs that can be loaded
   // by normal tabs such as javascript: URLs or about:hang.
   bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
-                               const GURL& url,
-                               bool data_urls_allowed) const;
+                               const GURL& url) const;
 
  private:
   friend struct DefaultSingletonTraits<WebUIControllerFactoryRegistry>;

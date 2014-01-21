@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_options_menu_model.h"
+#include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -38,12 +39,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"
-#else
-#include "chrome/browser/ui/views/notifications/balloon_view_host.h"
-#endif
 
 namespace {
 
@@ -306,12 +301,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   options_menu_button_ =
       new views::MenuButton(NULL, base::string16(), this, false);
   AddChildView(options_menu_button_);
-#if defined(OS_CHROMEOS)
-  // Disable and hide the options menu on ChromeOS. This is a short term fix
-  // for a crash (long term we're redesigning notifications).
-  options_menu_button_->SetEnabled(false);
-  options_menu_button_->SetVisible(false);
-#endif
   close_button_ = new views::ImageButton(this);
   close_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_NOTIFICATION_BALLOON_DISMISS_LABEL));
@@ -332,11 +321,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   //
   // We don't let the OS manage the RTL layout of these widgets, because
   // this code is already taking care of correctly reversing the layout.
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-  html_contents_.reset(new chromeos::BalloonViewHost(balloon));
-#else
   html_contents_.reset(new BalloonViewHost(balloon));
-#endif
   html_contents_->SetPreferredSize(gfx::Size(10000, 10000));
   if (enable_web_ui_)
     html_contents_->EnableWebUI();

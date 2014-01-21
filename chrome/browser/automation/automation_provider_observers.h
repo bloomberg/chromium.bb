@@ -51,7 +51,6 @@
 #include "ui/gfx/size.h"
 
 class AutomationProvider;
-class BalloonCollection;
 class Browser;
 class ExtensionService;
 class Notification;
@@ -1098,85 +1097,6 @@ class AppLaunchObserver : public content::NotificationObserver {
   int new_window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchObserver);
-};
-
-// Allows the automation provider to wait until all the notification
-// processes are ready.
-class GetAllNotificationsObserver : public content::NotificationObserver {
- public:
-  GetAllNotificationsObserver(AutomationProvider* automation,
-                              IPC::Message* reply_message);
-  virtual ~GetAllNotificationsObserver();
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  // Sends a message via the |AutomationProvider|. |automation_| must be valid.
-  // Deletes itself after the message is sent.
-  void SendMessage();
-  // Returns a new dictionary describing the given notification.
-  base::DictionaryValue* NotificationToJson(const Notification* note);
-
-  content::NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetAllNotificationsObserver);
-};
-
-// Allows the automation provider to wait for a new notification balloon
-// to appear and be ready.
-class NewNotificationBalloonObserver : public content::NotificationObserver {
- public:
-  NewNotificationBalloonObserver(AutomationProvider* provider,
-                                 IPC::Message* reply_message);
-  virtual ~NewNotificationBalloonObserver();
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  content::NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewNotificationBalloonObserver);
-};
-
-// Allows the automation provider to wait for a given number of
-// notification balloons.
-class OnNotificationBalloonCountObserver
-    : public content::NotificationObserver {
- public:
-  OnNotificationBalloonCountObserver(AutomationProvider* provider,
-                                     IPC::Message* reply_message,
-                                     int count);
-  virtual ~OnNotificationBalloonCountObserver();
-
-  // Sends an automation reply message if |automation_| is still valid and the
-  // number of ready balloons matches the desired count. Deletes itself if the
-  // message is sent or if |automation_| is invalid.
-  void CheckBalloonCount();
-
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  content::NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  BalloonCollection* collection_;
-  int count_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnNotificationBalloonCountObserver);
 };
 
 // Allows the automation provider to wait for a RENDERER_PROCESS_CLOSED

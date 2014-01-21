@@ -1747,10 +1747,9 @@ bool WebContentsImpl::NavigateToEntry(
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings = dest_render_view_host->GetEnabledBindings();
-  bool data_urls_allowed = delegate_ && delegate_->CanLoadDataURLsInWebUI();
   bool is_allowed_in_web_ui_renderer =
       WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-          GetBrowserContext(), entry.GetURL(), data_urls_allowed);
+          GetBrowserContext(), entry.GetURL());
   if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
       !is_allowed_in_web_ui_renderer) {
     // Log the URL to help us diagnose any future failures of this CHECK.

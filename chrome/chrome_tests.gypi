@@ -428,6 +428,9 @@
           ],
           'sources!': [
             # chromeos does not use cross-platform panels
+            'browser/notifications/desktop_notifications_unittest.cc',
+            'browser/notifications/desktop_notifications_unittest.h',
+            'browser/notifications/notification_browsertest.cc',
             'browser/ui/panels/detached_panel_browsertest.cc',
             'browser/ui/panels/docked_panel_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',
@@ -436,7 +439,6 @@
             'browser/ui/panels/stacked_panel_browsertest.cc',
             'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
-            'browser/notifications/desktop_notifications_unittest.cc',
           ],
         }],
         ['OS=="win"', {

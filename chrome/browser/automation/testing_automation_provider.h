@@ -529,24 +529,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void IsFindInPageVisible(base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
-  // Get ordered list of all active and queued HTML5 notifications.
-  // Uses the JSON interface for input/output.
-  void GetAllNotifications(Browser* browser,
-                           base::DictionaryValue* args,
-                           IPC::Message* reply_message);
-
-  // Close an active HTML5 notification.
-  // Uses the JSON interface for input/output.
-  void CloseNotification(Browser* browser,
-                         base::DictionaryValue* args,
-                         IPC::Message* reply_message);
-
-  // Waits for the number of active HTML5 notifications to reach a given count.
-  // Uses the JSON interface for input/output.
-  void WaitForNotificationCount(Browser* browser,
-                                base::DictionaryValue* args,
-                                IPC::Message* reply_message);
-
   // Gets info about the elements in the NTP.
   // Uses the JSON interface for input/output.
   void GetNTPInfo(Browser* browser,

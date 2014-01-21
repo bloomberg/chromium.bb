@@ -40,11 +40,6 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
-#include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/notifications/balloon_collection.h"
-#include "chrome/browser/notifications/balloon_host.h"
-#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -85,6 +80,10 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/notifications/balloon_notification_ui_manager.h"
+#endif
 
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;
@@ -1950,159 +1949,6 @@ void AppLaunchObserver::Observe(int type,
       AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(NULL);
     }
-    delete this;
-  }
-}
-
-namespace {
-
-// Returns whether all active notifications have an associated process ID.
-bool AreActiveNotificationProcessesReady() {
-  BalloonNotificationUIManager* manager =
-      BalloonNotificationUIManager::GetInstanceForTesting();
-  const BalloonCollection::Balloons& balloons =
-      manager->balloon_collection()->GetActiveBalloons();
-  BalloonCollection::Balloons::const_iterator iter;
-  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
-    BalloonHost* balloon_host = (*iter)->balloon_view()->GetHost();
-    if (balloon_host && !balloon_host->IsRenderViewReady())
-      return false;
-  }
-  return true;
-}
-
-}  // namespace
-
-GetAllNotificationsObserver::GetAllNotificationsObserver(
-    AutomationProvider* automation,
-    IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message) {
-  if (AreActiveNotificationProcessesReady()) {
-    SendMessage();
-  } else {
-    registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                   content::NotificationService::AllSources());
-  }
-}
-
-GetAllNotificationsObserver::~GetAllNotificationsObserver() {}
-
-void GetAllNotificationsObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (!automation_.get()) {
-    delete this;
-    return;
-  }
-  if (AreActiveNotificationProcessesReady())
-    SendMessage();
-}
-
-base::DictionaryValue* GetAllNotificationsObserver::NotificationToJson(
-    const Notification* note) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetString("content_url", note->content_url().spec());
-  dict->SetString("origin_url", note->origin_url().spec());
-  dict->SetString("display_source", note->display_source());
-  dict->SetString("id", note->notification_id());
-  return dict;
-}
-
-void GetAllNotificationsObserver::SendMessage() {
-  BalloonNotificationUIManager* manager =
-      BalloonNotificationUIManager::GetInstanceForTesting();
-  const BalloonCollection::Balloons& balloons =
-      manager->balloon_collection()->GetActiveBalloons();
-  base::DictionaryValue return_value;
-  base::ListValue* list = new base::ListValue;
-  return_value.Set("notifications", list);
-  BalloonCollection::Balloons::const_iterator balloon_iter;
-  for (balloon_iter = balloons.begin(); balloon_iter != balloons.end();
-       ++balloon_iter) {
-    base::DictionaryValue* note = NotificationToJson(
-        &(*balloon_iter)->notification());
-    BalloonHost* balloon_host = (*balloon_iter)->balloon_view()->GetHost();
-    if (balloon_host) {
-      int pid = base::GetProcId(balloon_host->web_contents()->
-                                GetRenderViewHost()->GetProcess()->GetHandle());
-      note->SetInteger("pid", pid);
-    }
-    list->Append(note);
-  }
-  std::vector<const Notification*> queued_notes;
-  manager->GetQueuedNotificationsForTesting(&queued_notes);
-  std::vector<const Notification*>::const_iterator queued_iter;
-  for (queued_iter = queued_notes.begin(); queued_iter != queued_notes.end();
-       ++queued_iter) {
-    list->Append(NotificationToJson(*queued_iter));
-  }
-  AutomationJSONReply(automation_.get(), reply_message_.release())
-      .SendSuccess(&return_value);
-  delete this;
-}
-
-NewNotificationBalloonObserver::NewNotificationBalloonObserver(
-    AutomationProvider* provider,
-    IPC::Message* reply_message)
-    : automation_(provider->AsWeakPtr()),
-      reply_message_(reply_message) {
-  registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                 content::NotificationService::AllSources());
-}
-
-NewNotificationBalloonObserver::~NewNotificationBalloonObserver() { }
-
-void NewNotificationBalloonObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (automation_.get()) {
-    AutomationJSONReply(automation_.get(), reply_message_.release())
-        .SendSuccess(NULL);
-  }
-  delete this;
-}
-
-OnNotificationBalloonCountObserver::OnNotificationBalloonCountObserver(
-    AutomationProvider* provider,
-    IPC::Message* reply_message,
-    int count)
-    : automation_(provider->AsWeakPtr()),
-      reply_message_(reply_message),
-      collection_(BalloonNotificationUIManager::GetInstanceForTesting()->
-          balloon_collection()),
-      count_(count) {
-  registrar_.Add(this, chrome::NOTIFICATION_NOTIFY_BALLOON_CONNECTED,
-                 content::NotificationService::AllSources());
-  collection_->set_on_collection_changed_callback(
-      base::Bind(&OnNotificationBalloonCountObserver::CheckBalloonCount,
-                 base::Unretained(this)));
-  CheckBalloonCount();
-}
-
-OnNotificationBalloonCountObserver::~OnNotificationBalloonCountObserver() {
-}
-
-void OnNotificationBalloonCountObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  CheckBalloonCount();
-}
-
-void OnNotificationBalloonCountObserver::CheckBalloonCount() {
-  bool balloon_count_met = AreActiveNotificationProcessesReady() &&
-      static_cast<int>(collection_->GetActiveBalloons().size()) == count_;
-
-  if (balloon_count_met && automation_.get()) {
-    AutomationJSONReply(automation_.get(), reply_message_.release())
-        .SendSuccess(NULL);
-  }
-
-  if (balloon_count_met || !automation_.get()) {
-    collection_->set_on_collection_changed_callback(base::Closure());
     delete this;
   }
 }

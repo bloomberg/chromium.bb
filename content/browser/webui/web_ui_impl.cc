@@ -15,7 +15,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -70,12 +69,10 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message) {
 void WebUIImpl::OnWebUISend(const GURL& source_url,
                             const std::string& message,
                             const base::ListValue& args) {
-  WebContentsDelegate* delegate = web_contents_->GetDelegate();
-  bool data_urls_allowed = delegate && delegate->CanLoadDataURLsInWebUI();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID()) ||
       !WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-          web_contents_->GetBrowserContext(), source_url, data_urls_allowed)) {
+          web_contents_->GetBrowserContext(), source_url)) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
     return;
   }

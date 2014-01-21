@@ -606,7 +606,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     // If so, force a swap if destination is not an acceptable URL for Web UI.
     // Here, data URLs are never allowed.
     if (!WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-            browser_context, new_url, false)) {
+            browser_context, new_url)) {
       return true;
     }
   } else {

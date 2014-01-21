@@ -27,8 +27,6 @@ bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
   return false;
 }
 
-bool WebContentsDelegate::CanLoadDataURLsInWebUI() const { return false; }
-
 bool WebContentsDelegate::CanOverscrollContent() const { return false; }
 
 gfx::Rect WebContentsDelegate::GetRootWindowResizerRect() const {
