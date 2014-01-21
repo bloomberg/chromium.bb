@@ -3039,7 +3039,7 @@ blink::WebMediaPlayer* RenderViewImpl::CreateMediaPlayer(
   scoped_refptr<media::AudioRendererSink> sink;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAudio)) {
     sink = RenderThreadImpl::current()->GetAudioRendererMixerManager()->
-        CreateInput(routing_id_);
+        CreateInput(routing_id_, render_frame->GetRoutingID());
     DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink.get();
   }
 

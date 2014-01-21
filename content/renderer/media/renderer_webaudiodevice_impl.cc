@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/media_switches.h"
@@ -49,10 +50,13 @@ void RendererWebAudioDeviceImpl::start() {
   // an extension creates a object that is passed and used within a page).
   WebFrame* const web_frame = WebFrame::frameForCurrentContext();
   WebView* const web_view = web_frame ? web_frame->view() : NULL;
+  RenderFrame* const render_frame =
+      web_frame ? RenderFrame::FromWebFrame(web_frame) : NULL;
   RenderViewImpl* const render_view =
       web_view ? RenderViewImpl::FromWebView(web_view) : NULL;
   output_device_ = AudioDeviceFactory::NewOutputDevice(
-      render_view ? render_view->routing_id() : MSG_ROUTING_NONE);
+      render_view ? render_view->routing_id() : MSG_ROUTING_NONE,
+      render_frame ? render_frame->GetRoutingID(): MSG_ROUTING_NONE);
   output_device_->InitializeUnifiedStream(params_, this, session_id_);
   output_device_->Start();
   // Note: Default behavior is to auto-play on start.

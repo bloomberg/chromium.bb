@@ -23,11 +23,13 @@ PepperPlatformAudioOutput* PepperPlatformAudioOutput::Create(
     int sample_rate,
     int frames_per_buffer,
     int source_render_view_id,
+    int source_render_frame_id,
     AudioHelper* client) {
   scoped_refptr<PepperPlatformAudioOutput> audio_output(
       new PepperPlatformAudioOutput());
   if (audio_output->Initialize(sample_rate, frames_per_buffer,
-                               source_render_view_id, client)) {
+                               source_render_view_id, source_render_frame_id,
+                               client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioOutput::ShutDownOnIOThread().
     audio_output->AddRef();
@@ -116,13 +118,14 @@ bool PepperPlatformAudioOutput::Initialize(
     int sample_rate,
     int frames_per_buffer,
     int source_render_view_id,
+    int source_render_frame_id,
     AudioHelper* client) {
   DCHECK(client);
   client_ = client;
 
   RenderThreadImpl* const render_thread = RenderThreadImpl::current();
   ipc_ = render_thread->audio_message_filter()->
-      CreateAudioOutputIPC(source_render_view_id);
+      CreateAudioOutputIPC(source_render_view_id, source_render_frame_id);
   CHECK(ipc_);
 
   media::AudioParameters params(

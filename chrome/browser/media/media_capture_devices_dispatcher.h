@@ -58,7 +58,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
     // Handle an information update that a new stream is being created.
     virtual void OnCreatingAudioStream(int render_process_id,
-                                       int render_view_id) {}
+                                       int render_frame_id) {}
 
     virtual ~Observer() {}
   };
@@ -132,7 +132,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       float power_dBFS,
       bool clipped) OVERRIDE;
   virtual void OnCreatingAudioStream(int render_process_id,
-                                     int render_view_id) OVERRIDE;
+                                     int render_frame_id) OVERRIDE;
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
 
@@ -205,7 +205,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       const content::MediaStreamDevice& device,
       content::MediaRequestState state);
   void OnCreatingAudioStreamOnUIThread(int render_process_id,
-                                       int render_view_id);
+                                       int render_frame_id);
 
   // A list of cached audio capture devices.
   content::MediaStreamDevices audio_devices_;

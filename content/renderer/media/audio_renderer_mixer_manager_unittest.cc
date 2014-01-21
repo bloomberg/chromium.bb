@@ -6,6 +6,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "ipc/ipc_message.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
@@ -23,7 +24,9 @@ static const int kBufferSize = 8192;
 static const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 
 static const int kRenderViewId = 123;
+static const int kRenderFrameId = 124;
 static const int kAnotherRenderViewId = 456;
+static const int kAnotherRenderFrameId = 678;
 
 using media::AudioParameters;
 
@@ -49,7 +52,7 @@ class AudioRendererMixerManagerTest : public testing::Test {
 
   media::AudioRendererMixer* GetMixer(int source_render_view_id,
                                       const media::AudioParameters& params) {
-    return manager_->GetMixer(source_render_view_id, params);
+    return manager_->GetMixer(source_render_view_id, MSG_ROUTING_NONE, params);
   }
 
   void RemoveMixer(int source_render_view_id,
@@ -131,10 +134,10 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   // Create two mixer inputs and ensure this doesn't instantiate any mixers yet.
   EXPECT_EQ(mixer_count(), 0);
   scoped_refptr<media::AudioRendererMixerInput> input(
-      manager_->CreateInput(kRenderViewId));
+      manager_->CreateInput(kRenderViewId, kRenderFrameId));
   EXPECT_EQ(mixer_count(), 0);
   scoped_refptr<media::AudioRendererMixerInput> another_input(
-      manager_->CreateInput(kAnotherRenderViewId));
+      manager_->CreateInput(kAnotherRenderViewId, kAnotherRenderFrameId));
   EXPECT_EQ(mixer_count(), 0);
 
   // Implicitly test that AudioRendererMixerInput was provided with the expected

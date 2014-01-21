@@ -96,9 +96,10 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
 // Request that is sent to the browser for creating an audio output stream.
 // |render_view_id| is the routing ID for the render view producing the audio
 // data.
-IPC_MESSAGE_CONTROL4(AudioHostMsg_CreateStream,
+IPC_MESSAGE_CONTROL5(AudioHostMsg_CreateStream,
                      int /* stream_id */,
                      int /* render_view_id */,
+                     int /* render_frame_id */,
                      int /* session_id */,
                      media::AudioParameters /* params */)
 

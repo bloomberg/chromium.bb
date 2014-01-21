@@ -112,6 +112,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // message.
   void OnCreateStream(int stream_id,
                       int render_view_id,
+                      int render_frame_id,
                       int session_id,
                       const media::AudioParameters& params);
 

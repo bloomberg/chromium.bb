@@ -25,11 +25,12 @@ AudioRendererMixerManager::~AudioRendererMixerManager() {
 }
 
 media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
-    int source_render_view_id) {
+    int source_render_view_id, int source_render_frame_id) {
   return new media::AudioRendererMixerInput(
       base::Bind(
           &AudioRendererMixerManager::GetMixer, base::Unretained(this),
-          source_render_view_id),
+          source_render_view_id,
+          source_render_frame_id),
       base::Bind(
           &AudioRendererMixerManager::RemoveMixer, base::Unretained(this),
           source_render_view_id));
@@ -42,6 +43,7 @@ void AudioRendererMixerManager::SetAudioRendererSinkForTesting(
 
 media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
     int source_render_view_id,
+    int source_render_frame_id,
     const media::AudioParameters& params) {
   const MixerKey key(source_render_view_id, params);
   base::AutoLock auto_lock(mixers_lock_);
@@ -79,7 +81,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   } else {
     mixer = new media::AudioRendererMixer(
         params, output_params, AudioDeviceFactory::NewOutputDevice(
-            source_render_view_id));
+            source_render_view_id, source_render_frame_id));
   }
 
   AudioRendererMixerReference mixer_reference = { mixer, 1 };

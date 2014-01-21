@@ -244,7 +244,7 @@ MediaStreamImpl::GetVideoFrameProvider(
 }
 
 scoped_refptr<MediaStreamAudioRenderer>
-MediaStreamImpl::GetAudioRenderer(const GURL& url) {
+MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
   DCHECK(CalledOnValidThread());
   blink::WebMediaStream web_stream(GetMediaStream(url));
 
@@ -266,7 +266,7 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
 
     // TODO(xians): Add support for the case that the media stream contains
     // multiple audio tracks.
-    return CreateLocalAudioRenderer(audio_tracks[0]);
+    return CreateLocalAudioRenderer(audio_tracks[0], render_frame_id);
   }
 
   webrtc::MediaStreamInterface* stream = extra_data->stream().get();
@@ -280,7 +280,8 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
   // Share the existing renderer if any, otherwise create a new one.
   scoped_refptr<WebRtcAudioRenderer> renderer(audio_device->renderer());
   if (!renderer.get()) {
-    renderer = CreateRemoteAudioRenderer(extra_data->stream().get());
+    renderer = CreateRemoteAudioRenderer(
+        extra_data->stream().get(), render_frame_id);
 
     if (renderer.get() && !audio_device->SetAudioRenderer(renderer.get()))
       renderer = NULL;
@@ -754,7 +755,8 @@ void MediaStreamImpl::StopUnreferencedSources(bool notify_dispatcher) {
 }
 
 scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
-    webrtc::MediaStreamInterface* stream) {
+    webrtc::MediaStreamInterface* stream,
+    int render_frame_id) {
   if (stream->GetAudioTracks().empty())
     return NULL;
 
@@ -770,13 +772,15 @@ scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
     GetDefaultOutputDeviceParams(&sample_rate, &buffer_size);
   }
 
-  return new WebRtcAudioRenderer(RenderViewObserver::routing_id(),
-      session_id, sample_rate, buffer_size);
+  return new WebRtcAudioRenderer(
+      RenderViewObserver::routing_id(), render_frame_id,  session_id,
+      sample_rate, buffer_size);
 }
 
 scoped_refptr<WebRtcLocalAudioRenderer>
 MediaStreamImpl::CreateLocalAudioRenderer(
-    const blink::WebMediaStreamTrack& audio_track) {
+    const blink::WebMediaStreamTrack& audio_track,
+    int render_frame_id) {
   DVLOG(1) << "MediaStreamImpl::CreateLocalAudioRenderer";
 
   int session_id = 0, sample_rate = 0, buffer_size = 0;
@@ -791,6 +795,7 @@ MediaStreamImpl::CreateLocalAudioRenderer(
   return new WebRtcLocalAudioRenderer(
       audio_track,
       RenderViewObserver::routing_id(),
+      render_frame_id,
       session_id,
       buffer_size);
 }

@@ -27,7 +27,7 @@ class TestMediaStreamClient : public RenderViewObserver,
       const base::Closure& error_cb,
       const VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
-      const GURL& url) OVERRIDE;
+      const GURL& url, int render_frame_id) OVERRIDE;
 };
 
 }  // namespace content

@@ -61,7 +61,7 @@ scoped_refptr<VideoFrameProvider> TestMediaStreamClient::GetVideoFrameProvider(
 }
 
 scoped_refptr<MediaStreamAudioRenderer> TestMediaStreamClient::GetAudioRenderer(
-    const GURL& url) {
+    const GURL& url, int render_frame_id) {
   return NULL;
 }
 

@@ -303,7 +303,7 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioRendererHost::OnCreateStream(
-    int stream_id, int render_view_id, int session_id,
+    int stream_id, int render_view_id, int render_frame_id, int session_id,
     const media::AudioParameters& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -369,7 +369,7 @@ void AudioRendererHost::OnCreateStream(
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer)
-    media_observer->OnCreatingAudioStream(render_process_id_, render_view_id);
+    media_observer->OnCreatingAudioStream(render_process_id_, render_frame_id);
 
   scoped_ptr<AudioEntry> entry(new AudioEntry(
       this, stream_id, render_view_id, params, output_device_id,

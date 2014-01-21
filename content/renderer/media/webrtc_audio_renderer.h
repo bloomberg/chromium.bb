@@ -30,6 +30,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
       NON_EXPORTED_BASE(public MediaStreamAudioRenderer) {
  public:
   WebRtcAudioRenderer(int source_render_view_id,
+                      int source_render_frame_id,
                       int session_id,
                       int sample_rate,
                       int frames_per_buffer);
@@ -90,8 +91,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // This method is called on the AudioOutputDevice worker thread.
   void SourceCallback(int fifo_frame_delay, media::AudioBus* audio_bus);
 
-  // The render view in which the audio is rendered into |sink_|.
+  // The render view and frame in which the audio is rendered into |sink_|.
   const int source_render_view_id_;
+  const int source_render_frame_id_;
   const int session_id_;
 
   // The sink (destination) for rendered audio.

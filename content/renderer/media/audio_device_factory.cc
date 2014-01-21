@@ -17,7 +17,7 @@ AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 // static
 scoped_refptr<media::AudioOutputDevice> AudioDeviceFactory::NewOutputDevice(
-    int render_view_id) {
+    int render_view_id, int render_frame_id) {
   if (factory_) {
     media::AudioOutputDevice* const device =
         factory_->CreateOutputDevice(render_view_id);
@@ -27,7 +27,8 @@ scoped_refptr<media::AudioOutputDevice> AudioDeviceFactory::NewOutputDevice(
 
   AudioMessageFilter* const filter = AudioMessageFilter::Get();
   return new media::AudioOutputDevice(
-      filter->CreateAudioOutputIPC(render_view_id), filter->io_message_loop());
+      filter->CreateAudioOutputIPC(render_view_id, render_frame_id),
+      filter->io_message_loop());
 }
 
 // static

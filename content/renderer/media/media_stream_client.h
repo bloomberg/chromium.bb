@@ -28,7 +28,7 @@ class MediaStreamClient {
       const VideoFrameProvider::RepaintCB& repaint_cb) = 0;
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
-      const GURL& url) = 0;
+      const GURL& url, int render_frame_id) = 0;
 
  protected:
   virtual ~MediaStreamClient() {}

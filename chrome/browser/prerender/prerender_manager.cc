@@ -1730,9 +1730,10 @@ void PrerenderManager::Observe(int type,
 }
 
 void PrerenderManager::OnCreatingAudioStream(int render_process_id,
-                                             int render_view_id) {
-  WebContents* tab = tab_util::GetWebContentsByID(
-      render_process_id, render_view_id);
+                                             int render_frame_id) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  WebContents* tab = WebContents::FromRenderFrameHost(render_frame_host);
   if (!tab)
     return;
 

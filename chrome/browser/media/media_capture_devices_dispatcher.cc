@@ -705,13 +705,13 @@ void MediaCaptureDevicesDispatcher::OnAudioStreamPlayingChanged(
 
 void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(
     int render_process_id,
-    int render_view_id) {
+    int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread,
-          base::Unretained(this), render_process_id, render_view_id));
+          base::Unretained(this), render_process_id, render_frame_id));
 }
 
 void MediaCaptureDevicesDispatcher::UpdateAudioDevicesOnUIThread(
@@ -803,10 +803,10 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
 
 void MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread(
     int render_process_id,
-    int render_view_id) {
+    int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnCreatingAudioStream(render_process_id, render_view_id));
+                    OnCreatingAudioStream(render_process_id, render_frame_id));
 }
 
 bool MediaCaptureDevicesDispatcher::IsDesktopCaptureInProgress() {

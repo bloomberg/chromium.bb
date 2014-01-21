@@ -267,8 +267,8 @@ MAYBE_WebRTCAudioDeviceTest::CreateDefaultWebRtcAudioRenderer(
   int sample_rate = hardware_config->GetOutputSampleRate();
   int frames_per_buffer = hardware_config->GetOutputBufferSize();
 
-  return new WebRtcAudioRenderer(render_view_id, 0, sample_rate,
-                                 frames_per_buffer);
+  return new WebRtcAudioRenderer(render_view_id, MSG_ROUTING_NONE, 0,
+                                 sample_rate, frames_per_buffer);
 }
 
 void MAYBE_WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {

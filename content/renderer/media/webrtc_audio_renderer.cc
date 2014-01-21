@@ -165,11 +165,13 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 }  // namespace
 
 WebRtcAudioRenderer::WebRtcAudioRenderer(int source_render_view_id,
+                                         int source_render_frame_id,
                                          int session_id,
                                          int sample_rate,
                                          int frames_per_buffer)
     : state_(UNINITIALIZED),
       source_render_view_id_(source_render_view_id),
+      source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
       source_(NULL),
       play_ref_count_(0),
@@ -313,7 +315,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   source->SetRenderFormat(source_params);
 
   // Configure the audio rendering client and start rendering.
-  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_);
+  sink_ = AudioDeviceFactory::NewOutputDevice(
+      source_render_view_id_, source_render_frame_id_);
 
   // TODO(tommi): Rename InitializeUnifiedStream to rather reflect association
   // with a session.

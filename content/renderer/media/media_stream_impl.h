@@ -67,7 +67,7 @@ class CONTENT_EXPORT MediaStreamImpl
       const base::Closure& error_cb,
       const VideoFrameProvider::RepaintCB& repaint_cb) OVERRIDE;
   virtual scoped_refptr<MediaStreamAudioRenderer>
-      GetAudioRenderer(const GURL& url) OVERRIDE;
+      GetAudioRenderer(const GURL& url, int render_frame_id) OVERRIDE;
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(
@@ -182,9 +182,10 @@ class CONTENT_EXPORT MediaStreamImpl
   void StopUnreferencedSources(bool notify_dispatcher);
 
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
-      webrtc::MediaStreamInterface* stream);
+      webrtc::MediaStreamInterface* stream, int render_frame_id);
   scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
-      const blink::WebMediaStreamTrack& audio_track);
+      const blink::WebMediaStreamTrack& audio_track,
+      int render_frame_id);
 
   // Returns a valid session id if a single capture device is currently open
   // (and then the matching session_id), otherwise -1.

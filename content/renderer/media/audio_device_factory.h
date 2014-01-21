@@ -21,10 +21,10 @@ namespace content {
 class AudioDeviceFactory {
  public:
   // Creates an AudioOutputDevice using the currently registered factory.
-  // |render_view_id| refers to the render view containing the entity producing
-  // the audio.
+  // |render_view_id| and |render_frame_id| refer to the render view and render
+   // frame containing the entity producing the audio.
   static scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
-      int render_view_id);
+      int render_view_id, int render_frame_id);
 
   // Creates an AudioInputDevice using the currently registered factory.
   // |render_view_id| refers to the render view containing the entity consuming

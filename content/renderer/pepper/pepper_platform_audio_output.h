@@ -30,6 +30,7 @@ class PepperPlatformAudioOutput
   static PepperPlatformAudioOutput* Create(int sample_rate,
                                            int frames_per_buffer,
                                            int source_render_view_id,
+                                           int source_render_frame_id,
                                            AudioHelper* client);
 
   // The following three methods are all called on main thread.
@@ -65,6 +66,7 @@ class PepperPlatformAudioOutput
   bool Initialize(int sample_rate,
                   int frames_per_buffer,
                   int source_render_view_id,
+                  int source_render_frame_id,
                   AudioHelper* client);
 
   // I/O thread backends to above functions.

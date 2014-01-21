@@ -27,6 +27,7 @@ using ::testing::NotNull;
 namespace {
 const int kRenderProcessId = 1;
 const int kRenderViewId = 4;
+const int kRenderFrameId = 5;
 const int kStreamId = 50;
 }  // namespace
 
@@ -208,7 +209,8 @@ class AudioRendererHostTest : public testing::Test {
           media::AudioParameters::kAudioCDSampleRate, 16,
           media::AudioParameters::kAudioCDSampleRate / 10);
     }
-    host_->OnCreateStream(kStreamId, kRenderViewId, session_id, params);
+    host_->OnCreateStream(kStreamId, kRenderViewId, kRenderFrameId, session_id,
+                          params);
 
     // At some point in the future, a corresponding RemoveDiverter() call must
     // be made.

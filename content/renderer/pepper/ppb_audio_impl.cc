@@ -8,6 +8,7 @@
 #include "content/renderer/pepper/common.h"
 #include "content/renderer/pepper/pepper_platform_audio_output.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_controller.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -74,7 +75,8 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
     return false;
   SetCallback(callback, user_data);
 
-  PepperPluginInstance* instance = PepperPluginInstance::Get(pp_instance());
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance()));
   if (!instance)
     return false;
 
@@ -84,6 +86,7 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
       static_cast<int>(enter.object()->GetSampleRate()),
       static_cast<int>(enter.object()->GetSampleFrameCount()),
       instance->GetRenderView()->GetRoutingID(),
+      instance->render_frame()->GetRoutingID(),
       this);
   return audio_ != NULL;
 }
@@ -123,7 +126,8 @@ int32_t PPB_Audio_Impl::Open(
     return PP_ERROR_FAILED;
   config_ = config;
 
-  PepperPluginInstance* instance = PepperPluginInstance::Get(pp_instance());
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance()));
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -133,6 +137,7 @@ int32_t PPB_Audio_Impl::Open(
       static_cast<int>(enter.object()->GetSampleRate()),
       static_cast<int>(enter.object()->GetSampleFrameCount()),
       instance->GetRenderView()->GetRoutingID(),
+      instance->render_frame()->GetRoutingID(),
       this);
   if (!audio_)
     return PP_ERROR_FAILED;

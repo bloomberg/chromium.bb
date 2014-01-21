@@ -35,12 +35,15 @@ class CONTENT_EXPORT AudioMessageFilter
   // Getter for the one AudioMessageFilter object.
   static AudioMessageFilter* Get();
 
-  // Create an AudioOutputIPC to be owned by one delegate.  |render_view_id| is
-  // the render view containing the entity producing the audio.
+  // Create an AudioOutputIPC to be owned by one delegate.  |render_view_id| and
+  // |render_frame_id| are the render view and render frame containing the
+  // entity producing the audio.
+  // TODO(jam): remove render_view_id
   //
   // The returned object is not thread-safe, and must be used on
   // |io_message_loop|.
-  scoped_ptr<media::AudioOutputIPC> CreateAudioOutputIPC(int render_view_id);
+  scoped_ptr<media::AudioOutputIPC> CreateAudioOutputIPC(int render_view_id,
+                                                         int render_frame_id);
 
   // When set, AudioMessageFilter will update the AudioHardwareConfig with new
   // configuration values as recieved by OnOutputDeviceChanged().  The provided

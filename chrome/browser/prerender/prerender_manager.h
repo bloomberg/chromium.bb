@@ -301,7 +301,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // MediaCaptureDevicesDispatcher::Observer
   virtual void OnCreatingAudioStream(int render_process_id,
-                                     int render_view_id) OVERRIDE;
+                                     int render_frame_id) OVERRIDE;
 
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
