@@ -857,3 +857,6 @@ crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-
 crbug.com/336222 svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-attr.html [ NeedsRebaseline ]
 crbug.com/336222 svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html [ NeedsRebaseline ]
 crbug.com/336222 svg/filters/feDropShadow.svg [ NeedsRebaseline ]
+
+# FreeType used in layout tests changed. Will be changed to NeedsRebaseline after landing https://codereview.chromium.org/138123004/ .
+Bug(bungeman) [ Linux ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsManualRebaseline ]
