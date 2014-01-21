@@ -7,6 +7,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -285,6 +286,25 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
       0, 100, 3, 2);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
+}
+
+TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
+  GetAutoclickController()->SetEnabled(true);
+  std::vector<ui::MouseEvent> events;
+  GetEventGenerator().MoveMouseTo(100, 100);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(2u, events.size());
+
+  // Show a window and make sure the new window is under the cursor. As a
+  // result, synthesized mouse events will be dispatched to the window, but it
+  // should not trigger an autoclick.
+  aura::test::EventCountDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, 123, gfx::Rect(50, 50, 100, 100)));
+  window->Show();
+  events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
+  EXPECT_EQ("1 1 0", delegate.GetMouseMotionCountsAndReset());
 }
 
 }  // namespace ash

@@ -122,7 +122,8 @@ void AutoclickControllerImpl::InitClickTimer() {
 }
 
 void AutoclickControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_MOVED) {
+  if (event->type() == ui::ET_MOUSE_MOVED &&
+      !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
     mouse_event_flags_ = event->flags();
 
     gfx::Point mouse_location = event->root_location();
