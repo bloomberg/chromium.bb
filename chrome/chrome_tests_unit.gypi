@@ -1697,6 +1697,7 @@
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
         'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
+        'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
         'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
@@ -2166,6 +2167,7 @@
         ['use_aura==1 or toolkit_views==1', {
           'dependencies': [
             '../ui/events/events.gyp:events_test_support',
+            '../ui/wm/wm.gyp:wm_public',
           ],
         }],
         ['use_aura==1 and component=="shared_library"', {

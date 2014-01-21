@@ -82,6 +82,8 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   }
 
  private:
+  friend class ShapedAppWindowTargeterTest;
+
   void InitializeDefaultWindow(
       const apps::ShellWindow::CreateParams& create_params);
   void InitializePanelWindow(
