@@ -160,8 +160,8 @@ ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
       Java_ContentViewCore_getNativeContentViewCore(env, obj));
 }
 
-ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
-                                         bool hardware_accelerated,
+ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
+                                         jobject obj,
                                          WebContents* web_contents,
                                          ui::ViewAndroid* view_android,
                                          ui::WindowAndroid* window_android)
@@ -179,8 +179,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       geolocation_needs_pause_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
-
-  // TODO(leandrogracia): make use of the hardware_accelerated argument.
 
   const gfx::Display& display =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
@@ -1680,13 +1678,13 @@ void ContentViewCoreImpl::OnSmartClipDataExtracted(
 }
 
 // This is called for each ContentView.
-jlong Init(JNIEnv* env, jobject obj,
-           jboolean hardware_accelerated,
+jlong Init(JNIEnv* env,
+           jobject obj,
            jlong native_web_contents,
            jlong view_android,
            jlong window_android) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
-      env, obj, hardware_accelerated,
+      env, obj,
       reinterpret_cast<WebContents*>(native_web_contents),
       reinterpret_cast<ui::ViewAndroid*>(view_android),
       reinterpret_cast<ui::WindowAndroid*>(window_android));

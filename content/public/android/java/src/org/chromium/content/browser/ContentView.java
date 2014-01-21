@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -125,7 +124,7 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean isReadyForSnapshot() {
-        return isReady();
+        return mContentViewCore.isReady();
     }
 
     @Override
@@ -164,18 +163,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * Returns true if the given Activity has hardware acceleration enabled
-     * in its manifest, or in its foreground window.
-     *
-     * TODO(husky): Remove when ContentViewCore.initialize() is refactored (see TODO there)
-     * TODO(dtrainor) This is still used by other classes.  Make sure to pull some version of this
-     * out before removing it.
-     */
-    public static boolean hasHardwareAcceleration(Activity activity) {
-        return ContentViewCore.hasHardwareAcceleration(activity);
-    }
-
-    /**
      * Destroy the internal state of the WebView. This method may only be called
      * after the WebView has been removed from the view system. No other methods
      * may be called on this WebView after this method has been called.
@@ -190,15 +177,6 @@ public class ContentView extends FrameLayout
      */
     public boolean isAlive() {
         return mContentViewCore.isAlive();
-    }
-
-    /**
-     * For internal use. Throws IllegalStateException if mNativeContentView is 0.
-     * Use this to ensure we get a useful Java stack trace, rather than a native
-     * crash dump, from use-after-destroy bugs in Java code.
-     */
-    void checkIsAlive() throws IllegalStateException {
-        mContentViewCore.checkIsAlive();
     }
 
     public void setContentViewClient(ContentViewClient client) {
@@ -222,13 +200,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * Stops loading the current web contents.
-     */
-    public void stopLoading() {
-        mContentViewCore.stopLoading();
-    }
-
-    /**
      * @return Whether the current WebContents has a previous navigation entry.
      */
     public boolean canGoBack() {
@@ -240,23 +211,6 @@ public class ContentView extends FrameLayout
      */
     public boolean canGoForward() {
         return mContentViewCore.canGoForward();
-    }
-
-    /**
-     * @param offset The offset into the navigation history.
-     * @return Whether we can move in history by given offset
-     */
-    public boolean canGoToOffset(int offset) {
-        return mContentViewCore.canGoToOffset(offset);
-    }
-
-    /**
-     * Navigates to the specified offset from the "current entry". Does nothing if the offset is out
-     * of bounds.
-     * @param offset The offset into the navigation history.
-     */
-    public void goToOffset(int offset) {
-        mContentViewCore.goToOffset(offset);
     }
 
     /**
@@ -274,32 +228,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * Clears the WebView's page history in both the backwards and forwards
-     * directions.
-     */
-    public void clearHistory() {
-        mContentViewCore.clearHistory();
-    }
-
-    /**
-     * Start profiling the update speed. You must call {@link #stopFpsProfiling}
-     * to stop profiling.
-     */
-    @VisibleForTesting
-    public void startFpsProfiling() {
-        // TODO(nileshagrawal): Implement this.
-    }
-
-    /**
-     * Stop profiling the update speed.
-     */
-    @VisibleForTesting
-    public float stopFpsProfiling() {
-        // TODO(nileshagrawal): Implement this.
-        return 0.0f;
-    }
-
-    /**
      * Fling the ContentView from the current position.
      * @param x Fling touch starting position
      * @param y Fling touch starting position
@@ -309,31 +237,6 @@ public class ContentView extends FrameLayout
     @VisibleForTesting
     public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
         mContentViewCore.getContentViewGestureHandler().fling(timeMs, x, y, velocityX, velocityY);
-    }
-
-    /**
-     * Start pinch zoom. You must call {@link #pinchEnd} to stop.
-     */
-    @VisibleForTesting
-    public void pinchBegin(long timeMs, int x, int y) {
-        mContentViewCore.getContentViewGestureHandler().pinchBegin(timeMs, x, y);
-    }
-
-    /**
-     * Stop pinch zoom.
-     */
-    @VisibleForTesting
-    public void pinchEnd(long timeMs) {
-        mContentViewCore.getContentViewGestureHandler().pinchEnd(timeMs);
-    }
-
-    void setIgnoreSingleTap(boolean value) {
-        mContentViewCore.getContentViewGestureHandler().setIgnoreSingleTap(value);
-    }
-
-    /** @see ContentViewGestureHandler#setIgnoreRemainingTouchEvents */
-    public void setIgnoreRemainingTouchEvents() {
-        mContentViewCore.getContentViewGestureHandler().setIgnoreRemainingTouchEvents();
     }
 
     /**
@@ -374,16 +277,6 @@ public class ContentView extends FrameLayout
      **/
     public void onHide() {
         mContentViewCore.onHide();
-    }
-
-    /**
-     * Return the ContentSettings object used to retrieve the settings for this
-     * ContentView.
-     * @return A ContentSettings object that can be used to retrieve this ContentView's
-     *         settings.
-     */
-    public ContentSettings getContentSettings() {
-        return mContentViewCore.getContentSettings();
     }
 
     /**
@@ -624,56 +517,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * Register the delegate to be used when content can not be handled by
-     * the rendering engine, and should be downloaded instead. This will replace
-     * the current delegate.
-     * @param delegate An implementation of ContentViewDownloadDelegate.
-     */
-    public void setDownloadDelegate(ContentViewDownloadDelegate delegate) {
-        mContentViewCore.setDownloadDelegate(delegate);
-    }
-
-    // Called by DownloadController.
-    ContentViewDownloadDelegate getDownloadDelegate() {
-        return mContentViewCore.getDownloadDelegate();
-    }
-
-    /**
-     * Zooms in the WebView by 25% (or less if that would result in zooming in
-     * more than possible).
-     *
-     * @return True if there was a zoom change, false otherwise.
-     */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean zoomIn() {
-        return mContentViewCore.zoomIn();
-    }
-
-    /**
-     * Zooms out the WebView by 20% (or less if that would result in zooming out
-     * more than possible).
-     *
-     * @return True if there was a zoom change, false otherwise.
-     */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean zoomOut() {
-        return mContentViewCore.zoomOut();
-    }
-
-    /**
-     * Resets the zoom factor of the WebView.
-     *
-     * @return True if there was a zoom change, false otherwise.
-     */
-    // This method uses the term 'zoom' for legacy reasons, but relates
-    // to what chrome calls the 'page scale factor'.
-    public boolean zoomReset() {
-        return mContentViewCore.zoomReset();
-    }
-
-    /**
      * Return the current scale of the WebView
      * @return The current scale.
      */
@@ -682,34 +525,10 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * If the view is ready to draw contents to the screen. In hardware mode,
-     * the initialization of the surface texture may not occur until after the
-     * view has been added to the layout. This method will return {@code true}
-     * once the texture is actually ready.
-     */
-    public boolean isReady() {
-        return mContentViewCore.isReady();
-    }
-
-    /**
-     * Returns whether or not accessibility injection is being used.
-     */
-    public boolean isInjectingAccessibilityScript() {
-        return mContentViewCore.isInjectingAccessibilityScript();
-    }
-
-    /**
      * Enable or disable accessibility features.
      */
     public void setAccessibilityState(boolean state) {
         mContentViewCore.setAccessibilityState(state);
-    }
-
-    /**
-     * Stop any TTS notifications that are currently going on.
-     */
-    public void stopCurrentAccessibilityNotifications() {
-        mContentViewCore.stopCurrentAccessibilityNotifications();
     }
 
     /**

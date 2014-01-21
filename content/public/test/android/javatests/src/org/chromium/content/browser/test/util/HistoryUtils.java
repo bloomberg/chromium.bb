@@ -4,9 +4,9 @@
 
 package org.chromium.content.browser.test.util;
 
-import android.app.Instrumentation;
-
 import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
+
+import android.app.Instrumentation;
 
 import org.chromium.base.test.util.InstrumentationUtils;
 import org.chromium.content.browser.ContentView;
@@ -43,13 +43,13 @@ public class HistoryUtils {
     }
 
     /**
-     * Calls {@link ContentView#canGoToOffset(int)} on UI thread.
+     * Calls {@link ContentViewCore#canGoToOffset(int)} on UI thread.
      *
      * @param instrumentation an Instrumentation instance.
      * @param contentViewCore a ContentViewCore instance.
      * @param offset The number of steps to go on the UI thread, with negative
      *      representing going back.
-     * @return result of {@link ContentView#canGoToOffset(int)}
+     * @return result of {@link ContentViewCore#canGoToOffset(int)}
      * @throws Throwable
      */
     public static boolean canGoToOffsetOnUiThread(Instrumentation instrumentation,
@@ -83,7 +83,7 @@ public class HistoryUtils {
     }
 
     /**
-     * Calls {@link ContentView#clearHistory()} on UI thread.
+     * Calls {@link ContentViewCore#clearHistory()} on UI thread.
      *
      * @param instrumentation an Instrumentation instance.
      * @param contentViewCore a ContentViewCore instance.

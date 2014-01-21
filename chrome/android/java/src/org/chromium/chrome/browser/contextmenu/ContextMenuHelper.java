@@ -70,7 +70,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
         mCurrentContextMenuParams = params;
 
         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-        if (view instanceof ContentView) ((ContentView) view).setIgnoreRemainingTouchEvents();
+        contentViewCore.setIgnoreRemainingTouchEvents();
         view.setOnCreateContextMenuListener(this);
         view.showContextMenu();
     }

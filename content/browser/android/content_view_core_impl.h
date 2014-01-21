@@ -42,7 +42,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
   ContentViewCoreImpl(JNIEnv* env,
                       jobject obj,
-                      bool hardware_accelerated,
                       WebContents* web_contents,
                       ui::ViewAndroid* view_android,
                       ui::WindowAndroid* window_android);
