@@ -187,7 +187,6 @@ void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
         input->setValueInternal(newValue, DispatchNoEvent);
         input->setNeedsStyleRecalc();
         input->dispatchFormControlInputEvent();
-        input->dispatchFormControlChangeEvent();
     }
     input->notifyFormStateChanged();
     input->updateClearButtonVisibility();
@@ -264,6 +263,7 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(const St
     unsigned end;
     if (date.parseDate(value, 0, end) && end == value.length())
         edit->setOnlyYearMonthDay(date);
+    element().dispatchFormControlChangeEvent();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(double value)
@@ -446,6 +446,11 @@ bool BaseMultipleFieldsDateAndTimeInputType::hasBadInput() const
 AtomicString BaseMultipleFieldsDateAndTimeInputType::localeIdentifier() const
 {
     return element().computeInheritedLanguage();
+}
+
+void BaseMultipleFieldsDateAndTimeInputType::editControlDidChangeValueByKeyboard()
+{
+    element().dispatchFormControlChangeEvent();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::minOrMaxAttributeChanged()

@@ -59,6 +59,7 @@ public:
         virtual bool isFieldOwnerDisabled() const = 0;
         virtual bool isFieldOwnerReadOnly() const = 0;
         virtual AtomicString localeIdentifier() const = 0;
+        virtual void fieldDidChangeValueByKeyboard() = 0;
     };
 
     virtual void defaultEventHandler(Event*) OVERRIDE;

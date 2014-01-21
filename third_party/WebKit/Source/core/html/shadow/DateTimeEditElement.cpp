@@ -694,6 +694,12 @@ AtomicString DateTimeEditElement::localeIdentifier() const
     return m_editControlOwner ? m_editControlOwner->localeIdentifier() : nullAtom;
 }
 
+void DateTimeEditElement::fieldDidChangeValueByKeyboard()
+{
+    if (m_editControlOwner)
+        m_editControlOwner->editControlDidChangeValueByKeyboard();
+}
+
 void DateTimeEditElement::readOnlyStateChanged()
 {
     updateUIState();

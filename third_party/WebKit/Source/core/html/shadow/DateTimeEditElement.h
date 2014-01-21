@@ -59,6 +59,7 @@ public:
         virtual bool isEditControlOwnerDisabled() const = 0;
         virtual bool isEditControlOwnerReadOnly() const = 0;
         virtual AtomicString localeIdentifier() const = 0;
+        virtual void editControlDidChangeValueByKeyboard() = 0;
     };
 
     struct LayoutParameters {
@@ -144,6 +145,7 @@ private:
     virtual bool isFieldOwnerDisabled() const OVERRIDE;
     virtual bool isFieldOwnerReadOnly() const OVERRIDE;
     virtual AtomicString localeIdentifier() const OVERRIDE;
+    virtual void fieldDidChangeValueByKeyboard() OVERRIDE;
 
     Vector<DateTimeFieldElement*, maximumNumberOfFields> m_fields;
     EditControlOwner* m_editControlOwner;
