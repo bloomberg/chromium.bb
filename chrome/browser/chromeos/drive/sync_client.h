@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
-#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -114,11 +113,9 @@ class SyncClient {
                             const base::TimeDelta& delay);
 
   // Adds a UPLOAD task.
-  void AddUploadTaskInternal(
-      const ClientContext& context,
-      const std::string& local_id,
-      file_system::UpdateOperation::ContentCheckMode content_check_mode,
-      const base::TimeDelta& delay);
+  void AddUploadTaskInternal(const ClientContext& context,
+                             const std::string& local_id,
+                             const base::TimeDelta& delay);
 
   // Adds a UPDATE task.
   void AddUpdateTaskInternal(const std::string& local_id,

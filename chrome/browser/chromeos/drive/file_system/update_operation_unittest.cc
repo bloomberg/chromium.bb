@@ -89,7 +89,6 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId) {
   operation_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
-      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -131,7 +130,6 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_NonexistentFile) {
   operation_->UpdateFileByLocalId(
       "nonexistent_local_id",
       ClientContext(USER_INITIATED),
-      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -155,7 +153,6 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   operation_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
-      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -204,6 +201,7 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
+  file_closer.reset();
 
   // And call UpdateFileByLocalId again.
   // In this case, although the file is marked as dirty, but the content
@@ -213,7 +211,6 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   operation_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
-      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -234,36 +231,6 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
   EXPECT_FALSE(cache_entry.is_dirty());
-
-  // Once again mark the cache file dirty.
-  error = FILE_ERROR_FAILED;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&internal::FileCache::OpenForWrite,
-                 base::Unretained(cache()),
-                 local_id,
-                 &file_closer),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // And call UpdateFileByLocalId again.
-  // In this case, NO_CONTENT_CHECK is set, so the actual uploading should run
-  // no matter the content is changed or not.
-  original_changestamp = fake_service()->about_resource().largest_change_id();
-  error = FILE_ERROR_FAILED;
-  operation_->UpdateFileByLocalId(
-      local_id,
-      ClientContext(USER_INITIATED),
-      UpdateOperation::NO_CONTENT_CHECK,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // Make sure that the server is receiving a change.
-  EXPECT_LE(original_changestamp,
-            fake_service()->about_resource().largest_change_id());
 }
 
 TEST_F(UpdateOperationTest, UpdateFileByLocalId_OpenedForWrite) {
@@ -295,7 +262,6 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_OpenedForWrite) {
   operation_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
-      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -323,7 +289,6 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_OpenedForWrite) {
   operation_->UpdateFileByLocalId(
       local_id,
       ClientContext(USER_INITIATED),
-      UpdateOperation::RUN_CONTENT_CHECK,
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

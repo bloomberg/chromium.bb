@@ -264,11 +264,10 @@ FileError FileCache::OpenForWrite(
     return FILE_ERROR_NOT_FOUND;
   }
 
-  if (!cache_entry.is_dirty()) {
-    cache_entry.set_is_dirty(true);
-    if (!storage_->PutCacheEntry(id, cache_entry))
-      return FILE_ERROR_FAILED;
-  }
+  cache_entry.set_is_dirty(true);
+  cache_entry.clear_md5();
+  if (!storage_->PutCacheEntry(id, cache_entry))
+    return FILE_ERROR_FAILED;
 
   write_opened_files_[id]++;
   file_closer->reset(new base::ScopedClosureRunner(
@@ -285,8 +284,31 @@ bool FileCache::IsOpenedForWrite(const std::string& id) {
   return write_opened_files_.count(id);
 }
 
-FileError FileCache::ClearDirty(const std::string& id, const std::string& md5) {
+FileError FileCache::UpdateMd5(const std::string& id) {
   AssertOnSequencedWorkerPool();
+
+  if (IsOpenedForWrite(id))
+    return FILE_ERROR_IN_USE;
+
+  FileCacheEntry cache_entry;
+  if (!storage_->GetCacheEntry(id, &cache_entry) ||
+      !cache_entry.is_present())
+    return FILE_ERROR_NOT_FOUND;
+
+  const std::string& md5 = util::GetMd5Digest(GetCacheFilePath(id));
+  if (md5.empty())
+    return FILE_ERROR_NOT_FOUND;
+
+  cache_entry.set_md5(md5);
+  return storage_->PutCacheEntry(id, cache_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
+}
+
+FileError FileCache::ClearDirty(const std::string& id) {
+  AssertOnSequencedWorkerPool();
+
+  if (IsOpenedForWrite(id))
+    return FILE_ERROR_IN_USE;
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
@@ -305,7 +327,6 @@ FileError FileCache::ClearDirty(const std::string& id, const std::string& md5) {
     return FILE_ERROR_INVALID_OPERATION;
   }
 
-  cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(false);
   return storage_->PutCacheEntry(id, cache_entry) ?
       FILE_ERROR_OK : FILE_ERROR_FAILED;
@@ -360,6 +381,19 @@ bool FileCache::ClearAll() {
 
 bool FileCache::Initialize() {
   AssertOnSequencedWorkerPool();
+
+  // Older versions do not clear MD5 when marking entries dirty.
+  // Clear MD5 of all dirty entries to deal with old data.
+  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
+      storage_->GetCacheEntryIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (it->GetValue().is_dirty()) {
+      FileCacheEntry new_entry(it->GetValue());
+      new_entry.clear_md5();
+      if (!storage_->PutCacheEntry(it->GetID(), new_entry))
+        return false;
+    }
+  }
 
   if (!RenameCacheFilesToNewFormat())
     return false;

@@ -8,11 +8,9 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
-#include "chrome/browser/drive/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -21,14 +19,14 @@ namespace drive {
 namespace file_system {
 
 struct UpdateOperation::LocalState {
-  LocalState() : content_is_same(false) {
+  LocalState() : should_upload(false) {
   }
 
   std::string local_id;
   ResourceEntry entry;
   base::FilePath drive_file_path;
   base::FilePath cache_file_path;
-  bool content_is_same;
+  bool should_upload;
 };
 
 namespace {
@@ -36,7 +34,6 @@ namespace {
 // Gets locally stored information about the specified file.
 FileError GetFileLocalState(internal::ResourceMetadata* metadata,
                             internal::FileCache* cache,
-                            UpdateOperation::ContentCheckMode check,
                             UpdateOperation::LocalState* local_state) {
   FileError error = metadata->GetResourceEntryById(local_state->local_id,
                                                    &local_state->entry);
@@ -54,16 +51,29 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  if (check == UpdateOperation::RUN_CONTENT_CHECK) {
-    const std::string& md5 = util::GetMd5Digest(local_state->cache_file_path);
-    local_state->content_is_same =
-        (md5 == local_state->entry.file_specific_info().md5());
-    if (local_state->content_is_same)
-      cache->ClearDirty(local_state->local_id, md5);
-  } else {
-    local_state->content_is_same = false;
+  // Do not upload the file if it's still opened.
+  if (cache->IsOpenedForWrite(local_state->local_id)) {
+    local_state->should_upload = false;
+    return FILE_ERROR_OK;
   }
 
+  FileCacheEntry cache_entry;
+  if (!cache->GetCacheEntry(local_state->local_id, &cache_entry))
+    return FILE_ERROR_NOT_FOUND;
+
+  // Update cache entry's MD5 if needed.
+  if (cache_entry.md5().empty()) {
+    error = cache->UpdateMd5(local_state->local_id);
+    if (error != FILE_ERROR_OK)
+      return error;
+    if (!cache->GetCacheEntry(local_state->local_id, &cache_entry))
+      return FILE_ERROR_NOT_FOUND;
+  }
+
+  local_state->should_upload =
+      (cache_entry.md5() != local_state->entry.file_specific_info().md5());
+  if (!local_state->should_upload)
+    return cache->ClearDirty(local_state->local_id);
   return FILE_ERROR_OK;
 }
 
@@ -95,10 +105,14 @@ FileError UpdateFileLocalState(
   if (drive_file_path->empty())
     return FILE_ERROR_NOT_FOUND;
 
-  // Do not clear the dirty bit if someone is writing to the file.
-  if (cache->IsOpenedForWrite(local_id))
+  FileCacheEntry cache_entry;
+  if (!cache->GetCacheEntry(local_id, &cache_entry))
+    return FILE_ERROR_NOT_FOUND;
+
+  // Do not clear dirty bit if the file has been edited during update.
+  if (cache_entry.md5() != entry.file_specific_info().md5())
     return FILE_ERROR_OK;
-  return cache->ClearDirty(local_id, entry.file_specific_info().md5());
+  return cache->ClearDirty(local_id);
 }
 
 }  // namespace
@@ -125,7 +139,6 @@ UpdateOperation::~UpdateOperation() {
 void UpdateOperation::UpdateFileByLocalId(
     const std::string& local_id,
     const ClientContext& context,
-    ContentCheckMode check,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -138,7 +151,6 @@ void UpdateOperation::UpdateFileByLocalId(
       base::Bind(&GetFileLocalState,
                  metadata_,
                  cache_,
-                 check,
                  local_state),
       base::Bind(&UpdateOperation::UpdateFileAfterGetLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -155,7 +167,7 @@ void UpdateOperation::UpdateFileAfterGetLocalState(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != FILE_ERROR_OK || local_state->content_is_same) {
+  if (error != FILE_ERROR_OK || !local_state->should_upload) {
     callback.Run(error);
     return;
   }

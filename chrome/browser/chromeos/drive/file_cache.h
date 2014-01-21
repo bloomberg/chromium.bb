@@ -115,8 +115,11 @@ class FileCache {
   // Returns true if the cache file corresponding to |id| is write-opened.
   bool IsOpenedForWrite(const std::string& id);
 
-  // Clears dirty state of the specified entry and updates its MD5.
-  FileError ClearDirty(const std::string& id, const std::string& md5);
+  // Calculates MD5 of the cache file and updates the stored value.
+  FileError UpdateMd5(const std::string& id);
+
+  // Clears dirty state of the specified entry.
+  FileError ClearDirty(const std::string& id);
 
   // Removes the specified cache entry and delete cache files if available.
   FileError Remove(const std::string& id);

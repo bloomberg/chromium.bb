@@ -225,9 +225,7 @@ void SyncClient::RemoveFetchTask(const std::string& local_id) {
 void SyncClient::AddUploadTask(const ClientContext& context,
                                const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddUploadTaskInternal(context, local_id,
-                        file_system::UpdateOperation::RUN_CONTENT_CHECK,
-                        delay_);
+  AddUploadTaskInternal(context, local_id, delay_);
 }
 
 void SyncClient::AddUpdateTask(const std::string& local_id) {
@@ -253,11 +251,9 @@ void SyncClient::AddFetchTaskInternal(const std::string& local_id,
   AddTask(SyncTasks::key_type(FETCH, local_id), task, delay);
 }
 
-void SyncClient::AddUploadTaskInternal(
-    const ClientContext& context,
-    const std::string& local_id,
-    file_system::UpdateOperation::ContentCheckMode content_check_mode,
-    const base::TimeDelta& delay) {
+void SyncClient::AddUploadTaskInternal(const ClientContext& context,
+                                       const std::string& local_id,
+                                       const base::TimeDelta& delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SyncTask task;
@@ -266,7 +262,6 @@ void SyncClient::AddUploadTaskInternal(
       base::Unretained(update_operation_.get()),
       local_id,
       context,
-      content_check_mode,
       base::Bind(&SyncClient::OnUploadFileComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_id));
@@ -341,9 +336,7 @@ void SyncClient::OnGetLocalIdsOfBacklog(
   for (size_t i = 0; i < to_upload->size(); ++i) {
     const std::string& local_id = (*to_upload)[i];
     DVLOG(1) << "Queuing to upload: " << local_id;
-    AddUploadTaskInternal(ClientContext(BACKGROUND), local_id,
-                          file_system::UpdateOperation::NO_CONTENT_CHECK,
-                          delay_);
+    AddUploadTaskInternal(ClientContext(BACKGROUND), local_id, delay_);
   }
 
   for (size_t i = 0; i < to_fetch->size(); ++i) {
@@ -437,15 +430,11 @@ void SyncClient::OnUploadFileComplete(const std::string& local_id,
     switch (error) {
       case FILE_ERROR_NO_CONNECTION:
         // Add the task again so that we'll retry once the connection is back.
-        AddUploadTaskInternal(ClientContext(BACKGROUND), local_id,
-                              file_system::UpdateOperation::NO_CONTENT_CHECK,
-                              delay_);
+        AddUploadTaskInternal(ClientContext(BACKGROUND), local_id, delay_);
         break;
       case FILE_ERROR_SERVICE_UNAVAILABLE:
         // Add the task again so that we'll retry once the service is back.
-        AddUploadTaskInternal(ClientContext(BACKGROUND), local_id,
-                              file_system::UpdateOperation::NO_CONTENT_CHECK,
-                              long_delay_);
+        AddUploadTaskInternal(ClientContext(BACKGROUND), local_id, long_delay_);
         operation_observer_->OnDriveSyncError(
             file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
             local_id);
