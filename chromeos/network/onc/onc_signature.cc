@@ -84,9 +84,14 @@ const OncFieldSignature ipsec_fields[] = {
     { ::onc::ipsec::kServerCAPEMs, &kStringListSignature},
     { ::onc::ipsec::kServerCARef, &kStringSignature},
     { ::onc::ipsec::kServerCARefs, &kStringListSignature},
+    { ::onc::ipsec::kXAUTH, &kXAUTHSignature},
     // Not yet supported.
     //  { ipsec::kEAP, &kEAPSignature },
-    //  { ipsec::kXAUTH, &kXAUTHSignature },
+    {NULL}};
+
+const OncFieldSignature xauth_fields[] = {
+    { ::onc::vpn::kPassword, &kStringSignature},
+    { ::onc::vpn::kUsername, &kStringSignature},
     {NULL}};
 
 const OncFieldSignature l2tp_fields[] = {
@@ -324,6 +329,9 @@ const OncValueSignature kCertificatePatternSignature = {
 const OncValueSignature kIPsecSignature = {
   base::Value::TYPE_DICTIONARY, ipsec_fields, NULL
 };
+const OncValueSignature kXAUTHSignature = {
+  base::Value::TYPE_DICTIONARY, xauth_fields, NULL
+};
 const OncValueSignature kL2TPSignature = {
   base::Value::TYPE_DICTIONARY, l2tp_fields, NULL
 };
@@ -419,6 +427,7 @@ struct CredentialEntry {
 const CredentialEntry credentials[] = {
     {&kEAPSignature, ::onc::eap::kPassword},
     {&kIPsecSignature, ::onc::ipsec::kPSK},
+    {&kXAUTHSignature, ::onc::vpn::kPassword},
     {&kL2TPSignature, ::onc::vpn::kPassword},
     {&kOpenVPNSignature, ::onc::vpn::kPassword},
     {&kOpenVPNSignature, ::onc::openvpn::kTLSAuthContents},

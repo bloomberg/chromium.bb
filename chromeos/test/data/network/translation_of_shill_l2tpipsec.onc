@@ -12,7 +12,11 @@
       // "AuthenticationType": "PSK",
       // "IKEVersion": 1,
       "PSK": "some_preshared_key",
-      "SaveCredentials": true
+      "SaveCredentials": true,
+      "XAUTH": {
+          "Username": "some xauth username",
+          "Password": "some xauth password"
+      }
     },
     "L2TP": {
       "Username": "some username",

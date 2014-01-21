@@ -61,6 +61,7 @@ class ShillToONCTranslator {
  private:
   void TranslateEthernet();
   void TranslateOpenVPN();
+  void TranslateIPsec();
   void TranslateVPN();
   void TranslateWiFiWithState();
   void TranslateCellularWithState();
@@ -124,6 +125,8 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateVPN();
   } else if (onc_signature_ == &kOpenVPNSignature) {
     TranslateOpenVPN();
+  } else if (onc_signature_ == &kIPsecSignature) {
+    TranslateIPsec();
   } else if (onc_signature_ == &kWiFiWithStateSignature) {
     TranslateWiFiWithState();
   } else if (onc_signature_ == &kCellularWithStateSignature) {
@@ -205,6 +208,12 @@ void ShillToONCTranslator::TranslateOpenVPN() {
                  << ", but expected a string";
     }
   }
+}
+
+void ShillToONCTranslator::TranslateIPsec() {
+  CopyPropertiesAccordingToSignature();
+  if (shill_dictionary_->HasKey(shill::kL2tpIpsecXauthUserProperty))
+    TranslateAndAddNestedObject(::onc::ipsec::kXAUTH);
 }
 
 void ShillToONCTranslator::TranslateVPN() {
@@ -302,6 +311,8 @@ void ShillToONCTranslator::TranslateAndAddNestedObject(
     const base::DictionaryValue& dictionary) {
   const OncFieldSignature* field_signature =
       GetFieldSignature(*onc_signature_, onc_field_name);
+  DCHECK(field_signature) << "Unable to find signature for field "
+                          << onc_field_name << ".";
   ShillToONCTranslator nested_translator(dictionary,
                                          *field_signature->value_signature);
   scoped_ptr<base::DictionaryValue> nested_object =

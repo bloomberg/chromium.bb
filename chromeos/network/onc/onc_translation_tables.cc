@@ -49,6 +49,11 @@ const FieldTranslationEntry ipsec_fields[] = {
     { ::onc::ipsec::kServerCAPEMs, shill::kL2tpIpsecCaCertPemProperty},
     {NULL}};
 
+const FieldTranslationEntry xauth_fields[] = {
+    { ::onc::vpn::kPassword, shill::kL2tpIpsecXauthPasswordProperty},
+    { ::onc::vpn::kUsername, shill::kL2tpIpsecXauthUserProperty},
+    {NULL}};
+
 const FieldTranslationEntry l2tp_fields[] = {
     { ::onc::vpn::kPassword, shill::kL2tpIpsecPasswordProperty},
     // We don't synchronize l2tp's SaveCredentials field for now, as Shill
@@ -179,6 +184,7 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
   { &kEAPSignature, eap_fields },
   { &kIPsecSignature, ipsec_fields },
   { &kL2TPSignature, l2tp_fields },
+  { &kXAUTHSignature, xauth_fields },
   { &kOpenVPNSignature, openvpn_fields },
   { &kVerifyX509Signature, verify_x509_fields },
   { &kVPNSignature, vpn_fields },

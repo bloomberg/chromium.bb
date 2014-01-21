@@ -41,6 +41,7 @@ CHROMEOS_EXPORT extern const OncValueSignature kIssuerSubjectPatternSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCertificatePatternSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kIPsecSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kL2TPSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kXAUTHSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kOpenVPNSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kVerifyX509Signature;
 CHROMEOS_EXPORT extern const OncValueSignature kVPNSignature;
