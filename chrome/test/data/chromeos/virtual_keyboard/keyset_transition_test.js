@@ -200,6 +200,8 @@ function testKeysetTransitionsAsync(testDoneCallback) {
 
     // Test the path abc -> symbol -> more -> abc.
     tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_DOWN, Keyset.LOWER);
+    // Mock keyUp on the abc since it occupies the space where the
+    // symbol key used to be.
     tester.keyEvent(alignment, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
     tester.keyEvent(alignment, Key.MORE_SYMBOLS, EventType.KEY_DOWN,
         Keyset.SYMBOL);
@@ -207,6 +209,14 @@ function testKeysetTransitionsAsync(testDoneCallback) {
         Keyset.MORE_SYMBOLS);
     tester.keyEvent(alignment, Key.TEXT, EventType.KEY_DOWN,
         Keyset.MORE_SYMBOLS);
+    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP, Keyset.LOWER);
+
+    // Test the path abc ->  highlighted ABC -> symbol -> abc.
+    tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_DOWN, Keyset.LOWER);
+    tester.keyEvent(alignment, Key.SHIFT, EventType.KEY_UP, Keyset.UPPER);
+    tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_DOWN, Keyset.UPPER);
+    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_UP, Keyset.SYMBOL);
+    tester.keyEvent(alignment, Key.TEXT, EventType.KEY_DOWN, Keyset.SYMBOL);
     tester.keyEvent(alignment, Key.SYMBOL, EventType.KEY_UP, Keyset.LOWER);
   };
 

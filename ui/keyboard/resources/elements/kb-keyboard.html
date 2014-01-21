@@ -477,6 +477,10 @@
             if (this.classList.contains(modifier))
               this.classList.remove(modifier);
             break;
+          case 'Invalid':
+            // Pressed a transition key. Resets control key states.
+            this.onNonControlKeyTyped();
+            break;
           default:
             // Notify shift key.
             if (this.shift)
