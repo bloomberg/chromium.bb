@@ -119,12 +119,6 @@ fi
 # Source a bunch of helper functions
 . ${CHROME_SRC}/build/android/adb_device_functions.sh
 
-# TODO(thakis), Jan 18 2014: Remove this after two weeks or so, after telling
-# everyone to set use_goma in GYP_DEFINES instead of a GOMA_DIR env var.
-if [[ -d $GOMA_DIR ]]; then
-  DEFINES+=" use_goma=1 gomadir=$GOMA_DIR"
-fi
-
 # Declare Android are cross compile.
 export GYP_CROSSCOMPILE=1
 

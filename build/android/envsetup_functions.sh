@@ -96,6 +96,12 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
     export CHROME_BUILD_TYPE="_official"
   fi
 
+  # TODO(thakis), Jan 18 2014: Remove this after two weeks or so, after telling
+  # everyone to set use_goma in GYP_DEFINES instead of a GOMA_DIR env var.
+  if [[ -d $GOMA_DIR ]]; then
+    DEFINES+=" use_goma=1 gomadir=$GOMA_DIR"
+  fi
+
   # The order file specifies the order of symbols in the .text section of the
   # shared library, libchromeview.so.  The file is an order list of section
   # names and the library is linked with option
