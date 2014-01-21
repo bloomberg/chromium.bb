@@ -108,14 +108,6 @@ elif [[ -n "$CHROME_ANDROID_BUILD_WEBVIEW" ]]; then
   webview_build_init
 fi
 
-# Workaround for valgrind build
-if [[ -n "$CHROME_ANDROID_VALGRIND_BUILD" ]]; then
-# arm_thumb=0 is a workaround for https://bugs.kde.org/show_bug.cgi?id=270709
-  DEFINES+=" arm_thumb=0 release_extra_cflags='-fno-inline\
- -fno-omit-frame-pointer -fno-builtin' release_valgrind_build=1\
- release_optimize=1"
-fi
-
 # Source a bunch of helper functions
 . ${CHROME_SRC}/build/android/adb_device_functions.sh
 
