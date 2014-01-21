@@ -22,9 +22,15 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
-using base::ASCIIToUTF16;
+#if !defined(OS_ANDROID)
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
+#endif
 
 namespace autofill {
+
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
 
 DataModelWrapper::~DataModelWrapper() {}
 
@@ -46,16 +52,59 @@ gfx::Image DataModelWrapper::GetIcon() {
   return gfx::Image();
 }
 
+#if !defined(OS_ANDROID)
 bool DataModelWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
-  base::string16 comma = ASCIIToUTF16(", ");
-  base::string16 newline = ASCIIToUTF16("\n");
+  // Format the address.
+  ::i18n::addressinput::AddressData address_data;
+  address_data.recipient = UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(NAME_FULL)));
+  address_data.country_code = UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_COUNTRY)));
+  address_data.administrative_area = UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_STATE)));
+  address_data.locality = UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_CITY)));
+  address_data.dependent_locality = UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY)));
+  address_data.sorting_code = UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_SORTING_CODE)));
+  address_data.postal_code = UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_ZIP)));
 
-  *vertically_compact = GetAddressDisplayText(comma);
-  *horizontally_compact = GetAddressDisplayText(newline);
+  address_data.address_lines.push_back(UTF16ToUTF8(
+      GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE1))));
+  base::string16 address2 = GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE2));
+  if (!address2.empty())
+    address_data.address_lines.push_back(UTF16ToUTF8(address2));
+
+  std::vector<std::string> lines;
+  address_data.FormatForDisplay(&lines);
+
+  // Email and phone number aren't part of address formatting.
+  base::string16 non_address_info;
+  base::string16 email = GetInfoForDisplay(AutofillType(EMAIL_ADDRESS));
+  if (!email.empty())
+    non_address_info += ASCIIToUTF16("\n") + email;
+
+  non_address_info += ASCIIToUTF16("\n") +
+      GetInfoForDisplay(AutofillType(PHONE_HOME_WHOLE_NUMBER));
+
+  // The separator is locale-specific.
+  std::string compact_separator =
+      ::i18n::addressinput::GetCompactAddressLinesSeparator(
+          g_browser_process->GetApplicationLocale(),
+          address_data.country_code);
+  *vertically_compact =
+      base::UTF8ToUTF16(JoinString(lines, compact_separator)) +
+          non_address_info;
+  *horizontally_compact = base::UTF8ToUTF16(JoinString(lines, "\n")) +
+      non_address_info;
+
   return true;
 }
+#endif
 
 bool DataModelWrapper::FillFormStructure(
     const DetailInputs& inputs,
@@ -78,29 +127,6 @@ bool DataModelWrapper::FillFormStructure(
 }
 
 DataModelWrapper::DataModelWrapper() {}
-
-base::string16 DataModelWrapper::GetAddressDisplayText(
-    const base::string16& separator) {
-  base::string16 address = GetInfoForDisplay(AutofillType(NAME_FULL)) +
-      separator + GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE1));
-  base::string16 address2 = GetInfoForDisplay(AutofillType(ADDRESS_HOME_LINE2));
-  if (!address2.empty())
-    address += separator + address2;
-
-  base::string16 comma = ASCIIToUTF16(", ");
-  base::string16 newline = ASCIIToUTF16("\n");
-  address += separator +
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_CITY)) + comma +
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_STATE)) + ASCIIToUTF16(" ") +
-      GetInfoForDisplay(AutofillType(ADDRESS_HOME_ZIP));
-
-  base::string16 email = GetInfoForDisplay(AutofillType(EMAIL_ADDRESS));
-  if (!email.empty())
-    address += newline + email;
-  address += newline + GetInfoForDisplay(AutofillType(PHONE_HOME_WHOLE_NUMBER));
-
-  return address;
-}
 
 // EmptyDataModelWrapper
 
@@ -212,6 +238,7 @@ gfx::Image AutofillCreditCardWrapper::GetIcon() {
   return rb.GetImageNamed(CreditCard::IconResourceId(card_->type()));
 }
 
+#if !defined(OS_ANDROID)
 bool AutofillCreditCardWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -221,6 +248,7 @@ bool AutofillCreditCardWrapper::GetDisplayText(
   *vertically_compact = *horizontally_compact = card_->TypeAndLastFourDigits();
   return true;
 }
+#endif
 
 // WalletAddressWrapper
 
@@ -245,6 +273,7 @@ base::string16 WalletAddressWrapper::GetInfoForDisplay(const AutofillType& type)
   return DataModelWrapper::GetInfoForDisplay(type);
 }
 
+#if !defined(OS_ANDROID)
 bool WalletAddressWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -256,6 +285,7 @@ bool WalletAddressWrapper::GetDisplayText(
   return DataModelWrapper::GetDisplayText(vertically_compact,
                                           horizontally_compact);
 }
+#endif
 
 // WalletInstrumentWrapper
 
@@ -289,6 +319,7 @@ gfx::Image WalletInstrumentWrapper::GetIcon() {
   return instrument_->CardIcon();
 }
 
+#if !defined(OS_ANDROID)
 bool WalletInstrumentWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -307,6 +338,7 @@ bool WalletInstrumentWrapper::GetDisplayText(
   *horizontally_compact = line1 + *horizontally_compact;
   return true;
 }
+#endif
 
 // FullWalletBillingWrapper
 
@@ -330,6 +362,7 @@ base::string16 FullWalletBillingWrapper::GetInfo(const AutofillType& type)
       type, g_browser_process->GetApplicationLocale());
 }
 
+#if !defined(OS_ANDROID)
 bool FullWalletBillingWrapper::GetDisplayText(
     base::string16* vertically_compact,
     base::string16* horizontally_compact) {
@@ -340,6 +373,7 @@ bool FullWalletBillingWrapper::GetDisplayText(
   return DataModelWrapper::GetDisplayText(vertically_compact,
                                           horizontally_compact);
 }
+#endif
 
 // FullWalletShippingWrapper
 

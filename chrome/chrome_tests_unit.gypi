@@ -2241,7 +2241,6 @@
             'browser/ui/autofill/autofill_credit_card_bubble_controller_unittest.cc',
             'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
             'browser/ui/autofill/autofill_dialog_i18n_input_unittest.cc',
-            'browser/ui/autofill/data_model_wrapper_unittest.cc',
             'browser/ui/autofill/mock_autofill_dialog_view_delegate.cc',
             'browser/ui/autofill/mock_autofill_dialog_view_delegate.h',
             'browser/ui/autofill/test_autofill_credit_card_bubble.cc',

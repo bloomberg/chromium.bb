@@ -30,6 +30,7 @@ TEST(AutofillCreditCardWrapperTest, GetInfoCreditCardExpMonth) {
   }
 }
 
+#if !defined(OS_ANDROID)
 TEST(AutofillCreditCardWrapperTest, GetDisplayTextEmptyWhenExpired) {
   CreditCard card;
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
@@ -58,18 +59,6 @@ TEST(AutofillCreditCardWrapperTest, GetDisplayTextNotEmptyWhenValid) {
   AutofillCreditCardWrapper wrapper(&card);
   base::string16 unused, unused2;
   EXPECT_TRUE(wrapper.GetDisplayText(&unused, &unused2));
-}
-
-TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth) {
-  scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument(
-      wallet::GetTestMaskedInstrument());
-  MonthComboboxModel model;
-  for (int month = 1; month <= 12; ++month) {
-    instrument->expiration_month_ = month;
-    WalletInstrumentWrapper wrapper(instrument.get());
-    EXPECT_EQ(model.GetItemAt(month),
-              wrapper.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH)));
-  }
 }
 
 TEST(WalletInstrumentWrapperTest, GetDisplayTextEmptyWhenExpired) {
@@ -102,6 +91,19 @@ TEST(DataModelWrapperTest, GetDisplayTextEmptyWithoutPhone) {
   EXPECT_EQ(base::string16(),
             address_wrapper.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
   EXPECT_FALSE(address_wrapper.GetDisplayText(&unused, &unused2));
+}
+#endif
+
+TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth) {
+  scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument(
+      wallet::GetTestMaskedInstrument());
+  MonthComboboxModel model;
+  for (int month = 1; month <= 12; ++month) {
+    instrument->expiration_month_ = month;
+    WalletInstrumentWrapper wrapper(instrument.get());
+    EXPECT_EQ(model.GetItemAt(month),
+              wrapper.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH)));
+  }
 }
 
 TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {

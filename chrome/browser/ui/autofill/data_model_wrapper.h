@@ -50,6 +50,7 @@ class DataModelWrapper {
   // Returns the icon, if any, that represents this model.
   virtual gfx::Image GetIcon();
 
+#if !defined(OS_ANDROID)
   // Gets text to display to the user to summarize this data source. The
   // default implementation assumes this is an address. Both params are required
   // to be non-NULL and will be filled in with text that is vertically compact
@@ -59,6 +60,7 @@ class DataModelWrapper {
   // complete and valid.
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact);
+#endif
 
   // Fills in |form_structure| with the data that this model contains. |inputs|
   // and |comparator| are used to determine whether each field in the
@@ -73,10 +75,6 @@ class DataModelWrapper {
   DataModelWrapper();
 
  private:
-  // Formats address data into a single string using |separator| between
-  // fields.
-  base::string16 GetAddressDisplayText(const base::string16& separator);
-
   DISALLOW_COPY_AND_ASSIGN(DataModelWrapper);
 };
 
@@ -142,8 +140,10 @@ class AutofillCreditCardWrapper : public DataModelWrapper {
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
+#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+#endif
 
  private:
   const CreditCard* card_;
@@ -160,8 +160,10 @@ class WalletAddressWrapper : public DataModelWrapper {
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
       OVERRIDE;
+#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+#endif
 
  private:
   const wallet::Address* address_;
@@ -180,8 +182,10 @@ class WalletInstrumentWrapper : public DataModelWrapper {
   virtual base::string16 GetInfoForDisplay(const AutofillType& type) const
       OVERRIDE;
   virtual gfx::Image GetIcon() OVERRIDE;
+#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+#endif
 
  private:
   const wallet::WalletItems::MaskedInstrument* instrument_;
@@ -196,8 +200,10 @@ class FullWalletBillingWrapper : public DataModelWrapper {
   virtual ~FullWalletBillingWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
+#if !defined(OS_ANDROID)
   virtual bool GetDisplayText(base::string16* vertically_compact,
                               base::string16* horizontally_compact) OVERRIDE;
+#endif
 
  private:
   wallet::FullWallet* full_wallet_;
