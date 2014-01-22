@@ -10,6 +10,7 @@
 #include <poll.h>
 #include <unistd.h>
 
+#include "base/debug/trace_event.h"
 #include "base/files/file_enumerator.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -41,6 +42,8 @@ EventFactoryEvdev::EventFactoryEvdev() {}
 EventFactoryEvdev::~EventFactoryEvdev() {}
 
 void EventFactoryEvdev::AttachInputDevice(const base::FilePath& path) {
+  TRACE_EVENT1("ozone", "AttachInputDevice", "path", path.value());
+
   int fd = open(path.value().c_str(), O_RDONLY | O_NONBLOCK);
   if (fd < 0) {
     PLOG(ERROR) << "Cannot open '" << path.value();

@@ -5,6 +5,7 @@
 #include "ui/events/ozone/event_converter_ozone.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_ozone.h"
 #include "ui/events/event.h"
@@ -12,6 +13,7 @@
 namespace {
 
 void DispatchEventHelper(scoped_ptr<ui::Event> key) {
+  TRACE_EVENT1("ozone", "DispatchEventHelper", "type", key->type());
   base::MessagePumpOzone::Current()->Dispatch(key.get());
 }
 
