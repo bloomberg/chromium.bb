@@ -32,8 +32,8 @@ class AppListSpecifics;
 
 namespace app_list {
 
-class AppListModel;
 class AppListItem;
+class AppListModel;
 
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
@@ -60,12 +60,9 @@ class AppListSyncableService : public syncer::SyncableService,
 
   virtual ~AppListSyncableService();
 
-  // Adds |item| to |sync_items_| and |model_|. Does nothing if a sync item
-  // already exists.
+  // Adds |item| to |sync_items_| and |model_|. If a sync item already exists,
+  // updates the existing sync item instead.
   void AddItem(AppListItem* item);
-
-  // Updates existing entry in |sync_items_| from |item|.
-  void UpdateItem(AppListItem* item);
 
   // Removes sync item matching |id|.
   void RemoveItem(const std::string& id);
@@ -91,6 +88,7 @@ class AppListSyncableService : public syncer::SyncableService,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
  private:
+  class ItemListObserver;
   typedef std::map<std::string, SyncItem*> SyncItemMap;
 
   // content::NotificationObserver
@@ -104,16 +102,46 @@ class AppListSyncableService : public syncer::SyncableService,
   // Returns true if sync has restarted, otherwise runs |flare_|.
   bool SyncStarted();
 
+  // If |app_item| matches an existing sync item, updates the sync item and
+  // returns it. Otherwise adds |app_item| to |sync_items_| and returns the new
+  // item. If |app_item| is invalid returns NULL.
+  SyncItem* AddOrUpdateSyncItem(AppListItem* app_item);
+
+  // Creates a sync item for |app_item| and sends an ADD SyncChange event.
+  SyncItem* CreateSyncItemFromAppItem(AppListItem* app_item);
+
+  // If a sync item for |app_item| already exists, update |app_item| from the
+  // sync item, otherwise create a new sync item from |app_item|.
+  void AddOrUpdateFromSyncItem(AppListItem* app_item);
+
+  // Either uninstalling a default app or remove the REMOVE_DEFAULT sync item.
+  // Returns true if the app is removed. Otherwise deletes the existing sync
+  // item and returns false.
+  bool RemoveDefaultApp(AppListItem* item, SyncItem* sync_item);
+
+  // Deletes a sync item from |sync_items_| and sends a DELETE action.
+  void DeleteSyncItem(SyncItem* sync_item);
+
+  // Updates existing entry in |sync_items_| from |app_item|.
+  void UpdateSyncItem(AppListItem* app_item);
+
+  // Removes sync item matching |id|.
+  void RemoveSyncItem(const std::string& id);
+
   // Creates or updates a SyncItem from |specifics|. Returns true if a new item
   // was created.
-  bool ProcessSyncItem(const sync_pb::AppListSpecifics& specifics);
+  bool ProcessSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
-  // Handles a newly created sync item (e.g. creates a new Appitem and adds it
+  // Handles a newly created sync item (e.g. creates a new AppItem and adds it
   // to the model or uninstalls a deleted default item.
   void ProcessNewSyncItem(SyncItem* sync_item);
 
-  // Handles updating an existing sync item (e.g. updates item positions).
+  // Handles an existing sync item.
   void ProcessExistingSyncItem(SyncItem* sync_item);
+
+  // Updates |app_item| from |sync_item| (e.g. updates item positions).
+  void UpdateAppItemFromSyncItem(const SyncItem* sync_item,
+                                 AppListItem* app_item);
 
   // Sends ADD or CHANGED for sync item.
   void SendSyncChange(SyncItem* sync_item,
@@ -128,12 +156,13 @@ class AppListSyncableService : public syncer::SyncableService,
       sync_pb::AppListSpecifics::AppListItemType item_type);
 
   // Deletes a SyncItem matching |specifics|.
-  void DeleteSyncItem(const sync_pb::AppListSpecifics& specifics);
+  void DeleteSyncItemSpecifics(const sync_pb::AppListSpecifics& specifics);
 
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<AppListModel> model_;
+  scoped_ptr<ItemListObserver> item_list_observer_;
   scoped_ptr<ExtensionAppModelBuilder> apps_builder_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;

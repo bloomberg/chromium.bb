@@ -22,7 +22,7 @@ class AppListTestModel : public AppListModel {
     AppListTestItemModel(const std::string& id, AppListTestModel* model);
     virtual ~AppListTestItemModel();
     virtual void Activate(int event_flags) OVERRIDE;
-    virtual const char* GetAppType() const OVERRIDE;
+    virtual const char* GetItemType() const OVERRIDE;
 
     void SetPosition(const syncer::StringOrdinal& new_position);
 
@@ -62,7 +62,7 @@ class AppListTestModel : public AppListModel {
   int activate_count() { return activate_count_; }
   AppListItem* last_activated() { return last_activated_; }
 
-  static const char kAppType[];
+  static const char kItemType[];
 
  private:
   void ItemActivated(AppListTestItemModel* item);

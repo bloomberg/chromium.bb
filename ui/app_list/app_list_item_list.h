@@ -51,7 +51,7 @@ class APP_LIST_EXPORT AppListItemList {
   void DeleteItem(const std::string& id);
 
   // Deletes all items matching |type| which must be a statically defined
-  // type descriptor, e.g. AppListFolderItem::kAppType. If |type| is NULL,
+  // type descriptor, e.g. AppListFolderItem::kItemType. If |type| is NULL,
   // deletes all items. Triggers observers_.OnListItemRemoved() for each item
   // as for DeleteItem.
   void DeleteItemsByType(const char* type);

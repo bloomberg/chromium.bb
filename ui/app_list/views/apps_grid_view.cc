@@ -179,7 +179,7 @@ int GetDistanceBetweenRects(gfx::Rect rect_1,
 
 // Returns true if the |item| is an folder item.
 bool IsFolderItem(AppListItem* item) {
-  return (item->GetAppType() == AppListFolderItem::kAppType);
+  return (item->GetItemType() == AppListFolderItem::kItemType);
 }
 
 // Merges |source_item| into the folder containing the target item specified

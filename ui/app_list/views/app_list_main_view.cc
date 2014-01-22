@@ -205,7 +205,7 @@ void AppListMainView::OnItemIconLoaded(IconLoader* loader) {
 
 void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
   // TODO(jennyz): Activate the folder via AppListModel notification.
-  if (item->GetAppType() == AppListFolderItem::kAppType)
+  if (item->GetItemType() == AppListFolderItem::kItemType)
     contents_view_->ShowFolderContent(static_cast<AppListFolderItem*>(item));
   else
     item->Activate(event_flags);

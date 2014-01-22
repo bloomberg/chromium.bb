@@ -57,7 +57,7 @@ class ExtensionAppItem : public app_list::AppListItem,
   const std::string& extension_id() const { return extension_id_; }
   const std::string& extension_name() const { return extension_name_; }
 
-  static const char kAppType[];
+  static const char kItemType[];
 
  private:
   // Gets extension associated with this model. Returns NULL if extension
@@ -89,7 +89,7 @@ class ExtensionAppItem : public app_list::AppListItem,
   // Overridden from AppListItem:
   virtual void Activate(int event_flags) OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
-  virtual const char* GetAppType() const OVERRIDE;
+  virtual const char* GetItemType() const OVERRIDE;
 
   // Overridden from app_list::AppContextMenuDelegate:
   virtual void ExecuteLaunchCommand(int event_flags) OVERRIDE;

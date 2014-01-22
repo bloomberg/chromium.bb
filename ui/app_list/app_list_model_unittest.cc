@@ -206,10 +206,10 @@ TEST_F(AppListModelTest, ModelRemoveItemByType) {
   model_.PopulateApps(num_apps);
   model_.item_list()->AddItem(new AppListFolderItem("folder1"));
   model_.item_list()->AddItem(new AppListFolderItem("folder2"));
-  model_.item_list()->DeleteItemsByType(test::AppListTestModel::kAppType);
+  model_.item_list()->DeleteItemsByType(test::AppListTestModel::kItemType);
   EXPECT_EQ(num_apps, observer_.items_removed());
   EXPECT_EQ(2u, model_.item_list()->item_count());
-  model_.item_list()->DeleteItemsByType(AppListFolderItem::kAppType);
+  model_.item_list()->DeleteItemsByType(AppListFolderItem::kItemType);
   EXPECT_EQ(num_apps + 2, observer_.items_removed());
   EXPECT_EQ(0u, model_.item_list()->item_count());
   // Delete all items

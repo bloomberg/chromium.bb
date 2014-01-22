@@ -90,6 +90,8 @@ ExtensionAppItem::ExtensionAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     // An existing synced position exists, use that.
     set_position(sync_item->item_ordinal);
+    if (title().empty())
+      SetTitleAndFullName(sync_item->item_name, sync_item->item_name);
     return;
   }
   GetAppSorting(profile_)->EnsureValidOrdinals(extension_id_,
@@ -275,10 +277,10 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
 }
 
 // static
-const char ExtensionAppItem::kAppType[] = "ExtensionAppItem";
+const char ExtensionAppItem::kItemType[] = "ExtensionAppItem";
 
-const char* ExtensionAppItem::GetAppType() const {
-  return ExtensionAppItem::kAppType;
+const char* ExtensionAppItem::GetItemType() const {
+  return ExtensionAppItem::kItemType;
 }
 
 void ExtensionAppItem::ExecuteLaunchCommand(int event_flags) {

@@ -36,7 +36,7 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
 
   AppListItemList* item_list() { return item_list_.get(); }
 
-  static const char kAppType[];
+  static const char kItemType[];
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons in sequence of top left, top right,
@@ -46,7 +46,7 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
  private:
   // AppListItem
   virtual void Activate(int event_flags) OVERRIDE;
-  virtual const char* GetAppType() const OVERRIDE;
+  virtual const char* GetItemType() const OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
   // AppListItemObserver

@@ -59,7 +59,7 @@ class APP_LIST_EXPORT AppListItem {
 
   // Returns a static const char* identifier for the subclass (defaults to "").
   // Pointers can be compared for quick type checking.
-  virtual const char* GetAppType() const;
+  virtual const char* GetItemType() const;
 
   // Returns the context menu model for this item, or NULL if there is currently
   // no menu for the item (e.g. during install).

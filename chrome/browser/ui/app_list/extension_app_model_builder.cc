@@ -190,7 +190,7 @@ void ExtensionAppModelBuilder::AddApps(
 
 void ExtensionAppModelBuilder::BuildModel() {
   // Delete any extension apps.
-  model_->item_list()->DeleteItemsByType(ExtensionAppItem::kAppType);
+  model_->item_list()->DeleteItemsByType(ExtensionAppItem::kItemType);
 
   if (tracker_)
     tracker_->RemoveObserver(this);
@@ -245,9 +245,9 @@ ExtensionAppItem* ExtensionAppModelBuilder::GetExtensionAppItem(
   app_list::AppListItem* item =
       model_->item_list()->FindItem(extension_id);
   LOG_IF(ERROR, item &&
-         item->GetAppType() != ExtensionAppItem::kAppType)
+         item->GetItemType() != ExtensionAppItem::kItemType)
       << "App Item matching id: " << extension_id
-      << " has incorrect type: '" << item->GetAppType() << "'";
+      << " has incorrect type: '" << item->GetItemType() << "'";
   return static_cast<ExtensionAppItem*>(item);
 }
 
@@ -268,18 +268,16 @@ void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
   // This will get called from AppListItemList::ListItemMoved after
   // set_position is called for the item.
   app_list::AppListItemList* item_list = model_->item_list();
-  if (item->GetAppType() != ExtensionAppItem::kAppType)
+  if (item->GetItemType() != ExtensionAppItem::kItemType)
     return;
 
-  if (service_) {
-    service_->UpdateItem(item);
+  if (service_)
     return;
-  }
 
   ExtensionAppItem* prev = NULL;
   for (size_t idx = to_index; idx > 0; --idx) {
     app_list::AppListItem* item = item_list->item_at(idx - 1);
-    if (item->GetAppType() == ExtensionAppItem::kAppType) {
+    if (item->GetItemType() == ExtensionAppItem::kItemType) {
       prev = static_cast<ExtensionAppItem*>(item);
       break;
     }
@@ -287,7 +285,7 @@ void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
   ExtensionAppItem* next = NULL;
   for (size_t idx = to_index; idx < item_list->item_count() - 1; ++idx) {
     app_list::AppListItem* item = item_list->item_at(idx + 1);
-    if (item->GetAppType() == ExtensionAppItem::kAppType) {
+    if (item->GetItemType() == ExtensionAppItem::kItemType) {
       next = static_cast<ExtensionAppItem*>(item);
       break;
     }

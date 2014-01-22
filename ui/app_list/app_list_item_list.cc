@@ -92,7 +92,7 @@ void AppListItemList::DeleteItemsByType(const char* type) {
   for (int i = static_cast<int>(app_list_items_.size()) - 1;
        i >= 0; --i) {
     AppListItem* item = app_list_items_[i];
-    if (!type || item->GetAppType() == type)
+    if (!type || item->GetItemType() == type)
       DeleteItemAt(i);
   }
 }

@@ -10,7 +10,7 @@ namespace app_list {
 namespace test {
 
 // static
-const char AppListTestModel::kAppType[] = "TestItem";
+const char AppListTestModel::kItemType[] = "TestItem";
 
 // AppListTestModel::AppListTestItemModel
 
@@ -27,8 +27,8 @@ void AppListTestModel::AppListTestItemModel::Activate(int event_flags) {
   model_->ItemActivated(this);
 }
 
-const char* AppListTestModel::AppListTestItemModel::GetAppType() const {
-  return AppListTestModel::kAppType;
+const char* AppListTestModel::AppListTestItemModel::GetItemType() const {
+  return AppListTestModel::kItemType;
 }
 
 void AppListTestModel::AppListTestItemModel::SetPosition(

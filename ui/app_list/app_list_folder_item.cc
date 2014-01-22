@@ -110,7 +110,7 @@ void AppListFolderItem::Activate(int event_flags) {
 }
 
 // static
-const char AppListFolderItem::kAppType[] = "FolderItem";
+const char AppListFolderItem::kItemType[] = "FolderItem";
 
 // static
 Rects AppListFolderItem::GetTopIconsBounds(
@@ -144,8 +144,8 @@ Rects AppListFolderItem::GetTopIconsBounds(
   return top_icon_bounds;
 }
 
-const char* AppListFolderItem::GetAppType() const {
-  return AppListFolderItem::kAppType;
+const char* AppListFolderItem::GetItemType() const {
+  return AppListFolderItem::kItemType;
 }
 
 ui::MenuModel* AppListFolderItem::GetContextMenuModel() {
