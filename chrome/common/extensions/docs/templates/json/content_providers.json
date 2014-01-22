@@ -74,7 +74,10 @@
     },
     "serveFrom": "native-client",
     "supportsTemplates": true
-  },
+  }
+
+  // GitHub is not working at the moment. Disable entirely.
+  //
   //"devtools-docs": {
   //  "github": {
   //    "owner": "GoogleChrome",
@@ -83,20 +86,20 @@
   //  "serveFrom": "devtools",
   //  "supportsTemplates": true
   //},
-  "multidevice-docs": {
-    "github": {
-      "owner": "GoogleChrome",
-      "repo": "multi-device"
-    },
-    "serveFrom": "multidevice",
-    "supportsTemplates": true
-  },
-  "webstore-docs": {
-    "github": {
-      "owner": "GoogleChrome",
-      "repo": "webstore-docs"
-    },
-    "serveFrom": "webstore",
-    "supportsTemplates": true
-  }
+  //"multidevice-docs": {
+  //  "github": {
+  //    "owner": "GoogleChrome",
+  //    "repo": "multi-device"
+  //  },
+  //  "serveFrom": "multidevice",
+  //  "supportsTemplates": true
+  //},
+  //"webstore-docs": {
+  //  "github": {
+  //    "owner": "GoogleChrome",
+  //    "repo": "webstore-docs"
+  //  },
+  //  "serveFrom": "webstore",
+  //  "supportsTemplates": true
+  //}
 }
