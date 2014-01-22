@@ -555,7 +555,14 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessURLLoader) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader) {
+
+// Timing out on Windows dbg. http://crbug.com/95005
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD))
+#define MAYBE_NaClNewlibURLLoader DISABLED_NaClNewlibURLLoader
+#else
+#define MAYBE_NaClNewlibURLLoader NaClNewlibURLLoader
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_NaClNewlibURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -585,8 +592,11 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
+
 // Flaky on 32-bit linux bot; http://crbug.com/308906
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+// Timing out on Windows dbg. http://crbug.com/95005
+#if (defined(OS_LINUX) && defined(ARCH_CPU_X86)) || \
+    (defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD)))
 #define MAYBE_NaCl_Glibc_URLLoader DISABLED_URLLoader
 #else
 #define MAYBE_NaCl_Glibc_URLLoader URLLoader
@@ -621,7 +631,14 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_URLLoader) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader) {
+
+// Timing out on Windows dbg. http://crbug.com/95005
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD))
+#define MAYBE_NaClPNaClURLLoader DISABLED_NaClPNaClURLLoader
+#else
+#define MAYBE_NaClPNaClURLLoader NaClPNaClURLLoader
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_NaClPNaClURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
