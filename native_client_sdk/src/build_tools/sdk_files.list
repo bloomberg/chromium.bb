@@ -9,6 +9,7 @@ examples/api/graphics_3d/*
 examples/api/input_event/*
 [win]examples/api/make.bat
 examples/api/Makefile
+examples/api/media_stream_video/*
 examples/api/mouse_cursor/*
 examples/api/mouse_lock/*
 examples/api/network_monitor/*

@@ -60,6 +60,8 @@ DISABLED_TESTS = [
     # TODO(binji): Disable 3D examples on linux/win/mac. See
     # http://crbug.com/262379.
     {'name': 'graphics_3d', 'platform': ('win', 'linux', 'mac')},
+    # media_stream_video uses 3D and webcam which are not supported.
+    {'name': 'media_stream_video', 'platform': ('win', 'linux', 'mac')},
     # TODO(binji): These tests timeout on the trybots because the NEXEs take
     # more than 40 seconds to load (!). See http://crbug.com/280753
     {'name': 'nacl_io_test', 'platform': 'win', 'toolchain': 'glibc'},
