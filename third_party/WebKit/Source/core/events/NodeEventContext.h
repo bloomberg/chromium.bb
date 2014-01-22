@@ -27,16 +27,16 @@
 #ifndef NodeEventContext_h
 #define NodeEventContext_h
 
-#include "core/dom/Node.h"
-#include "core/dom/TreeScope.h"
-#include "core/events/EventTarget.h"
 #include "core/events/TreeScopeEventContext.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class Event;
+class EventTarget;
+class Node;
+class NodeList;
+class TouchEventContext;
 
 class NodeEventContext {
 public:
@@ -63,26 +63,6 @@ private:
     RefPtr<EventTarget> m_currentTarget;
     RefPtr<TreeScopeEventContext> m_treeScopeEventContext;
 };
-
-#ifndef NDEBUG
-inline bool TreeScopeEventContext::isUnreachableNode(EventTarget* target)
-{
-    // FIXME: Checks also for SVG elements.
-    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope().isInclusiveAncestorOf(m_treeScope);
-}
-#endif
-
-inline void TreeScopeEventContext::setTarget(PassRefPtr<EventTarget> target)
-{
-    ASSERT(!isUnreachableNode(target.get()));
-    m_target = target;
-}
-
-inline void TreeScopeEventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
-{
-    ASSERT(!isUnreachableNode(relatedTarget.get()));
-    m_relatedTarget = relatedTarget;
-}
 
 }
 

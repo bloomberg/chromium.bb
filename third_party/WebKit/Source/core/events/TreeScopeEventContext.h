@@ -27,7 +27,10 @@
 #ifndef TreeScopeEventContext_h
 #define TreeScopeEventContext_h
 
+#include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
+#include "core/dom/TreeScope.h"
+#include "core/events/EventTarget.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -71,6 +74,26 @@ private:
     RefPtr<NodeList> m_eventPath;
     RefPtr<TouchEventContext> m_touchEventContext;
 };
+
+#ifndef NDEBUG
+inline bool TreeScopeEventContext::isUnreachableNode(EventTarget* target)
+{
+    // FIXME: Checks also for SVG elements.
+    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope().isInclusiveAncestorOf(m_treeScope);
+}
+#endif
+
+inline void TreeScopeEventContext::setTarget(PassRefPtr<EventTarget> target)
+{
+    ASSERT(!isUnreachableNode(target.get()));
+    m_target = target;
+}
+
+inline void TreeScopeEventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
+{
+    ASSERT(!isUnreachableNode(relatedTarget.get()));
+    m_relatedTarget = relatedTarget;
+}
 
 }
 
