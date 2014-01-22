@@ -20,6 +20,7 @@
               'action_name': 'reorder_imports',
               'inputs': [
                 '<(reorder_py_path)',
+                '$(OutDir)\\initial\\chrome.exe',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)\\chrome.exe',
