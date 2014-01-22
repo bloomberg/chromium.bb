@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/common/constants.h"
@@ -187,10 +188,15 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
   // The type of action which we take after we load an extension in order to
   // cause any errors.
   enum Action {
-    ACTION_NAVIGATE,  // navigate to a page to allow a content script to run.
-    ACTION_BROWSER_ACTION,  // simulate a browser action click.
-    ACTION_NONE  // Do nothing (errors will be caused by a background script,
-                 // or by a manifest/loading warning).
+    // Navigate to a (non-chrome) page to allow a content script to run.
+    ACTION_NAVIGATE,
+    // Simulate a browser action click.
+    ACTION_BROWSER_ACTION,
+    // Navigate to the new tab page.
+    ACTION_NEW_TAB,
+    // Do nothing (errors will be caused by a background script,
+    // or by a manifest/loading warning).
+    ACTION_NONE
   };
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -244,6 +250,11 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
       case ACTION_BROWSER_ACTION: {
         ExtensionToolbarModel::Get(profile())->ExecuteBrowserAction(
             *extension, browser(), NULL, true);
+        break;
+      }
+      case ACTION_NEW_TAB: {
+        ui_test_utils::NavigateToURL(browser(),
+                                     GURL(chrome::kChromeUINewTabURL));
         break;
       }
       case ACTION_NONE:
@@ -518,6 +529,16 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIPermissionsRuntimeError) {
                   script_url,
                   kAnonymousFunction,
                   5u, 1u);
+}
+
+IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadExtensionPage) {
+  const Extension* extension = NULL;
+  LoadExtensionAndCheckErrors(
+      "bad_extension_page",
+      kNoFlags,
+      1,  // One error: the page will load JS which has a reference error.
+      ACTION_NEW_TAB,
+      &extension);
 }
 
 }  // namespace extensions

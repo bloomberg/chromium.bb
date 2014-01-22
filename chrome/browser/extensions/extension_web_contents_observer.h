@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_CONTENTS_OBSERVER_H_
 
+#include "base/basictypes.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "extensions/common/stack_frame.h"
 
 namespace content {
 class BrowserContext;
@@ -36,6 +39,11 @@ class ExtensionWebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnPostMessage(int port_id, const Message& message);
+  void OnDetailedConsoleMessageAdded(const base::string16& message,
+                                     const base::string16& source,
+                                     const StackTrace& stack_trace,
+                                     int32 severity_level);
+
 
   // Gets the extension or app (if any) that is associated with a RVH.
   const Extension* GetExtension(content::RenderViewHost* render_view_host);
