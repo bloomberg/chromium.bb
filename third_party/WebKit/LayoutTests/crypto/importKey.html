@@ -29,7 +29,6 @@ Promise.resolve(null).then(function() {
     shouldBe("key.type", "'secret'")
     shouldBe("key.extractable", "true")
     shouldBe("key.algorithm.name", "'HMAC'")
-    shouldBe("key.algorithm.hash.name", "'SHA-256'")
     shouldBe("key.usages.join(',')", "'encrypt,sign'")
 
     // Same test as above, but with an keyUsages, and AES-CBC.

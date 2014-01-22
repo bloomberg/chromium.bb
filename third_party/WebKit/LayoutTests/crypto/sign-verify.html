@@ -89,11 +89,9 @@ function runSuccessTestCase(testCase)
         
         // shouldBe() can only resolve variables in global context.
         tmpKey = key;
-        tmpHashName = testCase.algorithm;
         shouldBe("tmpKey.type", "'secret'")
         shouldBe("tmpKey.extractable", "false")
         shouldBe("tmpKey.algorithm.name", "'HMAC'")
-        shouldBe("tmpKey.algorithm.hash.name", "tmpHashName")
         shouldBe("tmpKey.usages.join(',')", "'sign,verify'")
 
         // (2) Sign.

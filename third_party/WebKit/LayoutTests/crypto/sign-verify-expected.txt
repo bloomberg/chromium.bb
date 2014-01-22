@@ -13,32 +13,26 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
-PASS tmpKey.algorithm.hash.name is tmpHashName
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
-PASS tmpKey.algorithm.hash.name is tmpHashName
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
-PASS tmpKey.algorithm.hash.name is tmpHashName
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
-PASS tmpKey.algorithm.hash.name is tmpHashName
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
-PASS tmpKey.algorithm.hash.name is tmpHashName
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
-PASS tmpKey.algorithm.hash.name is tmpHashName
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS: Mac should be [fbdb1d1b18aa6c08324b7d64b71fb76370690e1d] and was
 PASS: Mac should be [b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad] and was

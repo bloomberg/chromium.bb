@@ -31,46 +31,14 @@
 #include "config.h"
 #include "modules/crypto/Algorithm.h"
 
-#include "modules/crypto/AesCbcParams.h"
-#include "modules/crypto/AesCtrParams.h"
-#include "modules/crypto/AesKeyGenParams.h"
-#include "modules/crypto/HmacKeyParams.h"
-#include "modules/crypto/HmacParams.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
-#include "modules/crypto/RsaKeyGenParams.h"
-#include "modules/crypto/RsaSsaParams.h"
-#include "platform/NotImplemented.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 PassRefPtr<Algorithm> Algorithm::create(const blink::WebCryptoAlgorithm& algorithm)
 {
-    switch (algorithm.paramsType()) {
-    case blink::WebCryptoAlgorithmParamsTypeNone:
-        return adoptRef(new Algorithm(algorithm));
-    case blink::WebCryptoAlgorithmParamsTypeAesCbcParams:
-        return AesCbcParams::create(algorithm);
-    case blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
-        return AesKeyGenParams::create(algorithm);
-    case blink::WebCryptoAlgorithmParamsTypeHmacParams:
-        return HmacParams::create(algorithm);
-    case blink::WebCryptoAlgorithmParamsTypeHmacKeyParams:
-        return HmacKeyParams::create(algorithm);
-    case blink::WebCryptoAlgorithmParamsTypeRsaSsaParams:
-        return RsaSsaParams::create(algorithm);
-    case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
-        return RsaKeyGenParams::create(algorithm);
-    case blink::WebCryptoAlgorithmParamsTypeAesCtrParams:
-        return AesCtrParams::create(algorithm);
-    case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
-    case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
-        // TODO
-        notImplemented();
-        break;
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
+    return adoptRef(new Algorithm(algorithm));
 }
 
 Algorithm::Algorithm(const blink::WebCryptoAlgorithm& algorithm)
