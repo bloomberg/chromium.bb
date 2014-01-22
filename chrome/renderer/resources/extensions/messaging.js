@@ -186,10 +186,8 @@
           port = null;
         }
       });
-      if (!isSendMessage) {
-        requestEvent.dispatch(request, sender, responseCallback);
-      } else {
-        var rv = requestEvent.dispatch(request, sender, responseCallback);
+      var rv = requestEvent.dispatch(request, sender, responseCallback);
+      if (isSendMessage) {
         responseCallbackPreserved =
             rv && rv.results && $Array.indexOf(rv.results, true) > -1;
         if (!responseCallbackPreserved && port) {
@@ -206,11 +204,9 @@
     };
     port.onMessage.addListener(messageListener);
 
-    var eventName = (isSendMessage ?
-          (isExternal ?
-              "runtime.onMessageExternal" : "runtime.onMessage") :
-          (isExternal ?
-              "extension.onRequestExternal" : "extension.onRequest"));
+    var eventName = isSendMessage ? "runtime.onMessage" : "extension.onRequest";
+    if (isExternal)
+      eventName += "External";
     logActivity.LogEvent(targetExtensionId,
                          eventName,
                          [sourceExtensionId, sourceUrl]);
