@@ -3426,6 +3426,9 @@
                   '-fno-omit-frame-pointer',
                   '-gline-tables-only',
                 ],
+                'cflags!': [
+                  '-fomit-frame-pointer',
+                ],
                 'ldflags!': [
                   # Functions interposed by the sanitizers can make ld think
                   # that some libraries aren't needed when they actually are,
