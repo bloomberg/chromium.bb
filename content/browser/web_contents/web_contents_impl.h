@@ -465,6 +465,12 @@ class CONTENT_EXPORT WebContentsImpl
       const GURL& validated_target_url) OVERRIDE;
   virtual void NotifyChangedNavigationState(
       InvalidateTypes changed_flags) OVERRIDE;
+  virtual void AboutToNavigateRenderFrame(
+      RenderFrameHostImpl* render_frame_host) OVERRIDE;
+  virtual void DidStartNavigationToPendingEntry(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      NavigationController::ReloadType reload_type) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 
@@ -764,12 +770,6 @@ class CONTENT_EXPORT WebContentsImpl
   bool UpdateTitleForEntry(NavigationEntryImpl* entry,
                            const base::string16& title);
 
-  // Causes the WebContentsImpl to navigate in the right renderer to |entry|,
-  // which must be already part of the entries in the navigation controller.
-  // This does not change the NavigationController state.
-  bool NavigateToEntry(const NavigationEntryImpl& entry,
-                       NavigationController::ReloadType reload_type);
-
   // Recursively creates swapped out RenderViews for this tab's opener chain
   // (including this tab) in the given SiteInstance, allowing other tabs to send
   // cross-process JavaScript calls to their opener(s).  Returns the route ID of
@@ -919,9 +919,6 @@ class CONTENT_EXPORT WebContentsImpl
   // to a given tab and SiteInstance, and must be valid for the lifetime of the
   // WebContentsImpl.
   std::map<int32, int32> max_page_ids_;
-
-  // System time at which the current load was started.
-  base::TimeTicks current_load_start_;
 
   // The current load state and the URL associated with it.
   net::LoadStateWithParam load_state_;

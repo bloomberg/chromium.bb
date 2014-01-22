@@ -156,7 +156,7 @@ void RenderFrameHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
   }
 }
 
-RenderViewHostImpl* RenderFrameHostManager::Navigate(
+RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     const NavigationEntryImpl& entry) {
   TRACE_EVENT0("browser", "RenderFrameHostManager:Navigate");
   // Create a pending RenderFrameHost to use for the navigation.
@@ -201,8 +201,7 @@ RenderViewHostImpl* RenderFrameHostManager::Navigate(
     }
   }
 
-  // TODO(creis): Return the RFH instead, once we can navigate RFHs.
-  return dest_render_frame_host->render_view_host();
+  return dest_render_frame_host;
 }
 
 void RenderFrameHostManager::Stop() {

@@ -522,6 +522,7 @@
     'browser/frame_host/navigation_entry_impl.h',
     'browser/frame_host/navigation_entry_screenshot_manager.cc',
     'browser/frame_host/navigation_entry_screenshot_manager.h',
+    'browser/frame_host/navigator.cc',
     'browser/frame_host/navigator.h',
     'browser/frame_host/navigator_impl.cc',
     'browser/frame_host/navigator_impl.h',

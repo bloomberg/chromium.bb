@@ -167,10 +167,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   void SetPendingWebUI(const NavigationEntryImpl& entry);
 
   // Called when we want to instruct the renderer to navigate to the given
-  // navigation entry. It may create a new RenderViewHost or re-use an existing
-  // one. The RenderViewHost to navigate will be returned. Returns NULL if one
+  // navigation entry. It may create a new RenderFrameHost or re-use an existing
+  // one. The RenderFrameHost to navigate will be returned. Returns NULL if one
   // could not be created.
-  RenderViewHostImpl* Navigate(const NavigationEntryImpl& entry);
+  RenderFrameHostImpl* Navigate(const NavigationEntryImpl& entry);
 
   // Instructs the various live views to stop. Called when the user directed the
   // page to stop loading.

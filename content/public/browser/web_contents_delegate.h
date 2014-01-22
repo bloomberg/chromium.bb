@@ -88,10 +88,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void NavigationStateChanged(const WebContents* source,
                                       unsigned changed_flags) {}
 
-  // Adds the navigation request headers to |headers|. Use
-  // net::HttpUtil::AppendHeaderIfMissing to build the set of headers.
-  virtual void AddNavigationHeaders(const GURL& url, std::string* headers) {}
-
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents should be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |initial_pos| should hold

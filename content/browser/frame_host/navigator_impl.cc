@@ -13,15 +13,104 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 
 namespace content {
+
+namespace {
+
+ViewMsg_Navigate_Type::Value GetNavigationType(
+    BrowserContext* browser_context, const NavigationEntryImpl& entry,
+    NavigationController::ReloadType reload_type) {
+  switch (reload_type) {
+    case NavigationControllerImpl::RELOAD:
+      return ViewMsg_Navigate_Type::RELOAD;
+    case NavigationControllerImpl::RELOAD_IGNORING_CACHE:
+      return ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+    case NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL:
+      return ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+    case NavigationControllerImpl::NO_RELOAD:
+      break;  // Fall through to rest of function.
+  }
+
+  // |RenderViewImpl::PopulateStateFromPendingNavigationParams| differentiates
+  // between |RESTORE_WITH_POST| and |RESTORE|.
+  if (entry.restore_type() ==
+      NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY) {
+    if (entry.GetHasPostData())
+      return ViewMsg_Navigate_Type::RESTORE_WITH_POST;
+    return ViewMsg_Navigate_Type::RESTORE;
+  }
+
+  return ViewMsg_Navigate_Type::NORMAL;
+}
+
+void MakeNavigateParams(const NavigationEntryImpl& entry,
+                        const NavigationControllerImpl& controller,
+                        NavigationController::ReloadType reload_type,
+                        ViewMsg_Navigate_Params* params) {
+  params->page_id = entry.GetPageID();
+  params->should_clear_history_list = entry.should_clear_history_list();
+  params->should_replace_current_entry = entry.should_replace_entry();
+  if (entry.should_clear_history_list()) {
+    // Set the history list related parameters to the same values a
+    // NavigationController would return before its first navigation. This will
+    // fully clear the RenderView's view of the session history.
+    params->pending_history_list_offset = -1;
+    params->current_history_list_offset = -1;
+    params->current_history_list_length = 0;
+  } else {
+    params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
+    params->current_history_list_offset =
+        controller.GetLastCommittedEntryIndex();
+    params->current_history_list_length = controller.GetEntryCount();
+  }
+  params->url = entry.GetURL();
+  if (!entry.GetBaseURLForDataURL().is_empty()) {
+    params->base_url_for_data_url = entry.GetBaseURLForDataURL();
+    params->history_url_for_data_url = entry.GetVirtualURL();
+  }
+  params->referrer = entry.GetReferrer();
+  params->transition = entry.GetTransitionType();
+  params->page_state = entry.GetPageState();
+  params->navigation_type =
+      GetNavigationType(controller.GetBrowserContext(), entry, reload_type);
+  params->request_time = base::Time::Now();
+  params->extra_headers = entry.extra_headers();
+  params->transferred_request_child_id =
+      entry.transferred_global_request_id().child_id;
+  params->transferred_request_request_id =
+      entry.transferred_global_request_id().request_id;
+  params->is_overriding_user_agent = entry.GetIsOverridingUserAgent();
+  // Avoid downloading when in view-source mode.
+  params->allow_download = !entry.IsViewSourceMode();
+  params->is_post = entry.GetHasPostData();
+  if (entry.GetBrowserInitiatedPostData()) {
+    params->browser_initiated_post_data.assign(
+        entry.GetBrowserInitiatedPostData()->front(),
+        entry.GetBrowserInitiatedPostData()->front() +
+            entry.GetBrowserInitiatedPostData()->size());
+  }
+
+  params->redirects = entry.redirect_chain();
+
+  params->can_load_local_resources = entry.GetCanLoadLocalResources();
+  params->frame_to_navigate = entry.GetFrameToNavigate();
+}
+
+}  // namespace
+
 
 NavigatorImpl::NavigatorImpl(
     NavigationControllerImpl* navigation_controller,
@@ -179,6 +268,97 @@ void NavigatorImpl::DidRedirectProvisionalLoad(
 
   delegate_->DidRedirectProvisionalLoad(
       render_frame_host, validated_target_url);
+}
+
+bool NavigatorImpl::NavigateToEntry(
+    RenderFrameHostImpl* render_frame_host,
+    const NavigationEntryImpl& entry,
+    NavigationController::ReloadType reload_type) {
+  TRACE_EVENT0("browser", "NavigatorImpl::NavigateToEntry");
+
+  // The renderer will reject IPC messages with URLs longer than
+  // this limit, so don't attempt to navigate with a longer URL.
+  if (entry.GetURL().spec().size() > GetMaxURLChars()) {
+    LOG(WARNING) << "Refusing to load URL as it exceeds " << GetMaxURLChars()
+                 << " characters.";
+    return false;
+  }
+
+  // Use entry->frame_tree_node_id() to pick which RenderFrameHostManager to
+  // use when --site-per-process is used.
+  RenderFrameHostManager* manager =
+      render_frame_host->frame_tree_node()->render_manager();
+  if (entry.frame_tree_node_id() != -1 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    int64 frame_tree_node_id = entry.frame_tree_node_id();
+    manager = render_frame_host->frame_tree_node()->frame_tree()->FindByID(
+        frame_tree_node_id)->render_manager();
+  }
+
+  RenderFrameHostImpl* dest_render_frame_host = manager->Navigate(entry);
+  if (!dest_render_frame_host)
+    return false;  // Unable to create the desired RenderFrameHost.
+
+  // For security, we should never send non-Web-UI URLs to a Web UI renderer.
+  // Double check that here.
+  int enabled_bindings =
+      dest_render_frame_host->render_view_host()->GetEnabledBindings();
+  bool is_allowed_in_web_ui_renderer =
+      WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
+          controller_->GetBrowserContext(), entry.GetURL());
+  if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
+      !is_allowed_in_web_ui_renderer) {
+    // Log the URL to help us diagnose any future failures of this CHECK.
+    GetContentClient()->SetActiveURL(entry.GetURL());
+    CHECK(0);
+  }
+
+  // Notify observers that we will navigate in this RenderFrame.
+  if (delegate_)
+    delegate_->AboutToNavigateRenderFrame(dest_render_frame_host);
+
+  // Used for page load time metrics.
+  current_load_start_ = base::TimeTicks::Now();
+
+  // Navigate in the desired RenderViewHost.
+  // TODO(creis): As a temporary hack, we currently do cross-process subframe
+  // navigations in a top-level frame of the new process.  Thus, we don't yet
+  // need to store the correct frame ID in ViewMsg_Navigate_Params.
+  ViewMsg_Navigate_Params navigate_params;
+  MakeNavigateParams(entry, *controller_, reload_type, &navigate_params);
+  dest_render_frame_host->render_view_host()->Navigate(navigate_params);
+
+  if (entry.GetPageID() == -1) {
+    // HACK!!  This code suppresses javascript: URLs from being added to
+    // session history, which is what we want to do for javascript: URLs that
+    // do not generate content.  What we really need is a message from the
+    // renderer telling us that a new page was not created.  The same message
+    // could be used for mailto: URLs and the like.
+    if (entry.GetURL().SchemeIs(kJavaScriptScheme))
+      return false;
+  }
+
+  // Notify observers about navigation.
+  if (delegate_) {
+    delegate_->DidStartNavigationToPendingEntry(render_frame_host,
+                                                entry.GetURL(),
+                                                reload_type);
+  }
+
+  return true;
+}
+
+bool NavigatorImpl::NavigateToPendingEntry(
+    RenderFrameHostImpl* render_frame_host,
+    NavigationController::ReloadType reload_type) {
+  return NavigateToEntry(
+      render_frame_host,
+      *NavigationEntryImpl::FromNavigationEntry(controller_->GetPendingEntry()),
+      reload_type);
+}
+
+base::TimeTicks NavigatorImpl::GetCurrentLoadStart() {
+  return current_load_start_;
 }
 
 }  // namespace content

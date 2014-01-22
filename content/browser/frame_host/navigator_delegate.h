@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_
 
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/navigation_controller.h"
 
 namespace content {
 
@@ -40,6 +41,17 @@ class NavigatorDelegate {
   // changed. This method corresponds to
   // WebContents::NotifyNavigationStateChanged.
   virtual void NotifyChangedNavigationState(InvalidateTypes changed_flags) {}
+
+  // Notifies the Navigator embedder that it is beginning to navigate a frame.
+  virtual void AboutToNavigateRenderFrame(
+      RenderFrameHostImpl* render_frame_host) {}
+
+  // Notifies the Navigator embedder that a navigation to pending
+  // NavigationEntry has started in the browser process.
+  virtual void DidStartNavigationToPendingEntry(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      NavigationController::ReloadType reload_type) {}
 };
 
 }  // namspace content

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_IMPL_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"
 
@@ -36,6 +37,14 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       int32 page_id,
       const GURL& source_url,
       const GURL& target_url) OVERRIDE;
+  virtual bool NavigateToEntry(
+      RenderFrameHostImpl* render_frame_host,
+      const NavigationEntryImpl& entry,
+      NavigationController::ReloadType reload_type) OVERRIDE;
+  virtual bool NavigateToPendingEntry(
+      RenderFrameHostImpl* render_frame_host,
+      NavigationController::ReloadType reload_type) OVERRIDE;
+  virtual base::TimeTicks GetCurrentLoadStart() OVERRIDE;
 
  private:
   virtual ~NavigatorImpl() {}
@@ -49,6 +58,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Used to notify the object embedding this Navigator about navigation
   // events. Can be NULL in tests.
   NavigatorDelegate* delegate_;
+
+  // System time at which the current load was started.
+  base::TimeTicks current_load_start_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
 };

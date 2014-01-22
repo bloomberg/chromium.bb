@@ -7,13 +7,19 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/navigation_controller.h"
 
 class GURL;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
+namespace base {
+class TimeTicks;
+}
+
 namespace content {
 
 class NavigationControllerImpl;
+class NavigationEntryImpl;
 class NavigatorDelegate;
 class RenderFrameHostImpl;
 
@@ -48,6 +54,34 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       int32 page_id,
       const GURL& source_url,
       const GURL& target_url) {}
+
+  // Causes the Navigator to navigate in the right render frame to |entry|,
+  // which must be already part of the entries in the navigation controller.
+  // This does not change the NavigationController state.
+  virtual bool NavigateToEntry(
+      RenderFrameHostImpl* render_frame_host,
+      const NavigationEntryImpl& entry,
+      NavigationController::ReloadType reload_type);
+
+  // Called by the NavigationController to cause the Navigator to navigate
+  // to the current pending entry. The NavigationController should be called
+  // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
+  // The callbacks can be inside of this function, or at some future time.
+  //
+  // The entry has a PageID of -1 if newly created (corresponding to navigation
+  // to a new URL).
+  //
+  // If this method returns false, then the navigation is discarded (equivalent
+  // to calling DiscardPendingEntry on the NavigationController).
+  //
+  // TODO(nasko): Remove this method from the interface, since Navigator and
+  // NavigationController know about each other. This will be possible once
+  // initialization of Navigator and NavigationController is properly done.
+  virtual bool NavigateToPendingEntry(
+      RenderFrameHostImpl* render_frame_host,
+      NavigationController::ReloadType reload_type);
+
+  virtual base::TimeTicks GetCurrentLoadStart();
 
  protected:
   friend class base::RefCounted<Navigator>;
