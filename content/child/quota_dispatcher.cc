@@ -43,7 +43,7 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
     callbacks_->didQueryStorageUsageAndQuota(usage, quota);
   }
   virtual void DidGrantStorageQuota(int64 usage, int64 granted_quota) OVERRIDE {
-    callbacks_->didGrantStorageQuota(granted_quota);
+    callbacks_->didGrantStorageQuota(usage, granted_quota);
   }
   virtual void DidFail(quota::QuotaStatusCode error) OVERRIDE {
     callbacks_->didFail(static_cast<WebStorageQuotaError>(error));
