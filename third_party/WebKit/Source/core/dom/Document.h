@@ -633,10 +633,7 @@ public:
     Element* cssTarget() const { return m_cssTarget; }
 
     void scheduleStyleRecalc();
-    void unscheduleStyleRecalc();
-    bool hasPendingStyleRecalc() const;
     bool hasPendingForcedStyleRecalc() const;
-    void styleRecalcTimerFired(Timer<Document>*);
 
     void registerNodeList(LiveNodeListBase*);
     void unregisterNodeList(LiveNodeListBase*);
@@ -1045,6 +1042,9 @@ private:
     void updateDistributionIfNeeded();
 
     void updateUseShadowTrees();
+
+    void unscheduleStyleRecalc();
+    void styleRecalcTimerFired(Timer<Document>*);
 
     void detachParser();
 

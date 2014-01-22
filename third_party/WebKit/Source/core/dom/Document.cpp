@@ -1547,14 +1547,9 @@ void Document::unscheduleStyleRecalc()
     m_styleRecalcTimer.stop();
 }
 
-bool Document::hasPendingStyleRecalc() const
-{
-    return m_styleRecalcTimer.isActive() && !m_inStyleRecalc;
-}
-
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return hasPendingStyleRecalc() && styleChangeType() >= SubtreeStyleChange;
+    return m_styleRecalcTimer.isActive() && !m_inStyleRecalc && styleChangeType() >= SubtreeStyleChange;
 }
 
 void Document::styleRecalcTimerFired(Timer<Document>*)

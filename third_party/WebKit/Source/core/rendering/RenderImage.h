@@ -115,7 +115,6 @@ private:
     // Text to display as long as the image isn't available.
     String m_altText;
     OwnPtr<RenderImageResource> m_imageResource;
-    bool m_needsToSetSizeForAltText;
     bool m_didIncrementVisuallyNonEmptyPixelCount;
     bool m_isGeneratedContent;
     float m_imageDevicePixelRatio;

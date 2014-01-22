@@ -57,7 +57,6 @@ using namespace HTMLNames;
 
 RenderImage::RenderImage(Element* element)
     : RenderReplaced(element, IntSize())
-    , m_needsToSetSizeForAltText(false)
     , m_didIncrementVisuallyNonEmptyPixelCount(false)
     , m_isGeneratedContent(false)
     , m_imageDevicePixelRatio(1.0f)
@@ -144,11 +143,6 @@ bool RenderImage::setImageSizeForAltText(ImageResource* newImage /* = 0 */)
 void RenderImage::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderReplaced::styleDidChange(diff, oldStyle);
-    if (m_needsToSetSizeForAltText) {
-        if (!m_altText.isEmpty() && setImageSizeForAltText(m_imageResource->cachedImage()))
-            imageDimensionsChanged(true /* imageSizeChanged */);
-        m_needsToSetSizeForAltText = false;
-    }
 }
 
 void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
@@ -183,17 +177,8 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     bool imageSizeChanged = false;
 
     // Set image dimensions, taking into account the size of the alt text.
-    if (m_imageResource->errorOccurred() || !newImage) {
-        if (!m_altText.isEmpty() && document().hasPendingStyleRecalc()) {
-            ASSERT(node());
-            if (node()) {
-                m_needsToSetSizeForAltText = true;
-                node()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
-            }
-            return;
-        }
+    if (m_imageResource->errorOccurred() || !newImage)
         imageSizeChanged = setImageSizeForAltText(m_imageResource->cachedImage());
-    }
 
     imageDimensionsChanged(imageSizeChanged, rect);
 }
