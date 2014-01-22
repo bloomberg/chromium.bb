@@ -185,15 +185,15 @@ bool IsLockButton(unsigned int code) { return code == KEY_CAPSLOCK; }
 }  // namespace
 
 KeyEventConverterEvdev::KeyEventConverterEvdev(int fd,
-                                               int id,
+                                               base::FilePath path,
                                                EventModifiersEvdev* modifiers)
-    : fd_(fd), id_(id), modifiers_(modifiers) {
+    : fd_(fd), path_(path), modifiers_(modifiers) {
   // TODO(spang): Initialize modifiers using EVIOCGKEY.
 }
 
 KeyEventConverterEvdev::~KeyEventConverterEvdev() {
   if (fd_ >= 0 && close(fd_) < 0)
-    DLOG(WARNING) << "failed close on /dev/input/event" << id_;
+    DLOG(WARNING) << "failed close on " << path_.value();
 }
 
 void KeyEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {

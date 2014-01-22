@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVENT_FACTORY_DELEGATE_EVDEV_H_
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "ui/events/events_export.h"
 #include "ui/events/ozone/evdev/event_modifiers.h"
 #include "ui/events/ozone/event_factory_ozone.h"
@@ -21,6 +22,9 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
   virtual void StartProcessingEvents() OVERRIDE;
 
  private:
+  // Open device at path & starting processing events.
+  void AttachInputDevice(const base::FilePath& file_path);
+
   EventModifiersEvdev modifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFactoryEvdev);

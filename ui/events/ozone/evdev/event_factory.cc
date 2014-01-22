@@ -10,7 +10,9 @@
 #include <poll.h>
 #include <unistd.h>
 
+#include "base/files/file_enumerator.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/key_event_converter.h"
 #include "ui/events/ozone/evdev/touch_event_converter.h"
@@ -38,46 +40,48 @@ EventFactoryEvdev::EventFactoryEvdev() {}
 
 EventFactoryEvdev::~EventFactoryEvdev() {}
 
-void EventFactoryEvdev::StartProcessingEvents() {
-  // The number of devices in the directory is unknown without reading
-  // the contents of the directory. Further, with hot-plugging,  the entries
-  // might decrease during the execution of this loop. So exciting from the
-  // loop on the first failure of open below is both cheaper and more
-  // reliable.
-  for (int id = 0; true; id++) {
-    std::string path = base::StringPrintf("/dev/input/event%d", id);
-    int fd = open(path.c_str(), O_RDONLY | O_NONBLOCK);
-    if (fd < 0) {
-      DLOG(ERROR) << "Cannot open '" << path << "': " << strerror(errno);
-      break;
-    }
-
-    EventDeviceInfo devinfo;
-    if (!devinfo.Initialize(fd)) {
-      DLOG(ERROR) << "failed to get device information for " << path;
-      close(fd);
-      continue;
-    }
-
-    if (IsTouchPad(devinfo)) {
-      LOG(WARNING) << "touchpad device not supported: " << path;
-      close(fd);
-      continue;
-    }
-
-    scoped_ptr<EventConverterOzone> converter;
-    // TODO(rjkroege) Add more device types. Support hot-plugging.
-    if (IsTouchScreen(devinfo))
-      converter.reset(new TouchEventConverterEvdev(fd, id));
-    else if (devinfo.HasEventType(EV_KEY))
-      converter.reset(new KeyEventConverterEvdev(fd, id, &modifiers_));
-
-    if (converter) {
-      AddEventConverter(fd, converter.Pass());
-    } else {
-      close(fd);
-    }
+void EventFactoryEvdev::AttachInputDevice(const base::FilePath& path) {
+  int fd = open(path.value().c_str(), O_RDONLY | O_NONBLOCK);
+  if (fd < 0) {
+    PLOG(ERROR) << "Cannot open '" << path.value();
+    return;
   }
+
+  EventDeviceInfo devinfo;
+  if (!devinfo.Initialize(fd)) {
+    LOG(ERROR) << "failed to get device information for " << path.value();
+    close(fd);
+    return;
+  }
+
+  if (IsTouchPad(devinfo)) {
+    LOG(WARNING) << "touchpad device not supported: " << path.value();
+    close(fd);
+    return;
+  }
+
+  // TODO(spang) Add more device types. Support hot-plugging.
+  scoped_ptr<EventConverterOzone> converter;
+  if (IsTouchScreen(devinfo))
+    converter.reset(new TouchEventConverterEvdev(fd, path));
+  else if (devinfo.HasEventType(EV_KEY))
+    converter.reset(new KeyEventConverterEvdev(fd, path, &modifiers_));
+
+  if (converter) {
+    AddEventConverter(fd, converter.Pass());
+  } else {
+    close(fd);
+  }
+}
+
+void EventFactoryEvdev::StartProcessingEvents() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  base::FileEnumerator file_enum(
+      base::FilePath("/dev/input"), false, base::FileEnumerator::FILES);
+  for (base::FilePath path = file_enum.Next(); !path.empty();
+       path = file_enum.Next())
+    AttachInputDevice(path);
 }
 
 }  // namespace ui

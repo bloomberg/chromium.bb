@@ -8,6 +8,7 @@
 #include <bitset>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/ozone/event_converter_ozone.h"
@@ -21,7 +22,7 @@ class EVENTS_EXPORT TouchEventConverterEvdev : public EventConverterOzone {
   enum {
     MAX_FINGERS = 11
   };
-  TouchEventConverterEvdev(int fd, int id);
+  TouchEventConverterEvdev(int fd, base::FilePath path);
   virtual ~TouchEventConverterEvdev();
 
  private:
@@ -52,8 +53,8 @@ class EVENTS_EXPORT TouchEventConverterEvdev : public EventConverterOzone {
   // File descriptor for the /dev/input/event* instance.
   int fd_;
 
-  // Number corresponding to * in the source evdev device: /dev/input/event*
-  int id_;
+  // Path to input device.
+  base::FilePath path_;
 
   // Bit field tracking which in-progress touch points have been modified
   // without a syn event.

@@ -32,7 +32,7 @@ const float kFingerWidth = 25.f;
 
 namespace ui {
 
-TouchEventConverterEvdev::TouchEventConverterEvdev(int fd, int id)
+TouchEventConverterEvdev::TouchEventConverterEvdev(int fd, base::FilePath path)
     : pressure_min_(0),
       pressure_max_(0),
       x_scale_(1.),
@@ -41,13 +41,13 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(int fd, int id)
       y_max_(std::numeric_limits<int>::max()),
       current_slot_(0),
       fd_(fd),
-      id_(id) {
+      path_(path) {
   Init();
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
   if (fd_ >= 0 && close(fd_) < 0)
-    DLOG(WARNING) << "failed close on /dev/input/event" << id_;
+    DLOG(WARNING) << "failed close on " << path_.value();
 }
 
 void TouchEventConverterEvdev::Init() {
@@ -56,27 +56,29 @@ void TouchEventConverterEvdev::Init() {
     CHECK_GE(abs.maximum, abs.minimum);
     CHECK_GE(abs.minimum, 0);
   } else {
-    DLOG(WARNING) << "failed ioctl EVIOCGABS ABS_MT_SLOT event" << id_;
+    DLOG(WARNING) << "failed ioctl EVIOCGABS ABS_MT_SLOT event on "
+                  << path_.value();
   }
   if (ioctl(fd_, EVIOCGABS(ABS_MT_PRESSURE), &abs) != -1) {
     pressure_min_ = abs.minimum;
     pressure_max_ = abs.maximum;
   } else {
-    DLOG(WARNING) << "failed ioctl EVIOCGABS ABS_MT_PRESSURE event" << id_;
+    DLOG(WARNING) << "failed ioctl EVIOCGABS ABS_MT_PRESSURE event on "
+                  << path_.value();
   }
   int x_min = 0, x_max = 0;
   if (ioctl(fd_, EVIOCGABS(ABS_MT_POSITION_X), &abs) != -1) {
     x_min = abs.minimum;
     x_max = abs.maximum;
   } else {
-    LOG(WARNING) << "failed ioctl EVIOCGABS ABS_X event" << id_;
+    LOG(WARNING) << "failed ioctl EVIOCGABS ABS_X event on " << path_.value();
   }
   int y_min = 0, y_max = 0;
   if (ioctl(fd_, EVIOCGABS(ABS_MT_POSITION_Y), &abs) != -1) {
     y_min = abs.minimum;
     y_max = abs.maximum;
   } else {
-    LOG(WARNING) << "failed ioctl EVIOCGABS ABS_Y event" << id_;
+    LOG(WARNING) << "failed ioctl EVIOCGABS ABS_Y event on " << path_.value();
   }
   if (x_max && y_max && gfx::SurfaceFactoryOzone::GetInstance()) {
     const char* display =
@@ -88,8 +90,8 @@ void TouchEventConverterEvdev::Init() {
       y_scale_ = (double)screen_height / (y_max - y_min);
       x_max_ = screen_width - 1;
       y_max_ = screen_height - 1;
-      LOG(INFO) << "touch input x_scale=" << x_scale_
-                << " y_scale=" << y_scale_;
+      VLOG(1) << "touch input x_scale=" << x_scale_
+              << " y_scale=" << y_scale_;
     } else {
       LOG(WARNING) << "malformed display spec from "
                    << "SurfaceFactoryOzone::DefaultDisplaySpec";
