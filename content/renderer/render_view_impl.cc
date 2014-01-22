@@ -3640,7 +3640,7 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame, int world_id) {
   if (!world_id)
     return;
 
-  if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION)
+  if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION))
     DomAutomationController::Install(this, frame);
 
   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
