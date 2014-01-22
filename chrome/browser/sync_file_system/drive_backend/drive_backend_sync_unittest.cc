@@ -211,12 +211,16 @@ class DriveBackendSyncTest : public testing::Test {
     return status;
   }
 
+  void FetchRemoteChanges() {
+    remote_sync_service_->OnNotificationReceived();
+    base::RunLoop().RunUntilIdle();
+  }
+
   SyncStatusCode ProcessChangesUntilDone() {
     SyncStatusCode local_sync_status;
     SyncStatusCode remote_sync_status;
     do {
-      remote_sync_service_->OnNotificationReceived();
-      base::RunLoop().RunUntilIdle();
+      FetchRemoteChanges();
 
       local_sync_status = ProcessLocalChange();
       if (local_sync_status != SYNC_STATUS_OK &&
@@ -473,6 +477,52 @@ TEST_F(DriveBackendSyncTest, RemoteFileDeletionTest) {
   EXPECT_TRUE(GetFileIDByPath(app_id, base::FilePath(path), &file_id));
   EXPECT_EQ(google_apis::HTTP_NO_CONTENT,
             fake_drive_service_helper()->DeleteResource(file_id));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+}
+
+TEST_F(DriveBackendSyncTest, RemoteRenameTest) {
+  std::string app_id = "example";
+  const base::FilePath::StringType path(FPL("file"));
+
+  RegisterApp(app_id);
+  AddOrUpdateLocalFile(app_id, path, "abcde");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  std::string file_id;
+  EXPECT_TRUE(GetFileIDByPath(app_id, base::FilePath(path), &file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->RenameResource(
+                file_id, "renamed_file"));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+}
+
+TEST_F(DriveBackendSyncTest, RemoteRenameAndRevertTest) {
+  std::string app_id = "example";
+  const base::FilePath::StringType path(FPL("file"));
+
+  RegisterApp(app_id);
+  AddOrUpdateLocalFile(app_id, path, "abcde");
+
+  EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
+  VerifyConsistency();
+
+  std::string file_id;
+  EXPECT_TRUE(GetFileIDByPath(app_id, base::FilePath(path), &file_id));
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->RenameResource(
+                file_id, "renamed_file"));
+
+  FetchRemoteChanges();
+
+  EXPECT_EQ(google_apis::HTTP_SUCCESS,
+            fake_drive_service_helper()->RenameResource(
+                file_id, base::FilePath(path).AsUTF8Unsafe()));
 
   EXPECT_EQ(SYNC_STATUS_OK, ProcessChangesUntilDone());
   VerifyConsistency();
