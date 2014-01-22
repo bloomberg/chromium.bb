@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/tuple.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/mock_new_credit_card_bubble_controller.h"
@@ -1055,7 +1056,8 @@ TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidAddress) {
   full_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("C"));
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
 
-  EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
+  if (!i18ninput::Enabled())
+    EXPECT_FALSE(!!controller()->MenuModelForSection(SECTION_BILLING));
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestIncompleteAddress) {

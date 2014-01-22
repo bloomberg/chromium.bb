@@ -140,6 +140,7 @@ const std::string& GetCompactLineSeparator(Script script) {
 
 std::map<std::string, std::string> InitRegionData() {
   std::map<std::string, std::string> region_data;
+  // TODO(estade): these all need "require" fields.
   region_data.insert(std::make_pair("AD", "{"
       "\"name\":\"ANDORRA\","
       "\"lang\":\"ca\","
@@ -1098,6 +1099,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"en\","
       "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C, %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -1215,6 +1217,7 @@ const std::string& RegionDataConstants::GetDefaultRegionData() {
   static const std::string kDefaultRegionData(
       "{"
       "\"fmt\":\"%N%n%O%n%A%n%C\","
+      "\"require\":\"AC\","
       "\"state_name_type\":\"province\","
       "\"zip_name_type\":\"postal\""
       "}");

@@ -79,15 +79,21 @@ TEST_P(AddressUiTest, ComponentsAreValid) {
   EXPECT_TRUE(ComponentsAreValid(BuildComponents(GetParam())));
 }
 
+// Verifies that BuildComponents() returns a non-empty vector for a region code.
+TEST_P(AddressUiTest, RequiredFieldsExist) {
+  EXPECT_FALSE(GetRequiredFields(GetParam()).empty());
+}
+
 // Test all regions codes.
 INSTANTIATE_TEST_CASE_P(
     AllRegions, AddressUiTest,
     testing::ValuesIn(GetRegionCodes()));
 
-// Verifies that BuildComponents() returns an empty vector for an invalid region
-// code.
+// Verifies that BuildComponents() and GetRequiredFields() return an empty
+// vector for an invalid region code.
 TEST_F(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
   EXPECT_TRUE(BuildComponents("INVALID-REGION-CODE").empty());
+  EXPECT_TRUE(GetRequiredFields("INVALID-REGION-CODE").empty());
 }
 
 struct SeparatorData {

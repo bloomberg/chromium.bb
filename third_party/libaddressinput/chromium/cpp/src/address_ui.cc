@@ -120,6 +120,17 @@ std::vector<AddressUiComponent> BuildComponents(
   return result;
 }
 
+std::vector<AddressField> GetRequiredFields(const std::string& region_code) {
+  Rule rule;
+  rule.CopyFrom(Rule::GetDefault());
+  if (!rule.ParseSerializedRule(
+           RegionDataConstants::GetRegionData(region_code))) {
+    return std::vector<AddressField>();
+  }
+
+  return rule.GetRequired();
+}
+
 const std::string& GetCompactAddressLinesSeparator(
     const std::string& language_code,
     const std::string& country_code) {

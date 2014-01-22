@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "grit/component_strings.h"
 #include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_field.h"
@@ -19,29 +21,30 @@ namespace i18ninput {
 
 namespace {
 
-using i18n::addressinput::AddressField;
-using i18n::addressinput::AddressUiComponent;
+using ::i18n::addressinput::AddressField;
+using ::i18n::addressinput::AddressUiComponent;
 
-ServerFieldType GetServerType(AddressField address_field, bool billing) {
+ServerFieldType AddressFieldToServerFieldType(AddressField address_field,
+                                              bool billing) {
   switch (address_field) {
-    case i18n::addressinput::COUNTRY:
+    case ::i18n::addressinput::COUNTRY:
       return billing ? ADDRESS_BILLING_COUNTRY : ADDRESS_HOME_COUNTRY;
-    case i18n::addressinput::ADMIN_AREA:
+    case ::i18n::addressinput::ADMIN_AREA:
       return billing ? ADDRESS_BILLING_STATE : ADDRESS_HOME_STATE;
-    case i18n::addressinput::LOCALITY:
+    case ::i18n::addressinput::LOCALITY:
       return billing ? ADDRESS_BILLING_CITY : ADDRESS_HOME_CITY;
-    case i18n::addressinput::DEPENDENT_LOCALITY:
+    case ::i18n::addressinput::DEPENDENT_LOCALITY:
       return billing ? ADDRESS_BILLING_DEPENDENT_LOCALITY :
                        ADDRESS_HOME_DEPENDENT_LOCALITY;
-    case i18n::addressinput::POSTAL_CODE:
+    case ::i18n::addressinput::POSTAL_CODE:
       return billing ? ADDRESS_BILLING_ZIP : ADDRESS_HOME_ZIP;
-    case i18n::addressinput::SORTING_CODE:
+    case ::i18n::addressinput::SORTING_CODE:
       return billing ? ADDRESS_BILLING_SORTING_CODE : ADDRESS_HOME_SORTING_CODE;
-    case i18n::addressinput::STREET_ADDRESS:
+    case ::i18n::addressinput::STREET_ADDRESS:
       return billing ? ADDRESS_BILLING_LINE1 : ADDRESS_HOME_LINE1;
-    case i18n::addressinput::RECIPIENT:
+    case ::i18n::addressinput::RECIPIENT:
       return billing ? NAME_BILLING_FULL : NAME_FULL;
-    case i18n::addressinput::ORGANIZATION:
+    case ::i18n::addressinput::ORGANIZATION:
       return COMPANY_NAME;
   }
   NOTREACHED();
@@ -66,24 +69,25 @@ void BuildAddressInputs(common::AddressType address_type,
                         const std::string& country_code,
                         DetailInputs* inputs) {
   std::vector<AddressUiComponent> components(
-      i18n::addressinput::BuildComponents(country_code));
+      ::i18n::addressinput::BuildComponents(country_code));
 
   const bool billing = address_type == common::ADDRESS_TYPE_BILLING;
 
   for (size_t i = 0; i < components.size(); ++i) {
     const AddressUiComponent& component = components[i];
-    if (component.field == i18n::addressinput::ORGANIZATION) {
+    if (component.field == ::i18n::addressinput::ORGANIZATION) {
       // TODO(dbeam): figure out when we actually need this.
       continue;
     }
 
-    ServerFieldType server_type = GetServerType(component.field, billing);
+    ServerFieldType server_type = AddressFieldToServerFieldType(component.field,
+                                                                billing);
     DetailInput::Length length = LengthFromHint(component.length_hint);
     base::string16 placeholder = l10n_util::GetStringUTF16(component.name_id);
     DetailInput input = { length, server_type, placeholder };
     inputs->push_back(input);
 
-    if (component.field == i18n::addressinput::STREET_ADDRESS &&
+    if (component.field == ::i18n::addressinput::STREET_ADDRESS &&
         component.length_hint == AddressUiComponent::HINT_LONG) {
       // TODO(dbeam): support more than 2 address lines. http://crbug.com/324889
       ServerFieldType server_type =
@@ -100,6 +104,56 @@ void BuildAddressInputs(common::AddressType address_type,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_COUNTRY);
   DetailInput input = { DetailInput::LONG, server_type, placeholder_text };
   inputs->push_back(input);
+}
+
+bool CardHasCompleteAndVerifiedData(const CreditCard& card) {
+  if (!card.IsVerified())
+    return false;
+
+  const ServerFieldType required_fields[] = {
+      CREDIT_CARD_NUMBER,
+      CREDIT_CARD_EXP_MONTH,
+      CREDIT_CARD_EXP_4_DIGIT_YEAR,
+  };
+
+  for (size_t i = 0; i < arraysize(required_fields); ++i) {
+    if (card.GetRawInfo(required_fields[i]).empty())
+      return false;
+  }
+
+  return true;
+}
+
+bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile) {
+  if (!profile.IsVerified())
+    return false;
+
+  base::string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
+  if (country_code.empty())
+    return false;
+
+  std::vector<AddressField> required_fields =
+      ::i18n::addressinput::GetRequiredFields(base::UTF16ToUTF8(country_code));
+
+  for (size_t i = 0; i < required_fields.size(); ++i) {
+    ServerFieldType type =
+        AddressFieldToServerFieldType(required_fields[i], false);
+    if (profile.GetRawInfo(type).empty())
+      return false;
+  }
+
+  const ServerFieldType more_required_fields[] = {
+      NAME_FULL,
+      EMAIL_ADDRESS,
+      PHONE_HOME_WHOLE_NUMBER
+  };
+
+  for (size_t i = 0; i < arraysize(more_required_fields); ++i) {
+    if (profile.GetRawInfo(more_required_fields[i]).empty())
+      return false;
+  }
+
+  return true;
 }
 
 }  // namespace i18ninput

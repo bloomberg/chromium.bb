@@ -9,6 +9,10 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 
 namespace autofill {
+
+class AutofillProfile;
+class CreditCard;
+
 namespace i18ninput {
 
 // Returns true if the internationalized address input is enabled.
@@ -20,6 +24,14 @@ bool Enabled();
 void BuildAddressInputs(common::AddressType address_type,
                         const std::string& country_code,
                         DetailInputs* inputs);
+
+// Returns whether the given card is complete and verified (i.e. was reviewed
+// by the user and not just automatically aggregated).
+bool CardHasCompleteAndVerifiedData(const CreditCard& card);
+
+// As above, but for the address in |profile|. Region-aware, meaning that the
+// exact set of required fields depends on the region.
+bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile);
 
 }  // namespace i18ninput
 }  // namespace autofill

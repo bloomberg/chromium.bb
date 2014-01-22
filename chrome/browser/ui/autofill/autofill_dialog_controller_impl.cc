@@ -276,27 +276,6 @@ void UserDidOptIntoLocationServices() {
   content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
 }
 
-// Returns whether |data_model| is complete, i.e. can fill out all the
-// |requested_fields|, and verified, i.e. not just automatically aggregated.
-// Incomplete or unverifed data will not be displayed in the dropdown menu.
-bool HasCompleteAndVerifiedData(const AutofillDataModel& data_model,
-                                const DetailInputs& requested_fields) {
-  if (!data_model.IsVerified())
-    return false;
-
-  for (size_t i = 0; i < requested_fields.size(); ++i) {
-    ServerFieldType type =
-        AutofillType(requested_fields[i].type).GetStorableType();
-    if (type != ADDRESS_HOME_LINE2 &&
-        type != CREDIT_CARD_VERIFICATION_CODE &&
-        data_model.GetRawInfo(type).empty()) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 // Returns true if |profile| has an invalid address, i.e. an invalid state, zip
 // code, phone number, or email address. Otherwise returns false. Profiles with
 // invalid addresses are not suggested in the dropdown menu for billing and
@@ -2821,7 +2800,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     const std::vector<CreditCard*>& cards = manager->GetCreditCards();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     for (size_t i = 0; i < cards.size(); ++i) {
-      if (!HasCompleteAndVerifiedData(*cards[i], requested_cc_fields_))
+      if (!i18ninput::CardHasCompleteAndVerifiedData(*cards[i]))
         continue;
 
       suggested_cc_.AddKeyedItemWithIcon(
@@ -2836,8 +2815,8 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     DCHECK_EQ(labels.size(), profiles.size());
     for (size_t i = 0; i < profiles.size(); ++i) {
       const AutofillProfile& profile = *profiles[i];
-      if (!HasCompleteAndVerifiedData(profile, requested_shipping_fields_) ||
-          HasInvalidAddress(*profiles[i])) {
+      if (!i18ninput::AddressHasCompleteAndVerifiedData(profile) ||
+          (!i18ninput::Enabled() && HasInvalidAddress(*profiles[i]))) {
         continue;
       }
 
