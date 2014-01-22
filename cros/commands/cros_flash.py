@@ -150,21 +150,6 @@ To update the device with an xbuddy path:
 using-the-dev-server/xbuddy-for-devserver
 """
 
-  CHERRYPY_ERROR_MSG = """
-If you see a cherrypy import error, that is because your device is
-running an older image (<R33-4986.0.0) that does not have cherrypy
-package installed by default.
-
-Cros flash launches a devserver instance on the device to serve the
-update payload for rootfs update. You can fix this with one of the
-following three options.
-
-  1. Update the device to a newer image with a USB stick.
-  2. Run 'cros deploy device cherrypy' to install cherrpy.
-  3. Use '--no-rootfs-update' to update the stateful parition first (with the
-    risk that the rootfs/stateful version mismatch may cause some problems).
-  """
-
   ROOTFS_FILENAME = 'update.gz'
   STATEFUL_FILENAME = 'stateful.tgz'
   DEVSERVER_STATIC_DIR = ds_wrapper.FromChrootPath(
@@ -225,11 +210,14 @@ following three options.
     stateful_update_bin = ds_wrapper.FromChrootPath(self.STATEFUL_UPDATE_BIN)
     device.CopyToWorkDir(stateful_update_bin)
 
-    logging.info('Updating stateful partition...')
+    msg = 'Updating stateful partition'
     cmd = ['sh', os.path.join(device.work_dir,
                               os.path.basename(self.STATEFUL_UPDATE_BIN)), '-']
     if clobber:
       cmd.append('--stateful_change=clean')
+      msg += ' with clobber enabled'
+
+    logging.info('%s...', msg)
 
     device.PipeOverSSH(payload, cmd)
     logging.info('Payload decompressed to stateful partition.')
@@ -309,8 +297,9 @@ following three options.
     except timeout_util.TimeoutError:
       raise DeviceUpdateError('Timed out updating rootfs.')
     except ds_wrapper.DevServerException:
-      logging.error(ds.TailLog())
-      logging.error(self.CHERRYPY_ERROR_MSG)
+      ds_log = ds.TailLog()
+      if ds_log:
+        logging.error(ds_log)
       raise
     finally:
       ds.Stop()
@@ -346,7 +335,9 @@ following three options.
       ds.DownloadFile(os.path.join(url, self.ROOTFS_FILENAME), payload_dir)
       ds.DownloadFile(os.path.join(url, self.STATEFUL_FILENAME), payload_dir)
     except ds_wrapper.DevServerException:
-      logging.error(ds.TailLog())
+      ds_log = ds.TailLog()
+      if ds_log:
+        logging.error(ds_log)
       raise
     finally:
       ds.Stop()
@@ -483,6 +474,9 @@ following three options.
           logging.info('Rebooting device..')
           device.Reboot()
 
+    except ds_wrapper.DevServerException:
+      # DevServerException should have been properly handled by now.
+      logging.error('Cros Flash failed before completing.')
     except Exception:
       logging.error('Cros Flash failed before completing.')
       raise

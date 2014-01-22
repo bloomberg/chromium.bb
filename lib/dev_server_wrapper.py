@@ -184,7 +184,7 @@ class DevServerWrapper(multiprocessing.Process):
   def IsReady(self):
     """Check if devserver is up and running."""
     if not self.is_alive():
-      raise DevServerException('Devserver crashed while starting')
+      raise DevServerException('Devserver terminated unexpectedly!')
 
     url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
     if self.OpenURL(url, ignore_url_error=True, timeout=2):
@@ -235,8 +235,12 @@ class DevServerWrapper(multiprocessing.Process):
         cwd=constants.SOURCE_ROOT, error_code_ok=True,
         redirect_stdout=True, combine_stdout_stderr=True)
     if result.returncode != 0:
-      logging.error('Devserver terminated unexpectedly!')
-      logging.error(result.output)
+      msg = ('Devserver failed to start!\n'
+             '--- Start output from the devserver startup command ---\n'
+             '%s'
+             '--- End output from the devserver startup command ---'
+             ) % result.output
+      logging.error(msg)
 
   def Start(self):
     """Starts a background devserver and waits for it to start.
@@ -251,14 +255,14 @@ class DevServerWrapper(multiprocessing.Process):
   def Stop(self):
     """Kills the devserver instance with SIGTERM and SIGKILL if SIGTERM fails"""
     if not self._pid:
-      logging.error('No devserver running.')
+      logging.debug('No devserver running.')
       return
 
     logging.debug('Stopping devserver instance with pid %s', self._pid)
     if self.is_alive():
       self._RunCommand(['kill', self._pid])
     else:
-      logging.error('Devserver not running!')
+      logging.debug('Devserver not running!')
       return
 
     self.join(self.KILL_TIMEOUT)
@@ -310,6 +314,20 @@ class RemoteDevServerWrapper(DevServerWrapper):
   KILL_TIMEOUT = 10
   PID_FILE_PATH = '/tmp/devserver_wrapper.pid'
 
+  CHERRYPY_ERROR_MSG = """
+Your device does not have cherrypy package installed; cherrypy is
+necessary for launching devserver on the device. Your device may be
+running an older image (<R33-4986.0.0), where cherrypy is not
+installed by default.
+
+You can fix this with one of the following three options:
+  1. Update the device to a newer image with a USB stick.
+  2. Run 'cros deploy device cherrypy' to install cherrpy.
+  3. Run cros flash with --no-rootfs-update to update only the stateful
+     parition to a newer image (with the risk that the rootfs/stateful version
+    mismatch may cause some problems).
+  """
+
   def __init__(self, remote_device, devserver_bin, **kwargs):
     """Initializes a RemoteDevserverPortal object with the remote device.
 
@@ -348,7 +366,7 @@ class RemoteDevServerWrapper(DevServerWrapper):
   def IsReady(self):
     """Returns True if devserver is ready to accept requests."""
     if not self.is_alive():
-      raise DevServerException('Devserver crashed while starting')
+      raise DevServerException('Devserver terminated unexpectedly!')
 
     url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
     # Running wget through ssh because the port on the device is not
@@ -372,10 +390,17 @@ class RemoteDevServerWrapper(DevServerWrapper):
 
     logging.info('Starting devserver %s', self.GetDevServerURL(ip=self.hostname,
                                                                port=self.port))
-    result = self._RunCommand(cmd)
+    result = self._RunCommand(cmd, error_code_ok=True, redirect_stdout=True,
+                              combine_stdout_stderr=True)
     if result.returncode != 0:
-      logging.error('Remote devserver terminated unexpectedly!')
-      logging.error(result.output)
+      msg = ('Remote devserver failed to start!\n'
+             '--- Start output from the devserver startup command ---\n'
+             '%s'
+             '--- End output from the devserver startup command ---'
+             ) % result.output
+      logging.error(msg)
+      if 'ImportError: No module named cherrypy' in result.output:
+        logging.error(self.CHERRYPY_ERROR_MSG)
 
   @classmethod
   def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
