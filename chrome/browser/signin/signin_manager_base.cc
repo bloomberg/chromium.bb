@@ -66,6 +66,10 @@ const std::string& SigninManagerBase::GetAuthenticatedUsername() const {
   return authenticated_username_;
 }
 
+const std::string& SigninManagerBase::GetAuthenticatedAccountId() const {
+  return GetAuthenticatedUsername();
+}
+
 void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
   if (!authenticated_username_.empty()) {
     DLOG_IF(ERROR, !gaia::AreEmailsSame(username, authenticated_username_)) <<
