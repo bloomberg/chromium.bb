@@ -4,6 +4,7 @@
 
 #include "base/debug/trace_event_unittest.h"
 
+#include <math.h>
 #include <cstdlib>
 
 #include "base/bind.h"
@@ -1986,6 +1987,127 @@ TEST_F(TraceEventTestFixture, ConvertableTypes) {
   ASSERT_TRUE(value->GetAsDictionary(&convertable_dict));
   EXPECT_TRUE(convertable_dict->GetInteger("foo", &foo_val));
   EXPECT_EQ(1, foo_val);
+}
+
+TEST_F(TraceEventTestFixture, PrimitiveArgs) {
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+      base::debug::TraceLog::RECORDING_MODE,
+      TraceLog::RECORD_UNTIL_FULL);
+
+  TRACE_EVENT1("foo", "event1", "int_one", 1);
+  TRACE_EVENT1("foo", "event2", "int_neg_ten", -10);
+  TRACE_EVENT1("foo", "event3", "float_one", 1.0f);
+  TRACE_EVENT1("foo", "event4", "float_half", .5f);
+  TRACE_EVENT1("foo", "event5", "float_neghalf", -.5f);
+  TRACE_EVENT1("foo", "event6", "float_infinity",
+      std::numeric_limits<float>::infinity());
+  TRACE_EVENT1("foo", "event7", "double_nan",
+      std::numeric_limits<double>::quiet_NaN());
+  void* p = 0;
+  TRACE_EVENT1("foo", "event8", "pointer_null", p);
+  p = reinterpret_cast<void*>(0xbadf00d);
+  TRACE_EVENT1("foo", "event9", "pointer_badf00d", p);
+  TRACE_EVENT1("foo", "event10", "bool_true", true);
+  TRACE_EVENT1("foo", "event11", "bool_false", false);
+  EndTraceAndFlush();
+
+  const DictionaryValue* args_dict = NULL;
+  DictionaryValue* dict = NULL;
+  const Value* value = NULL;
+  std::string str_value;
+  int int_value;
+  double double_value;
+  bool bool_value;
+
+  dict = FindNamePhase("event1", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetInteger("int_one", &int_value));
+  EXPECT_EQ(1, int_value);
+
+  dict = FindNamePhase("event2", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetInteger("int_neg_ten", &int_value));
+  EXPECT_EQ(-10, int_value);
+
+  // 1f must be serlized to JSON as "1.0" in order to be a double, not an int.
+  dict = FindNamePhase("event3", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->Get("float_one", &value));
+  EXPECT_TRUE(value->IsType(Value::TYPE_DOUBLE));
+  EXPECT_TRUE(value->GetAsDouble(&double_value));
+  EXPECT_EQ(1, double_value);
+
+  // .5f must be serlized to JSON as "0.5".
+  dict = FindNamePhase("event4", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->Get("float_half", &value));
+  EXPECT_TRUE(value->IsType(Value::TYPE_DOUBLE));
+  EXPECT_TRUE(value->GetAsDouble(&double_value));
+  EXPECT_EQ(0.5, double_value);
+
+  // -.5f must be serlized to JSON as "-0.5".
+  dict = FindNamePhase("event5", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->Get("float_neghalf", &value));
+  EXPECT_TRUE(value->IsType(Value::TYPE_DOUBLE));
+  EXPECT_TRUE(value->GetAsDouble(&double_value));
+  EXPECT_EQ(-0.5, double_value);
+
+  // Infinity can only be serlized to JSON as null.
+  dict = FindNamePhase("event6", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->Get("float_infinity", &value));
+  EXPECT_TRUE(value->IsType(Value::TYPE_NULL));
+
+  // NaN can only be serlized to JSON as null.
+  dict = FindNamePhase("event7", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->Get("double_nan", &value));
+  EXPECT_TRUE(value->IsType(Value::TYPE_NULL));
+
+  // NULL pointers should be serialized as "0x0".
+  dict = FindNamePhase("event8", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetString("pointer_null", &str_value));
+  EXPECT_STREQ("0x0", str_value.c_str());
+
+  // Other pointers should be serlized as a hex string.
+  dict = FindNamePhase("event9", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetString("pointer_badf00d", &str_value));
+  EXPECT_STREQ("0xbadf00d", str_value.c_str());
+
+  dict = FindNamePhase("event10", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetBoolean("bool_true", &bool_value));
+  EXPECT_TRUE(bool_value);
+
+  dict = FindNamePhase("event11", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetBoolean("bool_false", &bool_value));
+  EXPECT_FALSE(bool_value);
 }
 
 class TraceEventCallbackTest : public TraceEventTestFixture {

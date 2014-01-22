@@ -12,6 +12,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_synthetic_delay.h"
+#include "base/float_util.h"
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/lazy_instance.h"
@@ -635,24 +636,31 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
     case TRACE_VALUE_TYPE_DOUBLE: {
       // FIXME: base/json/json_writer.cc is using the same code,
       //        should be made into a common method.
-      std::string real = DoubleToString(value.as_double);
-      // Ensure that the number has a .0 if there's no decimal or 'e'.  This
-      // makes sure that when we read the JSON back, it's interpreted as a
-      // real rather than an int.
-      if (real.find('.') == std::string::npos &&
-          real.find('e') == std::string::npos &&
-          real.find('E') == std::string::npos) {
-        real.append(".0");
+      std::string real;
+      double val = value.as_double;
+      if (IsFinite(val)) {
+        real = DoubleToString(val);
+        // Ensure that the number has a .0 if there's no decimal or 'e'.  This
+        // makes sure that when we read the JSON back, it's interpreted as a
+        // real rather than an int.
+        if (real.find('.') == std::string::npos &&
+            real.find('e') == std::string::npos &&
+            real.find('E') == std::string::npos) {
+          real.append(".0");
+        }
+        // The JSON spec requires that non-integer values in the range (-1,1)
+        // have a zero before the decimal point - ".52" is not valid, "0.52" is.
+        if (real[0] == '.') {
+          real.insert(0, "0");
+        } else if (real.length() > 1 && real[0] == '-' && real[1] == '.') {
+          // "-.1" bad "-0.1" good
+          real.insert(1, "0");
+        }
+      } else {
+        // The JSON spec doesn't allow NaN and Infinity (since these are
+        // objects in EcmaScript).  In practice null is substituted for them.
+        real = "null";
       }
-      // The JSON spec requires that non-integer values in the range (-1,1)
-      // have a zero before the decimal point - ".52" is not valid, "0.52" is.
-      if (real[0] == '.') {
-        real.insert(0, "0");
-      } else if (real.length() > 1 && real[0] == '-' && real[1] == '.') {
-        // "-.1" bad "-0.1" good
-        real.insert(1, "0");
-      }
-
       StringAppendF(out, "%s", real.c_str());
       break;
     }

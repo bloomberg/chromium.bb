@@ -125,10 +125,6 @@ class BASE_EXPORT TraceEvent {
   void UpdateDuration(const TimeTicks& now, const TimeTicks& thread_now);
 
   // Serialize event data to JSON
-  static void AppendEventsAsJSON(const std::vector<TraceEvent>& events,
-                                 size_t start,
-                                 size_t count,
-                                 std::string* out);
   void AppendAsJSON(std::string* out) const;
   void AppendPrettyPrinted(std::ostringstream* out) const;
 
