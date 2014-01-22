@@ -8,7 +8,7 @@
 
 import os
 import sys
-from optparse import OptionParser
+from argparse import ArgumentParser
 from parse import mojo_parser
 from parse import mojo_translate
 from generators import mojom_data
@@ -17,21 +17,19 @@ from generators import mojom_js_generator
 
 
 def Main():
-  parser = OptionParser(usage="usage: %prog [options] filename1 [filename2...]")
-  parser.add_option("-i", "--include_dir", dest="include_dir", default=".",
-                    help="specify directory for #includes")
-  parser.add_option("-o", "--output_dir", dest="output_dir", default=".",
-                    help="specify output directory")
-  (options, args) = parser.parse_args()
+  parser = ArgumentParser(description="Generate bindings from mojom files.")
+  parser.add_argument("filename", nargs="+",
+                      help="mojom input file")
+  parser.add_argument("-i", "--include_dir", dest="include_dir", default=".",
+                      help="include path for #includes")
+  parser.add_argument("-o", "--output_dir", dest="output_dir", default=".",
+                      help="output directory for generated files")
+  args = parser.parse_args()
 
-  if len(args) < 1:
-    parser.print_help()
-    sys.exit(1)
+  if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
 
-  if not os.path.exists(options.output_dir):
-    os.makedirs(options.output_dir)
-
-  for filename in args:
+  for filename in args.filename:
     name = os.path.splitext(os.path.basename(filename))[0]
     # TODO(darin): There's clearly too many layers of translation here!  We can
     # at least avoid generating the serialized Mojom IR.
@@ -39,12 +37,12 @@ def Main():
     mojom = mojo_translate.Translate(tree, name)
     module = mojom_data.OrderedModuleFromData(mojom)
     cpp = mojom_cpp_generator.CppGenerator(
-        module, options.include_dir, options.output_dir)
+        module, args.include_dir, args.output_dir)
     cpp.GenerateFiles()
     js = mojom_js_generator.JsGenerator(
-        module, options.include_dir, options.output_dir)
+        module, args.include_dir, args.output_dir)
     js.GenerateFiles()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   Main()
