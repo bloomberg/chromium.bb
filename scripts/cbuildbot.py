@@ -400,6 +400,7 @@ class SimpleBuilder(Builder):
     steps = [stage.Run for stage in stage_objs]
     try:
       parallel.RunParallelSteps(steps)
+
     except BaseException as ex:
       # If a stage threw an exception, it might not have correctly reported
       # results (e.g. because it was killed before it could report the
@@ -834,14 +835,15 @@ def _RunBuildStagesWrapper(options, build_config):
   # to the start of the script (e.g. in or after _PostParseCheck).
   options.Freeze()
 
-  builder_run = cbuildbot_run.BuilderRun(options, build_config)
-  if _IsDistributedBuilder(options, chrome_rev, build_config):
-    builder_cls = DistributedBuilder
-  else:
-    builder_cls = SimpleBuilder
-  builder = builder_cls(builder_run)
-  if not builder.Run():
-    sys.exit(1)
+  with parallel.Manager() as manager:
+    builder_run = cbuildbot_run.BuilderRun(options, build_config, manager)
+    if _IsDistributedBuilder(options, chrome_rev, build_config):
+      builder_cls = DistributedBuilder
+    else:
+      builder_cls = SimpleBuilder
+    builder = builder_cls(builder_run)
+    if not builder.Run():
+      sys.exit(1)
 
 
 # Parser related functions

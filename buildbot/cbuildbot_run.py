@@ -20,33 +20,501 @@ that run attributes (e.g. self.attrs.release_tag) are shared between them
 all, as intended.
 """
 
+import cPickle
 import functools
 import os
+try:
+  import Queue
+except ImportError:
+  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
+  # with naming variables as "queue".  Maybe we'll transition at some point.
+  # pylint: disable=F0401
+  import queue as Queue
 import types
 
 from chromite.buildbot import cbuildbot_archive
 from chromite.buildbot import manifest_version
 
 
+class RunAttributesError(Exception):
+  """Base class for exceptions related to RunAttributes behavior."""
+
+  def __str__(self):
+    """Handle stringify because base class will just spit out self.args."""
+    return self.msg
+
+
+class ParallelAttributeError(AttributeError):
+  """Custom version of AttributeError."""
+
+  def __init__(self, attr, board=None, target=None, *args):
+    if board or target:
+      self.msg = ('No such board-specific parallel run attribute %r for %s/%s' %
+                  (attr, board, target))
+    else:
+      self.msg = 'No such parallel run attribute %r' % attr
+    super(ParallelAttributeError, self).__init__(self.msg, *args)
+    self.args = (attr, board, target) + tuple(args)
+
+  def __str__(self):
+    return self.msg
+
+
+class AttrSepCountError(ValueError):
+  """Custom version of ValueError for when BOARD_ATTR_SEP is misused."""
+  def __init__(self, attr, *args):
+    self.msg = ('Attribute name has an unexpected number of "%s" occurrences'
+                ' in it: %s' % (RunAttributes.BOARD_ATTR_SEP, attr))
+    super(AttrSepCountError, self).__init__(self.msg, *args)
+    self.args = (attr, ) + tuple(args)
+
+  def __str__(self):
+    return self.msg
+
+
+class AttrNotPickleableError(RunAttributesError):
+  """For when attribute value to queue is not pickleable."""
+
+  def __init__(self, attr, value, *args):
+    self.msg = 'Run attribute "%s" value cannot be pickled: %r' % (attr, value)
+    super(AttrNotPickleableError, self).__init__(self.msg, *args)
+    self.args = (attr, value) + tuple(args)
+
+
+class AttrTimeoutError(RunAttributesError):
+  """For when timeout is reached while waiting for attribute value."""
+
+  def __init__(self, attr, *args):
+    self.msg = 'Timed out waiting for value for run attribute "%s".' % attr
+    super(AttrTimeoutError, self).__init__(self.msg, *args)
+    self.args = (attr, ) + tuple(args)
+
+
+class LockableQueue(object):
+  """Multiprocessing queue with associated recursive lock.
+
+  Objects of this class function just like a regular multiprocessing Queue,
+  except that there is also an rlock attribute for getting a multiprocessing
+  RLock associated with this queue.  Actual locking must still be handled by
+  the calling code.  Example usage:
+
+  with queue.rlock:
+    ... process the queue in some way.
+  """
+
+  def __init__(self, manager):
+    self._queue = manager.Queue()
+    self.rlock = manager.RLock()
+
+  def __getattr__(self, attr):
+    """Relay everything to the underlying Queue object at self._queue."""
+    return getattr(self._queue, attr)
+
+
 class RunAttributes(object):
-  """Hold all run attributes for a particular builder run."""
+  """Hold all run attributes for a particular builder run.
 
-  # A word of warning about the way run attributes currently work.  The
-  # value set (or altered) by a given stage can be seen by any subsequent
-  # stage, including stages on child processes.  Any value set (or
-  # altered) by a stage in a subprocess will not be seen by co-subprocesses
-  # (other stages being run in parallel at the same time) and will
-  # be *discarded* when that subprocess ends (and parent process resumes).
-  # This is expected behavior for forked processes.
-  # TODO(mtennant): Possibly design a mechanism to preserve run attribute
-  # changes in subprocess stages for subsequent stages (but probably not for
-  # co-subprocess stages).
+  There are two supported flavors of run attributes: REGULAR attributes are
+  available only to stages that are run sequentially as part of the main (top)
+  process and PARALLEL attributes are available to all stages, no matter what
+  process they are in.  REGULAR attributes are accessed directly as normal
+  attributes on a RunAttributes object, while PARALLEL attributes are accessed
+  through the {Set|Has|Get}Parallel methods.  PARALLEL attributes also have the
+  restriction that their values must be pickle-able (in order to be sent
+  through multiprocessing queue).
 
-  __slots__ = (
+  The currently supported attributes of each kind are listed in REGULAR_ATTRS
+  and PARALLEL_ATTRS below.  To add support for a new run attribute simply
+  add it to one of those sets.
+
+  A subset of PARALLEL_ATTRS is BOARD_ATTRS.  These attributes only have meaning
+  in the context of a specific board and config target.  The attributes become
+  available once a board/config is registered for a run, and then they can be
+  accessed through the {Set|Has|Get}BoardParallel methods or through the
+  {Get|Set|Has}Parallel methods of a BoardRunAttributes object.  The latter is
+  encouraged.
+
+  To add a new BOARD attribute simply add it to the BOARD_ATTRS set below, which
+  will also add it to PARALLEL_ATTRS (all BOARD attributes are assumed to need
+  PARALLEL support).
+  """
+
+  REGULAR_ATTRS = frozenset((
       'chrome_version',   # Set by SyncChromeStage, if it runs.
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.
+  ))
+
+  # TODO(mtennant): It might be useful to have additional info for each board
+  # attribute:  1) a log-friendly pretty name, 2) a rough upper bound timeout
+  # value for consumers of the attribute to use when waiting for it.
+  BOARD_ATTRS = frozenset((
+      'breakpad_symbols_generated', # Set by DebugSymbolsStage.
+  ))
+
+  # Attributes that need to be set by stages that can run in parallel
+  # (i.e. in a subprocess) must be included here.  All BOARD_ATTRS are
+  # assumed to fit into this category.
+  PARALLEL_ATTRS = BOARD_ATTRS | frozenset((
+      'unittest_value',   # For unittests.  An example of a PARALLEL attribute
+                          # that is not also a BOARD attribute.
+  ))
+
+  # This separator is used to create a unique attribute name for any
+  # board-specific attribute.  For example:
+  # breakpad_symbols_generated||stumpy||stumpy-full-config
+  BOARD_ATTR_SEP = '||'
+
+  # Sanity check, make sure there is no overlap between the attr groups.
+  assert not REGULAR_ATTRS & PARALLEL_ATTRS
+
+  # REGULAR_ATTRS show up as attributes directly on the RunAttributes object.
+  __slots__ = tuple(REGULAR_ATTRS) + (
+      '_board_targets', # Set of registered board/target combinations.
+      '_manager',       # The multiprocessing.Manager to use.
+      '_queues',        # Dict of parallel attribute names to LockableQueues.
   )
+
+  def __init__(self, multiprocess_manager):
+    # Create queues for all non-board-specific parallel attributes now.
+    # Parallel board attributes must wait for the board to be registered.
+    self._manager = multiprocess_manager
+    self._queues = {}
+    for attr in RunAttributes.PARALLEL_ATTRS:
+      if attr not in RunAttributes.BOARD_ATTRS:
+        # pylint: disable=E1101
+        self._queues[attr] = LockableQueue(self._manager)
+
+    # Set of known <board>||<target> combinations.
+    self._board_targets = set()
+
+  def RegisterBoardAttrs(self, board, target):
+    """Register a new valid board/target combination.  Safe to repeat.
+
+    Args:
+      board: Board name to register.
+      target: Build config name to register.
+
+    Returns:
+      A new BoardRunAttributes object for more convenient access to the newly
+        registered attributes specific to this board/target combination.
+    """
+    board_target = RunAttributes.BOARD_ATTR_SEP.join((board, target))
+
+    if not board_target in self._board_targets:
+      # Register board/target as a known board/target.
+      self._board_targets.add(board_target)
+
+      # For each board attribute that should be queue-able, create its queue
+      # now.  Queues are kept by the uniquified run attribute name.
+      for attr in RunAttributes.BOARD_ATTRS:
+        # Every attr in BOARD_ATTRS is in PARALLEL_ATTRS, by construction.
+        # pylint: disable=E1101
+        uniquified_attr = self._GetBoardAttrName(attr, board, target)
+        self._queues[uniquified_attr] = LockableQueue(self._manager)
+
+    return BoardRunAttributes(self, board, target)
+
+  # TODO(mtennant): Complain if a child process attempts to set a non-parallel
+  # run attribute?  It could be done something like this:
+  #def __setattr__(self, attr, value):
+  #  """Override __setattr__ to prevent misuse of run attributes."""
+  #  if attr in self.REGULAR_ATTRS:
+  #    assert not self._IsChildProcess()
+  #  super(RunAttributes, self).__setattr__(attr, value)
+
+  @staticmethod
+  def _GetBoardAttrName(attr, board, target):
+    """Translate plain |attr| to uniquified board attribute name.
+
+    Args:
+      attr: Plain run attribute name.
+      board: Board name.
+      target: Build config name.
+
+    Returns:
+      The uniquified board-specific attribute name.
+    """
+    # Translate to the unique attribute name for attr/board/target.
+    return RunAttributes.BOARD_ATTR_SEP.join((attr, board, target))
+
+  def SetBoardParallel(self, attr, value, board, target):
+    """Set board-specific parallel run attribute value.
+
+    Args:
+      attr: Plain board run attribute name.
+      value: Value to set.
+      board: Board name.
+      target: Build config name.
+    """
+    unique_attr = self._GetBoardAttrName(attr, board, target)
+    try:
+      self.SetParallel(unique_attr, value)
+    except ParallelAttributeError:
+      # Clarify the AttributeError.
+      raise ParallelAttributeError(attr, board=board, target=target)
+
+  def HasBoardParallel(self, attr, board, target):
+    """Return True if board-specific parallel run attribute is known and set.
+
+    Args:
+      attr: Plain board run attribute name.
+      board: Board name.
+      target: Build config name.
+    """
+    unique_attr = self._GetBoardAttrName(attr, board, target)
+    return self.HasParallel(unique_attr)
+
+  def SetBoardParallelDefault(self, attr, default_value, board, target):
+    """Set board-specific parallel run attribute value, if not already set.
+
+    Args:
+      attr: Plain board run attribute name.
+      default_value: Value to set.
+      board: Board name.
+      target: Build config name.
+    """
+    if not self.HasBoardParallel(attr, board, target):
+      self.SetBoardParallel(attr, default_value, board, target)
+
+  def GetBoardParallel(self, attr, board, target, timeout=0):
+    """Get board-specific parallel run attribute value.
+
+    Args:
+      attr: Plain board run attribute name.
+      board: Board name.
+      target: Build config name.
+      timeout: See GetParallel for description.
+
+    Returns:
+      The value found.
+    """
+    unique_attr = self._GetBoardAttrName(attr, board, target)
+    try:
+      return self.GetParallel(unique_attr, timeout=timeout)
+    except ParallelAttributeError:
+      # Clarify the AttributeError.
+      raise ParallelAttributeError(attr, board=board, target=target)
+
+  def _GetQueue(self, attr, strict=False):
+    """Return the queue for the given attribute, if it exists.
+
+    Args:
+      attr: The run attribute name.
+      strict: If True, then complain if queue for |attr| is not found.
+
+    Returns:
+      The LockableQueue for this attribute, if it has one, or None
+        (assuming strict is False).
+
+    Raises:
+      ParallelAttributeError if no queue for this attribute is registered,
+        meaning no parallel attribute by this name is known.
+    """
+    queue = self._queues.get(attr)
+
+    if queue is None and strict:
+      raise ParallelAttributeError(attr)
+
+    return queue
+
+  def SetParallel(self, attr, value):
+    """Set the given parallel run attribute value.
+
+    Called to set the value of any parallel run attribute.  The value is
+    saved onto a multiprocessing queue for that attribute.
+
+    Args:
+      attr: Name of the attribute.
+      value: Value to give the attribute.  This value must be pickleable.
+
+    Raises:
+      ParallelAttributeError if attribute is not a valid parallel attribute.
+      AttrNotPickleableError if value cannot be pickled, meaning it cannot
+        go through the queue system.
+    """
+    # Confirm that value can be pickled, because otherwise it will fail
+    # in the queue.
+    try:
+      cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
+    except cPickle.PicklingError:
+      raise AttrNotPickleableError(attr, value)
+
+    queue = self._GetQueue(attr, strict=True)
+
+    with queue.rlock:
+      # First empty the queue.  Any value already on the queue is now stale.
+      while True:
+        try:
+          queue.get(False)
+        except Queue.Empty:
+          break
+
+      queue.put(value)
+
+  def HasParallel(self, attr):
+    """Return True if the given parallel run attribute is known and set.
+
+    Args:
+      attr: Name of the attribute.
+    """
+    try:
+      queue = self._GetQueue(attr, strict=True)
+
+      with queue.rlock:
+        return not queue.empty()
+    except ParallelAttributeError:
+      return False
+
+  def SetParallelDefault(self, attr, default_value):
+    """Set the given parallel run attribute only if it is not already set.
+
+    This leverages HasParallel and SetParallel in a convenient pattern.
+
+    Args:
+      attr: Name of the attribute.
+      default_value: Value to give the attribute if it is not set.  This value
+        must be pickleable.
+
+    Raises:
+      ParallelAttributeError if attribute is not a valid parallel attribute.
+      AttrNotPickleableError if value cannot be pickled, meaning it cannot
+        go through the queue system.
+    """
+    if not self.HasParallel(attr):
+      self.SetParallel(attr, default_value)
+
+  # TODO(mtennant): Add an option to log access, including the time to wait
+  # or waited.  It could be enabled with an optional announce=False argument.
+  # See GetParallel helper on BoardSpecificBuilderStage class for ideas.
+  def GetParallel(self, attr, timeout=0):
+    """Get value for the given parallel run attribute, optionally waiting.
+
+    If the given parallel run attr already has a value in the queue it will
+    return that value right away.  Otherwise, it will wait for a value to
+    appear in the queue up to the timeout specified (timeout of None means
+    wait forever) before returning the value found or raising AttrTimeoutError
+    if a timeout was reached.
+
+    Args:
+      attr: The name of the run attribute.
+      timeout: Timeout, in seconds.  A None value means wait forever,
+        which is probably never a good idea.  A value of 0 does not wait at all.
+
+    Raises:
+      ParallelAttributeError if attribute is not set and timeout was 0.
+      AttrTimeoutError if timeout is greater than 0 and timeout is reached
+        before a value is available on the queue.
+    """
+    got_value = False
+    queue = self._GetQueue(attr, strict=True)
+
+    # First attempt to get a value off the queue, without the lock.  This
+    # allows a blocking get to wait for a value to appear.
+    try:
+      value = queue.get(True, timeout)
+      got_value = True
+    except Queue.Empty:
+      # This means there is nothing on the queue.  Let this fall through to
+      # the locked code block to see if another process is in the process
+      # of re-queuing a value.  Any process doing that will have a lock.
+      pass
+
+    # Now grab the queue lock and flush any other values that are on the queue.
+    # This should only happen if another process put a value in after our first
+    # queue.get above.  If so, accept the updated value.
+    with queue.rlock:
+      while True:
+        try:
+          value = queue.get(False)
+          got_value = True
+        except Queue.Empty:
+          break
+
+      if got_value:
+        # First re-queue the value, then return it.
+        queue.put(value)
+        return value
+
+      else:
+        # Handle no value differently depending on whether timeout is 0.
+        if timeout == 0:
+          raise ParallelAttributeError(attr)
+        else:
+          raise AttrTimeoutError(attr)
+
+
+class BoardRunAttributes(object):
+  """Convenience class for accessing board-specific run attributes.
+
+  Board-specific run attributes (actually board/target-specific) are saved in
+  the RunAttributes object but under uniquified names.  A BoardRunAttributes
+  object provides access to these attributes using their plain names by
+  providing the board/target information where needed.
+
+  For example, to access the breakpad_symbols_generated board run attribute on
+  a regular RunAttributes object requires this:
+
+    value = attrs.GetBoardParallel('breakpad_symbols_generated', board, target)
+
+  But on a BoardRunAttributes object:
+
+    boardattrs = BoardRunAttributes(attrs, board, target)
+    ...
+    value = boardattrs.GetParallel('breakpad_symbols_generated')
+
+  The same goes for setting values.
+  """
+
+  __slots__ = ('_attrs', '_board', '_target')
+
+  def __init__(self, attrs, board, target):
+    """Initialize.
+
+    Args:
+      attrs: The main RunAttributes object.
+      board: The board name this is specific to.
+      target: The build config name this is specific to.
+    """
+    self._attrs = attrs
+    self._board = board
+    self._target = target
+
+  def SetParallel(self, attr, value, *args, **kwargs):
+    """Set the value of parallel board attribute |attr| to |value|.
+
+    Relay to SetBoardParallel on self._attrs, supplying board and target.
+    See documentation on RunAttributes.SetBoardParallel for more details.
+    """
+    self._attrs.SetBoardParallel(attr, value, self._board, self._target,
+                                 *args, **kwargs)
+
+  def HasParallel(self, attr, *args, **kwargs):
+    """Return True if parallel board attribute |attr| exists.
+
+    Relay to HasBoardParallel on self._attrs, supplying board and target.
+    See documentation on RunAttributes.HasBoardParallel for more details.
+    """
+    return self._attrs.HasBoardParallel(attr, self._board, self._target,
+                                        *args, **kwargs)
+
+  def SetParallelDefault(self, attr, default_value, *args, **kwargs):
+    """Set the value of parallel board attribute |attr| to |value|, if not set.
+
+    Relay to SetBoardParallelDefault on self._attrs, supplying board and target.
+    See documentation on RunAttributes.SetBoardParallelDefault for more details.
+    """
+    self._attrs.SetBoardParallelDefault(attr, default_value, self._board,
+                                        self._target, *args, **kwargs)
+
+  def GetParallel(self, attr, *args, **kwargs):
+    """Get the value of parallel board attribute |attr|.
+
+    Relay to GetBoardParallel on self._attrs, supplying board and target.
+    See documentation on RunAttributes.GetBoardParallel for more details.
+    """
+    return self._attrs.GetBoardParallel(attr, self._board, self._target,
+                                        *args, **kwargs)
 
 
 # TODO(mtennant): Consider renaming this _BuilderRunState, then renaming
@@ -87,7 +555,7 @@ class _BuilderRunBase(object):
       # test = (config build_tests AND option tests)
   )
 
-  def __init__(self, options):
+  def __init__(self, options, multiprocess_manager):
     self.options = options
 
     # Note that self.config is filled in dynamically by either of the classes
@@ -100,7 +568,7 @@ class _BuilderRunBase(object):
 
     # Create the RunAttributes object for this BuilderRun and save
     # the id number for it in order to look it up via attrs property.
-    attrs = RunAttributes()
+    attrs = RunAttributes(multiprocess_manager)
     self._ATTRS[id(attrs)] = attrs
     self._attrs_id = id(attrs)
 
@@ -146,6 +614,10 @@ class _BuilderRunBase(object):
     # the GetVersion function itself to be called when needed later.
     return cbuildbot_archive.Archive(self.bot_id, self.GetVersion,
                                      self.options, self.config)
+
+  def GetBoardRunAttrs(self, board):
+    """Create a BoardRunAttributes object for this run and given |board|."""
+    return BoardRunAttributes(self.attrs, board, self.config.name)
 
   def ShouldUploadPrebuilts(self):
     """Return True if this run should upload prebuilts."""
@@ -222,6 +694,11 @@ class _RealBuilderRun(object):
     self._run_base = run_base
     self._config = build_config
 
+    # Make sure self.attrs has board-specific attributes for each board
+    # in build_config.
+    for board in build_config.boards:
+      self.attrs.RegisterBoardAttrs(board, build_config.name)
+
   def __getattr__(self, attr):
     # Remember, __getattr__ only called if attribute was not found normally.
     # In normal usage, the __init__ guarantees that self._run_base and
@@ -291,14 +768,15 @@ class _RealBuilderRun(object):
 class BuilderRun(_RealBuilderRun):
   """A standard BuilderRun for a top-level build config."""
 
-  def __init__(self, options, build_config):
+  def __init__(self, options, build_config, multiprocess_manager):
     """Initialize.
 
     Args:
       options: Command line options from this cbuildbot run.
       build_config: Build config for this cbuildbot run.
+      multiprocess_manager: A multiprocessing.Manager.
     """
-    run_base = _BuilderRunBase(options)
+    run_base = _BuilderRunBase(options, multiprocess_manager)
     super(BuilderRun, self).__init__(run_base, build_config)
 
 

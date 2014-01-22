@@ -51,6 +51,7 @@ from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot
 
 try:
+  # pylint: disable=F0401
   from crostools.lib import gspaths
   from crostools.lib import paygen_build_lib
   CROSTOOLS_AVAILABLE = True
@@ -228,8 +229,17 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     # Some preliminary sanity checks.
     self.assertEquals(options.buildroot, self.build_root)
 
+    # Make up a fake object with a Queue() method.
+    class _FakeMultiprocessManager(object):
+      """This just needs to not crash when Queue/RLock called."""
+      def Queue(self):
+        return 'SomeQueue'
+      def RLock(self):
+        return 'SomeLock'
+    manager = _FakeMultiprocessManager()
+
     # Construct a real BuilderRun using options and build_config.
-    self.run = cbuildbot_run.BuilderRun(options, build_config)
+    self.run = cbuildbot_run.BuilderRun(options, build_config, manager)
 
     if self.RELEASE_TAG is not None:
       self.run.attrs.release_tag = self.RELEASE_TAG
@@ -392,13 +402,10 @@ class BuilderStageTest(AbstractStageTest):
     class TestError(Exception):
       """Unique test exception"""
 
-    class BadStage(bs.BuilderStage):
-      """Stage that throws an exception when PerformStage is called."""
+    perform_mock = self.PatchObject(bs.BuilderStage, 'PerformStage')
+    perform_mock.side_effect = TestError('fail!')
 
-      def PerformStage(self):
-        raise TestError('fail!')
-
-    stage = BadStage(self.run)
+    stage = self.ConstructStage()
     results_lib.Results.Clear()
     self.assertRaises(results_lib.StepFailure, self._RunCapture, stage)
 
@@ -1505,7 +1512,6 @@ class BuildImageStageTest(BuildPackagesStageTest):
     self.StartPatcher(BuildImageStageMock())
 
   def ConstructStage(self):
-    self.run.attrs.release_tag = self._release_tag
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.BuildImageStage(self.run, self._current_board, archive_stage)
 
@@ -1528,11 +1534,13 @@ class BuildImageStageTest(BuildPackagesStageTest):
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):
     """Test with the config for the specified bot_id."""
+    release_tag = '0.0.1'
     self._Prepare(bot_id)
     self.run.options.tests = options_tests
+    self.run.attrs.release_tag = release_tag
 
     task = self.RunTestsWithReleaseConfig
-    steps = [lambda: task(tag) for tag in (None, '0.0.1')]
+    steps = [lambda: task(tag) for tag in (None, release_tag)]
     parallel.RunParallelSteps(steps)
 
 
@@ -2080,6 +2088,52 @@ class SuicideStage(bs.BuilderStage):
     os.kill(os.getpid(), signal.SIGKILL)
 
 
+class SetAttrStage(bs.BuilderStage):
+  """Stage that sets requested run attribute to a value."""
+
+  DEFAULT_ATTR = 'unittest_value'
+  VALUE = 'HereTakeThis'
+
+  def __init__(self, builder_run, delay=2, attr=DEFAULT_ATTR, *args, **kwargs):
+    super(SetAttrStage, self).__init__(builder_run, *args, **kwargs)
+    self.delay = delay
+    self.attr = attr
+
+  def PerformStage(self):
+    """Wait self.delay seconds then set requested run attribute."""
+    time.sleep(self.delay)
+    self._run.attrs.SetParallel(self.attr, self.VALUE)
+
+  def QueueableException(self):
+    return cbuildbot_run.ParallelAttributeError(self.attr)
+
+
+class GetAttrStage(bs.BuilderStage):
+  """Stage that accesses requested run attribute and confirms value."""
+
+  DEFAULT_ATTR = 'unittest_value'
+
+  def __init__(self, builder_run, tester=None, timeout=5, attr=DEFAULT_ATTR,
+               *args, **kwargs):
+    super(GetAttrStage, self).__init__(builder_run, *args, **kwargs)
+    self.tester = tester
+    self.timeout = timeout
+    self.attr = attr
+
+  def PerformStage(self):
+    """Wait for attrs.test value to show up."""
+    assert not self._run.attrs.HasParallel(self.attr)
+    value = self._run.attrs.GetParallel(self.attr, self.timeout)
+    if self.tester:
+      self.tester(value)
+
+  def QueueableException(self):
+    return cbuildbot_run.ParallelAttributeError(self.attr)
+
+  def TimeoutException(self):
+    return cbuildbot_run.AttrTimeoutError(self.attr)
+
+
 class BuildStagesResultsTest(cros_test_lib.TestCase):
   """Tests for stage results and reporting."""
 
@@ -2106,9 +2160,16 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     options.chrome_rev = None
     options.branch = 'dontcare'
 
-    self.run = cbuildbot_run.BuilderRun(options, build_config)
+    self._manager = parallel.Manager()
+    self._manager.__enter__()
+
+    self.run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
 
     results_lib.Results.Clear()
+
+  def tearDown(self):
+    # Mimic exiting with statement for self._manager.
+    self._manager.__exit__(None, None, None)
 
   def _runStages(self):
     """Run a couple of stages so we can capture the results"""
@@ -2119,7 +2180,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
       results_lib.StepFailure,
       FailStage(self.run).Run)
 
-  def _verifyRunResults(self, expectedResults):
+  def _verifyRunResults(self, expectedResults, max_time=2.0):
     actualResults = results_lib.Results.Get()
 
     # Break out the asserts to be per item to make debugging easier
@@ -2133,7 +2194,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         if isinstance(entry.result, results_lib.StepFailure):
           self.assertEqual(str(entry.result), entry.description)
 
-      self.assertTrue(entry.time >= 0 and entry.time < 2.0)
+      self.assertTrue(entry.time >= 0 and entry.time < max_time)
       self.assertEqual(xname, entry.name)
       self.assertEqual(type(xresult), type(entry.result))
       self.assertEqual(repr(xresult), repr(entry.result))
@@ -2173,16 +2234,22 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
     self.assertFalse(results_lib.Results.BuildSucceededSoFar())
 
+  def _TestParallelStages(self, stage_objs):
+    builder = cbuildbot.SimpleBuilder(self.run)
+    error = None
+    with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
+      try:
+        builder._RunParallelStages(stage_objs)
+      except parallel.BackgroundFailure as ex:
+        error = ex
+
+    return error
+
   def testParallelStages(self):
     stage_objs = [stage(self.run) for stage in
                   (PassStage, SneakyFailStage, FailStage, SuicideStage,
                    Pass2Stage)]
-    error = None
-    with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
-      try:
-        cbuildbot.SimpleBuilder._RunParallelStages(stage_objs)
-      except parallel.BackgroundFailure as ex:
-        error = ex
+    error = self._TestParallelStages(stage_objs)
     self.assertTrue(error)
     expectedResults = [
         ('Pass', results_lib.Results.SUCCESS),
@@ -2192,6 +2259,60 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         ('Suicide', error),
     ]
     self._verifyRunResults(expectedResults)
+
+  def testParallelStageCommunicationOK(self):
+    """Test run attr communication betweeen parallel stages."""
+    def assert_test(value):
+      self.assertEqual(value, SetAttrStage.VALUE,
+                       'Expected value %r to be passed between stages, but'
+                       ' got %r.' % (SetAttrStage.VALUE, value))
+    stage_objs = [
+        SetAttrStage(self.run),
+        GetAttrStage(self.run, assert_test, timeout=30),
+        GetAttrStage(self.run, assert_test, timeout=30),
+    ]
+    error = self._TestParallelStages(stage_objs)
+    self.assertFalse(error)
+    expectedResults = [
+        ('SetAttr', results_lib.Results.SUCCESS),
+        ('GetAttr', results_lib.Results.SUCCESS),
+        ('GetAttr', results_lib.Results.SUCCESS),
+    ]
+    self._verifyRunResults(expectedResults, max_time=30.0)
+
+    # Make sure run attribute propagated up to the top, too.
+    value = self.run.attrs.GetParallel('unittest_value')
+    self.assertEqual(SetAttrStage.VALUE, value)
+
+  def testParallelStageCommunicationTimeout(self):
+    """Test run attr communication between parallel stages that times out."""
+    def assert_test(value):
+      self.assertEqual(value, SetAttrStage.VALUE,
+                       'Expected value %r to be passed between stages, but'
+                       ' got %r.' % (SetAttrStage.VALUE, value))
+    stage_objs = [SetAttrStage(self.run, delay=11),
+                  GetAttrStage(self.run, assert_test, timeout=1),
+                 ]
+    error = self._TestParallelStages(stage_objs)
+    self.assertTrue(error)
+    expectedResults = [
+        ('SetAttr', results_lib.Results.SUCCESS),
+        ('GetAttr', stage_objs[1].TimeoutException()),
+    ]
+    self._verifyRunResults(expectedResults, max_time=12.0)
+
+  def testParallelStageCommunicationNotQueueable(self):
+    """Test setting non-queueable run attr in parallel stage."""
+    stage_objs = [SetAttrStage(self.run, attr='release_tag'),
+                  GetAttrStage(self.run, timeout=2),
+                 ]
+    error = self._TestParallelStages(stage_objs)
+    self.assertTrue(error)
+    expectedResults = [
+        ('SetAttr', stage_objs[0].QueueableException()),
+        ('GetAttr', stage_objs[1].TimeoutException()),
+    ]
+    self._verifyRunResults(expectedResults, max_time=12.0)
 
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""

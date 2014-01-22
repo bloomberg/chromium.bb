@@ -88,9 +88,16 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase,
     self.options.patches = None
     self.options.prebuilts = False
 
-    self.run = cbuildbot_run.BuilderRun(self.options, self.build_config)
+    self._manager = cbuildbot.parallel.Manager()
+    self._manager.__enter__()
+    self.run = cbuildbot_run.BuilderRun(self.options, self.build_config,
+                                        self._manager)
 
     self.StartPatcher(BuilderRunMock())
+
+  def tearDown(self):
+    # Mimic exiting a 'with' statement.
+    self._manager.__exit__(None, None, None)
 
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
@@ -183,6 +190,13 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
                      return_value='1234.0.0')
     self.StartPatcher(parallel_unittest.ParallelMock())
 
+    self._manager = cbuildbot.parallel.Manager()
+    self._manager.__enter__()
+
+  def tearDown(self):
+    # Mimic exiting a 'with' statement.
+    self._manager.__exit__(None, None, None)
+
   def _initConfig(self, bot_id, extra_argv=None):
     """Return normal options/build_config for |bot_id|"""
     build_config = copy.deepcopy(config.config[bot_id])
@@ -198,7 +212,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     # Yikes.
     options.managed_chrome = build_config['sync_chrome']
 
-    return cbuildbot_run.BuilderRun(options, build_config)
+    return cbuildbot_run.BuilderRun(options, build_config, self._manager)
 
   def testRunStagesPreCQ(self):
     """Verify RunStages for PRE_CQ_LAUNCHER_TYPE builders"""

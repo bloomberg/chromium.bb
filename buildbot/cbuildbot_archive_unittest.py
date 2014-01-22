@@ -74,9 +74,18 @@ def _NewBuilderRun(options=None, config=None):
   Returns:
     BuilderRun object.
   """
+  # Make up a fake object with a Queue() method.
+  class _FakeMultiprocessManager(object):
+    """This just needs to not crash when Queue/RLock called."""
+    def Queue(self):
+      return 'SomeQueue'
+    def RLock(self):
+      return 'SomeLock'
+  manager = _FakeMultiprocessManager()
+
   options = options or DEFAULT_OPTIONS
   config = config or DEFAULT_CONFIG
-  return cbuildbot_run.BuilderRun(options, config)
+  return cbuildbot_run.BuilderRun(options, config, manager)
 
 
 class GetBaseUploadURITest(cros_test_lib.TestCase):
