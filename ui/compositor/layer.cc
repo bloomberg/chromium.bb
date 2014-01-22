@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/scoped_ptr_algorithm.h"
@@ -660,7 +661,9 @@ class LayerDebugInfo : public base::debug::ConvertableToTraceFormat {
  public:
   explicit LayerDebugInfo(std::string name) : name_(name) { }
   virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
-    out->append("{\"layer_name\": \"" + name_ + "\"}");
+    base::DictionaryValue dictionary;
+    dictionary.SetString("layer_name", name_);
+    base::JSONWriter::Write(&dictionary, out);
   }
 
  private:
