@@ -114,7 +114,7 @@ private:
         Scroll
     };
     RegionSetting scanSettingName(VTTScanner&);
-    void parseSettingValue(RegionSetting, const String&);
+    void parseSettingValue(RegionSetting, VTTScanner&);
 
     static const AtomicString& textTrackCueContainerShadowPseudoId();
     static const AtomicString& textTrackCueContainerScrollingClass();

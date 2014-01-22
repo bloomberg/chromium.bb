@@ -213,9 +213,7 @@ void VTTRegion::setRegionSettings(const String& inputString)
         }
 
         // Scan the value part.
-        VTTScanner::Run valueRun = input.collectUntil<VTTParser::isASpace>();
-        parseSettingValue(name, input.extractString(valueRun));
-        input.skipRun(valueRun);
+        parseSettingValue(name, input);
     }
 }
 
@@ -237,19 +235,27 @@ VTTRegion::RegionSetting VTTRegion::scanSettingName(VTTScanner& input)
     return None;
 }
 
-void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
+static inline bool parsedEntireRun(const VTTScanner& input, const VTTScanner::Run& run)
+{
+    return input.isAt(run.end());
+}
+
+void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, scrollUpValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
+    VTTScanner::Run valueRun = input.collectUntil<VTTParser::isASpace>();
+
     switch (setting) {
-    case Id:
-        if (value.find("-->") == kNotFound)
-            m_id = value;
+    case Id: {
+        String stringValue = input.extractString(valueRun);
+        if (stringValue.find("-->") == kNotFound)
+            m_id = stringValue;
         break;
+    }
     case Width: {
         float floatWidth;
-        VTTScanner valueScanner(value);
-        if (VTTParser::parseFloatPercentageValue(valueScanner, floatWidth) && valueScanner.isAtEnd())
+        if (VTTParser::parseFloatPercentageValue(input, floatWidth) && parsedEntireRun(input, valueRun))
             m_width = floatWidth;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Width");
@@ -257,33 +263,30 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
     }
     case Height: {
         int number;
-        VTTScanner valueScanner(value);
-        if (valueScanner.scanDigits(number) && valueScanner.isAtEnd())
+        if (input.scanDigits(number) && parsedEntireRun(input, valueRun))
             m_heightInLines = number;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
         break;
     }
     case RegionAnchor: {
-        VTTScanner valueScanner(value);
         FloatPoint anchor;
-        if (VTTParser::parseFloatPercentageValuePair(valueScanner, ',', anchor) && valueScanner.isAtEnd())
+        if (VTTParser::parseFloatPercentageValuePair(input, ',', anchor) && parsedEntireRun(input, valueRun))
             m_regionAnchor = anchor;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
         break;
     }
     case ViewportAnchor: {
-        VTTScanner valueScanner(value);
         FloatPoint anchor;
-        if (VTTParser::parseFloatPercentageValuePair(valueScanner, ',', anchor) && valueScanner.isAtEnd())
+        if (VTTParser::parseFloatPercentageValuePair(input, ',', anchor) && parsedEntireRun(input, valueRun))
             m_viewportAnchor = anchor;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid ViewportAnchor");
         break;
     }
     case Scroll:
-        if (value == scrollUpValueKeyword)
+        if (input.scanRun(valueRun, scrollUpValueKeyword))
             m_scroll = true;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Scroll");
@@ -291,6 +294,8 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
     case None:
         break;
     }
+
+    input.skipRun(valueRun);
 }
 
 const AtomicString& VTTRegion::textTrackCueContainerShadowPseudoId()
