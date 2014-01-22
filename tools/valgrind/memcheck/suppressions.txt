@@ -6383,11 +6383,6 @@
    fun:_ZN15google_breakpad16ExceptionHandler13SignalHandlerEiP7siginfoPv
 }
 {
-   bug_333564
-   Memcheck:Uninitialized
-   fun:_ZNK7WebCore11RenderLayer25shouldBeSelfPaintingLayerEv
-}
-{
    bug_333992
    Memcheck:Leak
    fun:_Znw*
