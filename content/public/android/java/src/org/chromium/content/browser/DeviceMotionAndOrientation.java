@@ -46,6 +46,9 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     // The lock to access the mNativePtr.
     private final Object mNativePtrLock = new Object();
 
+    // Holds a shortened version of the rotation vector for compatibility purposes.
+    private float[] mTruncatedRotationVector;
+
     // Lazily initialized when registering for notifications.
     private SensorManagerProxy mSensorManagerProxy;
 
@@ -188,7 +191,19 @@ class DeviceMotionAndOrientation implements SensorEventListener {
                 break;
             case Sensor.TYPE_ROTATION_VECTOR:
                 if (mDeviceOrientationIsActive) {
-                    getOrientationFromRotationVector(values);
+                    if (values.length > 4) {
+                        // On some Samsung devices SensorManager.getRotationMatrixFromVector
+                        // appears to throw an exception if rotation vector has length > 4.
+                        // For the purposes of this class the first 4 values of the
+                        // rotation vector are sufficient (see crbug.com/335298 for details).
+                        if (mTruncatedRotationVector == null) {
+                            mTruncatedRotationVector = new float[4];
+                        }
+                        System.arraycopy(values, 0, mTruncatedRotationVector, 0, 4);
+                        getOrientationFromRotationVector(mTruncatedRotationVector);
+                    } else {
+                        getOrientationFromRotationVector(values);
+                    }
                 }
                 break;
             default:
