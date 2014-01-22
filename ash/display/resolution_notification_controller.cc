@@ -226,7 +226,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
               GetDisplayNameForId(change_info_->display_id)),
           base::UTF8ToUTF16(change_info_->new_resolution.ToString())),
       timeout_message,
-      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
+      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16() /* display_source */,
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
