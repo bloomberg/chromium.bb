@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -60,7 +62,13 @@ ExtensionToolbarModel::ExtensionToolbarModel(
 
   visible_icon_count_ = prefs_->GetInteger(
       extensions::pref_names::kToolbarSize);
-
+  // Visible count can be -1, meaning: 'show all'. Since UMA converts negative
+  // values to 0, this would be counted as 'show none' unless we convert it to
+  // max.
+  UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsVisible",
+                           visible_icon_count_ == -1 ?
+                               base::HistogramBase::kSampleType_MAX :
+                               visible_icon_count_);
   pref_change_registrar_.Init(prefs_);
   pref_change_callback_ =
       base::Bind(&ExtensionToolbarModel::OnExtensionToolbarPrefChange,
@@ -381,6 +389,9 @@ void ExtensionToolbarModel::Populate(
   }
   toolbar_items_.insert(toolbar_items_.end(), unsorted.begin(),
                         unsorted.end());
+
+  UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsCount",
+                           toolbar_items_.size());
 
   // Inform observers.
   for (size_t i = 0; i < toolbar_items_.size(); i++) {
