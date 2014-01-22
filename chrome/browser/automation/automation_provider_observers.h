@@ -52,7 +52,6 @@
 
 class AutomationProvider;
 class Browser;
-class ExtensionService;
 class Notification;
 class Profile;
 class SavePackage;
@@ -76,6 +75,7 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class ExtensionSystem;
 class ProcessManager;
 }
 
@@ -327,10 +327,10 @@ class ExtensionReadyNotificationObserver
     : public content::NotificationObserver {
  public:
   // Creates an observer that replies using the JSON automation interface.
-  ExtensionReadyNotificationObserver(extensions::ProcessManager* manager,
-                                     ExtensionService* service,
-                                     AutomationProvider* automation,
-                                     IPC::Message* reply_message);
+  ExtensionReadyNotificationObserver(
+      extensions::ExtensionSystem* extension_system,
+      AutomationProvider* automation,
+      IPC::Message* reply_message);
   virtual ~ExtensionReadyNotificationObserver();
 
   // Overridden from content::NotificationObserver:
@@ -342,8 +342,7 @@ class ExtensionReadyNotificationObserver
   void Init();
 
   content::NotificationRegistrar registrar_;
-  extensions::ProcessManager* manager_;
-  ExtensionService* service_;
+  extensions::ExtensionSystem* extension_system_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   const extensions::Extension* extension_;

@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
@@ -49,7 +48,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/runtime_data.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
@@ -2361,17 +2362,19 @@ bool WebRequestHandlerBehaviorChangedFunction::RunImpl() {
 
 void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  if (!profile || !profile->GetExtensionService())
+  if (!profile)
     return;
 
   bool adblock = false;
   bool adblock_plus = false;
   bool other = false;
-  const extensions::ExtensionSet* extensions =
-      profile->GetExtensionService()->extensions();
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    if (profile->GetExtensionService()->HasUsedWebRequest(it->get())) {
+  const extensions::ExtensionSet& extensions =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+  extensions::RuntimeData* runtime_data =
+      extensions::ExtensionSystem::Get(profile)->runtime_data();
+  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end(); ++it) {
+    if (runtime_data->HasUsedWebRequest(it->get())) {
       if ((*it)->name().find("Adblock Plus") != std::string::npos) {
         adblock_plus = true;
       } else if ((*it)->name().find("AdBlock") != std::string::npos) {

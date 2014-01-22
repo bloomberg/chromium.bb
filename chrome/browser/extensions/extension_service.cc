@@ -83,6 +83,7 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/update_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -188,15 +189,6 @@ class SharedModuleProvider : public extensions::ManagementPolicy::Provider {
 
 
 }  // namespace
-
-ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
-    : background_page_ready(false),
-      being_upgraded(false),
-      has_used_webrequest(false) {
-}
-
-ExtensionService::ExtensionRuntimeData::~ExtensionRuntimeData() {
-}
 
 // ExtensionService.
 
@@ -740,7 +732,7 @@ void ExtensionService::ReloadExtension(const std::string extension_id) {
 
     path = current_extension->path();
     // BeingUpgraded is set back to false when the extension is added.
-    SetBeingUpgraded(current_extension, true);
+    system_->runtime_data()->SetBeingUpgraded(current_extension, true);
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
     reloading_extensions_.insert(extension_id);
   } else {
@@ -979,9 +971,9 @@ void ExtensionService::DisableExtension(
   if (!extension)
     return;
 
-  // Reset the background_page_ready flag
-  if (extensions::BackgroundInfo::HasBackgroundPage(extension))
-    extension_runtime_data_[extension->id()].background_page_ready = false;
+  // The extension is either enabled or terminated.
+  DCHECK(registry_->enabled_extensions().Contains(extension->id()) ||
+         registry_->terminated_extensions().Contains(extension->id()));
 
   // Move it over to the disabled list. Don't send a second unload notification
   // for terminated extensions being disabled.
@@ -1144,6 +1136,8 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 void ExtensionService::NotifyExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
+  registry_->TriggerOnUnloaded(extension);
+
   UnloadedExtensionInfo details(extension, reason);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -1590,15 +1584,14 @@ void ExtensionService::UnloadExtension(
   // Clean up if the extension is meant to be enabled after a reload.
   reloading_extensions_.erase(extension->id());
 
-  // Clean up runtime data.
-  extension_runtime_data_.erase(extension_id);
-
   if (registry_->disabled_extensions().Contains(extension->id())) {
     registry_->RemoveDisabled(extension->id());
     // Make sure the profile cleans up its RequestContexts when an already
     // disabled extension is unloaded (since they are also tracking the disabled
     // extensions).
     system_->UnregisterExtensionWithRequestContexts(extension_id, reason);
+    // Don't send the unloaded notification. It was sent when the extension
+    // was disabled.
   } else {
     // Remove the extension from the enabled list.
     registry_->RemoveEnabled(extension->id());
@@ -1721,7 +1714,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
     if (!Manifest::IsUnpackedLocation(extension->location()))
       CHECK_GE(version_compare_result, 0);
   }
-  SetBeingUpgraded(extension, is_extension_upgrade);
+  system_->runtime_data()->SetBeingUpgraded(extension, is_extension_upgrade);
 
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
@@ -1784,7 +1777,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
       extension_sync_service_->SyncExtensionChangeIfNeeded(*extension);
     NotifyExtensionLoaded(extension);
   }
-  SetBeingUpgraded(extension, false);
+  system_->runtime_data()->SetBeingUpgraded(extension, false);
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {
@@ -2619,32 +2612,6 @@ ExtensionIdSet ExtensionService::GetAppIds() const {
   return result;
 }
 
-bool ExtensionService::IsBackgroundPageReady(const Extension* extension) const {
-  if (!extensions::BackgroundInfo::HasPersistentBackgroundPage(extension))
-    return true;
-  ExtensionRuntimeDataMap::const_iterator it =
-      extension_runtime_data_.find(extension->id());
-  return it == extension_runtime_data_.end() ? false :
-                                               it->second.background_page_ready;
-}
-
-void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
-  DCHECK(extensions::BackgroundInfo::HasBackgroundPage(extension));
-  extension_runtime_data_[extension->id()].background_page_ready = true;
-}
-
-bool ExtensionService::IsBeingUpgraded(const Extension* extension) const {
-  ExtensionRuntimeDataMap::const_iterator it =
-      extension_runtime_data_.find(extension->id());
-  return it == extension_runtime_data_.end() ? false :
-                                               it->second.being_upgraded;
-}
-
-void ExtensionService::SetBeingUpgraded(const Extension* extension,
-                                        bool value) {
-  extension_runtime_data_[extension->id()].being_upgraded = value;
-}
-
 bool ExtensionService::IsBeingReloaded(
     const std::string& extension_id) const {
   return ContainsKey(extensions_being_reloaded_, extension_id);
@@ -2656,18 +2623,6 @@ void ExtensionService::SetBeingReloaded(const std::string& extension_id,
     extensions_being_reloaded_.insert(extension_id);
   else
     extensions_being_reloaded_.erase(extension_id);
-}
-
-bool ExtensionService::HasUsedWebRequest(const Extension* extension) const {
-  ExtensionRuntimeDataMap::const_iterator it =
-      extension_runtime_data_.find(extension->id());
-  return it == extension_runtime_data_.end() ? false :
-                                               it->second.has_used_webrequest;
-}
-
-void ExtensionService::SetHasUsedWebRequest(const Extension* extension,
-                                            bool value) {
-  extension_runtime_data_[extension->id()].has_used_webrequest = value;
 }
 
 bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
@@ -2822,7 +2777,7 @@ void ExtensionService::UnloadAllExtensionsInternal() {
   profile_->GetExtensionSpecialStoragePolicy()->RevokeRightsForAllExtensions();
 
   registry_->ClearAll();
-  extension_runtime_data_.clear();
+  system_->runtime_data()->ClearAll();
 
   // TODO(erikkay) should there be a notification for this?  We can't use
   // EXTENSION_UNLOADED since that implies that the extension has been disabled

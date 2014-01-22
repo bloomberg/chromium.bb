@@ -3446,15 +3446,13 @@ void TestingAutomationProvider::InstallExtension(
   }
   args->GetBoolean("from_webstore", &from_webstore);
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser->profile())->extension_service();
-  extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
-  if (service && manager) {
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(browser->profile());
+  ExtensionService* service = system->extension_service();
+  if (service) {
     // The observer will delete itself when done.
     new ExtensionReadyNotificationObserver(
-        manager,
-        service,
+        system,
         this,
         reply_message);
 
@@ -3480,7 +3478,7 @@ void TestingAutomationProvider::InstallExtension(
     }
   } else {
     AutomationJSONReply(this, reply_message).SendError(
-        "Extensions service/process manager is not available");
+        "Extensions service is not available");
   }
 }
 
@@ -3660,21 +3658,19 @@ void TestingAutomationProvider::SetExtensionStateById(
     return;
   }
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser->profile())->extension_service();
-  extensions::ProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(browser->profile());
+  ExtensionService* service = system->extension_service();
   if (!service) {
     AutomationJSONReply(this, reply_message)
-        .SendError("No extensions service or process manager.");
+        .SendError("No extensions service.");
     return;
   }
 
   if (enable) {
     if (!service->IsExtensionEnabled(extension->id())) {
       new ExtensionReadyNotificationObserver(
-          manager,
-          service,
+          system,
           this,
           reply_message);
       service->EnableExtension(extension->id());

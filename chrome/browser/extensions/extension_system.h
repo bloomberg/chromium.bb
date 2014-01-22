@@ -40,6 +40,7 @@ class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class NavigationObserver;
 class ProcessManager;
+class RuntimeData;
 class StandardManagementPolicyProvider;
 class StateStore;
 class UserScriptMaster;
@@ -72,6 +73,10 @@ class ExtensionSystem : public BrowserContextKeyedService {
 
   // The ExtensionService is created at startup.
   virtual ExtensionService* extension_service() = 0;
+
+  // Per-extension data that can change during the life of the process but
+  // does not persist across restarts. Lives on UI thread. Created at startup.
+  virtual RuntimeData* runtime_data() = 0;
 
   // The class controlling whether users are permitted to perform certain
   // actions on extensions (install, uninstall, disable, etc.).
@@ -146,6 +151,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
 
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
+  virtual RuntimeData* runtime_data() OVERRIDE;  // shared
   virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
   virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
   virtual ProcessManager* process_manager() OVERRIDE;
@@ -191,6 +197,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     StateStore* state_store();
     StateStore* rules_store();
     ExtensionService* extension_service();
+    RuntimeData* runtime_data();
     ManagementPolicy* management_policy();
     UserScriptMaster* user_script_master();
     Blacklist* blacklist();
@@ -219,7 +226,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // StandardManagementPolicyProvider depends on Blacklist.
     scoped_ptr<StandardManagementPolicyProvider>
         standard_management_policy_provider_;
-    // ExtensionService depends on StateStore and Blacklist.
+    scoped_ptr<RuntimeData> runtime_data_;
+    // ExtensionService depends on StateStore, Blacklist and RuntimeData.
     scoped_ptr<ExtensionService> extension_service_;
     scoped_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive process_manager_.

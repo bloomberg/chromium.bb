@@ -41,6 +41,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   // ExtensionSystem implementation:
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE;
   virtual ExtensionService* extension_service() OVERRIDE;
+  virtual RuntimeData* runtime_data() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;
   virtual UserScriptMaster* user_script_master() OVERRIDE;
   virtual ProcessManager* process_manager() OVERRIDE;
@@ -67,6 +68,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   // Data to be accessed on the IO thread. Must outlive process_manager_.
   scoped_refptr<InfoMap> info_map_;
 
+  scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
   scoped_ptr<EventRouter> event_router_;
   scoped_ptr<ProcessManager> process_manager_;

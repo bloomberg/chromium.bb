@@ -14,6 +14,7 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry_factory.h"
 
 using content::BrowserContext;
 
@@ -127,6 +128,7 @@ std::vector<BrowserContextKeyedServiceFactory*>
 ShellExtensionsBrowserClient::GetExtensionSystemDependencies() {
   std::vector<BrowserContextKeyedServiceFactory*> depends_on;
   depends_on.push_back(ExtensionPrefsFactory::GetInstance());
+  depends_on.push_back(ExtensionRegistryFactory::GetInstance());
   return depends_on;
 }
 

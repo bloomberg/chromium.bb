@@ -73,6 +73,7 @@
 #include "content/public/common/process_type.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/runtime_data.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
@@ -571,10 +572,10 @@ void ExtensionUninstallObserver::Observe(
 }
 
 ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
-    extensions::ProcessManager* manager, ExtensionService* service,
-    AutomationProvider* automation, IPC::Message* reply_message)
-    : manager_(manager),
-      service_(service),
+    extensions::ExtensionSystem* extension_system,
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : extension_system_(extension_system),
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       extension_(NULL) {
@@ -609,7 +610,8 @@ void ExtensionReadyNotificationObserver::Observe(
     case content::NOTIFICATION_LOAD_STOP:
       // Only continue on with this method if our extension has been loaded
       // and all the extension views have stopped loading.
-      if (!extension_ || !DidExtensionViewsStopLoading(manager_))
+      if (!extension_ ||
+          !DidExtensionViewsStopLoading(extension_system_->process_manager()))
         return;
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
@@ -621,13 +623,13 @@ void ExtensionReadyNotificationObserver::Observe(
           !extensions::Manifest::IsUnpackedLocation(location))
         return;
       extension_ = loaded_extension;
-      if (!DidExtensionViewsStopLoading(manager_))
+      if (!DidExtensionViewsStopLoading(extension_system_->process_manager()))
         return;
       // For some reason, the background extension view is not yet
       // created at this point so just checking whether all extension views
       // are loaded is not sufficient. If background page is not ready,
       // we wait for NOTIFICATION_LOAD_STOP.
-      if (!service_->IsBackgroundPageReady(extension_))
+      if (!extension_system_->runtime_data()->IsBackgroundPageReady(extension_))
         return;
       break;
     }

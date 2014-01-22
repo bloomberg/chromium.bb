@@ -187,27 +187,10 @@ class ExtensionService
                         const std::string& predecessor_extension_id,
                         const std::string& successor_extension_id);
 
-  // Whether the persistent background page, if any, is ready. We don't load
-  // other components until then. If there is no background page, or if it is
-  // non-persistent (lazy), we consider it to be ready.
-  bool IsBackgroundPageReady(const extensions::Extension* extension) const;
-  void SetBackgroundPageReady(const extensions::Extension* extension);
-
-  // Getter and setter for the flag that specifies whether the extension is
-  // being upgraded.
-  bool IsBeingUpgraded(const extensions::Extension* extension) const;
-  void SetBeingUpgraded(const extensions::Extension* extension, bool value);
-
   // Getter and setter for the flag that specifies whether the extension is
   // being reloaded.
   bool IsBeingReloaded(const std::string& extension_id) const;
   void SetBeingReloaded(const std::string& extension_id, bool value);
-
-  // Getter and setter for the flag that specifies if the extension has used
-  // the webrequest API.
-  // TODO(mpcomplete): remove. http://crbug.com/100411
-  bool HasUsedWebRequest(const extensions::Extension* extension) const;
-  void SetHasUsedWebRequest(const extensions::Extension* extension, bool value);
 
   // Initialize and start all installed extensions.
   void Init();
@@ -616,23 +599,6 @@ class ExtensionService
 #endif
 
  private:
-  // Contains Extension data that can change during the life of the process,
-  // but does not persist across restarts.
-  struct ExtensionRuntimeData {
-    // True if the background page is ready.
-    bool background_page_ready;
-
-    // True while the extension is being upgraded.
-    bool being_upgraded;
-
-    // True if the extension has used the webRequest API.
-    bool has_used_webrequest;
-
-    ExtensionRuntimeData();
-    ~ExtensionRuntimeData();
-  };
-  typedef std::map<std::string, ExtensionRuntimeData> ExtensionRuntimeDataMap;
-
   // Signals *ready_ and sends a notification to the listeners.
   void SetReadyAndNotifyListeners();
 
@@ -740,9 +706,6 @@ class ExtensionService
 
   // Hold the set of pending extensions.
   extensions::PendingExtensionManager pending_extension_manager_;
-
-  // The map of extension IDs to their runtime data.
-  ExtensionRuntimeDataMap extension_runtime_data_;
 
   // The full path to the directory where extensions are installed.
   base::FilePath install_directory_;

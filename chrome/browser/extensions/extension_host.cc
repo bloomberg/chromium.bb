@@ -41,6 +41,7 @@
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
@@ -323,9 +324,9 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
 
 void ExtensionHost::OnDocumentAvailable() {
   DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
-  ExtensionService* service = GetExtensionService();
-  if (service)
-    service->SetBackgroundPageReady(extension_);
+  ExtensionSystem::GetForBrowserContext(browser_context_)
+      ->runtime_data()
+      ->SetBackgroundPageReady(extension_, true);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
       content::Source<const Extension>(extension_),

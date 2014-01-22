@@ -39,10 +39,12 @@
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/runtime_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -168,6 +170,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   user_script_master_ = new UserScriptMaster(profile_);
 
+  // ExtensionService depends on RuntimeData.
+  runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
+
   bool autoupdate_enabled = true;
 #if defined(OS_CHROMEOS)
   if (!extensions_enabled)
@@ -279,6 +284,10 @@ ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
   return extension_service_.get();
 }
 
+RuntimeData* ExtensionSystemImpl::Shared::runtime_data() {
+  return runtime_data_.get();
+}
+
 ManagementPolicy* ExtensionSystemImpl::Shared::management_policy() {
   return management_policy_.get();
 }
@@ -355,6 +364,10 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
 
 ExtensionService* ExtensionSystemImpl::extension_service() {
   return shared_->extension_service();
+}
+
+RuntimeData* ExtensionSystemImpl::runtime_data() {
+  return shared_->runtime_data();
 }
 
 ManagementPolicy* ExtensionSystemImpl::management_policy() {

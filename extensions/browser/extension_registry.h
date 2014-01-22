@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/common/extension_set.h"
 
@@ -18,6 +19,7 @@ class BrowserContext;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistryObserver;
 
 // ExtensionRegistry holds sets of the installed extensions for a given
 // BrowserContext. An incognito browser context and its master browser context
@@ -54,6 +56,14 @@ class ExtensionRegistry : public BrowserContextKeyedService {
   const ExtensionSet& blacklisted_extensions() const {
     return blacklisted_extensions_;
   }
+
+  // The usual observer interface.
+  void AddObserver(ExtensionRegistryObserver* observer);
+  void RemoveObserver(ExtensionRegistryObserver* observer);
+
+  // Invokes the observer method OnExtensionUnloaded(). The extension must not
+  // be enabled at the time of the call.
+  void TriggerOnUnloaded(const Extension* extension);
 
   // Find an extension by ID using |include_mask| to pick the sets to search:
   //  * enabled_extensions()     --> ExtensionRegistry::ENABLED
@@ -116,6 +126,8 @@ class ExtensionRegistry : public BrowserContextKeyedService {
   // so that if extensions are blacklisted by mistake they can easily be
   // un-blacklisted.
   ExtensionSet blacklisted_extensions_;
+
+  ObserverList<ExtensionRegistryObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionRegistry);
 };

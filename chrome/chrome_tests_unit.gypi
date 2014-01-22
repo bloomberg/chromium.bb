@@ -538,6 +538,7 @@
         '../extensions/browser/management_policy_unittest.cc',
         '../extensions/browser/process_map_unittest.cc',
         '../extensions/browser/quota_service_unittest.cc',
+        '../extensions/browser/runtime_data_unittest.cc',
         '../extensions/common/csp_validator_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',
         '../extensions/common/extension_resource_unittest.cc',

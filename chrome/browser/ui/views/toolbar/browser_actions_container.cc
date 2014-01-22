@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/runtime_data.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -625,7 +626,7 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
   // Enlarge the container if it was already at maximum size and we're not in
   // the middle of upgrading.
   if ((model_->GetVisibleIconCount() < 0) &&
-      !extensions::ExtensionSystem::Get(profile_)->extension_service()->
+      !extensions::ExtensionSystem::Get(profile_)->runtime_data()->
           IsBeingUpgraded(extension)) {
     suppress_chevron_ = true;
     SaveDesiredSizeAndAnimate(gfx::Tween::LINEAR, visible_actions + 1);
@@ -650,7 +651,7 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
 
       // If the extension is being upgraded we don't want the bar to shrink
       // because the icon is just going to get re-added to the same location.
-      if (extensions::ExtensionSystem::Get(profile_)->extension_service()->
+      if (extensions::ExtensionSystem::Get(profile_)->runtime_data()->
               IsBeingUpgraded(extension))
         return;
 

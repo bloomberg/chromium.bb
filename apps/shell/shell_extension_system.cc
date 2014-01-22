@@ -21,6 +21,7 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/runtime_data.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -77,6 +78,8 @@ void ShellExtensionSystem::Shutdown() {
 }
 
 void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
+  runtime_data_.reset(
+      new RuntimeData(ExtensionRegistry::Get(browser_context_)));
   lazy_background_task_queue_.reset(
       new LazyBackgroundTaskQueue(browser_context_));
   event_router_.reset(
@@ -86,6 +89,10 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 
 ExtensionService* ShellExtensionSystem::extension_service() {
   return NULL;
+}
+
+RuntimeData* ShellExtensionSystem::runtime_data() {
+  return runtime_data_.get();
 }
 
 ManagementPolicy* ShellExtensionSystem::management_policy() {

@@ -21,6 +21,7 @@ class BrowserContext;
 
 namespace extensions {
 class ExtensionPrefs;
+class RuntimeData;
 
 // Test ExtensionSystem, for use with TestingProfile.
 class TestExtensionSystem : public ExtensionSystem {
@@ -56,6 +57,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
   void SetExtensionService(ExtensionService* service);
   virtual ExtensionService* extension_service() OVERRIDE;
+  virtual RuntimeData* runtime_data() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;
   virtual UserScriptMaster* user_script_master() OVERRIDE;
   virtual ProcessManager* process_manager() OVERRIDE;
@@ -90,6 +92,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<StandardManagementPolicyProvider>
       standard_management_policy_provider_;
   scoped_ptr<ManagementPolicy> management_policy_;
+  scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ProcessManager> process_manager_;
   scoped_refptr<InfoMap> info_map_;

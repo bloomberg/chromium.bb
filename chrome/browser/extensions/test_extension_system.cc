@@ -23,10 +23,12 @@
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/runtime_data.h"
 
 using content::BrowserThread;
 
@@ -96,6 +98,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProvider(
       standard_management_policy_provider_.get());
+  runtime_data_.reset(new RuntimeData(ExtensionRegistry::Get(profile_)));
   extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,
                                                 install_directory,
@@ -110,6 +113,10 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
 
 ExtensionService* TestExtensionSystem::extension_service() {
   return extension_service_.get();
+}
+
+RuntimeData* TestExtensionSystem::runtime_data() {
+  return runtime_data_.get();
 }
 
 ManagementPolicy* TestExtensionSystem::management_policy() {

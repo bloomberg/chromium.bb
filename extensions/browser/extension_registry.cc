@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "extensions/browser/extension_registry_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace extensions {
 
@@ -15,6 +16,20 @@ ExtensionRegistry::~ExtensionRegistry() {}
 // static
 ExtensionRegistry* ExtensionRegistry::Get(content::BrowserContext* context) {
   return ExtensionRegistryFactory::GetForBrowserContext(context);
+}
+
+void ExtensionRegistry::AddObserver(ExtensionRegistryObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ExtensionRegistry::RemoveObserver(ExtensionRegistryObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void ExtensionRegistry::TriggerOnUnloaded(const Extension* extension) {
+  DCHECK(!enabled_extensions_.Contains(extension->id()));
+  FOR_EACH_OBSERVER(
+      ExtensionRegistryObserver, observers_, OnExtensionUnloaded(extension));
 }
 
 const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,
