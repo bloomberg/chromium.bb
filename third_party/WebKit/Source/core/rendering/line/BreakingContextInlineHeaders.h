@@ -28,7 +28,11 @@
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderListMarker.h"
+#include "core/rendering/RenderRubyRun.h"
 #include "core/rendering/break_lines.h"
+#include "core/rendering/line/LineBreaker.h"
 #include "core/rendering/line/LineInfo.h"
 #include "core/rendering/line/LineWidth.h"
 #include "core/rendering/line/TrailingObjects.h"
@@ -39,15 +43,6 @@ namespace WebCore {
 
 // We don't let our line box tree for a single line get any deeper than this.
 const unsigned cMaxLineDepth = 200;
-
-struct RenderTextInfo {
-    RenderTextInfo();
-    ~RenderTextInfo();
-
-    RenderText* m_text;
-    LazyLineBreakIterator m_lineBreakIterator;
-    const Font* m_font;
-};
 
 class WordMeasurement {
 public:
@@ -171,8 +166,6 @@ private:
 
     TrailingObjects m_trailingObjects;
 };
-
-enum WhitespacePosition { LeadingWhitespace, TrailingWhitespace };
 
 inline bool shouldCollapseWhiteSpace(const RenderStyle* style, const LineInfo& lineInfo, WhitespacePosition whitespacePosition)
 {
@@ -952,48 +945,14 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
     }
 }
 
-InlineIterator BreakingContext::handleEndOfLine()
+inline IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, RenderStyle* style)
 {
-    ShapeInsideInfo* shapeInfo = m_block->layoutShapeInsideInfo();
-    bool segmentAllowsOverflow = !shapeInfo || !shapeInfo->hasSegments();
+    if (isFirstLine)
+        return IndentText;
+    if (isAfterHardLineBreak && style->textIndentLine() == TextIndentEachLine)
+        return IndentText;
 
-    if (m_lineBreak == m_resolver.position() && (!m_lineBreak.object() || !m_lineBreak.object()->isBR()) && segmentAllowsOverflow) {
-        // we just add as much as possible
-        if (m_blockStyle->whiteSpace() == PRE && !m_current.offset()) {
-            m_lineBreak.moveTo(m_lastObject, m_lastObject->isText() ? m_lastObject->length() : 0);
-        } else if (m_lineBreak.object()) {
-            // Don't ever break in the middle of a word if we can help it.
-            // There's no room at all. We just have to be on this line,
-            // even though we'll spill out.
-            m_lineBreak.moveTo(m_current.object(), m_current.offset());
-        }
-    }
-
-    // FIXME Bug 100049: We do not need to consume input in a multi-segment line
-    // unless no segment will.
-    // make sure we consume at least one char/object.
-    if (m_lineBreak == m_resolver.position() && segmentAllowsOverflow)
-        m_lineBreak.increment();
-
-    // Sanity check our midpoints.
-    m_lineMidpointState.checkMidpoints(m_lineBreak);
-
-    m_trailingObjects.updateMidpointsForTrailingBoxes(m_lineMidpointState, m_lineBreak, TrailingObjects::CollapseFirstSpace);
-
-    // We might have made lineBreak an iterator that points past the end
-    // of the object. Do this adjustment to make it point to the start
-    // of the next object instead to avoid confusing the rest of the
-    // code.
-    if (m_lineBreak.offset()) {
-        // This loop enforces the invariant that line breaks should never point
-        // at an empty inline. See http://crbug.com/305904.
-        do {
-            m_lineBreak.setOffset(m_lineBreak.offset() - 1);
-            m_lineBreak.increment();
-        } while (!m_lineBreak.atEnd() && isEmptyInline(m_lineBreak.object()));
-    }
-
-    return m_lineBreak;
+    return DoNotIndentText;
 }
 
 }

@@ -35,6 +35,7 @@
 #include "core/rendering/VerticalPositionCache.h"
 #include "core/rendering/line/BreakingContextInlineHeaders.h"
 #include "core/rendering/line/LineLayoutState.h"
+#include "core/rendering/line/LineWidth.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
 #include "platform/text/BidiResolver.h"
 #include "wtf/RefCountedLeakCounter.h"
@@ -46,42 +47,6 @@ namespace WebCore {
 
 using namespace std;
 using namespace WTF::Unicode;
-
-static IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, RenderStyle* style)
-{
-    if (isFirstLine)
-        return IndentText;
-    if (isAfterHardLineBreak && style->textIndentLine() == TextIndentEachLine)
-        return IndentText;
-
-    return DoNotIndentText;
-}
-
-class LineBreaker {
-public:
-    friend class BreakingContext;
-    LineBreaker(RenderBlockFlow* block)
-        : m_block(block)
-    {
-        reset();
-    }
-
-    InlineIterator nextLineBreak(InlineBidiResolver&, LineInfo&, RenderTextInfo&, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements&);
-
-    bool lineWasHyphenated() { return m_hyphenated; }
-    const Vector<RenderBox*>& positionedObjects() { return m_positionedObjects; }
-    EClear clear() { return m_clear; }
-private:
-    void reset();
-
-    InlineIterator nextSegmentBreak(InlineBidiResolver&, LineInfo&, RenderTextInfo&, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements&);
-    void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
-
-    RenderBlockFlow* m_block;
-    bool m_hyphenated;
-    EClear m_clear;
-    Vector<RenderBox*> m_positionedObjects;
-};
 
 static RenderObject* firstRenderObjectForDirectionalityDetermination(RenderObject* root, RenderObject* current = 0)
 {
@@ -1938,139 +1903,6 @@ bool RenderBlockFlow::generatesLineBoxesForInlineChild(RenderObject* inlineObj)
     return !it.atEnd();
 }
 
-void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& lineInfo,
-                                                     FloatingObject* lastFloatFromPreviousLine, LineWidth& width)
-{
-    while (!resolver.position().atEnd() && !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
-        RenderObject* object = resolver.position().object();
-        if (object->isOutOfFlowPositioned()) {
-            setStaticPositions(m_block, toRenderBox(object));
-            if (object->style()->isOriginalDisplayInlineType()) {
-                resolver.runs().addRun(createRun(0, 1, object, resolver));
-                lineInfo.incrementRunsFromLeadingWhitespace();
-            }
-        } else if (object->isFloating())
-            m_block->positionNewFloatOnLine(m_block->insertFloatingObject(toRenderBox(object)), lastFloatFromPreviousLine, lineInfo, width);
-        else if (object->isText() && object->style()->hasTextCombine() && object->isCombineText() && !toRenderCombineText(object)->isCombined()) {
-            toRenderCombineText(object)->combineText();
-            if (toRenderCombineText(object)->isCombined())
-                continue;
-        }
-        resolver.position().increment(&resolver);
-    }
-    resolver.commitExplicitEmbedding();
-}
-
-void LineBreaker::reset()
-{
-    m_positionedObjects.clear();
-    m_hyphenated = false;
-    m_clear = CNONE;
-}
-
-InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo& lineInfo, RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements& wordMeasurements)
-{
-    ShapeInsideInfo* shapeInsideInfo = m_block->layoutShapeInsideInfo();
-
-    if (!shapeInsideInfo || !shapeInsideInfo->lineOverlapsShapeBounds())
-        return nextSegmentBreak(resolver, lineInfo, renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
-
-    InlineIterator end = resolver.position();
-    InlineIterator oldEnd = end;
-
-    if (!shapeInsideInfo->hasSegments()) {
-        end = nextSegmentBreak(resolver, lineInfo, renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
-        resolver.setPositionIgnoringNestedIsolates(oldEnd);
-        return oldEnd;
-    }
-
-    const SegmentList& segments = shapeInsideInfo->segments();
-    SegmentRangeList& segmentRanges = shapeInsideInfo->segmentRanges();
-
-    for (unsigned i = 0; i < segments.size() && !end.atEnd(); i++) {
-        const InlineIterator segmentStart = resolver.position();
-        end = nextSegmentBreak(resolver, lineInfo, renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
-
-        ASSERT(segmentRanges.size() == i);
-        if (resolver.position().atEnd()) {
-            segmentRanges.append(LineSegmentRange(segmentStart, end));
-            break;
-        }
-        if (resolver.position() == end) {
-            // Nothing fit this segment
-            end = segmentStart;
-            segmentRanges.append(LineSegmentRange(segmentStart, segmentStart));
-            resolver.setPositionIgnoringNestedIsolates(segmentStart);
-        } else {
-            // Note that resolver.position is already skipping some of the white space at the beginning of the line,
-            // so that's why segmentStart might be different than resolver.position().
-            LineSegmentRange range(resolver.position(), end);
-            segmentRanges.append(range);
-            resolver.setPosition(end, numberOfIsolateAncestors(end));
-
-            if (lineInfo.previousLineBrokeCleanly()) {
-                // If we hit a new line break, just stop adding anything to this line.
-                break;
-            }
-        }
-    }
-    resolver.setPositionIgnoringNestedIsolates(oldEnd);
-    return end;
-}
-
-InlineIterator LineBreaker::nextSegmentBreak(InlineBidiResolver& resolver, LineInfo& lineInfo, RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements& wordMeasurements)
-{
-    reset();
-
-    ASSERT(resolver.position().root() == m_block);
-
-    bool appliedStartWidth = resolver.position().offset() > 0;
-
-    LineWidth width(*m_block, lineInfo.isFirstLine(), requiresIndent(lineInfo.isFirstLine(), lineInfo.previousLineBrokeCleanly(), m_block->style()));
-
-    skipLeadingWhitespace(resolver, lineInfo, lastFloatFromPreviousLine, width);
-
-    if (resolver.position().atEnd())
-        return resolver.position();
-
-    BreakingContext context(resolver, lineInfo, width, renderTextInfo, lastFloatFromPreviousLine, appliedStartWidth, m_block);
-
-    while (context.currentObject()) {
-        context.initializeForCurrentObject();
-        if (context.currentObject()->isBR()) {
-            context.handleBR(m_clear);
-        } else if (context.currentObject()->isOutOfFlowPositioned()) {
-            context.handleOutOfFlowPositioned(m_positionedObjects);
-        } else if (context.currentObject()->isFloating()) {
-            context.handleFloat();
-        } else if (context.currentObject()->isRenderInline()) {
-            context.handleEmptyInline();
-        } else if (context.currentObject()->isReplaced()) {
-            context.handleReplaced();
-        } else if (context.currentObject()->isText()) {
-            if (context.handleText(wordMeasurements, m_hyphenated)) {
-                // We've hit a hard text line break. Our line break iterator is updated, so go ahead and early return.
-                return context.lineBreak();
-            }
-        } else {
-            ASSERT_NOT_REACHED();
-        }
-
-        if (context.atEnd())
-            return context.handleEndOfLine();
-
-        context.commitAndUpdateLineBreakIfNeeded();
-
-        if (context.atEnd())
-            return context.handleEndOfLine();
-
-        context.increment();
-    }
-
-    context.clearLineBreakIfFitsOnLine();
-
-    return context.handleEndOfLine();
-}
 
 void RenderBlockFlow::addOverflowFromInlineChildren()
 {
