@@ -218,7 +218,7 @@
     { "name": "appspot.com", "include_subdomains": true, "pins": "google" },
     { "name": "googlesyndication.com", "include_subdomains": true, "pins": "google" },
     { "name": "doubleclick.net", "include_subdomains": true, "pins": "google" },
-    { "name": "ssl.gstatic.com", "include_subdomains": true, "pins": "google" },
+    { "name": "gstatic.com", "include_subdomains": true, "pins": "google" },
     { "name": "youtu.be", "include_subdomains": true, "pins": "google" },
     { "name": "android.com", "include_subdomains": true, "pins": "google" },
     { "name": "googlecommerce.com", "include_subdomains": true, "pins": "google" },
