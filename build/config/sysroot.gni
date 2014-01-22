@@ -33,6 +33,12 @@ if (is_android) {
     # Any other builds don't use a sysroot.
     sysroot = ""
   }
+} else if (is_linux && !is_chromeos) {
+  if (cpu_arch == "mipsel") {
+    sysroot = rebase_path("//mipsel-sysroot/sysroot", ".", "")
+  } else {
+    sysroot = ""
+  }
 } else if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 

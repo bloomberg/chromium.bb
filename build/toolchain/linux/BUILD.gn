@@ -5,6 +5,7 @@
 import("../clang.gni")
 import("../goma.gni")
 import("../gcc_toolchain.gni")
+import("//build/config/sysroot.gni")
 
 if (is_gyp) {
   # Set the compilers for GYP to use. This logic is only relevant to GYP where
@@ -15,7 +16,15 @@ if (is_gyp) {
     # Set the GYP header for all toolchains when running under Clang.
     make_global_settings = make_clang_global_settings
   } else {
-    make_global_settings = ""
+    if (cpu_arch == "mipsel") {
+      make_global_settings =
+        "['CC', '$sysroot/../bin/mipsel-linux-gnu-gcc']," +
+        "['CXX', '$sysroot/../bin/mipsel-linux-gnu-g++']," +
+        "['CC.host', '/usr/bin/gcc']," +
+        "['CXX.host', '/usr/bin/g++'],"
+    } else {
+      make_global_settings = ""
+    }
   }
 
   if (use_goma) {
