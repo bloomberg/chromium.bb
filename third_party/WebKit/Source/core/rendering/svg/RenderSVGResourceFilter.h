@@ -69,7 +69,7 @@ public:
     virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE;
     virtual void postApplyResource(RenderObject*, GraphicsContext*&, unsigned short resourceMode, const Path*, const RenderSVGShape*) OVERRIDE;
 
-    FloatRect resourceBoundingBox(RenderObject*);
+    FloatRect resourceBoundingBox(const RenderObject*);
 
     PassRefPtr<SVGFilterBuilder> buildPrimitives(SVGFilter*);
 

@@ -296,11 +296,10 @@ bool SVGRenderSupport::isOverflowHidden(const RenderObject* object)
     return object->style()->overflowX() == OHIDDEN;
 }
 
-void SVGRenderSupport::intersectRepaintRectWithResources(const RenderObject* object, FloatRect& repaintRect)
+void SVGRenderSupport::intersectRepaintRectWithResources(const RenderObject* renderer, FloatRect& repaintRect)
 {
-    ASSERT(object);
+    ASSERT(renderer);
 
-    RenderObject* renderer = const_cast<RenderObject*>(object);
     SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(renderer);
     if (!resources)
         return;

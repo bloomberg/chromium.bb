@@ -161,7 +161,7 @@ void RenderSVGResourceMasker::calculateMaskContentRepaintRect()
     }
 }
 
-FloatRect RenderSVGResourceMasker::resourceBoundingBox(RenderObject* object)
+FloatRect RenderSVGResourceMasker::resourceBoundingBox(const RenderObject* object)
 {
     SVGMaskElement* maskElement = toSVGMaskElement(element());
     ASSERT(maskElement);

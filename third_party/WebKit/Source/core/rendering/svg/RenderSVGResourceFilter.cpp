@@ -332,7 +332,7 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
     filterData->sourceGraphicBuffer.clear();
 }
 
-FloatRect RenderSVGResourceFilter::resourceBoundingBox(RenderObject* object)
+FloatRect RenderSVGResourceFilter::resourceBoundingBox(const RenderObject* object)
 {
     if (SVGFilterElement* element = toSVGFilterElement(this->element()))
         return SVGLengthContext::resolveRectangle<SVGFilterElement>(element, element->filterUnitsCurrentValue(), object->objectBoundingBox());

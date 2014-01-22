@@ -46,7 +46,7 @@ public:
     virtual void removeClientFromCache(RenderObject*, bool markForInvalidation = true) OVERRIDE;
     virtual bool applyResource(RenderObject*, RenderStyle*, GraphicsContext*&, unsigned short resourceMode) OVERRIDE;
     virtual void postApplyResource(RenderObject*, GraphicsContext*&, unsigned short, const Path*, const RenderSVGShape*) OVERRIDE;
-    FloatRect resourceBoundingBox(RenderObject*);
+    FloatRect resourceBoundingBox(const RenderObject*);
 
     SVGUnitTypes::SVGUnitType maskUnits() const { return toSVGMaskElement(element())->maskUnitsCurrentValue(); }
     SVGUnitTypes::SVGUnitType maskContentUnits() const { return toSVGMaskElement(element())->maskContentUnitsCurrentValue(); }

@@ -353,7 +353,7 @@ bool RenderSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
     return false;
 }
 
-FloatRect RenderSVGResourceClipper::resourceBoundingBox(RenderObject* object)
+FloatRect RenderSVGResourceClipper::resourceBoundingBox(const RenderObject* object)
 {
     // Resource was not layouted yet. Give back the boundingBox of the object.
     if (selfNeedsLayout())
