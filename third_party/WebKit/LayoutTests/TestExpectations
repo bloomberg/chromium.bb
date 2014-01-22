@@ -34,6 +34,8 @@ crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 # This test is sensitive to the number of compositing updates between portions of the test.
 crbug.com/313922 [ Mac ] inspector/layer-tree-model.html [ Failure ]
 
+crbug.com/336925 inspector/styles/styles-add-blank-property.html [ Pass Failure ]
+
 # -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------
