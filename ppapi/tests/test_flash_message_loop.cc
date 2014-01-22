@@ -40,7 +40,7 @@ std::string TestFlashMessageLoop::TestBasics() {
   delete message_loop_;
   message_loop_ = NULL;
 
-  ASSERT_EQ(PP_OK, result);
+  ASSERT_EQ(result, PP_OK);
   PASS();
 }
 
@@ -58,7 +58,7 @@ std::string TestFlashMessageLoop::TestRunWithoutQuit() {
     ASSERT_TRUE(false);
   }
 
-  ASSERT_EQ(PP_ERROR_ABORTED, result);
+  ASSERT_EQ(result, PP_ERROR_ABORTED);
   PASS();
 }
 

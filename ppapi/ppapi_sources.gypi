@@ -484,8 +484,6 @@
       'tests/test_tcp_socket.h',
       'tests/test_tcp_socket_private.cc',
       'tests/test_tcp_socket_private.h',
-      'tests/test_test_internals.cc',
-      'tests/test_test_internals.h',
       'tests/test_trace_event.cc',
       'tests/test_trace_event.h',
       'tests/test_truetype_font.cc',

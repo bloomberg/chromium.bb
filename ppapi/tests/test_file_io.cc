@@ -653,11 +653,11 @@ std::string TestFileIO::TestAbortCalls() {
     callback.WaitForResult(rv);
     CHECK_CALLBACK_BEHAVIOR(callback);
     if (callback_type() == PP_BLOCKING) {
-      ASSERT_EQ(PP_OK, callback.result());
+      ASSERT_EQ(callback.result(), PP_OK);
       // The operation completed synchronously, so |info| should have changed.
       ASSERT_NE(0, memcmp(&info_copy, &info, sizeof(info)));
     } else {
-      ASSERT_EQ(PP_ERROR_ABORTED, callback.result());
+      ASSERT_EQ(callback.result(), PP_ERROR_ABORTED);
       ASSERT_EQ(0, memcmp(&info_copy, &info, sizeof(info)));
     }
   }
@@ -697,7 +697,7 @@ std::string TestFileIO::TestAbortCalls() {
     if (callback_type() == PP_BLOCKING) {
       ASSERT_EQ(callback.result(), sizeof(buf));
     } else {
-      ASSERT_EQ(PP_ERROR_ABORTED, callback.result());
+      ASSERT_EQ(callback.result(), PP_ERROR_ABORTED);
       ASSERT_EQ(0, memcmp(&buf_copy, &buf, sizeof(buf)));
     }
   }
@@ -719,7 +719,7 @@ std::string TestFileIO::TestAbortCalls() {
     if (callback_type() == PP_BLOCKING)
       ASSERT_EQ(callback.result(), sizeof(buf));
     else
-      ASSERT_EQ(PP_ERROR_ABORTED, callback.result());
+      ASSERT_EQ(callback.result(), PP_ERROR_ABORTED);
   }
 
   // Abort |SetLength()|.

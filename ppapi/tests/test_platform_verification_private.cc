@@ -37,6 +37,6 @@ std::string TestPlatformVerificationPrivate::TestChallengePlatform() {
       &signed_data_signature, &platform_key_certificate,
       callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
+  ASSERT_EQ(callback.result(), PP_ERROR_FAILED);
   PASS();
 }
