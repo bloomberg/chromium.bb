@@ -604,16 +604,7 @@ User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
     const UserList& users = GetUsers();
     const UserList::const_iterator pos = std::find_if(
         users.begin(), users.end(), UserHashMatcher(username_hash));
-    if (pos != users.end())
-      return *pos;
-
-    // Many tests do not have their users registered with UserManager and
-    // runs here. If |active_user_| matches |profile|, returns it.
-    return active_user_ &&
-                   ProfileHelper::GetProfilePathByUserIdHash(
-                       active_user_->username_hash()) == profile->GetPath()
-               ? active_user_
-               : NULL;
+    return (pos != users.end()) ? *pos : NULL;
   }
   return active_user_;
 }

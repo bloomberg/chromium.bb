@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -67,6 +69,12 @@ class ProfileListChromeOSTest : public testing::Test {
     // We only instantiate UserMenuModel if multi-profile mode is enabled.
     CommandLine* cl = CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kMultiProfiles);
+
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("42")));
+    base::FieldTrialList::CreateTrialsFromString(
+        "ChromeOSUseMultiProfiles/Enable/",
+        base::FieldTrialList::ACTIVATE_TRIALS);
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_.reset(
@@ -127,6 +135,7 @@ class ProfileListChromeOSTest : public testing::Test {
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
   scoped_ptr<AvatarMenu> avatar_menu_;
   ChromeShellDelegate chrome_shell_delegate_;
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListChromeOSTest);
 };
