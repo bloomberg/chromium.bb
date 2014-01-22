@@ -79,8 +79,8 @@ bool AreAllBrowsersCloseable() {
 int g_keep_alive_count = 0;
 
 #if defined(OS_CHROMEOS)
-// Whether a session manager requested to shutdown.
-bool g_session_manager_requested_shutdown = true;
+// Whether chrome should send stop request to a session manager.
+bool g_send_stop_request_to_session_manager = false;
 #endif
 
 }  // namespace
@@ -168,7 +168,7 @@ void AttemptUserExit() {
       state->CommitPendingWrite();
     }
   }
-  g_session_manager_requested_shutdown = false;
+  g_send_stop_request_to_session_manager = true;
   // On ChromeOS, always terminate the browser, regardless of the result of
   // AreAllBrowsersCloseable(). See crbug.com/123107.
   chrome::NotifyAndTerminate(true);
@@ -205,10 +205,12 @@ void AttemptRestart() {
   pref_service->SetBoolean(prefs::kWasRestarted, true);
 
 #if defined(OS_CHROMEOS)
-  // For CrOS instead of browser restart (which is not supported) perform a full
-  // sign out. Session will be only restored if user has that setting set.
-  // Same session restore behavior happens in case of full restart after update.
-  AttemptUserExit();
+  DCHECK(!g_send_stop_request_to_session_manager);
+  // Make sure we don't send stop request to the session manager.
+  g_send_stop_request_to_session_manager = false;
+  // Run exit process in clean stack.
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(&ExitCleanly));
 #else
   // Set the flag to restore state after the restart.
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
@@ -218,6 +220,10 @@ void AttemptRestart() {
 #endif
 
 void AttemptExit() {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, user exit and system exits are the same.
+  AttemptUserExit();
+#else
   // If we know that all browsers can be closed without blocking,
   // don't notify users of crashes beyond this point.
   // Note that MarkAsCleanShutdown() does not set UMA's exit cleanly bit
@@ -228,6 +234,7 @@ void AttemptExit() {
     MarkAsCleanShutdown();
 #endif
   AttemptExitInternal(true);
+#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -360,17 +367,19 @@ void NotifyAndTerminate(bool fast_path) {
     if (update_engine_client->GetLastStatus().status ==
         chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
       update_engine_client->RebootAfterUpdate();
-    } else if (!g_session_manager_requested_shutdown) {
+    } else if (g_send_stop_request_to_session_manager) {
       // Don't ask SessionManager to stop session if the shutdown request comes
       // from session manager.
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
           ->StopSession();
     }
   } else {
-    // If running the Chrome OS build, but we're not on the device, act
-    // as if we received signal from SessionManager.
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(&ExitCleanly));
+    if (g_send_stop_request_to_session_manager) {
+      // If running the Chrome OS build, but we're not on the device, act
+      // as if we received signal from SessionManager.
+      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                       base::Bind(&ExitCleanly));
+    }
   }
 #endif
 }

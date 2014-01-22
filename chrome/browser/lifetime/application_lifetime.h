@@ -59,11 +59,13 @@ void AttemptRestartToMetroMode();
 void AttemptExit();
 
 #if defined(OS_CHROMEOS)
-// This is equivalent to AttemptUserExit, except that it always set
-// exit cleanly bit. ChromeOS checks if it can exit without user
-// interactions, so it will always exit the browser.  This is used to
-// handle SIGTERM on chromeos which is a signal to force shutdown
-// the chrome.
+// Shutdown chrome cleanly without blocking. This is called
+// when SIGTERM is received on Chrome OS, and always sets
+// exit-cleanly bit and exits the browser, even if there is
+// ongoing downloads or a page with onbeforeunload handler.
+//
+// If you need to exit or restart in your code on ChromeOS,
+// use AttemptExit or AttemptRestart respectively.
 void ExitCleanly();
 #endif
 

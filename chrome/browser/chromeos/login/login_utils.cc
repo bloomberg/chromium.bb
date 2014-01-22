@@ -197,9 +197,9 @@ class LoginUtilsImpl
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlz(Profile* user_profile, bool disabled);
 
-  // Attempts exiting browser process and esures this does not happen
-  // while we are still fetching new OAuth refresh tokens.
-  void AttemptExit(Profile* profile);
+  // Attempts restarting the browser process and esures that this does
+  // not happen while we are still fetching new OAuth refresh tokens.
+  void AttemptRestart(Profile* profile);
 
   UserContext user_context_;
 
@@ -308,7 +308,7 @@ void LoginUtilsImpl::DoBrowserLaunchOnLocaleLoadedImpl(
     VLOG(1) << "Restarting to apply per-session flags...";
     DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
         UserManager::Get()->GetActiveUser()->email(), flags);
-    AttemptExit(profile);
+    AttemptRestart(profile);
     return;
   }
 
@@ -794,9 +794,9 @@ void LoginUtilsImpl::OnNewRefreshTokenAvaiable(Profile* user_profile) {
       User::OAUTH2_TOKEN_STATUS_VALID);
 
   LOG(WARNING) << "Exiting after new refresh token fetched";
-  // We need to exit cleanly in this case to make sure OAuth2 RT is actually
+  // We need to restart cleanly in this case to make sure OAuth2 RT is actually
   // saved.
-  chrome::ExitCleanly();
+  chrome::AttemptRestart();
 }
 
 void LoginUtilsImpl::OnConnectionTypeChanged(
@@ -828,10 +828,10 @@ void LoginUtilsImpl::OnConnectionTypeChanged(
   }
 }
 
-void LoginUtilsImpl::AttemptExit(Profile* profile) {
+void LoginUtilsImpl::AttemptRestart(Profile* profile) {
   if (session_restore_strategy_ !=
       OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR) {
-    chrome::AttemptExit();
+    chrome::AttemptRestart();
     return;
   }
 
@@ -843,7 +843,7 @@ void LoginUtilsImpl::AttemptExit(Profile* profile) {
           OAuth2LoginManager::SESSION_RESTORE_PREPARING &&
       login_manager->state() !=
           OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
-    chrome::AttemptExit();
+    chrome::AttemptRestart();
     return;
   }
 

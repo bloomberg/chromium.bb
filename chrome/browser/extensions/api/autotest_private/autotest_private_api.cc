@@ -81,13 +81,6 @@ bool AutotestPrivateShutdownFunction::RunImpl() {
 
   DVLOG(1) << "AutotestPrivateShutdownFunction " << params->force;
 
-#if defined(OS_CHROMEOS)
-  if (params->force) {
-    if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
-      chrome::ExitCleanly();
-    return true;
-  }
-#endif
   if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
     chrome::AttemptExit();
   return true;

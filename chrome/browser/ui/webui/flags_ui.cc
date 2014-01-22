@@ -218,9 +218,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
 
 void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
   DCHECK(flags_storage_);
-#if !defined(OS_CHROMEOS)
-  chrome::AttemptRestart();
-#else
+#if defined(OS_CHROMEOS)
   // On ChromeOS be less intrusive and restart inside the user session after
   // we apply the newly selected flags.
   CommandLine user_flags(CommandLine::NO_PROGRAM);
@@ -234,8 +232,8 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
       SetFlagsForUser(chromeos::UserManager::Get()->GetActiveUser()->email(),
                       flags);
-  chrome::ExitCleanly();
 #endif
+  chrome::AttemptRestart();
 }
 
 void FlagsDOMHandler::HandleResetAllFlags(const base::ListValue* args) {
