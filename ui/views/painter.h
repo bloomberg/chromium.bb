@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/nine_image_painter_factory.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -18,11 +19,6 @@ class Insets;
 class Rect;
 class Size;
 }
-
-// A macro to define arrays of IDR constants used with CreateImageGridPainter.
-#define IMAGE_GRID(x) { x ## _TOP_LEFT,    x ## _TOP,    x ## _TOP_RIGHT, \
-                        x ## _LEFT,        x ## _CENTER, x ## _RIGHT, \
-                        x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT, }
 
 namespace views {
 

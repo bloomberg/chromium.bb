@@ -5,11 +5,13 @@
 #include "content/test/webkit_support.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/test/test_webkit_platform_support.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/url_util.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
@@ -41,6 +43,19 @@ class TestEnvironment {
 
     // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
     webkit_platform_support_.reset(new TestWebKitPlatformSupport);
+
+#if defined(OS_WIN)
+    base::FilePath pak_file;
+    PathService::Get(base::DIR_MODULE, &pak_file);
+    pak_file = pak_file.AppendASCII("ui_test.pak");
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+#endif
+  }
+
+  ~TestEnvironment() {
+#if defined(OS_WIN)
+    ui::ResourceBundle::CleanupSharedInstance();
+#endif
   }
 
   TestWebKitPlatformSupport* webkit_platform_support() const {
