@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "cc/base/latency_info_swap_promise.h"
@@ -64,6 +65,7 @@ namespace content {
 namespace {
 
 const int kUndefinedOutputSurfaceId = -1;
+static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
 void InsertSyncPointAndAckForCompositor(
     int renderer_host_id,
@@ -92,10 +94,13 @@ void CopyFromCompositingSurfaceFinished(
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     scoped_ptr<SkBitmap> bitmap,
+    const base::TimeTicks& start_time,
     scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
     bool result) {
   bitmap_pixels_lock.reset();
   release_callback->Run(0, false);
+  UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
+                      base::TimeTicks::Now() - start_time);
   callback.Run(result, *bitmap);
 }
 
@@ -628,6 +633,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     bool readback_config_rgb565) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
   if (!using_synchronous_compositor_ && !IsSurfaceAvailableForCopy()) {
     callback.Run(false, SkBitmap());
     return;
@@ -656,6 +662,8 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
   if (using_synchronous_compositor_) {
     SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback);
+    UMA_HISTOGRAM_TIMES("Compositing.CopyFromSurfaceTimeSynchronous",
+                        base::TimeTicks::Now() - start_time);
     return;
   }
   scoped_ptr<cc::CopyOutputRequest> request;
@@ -663,12 +671,14 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       request = cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
           &RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult,
           dst_size_in_pixel,
+          start_time,
           callback));
   } else {
       request = cc::CopyOutputRequest::CreateRequest(base::Bind(
           &RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult,
           dst_size_in_pixel,
           readback_config_rgb565,
+          start_time,
           callback));
   }
   request->set_area(src_subrect_in_pixel);
@@ -1391,6 +1401,7 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
 void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     bool readback_config_rgb565,
+    const base::TimeTicks& start_time,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(result->HasTexture());
@@ -1442,12 +1453,14 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
                  callback,
                  base::Passed(&release_callback),
                  base::Passed(&bitmap),
+                 start_time,
                  base::Passed(&bitmap_pixels_lock)));
 }
 
 // static
 void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
+    const base::TimeTicks& start_time,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(result->HasBitmap());
@@ -1466,6 +1479,9 @@ void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
   DCHECK_EQ(source->height(), dst_size_in_pixel.height());
 
   ignore_result(scoped_callback_runner.Release());
+  UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
+                      base::TimeTicks::Now() - start_time);
+
   callback.Run(true, *source);
 }
 

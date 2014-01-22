@@ -275,10 +275,12 @@ class RenderWidgetHostViewAndroid
   static void PrepareTextureCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
       bool readback_config_rgb565,
+      const base::TimeTicks& start_time,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareBitmapCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
+      const base::TimeTicks& start_time,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
 

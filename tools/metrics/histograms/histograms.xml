@@ -1591,6 +1591,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Compositing.CopyFromSurfaceTime" units="ms">
+  <summary>
+    The turn around time taken for the async readback of pixels is measured
+    here.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.CopyFromSurfaceTimeSynchronous" units="ms">
+  <summary>
+    The time taken for the sync readback of pixels is measured here.
+  </summary>
+</histogram>
+
 <histogram name="ConnectivityDiagnostics.ChromeOsSignalStrength"
     units="percent">
   <summary>
