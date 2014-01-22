@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/css/analyzer/RuleSetAnalyzer.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/RuleFeature.h"
@@ -142,7 +143,6 @@ void RuleSetAnalyzer::collectFeaturesFromRuleData(RuleFeatureSet& features, cons
 {
     bool foundSiblingSelector = false;
     unsigned maxDirectAdjacentSelectors = 0;
-    bool selectorUsesClassInvalidationSet= updateClassInvalidationSets(ruleData.selector());
     for (const CSSSelector* selector = ruleData.selector(); selector; selector = selector->tagHistory()) {
         features.collectFeaturesFromSelector(selector);
 
@@ -162,10 +162,13 @@ void RuleSetAnalyzer::collectFeaturesFromRuleData(RuleFeatureSet& features, cons
                 maxDirectAdjacentSelectors++;
         }
     }
-    if (!selectorUsesClassInvalidationSet) {
-        for (HashSet<AtomicString>::const_iterator it = features.classesInRules.begin(); it != features.classesInRules.end(); ++it) {
-            DescendantInvalidationSet& invalidationSet = ensureClassInvalidationSet(*it);
-            invalidationSet.setWholeSubtreeInvalid();
+    if (RuntimeEnabledFeatures::targetedStyleRecalcEnabled()) {
+        bool selectorUsesClassInvalidationSet = updateClassInvalidationSets(ruleData.selector());
+        if (!selectorUsesClassInvalidationSet) {
+            for (HashSet<AtomicString>::const_iterator it = features.classesInRules.begin(); it != features.classesInRules.end(); ++it) {
+                DescendantInvalidationSet& invalidationSet = ensureClassInvalidationSet(*it);
+                invalidationSet.setWholeSubtreeInvalid();
+            }
         }
     }
     features.setMaxDirectAdjacentSelectors(maxDirectAdjacentSelectors);
