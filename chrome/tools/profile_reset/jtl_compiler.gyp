@@ -22,7 +22,7 @@
       'type': 'static_library',
       'product_name': 'jtl_compiler',
       'dependencies': [
-        '../../../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../../../third_party/re2/re2.gyp:re2',
         '../../../base/base.gyp:base',
       ],
       'sources': [

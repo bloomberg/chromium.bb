@@ -2613,7 +2613,7 @@
             'installer_util',
             'sync_file_system_drive_proto',
             'sync_file_system_proto',
-            '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+            '../third_party/re2/re2.gyp:re2',
             '../cc/cc.gyp:cc',
             '../components/components.gyp:autofill_content_browser',
             '../components/components.gyp:browser_context_keyed_service',

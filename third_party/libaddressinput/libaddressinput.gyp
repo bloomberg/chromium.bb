@@ -99,7 +99,7 @@
       ],
       'dependencies': [
         'libaddressinput_strings',
-        '<(DEPTH)/<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+        '<(DEPTH)/third_party/re2/re2.gyp:re2',
         '<(DEPTH)/base/base.gyp:base',
       ],
       'direct_dependent_settings': {

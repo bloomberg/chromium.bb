@@ -13,7 +13,7 @@
         'common_net',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-        '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../third_party/re2/re2.gyp:re2',
         '../components/components.gyp:autofill_content_renderer',
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:plugins_renderer',

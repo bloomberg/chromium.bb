@@ -11,7 +11,7 @@
       'target_name': 'extensions_common',
       'type': 'static_library',
       'dependencies': [
-        '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../third_party/re2/re2.gyp:re2',
         # TODO(benwells): figure out what to do with the api target and
         # api resources compiled into the chrome resource bundle.
         # http://crbug.com/162530

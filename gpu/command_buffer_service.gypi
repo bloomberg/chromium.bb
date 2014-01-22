@@ -12,7 +12,7 @@
     ],
   },
   'dependencies': [
-    '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+    '../third_party/re2/re2.gyp:re2',
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../crypto/crypto.gyp:crypto',

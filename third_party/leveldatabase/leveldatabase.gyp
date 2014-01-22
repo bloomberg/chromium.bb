@@ -37,7 +37,7 @@
       'target_name': 'leveldatabase',
       'type': 'static_library',
       'dependencies': [
-        '../../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../../third_party/re2/re2.gyp:re2',
         '../../base/base.gyp:base',
         # base::LazyInstance is a template that pulls in dynamic_annotations so
         # we need to explictly link in the code for dynamic_annotations.

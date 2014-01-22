@@ -11,7 +11,7 @@
           'target_name': 'plugins_renderer',
           'type': 'static_library',
           'dependencies': [
-            '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+            '../third_party/re2/re2.gyp:re2',
             '../gin/gin.gyp:gin',
             '../skia/skia.gyp:skia',
             '../third_party/WebKit/public/blink.gyp:blink',

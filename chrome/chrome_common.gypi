@@ -414,7 +414,7 @@
         }],
         ['OS != "ios"', {
           'dependencies': [
-            '<(DEPTH)/<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+            '<(DEPTH)/third_party/re2/re2.gyp:re2',
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/components.gyp:autofill_content_common',

@@ -42,7 +42,7 @@
         'installer_util',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
-        '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../third_party/re2/re2.gyp:re2',
         '../breakpad/breakpad.gyp:breakpad_client',
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',

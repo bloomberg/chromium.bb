@@ -35,7 +35,7 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
-            '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+            '../third_party/re2/re2.gyp:re2',
             '../cc/cc_tests.gyp:*',
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',

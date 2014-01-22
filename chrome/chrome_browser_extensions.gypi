@@ -28,7 +28,7 @@
         'installer_util',
         'safe_browsing_proto',
         'sync_file_system_proto',
-        '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../third_party/re2/re2.gyp:re2',
         '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:url_matcher',

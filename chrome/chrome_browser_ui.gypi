@@ -2623,7 +2623,7 @@
             'common/extensions/api/api.gyp:api',
             'debugger',
             'installer_util',
-            '../<(gyp_output_dir)/gn_gyp/third_party/re2/re2.gyp:re2',
+            '../third_party/re2/re2.gyp:re2',
             '../components/components.gyp:autofill_content_risk_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../media/media.gyp:media',
