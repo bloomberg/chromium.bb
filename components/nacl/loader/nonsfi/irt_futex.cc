@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
+#include "components/nacl/loader/nonsfi/irt_util.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 namespace nacl {
@@ -52,19 +53,13 @@ int IrtFutexWaitAbs(volatile int* addr, int value,
       return ETIMEDOUT;
     timeout_ptr = &timeout;
   }
-  if (syscall(SYS_futex, addr, FUTEX_WAIT_PRIVATE, value, timeout_ptr, 0, 0))
-    return errno;
-
-  return 0;
+  return CheckError(
+      syscall(SYS_futex, addr, FUTEX_WAIT_PRIVATE, value, timeout_ptr, 0, 0));
 }
 
 int IrtFutexWake(volatile int* addr, int nwake, int* count) {
-  int result = syscall(SYS_futex, addr, FUTEX_WAKE_PRIVATE, nwake, 0, 0, 0);
-  if (result < 0)
-    return errno;
-
-  *count = result;
-  return 0;
+  return CheckErrorWithResult(
+      syscall(SYS_futex, addr, FUTEX_WAKE_PRIVATE, nwake, 0, 0, 0), count);
 }
 
 }  // namespace

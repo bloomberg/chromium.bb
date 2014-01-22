@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "components/nacl/loader/nonsfi/abi_conversion.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
+#include "components/nacl/loader/nonsfi/irt_util.h"
 #include "native_client/src/trusted/service_runtime/include/sys/dirent.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
@@ -19,54 +20,28 @@ namespace nonsfi {
 namespace {
 
 int IrtClose(int fd) {
-  if (close(fd))
-    return errno;
-
-  return 0;
+  return CheckError(close(fd));
 }
 
 int IrtDup(int fd, int* newfd) {
-  int result = dup(fd);
-  if (result < 0)
-    return errno;
-
-  *newfd = result;
-  return 0;
+  return CheckErrorWithResult(dup(fd), newfd);
 }
 
 int IrtDup2(int fd, int newfd) {
-  if (dup2(fd, newfd) < 0)
-    return errno;
-
-  return 0;
+  return CheckError(dup2(fd, newfd));
 }
 
 int IrtRead(int fd, void* buf, size_t count, size_t* nread) {
-  ssize_t result = read(fd, buf, count);
-  if (result < 0)
-    return errno;
-
-  *nread = result;
-  return 0;
+  return CheckErrorWithResult(read(fd, buf, count), nread);
 }
 
 int IrtWrite(int fd, const void* buf, size_t count, size_t* nwrote) {
-  ssize_t result = write(fd, buf, count);
-  if (result < 0)
-    return errno;
-
-  *nwrote = result;
-  return 0;
+  return CheckErrorWithResult(write(fd, buf, count), nwrote);
 }
 
 int IrtSeek(int fd, nacl_abi_off_t offset, int whence,
             nacl_abi_off_t* new_offset) {
-  off_t result = lseek(fd, offset, whence);
-  if (result < 0)
-    return errno;
-
-  *new_offset = result;
-  return 0;
+  return CheckErrorWithResult(lseek(fd, offset, whence), new_offset);
 }
 
 int IrtFstat(int fd, struct nacl_abi_stat* st) {

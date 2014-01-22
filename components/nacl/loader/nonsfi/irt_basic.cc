@@ -11,6 +11,7 @@
 
 #include "components/nacl/loader/nonsfi/abi_conversion.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
+#include "components/nacl/loader/nonsfi/irt_util.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 
@@ -52,10 +53,7 @@ int IrtNanoSleep(const struct nacl_abi_timespec* req,
 }
 
 int IrtSchedYield() {
-  if (sched_yield())
-    return errno;
-
-  return 0;
+  return CheckError(sched_yield());
 }
 
 int IrtSysconf(int name, int* value) {
