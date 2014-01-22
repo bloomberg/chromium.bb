@@ -61,6 +61,15 @@ bool ParseFails(const std::string& content) {
   return true;
 }
 
+std::string SchemaObjectWrapper(const std::string& subschema) {
+  return "{"
+         "  \"type\": \"object\","
+         "  \"properties\": {"
+         "    \"SomePropertyName\":" + subschema +
+         "  }"
+         "}";
+}
+
 }  // namespace
 
 TEST(SchemaTest, MinimalSchema) {
@@ -323,26 +332,49 @@ TEST(SchemaTest, Wrap) {
     { base::Value::TYPE_STRING,       -1 },   // 4
     { base::Value::TYPE_LIST,         4 },    // 5: list of strings.
     { base::Value::TYPE_LIST,         5 },    // 6: list of lists of strings.
+    { base::Value::TYPE_INTEGER,      0 },    // 7: integer enumerations.
+    { base::Value::TYPE_INTEGER,      1 },    // 8: ranged integers.
+    { base::Value::TYPE_STRING,       2 },    // 9: string enumerations.
   };
 
   const internal::PropertyNode kPropertyNodes[] = {
-    { "Boolean",  1 },
-    { "Integer",  2 },
-    { "Number",   3 },
-    { "String",   4 },
-    { "List",     5 },
+    { "Boolean",   1 },  // 0
+    { "Integer",   2 },  // 1
+    { "Number",    3 },  // 2
+    { "String",    4 },  // 3
+    { "List",      5 },  // 4
+    { "IntEnum",   7 },  // 5
+    { "RangedInt", 8 },  // 6
+    { "StrEnum",   9 },  // 7
   };
 
   const internal::PropertiesNode kProperties[] = {
-    // Properties 0 to 5 (exclusive) are known, from kPropertyNodes.
-    // SchemaNode offset 6 is for additionalProperties (list of lists).
-    { 0, 5, 6 },
+    // 0 to 8 (exclusive) are the known properties in kPropertyNodes, and 6 is
+    // the addionalProperties node.
+    { 0, 8, 6 },
+  };
+
+  const internal::RestrictionNode kRestriction[] = {
+    {{0, 3}},  // [1, 2, 3]
+    {{5, 1}},  // minimum = 1, maximum = 5
+    {{0, 3}},  // ["one", "two", "three"]
+  };
+
+  const int kIntEnums[] = {1, 2, 3};
+
+  const char* kStringEnums[] = {
+    "one",
+    "two",
+    "three",
   };
 
   const internal::SchemaData kData = {
     kSchemas,
     kPropertyNodes,
     kProperties,
+    kRestriction,
+    kIntEnums,
+    kStringEnums,
   };
 
   Schema schema = Schema::Wrap(&kData);
@@ -358,6 +390,9 @@ TEST(SchemaTest, Wrap) {
     { "Number", base::Value::TYPE_DOUBLE },
     { "String", base::Value::TYPE_STRING },
     { "List", base::Value::TYPE_LIST },
+    { "IntEnum", base::Value::TYPE_INTEGER },
+    { "RangedInt", base::Value::TYPE_INTEGER },
+    { "StrEnum", base::Value::TYPE_STRING }
   };
 
   Schema::Iterator it = schema.GetPropertiesIterator();
@@ -369,7 +404,6 @@ TEST(SchemaTest, Wrap) {
     EXPECT_EQ(kExpectedProperties[i].type, sub.type());
 
     if (sub.type() == base::Value::TYPE_LIST) {
-      ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
       Schema items = sub.GetItems();
       ASSERT_TRUE(items.valid());
       EXPECT_EQ(base::Value::TYPE_STRING, items.type());
@@ -682,5 +716,55 @@ TEST(SchemaTest, ItemsReference) {
   ASSERT_EQ(base::Value::TYPE_BOOLEAN, items.type());
 }
 
+TEST(SchemaTest, EnumerationRestriction) {
+  // Enum attribute is a list.
+  EXPECT_TRUE(ParseFails(SchemaObjectWrapper(
+      "{"
+      "  \"type\": \"string\","
+      "  \"enum\": 12"
+      "}")));
+
+  // Empty enum attributes is not allowed.
+  EXPECT_TRUE(ParseFails(SchemaObjectWrapper(
+      "{"
+      "  \"type\": \"integer\","
+      "  \"enum\": []"
+      "}")));
+
+  // Enum elements type should be same as stated.
+  EXPECT_TRUE(ParseFails(SchemaObjectWrapper(
+      "{"
+      "  \"type\": \"string\","
+      "  \"enum\": [1, 2, 3]"
+      "}")));
+
+  EXPECT_FALSE(ParseFails(SchemaObjectWrapper(
+      "{"
+      "  \"type\": \"integer\","
+      "  \"enum\": [1, 2, 3]"
+      "}")));
+
+  EXPECT_FALSE(ParseFails(SchemaObjectWrapper(
+      "{"
+      "  \"type\": \"string\","
+      "  \"enum\": [\"1\", \"2\", \"3\"]"
+      "}")));
+}
+
+TEST(SchemaTest, RangedRestriction) {
+  EXPECT_TRUE(ParseFails(SchemaObjectWrapper(
+      "{"
+      "  \"type\": \"integer\","
+      "  \"minimum\": 10,"
+      "  \"maximum\": 5"
+      "}")));
+
+  EXPECT_FALSE(ParseFails(SchemaObjectWrapper(
+      "{"
+      "  \"type\": \"integer\","
+      "  \"minimum\": 10,"
+      "  \"maximum\": 20"
+      "}")));
+}
 
 }  // namespace policy

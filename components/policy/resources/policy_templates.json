@@ -4504,7 +4504,10 @@
         {
           'name': 'ScreenDimDelayAC',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,
@@ -4526,7 +4529,10 @@
         {
           'name': 'ScreenOffDelayAC',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,
@@ -4548,7 +4554,10 @@
         {
           'name': 'ScreenLockDelayAC',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,
@@ -4572,7 +4581,10 @@
         {
           'name': 'IdleWarningDelayAC',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:27-'],
           'features': {
             'dynamic_refresh': True,
@@ -4592,7 +4604,10 @@
         {
           'name': 'IdleDelayAC',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,
@@ -4612,7 +4627,10 @@
         {
           'name': 'ScreenDimDelayBattery',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,
@@ -4634,7 +4652,10 @@
         {
           'name': 'ScreenOffDelayBattery',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,
@@ -4656,7 +4677,10 @@
         {
           'name': 'ScreenLockDelayBattery',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,
@@ -4680,7 +4704,10 @@
         {
           'name': 'IdleWarningDelayBattery',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:27-'],
           'features': {
             'dynamic_refresh': True,
@@ -4700,7 +4727,10 @@
         {
           'name': 'IdleDelayBattery',
           'type': 'int',
-          'schema': { 'type': 'integer' },
+          'schema': {
+            'type': 'integer',
+            'minimum': 0
+          },
           'supported_on': ['chrome_os:26-'],
           'features': {
             'dynamic_refresh': True,

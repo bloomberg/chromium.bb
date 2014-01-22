@@ -257,7 +257,6 @@ SIMPLE_SCHEMA_NAME_MAP = {
   'string' : 'TYPE_STRING',
 }
 
-
 class SchemaNodesGenerator:
   """Builds the internal structs to represent a JSON schema."""
 
@@ -271,6 +270,9 @@ class SchemaNodesGenerator:
     self.schema_nodes = []
     self.property_nodes = []
     self.properties_nodes = []
+    self.restriction_nodes = []
+    self.int_enums = []
+    self.string_enums = []
     self.simple_types = {
       'boolean': None,
       'integer': None,
@@ -279,6 +281,7 @@ class SchemaNodesGenerator:
       'string': None,
     }
     self.stringlist_type = None
+    self.ranges = {}
 
   def GetString(self, s):
     return self.shared_strings[s] if s in self.shared_strings else '"%s"' % s
@@ -287,6 +290,13 @@ class SchemaNodesGenerator:
     index = len(self.schema_nodes)
     self.schema_nodes.append((type, extra, comment))
     return index
+
+  def AppendRestriction(self, first, second):
+    r = (str(first), str(second))
+    if not r in self.ranges:
+      self.ranges[r] = len(self.restriction_nodes)
+      self.restriction_nodes.append(r)
+    return self.ranges[r]
 
   def GetSimpleType(self, name):
     if self.simple_types[name] == None:
@@ -304,14 +314,79 @@ class SchemaNodesGenerator:
           'simple type: stringlist')
     return self.stringlist_type
 
+  def SchemaHaveRestriction(self, schema):
+    return 'minimum' in schema or 'maximum' in schema or 'enum' in schema
+
+  def IsConsecutiveInterval(self, seq):
+    sortedSeq = sorted(seq)
+    return all(sortedSeq[i] + 1 == sortedSeq[i + 1]
+               for i in xrange(len(sortedSeq) - 1))
+
+  def GetEnumIntegerType(self, schema, name):
+    assert all(type(x) == int for x in schema['enum'])
+    possible_values = schema['enum']
+    if self.IsConsecutiveInterval(possible_values):
+      index = self.AppendRestriction(max(possible_values), min(possible_values))
+      return self.AppendSchema('TYPE_INTEGER', index,
+          'integer with enumeration restriction (use range instead): %s' % name)
+    offset_begin = len(self.int_enums)
+    self.int_enums += possible_values
+    offset_end = len(self.int_enums)
+    return self.AppendSchema('TYPE_INTEGER',
+        self.AppendRestriction(offset_begin, offset_end),
+        'integer with enumeration restriction: %s' % name)
+
+  def GetEnumStringType(self, schema, name):
+    assert all(type(x) == str for x in schema['enum'])
+    offset_begin = len(self.string_enums)
+    self.string_enums += schema['enum']
+    offset_end = len(self.string_enums)
+    return self.AppendSchema('TYPE_STRING',
+        self.AppendRestriction(offset_begin, offset_end),
+        'string with enumeration restriction: %s' % name)
+
+  def GetEnumType(self, schema, name):
+    if len(schema['enum']) == 0:
+      raise RuntimeError('Empty enumeration in %s' % name)
+    elif schema['type'] == 'integer':
+      return self.GetEnumIntegerType(schema, name)
+    elif schema['type'] == 'string':
+      return self.GetEnumStringType(schema, name)
+    else:
+      raise RuntimeError('Unknown enumeration type in %s' % name)
+
+  def GetRangedType(self, schema, name):
+    if schema['type'] != 'integer':
+      raise RuntimeError('Unknown ranged type in %s' % name)
+    min_value_set, max_value_set = False, False
+    if 'minimum' in schema:
+      min_value = int(schema['minimum'])
+      min_value_set = True
+    if 'maximum' in schema:
+      max_value = int(schema['minimum'])
+      max_value_set = True
+    if min_value_set and max_value_set and min_value > max_value:
+      raise RuntimeError('Invalid ranged type in %s' % name)
+    index = self.AppendRestriction(
+        str(max_value) if max_value_set else 'INT_MAX',
+        str(min_value) if min_value_set else 'INT_MIN')
+    return self.AppendSchema('TYPE_INTEGER',
+        index,
+        'integer with ranged restriction: %s' % name)
+
   def Generate(self, schema, name):
     """Generates the structs for the given schema.
 
     |schema|: a valid JSON schema in a dictionary.
     |name|: the name of the current node, for the generated comments."""
-    # Simple types use shared nodes.
     if schema['type'] in self.simple_types:
-      return self.GetSimpleType(schema['type'])
+      if not self.SchemaHaveRestriction(schema):
+        # Simple types use shared nodes.
+        return self.GetSimpleType(schema['type'])
+      elif 'enum' in schema:
+        return self.GetEnumType(schema, name)
+      else:
+        return self.GetRangedType(schema, name)
 
     if schema['type'] == 'array':
       # Special case for lists of strings, which is a common policy type.
@@ -380,17 +455,37 @@ class SchemaNodesGenerator:
       f.write('  { %5d, %5d, %5d },  // %s\n' % node)
     f.write('};\n\n')
 
+    f.write('const internal::RestrictionNode kRestrictionNodes[] = {\n')
+    f.write('//   FIRST, SECOND\n')
+    for first, second in self.restriction_nodes:
+      f.write('  {{ %-8s %4s}},\n' % (first + ',', second))
+    f.write('};\n\n')
+
+    f.write('const int kIntegerEnumerations[] = {\n')
+    for possible_values in self.int_enums:
+      f.write('  %d,\n' % possible_values)
+    f.write('};\n\n')
+
+    f.write('const char* kStringEnumerations[] = {\n')
+    for possible_values in self.string_enums:
+      f.write('  %s,\n' % self.GetString(possible_values))
+    f.write('};\n\n')
+
     f.write('const internal::SchemaData kChromeSchemaData = {\n'
             '  kSchemas,\n'
             '  kPropertyNodes,\n'
-            '  kProperties,\n'
-            '};\n\n')
+            '  kProperties,\n');
+    f.write('  kRestrictionNodes,\n' if self.restriction_nodes else '  NULL,\n')
+    f.write('  kIntegerEnumerations,\n' if self.int_enums else '  NULL,\n')
+    f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
+    f.write('};\n\n')
 
 
 def _WritePolicyConstantSource(policies, os, f):
   f.write('#include "policy/policy_constants.h"\n'
           '\n'
           '#include <algorithm>\n'
+          '#include <climits>\n'
           '\n'
           '#include "base/logging.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'

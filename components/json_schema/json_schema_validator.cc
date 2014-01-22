@@ -162,7 +162,10 @@ bool IsValidSchema(const base::DictionaryValue* dict,
       return false;
     }
 
-    if (!it.value().IsType(entry->type)) {
+    // Integer can be converted to double.
+    if (!(it.value().IsType(entry->type) ||
+          (it.value().IsType(base::Value::TYPE_INTEGER) &&
+           entry->type == base::Value::TYPE_DOUBLE))) {
       *error = base::StringPrintf("Invalid value for %s attribute",
                                   it.key().c_str());
       return false;

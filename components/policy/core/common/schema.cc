@@ -5,6 +5,7 @@
 #include "components/policy/core/common/schema.h"
 
 #include <algorithm>
+#include <climits>
 #include <map>
 #include <utility>
 #include <vector>
@@ -22,6 +23,7 @@ namespace policy {
 
 using internal::PropertiesNode;
 using internal::PropertyNode;
+using internal::RestrictionNode;
 using internal::SchemaData;
 using internal::SchemaNode;
 
@@ -41,11 +43,15 @@ typedef std::vector<std::pair<std::string, int*> > ReferenceList;
 // for "$ref" attributes).
 struct StorageSizes {
   StorageSizes()
-      : strings(0), schema_nodes(0), property_nodes(0), properties_nodes(0) {}
+      : strings(0), schema_nodes(0), property_nodes(0), properties_nodes(0),
+        restriction_nodes(0), int_enums(0), string_enums(0) { }
   size_t strings;
   size_t schema_nodes;
   size_t property_nodes;
   size_t properties_nodes;
+  size_t restriction_nodes;
+  size_t int_enums;
+  size_t string_enums;
 };
 
 // An invalid index, indicating that a node is not present; similar to a NULL
@@ -108,6 +114,18 @@ class Schema::InternalStorage
     return schema_data_.property_nodes + index;
   }
 
+  const RestrictionNode* restriction(int index) const {
+    return schema_data_.restriction_nodes + index;
+  }
+
+  const int* int_enums(int index) const {
+    return schema_data_.int_enums + index;
+  }
+
+  const char** string_enums(int index) const {
+    return schema_data_.string_enums + index;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<InternalStorage>;
 
@@ -152,6 +170,15 @@ class Schema::InternalStorage
                  ReferenceList* reference_list,
                  std::string* error);
 
+  bool ParseEnum(const base::DictionaryValue& schema,
+                 base::Value::Type type,
+                 SchemaNode* schema_node,
+                 std::string* error);
+
+  bool ParseRangedInt(const base::DictionaryValue& schema,
+                       SchemaNode* schema_node,
+                       std::string* error);
+
   // Assigns the IDs in |id_map| to the pending references in the
   // |reference_list|. If an ID is missing then |error| is set and false is
   // returned; otherwise returns true.
@@ -164,6 +191,9 @@ class Schema::InternalStorage
   std::vector<SchemaNode> schema_nodes_;
   std::vector<PropertyNode> property_nodes_;
   std::vector<PropertiesNode> properties_nodes_;
+  std::vector<RestrictionNode> restriction_nodes_;
+  std::vector<int> int_enums_;
+  std::vector<const char*> string_enums_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalStorage);
 };
@@ -179,6 +209,9 @@ scoped_refptr<const Schema::InternalStorage> Schema::InternalStorage::Wrap(
   storage->schema_data_.schema_nodes = data->schema_nodes;
   storage->schema_data_.property_nodes = data->property_nodes;
   storage->schema_data_.properties_nodes = data->properties_nodes;
+  storage->schema_data_.restriction_nodes = data->restriction_nodes;
+  storage->schema_data_.int_enums = data->int_enums;
+  storage->schema_data_.string_enums = data->string_enums;
   return storage;
 }
 
@@ -198,6 +231,9 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   storage->schema_nodes_.reserve(sizes.schema_nodes);
   storage->property_nodes_.reserve(sizes.property_nodes);
   storage->properties_nodes_.reserve(sizes.properties_nodes);
+  storage->restriction_nodes_.reserve(sizes.restriction_nodes);
+  storage->int_enums_.reserve(sizes.int_enums);
+  storage->string_enums_.reserve(sizes.string_enums);
 
   int root_index = kInvalid;
   IdMap id_map;
@@ -217,7 +253,10 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
       sizes.strings != storage->strings_.size() ||
       sizes.schema_nodes != storage->schema_nodes_.size() ||
       sizes.property_nodes != storage->property_nodes_.size() ||
-      sizes.properties_nodes != storage->properties_nodes_.size()) {
+      sizes.properties_nodes != storage->properties_nodes_.size() ||
+      sizes.restriction_nodes != storage->restriction_nodes_.size() ||
+      sizes.int_enums != storage->int_enums_.size() ||
+      sizes.string_enums != storage->string_enums_.size()) {
     *error = "Failed to parse the schema due to a Chrome bug. Please file a "
              "new issue at http://crbug.com";
     return NULL;
@@ -230,6 +269,9 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   data->schema_nodes = vector_as_array(&storage->schema_nodes_);
   data->property_nodes = vector_as_array(&storage->property_nodes_);
   data->properties_nodes = vector_as_array(&storage->properties_nodes_);
+  data->restriction_nodes = vector_as_array(&storage->restriction_nodes_);
+  data->int_enums = vector_as_array(&storage->int_enums_);
+  data->string_enums = vector_as_array(&storage->string_enums_);
   return storage;
 }
 
@@ -275,6 +317,20 @@ void Schema::InternalStorage::DetermineStorageSizes(
         sizes->property_nodes++;
       }
     }
+  } else if (schema.HasKey(schema::kEnum)) {
+    const base::ListValue* possible_values = NULL;
+    if (schema.GetList(schema::kEnum, &possible_values)) {
+      if (type == base::Value::TYPE_INTEGER) {
+        sizes->int_enums += possible_values->GetSize();
+      } else if (type == base::Value::TYPE_STRING) {
+        sizes->string_enums += possible_values->GetSize();
+        sizes->strings += possible_values->GetSize();
+      }
+      sizes->restriction_nodes++;
+    }
+  } else if (type == base::Value::TYPE_INTEGER) {
+    if (schema.HasKey(schema::kMinimum) || schema.HasKey(schema::kMaximum))
+      sizes->restriction_nodes++;
   }
 }
 
@@ -318,8 +374,18 @@ bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
   } else if (type == base::Value::TYPE_LIST) {
     if (!ParseList(schema, schema_node, id_map, reference_list, error))
       return false;
+  } else if (schema.HasKey(schema::kEnum)) {
+    if (!ParseEnum(schema, type, schema_node, error))
+      return false;
+  } else if (schema.HasKey(schema::kMinimum) ||
+             schema.HasKey(schema::kMaximum)) {
+    if (type != base::Value::TYPE_INTEGER) {
+      *error = "Only integers can have minimum and maximum";
+      return false;
+    }
+    if (!ParseRangedInt(schema, schema_node, error))
+      return false;
   }
-
   std::string id_string;
   if (schema.GetString(schema::kId, &id_string)) {
     if (ContainsKey(*id_map, id_string)) {
@@ -392,6 +458,79 @@ bool Schema::InternalStorage::ParseList(const base::DictionaryValue& schema,
     return false;
   }
   return Parse(*dict, &schema_node->extra, id_map, reference_list, error);
+}
+
+bool Schema::InternalStorage::ParseEnum(const base::DictionaryValue& schema,
+                                        base::Value::Type type,
+                                        SchemaNode* schema_node,
+                                        std::string* error) {
+  const base::ListValue *possible_values = NULL;
+  if (!schema.GetList(schema::kEnum, &possible_values)) {
+    *error = "Enum attribute must be a list value";
+    return false;
+  }
+  if (possible_values->empty()) {
+    *error = "Enum attribute must be non-empty";
+    return false;
+  }
+  int offset_begin;
+  int offset_end;
+  if (type == base::Value::TYPE_INTEGER) {
+    offset_begin = static_cast<int>(int_enums_.size());
+    int value;
+    for (base::ListValue::const_iterator it = possible_values->begin();
+         it != possible_values->end(); ++it) {
+      if (!(*it)->GetAsInteger(&value)) {
+        *error = "Invalid enumeration member type";
+        return false;
+      }
+      int_enums_.push_back(value);
+    }
+    offset_end = static_cast<int>(int_enums_.size());
+  } else if (type == base::Value::TYPE_STRING) {
+    offset_begin = static_cast<int>(string_enums_.size());
+    std::string value;
+    for (base::ListValue::const_iterator it = possible_values->begin();
+         it != possible_values->end(); ++it) {
+      if (!(*it)->GetAsString(&value)) {
+        *error = "Invalid enumeration member type";
+        return false;
+      }
+      strings_.push_back(value);
+      string_enums_.push_back(strings_.back().c_str());
+    }
+    offset_end = static_cast<int>(string_enums_.size());
+  } else {
+    *error = "Enumeration is only supported for integer and string.";
+    return false;
+  }
+  schema_node->extra = static_cast<int>(restriction_nodes_.size());
+  restriction_nodes_.push_back(RestrictionNode());
+  restriction_nodes_.back().enumeration_restriction.offset_begin = offset_begin;
+  restriction_nodes_.back().enumeration_restriction.offset_end = offset_end;
+  return true;
+}
+
+bool Schema::InternalStorage::ParseRangedInt(
+    const base::DictionaryValue& schema,
+    SchemaNode* schema_node,
+    std::string* error) {
+  int min_value = INT_MIN;
+  int max_value = INT_MAX;
+  int value;
+  if (schema.GetInteger(schema::kMinimum, &value))
+    min_value = value;
+  if (schema.GetInteger(schema::kMaximum, &value))
+    max_value = value;
+  if (min_value > max_value) {
+    *error = "Invalid range restriction for int type.";
+    return false;
+  }
+  schema_node->extra = static_cast<int>(restriction_nodes_.size());
+  restriction_nodes_.push_back(RestrictionNode());
+  restriction_nodes_.back().ranged_restriction.max_value = max_value;
+  restriction_nodes_.back().ranged_restriction.min_value = min_value;
+  return true;
 }
 
 // static

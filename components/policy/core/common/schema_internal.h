@@ -28,6 +28,11 @@ struct POLICY_EXPORT SchemaNode {
   // SchemaData::schema_nodes that indexes the SchemaNode describing the items
   // of this list.
   //
+  // If |type| is TYPE_INTEGER or TYPE_STRING, and contains corresponding
+  // restriction (enumeration of possible values, or range for integer), then
+  // |extra| is an offset into SchemaData::restriction_nodes that indexes the
+  // RestrictionNode describing the restriction on the value.
+  //
   // Otherwise extra is -1 and is invalid.
   int extra;
 };
@@ -66,12 +71,40 @@ struct POLICY_EXPORT PropertiesNode {
   int additional;
 };
 
+// Represents the restriction on TYPE_INTEGER or TYPE_STRING instance of
+// base::Value.
+union POLICY_EXPORT RestrictionNode {
+  // Offsets into SchemaData::int_enums or SchemaData::string_enums, the
+  // entry of which describes the enumeration of all possible values of
+  // corresponding integer or string value. |offset_begin| being strictly less
+  // than |offset_end| is assumed.
+  struct EnumerationRestriction {
+    int offset_begin;
+    int offset_end;
+  } enumeration_restriction;
+
+  // For integer type only, represents that all values between |min_value|
+  // and |max_value| can be choosen. Note that integer type in base::Value
+  // is bounded, so this can also be used if only one of |min_value| and
+  // |max_value| is stated. |max_value| being greater or equal to |min_value|
+  // is assumed.
+  struct RangedRestriction {
+    int max_value;
+    int min_value;
+  } ranged_restriction;
+};
+
+
 // Contains arrays of related nodes. All of the offsets in these nodes reference
 // other nodes in these arrays.
 struct POLICY_EXPORT SchemaData {
   const SchemaNode* schema_nodes;
   const PropertyNode* property_nodes;
   const PropertiesNode* properties_nodes;
+  const RestrictionNode* restriction_nodes;
+
+  const int* int_enums;
+  const char** string_enums;
 };
 
 }  // namespace internal
