@@ -19,6 +19,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/gcm_network_channel.h"
+#include "sync/notifier/gcm_network_channel_delegate.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/push_client_channel.h"
 
@@ -179,8 +180,11 @@ scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreatePushClientChannel(
       new PushClientChannel(push_client.Pass()));
 }
 
-scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel() {
-  return scoped_ptr<SyncNetworkChannel>(new GCMNetworkChannel());
+scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_ptr<GCMNetworkChannelDelegate> delegate) {
+  return scoped_ptr<SyncNetworkChannel>(new GCMNetworkChannel(
+      request_context_getter, delegate.Pass()));
 }
 
 const std::string& SyncNetworkChannel::GetServiceContextForTest() const {

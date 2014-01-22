@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "sync/notifier/gcm_network_channel_delegate.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/non_blocking_invalidator.h"
@@ -342,8 +343,13 @@ void TiclInvalidationService::StartInvalidator(
       break;
     }
     case GCM_NETWORK_CHANNEL: {
+      // TODO(pavely): Pass NULL pointer for now. When GCMNetworkChannelDelegate
+      // is implemented it will be instantiated and passed here.
+      scoped_ptr<syncer::GCMNetworkChannelDelegate> delegate;
       network_channel_creator =
-          syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator();
+          syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
+              profile_->GetRequestContext(),
+              delegate.Pass());
       break;
     }
     default: {

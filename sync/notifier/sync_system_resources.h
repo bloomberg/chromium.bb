@@ -26,6 +26,8 @@
 
 namespace syncer {
 
+class GCMNetworkChannelDelegate;
+
 class SyncLogger : public invalidation::Logger {
  public:
   SyncLogger();
@@ -123,7 +125,9 @@ class SYNC_EXPORT_PRIVATE SyncNetworkChannel
   // specific parameters.
   static scoped_ptr<SyncNetworkChannel> CreatePushClientChannel(
       const notifier::NotifierOptions& notifier_options);
-  static scoped_ptr<SyncNetworkChannel> CreateGCMNetworkChannel();
+  static scoped_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_ptr<GCMNetworkChannelDelegate> delegate);
 
   const std::string& GetServiceContextForTest() const;
 

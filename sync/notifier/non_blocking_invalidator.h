@@ -29,6 +29,7 @@ class SingleThreadTaskRunner;
 
 namespace syncer {
 class SyncNetworkChannel;
+class GCMNetworkChannelDelegate;
 
 // Callback type for function that creates SyncNetworkChannel. This function
 // gets passed into NonBlockingInvalidator constructor.
@@ -74,7 +75,9 @@ class SYNC_EXPORT_PRIVATE NonBlockingInvalidator
   // channel implementation to client of invalidator.
   static NetworkChannelCreator MakePushClientChannelCreator(
       const notifier::NotifierOptions& notifier_options);
-  static NetworkChannelCreator MakeGCMNetworkChannelCreator();
+  static NetworkChannelCreator MakeGCMNetworkChannelCreator(
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_ptr<GCMNetworkChannelDelegate> delegate);
  private:
   struct InitializeOptions;
   class Core;

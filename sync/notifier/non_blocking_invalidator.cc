@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "sync/notifier/gcm_network_channel_delegate.h"
 #include "sync/notifier/invalidation_notifier.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/notifier/sync_system_resources.h"
@@ -247,9 +248,12 @@ NetworkChannelCreator
       notifier_options);
 }
 
-NetworkChannelCreator
-    NonBlockingInvalidator::MakeGCMNetworkChannelCreator() {
-  return base::Bind(SyncNetworkChannel::CreateGCMNetworkChannel);
+NetworkChannelCreator NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_ptr<GCMNetworkChannelDelegate> delegate) {
+  return base::Bind(&SyncNetworkChannel::CreateGCMNetworkChannel,
+                    request_context_getter,
+                    base::Passed(&delegate));
 }
 
 }  // namespace syncer
