@@ -20,6 +20,14 @@ namespace media {
 // - the End of System Exclusive message.
 MEDIA_EXPORT size_t GetMIDIMessageLength(uint8 status_byte);
 
+const uint8 kSysExByte = 0xf0;
+const uint8 kEndOfSysExByte = 0xf7;
+
+const uint8 kSysMessageBitMask = 0xf0;
+const uint8 kSysMessageBitPattern = 0xf0;
+const uint8 kSysRTMessageBitMask = 0xf8;
+const uint8 kSysRTMessageBitPattern = 0xf8;
+
 }  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MESSAGE_UTIL_H_

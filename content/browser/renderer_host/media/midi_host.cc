@@ -35,9 +35,6 @@ const size_t kMaxInFlightBytes = 10 * 1024 * 1024;  // 10 MB.
 // how many bytes will be sent before reporting back to the renderer.
 const size_t kAcknowledgementThresholdBytes = 1024 * 1024;  // 1 MB.
 
-const uint8 kSysExMessage = 0xf0;
-const uint8 kEndOfSysExMessage = 0xf7;
-
 bool IsDataByte(uint8 data) {
   return (data & 0x80) == 0;
 }
@@ -47,6 +44,9 @@ bool IsSystemRealTimeMessage(uint8 data) {
 }
 
 }  // namespace
+
+using media::kSysExByte;
+using media::kEndOfSysExByte;
 
 MIDIHost::MIDIHost(int renderer_process_id, media::MIDIManager* midi_manager)
     : renderer_process_id_(renderer_process_id),
@@ -119,7 +119,7 @@ void MIDIHost::OnSendData(uint32 port,
   // in JavaScript. The actual permission check for security purposes
   // happens here in the browser process.
   if (!has_sys_ex_permission_ &&
-      (std::find(data.begin(), data.end(), kSysExMessage) != data.end())) {
+      std::find(data.begin(), data.end(), kSysExByte) != data.end()) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_MIDI"));
     BadMessageReceived();
     return;
@@ -162,7 +162,7 @@ void MIDIHost::ReceiveMIDIData(
     // MIDI devices may send a system exclusive messages even if the renderer
     // doesn't have a permission to receive it. Don't kill the renderer as
     // OnSendData() does.
-    if (message[0] == kSysExMessage && !has_sys_ex_permission_)
+    if (message[0] == kSysExByte && !has_sys_ex_permission_)
       continue;
 
     // Send to the renderer.
@@ -204,13 +204,13 @@ bool MIDIHost::IsValidWebMIDIData(const std::vector<uint8>& data) {
       continue;  // Found data byte as expected.
     }
     if (in_sysex) {
-      if (data[i] == kEndOfSysExMessage)
+      if (data[i] == kEndOfSysExByte)
         in_sysex = false;
       else if (!IsDataByte(current))
         return false;  // Error: |current| should have been data byte.
       continue;  // Found data byte as expected.
     }
-    if (current == kSysExMessage) {
+    if (current == kSysExByte) {
       in_sysex = true;
       continue;  // Found SysEX
     }
