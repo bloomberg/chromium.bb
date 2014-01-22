@@ -85,6 +85,16 @@ define([
     expect(foo.source).toBe(0xFFFF);
   }
 
+  // Check that values are set to the defaults if we don't override them.
+  function checkDefaultValues() {
+    var bar = new sample.Bar();
+    expect(bar.alpha).toBe(255);
+
+    var foo = new sample.Foo();
+    expect(foo.name).toBe("Fooby");
+    expect(foo.a).toBeTruthy();
+  }
+
   function ServiceImpl() {
   }
 
@@ -110,6 +120,8 @@ define([
 
   var receiver = new SimpleMessageReceiver();
   var serviceProxy = new sample.ServiceProxy(receiver);
+
+  checkDefaultValues();
 
   var foo = makeFoo();
   checkFoo(foo);

@@ -6,8 +6,25 @@
 {%-   set _ = dtor_name.append("NULL") %}
 {%- endif %}
 
+{%- macro set_default(field) -%}
+{%-   if field.kind|is_string_kind -%}
+set_{{field.name}}(mojo::String({{field.default}}));
+{%-   elif field.kind|is_object_kind -%}
+{
+  {{field.kind|cpp_wrapper_type}}::Builder tmp;
+  // TODO
+  set_{{field.name}}(tmp.Finish());
+}
+{%-   else -%}
+set_{{field.name}}({{field.default}});
+{%-   endif %}
+{%- endmacro %}
+
 {{class_name}}::Builder::Builder(mojo::Buffer* buf)
     : data_(Data::New(buf, {{dtor_name[0]}})) {
+{%- for pf in struct.packed.packed_fields if pf.field.default %}
+  {{set_default(pf.field)|indent(2)}}
+{%- endfor %}
 }
 
 {{class_name}} {{class_name}}::Builder::Finish() {

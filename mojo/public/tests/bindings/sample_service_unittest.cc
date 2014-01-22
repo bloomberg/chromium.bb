@@ -309,4 +309,18 @@ TEST(BindingsSampleTest, Basic) {
   service->Frobinate(foo, Service::BAZ_EXTRA, port0.Pass());
 }
 
+TEST(BindingsSampleTest, DefaultValues) {
+  mojo::Environment env;
+  SimpleMessageReceiver receiver;
+  mojo::AllocationScope scope;
+
+  Bar bar = Bar::Builder().Finish();
+  EXPECT_EQ(255, bar.alpha());
+
+  Foo foo = Foo::Builder().Finish();
+  ASSERT_FALSE(foo.name().is_null());
+  EXPECT_EQ("Fooby", foo.name().To<std::string>());
+  EXPECT_TRUE(foo.a());
+}
+
 }  // namespace sample

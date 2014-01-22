@@ -25,8 +25,11 @@ def GetStructInfo(exported, struct):
   struct.exported = exported
   return struct
 
+def IsStringKind(kind):
+  return kind.spec == 's'
+
 def IsObjectKind(kind):
-  return isinstance(kind, (mojom.Struct, mojom.Array)) or kind.spec == 's'
+  return isinstance(kind, (mojom.Struct, mojom.Array)) or IsStringKind(kind)
 
 def IsHandleKind(kind):
   return kind.spec.startswith('h')

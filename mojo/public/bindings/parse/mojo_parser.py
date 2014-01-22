@@ -95,8 +95,14 @@ class Parser(object):
       p[0] = ListFromConcat(p[1], p[2])
 
   def p_field(self, p):
-    """field : typename NAME ordinal SEMI"""
-    p[0] = ('FIELD', p[1], p[2], p[3])
+    """field : typename NAME default ordinal SEMI"""
+    p[0] = ('FIELD', p[1], p[2], p[4], p[3])
+
+  def p_default(self, p):
+    """default : EQUALS expression
+               | """
+    if len(p) > 2:
+      p[0] = p[2]
 
   def p_interface(self, p):
     """interface : attribute_section INTERFACE NAME LBRACE interface_body RBRACE SEMI"""

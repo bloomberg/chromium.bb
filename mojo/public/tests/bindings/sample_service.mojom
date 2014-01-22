@@ -12,7 +12,7 @@ enum BarType {
 };
 
 struct Bar {
-  uint8 alpha @0;
+  uint8 alpha = (0x100 - 1) @0;
   uint8 beta @1;
   uint8 gamma @2;
   int32 type @3;
@@ -20,10 +20,10 @@ struct Bar {
 
 [RequiredFields=7]
 struct Foo {
-  string name @8;
+  string name = "Fooby" @8;
   int32 x @0;
   int32 y @1;
-  bool a @2;
+  bool a = true @2;
   bool b @3;
   bool c @4;
   Bar bar @5;

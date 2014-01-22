@@ -54,7 +54,8 @@ def MapFields(fields):
     if field[0] == 'FIELD':
       out.append({'name': field[2],
                   'kind': MapKind(field[1]),
-                  'ordinal': MapOrdinal(field[3])})
+                  'ordinal': MapOrdinal(field[3]),
+                  'default': field[4]})
   return out
 
 
