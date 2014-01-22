@@ -2,9 +2,7 @@
   "name": "chromium",
   "dependencies": {
     "platform": "latest",
-    "polymer": "latest",
-    "polymer-selector": "latest",
-    "polymer-selection": "latest"
+    "polymer": "latest"
   },
   "private": true
 }
