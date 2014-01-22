@@ -464,7 +464,9 @@ class GSContext(object):
       # can hit a different backend. This should be removed after the
       # bug is fixed by the Google Storage team (see crbug.com/308300).
       if (self.RESUMABLE_DOWNLOAD_ERROR in error or
-          self.RESUMABLE_UPLOAD_ERROR in error):
+          self.RESUMABLE_UPLOAD_ERROR in error or
+          'ResumableUploadException' in error or
+          'ResumableDownloadException' in error):
 
         # Only remove the tracker files if we try to upload/download a file.
         if 'cp' in e.result.cmd[:-2]:
