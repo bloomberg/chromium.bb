@@ -4,7 +4,10 @@
 #ifndef CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_H_
 #define CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_H_
 
+#include <deque>
+
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -13,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class GaiaAuthFetcher;
@@ -62,6 +66,12 @@ class AccountReconcilor : public BrowserContextKeyedService,
   }
 
  private:
+  // Used during GetAccountsFromCookie.
+  // Stores a callback for the next action to perform.
+  typedef base::Callback<void(
+      const GoogleServiceAuthError& error,
+      const std::vector<std::string>&)> GetAccountsFromCookieCallback;
+
   class AccountReconcilorTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieSuccess);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieFailure);
@@ -92,7 +102,11 @@ class AccountReconcilor : public BrowserContextKeyedService,
   void PeriodicReconciliation();
 
   void PerformMergeAction(const std::string& account_id);
-  void PerformRemoveAction(const std::string& account_id);
+  void StartRemoveAction(const std::string& account_id);
+  void FinishRemoveAction(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error,
+      const std::vector<std::string>& accounts);
 
   // Used during period reconciliation.
   void StartReconcileAction();
@@ -100,7 +114,10 @@ class AccountReconcilor : public BrowserContextKeyedService,
   void HandleSuccessfulAccountIdCheck(const std::string& account_id);
   void HandleFailedAccountIdCheck(const std::string& account_id);
 
-  void GetAccountsFromCookie();
+  void GetAccountsFromCookie(GetAccountsFromCookieCallback callback);
+  void ContinueReconcileActionAfterGetGaiaAccounts(
+      const GoogleServiceAuthError& error,
+      const std::vector<std::string>& accounts);
   void ValidateAccountsFromTokenService();
 
   void OnCookieChanged(ChromeCookieDetails* details);
@@ -127,6 +144,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
   virtual void OnListAccountsFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
+  void MayBeDoNextListAccounts();
+
   // The profile that this reconcilor belongs to.
   Profile* profile_;
   content::NotificationRegistrar registrar_;
@@ -148,6 +167,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
   ScopedVector<UserIdFetcher> user_id_fetchers_;
   std::set<std::string> valid_chrome_accounts_;
   std::set<std::string> invalid_chrome_accounts_;
+
+  std::deque<GetAccountsFromCookieCallback> get_gaia_accounts_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };

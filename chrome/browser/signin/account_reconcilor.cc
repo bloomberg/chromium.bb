@@ -105,6 +105,7 @@ AccountReconcilor::~AccountReconcilor() {
 void AccountReconcilor::Shutdown() {
   DVLOG(1) << "AccountReconcilor::Shutdown";
   merge_session_helper_.CancelAll();
+  gaia_fetcher_.reset();
   DeleteAccessTokenRequestsAndUserIdFetchers();
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
@@ -241,7 +242,7 @@ void AccountReconcilor::OnRefreshTokenAvailable(const std::string& account_id) {
 
 void AccountReconcilor::OnRefreshTokenRevoked(const std::string& account_id) {
   DVLOG(1) << "AccountReconcilor::OnRefreshTokenRevoked: " << account_id;
-  PerformRemoveAction(account_id);
+  StartRemoveAction(account_id);
 }
 
 void AccountReconcilor::OnRefreshTokensLoaded() {}
@@ -250,8 +251,21 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
   merge_session_helper_.LogIn(account_id);
 }
 
-void AccountReconcilor::PerformRemoveAction(const std::string& account_id) {
-  // TODO(acleung): Implement this:
+void AccountReconcilor::StartRemoveAction(const std::string& account_id) {
+  GetAccountsFromCookie(
+      base::Bind(&AccountReconcilor::FinishRemoveAction,
+                 base::Unretained(this),
+                 account_id));
+}
+
+void AccountReconcilor::FinishRemoveAction(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error,
+    const std::vector<std::string>& accounts) {
+  if (error.state() == GoogleServiceAuthError::NONE) {
+    merge_session_helper_.LogOut(account_id, accounts);
+  }
+  // Wait for the next ReconcileAction if there is an error.
 }
 
 void AccountReconcilor::StartReconcileAction() {
@@ -261,7 +275,9 @@ void AccountReconcilor::StartReconcileAction() {
   // Reset state for validating gaia cookie.
   are_gaia_accounts_set_ = false;
   gaia_accounts_.clear();
-  GetAccountsFromCookie();
+  GetAccountsFromCookie(base::Bind(
+      &AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts,
+          base::Unretained(this)));
 
   // Reset state for validating oauth2 tokens.
   primary_account_.clear();
@@ -272,34 +288,69 @@ void AccountReconcilor::StartReconcileAction() {
   ValidateAccountsFromTokenService();
 }
 
-void AccountReconcilor::GetAccountsFromCookie() {
-  gaia_fetcher_.reset(new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
+void AccountReconcilor::GetAccountsFromCookie(
+    GetAccountsFromCookieCallback callback) {
+  get_gaia_accounts_callbacks_.push_back(callback);
+  if (!gaia_fetcher_) {
+    // There is no list account request in flight.
+    gaia_fetcher_.reset(new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
                                           profile_->GetRequestContext()));
-  gaia_fetcher_->StartListAccounts();
+    gaia_fetcher_->StartListAccounts();
+  }
 }
 
 void AccountReconcilor::OnListAccountsSuccess(const std::string& data) {
   gaia_fetcher_.reset();
 
   // Get account information from response data.
-  gaia_accounts_ = gaia::ParseListAccountsData(data);
-  if (gaia_accounts_.size() > 0) {
+  std::vector<std::string> gaia_accounts = gaia::ParseListAccountsData(data);
+  if (gaia_accounts.size() > 0) {
     DVLOG(1) << "AccountReconcilor::OnListAccountsSuccess: "
-             << "Gaia " << gaia_accounts_.size() << " accounts, "
-             << "Primary is '" << gaia_accounts_[0] << "'";
+             << "Gaia " << gaia_accounts.size() << " accounts, "
+             << "Primary is '" << gaia_accounts[0] << "'";
   } else {
     DVLOG(1) << "AccountReconcilor::OnListAccountsSuccess: No accounts";
   }
 
-  are_gaia_accounts_set_ = true;
-  FinishReconcileAction();
+  // There must be at least one callback waiting for result.
+  DCHECK(!get_gaia_accounts_callbacks_.empty());
+
+  get_gaia_accounts_callbacks_.front().Run(
+      GoogleServiceAuthError::AuthErrorNone(), gaia_accounts);
+  get_gaia_accounts_callbacks_.pop_front();
+
+  MayBeDoNextListAccounts();
 }
 
 void AccountReconcilor::OnListAccountsFailure(
     const GoogleServiceAuthError& error) {
   gaia_fetcher_.reset();
   DVLOG(1) << "AccountReconcilor::OnListAccountsFailure: " << error.ToString();
+  std::vector<std::string> empty_accounts;
 
+  // There must be at least one callback waiting for result.
+  DCHECK(!get_gaia_accounts_callbacks_.empty());
+
+  get_gaia_accounts_callbacks_.front().Run(error, empty_accounts);
+  get_gaia_accounts_callbacks_.pop_front();
+
+  MayBeDoNextListAccounts();
+}
+
+void AccountReconcilor::MayBeDoNextListAccounts() {
+  if (!get_gaia_accounts_callbacks_.empty()) {
+    gaia_fetcher_.reset(new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
+                                          profile_->GetRequestContext()));
+    gaia_fetcher_->StartListAccounts();
+  }
+}
+
+void AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts(
+    const GoogleServiceAuthError& error,
+    const std::vector<std::string>& accounts) {
+  if (error.state() == GoogleServiceAuthError::NONE) {
+    gaia_accounts_ = accounts;
+  }
   are_gaia_accounts_set_ = true;
   FinishReconcileAction();
 }

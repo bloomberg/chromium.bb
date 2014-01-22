@@ -12,6 +12,9 @@
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 GoogleAutoLoginHelper::GoogleAutoLoginHelper(Profile* profile,
                                              Observer* observer)
@@ -25,6 +28,7 @@ GoogleAutoLoginHelper::~GoogleAutoLoginHelper() {
 }
 
 void GoogleAutoLoginHelper::LogIn(const std::string& account_id) {
+  DCHECK(!account_id.empty());
   accounts_.push_back(account_id);
   if (accounts_.size() == 1)
     StartFetching();
@@ -44,6 +48,57 @@ void GoogleAutoLoginHelper::CancelAll() {
   accounts_.clear();
 }
 
+void GoogleAutoLoginHelper::LogOut(
+    const std::string& account_id,
+    const std::vector<std::string>& accounts) {
+  DCHECK(!account_id.empty());
+  bool pending = !accounts_.empty();
+
+  if (pending) {
+    for (std::deque<std::string>::const_iterator it = accounts_.begin() + 1;
+        it != accounts_.end(); it++) {
+      if (!it->empty() &&
+          (std::find(accounts.begin(), accounts.end(), *it) == accounts.end() ||
+          *it == account_id)) {
+        // We have a pending log in request for an account followed by
+        // a signout.
+        GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
+        SignalComplete(*it, error);
+      }
+    }
+
+    // Remove every thing in the work list besides the one that is running.
+    accounts_.resize(1);
+  }
+
+  // Signal a logout to be the next thing to do unless the pending
+  // action is already a logout.
+  if (!pending || !accounts_.front().empty()) {
+    accounts_.push_back("");
+  }
+
+  for (std::vector<std::string>::const_iterator it = accounts.begin();
+      it != accounts.end(); it++) {
+    if (*it != account_id) {
+      DCHECK(!it->empty());
+      accounts_.push_back(*it);
+    }
+  }
+
+  if (!pending) {
+    StartLogOutUrlFetch();
+  }
+}
+
+void GoogleAutoLoginHelper::StartLogOutUrlFetch() {
+  DCHECK(accounts_.front().empty());
+  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url());
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this);
+  fetcher->SetRequestContext(profile_->GetRequestContext());
+  fetcher->Start();
+}
+
 void GoogleAutoLoginHelper::OnUbertokenSuccess(const std::string& uber_token) {
   VLOG(1) << "GoogleAutoLoginHelper::OnUbertokenSuccess"
           << " account=" << accounts_.front();
@@ -59,14 +114,14 @@ void GoogleAutoLoginHelper::OnUbertokenFailure(
           << " account=" << accounts_.front()
           << " error=" << error.ToString();
   const std::string account_id = accounts_.front();
-  MergeNextAccount();
+  HandleNextAccount();
   SignalComplete(account_id, error);
 }
 
 void GoogleAutoLoginHelper::OnMergeSessionSuccess(const std::string& data) {
   DVLOG(1) << "MergeSession successful account=" << accounts_.front();
   const std::string account_id = accounts_.front();
-  MergeNextAccount();
+  HandleNextAccount();
   SignalComplete(account_id, GoogleServiceAuthError::AuthErrorNone());
 }
 
@@ -76,7 +131,7 @@ void GoogleAutoLoginHelper::OnMergeSessionFailure(
           << " account=" << accounts_.front()
           << " error=" << error.ToString();
   const std::string account_id = accounts_.front();
-  MergeNextAccount();
+  HandleNextAccount();
   SignalComplete(account_id, error);
 }
 
@@ -86,6 +141,11 @@ void GoogleAutoLoginHelper::StartFetching() {
       this,
       profile_->GetRequestContext()));
   uber_token_fetcher_->StartFetchingToken(accounts_.front());
+}
+
+void GoogleAutoLoginHelper::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(accounts_.front().empty());
+  HandleNextAccount();
 }
 
 void GoogleAutoLoginHelper::SignalComplete(
@@ -98,12 +158,16 @@ void GoogleAutoLoginHelper::SignalComplete(
                     MergeSessionCompleted(account_id, error));
 }
 
-void GoogleAutoLoginHelper::MergeNextAccount() {
-  gaia_auth_fetcher_.reset();
+void GoogleAutoLoginHelper::HandleNextAccount() {
   accounts_.pop_front();
+  gaia_auth_fetcher_.reset();
   if (accounts_.empty()) {
     uber_token_fetcher_.reset();
   } else {
-    StartFetching();
+    if (accounts_.front().empty()) {
+      StartLogOutUrlFetch();
+    } else {
+      StartFetching();
+    }
   }
 }

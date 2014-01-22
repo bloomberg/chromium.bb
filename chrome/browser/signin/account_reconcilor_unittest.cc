@@ -146,7 +146,9 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
       "[\"foo\", [[\"bar\", 0, \"name\", \"email\", \"photo\", 0, 0, 0]]]",
       net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  reconcilor->GetAccountsFromCookie();
+  reconcilor->GetAccountsFromCookie(base::Bind(
+      &AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts,
+          base::Unretained(reconcilor)));
   ASSERT_FALSE(reconcilor->AreGaiaAccountsSet());
 
   base::RunLoop().RunUntilIdle();
@@ -166,11 +168,12 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
   SetFakeResponse("https://accounts.google.com/ListAccounts", "",
       net::HTTP_NOT_FOUND, net::URLRequestStatus::SUCCESS);
 
-  reconcilor->GetAccountsFromCookie();
+  reconcilor->GetAccountsFromCookie(base::Bind(
+      &AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts,
+          base::Unretained(reconcilor)));
   ASSERT_FALSE(reconcilor->AreGaiaAccountsSet());
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(reconcilor->AreGaiaAccountsSet());
   ASSERT_EQ(0u, reconcilor->GetGaiaAccountsForTesting().size());
 }
 

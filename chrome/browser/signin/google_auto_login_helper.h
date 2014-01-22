@@ -23,7 +23,8 @@ class Profile;
 //
 // By default instances of GoogleAutoLoginHelper delete themselves when done.
 class GoogleAutoLoginHelper : public GaiaAuthConsumer,
-                              public UbertokenConsumer {
+                              public UbertokenConsumer,
+                              public net::URLFetcherDelegate {
  public:
   class Observer {
    public:
@@ -48,6 +49,13 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
   // Cancel all login requests.
   void CancelAll();
 
+  // Signout of |account_id| given a list of accounts already signed in.
+  // Since this involves signing out of all accounts and resigning back in,
+  // the order which |accounts| are given is important as it will dictate
+  // the sign in order. |account_id| does not have to be in |accounts|.
+  void LogOut(const std::string& account_id,
+              const std::vector<std::string>& accounts);
+
  private:
   // Overridden from UbertokenConsumer.
   virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
@@ -62,16 +70,26 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
   // for the next account.  Virtual so that it can be overriden in tests.
   virtual void StartFetching();
 
+  // Virtual for testing purpose.
+  virtual void StartLogOutUrlFetch();
+
   // Call observer when merge session completes.
   void SignalComplete(const std::string& account_id,
                       const GoogleServiceAuthError& error);
 
   // Start the next merge session, if needed.
-  void MergeNextAccount();
+  void HandleNextAccount();
+
+  // Overridden from URLFetcherDelgate.
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   Profile* profile_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<UbertokenFetcher> uber_token_fetcher_;
+
+  // A worklist for this class. Accounts names are stored here if
+  // we are pending a signin action for that account. Empty strings
+  // represent a signout request.
   std::deque<std::string> accounts_;
 
   // List of observers to notify when merge session completes.
