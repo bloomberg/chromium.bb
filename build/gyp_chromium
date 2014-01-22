@@ -211,6 +211,7 @@ def GetArgsStringForGN(supplemental_files):
       ('use_goma', '1', 'use_goma=true'),
       ('asan', '1', 'is_asan=true'),
       ('lsan', '1', 'is_lsan=true'),
+      ('msan', '1', 'is_msan=true'),
       ('tsan', '1', 'is_tsan=true'),
   ]
   for i in remap_cases:
