@@ -52,6 +52,8 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // ServiceWorkerDispatcherHost.
   void OnWorkerStarted(int process_id, int thread_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
+  void OnSendMessageToBrowser(int embedded_worker_id,
+                              const IPC::Message& message);
 
   // Keeps a map from process_id to sender information.
   void AddChildProcessSender(int process_id, IPC::Sender* sender);

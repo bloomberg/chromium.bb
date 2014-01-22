@@ -77,6 +77,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnWorkerStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
                         OnWorkerStopped)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_SendMessageToBrowser,
+                        OnSendMessageToBrowser)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -191,6 +193,15 @@ void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
     return;
   context_->embedded_worker_registry()->OnWorkerStopped(
       render_process_id_, embedded_worker_id);
+}
+
+void ServiceWorkerDispatcherHost::OnSendMessageToBrowser(
+    int embedded_worker_id,
+    const IPC::Message& message) {
+  if (!context_)
+    return;
+  context_->embedded_worker_registry()->OnSendMessageToBrowser(
+      embedded_worker_id, message);
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(

@@ -49,6 +49,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnWorkerStarted(int thread_id,
                        int embedded_worker_id);
   void OnWorkerStopped(int embedded_worker_id);
+  void OnSendMessageToBrowser(int embedded_worker_id,
+                              const IPC::Message& message);
 
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int32 thread_id,

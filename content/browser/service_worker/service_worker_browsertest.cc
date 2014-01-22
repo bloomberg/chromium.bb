@@ -112,6 +112,9 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest,
     last_worker_status_ = worker_->status();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_closure_);
   }
+  virtual void OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    NOTREACHED();
+  }
 
   ServiceWorkerProviderHost* GetRegisteredProviderHost() {
     // Assumes only one provider host is registered at this point.

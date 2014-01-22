@@ -19,6 +19,7 @@ class EmbeddedWorkerInstance;
 class EmbeddedWorkerRegistry;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
+struct ServiceWorkerFetchRequest;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -68,6 +69,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Starts and stops an embedded worker for this version.
   void StartWorker();
   void StopWorker();
+
+  // Sends fetch event to the associated embedded worker.
+  // This immediately returns false if the worker is not running
+  // or sending a message to the child process fails.
+  bool DispatchFetchEvent(const ServiceWorkerFetchRequest& request);
 
   // Called when this version is associated to a provider host.
   // Non-null |provider_host| must be given.

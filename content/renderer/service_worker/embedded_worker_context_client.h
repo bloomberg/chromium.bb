@@ -17,12 +17,19 @@ class MessageLoopProxy;
 
 namespace content {
 
-struct ServiceWorkerFetchRequest;
+class ServiceWorkerScriptContext;
 class ThreadSafeSender;
 
 // This class provides access to/from an embedded worker's WorkerGlobalScope.
 // All methods other than the constructor (it's created on the main thread)
 // are called on the worker thread.
+//
+// TODO(kinuko): Currently EW/SW separation is made a little hazily.
+// This should implement WebEmbeddedWorkerContextClient
+// or sort of it (which doesn't exist yet) rather than
+// WebServiceWorkerContextClient if we want to separate them more cleanly,
+// or ServiceWorkerScriptContext should be merged into this class
+// if we consider EW == SW script context.
 class EmbeddedWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
@@ -38,6 +45,8 @@ class EmbeddedWorkerContextClient
 
   bool OnMessageReceived(const IPC::Message& msg);
 
+  void SendMessageToBrowser(const IPC::Message& message);
+
   // WebServiceWorkerContextClient overrides.
   virtual void workerContextFailedToStart();
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
@@ -48,9 +57,9 @@ class EmbeddedWorkerContextClient
   int embedded_worker_id() const { return embedded_worker_id_; }
 
  private:
-  void OnFetchEvent(int thread_id,
-                    int embedded_worker_id,
-                    const ServiceWorkerFetchRequest& request);
+  void OnSendMessageToWorker(int thread_id,
+                             int embedded_worker_id,
+                             const IPC::Message& message);
 
   const int embedded_worker_id_;
   const int64 service_worker_version_id_;
@@ -58,7 +67,7 @@ class EmbeddedWorkerContextClient
   scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::MessageLoopProxy> main_thread_proxy_;
 
-  blink::WebServiceWorkerContextProxy* proxy_;
+  scoped_ptr<ServiceWorkerScriptContext> script_context_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerContextClient);
 };

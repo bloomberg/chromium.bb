@@ -6,6 +6,7 @@
 
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "ipc/ipc_message.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -41,14 +42,11 @@ bool EmbeddedWorkerInstance::Stop() {
   return success;
 }
 
-bool EmbeddedWorkerInstance::SendFetchRequest(
-    const ServiceWorkerFetchRequest& request) {
+bool EmbeddedWorkerInstance::SendMessage(const IPC::Message& message) {
   DCHECK(status_ == RUNNING);
-  // TODO: Refine this code, the code around FetchEvent is currently very
-  // rough, mainly just for a placeholder for now.
   return registry_->Send(process_id_,
-                         new EmbeddedWorkerContextMsg_FetchEvent(
-                             thread_id_, embedded_worker_id_, request));
+                         new EmbeddedWorkerContextMsg_SendMessageToWorker(
+                             thread_id_, embedded_worker_id_, message));
 }
 
 void EmbeddedWorkerInstance::AddProcessReference(int process_id) {
@@ -93,6 +91,10 @@ void EmbeddedWorkerInstance::OnStopped() {
   process_id_ = -1;
   thread_id_ = -1;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnStopped());
+}
+
+void EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnMessageReceived(message));
 }
 
 void EmbeddedWorkerInstance::AddObserver(Observer* observer) {

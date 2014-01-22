@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
 
@@ -40,6 +41,14 @@ void ServiceWorkerVersion::StartWorker() {
 void ServiceWorkerVersion::StopWorker() {
   DCHECK(!is_shutdown_);
   embedded_worker_->Stop();
+}
+
+bool ServiceWorkerVersion::DispatchFetchEvent(
+    const ServiceWorkerFetchRequest& request) {
+  if (embedded_worker_->status() != EmbeddedWorkerInstance::RUNNING)
+    return false;
+  return embedded_worker_->SendMessage(
+      ServiceWorkerMsg_FetchEvent(request));
 }
 
 void ServiceWorkerVersion::OnAssociateProvider(

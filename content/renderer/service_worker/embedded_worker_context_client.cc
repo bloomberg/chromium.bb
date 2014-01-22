@@ -12,6 +12,7 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_script_context.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/child/worker_task_runner.h"
@@ -51,8 +52,7 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
       service_worker_version_id_(service_worker_version_id),
       script_url_(script_url),
       sender_(ChildThread::current()->thread_safe_sender()),
-      main_thread_proxy_(base::MessageLoopProxy::current()),
-      proxy_(NULL) {
+      main_thread_proxy_(base::MessageLoopProxy::current()) {
   g_worker_client_tls.Pointer()->Set(this);
 }
 
@@ -65,15 +65,22 @@ bool EmbeddedWorkerContextClient::OnMessageReceived(
     const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerContextClient, msg)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_FetchEvent, OnFetchEvent)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_SendMessageToWorker,
+                        OnSendMessageToWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
+void EmbeddedWorkerContextClient::SendMessageToBrowser(
+    const IPC::Message& message) {
+  sender_->Send(new EmbeddedWorkerHostMsg_SendMessageToBrowser(
+      embedded_worker_id_, message));
+}
+
 void EmbeddedWorkerContextClient::workerContextFailedToStart() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
-  DCHECK(!proxy_);
+  DCHECK(!script_context_);
 
   RenderThreadImpl::current()->embedded_worker_dispatcher()->
       WorkerContextDestroyed(embedded_worker_id_);
@@ -83,8 +90,9 @@ void EmbeddedWorkerContextClient::workerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());
   DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
+  DCHECK(!script_context_);
   g_worker_client_tls.Pointer()->Set(this);
-  proxy_ = proxy;
+  script_context_.reset(new ServiceWorkerScriptContext(this, proxy));
 
   sender_->Send(new EmbeddedWorkerHostMsg_WorkerStarted(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
@@ -94,20 +102,21 @@ void EmbeddedWorkerContextClient::workerContextStarted(
 void EmbeddedWorkerContextClient::workerContextDestroyed() {
   // At this point OnWorkerRunLoopStopped is already called, so
   // CurrentWorkerId() returns 0 (while we're still on the worker thread).
-  proxy_ = NULL;
+  script_context_.reset();
   main_thread_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CallWorkerContextDestroyedOnMainThread,
                  embedded_worker_id_));
 }
 
-void EmbeddedWorkerContextClient::OnFetchEvent(
+void EmbeddedWorkerContextClient::OnSendMessageToWorker(
     int thread_id,
     int embedded_worker_id,
-    const ServiceWorkerFetchRequest& request) {
-  // TODO(kinuko): Implement.
-  // This is to call WebServiceWorkerContextProxy's dispatchFetchEvent method.
-  NOTIMPLEMENTED();
+    const IPC::Message& message) {
+  if (!script_context_)
+    return;
+  DCHECK_EQ(embedded_worker_id_, embedded_worker_id);
+  script_context_->OnMessageReceived(message);
 }
 
 }  // namespace content

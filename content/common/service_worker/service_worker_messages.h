@@ -5,6 +5,7 @@
 // Message definition file, included multiple times, hence no include guard.
 
 #include "base/strings/string16.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
@@ -16,6 +17,12 @@
 #define IPC_MESSAGE_START ServiceWorkerMsgStart
 
 IPC_ENUM_TRAITS(blink::WebServiceWorkerError::ErrorType)
+
+IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(method)
+  IPC_STRUCT_TRAITS_MEMBER(headers)
+IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the child process to the browser.
 
@@ -50,6 +57,10 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                      int32 /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,
                      base::string16 /* message */)
+
+// Sent via EmbeddedWorker to dispatch fetch event.
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_FetchEvent,
+                     content::ServiceWorkerFetchRequest)
 
 // Informs the browser of a new ServiceWorkerProvider in the child process,
 // |provider_id| is unique within its child process.

@@ -17,6 +17,10 @@
 
 class GURL;
 
+namespace IPC {
+class Message;
+}
+
 namespace content {
 
 class EmbeddedWorkerRegistry;
@@ -39,6 +43,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     virtual ~Observer() {}
     virtual void OnStarted() = 0;
     virtual void OnStopped() = 0;
+    virtual void OnMessageReceived(const IPC::Message& message) = 0;
   };
 
   ~EmbeddedWorkerInstance();
@@ -56,10 +61,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // IPC couldn't be sent to the worker.
   bool Stop();
 
-  // Sends |request| to the embedded worker running in the child process.
+  // Sends |message| to the embedded worker running in the child process.
   // This returns false if sending IPC fails.
   // It is invalid to call this while the worker is not in RUNNING status.
-  bool SendFetchRequest(const ServiceWorkerFetchRequest& request);
+  bool SendMessage(const IPC::Message& message);
 
   // Add or remove |process_id| to the internal process set where this
   // worker can be started.
@@ -96,6 +101,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // This will change the internal status from STARTING or RUNNING to
   // STOPPED.
   void OnStopped();
+
+  // Called back from Registry when the worker instance sends message
+  // to the browser (i.e. EmbeddedWorker observers).
+  void OnMessageReceived(const IPC::Message& message);
 
   // Chooses a process to start this worker and populate process_id_.
   // Returns false when no process is available.
