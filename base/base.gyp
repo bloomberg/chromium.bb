@@ -761,11 +761,6 @@
           },
         ],
         ['OS == "win"', {
-          # This is needed to trigger the dll copy step on windows.
-          # TODO(mark): This should not be necessary.
-          'dependencies': [
-            '../third_party/icu/icu.gyp:icudata',
-          ],
           'sources!': [
             'file_descriptor_shuffle_unittest.cc',
             'files/dir_reader_posix_unittest.cc',
@@ -776,15 +771,22 @@
           'msvs_disabled_warnings': [
             4267,
           ],
-          # This is needed so base_unittests uses the allocator shim, as
-          # SecurityTest.MemoryAllocationRestriction* tests are dependent
-          # on tcmalloc.
-          # TODO(wfh): crbug.com/246278 Move tcmalloc specific tests into
-          # their own test suite.
           'conditions': [
+            # This is needed so base_unittests uses the allocator shim, as
+            # SecurityTest.MemoryAllocationRestriction* tests are dependent
+            # on tcmalloc.
+            # TODO(wfh): crbug.com/246278 Move tcmalloc specific tests into
+            # their own test suite.
             ['win_use_allocator_shim==1', {
               'dependencies': [
                 'allocator/allocator.gyp:allocator',
+              ],
+            }],
+            ['icu_use_data_file_flag==0', {
+              # This is needed to trigger the dll copy step on windows.
+              # TODO(mark): This should not be necessary.
+              'dependencies': [
+                '../third_party/icu/icu.gyp:icudata',
               ],
             }],
           ],

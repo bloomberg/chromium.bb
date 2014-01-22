@@ -1288,6 +1288,7 @@
       }],
       ['OS=="win"', {
         'windows_driver_kit_path%': '$(WDK_DIR)',
+        'icu_use_data_file_flag%': 1,
       }],
       ['os_posix==1 and OS!="mac" and OS!="ios"', {
         'conditions': [
