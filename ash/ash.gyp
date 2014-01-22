@@ -649,6 +649,8 @@
           'sources/': [
             ['exclude', 'display/output_configurator_animation.cc'],
             ['exclude', 'display/output_configurator_animation.h'],
+            ['exclude', 'display/resolution_notification_controller.cc'],
+            ['exclude', 'display/resolution_notification_controller.h'],
           ],
         }],
       ],
@@ -983,6 +985,10 @@
           ],
           'sources': [
             'first_run/first_run_helper_unittest.cc',
+          ],
+        }, { # else: chromeos!=1
+          'sources/': [
+            ['exclude', 'display/resolution_notification_controller_unittest.cc'],
           ],
         }],
         ['OS=="linux" and component=="shared_library" and linux_use_tcmalloc==1', {

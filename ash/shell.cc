@@ -21,7 +21,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/display/virtual_keyboard_window_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -125,6 +124,7 @@
 #include "base/sys_info.h"
 #include "chromeos/display/output_configurator.h"
 #endif  // defined(USE_X11)
+#include "ash/display/resolution_notification_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
@@ -705,7 +705,9 @@ Shell::~Shell() {
   power_button_controller_.reset();
   lock_state_controller_.reset();
 
+#if defined(OS_CHROMEOS)
   resolution_notification_controller_.reset();
+#endif
   desktop_background_controller_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
@@ -722,7 +724,7 @@ Shell::~Shell() {
   media_delegate_.reset();
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-   if (display_change_observer_)
+  if (display_change_observer_)
     output_configurator_->RemoveObserver(display_change_observer_.get());
   if (output_configurator_animation_)
     output_configurator_->RemoveObserver(output_configurator_animation_.get());
@@ -808,8 +810,10 @@ void Shell::Init() {
   aura::Window* root_window = display_controller_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
 
+#if defined(OS_CHROMEOS)
   resolution_notification_controller_.reset(
       new internal::ResolutionNotificationController);
+#endif
 
   cursor_manager_.SetDisplay(GetScreen()->GetPrimaryDisplay());
 

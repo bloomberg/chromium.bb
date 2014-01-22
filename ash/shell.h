@@ -484,7 +484,8 @@ class ASH_EXPORT Shell
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
+#if defined(USE_X11)
   // TODO(oshima): Move these objects to DisplayController.
   chromeos::OutputConfigurator* output_configurator() {
     return output_configurator_.get();
@@ -495,12 +496,13 @@ class ASH_EXPORT Shell
   internal::DisplayErrorObserver* display_error_observer() {
     return display_error_observer_.get();
   }
-#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+#endif  // defined(USE_X11)
 
   internal::ResolutionNotificationController*
       resolution_notification_controller() {
     return resolution_notification_controller_.get();
   }
+#endif  // defined(OS_CHROMEOS)
 
   WindowTreeHostFactory* root_window_host_factory() {
     return root_window_host_factory_.get();
@@ -683,6 +685,8 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<internal::VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<StickyKeysController> sticky_keys_controller_;
+  scoped_ptr<internal::ResolutionNotificationController>
+      resolution_notification_controller_;
 #if defined(USE_X11)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
@@ -694,9 +698,6 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::DisplayChangeObserver> display_change_observer_;
 #endif  // defined(USE_X11)
 #endif  // defined(OS_CHROMEOS)
-
-  scoped_ptr<internal::ResolutionNotificationController>
-      resolution_notification_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.
