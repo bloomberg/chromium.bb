@@ -1,7 +1,7 @@
 Name: Polymer
 Short Name: polymer
 URL: http://www.polymer-project.org
-Version: 0.1.1
+Version: 0.1.3
 Revision: (See <component>/.bower.json)
 License: BSD
 License File: LICENSE
@@ -12,6 +12,8 @@ This directory contains a copy of the following components which are a part of
 the Polymer project:
 -polymer
 -platform
+-polymer-selector
+-polymer-selection
 
 The directory can be updated by running "bower update". A now component can be
 installed by running "bower install Polymer/<component>". Be sure to add the
