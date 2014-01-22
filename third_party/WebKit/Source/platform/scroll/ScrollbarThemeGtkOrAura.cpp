@@ -62,6 +62,9 @@ ScrollbarTheme* ScrollbarTheme::nativeTheme()
 int ScrollbarThemeGtkOrAura::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     // Horiz and Vert scrollbars are the same thickness.
+    // In unit tests we don't have the mock theme engine (because of layering violations), so we hard code the size (see bug 327470).
+    if (useMockTheme())
+        return 15;
     IntSize scrollbarSize = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarVerticalTrack);
     return scrollbarSize.width();
 }
