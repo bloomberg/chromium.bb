@@ -1224,7 +1224,6 @@
         'browser/signin/account_reconcilor_unittest.cc',
         'browser/signin/fake_auth_status_provider.cc',
         'browser/signin/fake_auth_status_provider.h',
-        'browser/signin/google_auto_login_helper_unittest.cc',
         'browser/signin/local_auth_unittest.cc',
         'browser/signin/mutable_profile_oauth2_token_service_unittest.cc',
         'browser/signin/profile_oauth2_token_service_request_unittest.cc',

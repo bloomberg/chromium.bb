@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/signin/google_auto_login_helper.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/merge_session_helper.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class GaiaAuthFetcher;
@@ -36,8 +36,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
   virtual void Shutdown() OVERRIDE;
 
   // Add or remove observers for the merge session notification.
-  void AddMergeSessionObserver(GoogleAutoLoginHelper::Observer* observer);
-  void RemoveMergeSessionObserver(GoogleAutoLoginHelper::Observer* observer);
+  void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
+  void RemoveMergeSessionObserver(MergeSessionHelper::Observer* observer);
 
   Profile* profile() { return profile_; }
 
@@ -150,7 +150,7 @@ class AccountReconcilor : public BrowserContextKeyedService,
   Profile* profile_;
   content::NotificationRegistrar registrar_;
   base::RepeatingTimer<AccountReconcilor> reconciliation_timer_;
-  GoogleAutoLoginHelper merge_session_helper_;
+  MergeSessionHelper merge_session_helper_;
   bool registered_with_token_service_;
 
   // Used during reconcile action.

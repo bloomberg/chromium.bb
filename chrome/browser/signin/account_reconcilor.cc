@@ -78,7 +78,10 @@ void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
 AccountReconcilor::AccountReconcilor(Profile* profile)
     : OAuth2TokenService::Consumer("account_reconcilor"),
       profile_(profile),
-      merge_session_helper_(profile, NULL),
+      merge_session_helper_(
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          profile->GetRequestContext(),
+          NULL),
       registered_with_token_service_(false),
       are_gaia_accounts_set_(false),requests_(NULL) {
   DVLOG(1) << "AccountReconcilor::AccountReconcilor";
@@ -114,12 +117,12 @@ void AccountReconcilor::Shutdown() {
 }
 
 void AccountReconcilor::AddMergeSessionObserver(
-    GoogleAutoLoginHelper::Observer* observer) {
+    MergeSessionHelper::Observer* observer) {
   merge_session_helper_.AddObserver(observer);
 }
 
 void AccountReconcilor::RemoveMergeSessionObserver(
-    GoogleAutoLoginHelper::Observer* observer) {
+    MergeSessionHelper::Observer* observer) {
   merge_session_helper_.RemoveObserver(observer);
 }
 

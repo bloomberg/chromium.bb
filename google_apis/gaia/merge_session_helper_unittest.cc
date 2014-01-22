@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,19 +6,23 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/signin/google_auto_login_helper.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/fake_oauth2_token_service.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/merge_session_helper.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class MockObserver : public GoogleAutoLoginHelper::Observer {
+class MockObserver : public MergeSessionHelper::Observer {
  public:
-  explicit MockObserver(GoogleAutoLoginHelper* helper) : helper_(helper) {
+  explicit MockObserver(MergeSessionHelper* helper) : helper_(helper) {
     helper_->AddObserver(this);
   }
 
@@ -30,25 +34,27 @@ class MockObserver : public GoogleAutoLoginHelper::Observer {
                void(const std::string&,
                     const GoogleServiceAuthError& ));
  private:
-  GoogleAutoLoginHelper* helper_;
+  MergeSessionHelper* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
-// Counts number of InstrumentedGoogleAutoLoginHelper created.
+// Counts number of InstrumentedMergeSessionHelper created.
 // We can EXPECT_* to be zero at the end of our unit tests
 // to make sure everything is properly deleted.
 
 int total = 0;
 
-class InstrumentedGoogleAutoLoginHelper : public GoogleAutoLoginHelper {
+class InstrumentedMergeSessionHelper : public MergeSessionHelper {
  public:
-  explicit InstrumentedGoogleAutoLoginHelper(Profile* profile) :
-    GoogleAutoLoginHelper(profile, NULL) {
+  InstrumentedMergeSessionHelper(
+      OAuth2TokenService* token_service,
+      net::URLRequestContextGetter* request_context) :
+    MergeSessionHelper(token_service, request_context, NULL) {
     total++;
   }
 
-  virtual ~InstrumentedGoogleAutoLoginHelper() {
+  virtual ~InstrumentedMergeSessionHelper() {
     total--;
   }
 
@@ -56,17 +62,22 @@ class InstrumentedGoogleAutoLoginHelper : public GoogleAutoLoginHelper {
   MOCK_METHOD0(StartLogOutUrlFetch, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InstrumentedGoogleAutoLoginHelper);
+  DISALLOW_COPY_AND_ASSIGN(InstrumentedMergeSessionHelper);
 };
 
-class GoogleAutoLoginHelperTest : public testing::Test {
+class MergeSessionHelperTest : public testing::Test {
  public:
-   GoogleAutoLoginHelperTest()
+   MergeSessionHelperTest()
        : no_error_(GoogleServiceAuthError::NONE),
          error_(GoogleServiceAuthError::SERVICE_ERROR),
-         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {}
+         canceled_(GoogleServiceAuthError::REQUEST_CANCELED),
+         request_context_getter_(new net::TestURLRequestContextGetter(
+             base::MessageLoopProxy::current())) {}
 
-  TestingProfile* profile() { return &profile_; }
+  OAuth2TokenService* token_service() { return &token_service_; }
+  net::URLRequestContextGetter* request_context() {
+    return request_context_getter_;
+  }
 
   void SimulateUbertokenFailure(UbertokenConsumer* consumer,
                                 const GoogleServiceAuthError& error) {
@@ -92,19 +103,21 @@ class GoogleAutoLoginHelperTest : public testing::Test {
   const GoogleServiceAuthError& canceled() { return canceled_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  base::MessageLoop message_loop_;
+  net::TestURLFetcherFactory factory_;
+  FakeOAuth2TokenService token_service_;
   GoogleServiceAuthError no_error_;
   GoogleServiceAuthError error_;
   GoogleServiceAuthError canceled_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 };
 
 } // namespace
 
 using ::testing::_;
 
-TEST_F(GoogleAutoLoginHelperTest, Success) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, Success) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching());
@@ -114,8 +127,8 @@ TEST_F(GoogleAutoLoginHelperTest, Success) {
   SimulateMergeSessionSuccess(&helper, "token");
 }
 
-TEST_F(GoogleAutoLoginHelperTest, FailedMergeSession) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, FailedMergeSession) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching());
@@ -125,8 +138,8 @@ TEST_F(GoogleAutoLoginHelperTest, FailedMergeSession) {
   SimulateMergeSessionFailure(&helper, error());
 }
 
-TEST_F(GoogleAutoLoginHelperTest, FailedUbertoken) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, FailedUbertoken) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching());
@@ -136,8 +149,8 @@ TEST_F(GoogleAutoLoginHelperTest, FailedUbertoken) {
   SimulateUbertokenFailure(&helper, error());
 }
 
-TEST_F(GoogleAutoLoginHelperTest, ContinueAfterSuccess) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, ContinueAfterSuccess) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(2);
@@ -150,8 +163,8 @@ TEST_F(GoogleAutoLoginHelperTest, ContinueAfterSuccess) {
   SimulateMergeSessionSuccess(&helper, "token2");
 }
 
-TEST_F(GoogleAutoLoginHelperTest, ContinueAfterFailure1) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, ContinueAfterFailure1) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(2);
@@ -164,8 +177,8 @@ TEST_F(GoogleAutoLoginHelperTest, ContinueAfterFailure1) {
   SimulateMergeSessionSuccess(&helper, "token2");
 }
 
-TEST_F(GoogleAutoLoginHelperTest, ContinueAfterFailure2) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, ContinueAfterFailure2) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(2);
@@ -178,8 +191,8 @@ TEST_F(GoogleAutoLoginHelperTest, ContinueAfterFailure2) {
   SimulateMergeSessionSuccess(&helper, "token2");
 }
 
-TEST_F(GoogleAutoLoginHelperTest, AllRequestsInMultipleGoes) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, AllRequestsInMultipleGoes) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   EXPECT_CALL(helper, StartFetching()).Times(4);
@@ -200,8 +213,8 @@ TEST_F(GoogleAutoLoginHelperTest, AllRequestsInMultipleGoes) {
   SimulateMergeSessionSuccess(&helper, "token4");
 }
 
-TEST_F(GoogleAutoLoginHelperTest, LogOut) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, LogOut) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts;
@@ -220,8 +233,8 @@ TEST_F(GoogleAutoLoginHelperTest, LogOut) {
   SimulateMergeSessionSuccess(&helper, "token3");
 }
 
-TEST_F(GoogleAutoLoginHelperTest, PendingSigninThenSignout) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, PendingSigninThenSignout) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts;
@@ -246,8 +259,8 @@ TEST_F(GoogleAutoLoginHelperTest, PendingSigninThenSignout) {
   SimulateMergeSessionSuccess(&helper, "token3");
 }
 
-TEST_F(GoogleAutoLoginHelperTest, CancelSignIn) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, CancelSignIn) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts;
@@ -265,8 +278,8 @@ TEST_F(GoogleAutoLoginHelperTest, CancelSignIn) {
   SimulateLogoutSuccess(&helper);
 }
 
-TEST_F(GoogleAutoLoginHelperTest, DoubleSignout) {
-  InstrumentedGoogleAutoLoginHelper helper(profile());
+TEST_F(MergeSessionHelperTest, DoubleSignout) {
+  InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MockObserver observer(&helper);
 
   std::vector<std::string> current_accounts1;

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/google_auto_login_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/merge_session_helper.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
@@ -50,7 +50,7 @@ class Profile;
 // in sync state so they can be reflected in the UI.
 class SigninTracker : public content::NotificationObserver,
                       public OAuth2TokenService::Observer,
-                      public GoogleAutoLoginHelper::Observer {
+                      public MergeSessionHelper::Observer {
  public:
   class Observer {
    public:
@@ -84,7 +84,7 @@ class SigninTracker : public content::NotificationObserver,
   // Initializes this by adding notifications and observers.
   void Initialize();
 
-  // GoogleAutoLoginHelper::Observer implementation.
+  // MergeSessionHelper::Observer implementation.
   virtual void MergeSessionCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) OVERRIDE;

@@ -2004,8 +2004,6 @@
         'browser/signin/account_reconcilor_factory.h',
         'browser/signin/chrome_signin_manager_delegate.cc',
         'browser/signin/chrome_signin_manager_delegate.h',
-        'browser/signin/google_auto_login_helper.cc',
-        'browser/signin/google_auto_login_helper.h',
         'browser/signin/local_auth.cc',
         'browser/signin/local_auth.h',
         'browser/signin/mutable_profile_oauth2_token_service.cc',

@@ -117,13 +117,13 @@ bool SigninManager::HasSigninProcess() const {
 }
 
 void SigninManager::AddMergeSessionObserver(
-    GoogleAutoLoginHelper::Observer* observer) {
+    MergeSessionHelper::Observer* observer) {
   if (merge_session_helper_)
     merge_session_helper_->AddObserver(observer);
 }
 
 void SigninManager::RemoveMergeSessionObserver(
-    GoogleAutoLoginHelper::Observer* observer) {
+    MergeSessionHelper::Observer* observer) {
   if (merge_session_helper_)
     merge_session_helper_->RemoveObserver(observer);
 }
@@ -580,19 +580,22 @@ void SigninManager::CompletePendingSignin() {
   DCHECK(!possibly_invalid_username_.empty());
   OnSignedIn(possibly_invalid_username_);
 
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+
   // If inline sign in is enabled, but new profile management is not, perform a
   // merge session now to push the user's credentials into the cookie jar.
   bool do_merge_session_in_signin_manager =
       !switches::IsEnableWebBasedSignin() &&
       !switches::IsNewProfileManagement();
 
-  if (do_merge_session_in_signin_manager)
-    merge_session_helper_.reset(new GoogleAutoLoginHelper(profile_, NULL));
+  if (do_merge_session_in_signin_manager) {
+    merge_session_helper_.reset(new MergeSessionHelper(
+        token_service, profile_->GetRequestContext(), NULL));
+  }
 
   DCHECK(!temp_oauth_login_tokens_.refresh_token.empty());
   DCHECK(!GetAuthenticatedUsername().empty());
-  ProfileOAuth2TokenService* token_service =
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   token_service->UpdateCredentials(GetAuthenticatedUsername(),
                                    temp_oauth_login_tokens_.refresh_token);
   temp_oauth_login_tokens_ = ClientOAuthResult();

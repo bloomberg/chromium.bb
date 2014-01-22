@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_GOOGLE_AUTO_LOGIN_HELPER_H_
-#define CHROME_BROWSER_SIGNIN_GOOGLE_AUTO_LOGIN_HELPER_H_
+#ifndef GOOGLE_APIS_GAIA_MERGE_SESSION_HELPER_H_
+#define GOOGLE_APIS_GAIA_MERGE_SESSION_HELPER_H_
 
 #include <deque>
 
@@ -13,18 +13,21 @@
 
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
-class Profile;
+class OAuth2TokenService;
 
-// Merges a Google account known to Chrome into the cookie jar.  Once the
-// account is merged, successfully or not, a NOTIFICATION_MERGE_SESSION_COMPLETE
-// notification is sent out.  When merging multiple accounts, one instance of
-// the helper is better than multiple instances if there is the possibility
-// that they run concurrently, since changes to the cookie must be serialized.
+namespace net {
+class URLRequestContextGetter;
+}
+
+// Merges a Google account known to Chrome into the cookie jar.  When merging
+// multiple accounts, one instance of the helper is better than multiple
+// instances if there is the possibility that they run concurrently, since
+// changes to the cookie must be serialized.
 //
-// By default instances of GoogleAutoLoginHelper delete themselves when done.
-class GoogleAutoLoginHelper : public GaiaAuthConsumer,
-                              public UbertokenConsumer,
-                              public net::URLFetcherDelegate {
+// By default instances of MergeSessionHelper delete themselves when done.
+class MergeSessionHelper : public GaiaAuthConsumer,
+                           public UbertokenConsumer,
+                           public net::URLFetcherDelegate {
  public:
   class Observer {
    public:
@@ -37,8 +40,10 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
     virtual ~Observer() {}
   };
 
-  GoogleAutoLoginHelper(Profile* profile, Observer* observer);
-  virtual ~GoogleAutoLoginHelper();
+  MergeSessionHelper(OAuth2TokenService* token_service,
+                     net::URLRequestContextGetter* request_context,
+                     Observer* observer);
+  virtual ~MergeSessionHelper();
 
   void LogIn(const std::string& account_id);
 
@@ -83,7 +88,8 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
   // Overridden from URLFetcherDelgate.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  Profile* profile_;
+  OAuth2TokenService* token_service_;
+  net::URLRequestContextGetter* request_context_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<UbertokenFetcher> uber_token_fetcher_;
 
@@ -96,7 +102,7 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
   // Makes sure list is empty on destruction.
   ObserverList<Observer, true> observer_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(GoogleAutoLoginHelper);
+  DISALLOW_COPY_AND_ASSIGN(MergeSessionHelper);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_GOOGLE_AUTO_LOGIN_HELPER_H_
+#endif  // GOOGLE_APIS_GAIA_MERGE_SESSION_HELPER_H_
