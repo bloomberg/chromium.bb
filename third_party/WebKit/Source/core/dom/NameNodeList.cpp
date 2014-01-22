@@ -42,9 +42,9 @@ NameNodeList::~NameNodeList()
     ownerNode()->nodeLists()->removeCacheWithAtomicName(this, NameNodeListType, m_name);
 }
 
-bool NameNodeList::nodeMatches(Element* testNode) const
+bool NameNodeList::nodeMatches(const Element& testNode) const
 {
-    return testNode->getNameAttribute() == m_name;
+    return testNode.getNameAttribute() == m_name;
 }
 
 } // namespace WebCore

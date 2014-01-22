@@ -120,11 +120,11 @@ protected:
     bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
 
 private:
-    Node* itemBeforeOrAfterCachedItem(unsigned offset, ContainerNode* root) const;
+    Node* itemBeforeOrAfterCachedItem(unsigned offset, const ContainerNode& root) const;
     bool isLastItemCloserThanLastOrCachedItem(unsigned offset) const;
     bool isFirstItemCloserThanCachedItem(unsigned offset) const;
     Node* iterateForPreviousNode(Node* current) const;
-    Node* itemBefore(Node* previousItem) const;
+    Node* itemBefore(const Node* previousItem) const;
     void invalidateIdNameCacheMaps() const;
 
     RefPtr<Node> m_ownerNode;
@@ -176,12 +176,12 @@ public:
     virtual unsigned length() const OVERRIDE FINAL { return LiveNodeListBase::length(); }
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return LiveNodeListBase::item(offset); }
     virtual Node* namedItem(const AtomicString&) const OVERRIDE FINAL;
-    virtual bool nodeMatches(Element*) const = 0;
+    virtual bool nodeMatches(const Element&) const = 0;
     // Avoid ambiguity since both NodeList and LiveNodeListBase have an ownerNode() method.
     using LiveNodeListBase::ownerNode;
 
-    Node* traverseToFirstElement(ContainerNode& root) const;
-    Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, ContainerNode* root) const;
+    Node* traverseToFirstElement(const ContainerNode& root) const;
+    Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
 
 private:
     virtual bool isLiveNodeList() const OVERRIDE FINAL { return true; }

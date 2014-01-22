@@ -89,28 +89,28 @@ void RadioNodeList::setValue(const String& value)
     }
 }
 
-bool RadioNodeList::checkElementMatchesRadioNodeListFilter(Element* testElement) const
+bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testElement) const
 {
     ASSERT(!m_onlyMatchImgElements);
-    ASSERT(testElement->hasTagName(objectTag) || testElement->isFormControlElement());
+    ASSERT(testElement.hasTagName(objectTag) || testElement.isFormControlElement());
     if (ownerNode()->hasTagName(formTag)) {
-        HTMLFormElement* formElement = toHTMLElement(testElement)->formOwner();
+        HTMLFormElement* formElement = toHTMLElement(testElement).formOwner();
         if (!formElement || formElement != ownerNode())
             return false;
     }
 
-    return testElement->getIdAttribute() == m_name || testElement->getNameAttribute() == m_name;
+    return testElement.getIdAttribute() == m_name || testElement.getNameAttribute() == m_name;
 }
 
-bool RadioNodeList::nodeMatches(Element* testElement) const
+bool RadioNodeList::nodeMatches(const Element& testElement) const
 {
     if (m_onlyMatchImgElements)
-        return testElement->hasTagName(imgTag);
+        return testElement.hasTagName(imgTag);
 
-    if (!testElement->hasTagName(objectTag) && !testElement->isFormControlElement())
+    if (!testElement.hasTagName(objectTag) && !testElement.isFormControlElement())
         return false;
 
-    if (testElement->hasTagName(inputTag) && toHTMLInputElement(testElement)->isImageButton())
+    if (testElement.hasTagName(inputTag) && toHTMLInputElement(testElement).isImageButton())
         return false;
 
     return checkElementMatchesRadioNodeListFilter(testElement);

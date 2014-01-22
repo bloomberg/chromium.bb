@@ -50,7 +50,7 @@ public:
 protected:
     TagNodeList(PassRefPtr<Node> rootNode, CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
 
-    virtual bool nodeMatches(Element*) const OVERRIDE;
+    virtual bool nodeMatches(const Element&) const OVERRIDE;
 
     AtomicString m_namespaceURI;
     AtomicString m_localName;
@@ -64,22 +64,22 @@ public:
         return adoptRef(new HTMLTagNodeList(rootNode, localName));
     }
 
-    bool nodeMatchesInlined(Element*) const;
+    bool nodeMatchesInlined(const Element&) const;
 
 private:
     HTMLTagNodeList(PassRefPtr<Node> rootNode, const AtomicString& localName);
 
-    virtual bool nodeMatches(Element*) const OVERRIDE;
+    virtual bool nodeMatches(const Element&) const OVERRIDE;
 
     AtomicString m_loweredLocalName;
 };
 
-inline bool HTMLTagNodeList::nodeMatchesInlined(Element* testNode) const
+inline bool HTMLTagNodeList::nodeMatchesInlined(const Element& testNode) const
 {
     // Implements http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagname
     if (m_localName != starAtom) {
-        const AtomicString& localName = testNode->isHTMLElement() ? m_loweredLocalName : m_localName;
-        if (localName != testNode->localName())
+        const AtomicString& localName = testNode.isHTMLElement() ? m_loweredLocalName : m_localName;
+        if (localName != testNode.localName())
             return false;
     }
     ASSERT(m_namespaceURI == starAtom);

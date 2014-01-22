@@ -201,7 +201,7 @@ void HTMLOptionElement::setValue(const AtomicString& value)
     setAttribute(valueAttr, value);
 }
 
-bool HTMLOptionElement::selected()
+bool HTMLOptionElement::selected() const
 {
     if (HTMLSelectElement* select = ownerSelectElement()) {
         // If a stylesheet contains option:checked selectors, this function is

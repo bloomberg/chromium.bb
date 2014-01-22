@@ -187,48 +187,48 @@ void HTMLCollection::invalidateCache() const
 }
 
 template <class NodeListType>
-inline bool isMatchingElement(const NodeListType*, Element*);
+inline bool isMatchingElement(const NodeListType&, const Element&);
 
-template <> inline bool isMatchingElement(const HTMLCollection* htmlCollection, Element* element)
+template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, const Element& element)
 {
-    CollectionType type = htmlCollection->type();
-    if (!element->isHTMLElement() && !(type == DocAll || type == NodeChildren || type == WindowNamedItems))
+    CollectionType type = htmlCollection.type();
+    if (!element.isHTMLElement() && !(type == DocAll || type == NodeChildren || type == WindowNamedItems))
         return false;
 
     switch (type) {
     case DocImages:
-        return element->hasLocalName(imgTag);
+        return element.hasLocalName(imgTag);
     case DocScripts:
-        return element->hasLocalName(scriptTag);
+        return element.hasLocalName(scriptTag);
     case DocForms:
-        return element->hasLocalName(formTag);
+        return element.hasLocalName(formTag);
     case TableTBodies:
-        return element->hasLocalName(tbodyTag);
+        return element.hasLocalName(tbodyTag);
     case TRCells:
-        return element->hasLocalName(tdTag) || element->hasLocalName(thTag);
+        return element.hasLocalName(tdTag) || element.hasLocalName(thTag);
     case TSectionRows:
-        return element->hasLocalName(trTag);
+        return element.hasLocalName(trTag);
     case SelectOptions:
-        return element->hasLocalName(optionTag);
+        return element.hasLocalName(optionTag);
     case SelectedOptions:
-        return element->hasLocalName(optionTag) && toHTMLOptionElement(element)->selected();
+        return element.hasLocalName(optionTag) && toHTMLOptionElement(element).selected();
     case DataListOptions:
-        if (element->hasLocalName(optionTag)) {
-            HTMLOptionElement* option = toHTMLOptionElement(element);
-            if (!option->isDisabledFormControl() && !option->value().isEmpty())
+        if (element.hasLocalName(optionTag)) {
+            const HTMLOptionElement& option = toHTMLOptionElement(element);
+            if (!option.isDisabledFormControl() && !option.value().isEmpty())
                 return true;
         }
         return false;
     case MapAreas:
-        return element->hasLocalName(areaTag);
+        return element.hasLocalName(areaTag);
     case DocApplets:
-        return element->hasLocalName(appletTag) || (element->hasLocalName(objectTag) && toHTMLObjectElement(element)->containsJavaApplet());
+        return element.hasLocalName(appletTag) || (element.hasLocalName(objectTag) && toHTMLObjectElement(element).containsJavaApplet());
     case DocEmbeds:
-        return element->hasLocalName(embedTag);
+        return element.hasLocalName(embedTag);
     case DocLinks:
-        return (element->hasLocalName(aTag) || element->hasLocalName(areaTag)) && element->fastHasAttribute(hrefAttr);
+        return (element.hasLocalName(aTag) || element.hasLocalName(areaTag)) && element.fastHasAttribute(hrefAttr);
     case DocAnchors:
-        return element->hasLocalName(aTag) && element->fastHasAttribute(nameAttr);
+        return element.hasLocalName(aTag) && element.fastHasAttribute(nameAttr);
     case DocAll:
     case NodeChildren:
         return true;
@@ -249,37 +249,37 @@ template <> inline bool isMatchingElement(const HTMLCollection* htmlCollection, 
     return false;
 }
 
-template <> inline bool isMatchingElement(const LiveNodeList* nodeList, Element* element)
+template <> inline bool isMatchingElement(const LiveNodeList& nodeList, const Element& element)
 {
-    return nodeList->nodeMatches(element);
+    return nodeList.nodeMatches(element);
 }
 
-template <> inline bool isMatchingElement(const HTMLTagNodeList* nodeList, Element* element)
+template <> inline bool isMatchingElement(const HTMLTagNodeList& nodeList, const Element& element)
 {
-    return nodeList->nodeMatchesInlined(element);
+    return nodeList.nodeMatchesInlined(element);
 }
 
-template <> inline bool isMatchingElement(const ClassNodeList* nodeList, Element* element)
+template <> inline bool isMatchingElement(const ClassNodeList& nodeList, const Element& element)
 {
-    return nodeList->nodeMatchesInlined(element);
+    return nodeList.nodeMatchesInlined(element);
 }
 
-static Node* previousNode(Node& base, Node& previous, bool onlyIncludeDirectChildren)
+static Node* previousNode(const Node& base, const Node& previous, bool onlyIncludeDirectChildren)
 {
     return onlyIncludeDirectChildren ? previous.previousSibling() : NodeTraversal::previous(previous, &base);
 }
 
-static inline Node* lastDescendent(Node& node)
+static inline Node* lastDescendant(const Node& node)
 {
-    Node* descendent = node.lastChild();
-    for (Node* current = descendent; current; current = current->lastChild())
-        descendent = current;
-    return descendent;
+    Node* descendant = node.lastChild();
+    for (Node* current = descendant; current; current = current->lastChild())
+        descendant = current;
+    return descendant;
 }
 
-static Node* lastNode(Node& rootNode, bool onlyIncludeDirectChildren)
+static Node* lastNode(const Node& rootNode, bool onlyIncludeDirectChildren)
 {
-    return onlyIncludeDirectChildren ? rootNode.lastChild() : lastDescendent(rootNode);
+    return onlyIncludeDirectChildren ? rootNode.lastChild() : lastDescendant(rootNode);
 }
 
 ALWAYS_INLINE Node* LiveNodeListBase::iterateForPreviousNode(Node* current) const
@@ -289,17 +289,17 @@ ALWAYS_INLINE Node* LiveNodeListBase::iterateForPreviousNode(Node* current) cons
     Node& rootNode = this->rootNode();
     for (; current; current = previousNode(rootNode, *current, onlyIncludeDirectChildren)) {
         if (isLiveNodeListType(collectionType)) {
-            if (current->isElementNode() && isMatchingElement(static_cast<const LiveNodeList*>(this), toElement(current)))
+            if (current->isElementNode() && isMatchingElement(static_cast<const LiveNodeList&>(*this), toElement(*current)))
                 return toElement(current);
         } else {
-            if (current->isElementNode() && isMatchingElement(static_cast<const HTMLCollection*>(this), toElement(current)))
+            if (current->isElementNode() && isMatchingElement(static_cast<const HTMLCollection&>(*this), toElement(*current)))
                 return toElement(current);
         }
     }
     return 0;
 }
 
-ALWAYS_INLINE Node* LiveNodeListBase::itemBefore(Node* previous) const
+ALWAYS_INLINE Node* LiveNodeListBase::itemBefore(const Node* previous) const
 {
     Node* current;
     if (LIKELY(!!previous)) // Without this LIKELY, length() and item() can be 10% slower.
@@ -313,26 +313,26 @@ ALWAYS_INLINE Node* LiveNodeListBase::itemBefore(Node* previous) const
 }
 
 template <class NodeListType>
-inline Element* firstMatchingElement(const NodeListType* nodeList, ContainerNode& root)
+inline Element* firstMatchingElement(const NodeListType& nodeList, const ContainerNode& root)
 {
     Element* element = ElementTraversal::firstWithin(root);
-    while (element && !isMatchingElement(nodeList, element))
+    while (element && !isMatchingElement(nodeList, *element))
         element = ElementTraversal::next(*element, &root);
     return element;
 }
 
 template <class NodeListType>
-inline Element* nextMatchingElement(const NodeListType* nodeList, Element& current, ContainerNode* root)
+inline Element* nextMatchingElement(const NodeListType& nodeList, Element& current, const ContainerNode& root)
 {
     Element* next = &current;
     do {
-        next = ElementTraversal::next(*next, root);
-    } while (next && !isMatchingElement(nodeList, next));
+        next = ElementTraversal::next(*next, &root);
+    } while (next && !isMatchingElement(nodeList, *next));
     return next;
 }
 
 template <class NodeListType>
-inline Element* traverseMatchingElementsForwardToOffset(const NodeListType* nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root)
+inline Element* traverseMatchingElementsForwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root)
 {
     ASSERT(currentOffset < offset);
     Element* next = &currentElement;
@@ -356,34 +356,34 @@ static inline Node* traverseSiblingsForwardToOffset(unsigned offset, Node& curre
 
 // FIXME: This should be in LiveNodeList.cpp but it needs to stay here until firstMatchingElement()
 // and others are moved to a separate header.
-inline Node* LiveNodeList::traverseToFirstElement(ContainerNode& root) const
+inline Node* LiveNodeList::traverseToFirstElement(const ContainerNode& root) const
 {
     ASSERT(isLiveNodeListType(type()));
     switch (type()) {
     case ChildNodeListType:
         return root.firstChild();
     case HTMLTagNodeListType:
-        return firstMatchingElement(static_cast<const HTMLTagNodeList*>(this), root);
+        return firstMatchingElement(static_cast<const HTMLTagNodeList&>(*this), root);
     case ClassNodeListType:
-        return firstMatchingElement(static_cast<const ClassNodeList*>(this), root);
+        return firstMatchingElement(static_cast<const ClassNodeList&>(*this), root);
     default:
-        return firstMatchingElement(static_cast<const LiveNodeList*>(this), root);
+        return firstMatchingElement(static_cast<const LiveNodeList&>(*this), root);
     }
 }
 
 // FIXME: This should be in LiveNodeList.cpp but it needs to stay here until traverseMatchingElementsForwardToOffset()
 // and others are moved to a separate header.
-inline Node* LiveNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, ContainerNode* root) const
+inline Node* LiveNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const
 {
     switch (type()) {
     case ChildNodeListType:
         return traverseSiblingsForwardToOffset(offset, currentNode, currentOffset);
     case HTMLTagNodeListType:
-        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagNodeList*>(this), offset, toElement(currentNode), currentOffset, root);
+        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagNodeList&>(*this), offset, toElement(currentNode), currentOffset, root);
     case ClassNodeListType:
-        return traverseMatchingElementsForwardToOffset(static_cast<const ClassNodeList*>(this), offset, toElement(currentNode), currentOffset, root);
+        return traverseMatchingElementsForwardToOffset(static_cast<const ClassNodeList&>(*this), offset, toElement(currentNode), currentOffset, root);
     default:
-        return traverseMatchingElementsForwardToOffset(this, offset, toElement(currentNode), currentOffset, root);
+        return traverseMatchingElementsForwardToOffset(*this, offset, toElement(currentNode), currentOffset, root);
     }
 }
 
@@ -455,10 +455,10 @@ Node* LiveNodeListBase::item(unsigned offset) const
     if (cachedItemOffset() == offset)
         return cachedItem();
 
-    return itemBeforeOrAfterCachedItem(offset, root);
+    return itemBeforeOrAfterCachedItem(offset, *root);
 }
 
-inline Node* LiveNodeListBase::itemBeforeOrAfterCachedItem(unsigned offset, ContainerNode* root) const
+inline Node* LiveNodeListBase::itemBeforeOrAfterCachedItem(unsigned offset, const ContainerNode& root) const
 {
     unsigned currentOffset = cachedItemOffset();
     Node* currentItem = cachedItem();
@@ -499,70 +499,70 @@ Element* HTMLCollection::virtualItemAfter(Element*) const
     return 0;
 }
 
-static inline bool nameShouldBeVisibleInDocumentAll(HTMLElement* element)
+static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
 {
     // The document.all collection returns only certain types of elements by name,
     // although it returns any type of element by id.
-    return element->hasLocalName(appletTag)
-        || element->hasLocalName(embedTag)
-        || element->hasLocalName(formTag)
-        || element->hasLocalName(imgTag)
-        || element->hasLocalName(inputTag)
-        || element->hasLocalName(objectTag)
-        || element->hasLocalName(selectTag);
+    return element.hasLocalName(appletTag)
+        || element.hasLocalName(embedTag)
+        || element.hasLocalName(formTag)
+        || element.hasLocalName(imgTag)
+        || element.hasLocalName(inputTag)
+        || element.hasLocalName(objectTag)
+        || element.hasLocalName(selectTag);
 }
 
-bool HTMLCollection::checkForNameMatch(Element* element, bool checkName, const AtomicString& name) const
+bool HTMLCollection::checkForNameMatch(const Element& element, bool checkName, const AtomicString& name) const
 {
-    if (!element->isHTMLElement())
+    if (!element.isHTMLElement())
         return false;
 
-    HTMLElement* e = toHTMLElement(element);
+    const HTMLElement& e = toHTMLElement(element);
     if (!checkName)
-        return e->getIdAttribute() == name;
+        return e.getIdAttribute() == name;
 
     if (type() == DocAll && !nameShouldBeVisibleInDocumentAll(e))
         return false;
 
-    return e->getNameAttribute() == name && e->getIdAttribute() != name;
+    return e.getNameAttribute() == name && e.getIdAttribute() != name;
 }
 
-inline Element* firstMatchingChildElement(const HTMLCollection* nodeList, ContainerNode& root)
+inline Element* firstMatchingChildElement(const HTMLCollection& nodeList, const ContainerNode& root)
 {
     Element* element = ElementTraversal::firstWithin(root);
-    while (element && !isMatchingElement(nodeList, element))
+    while (element && !isMatchingElement(nodeList, *element))
         element = ElementTraversal::nextSkippingChildren(*element, &root);
     return element;
 }
 
-inline Element* nextMatchingChildElement(const HTMLCollection* nodeList, Element& current, ContainerNode* root)
+inline Element* nextMatchingChildElement(const HTMLCollection& nodeList, Element& current, const ContainerNode& root)
 {
     Element* next = &current;
     do {
-        next = ElementTraversal::nextSkippingChildren(*next, root);
-    } while (next && !isMatchingElement(nodeList, next));
+        next = ElementTraversal::nextSkippingChildren(*next, &root);
+    } while (next && !isMatchingElement(nodeList, *next));
     return next;
 }
 
-inline Element* HTMLCollection::traverseToFirstElement(ContainerNode& root) const
+inline Element* HTMLCollection::traverseToFirstElement(const ContainerNode& root) const
 {
     if (overridesItemAfter())
         return virtualItemAfter(0);
     if (shouldOnlyIncludeDirectChildren())
-        return firstMatchingChildElement(static_cast<const HTMLCollection*>(this), root);
-    return firstMatchingElement(static_cast<const HTMLCollection*>(this), root);
+        return firstMatchingChildElement(*this, root);
+    return firstMatchingElement(*this, root);
 }
 
-inline Element* HTMLCollection::traverseNextElement(Element& previous, ContainerNode* root) const
+inline Element* HTMLCollection::traverseNextElement(Element& previous, const ContainerNode& root) const
 {
     if (overridesItemAfter())
         return virtualItemAfter(&previous);
     if (shouldOnlyIncludeDirectChildren())
-        return nextMatchingChildElement(this, previous, root);
-    return nextMatchingElement(this, previous, root);
+        return nextMatchingChildElement(*this, previous, root);
+    return nextMatchingElement(*this, previous, root);
 }
 
-inline Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root) const
+inline Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const
 {
     ASSERT(currentOffset < offset);
     if (overridesItemAfter()) {
@@ -575,13 +575,13 @@ inline Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element
     }
     if (shouldOnlyIncludeDirectChildren()) {
         Element* next = &currentElement;
-        while ((next = nextMatchingChildElement(this, *next, root))) {
+        while ((next = nextMatchingChildElement(*this, *next, root))) {
             if (++currentOffset == offset)
                 return next;
         }
         return 0;
     }
-    return traverseMatchingElementsForwardToOffset(this, offset, currentElement, currentOffset, root);
+    return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset, root);
 }
 
 Node* HTMLCollection::namedItem(const AtomicString& name) const
@@ -597,8 +597,8 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
         return 0;
 
     unsigned i = 0;
-    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, root)) {
-        if (checkForNameMatch(element, /* checkName */ false, name)) {
+    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, *root)) {
+        if (checkForNameMatch(*element, /* checkName */ false, name)) {
             setItemCache(element, i);
             return element;
         }
@@ -606,8 +606,8 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
     }
 
     i = 0;
-    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, root)) {
-        if (checkForNameMatch(element, /* checkName */ true, name)) {
+    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, *root)) {
+        if (checkForNameMatch(*element, /* checkName */ true, name)) {
             setItemCache(element, i);
             return element;
         }
@@ -626,14 +626,14 @@ void HTMLCollection::updateNameCache() const
     if (!root)
         return;
 
-    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, root)) {
+    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, *root)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
             appendIdCache(idAttrVal, element);
         if (!element->isHTMLElement())
             continue;
         const AtomicString& nameAttrVal = element->getNameAttribute();
-        if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal && (type() != DocAll || nameShouldBeVisibleInDocumentAll(toHTMLElement(element))))
+        if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal && (type() != DocAll || nameShouldBeVisibleInDocumentAll(toHTMLElement(*element))))
             appendNameCache(nameAttrVal, element);
     }
 

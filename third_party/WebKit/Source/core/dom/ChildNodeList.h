@@ -41,7 +41,7 @@ public:
 protected:
     explicit ChildNodeList(PassRefPtr<Node> rootNode);
 
-    virtual bool nodeMatches(Element*) const OVERRIDE;
+    virtual bool nodeMatches(const Element&) const OVERRIDE;
 };
 
 } // namespace WebCore

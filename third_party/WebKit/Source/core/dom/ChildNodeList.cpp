@@ -38,11 +38,11 @@ ChildNodeList::~ChildNodeList()
     ownerNode()->nodeLists()->removeChildNodeList(this);
 }
 
-bool ChildNodeList::nodeMatches(Element* testNode) const
+bool ChildNodeList::nodeMatches(const Element& testNode) const
 {
     // This function will be called only by LiveNodeList::namedItem,
     // for an element that was located with getElementById.
-    return testNode->parentNode() == rootNode();
+    return testNode.parentNode() == rootNode();
 }
 
 } // namespace WebCore

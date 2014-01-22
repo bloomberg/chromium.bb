@@ -45,13 +45,13 @@ TagNodeList::~TagNodeList()
         ownerNode()->nodeLists()->removeCacheWithQualifiedName(this, m_namespaceURI, m_localName);
 }
 
-bool TagNodeList::nodeMatches(Element* testNode) const
+bool TagNodeList::nodeMatches(const Element& testNode) const
 {
     // Implements http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagnamens
-    if (m_localName != starAtom && m_localName != testNode->localName())
+    if (m_localName != starAtom && m_localName != testNode.localName())
         return false;
 
-    return m_namespaceURI == starAtom || m_namespaceURI == testNode->namespaceURI();
+    return m_namespaceURI == starAtom || m_namespaceURI == testNode.namespaceURI();
 }
 
 HTMLTagNodeList::HTMLTagNodeList(PassRefPtr<Node> rootNode, const AtomicString& localName)
@@ -60,7 +60,7 @@ HTMLTagNodeList::HTMLTagNodeList(PassRefPtr<Node> rootNode, const AtomicString& 
 {
 }
 
-bool HTMLTagNodeList::nodeMatches(Element* testNode) const
+bool HTMLTagNodeList::nodeMatches(const Element& testNode) const
 {
     return nodeMatchesInlined(testNode);
 }

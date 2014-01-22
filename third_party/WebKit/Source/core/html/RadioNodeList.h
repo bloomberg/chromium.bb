@@ -48,9 +48,9 @@ public:
 private:
     RadioNodeList(Node*, const AtomicString& name, CollectionType);
 
-    bool checkElementMatchesRadioNodeListFilter(Element*) const;
+    bool checkElementMatchesRadioNodeListFilter(const Element&) const;
 
-    virtual bool nodeMatches(Element*) const OVERRIDE;
+    virtual bool nodeMatches(const Element&) const OVERRIDE;
 
     AtomicString m_name;
     const bool m_onlyMatchImgElements;

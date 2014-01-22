@@ -49,28 +49,28 @@ public:
 
     virtual ~ClassNodeList();
 
-    bool nodeMatchesInlined(Element*) const;
+    bool nodeMatchesInlined(const Element&) const;
 
 private:
     ClassNodeList(PassRefPtr<Node> rootNode, const AtomicString& classNames);
 
-    virtual bool nodeMatches(Element*) const OVERRIDE;
+    virtual bool nodeMatches(const Element&) const OVERRIDE;
 
     SpaceSplitString m_classNames;
     AtomicString m_originalClassNames;
 };
 
-inline bool ClassNodeList::nodeMatchesInlined(Element* testNode) const
+inline bool ClassNodeList::nodeMatchesInlined(const Element& testNode) const
 {
-    if (!testNode->hasClass())
+    if (!testNode.hasClass())
         return false;
     if (!m_classNames.size())
         return false;
     // FIXME: DOM4 allows getElementsByClassName to return non StyledElement.
     // https://bugs.webkit.org/show_bug.cgi?id=94718
-    if (!testNode->isStyledElement())
+    if (!testNode.isStyledElement())
         return false;
-    return testNode->classNames().containsAll(m_classNames);
+    return testNode.classNames().containsAll(m_classNames);
 }
 
 } // namespace WebCore

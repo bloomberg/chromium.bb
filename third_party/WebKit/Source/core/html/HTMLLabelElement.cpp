@@ -35,13 +35,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static bool supportsLabels(Element* element)
+static bool supportsLabels(const Element& element)
 {
-    if (!element || !element->isHTMLElement())
+    if (!element.isHTMLElement())
         return false;
-    if (!toHTMLElement(element)->isLabelable())
+    if (!toHTMLElement(element).isLabelable())
         return false;
-    return toLabelableElement(element)->supportLabels();
+    return toLabelableElement(element).supportLabels();
 }
 
 inline HTMLLabelElement::HTMLLabelElement(Document& document)
@@ -61,16 +61,15 @@ bool HTMLLabelElement::rendererIsFocusable() const
     return that->isContentEditable();
 }
 
-LabelableElement* HTMLLabelElement::control()
+LabelableElement* HTMLLabelElement::control() const
 {
     const AtomicString& controlId = getAttribute(forAttr);
     if (controlId.isNull()) {
         // Search the children and descendants of the label element for a form element.
         // per http://dev.w3.org/html5/spec/Overview.html#the-label-element
         // the form element must be "labelable form-associated element".
-        Element* element = this;
-        while ((element = ElementTraversal::next(*element, this))) {
-            if (!supportsLabels(element))
+        for (Element* element = ElementTraversal::next(*this, this); element; element = ElementTraversal::next(*element, this)) {
+            if (!supportsLabels(*element))
                 continue;
             return toLabelableElement(element);
         }
@@ -78,7 +77,7 @@ LabelableElement* HTMLLabelElement::control()
     }
 
     if (Element* element = treeScope().getElementById(controlId)) {
-        if (supportsLabels(element))
+        if (supportsLabels(*element))
             return toLabelableElement(element);
     }
 

@@ -43,9 +43,9 @@ LabelsNodeList::~LabelsNodeList()
     ownerNode()->nodeLists()->removeCacheWithAtomicName(this, LabelsNodeListType, starAtom);
 }
 
-bool LabelsNodeList::nodeMatches(Element* testNode) const
+bool LabelsNodeList::nodeMatches(const Element& testNode) const
 {
-    return testNode->hasTagName(labelTag) && toHTMLLabelElement(testNode)->control() == ownerNode();
+    return testNode.hasTagName(labelTag) && toHTMLLabelElement(testNode).control() == ownerNode();
 }
 
 } // namespace WebCore

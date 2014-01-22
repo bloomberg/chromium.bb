@@ -33,7 +33,7 @@ class HTMLLabelElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLLabelElement> create(Document&);
 
-    LabelableElement* control();
+    LabelableElement* control() const;
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 

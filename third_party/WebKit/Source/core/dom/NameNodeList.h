@@ -44,7 +44,7 @@ public:
 private:
     NameNodeList(PassRefPtr<Node> rootNode, const AtomicString& name);
 
-    virtual bool nodeMatches(Element*) const OVERRIDE;
+    virtual bool nodeMatches(const Element&) const OVERRIDE;
 
     AtomicString m_name;
 };

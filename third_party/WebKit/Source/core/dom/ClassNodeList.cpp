@@ -47,7 +47,7 @@ ClassNodeList::~ClassNodeList()
     ownerNode()->nodeLists()->removeCacheWithAtomicName(this, ClassNodeListType, m_originalClassNames);
 }
 
-bool ClassNodeList::nodeMatches(Element* testNode) const
+bool ClassNodeList::nodeMatches(const Element& testNode) const
 {
     return nodeMatchesInlined(testNode);
 }

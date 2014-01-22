@@ -61,8 +61,8 @@ public:
 
     virtual Element* virtualItemAfter(Element*) const;
 
-    Element* traverseToFirstElement(ContainerNode& root) const;
-    Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root) const;
+    Element* traverseToFirstElement(const ContainerNode& root) const;
+    Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
 
 protected:
     HTMLCollection(Node* base, CollectionType, ItemAfterOverrideType);
@@ -78,8 +78,8 @@ protected:
     void appendNameCache(const AtomicString& name, Element* element) const { append(m_nameCache, name, element); }
 
 private:
-    bool checkForNameMatch(Element*, bool checkName, const AtomicString& name) const;
-    Element* traverseNextElement(Element& previous, ContainerNode* root) const;
+    bool checkForNameMatch(const Element&, bool checkName, const AtomicString& name) const;
+    Element* traverseNextElement(Element& previous, const ContainerNode& root) const;
 
     static void append(NodeCacheMap&, const AtomicString&, Element*);
     void invalidateIdNameCacheMaps() const

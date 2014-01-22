@@ -47,7 +47,7 @@ public:
     String value() const;
     void setValue(const AtomicString&);
 
-    bool selected();
+    bool selected() const;
     void setSelected(bool);
 
     HTMLDataListElement* ownerDataListElement() const;
