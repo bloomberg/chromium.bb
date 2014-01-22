@@ -45,7 +45,7 @@ using namespace std;
 
 namespace WebCore {
 
-FastTextAutosizer::FastTextAutosizer(Document* document)
+FastTextAutosizer::FastTextAutosizer(const Document* document)
     : m_document(document)
 #ifndef NDEBUG
     , m_renderViewInfoPrepared(false)
@@ -53,7 +53,7 @@ FastTextAutosizer::FastTextAutosizer(Document* document)
 {
 }
 
-void FastTextAutosizer::record(RenderBlock* block)
+void FastTextAutosizer::record(const RenderBlock* block)
 {
     if (!enabled())
         return;
@@ -68,7 +68,7 @@ void FastTextAutosizer::record(RenderBlock* block)
     m_fingerprintMapper.add(block, fingerprint);
 }
 
-void FastTextAutosizer::destroy(RenderBlock* block)
+void FastTextAutosizer::destroy(const RenderBlock* block)
 {
     m_fingerprintMapper.remove(block);
 }
@@ -126,10 +126,10 @@ void FastTextAutosizer::prepareRenderViewInfo(RenderView* renderView)
     bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
 
     Frame* mainFrame = m_document->page()->mainFrame();
-    IntSize windowSize = m_document->settings()->textAutosizingWindowSizeOverride();
-    if (windowSize.isEmpty())
-        windowSize = mainFrame->view()->unscaledVisibleContentSize(ScrollableArea::IncludeScrollbars);
-    m_windowWidth = horizontalWritingMode ? windowSize.width() : windowSize.height();
+    IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
+    if (frameSize.isEmpty())
+        frameSize = mainFrame->view()->unscaledVisibleContentSize(ScrollableArea::IncludeScrollbars);
+    m_frameWidth = horizontalWritingMode ? frameSize.width() : frameSize.height();
 
     IntSize layoutSize = m_document->page()->mainFrame()->view()->layoutSize();
     m_layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
@@ -145,7 +145,7 @@ void FastTextAutosizer::prepareRenderViewInfo(RenderView* renderView)
 #endif
 }
 
-bool FastTextAutosizer::isFingerprintingCandidate(RenderBlock* block)
+bool FastTextAutosizer::isFingerprintingCandidate(const RenderBlock* block)
 {
     // FIXME: move the logic out of TextAutosizer.cpp into this class.
     return block->isRenderView()
@@ -153,19 +153,19 @@ bool FastTextAutosizer::isFingerprintingCandidate(RenderBlock* block)
             && TextAutosizer::isIndependentDescendant(block));
 }
 
-bool FastTextAutosizer::clusterWantsAutosizing(RenderBlock* root)
+bool FastTextAutosizer::clusterWantsAutosizing(const RenderBlock* root)
 {
     // FIXME: this should call (or re-implement) TextAutosizer::clusterShouldBeAutosized.
     return true;
 }
 
-AtomicString FastTextAutosizer::computeFingerprint(RenderBlock* block)
+AtomicString FastTextAutosizer::computeFingerprint(const RenderBlock* block)
 {
     // FIXME(crbug.com/322340): Implement a fingerprinting algorithm.
     return nullAtom;
 }
 
-FastTextAutosizer::Cluster* FastTextAutosizer::maybeGetOrCreateCluster(RenderBlock* block)
+FastTextAutosizer::Cluster* FastTextAutosizer::maybeGetOrCreateCluster(const RenderBlock* block)
 {
     if (!TextAutosizer::isAutosizingContainer(block))
         return 0;
@@ -197,10 +197,10 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeGetOrCreateCluster(RenderBlo
     return addSupercluster(fingerprint, block);
 }
 
-FastTextAutosizer::Cluster* FastTextAutosizer::addSupercluster(AtomicString fingerprint, RenderBlock* returnFor)
+FastTextAutosizer::Cluster* FastTextAutosizer::addSupercluster(AtomicString fingerprint, const RenderBlock* returnFor)
 {
     BlockSet& roots = m_fingerprintMapper.getBlocks(fingerprint);
-    RenderBlock* superRoot = deepestCommonAncestor(roots);
+    const RenderBlock* superRoot = deepestCommonAncestor(roots);
 
     bool shouldAutosize = false;
     for (BlockSet::iterator it = roots.begin(); it != roots.end(); ++it)
@@ -219,13 +219,13 @@ FastTextAutosizer::Cluster* FastTextAutosizer::addSupercluster(AtomicString fing
     return result;
 }
 
-RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
+const RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
 {
     // Find the lowest common ancestor of blocks.
     // Note: this could be improved to not be O(b*h) for b blocks and tree height h.
-    HashCountedSet<RenderObject*> ancestors;
+    HashCountedSet<const RenderBlock*> ancestors;
     for (BlockSet::iterator it = blocks.begin(); it != blocks.end(); ++it) {
-        for (RenderBlock* block = (*it); block; block = block->containingBlock()) {
+        for (const RenderBlock* block = (*it); block; block = block->containingBlock()) {
             ancestors.add(block);
             // The first ancestor that has all of the blocks as children wins.
             if (ancestors.count(block) == blocks.size())
@@ -236,7 +236,7 @@ RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
     return 0;
 }
 
-float FastTextAutosizer::computeMultiplier(RenderBlock* block)
+float FastTextAutosizer::computeMultiplier(const RenderBlock* block)
 {
 #ifndef NDEBUG
     ASSERT(m_renderViewInfoPrepared);
@@ -244,7 +244,7 @@ float FastTextAutosizer::computeMultiplier(RenderBlock* block)
     // Block width, in CSS pixels.
     float blockWidth = block->contentLogicalWidth();
 
-    float multiplier = min(blockWidth, static_cast<float>(m_layoutWidth)) / m_windowWidth;
+    float multiplier = min(blockWidth, static_cast<float>(m_layoutWidth)) / m_frameWidth;
     return max(m_baseMultiplier * multiplier, 1.0f);
 }
 
@@ -261,7 +261,7 @@ void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier
     renderer->setStyleInternal(style.release());
 }
 
-void FastTextAutosizer::FingerprintMapper::add(RenderBlock* block, AtomicString fingerprint)
+void FastTextAutosizer::FingerprintMapper::add(const RenderBlock* block, AtomicString fingerprint)
 {
     m_fingerprints.set(block, fingerprint);
 
@@ -271,7 +271,7 @@ void FastTextAutosizer::FingerprintMapper::add(RenderBlock* block, AtomicString 
     addResult.iterator->value->add(block);
 }
 
-void FastTextAutosizer::FingerprintMapper::remove(RenderBlock* block)
+void FastTextAutosizer::FingerprintMapper::remove(const RenderBlock* block)
 {
     AtomicString fingerprint = m_fingerprints.take(block);
     if (fingerprint.isNull())
@@ -284,7 +284,7 @@ void FastTextAutosizer::FingerprintMapper::remove(RenderBlock* block)
         m_blocksForFingerprint.remove(blocksIter);
 }
 
-AtomicString FastTextAutosizer::FingerprintMapper::get(RenderBlock* block)
+AtomicString FastTextAutosizer::FingerprintMapper::get(const RenderBlock* block)
 {
     return m_fingerprints.get(block);
 }

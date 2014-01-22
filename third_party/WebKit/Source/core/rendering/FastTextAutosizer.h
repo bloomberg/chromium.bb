@@ -53,68 +53,68 @@ class FastTextAutosizer FINAL {
     WTF_MAKE_NONCOPYABLE(FastTextAutosizer);
 
 public:
-    static PassOwnPtr<FastTextAutosizer> create(Document* document)
+    static PassOwnPtr<FastTextAutosizer> create(const Document* document)
     {
         return adoptPtr(new FastTextAutosizer(document));
     }
 
-    void record(RenderBlock*);
-    void destroy(RenderBlock*);
+    void record(const RenderBlock*);
+    void destroy(const RenderBlock*);
 
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
 
 private:
     struct Cluster {
-        explicit Cluster(RenderBlock* root, bool autosize, float multiplier)
+        explicit Cluster(const RenderBlock* root, bool autosize, float multiplier)
             : m_root(root)
             , m_autosize(autosize)
             , m_multiplier(multiplier)
         {
         }
-        RenderBlock* m_root;
-        bool m_autosize;
+        const RenderBlock* m_root;
+        const bool m_autosize;
         float m_multiplier;
     };
 
-    typedef WTF::HashSet<RenderBlock*> BlockSet;
-    typedef WTF::HashMap<RenderBlock*, OwnPtr<Cluster> > ClusterMap;
-    typedef WTF::Vector<Cluster*> ClusterStack;
+    typedef HashSet<const RenderBlock*> BlockSet;
+    typedef HashMap<const RenderBlock*, OwnPtr<Cluster> > ClusterMap;
+    typedef Vector<Cluster*> ClusterStack;
 
     // Fingerprints are computed during style recalc, for (some subset of)
     // blocks that will become cluster roots.
     class FingerprintMapper {
     public:
-        void add(RenderBlock*, AtomicString);
-        void remove(RenderBlock*);
-        AtomicString get(RenderBlock*);
+        void add(const RenderBlock*, AtomicString);
+        void remove(const RenderBlock*);
+        AtomicString get(const RenderBlock*);
         BlockSet& getBlocks(AtomicString);
     private:
-        typedef WTF::HashMap<RenderBlock*, AtomicString> FingerprintMap;
-        typedef WTF::HashMap<AtomicString, OwnPtr<BlockSet> > ReverseFingerprintMap;
+        typedef HashMap<const RenderBlock*, AtomicString> FingerprintMap;
+        typedef HashMap<AtomicString, OwnPtr<BlockSet> > ReverseFingerprintMap;
 
         FingerprintMap m_fingerprints;
         ReverseFingerprintMap m_blocksForFingerprint;
     };
 
-    explicit FastTextAutosizer(Document*);
+    explicit FastTextAutosizer(const Document*);
 
     void inflate(RenderBlock*);
     bool enabled();
     void prepareRenderViewInfo(RenderView*);
-    bool isFingerprintingCandidate(RenderBlock*);
-    bool clusterWantsAutosizing(RenderBlock*);
-    AtomicString computeFingerprint(RenderBlock*);
-    Cluster* maybeGetOrCreateCluster(RenderBlock*);
-    Cluster* addSupercluster(AtomicString, RenderBlock*);
-    RenderBlock* deepestCommonAncestor(BlockSet&);
-    float computeMultiplier(RenderBlock*);
+    bool isFingerprintingCandidate(const RenderBlock*);
+    bool clusterWantsAutosizing(const RenderBlock*);
+    AtomicString computeFingerprint(const RenderBlock*);
+    Cluster* maybeGetOrCreateCluster(const RenderBlock*);
+    Cluster* addSupercluster(AtomicString, const RenderBlock*);
+    const RenderBlock* deepestCommonAncestor(BlockSet&);
+    float computeMultiplier(const RenderBlock*);
     void applyMultiplier(RenderObject*, float);
 
     RenderObject* nextChildSkippingChildrenOfBlocks(const RenderObject*, const RenderObject*);
 
-    Document* m_document;
-    int m_windowWidth; // Frame width in density-independent pixels (DIPs).
+    const Document* m_document;
+    int m_frameWidth; // Frame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
     float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
 #ifndef NDEBUG
