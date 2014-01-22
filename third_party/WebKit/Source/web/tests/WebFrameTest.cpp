@@ -5020,4 +5020,31 @@ TEST_F(WebFrameTest, CurrentHistoryItem)
     EXPECT_EQ(url, item.urlString().utf8());
 }
 
+class FailCreateChildFrame : public WebFrameClient {
+public:
+    FailCreateChildFrame() : m_callCount(0) { }
+
+    WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName)
+    {
+        ++m_callCount;
+        return 0;
+    }
+
+    int callCount() const { return m_callCount; }
+
+private:
+    int m_callCount;
+};
+
+// Test that we don't crash if WebFrameClient::createChildFrame() fails.
+TEST_F(WebFrameTest, CreateChildFrameFailure)
+{
+    registerMockedHttpURLLoad("create_child_frame_fail.html");
+    FailCreateChildFrame client;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "create_child_frame_fail.html", true, &client);
+
+    EXPECT_EQ(1, client.callCount());
+}
+
 } // namespace
