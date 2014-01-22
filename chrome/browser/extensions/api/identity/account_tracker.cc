@@ -234,7 +234,7 @@ void AccountIdFetcher::OnGetTokenSuccess(
 void AccountIdFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  LOG(ERROR) << "OnGetTokenFailure: " << error.error_message();
+  LOG(ERROR) << "OnGetTokenFailure: " << error.ToString();
   DCHECK_EQ(request, login_token_request_.get());
   tracker_->OnUserInfoFetchFailure(this);
 }
