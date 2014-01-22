@@ -8,56 +8,18 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
 typedef int LauncherID;
 
-// Type the LauncherItem represents.
-enum LauncherItemType {
-  // Represents a running app panel.
-  TYPE_APP_PANEL,
-
-  // Represents a pinned shortcut to an app.
-  TYPE_APP_SHORTCUT,
-
-  // Toggles visiblity of the app list.
-  TYPE_APP_LIST,
-
-  // The browser shortcut button.
-  TYPE_BROWSER_SHORTCUT,
-
-  // Represents a platform app.
-  TYPE_PLATFORM_APP,
-
-  // Represents a windowed V1 browser app.
-  TYPE_WINDOWED_APP,
-
-  // Represents a dialog.
-  TYPE_DIALOG,
-
-  // Default value.
-  TYPE_UNDEFINED,
-};
-
-// Represents the status of pinned or running app launcher items.
-enum LauncherItemStatus {
-  // A closed LauncherItem, i.e. has no live instance.
-  STATUS_CLOSED,
-  // A LauncherItem that has live instance.
-  STATUS_RUNNING,
-  // An active LauncherItem that has focus.
-  STATUS_ACTIVE,
-  // A LauncherItem that needs user's attention.
-  STATUS_ATTENTION,
-};
-
 struct ASH_EXPORT LauncherItem {
   LauncherItem();
   ~LauncherItem();
 
-  LauncherItemType type;
+  ShelfItemType type;
 
   // Image to display in the launcher.
   gfx::ImageSkia image;
@@ -66,7 +28,7 @@ struct ASH_EXPORT LauncherItem {
   LauncherID id;
 
   // Running status.
-  LauncherItemStatus status;
+  ShelfItemStatus status;
 };
 
 typedef std::vector<LauncherItem> LauncherItems;

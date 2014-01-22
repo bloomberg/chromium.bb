@@ -272,7 +272,7 @@ class FadeInAnimationDelegate
   DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
 };
 
-void ReflectItemStatus(const ash::LauncherItem& item, ShelfButton* button) {
+void ReflectItemStatus(const LauncherItem& item, ShelfButton* button) {
   switch (item.status) {
     case STATUS_CLOSED:
       button->ClearState(ShelfButton::STATE_ACTIVE);
@@ -1234,7 +1234,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
 
 ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) {
   DCHECK(index >= 0 && index < model_->item_count());
-  LauncherItemType type = model_->items()[index].type;
+  ShelfItemType type = model_->items()[index].type;
   if (type == TYPE_APP_LIST || type == TYPE_DIALOG || !delegate_->CanPin())
     return NOT_REMOVABLE;
 
@@ -1245,8 +1245,7 @@ ShelfView::RemovableState ShelfView::RemovableByRipOff(int index) {
       REMOVABLE : DRAGGABLE;
 }
 
-bool ShelfView::SameDragType(LauncherItemType typea,
-                             LauncherItemType typeb) const {
+bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
   switch (typea) {
     case TYPE_APP_SHORTCUT:
     case TYPE_BROWSER_SHORTCUT:
@@ -1258,7 +1257,7 @@ bool ShelfView::SameDragType(LauncherItemType typea,
     case TYPE_DIALOG:
       return typeb == typea;
     case TYPE_UNDEFINED:
-      NOTREACHED() << "LauncherItemType must be set.";
+      NOTREACHED() << "ShelfItemType must be set.";
       return false;
   }
   NOTREACHED();
@@ -1268,7 +1267,7 @@ bool ShelfView::SameDragType(LauncherItemType typea,
 std::pair<int, int> ShelfView::GetDragRange(int index) {
   int min_index = -1;
   int max_index = -1;
-  LauncherItemType type = model_->items()[index].type;
+  ShelfItemType type = model_->items()[index].type;
   for (int i = 0; i < model_->item_count(); ++i) {
     if (SameDragType(model_->items()[i].type, type)) {
       if (min_index == -1)
@@ -1797,7 +1796,7 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
         break;
 
       case TYPE_UNDEFINED:
-        NOTREACHED() << "LauncherItemType must be set.";
+        NOTREACHED() << "ShelfItemType must be set.";
         break;
     }
 
@@ -1880,7 +1879,7 @@ void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
       GetWidget()->GetNativeView())->shelf();
   if (!context_menu) {
     // Application lists use a bubble.
-    ash::ShelfAlignment align = shelf->GetAlignment();
+    ShelfAlignment align = shelf->GetAlignment();
     anchor_point = source->GetBoundsInScreen();
 
     // It is possible to invoke the menu while it is sliding into view. To cover
@@ -1897,16 +1896,16 @@ void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
       anchor_point.Inset(source->border()->GetInsets());
 
     switch (align) {
-      case ash::SHELF_ALIGNMENT_BOTTOM:
+      case SHELF_ALIGNMENT_BOTTOM:
         menu_alignment = views::MenuItemView::BUBBLE_ABOVE;
         break;
-      case ash::SHELF_ALIGNMENT_LEFT:
+      case SHELF_ALIGNMENT_LEFT:
         menu_alignment = views::MenuItemView::BUBBLE_RIGHT;
         break;
-      case ash::SHELF_ALIGNMENT_RIGHT:
+      case SHELF_ALIGNMENT_RIGHT:
         menu_alignment = views::MenuItemView::BUBBLE_LEFT;
         break;
-      case ash::SHELF_ALIGNMENT_TOP:
+      case SHELF_ALIGNMENT_TOP:
         menu_alignment = views::MenuItemView::BUBBLE_BELOW;
         break;
     }
@@ -2009,20 +2008,20 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
 int ShelfView::CalculateShelfDistance(const gfx::Point& coordinate) const {
   ShelfWidget* shelf = RootWindowController::ForShelf(
       GetWidget()->GetNativeView())->shelf();
-  ash::ShelfAlignment align = shelf->GetAlignment();
+  ShelfAlignment align = shelf->GetAlignment();
   const gfx::Rect bounds = GetBoundsInScreen();
   int distance = 0;
   switch (align) {
-    case ash::SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM:
       distance = bounds.y() - coordinate.y();
       break;
-    case ash::SHELF_ALIGNMENT_LEFT:
+    case SHELF_ALIGNMENT_LEFT:
       distance = coordinate.x() - bounds.right();
       break;
-    case ash::SHELF_ALIGNMENT_RIGHT:
+    case SHELF_ALIGNMENT_RIGHT:
       distance = bounds.x() - coordinate.x();
       break;
-    case ash::SHELF_ALIGNMENT_TOP:
+    case SHELF_ALIGNMENT_TOP:
       distance = coordinate.y() - bounds.bottom();
       break;
   }

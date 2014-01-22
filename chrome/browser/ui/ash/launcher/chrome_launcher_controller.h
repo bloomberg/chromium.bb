@@ -150,11 +150,11 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // Creates a new app item on the shelf for |controller|.
   ash::LauncherID CreateAppLauncherItem(LauncherItemController* controller,
                                         const std::string& app_id,
-                                        ash::LauncherItemStatus status);
+                                        ash::ShelfItemStatus status);
 
   // Updates the running status of an item. It will also update the status of
   // browsers shelf item if needed.
-  void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
+  void SetItemStatus(ash::LauncherID id, ash::ShelfItemStatus status);
 
   // Updates the controller associated with id (which should be a shortcut).
   // |controller| remains owned by caller.
@@ -435,7 +435,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   ash::LauncherID CreateAppShortcutLauncherItemWithType(
       const std::string& app_id,
       int index,
-      ash::LauncherItemType launcher_item_type);
+      ash::ShelfItemType shelf_item_type);
 
   // Invoked when the associated browser or app is closed.
   void LauncherItemClosed(ash::LauncherID id);
@@ -475,13 +475,12 @@ class ChromeLauncherController : public ash::ShelfDelegate,
 
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.
-  // The |launcher_item_type| will be set into the ShelfModel.
-  ash::LauncherID InsertAppLauncherItem(
-      LauncherItemController* controller,
-      const std::string& app_id,
-      ash::LauncherItemStatus status,
-      int index,
-      ash::LauncherItemType launcher_item_type);
+  // The |shelf_item_type| will be set into the ShelfModel.
+  ash::LauncherID InsertAppLauncherItem(LauncherItemController* controller,
+                                        const std::string& app_id,
+                                        ash::ShelfItemStatus status,
+                                        int index,
+                                        ash::ShelfItemType shelf_item_type);
 
   bool HasItemController(ash::LauncherID id) const;
 

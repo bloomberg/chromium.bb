@@ -34,7 +34,7 @@ void TestShelfDelegate::AddLauncherItem(aura::Window* window) {
 }
 
 void TestShelfDelegate::AddLauncherItem(aura::Window* window,
-                                        LauncherItemStatus status) {
+                                        ShelfItemStatus status) {
   LauncherItem item;
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
     item.type = TYPE_APP_PANEL;

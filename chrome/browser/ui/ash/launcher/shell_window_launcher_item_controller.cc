@@ -81,7 +81,7 @@ ShellWindowLauncherItemController::~ShellWindowLauncherItemController() {
 
 void ShellWindowLauncherItemController::AddShellWindow(
     ShellWindow* shell_window,
-    ash::LauncherItemStatus status) {
+    ash::ShelfItemStatus status) {
   if (shell_window->window_type_is_panel() && type() != TYPE_APP_PANEL)
     LOG(ERROR) << "ShellWindow of type Panel added to non-panel launcher item";
   shell_windows_.push_front(shell_window);
@@ -251,7 +251,7 @@ void ShellWindowLauncherItemController::OnWindowPropertyChanged(
     const void* key,
     intptr_t old) {
   if (key == aura::client::kDrawAttentionKey) {
-    ash::LauncherItemStatus status;
+    ash::ShelfItemStatus status;
     if (ash::wm::IsActiveWindow(window)) {
       status = ash::STATUS_ACTIVE;
     } else if (window->GetProperty(aura::client::kDrawAttentionKey)) {

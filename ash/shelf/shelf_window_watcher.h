@@ -87,8 +87,8 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
   // Removes observer from ActivationClient of |root_window|.
   void OnRootWindowRemoved(aura::Window* root_window);
 
-  // Updates the status of LauncherItem for |window|.
-  void UpdateLauncherItemStatus(aura::Window* window, bool is_active);
+  // Updates the status of ShelfItem for |window|.
+  void UpdateShelfItemStatus(aura::Window* window, bool is_active);
 
   // Returns the index of LauncherItem associated with |window|.
   int GetLauncherItemIndexForWindow(aura::Window* window) const;

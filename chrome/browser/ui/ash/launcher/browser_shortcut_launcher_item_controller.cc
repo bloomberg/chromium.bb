@@ -59,7 +59,7 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   int browser_index = model->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
   DCHECK_GE(browser_index, 0);
   ash::LauncherItem browser_item = model->items()[browser_index];
-  ash::LauncherItemStatus browser_status = ash::STATUS_CLOSED;
+  ash::ShelfItemStatus browser_status = ash::STATUS_CLOSED;
 
   aura::Window* window = ash::wm::GetActiveWindow();
   if (window) {

@@ -50,7 +50,7 @@ class ASH_EXPORT ShelfModel {
   // Returns the |index| of the item matching |type| in |items_|.
   // Returns -1 if the matching item is not found.
   // Note: Requires a linear search.
-  int GetItemIndexForType(LauncherItemType type);
+  int GetItemIndexForType(ShelfItemType type);
 
   // Returns the index of the first running application or the index where the
   // first running application would go if there are no running (non pinned)
@@ -84,7 +84,7 @@ class ASH_EXPORT ShelfModel {
   // Makes sure |index| is in line with the type-based order of items. If that
   // is not the case, adjusts index by shifting it to the valid range and
   // returns the new value.
-  int ValidateInsertionIndex(LauncherItemType type, int index) const;
+  int ValidateInsertionIndex(ShelfItemType type, int index) const;
 
   // ID assigned to the next item.
   LauncherID next_id_;

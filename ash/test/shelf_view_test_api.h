@@ -5,7 +5,7 @@
 #ifndef ASH_TEST_SHELF_VIEW_TEST_API_H_
 #define ASH_TEST_SHELF_VIEW_TEST_API_H_
 
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "base/basictypes.h"
 
 namespace gfx {
@@ -75,7 +75,7 @@ class ShelfViewTestAPI {
   int GetButtonSpacing();
 
   // Wrapper for ShelfView::SameDragType.
-  bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
+  bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;
 
   // Sets ShelfDelegate.
   void SetShelfDelegate(ShelfDelegate* delegate);

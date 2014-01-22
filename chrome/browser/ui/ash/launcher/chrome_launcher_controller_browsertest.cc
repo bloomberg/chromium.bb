@@ -266,7 +266,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   }
 
   // Get the index of an item which has the given type.
-  int GetIndexOfShelfItemType(ash::LauncherItemType type) {
+  int GetIndexOfShelfItemType(ash::ShelfItemType type) {
     return model_->GetItemIndexForType(type);
   }
 

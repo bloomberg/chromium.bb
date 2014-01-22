@@ -115,8 +115,8 @@ int ShelfViewTestAPI::GetButtonSpacing() {
   return shelf_view_->GetButtonSpacing();
 }
 
-bool ShelfViewTestAPI::SameDragType(LauncherItemType typea,
-                                    LauncherItemType typeb) const {
+bool ShelfViewTestAPI::SameDragType(ShelfItemType typea,
+                                    ShelfItemType typeb) const {
   return shelf_view_->SameDragType(typea, typeb);
 }
 

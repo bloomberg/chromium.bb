@@ -10,33 +10,33 @@ namespace ash {
 
 namespace {
 
-// Returns true if accelerator processing should skip the launcher item with
-// the specified type.
-bool ShouldSkip(ash::LauncherItemType type) {
-  return type == ash::TYPE_APP_LIST ||
-         type == ash::TYPE_BROWSER_SHORTCUT ||
-         type == ash::TYPE_APP_SHORTCUT ||
-         type == ash::TYPE_WINDOWED_APP;
+// Returns true if accelerator processing should skip the shelf item with the
+// specified type.
+bool ShouldSkip(ShelfItemType type) {
+  return type == TYPE_APP_LIST ||
+         type == TYPE_BROWSER_SHORTCUT ||
+         type == TYPE_APP_SHORTCUT ||
+         type == TYPE_WINDOWED_APP;
 }
 
 }  // namespace
 
 int GetNextActivatedItemIndex(const ShelfModel& model,
                               CycleDirection direction) {
-  const ash::LauncherItems& items = model.items();
+  const LauncherItems& items = model.items();
   int item_count = model.item_count();
   int current_index = -1;
   int first_running = -1;
 
   for (int i = 0; i < item_count; ++i) {
-    const ash::LauncherItem& item = items[i];
+    const LauncherItem& item = items[i];
     if (ShouldSkip(item.type))
       continue;
 
-    if (item.status == ash::STATUS_RUNNING && first_running < 0)
+    if (item.status == STATUS_RUNNING && first_running < 0)
       first_running = i;
 
-    if (item.status == ash::STATUS_ACTIVE) {
+    if (item.status == STATUS_ACTIVE) {
       current_index = i;
       break;
     }
@@ -55,12 +55,12 @@ int GetNextActivatedItemIndex(const ShelfModel& model,
   // Find the next item and activate it.
   for (int i = (current_index + step + item_count) % item_count;
        i != current_index; i = (i + step + item_count) % item_count) {
-    const ash::LauncherItem& item = items[i];
+    const LauncherItem& item = items[i];
     if (ShouldSkip(item.type))
       continue;
 
     // Skip already active item.
-    if (item.status == ash::STATUS_ACTIVE)
+    if (item.status == STATUS_ACTIVE)
       continue;
 
     return i;

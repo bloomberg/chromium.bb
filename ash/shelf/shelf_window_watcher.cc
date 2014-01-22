@@ -171,8 +171,8 @@ void ShelfWindowWatcher::OnRootWindowRemoved(aura::Window* root_window) {
       aura::client::GetActivationClient(root_window));
 }
 
-void ShelfWindowWatcher::UpdateLauncherItemStatus(aura::Window* window,
-                                                  bool is_active) {
+void ShelfWindowWatcher::UpdateShelfItemStatus(aura::Window* window,
+                                               bool is_active) {
   int index = GetLauncherItemIndexForWindow(window);
   DCHECK_GE(index, 0);
 
@@ -198,9 +198,9 @@ void ShelfWindowWatcher::FinishObservingRemovedWindow(aura::Window* window) {
 void ShelfWindowWatcher::OnWindowActivated(aura::Window* gained_active,
                                            aura::Window* lost_active) {
   if (gained_active && HasLauncherItemForWindow(gained_active))
-    UpdateLauncherItemStatus(gained_active, true);
+    UpdateShelfItemStatus(gained_active, true);
   if (lost_active && HasLauncherItemForWindow(lost_active))
-    UpdateLauncherItemStatus(lost_active, false);
+    UpdateShelfItemStatus(lost_active, false);
 }
 
 void ShelfWindowWatcher::OnWindowAdded(aura::Window* window) {

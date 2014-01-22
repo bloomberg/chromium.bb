@@ -26,7 +26,7 @@ class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
   virtual ~TestShelfDelegate();
 
   void AddLauncherItem(aura::Window* window);
-  void AddLauncherItem(aura::Window* window, LauncherItemStatus status);
+  void AddLauncherItem(aura::Window* window, ShelfItemStatus status);
   void RemoveLauncherItemForWindow(aura::Window* window);
 
   static TestShelfDelegate* instance() { return instance_; }

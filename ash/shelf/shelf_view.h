@@ -210,7 +210,7 @@ class ASH_EXPORT ShelfView : public views::View,
   RemovableState RemovableByRipOff(int index);
 
   // Returns true if |typea| and |typeb| should be in the same drag range.
-  bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
+  bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;
 
   // Returns the range (in the model) the item at the specified index can be
   // dragged to.

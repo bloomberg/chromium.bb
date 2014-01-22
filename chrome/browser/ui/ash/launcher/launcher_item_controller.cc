@@ -39,7 +39,7 @@ base::string16 LauncherItemController::GetAppTitle() const {
   return extension ? base::UTF8ToUTF16(extension->name()) : base::string16();
 }
 
-ash::LauncherItemType LauncherItemController::GetLauncherItemType() const {
+ash::ShelfItemType LauncherItemController::GetShelfItemType() const {
   switch (type_) {
     case LauncherItemController::TYPE_SHORTCUT:
     case LauncherItemController::TYPE_WINDOWED_APP:

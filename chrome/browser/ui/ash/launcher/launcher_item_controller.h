@@ -81,8 +81,8 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   // Called to retrieve the list of running applications.
   virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags) = 0;
 
-  // Helper function to get the ash::LauncherItemType for the item type.
-  ash::LauncherItemType GetLauncherItemType() const;
+  // Helper function to get the ash::ShelfItemType for the item type.
+  ash::ShelfItemType GetShelfItemType() const;
 
  protected:
   // Helper function to return the title associated with |app_id_|.

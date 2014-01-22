@@ -13,7 +13,7 @@ namespace ash {
 
 namespace {
 
-int LauncherItemTypeToWeight(LauncherItemType type) {
+int ShelfItemTypeToWeight(ShelfItemType type) {
   if (ash::switches::UseAlternateShelfLayout()) {
     switch (type) {
       case TYPE_APP_LIST:
@@ -31,7 +31,7 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
       case TYPE_APP_PANEL:
         return 4;
       case TYPE_UNDEFINED:
-        NOTREACHED() << "LauncherItemType must be set";
+        NOTREACHED() << "ShelfItemType must be set";
         return -1;
     }
   } else {
@@ -49,7 +49,7 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
       case TYPE_APP_PANEL:
         return 4;
       case TYPE_UNDEFINED:
-        NOTREACHED() << "LauncherItemType must be set";
+        NOTREACHED() << "ShelfItemType must be set";
         return -1;
     }
   }
@@ -59,7 +59,7 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
 }
 
 bool CompareByWeight(const LauncherItem& a, const LauncherItem& b) {
-  return LauncherItemTypeToWeight(a.type) < LauncherItemTypeToWeight(b.type);
+  return ShelfItemTypeToWeight(a.type) < ShelfItemTypeToWeight(b.type);
 }
 
 }  // namespace
@@ -135,7 +135,7 @@ int ShelfModel::ItemIndexByID(LauncherID id) const {
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
 
-int ShelfModel::GetItemIndexForType(LauncherItemType type) {
+int ShelfModel::GetItemIndexForType(ShelfItemType type) {
   for (size_t i = 0; i < items_.size(); ++i) {
     if (items_[i].type == type)
       return i;
@@ -155,8 +155,8 @@ LauncherItems::const_iterator ShelfModel::ItemByID(int id) const {
 int ShelfModel::FirstRunningAppIndex() const {
   // Since lower_bound only checks weights against each other, we do not need
   // to explicitly change different running application types.
-  DCHECK_EQ(LauncherItemTypeToWeight(TYPE_WINDOWED_APP),
-            LauncherItemTypeToWeight(TYPE_PLATFORM_APP));
+  DCHECK_EQ(ShelfItemTypeToWeight(TYPE_WINDOWED_APP),
+            ShelfItemTypeToWeight(TYPE_PLATFORM_APP));
   LauncherItem weight_dummy;
   weight_dummy.type = TYPE_WINDOWED_APP;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
@@ -186,7 +186,7 @@ void ShelfModel::RemoveObserver(ShelfModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-int ShelfModel::ValidateInsertionIndex(LauncherItemType type, int index) const {
+int ShelfModel::ValidateInsertionIndex(ShelfItemType type, int index) const {
   DCHECK(index >= 0 && index <= item_count() +
       (ash::switches::UseAlternateShelfLayout() ? 1 : 0));
 

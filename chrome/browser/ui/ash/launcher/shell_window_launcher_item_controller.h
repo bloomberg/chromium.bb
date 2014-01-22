@@ -46,7 +46,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   virtual ~ShellWindowLauncherItemController();
 
   void AddShellWindow(apps::ShellWindow* shell_window,
-                      ash::LauncherItemStatus status);
+                      ash::ShelfItemStatus status);
 
   void RemoveShellWindowForWindow(aura::Window* window);
 

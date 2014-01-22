@@ -5,20 +5,20 @@
 #include "ash/shelf/shelf_navigator.h"
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
 
 namespace {
 
-class LauncherNavigatorTest : public testing::Test {
+class ShelfNavigatorTest : public testing::Test {
  public:
-  LauncherNavigatorTest() {}
+  ShelfNavigatorTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
@@ -40,9 +40,9 @@ class LauncherNavigatorTest : public testing::Test {
     model_->Add(browser_shortcut);
   }
 
-  void SetupMockShelfModel(LauncherItemType* types,
-                              int types_length,
-                              int focused_index) {
+  void SetupMockShelfModel(ShelfItemType* types,
+                           int types_length,
+                           int focused_index) {
     for (int i = 0; i < types_length; ++i) {
       LauncherItem new_item;
       new_item.type = types[i];
@@ -66,29 +66,29 @@ class LauncherNavigatorTest : public testing::Test {
  private:
   scoped_ptr<ShelfModel> model_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherNavigatorTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfNavigatorTest);
 };
 
-class LauncherNavigatorLegacyShelfLayoutTest : public LauncherNavigatorTest {
+class ShelfNavigatorLegacyShelfLayoutTest : public ShelfNavigatorTest {
  public:
-  LauncherNavigatorLegacyShelfLayoutTest() : LauncherNavigatorTest() {}
+  ShelfNavigatorLegacyShelfLayoutTest() : ShelfNavigatorTest() {}
 
  protected:
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshDisableAlternateShelfLayout);
-    LauncherNavigatorTest::SetUp();
+      switches::kAshDisableAlternateShelfLayout);
+    ShelfNavigatorTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LauncherNavigatorLegacyShelfLayoutTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfNavigatorLegacyShelfLayoutTest);
 };
 
 }  // namespace
 
-TEST_F(LauncherNavigatorTest, BasicCycle) {
+TEST_F(ShelfNavigatorTest, BasicCycle) {
   // An app shortcut and three platform apps.
-  LauncherItemType types[] = {
+  ShelfItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   // ShelfModel automatically adds BROWSER_SHORTCUT item at the
@@ -102,9 +102,9 @@ TEST_F(LauncherNavigatorTest, BasicCycle) {
   EXPECT_EQ(5, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(LauncherNavigatorLegacyShelfLayoutTest, BasicCycle) {
+TEST_F(ShelfNavigatorLegacyShelfLayoutTest, BasicCycle) {
   // An app shortcut and three platform apps.
-  LauncherItemType types[] = {
+  ShelfItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   // ShelfModel automatically adds BROWSER_SHORTCUT item at the
@@ -118,8 +118,8 @@ TEST_F(LauncherNavigatorLegacyShelfLayoutTest, BasicCycle) {
   EXPECT_EQ(4, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(LauncherNavigatorTest, WrapToBeginning) {
-  LauncherItemType types[] = {
+TEST_F(ShelfNavigatorTest, WrapToBeginning) {
+  ShelfItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   SetupMockShelfModel(types, arraysize(types), 5);
@@ -130,8 +130,8 @@ TEST_F(LauncherNavigatorTest, WrapToBeginning) {
   EXPECT_EQ(3, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
 }
 
-TEST_F(LauncherNavigatorLegacyShelfLayoutTest, WrapToBeginning) {
-  LauncherItemType types[] = {
+TEST_F(ShelfNavigatorLegacyShelfLayoutTest, WrapToBeginning) {
+  ShelfItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   SetupMockShelfModel(types, arraysize(types), 4);
@@ -142,14 +142,14 @@ TEST_F(LauncherNavigatorLegacyShelfLayoutTest, WrapToBeginning) {
   EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
 }
 
-TEST_F(LauncherNavigatorTest, Empty) {
+TEST_F(ShelfNavigatorTest, Empty) {
   SetupMockShelfModel(NULL, 0, -1);
   EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
   EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(LauncherNavigatorTest, SingleEntry) {
-  LauncherItemType type = TYPE_PLATFORM_APP;
+TEST_F(ShelfNavigatorTest, SingleEntry) {
+  ShelfItemType type = TYPE_PLATFORM_APP;
   SetupMockShelfModel(&type, 1, 2);
 
   // If there's only one item there and it is already active, there's no item
@@ -158,8 +158,8 @@ TEST_F(LauncherNavigatorTest, SingleEntry) {
   EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(LauncherNavigatorLegacyShelfLayoutTest, SingleEntry) {
-  LauncherItemType type = TYPE_PLATFORM_APP;
+TEST_F(ShelfNavigatorLegacyShelfLayoutTest, SingleEntry) {
+  ShelfItemType type = TYPE_PLATFORM_APP;
   SetupMockShelfModel(&type, 1, 1);
 
   // If there's only one item there and it is already active, there's no item
@@ -168,8 +168,8 @@ TEST_F(LauncherNavigatorLegacyShelfLayoutTest, SingleEntry) {
   EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(LauncherNavigatorTest, NoActive) {
-  LauncherItemType types[] = {
+TEST_F(ShelfNavigatorTest, NoActive) {
+  ShelfItemType types[] = {
     TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   // Special case: no items are 'STATUS_ACTIVE'.
@@ -180,8 +180,8 @@ TEST_F(LauncherNavigatorTest, NoActive) {
   EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(LauncherNavigatorLegacyShelfLayoutTest, NoActive) {
-  LauncherItemType types[] = {
+TEST_F(ShelfNavigatorLegacyShelfLayoutTest, NoActive) {
+  ShelfItemType types[] = {
     TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   // Special case: no items are 'STATUS_ACTIVE'.

@@ -149,7 +149,7 @@ void ShellWindowLauncherController::RegisterApp(ShellWindow* shell_window) {
 
   // Find or create an item controller and launcher item.
   std::string app_id = shell_window->extension()->id();
-  ash::LauncherItemStatus status = ash::wm::IsActiveWindow(window) ?
+  ash::ShelfItemStatus status = ash::wm::IsActiveWindow(window) ?
       ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   AppControllerMap::iterator iter = app_controller_map_.find(app_launcher_id);
   ash::LauncherID launcher_id = 0;
