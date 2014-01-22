@@ -170,6 +170,13 @@ class PrerenderContents::WebContentsDelegateImpl
     prerender_contents_->Destroy(FINAL_STATUS_REGISTER_PROTOCOL_HANDLER);
   }
 
+  virtual gfx::Size GetSizeForNewRenderView(
+      const WebContents* web_contents) const OVERRIDE {
+    // Have to set the size of the RenderView on initialization to be sure it is
+    // set before the RenderView is hidden on all platforms (esp. Android).
+    return prerender_contents_->size_;
+  }
+
  private:
   PrerenderContents* prerender_contents_;
 };
