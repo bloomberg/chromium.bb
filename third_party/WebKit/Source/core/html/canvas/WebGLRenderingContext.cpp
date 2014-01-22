@@ -508,6 +508,15 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
 
     bool preserveDrawingBuffer = attrs ? attrs->preserveDrawingBuffer() : false;
     blink::WebGraphicsContext3D::Attributes requestedAttributes = attrs ? attrs->attributes() : blink::WebGraphicsContext3D::Attributes();
+    if (!attrs) {
+        // Default attributes.
+        ASSERT(requestedAttributes.alpha);
+        ASSERT(requestedAttributes.depth);
+        ASSERT(requestedAttributes.antialias);
+        ASSERT(requestedAttributes.premultipliedAlpha);
+        ASSERT(!requestedAttributes.failIfMajorPerformanceCaveat);
+        requestedAttributes.stencil = false;
+    }
     requestedAttributes.noExtensions = true;
     requestedAttributes.shareResources = true;
     requestedAttributes.preferDiscreteGPU = true;

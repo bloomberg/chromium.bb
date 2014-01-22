@@ -5,6 +5,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE
+Testing default attributes: { stencil:false }
+PASS getError was expected value: NO_ERROR : should be no errors
+PASS gl = getWebGL(1, 1, null, [ 0, 0, 0, 0 ], 1, 0) is non-null.
+PASS gl.getContextAttributes().stencil is false
+PASS gl.getParameter(gl.STENCIL_BITS) == 0 is true
 Testing alpha = true
 PASS getError was expected value: NO_ERROR : should be no errors
 PASS gl = getWebGL(1, 1, { alpha: true, depth: false, stencil: false, antialias: false }, [ 0, 0, 0, 0 ], 1, 0) is non-null.

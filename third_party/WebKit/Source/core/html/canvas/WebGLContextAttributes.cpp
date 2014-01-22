@@ -44,6 +44,12 @@ WebGLContextAttributes::WebGLContextAttributes()
     : CanvasContextAttributes()
     , m_preserveDrawingBuffer(false)
 {
+    ASSERT(m_attrs.alpha);
+    ASSERT(m_attrs.depth);
+    ASSERT(m_attrs.antialias);
+    ASSERT(m_attrs.premultipliedAlpha);
+    ASSERT(!m_attrs.failIfMajorPerformanceCaveat);
+    m_attrs.stencil = false;
     ScriptWrappable::init(this);
 }
 
