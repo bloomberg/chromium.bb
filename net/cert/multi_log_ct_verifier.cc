@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/metrics/histogram.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/cert/ct_log_verifier.h"
@@ -13,9 +14,44 @@
 #include "net/cert/ct_serialization.h"
 #include "net/cert/ct_signed_certificate_timestamp_log_param.h"
 #include "net/cert/ct_verify_result.h"
+#include "net/cert/sct_status_flags.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {
+
+namespace {
+
+// Record SCT verification status. This metric would help detecting presence
+// of unknown CT logs as well as bad deployments (invalid SCTs).
+void LogSCTStatusToUMA(ct::SCTVerifyStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.CertificateTransparency.SCTStatus", status, ct::SCT_STATUS_MAX);
+}
+
+// Record SCT origin enum. This metric measure the popularity
+// of the various channels of providing SCTs for a certificate.
+void LogSCTOriginToUMA(ct::SignedCertificateTimestamp::Origin origin) {
+  UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.SCTOrigin",
+                            origin,
+                            ct::SignedCertificateTimestamp::SCT_ORIGIN_MAX);
+}
+
+// Count the number of SCTs that were available for each SSL connection
+// (including SCTs embedded in the certificate).
+// This metric would allow measuring:
+// * Of all SSL connections, how many had SCTs available for validation.
+// * When SCTs are available, how many are available per connection.
+void LogNumSCTsToUMA(const ct::CTVerifyResult& result) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.CertificateTransparency.SCTsPerConnection",
+                              result.invalid_scts.size() +
+                                  result.verified_scts.size() +
+                                  result.unknown_logs_scts.size(),
+                              1,
+                              10,
+                              11);
+}
+
+}  // namespace
 
 MultiLogCTVerifier::MultiLogCTVerifier() { }
 
@@ -104,6 +140,8 @@ int MultiLogCTVerifier::Verify(
       NetLog::TYPE_SIGNED_CERTIFICATE_TIMESTAMPS_CHECKED,
       net_log_checked_callback);
 
+  LogNumSCTsToUMA(*result);
+
   if (has_verified_scts)
     return OK;
 
@@ -128,9 +166,11 @@ bool MultiLogCTVerifier::VerifySCTs(
   for (std::vector<base::StringPiece>::const_iterator it = sct_list.begin();
        it != sct_list.end(); ++it) {
     base::StringPiece encoded_sct(*it);
+    LogSCTOriginToUMA(origin);
 
     scoped_refptr<ct::SignedCertificateTimestamp> decoded_sct;
     if (!DecodeSignedCertificateTimestamp(&encoded_sct, &decoded_sct)) {
+      LogSCTStatusToUMA(ct::SCT_STATUS_NONE);
       // XXX(rsleevi): Should we really just skip over bad SCTs?
       continue;
     }
@@ -152,6 +192,7 @@ bool MultiLogCTVerifier::VerifySingleSCT(
   if (it == logs_.end()) {
     DVLOG(1) << "SCT does not match any known log.";
     result->unknown_logs_scts.push_back(sct);
+    LogSCTStatusToUMA(ct::SCT_STATUS_LOG_UNKNOWN);
     return false;
   }
 
@@ -160,6 +201,7 @@ bool MultiLogCTVerifier::VerifySingleSCT(
   if (!it->second->Verify(expected_entry, *sct)) {
     DVLOG(1) << "Unable to verify SCT signature.";
     result->invalid_scts.push_back(sct);
+    LogSCTStatusToUMA(ct::SCT_STATUS_INVALID);
     return false;
   }
 
@@ -167,9 +209,11 @@ bool MultiLogCTVerifier::VerifySingleSCT(
   if (sct->timestamp > base::Time::Now()) {
     DVLOG(1) << "SCT is from the future!";
     result->invalid_scts.push_back(sct);
+    LogSCTStatusToUMA(ct::SCT_STATUS_INVALID);
     return false;
   }
 
+  LogSCTStatusToUMA(ct::SCT_STATUS_OK);
   result->verified_scts.push_back(sct);
   return true;
 }

@@ -10,9 +10,12 @@ namespace net {
 namespace ct {
 
 // The possible verification statuses for a SignedCertificateTimestamp.
+// Note: The numeric values are used within histograms and should not change
+// or be re-assigned.
 enum SCTVerifyStatus {
   // Not a real status, this just prevents a default int value from being
   // mis-interpreseted as a valid status.
+  // Also used to count SCTs that cannot be decoded in the histogram.
   SCT_STATUS_NONE = 0,
 
   // The SCT is from an unknown log, so we cannot verify its signature.
@@ -23,6 +26,9 @@ enum SCTVerifyStatus {
 
   // The SCT is from a known log, and the signature is valid.
   SCT_STATUS_OK = 3,
+
+  // Used to bound the enum values.
+  SCT_STATUS_MAX,
 };
 
 }  // namespace ct

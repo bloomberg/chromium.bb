@@ -7674,6 +7674,38 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.CertificateTransparency.MainFrameValidSCTCount">
+  <summary>
+    Number of valid Signed Certificate Timestamps (SCTs) present for the
+    main-frame resource. Emitted every time a main-frame resource is fetched.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertificateTransparency.SCTOrigin" enum="SCTOrigin">
+  <summary>
+    The origin breakdown of Signed Certificate Timestamps (SCTs). Emitted once
+    for every SCT when first validated, which means 0 or more times during every
+    SSL connection establishment.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertificateTransparency.SCTsPerConnection">
+  <summary>
+    The number of Signed Certificate Timestamps (SCTs) that were available for
+    each SSL connection, including SCTs embedded in the certificate. This metric
+    measures how many SSL connections had SCTs available. Emitted during every
+    SSL connection establishment.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertificateTransparency.SCTStatus" enum="SCTVerifyStatus">
+  <summary>
+    Breakdown of Signed Certificate Timestamps (SCTs) validation status. Emitted
+    once for every SCT when first validated, which means 0 or more times during
+    every SSL connection establishment.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertVerifier_Job_Latency" units="milliseconds">
   <summary>
     The actual amount of time spent verifying a certificate using the underlying
@@ -29779,6 +29811,19 @@ other types of suffix sets.
 <enum name="ScrollThread" type="int">
   <int value="0" label="Scroll on impl-thread"/>
   <int value="1" label="Scroll on main-thread"/>
+</enum>
+
+<enum name="SCTOrigin" type="int">
+  <int value="0" label="SCT_EMBEDDED"/>
+  <int value="1" label="SCT_FROM_TLS_EXTENSION"/>
+  <int value="2" label="SCT_FROM_OCSP_RESPONSE"/>
+</enum>
+
+<enum name="SCTVerifyStatus" type="int">
+  <int value="0" label="SCT_STATUS_NONE"/>
+  <int value="1" label="SCT_STATUS_LOG_UNKNOWN"/>
+  <int value="2" label="SCT_STATUS_INVALID"/>
+  <int value="3" label="SCT_STATUS_OK"/>
 </enum>
 
 <enum name="SearchEngine" type="int">

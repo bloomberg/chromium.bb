@@ -88,10 +88,13 @@ struct NET_EXPORT SignedCertificateTimestamp
   };
 
   // Source of the SCT - supplementary, not defined in CT RFC.
+  // Note: The numeric values are used within histograms and should not change
+  // or be re-assigned.
   enum Origin {
     SCT_EMBEDDED = 0,
     SCT_FROM_TLS_EXTENSION = 1,
     SCT_FROM_OCSP_RESPONSE = 2,
+    SCT_ORIGIN_MAX,
   };
 
   SignedCertificateTimestamp();

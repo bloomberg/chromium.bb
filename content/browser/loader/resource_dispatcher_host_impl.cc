@@ -6,6 +6,7 @@
 
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 
+#include <algorithm>
 #include <set>
 #include <vector>
 
@@ -305,6 +306,11 @@ void NotifyResponseOnUI(int render_process_id,
   if (!web_contents)
     return;
   web_contents->DidGetResourceResponseStart(*details.get());
+}
+
+bool IsValidatedSCT(
+    const net::SignedCertificateTimestampAndStatus& sct_status) {
+  return sct_status.status == net::ct::SCT_STATUS_OK;
 }
 
 }  // namespace
@@ -757,11 +763,18 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
         "Net.ErrorCodesForMainFrame3",
         -loader->request()->status().error());
 
-    if (loader->request()->url().SchemeIsSecure() &&
-        loader->request()->url().host() == "www.google.com") {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
-          "Net.ErrorCodesForHTTPSGoogleMainFrame2",
-          -loader->request()->status().error());
+    if (loader->request()->url().SchemeIsSecure()) {
+      if (loader->request()->url().host() == "www.google.com") {
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ErrorCodesForHTTPSGoogleMainFrame2",
+                                    -loader->request()->status().error());
+      }
+
+      int num_valid_scts = std::count_if(
+          loader->request()->ssl_info().signed_certificate_timestamps.begin(),
+          loader->request()->ssl_info().signed_certificate_timestamps.end(),
+          IsValidatedSCT);
+      UMA_HISTOGRAM_COUNTS_100(
+          "Net.CertificateTransparency.MainFrameValidSCTCount", num_valid_scts);
     }
   } else {
     if (info->GetResourceType() == ResourceType::IMAGE) {

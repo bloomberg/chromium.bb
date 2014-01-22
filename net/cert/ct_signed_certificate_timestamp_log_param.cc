@@ -27,6 +27,8 @@ const char* OriginToString(ct::SignedCertificateTimestamp::Origin origin) {
       return "tls_extension";
     case ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE:
       return "ocsp";
+    case ct::SignedCertificateTimestamp::SCT_ORIGIN_MAX:
+      break;
   }
 
   return "unknown";
