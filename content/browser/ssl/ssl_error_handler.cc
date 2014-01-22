@@ -63,8 +63,7 @@ void SSLErrorHandler::Dispatch() {
   WebContents* web_contents = NULL;
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  if (render_frame_host)
-    web_contents = WebContents::FromRenderFrameHost(render_frame_host);
+  web_contents = WebContents::FromRenderFrameHost(render_frame_host);
 
   if (!web_contents) {
     // We arrived on the UI thread, but the tab we're looking for is no longer

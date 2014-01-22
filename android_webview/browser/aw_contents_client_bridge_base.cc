@@ -60,7 +60,6 @@ AwContentsClientBridgeBase* AwContentsClientBridgeBase::FromID(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!rfh) return NULL;
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   return UserData::GetContents(web_contents);

@@ -161,8 +161,6 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
   DCHECK(!dispatcher_owner_);
   content::RenderFrameHost* frame_host = content::RenderFrameHost::FromID(
       render_process_id_, render_frame_id_);
-  if (!frame_host)
-    return;
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(frame_host);
 

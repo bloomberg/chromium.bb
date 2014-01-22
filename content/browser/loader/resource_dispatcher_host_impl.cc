@@ -282,9 +282,6 @@ void NotifyRedirectOnUI(int render_process_id,
                         scoped_ptr<ResourceRedirectDetails> details) {
   RenderFrameHostImpl* host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host);
-  if (!host)
-    return;
-
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
   if (!web_contents)
@@ -298,9 +295,6 @@ void NotifyResponseOnUI(int render_process_id,
                         scoped_ptr<ResourceRequestDetails> details) {
   RenderFrameHostImpl* host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host);
-  if (!host)
-    return;
-
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
   if (!web_contents)

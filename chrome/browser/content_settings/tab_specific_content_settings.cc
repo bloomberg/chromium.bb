@@ -105,9 +105,6 @@ TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
 
   content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
       render_process_id, render_frame_id);
-  if (!frame)
-    return NULL;
-
   WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
   if (!web_contents)
     return NULL;

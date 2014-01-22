@@ -126,8 +126,6 @@ WebContents* LoginHandler::GetWebContentsForLogin() const {
 
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       render_process_host_id_, render_frame_id_);
-  if (!rfh)
-    return NULL;
   return WebContents::FromRenderFrameHost(rfh);
 }
 

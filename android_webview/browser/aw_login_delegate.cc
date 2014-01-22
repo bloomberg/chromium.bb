@@ -89,11 +89,6 @@ void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
 
   RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
       render_process_id_, render_frame_id_);
-  if (!render_frame_host) {
-    Cancel();
-    return;
-  }
-
   WebContents* web_contents = WebContents::FromRenderFrameHost(
       render_frame_host);
   if (!aw_http_auth_handler_->HandleOnUIThread(web_contents)) {

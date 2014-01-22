@@ -32,8 +32,7 @@ void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
   WebContents* web_contents = NULL;
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (render_frame_host)
-    web_contents = WebContents::FromRenderFrameHost(render_frame_host);
+  web_contents = WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
 
   gfx::NativeWindow parent_window =

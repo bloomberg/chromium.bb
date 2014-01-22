@@ -1783,10 +1783,6 @@ void ChromeContentBrowserClient::AllowCertificateError(
   // If the tab is being prerendered, cancel the prerender and the request.
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host) {
-    NOTREACHED();
-    return;
-  }
   WebContents* tab = WebContents::FromRenderFrameHost(render_frame_host);
   if (!tab) {
     NOTREACHED();

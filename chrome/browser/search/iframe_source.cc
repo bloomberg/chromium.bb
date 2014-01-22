@@ -56,8 +56,6 @@ bool IframeSource::GetOrigin(
     std::string* origin) const {
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (rfh == NULL)
-    return false;
   content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(rfh);
   if (contents == NULL)

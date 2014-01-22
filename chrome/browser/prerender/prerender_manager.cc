@@ -1864,9 +1864,6 @@ void PrerenderManager::RecordCookieEvent(int process_id,
                                          PrerenderContents::CookieEvent event,
                                          const net::CookieList* cookie_list) {
   RenderFrameHost* rfh = RenderFrameHost::FromID(process_id, frame_id);
-  if (!rfh)
-    return;
-
   WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
   if (!web_contents)
     return;
