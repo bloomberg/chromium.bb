@@ -384,20 +384,34 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(observer.infobar_shown());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForOtherXHR) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForXHRWithoutOnSubmit) {
   NavigateToFile("/password/password_xhr_submit.html");
 
-  // Verify that if random XHR navigation occurs, we don't try and save the
-  // password.
-  //
-  // We may want to change this functionality in the future to account for
-  // cases where the element that users click on isn't a submit button.
+  // Verify that if XHR navigation occurs and the form is properly filled out,
+  // we try and save the password even though onsubmit hasn't been called.
   NavigationObserver observer(WebContents());
   std::string fill_and_navigate =
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "send_xhr()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       NoPromptIfLinkClicked) {
+  NavigateToFile("/password/password_form.html");
+
+  // Verify that if the user takes a direct action to leave the page, we don't
+  // prompt to save the password even if the form is already filled out.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_click_link =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('link').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_click_link));
   observer.Wait();
   EXPECT_FALSE(observer.infobar_shown());
 }

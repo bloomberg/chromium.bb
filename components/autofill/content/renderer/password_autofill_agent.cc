@@ -503,16 +503,33 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(blink::WebFrame* frame) {
     // If the navigation is not triggered by a user gesture, e.g. by some ajax
     // callback, then inherit the submitted password form from the previous
     // state. This fixes the no password save issue for ajax login, tracked in
-    // [http://crbug/43219]. Note that there are still some sites that this
-    // fails for because they use some element other than a submit button to
-    // trigger submission (which means WillSendSubmitEvent will not be called).
+    // [http://crbug/43219]. Note that this still fails for sites that use
+    // synchonous XHR as isProcessingUserGesture() will return true.
     blink::WebFrame* form_frame = CurrentOrChildFrameWithSavedForms(frame);
-    if (!blink::WebUserGestureIndicator::isProcessingUserGesture() &&
-        provisionally_saved_forms_[form_frame].get()) {
-      Send(new AutofillHostMsg_PasswordFormSubmitted(
-          routing_id(),
-          *provisionally_saved_forms_[form_frame]));
-      provisionally_saved_forms_.erase(form_frame);
+    if (!blink::WebUserGestureIndicator::isProcessingUserGesture()) {
+      // If onsubmit has been called, try and save that form.
+      if (provisionally_saved_forms_[form_frame].get()) {
+        Send(new AutofillHostMsg_PasswordFormSubmitted(
+            routing_id(),
+            *provisionally_saved_forms_[form_frame]));
+        provisionally_saved_forms_.erase(form_frame);
+      } else {
+        // Loop through the forms on the page looking for one that has been
+        // filled out. If one exists, try and save the credentials.
+        blink::WebVector<blink::WebFormElement> forms;
+        frame->document().forms(forms);
+
+        for (size_t i = 0; i < forms.size(); ++i) {
+          blink::WebFormElement fe = forms[i];
+          scoped_ptr<PasswordForm> password_form(CreatePasswordForm(fe));
+          if (password_form.get() &&
+              !password_form->username_value.empty() &&
+              !password_form->password_value.empty()) {
+            Send(new AutofillHostMsg_PasswordFormSubmitted(
+                routing_id(), *password_form));
+          }
+        }
+      }
     }
     // Clear the whole map during main frame navigation.
     provisionally_saved_forms_.clear();
