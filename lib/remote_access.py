@@ -32,6 +32,34 @@ DEFAULT_SSH_PORT = 22
 SSH_ERROR_CODE = 255
 
 
+def RunCommandFuncWrapper(func, msg, *args, **kwargs):
+  """Wraps a function that invokes cros_build_lib.RunCommand.
+
+  If the command failed, logs warning |msg| if error_code_ok is set;
+  logs error |msg| if error_code_ok is not set.
+
+  Args:
+    func: The function to call.
+    msg: The message to display if the command failed.
+    *args: Arguments to pass to |func|.
+    **kwargs: Keyword arguments to pass to |func|.
+
+  Returns:
+    The result of |func|.
+
+  Raises:
+    cros_build_lib.RunCommandError if the command failed and error_code_ok
+    is not set.
+  """
+  error_code_ok = kwargs.pop('error_code_ok', False)
+  result = func(*args, error_code_ok=True, **kwargs)
+  if result.returncode != 0 and not error_code_ok:
+    raise cros_build_lib.RunCommandError(msg, result)
+
+  if result.returncode != 0:
+    logging.warning(msg)
+
+
 def CompileSSHConnectSettings(ConnectTimeout=10, ConnectionAttempts=2):
   return ['-o', 'ConnectTimeout=%s' % ConnectTimeout,
           '-o', 'ConnectionAttempts=%s' % ConnectionAttempts,
@@ -360,19 +388,23 @@ class RemoteDevice(object):
 
   def CopyToDevice(self, src, dest, **kwargs):
     """Copy path to device."""
-    self.agent.Rsync(src, dest, **kwargs)
+    msg = 'Could not copy %s to device.' % src
+    return RunCommandFuncWrapper(
+        self.agent.Rsync, msg, src, dest, **kwargs)
 
   def CopyFromDevice(self, src, dest, **kwargs):
     """Copy path from device."""
-    self.agent.RsyncToLocal(src, dest, **kwargs)
+    msg = 'Could not copy %s from device.' % src
+    return RunCommandFuncWrapper(
+        self.agent.RsyncToLocal, msg, src, dest, **kwargs)
 
   def CopyFromWorkDir(self, src, dest, **kwargs):
     """Copy path from working directory on the device."""
-    self.CopyFromDevice(os.path.join(self.work_dir, src), dest, **kwargs)
+    return self.CopyFromDevice(os.path.join(self.work_dir, src), dest, **kwargs)
 
   def CopyToWorkDir(self, src, dest='', **kwargs):
     """Copy path to working directory on the device."""
-    self.CopyToDevice(src, os.path.join(self.work_dir, dest), **kwargs)
+    return self.CopyToDevice(src, os.path.join(self.work_dir, dest), **kwargs)
 
   def PipeOverSSH(self, filepath, cmd, **kwargs):
     """Cat a file and pipe over SSH."""
@@ -381,7 +413,7 @@ class RemoteDevice(object):
 
   def Reboot(self):
     """Reboot the device."""
-    self.agent.RemoteReboot()
+    return self.agent.RemoteReboot()
 
   def RunCommand(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured.

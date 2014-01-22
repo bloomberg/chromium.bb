@@ -304,9 +304,11 @@ using-the-dev-server/xbuddy-for-devserver
     finally:
       ds.Stop()
       device.CopyFromDevice(ds.log_filename,
-                            os.path.join(tempdir, 'target_devserver.log'))
+                            os.path.join(tempdir, 'target_devserver.log'),
+                            error_code_ok=True)
       device.CopyFromDevice('/var/log/update_engine.log', tempdir,
-                            follow_symlinks=True)
+                            follow_symlinks=True,
+                            error_code_ok=True)
 
   def GetUpdatePayloads(self, path, payload_dir, board=None, src_image=None,
                         timeout=60 * 15):
@@ -344,6 +346,8 @@ using-the-dev-server/xbuddy-for-devserver
       if os.path.exists(ds.log_filename):
         shutil.copyfile(ds.log_filename,
                         os.path.join(payload_dir, 'local_devserver.log'))
+      else:
+        logging.warning('Could not find %s', ds.log_filename)
 
   @classmethod
   def AddParser(cls, parser):
