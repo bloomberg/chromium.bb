@@ -62,7 +62,6 @@ PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
 PASS source.start() did not throw exception.
 PASS source.stop() did not throw exception.
-PASS source.stop() threw exception InvalidStateError: Failed to execute 'stop' on 'AudioBufferSourceNode': cannot call stop more than once..
 PASS source = context.createOscillator() did not throw exception.
 PASS source.start() did not throw exception.
 PASS source.stop() did not throw exception.
@@ -71,7 +70,6 @@ PASS osc.stop() threw exception InvalidStateError: Failed to execute 'stop' on '
 PASS osc1 = context.createOscillator() did not throw exception.
 PASS osc1.start() did not throw exception.
 PASS osc1.stop() did not throw exception.
-PASS osc1.stop() threw exception InvalidStateError: Failed to execute 'stop' on 'OscillatorNode': cannot call stop more than once..
 PASS successfullyParsed is true
 
 TEST COMPLETE

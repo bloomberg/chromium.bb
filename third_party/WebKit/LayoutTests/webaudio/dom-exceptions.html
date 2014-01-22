@@ -145,7 +145,6 @@ function runTest() {
     shouldNotThrow("source.buffer = buffer");
     shouldNotThrow("source.start()");
     shouldNotThrow("source.stop()");
-    shouldThrow("source.stop()");
 
     
     // Start/stop for OscillatorNodes
@@ -158,8 +157,6 @@ function runTest() {
     shouldNotThrow("osc1 = context.createOscillator()");
     shouldNotThrow("osc1.start()");
     shouldNotThrow("osc1.stop()");
-    shouldThrow("osc1.stop()");
-
 }
 
 runTest();

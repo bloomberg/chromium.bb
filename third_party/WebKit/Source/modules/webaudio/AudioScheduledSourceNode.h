@@ -109,7 +109,6 @@ protected:
     double m_endTime; // in seconds
 
     bool m_hasEndedListener;
-    bool m_stopCalled;
 
     static const double UnknownTime;
 };
