@@ -202,7 +202,10 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   OutputFile internal_output_file;
   if (target_->output_type() == Target::SHARED_LIBRARY) {
     if (settings_->IsWin()) {
-      internal_output_file = OutputFile(target_->label().name() + ".dll");
+      internal_output_file.value() =
+          target_->settings()->toolchain_output_subdir().value();
+      internal_output_file.value().append(target_->label().name());
+      internal_output_file.value().append(".dll");
     } else {
       internal_output_file = external_output_file;
     }
