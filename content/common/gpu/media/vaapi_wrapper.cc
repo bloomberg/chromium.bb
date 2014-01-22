@@ -112,6 +112,9 @@ typedef VAStatus (*VaapiRenderPicture)(VADisplay dpy,
                                        VAContextID context,
                                        VABufferID *buffers,
                                        int num_buffers);
+typedef VAStatus (*VaapiSetDisplayAttributes)(VADisplay dpy,
+                                              VADisplayAttribute *type,
+                                              int num_attributes);
 typedef VAStatus (*VaapiSyncSurface)(VADisplay dpy, VASurfaceID render_target);
 typedef VAStatus (*VaapiTerminate)(VADisplay dpy);
 
@@ -134,6 +137,7 @@ VAAPI_SYM(GetDisplay, vaapi_x11_handle);
 VAAPI_SYM(Initialize, vaapi_handle);
 VAAPI_SYM(PutSurface, vaapi_x11_handle);
 VAAPI_SYM(RenderPicture, vaapi_handle);
+VAAPI_SYM(SetDisplayAttributes, vaapi_handle);
 VAAPI_SYM(SyncSurface, vaapi_x11_handle);
 VAAPI_SYM(Terminate, vaapi_handle);
 
@@ -194,6 +198,18 @@ scoped_ptr<VaapiWrapper> VaapiWrapper::Create(
   return vaapi_wrapper.Pass();
 }
 
+void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
+  VADisplayAttribute item = {VADisplayAttribRenderMode,
+                             1,  // At least support '_LOCAL_OVERLAY'.
+                             -1,  // The maximum possible support 'ALL'.
+                             VA_RENDER_MODE_LOCAL_GPU,
+                             VA_DISPLAY_ATTRIB_SETTABLE};
+
+  VAStatus va_res = VAAPI_SetDisplayAttributes(va_display_, &item, 1);
+  if (va_res != VA_STATUS_SUCCESS)
+    DVLOG(2) << "VAAPI_SetDisplayAttributes unsupported, ignoring by default.";
+}
+
 bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
                               Display* x_display,
                               const base::Closure& report_error_to_uma_cb) {
@@ -235,6 +251,8 @@ bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
     DVLOG(1) << "YUV420 not supported by this VAAPI implementation";
     return false;
   }
+
+  TryToSetVADisplayAttributeToLocalGPU();
 
   va_res = VAAPI_CreateConfig(va_display_, va_profile, kEntrypoint,
                               &attrib, 1, &va_config_id_);
@@ -466,6 +484,7 @@ bool VaapiWrapper::PostSandboxInitialization() {
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(Initialize, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(PutSurface, vaapi_x11_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(RenderPicture, vaapi_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(SetDisplayAttributes, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(SyncSurface, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(Terminate, vaapi_handle);
 #undef VAAPI_DLSYM

@@ -94,6 +94,9 @@ class CONTENT_EXPORT VaapiWrapper {
   // by client or if decode fails in hardware.
   bool SubmitDecode(VASurfaceID va_surface_id);
 
+  // Attempt to set render mode to "render to texture.". Failure is non-fatal.
+  void TryToSetVADisplayAttributeToLocalGPU();
+
   // Lazily initialize static data after sandbox is enabled.  Return false on
   // init failure.
   static bool PostSandboxInitialization();
