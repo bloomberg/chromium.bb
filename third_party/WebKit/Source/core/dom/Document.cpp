@@ -2870,9 +2870,9 @@ void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& c
 void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content)
 {
     if (equalIgnoringCase(equiv, "content-security-policy"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce, ContentSecurityPolicy::HeaderSourceMeta);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report);
+        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report, ContentSecurityPolicy::HeaderSourceMeta);
     // FIXME: Remove deprecation messages after the next release branch.
     else if (equalIgnoringCase(equiv, "x-webkit-csp"))
         UseCounter::countDeprecation(this, UseCounter::PrefixedContentSecurityPolicy);

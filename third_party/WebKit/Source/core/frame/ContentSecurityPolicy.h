@@ -69,6 +69,11 @@ public:
         Enforce,
     };
 
+    enum HeaderSource {
+        HeaderSourceHTTP,
+        HeaderSourceMeta
+    };
+
     enum ReportingStatus {
         SendReport,
         SuppressReport
@@ -81,7 +86,7 @@ public:
     };
 
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
-    void didReceiveHeader(const String&, HeaderType);
+    void didReceiveHeader(const String&, HeaderType, HeaderSource);
 
     // These functions are wrong because they assume that there is only one header.
     // FIXME: Replace them with functions that return vectors.
@@ -136,6 +141,7 @@ public:
     void reportUnsupportedDirective(const String&) const;
     void reportInvalidInReportOnly(const String&) const;
     void reportInvalidReferrer(const String&) const;
+    void reportReportOnlyInMeta(const String&) const;
     void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<KURL>& reportURIs, const String& header);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
@@ -156,7 +162,7 @@ private:
     explicit ContentSecurityPolicy(ExecutionContextClient*);
 
     void logToConsole(const String& message) const;
-    void addPolicyFromHeaderValue(const String&, HeaderType);
+    void addPolicyFromHeaderValue(const String&, HeaderType, HeaderSource);
 
     bool shouldSendViolationReport(const String&) const;
     void didSendViolationReport(const String&);
