@@ -11,8 +11,7 @@ namespace browser_window_controller {
 
 enum CoreAnimationStatus {
   kCoreAnimationDisabled,
-  kCoreAnimationEnabledLazy,
-  kCoreAnimationEnabledAlways,
+  kCoreAnimationEnabled,
 };
 
 }  // namespace browser_window_controller

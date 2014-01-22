@@ -976,14 +976,6 @@ willPositionSheet:(NSWindow*)sheet
   // transitioning between composited and non-composited mode.
   // http://crbug.com/279472
   allowOverlappingViews = YES;
-
-  if (allowOverlappingViews &&
-      [self coreAnimationStatus] ==
-          browser_window_controller::kCoreAnimationEnabledLazy) {
-    [[[self window] contentView] setWantsLayer:YES];
-    [[self tabStripView] setWantsLayer:YES];
-  }
-
   contents->GetView()->SetAllowOverlappingViews(allowOverlappingViews);
 
   DevToolsWindow* devToolsWindow =
@@ -1001,20 +993,11 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (browser_window_controller::CoreAnimationStatus)coreAnimationStatus {
-  // TODO(sail) Remove this.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseCoreAnimation)) {
-    return browser_window_controller::kCoreAnimationDisabled;
+    return browser_window_controller::kCoreAnimationEnabled;
   }
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseCoreAnimation) == "lazy") {
-    return browser_window_controller::kCoreAnimationEnabledLazy;
-  }
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseCoreAnimation) == "disabled") {
-    return browser_window_controller::kCoreAnimationDisabled;
-  }
-  return browser_window_controller::kCoreAnimationEnabledAlways;
+  return browser_window_controller::kCoreAnimationDisabled;
 }
 
 @end  // @implementation BrowserWindowController(Private)

@@ -258,9 +258,9 @@ enum {
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
-    // Eagerly enable core animation if requested.
+    // Enable core animation if requested.
     if ([self coreAnimationStatus] ==
-            browser_window_controller::kCoreAnimationEnabledAlways) {
+            browser_window_controller::kCoreAnimationEnabled) {
       [[[self window] contentView] setWantsLayer:YES];
       [[self tabStripView] setWantsLayer:YES];
     }

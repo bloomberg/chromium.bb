@@ -83,25 +83,15 @@ using blink::WebMouseWheelEvent;
 
 enum CoreAnimationStatus {
   CORE_ANIMATION_DISABLED,
-  CORE_ANIMATION_ENABLED_LAZY,
-  CORE_ANIMATION_ENABLED_ALWAYS,
+  CORE_ANIMATION_ENABLED,
 };
 
 static CoreAnimationStatus GetCoreAnimationStatus() {
-  // TODO(sail) Remove this.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseCoreAnimation)) {
-    return CORE_ANIMATION_DISABLED;
+    return CORE_ANIMATION_ENABLED;
   }
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseCoreAnimation) == "lazy") {
-    return CORE_ANIMATION_ENABLED_LAZY;
-  }
-  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseCoreAnimation) == "disabled") {
-    return CORE_ANIMATION_DISABLED;
-  }
-  return CORE_ANIMATION_ENABLED_ALWAYS;
+  return CORE_ANIMATION_DISABLED;
 }
 
 // These are not documented, so use only after checking -respondsToSelector:.
@@ -428,7 +418,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
 
-  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_ALWAYS) {
+  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED) {
     EnableCoreAnimation();
   }
 
@@ -459,14 +449,6 @@ void RenderWidgetHostViewMac::SetDelegate(
 }
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
-  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_LAZY) {
-    if (overlapping) {
-      ScopedCAActionDisabler disabler;
-      EnableCoreAnimation();
-      return;
-    }
-  }
-
   if (allow_overlapping_views_ == overlapping)
     return;
   allow_overlapping_views_ = overlapping;
@@ -2592,13 +2574,6 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
   // prevents a flash when the current tab is closed.
   if (!renderWidgetHostView_->use_core_animation_)
     [oldWindow disableScreenUpdatesUntilFlush];
-
-  // If the new window for this view is using CoreAnimation then enable
-  // CoreAnimation on this view.
-  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_LAZY &&
-      [[newWindow contentView] wantsLayer]) {
-    renderWidgetHostView_->EnableCoreAnimation();
-  }
 
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
