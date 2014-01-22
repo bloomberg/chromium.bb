@@ -34,21 +34,21 @@ class BookmarkUtilsTest : public ::testing::Test {
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
   BookmarkModel model(NULL);
   const BookmarkNode* node1 = model.AddURL(model.other_node(),
-                                        0,
-                                        ASCIIToUTF16("foo bar"),
-                                        GURL("http://www.google.com"));
-  const BookmarkNode* node2 = model.AddURL(model.other_node(),
-                                        0,
-                                        ASCIIToUTF16("baz buz"),
-                                        GURL("http://www.cnn.com"));
-
-  const BookmarkNode* folder1 = model.AddFolder(model.other_node(),
                                            0,
-                                           ASCIIToUTF16("foo"));
-
+                                           ASCIIToUTF16("foo bar"),
+                                           GURL("http://www.google.com"));
+  const BookmarkNode* node2 = model.AddURL(model.other_node(),
+                                           0,
+                                           ASCIIToUTF16("baz buz"),
+                                           GURL("http://www.cnn.com"));
+  const BookmarkNode* folder1 = model.AddFolder(model.other_node(),
+                                                0,
+                                                ASCIIToUTF16("foo"));
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
   query.word_phrase_query.reset(new base::string16);
+
+  // Node "foo bar" and folder "foo" are returned in search results.
   *query.word_phrase_query = ASCIIToUTF16("foo");
   GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
   ASSERT_EQ(2U, nodes.size());
@@ -56,16 +56,24 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
   EXPECT_TRUE(nodes[1] == node1);
   nodes.clear();
 
+  // Ensure url matches return in search results.
   *query.word_phrase_query = ASCIIToUTF16("cnn");
   GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node2);
   nodes.clear();
 
+  // Ensure folder "foo" is not returned in more specific search.
   *query.word_phrase_query = ASCIIToUTF16("foo bar");
   GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == node1);
+  nodes.clear();
+
+  // Bookmark Bar and Other Bookmarks are not returned in search results.
+  *query.word_phrase_query = ASCIIToUTF16("Bookmark");
+  GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
+  ASSERT_EQ(0U, nodes.size());
   nodes.clear();
 }
 

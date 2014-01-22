@@ -22,11 +22,11 @@ function bookmarksBar() { return expected[0].children[0]; }
 function otherBookmarks() { return expected[0].children[1]; }
 
 // Some variables that are used across multiple tests.
-var node1 = {parentId:"1", title:"Foo bar baz",
+var node1 = {parentId:"1", title:"bar baz",
              url:"http://www.example.com/hello"};
 var node2 = {parentId:"1", title:"foo quux",
              url:"http://www.example.com/bar"};
-var node3 = {parentId:"1", title:"bar baz",
+var node3 = {parentId:"1", title:"Foo bar baz",
              url:"http://www.google.com/hello/quux"};
 var quota_node1 = {parentId:"1", title:"Dave",
                    url:"http://www.dmband.com/"};
@@ -301,12 +301,16 @@ chrome.test.runTests([
       chrome.test.assertEq(1, results.length);
     }));
     chrome.bookmarks.search("foo bar", pass(function(results) {
-      // matches node1 & folder "foo bar" from createFolder
+      // matches node3 & folder "foo bar" from createFolder
       chrome.test.assertEq(2, results.length);
     }));
     chrome.bookmarks.search("quux", pass(function(results) {
-      // matches node2 & node3
+      // matches node2 & node1
       chrome.test.assertEq(2, results.length);
+    }));
+    chrome.bookmarks.search("Bookmark Bar", pass(function(results) {
+      // Does not match any node since permanent nodes are stripped from search
+      chrome.test.assertEq(0, results.length);
     }));
   },
 
@@ -364,9 +368,16 @@ chrome.test.runTests([
       expected[0].children[1].children[1].children.shift();
       expected[0].children[1].children[1].children[0].index = 0;
       expected[0].children[1].children[1].children[1].index = 1;
-
       verifyTreeIsExpected(pass());
     }));
+  },
+
+  function searchRemoved() {
+      // Search for deleted node
+      chrome.bookmarks.search("baz bar", pass(function(results) {
+        // matches only node3 since node1 was removed
+        chrome.test.assertEq(1, results.length);
+      }));
   },
 
   function removeTree() {
@@ -382,6 +393,14 @@ chrome.test.runTests([
       // Update expected to match.
       expected[0].children[1].children.pop();
       verifyTreeIsExpected(pass());
+    }));
+  },
+
+  function searchRemovedTree() {
+    // Search for deleted folder and enclosed node3
+    chrome.bookmarks.search("foo bar", pass(function(results) {
+      // Does not match anything since folder was removed with node3 in it
+      chrome.test.assertEq(0, results.length);
     }));
   },
 
@@ -451,11 +470,11 @@ chrome.test.runTests([
         expected = results;
 
         // Reset the nodes
-        node1 = {parentId:"1", title:"Foo bar baz",
+        node1 = {parentId:"1", title:"bar baz",
                  url:"http://www.example.com/hello"};
         node2 = {parentId:"1", title:"foo quux",
                  url:"http://www.example.com/bar"};
-        node3 = {parentId:"1", title:"bar baz",
+        node3 = {parentId:"1", title:"Foo bar baz",
                   url:"http://www.google.com/hello/quux"};
         createNodes(bookmarksBar(), [node1, node2, node3], pass(function() {
           verifyTreeIsExpected(pass());

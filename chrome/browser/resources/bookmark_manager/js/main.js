@@ -824,27 +824,42 @@ function openItem() {
 }
 
 /**
+ * Refreshes search results after delete or undo-delete.
+ * This ensures children of deleted folders do not remain in results
+ */
+function updateSearchResults() {
+  if (list.isSearch()) {
+    list.reload();
+  }
+}
+
+/**
  * Deletes the selected bookmarks. The bookmarks are saved in memory in case
  * the user needs to undo the deletion.
  */
 function deleteBookmarks() {
   var selectedIds = getSelectedBookmarkIds();
+  var filteredIds = getFilteredSelectedBookmarkIds();
   lastDeletedNodes = [];
 
   function performDelete() {
-    chrome.bookmarkManagerPrivate.removeTrees(selectedIds);
+    // Only remove filtered ids.
+    chrome.bookmarkManagerPrivate.removeTrees(filteredIds);
     $('undo-delete-command').canExecuteChange();
     performGlobalUndo = undoDelete;
   }
 
   // First, store information about the bookmarks being deleted.
+  // Store all selected ids.
   selectedIds.forEach(function(id) {
     chrome.bookmarks.getSubTree(id, function(results) {
       lastDeletedNodes.push(results);
 
       // When all nodes have been saved, perform the deletion.
-      if (lastDeletedNodes.length === selectedIds.length)
+      if (lastDeletedNodes.length === selectedIds.length) {
         performDelete();
+        updateSearchResults();
+      }
     });
   });
 }
@@ -875,6 +890,8 @@ function restoreTree(node, parentId) {
         restoreTree(child, result.id);
       });
     }
+
+    updateSearchResults();
   });
 }
 
@@ -1081,6 +1098,43 @@ function pasteBookmark(id) {
 }
 
 /**
+ * Returns true if child is contained in another selected folder.
+ * Traces parent nodes up the tree until a selected ancestor or root is found.
+ */
+function hasSelectedAncestor(parentNode) {
+  function contains(arr, item) {
+    for (var i = 0; i < arr.length; i++)
+        if (arr[i] === item)
+          return true;
+    return false;
+  }
+
+  // Don't search top level, cannot select permanent nodes in search.
+  if (parentNode == null || parentNode.id <= 2)
+    return false;
+
+  // Found selected ancestor.
+  if (contains(getSelectedBookmarkNodes(), parentNode))
+    return true;
+
+  // Keep digging.
+  return hasSelectedAncestor(tree.getBookmarkNodeById(parentNode.parentId));
+}
+
+function getFilteredSelectedBookmarkIds() {
+  // Remove duplicates from filteredIds and return.
+  var filteredIds = new Array();
+  // Selected nodes to iterate through for matches.
+  var nodes = getSelectedBookmarkNodes();
+
+  for (var i = 0; i < nodes.length; i++)
+    if (!hasSelectedAncestor(tree.getBookmarkNodeById(nodes[i].parentId)))
+      filteredIds.splice(0, 0, nodes[i].id);
+
+  return filteredIds;
+}
+
+/**
  * Handler for the command event. This is used for context menu of list/tree
  * and organized menu.
  * @param {!Event} e The event object.
@@ -1134,7 +1188,10 @@ function handleCommand(e) {
     case 'cut-command':
       recordUserAction('Cut');
       chrome.bookmarkManagerPrivate.cut(getSelectedBookmarkIds(),
-                                        updatePasteCommand);
+                                        function() {
+                                          updatePasteCommand();
+                                          updateSearchResults();
+                                        });
       break;
     case 'paste-from-organize-menu-command':
       pasteBookmark(list.parentId);

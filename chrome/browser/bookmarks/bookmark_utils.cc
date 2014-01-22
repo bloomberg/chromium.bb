@@ -95,6 +95,21 @@ bool PruneInvisibleFolders(const BookmarkNode* node) {
   return !node->IsVisible();
 }
 
+// This traces parents up to root, determines if node is contained in a
+// selected folder.
+bool HasSelectedAncestor(BookmarkModel* model,
+                         const std::vector<const BookmarkNode*>& selectedNodes,
+                         const BookmarkNode* node) {
+  if (!node || model->is_permanent_node(node))
+    return false;
+
+  for (size_t i = 0; i < selectedNodes.size(); ++i)
+    if (node->id() == selectedNodes[i]->id())
+      return true;
+
+  return HasSelectedAncestor(model, selectedNodes, node->parent());
+}
+
 }  // namespace
 
 namespace bookmark_utils {
@@ -123,17 +138,24 @@ void CopyToClipboard(BookmarkModel* model,
   if (nodes.empty())
     return;
 
-  BookmarkNodeData(nodes).WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  // Create array of selected nodes with descendants filtered out.
+  std::vector<const BookmarkNode*> filteredNodes;
+  for (size_t i = 0; i < nodes.size(); ++i)
+    if (!HasSelectedAncestor(model, nodes, nodes[i]->parent()))
+      filteredNodes.push_back(nodes[i]);
+
+  BookmarkNodeData(filteredNodes).
+      WriteToClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE);
 
   if (remove_nodes) {
 #if !defined(OS_ANDROID)
     ScopedGroupingAction group_cut(BookmarkUndoServiceFactory::GetForProfile(
         model->profile())->undo_manager());
 #endif
-    for (size_t i = 0; i < nodes.size(); ++i) {
-      int index = nodes[i]->parent()->GetIndexOf(nodes[i]);
+    for (size_t i = 0; i < filteredNodes.size(); ++i) {
+      int index = filteredNodes[i]->parent()->GetIndexOf(filteredNodes[i]);
       if (index > -1)
-        model->Remove(nodes[i]->parent(), index);
+        model->Remove(filteredNodes[i]->parent(), index);
     }
   }
 }
@@ -246,8 +268,9 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
-    if (!query_words.empty() &&
-        !DoesBookmarkContainWords(node, query_words, languages)) {
+    if ((!query_words.empty() &&
+        !DoesBookmarkContainWords(node, query_words, languages)) ||
+        model->is_permanent_node(node)) {
       continue;
     }
     if (query.url) {
