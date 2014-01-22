@@ -129,9 +129,7 @@ bool IsMalware(const GURL& url, content::WebContents* tab) {
 // number for the title of the page. If we don't have a specialized title,
 // returns -1.
 int StringForChromeHost(const GURL& url) {
-  DCHECK(url.is_empty() ||
-      url.SchemeIs(chrome::kChromeUIScheme) ||
-      url.SchemeIs(chrome::kAboutScheme));
+  DCHECK(url.is_empty() || url.SchemeIs(chrome::kChromeUIScheme));
 
   if (url.is_empty())
     return IDS_NEW_TAB_TITLE;
@@ -374,8 +372,7 @@ void SiteChipView::Update(content::WebContents* web_contents) {
   showing_16x16_icon_ = false;
 
   if (url_displayed_.is_empty() ||
-      url_displayed_.SchemeIs(chrome::kChromeUIScheme) ||
-      url_displayed_.SchemeIs(chrome::kAboutScheme)) {
+      url_displayed_.SchemeIs(chrome::kChromeUIScheme)) {
     icon = IDR_PRODUCT_LOGO_16;
     showing_16x16_icon_ = true;
   }
