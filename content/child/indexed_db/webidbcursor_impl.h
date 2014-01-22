@@ -25,7 +25,9 @@ class ThreadSafeSender;
 class CONTENT_EXPORT WebIDBCursorImpl
     : NON_EXPORTED_BASE(public blink::WebIDBCursor) {
  public:
-  WebIDBCursorImpl(int32 ipc_cursor_id, ThreadSafeSender* thread_safe_sender);
+  WebIDBCursorImpl(int32 ipc_cursor_id,
+                   int64 transaction_id,
+                   ThreadSafeSender* thread_safe_sender);
   virtual ~WebIDBCursorImpl();
 
   virtual void advance(unsigned long count, blink::WebIDBCallbacks* callback);
@@ -42,14 +44,21 @@ class CONTENT_EXPORT WebIDBCursorImpl
 
   void CachedAdvance(unsigned long count, blink::WebIDBCallbacks* callbacks);
   void CachedContinue(blink::WebIDBCallbacks* callbacks);
-  void ResetPrefetchCache();
+
+  // This method is virtual so it can be overridden in unit tests.
+  virtual void ResetPrefetchCache();
+
+  int64 transaction_id() const { return transaction_id_; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorReset);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, CursorTransactionId);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, AdvancePrefetchTest);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchReset);
+  FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
 
   int32 ipc_cursor_id_;
+  int64 transaction_id_;
 
   // Prefetch cache.
   std::deque<IndexedDBKey> prefetch_keys_;
