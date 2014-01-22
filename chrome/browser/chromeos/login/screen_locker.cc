@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -318,10 +319,11 @@ void ScreenLocker::ShowUserPodButton(const std::string& username,
     return;
 
   screenlock_icon_provider_->AddIcon(username, icon);
-  delegate_->ShowUserPodButton(
-      username,
-      ScreenlockIconSource::GetIconURLForUser(username),
-      click_callback);
+
+  // Append the current time to the URL so the image will not be cached.
+  std::string icon_url = ScreenlockIconSource::GetIconURLForUser(username)
+       + "?" + base::Int64ToString(base::Time::Now().ToInternalValue());
+  delegate_->ShowUserPodButton(username, icon_url, click_callback);
 }
 
 void ScreenLocker::ShowErrorMessage(int error_msg_id,
