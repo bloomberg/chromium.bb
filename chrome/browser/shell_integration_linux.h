@@ -85,18 +85,24 @@ std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
 
 // Returns contents for .desktop file based on |url| and |title|. If
 // |no_display| is true, the shortcut will not be visible to the user in menus.
-// If |show_app_list| is true, creates a shortcut to the app list, and ignores
-// |url|, |extension_id| and |profile_path|.
 std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
                                    const std::string& app_name,
                                    const GURL& url,
                                    const std::string& extension_id,
-                                   const base::FilePath& extension_path,
                                    const base::string16& title,
                                    const std::string& icon_name,
                                    const base::FilePath& profile_path,
-                                   bool no_display,
-                                   bool show_app_list);
+                                   bool no_display);
+
+// Returns contents for .desktop file that executes command_line. This is a more
+// general form of GetDesktopFileContents. If |no_display| is true, the shortcut
+// will not be visible to the user in menus.
+std::string GetDesktopFileContentsForCommand(const CommandLine& command_line,
+                                             const std::string& app_name,
+                                             const GURL& url,
+                                             const base::string16& title,
+                                             const std::string& icon_name,
+                                             bool no_display);
 
 // Returns contents for .directory file named |title| with icon |icon_name|. If
 // |icon_name| is empty, will use the Chrome icon.

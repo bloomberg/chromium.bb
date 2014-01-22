@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -572,17 +573,17 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),
             std::string(),
-            base::FilePath(),
             base::ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name,
             base::FilePath(),
-            test_cases[i].nodisplay,
-            false));
+            test_cases[i].nodisplay));
   }
 }
 
 TEST(ShellIntegrationTest, GetDesktopFileContentsAppList) {
   const base::FilePath kChromeExePath("/opt/google/chrome/google-chrome");
+  CommandLine command_line(kChromeExePath);
+  command_line.AppendSwitch("--show-app-list");
   EXPECT_EQ(
       "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
@@ -593,17 +594,13 @@ TEST(ShellIntegrationTest, GetDesktopFileContentsAppList) {
       "Exec=/opt/google/chrome/google-chrome --show-app-list\n"
       "Icon=chrome_app_list\n"
       "StartupWMClass=chrome-app-list\n",
-      ShellIntegrationLinux::GetDesktopFileContents(
-          kChromeExePath,
+      ShellIntegrationLinux::GetDesktopFileContentsForCommand(
+          command_line,
           "chrome-app-list",
           GURL(),
-          std::string(),
-          base::FilePath(),
           base::ASCIIToUTF16("Chrome App Launcher"),
           "chrome_app_list",
-          base::FilePath(),
-          false,
-          true));
+          false));
 }
 
 TEST(ShellIntegrationTest, GetDirectoryFileContents) {

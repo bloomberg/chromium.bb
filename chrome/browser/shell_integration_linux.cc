@@ -279,6 +279,25 @@ std::string QuoteArgForDesktopFileExec(const std::string& arg) {
   return quoted;
 }
 
+// Quote a command line so it is suitable for use as the Exec key in a desktop
+// file. Note: This should be used instead of GetCommandLineString, which does
+// not properly quote the string; this function is designed for the Exec key.
+std::string QuoteCommandLineForDesktopFileExec(
+    const CommandLine& command_line) {
+  // http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
+
+  std::string quoted_path = "";
+  const CommandLine::StringVector& argv = command_line.argv();
+  for (CommandLine::StringVector::const_iterator i = argv.begin();
+       i != argv.end(); ++i) {
+    if (i != argv.begin())
+      quoted_path += " ";
+    quoted_path += QuoteArgForDesktopFileExec(*i);
+  }
+
+  return quoted_path;
+}
+
 const char kDesktopEntry[] = "Desktop Entry";
 
 const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
@@ -724,12 +743,24 @@ std::string GetDesktopFileContents(
     const std::string& app_name,
     const GURL& url,
     const std::string& extension_id,
-    const base::FilePath& extension_path,
     const base::string16& title,
     const std::string& icon_name,
     const base::FilePath& profile_path,
-    bool no_display,
-    bool show_app_list) {
+    bool no_display) {
+  CommandLine cmd_line = ShellIntegration::CommandLineArgsForLauncher(
+      url, extension_id, profile_path);
+  cmd_line.SetProgram(chrome_exe_path);
+  return GetDesktopFileContentsForCommand(cmd_line, app_name, url, title,
+                                          icon_name, no_display);
+}
+
+std::string GetDesktopFileContentsForCommand(
+    const CommandLine& command_line,
+    const std::string& app_name,
+    const GURL& url,
+    const base::string16& title,
+    const std::string& icon_name,
+    bool no_display) {
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
   std::string output_buffer = std::string(kXdgOpenShebang) + "\n";
@@ -755,25 +786,7 @@ std::string GetDesktopFileContents(
   g_key_file_set_string(key_file, kDesktopEntry, "Name", final_title.c_str());
 
   // Set the "Exec" key.
-  std::string final_path = chrome_exe_path.value();
-  CommandLine cmd_line(CommandLine::NO_PROGRAM);
-  if (show_app_list) {
-    cmd_line.AppendSwitch(switches::kShowAppList);
-  } else {
-    cmd_line = ShellIntegration::CommandLineArgsForLauncher(
-        url, extension_id, profile_path);
-  }
-  const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
-  for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
-       i != switch_map.end(); ++i) {
-    if (i->second.empty()) {
-      final_path += " --" + i->first;
-    } else {
-      final_path += " " + QuoteArgForDesktopFileExec("--" + i->first +
-                                                     "=" + i->second);
-    }
-  }
-
+  std::string final_path = QuoteCommandLineForDesktopFileExec(command_line);
   g_key_file_set_string(key_file, kDesktopEntry, "Exec", final_path.c_str());
 
   // Set the "Icon" key.
@@ -890,11 +903,9 @@ bool CreateDesktopShortcut(
         app_name,
         shortcut_info.url,
         shortcut_info.extension_id,
-        shortcut_info.extension_path,
         shortcut_info.title,
         icon_name,
         shortcut_info.profile_path,
-        false,
         false);
     success = CreateShortcutOnDesktop(shortcut_filename, contents);
   }
@@ -924,13 +935,11 @@ bool CreateDesktopShortcut(
         app_name,
         shortcut_info.url,
         shortcut_info.extension_id,
-        shortcut_info.extension_path,
         shortcut_info.title,
         icon_name,
         shortcut_info.profile_path,
         creation_locations.applications_menu_location ==
-            ShellIntegration::APP_MENU_LOCATION_NONE,
-        false);
+            ShellIntegration::APP_MENU_LOCATION_NONE);
     success = CreateShortcutInApplicationsMenu(
         shortcut_filename, contents, directory_filename, directory_contents) &&
         success;
@@ -965,17 +974,11 @@ bool CreateAppListDesktopShortcut(
   icon_images.Add(*resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_256));
   std::string icon_name = CreateShortcutIcon(icon_images, desktop_name);
 
-  std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
-      chrome_exe_path,
-      wm_class,
-      GURL(),
-      "",
-      base::FilePath(),
-      base::UTF8ToUTF16(title),
-      icon_name,
-      base::FilePath(),
-      false,
-      true);
+  CommandLine command_line(chrome_exe_path);
+  command_line.AppendSwitch(switches::kShowAppList);
+  std::string contents = GetDesktopFileContentsForCommand(
+      command_line, wm_class, GURL(), base::UTF8ToUTF16(title), icon_name,
+      false);
   return CreateShortcutInApplicationsMenu(
       shortcut_filename, contents, base::FilePath(), "");
 }
