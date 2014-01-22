@@ -19,6 +19,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/history/history_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_config.h"
@@ -325,6 +326,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                                   bool* lookup_result,
                                   bool* database_was_present,
                                   const base::Closure& result_cb);
+
+  void OnHistoryServiceDidQueryURL(Origin origin,
+                                   uint8 experiment_id,
+                                   CancelableRequestProvider::Handle handle,
+                                   bool success,
+                                   const history::URLRow* url_row,
+                                   history::VisitVector* visits);
 
   Profile* profile() const { return profile_; }
 
@@ -754,6 +762,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   scoped_ptr<LoggedInStateMap> logged_in_state_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  CancelableRequestConsumer query_url_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

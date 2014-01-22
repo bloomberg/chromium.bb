@@ -14843,6 +14843,13 @@ other types of suffix sets.
   <summary>Types of pages rendered.</summary>
 </histogram>
 
+<histogram name="Prerender.PageVisitedStatus" enum="Boolean">
+  <summary>
+    Indicates whether the user has ever visited (in the past) a URL for which a
+    prerender is launched.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.PerceivedPageLoadTime_Control" units="milliseconds">
   <obsolete>
     Deprecated 03/24/11.  Replaced by
@@ -33794,6 +33801,7 @@ other types of suffix sets.
   <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderMulti"/>
   <affected-histogram name="Prerender.LocalPredictorEvent_PrerenderNoUse"/>
   <affected-histogram name="Prerender.LocalPredictorTimeUntilUsed"/>
+  <affected-histogram name="Prerender.PageVisitedStatus"/>
   <affected-histogram name="Prerender.PerceivedPLT"/>
   <affected-histogram name="Prerender.PerceivedPLT_Prerender5minTTL"/>
   <affected-histogram name="Prerender.PerceivedPLT_PrerenderControl"/>

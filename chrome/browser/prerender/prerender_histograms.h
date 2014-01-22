@@ -94,6 +94,10 @@ class PrerenderHistograms {
                           uint8 experiment_id,
                           int cookie_status) const;
 
+  void RecordPrerenderPageVisitedStatus(Origin origin,
+                                        uint8 experiment_id,
+                                        bool visited_before) const;
+
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
 
