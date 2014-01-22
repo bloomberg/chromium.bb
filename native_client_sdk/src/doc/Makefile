@@ -209,11 +209,17 @@ devsite:
 chromesite:
 	doxygen/generate_docs.py
 	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(CHROMESITE_BUILDDIR)
+	rm -rf $(CHROMESITE_BUILDDIR)/images
+	cp -r $(CHROMESITE_BUILDDIR)/_images $(CHROMESITE_BUILDDIR)/images
+	rm -rf $(CHROMESITE_BUILDDIR)/{_images,searchindex.js}
 	@echo
 	@echo "Build finished. The HTML pages are in $(CHROMESITE_BUILDDIR)"
 
 chromesite_rst:
 	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(CHROMESITE_BUILDDIR)
+	rm -rf $(CHROMESITE_BUILDDIR)/images
+	cp -r $(CHROMESITE_BUILDDIR)/_images $(CHROMESITE_BUILDDIR)/images
+	rm -rf $(CHROMESITE_BUILDDIR)/{_images,searchindex.js}
 
 
 serve:
