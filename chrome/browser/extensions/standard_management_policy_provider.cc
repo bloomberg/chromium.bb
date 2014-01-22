@@ -6,9 +6,9 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/admin_policy.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 

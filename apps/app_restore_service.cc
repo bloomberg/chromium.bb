@@ -12,10 +12,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 

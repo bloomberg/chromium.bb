@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_prefs.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_merge_result.h"

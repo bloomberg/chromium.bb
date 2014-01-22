@@ -8,13 +8,13 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/common/extension.h"
 
 namespace {

@@ -6,10 +6,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/blacklist.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

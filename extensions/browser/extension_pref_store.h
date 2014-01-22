@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_STORE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_STORE_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_PREF_STORE_H_
+#define EXTENSIONS_BROWSER_EXTENSION_PREF_STORE_H_
 
 #include <string>
 
 #include "base/prefs/value_map_pref_store.h"
-#include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "extensions/browser/extension_pref_value_map.h"
 
 // A (non-persistent) PrefStore implementation that holds effective preferences
 // set by extensions. These preferences are managed by and fetched from an
@@ -35,4 +35,4 @@ class ExtensionPrefStore : public ValueMapPrefStore,
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefStore);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_STORE_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_PREF_STORE_H_

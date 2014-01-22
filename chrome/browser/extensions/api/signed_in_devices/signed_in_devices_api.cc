@@ -8,12 +8,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
+#include "extensions/browser/extension_prefs.h"
 
 using base::DictionaryValue;
 using browser_sync::DeviceInfo;

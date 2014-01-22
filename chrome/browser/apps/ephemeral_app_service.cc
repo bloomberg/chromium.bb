@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_PREFS_H_
+#define EXTENSIONS_BROWSER_EXTENSION_PREFS_H_
 
 #include <set>
 #include <string>
@@ -14,9 +14,9 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_scoped_prefs.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern_set.h"
@@ -610,13 +610,14 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
       const syncer::StringOrdinal& suggested_page_ordinal,
       base::DictionaryValue* extension_dict);
 
-  // The pref service specific to this set of extension prefs. Owned by profile.
+  // The pref service specific to this set of extension prefs. Owned by the
+  // BrowserContext.
   PrefService* prefs_;
 
   // Base extensions install directory.
   base::FilePath install_directory_;
 
-  // Weak pointer, owned by Profile.
+  // Weak pointer, owned by BrowserContext.
   ExtensionPrefValueMap* extension_pref_value_map_;
 
   // Contains all the logic for handling the order for various extension
@@ -634,4 +635,4 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_PREFS_H_

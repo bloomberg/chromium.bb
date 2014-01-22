@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_WIN)

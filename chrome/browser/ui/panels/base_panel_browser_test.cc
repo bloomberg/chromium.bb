@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 

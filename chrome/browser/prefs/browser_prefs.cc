@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -98,6 +97,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/extension_prefs.h"
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"

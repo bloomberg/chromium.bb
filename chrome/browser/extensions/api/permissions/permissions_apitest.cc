@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"

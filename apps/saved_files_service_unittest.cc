@@ -9,11 +9,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

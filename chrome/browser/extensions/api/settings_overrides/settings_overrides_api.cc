@@ -8,8 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -17,6 +15,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 

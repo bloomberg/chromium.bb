@@ -9,11 +9,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
 
 using content::BrowserContext;
 

@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "chrome/browser/extensions/extension_prefs_unittest.h"
+#include "chrome/browser/extensions/./extension_prefs_unittest.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"

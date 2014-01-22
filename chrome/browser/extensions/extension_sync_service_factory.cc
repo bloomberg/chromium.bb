@@ -5,13 +5,13 @@
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_prefs_factory.h"
 
 // static
 ExtensionSyncService* ExtensionSyncServiceFactory::GetForProfile(
@@ -41,7 +41,7 @@ BrowserContextKeyedService*
   Profile* profile = Profile::FromBrowserContext(context);
   return new ExtensionSyncService(
       profile,
-      extensions::ExtensionPrefsFactory::GetForBrowserContext(profile),
+      extensions::ExtensionPrefsFactory::GetForBrowserContext(context),
       extensions::ExtensionSystemFactory::GetForProfile(profile)->
           extension_service());
 }

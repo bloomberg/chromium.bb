@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "grit/theme_resources.h"
 #include "sync/api/string_ordinal.h"

@@ -60,7 +60,7 @@ class ExtensionsBrowserClient {
   virtual content::BrowserContext* GetOffTheRecordContext(
       content::BrowserContext* context) = 0;
 
-  // Return the original "recording" context. This method returns |context| if
+  // Returns the original "recording" context. This method returns |context| if
   // |context| is not incognito.
   virtual content::BrowserContext* GetOriginalContext(
       content::BrowserContext* context) = 0;

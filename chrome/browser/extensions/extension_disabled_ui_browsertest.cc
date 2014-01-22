@@ -8,7 +8,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_fetcher.h"
 

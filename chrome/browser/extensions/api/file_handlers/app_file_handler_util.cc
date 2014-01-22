@@ -6,10 +6,10 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/extension_prefs.h"
 #include "net/base/mime_util.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/fileapi/file_system_mount_option.h"

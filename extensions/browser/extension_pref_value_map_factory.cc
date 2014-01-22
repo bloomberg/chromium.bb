@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_pref_value_map_factory.h"
 
-#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_pref_value_map.h"
 
 ExtensionPrefValueMapFactory::ExtensionPrefValueMapFactory()
     : BrowserContextKeyedServiceFactory(

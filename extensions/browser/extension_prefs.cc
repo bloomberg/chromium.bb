@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_prefs.h"
+#include "extensions/browser/extension_prefs.h"
 
 #include <iterator>
 
@@ -14,12 +14,12 @@
 #include "base/value_conversions.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "extensions/browser/admin_policy.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_pref_store.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
@@ -27,7 +27,6 @@
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/user_script.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::Value;
@@ -1683,7 +1682,7 @@ ExtensionPrefs::ExtensionPrefs(
       content_settings_store_(new ContentSettingsStore()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
-  app_sorting_->SetExtensionScopedPrefs(this),
+  app_sorting_->SetExtensionScopedPrefs(this);
   MakePathsRelative();
   InitPrefStore();
 }

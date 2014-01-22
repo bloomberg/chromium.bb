@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_store_observer_mock.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "extensions/browser/extension_pref_value_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

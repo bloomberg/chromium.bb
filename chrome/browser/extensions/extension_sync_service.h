@@ -10,10 +10,10 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_sync_bundle.h"
 #include "chrome/browser/extensions/pending_enables.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 #include "sync/api/sync_change.h"

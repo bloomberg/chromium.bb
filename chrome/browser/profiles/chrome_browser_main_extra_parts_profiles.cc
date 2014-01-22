@@ -102,7 +102,6 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
-#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_toolbar_model_factory.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
@@ -110,6 +109,7 @@
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #endif  // defined(ENABLE_EXTENSIONS)
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)

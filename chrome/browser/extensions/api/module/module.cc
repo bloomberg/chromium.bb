@@ -7,12 +7,12 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/browser/extension_prefs.h"
 
 namespace extensions {
 

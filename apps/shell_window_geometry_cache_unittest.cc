@@ -6,11 +6,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kWindowId[] = "windowid";

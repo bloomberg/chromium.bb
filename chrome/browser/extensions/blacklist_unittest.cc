@@ -8,12 +8,12 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

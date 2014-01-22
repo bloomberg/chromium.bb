@@ -8,11 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/./extension_prefs_unittest.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_prefs_unittest.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

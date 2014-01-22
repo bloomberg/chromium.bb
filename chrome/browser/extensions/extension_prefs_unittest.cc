@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_prefs_unittest.h"
+#include "chrome/browser/extensions/./extension_prefs_unittest.h"
 
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
@@ -14,14 +14,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_pref_value_map.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/mock_notification_observer.h"
+#include "extensions/browser/extension_pref_value_map.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
