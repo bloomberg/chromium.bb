@@ -88,6 +88,13 @@ shouldBeDefined("form2['input1']");
 shouldBeDefined("form2['image1']");
 shouldBeUndefined("form2['input-in-document']");
 shouldBeUndefined("form2['image-in-document']");
+
+debug("Association-by-parser should not work for non-Document trees");
+removed.innerHTML = "<table><form><tr><td><input><object></object><img name='image4'></td></tr></form>";
+shouldBeUndefined("removed.querySelector('form')['image4']");
+shouldBeNull("removed.querySelector('input').form");
+shouldBeNull("removed.querySelector('object').form");
+
 </script>
 </body>
 </html>
