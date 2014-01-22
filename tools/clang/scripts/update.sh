@@ -23,10 +23,10 @@ STAMP_FILE="${LLVM_BUILD_DIR}/cr_build_revision"
 # ${A:-a} returns $A if it's set, a else.
 LLVM_REPO_URL=${LLVM_URL:-https://llvm.org/svn/llvm-project}
 
-if [[ -n "$GYP_DEFINES" ]]; then
+if [[ -z "$GYP_DEFINES" ]]; then
   GYP_DEFINES=
 fi
-if [[ -n "$GYP_GENERATORS" ]]; then
+if [[ -z "$GYP_GENERATORS" ]]; then
   GYP_GENERATORS=
 fi
 
