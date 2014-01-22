@@ -94,8 +94,6 @@ void RegisterSwiftShaderWithChrome(const base::FilePath& path) {
   GpuDataManager::GetInstance()->RegisterSwiftShaderPath(path);
 }
 
-}  // namespace
-
 class SwiftShaderComponentInstaller : public ComponentInstaller {
  public:
   explicit SwiftShaderComponentInstaller(const Version& version);
@@ -205,6 +203,8 @@ void UpdateChecker::OnGpuInfoUpdate() {
   }
 }
 
+#if defined(ENABLE_SWIFTSHADER)
+
 // Check if there already is a version of swiftshader installed,
 // and if so register it.
 void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
@@ -235,6 +235,10 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
     base::DeleteFile(*iter, true);
   }
 }
+
+#endif  // ENABLE_SWIFTSHADER
+
+}  // namespace
 
 void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
 #if defined(ENABLE_SWIFTSHADER)
