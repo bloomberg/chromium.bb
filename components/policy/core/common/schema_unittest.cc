@@ -48,6 +48,23 @@ const char kTestSchema[] =
     "        \"two\": { \"type\": \"integer\" }"
     "      },"
     "      \"additionalProperties\": { \"type\": \"string\" }"
+    "    },"
+    "    \"IntegerWithEnums\": {"
+    "      \"type\": \"integer\","
+    "      \"enum\": [1, 2, 3]"
+    "    },"
+    "    \"IntegerWithEnumsGaps\": {"
+    "      \"type\": \"integer\","
+    "      \"enum\": [10, 20, 30]"
+    "    },"
+    "    \"StringWithEnums\": {"
+    "      \"type\": \"string\","
+    "      \"enum\": [\"one\", \"two\", \"three\"]"
+    "    },"
+    "    \"IntegerWithRange\": {"
+    "      \"type\": \"integer\","
+    "      \"minimum\": 1,"
+    "      \"maximum\": 3"
     "    }"
     "  }"
     "}";
@@ -238,19 +255,39 @@ TEST(SchemaTest, ValidSchema) {
   ASSERT_TRUE(subsub.valid());
   EXPECT_EQ(base::Value::TYPE_STRING, subsub.type());
 
+  sub = schema.GetProperty("IntegerWithEnums");
+  ASSERT_TRUE(sub.valid());
+  ASSERT_EQ(base::Value::TYPE_INTEGER, sub.type());
+
+  sub = schema.GetProperty("IntegerWithEnumsGaps");
+  ASSERT_TRUE(sub.valid());
+  ASSERT_EQ(base::Value::TYPE_INTEGER, sub.type());
+
+  sub = schema.GetProperty("StringWithEnums");
+  ASSERT_TRUE(sub.valid());
+  ASSERT_EQ(base::Value::TYPE_STRING, sub.type());
+
+  sub = schema.GetProperty("IntegerWithRange");
+  ASSERT_TRUE(sub.valid());
+  ASSERT_EQ(base::Value::TYPE_INTEGER, sub.type());
+
   struct {
     const char* expected_key;
     base::Value::Type expected_type;
   } kExpectedProperties[] = {
-    { "Array",            base::Value::TYPE_LIST },
-    { "ArrayOfArray",     base::Value::TYPE_LIST },
-    { "ArrayOfObjects",   base::Value::TYPE_LIST },
-    { "Boolean",          base::Value::TYPE_BOOLEAN },
-    { "Integer",          base::Value::TYPE_INTEGER },
-    { "Null",             base::Value::TYPE_NULL },
-    { "Number",           base::Value::TYPE_DOUBLE },
-    { "Object",           base::Value::TYPE_DICTIONARY },
-    { "String",           base::Value::TYPE_STRING },
+    { "Array",                base::Value::TYPE_LIST },
+    { "ArrayOfArray",         base::Value::TYPE_LIST },
+    { "ArrayOfObjects",       base::Value::TYPE_LIST },
+    { "Boolean",              base::Value::TYPE_BOOLEAN },
+    { "Integer",              base::Value::TYPE_INTEGER },
+    { "IntegerWithEnums",     base::Value::TYPE_INTEGER },
+    { "IntegerWithEnumsGaps", base::Value::TYPE_INTEGER },
+    { "IntegerWithRange",     base::Value::TYPE_INTEGER },
+    { "Null",                 base::Value::TYPE_NULL },
+    { "Number",               base::Value::TYPE_DOUBLE },
+    { "Object",               base::Value::TYPE_DICTIONARY },
+    { "String",               base::Value::TYPE_STRING },
+    { "StringWithEnums",      base::Value::TYPE_STRING },
   };
   Schema::Iterator it = schema.GetPropertiesIterator();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExpectedProperties); ++i) {
@@ -503,10 +540,50 @@ TEST(SchemaTest, Validate) {
     bundle.Set("Object", dict.DeepCopy());
   }
 
+  bundle.SetInteger("IntegerWithEnums", 1);
+  bundle.SetInteger("IntegerWithEnumsGaps", 20);
+  bundle.SetString("StringWithEnums", "two");
+  bundle.SetInteger("IntegerWithRange", 3);
+
   EXPECT_TRUE(schema.Validate(bundle));
 
   bundle.SetString("boom", "bang");
   EXPECT_FALSE(schema.Validate(bundle));
+  bundle.Remove("boom", NULL);
+
+  bundle.SetInteger("IntegerWithEnums", 0);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnums", 1);
+
+  bundle.SetInteger("IntegerWithEnumsGaps", 0);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 9);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 10);
+  EXPECT_TRUE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 11);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 19);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 21);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 29);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 30);
+  EXPECT_TRUE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 31);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 100);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithEnumsGaps", 20);
+
+  bundle.SetString("StringWithEnums", "FOUR");
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetString("StringWithEnums", "two");
+
+  bundle.SetInteger("IntegerWithRange", 4);
+  EXPECT_FALSE(schema.Validate(bundle));
+  bundle.SetInteger("IntegerWithRange", 3);
 
 }
 TEST(SchemaTest, InvalidReferences) {

@@ -620,6 +620,8 @@ bool Schema::Validate(const base::Value& value) const {
 
   const base::DictionaryValue* dict = NULL;
   const base::ListValue* list = NULL;
+  int int_value;
+  std::string str_value;
   if (value.GetAsDictionary(&dict)) {
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
@@ -632,6 +634,12 @@ bool Schema::Validate(const base::Value& value) const {
       if (!*it || !GetItems().Validate(**it))
         return false;
     }
+  } else if (value.GetAsInteger(&int_value)) {
+    return node_->extra == kInvalid ||
+        ValidateIntegerRestriction(node_->extra, int_value);
+  } else if (value.GetAsString(&str_value)) {
+    return node_->extra == kInvalid ||
+        ValidateStringRestriction(node_->extra, str_value.c_str());
   }
 
   return true;
@@ -721,6 +729,32 @@ Schema Schema::GetItems() const {
   if (node_->extra == kInvalid)
     return Schema();
   return Schema(storage_, storage_->schema(node_->extra));
+}
+
+bool Schema::ValidateIntegerRestriction(int index, int value) const {
+  const RestrictionNode* rnode = storage_->restriction(index);
+  if (rnode->ranged_restriction.min_value <=
+      rnode->ranged_restriction.max_value) {
+    return rnode->ranged_restriction.min_value <= value &&
+           rnode->ranged_restriction.max_value >= value;
+  } else {
+    for (int i = rnode->enumeration_restriction.offset_begin;
+         i < rnode->enumeration_restriction.offset_end; i++) {
+      if (*storage_->int_enums(i) == value)
+        return true;
+    }
+    return false;
+  }
+}
+
+bool Schema::ValidateStringRestriction(int index, const char *str) const {
+  const RestrictionNode* rnode = storage_->restriction(index);
+  for (int i = rnode->enumeration_restriction.offset_begin;
+       i < rnode->enumeration_restriction.offset_end; i++) {
+    if (strcmp(*storage_->string_enums(i), str) == 0)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace policy

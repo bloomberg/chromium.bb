@@ -118,6 +118,9 @@ class POLICY_EXPORT Schema {
   Schema(const scoped_refptr<const InternalStorage>& storage,
          const internal::SchemaNode* node);
 
+  bool ValidateIntegerRestriction(int index, int value) const;
+  bool ValidateStringRestriction(int index, const char *str) const;
+
   scoped_refptr<const InternalStorage> storage_;
   const internal::SchemaNode* node_;
 };
