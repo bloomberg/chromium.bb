@@ -105,6 +105,7 @@ pointer-events
 position
 resize custom_value
 right type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
+scroll-behavior type_name=ScrollBehavior
 shape-image-threshold type_name=float
 shape-inside type_name=ShapeValue*, custom_value
 shape-margin type_name=Length, converter=convertLength

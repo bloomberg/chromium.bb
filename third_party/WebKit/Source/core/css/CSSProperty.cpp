@@ -479,6 +479,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyPaintOrder:
     case CSSPropertyPosition:
     case CSSPropertyRight:
+    case CSSPropertyScrollBehavior:
     case CSSPropertySize:
     case CSSPropertySrc:
     case CSSPropertyStopColor:

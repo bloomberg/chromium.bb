@@ -91,6 +91,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_isolation(RenderStyle::initialIsolation())
     , m_justifySelf(RenderStyle::initialJustifySelf())
     , m_justifySelfOverflowAlignment(RenderStyle::initialJustifySelfOverflowAlignment())
+    , m_scrollBehavior(RenderStyle::initialScrollBehavior())
 {
     m_maskBoxImage.setMaskDefaults();
 }
@@ -171,6 +172,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_isolation(o.m_isolation)
     , m_justifySelf(o.m_justifySelf)
     , m_justifySelfOverflowAlignment(o.m_justifySelfOverflowAlignment)
+    , m_scrollBehavior(o.m_scrollBehavior)
 {
 }
 
@@ -257,7 +259,8 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_objectFit == o.m_objectFit
         && m_isolation == o.m_isolation
         && m_justifySelf == o.m_justifySelf
-        && m_justifySelfOverflowAlignment == o.m_justifySelfOverflowAlignment;
+        && m_justifySelfOverflowAlignment == o.m_justifySelfOverflowAlignment
+        && m_scrollBehavior == o.m_scrollBehavior;
 }
 
 bool StyleRareNonInheritedData::contentDataEquivalent(const StyleRareNonInheritedData& o) const

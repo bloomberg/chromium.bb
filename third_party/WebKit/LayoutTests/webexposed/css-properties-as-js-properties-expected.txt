@@ -188,6 +188,7 @@ position
 quotes
 resize
 right
+scrollBehavior
 shapeImageThreshold
 shapeInside
 shapeMargin

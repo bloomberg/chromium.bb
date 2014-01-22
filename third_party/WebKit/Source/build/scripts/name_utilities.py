@@ -31,6 +31,7 @@ import re
 
 
 ACRONYMS = [
+    'CSSOM',
     'CSS',
     'DNS',
     'FE',

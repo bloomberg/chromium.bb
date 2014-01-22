@@ -45,6 +45,7 @@
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Path.h"
+#include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/UnicodeBidi.h"
 #include "platform/text/WritingMode.h"
@@ -5042,6 +5043,38 @@ template<> inline CSSPrimitiveValue::operator OverflowAlignment() const
     }
     ASSERT_NOT_REACHED();
     return OverflowAlignmentTrue;
+}
+
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ScrollBehavior behavior)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (behavior) {
+    case ScrollBehaviorInstant:
+        m_value.valueID = CSSValueInstant;
+        break;
+    case ScrollBehaviorSmooth:
+        m_value.valueID = CSSValueSmooth;
+        break;
+    case ScrollBehaviorAuto:
+        // Behavior 'auto' is only allowed in ScrollOptions arguments passed to
+        // CSSOM scroll APIs.
+        ASSERT_NOT_REACHED();
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator ScrollBehavior() const
+{
+    switch (getValueID()) {
+    case CSSValueInstant:
+        return ScrollBehaviorInstant;
+    case CSSValueSmooth:
+        return ScrollBehaviorSmooth;
+    default:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return ScrollBehaviorInstant;
 }
 
 }

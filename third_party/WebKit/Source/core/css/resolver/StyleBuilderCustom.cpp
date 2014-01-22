@@ -1876,6 +1876,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyPosition:
     case CSSPropertyResize:
     case CSSPropertyRight:
+    case CSSPropertyScrollBehavior:
     case CSSPropertySize:
     case CSSPropertySpeak:
     case CSSPropertyTabSize:

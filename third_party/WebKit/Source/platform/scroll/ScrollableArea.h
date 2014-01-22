@@ -41,6 +41,12 @@ class PlatformGestureEvent;
 class PlatformWheelEvent;
 class ScrollAnimator;
 
+enum ScrollBehavior {
+    ScrollBehaviorAuto,
+    ScrollBehaviorInstant,
+    ScrollBehaviorSmooth,
+};
+
 class PLATFORM_EXPORT ScrollableArea {
     WTF_MAKE_NONCOPYABLE(ScrollableArea);
 public:

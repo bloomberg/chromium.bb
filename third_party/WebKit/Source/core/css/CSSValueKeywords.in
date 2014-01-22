@@ -1036,3 +1036,7 @@ self-end
 // right
 true
 safe
+
+// scroll-behavior
+instant
+smooth

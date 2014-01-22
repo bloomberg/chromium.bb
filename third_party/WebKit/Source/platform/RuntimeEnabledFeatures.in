@@ -26,6 +26,7 @@ CSSCompositing status=experimental
 CSSExclusions status=experimental
 CSSGridLayout status=experimental
 CSSMaskSourceType status=experimental
+CSSOMSmoothScroll status=experimental
 CSSRegions status=experimental
 CSSShapes status=experimental
 CSSStickyPosition status=experimental

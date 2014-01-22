@@ -575,6 +575,9 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueNone || valueID == CSSValueBoth || valueID == CSSValueHorizontal || valueID == CSSValueVertical || valueID == CSSValueAuto)
             return true;
         break;
+    case CSSPropertyScrollBehavior: // instant | smooth
+        if (valueID == CSSValueInstant || valueID == CSSValueSmooth)
+            return RuntimeEnabledFeatures::cssomSmoothScrollEnabled();
     case CSSPropertySpeak: // none | normal | spell-out | digits | literal-punctuation | no-punctuation | inherit
         if (valueID == CSSValueNone || valueID == CSSValueNormal || valueID == CSSValueSpellOut || valueID == CSSValueDigits || valueID == CSSValueLiteralPunctuation || valueID == CSSValueNoPunctuation)
             return true;
@@ -867,6 +870,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyPointerEvents:
     case CSSPropertyPosition:
     case CSSPropertyResize:
+    case CSSPropertyScrollBehavior:
     case CSSPropertySpeak:
     case CSSPropertyTableLayout:
     case CSSPropertyTextAlignLast:

@@ -496,6 +496,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyTextJustify: return 441;
     case CSSPropertyTouchActionDelay: return 442;
     case CSSPropertyJustifySelf: return 443;
+    case CSSPropertyScrollBehavior: return 444;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
