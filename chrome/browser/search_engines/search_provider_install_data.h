@@ -20,15 +20,14 @@ class SearchHostToURLsMap;
 class TemplateURL;
 
 namespace content {
-class NotificationSource;
+class RenderProcessHost;
 }
 
 // Provides the search provider install state for the I/O thread. It works by
 // loading the data on demand (when CallWhenLoaded is called) and then throwing
 // away the results after the callbacks are done, so the results are always up
 // to date with what is in the database.
-class SearchProviderInstallData : public WebDataServiceConsumer,
-    public base::SupportsWeakPtr<SearchProviderInstallData> {
+class SearchProviderInstallData : public WebDataServiceConsumer {
  public:
   enum State {
     // The search provider is not installed.
@@ -41,13 +40,11 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
     INSTALLED_AS_DEFAULT = 2
   };
 
-  // |ui_death_notification| and |ui_death_source| identify a notification that
-  // may be observed on the UI thread to know when this class no longer needs to
-  // be kept up to date. (Note that this class may be deleted before or after
-  // that notification occurs. It doesn't matter.)
-  SearchProviderInstallData(Profile* profile,
-                            int ui_death_notification,
-                            const content::NotificationSource& ui_death_source);
+  // |host| is a RenderProcessHost that is observed, and whose destruction is a
+  // signal to this class that it no longer needs to be kept up to date. (Note
+  // that this class may be deleted before or after that death occurs. It
+  // doesn't matter.)
+  SearchProviderInstallData(Profile* profile, content::RenderProcessHost* host);
   virtual ~SearchProviderInstallData();
 
   // Use to determine when the search provider information is loaded. The
@@ -103,6 +100,8 @@ class SearchProviderInstallData : public WebDataServiceConsumer,
 
   // The google base url.
   std::string google_base_url_;
+
+  base::WeakPtrFactory<SearchProviderInstallData> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderInstallData);
 };

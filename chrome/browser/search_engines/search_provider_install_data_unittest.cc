@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -135,6 +137,10 @@ class SearchProviderInstallDataTest : public testing::Test {
   // deleted on the I/O thread, which is why it isn't a scoped_ptr.
   SearchProviderInstallData* install_data_;
 
+  // A mock RenderProcessHost that the SearchProviderInstallData will scope its
+  // lifetime to.
+  scoped_ptr<content::MockRenderProcessHost> process_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchProviderInstallDataTest);
 };
 
@@ -149,9 +155,9 @@ void SearchProviderInstallDataTest::SetUp() {
       std::string() /* unknown country code */);
 #endif
   util_.SetUp();
-  install_data_ = new SearchProviderInstallData(util_.profile(),
-      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      content::Source<SearchProviderInstallDataTest>(this));
+  process_.reset(new content::MockRenderProcessHost(util_.profile()));
+  install_data_ =
+      new SearchProviderInstallData(util_.profile(), process_.get());
 }
 
 void SearchProviderInstallDataTest::TearDown() {
@@ -160,10 +166,7 @@ void SearchProviderInstallDataTest::TearDown() {
 
   // Make sure that the install data class on the UI thread gets cleaned up.
   // It doesn't matter that this happens after install_data_ is deleted.
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      content::Source<SearchProviderInstallDataTest>(this),
-      content::NotificationService::NoDetails());
+  process_.reset();
 
   util_.TearDown();
   testing::Test::TearDown();

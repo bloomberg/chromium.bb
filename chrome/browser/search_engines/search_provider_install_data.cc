@@ -27,6 +27,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 
 using content::BrowserThread;
 
@@ -94,17 +96,21 @@ void GoogleURLChangeNotifier::OnChange(const std::string& google_base_url) {
 
 // Notices changes in the Google base URL and sends them along
 // to the SearchProviderInstallData on the I/O thread.
-class GoogleURLObserver : public content::NotificationObserver {
+class GoogleURLObserver : public content::NotificationObserver,
+                          public content::RenderProcessHostObserver {
  public:
   GoogleURLObserver(Profile* profile,
                     GoogleURLChangeNotifier* change_notifier,
-                    int ui_death_notification,
-                    const content::NotificationSource& ui_death_source);
+                    content::RenderProcessHost* host);
 
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Implementation of content::RenderProcessHostObserver.
+  virtual void RenderProcessHostDestroyed(
+        content::RenderProcessHost* host) OVERRIDE;
 
  private:
   virtual ~GoogleURLObserver() {}
@@ -118,27 +124,29 @@ class GoogleURLObserver : public content::NotificationObserver {
 GoogleURLObserver::GoogleURLObserver(
     Profile* profile,
     GoogleURLChangeNotifier* change_notifier,
-    int ui_death_notification,
-    const content::NotificationSource& ui_death_source)
+    content::RenderProcessHost* host)
     : change_notifier_(change_notifier) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
                  content::Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, ui_death_notification, ui_death_source);
+  host->AddObserver(this);
 }
 
 void GoogleURLObserver::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&GoogleURLChangeNotifier::OnChange, change_notifier_.get(),
-            content::Details<GoogleURLTracker::UpdatedDetails>(details)->second.
-                spec()));
-  } else {
-    // This must be the death notification.
-    delete this;
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_URL_UPDATED, type);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GoogleURLChangeNotifier::OnChange,
+                 change_notifier_.get(),
+                 content::Details<GoogleURLTracker::UpdatedDetails>(details)->
+                     second.spec()));
+}
+
+void GoogleURLObserver::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
+  delete this;
 }
 
 // Indicates if the two inputs have the same security origin.
@@ -157,16 +165,16 @@ static bool IsSameOrigin(const GURL& requested_origin,
 }  // namespace
 
 SearchProviderInstallData::SearchProviderInstallData(
-    Profile* profile,
-    int ui_death_notification,
-    const content::NotificationSource& ui_death_source)
+    Profile* profile, content::RenderProcessHost* host)
     : web_service_(WebDataService::FromBrowserContext(profile)),
       load_handle_(0),
-      google_base_url_(UIThreadSearchTermsData(profile).GoogleBaseURLValue()) {
+      google_base_url_(UIThreadSearchTermsData(profile).GoogleBaseURLValue()),
+      weak_factory_(this) {
   // GoogleURLObserver is responsible for killing itself when
   // the given notification occurs.
-  new GoogleURLObserver(profile, new GoogleURLChangeNotifier(AsWeakPtr()),
-                        ui_death_notification, ui_death_source);
+  new GoogleURLObserver(profile,
+                        new GoogleURLChangeNotifier(weak_factory_.GetWeakPtr()),
+                        host);
 }
 
 SearchProviderInstallData::~SearchProviderInstallData() {
