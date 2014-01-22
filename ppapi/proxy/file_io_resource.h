@@ -58,7 +58,10 @@ class PPAPI_PROXY_EXPORT FileIOResource
   virtual int32_t SetLength(int64_t length,
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int64_t GetMaxWrittenOffset() const OVERRIDE;
+  virtual int64_t GetAppendModeWriteAmount() const OVERRIDE;
   virtual void SetMaxWrittenOffset(int64_t max_written_offset) OVERRIDE;
+  virtual void SetAppendModeWriteAmount(
+      int64_t append_mode_write_amount) OVERRIDE;
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual int32_t RequestOSFileHandle(
@@ -216,6 +219,7 @@ class PPAPI_PROXY_EXPORT FileIOResource
 
   int32_t open_flags_;
   int64_t max_written_offset_;
+  int64_t append_mode_write_amount_;
   bool check_quota_;
   bool called_close_;
 

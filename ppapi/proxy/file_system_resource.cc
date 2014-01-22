@@ -203,6 +203,7 @@ void FileSystemResource::ReserveQuotaComplete(
     DCHECK(!enter.failed());
     PPB_FileIO_API* file_io_api = enter.object();
     file_io_api->SetMaxWrittenOffset(it->second);
+    file_io_api->SetAppendModeWriteAmount(0);
   }
 
   DCHECK(!pending_quota_requests_.empty());

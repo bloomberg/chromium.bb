@@ -112,6 +112,7 @@ FileIOResource::FileIOResource(Connection connection, PP_Instance instance)
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       open_flags_(0),
       max_written_offset_(0),
+      append_mode_write_amount_(0),
       check_quota_(false),
       called_close_(false) {
   SendCreate(BROWSER, PpapiHostMsg_FileIO_Create());
@@ -272,7 +273,7 @@ int32_t FileIOResource::Write(int64_t offset,
                               scoped_refptr<TrackedCallback> callback) {
   if (!buffer)
     return PP_ERROR_FAILED;
-  if (bytes_to_write < 0)
+  if (offset < 0 || bytes_to_write < 0)
     return PP_ERROR_FAILED;
   if (!FileHandleHolder::IsValid(file_handle_))
     return PP_ERROR_FAILED;
@@ -285,13 +286,18 @@ int32_t FileIOResource::Write(int64_t offset,
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_WRITE);
 
   if (check_quota_) {
-    int64_t actual_offset =
-        (open_flags_ & PP_FILEOPENFLAG_APPEND) ? max_written_offset_ : offset;
+    int64_t increase = 0;
+    uint64_t max_offset = 0;
+    bool append = (open_flags_ & PP_FILEOPENFLAG_APPEND) != 0;
+    if (append) {
+      increase = bytes_to_write;
+    } else {
+      uint64_t max_offset = offset + bytes_to_write;
+      if (max_offset > static_cast<uint64_t>(kint64max))
+        return PP_ERROR_FAILED;  // amount calculation would overflow.
+      increase = static_cast<int64_t>(max_offset) - max_written_offset_;
+    }
 
-    uint64_t max_offset = actual_offset + bytes_to_write;
-    if (max_offset > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()))
-      return PP_ERROR_FAILED;  // amount calculation would overflow.
-    int64_t increase = static_cast<int64_t>(max_offset) - max_written_offset_;
     if (increase > 0) {
       int64_t result =
           file_system_resource_->AsPPB_FileSystem_API()->RequestQuota(
@@ -302,7 +308,11 @@ int32_t FileIOResource::Write(int64_t offset,
       if (result == PP_OK_COMPLETIONPENDING)
         return PP_OK_COMPLETIONPENDING;
       DCHECK(result == increase);
-      max_written_offset_ = max_offset;
+
+      if (append)
+        append_mode_write_amount_ += bytes_to_write;
+      else
+        max_written_offset_ = max_offset;
     }
   }
   return WriteValidated(offset, buffer, bytes_to_write, callback);
@@ -360,8 +370,17 @@ int64_t FileIOResource::GetMaxWrittenOffset() const {
   return max_written_offset_;
 }
 
+int64_t FileIOResource::GetAppendModeWriteAmount() const {
+  return append_mode_write_amount_;
+}
+
 void FileIOResource::SetMaxWrittenOffset(int64_t max_written_offset) {
   max_written_offset_ = max_written_offset;
+}
+
+void FileIOResource::SetAppendModeWriteAmount(
+    int64_t append_mode_write_amount) {
+  append_mode_write_amount_ = append_mode_write_amount;
 }
 
 void FileIOResource::Close() {
@@ -378,7 +397,10 @@ void FileIOResource::Close() {
   if (file_handle_)
     file_handle_ = NULL;
 
-  Post(BROWSER, PpapiHostMsg_FileIO_Close(max_written_offset_));
+  // TODO(tzik): Post |max_written_offset_| and |append_mode_write_amount_|
+  // separately by using FileGrowth after the IPC signature changed.
+  Post(BROWSER, PpapiHostMsg_FileIO_Close(
+      max_written_offset_ + append_mode_write_amount_));
 }
 
 int32_t FileIOResource::RequestOSFileHandle(
@@ -510,7 +532,11 @@ void FileIOResource::SetLengthValidated(
       base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this,
                  callback));
 
-  max_written_offset_ = length;
+  // On the browser side we grow |max_written_offset_| monotonically, due to the
+  // unpredictable ordering of plugin side Write and SetLength calls. Match that
+  // behavior here.
+  if (max_written_offset_ < length)
+    max_written_offset_ = length;
 }
 
 int32_t FileIOResource::OnQueryComplete(scoped_refptr<QueryOp> query_op,
@@ -560,7 +586,17 @@ void FileIOResource::OnRequestWriteQuotaComplete(
     callback->Run(PP_ERROR_NOQUOTA);
     return;
   }
-  max_written_offset_ += granted;
+  if (open_flags_ & PP_FILEOPENFLAG_APPEND) {
+    DCHECK_LE(bytes_to_write, granted);
+    append_mode_write_amount_ += bytes_to_write;
+  } else {
+    DCHECK_LE(offset + bytes_to_write - max_written_offset_, granted);
+
+    int64_t max_offset = offset + bytes_to_write;
+    if (max_written_offset_ < max_offset)
+      max_written_offset_ = max_offset;
+  }
+
   int32_t result = WriteValidated(offset, buffer, bytes_to_write, callback);
   if (result != PP_OK_COMPLETIONPENDING)
     callback->Run(result);
@@ -576,7 +612,9 @@ void FileIOResource::OnRequestSetLengthQuotaComplete(
     return;
   }
 
-  max_written_offset_ = length;
+  DCHECK_LE(length - max_written_offset_, granted);
+  if (max_written_offset_ < length)
+    max_written_offset_ = length;
   SetLengthValidated(length, callback);
 }
 
