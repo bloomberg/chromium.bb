@@ -42,6 +42,9 @@
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
+#include "heap/Heap.h"
+#include "heap/glue/MessageLoopInterruptor.h"
+#include "heap/glue/PendingGCRunner.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/graphics/ImageDecodingStore.h"
@@ -73,6 +76,11 @@ public:
 } // namespace
 
 static WebThread::TaskObserver* s_endOfTaskRunner = 0;
+#if ENABLE(OILPAN)
+static WebThread::TaskObserver* s_pendingGCRunner = 0;
+static WebCore::ThreadState::Interruptor* s_messageLoopInterruptor = 0;
+static WebCore::ThreadState::Interruptor* s_isolateInterruptor = 0;
+#endif
 
 // Make sure we are not re-initialized in the same address space.
 // Doing so may cause hard to reproduce crashes.
@@ -105,6 +113,11 @@ void initialize(Platform* platform)
     v8::V8::Initialize();
     WebCore::setMainThreadIsolate(isolate);
     WebCore::V8PerIsolateData::ensureInitialized(isolate);
+
+#if ENABLE(OILPAN)
+    s_isolateInterruptor = new WebCore::V8IsolateInterruptor(v8::Isolate::GetCurrent());
+    WebCore::ThreadState::current()->addInterruptor(s_isolateInterruptor);
+#endif
 
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (WebThread* currentThread = platform->currentThread()) {
@@ -153,6 +166,18 @@ void initializeWithoutV8(Platform* platform)
     WTF::setRandomSource(cryptographicallyRandomValues);
     WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction);
     WTF::initializeMainThread(callOnMainThreadFunction);
+#if ENABLE(OILPAN)
+    WebCore::Heap::init();
+    if (WebThread* currentThread = platform->currentThread()) {
+        ASSERT(!s_pendingGCRunner);
+        s_pendingGCRunner = new WebCore::PendingGCRunner;
+        currentThread->addTaskObserver(s_pendingGCRunner);
+
+        ASSERT(!s_messageLoopInterruptor);
+        s_messageLoopInterruptor = new WebCore::MessageLoopInterruptor(currentThread);
+        WebCore::ThreadState::current()->addInterruptor(s_messageLoopInterruptor);
+    }
+#endif
     WebCore::init();
     WebCore::ImageDecodingStore::initializeOnce();
 
@@ -183,6 +208,11 @@ void shutdown()
         s_endOfTaskRunner = 0;
     }
 
+#if ENABLE(OILPAN)
+    ASSERT(s_isolateInterruptor);
+    WebCore::ThreadState::current()->removeInterruptor(s_isolateInterruptor);
+#endif
+
     WebCore::V8PerIsolateData::dispose(WebCore::mainThreadIsolate());
     WebCore::setMainThreadIsolate(0);
     v8::V8::Dispose();
@@ -195,6 +225,19 @@ void shutdownWithoutV8()
     ASSERT(!s_endOfTaskRunner);
     WebCore::ImageDecodingStore::shutdown();
     WebCore::shutdown();
+#if ENABLE(OILPAN)
+    if (Platform::current()->currentThread()) {
+        ASSERT(s_pendingGCRunner);
+        delete s_pendingGCRunner;
+        s_pendingGCRunner = 0;
+
+        ASSERT(s_messageLoopInterruptor);
+        WebCore::ThreadState::current()->removeInterruptor(s_messageLoopInterruptor);
+        delete s_messageLoopInterruptor;
+        s_messageLoopInterruptor = 0;
+    }
+    WebCore::Heap::shutdown();
+#endif
     WTF::shutdown();
     Platform::shutdown();
     WebPrerenderingSupport::shutdown();

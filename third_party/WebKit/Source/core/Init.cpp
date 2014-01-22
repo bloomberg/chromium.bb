@@ -79,7 +79,6 @@ void init()
     QualifiedName::init();
     Partitions::init();
     EventTracer::initialize();
-    Heap::init();
 
     // Ensure that the main thread's thread-local data is initialized before
     // starting any worker threads.
@@ -90,7 +89,6 @@ void init()
 
 void shutdown()
 {
-    Heap::shutdown();
     Partitions::shutdown();
 }
 

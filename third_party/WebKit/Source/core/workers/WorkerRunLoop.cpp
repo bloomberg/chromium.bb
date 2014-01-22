@@ -34,6 +34,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "heap/ThreadState.h"
 #include "platform/PlatformThreadData.h"
 #include "platform/SharedTimer.h"
 #include "platform/ThreadTimers.h"
@@ -160,6 +161,9 @@ void WorkerRunLoop::run(WorkerGlobalScope* context)
     ModePredicate modePredicate(defaultMode());
     MessageQueueWaitResult result;
     do {
+#if ENABLE(OILPAN)
+        ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
+#endif
         result = runInMode(context, modePredicate, WaitForMessage);
     } while (result != MessageQueueTerminated);
     runCleanupTasks(context);
@@ -204,7 +208,13 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
                 }
             }
         }
-        task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
+
+        {
+#if ENABLE(OILPAN)
+            ThreadState::SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
+#endif
+            task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
+        }
     } while (result == MessageQueueTimeout && nextTimeoutEventIsIdleWatchdog);
 
     // If the context is closing, don't execute any further JavaScript tasks (per section 4.1.1 of the Web Workers spec).

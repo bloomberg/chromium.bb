@@ -39,6 +39,7 @@
 #include "bindings/v8/V8StringResource.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "bindings/v8/V8ValueCache.h"
+#include "heap/Heap.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
@@ -707,6 +708,32 @@ namespace WebCore {
         DeleteReject,
         DeleteUnknownProperty
     };
+
+#if ENABLE(OILPAN)
+    class V8IsolateInterruptor : public ThreadState::Interruptor {
+    public:
+        explicit V8IsolateInterruptor(v8::Isolate* isolate) : m_isolate(isolate) { }
+
+        static void onInterruptCallback(v8::Isolate* isolate, void* data)
+        {
+            reinterpret_cast<V8IsolateInterruptor*>(data)->onInterrupted();
+        }
+
+        virtual void requestInterrupt() OVERRIDE
+        {
+            m_isolate->RequestInterrupt(&onInterruptCallback, this);
+        }
+
+        virtual void clearInterrupt() OVERRIDE
+        {
+            m_isolate->ClearInterrupt();
+        }
+
+    private:
+        v8::Isolate* m_isolate;
+    };
+#endif
+
 } // namespace WebCore
 
 #endif // V8Binding_h

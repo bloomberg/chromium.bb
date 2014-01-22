@@ -253,7 +253,7 @@ public:
         for (int i = 0; i < numberOfThreads; i++)
             createThread(&threadFunc, tester, "testing thread");
         while (tester->m_threadsToFinish) {
-            ThreadState::current()->safePoint();
+            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             yield();
         }
     }
@@ -280,14 +280,14 @@ private:
 
         int gcCount = 0;
         while (!done()) {
-            ThreadState::current()->safePoint();
+            ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             {
                 IntWrapper* wrapper;
 
                 for (int i = 0; i < numberOfAllocations; i++) {
                     wrapper = IntWrapper::create(0x0bbac0de);
                     if (!(i % 10))
-                        ThreadState::current()->safePoint();
+                        ThreadState::current()->safePoint(ThreadState::HeapPointersOnStack);
                     yield();
                 }
 

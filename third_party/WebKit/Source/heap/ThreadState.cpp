@@ -117,9 +117,14 @@ public:
         atomicAdd(&m_unparkedThreadCount, threads.size());
         atomicSetOneToZero(&m_canResume);
 
+        ThreadState* current = ThreadState::current();
         for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-            if ((*it)->interruptor())
-                (*it)->interruptor()->requestInterrupt();
+            if (*it == current)
+                continue;
+
+            const Vector<ThreadState::Interruptor*>& interruptors = (*it)->interruptors();
+            for (size_t i = 0; i < interruptors.size(); i++)
+                interruptors[i]->requestInterrupt();
         }
 
         while (m_unparkedThreadCount > 0)
@@ -139,9 +144,14 @@ public:
             m_resume.broadcast();
         }
 
+        ThreadState* current = ThreadState::current();
         for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-            if ((*it)->interruptor())
-                (*it)->interruptor()->clearInterrupt();
+            if (*it == current)
+                continue;
+
+            const Vector<ThreadState::Interruptor*>& interruptors = (*it)->interruptors();
+            for (size_t i = 0; i < interruptors.size(); i++)
+                interruptors[i]->clearInterrupt();
         }
 
         threadAttachMutex().unlock();
@@ -223,7 +233,7 @@ ThreadState::ThreadState()
     , m_endOfStack(reinterpret_cast<intptr_t*>(getStackStart()))
     , m_safePointScopeMarker(0)
     , m_atSafePoint(false)
-    , m_interruptor(0)
+    , m_interruptors()
     , m_gcRequested(false)
     , m_sweepRequested(0)
     , m_sweepInProgress(false)
@@ -251,8 +261,7 @@ ThreadState::~ThreadState()
         delete m_heaps[i];
     delete m_persistents;
     m_persistents = 0;
-    delete m_interruptor;
-    m_interruptor = 0;
+    deleteAllValues(m_interruptors);
     **s_threadSpecific = 0;
 }
 
@@ -491,9 +500,14 @@ void ThreadState::resumeThreads()
     s_safePointBarrier->resumeOthers();
 }
 
-void ThreadState::safePoint()
+void ThreadState::safePoint(StackState stackState)
 {
+    checkThread();
+    if (stackState == NoHeapPointersOnStack && gcRequested())
+        Heap::collectGarbage(NoHeapPointersOnStack);
+    m_stackState = stackState;
     s_safePointBarrier->checkAndPark(this);
+    m_stackState = HeapPointersOnStack;
 }
 
 void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
@@ -554,14 +568,25 @@ void ThreadState::performPendingSweep()
     }
 }
 
-void ThreadState::setInterruptor(Interruptor* interruptor)
+void ThreadState::addInterruptor(Interruptor* interruptor)
 {
     SafePointScope scope(HeapPointersOnStack, SafePointScope::AllowNesting);
 
     {
         MutexLocker locker(threadAttachMutex());
-        delete m_interruptor;
-        m_interruptor = interruptor;
+        m_interruptors.append(interruptor);
+    }
+}
+
+void ThreadState::removeInterruptor(Interruptor* interruptor)
+{
+    SafePointScope scope(HeapPointersOnStack, SafePointScope::AllowNesting);
+
+    {
+        MutexLocker locker(threadAttachMutex());
+        size_t index = m_interruptors.find(interruptor);
+        RELEASE_ASSERT(index >= 0);
+        m_interruptors.remove(index);
     }
 }
 
@@ -570,7 +595,7 @@ void ThreadState::Interruptor::onInterrupted()
     ThreadState* state = ThreadState::current();
     ASSERT(state);
     ASSERT(!state->isAtSafePoint());
-    state->safePoint();
+    state->safePoint(HeapPointersOnStack);
 }
 
 ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()

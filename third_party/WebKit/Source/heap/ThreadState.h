@@ -326,7 +326,7 @@ public:
 
     // Check if GC is requested by another thread and pause this thread if this is the case.
     // Can only be called when current thread is in a consistent state.
-    void safePoint();
+    void safePoint(StackState);
 
     // Mark current thread as running inside safepoint.
     void enterSafePointWithoutPointers() { enterSafePoint(NoHeapPointersOnStack, 0); }
@@ -389,10 +389,11 @@ public:
         void onInterrupted();
     };
 
-    void setInterruptor(Interruptor*);
+    void addInterruptor(Interruptor*);
+    void removeInterruptor(Interruptor*);
 
     // Should only be called under protection of threadAttachMutex().
-    Interruptor* interruptor() const { return m_interruptor; }
+    const Vector<Interruptor*>& interruptors() const { return m_interruptors; }
 
     void recordStackEnd(intptr_t* endOfStack)
     {
@@ -475,7 +476,7 @@ private:
     void* m_safePointScopeMarker;
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
-    Interruptor* m_interruptor;
+    Vector<Interruptor*> m_interruptors;
     bool m_gcRequested;
     volatile int m_sweepRequested;
     bool m_sweepInProgress;

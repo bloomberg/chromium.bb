@@ -34,6 +34,7 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "heap/ThreadState.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "platform/PlatformThreadData.h"
@@ -111,7 +112,9 @@ void WorkerThread::workerThread()
 
     {
         MutexLocker lock(m_threadCreationMutex);
-
+#if ENABLE(OILPAN)
+        ThreadState::attach();
+#endif
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
 
         if (m_runLoop.terminated()) {
@@ -146,6 +149,10 @@ void WorkerThread::workerThread()
 
     // The thread object may be already destroyed from notification now, don't try to access "this".
     detachThread(threadID);
+
+#if ENABLE(OILPAN)
+    ThreadState::detach();
+#endif
 }
 
 void WorkerThread::runEventLoop()
@@ -209,6 +216,11 @@ public:
 
 void WorkerThread::stop()
 {
+#if ENABLE(OILPAN)
+    // Prevent the deadlock between GC and an attempt to stop a thread.
+    ThreadState::SafePointScope safePointScope(ThreadState::HeapPointersOnStack);
+#endif
+
     // Mutex protection is necessary because stop() can be called before the context is fully created.
     MutexLocker lock(m_threadCreationMutex);
 
