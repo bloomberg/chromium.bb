@@ -27,7 +27,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
  public:
   ExampleMenuModel();
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
+  // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
@@ -64,7 +64,7 @@ class ExampleMenuButton : public MenuButton, public MenuButtonListener {
   virtual ~ExampleMenuButton();
 
  private:
-  // Overridden from MenuButtonListener:
+  // MenuButtonListener:
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
 
@@ -128,24 +128,24 @@ bool ExampleMenuModel::GetAcceleratorForCommandId(
 void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case COMMAND_DO_SOMETHING: {
-      LOG(INFO) << "Done something";
+      VLOG(0) << "Done something";
       break;
     }
 
     // Radio items.
     case COMMAND_SELECT_ASCII: {
       current_encoding_command_id_ = COMMAND_SELECT_ASCII;
-      LOG(INFO) << "Selected ASCII";
+      VLOG(0) << "Selected ASCII";
       break;
     }
     case COMMAND_SELECT_UTF8: {
       current_encoding_command_id_ = COMMAND_SELECT_UTF8;
-      LOG(INFO) << "Selected UTF-8";
+      VLOG(0) << "Selected UTF-8";
       break;
     }
     case COMMAND_SELECT_UTF16: {
       current_encoding_command_id_ = COMMAND_SELECT_UTF16;
-      LOG(INFO) << "Selected UTF-16";
+      VLOG(0) << "Selected UTF-16";
       break;
     }
 

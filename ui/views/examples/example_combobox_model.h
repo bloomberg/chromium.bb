@@ -5,8 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_EXAMPLE_COMBOBOX_MODEL_H_
 #define UI_VIEWS_EXAMPLES_EXAMPLE_COMBOBOX_MODEL_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/base/models/combobox_model.h"
 
 namespace views {
@@ -17,7 +16,7 @@ class ExampleComboboxModel : public ui::ComboboxModel {
   ExampleComboboxModel(const char** strings, int count);
   virtual ~ExampleComboboxModel();
 
-  // Overridden from ui::ComboboxModel:
+  // ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
   virtual base::string16 GetItemAt(int index) OVERRIDE;
 

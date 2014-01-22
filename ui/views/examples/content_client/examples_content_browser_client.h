@@ -5,10 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_CONTENT_BROWSER_CLIENT_H_
 #define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_CONTENT_BROWSER_CLIENT_H_
 
-#include <string>
-
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {
@@ -25,7 +22,7 @@ class ExamplesContentBrowserClient : public content::ContentBrowserClient {
   ExamplesContentBrowserClient();
   virtual ~ExamplesContentBrowserClient();
 
-  // Overridden from content::ContentBrowserClient:
+  // content::ContentBrowserClient:
   virtual content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(

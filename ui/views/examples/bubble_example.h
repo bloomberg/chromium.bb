@@ -18,10 +18,11 @@ class VIEWS_EXAMPLES_EXPORT BubbleExample : public ExampleBase,
   BubbleExample();
   virtual ~BubbleExample();
 
-  // Overridden from ExampleBase.
+  // ExampleBase:
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
+  // ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   Button* no_shadow_;

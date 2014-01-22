@@ -104,7 +104,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
     example_list_.swap(*examples);
   }
 
-  // Overridden from ui::ComboboxModel:
+  // ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE { return example_list_.size(); }
   virtual base::string16 GetItemAt(int index) OVERRIDE {
     return base::UTF8ToUTF16(example_list_[index]->example_title());
@@ -170,7 +170,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   static ExamplesWindowContents* instance() { return instance_; }
 
  private:
-  // Overridden from WidgetDelegateView:
+  // WidgetDelegateView:
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual bool CanMaximize() const OVERRIDE { return true; }
   virtual base::string16 GetWindowTitle() const OVERRIDE {
@@ -183,7 +183,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
       base::MessageLoopForUI::current()->Quit();
   }
 
-  // Overridden from ComboboxListener:
+  // ComboboxListener:
   virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE {
     DCHECK_EQ(combobox, combobox_);
     DCHECK(combobox->selected_index() < combobox_model_.GetItemCount());

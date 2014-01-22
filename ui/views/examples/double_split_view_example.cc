@@ -21,7 +21,7 @@ class SplittedView : public View {
 
   void SetColor(SkColor from, SkColor to);
 
-  // Overridden from View.
+  // View:
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
  private:

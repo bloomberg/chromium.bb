@@ -5,8 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_SINGLE_SPLIT_VIEW_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_SINGLE_SPLIT_VIEW_EXAMPLE_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/controls/single_split_view_listener.h"
 #include "ui/views/examples/example_base.h"
 
@@ -20,10 +19,11 @@ class VIEWS_EXAMPLES_EXPORT SingleSplitViewExample
   SingleSplitViewExample();
   virtual ~SingleSplitViewExample();
 
-  // Overridden from ExampleBase:
+  // ExampleBase:
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
+  // SingleSplitViewListener:
   virtual bool SplitHandleMoved(SingleSplitView* sender) OVERRIDE;
 
   SingleSplitView* single_split_view_;

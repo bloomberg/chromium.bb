@@ -5,8 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_LINK_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_LINK_EXAMPLE_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/examples/example_base.h"
 
@@ -19,11 +18,11 @@ class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
   LinkExample();
   virtual ~LinkExample();
 
-  // Overridden from ExampleBase:
+  // ExampleBase:
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from LinkListener:
+  // LinkListener:
   virtual void LinkClicked(Link* source, int event_flags) OVERRIDE;
 
   Link* link_;

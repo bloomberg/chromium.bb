@@ -5,14 +5,14 @@
 #ifndef UI_VIEWS_EXAMPLES_MULTILINE_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_MULTILINE_EXAMPLE_H_
 
-#include "base/compiler_specific.h"
-#include "base/strings/string16.h"
-#include "ui/views/controls/button/checkbox.h"
+#include "base/macros.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/examples/example_base.h"
 
 namespace views {
 
+class Checkbox;
 class Label;
 
 namespace examples {

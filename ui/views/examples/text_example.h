@@ -5,8 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_TEXT_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_TEXT_EXAMPLE_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -27,7 +26,7 @@ class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase,
   TextExample();
   virtual ~TextExample();
 
-  // Overridden from ExampleBase:
+  // ExampleBase:
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
@@ -40,10 +39,10 @@ class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase,
                         const char** strings,
                         int count);
 
-  // Overridden from ButtonListener:
+  // ButtonListener:
   virtual void ButtonPressed(Button* button, const ui::Event& event) OVERRIDE;
 
-  // Overridden from ComboboxListener:
+  // ComboboxListener:
   virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;
 
   class TextExampleView;

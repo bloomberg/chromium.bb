@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/views/examples/views_examples_export.h"
 
 namespace views {

@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 #define UI_VIEWS_EXAMPLES_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 
@@ -33,7 +33,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& parameters);
   virtual ~ExamplesBrowserMainParts();
 
-  // Overridden from content::BrowserMainParts:
+  // content::BrowserMainParts:
   virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;

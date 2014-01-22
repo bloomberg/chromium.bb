@@ -24,7 +24,7 @@ class PreferredSizeLabel : public Label {
   PreferredSizeLabel();
   virtual ~PreferredSizeLabel();
 
-  // Overridden from Label:
+  // Label:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:

@@ -7,8 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/widget/widget.h"
@@ -23,7 +22,7 @@ class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
   WidgetExample();
   virtual ~WidgetExample();
 
-  // Overridden from ExampleBase:
+  // ExampleBase:
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
@@ -41,7 +40,7 @@ class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
   // Construct a Widget for |sender|, initialize with |params|, and call Show().
   void ShowWidget(View* sender, Widget::InitParams params);
 
-  // Overridden from ButtonListener:
+  // ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetExample);

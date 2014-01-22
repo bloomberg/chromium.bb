@@ -6,7 +6,6 @@
 
 #include <stdarg.h>
 
-#include "base/compiler_specific.h"
 #include "base/strings/stringprintf.h"
 #include "ui/views/view.h"
 
@@ -28,7 +27,7 @@ class ContainerView : public View {
   }
 
  private:
-  // Overridden from View:
+  // View:
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE {
     View::ViewHierarchyChanged(details);
