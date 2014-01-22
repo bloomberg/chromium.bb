@@ -82,7 +82,6 @@ public:
     static const RenderSVGResourceType s_resourceType;
 
     FloatRect drawingRegion(RenderObject*) const;
-    static bool isDeferred();
 private:
     bool fitsInMaximumImageSize(const FloatSize&, FloatSize&);
 

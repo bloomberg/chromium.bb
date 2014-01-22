@@ -88,6 +88,7 @@ offlineWebApplicationCacheEnabled initial=false
 usesEncodingDetector initial=false
 allowScriptsToCloseWindows initial=false
 acceleratedFiltersEnabled initial=false
+deferredFiltersEnabled initial=false
 regionBasedColumnsEnabled initial=false
 
 # FIXME: This should really be disabled by default as it makes platforms that

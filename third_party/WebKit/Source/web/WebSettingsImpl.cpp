@@ -529,6 +529,11 @@ void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
     m_deferredImageDecodingEnabled = enabled;
 }
 
+void WebSettingsImpl::setDeferredFiltersEnabled(bool enabled)
+{
+    m_settings->setDeferredFiltersEnabled(enabled);
+}
+
 void WebSettingsImpl::setAcceleratedCompositingForFixedPositionEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForFixedPositionEnabled(enabled);

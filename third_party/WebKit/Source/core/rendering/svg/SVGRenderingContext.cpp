@@ -29,6 +29,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResource.h"
@@ -183,7 +184,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             // changes, we need to paint the whole filter region. Otherwise, elements not visible
             // at the time of the initial paint (due to scrolling, window size, etc.) will never
             // be drawn.
-            if (!m_filter->isDeferred())
+            if (!m_object->document().settings()->deferredFiltersEnabled())
                 m_paintInfo->rect = IntRect(m_filter->drawingRegion(m_object));
         }
     }

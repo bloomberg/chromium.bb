@@ -86,6 +86,7 @@ public:
     virtual void setDefaultFontSize(int) OVERRIDE;
     virtual void setDefaultTextEncodingName(const WebString&) OVERRIDE;
     virtual void setDefaultVideoPosterURL(const WebString&) OVERRIDE;
+    virtual void setDeferredFiltersEnabled(bool) OVERRIDE;
     virtual void setDeferredImageDecodingEnabled(bool) OVERRIDE;
     virtual void setDeviceScaleAdjustment(float) OVERRIDE;
     virtual void setDeviceSupportsMouse(bool) OVERRIDE;

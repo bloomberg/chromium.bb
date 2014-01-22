@@ -39,8 +39,6 @@ using namespace std;
 
 namespace WebCore {
 
-// This is currently always off at runtime, but will be switched over once all the tests are passing with it on.
-bool RenderSVGResourceFilter::s_deferredFilterRendering = false;
 const RenderSVGResourceType RenderSVGResourceFilter::s_resourceType = FilterResourceType;
 
 RenderSVGResourceFilter::RenderSVGResourceFilter(SVGFilterElement* node)
@@ -152,14 +150,15 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     clearInvalidationMask();
 
-    if (!s_deferredFilterRendering && m_filter.contains(object)) {
+    bool deferredFiltersEnabled = object->document().settings()->deferredFiltersEnabled();
+    if (!deferredFiltersEnabled && m_filter.contains(object)) {
         FilterData* filterData = m_filter.get(object);
         if (filterData->state == FilterData::PaintingSource || filterData->state == FilterData::Applying)
             filterData->state = FilterData::CycleDetected;
         return false; // Already built, or we're in a cycle, or we're marked for removal. Regardless, just do nothing more now.
     }
 
-    if (s_deferredFilterRendering) {
+    if (deferredFiltersEnabled) {
         if (m_objects.contains(object))
             return false; // We're in a cycle.
         m_objects.set(object, true);
@@ -221,7 +220,7 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
 
-    if (s_deferredFilterRendering) {
+    if (deferredFiltersEnabled) {
         SkiaImageFilterBuilder builder(context);
         RefPtr<ImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
         FloatRect boundaries = enclosingIntRect(filterData->boundaries);
@@ -270,7 +269,7 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
     ASSERT(context);
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
 
-    if (s_deferredFilterRendering) {
+    if (object->document().settings()->deferredFiltersEnabled()) {
         context->endLayer();
         m_objects.remove(object);
         return;
@@ -343,7 +342,7 @@ FloatRect RenderSVGResourceFilter::resourceBoundingBox(RenderObject* object)
 
 void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, const QualifiedName& attribute)
 {
-    if (s_deferredFilterRendering) {
+    if (object->document().settings()->deferredFiltersEnabled()) {
         markAllClientsForInvalidation(RepaintInvalidation);
         markAllClientLayersForInvalidation();
         return;
@@ -372,11 +371,6 @@ void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, co
         markClientForInvalidation(it->key, RepaintInvalidation);
     }
     markAllClientLayersForInvalidation();
-}
-
-bool RenderSVGResourceFilter::isDeferred()
-{
-    return s_deferredFilterRendering;
 }
 
 FloatRect RenderSVGResourceFilter::drawingRegion(RenderObject* object) const
