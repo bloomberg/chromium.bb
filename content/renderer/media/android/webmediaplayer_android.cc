@@ -349,8 +349,8 @@ void WebMediaPlayerAndroid::setVolume(double volume) {
 
 bool WebMediaPlayerAndroid::hasVideo() const {
   // If we have obtained video size information before, use it.
-  if (has_size_info_ && !natural_size_.isEmpty())
-    return true;
+  if (has_size_info_)
+    return !natural_size_.isEmpty();
 
   // TODO(qinmin): need a better method to determine whether the current media
   // content contains video. Android does not provide any function to do
@@ -680,6 +680,14 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
       EstablishSurfaceTexturePeer();
     }
   }
+#else
+  // When play() gets called, |natural_size_| may still be empty and
+  // EstablishSurfaceTexturePeer() will not get called. As a result, the video
+  // may play without a surface texture. When we finally get the valid video
+  // size here, we should call EstablishSurfaceTexturePeer() if it has not been
+  // previously called.
+  if (!paused() && needs_establish_peer_)
+    EstablishSurfaceTexturePeer();
 #endif  // defined(VIDEO_HOLE)
 
   natural_size_.width = width;
