@@ -8,7 +8,7 @@
       'target_name': 'mojo_sample_app',
       'type': 'shared_library',
       'dependencies': [
-        '../gpu/gpu.gyp:gles2_c_lib',
+        # TODO(darin): we should not be linking against these libraries!
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
@@ -41,7 +41,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../cc/cc.gyp:cc',
-        '../gpu/gpu.gyp:gles2_c_lib',
         '../gpu/gpu.gyp:gles2_implementation',
         '../skia/skia.gyp:skia',
         '../ui/gfx/gfx.gyp:gfx',
@@ -80,7 +79,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../cc/cc.gyp:cc',
-            '../gpu/gpu.gyp:gles2_c_lib',
             '../gpu/gpu.gyp:gles2_implementation',
             '../skia/skia.gyp:skia',
             '../ui/aura/aura.gyp:aura',

@@ -123,18 +123,12 @@
  *-----------------------------------------------------------------------*/
 
 #undef KHRONOS_APICALL
-#if defined(COMPONENT_BUILD)
-#if defined(WIN32)
-#if defined(GLES2_C_LIB_IMPLEMENTATION)
-#   define KHRONOS_APICALL __declspec(dllexport)
-#else 
-#   define KHRONOS_APICALL __declspec(dllimport)
-#endif /* defined(GLES2_C_LIB_IMPLEMENTATION) */
+#if defined(GLES2_USE_MOJO)
+#include "mojo/public/gles2/gles2_export.h"
+#define KHRONOS_APICALL MOJO_GLES2_EXPORT
 #else
-#   define KHRONOS_APICALL __attribute__((visibility("default")))
-#endif /* defined(WIN32) */
-#else
-#   define KHRONOS_APICALL
+#include "gpu/command_buffer/client/gles2_c_lib_export.h"
+#define KHRONOS_APICALL GLES2_C_LIB_EXPORT
 #endif
 
 #undef KHRONOS_APIENTRY

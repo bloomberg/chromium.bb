@@ -8,30 +8,9 @@
 // Note: This header should be compilable as C.
 
 #include <stdint.h>
+#include <GLES2/gl2.h>
 
-#if defined(COMPONENT_BUILD)
-
-#if defined(WIN32)
-
-#if defined(MOJO_GLES2_IMPLEMENTATION)
-#define MOJO_GLES2_EXPORT __declspec(dllexport)
-#else
-#define MOJO_GLES2_EXPORT __declspec(dllimport)
-#endif
-
-#else  // !defined(WIN32)
-
-#if defined(MOJO_GLES2_IMPLEMENTATION)
-#define MOJO_GLES2_EXPORT __attribute__((visibility("default")))
-#else
-#define MOJO_GLES2_EXPORT
-#endif
-
-#endif  // defined(WIN32)
-
-#else  // !defined(COMPONENT_BUILD)
-#define MOJO_GLES2_EXPORT
-#endif
+#include "mojo/public/gles2/gles2_export.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +21,10 @@ MOJO_GLES2_EXPORT void MojoGLES2Terminate();
 // TODO(abarth): MojoGLES2MakeCurrent should take a MojoHandle.
 MOJO_GLES2_EXPORT void MojoGLES2MakeCurrent(uint64_t encoded);
 MOJO_GLES2_EXPORT void MojoGLES2SwapBuffers();
+#define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
+  MOJO_GLES2_EXPORT ReturnType GL_APIENTRY gl##Function PARAMETERS;
+#include "mojo/public/gles2/gles2_call_visitor_autogen.h"
+#undef VISIT_GL_CALL
 
 #ifdef __cplusplus
 }  // extern "C"

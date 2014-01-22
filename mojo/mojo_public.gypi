@@ -25,6 +25,34 @@
       ],
     },
     {
+      'target_name': 'mojo_gles2',
+      'type': 'shared_library',
+      'defines': [
+        'MOJO_GLES2_IMPLEMENTATION',
+        'GLES2_USE_MOJO',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../third_party/khronos/khronos.gyp:khronos_headers'
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+        'defines': [
+          'GLES2_USE_MOJO',
+        ],
+      },
+      'sources': [
+        'public/gles2/gles2.h',
+        'public/gles2/gles2_private.cc',
+        'public/gles2/gles2_private.h',
+        'public/gles2/gles2_export.h',
+      ],
+    },
+    {
       'target_name': 'mojo_public_test_support',
       'type': 'static_library',
       'dependencies': [

@@ -16,7 +16,7 @@ _SIZE_OF_UINT32 = 4
 _SIZE_OF_COMMAND_HEADER = 4
 _FIRST_SPECIFIC_COMMAND_ID = 256
 
-_LICENSE = """// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+_LICENSE = """// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7802,6 +7802,22 @@ const size_t GLES2Util::enum_to_string_table_len_ =
       file.Write("}\n\n")
     file.Close()
 
+  def WriteMojoGLCallVisitor(self, filename):
+    """Provides the GL implementation for mojo"""
+    file = CWriter(filename)
+    file.Write(_LICENSE)
+    file.Write(_DO_NOT_EDIT_WARNING)
+
+    for func in self.original_functions:
+      if not func.IsCoreGLFunction():
+        continue
+      file.Write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
+                             (func.name, func.return_type,
+                              func.MakeTypedOriginalArgString(""),
+                              func.MakeOriginalArgString("")))
+
+    file.Close()
+
 def main(argv):
   """This is the main function."""
   parser = OptionParser()
@@ -7877,6 +7893,8 @@ def main(argv):
   gen.WriteCommonUtilsHeader("common/gles2_cmd_utils_autogen.h")
   gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
   gen.WriteGLES2Header("../GLES2/gl2chromium_autogen.h")
+  gen.WriteMojoGLCallVisitor(
+      "../../mojo/public/gles2/gles2_call_visitor_autogen.h")
 
   if gen.errors > 0:
     print "%d errors" % gen.errors

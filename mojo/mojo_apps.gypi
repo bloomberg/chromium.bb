@@ -5,7 +5,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../gpu/gpu.gyp:gles2_c_lib',
         '../gin/gin.gyp:gin',
         '../ui/gl/gl.gyp:gl',
         '../v8/tools/gyp/v8.gyp:v8',
