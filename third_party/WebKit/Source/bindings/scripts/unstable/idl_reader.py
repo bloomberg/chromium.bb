@@ -52,24 +52,26 @@ class IdlReader:
 
     def read_idl_definitions(self, idl_filename):
         """Returns an IdlDefinitions object for an IDL file, including all dependencies."""
-        basename = os.path.basename(idl_filename)
-        interface_name, _ = os.path.splitext(basename)
         definitions = self.read_idl_file(idl_filename)
-        if self.interface_dependency_resolver:
-            should_generate_bindings = self.interface_dependency_resolver.resolve_dependencies(definitions, interface_name)
-            if not should_generate_bindings:
-                return None
+        if not self.interface_dependency_resolver:
+            return definitions
+
+        interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
+        self.interface_dependency_resolver.resolve_dependencies(
+            definitions, interface_name)
         return definitions
 
     def read_idl_file(self, idl_filename):
         """Returns an IdlDefinitions object for an IDL file, without any dependencies."""
         ast = blink_idl_parser.parse_file(self.parser, idl_filename)
         definitions = idl_definitions_builder.build_idl_definitions_from_ast(ast)
-        if self.extended_attribute_validator:
-            try:
-                self.extended_attribute_validator.validate_extended_attributes(definitions)
-            except idl_validator.IDLInvalidExtendedAttributeError as error:
-                raise idl_validator.IDLInvalidExtendedAttributeError("""IDL ATTRIBUTE ERROR in file %s:
+        if not self.extended_attribute_validator:
+            return definitions
+
+        try:
+            self.extended_attribute_validator.validate_extended_attributes(definitions)
+        except idl_validator.IDLInvalidExtendedAttributeError as error:
+            raise idl_validator.IDLInvalidExtendedAttributeError("""IDL ATTRIBUTE ERROR in file %s:
     %s
 If you want to add a new IDL extended attribute, please add it to
     bindings/IDLExtendedAttributes.txt

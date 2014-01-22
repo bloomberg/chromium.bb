@@ -64,7 +64,7 @@ class InvalidPartialInterfaceError(Exception):
 
 class InterfaceDependencyResolver:
     def __init__(self, interfaces_info, reader):
-        """Inits dependency resolver.
+        """Initialize dependency resolver.
 
         Args:
             interfaces_info:
@@ -76,23 +76,18 @@ class InterfaceDependencyResolver:
         self.reader = reader
 
     def resolve_dependencies(self, definitions, interface_name):
-        """Resolves dependencies, merging them into IDL definitions of main file.
+        """Resolve dependencies, merging them into IDL definitions of main file.
 
         Dependencies consist of 'partial interface' for the same interface as
         in the main file, and other interfaces that this interface 'implements'.
 
-        Modifies definitions in place by adding parsed dependencies, and checks
-        whether bindings should be generated, returning bool.
+        Modifies definitions in place by adding parsed dependencies.
 
         Args:
             definitions: IdlDefinitions object, modified in place
-            idl_filename: filename of main IDL file for the interface
-        Returns:
-            bool, whether bindings should be generated or not.
+            interface_name:
+                name of interface whose dependencies are being resolved
         """
-        dependency_idl_filenames = self.compute_dependency_idl_files(interface_name)
-        if dependency_idl_filenames is None:
-            return False
         # The Blink IDL filenaming convention is that the file
         # <interface_name>.idl MUST contain the interface "interface_name" or
         # exception "interface_name", unless it is a dependency (e.g.,
@@ -101,31 +96,19 @@ class InterfaceDependencyResolver:
             target_interface = definitions.interfaces[interface_name]
         except KeyError:
             raise InterfaceNotFoundError('Could not find interface or exception "{0}" in {0}.idl'.format(interface_name))
-        if target_interface.is_exception:
-            # Exceptions do not have dependencies, so no merging necessary
-            return definitions
+
+        if interface_name not in self.interfaces_info:
+            # No dependencies, nothing to do
+            return
+        dependency_idl_filenames = self.interfaces_info[interface_name]['dependencies_full_paths']
+
         merge_interface_dependencies(target_interface, dependency_idl_filenames, self.reader)
-
-        return definitions
-
-    def compute_dependency_idl_files(self, target_interface_name):
-        """Returns list of IDL file dependencies for a given main IDL file.
-
-        Returns a list of IDL files on which a given IDL file depends,
-        possibly empty.
-        Dependencies consist of partial interface files and files for other
-        interfaces that the given interface implements.
-        """
-        if target_interface_name in self.interfaces_info:
-            return self.interfaces_info[target_interface_name]['dependencies_full_paths']
-
-        return []
 
 
 def merge_interface_dependencies(target_interface, dependency_idl_filenames, reader):
     """Merge dependencies ('partial interface' and 'implements') in dependency_idl_filenames into target_interface.
 
-    No return: modifies target_document in place.
+    No return: modifies target_interface in place.
     """
     # Sort so order consistent, so can compare output from run to run.
     for dependency_idl_filename in sorted(dependency_idl_filenames):
@@ -146,6 +129,16 @@ def merge_interface_dependencies(target_interface, dependency_idl_filenames, rea
 def merge_dependency_interface(target_interface, dependency_interface, dependency_interface_basename):
     """Merge dependency_interface into target_interface.
 
+    Merging consists of storing certain interface-level data in extended
+    attributes of the *members* (because there is no separate dependency
+    interface post-merging), then concatenating the lists.
+
+    The data storing consists of:
+    * applying certain extended attributes from the dependency interface
+      to its members
+    * storing the C++ class of the implementation in an internal
+      extended attribute of each member, [ImplementedBy]
+
     No return: modifies target_interface in place.
     """
     merged_extended_attributes = dict(
@@ -164,13 +157,13 @@ def merge_dependency_interface(target_interface, dependency_interface, dependenc
     implemented_by = dependency_interface.extended_attributes.get('ImplementedAs', dependency_interface_basename)
 
     def merge_lists(source_list, target_list):
-        for element in source_list:
-            element.extended_attributes.update(merged_extended_attributes)
+        for member in source_list:
+            member.extended_attributes.update(merged_extended_attributes)
             # FIXME: remove check for LegacyImplementedInBaseClass when this
             # attribute is removed
             if 'LegacyImplementedInBaseClass' not in dependency_interface.extended_attributes:
-                element.extended_attributes['ImplementedBy'] = implemented_by
-            target_list.append(element)
+                member.extended_attributes['ImplementedBy'] = implemented_by
+            target_list.append(member)
 
     merge_lists(dependency_interface.attributes, target_interface.attributes)
     merge_lists(dependency_interface.constants, target_interface.constants)
