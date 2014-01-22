@@ -460,7 +460,7 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
 
 def GetPaladinDeps(commit_message):
   """Get the paladin dependencies for the given |commit_message|."""
-  PALADIN_DEPENDENCY_RE = re.compile(r'^(CQ\W?DEPEND.)(.*)$',
+  PALADIN_DEPENDENCY_RE = re.compile(r'^(CQ.?DEPEND.)(.*)$',
                                      re.MULTILINE | re.IGNORECASE)
   PATCH_RE = re.compile('[^, ]+')
   EXPECTED_PREFIX = 'CQ-DEPEND='

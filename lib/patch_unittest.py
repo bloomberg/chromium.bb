@@ -387,6 +387,11 @@ I am the first commit.
     # Validate that it unique'ifies the results.
     self._CheckPaladin(git1, cid1, ['1'], 'CQ-DEPEND=1 1')
 
+    # Invalid syntax
+    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
+                      git1, cid1, [], 'CQ-DEPENDS=1')
+    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
+                      git1, cid1, [], 'CQ_DEPEND=1')
 
 class TestLocalPatchGit(TestGitRepoPatch):
 
