@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.content.browser.WebContents;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Provides a way of accessing toolbar data and state.

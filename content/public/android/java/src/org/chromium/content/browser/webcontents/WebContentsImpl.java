@@ -6,8 +6,8 @@ package org.chromium.content.browser.webcontents;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.browser.NavigationController;
-import org.chromium.content.browser.WebContents;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * The WebContentsImpl Java wrapper to allow communicating with the native WebContentsImpl

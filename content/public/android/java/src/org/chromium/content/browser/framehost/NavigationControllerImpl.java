@@ -6,7 +6,7 @@ package org.chromium.content.browser.framehost;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationController;
 
 /**
  * The NavigationControllerImpl Java wrapper to allow communicating with the native

@@ -29,8 +29,8 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.NavigationClient;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageInfo;
-import org.chromium.content.browser.WebContents;
 import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
 

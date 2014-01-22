@@ -69,6 +69,7 @@ import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.input.SelectionHandleController;
 import org.chromium.content.common.ContentSwitches;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;

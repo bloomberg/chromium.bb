@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.WebContents;
 import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Tab helper to toggle media autoplay for voice URL searches.
