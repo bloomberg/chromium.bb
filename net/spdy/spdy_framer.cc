@@ -1705,16 +1705,6 @@ bool SpdyFramer::ParseCredentialData(const char* data, size_t len,
   return true;
 }
 
-SpdyFrame* SpdyFramer::CreateDataFrame(SpdyStreamId stream_id,
-                                       const char* data,
-                                       uint32 len, SpdyDataFlags flags) const {
-  DCHECK_EQ(0, flags & (!DATA_FLAG_FIN));
-
-  SpdyDataIR data_ir(stream_id, base::StringPiece(data, len));
-  data_ir.set_fin(flags & DATA_FLAG_FIN);
-  return SerializeData(data_ir);
-}
-
 SpdySerializedFrame* SpdyFramer::SerializeData(const SpdyDataIR& data) const {
   const size_t kSize = GetDataFrameMinimumSize() + data.data().length();
 
@@ -1903,20 +1893,6 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::CreateSettings(
-    const SettingsMap& values) const {
-  SpdySettingsIR settings;
-  for (SettingsMap::const_iterator it = values.begin();
-       it != values.end();
-       ++it) {
-    settings.AddSetting(it->first,
-                        (it->second.first & SETTINGS_FLAG_PLEASE_PERSIST) != 0,
-                        (it->second.first & SETTINGS_FLAG_PERSISTED) != 0,
-                        it->second.second);
-  }
-  return SerializeSettings(settings);
-}
-
 SpdySerializedFrame* SpdyFramer::SerializeSettings(
     const SpdySettingsIR& settings) const {
   uint8 flags = 0;
@@ -1955,21 +1931,11 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::CreateBlocked(SpdyStreamId stream_id) {
-  SpdyBlockedIR blocked_ir(stream_id);
-  return SerializeBlocked(blocked_ir);
-}
-
 SpdyFrame* SpdyFramer::SerializeBlocked(const SpdyBlockedIR& blocked) const {
   DCHECK_LE(4, protocol_version());
   SpdyFrameBuilder builder(GetBlockedSize());
   builder.WriteFramePrefix(*this, BLOCKED, kNoFlags, blocked.stream_id());
   return builder.take();
-}
-
-SpdyFrame* SpdyFramer::CreatePingFrame(uint32 unique_id) const {
-  SpdyPingIR ping(unique_id);
-  return SerializePing(ping);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
@@ -1982,13 +1948,6 @@ SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
   builder.WriteUInt32(ping.id());
   DCHECK_EQ(GetPingSize(), builder.length());
   return builder.take();
-}
-
-SpdyFrame* SpdyFramer::CreateGoAway(
-    SpdyStreamId last_accepted_stream_id, SpdyGoAwayStatus status,
-    const base::StringPiece& description) const {
-  SpdyGoAwayIR goaway(last_accepted_stream_id, status, description);
-  return SerializeGoAway(goaway);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeGoAway(
@@ -2079,13 +2038,6 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   }
 
   return builder.take();
-}
-
-SpdyFrame* SpdyFramer::CreateWindowUpdate(
-    SpdyStreamId stream_id,
-    uint32 delta_window_size) const {
-  SpdyWindowUpdateIR window_update(stream_id, delta_window_size);
-  return SerializeWindowUpdate(window_update);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(

@@ -364,14 +364,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                 size_t header_length,
                                 SpdyHeaderBlock* block) const;
 
-  // Create a data frame.
-  // |stream_id| is the stream  for this frame
-  // |data| is the data to be included in the frame.
-  // |len| is the length of the data
-  // |flags| is the flags to use with the data.
-  //    To mark this frame as the last data frame, enable DATA_FLAG_FIN.
-  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id, const char* data,
-                             uint32 len, SpdyDataFlags flags) const;
+  // Serialize a data frame.
   SpdySerializedFrame* SerializeData(const SpdyDataIR& data) const;
   // Serializes just the data frame header, excluding actual data payload.
   SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
@@ -410,23 +403,18 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializeRstStream(
       const SpdyRstStreamIR& rst_stream) const;
 
-  // Creates and serializes a SETTINGS frame. The SETTINGS frame is
+  // Serializes a SETTINGS frame. The SETTINGS frame is
   // used to communicate name/value pairs relevant to the communication channel.
-  SpdyFrame* CreateSettings(const SettingsMap& values) const;
   SpdySerializedFrame* SerializeSettings(const SpdySettingsIR& settings) const;
 
-  // Creates and serializes a PING frame. The unique_id is used to
+  // Serializes a PING frame. The unique_id is used to
   // identify the ping request/response.
-  SpdyFrame* CreatePingFrame(uint32 unique_id) const;
   SpdySerializedFrame* SerializePing(const SpdyPingIR& ping) const;
 
-  // Creates and serializes a GOAWAY frame. The GOAWAY frame is used
+  // Serializes a GOAWAY frame. The GOAWAY frame is used
   // prior to the shutting down of the TCP connection, and includes the
   // stream_id of the last stream the sender of the frame is willing to process
   // to completion.
-  SpdyFrame* CreateGoAway(SpdyStreamId last_accepted_stream_id,
-                          SpdyGoAwayStatus status,
-                          const base::StringPiece& description) const;
   SpdySerializedFrame* SerializeGoAway(const SpdyGoAwayIR& goaway) const;
 
   // Creates and serializes a HEADERS frame. The HEADERS frame is used
@@ -437,11 +425,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                            const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeHeaders(const SpdyHeadersIR& headers);
 
-  // Creates and serializes a WINDOW_UPDATE frame. The WINDOW_UPDATE
+  // Serializes a WINDOW_UPDATE frame. The WINDOW_UPDATE
   // frame is used to implement per stream flow control in SPDY.
-  SpdyFrame* CreateWindowUpdate(
-      SpdyStreamId stream_id,
-      uint32 delta_window_size) const;
   SpdySerializedFrame* SerializeWindowUpdate(
       const SpdyWindowUpdateIR& window_update) const;
 
@@ -452,11 +437,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializeCredential(
       const SpdyCredentialIR& credential) const;
 
-  // Creates and serializes a BLOCKED frame. The BLOCKED frame is used to
+  // Serializes a BLOCKED frame. The BLOCKED frame is used to
   // indicate to the remote endpoint that this endpoint believes itself to be
   // flow-control blocked but otherwise ready to send data. The BLOCKED frame
   // is purely advisory and optional.
-  SpdyFrame* CreateBlocked(SpdyStreamId stream_id);
   SpdySerializedFrame* SerializeBlocked(const SpdyBlockedIR& blocked) const;
 
   // Creates and serializes a PUSH_PROMISE frame. The PUSH_PROMISE frame is used

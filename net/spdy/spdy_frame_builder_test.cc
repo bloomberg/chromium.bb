@@ -43,8 +43,8 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   // The one created via builder is initially given the incorrect length, but
   // then is corrected via RewriteLength().
   SpdyFramer framer(spdy_version_);
-  SettingsMap settings;
-  scoped_ptr<SpdyFrame> expected(framer.CreateSettings(settings));
+  SpdySettingsIR settings_ir;
+  scoped_ptr<SpdyFrame> expected(framer.SerializeSettings(settings_ir));
   SpdyFrameBuilder builder(expected->size() + 1);
   if (spdy_version_ < 4) {
     builder.WriteControlFrameHeader(framer, SETTINGS, 0);

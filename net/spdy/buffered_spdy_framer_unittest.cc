@@ -199,13 +199,10 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(BufferedSpdyFramerTest, OnSetting) {
   SpdyFramer framer(spdy_version());
-  SettingsMap settings;
-  settings[SETTINGS_UPLOAD_BANDWIDTH] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 0x00000002);
-  settings[SETTINGS_DOWNLOAD_BANDWIDTH] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, 0x00000003);
-
-  scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
+  SpdySettingsIR settings_ir;
+  settings_ir.AddSetting(SETTINGS_UPLOAD_BANDWIDTH, false, false, 0x00000002);
+  settings_ir.AddSetting(SETTINGS_DOWNLOAD_BANDWIDTH, false, false, 0x00000003);
+  scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
   TestBufferedSpdyVisitor visitor(spdy_version());
 
   visitor.SimulateInFramer(

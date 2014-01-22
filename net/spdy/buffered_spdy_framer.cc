@@ -270,20 +270,35 @@ SpdyFrame* BufferedSpdyFramer::CreateRstStream(
   return spdy_framer_.CreateRstStream(stream_id, status);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer
+// SpdySettingsIR).
 SpdyFrame* BufferedSpdyFramer::CreateSettings(
     const SettingsMap& values) const {
-  return spdy_framer_.CreateSettings(values);
+  SpdySettingsIR settings_ir;
+  for (SettingsMap::const_iterator it = values.begin();
+       it != values.end();
+       ++it) {
+    settings_ir.AddSetting(
+        it->first,
+        (it->second.first & SETTINGS_FLAG_PLEASE_PERSIST) != 0,
+        (it->second.first & SETTINGS_FLAG_PERSISTED) != 0,
+        it->second.second);
+  }
+  return spdy_framer_.SerializeSettings(settings_ir);
 }
 
-SpdyFrame* BufferedSpdyFramer::CreatePingFrame(
-    uint32 unique_id) const {
-  return spdy_framer_.CreatePingFrame(unique_id);
+// TODO(jgraettinger): Eliminate uses of this method (prefer SpdyPingIR).
+SpdyFrame* BufferedSpdyFramer::CreatePingFrame(uint32 unique_id) const {
+  SpdyPingIR ping_ir(unique_id);
+  return spdy_framer_.SerializePing(ping_ir);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer SpdyGoAwayIR).
 SpdyFrame* BufferedSpdyFramer::CreateGoAway(
     SpdyStreamId last_accepted_stream_id,
     SpdyGoAwayStatus status) const {
-  return spdy_framer_.CreateGoAway(last_accepted_stream_id, status, "go away");
+  SpdyGoAwayIR go_ir(last_accepted_stream_id, status, "");
+  return spdy_framer_.SerializeGoAway(go_ir);
 }
 
 SpdyFrame* BufferedSpdyFramer::CreateHeaders(
@@ -293,17 +308,24 @@ SpdyFrame* BufferedSpdyFramer::CreateHeaders(
   return spdy_framer_.CreateHeaders(stream_id, flags, headers);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer
+// SpdyWindowUpdateIR).
 SpdyFrame* BufferedSpdyFramer::CreateWindowUpdate(
     SpdyStreamId stream_id,
     uint32 delta_window_size) const {
-  return spdy_framer_.CreateWindowUpdate(stream_id, delta_window_size);
+  SpdyWindowUpdateIR update_ir(stream_id, delta_window_size);
+  return spdy_framer_.SerializeWindowUpdate(update_ir);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer SpdyDataIR).
 SpdyFrame* BufferedSpdyFramer::CreateDataFrame(SpdyStreamId stream_id,
                                                const char* data,
                                                uint32 len,
                                                SpdyDataFlags flags) {
-  return spdy_framer_.CreateDataFrame(stream_id, data, len, flags);
+  SpdyDataIR data_ir(stream_id,
+                     base::StringPiece(data, len));
+  data_ir.set_fin((flags & DATA_FLAG_FIN) != 0);
+  return spdy_framer_.SerializeData(data_ir);
 }
 
 SpdyPriority BufferedSpdyFramer::GetHighestPriority() const {

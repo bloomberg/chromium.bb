@@ -15,6 +15,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
+using base::StringPiece;
 using std::string;
 using std::max;
 using std::min;
@@ -1628,11 +1629,10 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressors) {
                                   &block));
   EXPECT_TRUE(syn_frame.get() != NULL);
 
-  const char bytes[] = "this is a test test test test test!";
-  scoped_ptr<SpdyFrame> send_frame(
-      send_framer.CreateDataFrame(
-          1, bytes, arraysize(bytes),
-          static_cast<SpdyDataFlags>(DATA_FLAG_FIN)));
+  StringPiece bytes = "this is a test test test test test!";
+  net::SpdyDataIR data_ir(1, bytes);
+  data_ir.set_fin(true);
+  scoped_ptr<SpdyFrame> send_frame(send_framer.SerializeData(data_ir));
   EXPECT_TRUE(send_frame.get() != NULL);
 
   // Run the inputs through the framer.
@@ -1648,7 +1648,7 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressors) {
   EXPECT_EQ(1, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
-  EXPECT_EQ(arraysize(bytes), static_cast<unsigned>(visitor.data_bytes_));
+  EXPECT_EQ(bytes.size(), static_cast<unsigned>(visitor.data_bytes_));
   EXPECT_EQ(0, visitor.fin_frame_count_);
   EXPECT_EQ(0, visitor.fin_flag_count_);
   EXPECT_EQ(1, visitor.zero_length_data_frame_count_);
@@ -1681,10 +1681,9 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressorsOneByteAtATime) {
   EXPECT_TRUE(syn_frame.get() != NULL);
 
   const char bytes[] = "this is a test test test test test!";
-  scoped_ptr<SpdyFrame> send_frame(
-      send_framer.CreateDataFrame(
-          1, bytes, arraysize(bytes),
-          static_cast<SpdyDataFlags>(DATA_FLAG_FIN)));
+  net::SpdyDataIR data_ir(1, StringPiece(bytes, arraysize(bytes)));
+  data_ir.set_fin(true);
+  scoped_ptr<SpdyFrame> send_frame(send_framer.SerializeData(data_ir));
   EXPECT_TRUE(send_frame.get() != NULL);
 
   // Run the inputs through the framer.
@@ -1715,7 +1714,8 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressorsOneByteAtATime) {
 
 TEST_P(SpdyFramerTest, WindowUpdateFrame) {
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyFrame> frame(framer.CreateWindowUpdate(1, 0x12345678));
+  scoped_ptr<SpdyFrame> frame(framer.SerializeWindowUpdate(
+      net::SpdyWindowUpdateIR(1, 0x12345678)));
 
   const char kDescription[] = "WINDOW_UPDATE frame, stream 1, delta 0x12345678";
   const unsigned char kV3FrameData[] = {  // Also applies for V2.
@@ -1756,8 +1756,8 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
     const char bytes[] = "hello";
 
-    scoped_ptr<SpdyFrame> frame(framer.CreateDataFrame(
-        1, bytes, strlen(bytes), DATA_FLAG_NONE));
+    SpdyDataIR data_ir(1, StringPiece(bytes, strlen(bytes)));
+    scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
            kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
@@ -1766,9 +1766,9 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
            kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));
     }
 
-    SpdyDataIR data_ir(1);
-    data_ir.SetDataShallow(base::StringPiece(bytes, strlen(bytes)));
-    frame.reset(framer.SerializeDataFrameHeader(data_ir));
+    SpdyDataIR data_header_ir(1);
+    data_header_ir.SetDataShallow(base::StringPiece(bytes, strlen(bytes)));
+    frame.reset(framer.SerializeDataFrameHeader(data_header_ir));
     CompareCharArraysWithHexError(
         kDescription,
         reinterpret_cast<const unsigned char*>(frame->data()),
@@ -1789,8 +1789,8 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       0x00, 0x00, 0x00, 0x01,
       0xff
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateDataFrame(
-        1, "\xff", 1, DATA_FLAG_NONE));
+    net::SpdyDataIR data_ir(1, StringPiece("\xff", 1));
+    scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
            kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
@@ -1814,8 +1814,9 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       'h',  'e',  'l',  'l',
       'o'
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateDataFrame(
-        1, "hello", 5, DATA_FLAG_FIN));
+    net::SpdyDataIR data_ir(1, StringPiece("hello", 5));
+    data_ir.set_fin(true);
+    scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
            kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
@@ -1835,8 +1836,8 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       0x00, 0x08, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x01,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateDataFrame(
-        1, "", 0, DATA_FLAG_NONE));
+    net::SpdyDataIR data_ir(1, StringPiece());
+    scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
            kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
@@ -1860,8 +1861,9 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       'h',  'e',  'l',  'l',
       'o'
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateDataFrame(
-        0x7fffffff, "hello", 5, DATA_FLAG_FIN));
+    net::SpdyDataIR data_ir(0x7fffffff, "hello");
+    data_ir.set_fin(true);
+    scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     if (IsSpdy4()) {
        CompareFrame(
            kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
@@ -1888,8 +1890,9 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     memcpy(expected_frame_data.get(), kFrameHeader, arraysize(kFrameHeader));
     memset(expected_frame_data.get() + arraysize(kFrameHeader), 'A', kDataSize);
 
-    scoped_ptr<SpdyFrame> frame(framer.CreateDataFrame(
-        1, kData.data(), kData.size(), DATA_FLAG_FIN));
+    net::SpdyDataIR data_ir(1, StringPiece(kData.data(), kData.size()));
+    data_ir.set_fin(true);
+    scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     CompareFrame(kDescription, *frame, expected_frame_data.get(), kFrameSize);
   }
 }
@@ -2534,7 +2537,12 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x0a, 0x0b, 0x0c, 0x0d,
     };
 
-    scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
+    SpdySettingsIR settings_ir;
+    settings_ir.AddSetting(kId,
+                           kFlags & SETTINGS_FLAG_PLEASE_PERSIST,
+                           kFlags & SETTINGS_FLAG_PERSISTED,
+                           kValue);
+    scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2583,7 +2591,16 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x03, 0x00, 0x00, 0x03,  // 4th Setting
       0xff, 0x00, 0x00, 0x04,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
+    SpdySettingsIR settings_ir;
+    for (SettingsMap::const_iterator it = settings.begin();
+         it != settings.end();
+         ++it) {
+      settings_ir.AddSetting(it->first,
+                             it->second.first & SETTINGS_FLAG_PLEASE_PERSIST,
+                             it->second.first & SETTINGS_FLAG_PERSISTED,
+                             it->second.second);
+    }
+    scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -2593,8 +2610,6 @@ TEST_P(SpdyFramerTest, CreateSettings) {
 
   {
     const char kDescription[] = "Empty SETTINGS frame";
-
-    SettingsMap settings;
 
     const unsigned char kV3FrameData[] = {  // Also applies for V2.
       0x80, spdy_version_ch_, 0x00, 0x04,
@@ -2606,7 +2621,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
+    SpdySettingsIR settings_ir;
+    scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -2630,7 +2646,7 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
       0x00, 0x00, 0x00, 0x00,
       0x12, 0x34, 0x56, 0x78,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreatePingFrame(0x12345678u));
+    scoped_ptr<SpdyFrame> frame(framer.SerializePing(SpdyPingIR(0x12345678u)));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -2662,7 +2678,8 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       0x00, 0x00, 0x00, 0x00,  // Status
       0x47, 0x41,              // Opaque Description
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(0, GOAWAY_OK, "GA"));
+    SpdyGoAwayIR goaway_ir(0, GOAWAY_OK, "GA");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeGoAway(goaway_ir));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2692,9 +2709,8 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       0x00, 0x00, 0x00, 0x02,  // Status
       0x47, 0x41,              // Opaque Description
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(0x7FFFFFFF,
-                                                    GOAWAY_INTERNAL_ERROR,
-                                                    "GA"));
+    SpdyGoAwayIR goaway_ir(0x7FFFFFFF, GOAWAY_INTERNAL_ERROR, "GA");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeGoAway(goaway_ir));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2968,7 +2984,7 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
       0x00, 0x00, 0x00, 0x01,
     };
     scoped_ptr<SpdyFrame> frame(
-        framer.CreateWindowUpdate(1, 1));
+        framer.SerializeWindowUpdate(net::SpdyWindowUpdateIR(1, 1)));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -2989,7 +3005,8 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
       0x7f, 0xff, 0xff, 0xff,
       0x00, 0x00, 0x00, 0x01,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateWindowUpdate(0x7FFFFFFF, 1));
+    scoped_ptr<SpdyFrame> frame(framer.SerializeWindowUpdate(
+        net::SpdyWindowUpdateIR(0x7FFFFFFF, 1)));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -3010,7 +3027,8 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
       0x00, 0x00, 0x00, 0x01,
       0x7f, 0xff, 0xff, 0xff,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateWindowUpdate(1, 0x7FFFFFFF));
+    scoped_ptr<SpdyFrame> frame(framer.SerializeWindowUpdate(
+        net::SpdyWindowUpdateIR(1, 0x7FFFFFFF)));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -3047,7 +3065,7 @@ TEST_P(SpdyFramerTest, CreateBlocked) {
   const SpdyStreamId kStreamId = 3;
 
   scoped_ptr<SpdySerializedFrame> frame_serialized(
-                                    framer.CreateBlocked(kStreamId));
+      framer.SerializeBlocked(SpdyBlockedIR(kStreamId)));
   SpdyBlockedIR blocked_ir(kStreamId);
   scoped_ptr<SpdySerializedFrame> frame_created(
                                     framer.SerializeFrame(blocked_ir));
@@ -3427,8 +3445,8 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
 
 TEST_P(SpdyFramerTest, ReadZeroLenSettingsFrame) {
   SpdyFramer framer(spdy_version_);
-  SettingsMap settings;
-  scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
+  SpdySettingsIR settings_ir;
+  scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
   SetFrameLength(control_frame.get(), 0, spdy_version_);
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
@@ -3447,7 +3465,12 @@ TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   // calling SimulateInFramer() below.
   settings[SETTINGS_UPLOAD_BANDWIDTH] =
       SettingsFlagsAndValue(SETTINGS_FLAG_PLEASE_PERSIST, 0x00000002);
-  scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
+  SpdySettingsIR settings_ir;
+  settings_ir.AddSetting(SETTINGS_UPLOAD_BANDWIDTH,
+                         true,  // please persist
+                         false,
+                         0x00000002);
+  scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
   const size_t kNewLength = 5;
   SetFrameLength(control_frame.get(), kNewLength, spdy_version_);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3469,7 +3492,16 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
   settings[SETTINGS_DOWNLOAD_BANDWIDTH] =
       SettingsFlagsAndValue(flags, 0x00000003);
   settings[SETTINGS_ROUND_TRIP_TIME] = SettingsFlagsAndValue(flags, 0x00000004);
-  scoped_ptr<SpdyFrame> control_frame(framer.CreateSettings(settings));
+  SpdySettingsIR settings_ir;
+  for (SettingsMap::const_iterator it = settings.begin();
+       it != settings.end();
+       ++it) {
+    settings_ir.AddSetting(it->first,
+                           it->second.first & SETTINGS_FLAG_PLEASE_PERSIST,
+                           it->second.first & SETTINGS_FLAG_PERSISTED,
+                           it->second.second);
+  }
+  scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
   EXPECT_LT(SpdyFramer::kControlFrameBufferSize,
             control_frame->size());
   TestSpdyVisitor visitor(spdy_version_);
@@ -3603,7 +3635,7 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
 TEST_P(SpdyFramerTest, ReadWindowUpdate) {
   SpdyFramer framer(spdy_version_);
   scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateWindowUpdate(1, 2));
+      framer.SerializeWindowUpdate(net::SpdyWindowUpdateIR(1, 2)));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
@@ -3780,8 +3812,8 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
   visitor.use_compression_ = false;
   string multiple_frame_data(credential_frame->data(),
                              credential_frame->size());
-  scoped_ptr<SpdyFrame> goaway_frame(
-      framer.CreateGoAway(0, GOAWAY_OK, "test"));
+  SpdyGoAwayIR goaway_ir(0, GOAWAY_OK, "test");
+  scoped_ptr<SpdyFrame> goaway_frame(framer.SerializeGoAway(goaway_ir));
   multiple_frame_data.append(string(goaway_frame->data(),
                                     goaway_frame->size()));
   visitor.SimulateInFramer(
@@ -4033,8 +4065,8 @@ TEST_P(SpdyFramerTest, DataFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    scoped_ptr<SpdyFrame> frame(
-        framer.CreateDataFrame(1, "hello", 5, DATA_FLAG_NONE));
+    net::SpdyDataIR data_ir(1, StringPiece("hello", 5));
+    scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~DATA_FLAG_FIN) {
@@ -4209,10 +4241,12 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    SettingsMap settings;
-    settings[SETTINGS_UPLOAD_BANDWIDTH] =
-        std::make_pair(SETTINGS_FLAG_NONE, 54321);
-    scoped_ptr<SpdyFrame> frame(framer.CreateSettings(settings));
+    SpdySettingsIR settings_ir;
+    settings_ir.AddSetting(SETTINGS_UPLOAD_BANDWIDTH,
+                           false,
+                           false,
+                           54321);
+    scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
@@ -4246,7 +4280,8 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    scoped_ptr<SpdyFrame> frame(framer.CreateGoAway(97, GOAWAY_OK, "test"));
+    SpdyGoAwayIR goaway_ir(97, GOAWAY_OK, "test");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeGoAway(goaway_ir));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
@@ -4320,7 +4355,7 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    scoped_ptr<SpdyFrame> frame(framer.CreatePingFrame(42));
+    scoped_ptr<SpdyFrame> frame(framer.SerializePing(SpdyPingIR(42)));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
@@ -4351,7 +4386,8 @@ TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    scoped_ptr<SpdyFrame> frame(framer.CreateWindowUpdate(4, 1024));
+    scoped_ptr<SpdyFrame> frame(framer.SerializeWindowUpdate(
+        net::SpdyWindowUpdateIR(4, 1024)));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {
