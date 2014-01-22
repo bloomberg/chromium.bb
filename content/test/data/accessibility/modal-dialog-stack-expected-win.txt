@@ -1,6 +1,4 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
-    IA2_ROLE_SECTION READONLY
-    IA2_ROLE_SECTION READONLY
     ROLE_SYSTEM_DIALOG READONLY
         ROLE_SYSTEM_TEXT name='This is the now active dialog. Of course it should be in the tree. ' READONLY
         ROLE_SYSTEM_PUSHBUTTON name='This is in the active dialog and should be in the tree.' FOCUSABLE

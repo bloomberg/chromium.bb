@@ -4,7 +4,6 @@ AXWebArea
         AXUnknown
             AXUnknown
                 AXWebArea
-                    AXGroup
                     AXGroup AXSubrole=AXApplicationDialog
                         AXStaticText AXValue='Text in the dialog.'
                 AXScrollBar AXValue='0'
