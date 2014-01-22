@@ -160,12 +160,17 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
       aura::client::GetCursorClient(root_window);
   if (cursor_client) {
     gfx::NativeCursor cursor = target->GetCursor(event->location());
-    if ((event->flags() & ui::EF_IS_NON_CLIENT) && target->delegate()) {
-      int window_component =
-          target->delegate()->GetNonClientComponent(event->location());
-      cursor = CursorForWindowComponent(window_component);
+    if ((event->flags() & ui::EF_IS_NON_CLIENT)) {
+      if (target->delegate()) {
+        int window_component =
+            target->delegate()->GetNonClientComponent(event->location());
+        cursor = CursorForWindowComponent(window_component);
+      } else {
+        // Allow the OS to handle non client cursors if we don't have a
+        // a delegate to handle the non client hittest.
+        return;
+      }
     }
-
     cursor_client->SetCursor(cursor);
   }
 }
