@@ -25,6 +25,12 @@ GesturePoint::GesturePoint()
       point_id_(-1),
       touch_id_(-1),
       source_device_id_(-1) {
+  max_touch_move_in_pixels_for_click_squared_ =
+      GestureConfiguration::max_touch_move_in_pixels_for_click() *
+      GestureConfiguration::max_touch_move_in_pixels_for_click();
+  max_distance_between_taps_for_double_tap_squared_ =
+      GestureConfiguration::max_distance_between_taps_for_double_tap() *
+      GestureConfiguration::max_distance_between_taps_for_double_tap();
 }
 
 GesturePoint::~GesturePoint() {}
@@ -91,19 +97,21 @@ void GesturePoint::UpdateForScroll() {
 }
 
 bool GesturePoint::IsInClickWindow(const TouchEvent& event) const {
-  return IsInClickTimeWindow() && IsInsideManhattanSquare(event);
+  return IsInClickTimeWindow() && IsInsideTouchSlopRegion(event);
 }
 
 bool GesturePoint::IsInDoubleClickWindow(const TouchEvent& event) const {
   return IsInClickAggregateTimeWindow(last_tap_time_, last_touch_time_) &&
-         IsPointInsideManhattanSquare(event.location(), last_tap_position_);
+         IsPointInsideDoubleTapTouchSlopRegion(
+             event.location(), last_tap_position_);
 }
 
 bool GesturePoint::IsInTripleClickWindow(const TouchEvent& event) const {
   return IsInClickAggregateTimeWindow(last_tap_time_, last_touch_time_) &&
          IsInClickAggregateTimeWindow(second_last_tap_time_, last_tap_time_) &&
-         IsPointInsideManhattanSquare(event.location(), last_tap_position_) &&
-         IsPointInsideManhattanSquare(last_tap_position_,
+         IsPointInsideDoubleTapTouchSlopRegion(
+             event.location(), last_tap_position_) &&
+         IsPointInsideDoubleTapTouchSlopRegion(last_tap_position_,
                                       second_last_tap_position_);
 }
 
@@ -111,7 +119,7 @@ bool GesturePoint::IsInScrollWindow(const TouchEvent& event) const {
   if (IsConsistentScrollingActionUnderway())
     return true;
   return event.type() == ui::ET_TOUCH_MOVED &&
-         !IsInsideManhattanSquare(event);
+         !IsInsideTouchSlopRegion(event);
 }
 
 bool GesturePoint::IsInFlickWindow(const TouchEvent& event) {
@@ -181,19 +189,21 @@ bool GesturePoint::IsInClickAggregateTimeWindow(double before,
   return duration < GestureConfiguration::max_seconds_between_double_click();
 }
 
-bool GesturePoint::IsInsideManhattanSquare(const TouchEvent& event) const {
+bool GesturePoint::IsInsideTouchSlopRegion(const TouchEvent& event) const {
   const gfx::Point& p1 = event.location();
   const gfx::Point& p2 = first_touch_position_;
-  int manhattan_distance = abs(p1.x() - p2.x()) + abs(p1.y() - p2.y());
-  return manhattan_distance <
-      GestureConfiguration::max_touch_move_in_pixels_for_click();
+  float dx = p1.x() - p2.x();
+  float dy = p1.y() - p2.y();
+  float distance = dx * dx + dy * dy;
+  return distance < max_touch_move_in_pixels_for_click_squared_;
 }
 
-bool GesturePoint::IsPointInsideManhattanSquare(gfx::Point p1,
+bool GesturePoint::IsPointInsideDoubleTapTouchSlopRegion(gfx::Point p1,
                                                 gfx::Point p2) const {
- int manhattan_distance = abs(p1.x() - p2.x()) + abs(p1.y() - p2.y());
-  return manhattan_distance <
-      GestureConfiguration::max_distance_between_taps_for_double_tap();
+  float dx = p1.x() - p2.x();
+  float dy = p1.y() - p2.y();
+  float distance = dx * dx + dy * dy;
+  return distance < max_distance_between_taps_for_double_tap_squared_;
 }
 
 bool GesturePoint::IsOverMinFlickSpeed() {

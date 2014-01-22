@@ -1138,7 +1138,7 @@ bool GestureSequence::Click(const TouchEvent& event,
     }
     AppendClickGestureEvent(point, tap_count, gestures);
     return true;
-  } else if (point.IsInsideManhattanSquare(event) &&
+  } else if (point.IsInsideTouchSlopRegion(event) &&
       !GetLongPressTimer()->IsRunning()) {
     AppendLongTapGestureEvent(point, gestures);
   }
@@ -1230,7 +1230,7 @@ bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
   base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
   base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
       ui::GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
-  if (time_delta > max_delta || !point.IsInsideManhattanSquare(event)) {
+  if (time_delta > max_delta || !point.IsInsideTouchSlopRegion(event)) {
     PinchStart(event, point, gestures);
     return true;
   }
@@ -1245,7 +1245,7 @@ bool GestureSequence::TwoFingerTouchReleased(const TouchEvent& event,
   base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
   base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
       ui::GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
-  if (time_delta < max_delta && point.IsInsideManhattanSquare(event))
+  if (time_delta < max_delta && point.IsInsideTouchSlopRegion(event))
     AppendTwoFingerTapGestureEvent(gestures);
   return true;
 }
@@ -1463,7 +1463,7 @@ void GestureSequence::StopTimersIfRequired(const TouchEvent& event) {
 
   // Since a timer is running, there should be a non-NULL point.
   const GesturePoint* point = GetPointByPointId(0);
-  if (!point->IsInsideManhattanSquare(event)) {
+  if (!point->IsInsideTouchSlopRegion(event)) {
     GetLongPressTimer()->Stop();
     GetShowPressTimer()->Stop();
   }

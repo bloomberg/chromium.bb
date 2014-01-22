@@ -43,7 +43,7 @@ class GesturePoint {
   bool IsInFlickWindow(const TouchEvent& event);
   bool IsInHorizontalRailWindow() const;
   bool IsInVerticalRailWindow() const;
-  bool IsInsideManhattanSquare(const TouchEvent& event) const;
+  bool IsInsideTouchSlopRegion(const TouchEvent& event) const;
   bool IsInScrollWindow(const TouchEvent& event) const;
   bool BreaksHorizontalRail();
   bool BreaksVerticalRail();
@@ -92,7 +92,8 @@ class GesturePoint {
   bool IsConsistentScrollingActionUnderway() const;
   bool IsInClickTimeWindow() const;
   bool IsInClickAggregateTimeWindow(double before, double after) const;
-  bool IsPointInsideManhattanSquare(gfx::Point p1, gfx::Point p2) const;
+  bool IsPointInsideDoubleTapTouchSlopRegion(
+      gfx::Point p1, gfx::Point p2) const;
   bool IsOverMinFlickSpeed();
 
   // Returns -1, 0, 1 for |v| below the negative velocity threshold,
@@ -137,6 +138,9 @@ class GesturePoint {
   gfx::Vector2d same_direction_count_;
 
   int source_device_id_;
+
+  float max_touch_move_in_pixels_for_click_squared_;
+  float max_distance_between_taps_for_double_tap_squared_;
 
   DISALLOW_COPY_AND_ASSIGN(GesturePoint);
 };
