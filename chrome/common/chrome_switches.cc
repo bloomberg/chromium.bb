@@ -410,6 +410,10 @@ const char kDisableQuic[]                   = "disable-quic";
 // testing flag.  This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicHttps[]              = "disable-quic-https";
 
+// Disable use of Chromium's port selection for the ephemeral port via bind().
+// This only has an effect if QUIC protocol is enabled.
+const char kDisableQuicPortSelection[]      = "disable-quic-port_selection";
+
 // Prevents the URLs of BackgroundContents from being remembered and
 // re-launched when the browser restarts.
 const char kDisableRestoreBackgroundContents[] =
@@ -725,6 +729,10 @@ const char kEnableQuic[]                    = "enable-quic";
 // Enables support for the HTTPS over QUIC protocol.  This is a temporary
 // testing flag.  This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicHttps[]               = "enable-quic-https";
+
+// Enable use of Chromium's port selection for the ephemeral port via bind().
+// This only has an effect if QUIC protocol is enabled.
+const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 
 // Enables the Quickoffoce/Chrome document viewer rather than the editor.
 const char kEnableQuickofficeViewing[]      = "enable-quickoffice-viewing";

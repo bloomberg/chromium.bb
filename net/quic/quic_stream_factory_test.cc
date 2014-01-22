@@ -79,7 +79,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  base::WeakPtr<HttpServerProperties>(),
                  &crypto_client_stream_factory_,
                  &random_generator_, clock_, kDefaultMaxPacketSize,
-                 SupportedVersions(GetParam())),
+                 SupportedVersions(GetParam()), true),
         host_port_proxy_pair_(HostPortPair(kDefaultServerHostName,
                                            kDefaultServerPort),
                               ProxyServer::Direct()),

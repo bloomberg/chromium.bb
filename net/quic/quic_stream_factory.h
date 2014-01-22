@@ -90,7 +90,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       QuicRandom* random_generator,
       QuicClock* clock,
       size_t max_packet_length,
-      const QuicVersionVector& supported_versions);
+      const QuicVersionVector& supported_versions,
+      bool enable_port_selection);
   virtual ~QuicStreamFactory();
 
   // Creates a new QuicHttpStream to |host_port_proxy_pair| which will be
@@ -149,6 +150,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   }
 
   QuicConnectionHelper* helper() { return helper_.get(); }
+
+  bool enable_port_selection() const { return enable_port_selection_; }
 
  private:
   class Job;
@@ -236,6 +239,11 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   RequestMap active_requests_;
 
   QuicVersionVector supported_versions_;
+
+  // Determine if we should consistently select a client UDP port. If false,
+  // then we will just let the OS select a random client port for each new
+  // connection.
+  bool enable_port_selection_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that

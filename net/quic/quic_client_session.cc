@@ -147,24 +147,29 @@ QuicClientSession::~QuicClientSession() {
   // Sending one client_hello means we had zero handshake-round-trips.
   int round_trip_handshakes = crypto_stream_->num_sent_client_hellos() - 1;
 
-  // TODO(jar): This histogram should be replaced by the HandshakeRoundTrips*
-  // histogram below. Until we get used to the new histogram, it is helpful to
-  // maintain the old one.
-  UMA_HISTOGRAM_COUNTS("Net.QuicNumSentClientHellosCryptoHandshakeConfirmed",
-                       round_trip_handshakes + 1);
-
   // Don't bother with these histogram during tests, which mock out
   // num_sent_client_hellos().
-  if (round_trip_handshakes < 0)
+  if (round_trip_handshakes < 0 || !stream_factory_)
     return;
 
+  bool port_selected = stream_factory_->enable_port_selection();
   SSLInfo ssl_info;
   if (!crypto_stream_->GetSSLInfo(&ssl_info) || !ssl_info.cert) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.HandshakeRoundTripsForHTTP",
-                                round_trip_handshakes, 0, 3, 4);
+    if (port_selected) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectSelectPortForHTTP",
+                                  round_trip_handshakes, 0, 3, 4);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTP",
+                                  round_trip_handshakes, 0, 3, 4);
+    }
   } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.HandshakeRoundTripsForHTTPS",
-                                round_trip_handshakes, 0, 3, 4);
+    if (port_selected) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectSelectPortForHTTPS",
+                                  round_trip_handshakes, 0, 3, 4);
+    } else {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTPS",
+                                  round_trip_handshakes, 0, 3, 4);
+    }
   }
 }
 

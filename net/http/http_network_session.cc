@@ -82,6 +82,7 @@ HttpNetworkSession::Params::Params()
       time_func(&base::TimeTicks::Now),
       enable_quic(false),
       enable_quic_https(false),
+      enable_quic_port_selection(true),
       quic_clock(NULL),
       quic_random(NULL),
       quic_max_packet_length(kDefaultMaxPacketSize),
@@ -117,7 +118,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                            params.quic_clock ? params. quic_clock :
                                new QuicClock(),
                            params.quic_max_packet_length,
-                           params.quic_supported_versions),
+                           params.quic_supported_versions,
+                           params.enable_quic_port_selection),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
                          params.http_server_properties,
@@ -200,6 +202,8 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);
   dict->SetBoolean("quic_enabled_https", params_.enable_quic_https);
+  dict->SetBoolean("enable_quic_port_selection",
+                   params_.enable_quic_port_selection);
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
   return dict;

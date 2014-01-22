@@ -165,6 +165,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<string> trusted_spdy_proxy;
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_https;
+    Optional<bool> enable_quic_port_selection;
     Optional<size_t> quic_max_packet_length;
     Optional<net::QuicVersionVector> quic_supported_versions;
     Optional<net::HostPortPair> origin_to_force_quic_on;
@@ -273,6 +274,12 @@ class IOThread : public content::BrowserThreadDelegate {
   // of a field trial or a command line flag.
   bool ShouldEnableQuicHttps(const CommandLine& command_line,
                              base::StringPiece quic_trial_group);
+
+  // Returns true if the selection of the ephemeral port in bind() should be
+  // performed by Chromium, and false if the OS should select the port.  The OS
+  // option is used to prevent Windows from posting a security security warning
+  // dialog.
+  bool ShouldEnableQuicPortSelection(const CommandLine& command_line);
 
   // Returns the maximum length for QUIC packets, based on any flags in
   // |command_line| or the field trial.  Returns 0 if there is an error

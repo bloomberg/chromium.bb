@@ -9509,6 +9509,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicNumSentClientHellosCryptoHandshakeConfirmed">
+  <obsolete>
+    see Net.QuicSession.Connect*PortForHTTP*
+  </obsolete>
   <summary>
     The number of client hello messages sent when the crypto handshake was
     confirmed.
@@ -9530,6 +9533,16 @@ other types of suffix sets.
 <histogram name="Net.QuicSession.CloseSessionOnError" enum="NetErrorCodes">
   <summary>
     The network error code which resulted in the session being closed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.Connect" units="RTTs">
+  <obsolete>
+    see Net.QuicSession.Connect*PortForHTTP*
+  </obsolete>
+  <summary>
+    Samples of the number of round-trips needed by a QUIC connection before a
+    request could be sent by the client.
   </summary>
 </histogram>
 
@@ -9575,6 +9588,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.HandshakeRoundTrips" units="RTTs">
+  <obsolete>
+    see Net.QuicSession.Connect*PortForHTTP*
+  </obsolete>
   <summary>
     Samples of the number of round-trips needed by a QUIC connection before a
     request could be sent by the client.
@@ -34114,9 +34130,21 @@ other types of suffix sets.
   <affected-histogram name="Omnibox.QueryTime"/>
 </fieldtrial>
 
+<fieldtrial name="QuicPortSelection" separator="">
+  <group name="SelectPort"
+      label="An effort was mode to (try to) consistently connect using the
+             same source port for the given server IP/port."/>
+  <group name="RandomPort"
+      label="The operating system randomly selected a source port for the
+             connection."/>
+  <affected-histogram name="Net.QuicSession.Connect"/>
+</fieldtrial>
+
 <fieldtrial name="QuicRttCount" separator="">
   <group name="ForHTTP" label="Only insecure HTTP connections are counted."/>
   <group name="ForHTTPS" label="Only secure HTTPS connections are counted."/>
+  <affected-histogram name="Net.QuicSession.ConnectRandomPort"/>
+  <affected-histogram name="Net.QuicSession.ConnectSelectPort"/>
   <affected-histogram name="Net.QuicSession.HandshakeRoundTrips"/>
 </fieldtrial>
 

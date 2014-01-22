@@ -88,6 +88,7 @@ class NET_EXPORT HttpNetworkSession
     std::string trusted_spdy_proxy;
     bool enable_quic;
     bool enable_quic_https;
+    bool enable_quic_port_selection;
     HostPortPair origin_to_force_quic_on;
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;

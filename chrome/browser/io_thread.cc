@@ -41,6 +41,7 @@
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/policy/core/common/policy_service.h"
@@ -975,6 +976,8 @@ void IOThread::InitializeNetworkSessionParams(
       &params->trusted_spdy_proxy);
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
+  globals_->enable_quic_port_selection.CopyToIfSet(
+      &params->enable_quic_port_selection);
   globals_->quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
   globals_->quic_supported_versions.CopyToIfSet(
       &params->quic_supported_versions);
@@ -1062,6 +1065,8 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   if (enable_quic) {
     globals_->enable_quic_https.set(
         ShouldEnableQuicHttps(command_line, quic_trial_group));
+    globals_->enable_quic_port_selection.set(
+        ShouldEnableQuicPortSelection(command_line));
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
@@ -1108,6 +1113,34 @@ bool IOThread::ShouldEnableQuicHttps(const CommandLine& command_line,
     return true;
 
   return quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
+}
+
+bool IOThread::ShouldEnableQuicPortSelection(
+      const CommandLine& command_line) {
+  if (command_line.HasSwitch(switches::kDisableQuicPortSelection))
+    return false;
+
+  if (command_line.HasSwitch(switches::kEnableQuicPortSelection))
+    return true;
+
+#if defined(OS_WIN)
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  // Avoid picking ports (which might induce a security dialog) when we have a
+  // beta or stable release.  Allow in all other cases, including when we do a
+  // developer build (CHANNEL_UNKNOWN).
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    // TODO(grt) bug=329255: Detect presence of rule on Windows that allows us
+    // to do port selection without inducing a dialog.
+    // When we have an API to see if the administrative security manager will
+    // allow port selection without a security dialog, we may return true if
+    // we're sure there will be no security dialog.
+    return false;
+  }
+  return true;
+#else
+  return true;
+#endif
 }
 
 size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,
