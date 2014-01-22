@@ -1509,6 +1509,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'storyboard':  'file.storyboard',
         'strings':     'text.plist.strings',
         'ttf':         'file',
+        'xcassets':    'folder.assetcatalog',
         'xcconfig':    'text.xcconfig',
         'xcdatamodel': 'wrapper.xcdatamodel',
         'xib':         'file.xib',
