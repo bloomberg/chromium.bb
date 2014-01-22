@@ -32,10 +32,8 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
-#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_controller.h"
-#endif
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -2532,11 +2530,9 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 void AutofillDialogControllerImpl::ShowNewCreditCardBubble(
     scoped_ptr<CreditCard> new_card,
     scoped_ptr<AutofillProfile> billing_profile) {
-#if !defined(OS_ANDROID)
   NewCreditCardBubbleController::Show(web_contents(),
                                       new_card.Pass(),
                                       billing_profile.Pass());
-#endif
 }
 
 void AutofillDialogControllerImpl::SubmitButtonDelayBegin() {
@@ -3648,12 +3644,10 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
   if (!full_wallet_ || !full_wallet_->billing_address())
     return;
 
-#if !defined(OS_ANDROID)
   GeneratedCreditCardBubbleController::Show(
       web_contents(),
       full_wallet_->TypeAndLastFourDigits(),
       backing_card_last_four_);
-#endif
 }
 
 void AutofillDialogControllerImpl::OnSubmitButtonDelayEnd() {

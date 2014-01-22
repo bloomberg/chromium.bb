@@ -77,9 +77,11 @@ scoped_ptr<DataModelWrapper> CreateWrapper(
 }
 
 void FillOutputForSectionWithComparator(
-    DialogSection section, const DetailInputs& inputs,
+    DialogSection section,
+    const DetailInputs& inputs,
     const InputFieldComparator& compare,
-    FormStructure& form_structure, wallet::FullWallet* full_wallet,
+    FormStructure& form_structure,
+    wallet::FullWallet* full_wallet,
     const base::string16& email_address) {
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section, full_wallet);
   if (wrapper)
