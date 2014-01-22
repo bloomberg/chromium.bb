@@ -17,7 +17,7 @@ namespace views {
 bool RepostLocatedEventWin(HWND window,
                            const ui::LocatedEvent& event) {
 #else
-bool RepostLocatedEvent(gfx::NativeWindow window
+bool RepostLocatedEvent(gfx::NativeWindow window,
                         const ui::LocatedEvent& event) {
 #endif
   if (!window)
