@@ -534,12 +534,18 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     // Tell inspected browser to update splitter and switch to inspected panel.
     BrowserWindow* inspected_window = inspected_browser->window();
     web_contents_->SetDelegate(this);
-    inspected_window->UpdateDevTools();
-    web_contents_->GetView()->SetInitialFocus();
-    inspected_window->Show();
 
     TabStripModel* tab_strip_model = inspected_browser->tab_strip_model();
     tab_strip_model->ActivateTabAt(inspected_tab_index, true);
+
+    inspected_window->UpdateDevTools();
+    web_contents_->GetView()->SetInitialFocus();
+    inspected_window->Show();
+    // On Aura, focusing once is not enough. Do it again.
+    // Note that focusing only here but not before isn't enough either. We just
+    // need to focus twice.
+    web_contents_->GetView()->SetInitialFocus();
+
     PrefsTabHelper::CreateForWebContents(web_contents_);
     GetRenderViewHost()->SyncRendererPrefs();
 
