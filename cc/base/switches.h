@@ -27,7 +27,6 @@ CC_EXPORT extern const char kEnableImplSidePainting[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kEnableGPURasterization[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
-CC_EXPORT extern const char kNumRasterThreads[];
 CC_EXPORT extern const char kTopControlsHeight[];
 CC_EXPORT extern const char kTopControlsHideThreshold[];
 CC_EXPORT extern const char kTraceOverdraw[];

@@ -213,6 +213,7 @@ extern const char kMemoryMetrics[];
 CONTENT_EXPORT extern const char kMuteAudio[];
 CONTENT_EXPORT extern const char kNoReferrers[];
 CONTENT_EXPORT extern const char kNoSandbox[];
+CONTENT_EXPORT extern const char kNumRasterThreads[];
 CONTENT_EXPORT extern const char kOverscrollHistoryNavigation[];
 extern const char kPluginLauncher[];
 CONTENT_EXPORT extern const char kPluginPath[];
