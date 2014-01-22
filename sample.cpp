@@ -6,20 +6,16 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 //
-// This sample application demonstrates how to use the matroska parser
-// library, which allows clients to handle a matroska format file.
+// This sample application demonstrates how to use the Matroska parser
+// library, which allows clients to handle a Matroska format file.
+
+#include <memory>
 
 #include "mkvreader.hpp"
 #include "mkvparser.hpp"
-#include <memory>
 
 #ifdef _MSC_VER
-// Silences these warnings:
-// warning C4996: 'mbstowcs': This function or variable may be unsafe. Consider
-// using mbstowcs_s instead. To disable deprecation, use
-// _CRT_SECURE_NO_WARNINGS. See online help for details.
-// Fixing this warning requires use of a function available only on Windows,
-// and this sample code must support non-windows platforms.
+// Disable MSVC warnings that suggest making code non-portable.
 #pragma warning(disable:4996)
 #endif
 

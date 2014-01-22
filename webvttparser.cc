@@ -686,8 +686,8 @@ Time& Time::presentation(presentation_t d) {
     return *this;
   }
 
-  seconds = d / 1000;
-  milliseconds = d - 1000 * seconds;
+  seconds = static_cast<int>(d / 1000);
+  milliseconds = static_cast<int>(d - 1000 * seconds);
 
   minutes = seconds / 60;
   seconds -= 60 * minutes;

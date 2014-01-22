@@ -26,6 +26,7 @@
 using mkvmuxer::uint64;
 
 #ifdef _MSC_VER
+// Disable MSVC warnings that suggest making code non-portable.
 #pragma warning(disable:4996)
 #endif
 
