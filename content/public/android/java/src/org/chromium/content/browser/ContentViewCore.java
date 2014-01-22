@@ -1305,10 +1305,22 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private void onScrollBeginEventAck() {
+        getContentViewClient().onScrollBeginEvent();
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private void onScrollUpdateGestureConsumed() {
         if (mGestureStateListener != null) {
             mGestureStateListener.onScrollUpdateGestureConsumed();
         }
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onScrollEndEventAck() {
+        getContentViewClient().onScrollEndEvent();
     }
 
     private void reportActionAfterDoubleTapUMA(int type) {
@@ -2429,6 +2441,10 @@ public class ContentViewCore
                 pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
                 contentOffsetYPix);
         onRenderCoordinatesUpdated();
+
+        if (scrollChanged || contentOffsetChanged) {
+            getContentViewClient().onScrollOrViewportChanged();
+        }
 
         if (needTemporarilyHideHandles) temporarilyHideTextHandles();
         if (needUpdateZoomControls) mZoomControlsDelegate.updateZoomControls();

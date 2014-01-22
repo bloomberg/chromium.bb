@@ -1085,10 +1085,19 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
 void RenderWidgetHostViewAndroid::GestureEventAck(
     int gesture_event_type,
     InputEventAckState ack_result) {
+  // Scroll events.
+  if (gesture_event_type == blink::WebInputEvent::GestureScrollBegin) {
+    content_view_core_->OnScrollBeginEventAck();
+  }
   if (gesture_event_type == blink::WebInputEvent::GestureScrollUpdate &&
       ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
     content_view_core_->OnScrollUpdateGestureConsumed();
   }
+  if (gesture_event_type == blink::WebInputEvent::GestureScrollEnd) {
+    content_view_core_->OnScrollEndEventAck();
+  }
+
+  // Fling events.
   if (gesture_event_type == blink::WebInputEvent::GestureFlingStart) {
     content_view_core_->OnFlingStartEventAck(ack_result);
   }

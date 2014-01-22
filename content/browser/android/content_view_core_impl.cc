@@ -512,12 +512,28 @@ void ContentViewCoreImpl::OnFlingStartEventAck(InputEventAckState ack_result) {
                                             static_cast<jint>(ack_result));
 }
 
+void ContentViewCoreImpl::OnScrollBeginEventAck() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
+  Java_ContentViewCore_onScrollBeginEventAck(env, j_obj.obj());
+}
+
 void ContentViewCoreImpl::OnScrollUpdateGestureConsumed() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
   Java_ContentViewCore_onScrollUpdateGestureConsumed(env, j_obj.obj());
+}
+
+void ContentViewCoreImpl::OnScrollEndEventAck() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
+  Java_ContentViewCore_onScrollEndEventAck(env, j_obj.obj());
 }
 
 void ContentViewCoreImpl::HasTouchEventHandlers(bool need_touch_events) {

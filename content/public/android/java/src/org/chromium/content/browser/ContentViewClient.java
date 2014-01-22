@@ -193,4 +193,22 @@ public class ContentViewClient {
      */
     public void onFlingStopped() {
     }
+
+    /**
+     * Called when a scroll gesture has begun.
+     */
+    public void onScrollBeginEvent() {
+    }
+
+    /**
+     * Called when a scroll gesture has ended.
+     */
+    public void onScrollEndEvent() {
+    }
+
+    /**
+     * Called when the scroll offsets or viewport dimensions may have changed.
+     */
+    public void onScrollOrViewportChanged() {
+    }
 }
