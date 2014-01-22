@@ -173,11 +173,6 @@
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_CSS" file="identity_scope_approval_dialog/scope_approval_dialog.css" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG" file="identity_scope_approval_dialog/scope_approval_dialog.html" type="BINDATA" />
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_DIALOG_JS" file="identity_scope_approval_dialog/scope_approval_dialog.js" type="BINDATA" />
-      <include name="IDR_APPS_DEBUGGER_MAIN" file="apps_debugger/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_APPS_DEBUGGER_BACKGROUND_JS" file="apps_debugger/background.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_APPS_DEBUGGER_MAIN_JS" file="apps_debugger/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_APPS_DEBUGGER_ICON_128" file="apps_debugger/images/dev-icon-128.png" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_APPS_DEBUGGER_ICON_16" file="apps_debugger/images/dev-icon-16.png" flattenhtml="true" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_WALLPAPER_MANAGER_CONSTANTS_JS" file="chromeos/wallpaper_manager/js/constants.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WALLPAPER_MANAGER_EVENT_JS" file="chromeos/wallpaper_manager/js/event_page.js" flattenhtml="true" type="BINDATA" />

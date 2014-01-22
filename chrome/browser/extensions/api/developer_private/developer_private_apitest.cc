@@ -12,11 +12,6 @@ using extensions::Manifest;
 
 class DeveloperPrivateApiTest : public ExtensionApiTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAppsDevtool);
-  }
-
   virtual void LoadExtensions() {
     base::FilePath base_dir = test_data_dir_.AppendASCII("developer");
     LoadNamedExtension(base_dir, "hosted_app");

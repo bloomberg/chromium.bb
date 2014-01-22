@@ -430,10 +430,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   source->AddString("extensionSettingsSuspiciousInstallHelpUrl",
       base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
           GURL(chrome::kRemoveNonCWSExtensionURL)).spec()));
-  source->AddString("extensionSettingsUseAppsDevTools",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_USE_APPS_DEV_TOOLS));
-  source->AddString("extensionSettingsOpenAppsDevTools",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPEN_APPS_DEV_TOOLS));
   source->AddString("extensionSettingsShowButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON));
   source->AddString("extensionSettingsLoadUnpackedButton",
@@ -729,9 +725,6 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results.SetBoolean("profileIsManaged", is_managed);
   results.SetBoolean("developerMode", developer_mode);
-  results.SetBoolean(
-      "appsDevToolsEnabled",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsDevtool));
 
   bool load_unpacked_disabled =
       extension_service_->extension_prefs()->ExtensionsBlacklistedByDefault();
@@ -757,24 +750,6 @@ void ExtensionSettingsHandler::HandleToggleDeveloperMode(
       !profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   profile->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode,
                                   developer_mode);
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsDevtool))
-    return;
-
-  base::FilePath apps_debugger_path(FILE_PATH_LITERAL("apps_debugger"));
-  if (developer_mode) {
-    profile->GetExtensionService()->component_loader()->Add(
-        IDR_APPS_DEBUGGER_MANIFEST,
-        apps_debugger_path);
-  } else {
-    std::string extension_id =
-        profile->GetExtensionService()->component_loader()->GetExtensionID(
-            IDR_APPS_DEBUGGER_MANIFEST,
-            apps_debugger_path);
-    scoped_refptr<const Extension> extension(
-        profile->GetExtensionService()->GetInstalledExtension(extension_id));
-    profile->GetExtensionService()->component_loader()->Remove(extension_id);
-  }
 }
 
 void ExtensionSettingsHandler::HandleInspectMessage(

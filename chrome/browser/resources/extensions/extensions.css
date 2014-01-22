@@ -27,8 +27,7 @@ html:not(.focus-outline-visible)
   overflow: hidden;
 }
 
-#dev-controls .buttons-container,
-#apps-dev-tool-banner {
+#dev-controls .buttons-container {
   -webkit-padding-end: 3px;
   -webkit-padding-start: 4px;
 }
@@ -47,25 +46,6 @@ html:not(.focus-outline-visible)
   height: 45px;
   opacity: 1;
   padding-bottom: 7px;
-}
-
-#extension-settings.dev-mode.apps-dev-tools-mode #dev-controls {
-  height: 100px;
-}
-
-#apps-dev-tool-banner {
-  border-bottom: 1px solid #eee;
-  display: none;
-  padding-bottom: 13px;
-  padding-top: 13px;
-}
-
-#extension-settings.dev-mode.apps-dev-tools-mode #apps-dev-tool-banner {
-  display: -webkit-box;
-}
-
-.apps-dev-tool-banner-text {
-  -webkit-box-flex: 1;
 }
 
 #dev-controls-spacer {

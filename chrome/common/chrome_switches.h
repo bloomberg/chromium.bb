@@ -37,7 +37,6 @@ extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
 extern const char kAppListStartPageURL[];
-extern const char kAppsDevtool[];
 extern const char kAppWindowSize[];
 extern const char kAppsCheckoutURL[];
 extern const char kAppsGalleryDownloadURL[];

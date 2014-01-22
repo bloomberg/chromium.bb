@@ -1426,13 +1426,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableUserMediaScreenCapturing)
   },
   {
-    "enable-apps-devtool-app",
-    IDS_FLAGS_ENABLE_APPS_DEVTOOL_APP_NAME,
-    IDS_FLAGS_ENABLE_APPS_DEVTOOL_APP_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kAppsDevtool)
-  },
-  {
     "impl-side-painting",
     IDS_FLAGS_IMPL_SIDE_PAINTING_NAME,
     IDS_FLAGS_IMPL_SIDE_PAINTING_DESCRIPTION,

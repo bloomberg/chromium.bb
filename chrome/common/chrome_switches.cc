@@ -71,9 +71,6 @@ const char kApp[]                           = "app";
 // Specifies an URL to use for app list start page.
 const char kAppListStartPageURL[]           = "app-list-start-page-url";
 
-// Flag to enable apps_devtool app.
-const char kAppsDevtool[]                   = "apps-devtool";
-
 // Specifies the initial size for application windows launched with --app.
 // --app-window-size=w,h
 const char kAppWindowSize[]                 = "app-window-size";
