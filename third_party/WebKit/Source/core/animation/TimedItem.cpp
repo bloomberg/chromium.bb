@@ -50,6 +50,29 @@ TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelega
     m_specified.assertValid();
 }
 
+double TimedItem::iterationDuration() const
+{
+    double result = m_specified.hasIterationDuration ? m_specified.iterationDuration : intrinsicIterationDuration();
+    ASSERT(result >= 0);
+    return result;
+}
+
+double TimedItem::repeatedDuration() const
+{
+    const double result = multiplyZeroAlwaysGivesZero(iterationDuration(), m_specified.iterationCount);
+    ASSERT(result >= 0);
+    return result;
+}
+
+double TimedItem::activeDuration() const
+{
+    const double result = m_specified.playbackRate
+        ? repeatedDuration() / abs(m_specified.playbackRate)
+        : std::numeric_limits<double>::infinity();
+    ASSERT(result >= 0);
+    return result;
+}
+
 bool TimedItem::updateInheritedTime(double inheritedTime) const
 {
     bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));
@@ -62,20 +85,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
     const double localTime = inheritedTime - m_startTime;
     double timeToNextIteration = std::numeric_limits<double>::infinity();
     if (needsUpdate) {
-        const double iterationDuration = m_specified.hasIterationDuration
-            ? m_specified.iterationDuration
-            : intrinsicIterationDuration();
-        ASSERT(iterationDuration >= 0);
-
-        // When iterationDuration = 0 and iterationCount = infinity, or vice-
-        // versa, repeatedDuration should be 0, not NaN as operator*() would give.
-        // FIXME: The spec is unclear about this.
-        const double repeatedDuration = multiplyZeroAlwaysGivesZero(iterationDuration, m_specified.iterationCount);
-        ASSERT(repeatedDuration >= 0);
-        const double activeDuration = m_specified.playbackRate
-            ? repeatedDuration / abs(m_specified.playbackRate)
-            : std::numeric_limits<double>::infinity();
-        ASSERT(activeDuration >= 0);
+        const double activeDuration = this->activeDuration();
 
         const Phase currentPhase = calculatePhase(activeDuration, localTime, m_specified);
         // FIXME: parentPhase depends on groups being implemented.
@@ -84,11 +94,11 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
 
         double currentIteration;
         double timeFraction;
-        if (iterationDuration) {
+        if (const double iterationDuration = this->iterationDuration()) {
             const double startOffset = multiplyZeroAlwaysGivesZero(m_specified.iterationStart, iterationDuration);
             ASSERT(startOffset >= 0);
             const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_specified);
-            const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, m_specified);
+            const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration(), scaledActiveTime, startOffset, m_specified);
 
             currentIteration = calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, m_specified);
             timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_specified) / iterationDuration;
@@ -117,7 +127,6 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
         }
 
         m_calculated.currentIteration = currentIteration;
-        m_calculated.activeDuration = activeDuration;
         m_calculated.timeFraction = timeFraction;
 
         m_calculated.phase = currentPhase;

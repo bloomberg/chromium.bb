@@ -79,9 +79,11 @@ public:
     double timeToEffectChange() const { return ensureCalculated().timeToEffectChange; }
 
     double currentIteration() const { return ensureCalculated().currentIteration; }
-    double activeDuration() const { return ensureCalculated().activeDuration; }
+    double activeDuration() const;
     double timeFraction() const { return ensureCalculated().timeFraction; }
     double startTime() const { return m_startTime; }
+    double endTime() const { return startTime() + specified().startDelay + activeDuration(); }
+
     const Player* player() const { return m_player; }
     Player* player() { return m_player; }
     Player* player(bool& isNull) { isNull = !m_player; return m_player; }
@@ -98,6 +100,9 @@ protected:
     void invalidate() const { m_needsUpdate = true; };
 
 private:
+    double iterationDuration() const;
+    double repeatedDuration() const;
+
     // Returns whether style recalc was triggered.
     virtual bool updateChildrenAndEffects() const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
@@ -127,7 +132,6 @@ private:
 
     // FIXME: Should be versioned by monotonic value on player.
     mutable struct CalculatedTiming {
-        double activeDuration;
         Phase phase;
         double currentIteration;
         double timeFraction;
