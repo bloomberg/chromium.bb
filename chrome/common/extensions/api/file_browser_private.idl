@@ -101,11 +101,14 @@ enum DeviceEventType {
 };
 
 // Drive sync error type.
+// Keep it synced with DriveSyncErrorType in operation_observer.h.
 enum DriveSyncErrorType {
   // Request to delete a file without permission.
   delete_without_permission,
   // Google Drive is temporarily unavailable.
-  service_unavailable
+  service_unavailable,
+  // Miscellaneous errors other than listed above.
+  misc
 };
 
 // A file task represents an action that the file manager can perform over the

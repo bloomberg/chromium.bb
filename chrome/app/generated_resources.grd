@@ -12477,6 +12477,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SYNC_SERVICE_UNAVAILABLE_ERROR" desc="File Manager status message shown when the drive sync is failed because Google Drive is temporary unavailable.">
         Google Drive is not available right now. Uploading will automatically restart once Google Drive is back.
       </message>
+      <message name="IDS_FILE_BROWSER_SYNC_MISC_ERROR" desc="File Manager status message shown when the drive sync is failed because of miscellaneous errors.">
+        Google Drive was unable to sync "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" right now. Please try again later.
+      </message>
       <message name="IDS_FILE_BROWSER_SHARE_ERROR" desc="File Manager error message when sharing a file or a directory on Drive fails because of internet connection problems.">
         Sharing failed. Check your connection and try again later.
       </message>

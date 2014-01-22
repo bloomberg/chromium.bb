@@ -411,6 +411,9 @@ void SyncClient::OnFetchFileComplete(const std::string& local_id,
             local_id);
         break;
       default:
+        operation_observer_->OnDriveSyncError(
+            file_system::DRIVE_SYNC_ERROR_MISC,
+            local_id);
         LOG(WARNING) << "Failed to fetch " << local_id
                      << ": " << FileErrorToString(error);
     }
@@ -440,6 +443,9 @@ void SyncClient::OnUploadFileComplete(const std::string& local_id,
             local_id);
         break;
       default:
+        operation_observer_->OnDriveSyncError(
+            file_system::DRIVE_SYNC_ERROR_MISC,
+            local_id);
         LOG(WARNING) << "Failed to upload " << local_id << ": "
                      << FileErrorToString(error);
     }
@@ -469,6 +475,9 @@ void SyncClient::OnUpdateComplete(const std::string& local_id,
             local_id);
         break;
       default:
+        operation_observer_->OnDriveSyncError(
+            file_system::DRIVE_SYNC_ERROR_MISC,
+            local_id);
         LOG(WARNING) << "Failed to update " << local_id << ": "
                      << FileErrorToString(error);
     }

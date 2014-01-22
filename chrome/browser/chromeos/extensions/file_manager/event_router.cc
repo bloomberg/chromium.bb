@@ -576,6 +576,11 @@ void EventRouter::OnDriveSyncError(
     case drive::file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE:
       event.type =
           file_browser_private::DRIVE_SYNC_ERROR_TYPE_SERVICE_UNAVAILABLE;
+      break;
+    case drive::file_system::DRIVE_SYNC_ERROR_MISC:
+      event.type =
+          file_browser_private::DRIVE_SYNC_ERROR_TYPE_MISC;
+      break;
   }
   event.file_url = util::ConvertRelativeFilePathToFileSystemUrl(
       file_path, kFileManagerAppId).spec();

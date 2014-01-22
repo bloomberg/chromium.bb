@@ -168,6 +168,9 @@ DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
       case 'service_unavailable':
         item.message = str('SYNC_SERVICE_UNAVAILABLE_ERROR');
         break;
+      case 'misc':
+        item.message = strf('SYNC_MISC_ERROR', entry.name);
+        break;
     }
     this.progressCenter_.updateItem(item);
   }.bind(this));

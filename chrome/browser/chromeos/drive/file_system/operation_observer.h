@@ -13,11 +13,14 @@ namespace drive {
 namespace file_system {
 
 // Error type of sync client.
+// Keep it synced with "DriveSyncErrorType" in file_manager_private.idl.
 enum DriveSyncErrorType {
   // Request to delete a file without permission.
   DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION,
   // Google Drive is temporary unavailable.
   DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
+  // Errors other than above ones. No fallback is provided for the error.
+  DRIVE_SYNC_ERROR_MISC,
 };
 
 // Passes notifications from Drive operations back to the file system.
