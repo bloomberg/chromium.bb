@@ -766,6 +766,29 @@ class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
     self.assertTrue(self.LOG_MESSAGE in open(tmp_log_path.name).read())
 
 
+class ChromeDriverLogTest(unittest.TestCase):
+  """Tests that chromedriver produces the expected log file."""
+
+  UNEXPECTED_CHROMEOPTION_CAP = 'unexpected_chromeoption_capability'
+  LOG_MESSAGE = 'unrecognized chrome option: %s' % UNEXPECTED_CHROMEOPTION_CAP
+
+  def testChromeDriverLog(self):
+    tmp_log_path = tempfile.NamedTemporaryFile()
+    chromedriver_server = server.Server(
+        _CHROMEDRIVER_BINARY, log_path=tmp_log_path.name)
+    try:
+      driver = chromedriver.ChromeDriver(
+          chromedriver_server.GetUrl(), chrome_binary=_CHROME_BINARY,
+          experimental_options={ self.UNEXPECTED_CHROMEOPTION_CAP : 1 })
+      driver.Quit()
+    except chromedriver.ChromeDriverException, e:
+      self.assertTrue(self.LOG_MESSAGE in e.message)
+    finally:
+      chromedriver_server.Kill()
+    with open(tmp_log_path.name, 'r') as f:
+      self.assertTrue(self.LOG_MESSAGE in f.read())
+
+
 class SessionHandlingTest(ChromeDriverBaseTest):
   """Tests for session operations."""
   def testQuitASessionMoreThanOnce(self):
@@ -900,11 +923,14 @@ if __name__ == '__main__':
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
+  global _CHROMEDRIVER_BINARY
+  _CHROMEDRIVER_BINARY = options.chromedriver
+
   if (options.android_package and
       options.android_package not in _ANDROID_NEGATIVE_FILTER):
     parser.error('Invalid --android-package')
 
-  chromedriver_server = server.Server(os.path.abspath(options.chromedriver),
+  chromedriver_server = server.Server(os.path.abspath(_CHROMEDRIVER_BINARY),
                                       options.log_path)
   global _CHROMEDRIVER_SERVER_URL
   _CHROMEDRIVER_SERVER_URL = chromedriver_server.GetUrl()

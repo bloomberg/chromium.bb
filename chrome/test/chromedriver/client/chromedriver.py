@@ -64,10 +64,16 @@ class ChromeDriver(object):
                android_activity=None, android_process=None,
                android_use_running_app=None, chrome_switches=None,
                chrome_extensions=None, chrome_log_path=None,
-               debugger_address=None, browser_log_level=None):
+               debugger_address=None, browser_log_level=None,
+               experimental_options=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
+
+    if experimental_options:
+      assert isinstance(experimental_options, dict)
+      options = experimental_options.copy()
+
     if android_package:
       options['androidPackage'] = android_package
       if android_activity:
