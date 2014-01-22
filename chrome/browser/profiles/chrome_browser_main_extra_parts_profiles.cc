@@ -142,9 +142,7 @@
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
-#if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
-#endif
 #endif
 
 #if defined(USE_AURA)
@@ -308,7 +306,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ExtensionToolbarModelFactory::GetInstance();
 #endif  // defined(ENABLE_EXTENSIONS)
   FaviconServiceFactory::GetInstance();
-#if defined(OS_CHROMEOS) && defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
   file_manager::FileBrowserPrivateAPIFactory::GetInstance();
 #endif
   FindBarStateFactory::GetInstance();

@@ -210,7 +210,7 @@
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate_bubble_ui.h"
 #endif
 
-#if defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #endif
 
@@ -2314,7 +2314,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->accelerated_compositing_enabled = false;
   }
 
-#if defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
   // Override the default of suppressing HW compositing for WebUI pages for the
   // file manager, which is implemented using WebUI but wants HW acceleration
   // for video decode & render.

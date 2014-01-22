@@ -1768,6 +1768,7 @@
             'browser/net/nss_context_chromeos_browsertest.cc',
             'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
             'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
+            'browser/ui/views/select_file_dialog_extension_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],
@@ -1789,11 +1790,6 @@
           'dependencies': [
             '../dbus/dbus.gyp:dbus_test_support',
             '../build/linux/system.gyp:dbus',
-          ],
-        }],
-        ['file_manager_extension==0', {
-          'sources!': [
-            'browser/ui/views/select_file_dialog_extension_browsertest.cc',
           ],
         }],
         ['configuration_policy==0', {

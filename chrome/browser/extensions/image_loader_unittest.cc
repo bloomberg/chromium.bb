@@ -250,7 +250,7 @@ TEST_F(ImageLoaderTest, IsComponentExtensionResource) {
       extension_misc::EXTENSION_ICON_BITTY,
       ExtensionIconSet::MATCH_EXACTLY);
 
-#if defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
   int resource_id;
   ASSERT_EQ(true,
             ImageLoader::IsComponentExtensionResource(extension->path(),

@@ -3298,8 +3298,8 @@
             }],
           ],
         }],
-        # File manager extension replaces the native OS file open/save dialog.
-        ['file_manager_extension==1', {
+        # On chromeos, file manager extension handles the file open/save dialog.
+        ['chromeos==1', {
           'sources/': [
             ['include', '^browser/ui/views/select_file_dialog_extension.cc'],
             ['include', '^browser/ui/views/select_file_dialog_extension.h'],

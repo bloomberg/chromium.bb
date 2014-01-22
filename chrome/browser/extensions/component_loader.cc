@@ -272,7 +272,7 @@ bool ComponentLoader::Exists(const std::string& id) const {
 }
 
 void ComponentLoader::AddFileManagerExtension() {
-#if defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
 #ifndef NDEBUG
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
@@ -284,7 +284,7 @@ void ComponentLoader::AddFileManagerExtension() {
 #endif  // NDEBUG
   Add(IDR_FILEMANAGER_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("file_manager")));
-#endif  // defined(FILE_MANAGER_EXTENSION)
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ComponentLoader::AddHangoutServicesExtension() {

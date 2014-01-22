@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#ifdef FILE_MANAGER_EXTENSION
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "extensions/common/constants.h"
 #endif
@@ -27,7 +27,7 @@ TEST_F(TranslateManagerTest, CheckTranslatableURL) {
   GURL devtools_url = GURL(devtools);
   EXPECT_FALSE(TranslateManager::IsTranslatableURL(devtools_url));
 
-#ifdef FILE_MANAGER_EXTENSION
+#if defined(OS_CHROMEOS)
   std::string filemanager =
       std::string(extensions::kExtensionScheme) +
       std::string("://") +

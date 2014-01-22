@@ -54,7 +54,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 
-#ifdef FILE_MANAGER_EXTENSION
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "extensions/common/constants.h"
 #endif
@@ -104,7 +104,7 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
   return !url.is_empty() &&
          !url.SchemeIs(chrome::kChromeUIScheme) &&
          !url.SchemeIs(chrome::kChromeDevToolsScheme) &&
-#ifdef FILE_MANAGER_EXTENSION
+#if defined(OS_CHROMEOS)
          !(url.SchemeIs(extensions::kExtensionScheme) &&
            url.DomainIs(file_manager::kFileManagerAppId)) &&
 #endif

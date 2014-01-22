@@ -2184,7 +2184,7 @@
             ['exclude', '^browser/task_manager/'],
           ],
         }],
-        ['file_manager_extension==0', {
+        ['chromeos==0', {
           'sources!': [
             'browser/ui/views/select_file_dialog_extension_unittest.cc',
           ],

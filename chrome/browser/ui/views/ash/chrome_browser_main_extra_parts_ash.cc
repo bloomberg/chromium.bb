@@ -21,7 +21,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
-#if defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #endif
@@ -83,7 +83,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     keyboard::InitializeKeyboard();
 #endif
 
-#if defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
   ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
 #endif
 }
