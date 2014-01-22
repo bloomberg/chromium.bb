@@ -580,7 +580,7 @@ void Document::dispose()
     m_docType = 0;
     m_focusedElement = 0;
     m_hoverNode = 0;
-    m_activeElement = 0;
+    m_activeHoverElement = 0;
     m_titleElement = 0;
     m_documentElement = 0;
     m_contextFeatures = ContextFeatures::defaultSwitch();
@@ -2051,7 +2051,7 @@ void Document::detach(const AttachContext& context)
 
     m_hoverNode = 0;
     m_focusedElement = 0;
-    m_activeElement = 0;
+    m_activeHoverElement = 0;
     m_autofocusElement = 0;
 
     ContainerNode::detach(context);
@@ -3261,14 +3261,14 @@ void Document::setHoverNode(PassRefPtr<Node> newHoverNode)
     m_hoverNode = newHoverNode;
 }
 
-void Document::setActiveElement(PassRefPtr<Element> newActiveElement)
+void Document::setActiveHoverElement(PassRefPtr<Element> newActiveElement)
 {
     if (!newActiveElement) {
-        m_activeElement.clear();
+        m_activeHoverElement.clear();
         return;
     }
 
-    m_activeElement = newActiveElement;
+    m_activeHoverElement = newActiveElement;
 }
 
 void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
@@ -3308,17 +3308,17 @@ void Document::hoveredNodeDetached(Node* node)
 
 void Document::activeChainNodeDetached(Node* node)
 {
-    if (!m_activeElement)
+    if (!m_activeHoverElement)
         return;
 
-    if (node != m_activeElement && (!m_activeElement->isTextNode() || node != NodeRenderingTraversal::parent(m_activeElement.get())))
+    if (node != m_activeHoverElement && (!m_activeHoverElement->isTextNode() || node != NodeRenderingTraversal::parent(m_activeHoverElement.get())))
         return;
 
     Node* activeNode = NodeRenderingTraversal::parent(node);
     while (activeNode && activeNode->isElementNode() && !activeNode->renderer())
         activeNode = NodeRenderingTraversal::parent(activeNode);
 
-    m_activeElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
+    m_activeHoverElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
 }
 
 const Vector<AnnotatedRegionValue>& Document::annotatedRegions() const
@@ -5074,7 +5074,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         innerElementInDocument = innerElementInDocument->document().ownerElement();
     }
 
-    Element* oldActiveElement = activeElement();
+    Element* oldActiveElement = activeHoverElement();
     if (oldActiveElement && !request.active()) {
         // We are clearing the :active chain because the mouse has been released.
         for (RenderObject* curr = oldActiveElement->renderer(); curr; curr = curr->parent()) {
@@ -5084,7 +5084,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
                 m_userActionElements.setInActiveChain(curr->node(), false);
             }
         }
-        setActiveElement(0);
+        setActiveHoverElement(0);
     } else {
         Element* newActiveElement = innerElementInDocument;
         if (!oldActiveElement && newActiveElement && request.active() && !request.touchMove()) {
@@ -5095,12 +5095,12 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
                     m_userActionElements.setInActiveChain(curr->node(), true);
             }
 
-            setActiveElement(newActiveElement);
+            setActiveHoverElement(newActiveElement);
         }
     }
     // If the mouse has just been pressed, set :active on the chain. Those (and only those)
     // nodes should remain :active until the mouse is released.
-    bool allowActiveChanges = !oldActiveElement && activeElement();
+    bool allowActiveChanges = !oldActiveElement && activeHoverElement();
 
     // If the mouse is down and if this is a mouse move event, we want to restrict changes in
     // :hover/:active to only apply to elements that are in the :active chain that we froze
@@ -5321,6 +5321,27 @@ void Document::setAutofocusElement(Element* element)
     ASSERT(!m_autofocusElement);
     m_autofocusElement = element;
     m_taskRunner->postTask(AutofocusTask::create());
+}
+
+Element* Document::activeElement() const
+{
+    if (Element* element = treeScope().adjustedFocusedElement())
+        return element;
+    return body();
+}
+
+bool Document::hasFocus() const
+{
+    Page* page = this->page();
+    if (!page)
+        return false;
+    if (!page->focusController().isActive() || !page->focusController().isFocused())
+        return false;
+    if (Frame* focusedFrame = page->focusController().focusedFrame()) {
+        if (focusedFrame->tree().isDescendantOf(frame()))
+            return true;
+    }
+    return false;
 }
 
 } // namespace WebCore

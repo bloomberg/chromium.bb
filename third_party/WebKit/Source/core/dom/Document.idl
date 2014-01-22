@@ -147,6 +147,8 @@ callback CustomElementConstructor = Element ();
 
     // HTML 5
     NodeList getElementsByClassName(DOMString classNames);
+    readonly attribute Element activeElement;
+    boolean hasFocus();
 
     readonly attribute DOMString compatMode;
 

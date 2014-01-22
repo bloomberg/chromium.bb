@@ -47,9 +47,6 @@ public:
     String designMode() const;
     void setDesignMode(const String&);
 
-    Element* activeElement();
-    bool hasFocus();
-
     const AtomicString& bgColor() const;
     void setBgColor(const AtomicString&);
     const AtomicString& fgColor() const;

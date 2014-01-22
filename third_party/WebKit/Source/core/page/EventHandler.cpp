@@ -2298,7 +2298,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     } else if (gestureEvent.type() == PlatformEvent::GestureTapDownCancel) {
         hitType |= HitTestRequest::Release;
         // A TapDownCancel received when no element is active shouldn't really be changing hover state.
-        if (!m_frame->document()->activeElement())
+        if (!m_frame->document()->activeHoverElement())
             hitType |= HitTestRequest::ReadOnly;
     } else if (gestureEvent.type() == PlatformEvent::GestureTap) {
         hitType |= HitTestRequest::Release;

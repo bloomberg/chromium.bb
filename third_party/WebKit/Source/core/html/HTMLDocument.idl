@@ -45,9 +45,6 @@ interface HTMLDocument : Document {
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString designMode;
     readonly attribute DOMString compatMode;
 
-    readonly attribute Element activeElement;
-    boolean hasFocus();
-
     // Deprecated attributes
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString bgColor;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString fgColor;

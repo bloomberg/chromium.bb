@@ -237,6 +237,10 @@ public:
 
     SelectorQueryCache& selectorQueryCache();
 
+    // Focus Management.
+    Element* activeElement() const;
+    bool hasFocus() const;
+
     // DOM methods & attributes for Document
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
@@ -615,8 +619,8 @@ public:
     void setHoverNode(PassRefPtr<Node>);
     Node* hoverNode() const { return m_hoverNode.get(); }
 
-    void setActiveElement(PassRefPtr<Element>);
-    Element* activeElement() const { return m_activeElement.get(); }
+    void setActiveHoverElement(PassRefPtr<Element>);
+    Element* activeHoverElement() const { return m_activeHoverElement.get(); }
 
     void removeFocusedElementOfSubtree(Node*, bool amongChildrenOnly = false);
     void hoveredNodeDetached(Node*);
@@ -1147,7 +1151,7 @@ private:
     RefPtr<Element> m_autofocusElement;
     RefPtr<Element> m_focusedElement;
     RefPtr<Node> m_hoverNode;
-    RefPtr<Element> m_activeElement;
+    RefPtr<Element> m_activeHoverElement;
     RefPtr<Element> m_documentElement;
     UserActionElementSet m_userActionElements;
 
