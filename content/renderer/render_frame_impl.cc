@@ -166,7 +166,7 @@ void RenderFrameImpl::SetWebFrame(blink::WebFrame* web_frame) {
   CHECK(result.second) << "Inserting a duplicate item.";
 
   frame_ = web_frame;
- 
+
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
@@ -581,7 +581,12 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
                                          child_frame_identifier,
                                          base::UTF16ToUTF8(name),
                                          &routing_id));
-  CHECK_NE(routing_id, MSG_ROUTING_NONE);
+  // Allocation of routing id failed, so we can't create a child frame. This can
+  // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
+  // out state.
+  if (routing_id == MSG_ROUTING_NONE)
+    return NULL;
+
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(render_view_,
                                                                 routing_id);
   // TODO(nasko): Over-conservative check for debugging.
