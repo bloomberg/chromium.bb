@@ -18,10 +18,8 @@ using blink::WebIDBKey;
 namespace content {
 
 WebIDBCursorImpl::WebIDBCursorImpl(int32 ipc_cursor_id,
-                                   int64 transaction_id,
                                    ThreadSafeSender* thread_safe_sender)
     : ipc_cursor_id_(ipc_cursor_id),
-      transaction_id_(transaction_id),
       continue_count_(0),
       used_prefetches_(0),
       pending_onsuccess_callbacks_(0),
@@ -55,7 +53,7 @@ void WebIDBCursorImpl::advance(unsigned long count,
   }
   ResetPrefetchCache();
   dispatcher->RequestIDBCursorAdvance(
-      count, callbacks.release(), ipc_cursor_id_, transaction_id_);
+      count, callbacks.release(), ipc_cursor_id_);
 }
 
 void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
@@ -102,8 +100,7 @@ void WebIDBCursorImpl::continueFunction(const WebIDBKey& key,
   dispatcher->RequestIDBCursorContinue(IndexedDBKeyBuilder::Build(key),
                                        IndexedDBKeyBuilder::Build(primary_key),
                                        callbacks.release(),
-                                       ipc_cursor_id_,
-                                       transaction_id_);
+                                       ipc_cursor_id_);
 }
 
 void WebIDBCursorImpl::postSuccessHandlerCallback() {

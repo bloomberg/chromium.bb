@@ -16,8 +16,6 @@
 #include "third_party/WebKit/public/platform/WebIDBCursor.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
-#undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START IndexedDBMsgStart
 
 // Argument structures used in messages

@@ -53,8 +53,7 @@ class MockDispatcher : public IndexedDBDispatcher {
 
   virtual void RequestIDBCursorAdvance(unsigned long count,
                                        WebIDBCallbacks* callbacks,
-                                       int32 ipc_cursor_id,
-                                       int64 transaction_id) OVERRIDE {
+                                       int32 ipc_cursor_id) OVERRIDE {
     ++advance_calls_;
     callbacks_.reset(callbacks);
   }
@@ -62,8 +61,7 @@ class MockDispatcher : public IndexedDBDispatcher {
   virtual void RequestIDBCursorContinue(const IndexedDBKey& key,
                                         const IndexedDBKey& primary_key,
                                         WebIDBCallbacks* callbacks,
-                                        int32 ipc_cursor_id,
-                                        int64 transaction_id) OVERRIDE {
+                                        int32 ipc_cursor_id) OVERRIDE {
     ++continue_calls_;
     callbacks_.reset(callbacks);
   }
@@ -133,10 +131,8 @@ class WebIDBCursorImplTest : public testing::Test {
 
 TEST_F(WebIDBCursorImplTest, PrefetchTest) {
 
-  const int64 transaction_id = 1;
   {
     WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
-                            transaction_id,
                             thread_safe_sender_.get());
 
     // Call continue() until prefetching should kick in.
@@ -199,9 +195,7 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
 
 TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
 
-  const int64 transaction_id = 1;
   WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
-                          transaction_id,
                           thread_safe_sender_.get());
 
   // Call continue() until prefetching should kick in.
@@ -267,9 +261,7 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
 }
 
 TEST_F(WebIDBCursorImplTest, PrefetchReset) {
-  const int64 transaction_id = 1;
   WebIDBCursorImpl cursor(WebIDBCursorImpl::kInvalidCursorId,
-                          transaction_id,
                           thread_safe_sender_.get());
 
   // Call continue() until prefetching should kick in.
