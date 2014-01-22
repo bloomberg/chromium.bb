@@ -502,6 +502,11 @@ gfx::Image CvcIconForCreditCardType(const base::string16& credit_card_type) {
   return rb.GetImageNamed(IDR_CREDIT_CARD_CVC_HINT);
 }
 
+ServerFieldType CountryTypeForSection(DialogSection section) {
+  return section == SECTION_SHIPPING ? ADDRESS_HOME_COUNTRY :
+                                       ADDRESS_BILLING_COUNTRY;
+}
+
 }  // namespace
 
 AutofillDialogViewDelegate::~AutofillDialogViewDelegate() {}
@@ -602,11 +607,17 @@ void AutofillDialogControllerImpl::Show() {
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
 
-  common::BuildInputsForSection(SECTION_CC,
-                                std::string(),
-                                &requested_cc_fields_);
-  OnComboboxModelChanged(&billing_country_combobox_model_);
-  OnComboboxModelChanged(&shipping_country_combobox_model_);
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
+
+    std::string country_code;
+    CountryComboboxModel* model = CountryComboboxModelForSection(section);
+    if (model)
+      country_code = model->GetDefaultCountryCode();
+
+    DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+    common::BuildInputsForSection(section, country_code, inputs);
+  }
 
   // Test whether we need to show the shipping section. If filling that section
   // would be a no-op, don't show it.
@@ -631,10 +642,7 @@ void AutofillDialogControllerImpl::Show() {
   SubmitButtonDelayBegin();
   view_.reset(CreateView());
   view_->Show();
-
   GetManager()->AddObserver(this);
-  observer_.Add(&billing_country_combobox_model_);
-  observer_.Add(&shipping_country_combobox_model_);
 
   if (!account_chooser_model_->WalletIsSelected())
     LogDialogLatencyToShow();
@@ -1091,6 +1099,14 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
 void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
   SetEditingExistingData(section, false);
 
+  if (i18ninput::Enabled()) {
+    CountryComboboxModel* model = CountryComboboxModelForSection(section);
+    if (model) {
+      base::string16 country = model->GetItemAt(model->GetDefaultIndex());
+      RebuildInputsForCountry(section, country, false);
+    }
+  }
+
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
     it->initial_value = common::GetHardcodedValueForType(it->type);
@@ -1112,9 +1128,17 @@ void AutofillDialogControllerImpl::ShowEditUiIfBadSuggestion(
     SetEditingExistingData(section, true);
   }
 
-  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  if (wrapper && IsEditingExistingData(section))
-    wrapper->FillInputs(inputs);
+  if (wrapper && IsEditingExistingData(section)) {
+    base::string16 country =
+        wrapper->GetInfo(AutofillType(CountryTypeForSection(section)));
+    if (!country.empty()) {
+      // There's no user input to restore here as this is only called after
+      // resetting all section input.
+      if (RebuildInputsForCountry(section, country, false))
+        UpdateSection(section);
+    }
+    wrapper->FillInputs(MutableRequestedFieldsForSection(section));
+  }
 }
 
 bool AutofillDialogControllerImpl::InputWasEdited(ServerFieldType type,
@@ -1160,20 +1184,6 @@ void AutofillDialogControllerImpl::RestoreUserInputFromSnapshot(
     const FieldValueMap& snapshot) {
   if (snapshot.empty())
     return;
-
-  FieldValueMap::const_iterator it = snapshot.find(ADDRESS_BILLING_COUNTRY);
-  if (it != snapshot.end()) {
-    billing_country_combobox_model_.SetDefaultCountry(
-        AutofillCountry::GetCountryCode(
-            it->second, g_browser_process->GetApplicationLocale()));
-  }
-
-  FieldValueMap::const_iterator ship_it = snapshot.find(ADDRESS_HOME_COUNTRY);
-  if (ship_it != snapshot.end()) {
-    shipping_country_combobox_model_.SetDefaultCountry(
-        AutofillCountry::GetCountryCode(
-            ship_it->second, g_browser_process->GetApplicationLocale()));
-  }
 
   FieldMapWrapper wrapper(snapshot);
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
@@ -1867,11 +1877,11 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   ScopedViewUpdates updates(view_.get());
 
   if (type == ADDRESS_BILLING_COUNTRY || type == ADDRESS_HOME_COUNTRY) {
-    FieldValueMap snapshot = TakeUserInputSnapshot();
-    snapshot[type] = field_contents;
+    const FieldValueMap snapshot = TakeUserInputSnapshot();
+    // Clobber the inputs because the view's already been updated.
+    RebuildInputsForCountry(section, field_contents, true);
     RestoreUserInputFromSnapshot(snapshot);
-    const bool is_billing = type == ADDRESS_BILLING_COUNTRY;
-    UpdateSection(is_billing ? ActiveBillingSection() : SECTION_SHIPPING);
+    UpdateSection(section);
   }
 
   // The rest of this method applies only to textfields. If a combobox, bail.
@@ -2189,23 +2199,32 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   }
 
   if (i18ninput::Enabled()) {
+    // If the user hasn't switched away from the default country and |wrapper|'s
+    // country differs from the |view_|'s, rebuild inputs and restore user data.
+    const FieldValueMap snapshot = TakeUserInputSnapshot();
+    bool billing_rebuilt = false, shipping_rebuilt = false;
+
     base::string16 billing_country =
-      wrapper->GetInfo(AutofillType(ADDRESS_BILLING_COUNTRY));
+        wrapper->GetInfo(AutofillType(ADDRESS_BILLING_COUNTRY));
+    if (!snapshot.count(ADDRESS_BILLING_COUNTRY) &&
+        !billing_country.empty()) {
+      billing_rebuilt = RebuildInputsForCountry(
+          ActiveBillingSection(), billing_country, false);
+    }
+
     base::string16 shipping_country =
-      wrapper->GetInfo(AutofillType(ADDRESS_HOME_COUNTRY));
+        wrapper->GetInfo(AutofillType(ADDRESS_HOME_COUNTRY));
+    if (!snapshot.count(ADDRESS_HOME_COUNTRY) &&
+        !shipping_country.empty()) {
+      shipping_rebuilt = RebuildInputsForCountry(
+          SECTION_SHIPPING, shipping_country, false);
+    }
 
-    if (!billing_country.empty() || !shipping_country.empty()) {
-      FieldValueMap snapshot = TakeUserInputSnapshot();
-      if (!billing_country.empty())
-        snapshot[ADDRESS_BILLING_COUNTRY] = billing_country;
-      if (!shipping_country.empty())
-        snapshot[ADDRESS_HOME_COUNTRY] = shipping_country;
-
+    if (billing_rebuilt || shipping_rebuilt) {
       RestoreUserInputFromSnapshot(snapshot);
-
-      if (!billing_country.empty())
+      if (billing_rebuilt)
         UpdateSection(ActiveBillingSection());
-      if (!shipping_country.empty())
+      if (shipping_rebuilt)
         UpdateSection(SECTION_SHIPPING);
     }
   }
@@ -2293,12 +2312,6 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
 
   model->SetCheckedIndex(index);
   DialogSection section = SectionForSuggestionsMenuModel(*model);
-
-  if (i18ninput::Enabled()) {
-    CountryComboboxModel* model = CountryComboboxModelForSection(section);
-    if (model)
-      model->ResetDefault();
-  }
 
   ResetSectionInput(section);
   ShowEditUiIfBadSuggestion(section);
@@ -2597,8 +2610,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       wallet_server_validation_recoverable_(true),
       data_was_passed_back_(false),
       was_ui_latency_logged_(false),
-      card_generated_animation_(2000, 60, this),
-      observer_(this) {
+      card_generated_animation_(2000, 60, this) {
   // TODO(estade): remove duplicates from |form_structure|?
   DCHECK(!callback_.is_null());
 }
@@ -2890,6 +2902,16 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     ResetSectionInput(static_cast<DialogSection>(i));
   }
 
+  FieldValueMap::const_iterator billing_it =
+      snapshot.find(ADDRESS_BILLING_COUNTRY);
+  if (billing_it != snapshot.end())
+    RebuildInputsForCountry(ActiveBillingSection(), billing_it->second, false);
+
+  FieldValueMap::const_iterator shipping_it =
+      snapshot.find(ADDRESS_HOME_COUNTRY);
+  if (shipping_it != snapshot.end())
+    RebuildInputsForCountry(SECTION_SHIPPING, shipping_it->second, false);
+
   RestoreUserInputFromSnapshot(snapshot);
 
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
@@ -3056,17 +3078,12 @@ DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
 
 CountryComboboxModel* AutofillDialogControllerImpl::
     CountryComboboxModelForSection(DialogSection section) {
-  switch (section) {
-    case SECTION_CC:
-      return NULL;
-    case SECTION_BILLING:
-    case SECTION_CC_BILLING:
-      return &billing_country_combobox_model_;
-    case SECTION_SHIPPING:
-      return &shipping_country_combobox_model_;
-  }
+  if (section == SECTION_BILLING || section == SECTION_CC_BILLING)
+    return &billing_country_combobox_model_;
 
-  NOTREACHED();
+  if (section == SECTION_SHIPPING)
+    return &shipping_country_combobox_model_;
+
   return NULL;
 }
 
@@ -3075,46 +3092,41 @@ DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
   return const_cast<DetailInputs*>(&RequestedFieldsForSection(section));
 }
 
-void AutofillDialogControllerImpl::OnComboboxModelChanged(
-    ui::ComboboxModel* model) {
-  DCHECK(model == &billing_country_combobox_model_ ||
-         model == &shipping_country_combobox_model_);
-
-  const std::string country_code = AutofillCountry::GetCountryCode(
-      model->GetItemAt(model->GetDefaultIndex()),
-      g_browser_process->GetApplicationLocale());
-
-  const bool is_billing = model == &billing_country_combobox_model_;
-  DialogSection section = is_billing ? SECTION_BILLING : SECTION_SHIPPING;
-
-  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
-  inputs->clear();
-  common::BuildInputsForSection(section, country_code, inputs);
-
-  if (is_billing) {
-    // Also rebuild inputs for the combined credit card + billing section.
-    DetailInputs* inputs = MutableRequestedFieldsForSection(SECTION_CC_BILLING);
-    inputs->clear();
-    common::BuildInputsForSection(SECTION_CC_BILLING, country_code, inputs);
-  }
-}
-
 std::string AutofillDialogControllerImpl::CountryCodeForSection(
     DialogSection section) {
-  if (section == SECTION_CC)
-    return std::string();
-
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper) {
-    ServerFieldType type = section == SECTION_SHIPPING ?
-        ADDRESS_HOME_COUNTRY : ADDRESS_BILLING_COUNTRY;
     return AutofillCountry::GetCountryCode(
-        wrapper->GetInfo(AutofillType(type)),
+        wrapper->GetInfo(AutofillType(CountryTypeForSection(section))),
         g_browser_process->GetApplicationLocale());
   }
 
   CountryComboboxModel* model = CountryComboboxModelForSection(section);
-  return model->countries()[model->GetDefaultIndex()]->country_code();
+  return model ? model->GetDefaultCountryCode() : std::string();
+}
+
+bool AutofillDialogControllerImpl::RebuildInputsForCountry(
+    DialogSection section,
+    const base::string16& country_name,
+    bool should_clobber) {
+  DCHECK_NE(SECTION_CC, section);
+
+  if (view_ && !should_clobber) {
+    FieldValueMap outputs;
+    view_->GetUserInput(section, &outputs);
+
+    // If |country_name| is the same as the view, no-op and let the caller know.
+    if (outputs[CountryTypeForSection(section)] == country_name)
+      return false;
+  }
+
+  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+  inputs->clear();
+
+  std::string country_code = AutofillCountry::GetCountryCode(
+      country_name, g_browser_process->GetApplicationLocale());
+  common::BuildInputsForSection(section, country_code, inputs);
+  return true;
 }
 
 void AutofillDialogControllerImpl::HidePopup() {

@@ -1442,22 +1442,24 @@ class AutofillDialogControllerI18nTest : public AutofillDialogControllerTest {
     command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
     CHECK(i18ninput::Enabled());
   }
+
+ protected:
+  bool SectionHasField(DialogSection section, ServerFieldType type) {
+    const DetailInputs& fields =
+        controller()->RequestedFieldsForSection(section);
+    for (size_t i = 0; i < fields.size(); ++i) {
+      if (type == fields[i].type)
+        return true;
+    }
+    return false;
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
                        CountryChangeRebuildsSection) {
-  const DetailInputs& us_billing_inputs =
-      controller()->RequestedFieldsForSection(SECTION_BILLING);
-  const DetailInputs& us_shipping_inputs =
-      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
-
-  // Check that there's no dependent locality for the US layout.
-  for (size_t i = 0; i < us_billing_inputs.size(); ++i) {
-    EXPECT_NE(us_billing_inputs[i].type, ADDRESS_BILLING_DEPENDENT_LOCALITY);
-  }
-  for (size_t i = 0; i < us_shipping_inputs.size(); ++i) {
-    EXPECT_NE(us_shipping_inputs[i].type, ADDRESS_HOME_DEPENDENT_LOCALITY);
-  }
+  EXPECT_FALSE(
+      SectionHasField(SECTION_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+  EXPECT_FALSE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
@@ -1475,25 +1477,9 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   // Verify the name is still there.
   EXPECT_EQ(ASCIIToUTF16("B. Loblaw"), view->GetTextContentsOfInput(NAME_FULL));
 
-  const DetailInputs& cn_billing_inputs =
-      controller()->RequestedFieldsForSection(SECTION_BILLING);
-  const DetailInputs& fr_shipping_inputs =
-      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
-
-  // Check that there is dependent locality for the Chinese layout.
-  size_t i = 0;
-  for (; i < cn_billing_inputs.size(); ++i) {
-    if (cn_billing_inputs[i].type == ADDRESS_BILLING_DEPENDENT_LOCALITY)
-      break;
-  }
-  EXPECT_LT(i, cn_billing_inputs.size());
-
-  // Check that there's a sorting code (CEDEX) for French layout.
-  for (i = 0; i < fr_shipping_inputs.size(); ++i) {
-    if (fr_shipping_inputs[i].type == ADDRESS_HOME_SORTING_CODE)
-      break;
-  }
-  EXPECT_LT(i, fr_shipping_inputs.size());
+  EXPECT_TRUE(
+      SectionHasField(SECTION_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+  EXPECT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
@@ -1541,6 +1527,21 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("France"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+
+  ASSERT_TRUE(
+      SectionHasField(SECTION_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
+
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY,
+                               ASCIIToUTF16("Antarctica"));
+  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
+
+  // Select the first Wallet account.
+  account_chooser->ActivatedAt(0);
+  ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC_BILLING));
+
+  // Verify that inputs are rebuilt for billing sections across changes.
+  EXPECT_FALSE(
+      SectionHasField(SECTION_CC_BILLING, ADDRESS_BILLING_DEPENDENT_LOCALITY));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest, AddNewResetsCountry) {
@@ -1597,6 +1598,33 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   EXPECT_EQ(ASCIIToUTF16("China"),
             view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
   EXPECT_EQ(ASCIIToUTF16("China"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
+                       FillingFormPreservesChangedCountry) {
+  AutofillProfile full_profile(test::GetFullProfile());
+  full_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CN"));
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  // Select "Add new shipping address...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(1);
+
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  view->SetTextContentsOfInput(ADDRESS_BILLING_COUNTRY, ASCIIToUTF16("France"));
+  view->ActivateInput(ADDRESS_BILLING_COUNTRY);
+  view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Belarus"));
+  view->ActivateInput(ADDRESS_HOME_COUNTRY);
+
+  base::string16 name = full_profile.GetRawInfo(NAME_FULL);
+  view->SetTextContentsOfInput(NAME_FULL, name.substr(0, name.size() / 2));
+  view->ActivateInput(NAME_FULL);
+  ASSERT_EQ(NAME_FULL, controller()->popup_input_type());
+  controller()->DidAcceptSuggestion(base::string16(), 0);
+
+  EXPECT_EQ(ASCIIToUTF16("France"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
+  EXPECT_EQ(ASCIIToUTF16("Belarus"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
 }
 

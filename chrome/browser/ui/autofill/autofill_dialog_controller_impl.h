@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/autofill/account_chooser_model.h"
@@ -37,7 +36,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -78,8 +76,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                                      public wallet::WalletSigninHelperDelegate,
                                      public PersonalDataManagerObserver,
                                      public AccountChooserModelDelegate,
-                                     public gfx::AnimationDelegate,
-                                     public ui::ComboboxModelObserver {
+                                     public gfx::AnimationDelegate {
  public:
   virtual ~AutofillDialogControllerImpl();
 
@@ -223,9 +220,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // gfx::AnimationDelegate implementation.
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-
-  // ui::ComboboxModelObserver implementation.
-  virtual void OnComboboxModelChanged(ui::ComboboxModel* model) OVERRIDE;
 
  protected:
   enum DialogSignedInState {
@@ -434,6 +428,11 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Gets the CountryComboboxModel for |section|.
   CountryComboboxModel* CountryComboboxModelForSection(DialogSection section);
+
+  // Clears and builds the inputs in |section| for |country_name|.
+  bool RebuildInputsForCountry(DialogSection section,
+                               const base::string16& country_name,
+                               bool should_clobber);
 
   // Suggested text and icons for sections. Suggestion text is used to show an
   // abridged overview of the currently used suggestion. Extra text is used when
@@ -774,8 +773,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // A username string we display in the card scrambling/generated overlay.
   base::string16 submitted_cardholder_name_;
-
-  ScopedObserver<ui::ComboboxModel, AutofillDialogControllerImpl> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

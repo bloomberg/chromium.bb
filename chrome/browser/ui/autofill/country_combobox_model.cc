@@ -14,8 +14,7 @@
 
 namespace autofill {
 
-CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager)
-    : default_index_(0) {
+CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager) {
   // Insert the default country at the top as well as in the ordered list.
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   std::string default_country_code =
@@ -64,50 +63,8 @@ bool CountryComboboxModel::IsItemSeparatorAt(int index) {
   return !countries_[index];
 }
 
-int CountryComboboxModel::GetDefaultIndex() const {
-  return default_index_;
-}
-
-void CountryComboboxModel::AddObserver(ui::ComboboxModelObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void CountryComboboxModel::RemoveObserver(ui::ComboboxModelObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void CountryComboboxModel::ResetDefault() {
-  SetDefaultIndex(0);
-}
-
-void CountryComboboxModel::SetDefaultCountry(const std::string& country_code) {
-  DCHECK_EQ(2U, country_code.length());
-
-  for (size_t i = 0; i < countries_.size(); ++i) {
-    if (countries_[i] && countries_[i]->country_code() == country_code) {
-      SetDefaultIndex(i);
-      return;
-    }
-  }
-
-  NOTREACHED();
-}
-
 std::string CountryComboboxModel::GetDefaultCountryCode() const {
-  return countries_[default_index_]->country_code();
-}
-
-void CountryComboboxModel::SetDefaultIndex(int index) {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, static_cast<int>(countries_.size()));
-  DCHECK(!IsItemSeparatorAt(index));
-
-  if (index == default_index_)
-    return;
-
-  default_index_ = index;
-  FOR_EACH_OBSERVER(ui::ComboboxModelObserver, observers_,
-                    OnComboboxModelChanged(this));
+  return countries_[GetDefaultIndex()]->country_code();
 }
 
 }  // namespace autofill
