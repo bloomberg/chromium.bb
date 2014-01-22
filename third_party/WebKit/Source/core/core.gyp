@@ -204,20 +204,20 @@
       'includes': [ '../build/ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
-      'target_name': 'webcore_derived',
+      'target_name': 'webcore_generated',
       'type': 'static_library',
       'hard_dependency': 1,
       'dependencies': [
         'webcore_prerequisites',
-        '../bindings/derived_sources.gyp:bindings_derived_sources',
-        'core_derived_sources.gyp:make_core_derived_sources',
+        '../bindings/generated_bindings.gyp:generated_bindings',
+        'core_generated.gyp:make_core_generated',
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
-        '../platform/platform_derived_sources.gyp:make_platform_derived_sources',
+        '../platform/platform_generated.gyp:make_platform_generated',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/gin/gin.gyp:gin',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -248,14 +248,14 @@
       'sources': [
         # These files include all the .cpp files generated from the .idl files
         # in webcore_files.
-        '<@(derived_sources_aggregate_files)',
+        '<@(aggregate_generated_bindings_files)',
         '<@(bindings_files)',
 
         # Additional .cpp files for HashTools.h
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSPropertyNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.cpp',
 
-        # Additional .cpp files from make_core_derived_sources actions.
+        # Additional .cpp files from make_core_generated actions.
         '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventHeaders.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.h',
@@ -294,7 +294,7 @@
         # Generated from HTMLMetaElement-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',
 
-        # Additional .cpp files from the make_core_derived_sources rules.
+        # Additional .cpp files from the make_core_generated rules.
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSGrammar.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/XPathGrammar.cpp',
 
@@ -353,8 +353,8 @@
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'inspector_instrumentation_sources',
-        '../bindings/derived_sources.gyp:bindings_derived_sources',
-        'core_derived_sources.gyp:make_core_derived_sources',
+        '../bindings/generated_bindings.gyp:generated_bindings',
+        'core_generated.gyp:make_core_generated',
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
         '../heap/blink_heap.gyp:blink_heap',
@@ -813,7 +813,7 @@
         'webcore_rendering',
         'webcore_svg',
         # Exported.
-        'webcore_derived',
+        'webcore_generated',
         '../wtf/wtf.gyp:wtf',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
@@ -823,7 +823,7 @@
       ],
       'export_dependent_settings': [
         '../wtf/wtf.gyp:wtf',
-        'webcore_derived',
+        'webcore_generated',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',

@@ -102,34 +102,6 @@
     ],
 
     'conditions': [
-      ['OS=="win" and buildtype=="Official"', {
-        # On windows official release builds, we try to preserve symbol space.
-        'derived_sources_aggregate_files': [
-          '<(bindings_output_dir)/V8DerivedSourcesAll.cpp',
-        ],
-      },{
-        'derived_sources_aggregate_files': [
-          '<(bindings_output_dir)/V8DerivedSources01.cpp',
-          '<(bindings_output_dir)/V8DerivedSources02.cpp',
-          '<(bindings_output_dir)/V8DerivedSources03.cpp',
-          '<(bindings_output_dir)/V8DerivedSources04.cpp',
-          '<(bindings_output_dir)/V8DerivedSources05.cpp',
-          '<(bindings_output_dir)/V8DerivedSources06.cpp',
-          '<(bindings_output_dir)/V8DerivedSources07.cpp',
-          '<(bindings_output_dir)/V8DerivedSources08.cpp',
-          '<(bindings_output_dir)/V8DerivedSources09.cpp',
-          '<(bindings_output_dir)/V8DerivedSources10.cpp',
-          '<(bindings_output_dir)/V8DerivedSources11.cpp',
-          '<(bindings_output_dir)/V8DerivedSources12.cpp',
-          '<(bindings_output_dir)/V8DerivedSources13.cpp',
-          '<(bindings_output_dir)/V8DerivedSources14.cpp',
-          '<(bindings_output_dir)/V8DerivedSources15.cpp',
-          '<(bindings_output_dir)/V8DerivedSources16.cpp',
-          '<(bindings_output_dir)/V8DerivedSources17.cpp',
-          '<(bindings_output_dir)/V8DerivedSources18.cpp',
-          '<(bindings_output_dir)/V8DerivedSources19.cpp',
-        ],
-      }],
       # The bindings generator can not write generated files if they are identical
       # to the already existing file – that way they don't need to be recompiled.
       # However, a reverse dependency having a newer timestamp than a
@@ -156,7 +128,7 @@
     'actions': [{
       'action_name': 'compute_interface_dependencies',
       'variables': {
-        # Write sources into a file, so that the action command line won't
+        # Write list of IDL files into a file, so that the command line won't
         # exceed OS limits.
         'main_idl_files_list': '<|(main_idl_files_list.tmp <@(main_idl_files))',
         'support_idl_files_list': '<|(support_idl_files_list.tmp <@(support_idl_files))',
@@ -204,7 +176,7 @@
       }]
     },
     {
-      'target_name': 'bindings_sources',
+      'target_name': 'individual_generated_bindings',
       'type': 'none',
       # The 'binding' rule generates .h files, so mark as hard_dependency, per:
       # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
@@ -212,7 +184,7 @@
       'dependencies': [
         'interface_dependencies',
         '../config.gyp:config',
-        '../core/core_derived_sources.gyp:generate_test_support_idls',
+        '../core/core_generated.gyp:generate_test_support_idls',
       ],
       'sources': [
         '<@(main_interface_idl_files)',
@@ -286,35 +258,39 @@
       }],
     },
     {
-      'target_name': 'bindings_derived_sources',
+      'target_name': 'aggregate_generated_bindings',
       'type': 'none',
-      'dependencies': [
-        'interface_dependencies',
-        'bindings_sources',
-      ],
       'actions': [{
-        'action_name': 'derived_sources_all_in_one',
+        'action_name': 'generate_aggregate_generated_bindings',
         'variables': {
-          # Write sources into a file, so that the action command line won't
+          # Write list of IDL files into a file, so that the command line won't
           # exceed OS limits.
           'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
           },
         'inputs': [
-          'scripts/action_derivedsourcesallinone.py',
+          'scripts/aggregate_generated_bindings.py',
           '<(main_interface_idl_files_list)',
         ],
         'outputs': [
-          '<@(derived_sources_aggregate_files)',
+          '<@(aggregate_generated_bindings_files)',
         ],
         'action': [
           'python',
-          'scripts/action_derivedsourcesallinone.py',
+          'scripts/aggregate_generated_bindings.py',
           '<(main_interface_idl_files_list)',
           '--',
-          '<@(derived_sources_aggregate_files)',
+          '<@(aggregate_generated_bindings_files)',
         ],
-        'message': 'Generating bindings derived sources',
+        'message': 'Generating aggregate generated bindings files',
       }],
+    },
+    {
+      'target_name': 'generated_bindings',
+      'type': 'none',
+      'dependencies': [
+        'aggregate_generated_bindings',
+        'individual_generated_bindings',
+      ],
     },
   ],
 }

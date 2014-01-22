@@ -52,7 +52,7 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
     switch (impl->type()) {
     case CSSRule::UNKNOWN_RULE:
         // CSSUnknownRule.idl is explicitly excluded as it doesn't add anything
-        // over CSSRule.idl (see bindings/derived_sources.gyp: 'idl_files').
+        // over CSSRule.idl (see core/core.gypi: 'core_idl_files').
         // -> Use the base class wrapper here.
         return V8CSSRule::createWrapper(impl, creationContext, isolate);
     case CSSRule::STYLE_RULE:

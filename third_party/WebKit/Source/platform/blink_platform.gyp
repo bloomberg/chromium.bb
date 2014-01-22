@@ -138,7 +138,7 @@
       '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
       '<(DEPTH)/url/url.gyp:url_lib',
       '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-      'platform_derived_sources.gyp:make_platform_derived_sources',
+      'platform_generated.gyp:make_platform_generated',
       '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
       '<(libjpeg_gyp_path):libjpeg',
     ],
@@ -171,7 +171,7 @@
     'sources': [
       '<@(platform_files)',
 
-      # Additional .cpp files from platform_derived_sources.gyp:make_platform_derived_sources actions.
+      # Additional .cpp files from platform_generated.gyp:make_platform_generated actions.
       '<(SHARED_INTERMEDIATE_DIR)/blink/FontFamilyNames.cpp',
       '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.cpp',
       '<(SHARED_INTERMEDIATE_DIR)/blink/RuntimeEnabledFeatures.h',

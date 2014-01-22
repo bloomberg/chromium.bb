@@ -79,7 +79,7 @@
             'conditions': [
                 ['component=="shared_library"', {
                     'dependencies': [
-                        '../core/core.gyp:webcore_derived',
+                        '../core/core.gyp:webcore_generated',
                         '../core/core.gyp:webcore_test_support',
                         '../modules/modules.gyp:modules_test_support',
                         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',

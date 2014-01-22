@@ -32,14 +32,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# action_derivedsourcesallinone.py generates a single cpp file that includes
-# all v8 bindings cpp files generated from idls. Files can be assigned into
-# multiple output files, to reduce maximum compilation unit size and allow
-# parallel compilation.
-#
-# usage: action_derivedsourcesallinone.py IDL_FILES_LIST -- OUTPUT_FILE1 OUTPUT_FILE2 ...
-#
-# Note that IDL_FILES_LIST is a text file containing the IDL file paths.
+"""Generate aggregate .cpp files that include multiple V8 binding .cpp files.
+
+This can be a single output file, to preserve symbol space; or multiple output
+files, to reduce maximum compilation unit size and allow parallel compilation.
+
+Usage:
+aggregate_generated_bindings.py IDL_FILES_LIST -- OUTPUT_FILE1 OUTPUT_FILE2 ...
+
+IDL_FILES_LIST is a text file containing the IDL file paths, so the command
+line doesn't exceed OS length limits.
+OUTPUT_FILE1 etc. are filenames of output files.
+"""
 
 import errno
 import os
@@ -48,7 +52,8 @@ import subprocess
 import sys
 
 # A regexp for finding Conditional attributes in interface definitions.
-CONDITIONAL_PATTERN = re.compile('\[[^\]]*Conditional=([\_0-9a-zA-Z&|]*)[^\]]\]\s*interface', re.MULTILINE)
+CONDITIONAL_PATTERN = re.compile(
+    '\[[^\]]*Conditional=([\_0-9a-zA-Z&|]*)[^\]]\]\s*interface', re.MULTILINE)
 
 COPYRIGHT_TEMPLATE = """/*
  * THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
@@ -92,9 +97,7 @@ def format_conditional(conditional):
 
 
 def extract_conditional(idl_file_path):
-    """Find the conditional interface attribute."""
-
-    # Read file and look for [Conditional=XXX] interface.
+    """Find [Conditional] interface extended attribute."""
     with open(idl_file_path) as idl_file:
         idl_contents = idl_file.read()
 

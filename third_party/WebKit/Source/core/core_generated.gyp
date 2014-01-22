@@ -90,7 +90,7 @@
       ]
     },
     {
-      'target_name': 'make_core_derived_sources',
+      'target_name': 'make_core_generated',
       'type': 'none',
       'hard_dependency': 1,
       'dependencies': [

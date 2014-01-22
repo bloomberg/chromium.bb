@@ -244,30 +244,30 @@
         'conditions': [
             ['OS=="win" and buildtype=="Official"', {
                 # On windows official release builds, we try to preserve symbol space.
-                'derived_sources_aggregate_files': [
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSourcesAll.cpp',
+                'aggregate_generated_bindings_files': [
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings.cpp',
                 ],
-            },{
-                'derived_sources_aggregate_files': [
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources01.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources02.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources03.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources04.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources05.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources06.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources07.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources08.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources09.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources10.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources11.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources12.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources13.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources14.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources15.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources16.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources17.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources18.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8DerivedSources19.cpp',
+            }, {
+                'aggregate_generated_bindings_files': [
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings01.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings02.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings03.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings04.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings05.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings06.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings07.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings08.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings09.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings10.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings11.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings12.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings13.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings14.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings15.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings16.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings17.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings18.cpp',
+                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings19.cpp',
                 ],
             }],
         ],

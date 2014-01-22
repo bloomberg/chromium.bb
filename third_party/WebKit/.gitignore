@@ -22,7 +22,7 @@ autoinstall.cache.d
 *.vcxproj.user
 *.vcxproj
 *.vcxproj.filters
-Source/core/make_derived_sources.xml
+Source/core/make_core_generated.xml
 
 # Ignore common tool auto-generated files.
 .gdb_history
