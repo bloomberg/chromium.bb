@@ -40,7 +40,7 @@ class FillLayout : public aura::LayoutManager {
   }
 
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
-    child->SetBounds(gfx::Rect(root_->host()->GetBounds().size()));
+    child->SetBounds(root_->window()->bounds());
   }
 
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
