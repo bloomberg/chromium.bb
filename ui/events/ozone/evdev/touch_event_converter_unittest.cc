@@ -28,6 +28,9 @@ static int SetNonBlocking(int fd) {
   return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
+const int kInvalidFileDescriptor = -1;
+const char kTestDevicePath[] = "/dev/input/test-device";
+
 }  // namespace
 
 namespace ui {
@@ -35,7 +38,7 @@ namespace ui {
 class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
                                      public base::MessagePumpDispatcher {
  public:
-  MockTouchEventConverterEvdev(int a, int b);
+  MockTouchEventConverterEvdev(int fd, base::FilePath path);
   virtual ~MockTouchEventConverterEvdev() {};
 
   void ConfigureReadMock(struct input_event* queue,
@@ -62,8 +65,9 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
   DISALLOW_COPY_AND_ASSIGN(MockTouchEventConverterEvdev);
 };
 
-MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int a, int b)
-    : TouchEventConverterEvdev(a, b) {
+MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
+                                                           base::FilePath path)
+    : TouchEventConverterEvdev(fd, path) {
   pressure_min_ = 30;
   pressure_max_ = 60;
 
@@ -107,7 +111,8 @@ class TouchEventConverterEvdevTest : public testing::Test {
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     loop_ = new base::MessageLoopForUI;
-    device_ = new ui::MockTouchEventConverterEvdev(-1, 2);
+    device_ = new ui::MockTouchEventConverterEvdev(
+        kInvalidFileDescriptor, base::FilePath(kTestDevicePath));
     base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(device_);
   }
   virtual void TearDown() OVERRIDE {
