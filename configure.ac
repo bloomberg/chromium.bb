@@ -325,7 +325,7 @@ AC_ARG_ENABLE(resize-optimization,
 AS_IF([test "x$enable_resize_optimization" = "xyes"],
       [AC_DEFINE([USE_RESIZE_POOL], [1], [Use resize memory pool as a performance optimization])])
 
-PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login],
+PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login >= 198],
                   [have_systemd_login=yes], [have_systemd_login=no])
 AS_IF([test "x$have_systemd_login" = "xyes"],
       [AC_DEFINE([HAVE_SYSTEMD_LOGIN], [1], [Have systemd-login])])
