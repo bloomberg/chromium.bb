@@ -35,7 +35,7 @@ class CommitAnnouncerTest(unittest.TestCase):
         bot = CommitAnnouncer(tool, "test_password")
         self.assertEqual(
            'authorABC@chromium.org committed "Commit test subject line" '
-           'http://crrev.com/123456 https://src.chromium.org/viewvc/blink?view=revision&revision=456789',
+           'http://crrev.com/123456 r456789',
             bot._format_commit_detail("""\
 1234commit1234
 authorABC@chromium.org
@@ -55,7 +55,7 @@ git-svn-id: svn://svn.chromium.org/blink/trunk@456789 bbb929c8-8fbe-4397-9dbb-9b
         self.assertEqual(
             'authorABC@chromium.org committed "Commit test subject line" '
             'https://chromium.googlesource.com/chromium/blink/+/1234comm '
-            'https://src.chromium.org/viewvc/blink?view=revision&revision=456789',
+            'r456789',
             bot._format_commit_detail("""\
 1234commit1234
 authorABC@chromium.org
@@ -102,7 +102,7 @@ description.
 
         self.assertEqual(
             'authorABC@chromium.org committed "Commit test subject line" '
-            'http://crrev.com/123456 https://src.chromium.org/viewvc/blink?view=revision&revision=456789',
+            'http://crrev.com/123456 r456789',
             bot._format_commit_detail("""\
 1234commit1234
 authorABC@chromium.org
@@ -123,7 +123,7 @@ git-svn-id: svn://svn.chromium.org/blink/trunk@456789 bbb929c8-8fbe-4397-9dbb-9b
 
         self.assertEqual(
            'authorABC@chromium.org committed "Commit test subject line" '
-           'http://crrev.com/123456 https://src.chromium.org/viewvc/blink?view=revision&revision=456789 '
+           'http://crrev.com/123456 r456789 '
            '\x037TBR=reviewerDEF@chromium.org\x03',
             bot._format_commit_detail("""\
 1234commit1234
@@ -144,7 +144,7 @@ git-svn-id: svn://svn.chromium.org/blink/trunk@456789 bbb929c8-8fbe-4397-9dbb-9b
 
         self.assertEqual(
            'authorABC@chromium.org committed "Commit test subject line" '
-           'http://crrev.com/123456 https://src.chromium.org/viewvc/blink?view=revision&revision=456789 '
+           'http://crrev.com/123456 r456789 '
            '\x037NOTRY=true\x03',
             bot._format_commit_detail("""\
 1234commit1234
@@ -165,7 +165,7 @@ git-svn-id: svn://svn.chromium.org/blink/trunk@456789 bbb929c8-8fbe-4397-9dbb-9b
 
         self.assertEqual(
            'authorABC@chromium.org committed "Commit test subject line" '
-           'http://crrev.com/123456 https://src.chromium.org/viewvc/blink?view=revision&revision=456789 '
+           'http://crrev.com/123456 r456789 '
            '\x037NOTRY=true TBR=reviewerDEF@chromium.org\x03',
             bot._format_commit_detail("""\
 1234commit1234
@@ -187,7 +187,7 @@ git-svn-id: svn://svn.chromium.org/blink/trunk@456789 bbb929c8-8fbe-4397-9dbb-9b
 
         self.assertEqual(
            'authorABC@chromium.org committed "Commit test subject line" '
-           'http://crrev.com/123456 https://src.chromium.org/viewvc/blink?view=revision&revision=456789 '
+           'http://crrev.com/123456 r456789 '
            '\x037tbr=reviewerDEF@chromium.org, reviewerGHI@chromium.org, reviewerJKL@chromium.org notry=TRUE\x03',
             bot._format_commit_detail("""\
 1234commit1234

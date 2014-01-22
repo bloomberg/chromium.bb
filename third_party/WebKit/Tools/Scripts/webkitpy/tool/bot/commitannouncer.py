@@ -153,7 +153,7 @@ class CommitAnnouncer(SingleServerIRCBot):
         svn_string = 'git-svn-id: svn://svn.chromium.org/blink/trunk@'
         red_flag_strings = ['NOTRY=true', 'TBR=']
         review_url = ''
-        svn_url = ''
+        svn_revision = ''
         red_flags = []
 
         for line in body.split('\n'):
@@ -166,7 +166,7 @@ class CommitAnnouncer(SingleServerIRCBot):
                 revision = tokens[0]
                 if not revision.isdigit():
                     continue
-                svn_url = 'https://src.chromium.org/viewvc/blink?view=revision&revision=%s' % revision
+                svn_revision = 'r%s' % revision
             for red_flag_string in red_flag_strings:
                 if line.lower().startswith(red_flag_string.lower()):
                     red_flags.append(line.strip())
@@ -179,7 +179,7 @@ class CommitAnnouncer(SingleServerIRCBot):
 
         red_flag_message = ' \x037%s\x03' % (' '.join(red_flags)) if red_flags else ''
 
-        return '%s committed "%s" %s %s%s' % (email, subject, first_url, svn_url, red_flag_message)
+        return '%s committed "%s" %s %s%s' % (email, subject, first_url, svn_revision, red_flag_message)
 
     def _post(self, message):
         self.connection.execute_delayed(0, lambda: self.connection.privmsg(channel, self._sanitize_string(message)))
