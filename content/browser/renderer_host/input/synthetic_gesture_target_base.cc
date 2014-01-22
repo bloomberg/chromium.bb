@@ -80,15 +80,13 @@ void SyntheticGestureTargetBase::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetBase::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo& latency_info) {
-  host_->ForwardWheelEventWithLatencyInfo(
-      MouseWheelEventWithLatencyInfo(web_wheel, latency_info));
+  host_->ForwardWheelEventWithLatencyInfo(web_wheel, latency_info);
 }
 
 void SyntheticGestureTargetBase::DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) {
-  host_->ForwardMouseEventWithLatencyInfo(
-      MouseEventWithLatencyInfo(web_mouse, latency_info));
+  host_->ForwardMouseEventWithLatencyInfo(web_mouse, latency_info);
 }
 
 void SyntheticGestureTargetBase::OnSyntheticGestureCompleted(

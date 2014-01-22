@@ -936,24 +936,28 @@ void RenderWidgetHostImpl::EnableFullAccessibilityMode() {
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
-  ForwardMouseEventWithLatencyInfo(MouseEventWithLatencyInfo(
-      mouse_event, CreateRWHLatencyInfoIfNotExist(NULL, mouse_event.type)));
+  ForwardMouseEventWithLatencyInfo(mouse_event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
-    const MouseEventWithLatencyInfo& mouse_event) {
+      const blink::WebMouseEvent& mouse_event,
+      const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent",
-               "x", mouse_event.event.x, "y", mouse_event.event.y);
+               "x", mouse_event.x, "y", mouse_event.y);
+
+  ui::LatencyInfo latency_info =
+      CreateRWHLatencyInfoIfNotExist(&ui_latency, mouse_event.type);
 
   for (size_t i = 0; i < mouse_event_callbacks_.size(); ++i) {
-    if (mouse_event_callbacks_[i].Run(mouse_event.event))
+    if (mouse_event_callbacks_[i].Run(mouse_event))
       return;
   }
 
   if (IgnoreInputEvents())
     return;
 
-  input_router_->SendMouseEvent(mouse_event);
+  input_router_->SendMouseEvent(MouseEventWithLatencyInfo(mouse_event,
+                                                          latency_info));
 }
 
 void RenderWidgetHostImpl::OnPointerEventActivate() {
@@ -961,20 +965,25 @@ void RenderWidgetHostImpl::OnPointerEventActivate() {
 
 void RenderWidgetHostImpl::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
-  ForwardWheelEventWithLatencyInfo(MouseWheelEventWithLatencyInfo(
-      wheel_event, CreateRWHLatencyInfoIfNotExist(NULL, wheel_event.type)));
+  ForwardWheelEventWithLatencyInfo(wheel_event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
-    const MouseWheelEventWithLatencyInfo& wheel_event) {
+      const blink::WebMouseWheelEvent& wheel_event,
+      const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardWheelEvent");
+
+  ui::LatencyInfo latency_info =
+      CreateRWHLatencyInfoIfNotExist(&ui_latency, wheel_event.type);
+
   if (IgnoreInputEvents())
     return;
 
-  if (delegate_->PreHandleWheelEvent(wheel_event.event))
+  if (delegate_->PreHandleWheelEvent(wheel_event))
     return;
 
-  input_router_->SendWheelEvent(wheel_event);
+  input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(wheel_event,
+                                                               latency_info));
 }
 
 void RenderWidgetHostImpl::ForwardGestureEvent(

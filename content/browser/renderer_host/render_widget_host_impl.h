@@ -296,9 +296,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       const blink::WebTouchEvent& touch_event,
       const ui::LatencyInfo& ui_latency);
   void ForwardMouseEventWithLatencyInfo(
-      const MouseEventWithLatencyInfo& mouse_event);
+      const blink::WebMouseEvent& mouse_event,
+      const ui::LatencyInfo& ui_latency);
   void ForwardWheelEventWithLatencyInfo(
-      const MouseWheelEventWithLatencyInfo& wheel_event);
+      const blink::WebMouseWheelEvent& wheel_event,
+      const ui::LatencyInfo& ui_latency);
 
   void CancelUpdateTextDirection();
 

@@ -649,6 +649,10 @@ class RenderWidgetHostTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
+  int64 GetLatencyComponentId() {
+    return host_->GetLatencyComponentId();
+  }
+
   void SendInputEventACK(WebInputEvent::Type type,
                          InputEventAckState ack_result) {
     scoped_ptr<IPC::Message> response(
@@ -668,9 +672,26 @@ class RenderWidgetHostTest : public testing::Test {
     host_->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(type));
   }
 
+  void SimulateMouseEventWithLatencyInfo(WebInputEvent::Type type,
+                                         const ui::LatencyInfo& ui_latency) {
+    host_->ForwardMouseEventWithLatencyInfo(
+        SyntheticWebMouseEventBuilder::Build(type),
+        ui_latency);
+  }
+
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
     host_->ForwardWheelEvent(
         SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise));
+  }
+
+  void SimulateWheelEventWithLatencyInfo(float dX,
+                                         float dY,
+                                         int modifiers,
+                                         bool precise,
+                                         const ui::LatencyInfo& ui_latency) {
+    host_->ForwardWheelEventWithLatencyInfo(
+        SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise),
+        ui_latency);
   }
 
   void SimulateMouseMove(int x, int y, int modifiers) {
@@ -690,11 +711,26 @@ class RenderWidgetHostTest : public testing::Test {
     host_->ForwardGestureEvent(gesture_event);
   }
 
+  void SimulateGestureEventCoreWithLatencyInfo(
+      const WebGestureEvent& gesture_event,
+      const ui::LatencyInfo& ui_latency) {
+    host_->ForwardGestureEventWithLatencyInfo(gesture_event, ui_latency);
+  }
+
   // Inject simple synthetic WebGestureEvent instances.
   void SimulateGestureEvent(WebInputEvent::Type type,
                             WebGestureEvent::SourceDevice sourceDevice) {
     SimulateGestureEventCore(
         SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
+  }
+
+  void SimulateGestureEventWithLatencyInfo(
+      WebInputEvent::Type type,
+      WebGestureEvent::SourceDevice sourceDevice,
+      const ui::LatencyInfo& ui_latency) {
+    SimulateGestureEventCoreWithLatencyInfo(
+        SyntheticWebGestureEventBuilder::Build(type, sourceDevice),
+        ui_latency);
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
@@ -2507,6 +2543,83 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
   host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
 
   EXPECT_TRUE(host_->mock_input_router()->message_received_);
+}
+
+
+void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
+                                        int64 component_id,
+                                        WebInputEvent::Type input_type) {
+  const WebInputEvent* event = NULL;
+  ui::LatencyInfo latency_info;
+  bool is_keyboard_shortcut;
+  const IPC::Message* message = process->sink().GetUniqueMessageMatching(
+      InputMsg_HandleInputEvent::ID);
+  ASSERT_TRUE(message);
+  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(
+      message, &event, &latency_info, &is_keyboard_shortcut));
+  EXPECT_TRUE(latency_info.FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+      component_id,
+      NULL));
+  process->sink().ClearMessages();
+}
+
+// Tests that after input event passes through RWHI through ForwardXXXEvent()
+// or ForwardXXXEventWithLatencyInfo(), LatencyInfo component
+// ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will always present in the
+// event's LatencyInfo.
+TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  process_->sink().ClearMessages();
+
+  // Tests RWHI::ForwardWheelEvent().
+  SimulateWheelEvent(-5, 0, 0, true);
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::MouseWheel);
+  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Tests RWHI::ForwardWheelEventWithLatencyInfo().
+  SimulateWheelEventWithLatencyInfo(-5, 0, 0, true, ui::LatencyInfo());
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::MouseWheel);
+  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Tests RWHI::ForwardMouseEvent().
+  SimulateMouseEvent(WebInputEvent::MouseMove);
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::MouseMove);
+  SendInputEventACK(WebInputEvent::MouseMove, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Tests RWHI::ForwardMouseEventWithLatencyInfo().
+  SimulateMouseEventWithLatencyInfo(WebInputEvent::MouseMove,
+                                    ui::LatencyInfo());
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::MouseMove);
+  SendInputEventACK(WebInputEvent::MouseMove, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Tests RWHI::ForwardGestureEvent().
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+                       WebGestureEvent::Touchscreen);
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::GestureScrollUpdate);
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Tests RWHI::ForwardGestureEventWithLatencyInfo().
+  SimulateGestureEventWithLatencyInfo(WebInputEvent::GestureScrollUpdate,
+                                      WebGestureEvent::Touchscreen,
+                                      ui::LatencyInfo());
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::GestureScrollUpdate);
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Tests RWHI::ForwardTouchEventWithLatencyInfo().
+  PressTouchPoint(0, 1);
+  SendTouchEvent();
+  CheckLatencyInfoComponentInMessage(
+      process_, GetLatencyComponentId(), WebInputEvent::TouchStart);
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 
 }  // namespace content
