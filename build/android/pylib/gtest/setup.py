@@ -115,10 +115,14 @@ def _GenerateDepsDirUsingIsolate(suite_name):
       'remap',
       '--isolate', isolate_abs_path,
       '--isolated', isolated_abs_path,
-      '--path-variable', 'PRODUCT_DIR', constants.GetOutDirectory(),
-      '--config-variable', 'OS', 'android',
-      '--config-variable', 'icu_use_data_file_flag', '0',
       '--outdir', constants.ISOLATE_DEPS_DIR,
+
+      '--path-variable', 'PRODUCT_DIR', constants.GetOutDirectory(),
+
+      '--config-variable', 'OS', 'android',
+      '--config-variable', 'component', 'static_library',
+      '--config-variable', 'icu_use_data_file_flag', '0',
+      '--config-variable', 'use_openssl', '0',
   ]
   assert not cmd_helper.RunCmd(isolate_cmd)
 

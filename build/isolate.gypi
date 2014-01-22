@@ -69,20 +69,32 @@
         'python',
         '<(DEPTH)/tools/swarming_client/isolate.py',
         '<(test_isolation_mode)',
+        '--result', '<@(_outputs)',
+        '--isolate', '<(RULE_INPUT_PATH)',
+
         # Variables should use the -V FOO=<(FOO) form so frequent values,
-        # like '0' or '1', aren't stripped out by GYP.
-	# This list needs to be kept in sync with the cmd line options
-	# in src/build/android/pylib/gtest/setup.py.
+        # like '0' or '1', aren't stripped out by GYP. Run 'isolate.py help' for
+        # more details.
+        #
+        # This list needs to be kept in sync with the cmd line options
+        # in src/build/android/pylib/gtest/setup.py.
+
+        # Path variables are used to replace file paths when loading a .isolate
+        # file
         '--path-variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
+
+        # Extra variables are replaced on the 'command' entry and on paths in
+        # the .isolate file but are not considered relative paths.
+        '--extra-variable', 'version_full=<(version_full)',
+
         '--config-variable', 'OS=<(OS)',
+        '--config-variable', 'component=<(component)',
         # TODO(kbr): move this to chrome_tests.gypi:gles2_conform_tests_run
         # once support for user-defined config variables is added.
         '--config-variable',
-        'internal_gles2_conform_tests=<(internal_gles2_conform_tests)',
+          'internal_gles2_conform_tests=<(internal_gles2_conform_tests)',
         '--config-variable', 'icu_use_data_file_flag=<(icu_use_data_file_flag)',
-        '--extra-variable', 'version_full=<(version_full)',
-        '--result', '<@(_outputs)',
-        '--isolate', '<(RULE_INPUT_PATH)',
+        '--config-variable', 'use_openssl=<(use_openssl)',
       ],
       'conditions': [
         # Note: When gyp merges lists, it appends them to the old value.
