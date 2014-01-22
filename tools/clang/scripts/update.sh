@@ -23,8 +23,8 @@ STAMP_FILE="${LLVM_BUILD_DIR}/cr_build_revision"
 # ${A:-a} returns $A if it's set, a else.
 LLVM_REPO_URL=${LLVM_URL:-https://llvm.org/svn/llvm-project}
 
-# Die if any command dies.
-set -e
+# Die if any command dies, error on undefined variable expansions.
+set -eu
 
 OS="$(uname -s)"
 
@@ -65,6 +65,21 @@ while [[ $# > 0 ]]; do
       fi
       chrome_tools=$1
       ;;
+    --gcc-toolchain)
+      shift
+      if [[ $# == 0 ]]; then
+        echo "--gcc-toolchain requires an argument."
+        exit 1
+      fi
+      if [[ -x "$1/bin/gcc" ]]; then
+        gcc_toolchain=$1
+      else
+        echo "Invalid --gcc-toolchain: '$1'."
+        echo "'$1/bin/gcc' does not appear to be valid."
+        exit 1
+      fi
+      ;;
+
     --help)
       echo "usage: $0 [--force-local-build] [--mac-only] [--run-tests] "
       echo "--bootstrap: First build clang with CC, then with itself."
@@ -75,7 +90,15 @@ while [[ $# > 0 ]]; do
       echo "--with-chrome-tools: Select which chrome tools to build." \
            "Defaults to plugins."
       echo "    Example: --with-chrome-tools 'plugins empty-string'"
+      echo "--gcc-toolchain: Set the prefix for which GCC version should"
+      echo "    be used for building. For example, to use gcc in"
+      echo "    /opt/foo/bin/gcc, use '--gcc-toolchain '/opt/foo"
       echo
+      exit 1
+      ;;
+    *)
+      echo "Unknown argument: '$1'."
+      echo "Use --help for help."
       exit 1
       ;;
   esac
@@ -225,6 +248,15 @@ elif [ "${OS}" = "Darwin" ]; then
   NUM_JOBS="$(sysctl -n hw.ncpu)"
 fi
 
+if [[ -n "${gcc_toolchain}" ]]; then
+  # Use the specified gcc installation for building.
+  export CC="$gcc_toolchain/bin/gcc"
+  export CXX="$gcc_toolchain/bin/g++"
+fi
+
+export CFLAGS=""
+export CXXFLAGS=""
+
 # Build bootstrap clang if requested.
 if [[ -n "${bootstrap}" ]]; then
   echo "Building bootstrap compiler"
@@ -243,6 +275,16 @@ if [[ -n "${bootstrap}" ]]; then
         --without-llvmgcc \
         --without-llvmgxx
   fi
+
+  if [[ -n "${gcc_toolchain}" ]]; then
+    # Copy that gcc's stdlibc++.so.6 to the build dir, so the bootstrap
+    # compiler can start.
+    mkdir -p Release+Asserts/lib
+    cp -v "$(${CXX} -print-file-name=libstdc++.so.6)" \
+      "Release+Asserts/lib/"
+  fi
+
+
   MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}"
   if [[ -n "${run_tests}" ]]; then
     make check-all
@@ -250,6 +292,14 @@ if [[ -n "${bootstrap}" ]]; then
   cd -
   export CC="${PWD}/${LLVM_BOOTSTRAP_DIR}/Release+Asserts/bin/clang"
   export CXX="${PWD}/${LLVM_BOOTSTRAP_DIR}/Release+Asserts/bin/clang++"
+
+  if [[ -n "${gcc_toolchain}" ]]; then
+    # Tell the bootstrap compiler to use a specific gcc prefix to search
+    # for standard library headers and shared object file.
+    export CFLAGS="--gcc-toolchain=${gcc_toolchain}"
+    export CXXFLAGS="--gcc-toolchain=${gcc_toolchain}"
+  fi
+
   echo "Building final compiler"
 fi
 
@@ -267,6 +317,12 @@ if [[ ! -f ./config.status ]]; then
       --without-llvmgxx
 fi
 
+if [[ -n "${gcc_toolchain}" ]]; then
+  # Copy in the right stdlibc++.so.6 so clang can start.
+  mkdir -p Release+Asserts/lib
+  cp -v "$(${CXX} ${CXXFLAGS} -print-file-name=libstdc++.so.6)" \
+    Release+Asserts/lib/
+fi
 MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}"
 STRIP_FLAGS=
 if [ "${OS}" = "Darwin" ]; then

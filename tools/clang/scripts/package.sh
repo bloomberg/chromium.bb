@@ -6,6 +6,43 @@
 # This script will check out llvm and clang, and then package the results up
 # to a tgz file.
 
+# Parse command line options.
+while [[ $# > 0 ]]; do
+  case $1 in
+    --gcc-toolchain)
+      shift
+      if [[ $# == 0 ]]; then
+        echo "--gcc-toolchain requires an argument."
+        exit 1
+      fi
+      if [[ -x "$1/bin/gcc" ]]; then
+        gcc_toolchain=$1
+      else
+        echo "Invalid --gcc-toolchain: '$1'."
+        echo "'$1/bin/gcc' does not appear to be valid."
+        exit 1
+      fi
+      ;;
+
+    --help)
+      echo "usage: $0 [--gcc-toolchain <prefix>]"
+      echo
+      echo "--gcc-toolchain: Set the prefix for which GCC version should"
+      echo "    be used for building. For example, to use gcc in"
+      echo "    /opt/foo/bin/gcc, use '--gcc-toolchain '/opt/foo"
+      echo
+      exit 1
+      ;;
+    *)
+      echo "Unknown argument: '$1'."
+      echo "Use --help for help."
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
 LLVM_BOOTSTRAP_DIR="${THIS_DIR}/../../../third_party/llvm-bootstrap"
@@ -25,13 +62,17 @@ svn diff "${LLVM_DIR}/projects/compiler-rt" 2>&1 | tee -a buildlog.txt
 
 echo "Starting build" | tee -a buildlog.txt
 
-set -ex
+set -exu
 
 # Do a clobber build.
 rm -rf "${LLVM_BOOTSTRAP_DIR}"
 rm -rf "${LLVM_BUILD_DIR}"
-"${THIS_DIR}"/update.sh --run-tests --bootstrap --force-local-build 2>&1 | \
-    tee -a buildlog.txt
+extra_flags=
+if [[ -n "${gcc_toolchain}" ]]; then
+  extra_flags="--gcc-toolchain ${gcc_toolchain}"
+fi
+"${THIS_DIR}"/update.sh --bootstrap --force-local-build --run-tests \
+    ${extra_flags} 2>&1 | tee -a buildlog.txt
 
 R=$("${LLVM_BIN_DIR}/clang" --version | \
      sed -ne 's/clang version .*(trunk \([0-9]*\))/\1/p')
@@ -60,6 +101,11 @@ cp "${LLVM_BIN_DIR}/llvm-symbolizer" $PDIR/bin/
 # care about.
 cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
 cp "${LLVM_LIB_DIR}/libBlinkGCPlugin.${SO_EXT}" $PDIR/lib
+
+if [[ -n "${gcc_toolchain}" ]]; then
+  # Copy the stdlibc++.so.6 we linked Clang against so it can run.
+  cp "${LLVM_LIB_DIR}/libstdc++.so.6" $PDIR/lib
+fi
 
 # Copy built-in headers (lib/clang/3.2/include).
 # libcompiler-rt puts all kinds of libraries there too, but we want only some.
