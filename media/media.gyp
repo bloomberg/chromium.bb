@@ -42,7 +42,6 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
-        '../net/net.gyp:net',
         '../gpu/gpu.gyp:command_buffer_common',
         '../skia/skia.gyp:skia',
         '../third_party/opus/opus.gyp:opus',

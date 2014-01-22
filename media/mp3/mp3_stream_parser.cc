@@ -12,7 +12,6 @@
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
-#include "net/http/http_util.h"
 
 namespace media {
 
@@ -430,6 +429,24 @@ int MP3StreamParser::ParseMP3Frame(const uint8* data,
   return frame_size;
 }
 
+static int LocateEndOfHeaders(const uint8_t* buf, int buf_len, int i) {
+  bool was_lf = false;
+  char last_c = '\0';
+  for (; i < buf_len; ++i) {
+    char c = buf[i];
+    if (c == '\n') {
+      if (was_lf)
+        return i + 1;
+      was_lf = true;
+    } else if (c != '\r' || last_c != '\n') {
+      was_lf = false;
+    }
+    last_c = c;
+  }
+  return -1;
+}
+
+
 int MP3StreamParser::ParseIcecastHeader(const uint8* data, int size) {
   DVLOG(1) << __FUNCTION__ << "(" << size << ")";
 
@@ -440,8 +457,7 @@ int MP3StreamParser::ParseIcecastHeader(const uint8* data, int size) {
     return -1;
 
   int locate_size = std::min(size, kMaxIcecastHeaderSize);
-  int offset = net::HttpUtil::LocateEndOfHeaders(
-      reinterpret_cast<const char*>(data), locate_size, 4);
+  int offset = LocateEndOfHeaders(data, locate_size, 4);
   if (offset < 0) {
     if (locate_size == kMaxIcecastHeaderSize) {
       MEDIA_LOG(log_cb_) << "Icecast header is too large.";
