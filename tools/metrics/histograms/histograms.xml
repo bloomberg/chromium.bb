@@ -3678,6 +3678,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Event.AggregatedLatency.Renderer2" units="microseconds">
+  <summary>
+    Time between initiation of any input event and the renderer receiving and
+    starting to process it.
+  </summary>
+</histogram>
+
 <histogram name="Event.CoalescedCount.Mouse">
   <summary>Number of Mouse events coalesced.</summary>
 </histogram>
@@ -3960,198 +3967,15 @@ other types of suffix sets.
 
 <histogram name="Event.Latency.Renderer" units="microseconds">
   <summary>
-    Time between initiation of all input events and renderer processing.
+    Time between initiation of all input events and renderer processing. This is
+    soon to be replaced by Event.Latency.Renderer2.*
   </summary>
 </histogram>
 
-<histogram name="Event.Latency.Renderer.Char" units="microseconds">
+<histogram name="Event.Latency.Renderer2" units="microseconds">
   <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.ContextMenu" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureDoubleTap" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureFlingCancel"
-    units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureFlingStart" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureLongPress" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureLongTap" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GesturePinchBegin" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GesturePinchEnd" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GesturePinchUpdate"
-    units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureScrollBegin"
-    units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureScrollEnd" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureScrollUpdate"
-    units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureTap" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureTapCancel" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureTapDown" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.GestureTwoFingerTap"
-    units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.KeyDown" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.KeyUp" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.MouseDown" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.MouseEnter" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.MouseLeave" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.MouseMove" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.MouseUp" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.MouseWheel" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.RawKeyDown" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.TouchCancel" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.TouchEnd" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.TouchMove" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.TouchStart" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.Renderer.Undefined" units="microseconds">
-  <summary>
-    Time between initiation of input event and browser processing.
+    Time between initiation of the input event and the renderer receiving and
+    starting to process it.
   </summary>
 </histogram>
 
@@ -34152,6 +33976,108 @@ other types of suffix sets.
   <group name="" label="Normal start."/>
   <group name="Fast" label="Fast start by skipping normal chrome.dll startup."/>
   <affected-histogram name="Startup.WarmStartTimeFromRemoteProcessStart"/>
+</fieldtrial>
+
+<fieldtrial name="RendererEventLatency" separator=".">
+  <group name="Char" label="The Char event occurs on textual keyboard input."/>
+  <group name="ContextMenu" label="For ContextMenu event."/>
+  <group name="GestureDoubleTap"
+      label="A GestureDoubleTap occurs when the user double taps on a
+             touchscreen."/>
+  <group name="GestureFlingCancel"
+      label="A GestureFlingCancel is sent to the renderer to cancel any
+             active flings."/>
+  <group name="GestureFlingStart"
+      label="A GestureFlingStart is sent when the user quickly flicks on a
+             touchscreen."/>
+  <group name="GestureLongPress"
+      label="A GestureLongPress is sent when the user taps down and holds
+             their finger on a touchscreen."/>
+  <group name="GestureLongTap"
+      label="A GestureLongTap is sent when the user taps down on a
+             touchscreen, holds their finger for a while, then releases."/>
+  <group name="GesturePinchBegin"
+      label="A GesturePinchBegin is sent when a user starts a pinch zoom
+             motion on a touchscreen."/>
+  <group name="GesturePinchEnd"
+      label="A GesturePinchEnd is sent when the user releases their fingers
+             from the touchscreen after performing a pinch zoom motion."/>
+  <group name="GesturePinchUpdate"
+      label="GesturePinchUpdate events are sent while the user is performing
+             a pinch zoom motion on a touch screen. GesturePinchUpdate events
+             are sent as the user changes the distance between their fingers."/>
+  <group name="GestureScrollBegin"
+      label="A GestureScrollBegin is sent at the beginning of a gesture
+             scroll on a touchscreen."/>
+  <group name="GestureScrollEnd"
+      label="A GestureScrollEnd is sent when the user releases their finger
+             after a gesture scroll on a touchscreen."/>
+  <group name="GestureScrollUpdate"
+      label="GestureScrollUpdate events are sent as the user drags their
+             finger along the touchscreen during a gesture scroll."/>
+  <group name="GestureScrollUpdateWithoutPropagation"
+      label="GestureScrollUpdateWithoutPropagation events are scroll updates
+             that shouldn't bubble, generated by a gesture fling."/>
+  <group name="GestureShowPress"
+      label="A GestureShowPress event is sent when the user presses down on
+             the touchscreen but before a GestureTapDown."/>
+  <group name="GestureTap"
+      label="A GestureTap is sent when the user presses down and releases on
+             a touchscreen."/>
+  <group name="GestureTapUnconfirmed"
+      label="A GestureTapUnconfirmed is sent when the user taps the
+             touchscreen but, due to a delay, the GestureTap isn't sent yet."/>
+  <group name="GestureTapCancel"
+      label="A GestureTapCancel is sent to cancel a pending GestureTap event.
+             For example, if the user taps down but drags their finger
+             instead of releasing it."/>
+  <group name="GestureTapDown"
+      label="A GestureTapDown is sent when the user presses on the
+             touchscreen in what could potentially be a full GestureTap
+             event."/>
+  <group name="GestureTwoFingerTap"
+      label="A GestureTwoFingerTap is sent when the user presses down a
+             releases on a touchscreen with two fingers."/>
+  <group name="KeyDown"
+      label="A KeyDown event is sent when a keyboard key is pressed down."/>
+  <group name="KeyUp"
+      label="A KeyUp event is sent when a depressed keyboard key is released."/>
+  <group name="MouseDown"
+      label="A MouseDown event is sent when the user click down a mouse
+             button."/>
+  <group name="MouseEnter"
+      label="A MouseEnter event is sent when the mouse cursor enters the
+             renderer area."/>
+  <group name="MouseLeave"
+      label="A MouseLeave event is sent when the mouse cursor leaves the
+             renderer area."/>
+  <group name="MouseMove"
+      label="A MouseMove event is sent when the mouse cursor moves within the
+             renderer area."/>
+  <group name="MouseUp"
+      label="A MouseUp event is sent when a depressed mouse button is
+             released."/>
+  <group name="MouseWheel"
+      label="A MouseWheel event is sent when the user scrolls using the mouse
+             wheel within the renderer area."/>
+  <group name="RawKeyDown"
+      label="A RawKeyDown event is a wrapper around a native key event."/>
+  <group name="TouchCancel"
+      label="A TouchCancel is used to cancel an existing touch point. For
+             example, if the user drags a finger outside the bounds of the
+             renderer."/>
+  <group name="TouchEnd"
+      label="A TouchEnd is send when the user lifts a finger from the
+             touchscreen."/>
+  <group name="TouchMove"
+      label="A TouchMove is sent when the user moves a finger along the
+             touchscreen."/>
+  <group name="TouchStart"
+      label="A TouchStart is sent when the user first touches a finger to the
+             touchscreen."/>
+  <group name="Undefined" label="For unknown or undefined events."/>
+  <affected-histogram name="Event.Latency.Renderer"/>
+  <affected-histogram name="Event.Latency.Renderer2"/>
 </fieldtrial>
 
 <fieldtrial name="SBInterstitial">
