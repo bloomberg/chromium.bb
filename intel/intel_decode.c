@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "xf86drm.h"
 #include "intel_chipset.h"
 #include "intel_bufmgr.h"
 
@@ -104,11 +105,7 @@ static float int_as_float(uint32_t intval)
 	return uval.f;
 }
 
-static void
-instr_out(struct drm_intel_decode *ctx, unsigned int index,
-	  const char *fmt, ...) __attribute__((format(__printf__, 3, 4)));
-
-static void
+static void DRM_PRINTFLIKE(3, 4)
 instr_out(struct drm_intel_decode *ctx, unsigned int index,
 	  const char *fmt, ...)
 {
