@@ -114,6 +114,32 @@ TEST_F(JsonTest, NumberIsNotValid) {
   EXPECT_FALSE(json_->ParseObject("3"));
 }
 
+TEST_F(JsonTest, GetJsonValue) {
+  ASSERT_TRUE(json_->ParseObject("{\"dict\": {\"key\": \"value\"}}"));
+
+  scoped_ptr<Json> dict;
+  ASSERT_TRUE(json_->GetJsonValueForKey("dict", &dict));
+  ASSERT_TRUE(dict != NULL);
+
+  std::string string_value;
+  EXPECT_TRUE(dict->GetStringValueForKey("key", &string_value));
+  EXPECT_EQ("value", string_value);
+}
+
+TEST_F(JsonTest, GetMissingJsonValue) {
+  ASSERT_TRUE(json_->ParseObject("{\"dict\": {\"key\": \"value\"}}"));
+
+  scoped_ptr<Json> dict;
+  EXPECT_FALSE(json_->GetJsonValueForKey("not-dict", &dict));
+  EXPECT_TRUE(dict == NULL);
+}
+
+TEST_F(JsonTest, GetNullJsonValue) {
+  ASSERT_TRUE(json_->ParseObject("{\"dict\": {\"key\": \"value\"}}"));
+  EXPECT_TRUE(json_->GetJsonValueForKey("dict", NULL));
+}
+
+
 }  // namespace
 
 }  // namespace addressinput

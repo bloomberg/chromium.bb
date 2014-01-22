@@ -29,7 +29,7 @@
 namespace i18n {
 namespace addressinput {
 
-const char kKey[] = "data/CA/AB--fr";
+const char kKey[] = "data/CA";
 
 // Empty data that the downloader can return.
 const char kEmptyData[] = "{}";

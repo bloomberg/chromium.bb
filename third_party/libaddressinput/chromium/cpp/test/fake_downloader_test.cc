@@ -63,13 +63,14 @@ testing::AssertionResult DataIsValid(const std::string& data,
     return testing::AssertionFailure() << "empty data";
   }
 
-  std::string expected_data_begin = "{\"id\":\"" + key + "\"";
-  if (data.compare(0, expected_data_begin.length(), expected_data_begin) != 0) {
+  static const char kDataBegin[] = "{\"data/";
+  static const size_t kDataBeginLength = sizeof kDataBegin - 1;
+  if (data.compare(0, kDataBeginLength, kDataBegin, kDataBeginLength) != 0) {
     return testing::AssertionFailure() << data << " does not begin with "
-                                       << expected_data_begin;
+                                       << kDataBegin;
   }
 
-  static const char kDataEnd[] = "\"}";
+  static const char kDataEnd[] = "\"}}";
   static const size_t kDataEndLength = sizeof kDataEnd - 1;
   if (data.compare(data.length() - kDataEndLength,
                    kDataEndLength,
@@ -97,18 +98,6 @@ TEST_P(FakeDownloaderTest, FakeDownloaderHasValidDataForRegion) {
 INSTANTIATE_TEST_CASE_P(
     AllRegions, FakeDownloaderTest,
     testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
-
-// Verifies that the key "data" also contains valid data.
-TEST_F(FakeDownloaderTest, DownloadExistingData) {
-  static const std::string kKey = "data";
-  static const std::string kUrl =
-      std::string(FakeDownloader::kFakeDataUrl) + kKey;
-  downloader_.Download(kUrl, BuildCallback());
-
-  EXPECT_TRUE(success_);
-  EXPECT_EQ(kUrl, url_);
-  EXPECT_TRUE(DataIsValid(data_, kKey));
-}
 
 // Verifies that downloading a missing key will return "{}".
 TEST_F(FakeDownloaderTest, DownloadMissingKeyReturnsEmptyDictionary) {

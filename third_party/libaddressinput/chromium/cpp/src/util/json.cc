@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <string>
 
 #include <rapidjson/document.h>
@@ -31,20 +32,26 @@ namespace {
 
 class Rapidjson : public Json {
  public:
-  Rapidjson() : document_(new rapidjson::Document), valid_(false) {}
+  Rapidjson() : dict_() {}
 
   virtual ~Rapidjson() {}
 
   virtual bool ParseObject(const std::string& json) {
-    document_->Parse<rapidjson::kParseValidateEncodingFlag>(json.c_str());
-    valid_ = !document_->HasParseError() && document_->IsObject();
-    return valid_;
+    scoped_ptr<rapidjson::Document> document(new rapidjson::Document);
+    document->Parse<rapidjson::kParseValidateEncodingFlag>(json.c_str());
+    if (!document->HasParseError() && document->IsObject()) {
+      dict_.reset(document.release());
+      return true;
+    }
+    return false;
   }
 
   virtual bool GetStringValueForKey(const std::string& key,
                                     std::string* value) const {
-    assert(valid_);
-    const rapidjson::Value::Member* member = document_->FindMember(key.c_str());
+    assert(dict_ != NULL);
+
+    // Owned by |dict_|.
+    const rapidjson::Value::Member* member = dict_->FindMember(key.c_str());
     if (member == NULL || !member->value.IsString()) {
       return false;
     }
@@ -56,12 +63,39 @@ class Rapidjson : public Json {
     return true;
   }
 
- protected:
-  // JSON document.
-  scoped_ptr<rapidjson::Document> document_;
+  virtual bool GetJsonValueForKey(const std::string& key,
+                                  scoped_ptr<Json>* value) const {
+    assert(dict_ != NULL);
 
-  // True if the parsed string is a valid JSON object.
-  bool valid_;
+    // Owned by |dict_|.
+    const rapidjson::Value::Member* member = dict_->FindMember(key.c_str());
+    if (member == NULL || !member->value.IsObject()) {
+      return false;
+    }
+
+    if (value) {
+      scoped_ptr<rapidjson::Value> copy(new rapidjson::Value);
+
+      // Rapidjson provides only move operations in public API, but implements
+      // the move operation with a memcpy and delete:
+      //
+      // https://code.google.com/p/rapidjson/source/browse/trunk/include/rapidjson/document.h?r=131#173
+      //
+      // We need a copy of the object, so we use memcpy manually.
+      memcpy(copy.get(), &member->value, sizeof(rapidjson::Value));
+
+      value->reset(new Rapidjson(copy.Pass()));
+    }
+
+    return true;
+  }
+
+ protected:
+  explicit Rapidjson(scoped_ptr<rapidjson::Value> dict)
+      : dict_(dict.Pass()) {}
+
+  // JSON value.
+  scoped_ptr<rapidjson::Value> dict_;
 
   DISALLOW_COPY_AND_ASSIGN(Rapidjson);
 };

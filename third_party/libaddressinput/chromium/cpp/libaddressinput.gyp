@@ -48,7 +48,8 @@
         'src/validating_util.cc',
       ],
       'defines': [
-        'VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-address/"',
+        # TODO(rouslan): Use https://i18napis.appspot.com.
+        'VALIDATION_DATA_URL="https://i18napis-canary-hrd.appspot.com/ssl-aggregate-address/"',
       ],
       'dependencies': [
         'grit.gyp:generated_messages',
@@ -62,6 +63,7 @@
       'sources': [
         'test/address_data_test.cc',
         'test/address_ui_test.cc',
+        'test/country_rules_aggregator_test.cc',
         'test/fake_downloader.cc',
         'test/fake_downloader_test.cc',
         'test/fake_storage.cc',

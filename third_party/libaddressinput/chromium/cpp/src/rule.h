@@ -26,6 +26,8 @@
 namespace i18n {
 namespace addressinput {
 
+class Json;
+
 // Stores an element in the format of an address as it should be displayed on an
 // envelope. The element can be either a literal string, like " ", or a field,
 // like ADMIN_AREA.
@@ -74,6 +76,9 @@ class Rule {
   // Parses |serialized_rule|. Returns |true| if the |serialized_rule| has valid
   // format (JSON dictionary).
   bool ParseSerializedRule(const std::string& serialized_rule);
+
+  // Parses |json_rule|, which must contain parsed serialized rule.
+  void ParseJsonRule(const Json& json_rule);
 
   // Returns the format of the address as it should appear on an envelope.
   const std::vector<std::vector<FormatElement> >& GetFormat() const {

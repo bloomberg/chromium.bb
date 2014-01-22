@@ -15,18 +15,20 @@
 #ifndef I18N_ADDRESSINPUT_COUNTRY_RULES_AGGREGATOR_H_
 #define I18N_ADDRESSINPUT_COUNTRY_RULES_AGGREGATOR_H_
 
+#include <libaddressinput/address_field.h>
 #include <libaddressinput/callback.h>
 #include <libaddressinput/util/basictypes.h>
 #include <libaddressinput/util/scoped_ptr.h>
 
-#include <map>
 #include <string>
 #include <vector>
 
 namespace i18n {
 namespace addressinput {
 
+class Json;
 class Retriever;
+class Rule;
 class Ruleset;
 
 // Aggregates a ruleset for a country. Sample usage:
@@ -68,12 +70,18 @@ class CountryRulesAggregator {
                       scoped_ptr<Callback> rules_ready);
 
  private:
-  struct RequestData;
-
   // Callback for Retriever::Retrieve() method.
   void OnDataReady(bool success,
                    const std::string& key,
                    const std::string& data);
+
+  // Builds and returns the ruleset for |key| at |field| level. Returns NULL on
+  // failure, e.g. missing sub-region data in JSON.
+  scoped_ptr<Ruleset> Build(const std::string& key, AddressField field);
+
+  // Builds and returns the rule for |key| at |field| level. Returns NULL if
+  // |key| is not in JSON.
+  scoped_ptr<Rule> ParseRule(const std::string& key, AddressField field) const;
 
   // Abandons all requests and clears all retrieved data.
   void Reset();
@@ -82,34 +90,21 @@ class CountryRulesAggregator {
   // a time.
   scoped_ptr<Retriever> retriever_;
 
-  // A mapping of data keys (e.g., "data/CA/AB--fr") to information that helps
-  // to parse the response data and place it the correct location in the
-  // rulesets.
-  std::map<std::string, RequestData> requests_;
-
   // The country code for which to retrieve the ruleset. Passed to the callback
   // method to identify the ruleset. Examples: "US", "CA", "CH", etc.
   std::string country_code_;
 
+  // The key requested from retriever. For example, "data/US".
+  std::string key_;
+
   // The callback to invoke when the ruleset has been retrieved.
   scoped_ptr<Callback> rules_ready_;
 
-  // The top-level ruleset for the country code. Passed to the callback method
-  // as the result of the query.
-  scoped_ptr<Ruleset> root_;
+  // The collection of rules for a country code.
+  scoped_ptr<Json> json_;
 
-  // The default language for the country code. This value is parsed from the
-  // country-level rule for the country code and is used to filter out the
-  // default language from the list of all supported languages for a country.
-  // For example, the list of supported languages for Canada is ["en", "fr"],
-  // but the default language is "en". Data requests for "data/CA/AB--fr" will
-  // succeed, but "data/CA/AB--en" will not return data.
-  std::string default_language_;
-
-  // The list of all supported languages for the country code. This value is
-  // parsed from the country-level rule for the country and is used to download
-  // language-specific rules.
-  std::vector<std::string> languages_;
+  // The non-default languages that have custom rules.
+  std::vector<std::string> non_default_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(CountryRulesAggregator);
 };

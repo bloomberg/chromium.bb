@@ -95,7 +95,8 @@
         '<(libaddressinput_dir)/cpp/src/validating_util.h',
       ],
       'defines': [
-        'VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-address/"',
+        # TODO(rouslan): Use https://i18napis.appspot.com.
+        'VALIDATION_DATA_URL="https://i18napis-canary-hrd.appspot.com/ssl-aggregate-address/"',
       ],
       'dependencies': [
         'libaddressinput_strings',
@@ -122,6 +123,7 @@
         'chromium/chrome_storage_impl_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/address_data_test.cc',
         '<(libaddressinput_dir)/cpp/test/address_ui_test.cc',
+        '<(libaddressinput_dir)/cpp/test/country_rules_aggregator_test.cc',
         '<(libaddressinput_dir)/cpp/test/fake_downloader.cc',
         '<(libaddressinput_dir)/cpp/test/fake_downloader.h',
         '<(libaddressinput_dir)/cpp/test/fake_downloader_test.cc',

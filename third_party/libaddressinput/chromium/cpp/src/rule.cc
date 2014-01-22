@@ -255,46 +255,48 @@ bool Rule::ParseSerializedRule(const std::string& serialized_rule) {
   if (!json->ParseObject(serialized_rule)) {
     return false;
   }
+  ParseJsonRule(*json);
+  return true;
+}
 
+void Rule::ParseJsonRule(const Json& json_rule) {
   std::string value;
-  if (json->GetStringValueForKey("fmt", &value)) {
+  if (json_rule.GetStringValueForKey("fmt", &value)) {
     ParseAddressFieldsFormat(value, &format_);
   }
 
-  if (json->GetStringValueForKey("require", &value)) {
+  if (json_rule.GetStringValueForKey("require", &value)) {
     ParseAddressFieldsRequired(value, &required_);
   }
 
   // Used as a separator in a list of items. For example, the list of supported
   // languages can be "de~fr~it".
   static const char kSeparator = '~';
-  if (json->GetStringValueForKey("sub_keys", &value)) {
+  if (json_rule.GetStringValueForKey("sub_keys", &value)) {
     SplitString(value, kSeparator, &sub_keys_);
   }
 
-  if (json->GetStringValueForKey("languages", &value)) {
+  if (json_rule.GetStringValueForKey("languages", &value)) {
     SplitString(value, kSeparator, &languages_);
   }
 
-  if (json->GetStringValueForKey("lang", &value)) {
+  if (json_rule.GetStringValueForKey("lang", &value)) {
     language_ = value;
   }
 
-  if (json->GetStringValueForKey("zip", &value)) {
+  if (json_rule.GetStringValueForKey("zip", &value)) {
     postal_code_format_ = value;
   }
 
-  if (json->GetStringValueForKey("state_name_type", &value)) {
+  if (json_rule.GetStringValueForKey("state_name_type", &value)) {
     admin_area_name_message_id_ = GetAdminAreaMessageId(value, false);
     invalid_admin_area_message_id_ = GetAdminAreaMessageId(value, true);
   }
 
-  if (json->GetStringValueForKey("zip_name_type", &value)) {
+  if (json_rule.GetStringValueForKey("zip_name_type", &value)) {
     postal_code_name_message_id_ = GetPostalCodeMessageId(value, false);
     invalid_postal_code_message_id_ = GetPostalCodeMessageId(value, true);
   }
-
-  return true;
 }
 
 int Rule::GetInvalidFieldMessageId(AddressField field) const {

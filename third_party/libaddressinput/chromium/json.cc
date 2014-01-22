@@ -35,10 +35,29 @@ class ChromeJson : public Json {
 
   virtual bool GetStringValueForKey(const std::string& key, std::string* value)
       const OVERRIDE {
+    DCHECK(dict_);
     return dict_->GetStringWithoutPathExpansion(key, value);
   }
 
+  virtual bool GetJsonValueForKey(const std::string& key,
+                                  scoped_ptr<Json>* value) const OVERRIDE {
+    DCHECK(dict_);
+    base::DictionaryValue* sub_dict = NULL;  // Owned by |dict_|.
+    if (!dict_->GetDictionaryWithoutPathExpansion(key, &sub_dict) || !sub_dict)
+      return false;
+
+    if (value) {
+      value->reset(new ChromeJson(
+          scoped_ptr<base::DictionaryValue>(sub_dict->DeepCopy())));
+    }
+
+    return true;
+  }
+
  private:
+   explicit ChromeJson(scoped_ptr<base::DictionaryValue> dict)
+       : dict_(dict.Pass()) {}
+
   scoped_ptr<base::DictionaryValue> dict_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeJson);

@@ -33,7 +33,7 @@ class Storage;
 // Manages downloading data and caching it locally. Sample usage:
 //    Storage* storage = ...;
 //    Downloader* downloader = ...;
-//    Retriever retriever("https://i18napis.appspot.com/ssl-address/",
+//    Retriever retriever("https://i18napis.appspot.com/ssl-aggregate-address/",
 //                        downloader, storage);
 //    retriever.Retrieve("data/CA/AB--fr",
 //                       BuildCallback(this, &MyClass::OnDataRetrieved));
@@ -65,15 +65,15 @@ class Retriever {
                     const std::string& downloaded_data);
 
   // Returns the URL where the |key| can be retrieved. For example, returns
-  // "https://i18napis.appspot.com/ssl-address/data/US" for input "data/US".
-  // Assumes that the input string is a valid URL segment.
+  // "https://i18napis.appspot.com/ssl-aggregate-address/data/US" for input
+  // "data/US". Assumes that the input string is a valid URL segment.
   std::string GetUrlForKey(const std::string& key) const;
 
   // Returns the key for the |url|. For example, returns "data/US" for
-  // "https://i18napis.appspot.com/ssl-address/data/US". If the |url| does not
-  // start with |validation_data_url| that was passed to the constructor, then
-  // returns an empty string. (This can happen if the user of the library
-  // returns a bad URL in their Downloader implementation.)
+  // "https://i18napis.appspot.com/ssl-aggregate-address/data/US". If the |url|
+  // does not start with |validation_data_url| that was passed to the
+  // constructor, then returns an empty string. (This can happen if the user of
+  // the library returns a bad URL in their Downloader implementation.)
   std::string GetKeyForUrl(const std::string& url) const;
 
   // Returns true if the |url| starts with |validation_data_url| that was passed
