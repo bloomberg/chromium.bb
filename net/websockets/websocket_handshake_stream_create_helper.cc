@@ -14,9 +14,11 @@
 namespace net {
 
 WebSocketHandshakeStreamCreateHelper::WebSocketHandshakeStreamCreateHelper(
+    WebSocketStream::ConnectDelegate* connect_delegate,
     const std::vector<std::string>& requested_subprotocols)
     : requested_subprotocols_(requested_subprotocols),
-      stream_(NULL) {}
+      stream_(NULL),
+      connect_delegate_(connect_delegate) {}
 
 WebSocketHandshakeStreamCreateHelper::~WebSocketHandshakeStreamCreateHelper() {}
 
@@ -26,6 +28,7 @@ WebSocketHandshakeStreamCreateHelper::CreateBasicStream(
     bool using_proxy) {
   return stream_ =
       new WebSocketBasicHandshakeStream(connection.Pass(),
+                                        connect_delegate_,
                                         using_proxy,
                                         requested_subprotocols_,
                                         std::vector<std::string>());

@@ -9,16 +9,22 @@
 #include "base/basictypes.h"  // for size_t
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/big_endian.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"
+#include "net/websockets/websocket_handshake_request_info.h"
+#include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_mux.h"
 #include "net/websockets/websocket_stream.h"
 
@@ -117,6 +123,17 @@ class WebSocketChannel::ConnectDelegate
     // |this| has been deleted.
   }
 
+  virtual void OnStartOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {
+    creator_->OnStartOpeningHandshake(request.Pass());
+  }
+
+  virtual void OnFinishOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeResponseInfo> response)
+      OVERRIDE {
+    creator_->OnFinishOpeningHandshake(response.Pass());
+  }
+
  private:
   // A pointer to the WebSocketChannel that created this object. There is no
   // danger of this pointer being stale, because deleting the WebSocketChannel
@@ -126,6 +143,75 @@ class WebSocketChannel::ConnectDelegate
 
   DISALLOW_COPY_AND_ASSIGN(ConnectDelegate);
 };
+
+class WebSocketChannel::HandshakeNotificationSender
+    : public base::SupportsWeakPtr<HandshakeNotificationSender> {
+ public:
+  explicit HandshakeNotificationSender(WebSocketChannel* channel);
+  ~HandshakeNotificationSender();
+
+  static void Send(base::WeakPtr<HandshakeNotificationSender> sender);
+
+  ChannelState SendImmediately(WebSocketEventInterface* event_interface);
+
+  const WebSocketHandshakeRequestInfo* handshake_request_info() const {
+    return handshake_request_info_.get();
+  }
+
+  void set_handshake_request_info(
+      scoped_ptr<WebSocketHandshakeRequestInfo> request_info) {
+    handshake_request_info_ = request_info.Pass();
+  }
+
+  const WebSocketHandshakeResponseInfo* handshake_response_info() const {
+    return handshake_response_info_.get();
+  }
+
+  void set_handshake_response_info(
+      scoped_ptr<WebSocketHandshakeResponseInfo> response_info) {
+    handshake_response_info_ = response_info.Pass();
+  }
+
+ private:
+  WebSocketChannel* owner_;
+  scoped_ptr<WebSocketHandshakeRequestInfo> handshake_request_info_;
+  scoped_ptr<WebSocketHandshakeResponseInfo> handshake_response_info_;
+};
+
+WebSocketChannel::HandshakeNotificationSender::HandshakeNotificationSender(
+    WebSocketChannel* channel) : owner_(channel) {}
+
+WebSocketChannel::HandshakeNotificationSender::~HandshakeNotificationSender() {}
+
+void WebSocketChannel::HandshakeNotificationSender::Send(
+    base::WeakPtr<HandshakeNotificationSender> sender) {
+  // Do nothing if |sender| is already destructed.
+  if (sender) {
+    WebSocketChannel* channel = sender->owner_;
+    AllowUnused(sender->SendImmediately(channel->event_interface_.get()));
+  }
+}
+
+ChannelState WebSocketChannel::HandshakeNotificationSender::SendImmediately(
+    WebSocketEventInterface* event_interface) {
+
+  if (handshake_request_info_.get()) {
+    if (CHANNEL_DELETED == event_interface->OnStartOpeningHandshake(
+            handshake_request_info_.Pass()))
+      return CHANNEL_DELETED;
+  }
+
+  if (handshake_response_info_.get()) {
+    if (CHANNEL_DELETED == event_interface->OnFinishOpeningHandshake(
+            handshake_response_info_.Pass()))
+      return CHANNEL_DELETED;
+
+    // TODO(yhirano): We can release |this| to save memory because
+    // there will be no more opening handshake notification.
+  }
+
+  return CHANNEL_ALIVE;
+}
 
 WebSocketChannel::WebSocketChannel(
     scoped_ptr<WebSocketEventInterface> event_interface,
@@ -137,7 +223,8 @@ WebSocketChannel::WebSocketChannel(
       current_send_quota_(0),
       timeout_(base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
       closing_code_(0),
-      state_(FRESHLY_CONSTRUCTED) {}
+      state_(FRESHLY_CONSTRUCTED),
+      notification_sender_(new HandshakeNotificationSender(this)) {}
 
 WebSocketChannel::~WebSocketChannel() {
   // The stream may hold a pointer to read_frames_, and so it needs to be
@@ -316,8 +403,41 @@ void WebSocketChannel::OnConnectFailure(const std::string& message) {
   DCHECK_EQ(CONNECTING, state_);
   state_ = CLOSED;
   stream_request_.reset();
+
+  if (CHANNEL_DELETED ==
+      notification_sender_->SendImmediately(event_interface_.get())) {
+    // |this| has been deleted.
+    return;
+  }
   AllowUnused(event_interface_->OnFailChannel(message));
   // |this| has been deleted.
+}
+
+void WebSocketChannel::OnStartOpeningHandshake(
+    scoped_ptr<WebSocketHandshakeRequestInfo> request) {
+  DCHECK(!notification_sender_->handshake_request_info());
+
+  // Because it is hard to handle an IPC error synchronously is difficult,
+  // we asynchronously notify the information.
+  notification_sender_->set_handshake_request_info(request.Pass());
+  ScheduleOpeningHandshakeNotification();
+}
+
+void WebSocketChannel::OnFinishOpeningHandshake(
+    scoped_ptr<WebSocketHandshakeResponseInfo> response) {
+  DCHECK(!notification_sender_->handshake_response_info());
+
+  // Because it is hard to handle an IPC error synchronously is difficult,
+  // we asynchronously notify the information.
+  notification_sender_->set_handshake_response_info(response.Pass());
+  ScheduleOpeningHandshakeNotification();
+}
+
+void WebSocketChannel::ScheduleOpeningHandshakeNotification() {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(HandshakeNotificationSender::Send,
+                 notification_sender_->AsWeakPtr()));
 }
 
 ChannelState WebSocketChannel::WriteFrames() {
@@ -376,8 +496,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
       stream_->Close();
       DCHECK_NE(CLOSED, state_);
       state_ = CLOSED;
-      return event_interface_->OnDropChannel(kWebSocketErrorAbnormalClosure,
-                                             "Abnormal Closure");
+      return DoDropChannel(kWebSocketErrorAbnormalClosure, "Abnormal Closure");
   }
 }
 
@@ -442,7 +561,7 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
         code = closing_code_;
         reason = closing_reason_;
       }
-      return event_interface_->OnDropChannel(code, reason);
+      return DoDropChannel(code, reason);
   }
 }
 
@@ -635,7 +754,7 @@ ChannelState WebSocketChannel::FailChannel(ExposeError expose,
   stream_->Close();
   state_ = CLOSED;
 
-  return event_interface_->OnDropChannel(code, reason);
+  return DoDropChannel(code, reason);
 }
 
 ChannelState WebSocketChannel::SendClose(uint16 code,
@@ -709,12 +828,20 @@ void WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
   }
 }
 
+ChannelState WebSocketChannel::DoDropChannel(uint16 code,
+                                             const std::string& reason) {
+  if (CHANNEL_DELETED ==
+      notification_sender_->SendImmediately(event_interface_.get()))
+    return CHANNEL_DELETED;
+  return event_interface_->OnDropChannel(code, reason);
+}
+
 void WebSocketChannel::CloseTimeout() {
   stream_->Close();
   DCHECK_NE(CLOSED, state_);
   state_ = CLOSED;
-  AllowUnused(event_interface_->OnDropChannel(kWebSocketErrorAbnormalClosure,
-                                              "Abnormal Closure"));
+  AllowUnused(DoDropChannel(kWebSocketErrorAbnormalClosure,
+                            "Abnormal Closure"));
   // |this| has been deleted.
 }
 

@@ -10,6 +10,7 @@
 
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
+#include "net/websockets/websocket_stream.h"
 
 namespace net {
 
@@ -23,6 +24,7 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
     : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
   explicit WebSocketHandshakeStreamCreateHelper(
+      WebSocketStream::ConnectDelegate* connect_delegate,
       const std::vector<std::string>& requested_subprotocols);
 
   virtual ~WebSocketHandshakeStreamCreateHelper();
@@ -52,6 +54,8 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   // during the destruction of the URLRequest object associated with the
   // handshake.
   WebSocketHandshakeStreamBase* stream_;
+
+  WebSocketStream::ConnectDelegate* connect_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeStreamCreateHelper);
 };

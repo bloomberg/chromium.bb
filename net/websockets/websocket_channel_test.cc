@@ -21,9 +21,12 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
+#include "net/websockets/websocket_handshake_request_info.h"
+#include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_mux.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,6 +138,8 @@ typedef MockFunction<void(int)> Checkpoint;  // NOLINT
 // This mock is for testing expectations about how the EventInterface is used.
 class MockWebSocketEventInterface : public WebSocketEventInterface {
  public:
+  MockWebSocketEventInterface() {}
+
   MOCK_METHOD2(OnAddChannelResponse,
                ChannelState(bool, const std::string&));  // NOLINT
   MOCK_METHOD3(OnDataFrame,
@@ -146,6 +151,21 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
   MOCK_METHOD1(OnFailChannel, ChannelState(const std::string&));  // NOLINT
   MOCK_METHOD2(OnDropChannel,
                ChannelState(uint16, const std::string&));  // NOLINT
+
+  // We can't use GMock with scoped_ptr.
+  ChannelState OnStartOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeRequestInfo>) OVERRIDE {
+    OnStartOpeningHandshakeCalled();
+    return CHANNEL_ALIVE;
+  }
+  ChannelState OnFinishOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeResponseInfo>) OVERRIDE {
+    OnFinishOpeningHandshakeCalled();
+    return CHANNEL_ALIVE;
+  }
+
+  MOCK_METHOD0(OnStartOpeningHandshakeCalled, void());  // NOLINT
+  MOCK_METHOD0(OnFinishOpeningHandshakeCalled, void());  // NOLINT
 };
 
 // This fake EventInterface is for tests which need a WebSocketEventInterface
@@ -171,6 +191,14 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
   virtual ChannelState OnDropChannel(uint16 code,
                                      const std::string& reason) OVERRIDE {
     return CHANNEL_DELETED;
+  }
+  virtual ChannelState OnStartOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {
+    return CHANNEL_ALIVE;
+  }
+  virtual ChannelState OnFinishOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {
+    return CHANNEL_ALIVE;
   }
 };
 
@@ -766,6 +794,8 @@ enum EventInterfaceCall {
   EVENT_ON_CLOSING_HANDSHAKE = 0x8,
   EVENT_ON_FAIL_CHANNEL = 0x10,
   EVENT_ON_DROP_CHANNEL = 0x20,
+  EVENT_ON_START_OPENING_HANDSHAKE = 0x40,
+  EVENT_ON_FINISH_OPENING_HANDSHAKE = 0x80,
 };
 
 class WebSocketChannelDeletingTest : public WebSocketChannelTest {
@@ -785,7 +815,9 @@ class WebSocketChannelDeletingTest : public WebSocketChannelTest {
                   EVENT_ON_FLOW_CONTROL |
                   EVENT_ON_CLOSING_HANDSHAKE |
                   EVENT_ON_FAIL_CHANNEL |
-                  EVENT_ON_DROP_CHANNEL) {}
+                  EVENT_ON_DROP_CHANNEL |
+                  EVENT_ON_START_OPENING_HANDSHAKE |
+                  EVENT_ON_FINISH_OPENING_HANDSHAKE) {}
   // Create a ChannelDeletingFakeWebSocketEventInterface. Defined out-of-line to
   // avoid circular dependency.
   virtual scoped_ptr<WebSocketEventInterface> CreateEventInterface() OVERRIDE;
@@ -832,6 +864,15 @@ class ChannelDeletingFakeWebSocketEventInterface
   virtual ChannelState OnDropChannel(uint16 code,
                                      const std::string& reason) OVERRIDE {
     return fixture_->DeleteIfDeleting(EVENT_ON_DROP_CHANNEL);
+  }
+
+  virtual ChannelState OnStartOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_START_OPENING_HANDSHAKE);
+  }
+  virtual ChannelState OnFinishOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_FINISH_OPENING_HANDSHAKE);
   }
 
  private:
@@ -1029,6 +1070,47 @@ TEST_F(WebSocketChannelDeletingTest, OnDropChannelReadError) {
   deleting_ = EVENT_ON_DROP_CHANNEL;
   CreateChannelAndConnectSuccessfully();
   ASSERT_TRUE(channel_);
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnNotifyStartOpeningHandshakeError) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "HELLO"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::ASYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_START_OPENING_HANDSHAKE;
+
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  channel_->OnStartOpeningHandshake(scoped_ptr<WebSocketHandshakeRequestInfo>(
+      new WebSocketHandshakeRequestInfo(GURL("http://www.example.com/"),
+                                        base::Time())));
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(NULL, channel_.get());
+}
+
+TEST_F(WebSocketChannelDeletingTest, OnNotifyFinishOpeningHandshakeError) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, "HELLO"}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::ASYNC, OK, frames);
+  set_stream(stream.Pass());
+  deleting_ = EVENT_ON_FINISH_OPENING_HANDSHAKE;
+
+  CreateChannelAndConnectSuccessfully();
+  ASSERT_TRUE(channel_);
+  scoped_refptr<HttpResponseHeaders> response_headers(
+      new HttpResponseHeaders(""));
+  channel_->OnFinishOpeningHandshake(scoped_ptr<WebSocketHandshakeResponseInfo>(
+      new WebSocketHandshakeResponseInfo(GURL("http://www.example.com/"),
+                                         200,
+                                         "OK",
+                                         response_headers,
+                                         base::Time())));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(NULL, channel_.get());
 }
@@ -1773,6 +1855,78 @@ TEST_F(WebSocketChannelEventInterfaceTest, AsyncProtocolErrorGivesStatus1002) {
               OnDropChannel(kWebSocketErrorProtocolError, _));
 
   CreateChannelAndConnectSuccessfully();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(WebSocketChannelEventInterfaceTest, StartHandshakeRequest) {
+  {
+    InSequence s;
+    EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
+    EXPECT_CALL(*event_interface_, OnFlowControl(_));
+    EXPECT_CALL(*event_interface_, OnStartOpeningHandshakeCalled());
+  }
+
+  CreateChannelAndConnectSuccessfully();
+
+  scoped_ptr<WebSocketHandshakeRequestInfo> request_info(
+      new WebSocketHandshakeRequestInfo(GURL("ws://www.example.com/"),
+                                        base::Time()));
+  connect_data_.creator.connect_delegate->OnStartOpeningHandshake(
+      request_info.Pass());
+
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(WebSocketChannelEventInterfaceTest, FinishHandshakeRequest) {
+  {
+    InSequence s;
+    EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _));
+    EXPECT_CALL(*event_interface_, OnFlowControl(_));
+    EXPECT_CALL(*event_interface_, OnFinishOpeningHandshakeCalled());
+  }
+
+  CreateChannelAndConnectSuccessfully();
+
+  scoped_refptr<HttpResponseHeaders> response_headers(
+      new HttpResponseHeaders(""));
+  scoped_ptr<WebSocketHandshakeResponseInfo> response_info(
+      new WebSocketHandshakeResponseInfo(GURL("ws://www.example.com/"),
+                                         200,
+                                         "OK",
+                                         response_headers,
+                                         base::Time()));
+  connect_data_.creator.connect_delegate->OnFinishOpeningHandshake(
+      response_info.Pass());
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(WebSocketChannelEventInterfaceTest, FailJustAfterHandshake) {
+  {
+    InSequence s;
+    EXPECT_CALL(*event_interface_, OnStartOpeningHandshakeCalled());
+    EXPECT_CALL(*event_interface_, OnFinishOpeningHandshakeCalled());
+    EXPECT_CALL(*event_interface_, OnFailChannel("bye"));
+  }
+
+  CreateChannelAndConnect();
+
+  WebSocketStream::ConnectDelegate* connect_delegate =
+      connect_data_.creator.connect_delegate.get();
+  GURL url("ws://www.example.com/");
+  scoped_ptr<WebSocketHandshakeRequestInfo> request_info(
+      new WebSocketHandshakeRequestInfo(url, base::Time()));
+  scoped_refptr<HttpResponseHeaders> response_headers(
+      new HttpResponseHeaders(""));
+  scoped_ptr<WebSocketHandshakeResponseInfo> response_info(
+      new WebSocketHandshakeResponseInfo(url,
+                                         200,
+                                         "OK",
+                                         response_headers,
+                                         base::Time()));
+  connect_delegate->OnStartOpeningHandshake(request_info.Pass());
+  connect_delegate->OnFinishOpeningHandshake(response_info.Pass());
+
+  connect_delegate->OnFailure("bye");
   base::MessageLoop::current()->RunUntilIdle();
 }
 

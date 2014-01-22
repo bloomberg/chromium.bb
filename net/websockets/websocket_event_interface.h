@@ -14,6 +14,9 @@
 
 namespace net {
 
+struct WebSocketHandshakeRequestInfo;
+struct WebSocketHandshakeResponseInfo;
+
 // Interface for events sent from the network layer to the content layer. These
 // events will generally be sent as-is to the renderer process.
 class NET_EXPORT WebSocketEventInterface {
@@ -79,6 +82,15 @@ class NET_EXPORT WebSocketEventInterface {
   // This method returns a ChannelState for consistency, but all implementations
   // must delete the Channel and return CHANNEL_DELETED.
   virtual ChannelState OnFailChannel(const std::string& message)
+      WARN_UNUSED_RESULT = 0;
+
+  // Called when the browser starts the WebSocket Opening Handshake.
+  virtual ChannelState OnStartOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeRequestInfo> request) WARN_UNUSED_RESULT = 0;
+
+  // Called when the browser finishes the WebSocket Opening Handshake.
+  virtual ChannelState OnFinishOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeResponseInfo> response)
       WARN_UNUSED_RESULT = 0;
 
  protected:

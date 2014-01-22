@@ -64,6 +64,10 @@ websocket_handshake_stream_base.h
 websocket_handshake_stream_create_helper.cc
 websocket_handshake_stream_create_helper.h
 websocket_handshake_stream_create_helper_test.cc
+websocket_handshake_request_info.cc
+websocket_handshake_request_info.h
+websocket_handshake_response_info.cc
+websocket_handshake_response_info.h
 websocket_inflater.cc
 websocket_inflater.h
 websocket_inflater_test.cc

@@ -13,6 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/http/http_basic_state.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -26,6 +27,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
  public:
   WebSocketBasicHandshakeStream(
       scoped_ptr<ClientSocketHandle> connection,
+      WebSocketStream::ConnectDelegate* connect_delegate,
       bool using_proxy,
       std::vector<std::string> requested_sub_protocols,
       std::vector<std::string> requested_extensions);
@@ -80,6 +82,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   void ReadResponseHeadersCallback(const CompletionCallback& callback,
                                    int result);
 
+  void OnFinishOpeningHandshake();
+
   // Validates the response from the server and returns OK or
   // ERR_INVALID_RESPONSE.
   int ValidateResponse();
@@ -91,8 +95,15 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
 
   HttpStreamParser* parser() const { return state_.parser(); }
 
+  // The request URL.
+  GURL url_;
+
   // HttpBasicState holds most of the handshake-related state.
   HttpBasicState state_;
+
+  // Owned by another object.
+  // |connect_delegate| will live during the lifetime of this object.
+  WebSocketStream::ConnectDelegate* connect_delegate_;
 
   // This is stored in SendRequest() for use by ReadResponseHeaders().
   HttpResponseInfo* http_response_info_;

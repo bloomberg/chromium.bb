@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/basictypes.h"
@@ -15,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "crypto/random.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -27,6 +29,8 @@
 #include "net/websockets/websocket_extension_parser.h"
 #include "net/websockets/websocket_handshake_constants.h"
 #include "net/websockets/websocket_handshake_handler.h"
+#include "net/websockets/websocket_handshake_request_info.h"
+#include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_stream.h"
 
 namespace net {
@@ -230,10 +234,12 @@ bool ValidateExtensions(const HttpResponseHeaders* headers,
 
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     scoped_ptr<ClientSocketHandle> connection,
+    WebSocketStream::ConnectDelegate* connect_delegate,
     bool using_proxy,
     std::vector<std::string> requested_sub_protocols,
     std::vector<std::string> requested_extensions)
     : state_(connection.release(), using_proxy),
+      connect_delegate_(connect_delegate),
       http_response_info_(NULL),
       requested_sub_protocols_(requested_sub_protocols),
       requested_extensions_(requested_extensions) {}
@@ -245,6 +251,7 @@ int WebSocketBasicHandshakeStream::InitializeStream(
     RequestPriority priority,
     const BoundNetLog& net_log,
     const CompletionCallback& callback) {
+  url_ = request_info->url;
   state_.Initialize(request_info, priority, net_log, callback);
   return OK;
 }
@@ -287,6 +294,12 @@ int WebSocketBasicHandshakeStream::SendRequest(
   ComputeSecWebSocketAccept(handshake_challenge,
                             &handshake_challenge_response_);
 
+  DCHECK(connect_delegate_);
+  scoped_ptr<WebSocketHandshakeRequestInfo> request(
+      new WebSocketHandshakeRequestInfo(url_, base::Time::Now()));
+  request->headers.CopyFrom(enriched_headers);
+  connect_delegate_->OnStartOpeningHandshake(request.Pass());
+
   return parser()->SendRequest(
       state_.GenerateRequestLine(), enriched_headers, response, callback);
 }
@@ -301,7 +314,12 @@ int WebSocketBasicHandshakeStream::ReadResponseHeaders(
       base::Bind(&WebSocketBasicHandshakeStream::ReadResponseHeadersCallback,
                  base::Unretained(this),
                  callback));
-  return rv == OK ? ValidateResponse() : rv;
+  if (rv == ERR_IO_PENDING)
+    return rv;
+  if (rv == OK)
+    return ValidateResponse();
+  OnFinishOpeningHandshake();
+  return rv;
 }
 
 const HttpResponseInfo* WebSocketBasicHandshakeStream::GetResponseInfo() const {
@@ -401,7 +419,22 @@ void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(
     int result) {
   if (result == OK)
     result = ValidateResponse();
+  else
+    OnFinishOpeningHandshake();
   callback.Run(result);
+}
+
+void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
+  DCHECK(connect_delegate_);
+  DCHECK(http_response_info_);
+  scoped_refptr<HttpResponseHeaders> headers = http_response_info_->headers;
+  scoped_ptr<WebSocketHandshakeResponseInfo> response(
+      new WebSocketHandshakeResponseInfo(url_,
+                                         headers->response_code(),
+                                         headers->GetStatusText(),
+                                         headers,
+                                         http_response_info_->response_time));
+  connect_delegate_->OnFinishOpeningHandshake(response.Pass());
 }
 
 int WebSocketBasicHandshakeStream::ValidateResponse() {
@@ -411,6 +444,7 @@ int WebSocketBasicHandshakeStream::ValidateResponse() {
 
   switch (headers->response_code()) {
     case HTTP_SWITCHING_PROTOCOLS:
+      OnFinishOpeningHandshake();
       return ValidateUpgradeResponse(headers);
 
     // We need to pass these through for authentication to work.
@@ -423,6 +457,7 @@ int WebSocketBasicHandshakeStream::ValidateResponse() {
     default:
       failure_message_ = base::StringPrintf("Unexpected status code: %d",
                                             headers->response_code());
+      OnFinishOpeningHandshake();
       return ERR_INVALID_RESPONSE;
   }
 }

@@ -26,6 +26,8 @@ namespace net {
 class BoundNetLog;
 class IOBuffer;
 class URLRequestContext;
+struct WebSocketHandshakeRequestInfo;
+struct WebSocketHandshakeResponseInfo;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -101,7 +103,19 @@ class NET_EXPORT WebSocketChannel {
   // set it to a very small value for testing purposes.
   void SetClosingHandshakeTimeoutForTesting(base::TimeDelta delay);
 
+  // Called when the stream starts the WebSocket Opening Handshake.
+  // This method is public for testing.
+  void OnStartOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeRequestInfo> request);
+
+  // Called when the stream ends the WebSocket Opening Handshake.
+  // This method is public for testing.
+  void OnFinishOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeResponseInfo> response);
+
  private:
+  class HandshakeNotificationSender;
+
   // Methods which return a value of type ChannelState may delete |this|. If the
   // return value is CHANNEL_DELETED, then the caller must return without making
   // any further access to member variables or methods.
@@ -154,6 +168,10 @@ class NET_EXPORT WebSocketChannel {
   // Failure callback from WebSocketStream::CreateAndConnectStream(). Reports
   // failure to the event interface. May delete |this|.
   void OnConnectFailure(const std::string& message);
+
+  // Posts a task that sends pending notifications relating WebSocket Opening
+  // Handshake to the renderer.
+  void ScheduleOpeningHandshakeNotification();
 
   // Returns true if state_ is SEND_CLOSED, CLOSE_WAIT or CLOSED.
   bool InClosingState() const;
@@ -228,6 +246,11 @@ class NET_EXPORT WebSocketChannel {
                   uint16* code,
                   std::string* reason);
 
+  // Drop this channel.
+  // If there are pending opening handshake notifications, notify them
+  // before dropping.
+  ChannelState DoDropChannel(uint16 code, const std::string& reason);
+
   // Called if the closing handshake times out. Closes the connection and
   // informs the |event_interface_| if appropriate.
   void CloseTimeout();
@@ -286,6 +309,9 @@ class NET_EXPORT WebSocketChannel {
   // The current state of the channel. Mainly used for sanity checking, but also
   // used to track the close state.
   State state_;
+
+  // |notification_sender_| is owned by this object.
+  scoped_ptr<HandshakeNotificationSender> notification_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };

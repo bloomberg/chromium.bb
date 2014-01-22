@@ -189,7 +189,8 @@ scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
     const BoundNetLog& net_log,
     scoped_ptr<ConnectDelegate> connect_delegate) {
   scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper(
-      new WebSocketHandshakeStreamCreateHelper(requested_subprotocols));
+      new WebSocketHandshakeStreamCreateHelper(connect_delegate.get(),
+                                               requested_subprotocols));
   return CreateAndConnectStreamWithCreateHelper(socket_url,
                                                 create_helper.Pass(),
                                                 origin,

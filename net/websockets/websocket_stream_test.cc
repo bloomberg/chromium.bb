@@ -4,15 +4,21 @@
 
 #include "net/websockets/websocket_stream.h"
 
+#include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
+#include "net/websockets/websocket_handshake_request_info.h"
+#include "net/websockets/websocket_handshake_response_info.h"
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,14 +27,35 @@
 namespace net {
 namespace {
 
+typedef std::pair<std::string, std::string> HeaderKeyValuePair;
+
+std::vector<HeaderKeyValuePair> ToVector(const HttpRequestHeaders& headers) {
+  HttpRequestHeaders::Iterator it(headers);
+  std::vector<HeaderKeyValuePair> result;
+  while (it.GetNext())
+    result.push_back(HeaderKeyValuePair(it.name(), it.value()));
+  return result;
+}
+
+std::vector<HeaderKeyValuePair> ToVector(const HttpResponseHeaders& headers) {
+  void* iter = NULL;
+  std::string name, value;
+  std::vector<HeaderKeyValuePair> result;
+  while (headers.EnumerateHeaderLines(&iter, &name, &value))
+    result.push_back(HeaderKeyValuePair(name, value));
+  return result;
+}
+
 // A sub-class of WebSocketHandshakeStreamCreateHelper which always sets a
 // deterministic key to use in the WebSocket handshake.
 class DeterministicKeyWebSocketHandshakeStreamCreateHelper
     : public WebSocketHandshakeStreamCreateHelper {
  public:
   DeterministicKeyWebSocketHandshakeStreamCreateHelper(
+      WebSocketStream::ConnectDelegate* connect_delegate,
       const std::vector<std::string>& requested_subprotocols)
-      : WebSocketHandshakeStreamCreateHelper(requested_subprotocols) {}
+      : WebSocketHandshakeStreamCreateHelper(connect_delegate,
+                                             requested_subprotocols) {}
 
   virtual WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
@@ -91,16 +118,18 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   void CreateAndConnectStream(const std::string& socket_url,
                               const std::vector<std::string>& sub_protocols,
                               const std::string& origin) {
+    scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
+        new TestConnectDelegate(this));
+    WebSocketStream::ConnectDelegate* delegate = connect_delegate.get();
     stream_request_ = ::net::CreateAndConnectStreamForTesting(
         GURL(socket_url),
         scoped_ptr<WebSocketHandshakeStreamCreateHelper>(
             new DeterministicKeyWebSocketHandshakeStreamCreateHelper(
-                sub_protocols)),
+                delegate, sub_protocols)),
         GURL(origin),
         url_request_context_host_.GetURLRequestContext(),
         BoundNetLog(),
-        scoped_ptr<WebSocketStream::ConnectDelegate>(
-            new TestConnectDelegate(this)));
+        connect_delegate.Pass());
   }
 
   static void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
@@ -127,6 +156,19 @@ class WebSocketStreamCreateTest : public ::testing::Test {
       owner_->failure_message_ = message;
     }
 
+    virtual void OnStartOpeningHandshake(
+        scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {
+      if (owner_->request_info_)
+        ADD_FAILURE();
+      owner_->request_info_ = request.Pass();
+    }
+    virtual void OnFinishOpeningHandshake(
+        scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {
+      if (owner_->response_info_)
+        ADD_FAILURE();
+      owner_->response_info_ = response.Pass();
+    }
+
    private:
     WebSocketStreamCreateTest* owner_;
   };
@@ -138,15 +180,82 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   // Only set if the connection failed.
   std::string failure_message_;
   bool has_failed_;
+  scoped_ptr<WebSocketHandshakeRequestInfo> request_info_;
+  scoped_ptr<WebSocketHandshakeResponseInfo> response_info_;
 };
 
 // Confirm that the basic case works as expected.
 TEST_F(WebSocketStreamCreateTest, SimpleSuccess) {
   CreateAndConnectStandard(
       "ws://localhost/", "/", NoSubProtocols(), "http://localhost/", "", "");
+  EXPECT_FALSE(request_info_);
+  EXPECT_FALSE(response_info_);
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
+  EXPECT_TRUE(request_info_);
+  EXPECT_TRUE(response_info_);
+}
+
+TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
+  static const char kResponse[] =
+      "HTTP/1.1 101 Switching Protocols\r\n"
+      "Upgrade: websocket\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+      "foo: bar, baz\r\n"
+      "hoge: fuga\r\n"
+      "hoge: piyo\r\n"
+      "\r\n";
+
+  CreateAndConnectCustomResponse(
+      "ws://localhost/",
+      "/",
+      NoSubProtocols(),
+      "http://localhost/",
+      "",
+      kResponse);
+  EXPECT_FALSE(request_info_);
+  EXPECT_FALSE(response_info_);
+  RunUntilIdle();
+  EXPECT_TRUE(stream_);
+  ASSERT_TRUE(request_info_);
+  ASSERT_TRUE(response_info_);
+  std::vector<HeaderKeyValuePair> request_headers =
+      ToVector(request_info_->headers);
+  // We examine the contents of request_info_ and response_info_
+  // mainly only in this test case.
+  EXPECT_EQ(GURL("ws://localhost/"), request_info_->url);
+  EXPECT_EQ(GURL("ws://localhost/"), response_info_->url);
+  EXPECT_EQ(101, response_info_->status_code);
+  EXPECT_EQ("Switching Protocols", response_info_->status_text);
+  EXPECT_EQ(9u, request_headers.size());
+  EXPECT_EQ(HeaderKeyValuePair("Host", "localhost"), request_headers[0]);
+  EXPECT_EQ(HeaderKeyValuePair("Connection", "Upgrade"), request_headers[1]);
+  EXPECT_EQ(HeaderKeyValuePair("Upgrade", "websocket"), request_headers[2]);
+  EXPECT_EQ(HeaderKeyValuePair("Origin", "http://localhost/"),
+            request_headers[3]);
+  EXPECT_EQ(HeaderKeyValuePair("Sec-WebSocket-Version", "13"),
+            request_headers[4]);
+  EXPECT_EQ(HeaderKeyValuePair("User-Agent", ""), request_headers[5]);
+  EXPECT_EQ(HeaderKeyValuePair("Accept-Encoding", "gzip,deflate"),
+            request_headers[6]);
+  EXPECT_EQ(HeaderKeyValuePair("Accept-Language", "en-us,fr"),
+            request_headers[7]);
+  EXPECT_EQ("Sec-WebSocket-Key",  request_headers[8].first);
+
+  std::vector<HeaderKeyValuePair> response_headers =
+      ToVector(*response_info_->headers);
+  ASSERT_EQ(6u, response_headers.size());
+  // Sort the headers for ease of verification.
+  std::sort(response_headers.begin(), response_headers.end());
+
+  EXPECT_EQ(HeaderKeyValuePair("Connection", "Upgrade"), response_headers[0]);
+  EXPECT_EQ("Sec-WebSocket-Accept", response_headers[1].first);
+  EXPECT_EQ(HeaderKeyValuePair("Upgrade", "websocket"), response_headers[2]);
+  EXPECT_EQ(HeaderKeyValuePair("foo", "bar, baz"), response_headers[3]);
+  EXPECT_EQ(HeaderKeyValuePair("hoge", "fuga"), response_headers[4]);
+  EXPECT_EQ(HeaderKeyValuePair("hoge", "piyo"), response_headers[5]);
 }
 
 // Confirm that the stream isn't established until the message loop runs.
@@ -543,6 +652,8 @@ TEST_F(WebSocketStreamCreateTest, Cancellation) {
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
+  EXPECT_FALSE(request_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 // Connect failure must look just like negotiation failure.
@@ -557,6 +668,8 @@ TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
   EXPECT_TRUE(has_failed());
   EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_REFUSED",
             failure_message());
+  EXPECT_FALSE(request_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 // Connect timeout must look just like any other failure.
@@ -607,6 +720,8 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringWrite) {
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
+  EXPECT_TRUE(request_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 // Cancellation during read of the response headers works.
@@ -629,6 +744,8 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
   RunUntilIdle();
   EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
+  EXPECT_TRUE(request_info_);
+  EXPECT_FALSE(response_info_);
 }
 
 }  // namespace

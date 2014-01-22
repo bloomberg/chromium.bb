@@ -54,6 +54,18 @@ class MockClientSocketHandleFactory {
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketHandleFactory);
 };
 
+class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
+ public:
+  virtual ~TestConnectDelegate() {}
+
+  virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) OVERRIDE {}
+  virtual void OnFailure(const std::string& failure_message) OVERRIDE {}
+  virtual void OnStartOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeRequestInfo> request) OVERRIDE {}
+  virtual void OnFinishOpeningHandshake(
+      scoped_ptr<WebSocketHandshakeResponseInfo> response) OVERRIDE {}
+};
+
 class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
  protected:
   scoped_ptr<WebSocketStream> CreateAndInitializeStream(
@@ -63,7 +75,8 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
       const std::string& origin,
       const std::string& extra_request_headers,
       const std::string& extra_response_headers) {
-    WebSocketHandshakeStreamCreateHelper create_helper(sub_protocols);
+    WebSocketHandshakeStreamCreateHelper create_helper(&connect_delegate_,
+                                                       sub_protocols);
 
     scoped_ptr<ClientSocketHandle> socket_handle =
         socket_handle_factory_.CreateClientSocketHandle(
@@ -114,6 +127,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
   }
 
   MockClientSocketHandleFactory socket_handle_factory_;
+  TestConnectDelegate connect_delegate_;
 };
 
 // Confirm that the basic case works as expected.
