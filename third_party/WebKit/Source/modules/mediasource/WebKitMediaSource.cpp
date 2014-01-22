@@ -34,6 +34,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/TimeRanges.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/ContentType.h"
@@ -150,6 +151,9 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
 
 void WebKitMediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicString& newState)
 {
+    if (oldState == closedKeyword() && newState == openKeyword())
+        UseCounter::countDeprecation(executionContext(), UseCounter::PrefixedMediaSourceOpen);
+
     if (isClosed()) {
         m_sourceBuffers->clear();
         m_activeSourceBuffers->clear();

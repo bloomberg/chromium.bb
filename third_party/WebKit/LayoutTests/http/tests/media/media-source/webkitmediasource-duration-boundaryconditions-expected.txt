@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.
 Tests boundary values for duration attribute on MediaSource object.
 
 

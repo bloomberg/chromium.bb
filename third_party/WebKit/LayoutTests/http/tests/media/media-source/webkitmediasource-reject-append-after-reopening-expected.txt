@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.
 Verify that append() calls on old SourceBuffers always fail when the MediaSource is closed and reopened.
 
 EVENT(webkitsourceopen)
