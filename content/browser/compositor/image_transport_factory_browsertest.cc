@@ -15,15 +15,7 @@
 namespace content {
 namespace {
 
-class ImageTransportFactoryBrowserTest : public ContentBrowserTest {
- public:
-  ImageTransportFactoryBrowserTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    UseRealGLContexts();
-    ContentBrowserTest::SetUp();
-  }
-};
+class ImageTransportFactoryBrowserTest : public ContentBrowserTest {};
 
 class MockImageTransportFactoryObserver : public ImageTransportFactoryObserver {
  public:

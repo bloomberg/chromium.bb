@@ -130,9 +130,7 @@ PPAPITestBase::PPAPITestBase() {
 }
 
 void PPAPITestBase::SetUp() {
-  // Some of these tests require pixel output.
-  UseRealGLContexts();
-
+  EnablePixelOutput();
   InProcessBrowserTest::SetUp();
 }
 

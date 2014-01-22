@@ -163,8 +163,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabReload) {
 class ExtensionApiCaptureTest : public ExtensionApiTest {
  public:
   ExtensionApiCaptureTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    EnablePixelOutput();
+    ExtensionApiTest::SetUp();
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    UseRealGLContexts();
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 };

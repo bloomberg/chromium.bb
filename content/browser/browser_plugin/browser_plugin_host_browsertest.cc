@@ -820,7 +820,7 @@ class BrowserPluginThreadedCompositorPixelTest
     : public BrowserPluginThreadedCompositorTest {
  protected:
   virtual void SetUp() OVERRIDE {
-    UseRealGLContexts();
+    EnablePixelOutput();
     BrowserPluginThreadedCompositorTest::SetUp();
   }
 

@@ -224,13 +224,8 @@ class CompositingRenderWidgetHostViewBrowserTest
       : compositing_mode_(GetParam()) {}
 
   virtual void SetUp() OVERRIDE {
-    if (compositing_mode_ == SOFTWARE_COMPOSITING) {
+    if (compositing_mode_ == SOFTWARE_COMPOSITING)
       UseSoftwareCompositing();
-    } else {
-      // We expect real pixel output for these tests.
-      UseRealGLContexts();
-    }
-
     RenderWidgetHostViewBrowserTest::SetUp();
   }
 
@@ -509,6 +504,11 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       : expected_copy_from_compositing_surface_result_(false),
         allowable_error_(0),
         test_url_("data:text/html,<!doctype html>") {}
+
+  virtual void SetUp() OVERRIDE {
+    EnablePixelOutput();
+    CompositingRenderWidgetHostViewBrowserTest::SetUp();
+  }
 
   void CopyFromCompositingSurfaceCallback(base::Closure quit_callback,
                                           bool result,

@@ -100,8 +100,7 @@ class TabCapturePerformanceTest
   }
 
   virtual void SetUp() OVERRIDE {
-    // These tests needs pixel results.
-    UseRealGLContexts();
+    EnablePixelOutput();
     ExtensionApiTest::SetUp();
   }
 

@@ -242,10 +242,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       content::SpeechRecognitionManager::SetManagerForTesting(
           fake_speech_recognition_manager_.get());
     }
-
-    // We need real contexts, otherwise the embedder doesn't composite, but the
-    // guest does, and that isn't an expected configuration.
-    UseRealGLContexts();
     extensions::PlatformAppBrowserTest::SetUp();
   }
 
@@ -1850,13 +1846,15 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
 }
 #endif  // defined(ENABLE_PLUGINS)
 
-// Taking a screenshot does not work with threaded compositing, so disable
-// threaded compositing for this test (http://crbug.com/326756).
 class WebViewCaptureTest : public WebViewTest,
   public testing::WithParamInterface<std::string> {
  public:
   WebViewCaptureTest() {}
   virtual ~WebViewCaptureTest() {}
+  virtual void SetUp() OVERRIDE {
+    EnablePixelOutput();
+    WebViewTest::SetUp();
+  }
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(GetParam());
     // http://crbug.com/327035

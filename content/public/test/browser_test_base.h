@@ -118,9 +118,8 @@ class BrowserTestBase : public testing::Test {
   // returns.
   void PostTaskToInProcessRendererAndWait(const base::Closure& task);
 
-  // Call this before SetUp() to use real GL contexts in Compositor for the
-  // test.
-  void UseRealGLContexts();
+  // Call this before SetUp() to cause the test to generate pixel output.
+  void EnablePixelOutput();
 
   // Call this before SetUp() to not use GL, but use software compositing
   // instead.
@@ -141,9 +140,9 @@ class BrowserTestBase : public testing::Test {
   // Host resolver used during tests.
   scoped_refptr<net::RuleBasedHostResolverProc> rule_based_resolver_;
 
-  // When false, the ui::Compositor will be forced to use real GL contexts for
-  // the test, so that it produces real pixel output.
-  bool allow_test_contexts_;
+  // When true, the compositor will produce pixel output that can be read back
+  // for pixel tests.
+  bool enable_pixel_output_;
 
   // When true, do compositing with the software backend instead of using GL.
   bool use_software_compositing_;

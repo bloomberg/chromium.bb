@@ -43,7 +43,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
 class TabCaptureApiPixelTest : public TabCaptureApiTest {
  public:
   virtual void SetUp() OVERRIDE {
-    UseRealGLContexts();
+    EnablePixelOutput();
     TabCaptureApiTest::SetUp();
   }
 };

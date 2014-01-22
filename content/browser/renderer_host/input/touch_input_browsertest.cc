@@ -159,14 +159,6 @@ class TouchInputBrowserTest : public ContentBrowserTest,
     host->GetProcess()->AddFilter(filter_);
   }
 
-  // ContentBrowserTest:
-  virtual void SetUp() OVERRIDE {
-    // We expect real pixel output for these tests.
-    UseRealGLContexts();
-
-    ContentBrowserTest::SetUp();
-  }
-
   virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
     cmd->AppendSwitchASCII(switches::kTouchEvents,
                            switches::kTouchEventsEnabled);

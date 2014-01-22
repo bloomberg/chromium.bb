@@ -119,8 +119,7 @@ class LocalHostResolverProc : public net::HostResolverProc {
 extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
-    : allow_test_contexts_(true),
-      use_software_compositing_(false) {
+    : enable_pixel_output_(false), use_software_compositing_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
   base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
@@ -162,20 +161,21 @@ void BrowserTestBase::SetUp() {
 #endif
   }
 
-#if defined(OS_CHROMEOS)
-  // If the test is running on the chromeos envrionment (such as
-  // device or vm bots), always use real contexts.
-  if (base::SysInfo::IsRunningOnChromeOS())
-    allow_test_contexts_ = false;
-#endif
-
 #if defined(USE_AURA)
-  if (command_line->HasSwitch(switches::kDisableTestCompositor))
-    allow_test_contexts_  = false;
+  // Most tests do not need pixel output, so we don't produce any. The command
+  // line can override this behaviour to allow for visual debugging.
+  if (command_line->HasSwitch(switches::kEnablePixelOutputInTests))
+    enable_pixel_output_ = true;
 
-  // Use test contexts for browser tests unless they override and force us to
-  // use a real context.
-  if (allow_test_contexts_ && !use_software_compositing_)
+  if (command_line->HasSwitch(switches::kDisableGLDrawingForTests)) {
+    NOTREACHED() << "kDisableGLDrawingForTests should not be used as it"
+                    "is chosen by tests. Use kEnablePixelOutputInTests "
+                    "to enable pixel output.";
+  }
+
+  // Don't enable pixel output for browser tests unless they override and force
+  // us to, or it's requested on the command line.
+  if (!enable_pixel_output_ && !use_software_compositing_)
     command_line->AppendSwitch(switches::kDisableGLDrawingForTests);
 #endif
 
@@ -282,7 +282,7 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
   runner->Run();
 }
 
-void BrowserTestBase::UseRealGLContexts() { allow_test_contexts_ = false; }
+void BrowserTestBase::EnablePixelOutput() { enable_pixel_output_ = true; }
 
 void BrowserTestBase::UseSoftwareCompositing() {
 #if !defined(USE_AURA) && !defined(OS_MACOSX)

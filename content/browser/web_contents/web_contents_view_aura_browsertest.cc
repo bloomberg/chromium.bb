@@ -128,12 +128,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       : screenshot_manager_(NULL) {
   }
 
-  virtual void SetUp() OVERRIDE {
-    // TODO(jbauman): Remove this. http://crbug.com/268644
-    UseRealGLContexts();
-    ContentBrowserTest::SetUp();
-  }
-
   // Executes the javascript synchronously and makes sure the returned value is
   // freed properly.
   void ExecuteSyncJSFunction(RenderViewHost* rvh, const std::string& jscript) {

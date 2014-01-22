@@ -49,13 +49,6 @@ class GpuFeatureTest : public InProcessBrowserTest {
  public:
   GpuFeatureTest() : category_patterns_("test_gpu") {}
 
-  virtual void SetUp() OVERRIDE {
-    // We expect to use real GL contexts for these tests.
-    UseRealGLContexts();
-
-    InProcessBrowserTest::SetUp();
-  }
-
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
@@ -167,6 +160,14 @@ class GpuFeatureTest : public InProcessBrowserTest {
   scoped_ptr<TraceAnalyzer> analyzer_;
   std::string category_patterns_;
   std::string trace_events_json_;
+};
+
+class GpuFeaturePixelTest : public GpuFeatureTest {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    EnablePixelOutput();
+    GpuFeatureTest::SetUp();
+  }
 };
 
 #if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(USE_AURA) || \
@@ -438,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(Canvas2DDisabledTest, Canvas2DDisabled) {
   RunEventTest(url, kAcceleratedCanvasCreationEvent, false);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
+IN_PROC_BROWSER_TEST_F(GpuFeaturePixelTest,
                        CanOpenPopupAndRenderWithWebGLCanvas) {
   if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
     return;

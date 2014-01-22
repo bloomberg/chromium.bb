@@ -34,13 +34,6 @@ class WebViewInteractiveTest
         mouse_click_result_(false),
         first_click_(true) {}
 
-  virtual void SetUp() OVERRIDE {
-    // We need real contexts, otherwise the embedder doesn't composite, but the
-    // guest does, and that isn't an expected configuration.
-    UseRealGLContexts();
-    extensions::PlatformAppBrowserTest::SetUp();
-  }
-
   void MoveMouseInsideWindowWithListener(gfx::Point point,
                                          const std::string& message) {
     ExtensionTestMessageListener move_listener(message, false);

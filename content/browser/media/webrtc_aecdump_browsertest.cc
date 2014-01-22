@@ -30,9 +30,7 @@ class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(CreateTemporaryFileInDir(temp_dir_.path(), &dump_file_));
 
-    // These tests expect pixel output.
-    UseRealGLContexts();
-
+    EnablePixelOutput();
     ContentBrowserTest::SetUp();
   }
 

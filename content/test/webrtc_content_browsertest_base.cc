@@ -24,8 +24,7 @@ void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void WebRtcContentBrowserTest::SetUp() {
-  // These tests require pixel output.
-  UseRealGLContexts();
+  EnablePixelOutput();
   ContentBrowserTest::SetUp();
 }
 
