@@ -82,6 +82,26 @@ HistoryNode::HistoryNode(HistoryEntry* entry, HistoryItem* value)
     m_entry->m_uniqueNamesToItems.add(target, this);
 }
 
+void HistoryNode::removeChildren()
+{
+    // FIXME: This is inefficient. Figure out a cleaner way to ensure this HistoryNode isn't cached anywhere.
+    for (unsigned i = 0; i < m_children.size(); i++) {
+        m_children[i]->removeChildren();
+
+        HashMap<uint64_t, HistoryNode*>::iterator framesEnd = m_entry->m_framesToItems.end();
+        HashMap<String, HistoryNode*>::iterator uniqueNamesEnd = m_entry->m_uniqueNamesToItems.end();
+        for (HashMap<uint64_t, HistoryNode*>::iterator it = m_entry->m_framesToItems.begin(); it != framesEnd; ++it) {
+            if (it->value == m_children[i])
+                m_entry->m_framesToItems.remove(it);
+        }
+        for (HashMap<String, HistoryNode*>::iterator it = m_entry->m_uniqueNamesToItems.begin(); it != uniqueNamesEnd; ++it) {
+            if (it->value == m_children[i])
+                m_entry->m_uniqueNamesToItems.remove(it);
+        }
+    }
+    m_children.clear();
+}
+
 HistoryEntry::HistoryEntry(HistoryItem* root)
 {
     m_root = HistoryNode::create(this, root);
@@ -275,6 +295,14 @@ PassRefPtr<HistoryItem> HistoryController::previousItemForExport()
 HistoryItem* HistoryController::itemForNewChildFrame(Frame* frame) const
 {
     return m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
+}
+
+void HistoryController::removeChildrenForRedirect(Frame* frame)
+{
+    if (!m_provisionalEntry)
+        return;
+    if (HistoryNode* node = m_provisionalEntry->historyNodeForFrame(frame))
+        node->removeChildren();
 }
 
 void HistoryController::createNewBackForwardItem(Frame* targetFrame, HistoryItem* item, bool clipAtTarget)
