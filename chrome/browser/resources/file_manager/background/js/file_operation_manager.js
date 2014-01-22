@@ -340,7 +340,7 @@ FileOperationManager.EventRouter.prototype.__proto__ = cr.EventTarget.prototype;
  * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
  *     "ERROR" or "CANCELLED". TODO(hidehiko): Use enum.
  * @param {Object} status Current FileOperationManager's status. See also
- *     FileOperationManager.getStatus().
+ *     FileOperationManager.Task.getStatus().
  * @param {string} taskId ID of task related with the event.
  * @param {FileOperationManager.Error=} opt_error The info for the error. This
  *     should be set iff the reason is "ERROR".
@@ -423,8 +423,6 @@ FileOperationManager.Task = function(
    * @type {number}
    */
   this.processedBytes = 0;
-
-  this.deleteAfterCopy = false;
 
   /**
    * Set to true when cancel is requested.
@@ -540,12 +538,21 @@ FileOperationManager.Task.prototype.getSingleEntry = function() {
  *
  * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
+ * @param {boolean} deleteAfterCopy Whether the delete original files after
+ *     copy.
  * @constructor
  * @extends {FileOperationManager.Task}
  */
-FileOperationManager.CopyTask = function(sourceEntries, targetDirEntry) {
+FileOperationManager.CopyTask = function(sourceEntries,
+                                         targetDirEntry,
+                                         deleteAfterCopy) {
   FileOperationManager.Task.call(
-      this, util.FileOperationType.COPY, sourceEntries, targetDirEntry);
+      this,
+      deleteAfterCopy ?
+          util.FileOperationType.MOVE : util.FileOperationType.COPY,
+      sourceEntries,
+      targetDirEntry);
+  this.deleteAfterCopy = deleteAfterCopy;
 };
 
 /**
@@ -994,49 +1001,6 @@ FileOperationManager.Error = function(code, data) {
 // FileOperationManager methods.
 
 /**
- * @return {Object} Status object.
- */
-FileOperationManager.prototype.getStatus = function() {
-  // TODO(hidehiko): Reorganize the structure when delete queue is merged
-  // into copy task queue.
-  var result = {
-    // Set to util.FileOperationType if all the running/pending tasks is
-    // the same kind of task.
-    operationType: null,
-
-    // The number of entries to be processed.
-    numRemainingItems: 0,
-
-    // The total number of bytes to be processed.
-    totalBytes: 0,
-
-    // The number of bytes.
-    processedBytes: 0,
-
-    // Available if numRemainingItems == 1. Pointing to an Entry which is
-    // begin processed.
-    processingEntry: task.getSingleEntry()
-  };
-
-  var operationType =
-      this.copyTasks_.length > 0 ? this.copyTasks_[0].operationType : null;
-  var task = null;
-  for (var i = 0; i < this.copyTasks_.length; i++) {
-    task = this.copyTasks_[i];
-    if (task.operationType != operationType)
-      operationType = null;
-
-    // Assuming the number of entries is small enough, count every time.
-    result.numRemainingItems += task.countRemainingItems();
-    result.totalBytes += task.totalBytes;
-    result.processedBytes += task.processedBytes;
-  }
-
-  result.operationType = operationType;
-  return result;
-};
-
-/**
  * Adds an event listener for the tasks.
  * @param {string} type The name of the event.
  * @param {function(Event)} handler The handler for the event.
@@ -1120,15 +1084,6 @@ FileOperationManager.prototype.paste = function(
   if (sourceEntries.length === 0)
     return;
 
-  var errorCallback = function(error) {
-    this.eventRouter_.sendProgressEvent(
-        'ERROR',
-        this.getStatus(),
-        this.generateTaskId_(null),
-        new FileOperationManager.Error(
-            util.FileOperationErrorType.FILESYSTEM_ERROR, error));
-  }.bind(this);
-
   var filteredEntries = [];
   var resolveGroup = new AsyncUtil.Queue();
 
@@ -1140,13 +1095,13 @@ FileOperationManager.prototype.paste = function(
           if (!util.isSameEntry(inParentEntry, targetEntry))
             filteredEntries.push(sourceEntry);
           callback();
-        }), function() {
+        }, function() {
           console.warn(
               'Failed to resolve the parent for: ' + sourceEntry.toURL());
           // Even if the parent is not available, try to move it.
           filteredEntries.push(sourceEntry);
           callback();
-        }
+        });
       }.bind(this, sourceEntry));
     }
   } else {
@@ -1216,13 +1171,13 @@ FileOperationManager.prototype.queueCopy_ = function(
       if (isMovable) {
         createTask(new FileOperationManager.MoveTask(entries, targetDirEntry));
       } else {
-        var task = new FileOperationManager.CopyTask(entries, targetDirEntry);
-        task.deleteAfterCopy = true;
-        createTask(task);
+        createTask(
+            new FileOperationManager.CopyTask(entries, targetDirEntry, true));
       }
     });
   } else {
-    createTask(new FileOperationManager.CopyTask(entries, targetDirEntry));
+    createTask(
+        new FileOperationManager.CopyTask(entries, targetDirEntry, false));
   }
 };
 
