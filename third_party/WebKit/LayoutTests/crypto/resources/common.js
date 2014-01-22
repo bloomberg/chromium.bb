@@ -87,3 +87,62 @@ function failAndFinishJSTest(error)
        debug(error);
     finishJSTest();
 }
+
+numOutstandingTasks = 0;
+
+function addTask(promise)
+{
+    numOutstandingTasks++;
+
+    function taskFinished()
+    {
+        numOutstandingTasks--;
+        completeTestWhenAllTasksDone();
+    }
+
+    promise.then(taskFinished, taskFinished);
+}
+
+function completeTestWhenAllTasksDone()
+{
+    if (numOutstandingTasks == 0) {
+        finishJSTest();
+    }
+}
+
+function shouldRejectPromiseWithNull(code)
+{
+    var promise = eval(code);
+
+    function acceptCallback(result)
+    {
+        debug("FAIL: '" + code + "' accepted with " + result + " but should have been rejected");
+    }
+
+    function rejectCallback(result)
+    {
+        if (result == null)
+            debug("PASS: '" + code + "' rejected with null");
+        else
+            debug("FAIL: '" + code + "' rejected with " + result + " but was expecting null");
+    }
+
+    addTask(promise.then(acceptCallback, rejectCallback));
+}
+
+function shouldAcceptPromise(code)
+{
+    var promise = eval(code);
+
+    function acceptCallback(result)
+    {
+        debug("PASS: '" + code + "' accepted with " + result);
+    }
+
+    function rejectCallback(result)
+    {
+        debug("FAIL: '" + code + "' rejected with " + result);
+    }
+
+    addTask(promise.then(acceptCallback, rejectCallback));
+}

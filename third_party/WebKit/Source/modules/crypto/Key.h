@@ -57,7 +57,9 @@ public:
 
     const blink::WebCryptoKey& key() const { return m_key; }
 
-    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, AlgorithmOperation, ExceptionState&) const;
+    // If the key cannot be used with the indicated algorithm, returns false
+    // and fills the provided String with error details.
+    bool canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm&, AlgorithmOperation, String&) const;
 
     static bool parseFormat(const String&, blink::WebCryptoKeyFormat&, ExceptionState&);
     static bool parseUsageMask(const Vector<String>&, blink::WebCryptoKeyUsageMask&, ExceptionState&);

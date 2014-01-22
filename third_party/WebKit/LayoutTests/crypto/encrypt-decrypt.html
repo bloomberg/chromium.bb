@@ -85,10 +85,10 @@ function runSuccessTestCase(testCase)
         
         // shouldBe() can only resolve variables in global context.
         tmpKey = key;
-        shouldBe("tmpKey.type", "'secret'")
-        shouldBe("tmpKey.extractable", "false")
-        shouldBe("tmpKey.algorithm.name", "'AES-CBC'")
-        shouldBe("tmpKey.usages.join(',')", "'decrypt,encrypt'")
+        shouldBe("tmpKey.type", "'secret'");
+        shouldBe("tmpKey.extractable", "false");
+        shouldBe("tmpKey.algorithm.name", "'AES-CBC'");
+        shouldBe("tmpKey.usages.join(',')", "'decrypt,encrypt'");
 
         // (2) Encrypt.
         return crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));
@@ -104,7 +104,7 @@ function runSuccessTestCase(testCase)
 
 // Add all of the tests defined above.
 for (var i = 0; i < kSuccessTestVectors.length; ++i) {
-    allTests.push(runSuccessTestCase(kSuccessTestVectors[i]));
+    addTask(runSuccessTestCase(kSuccessTestVectors[i]));
 }
 
 // -------------------------------------------------
@@ -133,7 +133,7 @@ function testInvalidKeyImport(keyLengthBytes)
 }
 
 for (var i = 0; i < kUnsupportedKeyLengths.length; ++i) {
-    allTests.push(testInvalidKeyImport(kUnsupportedKeyLengths[i]));
+    addTask(testInvalidKeyImport(kUnsupportedKeyLengths[i]));
 }
 
 // -------------------------------------------------
@@ -189,7 +189,7 @@ function testInvalidDecryptions()
     });
 }
 
-allTests.push(testInvalidDecryptions());
+addTask(testInvalidDecryptions());
 
 function testNormalizationFailures(importedKeys)
 {
@@ -201,43 +201,39 @@ function testNormalizationFailures(importedKeys)
     // AES-CBC normalization failures (AesCbcParams)
     // ---------------------------------------------------
 
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC', iv: null}, keys.aesCbc, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC'}, keys.aesCbc, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC', iv: 3}, keys.aesCbc, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array[0]}, keys.aesCbc, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CBC', iv: null}, keys.aesCbc, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CBC'}, keys.aesCbc, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CBC', iv: 3}, keys.aesCbc, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(0)}, keys.aesCbc, data)");
 
     // ---------------------------------------------------
     // AES-CTR normalization failures (AesCtrParams)
     // ---------------------------------------------------
 
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: null}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR'}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(0)}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 0}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 18}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 256}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: -3}, keys.aesCtr, data)");
-    shouldThrow("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: Infinity}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: null}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR'}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(0)}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 0}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 18}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 256}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: -3}, keys.aesCtr, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: Infinity}, keys.aesCtr, data)");
 
     // Try calling with the wrong key type.
     aesCbc = {name: 'AES-CBC', iv: new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])};
-    shouldThrow("crypto.subtle.encrypt(aesCbc, keys.hmacSha1, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt(aesCbc, keys.hmacSha1, data)");
 
     // Key doesn't support encrypt.
-    shouldThrow("crypto.subtle.encrypt(aesCbc, keys.aesCbcJustDecrypt, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt(aesCbc, keys.aesCbcJustDecrypt, data)");
 
     // If no key was specified AND the algorithm was bogus, should complain
     // about the missing key first.
     shouldThrow("crypto.subtle.encrypt({name: 'bogus'}, null, data)");
 }
 
-allTests.push(importTestKeys().then(testNormalizationFailures));
+addTask(importTestKeys().then(testNormalizationFailures));
 
-// -------------------------------------------------
-// Wait until all the tests have been run.
-// -------------------------------------------------
-
-Promise.all(allTests).then(finishJSTest, failAndFinishJSTest);
+completeTestWhenAllTasksDone();
 
 </script>
 

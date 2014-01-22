@@ -43,6 +43,7 @@
 namespace WebCore {
 
 class ScriptPromiseResolver;
+class ScriptState;
 
 // Wrapper around a Promise to notify completion of the crypto operation.
 // Platform cannot know about Promises which are declared in bindings.
@@ -53,6 +54,7 @@ public:
     static PassRefPtr<CryptoResultImpl> create(ScriptPromise);
 
     virtual void completeWithError() OVERRIDE;
+    virtual void completeWithError(const blink::WebString&) OVERRIDE;
     virtual void completeWithBuffer(const blink::WebArrayBuffer&) OVERRIDE;
     virtual void completeWithBoolean(bool) OVERRIDE;
     virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;

@@ -41,10 +41,10 @@ importTestKeys().then(function(result) {
     shouldThrow("crypto.subtle.wrapKey('raw', key, wrappingKey, undefined)");
 
     // Key is not extractable.
-    shouldThrow("crypto.subtle.wrapKey('raw', keys.aesCbcJustDecrypt, wrappingKey, wrapAlgorithm)");
+    shouldRejectPromiseWithNull("crypto.subtle.wrapKey('raw', keys.aesCbcJustDecrypt, wrappingKey, wrapAlgorithm)");
 
     // wrappingKey's usage does not include wrapKey.
-    shouldThrow("crypto.subtle.wrapKey('raw', key, keys.aesCbcJustDecrypt, wrapAlgorithm)");
+    shouldRejectPromiseWithNull("crypto.subtle.wrapKey('raw', key, keys.aesCbcJustDecrypt, wrapAlgorithm)");
 
     // SHA-1 isn't a valid wrapKey algorithm.
     shouldThrow("crypto.subtle.wrapKey('raw', key, wrappingKey, {name: 'SHA-1'})");
@@ -52,7 +52,7 @@ importTestKeys().then(function(result) {
     // Wrap algorithm doesn't match the wrapping key's algorithm (AES-CBC key
     // with AES-CTR wrap algorithm)
     aesCtrAlgorithm = {name: 'AES-CTR', counter: new Uint8Array(16), length: 0};
-    shouldThrow("crypto.subtle.wrapKey('raw', key, wrappingKey, aesCtrAlgorithm)");
+    shouldRejectPromiseWithNull("crypto.subtle.wrapKey('raw', key, wrappingKey, aesCtrAlgorithm)");
 
     // --------------------------------
     // unwrapKey invalid parameters
@@ -75,7 +75,7 @@ importTestKeys().then(function(result) {
     shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
 
     // unwrappingKey does not include unwrapKey usage.
-    shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, keys.aesCbcJustDecrypt, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
+    shouldRejectPromiseWithNull("crypto.subtle.unwrapKey('raw', wrappedKey, keys.aesCbcJustDecrypt, unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
 
     // Invalid keyUsages (also, unwrappedKeyAlgorithm is set to null).
     shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, 'hi', unwrapAlgorithm, null, extractable, 9)");
@@ -90,7 +90,7 @@ importTestKeys().then(function(result) {
     shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, {name: 'SHA-1'}, unwrappedKeyAlgorithm, extractable, keyUsages)");
 
     // Mismatch between the unwrappingKey's algorithm and unwrapAlgorithm.
-    shouldThrow("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, aesCtrAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
+    shouldRejectPromiseWithNull("crypto.subtle.unwrapKey('raw', wrappedKey, unwrappingKey, aesCtrAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages)");
 
 }).then(finishJSTest, failAndFinishJSTest);
 

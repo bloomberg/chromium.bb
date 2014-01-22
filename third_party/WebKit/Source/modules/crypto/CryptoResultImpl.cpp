@@ -45,9 +45,6 @@ namespace WebCore {
 
 CryptoResultImpl::~CryptoResultImpl()
 {
-    ASSERT(m_finished);
-    ASSERT(!m_promiseResolver.get());
-    ASSERT(!m_requestState.isValid());
 }
 
 PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptPromise promise)
@@ -55,16 +52,23 @@ PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptPromise promise)
     return adoptRef(new CryptoResultImpl(activeExecutionContext(), promise));
 }
 
-void CryptoResultImpl::completeWithError()
+void CryptoResultImpl::completeWithError(const blink::WebString& errorDetails)
 {
     ASSERT(!m_finished);
 
     if (canCompletePromise()) {
         DOMRequestState::Scope scope(m_requestState);
+        if (!errorDetails.isEmpty()) {
+            // FIXME: Include the line number which started the crypto operation.
+            executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, errorDetails);
+        }
         m_promiseResolver->reject(ScriptValue::createNull());
     }
+}
 
-    finish();
+void CryptoResultImpl::completeWithError()
+{
+    completeWithError(blink::WebString());
 }
 
 void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)

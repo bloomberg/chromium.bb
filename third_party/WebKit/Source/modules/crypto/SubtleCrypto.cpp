@@ -46,6 +46,18 @@ namespace WebCore {
 
 namespace {
 
+bool parseAlgorithm(const Dictionary& rawAlgorithm, AlgorithmOperation operationType, blink::WebCryptoAlgorithm &algorithm, ExceptionState& exceptionState, CryptoResult* result)
+{
+    String errorDetails;
+    if (parseAlgorithm(rawAlgorithm, operationType, algorithm, errorDetails, exceptionState))
+        return true;
+
+    if (!exceptionState.hadException())
+        result->completeWithError(errorDetails);
+
+    return false;
+}
+
 ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& exceptionState)
 {
     bool requiresKey = operationType != Digest;
@@ -65,18 +77,21 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
         return ScriptPromise();
     }
 
-    blink::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, exceptionState))
-        return ScriptPromise();
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
 
-    if (requiresKey && !key->canBeUsedForAlgorithm(algorithm, operationType, exceptionState))
-        return ScriptPromise();
+    blink::WebCryptoAlgorithm algorithm;
+    if (!parseAlgorithm(rawAlgorithm, operationType, algorithm, exceptionState, result.get()))
+        return promise;
+
+    String errorDetails;
+    if (requiresKey && !key->canBeUsedForAlgorithm(algorithm, operationType, errorDetails)) {
+        result->completeWithError(errorDetails);
+        return promise;
+    }
 
     const unsigned char* data = static_cast<const unsigned char*>(dataBuffer->baseAddress());
     unsigned dataSize = dataBuffer->byteLength();
-
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
 
     switch (operationType) {
     case Encrypt:
@@ -140,12 +155,13 @@ ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool ext
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, exceptionState))
         return ScriptPromise();
 
-    blink::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, GenerateKey, algorithm, exceptionState))
-        return ScriptPromise();
-
     ScriptPromise promise = ScriptPromise::createPending();
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+
+    blink::WebCryptoAlgorithm algorithm;
+    if (!parseAlgorithm(rawAlgorithm, GenerateKey, algorithm, exceptionState, result.get()))
+        return promise;
+
     blink::Platform::current()->crypto()->generateKey(algorithm, extractable, keyUsages, result->result());
     return promise;
 }
@@ -165,15 +181,16 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, exceptionState))
         return ScriptPromise();
 
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+
     // The algorithm is optional.
     blink::WebCryptoAlgorithm algorithm;
-    if (!rawAlgorithm.isUndefinedOrNull() && !normalizeAlgorithm(rawAlgorithm, ImportKey, algorithm, exceptionState))
-        return ScriptPromise();
+    if (!rawAlgorithm.isUndefinedOrNull() && !parseAlgorithm(rawAlgorithm, ImportKey, algorithm, exceptionState, result.get()))
+        return promise;
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
 
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
     blink::Platform::current()->crypto()->importKey(format, keyDataBytes, keyData->byteLength(), algorithm, extractable, keyUsages, result->result());
     return promise;
 }
@@ -189,13 +206,14 @@ ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, Excepti
         return ScriptPromise();
     }
 
-    if (!key->extractable()) {
-        exceptionState.throwDOMException(NotSupportedError, "key is not extractable");
-        return ScriptPromise();
-    }
-
     ScriptPromise promise = ScriptPromise::createPending();
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+
+    if (!key->extractable()) {
+        result->completeWithError("key is not extractable");
+        return promise;
+    }
+
     blink::Platform::current()->crypto()->exportKey(format, key->key(), result->result());
     return promise;
 }
@@ -216,20 +234,24 @@ ScriptPromise SubtleCrypto::wrapKey(const String& rawFormat, Key* key, Key* wrap
         return ScriptPromise();
     }
 
-    blink::WebCryptoAlgorithm wrapAlgorithm;
-    if (!normalizeAlgorithm(rawWrapAlgorithm, WrapKey, wrapAlgorithm, exceptionState))
-        return ScriptPromise();
-
-    if (!key->extractable()) {
-        exceptionState.throwDOMException(NotSupportedError, "key is not extractable");
-        return ScriptPromise();
-    }
-
-    if (!wrappingKey->canBeUsedForAlgorithm(wrapAlgorithm, WrapKey, exceptionState))
-        return ScriptPromise();
-
     ScriptPromise promise = ScriptPromise::createPending();
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+
+    blink::WebCryptoAlgorithm wrapAlgorithm;
+    if (!parseAlgorithm(rawWrapAlgorithm, WrapKey, wrapAlgorithm, exceptionState, result.get()))
+        return promise;
+
+    if (!key->extractable()) {
+        result->completeWithError("key is not extractable");
+        return promise;
+    }
+
+    String errorDetails;
+    if (!wrappingKey->canBeUsedForAlgorithm(wrapAlgorithm, WrapKey, errorDetails)) {
+        result->completeWithError(errorDetails);
+        return promise;
+    }
+
     blink::Platform::current()->crypto()->wrapKey(format, key->key(), wrappingKey->key(), wrapAlgorithm, result->result());
     return promise;
 }
@@ -250,27 +272,31 @@ ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, ArrayBufferView* 
         return ScriptPromise();
     }
 
-    blink::WebCryptoAlgorithm unwrapAlgorithm;
-    if (!normalizeAlgorithm(rawUnwrapAlgorithm, UnwrapKey, unwrapAlgorithm, exceptionState))
-        return ScriptPromise();
-
-    // The unwrappedKeyAlgorithm is optional.
-    blink::WebCryptoAlgorithm unwrappedKeyAlgorithm;
-    if (!rawUnwrappedKeyAlgorithm.isUndefinedOrNull() && !normalizeAlgorithm(rawUnwrappedKeyAlgorithm, ImportKey, unwrappedKeyAlgorithm, exceptionState))
-        return ScriptPromise();
-
     blink::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, exceptionState))
         return ScriptPromise();
 
-    if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, UnwrapKey, exceptionState))
-        return ScriptPromise();
+    ScriptPromise promise = ScriptPromise::createPending();
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+
+    blink::WebCryptoAlgorithm unwrapAlgorithm;
+    if (!parseAlgorithm(rawUnwrapAlgorithm, UnwrapKey, unwrapAlgorithm, exceptionState, result.get()))
+        return promise;
+
+    // The unwrappedKeyAlgorithm is optional.
+    blink::WebCryptoAlgorithm unwrappedKeyAlgorithm;
+    if (!rawUnwrappedKeyAlgorithm.isUndefinedOrNull() && !parseAlgorithm(rawUnwrappedKeyAlgorithm, ImportKey, unwrappedKeyAlgorithm, exceptionState, result.get()))
+        return promise;
+
+    String errorDetails;
+    if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, UnwrapKey, errorDetails)) {
+        result->completeWithError(errorDetails);
+        return promise;
+    }
 
     const unsigned char* wrappedKeyData = static_cast<const unsigned char*>(wrappedKey->baseAddress());
     unsigned wrappedKeyDataSize = wrappedKey->byteLength();
 
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
     blink::Platform::current()->crypto()->unwrapKey(format, wrappedKeyData, wrappedKeyDataSize, unwrappingKey->key(), unwrapAlgorithm, unwrappedKeyAlgorithm, extractable, keyUsages, result->result());
     return promise;
 }

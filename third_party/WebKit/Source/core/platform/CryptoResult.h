@@ -42,6 +42,7 @@ public:
     virtual ~CryptoResult() { }
 
     virtual void completeWithError() = 0;
+    virtual void completeWithError(const blink::WebString&) = 0;
     virtual void completeWithBuffer(const blink::WebArrayBuffer&) = 0;
     virtual void completeWithBoolean(bool) = 0;
     virtual void completeWithKey(const blink::WebCryptoKey&) = 0;

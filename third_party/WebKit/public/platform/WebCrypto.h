@@ -44,6 +44,7 @@ namespace WTF { template <typename T> class PassRefPtr; }
 namespace blink {
 
 class WebArrayBuffer;
+class WebString;
 
 class WebCryptoResult {
 public:
@@ -64,6 +65,15 @@ public:
     }
 
     BLINK_EXPORT void completeWithError();
+
+    // Note that WebString is NOT safe to pass across threads.
+    //
+    // Error details are intended to be displayed to developers for debugging.
+    // They MUST NEVER reveal any secret information such as bytes of the key
+    // or plain text. An appropriate error would be something like:
+    //   "iv must be 16 bytes long".
+    BLINK_EXPORT void completeWithError(const WebString&);
+
     // Note that WebArrayBuffer is NOT safe to create from another thread.
     BLINK_EXPORT void completeWithBuffer(const WebArrayBuffer&);
     // Makes a copy of the input data given as a pointer and byte length.
@@ -85,7 +95,8 @@ private:
 
 class WebCrypto {
 public:
-    // WebCrypto is the interface for starting one-shot cryptographic operations.
+    // WebCrypto is the interface for starting one-shot cryptographic
+    // operations.
     //
     // -----------------------
     // Completing the request

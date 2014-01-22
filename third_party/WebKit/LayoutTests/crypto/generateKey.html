@@ -10,6 +10,7 @@
 
 <script>
 description("Tests crypto.subtle.generateKey.");
+jsTestIsAsync = true;
 
 extractable = true;
 keyUsages = ['encrypt', 'decrypt'];
@@ -24,58 +25,58 @@ shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, ['boo'])");
 // AES-CBC normalization failures (AesKeyGenParams)
 // ---------------------------------------------------
 
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: 70000 }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: -3 }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: -Infinity }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-cbc', length: 70000 }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-cbc', length: -3 }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-cbc', length: -Infinity }, extractable, keyUsages)");
 
 // ---------------------------------------------------
 // AES-CTR normalization failures (AesKeyGenParams)
 // ---------------------------------------------------
 
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr' }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: 70000 }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: -3 }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-ctr', length: -Infinity }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-ctr' }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-ctr', length: 70000 }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-ctr', length: -3 }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-ctr', length: -Infinity }, extractable, keyUsages)");
 
 // ---------------------------------------------------
 // AES-KW normalization failures (AesKeyGenParams)
 // ---------------------------------------------------
 
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw' }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw', length: 70000 }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw', length: -3 }, extractable, keyUsages)");
-shouldThrow("crypto.subtle.generateKey({ name: 'aes-kw', length: -Infinity }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-kw' }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-kw', length: 70000 }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-kw', length: -3 }, extractable, keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({ name: 'aes-kw', length: -Infinity }, extractable, keyUsages)");
 
 // ---------------------------------------------------
 // HMAC normalization failures (HmacKeyParams)
 // ---------------------------------------------------
 
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -3}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: ''}, length: 48}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: 5000000000}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: NaN}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: Infinity}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -Infinity}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: crypto}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: undefined}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -3}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: ''}, length: 48}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: 5000000000}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: NaN}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: Infinity}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: -Infinity}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: crypto}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: undefined}, extractable , keyUsages)");
 
 // The length property doesn't strictly need to be a number according to WebIDL.
 // It just has to be convertable with ToNumber().
-shouldNotThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: '48'}, extractable , keyUsages)");
-shouldNotThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: null}, extractable , keyUsages)");
-shouldNotThrow("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: true}, extractable , keyUsages)");
+shouldAcceptPromise("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: '48'}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: null}, extractable , keyUsages)");
+shouldAcceptPromise("crypto.subtle.generateKey({name: 'hmac', hash: {name: 'sha-256'}, length: true}, extractable , keyUsages)");
 
 // ---------------------------------------------------
 // RSASSA-PKCS1-v1_5 normalization failures (RsaKeyGenParams)
 // ---------------------------------------------------
 
-shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5'}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5'}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
 
 // ---------------------------------------------------
 // RSAES-PKCS1-v1_5 normalization failures (RsaKeyGenParams)
@@ -83,12 +84,14 @@ shouldThrow("crypto.subtle.generateKey({name: 'RSASSA-PKCS1-v1_5', modulusLength
 
 // Note: these are the same tests as for RSASSA-PKCS1-v1_5 above.
 
-shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5'}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
-shouldThrow("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: -30}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: NaN}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5'}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: 10}, extractable , keyUsages)");
+shouldRejectPromiseWithNull("crypto.subtle.generateKey({name: 'RSAES-PKCS1-v1_5', modulusLength: 10, publicExponent: null}, extractable , keyUsages)");
+
+completeTestWhenAllTasksDone();
 </script>
 
 </body>

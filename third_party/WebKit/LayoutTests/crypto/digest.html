@@ -98,11 +98,9 @@ kDigestTestVectors = [
   },
 ];
 
-var allTests = [];
-
 // Run each test.
 for (var i = 0; i < kDigestTestVectors.length; ++i) {
-    allTests.push(runTestCase(kDigestTestVectors[i]));
+    addTask(runTestCase(kDigestTestVectors[i]));
 }
 
 function runTestCase(testCase)
@@ -113,9 +111,7 @@ function runTestCase(testCase)
     });
 }
 
-Promise.all(allTests).then(finishJSTest, failAndFinishJSTest);
-
-// Pass invalid data to digeset()
+// Pass invalid data to digest()
 shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
 shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");
 shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
@@ -125,6 +121,8 @@ data = new Uint8Array([0]);
 shouldThrow("crypto.subtle.digest({name: 'sha'}, data)");
 shouldThrow("crypto.subtle.digest(null, data)");
 shouldThrow("crypto.subtle.digest({}, data)");
+
+completeTestWhenAllTasksDone();
 
 </script>
 

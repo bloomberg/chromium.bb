@@ -175,27 +175,28 @@ Vector<String> Key::usages() const
     return result;
 }
 
-bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, AlgorithmOperation op, ExceptionState& exceptionState) const
+bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, AlgorithmOperation op, String& errorDetails) const
 {
     if (!(m_key.usages() & toKeyUsage(op))) {
-        exceptionState.throwDOMException(NotSupportedError, "key.usages does not permit this operation");
+        errorDetails = "key.usages does not permit this operation";
         return false;
     }
 
     if (m_key.algorithm().id() != algorithm.id()) {
-        exceptionState.throwDOMException(NotSupportedError, "key.algorithm does not match that of operation");
+        errorDetails = "key.algorithm does not match that of operation";
         return false;
     }
 
     // Verify that the algorithm-specific parameters for the key conform to the
     // algorithm.
-    // FIXME: Verify that this is complete.
+    // FIXME: This is incomplete and not future proof. Operational parameters
+    //        should be enumerated when defining new parameters.
 
     if (m_key.algorithm().id() == blink::WebCryptoAlgorithmIdHmac) {
         blink::WebCryptoAlgorithmId keyHash;
         blink::WebCryptoAlgorithmId algorithmHash;
         if (!getHmacHashId(m_key.algorithm(), keyHash) || !getHmacHashId(algorithm, algorithmHash) || keyHash != algorithmHash) {
-            exceptionState.throwDOMException(NotSupportedError, "key.algorithm does not match that of operation (HMAC's hash differs)");
+            errorDetails = "key.algorithm does not match that of operation (HMAC's hash differs)";
             return false;
         }
     }

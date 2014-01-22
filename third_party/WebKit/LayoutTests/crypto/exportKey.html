@@ -13,7 +13,7 @@ description("Tests cypto.subtle.exportKey.");
 
 jsTestIsAsync = true;
 
-importTestKeys().then(function(result) {
+addTask(importTestKeys().then(function(result) {
     keys = result;
 
     // Invalid export formats.
@@ -26,10 +26,12 @@ importTestKeys().then(function(result) {
     shouldThrow("crypto.subtle.exportKey('raw', 3)");
 
     shouldBe("keys.aesCbcJustDecrypt.extractable", "false")
-    shouldThrow("crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt)");
+    shouldRejectPromiseWithNull("crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt)");
 
     // TODO(eroman): exportKey() is not implemented.
-}).then(finishJSTest, failAndFinishJSTest);
+}));
+
+completeTestWhenAllTasksDone();
 
 </script>
 
