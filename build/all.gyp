@@ -69,6 +69,7 @@
             '../third_party/qcms/qcms.gyp:*',
             '../tools/gn/gn.gyp:*',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
+            '../tools/telemetry/telemetry.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
             '../webkit/glue/webkit_glue.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:*',
@@ -265,6 +266,7 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
+            '../tools/telemetry/telemetry.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
           ],
         }],
@@ -436,6 +438,7 @@
             '../chrome/chrome.gyp:sync_performance_tests',
             '../media/media.gyp:media_perftests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
+            '../tools/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
             ['OS!="ios" and OS!="win"', {
@@ -472,6 +475,7 @@
             '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
+            '../tools/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
             ['OS!="ios" and OS!="win"', {
@@ -506,6 +510,7 @@
             '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
             '../gpu/gpu.gyp:gl_tests',
             '../gpu/gpu.gyp:angle_unittests',
+            '../tools/telemetry/telemetry.gyp:*',
           ],
           'conditions': [
             ['OS!="ios" and OS!="win"', {

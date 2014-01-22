@@ -28,6 +28,7 @@
         # the sync-related code for Android has been upstreamed.
         # See http://crbug.com/159203
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
+        '../tools/telemetry/telemetry.gyp:*#host',
       ],
     }, # target_name: All
     {

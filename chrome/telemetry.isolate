@@ -25,6 +25,7 @@
           '../third_party/WebKit/PerformanceTests/resources/statistics.js',
           '../third_party/flot/jquery.flot.min.js',
           '../tools/perf/unit-info.json',
+          '<(PRODUCT_DIR)/bitmaptools<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
           '../build/android/pylib/',
