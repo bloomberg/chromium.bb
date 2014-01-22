@@ -1124,7 +1124,7 @@ void ReplaceSelectionCommand::doApply()
     if (insertionBlock && insertionPos.deprecatedNode() == insertionBlock->parentNode() && (unsigned)insertionPos.deprecatedEditingOffset() < insertionBlock->nodeIndex() && !isStartOfParagraph(startOfInsertedContent))
         insertNodeAt(createBreakElement(document()).get(), startOfInsertedContent.deepEquivalent());
 
-    if (endBR && (plainTextFragment || shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR))) {
+    if (endBR && (plainTextFragment || (shouldRemoveEndBR(endBR, originalVisPosBeforeEndBR) && !(fragment.hasInterchangeNewlineAtEnd() && selectionIsPlainText)))) {
         RefPtr<Node> parent = endBR->parentNode();
         insertedNodes.willRemoveNode(*endBR);
         removeNode(endBR);
