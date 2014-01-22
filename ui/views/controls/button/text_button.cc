@@ -601,7 +601,8 @@ TextButton::TextButton(ButtonListener* listener, const base::string16& text)
       has_hover_icon_(false),
       has_pushed_icon_(false),
       icon_text_spacing_(kDefaultIconTextSpacing),
-      ignore_minimum_size_(true) {
+      ignore_minimum_size_(true),
+      full_justification_(false) {
   set_border(new TextButtonDefaultBorder);
   SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(
                       gfx::Insets(kFocusRectInset, kFocusRectInset,
@@ -661,22 +662,34 @@ gfx::Size TextButton::GetPreferredSize() {
 }
 
 void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
+  if (full_justification_ && icon_placement_ == ICON_ON_LEFT)
+      set_alignment(ALIGN_RIGHT);
+
   TextButtonBase::PaintButton(canvas, mode);
 
   const gfx::ImageSkia& icon = GetImageToPaint();
 
   if (icon.width() > 0) {
     gfx::Rect text_bounds = GetTextBounds();
-    int icon_x;
+    int icon_x = 0;
     int spacing = text_.empty() ? 0 : icon_text_spacing_;
     gfx::Insets insets = GetInsets();
-    if (icon_placement_ == ICON_ON_LEFT) {
-      icon_x = text_bounds.x() - icon.width() - spacing;
-    } else if (icon_placement_ == ICON_ON_RIGHT) {
-      icon_x = text_bounds.right() + spacing;
-    } else {  // ICON_CENTERED
-      DCHECK(text_.empty());
-      icon_x = (width() - insets.width() - icon.width()) / 2 + insets.left();
+    switch (icon_placement_) {
+      case ICON_ON_LEFT:
+        icon_x = full_justification_ ? insets.left()
+                                     : text_bounds.x() - icon.width() - spacing;
+        break;
+      case ICON_ON_RIGHT:
+        icon_x = full_justification_ ? width() - insets.right() - icon.width()
+                                     : text_bounds.right() + spacing;
+        break;
+      case ICON_CENTERED:
+        DCHECK(text_.empty());
+        icon_x = (width() - insets.width() - icon.width()) / 2 + insets.left();
+        break;
+      default:
+        NOTREACHED();
+        break;
     }
 
     int available_height = height() - insets.height();
@@ -691,6 +704,10 @@ void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
 void TextButton::set_ignore_minimum_size(bool ignore_minimum_size) {
   ignore_minimum_size_ = ignore_minimum_size;
+}
+
+void TextButton::set_full_justification(bool full_justification) {
+  full_justification_ = full_justification;
 }
 
 const char* TextButton::GetClassName() const {

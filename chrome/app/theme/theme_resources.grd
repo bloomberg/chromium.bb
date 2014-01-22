@@ -323,6 +323,9 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_BROWSE_GUEST" file="common/icon_browse_as_guest.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_BROWSE_GUEST_WHITE" file="common/icon_browse_as_guest_white.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_LOCKED" file="common/icon_locked.png" />
+        <structure type="chrome_scaled_image"
+        name="IDR_ICON_PROFILES_EDIT_HOVER" file="common/edit_button_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_PRESSED" file="common/edit_button_pressed.png" />
       </if>
       <if expr="not is_android and not is_ios and not pp_ifdef('chromeos')">
         <!-- TODO(noms): Remove this once local profile avatars are migrated -->

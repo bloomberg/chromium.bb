@@ -73,7 +73,7 @@ views::GridLayout* CreateDoubleColumnLayout(views::View* view) {
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, views::kUnrelatedControlLargeHorizontalSpacing);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
   return layout;
 }
@@ -245,8 +245,10 @@ class EditableProfileName : public views::TextButton,
     if (!is_editing_allowed)
       return;
 
-    SetIcon(*rb->GetImageSkiaNamed(IDR_INFOBAR_AUTOFILL));
+    SetHoverIcon(*rb->GetImageSkiaNamed(IDR_ICON_PROFILES_EDIT_HOVER));
+    SetPushedIcon(*rb->GetImageSkiaNamed(IDR_ICON_PROFILES_EDIT_PRESSED));
     set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+    set_full_justification(true);
 
     // Textfield that overlaps the button.
     profile_name_textfield_ = new views::Textfield();

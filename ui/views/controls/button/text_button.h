@@ -339,6 +339,8 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
 
   void set_ignore_minimum_size(bool ignore_minimum_size);
 
+  void set_full_justification(bool full_justification);
+
   // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
@@ -380,6 +382,10 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   // True if the button should ignore the minimum size for the platform. Default
   // is true. Set to false to prevent narrower buttons.
   bool ignore_minimum_size_;
+
+  // True if the icon and the text are aligned along both the left and right
+  // margins of the button.
+  bool full_justification_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButton);
 };
