@@ -114,8 +114,12 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
   // The resolution before the change.
   gfx::Size old_resolution;
 
-  // The new resolution after the change.
+  // The requested resolution. Note that this may be different from
+  // |current_resolution| which is the actual resolution set.
   gfx::Size new_resolution;
+
+  // The actual resolution after the change.
+  gfx::Size current_resolution;
 
   // The callback when accept is chosen.
   base::Closure accept_callback;
@@ -216,15 +220,26 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
 
   data.should_make_spoken_feedback_for_popup_updates = enable_spoken_feedback;
 
+  const base::string16 display_name = base::UTF8ToUTF16(
+      Shell::GetInstance()->display_manager()->GetDisplayNameForId(
+          change_info_->display_id));
+  const base::string16 message =
+      (change_info_->new_resolution == change_info_->current_resolution) ?
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
+          display_name,
+          base::UTF8ToUTF16(change_info_->new_resolution.ToString())) :
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED,
+          display_name,
+          base::UTF8ToUTF16(change_info_->new_resolution.ToString()),
+          base::UTF8ToUTF16(change_info_->current_resolution.ToString()));
+
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId,
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          base::UTF8ToUTF16(Shell::GetInstance()->display_manager()->
-              GetDisplayNameForId(change_info_->display_id)),
-          base::UTF8ToUTF16(change_info_->new_resolution.ToString())),
+      message,
       timeout_message,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16() /* display_source */,
@@ -288,6 +303,9 @@ void ResolutionNotificationController::OnDisplayConfigurationChanged() {
   if (!change_info_)
     return;
 
+  const DisplayInfo& info = Shell::GetInstance()->display_manager()->
+      GetDisplayInfo(change_info_->display_id);
+  change_info_->current_resolution = info.bounds_in_native().size();
   CreateOrUpdateNotification(true);
   if (g_use_timer && change_info_->timeout_count > 0) {
     change_info_->timer.Start(FROM_HERE,

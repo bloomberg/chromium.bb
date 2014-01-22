@@ -330,6 +330,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
         <ph name="DISPLAY_NAME">$1</ph> resolution was changed to <ph name="RESOLUTION">$2</ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED" desc="The label used in the tray to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution.">
+        <ph name="DISPLAY_NAME">$1</ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>2560x1600</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
         <ph name="DISPLAY_NAME">$1</ph> was rotated to <ph name="ROTATION">$2</ph>
       </message>
