@@ -1557,7 +1557,7 @@ internal_arm_paladin.add_config('beaglebone-paladin',
   packages=['chromeos-base/chromeos'],
   images=['base'],
   rootfs_verification=False,
-  important=False,
+  important=True,
   paladin_builder_name='beaglebone paladin',
 )
 
@@ -1885,14 +1885,7 @@ _release.add_config('zako-release',
 
 _arm_release = _release.derive(arm)
 
-_config.add_group('beaglebone-release-group',
-  _arm_release.add_config('beaglebone-release',
-    boards=['beaglebone'],
-  ),
-  _arm_release.add_config('beaglebone_servo-release',
-    boards=['beaglebone_servo'],
-  ),
-  sync_chrome=False,
+_beaglebone_release_config = _arm_release.derive(
   chrome_sdk=False,
   build_tests=False,
   dev_installer_prebuilts=False,
@@ -1901,7 +1894,17 @@ _config.add_group('beaglebone-release-group',
   images=['base'],
   rootfs_verification=False,
   signer_tests=False,
+  sync_chrome=False,
   upload_hw_test_artifacts=True,
+)
+
+_config.add_group('beaglebone-release-group',
+  _beaglebone_release_config.add_config('beaglebone-release',
+    boards=['beaglebone'],
+  ),
+  _beaglebone_release_config.add_config('beaglebone_servo-release',
+    boards=['beaglebone_servo'],
+  ),
 )
 
 _arm_release.add_config('daisy-release',
