@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/state_store.h"
+#include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -179,10 +180,11 @@ class GCMProfileService::IOWorker
     : public GCMClient::Delegate,
       public base::RefCountedThreadSafe<GCMProfileService::IOWorker>{
  public:
+  // Called on UI thread.
   explicit IOWorker(const base::WeakPtr<GCMProfileService>& service);
 
   // Overridden from GCMClient::Delegate:
-  // Called from IO thread.
+  // Called on IO thread.
   virtual void OnCheckInFinished(const GCMClient::CheckinInfo& checkin_info,
                                  GCMClient::Result result) OVERRIDE;
   virtual void OnRegisterFinished(const std::string& app_id,
@@ -200,9 +202,9 @@ class GCMProfileService::IOWorker
                                   GCMClient::Result result) OVERRIDE;
   virtual GCMClient::CheckinInfo GetCheckinInfo() const OVERRIDE;
   virtual void OnLoadingCompleted() OVERRIDE;
-  virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE;
 
-  void CheckGCMClientLoading();
+  // Called on IO thread.
+  void Initialize();
   void SetUser(const std::string& username);
   void RemoveUser(const std::string& username);
   void CheckIn();
@@ -223,6 +225,9 @@ class GCMProfileService::IOWorker
 
   const base::WeakPtr<GCMProfileService> service_;
 
+  // Not owned.
+  GCMClient* gcm_client_;
+
   // The username (email address) of the signed-in user.
   std::string username_;
 
@@ -233,10 +238,25 @@ class GCMProfileService::IOWorker
 
 GCMProfileService::IOWorker::IOWorker(
     const base::WeakPtr<GCMProfileService>& service)
-    : service_(service) {
+    : service_(service),
+      gcm_client_(NULL) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 GCMProfileService::IOWorker::~IOWorker() {
+}
+
+void GCMProfileService::IOWorker::Initialize() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  gcm_client_ = GCMClientFactory::GetClient();
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GCMProfileService::CheckGCMClientLoadingFinished,
+                 service_,
+                 gcm_client_->IsLoading()));
 }
 
 void GCMProfileService::IOWorker::OnCheckInFinished(
@@ -340,26 +360,12 @@ void GCMProfileService::IOWorker::OnLoadingCompleted() {
                  service_));
 }
 
-base::TaskRunner* GCMProfileService::IOWorker::GetFileTaskRunner() {
-  // TODO(jianli): to be implemented.
-  return NULL;
-}
-
-void GCMProfileService::IOWorker::CheckGCMClientLoading() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GCMProfileService::CheckGCMClientLoadingFinished,
-                 service_,
-                 GCMClient::Get()->IsLoading()));
-}
-
 void GCMProfileService::IOWorker::SetUser(const std::string& username) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(username_.empty() && !username.empty());
 
   username_ = username;
-  GCMClient::Get()->SetUserDelegate(username_, this);
+  gcm_client_->SetUserDelegate(username_, this);
 }
 
 void GCMProfileService::IOWorker::RemoveUser(const std::string& username) {
@@ -369,13 +375,13 @@ void GCMProfileService::IOWorker::RemoveUser(const std::string& username) {
   if (username_.empty())
     return;
   username_.clear();
-  GCMClient::Get()->SetUserDelegate(username_, NULL);
+  gcm_client_->SetUserDelegate(username_, NULL);
 }
 
 void GCMProfileService::IOWorker::CheckIn() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  GCMClient::Get()->CheckIn(username_);
+  gcm_client_->CheckIn(username_);
 }
 
 void GCMProfileService::IOWorker::SetCheckinInfo(
@@ -399,14 +405,14 @@ void GCMProfileService::IOWorker::Register(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(!username_.empty() && checkin_info_.IsValid());
 
-  GCMClient::Get()->Register(username_, app_id, cert, sender_ids);
+  gcm_client_->Register(username_, app_id, cert, sender_ids);
 }
 
 void GCMProfileService::IOWorker::Unregister(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(!username_.empty() && checkin_info_.IsValid());
 
-  GCMClient::Get()->Unregister(username_, app_id);
+  gcm_client_->Unregister(username_, app_id);
 }
 
 void GCMProfileService::IOWorker::Send(
@@ -416,7 +422,7 @@ void GCMProfileService::IOWorker::Send(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(!username_.empty() && checkin_info_.IsValid());
 
-  GCMClient::Get()->Send(username_, app_id, receiver_id, message);
+  gcm_client_->Send(username_, app_id, receiver_id, message);
 }
 
 GCMProfileService::RegistrationInfo::RegistrationInfo() {
@@ -465,6 +471,7 @@ GCMProfileService::GCMProfileService(Profile* profile)
       testing_delegate_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(!profile->IsOffTheRecord());
+
   Init();
 }
 
@@ -493,12 +500,12 @@ void GCMProfileService::Init() {
   // This has to be done first since CheckIn depends on it.
   io_worker_ = new IOWorker(weak_ptr_factory_.GetWeakPtr());
 
-  // Checks if GCMClient has finished the loading.
+  // This initializes GCMClient and also does the check to find out if GCMClient
+  // has finished the loading.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMProfileService::IOWorker::CheckGCMClientLoading,
-                 io_worker_));
+      base::Bind(&GCMProfileService::IOWorker::Initialize, io_worker_));
 
   // In case that the profile has been signed in before GCMProfileService is
   // created.

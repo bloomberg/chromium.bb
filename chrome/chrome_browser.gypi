@@ -1943,6 +1943,8 @@
         'browser/search_engines/template_url_service_observer.h',
         'browser/search_engines/util.cc',
         'browser/search_engines/util.h',
+        'browser/services/gcm/gcm_client_factory.cc',
+        'browser/services/gcm/gcm_client_factory.h',
         'browser/services/gcm/gcm_event_router.h',
         'browser/services/gcm/gcm_profile_service.cc',
         'browser/services/gcm/gcm_profile_service.h',
