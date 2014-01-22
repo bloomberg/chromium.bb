@@ -72,6 +72,10 @@ struct WindowTouchDetails {
   std::map<int, gfx::Point> start_touch_position_;
   std::map<int, gfx::Point> last_touch_position_;
 
+  // The maximum distance the first touch point travelled from its starting
+  // location in pixels.
+  float max_distance_from_start_squared_;
+
   // Last time-stamp of the last touch-end event.
   base::TimeDelta last_release_time_;
 
@@ -219,7 +223,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
       static_cast<int>(std::max(event.radius_x(), event.radius_y())),
       1, 500, 100);
 
-  UpdateBurstData(event);
+  UpdateTouchState(event);
 
   WindowTouchDetails* details = target->GetProperty(kWindowTouchDetails);
   if (!details) {
@@ -277,6 +281,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
     details->last_start_time_[event.touch_id()] = event.time_stamp();
     details->start_touch_position_[event.touch_id()] = event.root_location();
     details->last_touch_position_[event.touch_id()] = event.location();
+    details->max_distance_from_start_squared_ = 0;
 
     if (details->last_release_time_.ToInternalValue()) {
       // Measuring the interval between a touch-release and the next
@@ -297,6 +302,12 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
         details->last_start_time_.size(),
         1, kMaxTouchPoints, kMaxTouchPoints + 1);
   } else if (event.type() == ui::ET_TOUCH_RELEASED) {
+    if (is_single_finger_gesture_) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchMaxDistance",
+          static_cast<int>(
+              sqrt(details->max_distance_from_start_squared_)), 0, 1500, 50);
+    }
+
     if (details->last_start_time_.count(event.touch_id())) {
       base::TimeDelta duration = event.time_stamp() -
                                  details->last_start_time_[event.touch_id()];
@@ -341,20 +352,27 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 
     details->last_move_time_[event.touch_id()] = event.time_stamp();
     details->last_touch_position_[event.touch_id()] = event.location();
+
+    float cur_dist = (details->start_touch_position_[event.touch_id()] -
+                      event.root_location()).LengthSquared();
+    if (cur_dist > details->max_distance_from_start_squared_)
+      details->max_distance_from_start_squared_ = cur_dist;
   }
 }
 
 TouchUMA::TouchUMA()
-    : touch_in_progress_(false),
+    : is_single_finger_gesture_(false),
+      touch_in_progress_(false),
       burst_length_(0) {
 }
 
 TouchUMA::~TouchUMA() {
 }
 
-void TouchUMA::UpdateBurstData(const ui::TouchEvent& event) {
+void TouchUMA::UpdateTouchState(const ui::TouchEvent& event) {
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     if (!touch_in_progress_) {
+      is_single_finger_gesture_ = true;
       base::TimeDelta difference = event.time_stamp() - last_touch_down_time_;
       if (difference > base::TimeDelta::FromMilliseconds(250)) {
         if (burst_length_) {
@@ -365,6 +383,8 @@ void TouchUMA::UpdateBurstData(const ui::TouchEvent& event) {
       } else {
         ++burst_length_;
       }
+    } else {
+      is_single_finger_gesture_ = false;
     }
     touch_in_progress_ = true;
     last_touch_down_time_ = event.time_stamp();

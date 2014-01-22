@@ -330,6 +330,13 @@ other types of suffix sets.
   <summary>The duration of a touch-sequence.</summary>
 </histogram>
 
+<histogram name="Ash.TouchMaxDistance" units="pixels">
+  <summary>
+    The maximum euclidean distance in dips which a touch point has travelled
+    away from its starting point. Only measured for single finger gestures.
+  </summary>
+</histogram>
+
 <histogram name="Ash.TouchMoveInterval" units="milliseconds">
   <summary>The interval between touch-move events.</summary>
 </histogram>

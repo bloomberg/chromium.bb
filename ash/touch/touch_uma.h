@@ -65,10 +65,11 @@ class ASH_EXPORT TouchUMA {
   TouchUMA();
   ~TouchUMA();
 
-  void UpdateBurstData(const ui::TouchEvent& event);
+  void UpdateTouchState(const ui::TouchEvent& event);
   GestureActionType FindGestureActionType(aura::Window* window,
                                           const ui::GestureEvent& event);
 
+  bool is_single_finger_gesture_;
   // These are used to measure the number of touch-start events we receive in a
   // quick succession, regardless of the target window.
   bool touch_in_progress_;
