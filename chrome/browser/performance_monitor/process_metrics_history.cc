@@ -73,20 +73,71 @@ void ProcessMetricsHistory::EndOfCycle() {
 }
 
 void ProcessMetricsHistory::RunPerformanceTriggers() {
-  // As an initial step, we only care about browser processes.
-  if (process_type_ != content::PROCESS_TYPE_BROWSER || sample_count_ == 0)
+  if (sample_count_ == 0)
     return;
 
   // We scale up to the equivalent of 64 CPU cores fully loaded. More than this
   // doesn't really matter, as we're already in a terrible place.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("PerformanceMonitor.AverageCPU.BrowserProcess",
-                              accumulated_cpu_usage_ / sample_count_,
-                              0, 6400, 50);
+  const int kHistogramMin = 0;
+  const int kHistogramMax = 6400;
+  const int kHistogramBucketCount = 50;
 
-  // If CPU usage has consistently been above our threshold,
-  // we *may* have an issue.
-  if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
-    UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.BrowserProcess", true);
+  const double average_cpu_usage = accumulated_cpu_usage_ / sample_count_;
+
+  // The histogram macros don't support variables as histogram names,
+  // hence the macro duplication for each process type.
+  switch (process_type_) {
+    case content::PROCESS_TYPE_BROWSER:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.BrowserProcess", average_cpu_usage,
+          kHistogramMin, kHistogramMax, kHistogramBucketCount);
+      // If CPU usage has consistently been above our threshold,
+      // we *may* have an issue.
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
+        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.BrowserProcess",
+                              true);
+      }
+      break;
+    case content::PROCESS_TYPE_RENDERER:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.RendererProcess", average_cpu_usage,
+          kHistogramMin, kHistogramMax, kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
+        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.RendererProcess",
+                              true);
+      }
+      break;
+    case content::PROCESS_TYPE_PLUGIN:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.PluginProcess", average_cpu_usage,
+          kHistogramMin, kHistogramMax, kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
+        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PluginProcess", true);
+      break;
+    case content::PROCESS_TYPE_WORKER:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.WorkerProcess", average_cpu_usage,
+          kHistogramMin, kHistogramMax, kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
+        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.WorkerProcess", true);
+      break;
+    case content::PROCESS_TYPE_GPU:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.GPUProcess", average_cpu_usage,
+          kHistogramMin, kHistogramMax, kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
+        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.GPUProcess", true);
+      break;
+    case content::PROCESS_TYPE_PPAPI_PLUGIN:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.PPAPIProcess", average_cpu_usage,
+          kHistogramMin, kHistogramMax, kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
+        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PPAPIProcess", true);
+      break;
+    default:
+      break;
+  }
 }
 
 }  // namespace performance_monitor

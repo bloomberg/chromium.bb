@@ -12688,20 +12688,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="PerformanceMonitor.AverageCPU.BrowserProcess"
-    units="PercentCPUUsage">
+<histogram name="PerformanceMonitor.AverageCPU" units="PercentCPUUsage">
   <summary>
-    Average CPU utilization of the browser process, read out at each two-minute
-    interval. The utilization is in the 0-100% range per CPU, which is then
-    summed up. I.e. a quadcore system fully loaded would read as 400%.
+    Average CPU utilization of a process, read out at each two-minute interval.
+    The utilization is in the 0-100% range per CPU, which is then summed up.
+    I.e. a quadcore system fully loaded would read as 400%.
   </summary>
 </histogram>
 
-<histogram name="PerformanceMonitor.HighCPU.BrowserProcess" enum="BooleanHit">
+<histogram name="PerformanceMonitor.HighCPU" enum="BooleanHit">
   <summary>
-    The number of times a browser process has continuously stayed above a
-    certain threshold of CPU utilization over a certain time period (currently
-    set to two minutes).
+    The number of times a process has continuously stayed above a certain
+    threshold of CPU utilization over a certain time period (currently set to
+    two minutes).
   </summary>
 </histogram>
 
@@ -33623,6 +33622,17 @@ other types of suffix sets.
       name="PasswordManager.SavePasswordPromptDisappearedQuickly"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptDisplayed"/>
   <affected-histogram name="PasswordManager.SavePasswordPromptResponse"/>
+</fieldtrial>
+
+<fieldtrial name="PerformanceMonitor" separator=".">
+  <group name="BrowserProcess"/>
+  <group name="RendererProcess"/>
+  <group name="PluginProcess"/>
+  <group name="WorkerProcess"/>
+  <group name="GPUProcess"/>
+  <group name="PPAPIProcess"/>
+  <affected-histogram name="PerformanceMonitor.AverageCPU"/>
+  <affected-histogram name="PerformanceMonitor.HighCPU"/>
 </fieldtrial>
 
 <fieldtrial name="PpapiPluginName">
