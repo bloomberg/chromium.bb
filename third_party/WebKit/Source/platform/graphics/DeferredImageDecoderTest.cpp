@@ -176,33 +176,6 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
-TEST_F(DeferredImageDecoderTest, DISABLED_drawScaledIntoSkPicture)
-{
-    m_lazyDecoder->setData(m_data.get(), true);
-    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
-    SkBitmap scaledBitmap = image->resizedBitmap(SkISize::Make(50, 51), SkIRect::MakeWH(50, 51));
-    EXPECT_FALSE(scaledBitmap.isNull());
-    EXPECT_TRUE(scaledBitmap.isImmutable());
-    EXPECT_EQ(50, scaledBitmap.width());
-    EXPECT_EQ(51, scaledBitmap.height());
-    EXPECT_EQ(0, m_frameBufferRequestCount);
-
-    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
-    tempCanvas->drawBitmap(scaledBitmap, 0, 0);
-    m_picture.endRecording();
-    EXPECT_EQ(0, m_frameBufferRequestCount);
-
-    m_canvas->drawPicture(m_picture);
-    EXPECT_EQ(0, m_frameBufferRequestCount);
-
-    SkBitmap canvasBitmap;
-    canvasBitmap.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
-    ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
-    SkAutoLockPixels autoLock(canvasBitmap);
-    EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
-    EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(49, 50));
-}
-
 static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 {
     canvas->drawPicture(*picture);

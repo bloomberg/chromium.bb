@@ -96,8 +96,7 @@ private:
 
     // These methods are called while m_decodeMutex is locked.
     const ScaledImageFragment* tryToLockCompleteCache(const SkISize& scaledSize, size_t index);
-    const ScaledImageFragment* tryToScale(const ScaledImageFragment* fullSizeImage, const SkISize& scaledSize, size_t index);
-    const ScaledImageFragment* tryToResumeDecodeAndScale(const SkISize& scaledSize, size_t index);
+    const ScaledImageFragment* tryToResumeDecode(const SkISize& scaledSize, size_t index);
 
     // Use the given decoder to decode. If a decoder is not given then try to create one.
     PassOwnPtr<ScaledImageFragment> decode(size_t index, ImageDecoder**);
