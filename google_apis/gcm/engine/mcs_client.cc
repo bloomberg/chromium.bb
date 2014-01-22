@@ -106,12 +106,14 @@ MCSClient::~MCSClient() {
 }
 
 void MCSClient::Initialize(
-    const InitializationCompleteCallback& initialization_callback,
+    const ErrorCallback& error_callback,
     const OnMessageReceivedCallback& message_received_callback,
     const OnMessageSentCallback& message_sent_callback,
     const GCMStore::LoadResult& load_result) {
   DCHECK_EQ(state_, UNINITIALIZED);
-  initialization_callback_ = initialization_callback;
+
+  state_ = LOADED;
+  mcs_error_callback_ = error_callback;
   message_received_callback_ = message_received_callback;
   message_sent_callback_ = message_sent_callback;
 
@@ -124,26 +126,20 @@ void MCSClient::Initialize(
                  weak_ptr_factory_.GetWeakPtr()));
   connection_handler_ = connection_factory_->GetConnectionHandler();
 
-  // TODO(fgorski): Likely this whole check will be done outside in GCMClient.
-  if (!load_result.success) {
-    state_ = UNINITIALIZED;
-    LOG(ERROR) << "Failed to load/create RMQ state. Not connecting.";
-    return;
-  }
-
-  state_ = LOADED;
   stream_id_out_ = 1;  // Login request is hardcoded to id 1.
-
-  // TODO(fgorski): android_id and secutiry_token will be moved to GCMClient.
-  if (load_result.device_android_id == 0 ||
-      load_result.device_security_token == 0) {
-    DVLOG(1) << "No device credentials found, assuming new client.";
-    initialization_callback_.Run(true, 0, 0);
-    return;
-  }
 
   android_id_ = load_result.device_android_id;
   security_token_ = load_result.device_security_token;
+
+  if (android_id_ == 0) {
+    DVLOG(1) << "No device credentials found, assuming new client.";
+    // No need to try and load RMQ data in that case.
+    return;
+  }
+
+  // |android_id_| is non-zero, so should |security_token_|.
+  DCHECK_NE(0u, security_token_) << "Security token invalid, while android id"
+                                 << " is non-zero.";
 
   DVLOG(1) << "RMQ Load finished with " << load_result.incoming_messages.size()
            << " incoming acks pending and "
@@ -161,13 +157,15 @@ void MCSClient::Initialize(
     uint64 timestamp = 0;
     if (!base::StringToUint64(iter->first, &timestamp)) {
       LOG(ERROR) << "Invalid restored message.";
+      // TODO(fgorski): Error: data unreadable
+      mcs_error_callback_.Run();
       return;
     }
 
     // Check if the TTL has expired for this message.
     if (HasTTLExpired(*iter->second, clock_)) {
       expired_ttl_ids.push_back(iter->first);
-      message_sent_callback_.Run("TTL expired for " + iter->first);
+      NotifyMessageSendStatus(*iter->second, TTL_EXCEEDED);
       delete iter->second;
       continue;
     }
@@ -193,39 +191,34 @@ void MCSClient::Initialize(
     packet_info->persistent_id = base::Uint64ToString(iter->first);
     to_send_.push_back(make_linked_ptr(packet_info));
   }
-
-  // TODO(fgorski): that is likely the only place where the initialization
-  // callback could be used.
-  initialization_callback_.Run(true, android_id_, security_token_);
 }
 
 void MCSClient::Login(uint64 android_id, uint64 security_token) {
+  DCHECK_EQ(state_, LOADED);
+  DCHECK(android_id_ == 0 || android_id_ == android_id);
+  DCHECK(security_token_ == 0 || security_token_ == security_token);
+
   if (android_id != android_id_ && security_token != security_token_) {
     DCHECK(android_id);
     DCHECK(security_token);
-    DCHECK(restored_unackeds_server_ids_.empty());
     android_id_ = android_id;
     security_token_ = security_token;
-    gcm_store_->SetDeviceCredentials(
-        android_id_,
-        security_token_,
-        base::Bind(&MCSClient::OnGCMUpdateFinished,
-                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   state_ = CONNECTING;
   connection_factory_->Connect();
+  DCHECK(restored_unackeds_server_ids_.empty());
 }
 
 void MCSClient::SendMessage(const MCSMessage& message) {
   int ttl = GetTTL(message.GetProtobuf());
   DCHECK_GE(ttl, 0);
   if (to_send_.size() > kMaxSendQueueSize) {
-    message_sent_callback_.Run("Message queue full.");
+    NotifyMessageSendStatus(message.GetProtobuf(), QUEUE_SIZE_LIMIT_REACHED);
     return;
   }
   if (message.size() > kMaxMessageBytes) {
-    message_sent_callback_.Run("Message too large.");
+    NotifyMessageSendStatus(message.GetProtobuf(), MESSAGE_TOO_LARGE);
     return;
   }
 
@@ -245,12 +238,13 @@ void MCSClient::SendMessage(const MCSMessage& message) {
                        *(packet_info->protobuf)),
             base::Bind(&MCSClient::OnGCMUpdateFinished,
                        weak_ptr_factory_.GetWeakPtr()))) {
-      message_sent_callback_.Run("Message queue full.");
+      NotifyMessageSendStatus(message.GetProtobuf(),
+                              APP_QUEUE_SIZE_LIMIT_REACHED);
       return;
     }
   } else if (!connection_factory_->IsEndpointReachable()) {
     DVLOG(1) << "No active connection, dropping message.";
-    message_sent_callback_.Run("TTL expired");
+    NotifyMessageSendStatus(message.GetProtobuf(), NO_CONNECTION_ON_ZERO_TTL);
     return;
   }
   to_send_.push_back(make_linked_ptr(packet_info));
@@ -324,7 +318,7 @@ void MCSClient::ResetStateAndBuildLoginRequest(
       // message from the persistent store.
       if (!packet->persistent_id.empty())
         expired_ttl_ids.push_back(packet->persistent_id);
-      message_sent_callback_.Run("TTL expired");
+      NotifyMessageSendStatus(*packet->protobuf, TTL_EXCEEDED);
     }
   }
 
@@ -372,7 +366,7 @@ void MCSClient::MaybeSendMessage() {
   if (HasTTLExpired(*packet->protobuf, clock_)) {
     DCHECK(!packet->persistent_id.empty());
     DVLOG(1) << "Dropping expired message " << packet->persistent_id << ".";
-    message_sent_callback_.Run("TTL expired for " + packet->persistent_id);
+    NotifyMessageSendStatus(*packet->protobuf, TTL_EXCEEDED);
     gcm_store_->RemoveOutgoingMessage(
         packet->persistent_id,
         base::Bind(&MCSClient::OnGCMUpdateFinished,
@@ -532,7 +526,7 @@ void MCSClient::HandlePacketFromWire(
         state_ = UNINITIALIZED;
         DVLOG(1) << "  Error code: " << login_response->error().code();
         DVLOG(1) << "  Error message: " << login_response->error().message();
-        initialization_callback_.Run(false, 0, 0);
+        mcs_error_callback_.Run();
         return;
       }
 
@@ -641,6 +635,7 @@ void MCSClient::HandleStreamAck(StreamId last_stream_id_received) {
     const MCSPacketInternal& outgoing_packet = to_resend_.front();
     acked_outgoing_persistent_ids.push_back(outgoing_packet->persistent_id);
     acked_outgoing_stream_ids.push_back(outgoing_packet->stream_id);
+    NotifyMessageSendStatus(*outgoing_packet->protobuf, SUCCESS);
     to_resend_.pop_front();
   }
 
@@ -663,6 +658,7 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
   for (; iter != id_list.end() && !to_resend_.empty(); ++iter) {
     const MCSPacketInternal& outgoing_packet = to_resend_.front();
     DCHECK_EQ(outgoing_packet->persistent_id, *iter);
+    NotifyMessageSendStatus(*outgoing_packet->protobuf, SUCCESS);
 
     // No need to re-acknowledge any server messages this message already
     // acknowledged.
@@ -678,6 +674,7 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
   for (; iter != id_list.end() && !to_send_.empty(); ++iter) {
     const MCSPacketInternal& outgoing_packet = to_send_.front();
     DCHECK_EQ(outgoing_packet->persistent_id, *iter);
+    NotifyMessageSendStatus(*outgoing_packet->protobuf, SUCCESS);
 
     // No need to re-acknowledge any server messages this message already
     // acknowledged.
@@ -706,12 +703,6 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
 }
 
 void MCSClient::HandleServerConfirmedReceipt(StreamId device_stream_id) {
-  // TODO(zea): use a message id the sender understands.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(message_sent_callback_,
-                 "Message " + base::UintToString(device_stream_id) + " sent."));
-
   PersistentIdList acked_incoming_ids;
   for (std::map<StreamId, PersistentIdList>::iterator iter =
            acked_server_ids_.begin();
@@ -737,6 +728,21 @@ MCSClient::PersistentId MCSClient::GetNextPersistentId() {
 
 void MCSClient::OnConnectionResetByHeartbeat() {
   connection_factory_->SignalConnectionReset();
+}
+
+void MCSClient::NotifyMessageSendStatus(
+    const google::protobuf::MessageLite& protobuf,
+    MessageSendStatus status) {
+  if (GetMCSProtoTag(protobuf) != kDataMessageStanzaTag)
+    return;
+
+  const mcs_proto::DataMessageStanza* data_message_stanza =
+      reinterpret_cast<const mcs_proto::DataMessageStanza*>(&protobuf);
+  message_sent_callback_.Run(
+      data_message_stanza->device_user_id(),
+      data_message_stanza->category(),
+      data_message_stanza->id(),
+      status);
 }
 
 } // namespace gcm

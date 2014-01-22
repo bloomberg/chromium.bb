@@ -89,8 +89,14 @@ void MessageReceivedCallback(const MCSMessage& message) {
   }
 }
 
-void MessageSentCallback(const std::string& local_id) {
-  LOG(INFO) << "Message sent. Status: " << local_id;
+void MessageSentCallback(int64 user_serial_number,
+                         const std::string& app_id,
+                         const std::string& message_id,
+                         MCSClient::MessageSendStatus status) {
+  LOG(INFO) << "Message sent. Serial number: " << user_serial_number
+            << " Application ID: " << app_id
+            << " Message ID: " << message_id
+            << " Message send status: " << status;
 }
 
 // Needed to use a real host resolver.
@@ -175,9 +181,8 @@ class MCSProbe {
   void InitializeNetworkState();
   void BuildNetworkSession();
 
-  void InitializationCallback(bool success,
-                              uint64 restored_android_id,
-                              uint64 restored_security_token);
+  void LoadCallback(const GCMStore::LoadResult& load_result);
+  void ErrorCallback();
   void OnCheckInCompleted(uint64 android_id, uint64 secret);
 
   base::DefaultClock clock_;
@@ -270,13 +275,27 @@ void MCSProbe::Start() {
                                   connection_factory_.get(),
                                   gcm_store_.get()));
   run_loop_.reset(new base::RunLoop());
-  gcm_store_->Load(base::Bind(
-      &MCSClient::Initialize,
-      base::Unretained(mcs_client_.get()),
-      base::Bind(&MCSProbe::InitializationCallback, base::Unretained(this)),
-      base::Bind(&MessageReceivedCallback),
-      base::Bind(&MessageSentCallback)));
+  gcm_store_->Load(base::Bind(&MCSProbe::LoadCallback,
+                              base::Unretained(this)));
   run_loop_->Run();
+}
+
+void MCSProbe::LoadCallback(const GCMStore::LoadResult& load_result) {
+  DCHECK(load_result.success);
+  android_id_ = load_result.device_android_id;
+  secret_ = load_result.device_security_token;
+  mcs_client_->Initialize(
+      base::Bind(&MCSProbe::ErrorCallback, base::Unretained(this)),
+      base::Bind(&MessageReceivedCallback),
+      base::Bind(&MessageSentCallback),
+      load_result);
+
+  if (!android_id_ || !secret_) {
+    CheckIn();
+    return;
+  }
+
+  mcs_client_->Login(android_id_, secret_);
 }
 
 void MCSProbe::InitializeNetworkState() {
@@ -345,25 +364,8 @@ void MCSProbe::BuildNetworkSession() {
   network_session_ = new net::HttpNetworkSession(session_params);
 }
 
-void MCSProbe::InitializationCallback(bool success,
-                                      uint64 restored_android_id,
-                                      uint64 restored_security_token) {
-  LOG(INFO) << "Initialization " << (success ? "success!" : "failure!");
-  if (restored_android_id && restored_security_token) {
-    LOG(INFO) << "Restored device check-in info.";
-    android_id_ = restored_android_id;
-    secret_ = restored_security_token;
-  }
-  if (!success)
-    return;
-
-  if (!android_id_ || !secret_) {
-    CheckIn();
-    return;
-  }
-
-  LOG(INFO) << "MCS login initiated.";
-  mcs_client_->Login(android_id_, secret_);
+void MCSProbe::ErrorCallback() {
+  LOG(INFO) << "MCS error happened";
 }
 
 void MCSProbe::CheckIn() {

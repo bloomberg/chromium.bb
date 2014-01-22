@@ -51,22 +51,35 @@ class GCM_EXPORT MCSClient {
     CONNECTED,      // Connected and running.
   };
 
-  // Callback for informing MCSClient status. It is valid for this to be
-  // invoked more than once if a permanent error is encountered after a
-  // successful login was initiated.
-  typedef base::Callback<
-      void(bool success,
-           uint64 restored_android_id,
-           uint64 restored_security_token)> InitializationCompleteCallback;
+  enum MessageSendStatus {
+    // Message sent succcessfully.
+    SUCCESS,
+    // Message not saved, because total queue size limit reached.
+    QUEUE_SIZE_LIMIT_REACHED,
+    // Messgae not saved, because app queue size limit reached.
+    APP_QUEUE_SIZE_LIMIT_REACHED,
+    // Message too large to send.
+    MESSAGE_TOO_LARGE,
+    // Message not send becuase of TTL = 0 and no working connection.
+    NO_CONNECTION_ON_ZERO_TTL,
+    // Message exceeded TTL.
+    TTL_EXCEEDED
+  };
+
+  // Callback for MCSClient's error conditions.
+  // TODO(fgorski): Keeping it as a callback with intention to add meaningful
+  // error information.
+  typedef base::Callback<void()> ErrorCallback;
   // Callback when a message is received.
   typedef base::Callback<void(const MCSMessage& message)>
       OnMessageReceivedCallback;
   // Callback when a message is sent (and receipt has been acknowledged by
   // the MCS endpoint).
-  // TODO(zea): pass some sort of structure containing more details about
-  // send failures.
-  typedef base::Callback<void(const std::string& message_id)>
-      OnMessageSentCallback;
+  typedef base::Callback<
+      void(int64 user_serial_number,
+           const std::string& app_id,
+           const std::string& message_id,
+           MessageSendStatus status)> OnMessageSentCallback;
 
   MCSClient(base::Clock* clock,
             ConnectionFactory* connection_factory,
@@ -82,7 +95,7 @@ class GCM_EXPORT MCSClient {
   // |success == true|.
   /// If an error loading the GCM store is encountered,
   // |initialization_callback| will be invoked with |success == false|.
-  void Initialize(const InitializationCompleteCallback& initialization_callback,
+  void Initialize(const ErrorCallback& initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
                   const OnMessageSentCallback& message_sent_callback,
                   const GCMStore::LoadResult& load_result);
@@ -165,6 +178,10 @@ class GCM_EXPORT MCSClient {
   // Helper for the heartbeat manager to signal a connection reset.
   void OnConnectionResetByHeartbeat();
 
+  // Runs the message_sent_callback_ with send |status| of the |protobuf|.
+  void NotifyMessageSendStatus(const google::protobuf::MessageLite& protobuf,
+                               MessageSendStatus status);
+
   // Clock for enforcing TTL. Passed in for testing.
   base::Clock* const clock_;
 
@@ -172,7 +189,7 @@ class GCM_EXPORT MCSClient {
   State state_;
 
   // Callbacks for owner.
-  InitializationCompleteCallback initialization_callback_;
+  ErrorCallback mcs_error_callback_;
   OnMessageReceivedCallback message_received_callback_;
   OnMessageSentCallback message_sent_callback_;
 

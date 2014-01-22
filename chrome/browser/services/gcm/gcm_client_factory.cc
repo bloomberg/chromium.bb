@@ -44,7 +44,8 @@ GCMClient* GCMClientFactory::GetClient() {
         worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
             worker_pool->GetSequenceToken(),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-    client->Initialize(gcm_store_path, blocking_task_runner);
+    // TODO(jianli): proper initialization in progress.
+    // client->Initialize(gcm_store_path, blocking_task_runner);
     g_gcm_client_initialized = true;
   }
   return client;
