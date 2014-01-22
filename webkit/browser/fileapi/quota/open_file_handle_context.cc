@@ -43,6 +43,11 @@ int64 OpenFileHandleContext::GetEstimatedFileSize() const {
   return maximum_written_offset_ + append_mode_write_amount_;
 }
 
+int64 OpenFileHandleContext::GetMaxWrittenOffset() const {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return maximum_written_offset_;
+}
+
 OpenFileHandleContext::~OpenFileHandleContext() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 

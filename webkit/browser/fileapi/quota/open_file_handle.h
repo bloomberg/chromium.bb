@@ -48,6 +48,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OpenFileHandle {
   // OpenFileHandle object life cycle, so that client may cache the value.
   int64 GetEstimatedFileSize() const;
 
+  int64 GetMaxWrittenOffset() const;
   const base::FilePath& platform_path() const;
 
  private:

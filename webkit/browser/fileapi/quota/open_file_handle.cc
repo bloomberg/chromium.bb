@@ -35,6 +35,11 @@ int64 OpenFileHandle::GetEstimatedFileSize() const {
   return context_->GetEstimatedFileSize();
 }
 
+int64 OpenFileHandle::GetMaxWrittenOffset() const {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  return context_->GetMaxWrittenOffset();
+}
+
 const base::FilePath& OpenFileHandle::platform_path() const {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   return context_->platform_path();

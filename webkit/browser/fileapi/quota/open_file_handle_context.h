@@ -39,6 +39,7 @@ class OpenFileHandleContext : public base::RefCounted<OpenFileHandleContext> {
   }
 
   int64 GetEstimatedFileSize() const;
+  int64 GetMaxWrittenOffset() const;
 
  private:
   friend class base::RefCounted<OpenFileHandleContext>;
