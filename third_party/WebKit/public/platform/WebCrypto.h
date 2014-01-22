@@ -64,7 +64,9 @@ public:
     }
 
     BLINK_EXPORT void completeWithError();
+    // Note that WebArrayBuffer is NOT safe to create from another thread.
     BLINK_EXPORT void completeWithBuffer(const WebArrayBuffer&);
+    // Makes a copy of the input data given as a pointer and byte length.
     BLINK_EXPORT void completeWithBuffer(const void*, unsigned);
     BLINK_EXPORT void completeWithBoolean(bool);
     BLINK_EXPORT void completeWithKey(const WebCryptoKey&);
@@ -83,33 +85,86 @@ private:
 
 class WebCrypto {
 public:
-    // Starts a one-shot cryptographic operation which can complete either
-    // synchronously, or asynchronously.
+    // WebCrypto is the interface for starting one-shot cryptographic operations.
     //
-    // Let the WebCryptoResult be called "result".
+    // -----------------------
+    // Completing the request
+    // -----------------------
     //
-    // The result should be set exactly once, from the same thread which
-    // initiated the operation.
+    // Implementations signal completion by calling one of the methods on
+    // "result". Only a single result/error should be set for the request.
+    // Different operations expect different result types based on the
+    // algorithm parameters; see the Web Crypto standard for details.
     //
-    //   * WebCryptoAlgorithms parameters are guaranteed to be !isNull(),
-    //     unless noted otherwise.
-    //   * WebCryptoKey parameters are guaranteeed to be !isNull().
-    //   * const unsigned char* data buffers are not valid after return.
+    // The result can be set either synchronously while handling the request,
+    // or asynchronously after the method has returned. When completing
+    // asynchronously make a copy of the WebCryptoResult and call it from the
+    // same thread that started the request.
+    //
+    // -----------------------
+    // Threading
+    // -----------------------
+    //
+    // The WebCrypto interface will only be called from the render's main
+    // thread. All communication back to Blink must be on this same thread.
+    // Notably:
+    //
+    //   * The WebCryptoResult is NOT threadsafe. It should only be used from
+    //     the Blink main thread.
+    //
+    //   * WebCryptoKey and WebCryptoAlgorithm ARE threadsafe. They can be
+    //     safely copied between threads and accessed. Copying is cheap because
+    //     they are internally reference counted.
+    //
+    //   * WebArrayBuffer is NOT threadsafe. It should only be created from the
+    //     Blink main thread. This means threaded implementations may have to
+    //     make a copy of the output buffer.
+    //
+    // -----------------------
+    // Inputs
+    // -----------------------
+    //
+    //   * Data buffers are passed as (basePointer, byteLength) pairs.
+    //     These buffers are only valid during the call itself. Asynchronous
+    //     implementations wishing to access it after the function returns
+    //     should make a copy.
+    //
+    //   * All WebCryptoKeys are guaranteeed to be !isNull().
+    //
+    //   * All WebCryptoAlgorithms are guaranteed to be !isNull()
+    //     unless noted otherwise. Being "null" means that it was unspecified
+    //     by the caller.
+    //
+    //   * Look to the Web Crypto spec for an explanation of the parameter. The
+    //     method names here have a 1:1 correspondence with those of
+    //     crypto.subtle, with the exception of "verify" which is here called
+    //     "verifySignature".
+    //
+    // -----------------------
+    // Guarantees on input validity
+    // -----------------------
+    //
+    // Implementations MUST carefully sanitize algorithm inputs before using
+    // them, as they come directly from the user. Few checks have been done on
+    // algorithm parameters prior to passing to the embedder.
+    //
+    // Only the following checks can be assumed as having alread passed:
+    //
+    //  * The key is extractable when calling into exportKey/wrapKey.
+    //  * The key usages permit the operation being requested.
+    //  * The key's algorithm matches that of the requested operation.
+    //
     virtual void encrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
     virtual void decrypt(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
     virtual void sign(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
     virtual void verifySignature(const WebCryptoAlgorithm&, const WebCryptoKey&, const unsigned char* signature, unsigned signatureSize, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
     virtual void digest(const WebCryptoAlgorithm&, const unsigned char* data, unsigned dataSize, WebCryptoResult result) { result.completeWithError(); }
     virtual void generateKey(const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(); }
-    // The WebCryptoAlgorithm for importKey may be "isNull()" meaning that it
-    // was unspecified by the caller.
+    // It is possible for the WebCryptoAlgorithm to be "isNull()"
     virtual void importKey(WebCryptoKeyFormat, const unsigned char* keyData, unsigned keyDataSize, const WebCryptoAlgorithm&, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(); }
     virtual void exportKey(WebCryptoKeyFormat, const WebCryptoKey&, WebCryptoResult result) { result.completeWithError(); }
-
     virtual void wrapKey(WebCryptoKeyFormat, const WebCryptoKey& key, const WebCryptoKey& wrappingKey, const WebCryptoAlgorithm&, WebCryptoResult result) { result.completeWithError(); }
-
-    // It is possible for unwrappedKeyAlgorithm.isNull() meaning that it was
-    // unspecified by the caller.
+    // It is possible that unwrappedKeyAlgorithm.isNull()
     virtual void unwrapKey(WebCryptoKeyFormat, const unsigned char* wrappedKey, unsigned wrappedKeySize, const WebCryptoKey&, const WebCryptoAlgorithm& unwrapAlgorithm, const WebCryptoAlgorithm& unwrappedKeyAlgorithm, bool extractable, WebCryptoKeyUsageMask, WebCryptoResult result) { result.completeWithError(); }
 
 protected:

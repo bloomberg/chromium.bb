@@ -44,9 +44,6 @@
 
 namespace WebCore {
 
-// FIXME: asynchronous completion of CryptoResult. Need to re-enter the
-//        v8::Context before trying to fulfill the promise, and enable test.
-
 namespace {
 
 ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, AlgorithmOperation operationType, ArrayBufferView* signature, ArrayBufferView* dataBuffer, ExceptionState& exceptionState)

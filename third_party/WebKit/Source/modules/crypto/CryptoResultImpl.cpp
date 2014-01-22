@@ -32,6 +32,7 @@
 #include "modules/crypto/CryptoResultImpl.h"
 
 #include "bindings/v8/ScriptPromiseResolver.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/crypto/Key.h"
 #include "modules/crypto/KeyPair.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
@@ -45,51 +46,120 @@ namespace WebCore {
 CryptoResultImpl::~CryptoResultImpl()
 {
     ASSERT(m_finished);
+    ASSERT(!m_promiseResolver.get());
+    ASSERT(!m_requestState.isValid());
 }
 
 PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptPromise promise)
 {
-    return adoptRef(new CryptoResultImpl(promise));
+    return adoptRef(new CryptoResultImpl(activeExecutionContext(), promise));
 }
 
 void CryptoResultImpl::completeWithError()
 {
-    m_promiseResolver->reject(ScriptValue::createNull());
+    ASSERT(!m_finished);
+
+    if (canCompletePromise()) {
+        DOMRequestState::Scope scope(m_requestState);
+        m_promiseResolver->reject(ScriptValue::createNull());
+    }
+
     finish();
 }
 
 void CryptoResultImpl::completeWithBuffer(const blink::WebArrayBuffer& buffer)
 {
-    m_promiseResolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
+    ASSERT(!m_finished);
+
+    if (canCompletePromise()) {
+        DOMRequestState::Scope scope(m_requestState);
+        m_promiseResolver->resolve(PassRefPtr<ArrayBuffer>(buffer));
+    }
+
     finish();
 }
 
 void CryptoResultImpl::completeWithBoolean(bool b)
 {
-    m_promiseResolver->resolve(ScriptValue::createBoolean(b));
+    ASSERT(!m_finished);
+
+    if (canCompletePromise()) {
+        DOMRequestState::Scope scope(m_requestState);
+        m_promiseResolver->resolve(ScriptValue::createBoolean(b));
+    }
+
     finish();
 }
 
 void CryptoResultImpl::completeWithKey(const blink::WebCryptoKey& key)
 {
-    m_promiseResolver->resolve(Key::create(key));
+    ASSERT(!m_finished);
+
+    if (canCompletePromise()) {
+        DOMRequestState::Scope scope(m_requestState);
+        m_promiseResolver->resolve(Key::create(key));
+    }
+
     finish();
 }
 
 void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
 {
-    m_promiseResolver->resolve(KeyPair::create(publicKey, privateKey));
+    ASSERT(!m_finished);
+
+    if (canCompletePromise()) {
+        DOMRequestState::Scope scope(m_requestState);
+        m_promiseResolver->resolve(KeyPair::create(publicKey, privateKey));
+    }
+
     finish();
 }
 
-CryptoResultImpl::CryptoResultImpl(ScriptPromise promise)
-    : m_promiseResolver(ScriptPromiseResolver::create(promise))
-    , m_finished(false) { }
+CryptoResultImpl::CryptoResultImpl(ExecutionContext* context, ScriptPromise promise)
+    : ContextLifecycleObserver(context)
+    , m_promiseResolver(ScriptPromiseResolver::create(promise))
+    , m_requestState(context)
+#if !ASSERT_DISABLED
+    , m_owningThread(currentThread())
+    , m_finished(false)
+#endif
+{
+    ASSERT(toIsolate(context) == promise.isolate());
+}
 
 void CryptoResultImpl::finish()
 {
-    ASSERT(!m_finished);
+#if !ASSERT_DISABLED
     m_finished = true;
+#endif
+    clearPromiseResolver();
+}
+
+void CryptoResultImpl::clearPromiseResolver()
+{
+    m_promiseResolver.clear();
+    m_requestState.clear();
+}
+
+void CryptoResultImpl::CheckValidThread() const
+{
+    ASSERT(m_owningThread == currentThread());
+}
+
+void CryptoResultImpl::contextDestroyed()
+{
+    ContextLifecycleObserver::contextDestroyed();
+
+    // Abandon the promise without completing it when the context goes away.
+    clearPromiseResolver();
+    ASSERT(!canCompletePromise());
+}
+
+bool CryptoResultImpl::canCompletePromise() const
+{
+    CheckValidThread();
+    ExecutionContext* context = executionContext();
+    return context && !context->activeDOMObjectsAreSuspended() && !context->activeDOMObjectsAreStopped();
 }
 
 } // namespace WebCore
