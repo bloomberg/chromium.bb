@@ -45,6 +45,6 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, Basics) {
 
   InstallNamedExtension(basedir, "simple_extension", Manifest::INTERNAL);
 
-  ASSERT_TRUE(RunExtensionSubtest(
-      "developer/test", "basics.html", kFlagLoadAsComponent));
+  ASSERT_TRUE(RunPlatformAppTestWithFlags(
+      "developer/test", kFlagLoadAsComponent));
 }

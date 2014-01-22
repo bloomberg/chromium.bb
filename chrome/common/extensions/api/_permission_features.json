@@ -200,7 +200,7 @@
   },
   "cloudPrintPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "hosted_app"],
     // CloudPrint
     "whitelist": ["99060B01DE911EB85FD630C8BA6320C9186CA3AB"]
   },
@@ -369,7 +369,7 @@
   },
   "fileBrowserPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   },
   "fileSystem": [{
@@ -434,7 +434,7 @@
   "identityPrivate": {
     "channel": "stable",
     "extension_types": [
-      "legacy_packaged_app"
+      "legacy_packaged_app", "platform_app"
     ],
     "location": "component"
   },
@@ -507,6 +507,13 @@
         "EE17C698905F7F2E6DDC87C9C30F11E164C829F4",  // Watchdog (Activity Log)
         "90113DA9516526D24DAF156C629CC41C049E8882"   // Watchdog Test Version
       ]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": [
+        "B44D08FD98F1523ED5837D78D0A606EA9D6206E5"  // Web Store
+      ]
     }
   ],
   "mediaGalleries": {
@@ -544,7 +551,7 @@
   },
   "mediaPlayerPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   },
   "metricsPrivate": {
@@ -635,7 +642,7 @@
   },
   "echoPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   },
   "pageCapture": {
@@ -912,7 +919,7 @@
   },
   "webstorePrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app"],
+    "extension_types": ["extension", "legacy_packaged_app", "hosted_app"],
     "whitelist": [
       "B44D08FD98F1523ED5837D78D0A606EA9D6206E5",  // Web Store
       "2653F6F6C39BC6EEBD36A09AFB92A19782FF7EB4",  // Enterprise Web Store

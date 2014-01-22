@@ -9,7 +9,7 @@
   "permissions": [
     "fileBrowserHandler",
     "fileBrowserPrivate",
-    "https://www.googledrive.com"
+    "https://www.googledrive.com/"
   ],
   "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'; frame-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self' https://www.googledrive.com",
   "background": {

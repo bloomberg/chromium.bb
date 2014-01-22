@@ -20,10 +20,24 @@ chrome.extension.sendRequest("getApi", function(apis) {
       return contextList == 'all' ||
           contextList.indexOf('content_script') != -1;
     }
+    function checkFeature(feature) {
+      if (feature.contexts) {
+        // Simple features.
+        return checkContexts(feature.contexts);
+      } else {
+        // Complex features.
+        for (var i = 0; i < feature.length; i++) {
+          if (checkContexts(feature[i].contexts))
+            return true;
+        }
+        return false;
+      }
+    }
+
     if (apiFeatures.hasOwnProperty(path))
-      return checkContexts(apiFeatures[path]['contexts']);
+      return checkFeature(apiFeatures[path]);
     return apiFeatures.hasOwnProperty(namespace) &&
-        checkContexts(apiFeatures[namespace]['contexts']);
+        checkFeature(apiFeatures[namespace]);
   }
 
   console.log("got api response");

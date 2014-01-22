@@ -269,6 +269,22 @@
   "extension.getURL": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
+  "extension.getViews": [
+    {
+      "channel": "stable",
+      "contexts": ["blessed_extension"],
+      "extension_types": ["extension", "legacy_packaged_app"]
+    },
+    {
+      // TODO(yoz): Eliminate this usage.
+      "channel": "stable",
+      "contexts": ["blessed_extension"],
+      "extension_types": ["platform_app"],
+      "whitelist": [
+        "A948368FC53BE437A55FEB414106E207925482F5"  // File manager
+      ]
+    }
+  ],
   "extension.inIncognitoContext": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
