@@ -26,6 +26,10 @@ def Main():
                       help="output directory for generated files")
   args = parser.parse_args()
 
+  # TODO(vtl): Load these dynamically. (Also add a command-line option to
+  # specify which generators.)
+  generator_modules = [mojom_cpp_generator, mojom_js_generator]
+
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
@@ -36,12 +40,10 @@ def Main():
     tree = mojo_parser.Parse(filename)
     mojom = mojo_translate.Translate(tree, name)
     module = mojom_data.OrderedModuleFromData(mojom)
-    cpp = mojom_cpp_generator.CppGenerator(
-        module, args.include_dir, args.output_dir)
-    cpp.GenerateFiles()
-    js = mojom_js_generator.JsGenerator(
-        module, args.include_dir, args.output_dir)
-    js.GenerateFiles()
+    for generator_module in generator_modules:
+      generator = generator_module.Generator(module, args.include_dir,
+                                             args.output_dir)
+      generator.GenerateFiles()
 
 
 if __name__ == "__main__":

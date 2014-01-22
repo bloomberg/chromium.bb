@@ -62,3 +62,6 @@ class Generator(object):
       return
     with open(os.path.join(self.output_dir, filename), "w+") as f:
       f.write(contents)
+
+  def GenerateFiles(self):
+    raise NotImplementedError("Subclasses must override/implement this method")

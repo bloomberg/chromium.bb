@@ -140,7 +140,7 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeArrayPointer(%s, " % GetJavaScriptType(kind.kind);
 
 
-class JsGenerator(mojom_generator.Generator):
+class Generator(mojom_generator.Generator):
 
   js_filters = {
     "default_value": JavaScriptDefaultValue,

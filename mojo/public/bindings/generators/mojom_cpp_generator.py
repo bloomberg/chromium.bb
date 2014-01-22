@@ -95,7 +95,7 @@ def IsStructWithHandles(struct):
 
 _HEADER_SIZE = 8
 
-class CppGenerator(mojom_generator.Generator):
+class Generator(mojom_generator.Generator):
 
   cpp_filters = {
     "camel_to_underscores": mojom_generator.CamelToUnderscores,
