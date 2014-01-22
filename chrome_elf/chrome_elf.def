@@ -5,4 +5,5 @@
 LIBRARY  "chrome_elf.dll"
 
 EXPORTS
+  CreateFileW=chrome_redirects.CreateFileW
   SignalChromeElf

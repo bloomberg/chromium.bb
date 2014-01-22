@@ -11,6 +11,35 @@
     'blacklist.gypi',
   ],
   'targets': [
+   {
+      'target_name': 'chrome_redirects',
+      'type': 'shared_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'chrome_redirects.def',
+      ],
+      'dependencies': [
+        'chrome_elf_lib',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'BaseAddress': '0x01c10000',
+          # Set /SUBSYSTEM:WINDOWS.
+          'SubSystem': '2',
+        },
+      },
+      'conditions': [
+        ['component=="shared_library"', {
+          # In component builds, all targets depend on chrome_redirects by
+          # default. Remove it here to avoid a circular dependency.
+          'dependencies!': [
+            '../chrome_elf/chrome_elf.gyp:chrome_redirects',
+          ],
+        }],
+      ],
+    },
     {
       'target_name': 'chrome_elf',
       'type': 'shared_library',
@@ -25,11 +54,12 @@
       'dependencies': [
         'blacklist',
         'chrome_elf_lib',
+        'chrome_redirects',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
           'BaseAddress': '0x01c20000',
-          # Set /SUBSYSTEM:WINDOWS for chrome_elf.dll (for consistency).
+          # Set /SUBSYSTEM:WINDOWS.
           'SubSystem': '2',
           'AdditionalDependencies!': [
             'user32.lib',
@@ -46,6 +76,7 @@
       'type': 'executable',
       'sources': [
         'blacklist/test/blacklist_test.cc',
+        'create_file/chrome_create_file_unittest.cc',
         'elf_imports_unittest.cc',
         'ntdll_cache_unittest.cc',
       ],
@@ -86,9 +117,22 @@
         '..',
       ],
       'sources': [
+        'chrome_elf_constants.cc',
+        'chrome_elf_constants.h',
         'chrome_elf_types.h',
+        'create_file/chrome_create_file.cc',
+        'create_file/chrome_create_file.h',
         'ntdll_cache.cc',
         'ntdll_cache.h',
+      ],
+      'conditions': [
+        ['component=="shared_library"', {
+          # In component builds, all targets depend on chrome_redirects by
+          # default. Remove it here to avoid a circular dependency.
+          'dependencies!': [
+            '../chrome_elf/chrome_elf.gyp:chrome_redirects',
+          ],
+        }],
       ],
     },
   ],

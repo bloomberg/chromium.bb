@@ -25,6 +25,7 @@ typedef LONG NTSTATUS;
 #define STATUS_ACCESS_DENIED          ((NTSTATUS)0xC0000022L)
 #define STATUS_BUFFER_TOO_SMALL       ((NTSTATUS)0xC0000023L)
 #define STATUS_OBJECT_NAME_NOT_FOUND  ((NTSTATUS)0xC0000034L)
+#define STATUS_OBJECT_NAME_COLLISION  ((NTSTATUS)0xC0000035L)
 #define STATUS_PROCEDURE_NOT_FOUND    ((NTSTATUS)0xC000007AL)
 #define STATUS_INVALID_IMAGE_FORMAT   ((NTSTATUS)0xC000007BL)
 #define STATUS_NO_TOKEN               ((NTSTATUS)0xC000007CL)
@@ -124,6 +125,15 @@ typedef struct _IO_STATUS_BLOCK {
 #define FILE_OPEN_REPARSE_POINT                 0x00200000
 #define FILE_OPEN_NO_RECALL                     0x00400000
 #define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
+
+// Create/open result values. These are the disposition values returned on the
+// io status information.
+#define FILE_SUPERSEDED                         0x00000000
+#define FILE_OPENED                             0x00000001
+#define FILE_CREATED                            0x00000002
+#define FILE_OVERWRITTEN                        0x00000003
+#define FILE_EXISTS                             0x00000004
+#define FILE_DOES_NOT_EXIST                     0x00000005
 
 typedef NTSTATUS (WINAPI *NtCreateFileFunction)(
   OUT PHANDLE FileHandle,
