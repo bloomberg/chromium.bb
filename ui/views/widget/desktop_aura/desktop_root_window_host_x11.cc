@@ -484,9 +484,11 @@ void DesktopWindowTreeHostX11::Activate() {
 }
 
 void DesktopWindowTreeHostX11::Deactivate() {
-  // Deactivating a window means activating nothing.
+  if (!IsActive())
+    return;
+
   x11_capture_.reset();
-  X11DesktopHandler::get()->ActivateWindow(None);
+  X11DesktopHandler::get()->DeactivateWindow(xwindow_);
 }
 
 bool DesktopWindowTreeHostX11::IsActive() const {

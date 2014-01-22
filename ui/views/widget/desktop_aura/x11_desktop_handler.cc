@@ -104,6 +104,13 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
   }
 }
 
+void X11DesktopHandler::DeactivateWindow(::Window window) {
+  DCHECK(IsActiveWindow(window));
+
+  // See http://crbug.com/321342
+  NOTIMPLEMENTED();
+}
+
 bool X11DesktopHandler::IsActiveWindow(::Window window) const {
   return window == current_window_;
 }
