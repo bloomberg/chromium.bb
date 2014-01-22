@@ -70,7 +70,7 @@
   },
   "cr-native-client": {
     "chromium": {
-      "dir": "native_client_sdk/src/doc/_developer.chrome.com_generated"
+      "dir": "native_client_sdk/doc_generated"
     },
     "serveFrom": "native-client",
     "supportsTemplates": true

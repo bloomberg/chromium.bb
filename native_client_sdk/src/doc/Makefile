@@ -6,7 +6,7 @@ SPHINXOPTS    = -W
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
-CHROMESITE_BUILDDIR = _developer.chrome.com_generated
+CHROMESITE_BUILDDIR = $(realpath ../../doc_generated)
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -207,7 +207,7 @@ devsite:
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/devsite."
 
 chromesite:
-	doxygen/generate_docs.py
+	doxygen/generate_docs.py $(CHROMESITE_BUILDDIR)
 	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(CHROMESITE_BUILDDIR)
 	rm -rf $(CHROMESITE_BUILDDIR)/images
 	cp -r $(CHROMESITE_BUILDDIR)/_images $(CHROMESITE_BUILDDIR)/images

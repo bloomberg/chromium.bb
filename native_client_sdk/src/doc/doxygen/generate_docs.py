@@ -11,6 +11,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import urllib2
 
 
@@ -120,7 +121,10 @@ def GenerateDoxyfile(template_filename, out_dirname, doc_dirname, doxyfile):
     data = f.read()
 
   with open(doxyfile, 'w') as f:
-    f.write(data % {'out_dirname': out_dirname, 'doc_dirname': doc_dirname})
+    f.write(data % {
+      'out_dirname': out_dirname,
+      'doc_dirname': doc_dirname,
+      'script_dirname': SCRIPT_DIR})
 
 
 def RunDoxygen(out_dirname, doxyfile):
@@ -136,7 +140,8 @@ def RunDoxygen(out_dirname, doxyfile):
 
 
 def RunDoxyCleanup(out_dirname):
-  cmd = [sys.executable, 'doxy_cleanup.py', out_dirname]
+  script = os.path.join(SCRIPT_DIR, 'doxy_cleanup.py')
+  cmd = [sys.executable, script, out_dirname]
   if Trace.verbose:
     cmd.append('-v')
   Trace('Running doxy_cleanup:\n  %s' % ' '.join(cmd))
@@ -145,7 +150,8 @@ def RunDoxyCleanup(out_dirname):
 
 def RunRstIndex(kind, channel, pepper_version, out_dirname, out_rst_filename):
   assert kind in ('root', 'c', 'cpp')
-  cmd = [sys.executable, 'rst_index.py',
+  script = os.path.join(SCRIPT_DIR, 'rst_index.py')
+  cmd = [sys.executable, script,
          '--' + kind,
          '--channel', channel,
          '--version', pepper_version,
@@ -155,64 +161,68 @@ def RunRstIndex(kind, channel, pepper_version, out_dirname, out_rst_filename):
   subprocess.check_call(cmd)
 
 
-def GenerateDocs(channel, pepper_version, branch):
+def GenerateDocs(root_dirname, channel, pepper_version, branch):
   Trace('Generating docs for %s (branch %s)' % (channel, branch))
   pepper_dirname = 'pepper_%s' % channel
-  # i.e. ../_developer.chrome.com_generated/pepper_beta
-  chromesite_dir = os.path.join(DOC_DIR, '_developer.chrome.com_generated',
-                                pepper_dirname)
+  out_dirname = os.path.join(root_dirname, pepper_dirname)
 
   try:
-    CheckoutPepperDocs(branch, pepper_dirname)
-    GenerateCHeaders(pepper_version, pepper_dirname)
+    svn_dirname = tempfile.mkdtemp(prefix=pepper_dirname)
+    doxyfile_dirname = tempfile.mkdtemp(prefix='%s_doxyfiles' % pepper_dirname)
+
+    CheckoutPepperDocs(branch, svn_dirname)
+    GenerateCHeaders(pepper_version, svn_dirname)
 
     doxyfile_c = ''
     doxyfile_cpp = ''
 
     # Generate Root index
     rst_index_root = os.path.join(DOC_DIR, pepper_dirname, 'index.rst')
-    RunRstIndex('root', channel, pepper_version, chromesite_dir, rst_index_root)
+    RunRstIndex('root', channel, pepper_version, out_dirname, rst_index_root)
 
     # Generate C docs
-    out_dirname_c = os.path.join(chromesite_dir, 'c')
-    doxyfile_c = 'Doxyfile.c.%s' % channel
-    rst_index_c = os.path.join(DOC_DIR, pepper_dirname, 'c', 'index.rst')
-    GenerateDoxyfile('Doxyfile.c.template', out_dirname_c, pepper_dirname,
+    out_dirname_c = os.path.join(out_dirname, 'c')
+    doxyfile_c = os.path.join(doxyfile_dirname, 'Doxyfile.c.%s' % channel)
+    doxyfile_c_template = os.path.join(SCRIPT_DIR, 'Doxyfile.c.template')
+    rst_index_c = os.path.join(root_dirname, pepper_dirname, 'c', 'index.rst')
+    GenerateDoxyfile(doxyfile_c_template, out_dirname_c, svn_dirname,
                      doxyfile_c)
     RunDoxygen(out_dirname_c, doxyfile_c)
     RunDoxyCleanup(out_dirname_c)
     RunRstIndex('c', channel, pepper_version, out_dirname_c, rst_index_c)
 
     # Generate C++ docs
-    out_dirname_cpp = os.path.join(chromesite_dir, 'cpp')
-    doxyfile_cpp = 'Doxyfile.cpp.%s' % channel
-    rst_index_cpp = os.path.join(DOC_DIR, pepper_dirname, 'cpp', 'index.rst')
-    GenerateDoxyfile('Doxyfile.cpp.template', out_dirname_cpp, pepper_dirname,
+    out_dirname_cpp = os.path.join(out_dirname, 'cpp')
+    doxyfile_cpp = os.path.join(doxyfile_dirname, 'Doxyfile.cpp.%s' % channel)
+    doxyfile_cpp_template = os.path.join(SCRIPT_DIR, 'Doxyfile.cpp.template')
+    rst_index_cpp = os.path.join(root_dirname, pepper_dirname, 'cpp',
+                                 'index.rst')
+    GenerateDoxyfile(doxyfile_cpp_template, out_dirname_cpp, svn_dirname,
                      doxyfile_cpp)
     RunDoxygen(out_dirname_cpp, doxyfile_cpp)
     RunDoxyCleanup(out_dirname_cpp)
     RunRstIndex('cpp', channel, pepper_version, out_dirname_cpp, rst_index_cpp)
   finally:
     # Cleanup
-    RemoveDir(pepper_dirname)
-    RemoveFile(doxyfile_c)
-    RemoveFile(doxyfile_cpp)
+    RemoveDir(svn_dirname)
+    RemoveDir(doxyfile_dirname)
 
 
 def main(argv):
-  parser = optparse.OptionParser(usage='Usage: %prog [options]')
+  parser = optparse.OptionParser(usage='Usage: %prog [options] <out_directory>')
   parser.add_option('-v', '--verbose',
                     help='Verbose output', action='store_true')
-  options, _ = parser.parse_args(argv)
+  options, dirs = parser.parse_args(argv)
 
   if options.verbose:
     Trace.verbose = True
 
-  os.chdir(SCRIPT_DIR)
+  if len(dirs) != 1:
+    parser.error('Expected an output directory')
 
   channel_info = GetChannelInfo()
   for channel, info in channel_info.iteritems():
-    GenerateDocs(channel, info.version, info.branch)
+    GenerateDocs(dirs[0], channel, info.version, info.branch)
 
   return 0
 

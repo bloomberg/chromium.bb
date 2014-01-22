@@ -17,6 +17,10 @@ INPUT                  = %(doc_dirname)s/cpp \
 EXCLUDE                = %(doc_dirname)s/cpp/array_output.h \
                          %(doc_dirname)s/cpp/output_traits.h \
                          %(doc_dirname)s/utility/completion_callback_factory_thread_traits.h
+LAYOUT_FILE            = %(script_dirname)s/DoxygenLayout.xml
+HTML_HEADER            = %(script_dirname)s/header.html
+HTML_FOOTER            = %(script_dirname)s/footer.html
+HTML_STYLESHEET        = %(script_dirname)s/stylesheet.css
 
 # These entries are fixed.
 PROJECT_NAME           =
@@ -37,7 +41,6 @@ EXTRACT_ALL            = YES
 CASE_SENSE_NAMES       = NO
 SHOW_INCLUDE_FILES     = NO
 MAX_INITIALIZER_LINES  = 27
-LAYOUT_FILE            = DoxygenLayout.xml
 FILE_PATTERNS          = *.h \
                          *.dox
 EXCLUDE_PATTERNS       = _*.h
@@ -45,9 +48,6 @@ EXAMPLE_PATTERNS       = *
 VERBATIM_HEADERS       = NO
 ALPHABETICAL_INDEX     = NO
 HTML_OUTPUT            =
-HTML_HEADER            = header.html
-HTML_FOOTER            = footer.html
-HTML_STYLESHEET        = stylesheet.css
 HTML_COLORSTYLE_HUE    = 217
 TREEVIEW_WIDTH         = 251
 SEARCHENGINE           = NO
