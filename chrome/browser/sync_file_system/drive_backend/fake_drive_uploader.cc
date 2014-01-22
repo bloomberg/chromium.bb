@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive_backend_v1/fake_drive_uploader.h"
+#include "chrome/browser/sync_file_system/drive_backend/fake_drive_uploader.h"
 
 #include "base/bind.h"
 #include "base/location.h"

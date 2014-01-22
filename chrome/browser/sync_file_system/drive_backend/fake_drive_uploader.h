@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_V1_FAKE_DRIVE_UPLOADER_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_V1_FAKE_DRIVE_UPLOADER_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_DRIVE_UPLOADER_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_DRIVE_UPLOADER_H_
 
 #include <string>
 
@@ -13,7 +13,6 @@
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_service_helper.h"
-#include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "google_apis/drive/gdata_errorcode.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/escape.h"
@@ -85,4 +84,4 @@ class FakeDriveUploader : public drive::DriveUploaderInterface {
 }  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_V1_FAKE_DRIVE_UPLOADER_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_FAKE_DRIVE_UPLOADER_H_
