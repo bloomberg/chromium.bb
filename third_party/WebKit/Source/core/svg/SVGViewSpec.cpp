@@ -60,14 +60,14 @@ const SVGPropertyInfo* SVGViewSpec::transformPropertyInfo()
     return s_propertyInfo;
 }
 
-SVGViewSpec::SVGViewSpec(WeakPtr<SVGSVGElement> contextElement)
+SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     : m_contextElement(contextElement)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     // Note: We make |viewBox|'s contextElement the target element of SVGViewSpec.
     // This contextElement will be only used for keeping this alive from the tearoff.
     // SVGSVGElement holds a strong-ref to this SVGViewSpec, so this is kept alive as:
     // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)-> SVGViewSpec.
-    , m_viewBox(SVGAnimatedRect::create(contextElement.get(), SVGNames::viewBoxAttr))
+    , m_viewBox(SVGAnimatedRect::create(contextElement, SVGNames::viewBoxAttr))
 {
     ASSERT(m_contextElement);
     ScriptWrappable::init(this);
@@ -102,7 +102,7 @@ void SVGViewSpec::setTransformString(const String& transform)
     SVGTransformList newList;
     newList.parse(transform);
 
-    if (SVGAnimatedProperty* wrapper = SVGAnimatedProperty::lookupWrapper<SVGElement, SVGAnimatedTransformList>(m_contextElement.get(), transformPropertyInfo()))
+    if (SVGAnimatedProperty* wrapper = SVGAnimatedProperty::lookupWrapper<SVGElement, SVGAnimatedTransformList>(m_contextElement, transformPropertyInfo()))
         static_cast<SVGAnimatedTransformList*>(wrapper)->detachListWrappers(newList.size());
 
     m_transform = newList;
@@ -127,7 +127,7 @@ SVGElement* SVGViewSpec::viewTarget() const
 {
     if (!m_contextElement)
         return 0;
-    Element* element = m_contextElement.get()->treeScope().getElementById(AtomicString(m_viewTargetString));
+    Element* element = m_contextElement->treeScope().getElementById(AtomicString(m_viewTargetString));
     if (!element || !element->isSVGElement())
         return 0;
     return toSVGElement(element);
@@ -160,6 +160,12 @@ PassRefPtr<SVGAnimatedProperty> SVGViewSpec::lookupOrCreateTransformWrapper(SVGV
     ASSERT(ownerType);
     ASSERT(ownerType->contextElement());
     return SVGAnimatedProperty::lookupOrCreateWrapper<SVGElement, SVGAnimatedTransformList, SVGTransformList>(ownerType->contextElement(), transformPropertyInfo(), ownerType->m_transform);
+}
+
+void SVGViewSpec::detachContextElement()
+{
+    m_viewBox = 0;
+    m_contextElement = 0;
 }
 
 void SVGViewSpec::reset()

@@ -29,7 +29,6 @@
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGLengthTearOff.h"
 #include "core/svg/SVGZoomAndPan.h"
-#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
@@ -180,7 +179,6 @@ private:
     RefPtr<SMILTimeContainer> m_timeContainer;
     SVGPoint m_translation;
     RefPtr<SVGViewSpec> m_viewSpec;
-    WeakPtrFactory<SVGSVGElement> m_weakFactory;
 };
 
 inline bool isSVGSVGElement(const Node& node)

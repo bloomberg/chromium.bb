@@ -39,7 +39,7 @@ public:
     using RefCounted<SVGViewSpec>::ref;
     using RefCounted<SVGViewSpec>::deref;
 
-    static PassRefPtr<SVGViewSpec> create(WeakPtr<SVGSVGElement> contextElement)
+    static PassRefPtr<SVGViewSpec> create(SVGSVGElement* contextElement)
     {
         return adoptRef(new SVGViewSpec(contextElement));
     }
@@ -63,7 +63,8 @@ public:
     void setZoomAndPan(unsigned short, ExceptionState&);
     void setZoomAndPanBaseValue(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
 
-    SVGElement* contextElement() const { return m_contextElement.get(); }
+    SVGElement* contextElement() const { return m_contextElement; }
+    void detachContextElement();
 
     // Custom non-animated 'transform' property.
     SVGTransformListPropertyTearOff* transform();
@@ -79,7 +80,7 @@ public:
     void setPreserveAspectRatioBaseValue(const SVGPreserveAspectRatio& preserveAspectRatio) { m_preserveAspectRatio = preserveAspectRatio; }
 
 private:
-    explicit SVGViewSpec(WeakPtr<SVGSVGElement>);
+    explicit SVGViewSpec(SVGSVGElement*);
 
     static const SVGPropertyInfo* transformPropertyInfo();
     static const SVGPropertyInfo* preserveAspectRatioPropertyInfo();
@@ -93,7 +94,8 @@ private:
     template<typename CharType>
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-    WeakPtr<SVGSVGElement> m_contextElement;
+    // FIXME(oilpan): This is back-ptr to be cleared from contextElement.
+    SVGSVGElement* m_contextElement;
 
     SVGZoomAndPanType m_zoomAndPan;
     SVGTransformList m_transform;
