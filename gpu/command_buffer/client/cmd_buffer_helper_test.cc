@@ -33,6 +33,30 @@ const int32 kCommandBufferSizeBytes =
     kTotalNumCommandEntries * sizeof(CommandBufferEntry);
 const int32 kUnusedCommandId = 5;  // we use 0 and 2 currently.
 
+// Override CommandBufferService::Flush() to lock flushing and simulate
+// the buffer becoming full in asynchronous mode.
+class CommandBufferServiceLocked : public CommandBufferService {
+ public:
+  explicit CommandBufferServiceLocked(
+      TransferBufferManagerInterface* transfer_buffer_manager)
+      : CommandBufferService(transfer_buffer_manager),
+        flush_locked_(false) {}
+  virtual ~CommandBufferServiceLocked() {}
+
+  virtual void Flush(int32 put_offset) OVERRIDE {
+    if (!flush_locked_)
+      CommandBufferService::Flush(put_offset);
+  }
+
+  void LockFlush() { flush_locked_ = true; }
+
+  void UnlockFlush() { flush_locked_ = false; }
+
+ private:
+  bool flush_locked_;
+  DISALLOW_COPY_AND_ASSIGN(CommandBufferServiceLocked);
+};
+
 // Test fixture for CommandBufferHelper test - Creates a CommandBufferHelper,
 // using a CommandBufferEngine with a mock AsyncAPIInterface for its interface
 // (calling it directly, not through the RPC mechanism).
@@ -51,7 +75,7 @@ class CommandBufferHelperTest : public testing::Test {
       EXPECT_TRUE(manager->Initialize());
     }
     command_buffer_.reset(
-        new CommandBufferService(transfer_buffer_manager_.get()));
+        new CommandBufferServiceLocked(transfer_buffer_manager_.get()));
     EXPECT_TRUE(command_buffer_->Initialize());
 
     gpu_scheduler_.reset(new GpuScheduler(
@@ -98,6 +122,49 @@ class CommandBufferHelperTest : public testing::Test {
         .WillOnce(Return(_return));
   }
 
+  void TestCommandWrappingFull(int32 cmd_size, int32 start_commands) {
+    const int32 num_args = cmd_size - 1;
+    EXPECT_EQ(kTotalNumCommandEntries % cmd_size, 0);
+
+    std::vector<CommandBufferEntry> args(num_args);
+    for (int32 ii = 0; ii < num_args; ++ii) {
+      args[ii].value_uint32 = ii + 1;
+    }
+
+    // Initially insert commands up to start_commands and Finish()
+    for (int32 ii = 0; ii < start_commands; ++ii) {
+      AddCommandWithExpect(
+          error::kNoError, ii + kUnusedCommandId, num_args, &args[0]);
+    }
+    helper_->Finish();
+
+    EXPECT_EQ(GetParser()->put(),
+              (start_commands * cmd_size) % kTotalNumCommandEntries);
+    EXPECT_EQ(GetParser()->get(),
+              (start_commands * cmd_size) % kTotalNumCommandEntries);
+
+    // Lock flushing to force the buffer to get full
+    command_buffer_->LockFlush();
+
+    // Add enough commands to over fill the buffer
+    for (int32 ii = 0; ii < kTotalNumCommandEntries / cmd_size + 2; ++ii) {
+      AddCommandWithExpect(error::kNoError,
+                           start_commands + ii + kUnusedCommandId,
+                           num_args,
+                           &args[0]);
+    }
+
+    // Flush all commands
+    command_buffer_->UnlockFlush();
+    helper_->Finish();
+
+    // Check that the commands did happen.
+    Mock::VerifyAndClearExpectations(api_mock_.get());
+
+    // Check the error status.
+    EXPECT_EQ(error::kNoError, GetError());
+  }
+
   // Checks that the buffer from put to put+size is free in the parser.
   void CheckFreeSpace(CommandBufferOffset put, unsigned int size) {
     CommandBufferOffset parser_put = GetParser()->put();
@@ -141,7 +208,7 @@ class CommandBufferHelperTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
-  scoped_ptr<CommandBufferService> command_buffer_;
+  scoped_ptr<CommandBufferServiceLocked> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;
@@ -204,13 +271,13 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
 // Checks the case where the command inserted exactly matches the space left in
 // the command buffer.
 TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
-  const int32 kCommandSize = 5;
+  const int32 kCommandSize = kTotalNumCommandEntries / 2;
   const size_t kNumArgs = kCommandSize - 1;
   COMPILE_ASSERT(kTotalNumCommandEntries % kCommandSize == 0,
                  Not_multiple_of_num_command_entries);
   CommandBufferEntry args1[kNumArgs];
   for (size_t ii = 0; ii < kNumArgs; ++ii) {
-    args1[0].value_uint32 = ii + 1;
+    args1[ii].value_uint32 = ii + 1;
   }
 
   for (unsigned int i = 0; i < 5; ++i) {
@@ -224,6 +291,18 @@ TEST_F(CommandBufferHelperTest, TestCommandWrappingExactMultiple) {
 
   // Check the error status.
   EXPECT_EQ(error::kNoError, GetError());
+}
+
+TEST_F(CommandBufferHelperTest, TestCommandWrappingFullAtStart) {
+  TestCommandWrappingFull(2, 0);
+}
+
+TEST_F(CommandBufferHelperTest, TestCommandWrappingFullInMiddle) {
+  TestCommandWrappingFull(2, 1);
+}
+
+TEST_F(CommandBufferHelperTest, TestCommandWrappingFullAtEnd) {
+  TestCommandWrappingFull(2, kTotalNumCommandEntries / 2);
 }
 
 // Checks that asking for available entries work, and that the parser
