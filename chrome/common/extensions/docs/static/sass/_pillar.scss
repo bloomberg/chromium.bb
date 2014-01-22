@@ -49,7 +49,7 @@ $panel-margin-right: 1.5em;
     &::before {
       display: inline-block;
       content: '';
-      background: url("../images/further-resources-icons.svg") 0 50% no-repeat;
+      background: url("../../images/further-resources-icons.svg") 0 50% no-repeat;
       width: 50px;
       height: 43px;
       background-size: cover;
@@ -160,6 +160,6 @@ $panel-margin-right: 1.5em;
   opacity: 1;
 }
 .down-arrow {
-  background-image: url("../images/down-arrow.png");
+  background-image: url("../../images/down-arrow.png");
 }
 

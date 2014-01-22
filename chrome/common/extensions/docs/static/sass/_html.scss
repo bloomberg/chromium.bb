@@ -132,6 +132,10 @@ pre {
     @include background-image(linear-gradient(top, #008dfd 30%,#0370ea 100%));
     cursor: pointer;
   }
+
+  a {
+      color: inherit !important;
+  }
 }
 
 .button-alt {
@@ -372,7 +376,7 @@ pre {
   }
 
   .toggleIndicator {
-    background: url(../images/toggle_sprite.png) no-repeat 0 0;
+    background: url(../../images/toggle_sprite.png) no-repeat 0 0;
     height: 8px;
     position: absolute;
     right: 0;

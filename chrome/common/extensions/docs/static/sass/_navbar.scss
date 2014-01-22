@@ -35,7 +35,7 @@ $z-index-nav-hover: 1001;
 
   .collase-icon {
     display: none;
-    background: url("../images/burger-icon.png") 50% 100% no-repeat;
+    background: url("../../images/burger-icon.png") 50% 100% no-repeat;
     background-size: cover;
     width: 20px;
     height: 20px;
@@ -187,7 +187,7 @@ $z-index-nav-hover: 1001;
     input[type="search"] {
       width: 100%;
       @include box-sizing(border-box);
-      background: url("../images/search.png") no-repeat 15px 55%;
+      background: url("../../images/search.png") no-repeat 15px 55%;
       background-size: 20px;
       background-color: white;
       border: $default-border;
