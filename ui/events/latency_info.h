@@ -98,9 +98,6 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
   static bool Verify(const std::vector<LatencyInfo>& latency_info,
                      const char* referring_msg);
 
-  // Merges the contents of another LatencyInfo into this one.
-  void MergeWith(const LatencyInfo& other);
-
   // Add LatencyComponents that are in |other| but not in |this|.
   void AddNewLatencyFrom(const LatencyInfo& other);
 
@@ -112,13 +109,11 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
 
   // Modifies the current sequence number and adds a certain number of events
   // for a specific component.
-  // TODO(miletus): Remove the |dump_to_trace| once we remove MergeWith().
   void AddLatencyNumberWithTimestamp(LatencyComponentType component,
                                      int64 id,
                                      int64 component_sequence_number,
                                      base::TimeTicks time,
-                                     uint32 event_count,
-                                     bool dump_to_trace);
+                                     uint32 event_count);
 
   // Returns true if the a component with |type| and |id| is found in
   // the latency_components and the component is stored to |output| if

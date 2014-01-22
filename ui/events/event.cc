@@ -445,8 +445,7 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       0,
       0,
       base::TimeTicks::FromInternalValue(time_stamp().ToInternalValue()),
-      1,
-      true);
+      1);
 
 #if defined(USE_X11)
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(native_event->xcookie.data);

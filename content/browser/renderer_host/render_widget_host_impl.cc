@@ -1020,8 +1020,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
           GetLatencyComponentId(),
           original_component.sequence_number,
           original_component.event_time,
-          original_component.event_count,
-          true);
+          original_component.event_count);
     }
   }
 

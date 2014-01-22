@@ -122,8 +122,7 @@ ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent event) {
         0,
         0,
         base::TimeTicks() + base::TimeDelta::FromMicroseconds(time_micros),
-        1,
-        false);
+        1);
   }
   return latency_info;
 }
