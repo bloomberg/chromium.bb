@@ -372,7 +372,7 @@ void PluginObserver::OnRemovePluginPlaceholderHost(int placeholder_id) {
 
 void PluginObserver::OnOpenAboutPlugins() {
   web_contents()->OpenURL(OpenURLParams(
-      GURL(chrome::kAboutPluginsURL),
+      GURL(chrome::kChromeUIPluginsURL),
       content::Referrer(web_contents()->GetURL(),
                         blink::WebReferrerPolicyDefault),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK, false));

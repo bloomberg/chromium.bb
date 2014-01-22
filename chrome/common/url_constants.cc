@@ -17,10 +17,6 @@ const char kCrosScheme[] = "cros";
 const char kDriveScheme[] = "drive";
 #endif
 
-const char kAboutComponentsURL[] = "about:components";
-const char kAboutPluginsURL[] = "about:plugins";
-const char kAboutVersionURL[] = "about:version";
-
 // Add Chrome UI URLs as necessary, in alphabetical order.
 // Be sure to add the corresponding kChromeUI*Host constant below.
 // This is a WebUI page that lists other WebUI pages.

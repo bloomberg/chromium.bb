@@ -2213,9 +2213,9 @@ IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
   EXPECT_TRUE(browser()->is_app());
 }
 
-// Confirm about:version contains some expected content.
+// Confirm chrome://version contains some expected content.
 IN_PROC_BROWSER_TEST_F(BrowserTest, AboutVersion) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutVersionURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_GT(ui_test_utils::FindInPage(tab, ASCIIToUTF16("WebKit"), true, true,
                                       NULL, NULL),

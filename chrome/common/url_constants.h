@@ -15,10 +15,6 @@
 
 namespace chrome {
 
-extern const char kAboutComponentsURL[];
-extern const char kAboutPluginsURL[];
-extern const char kAboutVersionURL[];
-
 // chrome: URLs (including schemes). Should be kept in sync with the
 // components below.
 extern const char kChromeUIAboutURL[];
