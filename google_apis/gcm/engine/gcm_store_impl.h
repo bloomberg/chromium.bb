@@ -23,7 +23,8 @@ namespace gcm {
 // all callbacks to the thread on which the GCMStoreImpl is created.
 class GCM_EXPORT GCMStoreImpl : public GCMStore {
  public:
-  GCMStoreImpl(const base::FilePath& path,
+  GCMStoreImpl(bool use_mock_keychain,
+               const base::FilePath& path,
                scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   virtual ~GCMStoreImpl();
 

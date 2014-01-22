@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
-#include "components/webdata/encryptor/encryptor.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
@@ -129,11 +128,6 @@ MCSClientTest::MCSClientTest()
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
   run_loop_.reset(new base::RunLoop());
 
-  // On OSX, prevent the Keychain permissions popup during unit tests.
-#if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
-#endif
-
   // Advance the clock to a non-zero time.
   clock_.Advance(base::TimeDelta::FromSeconds(1));
 }
@@ -141,7 +135,8 @@ MCSClientTest::MCSClientTest()
 MCSClientTest::~MCSClientTest() {}
 
 void MCSClientTest::BuildMCSClient() {
-  gcm_store_.reset(new GCMStoreImpl(temp_directory_.path(),
+  gcm_store_.reset(new GCMStoreImpl(true,
+                                    temp_directory_.path(),
                                     message_loop_.message_loop_proxy()));
   mcs_client_.reset(new TestMCSClient(&clock_,
                                       &connection_factory_,

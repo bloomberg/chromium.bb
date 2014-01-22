@@ -109,7 +109,8 @@ void UserListTest::SetDelegateCallback(const std::string& username,
 }
 
 scoped_ptr<UserList> UserListTest::BuildUserList() {
-  gcm_store_.reset(new GCMStoreImpl(temp_directory_.path(),
+  gcm_store_.reset(new GCMStoreImpl(true,
+                                    temp_directory_.path(),
                                     message_loop_.message_loop_proxy()));
   return scoped_ptr<UserList>(new UserList(gcm_store_.get()));
 }

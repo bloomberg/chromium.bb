@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/webdata/encryptor/encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -65,18 +64,15 @@ GCMStoreImplTest::GCMStoreImplTest()
     : expected_success_(true) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
   run_loop_.reset(new base::RunLoop());
-
-// On OSX, prevent the Keychain permissions popup during unit tests.
-#if defined(OS_MACOSX)
-  Encryptor::UseMockKeychain(true);
-#endif
 }
 
 GCMStoreImplTest::~GCMStoreImplTest() {}
 
 scoped_ptr<GCMStore> GCMStoreImplTest::BuildGCMStore() {
   return scoped_ptr<GCMStore>(new GCMStoreImpl(
-      temp_directory_.path(), message_loop_.message_loop_proxy()));
+      true,
+      temp_directory_.path(),
+      message_loop_.message_loop_proxy()));
 }
 
 std::string GCMStoreImplTest::GetNextPersistentId() {
