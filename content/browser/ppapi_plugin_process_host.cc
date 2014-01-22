@@ -307,11 +307,15 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     // TODO(vtl): Stop passing flash args in the command line, or windows is
     // going to explode.
     std::string field_trial =
-        base::FieldTrialList::FindFullName(kLowLatencyFlashAudioFieldTrialName);
+        base::FieldTrialList::FindFullName(kFlashHwVideoDecodeFieldTrialName);
     std::string existing_args =
         browser_command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs);
-    if (field_trial == kLowLatencyFlashAudioFieldTrialEnabledName)
-      existing_args.append(" enable_low_latency_audio=1");
+    if (field_trial == kFlashHwVideoDecodeFieldTrialEnabledName) {
+      // Arguments passed to Flash are comma delimited.
+      if (!existing_args.empty())
+        existing_args.append(",");
+      existing_args.append("enable_hw_video_decode=1");
+    }
     cmd_line->AppendSwitchASCII(switches::kPpapiFlashArgs, existing_args);
   }
 

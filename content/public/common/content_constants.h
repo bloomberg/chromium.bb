@@ -54,9 +54,9 @@ extern const int kStatsMaxCounters;
 // a browser-supplied sequence number.
 CONTENT_EXPORT extern const int kHistogramSynchronizerReservedSequenceNumber;
 
-// Shared constants for the low latency flash audio field trial.
-CONTENT_EXPORT extern const char kLowLatencyFlashAudioFieldTrialName[];
-CONTENT_EXPORT extern const char kLowLatencyFlashAudioFieldTrialEnabledName[];
+// Shared constants for the flash hardware video decode field trial.
+CONTENT_EXPORT extern const char kFlashHwVideoDecodeFieldTrialName[];
+CONTENT_EXPORT extern const char kFlashHwVideoDecodeFieldTrialEnabledName[];
 
 }  // namespace content
 
