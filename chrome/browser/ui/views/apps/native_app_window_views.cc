@@ -257,6 +257,12 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
   init_params.remove_standard_frame = ShouldUseChromeStyleFrame();
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // On Linux, remove the standard frame. Instead, we will use CustomFrameView
+  // to draw a native-like frame.
+  // TODO(mgiuca): Remove this during fix for http://crbug.com/322256.
+  init_params.remove_standard_frame = true;
+#endif
   init_params.use_system_default_icon = true;
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.

@@ -93,6 +93,12 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   const gfx::Rect& client_view_bounds() const { return client_view_bounds_; }
 
+  // Determines whether the title bar is condensed vertically, as when the
+  // window is maximized. If true, the title bar is just the height of a tab,
+  // rather than having extra vertical space above the tabs. This also removes
+  // the thick frame border and rounded corners.
+  bool IsTitleBarCondensed() const;
+
  private:
   // Whether a specific button should be inserted on the leading or trailing
   // side.

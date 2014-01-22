@@ -1497,6 +1497,11 @@ const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
 // all of its state.
 const char kUserDataDir[]                   = "user-data-dir";
 
+// Use the system-provided title bar and window dressing. Only affects Linux
+// Aura. Temporarily activated by a switch; eventually to be dynamically
+// changeable with the kUseCustomChromeFrame preference as with the GTK version.
+const char kUseSystemTitleBar[]             = "use-system-title-bar";
+
 // Examines a .crx for validity and prints the result.
 const char kValidateCrx[]                   = "validate-crx";
 

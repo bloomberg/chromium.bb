@@ -57,6 +57,7 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
     toplevel_params.native_widget =
         new views::DesktopNativeWidgetAura(toplevel);
     toplevel_params.bounds = bounds;
+    toplevel_params.remove_standard_frame = true;
     toplevel->Init(toplevel_params);
     return toplevel;
   }

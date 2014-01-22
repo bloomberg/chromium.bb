@@ -14986,6 +14986,15 @@ Do you accept?
       Enable Web MIDI API experimental support.
     </message>
 
+    <message name="IDS_FLAGS_USE_SYSTEM_TITLE_BAR"
+             desc="Name of about:flag option to use the host operating system's title bar and window borders.">
+      Use system title bar and borders
+    </message>
+    <message name="IDS_FLAGS_USE_SYSTEM_TITLE_BAR_DESCRIPTION"
+             desc="Description of about:flag option to turn on the host operating system's title bar and window borders.">
+      Use the host operating system's window title bar and borders, instead of custom window dressing.
+    </message>
+
     <!-- Toast experiment. -->
     <message name="IDS_TRY_TOAST_SET_DEFAULT" desc="Text of the checkbox to make chrome the default browser">
       Make it my default browser

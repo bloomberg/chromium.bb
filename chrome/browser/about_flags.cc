@@ -1976,7 +1976,16 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_SYSTEM_SOUNDS_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableSystemSounds)
-  }
+  },
+#endif
+#if defined(USE_AURA)
+  {
+    "use-system-title-bar",
+    IDS_FLAGS_USE_SYSTEM_TITLE_BAR,
+    IDS_FLAGS_USE_SYSTEM_TITLE_BAR_DESCRIPTION,
+    kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kUseSystemTitleBar)
+  },
 #endif
 };
 
