@@ -38,27 +38,32 @@
 // missed due to deadstripping. Returns null on success and a string on failure
 // (describing the failure).
 const char* MinimalCTest(void) {
-// TODO(vtl): stdint.h seems to be broken in MSVS before 2013 (at least in our
-// build). Figure out what's going on.
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-  MojoTimeTicks ticks = MojoGetTimeTicksNow();
+  // MSVS before 2013 *really* only supports C90: All variables must be declared
+  // at the top. (MSVS 2013 is more reasonable.)
+  MojoTimeTicks ticks;
+  MojoHandle handle0, handle1;
+  MojoWaitFlags wait_flags;
+  const char kHello[] = "hello";
+  char buffer[200] = { 0 };
+  uint32_t num_bytes;
+
+  ticks = MojoGetTimeTicksNow();
   EXPECT_NE(ticks, 0);
 
-  MojoHandle handle0 = MOJO_HANDLE_INVALID;
+  handle0 = MOJO_HANDLE_INVALID;
   EXPECT_NE(MOJO_RESULT_OK, MojoClose(handle0));
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoWait(handle0, MOJO_WAIT_FLAG_EVERYTHING,
                      MOJO_DEADLINE_INDEFINITE));
 
-  MojoHandle handle1 = MOJO_HANDLE_INVALID;
+  handle1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(&handle0, &handle1));
 
-  MojoWaitFlags wait_flags = MOJO_WAIT_FLAG_READABLE;
+  wait_flags = MOJO_WAIT_FLAG_READABLE;
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
             MojoWaitMany(&handle0, &wait_flags, 1, 1));
 
-  const char kHello[] = "hello";
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWriteMessage(handle0, kHello, (uint32_t) sizeof(kHello), NULL,
                              0u, MOJO_WRITE_DATA_FLAG_NONE));
@@ -67,8 +72,7 @@ const char* MinimalCTest(void) {
             MojoWait(handle1, MOJO_WAIT_FLAG_READABLE,
                      MOJO_DEADLINE_INDEFINITE));
 
-  char buffer[200] = { 0 };
-  uint32_t num_bytes = (uint32_t) sizeof(buffer);
+  num_bytes = (uint32_t) sizeof(buffer);
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoReadMessage(handle1, buffer, &num_bytes, NULL, NULL,
                             MOJO_READ_MESSAGE_FLAG_NONE));
@@ -79,7 +83,6 @@ const char* MinimalCTest(void) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handle1));
 
   // TODO(vtl): data pipe
-#endif  // !defined(_MSC_VER) || (_MSC_VER >= 1800)
 
   return NULL;
 }
