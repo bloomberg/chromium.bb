@@ -8,9 +8,6 @@ declare_args() {
   # Use OpenSSL instead of NSS. This is used for Android and is experimental
   # in other cases (see http://crbug.com/62803).
   use_openssl = false
-
-  # Use the built-in system SSL library rather than our tree's libnss/OpenSSL.
-  use_system_ssl = false
 }
 
 if (is_linux && !use_openssl) {

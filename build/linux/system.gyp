@@ -18,17 +18,6 @@
     'linux_link_libbrlapi%': 0,
   },
   'conditions': [
-    [ 'os_posix==1 and OS!="mac"', {
-      'variables': {
-        # We use our own copy of libssl3, although we still need to link against
-        # the rest of NSS.
-        'use_system_ssl%': 0,
-      },
-    }, {
-      'variables': {
-        'use_system_ssl%': 1,
-      },
-    }],
     [ 'chromeos==0', {
       # Hide GTK and related dependencies for Chrome OS, so they won't get
       # added back to Chrome OS. Don't try to use GTK on Chrome OS.
@@ -713,7 +702,7 @@
                 '../../third_party/openssl/openssl.gyp:openssl',
               ],
             }],
-            ['use_openssl==0 and use_system_ssl==0', {
+            ['use_openssl==0', {
               'dependencies': [
                 '../../net/third_party/nss/ssl.gyp:libssl',
               ],
@@ -733,24 +722,6 @@
                 ],
                 'libraries': [
                   '<!@(<(pkg-config) --libs-only-l nss | sed -e "s/-lssl3//")',
-                ],
-              },
-            }],
-            ['use_openssl==0 and use_system_ssl==1', {
-              'direct_dependent_settings': {
-                'cflags': [
-                  '<!@(<(pkg-config) --cflags nss)',
-                ],
-                'defines': [
-                  'USE_SYSTEM_SSL',
-                ],
-              },
-              'link_settings': {
-                'ldflags': [
-                  '<!@(<(pkg-config) --libs-only-L --libs-only-other nss)',
-                ],
-                'libraries': [
-                  '<!@(<(pkg-config) --libs-only-l nss)',
                 ],
               },
             }],

@@ -13,14 +13,6 @@ config("ssl_preprocessor_flags") {
   }
 }
 
-# Config for system SSL on Linux.
-if (is_linux && use_system_ssl) {
-  pkg_config("system_ssl_config") {
-    packages = [ "nss" ]
-    defines = [ "USE_SYSTEM_SSL" ]
-  }
-}
-
 # This meta-target will include the SSL library according to the build flags.
 group("metassl") {
   direct_dependent_configs = [ ":ssl_preprocessor_flags" ]
@@ -29,9 +21,6 @@ group("metassl") {
     assert(is_linux)
     deps = "//third_party/openssl"
     use_openssl = false
-  } else if (use_system_ssl) {
-    assert(is_linux)
-    direct_dependent_configs = ":system_ssl_config"
   } else {
     deps = [ "//net/third_party/nss:ssl" ]
   }
