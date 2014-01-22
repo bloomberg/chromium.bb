@@ -37,6 +37,11 @@ using namespace WebCore;
 
 namespace blink {
 
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+COMPILE_ASSERT(ScrollerStyleLegacy == NSScrollerStyleLegacy, ScrollerStyle_Legacy_must_be_equal);
+COMPILE_ASSERT(ScrollerStyleOverlay == NSScrollerStyleOverlay, ScrollerStyle_Overlay_must_be_equal);
+#endif
+
 void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
     bool jumpOnTrackClick, bool redraw)
@@ -47,6 +52,13 @@ void WebScrollbarTheme::updateScrollbars(
 
     static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
         initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, redraw);
+}
+
+void WebScrollbarTheme::updateScrollbars(
+    float initialButtonDelay, float autoscrollButtonDelay,
+    bool jumpOnTrackClick, ScrollerStyle preferredScrollerStyle, bool redraw)
+{
+    updateScrollbars(initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, redraw);
 }
 
 } // namespace blink
