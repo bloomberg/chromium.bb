@@ -105,11 +105,10 @@ void FastTextAutosizer::inflate(RenderBlock* block)
 
     float multiplier = cluster->m_autosize ? cluster->m_multiplier : 1.0f;
 
-    for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
-        RenderObject* inlineObj = walker.current();
-        if (inlineObj->isText()) {
-            applyMultiplier(inlineObj, multiplier);
-            applyMultiplier(inlineObj->parent(), multiplier); // Parent handles line spacing.
+    for (RenderObject* descendant = nextChildSkippingChildrenOfBlocks(block, block); descendant; descendant = nextChildSkippingChildrenOfBlocks(descendant, block)) {
+        if (descendant->isText()) {
+            applyMultiplier(descendant, multiplier);
+            applyMultiplier(descendant->parent(), multiplier); // Parent handles line spacing.
         }
     }
 }
@@ -293,6 +292,13 @@ AtomicString FastTextAutosizer::FingerprintMapper::get(RenderBlock* block)
 FastTextAutosizer::BlockSet& FastTextAutosizer::FingerprintMapper::getBlocks(AtomicString fingerprint)
 {
     return *m_blocksForFingerprint.get(fingerprint);
+}
+
+RenderObject* FastTextAutosizer::nextChildSkippingChildrenOfBlocks(const RenderObject* current, const RenderObject* stayWithin)
+{
+    if (current == stayWithin || !current->isRenderBlock())
+        return current->nextInPreOrder(stayWithin);
+    return current->nextInPreOrderAfterChildren(stayWithin);
 }
 
 } // namespace WebCore

@@ -111,6 +111,8 @@ private:
     float computeMultiplier(RenderBlock*);
     void applyMultiplier(RenderObject*, float);
 
+    RenderObject* nextChildSkippingChildrenOfBlocks(const RenderObject*, const RenderObject*);
+
     Document* m_document;
     int m_windowWidth; // Frame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
