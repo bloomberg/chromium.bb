@@ -16,7 +16,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   static scoped_ptr<RasterWorkerPool> Create(
       ResourceProvider* resource_provider,
       ContextProvider* context_provider,
-      unsigned texture_target) {
+      GLenum texture_target) {
     return make_scoped_ptr<RasterWorkerPool>(
         new ImageRasterWorkerPool(resource_provider,
                                   context_provider,
@@ -25,7 +25,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
-  virtual unsigned GetResourceTarget() const OVERRIDE;
+  virtual GLenum GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void OnRasterTasksFinished() OVERRIDE;
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
@@ -33,7 +33,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
  private:
   ImageRasterWorkerPool(ResourceProvider* resource_provider,
                         ContextProvider* context_provider,
-                        unsigned texture_target);
+                        GLenum texture_target);
 
   void OnRasterTaskCompleted(
       scoped_refptr<internal::RasterWorkerPoolTask> task, bool was_canceled);
@@ -42,14 +42,14 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
   static void CreateGraphNodeForImageTask(
       internal::WorkerPoolTask* image_task,
-      const internal::Task::Vector& decode_tasks,
+      const TaskVector& decode_tasks,
       unsigned priority,
       bool is_required_for_activation,
       internal::GraphNode* raster_required_for_activation_finished_node,
       internal::GraphNode* raster_finished_node,
       TaskGraph* graph);
 
-  const unsigned texture_target_;
+  const GLenum texture_target_;
 
   TaskMap image_tasks_;
 

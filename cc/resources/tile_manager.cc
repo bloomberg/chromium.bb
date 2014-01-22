@@ -172,7 +172,7 @@ scoped_ptr<TileManager> TileManager::Create(
     bool use_map_image,
     size_t max_transfer_buffer_usage_bytes,
     size_t max_raster_usage_bytes,
-    unsigned map_image_texture_target) {
+    GLenum map_image_texture_target) {
   return make_scoped_ptr(
       new TileManager(client,
                       resource_provider,

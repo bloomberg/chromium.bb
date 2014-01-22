@@ -32,7 +32,7 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
         needs_upload_(false) {
   }
 
-  // Overridden from internal::Task:
+  // Overridden from internal::WorkerPoolTask:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     // |buffer_| can be NULL in lost context situations.
     if (!buffer_) {
@@ -46,8 +46,6 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
                                              task_->resource()->size(),
                                              0);
   }
-
-  // Overridden from internal::WorkerPoolTask:
   virtual void CompleteOnOriginThread() OVERRIDE {
     // |needs_upload_| must be be false if task didn't run.
     DCHECK(HasFinishedRunning() || !needs_upload_);
@@ -120,8 +118,7 @@ PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {
 void PixelBufferRasterWorkerPool::Shutdown() {
   shutdown_ = true;
   RasterWorkerPool::Shutdown();
-
-  CheckForCompletedWorkerPoolTasks();
+  CheckForCompletedWorkerTasks();
   CheckForCompletedUploads();
   check_for_completed_raster_tasks_callback_.Cancel();
   check_for_completed_raster_tasks_pending_ = false;
@@ -210,7 +207,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   // Check for completed tasks when ScheduleTasks() is called as
   // priorities might have changed and this maximizes the number
   // of top priority tasks that are scheduled.
-  CheckForCompletedWorkerPoolTasks();
+  CheckForCompletedWorkerTasks();
   CheckForCompletedUploads();
   FlushUploads();
 
@@ -230,7 +227,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       "state", TracedValue::FromValue(StateAsValue().release()));
 }
 
-unsigned PixelBufferRasterWorkerPool::GetResourceTarget() const {
+GLenum PixelBufferRasterWorkerPool::GetResourceTarget() const {
   return GL_TEXTURE_2D;
 }
 
@@ -394,7 +391,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
   check_for_completed_raster_tasks_callback_.Cancel();
   check_for_completed_raster_tasks_pending_ = false;
 
-  CheckForCompletedWorkerPoolTasks();
+  CheckForCompletedWorkerTasks();
   CheckForCompletedUploads();
   FlushUploads();
 

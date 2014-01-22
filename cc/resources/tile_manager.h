@@ -57,7 +57,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       bool use_map_image,
       size_t max_transfer_buffer_usage_bytes,
       size_t max_raster_usage_bytes,
-      unsigned map_image_texture_target);
+      GLenum map_image_texture_target);
   virtual ~TileManager();
 
   void ManageTiles(const GlobalStateThatImpactsTilePriority& state);

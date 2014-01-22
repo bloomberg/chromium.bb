@@ -106,7 +106,7 @@ size_t GetMaxRasterTasksUsageBytes(cc::ContextProvider* context_provider) {
   return GetMaxTransferBufferUsageBytes(context_provider);
 }
 
-unsigned GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
+GLenum GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
   if (!context_provider)
     return GL_TEXTURE_2D;
 

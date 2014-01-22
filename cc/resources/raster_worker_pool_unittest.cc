@@ -34,7 +34,7 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   TestRasterWorkerPoolTaskImpl(
       const Resource* resource,
       const Reply& reply,
-      internal::Task::Vector* dependencies,
+      TaskVector* dependencies,
       bool use_gpu_rasterization)
       : internal::RasterWorkerPoolTask(resource,
                                        dependencies,
@@ -42,7 +42,7 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         reply_(reply),
         raster_thread_(RASTER_THREAD_NONE) {}
 
-  // Overridden from internal::RasterWorkerPoolTask:
+  // Overridden from internal::WorkerPoolTask:
   virtual bool RunOnWorkerThread(unsigned thread_index,
                                  void* buffer,
                                  gfx::Size size,
@@ -75,7 +75,7 @@ class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
   BlockingRasterWorkerPoolTaskImpl(const Resource* resource,
                                    const Reply& reply,
                                    base::Lock* lock,
-                                   internal::Task::Vector* dependencies,
+                                   TaskVector* dependencies,
                                    bool use_gpu_rasterization)
       : TestRasterWorkerPoolTaskImpl(resource,
                                      reply,
@@ -83,7 +83,7 @@ class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
                                      use_gpu_rasterization),
         lock_(lock) {}
 
-  // Overridden from internal::RasterWorkerPoolTask:
+  // Overridden from TestRasterWorkerPoolTaskImpl:
   virtual bool RunOnWorkerThread(unsigned thread_index,
                                  void* buffer,
                                  gfx::Size size,

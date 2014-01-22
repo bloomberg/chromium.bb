@@ -328,10 +328,10 @@ const Experiment::Choice kZeroSuggestExperimentsChoices[] = {
 
 const Experiment::Choice kNumRasterThreadsChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_NUM_RASTER_THREADS_ONE, switches::kNumRasterThreads, "1" },
-  { IDS_FLAGS_NUM_RASTER_THREADS_TWO, switches::kNumRasterThreads, "2" },
-  { IDS_FLAGS_NUM_RASTER_THREADS_THREE, switches::kNumRasterThreads, "3" },
-  { IDS_FLAGS_NUM_RASTER_THREADS_FOUR, switches::kNumRasterThreads, "4" }
+  { IDS_FLAGS_NUM_RASTER_THREADS_ONE, cc::switches::kNumRasterThreads, "1" },
+  { IDS_FLAGS_NUM_RASTER_THREADS_TWO, cc::switches::kNumRasterThreads, "2" },
+  { IDS_FLAGS_NUM_RASTER_THREADS_THREE, cc::switches::kNumRasterThreads, "3" },
+  { IDS_FLAGS_NUM_RASTER_THREADS_FOUR, cc::switches::kNumRasterThreads, "4" }
 };
 
 // We're using independent flags here (as opposed to a common flag with

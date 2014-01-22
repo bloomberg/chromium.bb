@@ -54,6 +54,9 @@ const char kTopControlsHideThreshold[] = "top-controls-hide-threshold";
 // Percentage of the top controls need to be shown before they will auto show.
 const char kTopControlsShowThreshold[] = "top-controls-show-threshold";
 
+// Number of worker threads used to rasterize content.
+const char kNumRasterThreads[] = "num-raster-threads";
+
 // Show metrics about overdraw in about:tracing recordings, such as the number
 // of pixels culled, and the number of pixels drawn, for each frame.
 const char kTraceOverdraw[] = "trace-overdraw";
