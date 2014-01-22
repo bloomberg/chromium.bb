@@ -41,6 +41,8 @@
         'core/browser/autofill_policy_handler.h',
         'core/browser/browser_policy_connector.cc',
         'core/browser/browser_policy_connector.h',
+        'core/browser/browser_policy_connector_ios.h',
+        'core/browser/browser_policy_connector_ios.mm',
         'core/browser/cloud/message_util.cc',
         'core/browser/cloud/message_util.h',
         'core/browser/configuration_policy_handler.cc',
