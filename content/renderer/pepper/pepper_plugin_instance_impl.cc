@@ -1888,8 +1888,10 @@ void PepperPluginInstanceImpl::UpdateLayer() {
 
   if ((want_layer == !!texture_layer_.get()) &&
       (want_3d_layer == layer_is_hardware_) &&
-      layer_bound_to_fullscreen_ == !!fullscreen_container_)
+      layer_bound_to_fullscreen_ == !!fullscreen_container_) {
+    UpdateLayerTransform();
     return;
+  }
 
   if (texture_layer_) {
     if (!layer_bound_to_fullscreen_)
