@@ -83,7 +83,7 @@
           {
               var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
               var fullMediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
-              var truncateAt = Math.floor(segmentInfo.media[0].size * 0.95);  // Pick first 95% of segment bytes.
+              var truncateAt = Math.floor(segmentInfo.media[0].size * 0.5);  // Pick first 50% of segment bytes.
               var partialMediaSegment = fullMediaSegment.subarray(0, truncateAt);
               var mediaSegmentRemainder = fullMediaSegment.subarray(truncateAt);
 
@@ -96,6 +96,8 @@
                   assert_false(sourceBuffer.updating, 'updating attribute is false');
                   assert_equals(sourceBuffer.mode, 'segments');
                   sourceBuffer.mode = 'segments';  // No exception should occur.
+                  assert_equals(sourceBuffer.timestampOffset, 0.0);
+                  sourceBuffer.timestampOffset = 10.0;  // No exception should occur.
 
                   // Append first part of media segment.
                   test.expectEvent(sourceBuffer, 'updateend', 'Partial media segment append ended.');
@@ -109,6 +111,10 @@
                   assert_throws('InvalidStateError',
                       function() { sourceBuffer.mode = 'segments'; },
                       'Setting valid sourceBuffer.mode while still parsing media segment threw InvalidStateError.');
+                  assert_equals(sourceBuffer.timestampOffset, 10.0);
+                  assert_throws('InvalidStateError',
+                      function() { sourceBuffer.timestampOffset = 20.0; },
+                      'Setting valid sourceBuffer.timestampOffset while still parsing media segment threw InvalidStateError.');
 
                   // Append remainder of media segment.
                   test.expectEvent(sourceBuffer, 'updateend', 'Append ended of remainder of media segment.');
@@ -120,9 +126,11 @@
                   assert_false(sourceBuffer.updating, 'updating attribute is false');
                   assert_equals(sourceBuffer.mode, 'segments');
                   sourceBuffer.mode = 'segments';  // No exception should occur.
+                  assert_equals(sourceBuffer.timestampOffset, 10.0);
+                  sourceBuffer.timestampOffset = 20.0;  // No exception should occur.
                   test.done();
               });
-          }, 'Test setting SourceBuffer.mode while parsing media segment.');
+          }, 'Test setting SourceBuffer.mode and SourceBuffer.timestampOffset while parsing media segment.');
 
           // FIXME: Once 'sequence' mode implemented, add verification. See http://crbug.com/249422.
         </script>
