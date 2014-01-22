@@ -20,7 +20,6 @@
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
-#include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -50,10 +49,6 @@ namespace {
 // on startup. (So that displaying Chrome's GUI does not get delayed.)
 // Delay in milliseconds from startup.
 const int64 kServiceInitializationStartupDelay = 5000;
-
-// The URL for the device management server.
-const char kDefaultDeviceManagementServerUrl[] =
-    "https://m.google.com/devicemanagement/data/api";
 
 #if defined(OS_MACOSX)
 base::FilePath GetManagedPolicyPath() {
@@ -85,11 +80,7 @@ class DeviceManagementServiceConfiguration
   virtual ~DeviceManagementServiceConfiguration() {}
 
   virtual std::string GetServerUrl() OVERRIDE {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kDeviceManagementUrl))
-      return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
-    else
-      return kDefaultDeviceManagementServerUrl;
+    return BrowserPolicyConnector::GetDeviceManagementUrl();
   }
 
   virtual std::string GetAgentParameter() OVERRIDE {

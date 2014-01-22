@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -20,6 +21,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
@@ -28,6 +30,10 @@
 namespace policy {
 
 namespace {
+
+// The URL for the device management server.
+const char kDefaultDeviceManagementServerUrl[] =
+    "https://m.google.com/devicemanagement/data/api";
 
 // Used in BrowserPolicyConnector::SetPolicyProviderForTesting.
 bool g_created_policy_service = false;
@@ -199,6 +205,15 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
       return true;
   }
   return false;
+}
+
+// static
+std::string BrowserPolicyConnector::GetDeviceManagementUrl() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDeviceManagementUrl))
+    return command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
+  else
+    return kDefaultDeviceManagementServerUrl;
 }
 
 // static

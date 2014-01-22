@@ -93,6 +93,9 @@ class POLICY_EXPORT BrowserPolicyConnector {
   // false if the username is empty.
   static bool IsNonEnterpriseUser(const std::string& username);
 
+  // Returns the URL for the device management service endpoint.
+  static std::string GetDeviceManagementUrl();
+
   // Registers refresh rate prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
