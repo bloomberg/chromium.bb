@@ -695,6 +695,8 @@ evdev_device_destroy(struct evdev_device *device)
 
 	if (device->source)
 		wl_event_source_remove(device->source);
+	if (device->output)
+		wl_list_remove(&device->output_destroy_listener.link);
 	wl_list_remove(&device->link);
 	if (device->mtdev)
 		mtdev_close_delete(device->mtdev);
