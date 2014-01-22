@@ -424,19 +424,19 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
     CertVerifier* cert_verifier)
     : SSLClientSocketPool(0,
                           0,
-                          NULL,
+                          NULL,           // ssl_histograms
                           host_resolver,
                           cert_verifier,
+                          NULL,           // server_bound_cert_store
+                          NULL,           // transport_security_state
+                          NULL,           // cert_transparency_verifier
+                          std::string(),  // ssl_session_cache_shard
+                          NULL,           // deterministic_socket_factory
+                          NULL,           // transport_socket_pool
                           NULL,
                           NULL,
-                          NULL,
-                          std::string(),
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL),
+                          NULL,           // ssl_config_service
+                          NULL),          // net_log
       last_num_streams_(-1) {}
 
 class HttpStreamFactoryTest : public ::testing::Test,

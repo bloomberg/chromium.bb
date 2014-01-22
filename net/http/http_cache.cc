@@ -33,6 +33,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/http/disk_cache_based_ssl_host_info.h"
 #include "net/http/http_cache_transaction.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
@@ -40,6 +41,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
+#include "net/socket/ssl_host_info.h"
 
 namespace {
 
@@ -267,12 +269,33 @@ void HttpCache::MetadataWriter::OnIOComplete(int result) {
 
 //-----------------------------------------------------------------------------
 
+class HttpCache::SSLHostInfoFactoryAdaptor : public SSLHostInfoFactory {
+ public:
+  SSLHostInfoFactoryAdaptor(CertVerifier* cert_verifier, HttpCache* http_cache)
+      : cert_verifier_(cert_verifier),
+        http_cache_(http_cache) {
+  }
+
+  virtual SSLHostInfo* GetForHost(const std::string& hostname,
+                                  const SSLConfig& ssl_config) OVERRIDE {
+    return new DiskCacheBasedSSLHostInfo(
+        hostname, ssl_config, cert_verifier_, http_cache_);
+  }
+
+ private:
+  CertVerifier* const cert_verifier_;
+  HttpCache* const http_cache_;
+};
+
+//-----------------------------------------------------------------------------
 HttpCache::HttpCache(const net::HttpNetworkSession::Params& params,
                      BackendFactory* backend_factory)
     : net_log_(params.net_log),
       backend_factory_(backend_factory),
       building_backend_(false),
       mode_(NORMAL),
+      ssl_host_info_factory_(new SSLHostInfoFactoryAdaptor(
+          params.cert_verifier, this)),
       network_layer_(new HttpNetworkLayer(new HttpNetworkSession(params))) {
 }
 
@@ -283,6 +306,8 @@ HttpCache::HttpCache(HttpNetworkSession* session,
       backend_factory_(backend_factory),
       building_backend_(false),
       mode_(NORMAL),
+      ssl_host_info_factory_(new SSLHostInfoFactoryAdaptor(
+          session->cert_verifier(), this)),
       network_layer_(new HttpNetworkLayer(session)) {
 }
 

@@ -22,6 +22,7 @@ class HttpResponseInfo;
 class IOBuffer;
 struct LoadTimingInfo;
 class X509Certificate;
+class SSLHostInfo;
 
 // Represents a single HTTP transaction (i.e., a single request/response pair).
 // HTTP redirects are not followed and authentication challenges are not
@@ -132,6 +133,10 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // Returns the upload progress in bytes.  If there is no upload data,
   // zero will be returned.  This does not include the request headers.
   virtual UploadProgress GetUploadProgress() const = 0;
+
+  // SetSSLHostInfo sets a object which reads and writes public information
+  // about an SSL server.
+  virtual void SetSSLHostInfo(SSLHostInfo*) {};
 
   // Populates all of load timing, except for request start times and receive
   // headers time.
