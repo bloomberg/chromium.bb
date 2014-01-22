@@ -1412,8 +1412,14 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
     return true;
   }
 
-  [compositing_iosurface_context_->nsgl_context() setView:cocoa_view_];
   bool has_overlay = overlay_view_ && overlay_view_->compositing_iosurface_;
+  if (has_overlay) {
+    // Un-bind the overlay view's OpenGL context, since its content will be
+    // drawn by this context. Not doing this can result in corruption.
+    // http://crbug.com/330701
+    overlay_view_->ClearBoundContextDrawable();
+  }
+  [compositing_iosurface_context_->nsgl_context() setView:cocoa_view_];
 
   gfx::Rect view_rect(NSRectToCGRect([cocoa_view_ frame]));
   if (!compositing_iosurface_->DrawIOSurface(
