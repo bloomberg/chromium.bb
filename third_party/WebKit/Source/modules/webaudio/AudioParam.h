@@ -83,7 +83,6 @@ public:
     bool smooth();
 
     void resetSmoothedValue() { m_smoothedValue = m_value; }
-    void setSmoothingConstant(double k) { m_smoothingConstant = k; }
 
     // Parameter automation.
     void setValueAtTime(float value, double time) { m_timeline.setValueAtTime(value, time); }
@@ -113,7 +112,6 @@ protected:
         , m_maxValue(maxValue)
         , m_units(units)
         , m_smoothedValue(defaultValue)
-        , m_smoothingConstant(DefaultSmoothingConstant)
     {
         ScriptWrappable::init(this);
     }
@@ -132,7 +130,6 @@ private:
 
     // Smoothing (de-zippering)
     double m_smoothedValue;
-    double m_smoothingConstant;
 
     AudioParamTimeline m_timeline;
 };

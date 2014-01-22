@@ -61,11 +61,6 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* c
     initialize();
 }
 
-MediaStreamSource* MediaStreamAudioDestinationNode::mediaStreamSource()
-{
-    return m_source.get();
-}
-
 MediaStreamAudioDestinationNode::~MediaStreamAudioDestinationNode()
 {
     uninitialize();

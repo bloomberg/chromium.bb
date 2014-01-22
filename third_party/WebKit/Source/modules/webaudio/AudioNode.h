@@ -115,7 +115,6 @@ public:
     virtual void uninitialize();
 
     bool isInitialized() const { return m_isInitialized; }
-    void lazyInitialize();
 
     unsigned numberOfInputs() const { return m_inputs.size(); }
     unsigned numberOfOutputs() const { return m_outputs.size(); }

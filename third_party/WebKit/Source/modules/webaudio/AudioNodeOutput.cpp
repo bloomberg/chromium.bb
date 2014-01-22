@@ -146,11 +146,6 @@ unsigned AudioNodeOutput::renderingFanOutCount() const
     return m_renderingFanOutCount;
 }
 
-unsigned AudioNodeOutput::renderingParamFanOutCount() const
-{
-    return m_renderingParamFanOutCount;
-}
-
 void AudioNodeOutput::addInput(AudioNodeInput* input)
 {
     ASSERT(context()->isGraphOwner());

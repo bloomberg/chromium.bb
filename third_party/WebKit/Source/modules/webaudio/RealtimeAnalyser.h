@@ -40,8 +40,6 @@ class RealtimeAnalyser FINAL {
 public:
     RealtimeAnalyser();
 
-    void reset();
-
     size_t fftSize() const { return m_fftSize; }
     bool setFftSize(size_t);
 

@@ -84,7 +84,7 @@ bool AudioParam::smooth()
         m_smoothedValue = m_value;
     else {
         // Dezipper - exponential approach.
-        m_smoothedValue += (m_value - m_smoothedValue) * m_smoothingConstant;
+        m_smoothedValue += (m_value - m_smoothedValue) * DefaultSmoothingConstant;
 
         // If we get close enough then snap to actual value.
         if (fabs(m_smoothedValue - m_value) < SnapThreshold) // FIXME: the threshold needs to be adjustable depending on range - but this is OK general purpose value.

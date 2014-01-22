@@ -50,7 +50,6 @@ public:
     virtual void uninitialize() OVERRIDE;
 
     // AudioDestinationNode
-    virtual void enableInput(const String&) OVERRIDE { }
     virtual void startRendering() OVERRIDE;
 
     virtual float sampleRate()  const OVERRIDE { return m_renderTarget->sampleRate(); }

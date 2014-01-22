@@ -122,11 +122,6 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     }
 }
 
-void AudioBuffer::releaseMemory()
-{
-    m_channels.clear();
-}
-
 PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& exceptionState)
 {
     if (channelIndex >= m_channels.size()) {

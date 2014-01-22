@@ -49,7 +49,6 @@ public:
     virtual void setChannelCount(unsigned long, ExceptionState&) OVERRIDE;
 
     // AudioDestinationNode
-    virtual void enableInput(const String& inputDeviceId) OVERRIDE;
     virtual void startRendering() OVERRIDE;
     virtual unsigned long maxChannelCount() const OVERRIDE;
 

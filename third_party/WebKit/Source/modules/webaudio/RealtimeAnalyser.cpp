@@ -67,13 +67,6 @@ RealtimeAnalyser::RealtimeAnalyser()
     m_analysisFrame = adoptPtr(new FFTFrame(DefaultFFTSize));
 }
 
-void RealtimeAnalyser::reset()
-{
-    m_writeIndex = 0;
-    m_inputBuffer.zero();
-    m_magnitudeBuffer.zero();
-}
-
 bool RealtimeAnalyser::setFftSize(size_t size)
 {
     ASSERT(isMainThread());

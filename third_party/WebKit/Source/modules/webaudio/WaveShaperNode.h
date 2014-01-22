@@ -48,8 +48,6 @@ public:
     void setOversample(const String& , ExceptionState&);
     String oversample() const;
 
-    double latency() const { return latencyTime(); }
-
 private:
     explicit WaveShaperNode(AudioContext*);
 

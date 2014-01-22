@@ -62,7 +62,6 @@ public:
     float rateScale() const { return m_rateScale; }
 
     unsigned periodicWaveSize() const { return m_periodicWaveSize; }
-    float sampleRate() const { return m_sampleRate; }
 
 private:
     explicit PeriodicWave(float sampleRate);
@@ -80,8 +79,6 @@ private:
     float m_lowestFundamentalFrequency;
 
     float m_rateScale;
-
-    unsigned numberOfRanges() const { return m_numberOfRanges; }
 
     // Maximum possible number of partials (before culling).
     unsigned maxNumberOfPartials() const;

@@ -34,8 +34,6 @@
 #include "platform/Logging.h"
 #include "wtf/MainThread.h"
 
-const unsigned EnabledInputChannels = 2;
-
 namespace WebCore {
 
 DefaultAudioDestinationNode::DefaultAudioDestinationNode(AudioContext* context)
@@ -81,22 +79,6 @@ void DefaultAudioDestinationNode::createDestination()
     WTF_LOG(WebAudio, ">>>> hardwareSampleRate = %f\n", hardwareSampleRate);
 
     m_destination = AudioDestination::create(*this, m_inputDeviceId, m_numberOfInputChannels, channelCount(), hardwareSampleRate);
-}
-
-void DefaultAudioDestinationNode::enableInput(const String& inputDeviceId)
-{
-    ASSERT(isMainThread());
-    if (m_numberOfInputChannels != EnabledInputChannels) {
-        m_numberOfInputChannels = EnabledInputChannels;
-        m_inputDeviceId = inputDeviceId;
-
-        if (isInitialized()) {
-            // Re-create destination.
-            m_destination->stop();
-            createDestination();
-            m_destination->start();
-        }
-    }
 }
 
 void DefaultAudioDestinationNode::startRendering()

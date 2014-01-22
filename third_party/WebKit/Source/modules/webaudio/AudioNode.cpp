@@ -139,12 +139,6 @@ void AudioNode::setNodeType(NodeType type)
 #endif
 }
 
-void AudioNode::lazyInitialize()
-{
-    if (!isInitialized())
-        initialize();
-}
-
 void AudioNode::addInput(PassOwnPtr<AudioNodeInput> input)
 {
     m_inputs.append(input);

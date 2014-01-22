@@ -48,8 +48,6 @@ public:
     // AudioNode.
     virtual void process(size_t framesToProcess) OVERRIDE;
 
-    MediaStreamSource* mediaStreamSource();
-
 private:
     MediaStreamAudioDestinationNode(AudioContext*, size_t numberOfChannels);
 

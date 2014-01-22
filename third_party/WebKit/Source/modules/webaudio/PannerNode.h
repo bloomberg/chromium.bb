@@ -84,15 +84,12 @@ public:
     void setPanningModel(const String&);
 
     // Position
-    FloatPoint3D position() const { return m_position; }
     void setPosition(float x, float y, float z) { m_position = FloatPoint3D(x, y, z); }
 
     // Orientation
-    FloatPoint3D orientation() const { return m_position; }
     void setOrientation(float x, float y, float z) { m_orientation = FloatPoint3D(x, y, z); }
 
     // Velocity
-    FloatPoint3D velocity() const { return m_velocity; }
     void setVelocity(float x, float y, float z) { m_velocity = FloatPoint3D(x, y, z); }
 
     // Distance parameters
@@ -121,10 +118,6 @@ public:
 
     void getAzimuthElevation(double* outAzimuth, double* outElevation);
     float dopplerRate();
-
-    // Accessors for dynamically calculated gain values.
-    AudioParam* distanceGain() { return m_distanceGain.get(); }
-    AudioParam* coneGain() { return m_coneGain.get(); }
 
     virtual double tailTime() const OVERRIDE { return m_panner ? m_panner->tailTime() : 0; }
     virtual double latencyTime() const OVERRIDE { return m_panner ? m_panner->latencyTime() : 0; }
