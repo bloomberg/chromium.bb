@@ -348,23 +348,9 @@ void StyleEngine::clearMediaQueryRuleSetStyleSheets()
     clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes);
 }
 
-void StyleEngine::collectDocumentActiveStyleSheets(StyleSheetCollectionBase& collection)
+void StyleEngine::collectDocumentStyleSheets(DocumentStyleSheetCollector& collector)
 {
-    ASSERT(isMaster());
-
-    if (HTMLImport* rootImport = m_document.import()) {
-        for (HTMLImport* import = traverseFirstPostOrder(rootImport); import; import = traverseNextPostOrder(import)) {
-            Document* document = import->document();
-            if (!document)
-                continue;
-            StyleEngine* engine = document->styleEngine();
-            DocumentStyleSheetCollection::CollectFor collectFor = document == &m_document ?
-                DocumentStyleSheetCollection::CollectForList : DocumentStyleSheetCollection::DontCollectForList;
-            engine->m_documentStyleSheetCollection.collectStyleSheets(engine, collection, collectFor);
-        }
-    } else {
-        m_documentStyleSheetCollection.collectStyleSheets(this, collection, DocumentStyleSheetCollection::CollectForList);
-    }
+    m_documentStyleSheetCollection.collectStyleSheets(this, collector);
 }
 
 bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)

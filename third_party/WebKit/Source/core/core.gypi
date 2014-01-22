@@ -1900,6 +1900,8 @@
             'dom/DocumentSharedObjectPool.cpp',
             'dom/DocumentStyleSheetCollection.cpp',
             'dom/DocumentStyleSheetCollection.h',
+            'dom/DocumentStyleSheetCollector.cpp',
+            'dom/DocumentStyleSheetCollector.h',
             'dom/DocumentType.cpp',
             'dom/DOMError.cpp',
             'dom/DOMError.h',

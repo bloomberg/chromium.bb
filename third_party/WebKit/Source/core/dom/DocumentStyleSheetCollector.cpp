@@ -22,36 +22,23 @@
  * along with this library; see the file COPYING.LIB.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
- *
  */
 
-#ifndef DocumentStyleSheetCollection_h
-#define DocumentStyleSheetCollection_h
+#include "config.h"
+#include "core/dom/DocumentStyleSheetCollector.h"
 
-#include "core/dom/StyleSheetCollection.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 
-class CSSStyleSheet;
-class DocumentStyleSheetCollector;
-class StyleSheet;
-class StyleSheetCollection;
-class StyleEngine;
-class TreeScope;
-
-class DocumentStyleSheetCollection FINAL : public StyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
-public:
-    explicit DocumentStyleSheetCollection(TreeScope&);
-
-    bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
-    void collectStyleSheets(StyleEngine*, DocumentStyleSheetCollector&);
-
-private:
-    void collectStyleSheetsFromCandidates(StyleEngine*, DocumentStyleSheetCollector&);
-};
-
+bool DocumentStyleSheetCollector::isCollectingForList(TreeScope& scope) const
+{
+    return m_root == scope;
 }
 
-#endif
+void DocumentStyleSheetCollector::setCollectionTo(StyleSheetCollectionBase& collection)
+{
+    m_collection.swap(collection);
+}
 
+}

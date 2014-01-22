@@ -49,6 +49,17 @@ bool StyleSheetCandidate::isXSL() const
     return !m_node.document().isHTMLDocument() && m_type == Pi && toProcessingInstruction(m_node).isXSL();
 }
 
+bool StyleSheetCandidate::isImport() const
+{
+    return m_type == HTMLLink && toHTMLLinkElement(m_node).isImport();
+}
+
+Document* StyleSheetCandidate::importedDocument() const
+{
+    ASSERT(isImport());
+    return toHTMLLinkElement(m_node).import();
+}
+
 bool StyleSheetCandidate::isAlternate() const
 {
     if (!isElement())

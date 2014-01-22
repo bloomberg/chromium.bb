@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -24,55 +24,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyleSheetCandidate_h
-#define StyleSheetCandidate_h
+#ifndef DocumentStyleSheetCollector_h
+#define DocumentStyleSheetCollector_h
 
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "core/dom/StyleSheetCollection.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 
-class Document;
-class Node;
-class StyleSheet;
-
-class StyleSheetCandidate {
+class DocumentStyleSheetCollector FINAL {
 public:
-    enum Type {
-        HTMLLink,
-        HTMLStyle,
-        SVGStyle,
-        Pi
-    };
-
-    StyleSheetCandidate(Node& node)
-        : m_node(node)
-        , m_type(typeOf(node))
+    DocumentStyleSheetCollector(TreeScope& root)
+        : m_root(root)
     { }
 
-    bool isXSL() const;
-    bool isImport() const;
-    bool isAlternate() const;
-    bool isEnabledViaScript() const;
-    bool isEnabledAndLoading() const;
-    bool hasPreferrableName(const String& currentPreferrableName) const;
-    bool canBeActivated(const String& currentPreferrableName) const;
+    bool isCollectingForList(TreeScope&) const;
+    void setCollectionTo(StyleSheetCollectionBase&);
 
-    StyleSheet* sheet() const;
-    AtomicString title() const;
-    Document* importedDocument() const;
+    void appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& sheets)  { m_collection.appendActiveStyleSheets(sheets); }
+    void appendActiveStyleSheet(CSSStyleSheet* sheet) { m_collection.appendActiveStyleSheet(sheet); }
+    void appendSheetForList(StyleSheet* sheet) { m_collection.appendSheetForList(sheet); }
+    StyleSheetCollectionBase& collection() { return m_collection; }
+    void markVisited(Document* document) { m_documentsVisited.add(document); }
+    bool hasVisited(Document* document) const { return m_documentsVisited.contains(document); }
 
 private:
-    bool isElement() const { return m_type != Pi; }
-    bool isHTMLLink() const { return m_type == HTMLLink; }
-
-    static Type typeOf(Node&);
-
-    Node& m_node;
-    Type m_type;
+    TreeScope& m_root;
+    StyleSheetCollectionBase m_collection;
+    HashSet<Document*> m_documentsVisited;
 };
 
-}
+} // namespace WebCore
 
-#endif
-
+#endif // DocumentStyleSheetCollector_h

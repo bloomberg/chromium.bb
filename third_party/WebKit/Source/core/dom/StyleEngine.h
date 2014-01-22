@@ -107,6 +107,7 @@ public:
     void addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet);
 
     void clearMediaQueryRuleSetStyleSheets();
+    void collectDocumentStyleSheets(DocumentStyleSheetCollector&);
     bool updateActiveStyleSheets(StyleResolverUpdateMode);
 
     String preferredStylesheetSetName() const { return m_preferredStylesheetSetName; }
@@ -176,7 +177,6 @@ public:
     StyleResolverChange resolverChanged(RecalcStyleTime, StyleResolverUpdateMode);
     unsigned resolverAccessCount() const;
 
-    void collectDocumentActiveStyleSheets(StyleSheetCollectionBase&);
     void markDocumentDirty();
 
     static PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);

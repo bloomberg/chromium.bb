@@ -33,6 +33,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/StyleEngine.h"
@@ -53,7 +54,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     ASSERT(treeScope.rootNode() == treeScope.rootNode()->document());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine* engine, StyleSheetCollectionBase& collection, DocumentStyleSheetCollection::CollectFor collectFor)
+void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine* engine, DocumentStyleSheetCollector& collector)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
@@ -76,6 +77,17 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
             continue;
         }
 
+        if (candidate.isImport()) {
+            Document* document = candidate.importedDocument();
+            if (!document)
+                continue;
+            if (collector.hasVisited(document))
+                continue;
+            collector.markVisited(document);
+            document->styleEngine()->collectDocumentStyleSheets(collector);
+            continue;
+        }
+
         if (candidate.isEnabledAndLoading()) {
             // it is loading but we should still decide which style sheet set to use
             if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
@@ -89,10 +101,10 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
 
         if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
             engine->selectStylesheetSetName(candidate.title());
-        if (collectFor == CollectForList)
-            collection.appendSheetForList(sheet);
+        if (collector.isCollectingForList(m_treeScope))
+            collector.appendSheetForList(sheet);
         if (candidate.canBeActivated(engine->preferredStylesheetSetName()))
-            collection.appendActiveStyleSheet(toCSSStyleSheet(sheet));
+            collector.appendActiveStyleSheet(toCSSStyleSheet(sheet));
     }
 }
 
@@ -104,22 +116,22 @@ static void collectActiveCSSStyleSheetsFromSeamlessParents(StyleSheetCollectionB
     collection.appendActiveStyleSheets(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollectionBase& collection, DocumentStyleSheetCollection::CollectFor colletFor)
+void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, DocumentStyleSheetCollector& collector)
 {
     ASSERT(document()->styleEngine() == engine);
-    collection.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
-    collection.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
-    collectActiveCSSStyleSheetsFromSeamlessParents(collection, document());
-    collectStyleSheetsFromCandidates(engine, collection, colletFor);
+    collector.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
+    collector.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
+    collectActiveCSSStyleSheetsFromSeamlessParents(collector.collection(), document());
+    collectStyleSheetsFromCandidates(engine, collector);
 }
 
 bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
-    StyleSheetCollectionBase collection;
-    engine->collectDocumentActiveStyleSheets(collection);
+    DocumentStyleSheetCollector collector(m_treeScope);
+    collectStyleSheets(engine, collector);
 
     StyleSheetChange change;
-    analyzeStyleSheetChange(updateMode, collection, change);
+    analyzeStyleSheetChange(updateMode, collector.collection(), change);
 
     if (change.styleResolverUpdateType == Reconstruct) {
         engine->clearMasterResolver();
@@ -134,15 +146,15 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
             if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector)
                 engine->resetFontSelector();
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
-            styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
+            styleResolver->lazyAppendAuthorStyleSheets(0, collector.collection().activeAuthorStyleSheets());
         } else {
-            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
+            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collector.collection().activeAuthorStyleSheets());
         }
     } else if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector) {
         engine->resetFontSelector();
     }
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
-    collection.swap(*this);
+    collector.setCollectionTo(*this);
     updateUsesRemUnits();
 
     return change.requiresFullStyleRecalc;
