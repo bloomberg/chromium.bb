@@ -14,10 +14,12 @@
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"
 
 typedef struct _GdkColor GdkColor;
+typedef struct _GtkBorder GtkBorder;
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
@@ -28,6 +30,7 @@ class Image;
 }
 
 namespace libgtk2ui {
+class Gtk2Border;
 class GConfTitlebarListener;
 
 // Interface to GTK2 desktop features.
@@ -40,6 +43,17 @@ class Gtk2UI : public views::LinuxUI {
   void SetWindowButtonOrdering(
     const std::vector<views::FrameButton>& leading_buttons,
     const std::vector<views::FrameButton>& trailing_buttons);
+
+  // Draws the GTK button border for state |gtk_state| onto a bitmap.
+  SkBitmap DrawGtkButtonBorder(int gtk_state, int width, int height) const;
+
+  // Returns the current insets for a button.
+  gfx::Insets GetButtonInsets() const;
+
+  // We keep track of live Gtk2Border objects since we must alert them to theme
+  // changes.
+  void AddGtkBorder(Gtk2Border* border);
+  void RemoveGtkBorder(Gtk2Border* border);
 
   // ui::LinuxInputMethodContextFactory:
   virtual scoped_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
@@ -73,6 +87,7 @@ class Gtk2UI : public views::LinuxUI {
   virtual double GetCursorBlinkInterval() const OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
   virtual void SetUseSystemTheme(bool use_system_theme) OVERRIDE;
+  virtual bool GetUseSystemTheme() const OVERRIDE;
   virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
   virtual void SetDownloadCount(int count) const OVERRIDE;
   virtual void SetProgressFraction(float percentage) const OVERRIDE;
@@ -82,6 +97,9 @@ class Gtk2UI : public views::LinuxUI {
       const base::string16& tool_tip) const OVERRIDE;
   virtual gfx::Image GetIconForContentType(
       const std::string& content_type, int size) const OVERRIDE;
+  virtual views::Border* CreateNativeBorder(
+      views::CustomButton* owning_button,
+      views::Border* border) OVERRIDE;
   virtual void AddWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) OVERRIDE;
   virtual void RemoveWindowButtonOrderObserver(
@@ -161,8 +179,9 @@ class Gtk2UI : public views::LinuxUI {
   // entry.
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
-  // Draws the GTK button border for state |gtk_state| onto a bitmap.
-  SkBitmap DrawGtkButtonBorder(int gtk_state, int width, int height) const;
+  // Create a GTK window and button and queries what "default-border" is, which
+  // corresponds with our insets.
+  void UpdateButtonInsets();
 
   // Frees all calculated images and color data.
   void ClearAllThemeData();
@@ -193,6 +212,8 @@ class Gtk2UI : public views::LinuxUI {
   SkColor inactive_selection_bg_color_;
   SkColor inactive_selection_fg_color_;
 
+  gfx::Insets button_insets_;
+
 #if defined(USE_GCONF)
   // Currently, the only source of window button configuration. This will
   // change if we ever have to support XFCE's configuration system or KDE's.
@@ -206,6 +227,9 @@ class Gtk2UI : public views::LinuxUI {
 
   // Objects to notify when the window frame button order changes.
   ObserverList<views::WindowButtonOrderObserver> observer_list_;
+
+  // Borders to notify when the theme state changes.
+  ObserverList<Gtk2Border> border_list_;
 
   // Image cache of lazily created images.
   mutable ImageCache gtk_images_;

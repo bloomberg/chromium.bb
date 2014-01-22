@@ -45,6 +45,8 @@
         'chrome_gtk_menu_subclasses.h',
         'gconf_titlebar_listener.cc',
         'gconf_titlebar_listener.h',
+        'gtk2_border.cc',
+        'gtk2_border.h',
         'gtk2_ui.cc',
         'gtk2_ui.h',
         'gtk2_util.cc',

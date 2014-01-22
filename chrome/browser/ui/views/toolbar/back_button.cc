@@ -31,7 +31,7 @@ void BackButton::SetLeadingMargin(int margin) {
   const gfx::Insets insets(border->GetInsets());
   border->set_insets(gfx::Insets(insets.top(), insets.left() + margin,
                                  insets.bottom(), insets.right()));
-  set_border(border);
+  UpdateThemedBorder(border);
 
   // Similarly fiddle the focus border. Value consistent with LabelButton
   // and TextButton.

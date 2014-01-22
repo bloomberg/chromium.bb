@@ -17,6 +17,10 @@
 #include "ui/views/painter.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
 namespace {
 
 // The spacing between the icon and text.
@@ -155,8 +159,9 @@ void LabelButton::SetStyle(ButtonStyle style) {
 
   ResetColorsFromNativeTheme();
 
-  // Set the border and invalidate the layout to pickup its new insets.
-  set_border(new LabelButtonBorder(style));
+  UpdateThemedBorder(new LabelButtonBorder(style_));
+
+  // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
 }
 
@@ -332,6 +337,18 @@ void LabelButton::ResetColorsFromNativeTheme() {
 
 void LabelButton::UpdateImage() {
   image_->SetImage(GetImage(state()));
+}
+
+void LabelButton::UpdateThemedBorder(LabelButtonBorder* label_button_border) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  views::LinuxUI* linux_ui = views::LinuxUI::instance();
+  if (linux_ui) {
+    set_border(linux_ui->CreateNativeBorder(this, label_button_border));
+  } else
+#endif
+  {
+    set_border(label_button_border);
+  }
 }
 
 void LabelButton::StateChanged() {

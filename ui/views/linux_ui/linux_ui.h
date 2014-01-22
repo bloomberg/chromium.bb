@@ -9,6 +9,7 @@
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/shell_dialogs/linux_shell_dialog.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/views_export.h"
 
@@ -24,6 +25,9 @@ class NativeTheme;
 }
 
 namespace views {
+class Border;
+class CustomButton;
+class View;
 class WindowButtonOrderObserver;
 
 // Adapter class with targets to render like different toolkits. Set by any
@@ -72,6 +76,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual ui::NativeTheme* GetNativeTheme() const = 0;
 
   virtual void SetUseSystemTheme(bool use_system_theme) = 0;
+  virtual bool GetUseSystemTheme() const = 0;
 
   // Returns whether we should be using the native theme provided by this
   // object by default.
@@ -95,6 +100,11 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // caches.
   virtual gfx::Image GetIconForContentType(
       const std::string& content_type, int size) const = 0;
+
+  // Builds a Border which paints the native button style.
+  virtual Border* CreateNativeBorder(
+      views::CustomButton* owning_button,
+      views::Border* border) = 0;
 
   // Notifies the observer about changes about how window buttons should be
   // laid out. If the order is anything other than the default min,max,close on

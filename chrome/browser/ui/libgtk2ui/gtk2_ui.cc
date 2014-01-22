@@ -16,6 +16,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_border.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
 #include "chrome/browser/ui/libgtk2ui/print_dialog_gtk2.h"
@@ -163,6 +164,7 @@ struct IDRGtkMapping {
   { IDR_HOME_P,    GTK_STOCK_HOME,       GTK_STATE_ACTIVE },
 
   { IDR_RELOAD,    GTK_STOCK_REFRESH,    GTK_STATE_NORMAL },
+  { IDR_RELOAD_D,  GTK_STOCK_REFRESH,    GTK_STATE_INSENSITIVE },
   { IDR_RELOAD_H,  GTK_STOCK_REFRESH,    GTK_STATE_PRELIGHT },
   { IDR_RELOAD_P,  GTK_STOCK_REFRESH,    GTK_STATE_ACTIVE },
 
@@ -445,6 +447,13 @@ ui::NativeTheme* Gtk2UI::GetNativeTheme() const {
 
 void Gtk2UI::SetUseSystemTheme(bool use_system_theme) {
   use_gtk_ = use_system_theme;
+
+  FOR_EACH_OBSERVER(Gtk2Border, border_list_,
+                    InvalidateAndSetUsesGtk(use_system_theme));
+}
+
+bool Gtk2UI::GetUseSystemTheme() const {
+  return use_gtk_;
 }
 
 bool Gtk2UI::GetDefaultUsesSystemTheme() const {
@@ -516,6 +525,12 @@ gfx::Image Gtk2UI::GetIconForContentType(
   gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   image_skia.MakeThreadSafe();
   return gfx::Image(image_skia);
+}
+
+views::Border* Gtk2UI::CreateNativeBorder(
+    views::CustomButton* owning_button,
+    views::Border* border) {
+  return new Gtk2Border(this, owning_button, border);
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(
@@ -871,6 +886,9 @@ void Gtk2UI::LoadGtkValues() {
       GdkColorToSkColor(entry_style->base[GTK_STATE_ACTIVE]);
   inactive_selection_fg_color_ =
       GdkColorToSkColor(entry_style->text[GTK_STATE_ACTIVE]);
+
+  // Update the insets that we hand to Gtk2Border.
+  UpdateButtonInsets();
 }
 
 GdkColor Gtk2UI::BuildFrameColors(GtkStyle* frame_style) {
@@ -1031,6 +1049,7 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     case IDR_HOME_H:
     case IDR_HOME_P:
     case IDR_RELOAD:
+    case IDR_RELOAD_D:
     case IDR_RELOAD_H:
     case IDR_RELOAD_P:
     case IDR_STOP:
@@ -1263,6 +1282,42 @@ SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
   gtk_widget_destroy(window);
 
   return border;
+}
+
+gfx::Insets Gtk2UI::GetButtonInsets() const {
+  return button_insets_;
+}
+
+void Gtk2UI::AddGtkBorder(Gtk2Border* border) {
+  border_list_.AddObserver(border);
+}
+
+void Gtk2UI::RemoveGtkBorder(Gtk2Border* border) {
+  border_list_.RemoveObserver(border);
+}
+
+void Gtk2UI::UpdateButtonInsets() {
+  GtkWidget* window = gtk_offscreen_window_new();
+  GtkWidget* button = gtk_button_new();
+  gtk_container_add(GTK_CONTAINER(window), button);
+
+  GtkBorder* border = NULL;
+  gtk_widget_style_get(GTK_WIDGET(button),
+                       "default-border",
+                       &border,
+                       NULL);
+
+  gfx::Insets insets;
+  if (border) {
+    button_insets_ = gfx::Insets(border->top, border->left,
+                                 border->bottom, border->right);
+    gtk_border_free(border);
+  } else {
+    // Defined in gtkbutton.c:
+    button_insets_ = gfx::Insets(1, 1, 1, 1);
+  }
+
+  gtk_widget_destroy(window);
 }
 
 void Gtk2UI::ClearAllThemeData() {
