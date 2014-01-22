@@ -121,6 +121,21 @@
       "add_browser_metrics": true
     },
     {
+      "url": "file://tough_video_cases/video.html?src=garden2_10s.webm",
+      "media_metrics": {"action": "play-action"},
+      "add_browser_metrics": true
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=garden2_10s.mp4",
+      "media_metrics": {"action": "play-action"},
+      "add_browser_metrics": true
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=garden2_10s.ogv",
+      "media_metrics": {"action": "play-action"},
+      "add_browser_metrics": true
+    },
+    {
       "url": "file://tough_video_cases/video.html?src=tulip2.ogg&type=audio",
       "skip_basic_metrics": true,
       "media_metrics": {"action": "seek_before_and_after_playhead"}
@@ -131,12 +146,12 @@
       "media_metrics": {"action": "seek_before_and_after_playhead"}
     },
     {
-      "url": "file://tough_video_cases/video.html?src=tulip2.ogv&type=video",
+      "url": "file://tough_video_cases/video.html?src=tulip2.ogv",
       "skip_basic_metrics": true,
       "media_metrics": {"action": "seek_before_and_after_playhead"}
     },
     {
-      "url": "file://tough_video_cases/video.html?src=tulip2.webm&type=video",
+      "url": "file://tough_video_cases/video.html?src=tulip2.webm",
       "skip_basic_metrics": true,
       "media_metrics": {"action": "seek_before_and_after_playhead"}
     },
@@ -146,7 +161,22 @@
       "media_metrics": {"action": "seek_before_and_after_playhead"}
     },
     {
-      "url": "file://tough_video_cases/video.html?src=tulip2.mp4&type=video",
+      "url": "file://tough_video_cases/video.html?src=tulip2.mp4",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=garden2_10s.webm",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=garden2_10s.mp4",
+      "skip_basic_metrics": true,
+      "media_metrics": {"action": "seek_before_and_after_playhead"}
+    },
+    {
+      "url": "file://tough_video_cases/video.html?src=garden2_10s.ogv",
       "skip_basic_metrics": true,
       "media_metrics": {"action": "seek_before_and_after_playhead"}
     },

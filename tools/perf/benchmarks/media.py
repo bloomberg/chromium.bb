@@ -38,6 +38,8 @@ class MediaAndroid(test.Test):
   test = media.Media
   tag = 'android'
   # Disable media-tests on Android: crbug/329691
+  # Before re-enabling on Android, make sure the new 4K content,
+  # garden2_10s*, passes.
   enabled = not sys.platform.startswith('linux')
   page_set = 'page_sets/tough_video_cases.json'
   # Exclude crowd* media files (50fps 2160p).
