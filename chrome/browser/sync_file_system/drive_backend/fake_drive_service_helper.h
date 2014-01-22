@@ -45,6 +45,9 @@ class FakeDriveServiceHelper {
       const std::string& file_id);
   google_apis::GDataErrorCode TrashResource(
       const std::string& file_id);
+  google_apis::GDataErrorCode RenameResource(
+      const std::string& file_id,
+      const std::string& new_title);
   google_apis::GDataErrorCode GetSyncRootFolderID(
       std::string* sync_root_folder_id);
   google_apis::GDataErrorCode ListFilesInFolder(

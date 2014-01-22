@@ -160,6 +160,17 @@ GDataErrorCode FakeDriveServiceHelper::TrashResource(
   return error;
 }
 
+GDataErrorCode FakeDriveServiceHelper::RenameResource(
+    const std::string& file_id,
+    const std::string& new_title) {
+  GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  fake_drive_service_->RenameResource(
+      file_id, new_title,
+      CreateResultReceiver(&error));
+  base::RunLoop().RunUntilIdle();
+  return error;
+}
+
 GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
     std::string* sync_root_folder_id) {
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
