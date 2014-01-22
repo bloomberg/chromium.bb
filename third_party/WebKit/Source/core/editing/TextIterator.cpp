@@ -1506,19 +1506,6 @@ void CharacterIterator::advance(int count)
     m_runOffset = 0;
 }
 
-String CharacterIterator::string(int numChars)
-{
-    StringBuilder result;
-    result.reserveCapacity(numChars);
-    while (numChars > 0 && !atEnd()) {
-        int runSize = min(numChars, length());
-        m_textIterator.appendTextToStringBuilder(result, m_runOffset, runSize);
-        numChars -= runSize;
-        advance(runSize);
-    }
-    return result.toString();
-}
-
 static PassRefPtr<Range> characterSubrange(CharacterIterator& it, int offset, int length)
 {
     it.advance(offset);

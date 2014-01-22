@@ -316,8 +316,6 @@ public:
     template<typename BufferType>
     void appendTextTo(BufferType& output) { m_textIterator.appendTextTo(output, m_runOffset); }
 
-    String string(int numChars);
-
     int characterOffset() const { return m_offset; }
     PassRefPtr<Range> range() const;
 
@@ -360,9 +358,6 @@ public:
     String substring(unsigned position, unsigned length) const;
     UChar characterAt(unsigned index) const;
     int length() const;
-
-    // Range of the text we're currently returning
-    PassRefPtr<Range> range() const { return m_range; }
 
 private:
     Vector<UChar> m_buffer;

@@ -936,8 +936,6 @@
             'editing/SelectionType.h',
             'editing/SetNodeAttributeCommand.cpp',
             'editing/SetNodeAttributeCommand.h',
-            'editing/SetSelectionCommand.cpp',
-            'editing/SetSelectionCommand.h',
             'editing/SimplifyMarkupCommand.cpp',
             'editing/SmartReplaceCF.cpp',
             'editing/SmartReplaceICU.cpp',

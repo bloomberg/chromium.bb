@@ -357,14 +357,6 @@ EditingStyle::EditingStyle(const StylePropertySet* style)
     extractFontSizeDelta();
 }
 
-EditingStyle::EditingStyle(const CSSStyleDeclaration* style)
-    : m_mutableStyle(style ? style->copyProperties() : 0)
-    , m_shouldUseFixedDefaultFontSize(false)
-    , m_fontSizeDelta(NoFontDelta)
-{
-    extractFontSizeDelta();
-}
-
 EditingStyle::EditingStyle(CSSPropertyID propertyID, const String& value)
     : m_mutableStyle(0)
     , m_shouldUseFixedDefaultFontSize(false)
@@ -555,15 +547,6 @@ bool EditingStyle::textDirection(WritingDirection& writingDirection) const
     }
 
     return false;
-}
-
-void EditingStyle::setStyle(PassRefPtr<MutableStylePropertySet> style)
-{
-    m_mutableStyle = style;
-    // FIXME: We should be able to figure out whether or not font is fixed width for mutable style.
-    // We need to check font-family is monospace as in FontDescription but we don't want to duplicate code here.
-    m_shouldUseFixedDefaultFontSize = false;
-    extractFontSizeDelta();
 }
 
 void EditingStyle::overrideWithStyle(const StylePropertySet* style)

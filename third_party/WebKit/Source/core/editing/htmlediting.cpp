@@ -840,20 +840,6 @@ Node* tabSpanNode(const Node *node)
     return isTabSpanTextNode(node) ? node->parentNode() : 0;
 }
 
-Position positionOutsideTabSpan(const Position& pos)
-{
-    Node* node = pos.containerNode();
-    if (isTabSpanTextNode(node))
-        node = tabSpanNode(node);
-    else if (!isTabSpanNode(node))
-        return pos;
-
-    if (node && VisiblePosition(pos) == lastPositionInNode(node))
-        return positionInParentAfterNode(node);
-
-    return positionInParentBeforeNode(node);
-}
-
 PassRefPtr<Element> createTabSpanElement(Document& document, PassRefPtr<Node> prpTabTextNode)
 {
     RefPtr<Node> tabTextNode = prpTabTextNode;

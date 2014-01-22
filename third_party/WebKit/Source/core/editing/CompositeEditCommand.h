@@ -77,10 +77,8 @@ public:
     EditCommandComposition* composition() { return m_composition.get(); }
     EditCommandComposition* ensureComposition();
 
-    virtual bool isCreateLinkCommand() const;
     virtual bool isTypingCommand() const;
     virtual bool preservesTypingStyle() const;
-    virtual bool shouldRetainAutocorrectionIndicator() const;
     virtual void setShouldRetainAutocorrectionIndicator(bool);
     virtual bool shouldStopCaretBlinking() const { return false; }
 
@@ -106,7 +104,6 @@ protected:
     void insertNodeAtTabSpanPosition(PassRefPtr<Node>, const Position&);
     void insertNodeBefore(PassRefPtr<Node>, PassRefPtr<Node> refChild, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
     void insertParagraphSeparator(bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false);
-    void insertLineBreak();
     void insertTextIntoNode(PassRefPtr<Text>, unsigned offset, const String& text);
     void mergeIdenticalElements(PassRefPtr<Element>, PassRefPtr<Element>);
     void rebalanceWhitespace();

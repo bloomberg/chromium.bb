@@ -236,22 +236,12 @@ EditCommandComposition* CompositeEditCommand::ensureComposition()
     return command->m_composition.get();
 }
 
-bool CompositeEditCommand::isCreateLinkCommand() const
-{
-    return false;
-}
-
 bool CompositeEditCommand::preservesTypingStyle() const
 {
     return false;
 }
 
 bool CompositeEditCommand::isTypingCommand() const
-{
-    return false;
-}
-
-bool CompositeEditCommand::shouldRetainAutocorrectionIndicator() const
 {
     return false;
 }
@@ -309,11 +299,6 @@ void CompositeEditCommand::removeStyledElement(PassRefPtr<Element> element)
 void CompositeEditCommand::insertParagraphSeparator(bool useDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea)
 {
     applyCommandToComposite(InsertParagraphSeparatorCommand::create(document(), useDefaultParagraphElement, pasteBlockqutoeIntoUnquotedArea));
-}
-
-void CompositeEditCommand::insertLineBreak()
-{
-    applyCommandToComposite(InsertLineBreakCommand::create(document()));
 }
 
 bool CompositeEditCommand::isRemovableBlock(const Node* node)

@@ -1160,17 +1160,6 @@ bool ApplyStyleCommand::nodeFullySelected(Node *node, const Position &start, con
         && comparePositions(lastPositionInOrAfterNode(node).upstream(), end) <= 0;
 }
 
-bool ApplyStyleCommand::nodeFullyUnselected(Node *node, const Position &start, const Position &end) const
-{
-    ASSERT(node);
-    ASSERT(node->isElementNode());
-
-    bool isFullyBeforeStart = comparePositions(lastPositionInOrAfterNode(node).upstream(), start) < 0;
-    bool isFullyAfterEnd = comparePositions(firstPositionInOrBeforeNode(node), end) > 0;
-
-    return isFullyBeforeStart || isFullyAfterEnd;
-}
-
 void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& end)
 {
     ASSERT(start.containerNode()->isTextNode());

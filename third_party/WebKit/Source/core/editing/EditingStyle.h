@@ -87,11 +87,6 @@ public:
         return adoptRef(new EditingStyle(style));
     }
 
-    static PassRefPtr<EditingStyle> create(const CSSStyleDeclaration* style)
-    {
-        return adoptRef(new EditingStyle(style));
-    }
-
     static PassRefPtr<EditingStyle> create(CSSPropertyID propertyID, const String& value)
     {
         return adoptRef(new EditingStyle(propertyID, value));
@@ -102,7 +97,6 @@ public:
     MutableStylePropertySet* style() { return m_mutableStyle.get(); }
     bool textDirection(WritingDirection&) const;
     bool isEmpty() const;
-    void setStyle(PassRefPtr<MutableStylePropertySet>);
     void overrideWithStyle(const StylePropertySet*);
     void clear();
     PassRefPtr<EditingStyle> copy() const;
@@ -142,7 +136,6 @@ public:
 
     float fontSizeDelta() const { return m_fontSizeDelta; }
     bool hasFontSizeDelta() const { return m_fontSizeDelta != NoFontDelta; }
-    bool shouldUseFixedDefaultFontSize() const { return m_shouldUseFixedDefaultFontSize; }
 
     static PassRefPtr<EditingStyle> styleAtSelectionStart(const VisibleSelection&, bool shouldUseBackgroundColorInEffect = false);
     static WritingDirection textDirectionForSelection(const VisibleSelection&, EditingStyle* typingStyle, bool& hasNestedOrMultipleEmbeddings);
@@ -151,7 +144,6 @@ private:
     EditingStyle(Node*, PropertiesToInclude);
     EditingStyle(const Position&, PropertiesToInclude);
     explicit EditingStyle(const StylePropertySet*);
-    explicit EditingStyle(const CSSStyleDeclaration*);
     EditingStyle(CSSPropertyID, const String& value);
     void init(Node*, PropertiesToInclude);
     void removeTextFillAndStrokeColorsIfNeeded(RenderStyle*);

@@ -56,7 +56,6 @@ public:
     void toggleContinuousSpellChecking();
     bool isGrammarCheckingEnabled();
     void ignoreSpelling();
-    String misspelledWordAtCaretOrRange(Node* clickedNode) const;
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;
     void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);

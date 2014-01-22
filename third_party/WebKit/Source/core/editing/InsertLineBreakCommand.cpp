@@ -52,30 +52,6 @@ bool InsertLineBreakCommand::preservesTypingStyle() const
     return true;
 }
 
-void InsertLineBreakCommand::insertNodeAfterPosition(Node* node, const Position& pos)
-{
-    // Insert the BR after the caret position. In the case the
-    // position is a block, do an append. We don't want to insert
-    // the BR *after* the block.
-    Element* cb = pos.deprecatedNode()->enclosingBlockFlowElement();
-    if (cb == pos.deprecatedNode())
-        appendNode(node, cb);
-    else
-        insertNodeAfter(node, pos.deprecatedNode());
-}
-
-void InsertLineBreakCommand::insertNodeBeforePosition(Node* node, const Position& pos)
-{
-    // Insert the BR after the caret position. In the case the
-    // position is a block, do an append. We don't want to insert
-    // the BR *before* the block.
-    Element* cb = pos.deprecatedNode()->enclosingBlockFlowElement();
-    if (cb == pos.deprecatedNode())
-        appendNode(node, cb);
-    else
-        insertNodeBefore(node, pos.deprecatedNode());
-}
-
 // Whether we should insert a break element or a '\n'.
 bool InsertLineBreakCommand::shouldUseBreakElement(const Position& insertionPos)
 {

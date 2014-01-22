@@ -46,13 +46,6 @@ static Node* enclosingListChild(Node* node, Node* listNode)
     return listChild;
 }
 
-PassRefPtr<HTMLElement> InsertListCommand::insertList(Document& document, Type type)
-{
-    RefPtr<InsertListCommand> insertCommand = create(document, type);
-    insertCommand->apply();
-    return insertCommand->m_listElement;
-}
-
 HTMLElement* InsertListCommand::fixOrphanedListChild(Node* node)
 {
     RefPtr<HTMLElement> listElement = createUnorderedListElement(document());

@@ -304,36 +304,6 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     }
 }
 
-String SpellChecker::misspelledWordAtCaretOrRange(Node* clickedNode) const
-{
-    if (!isContinuousSpellCheckingEnabled() || !clickedNode || !isSpellCheckingEnabledFor(clickedNode))
-        return String();
-
-    VisibleSelection selection = m_frame.selection().selection();
-    if (!selection.isContentEditable() || selection.isNone())
-        return String();
-
-    VisibleSelection wordSelection(selection.base());
-    wordSelection.expandUsingGranularity(WordGranularity);
-    RefPtr<Range> wordRange = wordSelection.toNormalizedRange();
-
-    // In compliance with GTK+ applications, additionally allow to provide suggestions when the current
-    // selection exactly match the word selection.
-    if (selection.isRange() && !areRangesEqual(wordRange.get(), selection.toNormalizedRange().get()))
-        return String();
-
-    String word = wordRange->text();
-    if (word.isEmpty())
-        return String();
-
-    int wordLength = word.length();
-    int misspellingLocation = -1;
-    int misspellingLength = 0;
-    textChecker().checkSpellingOfString(word, &misspellingLocation, &misspellingLength);
-
-    return misspellingLength == wordLength ? word : String();
-}
-
 void SpellChecker::showSpellingGuessPanel()
 {
     if (spellCheckerClient().spellingUIIsShowing()) {

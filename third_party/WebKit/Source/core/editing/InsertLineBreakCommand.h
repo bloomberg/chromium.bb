@@ -44,8 +44,6 @@ private:
 
     virtual bool preservesTypingStyle() const OVERRIDE;
 
-    void insertNodeAfterPosition(Node*, const Position&);
-    void insertNodeBeforePosition(Node*, const Position&);
     bool shouldUseBreakElement(const Position&);
 };
 

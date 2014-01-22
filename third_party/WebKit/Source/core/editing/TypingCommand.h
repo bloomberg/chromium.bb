@@ -90,7 +90,6 @@ private:
 
     TypingCommand(Document&, ETypingCommand, const String& text, Options, TextGranularity, TextCompositionType);
 
-    bool smartDelete() const { return m_smartDelete; }
     void setSmartDelete(bool smartDelete) { m_smartDelete = smartDelete; }
     bool isOpenForMoreTyping() const { return m_openForMoreTyping; }
     void closeTyping() { m_openForMoreTyping = false; }
@@ -101,11 +100,6 @@ private:
     virtual EditAction editingAction() const OVERRIDE;
     virtual bool isTypingCommand() const OVERRIDE;
     virtual bool preservesTypingStyle() const OVERRIDE { return m_preservesTypingStyle; }
-    virtual bool shouldRetainAutocorrectionIndicator() const OVERRIDE
-    {
-        ASSERT(isTopLevelCommand());
-        return m_shouldRetainAutocorrectionIndicator;
-    }
     virtual void setShouldRetainAutocorrectionIndicator(bool retain) OVERRIDE { m_shouldRetainAutocorrectionIndicator = retain; }
     virtual bool shouldStopCaretBlinking() const OVERRIDE { return true; }
     void setShouldPreventSpellChecking(bool prevent) { m_shouldPreventSpellChecking = prevent; }

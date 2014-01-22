@@ -41,8 +41,6 @@ public:
         return adoptRef(new InsertListCommand(document, listType));
     }
 
-    static PassRefPtr<HTMLElement> insertList(Document&, Type);
-
     virtual bool preservesTypingStyle() const OVERRIDE { return true; }
 
 private:

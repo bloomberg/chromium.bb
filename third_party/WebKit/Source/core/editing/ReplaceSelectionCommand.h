@@ -91,7 +91,6 @@ private:
     void makeInsertedContentRoundTrippableWithHTMLTreeBuilder(InsertedNodes&);
     void moveNodeOutOfAncestor(PassRefPtr<Node>, PassRefPtr<Node> ancestor);
     void handleStyleSpans(InsertedNodes&);
-    void handlePasteAsQuotationNode();
 
     VisiblePosition positionAtStartOfInsertedContent() const;
     VisiblePosition positionAtEndOfInsertedContent() const;

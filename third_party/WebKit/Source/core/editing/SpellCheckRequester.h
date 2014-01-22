@@ -54,7 +54,6 @@ public:
 
     void setCheckerAndSequence(SpellCheckRequester*, int sequence);
     void requesterDestroyed();
-    bool isStarted() const { return m_requester; }
 
     virtual const TextCheckingRequestData& data() const OVERRIDE;
     virtual void didSucceed(const Vector<TextCheckingResult>&) OVERRIDE;
