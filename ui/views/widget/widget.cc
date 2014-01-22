@@ -381,6 +381,7 @@ void Widget::Init(const InitParams& in_params) {
     // Initialize the window's title before setting the window's initial bounds;
     // the frame view's preferred height may depend on the presence of a title.
     UpdateWindowTitle();
+    non_client_view_->ResetWindowControls();
     SetInitialBounds(params.bounds);
     if (params.show_state == ui::SHOW_STATE_MAXIMIZED)
       Maximize();

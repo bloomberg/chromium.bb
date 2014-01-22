@@ -945,6 +945,36 @@ TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
   EXPECT_TRUE(contents_view->HasFocus());
 }
 
+class TestBubbleDelegateView : public BubbleDelegateView {
+ public:
+  TestBubbleDelegateView(View* anchor)
+      : BubbleDelegateView(anchor, BubbleBorder::NONE),
+        reset_controls_called_(false) {}
+  virtual ~TestBubbleDelegateView() {}
+
+  virtual bool ShouldShowCloseButton() const OVERRIDE {
+    reset_controls_called_ = true;
+    return true;
+  }
+
+  mutable bool reset_controls_called_;
+};
+
+TEST_F(WidgetTest, BubbleControlsResetOnInit) {
+  Widget* anchor = CreateTopLevelPlatformWidget();
+  anchor->Show();
+
+  TestBubbleDelegateView* bubble_delegate =
+      new TestBubbleDelegateView(anchor->client_view());
+  Widget* bubble_widget(BubbleDelegateView::CreateBubble(bubble_delegate));
+  EXPECT_TRUE(bubble_delegate->reset_controls_called_);
+  bubble_widget->Show();
+  bubble_widget->CloseNow();
+
+  anchor->Hide();
+  anchor->CloseNow();
+}
+
 // Desktop native widget Aura tests are for non Chrome OS platforms.
 #if !defined(OS_CHROMEOS)
 // Test to ensure that after minimize, view width is set to zero.
