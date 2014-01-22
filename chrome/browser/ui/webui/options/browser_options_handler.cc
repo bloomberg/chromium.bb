@@ -100,6 +100,7 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -479,9 +480,16 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
 #if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromWebUI(web_ui());
-  std::string name = profile->GetProfileName();
-  std::string username =
-      name.empty() ? name : gaia::SanitizeEmail(gaia::CanonicalizeEmail(name));
+  std::string username = profile->GetProfileName();
+  if (username.empty()) {
+    chromeos::User* user =
+        chromeos::UserManager::Get()->GetUserByProfile(profile);
+    if (user && (user->GetType() != chromeos::User::USER_TYPE_GUEST))
+      username = user->email();
+  }
+  if (!username.empty())
+    username = gaia::SanitizeEmail(gaia::CanonicalizeEmail(username));
+
   values->SetString("username", username);
 #endif
 
