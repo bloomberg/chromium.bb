@@ -128,7 +128,9 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
+#if !defined(OS_IOS)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#endif
 #endif
 #endif
 
@@ -349,7 +351,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   policy::UserNetworkConfigurationUpdaterFactory::GetInstance();
 #else
   policy::UserCloudPolicyManagerFactory::GetInstance();
+#if !defined(OS_IOS)
   policy::UserPolicySigninServiceFactory::GetInstance();
+#endif
 #endif
   policy::PolicyHeaderServiceFactory::GetInstance();
   policy::SchemaRegistryServiceFactory::GetInstance();

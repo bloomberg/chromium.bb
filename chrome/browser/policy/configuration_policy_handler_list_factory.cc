@@ -7,6 +7,16 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/common/pref_names.h"
+#include "components/policy/core/browser/configuration_policy_handler.h"
+#include "components/policy/core/browser/configuration_policy_handler_list.h"
+#include "components/policy/core/common/policy_details.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "grit/component_strings.h"
+#include "policy/policy_constants.h"
+
+#if !defined(OS_IOS)
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
@@ -17,18 +27,11 @@
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/browser/sync/sync_policy_handler.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/autofill_policy_handler.h"
-#include "components/policy/core/browser/configuration_policy_handler.h"
-#include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
-#include "components/policy/core/common/policy_details.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_pref_names.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/manifest.h"
-#include "grit/component_strings.h"
-#include "policy/policy_constants.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "ash/magnifier/magnifier_constants.h"
@@ -44,7 +47,7 @@
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_IOS)
 #include "apps/pref_names.h"
 #endif
 
@@ -350,14 +353,14 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kForceEphemeralProfiles,
     base::Value::TYPE_BOOLEAN },
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_IOS)
   { key::kFullscreenAllowed,
     prefs::kFullscreenAllowed,
     base::Value::TYPE_BOOLEAN },
   { key::kFullscreenAllowed,
     apps::prefs::kAppFullscreenAllowed,
     base::Value::TYPE_BOOLEAN },
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MACOSX) && !defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,
@@ -450,6 +453,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // defined(OS_ANDROID)
 };
 
+#if !defined(OS_IOS)
 // Mapping from extension type names to Manifest::Type.
 StringToIntEnumListPolicyHandler::MappingEntry kExtensionAllowedTypesMap[] = {
   { "extension", extensions::Manifest::TYPE_EXTENSION },
@@ -459,10 +463,10 @@ StringToIntEnumListPolicyHandler::MappingEntry kExtensionAllowedTypesMap[] = {
   { "legacy_packaged_app", extensions::Manifest::TYPE_LEGACY_PACKAGED_APP },
   { "platform_app", extensions::Manifest::TYPE_PLATFORM_APP },
 };
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 
-#if !defined(OS_IOS)
 scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
   scoped_ptr<ConfigurationPolicyHandlerList> handlers(
       new ConfigurationPolicyHandlerList(base::Bind(&GetChromePolicyDetails)));
@@ -473,6 +477,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
                                 kSimplePolicyMap[i].value_type)));
   }
 
+#if !defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new AutofillPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
@@ -514,13 +519,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
           extensions::pref_names::kAllowedTypes,
           kExtensionAllowedTypesMap,
           kExtensionAllowedTypesMap + arraysize(kExtensionAllowedTypesMap))));
-#if defined(OS_CHROMEOS)
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new extensions::ExtensionListPolicyHandler(
-          key::kAttestationExtensionWhitelist,
-          prefs::kAttestationExtensionWhitelist,
-          false)));
-#endif  // defined(OS_CHROMEOS)
+#endif  // !defined(OS_IOS)
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
@@ -541,6 +540,11 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::ExtensionListPolicyHandler(
+          key::kAttestationExtensionWhitelist,
+          prefs::kAttestationExtensionWhitelist,
+          false)));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       NetworkConfigurationPolicyHandler::CreateForDevicePolicy()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
@@ -666,6 +670,5 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
 #endif
   return handlers.Pass();
 }
-#endif  // !defined(OS_IOS)
 
 }  // namespace policy

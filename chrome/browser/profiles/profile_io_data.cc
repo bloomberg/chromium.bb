@@ -916,7 +916,9 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
     network_delegate->SetEnableClientHints();
   network_delegate->set_extension_info_map(
       profile_params_->extension_info_map.get());
+#if defined(ENABLE_CONFIGURATION_POLICY)
   network_delegate->set_url_blacklist_manager(url_blacklist_manager_.get());
+#endif
   network_delegate->set_profile(profile_params_->profile);
   network_delegate->set_profile_path(profile_params_->path);
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());

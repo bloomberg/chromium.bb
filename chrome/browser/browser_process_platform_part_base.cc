@@ -7,7 +7,10 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#include "components/policy/core/browser/browser_policy_connector.h"
+#if !defined(OS_IOS)
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#endif
 #endif
 
 BrowserProcessPlatformPartBase::BrowserProcessPlatformPartBase() {
@@ -40,7 +43,12 @@ void BrowserProcessPlatformPartBase::PreMainMessageLoopRun() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
 scoped_ptr<policy::BrowserPolicyConnector>
 BrowserProcessPlatformPartBase::CreateBrowserPolicyConnector() {
+#if defined(OS_IOS)
+  NOTREACHED();
+  return scoped_ptr<policy::BrowserPolicyConnector>();
+#else
   return scoped_ptr<policy::BrowserPolicyConnector>(
       new policy::ChromeBrowserPolicyConnector());
+#endif
 }
 #endif

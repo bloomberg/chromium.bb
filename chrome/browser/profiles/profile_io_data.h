@@ -495,10 +495,9 @@ class ProfileIOData {
   BooleanPrefMember enable_metrics_;
 #endif
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
   // Pointed to by NetworkDelegate.
   mutable scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
   mutable scoped_ptr<policy::PolicyHeaderIOHelper> policy_header_helper_;
 #endif
 

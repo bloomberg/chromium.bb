@@ -6,7 +6,7 @@
 
 #include "url/gurl.h"
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_IOS)
 #include "chrome/browser/signin/signin_manager.h"
 #include "google_apis/gaia/gaia_urls.h"
 #endif
@@ -14,7 +14,7 @@
 namespace policy {
 
 bool SkipBlacklistForURL(const GURL& url) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_IOS)
   return false;
 #else
   static const char kServiceLoginAuth[] = "/ServiceLoginAuth";
