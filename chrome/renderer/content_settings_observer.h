@@ -101,8 +101,7 @@ class ContentSettingsObserver
 
   // RenderFrameObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
-                                        bool is_new_navigation) OVERRIDE;
+  virtual void DidCommitProvisionalLoad(bool is_new_navigation) OVERRIDE;
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);

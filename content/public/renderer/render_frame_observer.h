@@ -34,8 +34,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
 
   // These match the Blink API notifications
-  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
-                                        bool is_new_navigation) {}
+  virtual void DidCommitProvisionalLoad(bool is_new_navigation) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -946,7 +946,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,
   render_view_->didCommitProvisionalLoad(frame, is_new_navigation);
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidCommitProvisionalLoad(frame, is_new_navigation));
+                    DidCommitProvisionalLoad(is_new_navigation));
 }
 
 void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame,

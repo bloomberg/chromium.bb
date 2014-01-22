@@ -208,8 +208,8 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void ContentSettingsObserver::DidCommitProvisionalLoad(
-    WebFrame* frame, bool is_new_navigation) {
+void ContentSettingsObserver::DidCommitProvisionalLoad(bool is_new_navigation) {
+  WebFrame* frame = render_frame()->GetWebFrame();
   if (frame->parent())
     return;  // Not a top-level navigation.
 
