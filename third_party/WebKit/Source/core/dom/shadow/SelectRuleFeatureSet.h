@@ -48,8 +48,6 @@ public:
     bool hasSelectorForClass(const AtomicString&) const;
     bool hasSelectorForAttribute(const AtomicString&) const;
 
-    const RuleSetAnalyzer* ruleSetAnalyzer() const;
-
     bool hasSelectorForChecked() const { return hasSelectorFor(AffectedSelectorChecked); }
     bool hasSelectorForEnabled() const { return hasSelectorFor(AffectedSelectorEnabled); }
     bool hasSelectorForDisabled() const { return hasSelectorFor(AffectedSelectorDisabled); }
@@ -66,12 +64,6 @@ private:
     RuleFeatureSet m_cssRuleFeatureSet;
     int m_featureFlags;
 };
-
-// FIXME: make the shadow DOM smarter about analyzing select rules.
-inline const RuleSetAnalyzer* SelectRuleFeatureSet::ruleSetAnalyzer() const
-{
-    return 0;
-}
 
 inline bool SelectRuleFeatureSet::hasSelectorForId(const AtomicString& idValue) const
 {

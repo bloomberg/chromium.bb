@@ -39,7 +39,6 @@
 #include "core/css/SelectorFilter.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/analyzer/RuleSetAnalyzer.h"
 #include "core/html/track/TextTrackCue.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -270,7 +269,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& rule
 void RuleSet::addRule(StyleRule* rule, unsigned selectorIndex, AddRuleFlags addRuleFlags)
 {
     RuleData ruleData(rule, selectorIndex, m_ruleCount++, addRuleFlags);
-    m_features.ensureRuleSetAnalyzer().collectFeaturesFromRuleData(m_features, ruleData);
+    m_features.collectFeaturesFromRuleData(ruleData);
 
     if (!findBestRuleSetAndAdd(ruleData.selector(), ruleData)) {
         // If we didn't find a specialized map to stick it in, file under universal rules.

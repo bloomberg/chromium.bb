@@ -22,7 +22,7 @@
 #ifndef RuleFeature_h
 #define RuleFeature_h
 
-#include "core/css/analyzer/RuleSetAnalyzer.h"
+#include "core/css/analyzer/DescendantInvalidationSet.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -32,6 +32,7 @@ namespace WebCore {
 class StyleRule;
 class CSSSelector;
 class CSSSelectorList;
+class RuleData;
 
 struct RuleFeature {
     RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocumentSecurityOrigin)
@@ -56,6 +57,7 @@ public:
     void clear();
 
     void collectFeaturesFromSelector(const CSSSelector*);
+    void collectFeaturesFromRuleData(const RuleData&);
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
@@ -81,22 +83,25 @@ public:
         return idsInRules.contains(idValue);
     }
 
-    const RuleSetAnalyzer* ruleSetAnalyzer() const;
-    RuleSetAnalyzer& ensureRuleSetAnalyzer();
-
-    // FIXME: move this stuff into the rule set analyzer.
     HashSet<AtomicString> idsInRules;
     HashSet<AtomicString> classesInRules;
     HashSet<AtomicString> attrsInRules;
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
-private:
-    RefPtr<RuleSetAnalyzer> m_ruleSetAnalyzer;
 
+private:
     void collectFeaturesFromSelectorList(const CSSSelectorList*);
 
     bool m_usesFirstLineRules;
     unsigned m_maxDirectAdjacentSelectors;
+
+    typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
+
+    DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
+
+    bool updateClassInvalidationSets(const CSSSelector*);
+
+    InvalidationSetMap m_classInvalidationSets;
 };
 
 } // namespace WebCore

@@ -827,8 +827,6 @@
             'css/TreeBoundaryCrossingRules.h',
             'css/analyzer/DescendantInvalidationSet.h',
             'css/analyzer/DescendantInvalidationSet.cpp',
-            'css/analyzer/RuleSetAnalyzer.h',
-            'css/analyzer/RuleSetAnalyzer.cpp',
             'css/resolver/AnimatedStyleBuilder.cpp',
             'css/resolver/AnimatedStyleBuilder.h',
             'css/resolver/CSSToStyleMap.cpp',

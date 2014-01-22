@@ -36,6 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 
