@@ -67,7 +67,7 @@ public:
         return m_type;
     }
 
-    SVGElement* contextElement()
+    SVGElement* contextElement() const
     {
         return m_contextElement;
     }
@@ -91,6 +91,8 @@ public:
     {
         m_isReadOnly = true;
     }
+
+    bool isSpecified() const;
 
 protected:
     NewSVGAnimatedPropertyBase(AnimatedPropertyType, SVGElement*, const QualifiedName& attributeName);

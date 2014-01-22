@@ -103,6 +103,14 @@ const SVGPropertyInfo* OwnerType::LowerProperty##PropertyInfo() { \
                          &OwnerType::lookupOrCreate##UpperProperty##Wrapper)); \
     return &s_propertyInfo; \
 } \
+bool OwnerType::LowerProperty##Specified() const \
+{ \
+    if (TearOffType* wrapper = SVGAnimatedProperty::lookupWrapper<UseOwnerType, TearOffType>(this, LowerProperty##PropertyInfo())) { \
+        if (wrapper->isAnimating()) \
+            return true; \
+    } \
+    return hasAttribute(SVGDOMAttributeIdentifier); \
+} \
 PropertyType& OwnerType::LowerProperty##CurrentValue() const \
 { \
     if (TearOffType* wrapper = SVGAnimatedProperty::lookupWrapper<UseOwnerType, TearOffType>(this, LowerProperty##PropertyInfo())) { \
@@ -161,6 +169,7 @@ public: \
 #define DECLARE_ANIMATED_PROPERTY(TearOffType, PropertyType, UpperProperty, LowerProperty) \
 public: \
     static const SVGPropertyInfo* LowerProperty##PropertyInfo(); \
+    bool LowerProperty##Specified() const; \
     PropertyType& LowerProperty##CurrentValue() const; \
     PropertyType& LowerProperty##BaseValue() const; \
     void set##UpperProperty##BaseValue(const PropertyType& type); \

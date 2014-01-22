@@ -168,31 +168,31 @@ RenderObject* SVGPatternElement::createRenderer(RenderStyle*)
 
 static void setPatternAttributes(const SVGPatternElement* element, PatternAttributes& attributes)
 {
-    if (!attributes.hasX() && element->hasAttribute(SVGNames::xAttr))
+    if (!attributes.hasX() && element->x()->isSpecified())
         attributes.setX(element->x()->currentValue());
 
-    if (!attributes.hasY() && element->hasAttribute(SVGNames::yAttr))
+    if (!attributes.hasY() && element->y()->isSpecified())
         attributes.setY(element->y()->currentValue());
 
-    if (!attributes.hasWidth() && element->hasAttribute(SVGNames::widthAttr))
+    if (!attributes.hasWidth() && element->width()->isSpecified())
         attributes.setWidth(element->width()->currentValue());
 
-    if (!attributes.hasHeight() && element->hasAttribute(SVGNames::heightAttr))
+    if (!attributes.hasHeight() && element->height()->isSpecified())
         attributes.setHeight(element->height()->currentValue());
 
-    if (!attributes.hasViewBox() && element->hasAttribute(SVGNames::viewBoxAttr) && element->viewBox()->currentValue()->isValid())
+    if (!attributes.hasViewBox() && element->viewBox()->isSpecified() && element->viewBox()->currentValue()->isValid())
         attributes.setViewBox(element->viewBox()->currentValue()->value());
 
-    if (!attributes.hasPreserveAspectRatio() && element->hasAttribute(SVGNames::preserveAspectRatioAttr))
+    if (!attributes.hasPreserveAspectRatio() && element->preserveAspectRatioSpecified())
         attributes.setPreserveAspectRatio(element->preserveAspectRatioCurrentValue());
 
-    if (!attributes.hasPatternUnits() && element->hasAttribute(SVGNames::patternUnitsAttr))
+    if (!attributes.hasPatternUnits() && element->patternUnitsSpecified())
         attributes.setPatternUnits(element->patternUnitsCurrentValue());
 
-    if (!attributes.hasPatternContentUnits() && element->hasAttribute(SVGNames::patternContentUnitsAttr))
+    if (!attributes.hasPatternContentUnits() && element->patternContentUnitsSpecified())
         attributes.setPatternContentUnits(element->patternContentUnitsCurrentValue());
 
-    if (!attributes.hasPatternTransform() && element->hasAttribute(SVGNames::patternTransformAttr)) {
+    if (!attributes.hasPatternTransform() && element->patternTransformSpecified()) {
         AffineTransform transform;
         element->patternTransformCurrentValue().concatenate(transform);
         attributes.setPatternTransform(transform);

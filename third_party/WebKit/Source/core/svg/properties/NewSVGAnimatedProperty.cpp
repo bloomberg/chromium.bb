@@ -81,6 +81,11 @@ void NewSVGAnimatedPropertyBase::synchronizeAttribute()
     m_contextElement->setSynchronizedLazyAttribute(m_attributeName, value);
 }
 
+bool NewSVGAnimatedPropertyBase::isSpecified() const
+{
+    return isAnimating() || contextElement()->hasAttribute(attributeName());
+}
+
 void NewSVGAnimatedPropertyBase::commitChange()
 {
     contextElement()->invalidateSVGAttributes();

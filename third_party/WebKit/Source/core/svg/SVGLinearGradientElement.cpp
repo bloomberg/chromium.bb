@@ -117,13 +117,13 @@ RenderObject* SVGLinearGradientElement::createRenderer(RenderStyle*)
 
 static void setGradientAttributes(SVGGradientElement* element, LinearGradientAttributes& attributes, bool isLinear = true)
 {
-    if (!attributes.hasSpreadMethod() && element->hasAttribute(SVGNames::spreadMethodAttr))
+    if (!attributes.hasSpreadMethod() && element->spreadMethodSpecified())
         attributes.setSpreadMethod(element->spreadMethodCurrentValue());
 
-    if (!attributes.hasGradientUnits() && element->hasAttribute(SVGNames::gradientUnitsAttr))
+    if (!attributes.hasGradientUnits() && element->gradientUnitsSpecified())
         attributes.setGradientUnits(element->gradientUnitsCurrentValue());
 
-    if (!attributes.hasGradientTransform() && element->hasAttribute(SVGNames::gradientTransformAttr)) {
+    if (!attributes.hasGradientTransform() && element->gradientTransformSpecified()) {
         AffineTransform transform;
         element->gradientTransformCurrentValue().concatenate(transform);
         attributes.setGradientTransform(transform);
@@ -138,16 +138,16 @@ static void setGradientAttributes(SVGGradientElement* element, LinearGradientAtt
     if (isLinear) {
         SVGLinearGradientElement* linear = toSVGLinearGradientElement(element);
 
-        if (!attributes.hasX1() && element->hasAttribute(SVGNames::x1Attr))
+        if (!attributes.hasX1() && linear->x1()->isSpecified())
             attributes.setX1(linear->x1()->currentValue());
 
-        if (!attributes.hasY1() && element->hasAttribute(SVGNames::y1Attr))
+        if (!attributes.hasY1() && linear->y1()->isSpecified())
             attributes.setY1(linear->y1()->currentValue());
 
-        if (!attributes.hasX2() && element->hasAttribute(SVGNames::x2Attr))
+        if (!attributes.hasX2() && linear->x2()->isSpecified())
             attributes.setX2(linear->x2()->currentValue());
 
-        if (!attributes.hasY2() && element->hasAttribute(SVGNames::y2Attr))
+        if (!attributes.hasY2() && linear->y2()->isSpecified())
             attributes.setY2(linear->y2()->currentValue());
     }
 }

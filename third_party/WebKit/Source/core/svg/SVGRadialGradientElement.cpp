@@ -132,13 +132,13 @@ RenderObject* SVGRadialGradientElement::createRenderer(RenderStyle*)
 
 static void setGradientAttributes(SVGGradientElement* element, RadialGradientAttributes& attributes, bool isRadial = true)
 {
-    if (!attributes.hasSpreadMethod() && element->hasAttribute(SVGNames::spreadMethodAttr))
+    if (!attributes.hasSpreadMethod() && element->spreadMethodSpecified())
         attributes.setSpreadMethod(element->spreadMethodCurrentValue());
 
-    if (!attributes.hasGradientUnits() && element->hasAttribute(SVGNames::gradientUnitsAttr))
+    if (!attributes.hasGradientUnits() && element->gradientUnitsSpecified())
         attributes.setGradientUnits(element->gradientUnitsCurrentValue());
 
-    if (!attributes.hasGradientTransform() && element->hasAttribute(SVGNames::gradientTransformAttr)) {
+    if (!attributes.hasGradientTransform() && element->gradientTransformSpecified()) {
         AffineTransform transform;
         element->gradientTransformCurrentValue().concatenate(transform);
         attributes.setGradientTransform(transform);
@@ -153,22 +153,22 @@ static void setGradientAttributes(SVGGradientElement* element, RadialGradientAtt
     if (isRadial) {
         SVGRadialGradientElement* radial = toSVGRadialGradientElement(element);
 
-        if (!attributes.hasCx() && element->hasAttribute(SVGNames::cxAttr))
+        if (!attributes.hasCx() && radial->cx()->isSpecified())
             attributes.setCx(radial->cx()->currentValue());
 
-        if (!attributes.hasCy() && element->hasAttribute(SVGNames::cyAttr))
+        if (!attributes.hasCy() && radial->cy()->isSpecified())
             attributes.setCy(radial->cy()->currentValue());
 
-        if (!attributes.hasR() && element->hasAttribute(SVGNames::rAttr))
+        if (!attributes.hasR() && radial->r()->isSpecified())
             attributes.setR(radial->r()->currentValue());
 
-        if (!attributes.hasFx() && element->hasAttribute(SVGNames::fxAttr))
+        if (!attributes.hasFx() && radial->fx()->isSpecified())
             attributes.setFx(radial->fx()->currentValue());
 
-        if (!attributes.hasFy() && element->hasAttribute(SVGNames::fyAttr))
+        if (!attributes.hasFy() && radial->fy()->isSpecified())
             attributes.setFy(radial->fy()->currentValue());
 
-        if (!attributes.hasFr() && element->hasAttribute(SVGNames::frAttr))
+        if (!attributes.hasFr() && radial->fr()->isSpecified())
             attributes.setFr(radial->fr()->currentValue());
     }
 }
