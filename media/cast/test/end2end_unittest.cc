@@ -322,8 +322,8 @@ class TestReceiverVideoCallback :
   std::list<ExpectedVideoFrame> expected_frame_;
 };
 
-CastLoggingConfig EnableCastLoggingConfig() {
-  CastLoggingConfig config;
+CastLoggingConfig EnableCastLoggingConfig(bool sender) {
+  CastLoggingConfig config(sender);
   config.enable_raw_data_collection = true;
   config.enable_stats_data_collection = true;
   return config;
@@ -334,12 +334,15 @@ class End2EndTest : public ::testing::Test {
  protected:
   End2EndTest()
       : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
+        cast_environment_sender_(new CastEnvironment(&testing_clock_,
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, EnableCastLoggingConfig())),
+            task_runner_, task_runner_, EnableCastLoggingConfig(true))),
+        cast_environment_receiver_(new CastEnvironment(&testing_clock_,
+            task_runner_, task_runner_, task_runner_, task_runner_,
+            task_runner_, task_runner_, EnableCastLoggingConfig(false))),
         start_time_(),
-        sender_to_receiver_(cast_environment_),
-        receiver_to_sender_(cast_environment_),
+        sender_to_receiver_(cast_environment_sender_),
+        receiver_to_sender_(cast_environment_receiver_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
         test_receiver_video_callback_(new TestReceiverVideoCallback()) {
     testing_clock_.Advance(
@@ -402,10 +405,13 @@ class End2EndTest : public ::testing::Test {
   }
 
   void Create() {
-    cast_receiver_.reset(CastReceiver::CreateCastReceiver(cast_environment_,
-        audio_receiver_config_, video_receiver_config_, &receiver_to_sender_));
+    cast_receiver_.reset(CastReceiver::CreateCastReceiver(
+        cast_environment_receiver_,
+        audio_receiver_config_,
+        video_receiver_config_,
+        &receiver_to_sender_));
 
-    cast_sender_.reset(CastSender::CreateCastSender(cast_environment_,
+    cast_sender_.reset(CastSender::CreateCastSender(cast_environment_sender_,
                                                     audio_sender_config_,
                                                     video_sender_config_,
                                                     NULL,
@@ -455,7 +461,8 @@ class End2EndTest : public ::testing::Test {
 
   base::SimpleTestTickClock testing_clock_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
-  scoped_refptr<CastEnvironment> cast_environment_;
+  scoped_refptr<CastEnvironment> cast_environment_sender_;
+  scoped_refptr<CastEnvironment> cast_environment_receiver_;
   base::TimeTicks start_time_;
 
   LoopBackTransport sender_to_receiver_;
@@ -933,44 +940,83 @@ TEST_F(End2EndTest, VideoLogging) {
   // Basic tests.
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
   EXPECT_EQ(i, test_receiver_video_callback_->number_times_called());
-  // Logging tests.
-  LoggingImpl* logging = cast_environment_->Logging();
 
-  // Frame logging.
+  // Sender logging tests.
+  LoggingImpl* sender_log = cast_environment_sender_->Logging();
 
   // Verify that all frames and all required events were logged.
-  FrameRawMap frame_raw_log = logging->GetFrameRawData();
+  FrameRawMap frame_raw_log = sender_log->GetFrameRawData();
+
   // Every frame should have only one entry.
   EXPECT_EQ(static_cast<unsigned int>(i), frame_raw_log.size());
   FrameRawMap::const_iterator frame_it = frame_raw_log.begin();
+
   // Choose a video frame, and verify that all events were logged.
   std::vector<CastLoggingEvent> event_log = frame_it->second.type;
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kVideoFrameReceived)) != event_log.end());
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kVideoFrameSentToEncoder)) != event_log.end());
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kVideoFrameEncoded)) != event_log.end());
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kVideoRenderDelay)) != event_log.end());
+  std::vector<CastLoggingEvent>::iterator event_it;
+  event_it = std::find(event_log.begin(), event_log.end(),
+                       kVideoFrameSentToEncoder);
+  EXPECT_TRUE(event_it != event_log.end());
+  event_log.erase(event_it);
+
+  event_it = std::find(event_log.begin(), event_log.end(),
+                       kVideoFrameEncoded);
+  EXPECT_TRUE(event_it != event_log.end());
+  event_log.erase(event_it);
+
+  event_it = std::find(event_log.begin(), event_log.end(),
+                       kVideoFrameReceived);
+  EXPECT_TRUE(event_it != event_log.end());
+  event_log.erase(event_it);
+
+  event_it = std::find(event_log.begin(), event_log.end(),
+                       kVideoRenderDelay);
+  EXPECT_TRUE(event_it != event_log.end());
+  event_log.erase(event_it);
+
   // TODO(mikhal): Plumb this one through.
-  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kVideoFrameDecoded)) == event_log.end());
+  event_it = std::find(event_log.begin(), event_log.end(),
+                       kVideoFrameDecoded);
+  EXPECT_TRUE(event_it == event_log.end());
+
   // Verify that there were no other events logged with respect to this frame.
-  EXPECT_EQ(4u, event_log.size());
+  EXPECT_EQ(0u, event_log.size());
 
   // Packet logging.
   // Verify that all packet related events were logged.
-  PacketRawMap packet_raw_log = logging->GetPacketRawData();
+  PacketRawMap packet_raw_log = sender_log->GetPacketRawData();
   // Every rtp_timestamp should have only one entry.
   EXPECT_EQ(static_cast<unsigned int>(i), packet_raw_log.size());
   PacketRawMap::const_iterator packet_it = packet_raw_log.begin();
   // Choose a packet, and verify that all events were logged.
   event_log = (++(packet_it->second.packet_map.begin()))->second.type;
   EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
-               kPacketReceived)) != event_log.end());
+               kVideoPacketReceived)) != event_log.end());
   // Verify that there were no other events logged with respect to this frame.
   EXPECT_EQ(1u, event_log.size());
+
+  RunTasks(750);  // Make sure that we send a RTCP message with the log.
+
+  // Receiver logging tests.
+  LoggingImpl* receiver_log = cast_environment_receiver_->Logging();
+
+  // Verify that all frames and all required events were logged.
+  frame_raw_log = receiver_log->GetFrameRawData();
+  EXPECT_EQ(static_cast<unsigned int>(i), frame_raw_log.size());
+  frame_it = frame_raw_log.begin();
+
+  // Choose a video frame, and verify that all events were logged.
+  event_log = frame_it->second.type;
+
+  event_it = std::find(event_log.begin(), event_log.end(),
+                       kVideoFrameEncoded);
+  EXPECT_TRUE(event_it != event_log.end());
+
+  event_it = std::find(event_log.begin(), event_log.end(),
+                       kVideoRenderDelay);
+
+  EXPECT_TRUE(event_it != event_log.end());
+  EXPECT_EQ(2u, event_log.size());
 }
 
 // TODO(mikhal): Crashes on the bots. Re-enable. http://crbug.com/329563
@@ -1030,9 +1076,9 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
   //EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
   EXPECT_EQ(i - 1, test_receiver_audio_callback_->number_times_called());
   // Logging tests.
-  LoggingImpl* logging = cast_environment_->Logging();
+  LoggingImpl* sender_log = cast_environment_sender_->Logging();
   // Verify that all frames and all required events were logged.
-  FrameRawMap frame_raw_log = logging->GetFrameRawData();
+  FrameRawMap frame_raw_log = sender_log->GetFrameRawData();
   // TODO(mikhal): Results are wrong. Need to resolve passing/calculation of
   // rtp_timestamp for audio for this to work.
   // Should have logged both audio and video. Every frame should have only one

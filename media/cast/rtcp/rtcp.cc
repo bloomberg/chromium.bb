@@ -98,13 +98,15 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
           it->event_log_messages_.begin();
       for (; event_it != it->event_log_messages_.end(); ++event_it) {
         switch (event_it->type) {
-          case kPacketReceived:
+          case kAudioPacketReceived:
+          case kVideoPacketReceived:
           case kDuplicatePacketReceived:
             cast_environment_->Logging()->InsertPacketEvent(
                 event_it->event_timestamp, event_it->type, rtp_timestamp,
                 kFrameIdUnknown, event_it->packet_id, 0, 0);
             break;
-          case kAckSent:
+          case kAudioAckSent:
+          case kVideoAckSent:
           case kAudioFrameDecoded:
           case kVideoFrameDecoded:
             cast_environment_->Logging()->InsertFrameEvent(
@@ -260,8 +262,6 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
 
   if (cast_message) {
     packet_type_flags |= RtcpSender::kRtcpCast;
-    cast_environment_->Logging()->InsertGenericEvent(now, kAckSent,
-        cast_message->ack_frame_id_);
   }
   if (receiver_log) {
     packet_type_flags |= RtcpSender::kRtcpReceiverLog;
@@ -281,7 +281,6 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
           report_block.jitter);
       cast_environment_->Logging()->InsertGenericEvent(now, kPacketLoss,
           report_block.fraction_lost);
-
     }
 
     report_block.last_sr = last_report_received_;

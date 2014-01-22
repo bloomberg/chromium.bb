@@ -78,7 +78,7 @@ class EncodeDecodeTest : public ::testing::Test {
         // video decoder and main threads.
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
             NULL, NULL, NULL, task_runner_, NULL,
-            GetDefaultCastLoggingConfig())),
+            GetDefaultCastReceiverLoggingConfig())),
         test_callback_(new EncodeDecodeTestFrameCallback()) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));

@@ -95,7 +95,7 @@ class RtcpReceiverCastLogVerification : public RtcpReceiverFeedback {
         EXPECT_EQ(event_expected_it->type, event_incoming_it->type);
         EXPECT_EQ(event_expected_it->event_timestamp,
                   event_incoming_it->event_timestamp);
-        if (event_expected_it->type == kPacketReceived) {
+        if (event_expected_it->type == kVideoPacketReceived) {
           EXPECT_EQ(event_expected_it->packet_id, event_incoming_it->packet_id);
         } else {
           EXPECT_EQ(event_expected_it->delay_delta,
@@ -156,7 +156,7 @@ class RtcpReceiverTest : public ::testing::Test {
       : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, GetDefaultCastLoggingConfig())),
+            task_runner_, GetDefaultCastReceiverLoggingConfig())),
         rtcp_receiver_(new RtcpReceiver(cast_environment_,
                                         &mock_sender_feedback_,
                                         &mock_receiver_feedback_,
@@ -502,13 +502,13 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
   RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
   RtcpReceiverEventLogMessage event_log;
 
-  event_log.type = kAckSent;
+  event_log.type = kVideoAckSent;
   event_log.event_timestamp = testing_clock.NowTicks();
   event_log.delay_delta = base::TimeDelta::FromMilliseconds(kDelayDeltaMs);
   frame_log.event_log_messages_.push_back(event_log);
 
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeDelayMs));
-  event_log.type = kPacketReceived;
+  event_log.type = kVideoPacketReceived;
   event_log.event_timestamp = testing_clock.NowTicks();
   event_log.packet_id = kLostPacketId1;
   frame_log.event_log_messages_.push_back(event_log);
@@ -521,8 +521,8 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationBase) {
   p.AddRb(kSourceSsrc);
   p.AddReceiverLog(kSenderSsrc);
   p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
-  p.AddReceiverEventLog(kDelayDeltaMs, 1, 0);
-  p.AddReceiverEventLog(kLostPacketId1, 6, kTimeDelayMs);
+  p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
+  p.AddReceiverEventLog(kLostPacketId1, 8, kTimeDelayMs);
 
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc, kLastSr, kDelayLastSr)).
@@ -554,7 +554,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   for (int j = 0; j < 100; ++j) {
     RtcpReceiverFrameLogMessage frame_log(kRtpTimestamp);
     RtcpReceiverEventLogMessage event_log;
-    event_log.type = kAckSent;
+    event_log.type = kVideoAckSent;
     event_log.event_timestamp = testing_clock.NowTicks();
     event_log.delay_delta = base::TimeDelta::FromMilliseconds(kDelayDeltaMs);
     frame_log.event_log_messages_.push_back(event_log);
@@ -570,7 +570,7 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
   p.AddReceiverLog(kSenderSsrc);
   for (int i = 0; i < 100; ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp, 1, kTimeBaseMs +  i * kTimeDelayMs);
-    p.AddReceiverEventLog(kDelayDeltaMs, 1, 0);
+    p.AddReceiverEventLog(kDelayDeltaMs, 5, 0);
   }
 
   EXPECT_CALL(mock_rtt_feedback_,

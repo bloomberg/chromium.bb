@@ -13,18 +13,22 @@ namespace {
 media::cast::CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event) {
   switch (event) {
     case 1:
-      return media::cast::kAckSent;
+      return media::cast::kAudioAckSent;
     case 2:
       return media::cast::kAudioPlayoutDelay;
     case 3:
       return media::cast::kAudioFrameDecoded;
     case 4:
-      return media::cast::kVideoFrameDecoded;
+      return media::cast::kAudioPacketReceived;
     case 5:
-      return media::cast::kVideoRenderDelay;
+      return media::cast::kVideoAckSent;
     case 6:
-      return media::cast::kPacketReceived;
+      return media::cast::kVideoFrameDecoded;
     case 7:
+      return media::cast::kVideoRenderDelay;
+    case 8:
+      return media::cast::kVideoPacketReceived;
+    case 9:
       return media::cast::kDuplicatePacketReceived;
     default:
       // If the sender adds new log messages we will end up here until we add

@@ -104,7 +104,7 @@ class RtcpTest : public ::testing::Test {
       : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, GetDefaultCastLoggingConfig())),
+            task_runner_, GetDefaultCastSenderLoggingConfig())),
         transport_(cast_environment_, &testing_clock_) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));

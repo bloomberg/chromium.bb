@@ -166,7 +166,7 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
     render_.RenderFrame(video_frame);
 #endif // OS_LINUX
     // Print out the delta between frames.
-    if (!last_render_time_.is_null()){
+    if (!last_render_time_.is_null()) {
         base::TimeDelta time_diff = render_time - last_render_time_;
         VLOG(0) << " RenderDelay[mS] =  " << time_diff.InMilliseconds();
     }
@@ -180,7 +180,7 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
     // Default diff time is kFrameTimerMs.
     base::TimeDelta time_diff =
         base::TimeDelta::FromMilliseconds(kFrameTimerMs);
-    if (!last_playout_time_.is_null()){
+    if (!last_playout_time_.is_null()) {
         time_diff = playout_time - last_playout_time_;
         VLOG(0) << " ***PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
@@ -225,14 +225,15 @@ int main(int argc, char** argv) {
   base::DefaultTickClock clock;
   // Enable receiver side threads, and disable logging.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
-      media::cast::CastEnvironment(&clock,
-                                   main_message_loop.message_loop_proxy(),
-                                   NULL,
-                                   audio_thread.message_loop_proxy(),
-                                   NULL,
-                                   video_thread.message_loop_proxy(),
-                                   main_message_loop.message_loop_proxy(),
-                                   media::cast::GetDefaultCastLoggingConfig()));
+      media::cast::CastEnvironment(
+          &clock,
+          main_message_loop.message_loop_proxy(),
+          NULL,
+          audio_thread.message_loop_proxy(),
+          NULL,
+          video_thread.message_loop_proxy(),
+          main_message_loop.message_loop_proxy(),
+          media::cast::GetDefaultCastReceiverLoggingConfig()));
 
   media::cast::AudioReceiverConfig audio_config =
       media::cast::GetAudioReceiverConfig();

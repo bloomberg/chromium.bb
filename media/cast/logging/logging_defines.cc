@@ -9,16 +9,22 @@
 namespace media {
 namespace cast {
 
-CastLoggingConfig::CastLoggingConfig()
-    : enable_raw_data_collection(false),
+CastLoggingConfig::CastLoggingConfig(bool sender)
+    : is_sender(sender),
+      enable_raw_data_collection(false),
       enable_stats_data_collection(false),
       enable_uma_stats(false),
       enable_tracing(false) {}
 
 CastLoggingConfig::~CastLoggingConfig() {}
 
-CastLoggingConfig GetDefaultCastLoggingConfig() {
-  CastLoggingConfig config;
+CastLoggingConfig GetDefaultCastSenderLoggingConfig() {
+  CastLoggingConfig config(true);
+  return config;
+}
+
+CastLoggingConfig GetDefaultCastReceiverLoggingConfig() {
+  CastLoggingConfig config(false);
   return config;
 }
 
@@ -34,12 +40,14 @@ std::string CastLoggingToString(CastLoggingEvent event) {
       return "PacketLoss";
     case(kJitterMs):
       return "JitterMs";
-    case(kAckReceived):
-      return "AckReceived";
+    case(kVideoAckReceived):
+      return "VideoAckReceived";
     case(kRembBitrate):
       return "RembBitrate";
-    case(kAckSent):
-      return "AckSent";
+    case(kAudioAckSent):
+      return "AudioAckSent";
+    case(kVideoAckSent):
+      return "VideoAckSent";
     case(kAudioFrameReceived):
       return "AudioFrameReceived";
     case(kAudioFrameCaptured):
@@ -68,8 +76,10 @@ std::string CastLoggingToString(CastLoggingEvent event) {
       return "PacketSentToNetwork";
     case(kPacketRetransmitted):
       return "PacketRetransmited";
-    case(kPacketReceived):
-      return "PacketReceived";
+    case(kAudioPacketReceived):
+      return "AudioPacketReceived";
+    case(kVideoPacketReceived):
+      return "VideoPacketReceived";
     case(kDuplicatePacketReceived):
       return "DuplicatePacketReceived";
     default:
@@ -89,6 +99,9 @@ PacketEvent::~PacketEvent() {}
 
 GenericEvent::GenericEvent() {}
 GenericEvent::~GenericEvent() {}
+
+ReceiverRtcpEvent::ReceiverRtcpEvent() {}
+ReceiverRtcpEvent::~ReceiverRtcpEvent() {}
 
 FrameLogStats::FrameLogStats()
     : framerate_fps(0),

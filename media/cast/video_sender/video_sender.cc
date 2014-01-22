@@ -226,20 +226,18 @@ void VideoSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   transport::RtcpSenderLogMessage sender_log_message;
-  const FrameRawMap& frame_raw_map =
-      cast_environment_->Logging()->GetFrameRawData();
+  VideoRtcpRawMap video_logs =
+      cast_environment_->Logging()->GetVideoRtcpRawData();
 
-  FrameRawMap::const_iterator it = frame_raw_map.begin();
-  while (it != frame_raw_map.end()) {
+  while (!video_logs.empty()) {
+    VideoRtcpRawMap::iterator it = video_logs.begin();
+    uint32 rtp_timestamp = it->first;
+
     transport::RtcpSenderFrameLogMessage frame_message;
-    frame_message.rtp_timestamp = it->first;
+    frame_message.rtp_timestamp = rtp_timestamp;
     frame_message.frame_status = transport::kRtcpSenderFrameStatusUnknown;
-    if (it->second.type.empty()) {
-      ++it;
-      continue;
-    }
-    CastLoggingEvent last_event = it->second.type.back();
-    switch (last_event) {
+
+    switch (it->second.type) {
       case kVideoFrameCaptured:
         frame_message.frame_status =
             transport::kRtcpSenderFrameStatusDroppedByFlowControl;
@@ -253,28 +251,16 @@ void VideoSender::SendRtcpReport() {
             transport::kRtcpSenderFrameStatusSentToNetwork;
         break;
       default:
-        ++it;
-        continue;
-    }
-    ++it;
-    if (it == frame_raw_map.end()) {
-      // Last message on our map; only send if it is kVideoFrameEncoded.
-      if (last_event != kVideoFrameEncoded) {
-        // For other events we will wait for it to finish and report the result
-        // in the next report.
+        NOTREACHED();
         break;
-      }
     }
+    video_logs.erase(rtp_timestamp);
     sender_log_message.push_back(frame_message);
   }
   rtcp_->SendRtcpFromRtpSender(&sender_log_message);
   if (!sender_log_message.empty()) {
     VLOG(1) << "Failed to send all log messages";
   }
-
-  // TODO(pwestin): When we start pulling out the logging by other means we need
-  // to synchronize this.
-  cast_environment_->Logging()->ResetRaw();
   ScheduleNextRtcpReport();
 }
 
@@ -415,7 +401,7 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertGenericEvent(now, kAckReceived,
+  cast_environment_->Logging()->InsertGenericEvent(now, kVideoAckReceived,
                                                    acked_frame_id);
   VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;

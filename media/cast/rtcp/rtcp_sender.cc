@@ -32,7 +32,7 @@ uint16 MergeEventTypeAndTimestampForWireFormat(
 
   uint16 event_type = 0;
   switch (event) {
-    case media::cast::kAckSent:
+    case media::cast::kAudioAckSent:
       event_type = 1;
       break;
     case media::cast::kAudioPlayoutDelay:
@@ -41,17 +41,23 @@ uint16 MergeEventTypeAndTimestampForWireFormat(
     case media::cast::kAudioFrameDecoded:
       event_type = 3;
       break;
-    case media::cast::kVideoFrameDecoded:
+    case media::cast::kAudioPacketReceived:
       event_type = 4;
       break;
-    case media::cast::kVideoRenderDelay:
+    case media::cast::kVideoAckSent:
       event_type = 5;
       break;
-    case media::cast::kPacketReceived:
+    case media::cast::kVideoFrameDecoded:
       event_type = 6;
       break;
-    case media::cast::kDuplicatePacketReceived:
+    case media::cast::kVideoRenderDelay:
       event_type = 7;
+      break;
+    case media::cast::kVideoPacketReceived:
+      event_type = 8;
+      break;
+    case media::cast::kDuplicatePacketReceived:
+      event_type = 9;
       break;
     default:
       NOTREACHED();
@@ -630,7 +636,8 @@ void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
           MergeEventTypeAndTimestampForWireFormat(event_message.type,
           event_message.event_timestamp - event_timestamp_base);
       switch (event_message.type) {
-        case kAckSent:
+        case kAudioAckSent:
+        case kVideoAckSent:
         case kAudioPlayoutDelay:
         case kAudioFrameDecoded:
         case kVideoFrameDecoded:
@@ -639,7 +646,8 @@ void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
               event_message.delay_delta.InMilliseconds()));
           big_endian_writer.WriteU16(event_type_and_timestamp_delta);
           break;
-        case kPacketReceived:
+        case kAudioPacketReceived:
+        case kVideoPacketReceived:
         case kDuplicatePacketReceived:
           big_endian_writer.WriteU16(event_message.packet_id);
           big_endian_writer.WriteU16(event_type_and_timestamp_delta);

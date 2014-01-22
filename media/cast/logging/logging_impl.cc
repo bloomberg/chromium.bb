@@ -14,7 +14,7 @@ LoggingImpl::LoggingImpl(scoped_refptr<base::TaskRunner> main_thread_proxy,
                          const CastLoggingConfig& config)
     : main_thread_proxy_(main_thread_proxy),
       config_(config),
-      raw_(),
+      raw_(config.is_sender),
       stats_() {}
 
 LoggingImpl::~LoggingImpl() {}
@@ -196,6 +196,16 @@ PacketRawMap LoggingImpl::GetPacketRawData() {
 GenericRawMap LoggingImpl::GetGenericRawData() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   return raw_.GetGenericData();
+}
+
+AudioRtcpRawMap LoggingImpl::GetAudioRtcpRawData() {
+  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  return raw_.GetAndResetAudioRtcpData();
+}
+
+VideoRtcpRawMap LoggingImpl::GetVideoRtcpRawData() {
+  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  return raw_.GetAndResetVideoRtcpData();
 }
 
 const FrameStatsMap* LoggingImpl::GetFrameStatsData(

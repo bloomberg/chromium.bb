@@ -18,9 +18,10 @@ namespace cast {
 static const uint32 kFrameIdUnknown = 0xFFFF;
 
 struct CastLoggingConfig {
-  CastLoggingConfig();
+  CastLoggingConfig(bool sender);
   ~CastLoggingConfig();
 
+  bool is_sender;
   bool enable_raw_data_collection;
   bool enable_stats_data_collection;
   bool enable_uma_stats;
@@ -28,7 +29,8 @@ struct CastLoggingConfig {
 };
 
 // By default, enable raw and stats data collection. Disable tracing and UMA.
-CastLoggingConfig GetDefaultCastLoggingConfig();
+CastLoggingConfig GetDefaultCastSenderLoggingConfig();
+CastLoggingConfig GetDefaultCastReceiverLoggingConfig();
 
 enum CastLoggingEvent {
   // Generic events.
@@ -36,9 +38,10 @@ enum CastLoggingEvent {
   kRttMs,
   kPacketLoss,
   kJitterMs,
-  kAckReceived,
+  kVideoAckReceived,
   kRembBitrate,
-  kAckSent,
+  kAudioAckSent,
+  kVideoAckSent,
   // Audio sender.
   kAudioFrameReceived,
   kAudioFrameCaptured,
@@ -59,7 +62,8 @@ enum CastLoggingEvent {
   kPacketSentToNetwork,
   kPacketRetransmitted,
   // Receive-side packet events.
-  kPacketReceived,
+  kAudioPacketReceived,
+  kVideoPacketReceived,
   kDuplicatePacketReceived,
 
   kNumOfLoggingEvents,
@@ -116,10 +120,23 @@ struct FrameLogStats {
   int avg_delay_ms;
 };
 
+struct ReceiverRtcpEvent {
+  ReceiverRtcpEvent();
+  ~ReceiverRtcpEvent();
+
+  CastLoggingEvent type;
+  base::TimeTicks timestamp;
+  base::TimeDelta delay_delta;  // Render/playout delay.
+  uint16 packet_id;
+};
+
 // Store all log types in a map based on the event.
 typedef std::map<uint32, FrameEvent> FrameRawMap;
 typedef std::map<uint32, PacketEvent> PacketRawMap;
 typedef std::map<CastLoggingEvent, GenericEvent> GenericRawMap;
+
+typedef std::multimap<uint32, ReceiverRtcpEvent> AudioRtcpRawMap;
+typedef std::multimap<uint32, ReceiverRtcpEvent> VideoRtcpRawMap;
 
 typedef std::map<CastLoggingEvent, linked_ptr<FrameLogStats > > FrameStatsMap;
 typedef std::map<CastLoggingEvent, double> PacketStatsMap;

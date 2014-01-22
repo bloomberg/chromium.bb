@@ -60,7 +60,7 @@ class CastTransportSender : public base::NonThreadSafe {
       const RtcpDlrrReportBlock& dlrr,
       const RtcpSenderLogMessage& sender_log) = 0;
 
-  // Retransmision request.
+  // Retransmission request.
   virtual void ResendPackets(
       const MissingFramesAndPacketsMap& missing_packets) = 0;
 
@@ -71,6 +71,7 @@ class CastTransportSender : public base::NonThreadSafe {
   // Retrieves audio RTP statistics.
   virtual void RtpVideoStatistics(const base::TimeTicks& now,
                                   RtcpSenderInfo* sender_info) = 0;
+};
 
 }  // namespace transport
 }  // namespace cast

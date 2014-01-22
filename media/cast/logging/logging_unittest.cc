@@ -23,7 +23,7 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class TestLogging : public ::testing::Test {
  protected:
-  TestLogging() {
+  TestLogging() : config_(false) {
     // Enable all logging types.
     config_.enable_raw_data_collection = true;
     config_.enable_stats_data_collection = true;
@@ -258,6 +258,44 @@ TEST_F(TestLogging, GenericLogging) {
   EXPECT_NEAR(kBaseValue, sit->second, 2.5);
   sit = stats_map->find(kJitterMs);
   EXPECT_NEAR(kBaseValue, sit->second, 2.5);
+}
+
+TEST_F(TestLogging, RtcpMultipleEventFrameLogging) {
+  base::TimeTicks start_time = testing_clock_.NowTicks();
+  base::TimeDelta time_interval = testing_clock_.NowTicks() - start_time;
+  uint32 rtp_timestamp = 0;
+  uint32 frame_id = 0;
+  do {
+    logging_->InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
+                               rtp_timestamp, frame_id);
+    if (frame_id % 2) {
+      logging_->InsertFrameEventWithSize(testing_clock_.NowTicks(),
+          kAudioFrameEncoded, rtp_timestamp, frame_id, 1500);
+    } else if (frame_id % 3) {
+      logging_->InsertFrameEvent(testing_clock_.NowTicks(), kVideoFrameDecoded,
+                                 rtp_timestamp, frame_id);
+    } else {
+      logging_->InsertFrameEventWithDelay(testing_clock_.NowTicks(),
+          kVideoRenderDelay, rtp_timestamp, frame_id,
+          base::TimeDelta::FromMilliseconds(20));
+    }
+    testing_clock_.Advance(
+        base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
+    rtp_timestamp += kFrameIntervalMs * 90;
+    ++frame_id;
+    time_interval = testing_clock_.NowTicks() - start_time;
+  }  while (time_interval.InSeconds() < kIntervalTime1S);
+  // Get logging data.
+  FrameRawMap frame_map = logging_->GetFrameRawData();
+  // Size of map should be equal to the number of frames logged.
+  EXPECT_EQ(frame_id, frame_map.size());
+  // Multiple events captured per frame.
+
+  AudioRtcpRawMap audio_rtcp = logging_->GetAudioRtcpRawData();
+  EXPECT_EQ(0u, audio_rtcp.size());
+
+  VideoRtcpRawMap video_rtcp = logging_->GetVideoRtcpRawData();
+  EXPECT_EQ((frame_id + 1) / 2, video_rtcp.size());
 }
 
 }  // namespace cast

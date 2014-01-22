@@ -405,7 +405,7 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
     time_incoming_packet_updated_ = true;
   }
 
-  cast_environment_->Logging()->InsertPacketEvent(now, kPacketReceived,
+  cast_environment_->Logging()->InsertPacketEvent(now, kVideoPacketReceived,
       rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
       rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
 
@@ -435,9 +435,37 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
 // message builder).
 void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  // TODO(pwestin): wire up log messages.
-  rtcp_->SendRtcpFromRtpReceiver(&cast_message, NULL);
-  time_last_sent_cast_message_= cast_environment_->Clock()->NowTicks();
+
+  RtcpReceiverLogMessage receiver_log;
+  VideoRtcpRawMap video_logs =
+      cast_environment_->Logging()->GetVideoRtcpRawData();
+
+  while (!video_logs.empty()) {
+    VideoRtcpRawMap::iterator it = video_logs.begin();
+    uint32 rtp_timestamp = it->first;
+    std::pair<VideoRtcpRawMap::iterator, VideoRtcpRawMap::iterator>
+        frame_range = video_logs.equal_range(rtp_timestamp);
+
+    RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
+
+    VideoRtcpRawMap::const_iterator event_it = frame_range.first;
+    for (; event_it != frame_range.second; ++event_it) {
+      RtcpReceiverEventLogMessage event_log_message;
+      event_log_message.type = event_it->second.type;
+      event_log_message.event_timestamp = event_it->second.timestamp;
+      event_log_message.delay_delta = event_it->second.delay_delta;
+      event_log_message.packet_id = event_it->second.packet_id;
+      frame_log.event_log_messages_.push_back(event_log_message);
+    }
+    receiver_log.push_back(frame_log);
+    video_logs.erase(rtp_timestamp);
+  }
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertGenericEvent(now, kVideoAckSent,
+      cast_message.ack_frame_id_);
+
+  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &receiver_log);
+  time_last_sent_cast_message_= now;
 }
 
 // Cast messages should be sent within a maximum interval. Schedule a call

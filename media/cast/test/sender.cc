@@ -314,7 +314,7 @@ int main(int argc, char** argv) {
       video_thread.message_loop_proxy(),
       NULL,
       io_message_loop.message_loop_proxy(),
-      media::cast::GetDefaultCastLoggingConfig()));
+      media::cast::GetDefaultCastSenderLoggingConfig()));
 
   media::cast::AudioSenderConfig audio_config =
       media::cast::GetAudioSenderConfig();

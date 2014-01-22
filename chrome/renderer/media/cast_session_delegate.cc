@@ -83,7 +83,7 @@ void CastSessionDelegate::StartSendingInternal() {
       video_encode_thread_.message_loop_proxy(),
       NULL,
       base::MessageLoopProxy::current(),
-      media::cast::GetDefaultCastLoggingConfig());
+      media::cast::GetDefaultCastSenderLoggingConfig());
 
   // TODO(hclam): Implement VideoEncoderController to configure hardware
   // encoder.

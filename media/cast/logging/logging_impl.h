@@ -65,6 +65,9 @@ class LoggingImpl : public base::NonThreadSafe {
   FrameRawMap GetFrameRawData();
   PacketRawMap GetPacketRawData();
   GenericRawMap GetGenericRawData();
+  AudioRtcpRawMap GetAudioRtcpRawData();
+  VideoRtcpRawMap GetVideoRtcpRawData();
+
   // Get stats only (computed when called). Triggers UMA stats when enabled.
   const FrameStatsMap* GetFrameStatsData(const base::TimeTicks& now);
   const PacketStatsMap* GetPacketStatsData(const base::TimeTicks& now);

@@ -24,7 +24,7 @@ namespace cast {
 class LoggingRaw : public base::NonThreadSafe,
                    public base::SupportsWeakPtr<LoggingRaw> {
  public:
-  LoggingRaw();
+  explicit LoggingRaw(bool is_sender);
   ~LoggingRaw();
 
   // Inform of new event: three types of events: frame, packets and generic.
@@ -66,8 +66,10 @@ class LoggingRaw : public base::NonThreadSafe,
   PacketRawMap GetPacketData() const;
   GenericRawMap GetGenericData() const;
 
+  AudioRtcpRawMap GetAndResetAudioRtcpData();
+  VideoRtcpRawMap GetAndResetVideoRtcpData();
 
-  // Reset all log data.
+  // Reset all log data; except the Rtcp copies.
   void Reset();
 
  private:
@@ -76,9 +78,18 @@ class LoggingRaw : public base::NonThreadSafe,
                             uint32 frame_id,
                             uint32 rtp_timestamp);
 
+  void InsertRtcpFrameEvent(const base::TimeTicks& time_of_event,
+                            CastLoggingEvent event,
+                            uint32 rtp_timestamp,
+                            base::TimeDelta delay);
+
+  const bool is_sender_;
   FrameRawMap frame_map_;
   PacketRawMap packet_map_;
   GenericRawMap generic_map_;
+  AudioRtcpRawMap audio_rtcp_map_;
+  VideoRtcpRawMap video_rtcp_map_;
+
   base::WeakPtrFactory<LoggingRaw> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingRaw);

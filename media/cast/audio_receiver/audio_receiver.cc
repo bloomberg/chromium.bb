@@ -156,7 +156,7 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
-  cast_environment_->Logging()->InsertPacketEvent(now, kPacketReceived,
+  cast_environment_->Logging()->InsertPacketEvent(now, kAudioPacketReceived,
       rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
       rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
 
@@ -390,8 +390,36 @@ void AudioReceiver::IncomingPacket(const uint8* packet, size_t length,
 }
 
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
-  // TODO(pwestin): add logging.
-  rtcp_->SendRtcpFromRtpReceiver(&cast_message, NULL);
+  RtcpReceiverLogMessage receiver_log;
+  AudioRtcpRawMap audio_logs =
+      cast_environment_->Logging()->GetAudioRtcpRawData();
+
+  while (!audio_logs.empty()) {
+    AudioRtcpRawMap::iterator it = audio_logs.begin();
+    uint32 rtp_timestamp = it->first;
+    std::pair<AudioRtcpRawMap::iterator, AudioRtcpRawMap::iterator>
+        frame_range = audio_logs.equal_range(rtp_timestamp);
+
+    RtcpReceiverFrameLogMessage frame_log(rtp_timestamp);
+
+    AudioRtcpRawMap::const_iterator event_it = frame_range.first;
+    for (; event_it != frame_range.second; ++event_it) {
+      RtcpReceiverEventLogMessage event_log_message;
+      event_log_message.type = event_it->second.type;
+      event_log_message.event_timestamp = event_it->second.timestamp;
+      event_log_message.delay_delta = event_it->second.delay_delta;
+      event_log_message.packet_id = event_it->second.packet_id;
+      frame_log.event_log_messages_.push_back(event_log_message);
+    }
+    receiver_log.push_back(frame_log);
+    audio_logs.erase(rtp_timestamp);
+  }
+
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->Logging()->InsertGenericEvent(now, kAudioAckSent,
+      cast_message.ack_frame_id_);
+
+  rtcp_->SendRtcpFromRtpReceiver(&cast_message, &receiver_log);
 }
 
 base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,

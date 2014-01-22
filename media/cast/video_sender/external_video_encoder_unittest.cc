@@ -92,7 +92,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
-        GetDefaultCastLoggingConfig());
+        GetDefaultCastSenderLoggingConfig());
     video_encoder_.reset(new ExternalVideoEncoder(
         cast_environment_,
         video_config_,
