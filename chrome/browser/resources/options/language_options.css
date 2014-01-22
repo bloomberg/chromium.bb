@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#languagePage .content-area {
+  width: 660px;
+}
+
 .language-options {
   display: -webkit-box;
   margin: 10px 0;
@@ -59,9 +63,9 @@
 }
 
 #language-options-details {
+  -webkit-box-flex: 1;
   /* To share the center line with the left pane. */
   -webkit-margin-start: -1px;
-  width: 360px;
 }
 
 #language-options-details h3:not(:first-of-type) {
