@@ -143,8 +143,7 @@ int RenderFlexibleBox::baselinePosition(FontBaseline, bool, LineDirectionMode di
     if (baseline == -1)
         baseline = synthesizedBaselineFromContentBox(this, direction);
 
-    int marginAscent = direction == HorizontalLine ? marginTop() : marginRight();
-    return baseline + marginAscent;
+    return beforeMarginInLineDirection(direction) + baseline;
 }
 
 int RenderFlexibleBox::firstLineBoxBaseline() const

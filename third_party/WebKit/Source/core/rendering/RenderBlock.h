@@ -331,6 +331,8 @@ protected:
 
     LayoutUnit marginIntrinsicLogicalWidthForChild(RenderBox* child) const;
 
+    int beforeMarginInLineDirection(LineDirectionMode) const;
+
     virtual bool supportsPartialLayout() const OVERRIDE { return true; };
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;

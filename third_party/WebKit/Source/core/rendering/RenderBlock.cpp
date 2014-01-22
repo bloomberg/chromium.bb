@@ -4398,13 +4398,18 @@ LayoutUnit RenderBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
     return m_lineHeight;
 }
 
+int RenderBlock::beforeMarginInLineDirection(LineDirectionMode direction) const
+{
+    return direction == HorizontalLine ? marginTop() : marginRight();
+}
+
 int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
 {
     // Inline blocks are replaced elements. Otherwise, just pass off to
     // the base class.  If we're being queried as though we're the root line
     // box, then the fact that we're an inline-block is irrelevant, and we behave
     // just like a block.
-    if (isReplaced() && linePositionMode == PositionOnContainingLine) {
+    if (isInline() && linePositionMode == PositionOnContainingLine) {
         // For "leaf" theme objects, let the theme decide what the baseline position is.
         // FIXME: Might be better to have a custom CSS property instead, so that if the theme
         // is turned off, checkboxes/radios will still have decent baselines.
@@ -4433,7 +4438,7 @@ int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
                 baselinePos = -1;
         }
         if (baselinePos != -1)
-            return direction == HorizontalLine ? marginTop() + baselinePos : marginRight() + baselinePos;
+            return beforeMarginInLineDirection(direction) + baselinePos;
 
         return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
     }
