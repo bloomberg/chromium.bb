@@ -106,7 +106,8 @@ bool IsInHighDPIMode() {
 }
 
 void EnableHighDPISupport() {
-  if (IsHighDPIEnabled()) {
+  if (IsHighDPIEnabled() &&
+      (base::win::GetVersion() < base::win::VERSION_WIN8_1)) {
     typedef BOOL(WINAPI *SetProcessDPIAwarePtr)(VOID);
     SetProcessDPIAwarePtr set_process_dpi_aware_func =
         reinterpret_cast<SetProcessDPIAwarePtr>(
