@@ -668,6 +668,21 @@ ensure_focus_state(struct desktop_shell *shell, struct weston_seat *seat)
 }
 
 static void
+focus_state_set_focus(struct focus_state *state,
+		      struct weston_surface *surface)
+{
+	if (state->keyboard_focus) {
+		wl_list_remove(&state->surface_destroy_listener.link);
+		wl_list_init(&state->surface_destroy_listener.link);
+	}
+
+	state->keyboard_focus = surface;
+	if (surface)
+		wl_signal_add(&surface->destroy_signal,
+			      &state->surface_destroy_listener);
+}
+
+static void
 restore_focus_state(struct desktop_shell *shell, struct workspace *ws)
 {
 	struct focus_state *state, *next;
@@ -688,12 +703,10 @@ replace_focus_state(struct desktop_shell *shell, struct workspace *ws,
 		    struct weston_seat *seat)
 {
 	struct focus_state *state;
-	struct weston_surface *surface;
 
 	wl_list_for_each(state, &ws->focus_list, link) {
 		if (state->seat == seat) {
-			surface = seat->keyboard->focus;
-			state->keyboard_focus = surface;
+			focus_state_set_focus(state, seat->keyboard->focus);
 			return;
 		}
 	}
@@ -707,7 +720,7 @@ drop_focus_state(struct desktop_shell *shell, struct workspace *ws,
 
 	wl_list_for_each(state, &ws->focus_list, link)
 		if (state->keyboard_focus == surface)
-			state->keyboard_focus = NULL;
+			focus_state_set_focus(state, NULL);
 }
 
 static void
@@ -1258,7 +1271,7 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 
 	state = ensure_focus_state(shell, seat);
 	if (state != NULL)
-		state->keyboard_focus = surface;
+		focus_state_set_focus(state, surface);
 }
 
 static void
@@ -4225,9 +4238,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 		return;
 
 	old_es = state->keyboard_focus;
-	state->keyboard_focus = es;
-	wl_list_remove(&state->surface_destroy_listener.link);
-	wl_signal_add(&es->destroy_signal, &state->surface_destroy_listener);
+	focus_state_set_focus(state, es);
 
 	shsurf = get_shell_surface(main_surface);
 	assert(shsurf);
