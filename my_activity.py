@@ -21,7 +21,6 @@ Example:
 # This means that query time scales mostly with (today() - begin).
 
 import cookielib
-import csv
 import datetime
 from datetime import datetime
 from datetime import timedelta
@@ -29,7 +28,6 @@ from functools import partial
 import json
 import optparse
 import os
-import re
 import subprocess
 import sys
 import urllib
@@ -38,9 +36,6 @@ import urllib2
 import gerrit_util
 import rietveld
 from third_party import upload
-
-# Imported later, once options are set.
-webkitpy = None
 
 try:
   from dateutil.relativedelta import relativedelta # pylint: disable=F0401
@@ -53,38 +48,6 @@ try:
   import keyring  # pylint: disable=W0611,F0401
 except ImportError:
   print 'Consider installing python-keyring'
-
-def webkit_account(user):
-  if not webkitpy:
-    return None
-  committer_list = webkitpy.common.config.committers.CommitterList()
-  email = user + "@chromium.org"
-  return committer_list.account_by_email(email)
-
-def user_to_webkit_email(user):
-  account = webkit_account(user)
-  if not account:
-    return None
-  return account.emails[0]
-
-def user_to_webkit_owner_search(user):
-  account = webkit_account(user)
-  if not account:
-    return ['--author=%s@chromium.org' % user]
-  search = []
-  for email in account.emails:
-    search.append('--author=' + email)
-  # commit-bot is author for contributors who are not committers.
-  search.append('--grep=Patch by ' + account.full_name)
-  return search
-
-def user_to_webkit_reviewer_search(user):
-  committer_list = webkitpy.common.config.committers.CommitterList()
-  email = user + "@chromium.org"
-  account = committer_list.reviewer_by_email(email)
-  if not account:
-    return []
-  return ['--grep=Reviewed by ' + account.full_name]
 
 rietveld_instances = [
   {
@@ -154,29 +117,6 @@ google_code_projects = [
   },
   {
     'name': 'skia',
-  },
-]
-
-bugzilla_instances = [
-  {
-    'search_url': 'http://bugs.webkit.org/buglist.cgi',
-    'url': 'wkb.ug',
-    'user_func': user_to_webkit_email,
-  },
-]
-
-git_instances = [
-  {
-    'option': 'webkit_repo',
-    'change_re':
-        r'git-svn-id: http://svn\.webkit\.org/repository/webkit/trunk@(\d*)',
-    'change_url': 'trac.webkit.org/changeset',
-    'review_re': r'https://bugs\.webkit\.org/show_bug\.cgi\?id\=(\d*)',
-    'review_url': 'wkb.ug',
-    'review_prop': 'webkit_bug_id',
-
-    'owner_search_func': user_to_webkit_owner_search,
-    'reviewer_search_func': user_to_webkit_reviewer_search,
   },
 ]
 
@@ -269,9 +209,6 @@ class MyActivity(object):
     self.issues = []
     self.check_cookies()
     self.google_code_auth_token = None
-    self.webkit_repo = options.webkit_repo
-    if self.webkit_repo:
-      self.setup_webkit_info()
 
   # Check the codereview cookie jar to determine which Rietveld instances to
   # authenticate to.
@@ -608,195 +545,6 @@ class MyActivity(object):
       ret.append(e)
     return ret
 
-  @staticmethod
-  def git_cmd(repo, *args):
-    cmd = ['git', '--git-dir=%s/.git' % repo]
-    cmd.extend(args)
-    [stdout, _] = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE).communicate()
-    lines = str(stdout).split('\n')[:-1]
-    return lines
-
-  def git_search(self, instance, owner=None, reviewer=None):
-    repo = getattr(self, instance['option'])
-    if not repo:
-      return []
-
-    search = []
-    if owner:
-      search.extend(instance['owner_search_func'](owner))
-    if reviewer:
-      search.extend(instance['reviewer_search_func'](reviewer))
-    if not len(search):
-      return []
-
-    self.git_cmd(repo, 'fetch', 'origin')
-
-    time_format = '%Y-%m-%d %H:%M:%S'
-    log_args = [
-      '--after=' + self.modified_after.strftime(time_format),
-      '--before=' + self.modified_before.strftime(time_format),
-      '--format=%H'
-    ]
-    commits = set()
-    for query in search:
-      query_args = [query]
-      query_args.extend(log_args)
-      commits |= set(self.git_cmd(repo, 'log', 'origin/master', *query_args))
-
-    ret = []
-    for commit in commits:
-      output = self.git_cmd(repo, 'log', commit + "^!", "--format=%cn%n%cd%n%B")
-      author = output[0]
-      date = datetime.strptime(output[1], "%a %b %d %H:%M:%S %Y +0000")
-      processed = self.process_git_commit(instance, author, date, output[2:])
-      if processed:
-        ret.append(processed)
-
-    ret = sorted(ret, key=lambda i: i['modified'], reverse=True)
-    return ret
-
-  @staticmethod
-  def process_git_commit(instance, author, date, log):
-    ret = {}
-    ret['owner'] = author
-    ret['author'] = author
-    ret['modified'] = date
-    ret['created'] = date
-    ret['header'] = log[0]
-
-    reviews = []
-    reviewers = []
-    changes = []
-
-    for line in log:
-      match = re.match(r'Reviewed by ([^.]*)', line)
-      if match:
-        reviewers.append(match.group(1))
-      if instance['review_re']:
-        match = re.match(instance['review_re'], line)
-        if match:
-          reviews.append(int(match.group(1)))
-      if instance['change_re']:
-        match = re.match(instance['change_re'], line)
-        if match:
-          changes.append(int(match.group(1)))
-
-    committer_list = webkitpy.common.config.committers.CommitterList()
-    ret['reviewers'] = set(
-        (committer_list.contributor_by_name(r).emails[0] for r in reviewers))
-
-    # Reviews more useful than change link itself, but tricky if multiple
-    # Reviews == bugs for WebKit changes
-    if len(reviews) == 1:
-      url = 'http://%s/%d' % (instance['review_url'], reviews[0])
-      if instance['review_prop']:
-        ret[instance['review_prop']] = reviews[0]
-    elif len(changes) == 1:
-      url = 'http://%s/%d' % (instance['change_url'], changes[0])
-    else:
-      # Couldn't find anything.
-      return None
-    ret['review_url'] = url
-
-    return ret
-
-  def bugzilla_issues(self, instance, user):
-    if instance['user_func']:
-      user = instance['user_func'](user)
-    if not user:
-      return []
-
-    # This search is a little iffy, as it returns any bug that has been
-    # modified over a time period in any way and that a user has ever commented
-    # on, but that's the best that Bugzilla can get us.  Oops.
-    commented = { 'emaillongdesc1': 1 }
-    issues = self.bugzilla_search(instance, user, commented)
-    issues = filter(lambda issue: issue['owner'] != user, issues)
-
-    reported = { 'emailreporter1': 1, 'chfield': '[Bug creation]' }
-    issues.extend(self.bugzilla_search(instance, user, reported))
-
-    # Remove duplicates by bug id
-    seen = {}
-    pruned = []
-    for issue in issues:
-      bug_id = issue['webkit_bug_id']
-      if bug_id in seen:
-        continue
-      seen[bug_id] = True
-      pruned.append(issue)
-
-    # Bugzilla has no modified time, so sort by id?
-    pruned = sorted(pruned, key=lambda i: i['webkit_bug_id'])
-    return issues
-
-  def bugzilla_search(self, instance, user, params):
-    time_format = '%Y-%m-%d'
-    values = {
-      'chfieldfrom': self.modified_after.strftime(time_format),
-      'chfieldto': self.modified_before.strftime(time_format),
-      'ctype': 'csv',
-      'emailtype1': 'substring',
-      'email1': '%s' % user,
-    }
-    values.update(params)
-
-    # Must be GET not POST
-    data = urllib.urlencode(values)
-    req = urllib2.Request("%s?%s" % (instance['search_url'], data))
-    response = urllib2.urlopen(req)
-    reader = csv.reader(response)
-    reader.next() # skip the header line
-
-    issues = map(partial(self.process_bugzilla_issue, instance), reader)
-    return issues
-
-  @staticmethod
-  def process_bugzilla_issue(instance, issue):
-    bug_id, owner, desc = int(issue[0]), issue[4], issue[7]
-
-    ret = {}
-    ret['owner'] = owner
-    ret['author'] = owner
-    ret['review_url'] = 'http://%s/%d' % (instance['url'], bug_id)
-    ret['url'] = ret['review_url']
-    ret['header'] = desc
-    ret['webkit_bug_id'] = bug_id
-    return ret
-
-  def setup_webkit_info(self):
-    assert(self.webkit_repo)
-    git_dir = os.path.normpath(self.webkit_repo + "/.git")
-    if not os.path.exists(git_dir):
-      print "%s doesn't exist, skipping WebKit checks." % git_dir
-      self.webkit_repo = None
-      return
-
-    try:
-      self.git_cmd(self.webkit_repo, "fetch", "origin")
-    except subprocess.CalledProcessError:
-      print "Failed to update WebKit repo, skipping WebKit checks."
-      self.webkit_repo = None
-      return
-
-    path = "Tools/Scripts"
-    full_path = os.path.normpath("%s/%s" % (self.options.webkit_repo, path))
-    sys.path.append(full_path)
-
-    try:
-      global webkitpy
-      webkitpy = __import__('webkitpy.common.config.committers')
-    except ImportError:
-      print "Failed to import WebKit committer list, skipping WebKit checks."
-      self.webkit_repo = None
-      return
-
-    if not webkit_account(self.user):
-      email = self.user + "@chromium.org"
-      print "No %s in committers.py, skipping WebKit checks." % email
-      self.webkit_repo = None
-
   def print_heading(self, heading):
     print
     print self.options.output_format_heading.format(heading=heading)
@@ -893,9 +641,6 @@ class MyActivity(object):
     for instance in gerrit_instances:
       self.changes += self.gerrit_search(instance, owner=self.user)
 
-    for instance in git_instances:
-      self.changes += self.git_search(instance, owner=self.user)
-
   def print_changes(self):
     if self.changes:
       self.print_heading('Changes')
@@ -911,9 +656,6 @@ class MyActivity(object):
       reviews = filter(lambda r: not username(r['owner']) == self.user, reviews)
       self.reviews += reviews
 
-    for instance in git_instances:
-      self.reviews += self.git_search(instance, reviewer=self.user)
-
   def print_reviews(self):
     if self.reviews:
       self.print_heading('Reviews')
@@ -924,28 +666,11 @@ class MyActivity(object):
     for project in google_code_projects:
       self.issues += self.google_code_issue_search(project)
 
-    for instance in bugzilla_instances:
-      self.issues += self.bugzilla_issues(instance, self.user)
-
   def print_issues(self):
     if self.issues:
       self.print_heading('Issues')
       for issue in self.issues:
         self.print_issue(issue)
-
-  def process_activities(self):
-    # If a webkit bug was a review, don't list it as an issue.
-    ids = {}
-    for review in self.reviews + self.changes:
-      if 'webkit_bug_id' in review:
-        ids[review['webkit_bug_id']] = True
-
-    def duplicate_issue(issue):
-      if 'webkit_bug_id' not in issue:
-        return False
-      return issue['webkit_bug_id'] in ids
-
-    self.issues = filter(lambda issue: not duplicate_issue(issue), self.issues)
 
   def print_activity(self):
     self.print_changes()
@@ -962,10 +687,6 @@ def main():
       '-u', '--user', metavar='<email>',
       default=os.environ.get('USER'),
       help='Filter on user, default=%default')
-  parser.add_option(
-      '--webkit_repo', metavar='<dir>',
-      default='%s' % os.environ.get('WEBKIT_DIR'),
-      help='Local path to WebKit repository, default=%default')
   parser.add_option(
       '-b', '--begin', metavar='<date>',
       help='Filter issues created after the date')
@@ -1106,8 +827,6 @@ def main():
     my_activity.get_reviews()
   if options.issues:
     my_activity.get_issues()
-
-  my_activity.process_activities()
 
   print '\n\n\n'
 
