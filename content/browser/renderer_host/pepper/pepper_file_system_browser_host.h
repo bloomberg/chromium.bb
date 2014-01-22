@@ -18,6 +18,7 @@
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
+#include "ppapi/shared_impl/file_growth.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
@@ -73,7 +74,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   // Closes the file. This must be called after OpenQuotaFile and before the
   // PepperFileIOHost is destroyed.
   void CloseQuotaFile(PepperFileIOHost* file_io_host,
-                      int64_t max_written_offset);
+                      const ppapi::FileGrowth& file_growth);
 
  private:
   friend class PepperFileSystemBrowserHostTest;
@@ -114,7 +115,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   int32_t OnHostMsgReserveQuota(
       ppapi::host::HostMessageContext* context,
       int64_t amount,
-      const std::map<int32_t, int64_t>& max_written_offsets);
+      const ppapi::FileSizeMap& max_written_offsets);
 
   void SendReplyForFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
@@ -136,7 +137,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   void GotReservedQuota(
       ppapi::host::ReplyMessageContext reply_context,
       int64_t amount,
-      const std::map<int32_t, int64_t>& max_written_offsets);
+      const ppapi::FileSizeMap& max_written_offsets);
   void DidOpenQuotaFile(
       PP_Resource file_io_resource,
       const OpenQuotaFileCallback& callback,

@@ -79,10 +79,11 @@ int64_t QuotaReservation::OpenFile(int32_t id,
 }
 
 void QuotaReservation::CloseFile(int32_t id,
-                                 int64_t max_written_offset) {
+                                 const ppapi::FileGrowth& file_growth) {
   FileMap::iterator it = files_.find(id);
   if (it != files_.end()) {
-    it->second->UpdateMaxWrittenOffset(max_written_offset);
+    it->second->UpdateMaxWrittenOffset(file_growth.max_written_offset);
+    it->second->AddAppendModeWriteAmount(file_growth.append_mode_write_amount);
     delete it->second;
     files_.erase(it);
   } else {
@@ -92,14 +93,18 @@ void QuotaReservation::CloseFile(int32_t id,
 
 void QuotaReservation::ReserveQuota(
     int64_t amount,
-    const OffsetMap& max_written_offsets,
+    const ppapi::FileGrowthMap& file_growths,
     const ReserveQuotaCallback& callback) {
   for (FileMap::iterator it = files_.begin(); it != files_.end(); ++it) {
-    OffsetMap::const_iterator offset_it = max_written_offsets.find(it->first);
-    if (offset_it != max_written_offsets.end())
-      it->second->UpdateMaxWrittenOffset(offset_it->second);
-    else
+    ppapi::FileGrowthMap::const_iterator growth_it =
+        file_growths.find(it->first);
+    if (growth_it != file_growths.end()) {
+      it->second->UpdateMaxWrittenOffset(growth_it->second.max_written_offset);
+      it->second->AddAppendModeWriteAmount(
+          growth_it->second.append_mode_write_amount);
+    } else {
       NOTREACHED();
+    }
   }
 
   quota_reservation_->RefreshReservation(
@@ -116,7 +121,7 @@ void QuotaReservation::OnClientCrash() {
 void QuotaReservation::GotReservedQuota(
     const ReserveQuotaCallback& callback,
     base::PlatformFileError error) {
-  OffsetMap max_written_offsets;
+  ppapi::FileSizeMap max_written_offsets;
   for (FileMap::iterator it = files_.begin(); it != files_.end(); ++ it) {
     max_written_offsets.insert(
         std::make_pair(it->first, it->second->GetEstimatedFileSize()));

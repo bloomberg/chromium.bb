@@ -128,23 +128,27 @@ class QuotaReservationTest : public testing::Test {
 
 void GotReservedQuota(
     int64* reserved_quota_ptr,
-    QuotaReservation::OffsetMap* maximum_written_offsets_ptr,
+    ppapi::FileGrowthMap* file_growths_ptr,
     int64 reserved_quota,
-    const QuotaReservation::OffsetMap& maximum_written_offsets) {
+    const ppapi::FileSizeMap& maximum_written_offsets) {
   *reserved_quota_ptr = reserved_quota;
-  *maximum_written_offsets_ptr = maximum_written_offsets;
+
+  file_growths_ptr->clear();
+  for (ppapi::FileSizeMap::const_iterator it = maximum_written_offsets.begin();
+       it != maximum_written_offsets.end(); ++it)
+    (*file_growths_ptr)[it->first] = ppapi::FileGrowth(it->second, 0);
 }
 
 void ReserveQuota(
     scoped_refptr<QuotaReservation> quota_reservation,
     int64 amount,
     int64* reserved_quota,
-    QuotaReservation::OffsetMap* max_written_offsets) {
+    ppapi::FileGrowthMap* file_growths) {
   quota_reservation->ReserveQuota(amount,
-                                  *max_written_offsets,
+                                  *file_growths,
                                   base::Bind(&GotReservedQuota,
                                              reserved_quota,
-                                             max_written_offsets));
+                                             file_growths));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -163,10 +167,10 @@ TEST_F(QuotaReservationTest, ReserveQuota) {
   // Reserve quota with no files open.
   int64 amount = 100;
   int64 reserved_quota;
-  QuotaReservation::OffsetMap max_written_offsets;
-  ReserveQuota(test, amount, &reserved_quota, &max_written_offsets);
+  ppapi::FileGrowthMap file_growths;
+  ReserveQuota(test, amount, &reserved_quota, &file_growths);
   EXPECT_EQ(amount, reserved_quota);
-  EXPECT_EQ(0U, max_written_offsets.size());
+  EXPECT_EQ(0U, file_growths.size());
 
   // Open a file, refresh the reservation, extend the file, and close it.
   int64 file_size = 10;
@@ -175,17 +179,17 @@ TEST_F(QuotaReservationTest, ReserveQuota) {
                                         MakeFileSystemURL(file1_name));
   EXPECT_EQ(file_size, open_file_size);
 
-  max_written_offsets[kFile1ID] = file_size;  // 1 file open.
-  ReserveQuota(test, amount, &reserved_quota, &max_written_offsets);
+  file_growths[kFile1ID] = ppapi::FileGrowth(file_size, 0);  // 1 file open.
+  ReserveQuota(test, amount, &reserved_quota, &file_growths);
   EXPECT_EQ(amount, reserved_quota);
-  EXPECT_EQ(1U, max_written_offsets.size());
-  EXPECT_EQ(file_size, max_written_offsets[kFile1ID]);
+  EXPECT_EQ(1U, file_growths.size());
+  EXPECT_EQ(file_size, file_growths[kFile1ID].max_written_offset);
 
   int64 new_file_size = 30;
   SetFileSize(file1_name, new_file_size);
 
   EXPECT_EQ(amount, reservation->remaining_quota());
-  test->CloseFile(kFile1ID, new_file_size);
+  test->CloseFile(kFile1ID, ppapi::FileGrowth(new_file_size, 0));
   EXPECT_EQ(amount - (new_file_size - file_size),
             reservation->remaining_quota());
 }
@@ -221,29 +225,29 @@ TEST_F(QuotaReservationTest, MultipleFiles) {
   // Reserve quota.
   int64 amount = 100;
   int64 reserved_quota;
-  QuotaReservation::OffsetMap max_written_offsets;
-  max_written_offsets[kFile1ID] = file1_size;  // 3 files open.
-  max_written_offsets[kFile2ID] = file2_size;
-  max_written_offsets[kFile3ID] = file3_size;
+  ppapi::FileGrowthMap file_growths;
+  file_growths[kFile1ID] = ppapi::FileGrowth(file1_size, 0);  // 3 files open.
+  file_growths[kFile2ID] = ppapi::FileGrowth(file2_size, 0);
+  file_growths[kFile3ID] = ppapi::FileGrowth(file3_size, 0);
 
-  ReserveQuota(test, amount, &reserved_quota, &max_written_offsets);
+  ReserveQuota(test, amount, &reserved_quota, &file_growths);
   EXPECT_EQ(amount, reserved_quota);
-  EXPECT_EQ(3U, max_written_offsets.size());
-  EXPECT_EQ(file1_size, max_written_offsets[kFile1ID]);
-  EXPECT_EQ(file2_size, max_written_offsets[kFile2ID]);
-  EXPECT_EQ(file3_size, max_written_offsets[kFile3ID]);
+  EXPECT_EQ(3U, file_growths.size());
+  EXPECT_EQ(file1_size, file_growths[kFile1ID].max_written_offset);
+  EXPECT_EQ(file2_size, file_growths[kFile2ID].max_written_offset);
+  EXPECT_EQ(file3_size, file_growths[kFile3ID].max_written_offset);
 
-  test->CloseFile(kFile2ID, file2_size);
+  test->CloseFile(kFile2ID, ppapi::FileGrowth(file2_size, 0));
 
-  max_written_offsets.erase(max_written_offsets.find(kFile2ID));
-  ReserveQuota(test, amount, &reserved_quota, &max_written_offsets);
+  file_growths.erase(kFile2ID);
+  ReserveQuota(test, amount, &reserved_quota, &file_growths);
   EXPECT_EQ(amount, reserved_quota);
-  EXPECT_EQ(2U, max_written_offsets.size());
-  EXPECT_EQ(file1_size, max_written_offsets[kFile1ID]);
-  EXPECT_EQ(file3_size, max_written_offsets[kFile3ID]);
+  EXPECT_EQ(2U, file_growths.size());
+  EXPECT_EQ(file1_size, file_growths[kFile1ID].max_written_offset);
+  EXPECT_EQ(file3_size, file_growths[kFile3ID].max_written_offset);
 
-  test->CloseFile(kFile1ID, file1_size);
-  test->CloseFile(kFile3ID, file3_size);
+  test->CloseFile(kFile1ID, ppapi::FileGrowth(file1_size, 0));
+  test->CloseFile(kFile3ID, ppapi::FileGrowth(file3_size, 0));
 }
 
 }  // namespace content

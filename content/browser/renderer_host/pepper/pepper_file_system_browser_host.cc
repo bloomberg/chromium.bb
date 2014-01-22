@@ -142,7 +142,7 @@ void PepperFileSystemBrowserHost::OpenQuotaFile(
 
 void PepperFileSystemBrowserHost::CloseQuotaFile(
     PepperFileIOHost* file_io_host,
-    int64_t max_written_offset) {
+    const ppapi::FileGrowth& file_growth) {
   int32_t id = file_io_host->pp_resource();
   FileMap::iterator it = files_.find(id);
   if (it != files_.end()) {
@@ -157,7 +157,7 @@ void PepperFileSystemBrowserHost::CloseQuotaFile(
       base::Bind(&QuotaReservation::CloseFile,
                  quota_reservation_,
                  id,
-                 max_written_offset));
+                 file_growth));
 }
 
 int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
@@ -365,13 +365,18 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
 int32_t PepperFileSystemBrowserHost::OnHostMsgReserveQuota(
     ppapi::host::HostMessageContext* context,
     int64_t amount,
-    const std::map<int32_t, int64_t>& max_written_offsets) {
+    const ppapi::FileSizeMap& file_sizes) {
   DCHECK(ChecksQuota());
   DCHECK(amount > 0);
 
   if (reserving_quota_)
     return PP_ERROR_INPROGRESS;
   reserving_quota_ = true;
+
+  ppapi::FileGrowthMap file_growths;
+  for (ppapi::FileSizeMap::const_iterator it = file_sizes.begin();
+       it != file_sizes.end(); ++it)
+    file_growths[it->first] = ppapi::FileGrowth(it->second, 0);
 
   int64_t reservation_amount = std::max<int64_t>(kMinimumQuotaReservationSize,
                                                  amount);
@@ -380,7 +385,7 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgReserveQuota(
       base::Bind(&QuotaReservation::ReserveQuota,
                  quota_reservation_,
                  reservation_amount,
-                 max_written_offsets,
+                 file_growths,
                  base::Bind(&PepperFileSystemBrowserHost::GotReservedQuota,
                             weak_factory_.GetWeakPtr(),
                             context->MakeReplyMessageContext())));
@@ -458,7 +463,7 @@ void PepperFileSystemBrowserHost::GotQuotaReservation(
 void PepperFileSystemBrowserHost::GotReservedQuota(
     ppapi::host::ReplyMessageContext reply_context,
     int64_t amount,
-    const QuotaReservation::OffsetMap& max_written_offsets) {
+    const ppapi::FileSizeMap& max_written_offsets) {
   DCHECK(reserving_quota_);
   reserving_quota_ = false;
   reserved_quota_ = amount;

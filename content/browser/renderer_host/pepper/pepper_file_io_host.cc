@@ -336,7 +336,9 @@ int32_t PepperFileIOHost::OnHostMsgClose(
     ppapi::host::HostMessageContext* context,
     int64_t max_written_offset) {
   if (check_quota_) {
-    file_system_host_->CloseQuotaFile(this, max_written_offset);
+    file_system_host_->CloseQuotaFile(
+        this,
+        ppapi::FileGrowth(max_written_offset, 0));
     check_quota_ = false;
   }
 
