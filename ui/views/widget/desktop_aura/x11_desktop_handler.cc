@@ -55,10 +55,17 @@ X11DesktopHandler::X11DesktopHandler()
                attr.your_event_mask | PropertyChangeMask |
                StructureNotifyMask | SubstructureNotifyMask);
 
-  ::Window active_window;
-  wm_supports_active_window_ =
-    ui::GetXIDProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &active_window) &&
-    active_window;
+  std::vector<Atom> atoms;
+  if (ui::GetAtomArrayProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &atoms)) {
+    Atom active_window = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
+    for (std::vector<Atom>::iterator iter = atoms.begin(); iter != atoms.end();
+         ++iter) {
+      if (*(iter) == active_window) {
+        wm_supports_active_window_ = true;
+        break;
+      }
+    }
+  }
 }
 
 X11DesktopHandler::~X11DesktopHandler() {
@@ -129,14 +136,14 @@ bool X11DesktopHandler::Dispatch(const base::NativeEvent& event) {
   // Check for a change to the active window.
   switch (event->type) {
     case PropertyNotify: {
-      ::Atom active_window_atom = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
+      ::Atom active_window = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
 
       if (event->xproperty.window == x_root_window_ &&
-          event->xproperty.atom == active_window_atom) {
-        ::Window window;
-        if (ui::GetXIDProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &window) &&
+          event->xproperty.atom == active_window) {
+        int window;
+        if (ui::GetIntProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &window) &&
             window) {
-          OnActiveWindowChanged(window);
+          OnActiveWindowChanged(static_cast< ::Window>(window));
         }
       }
       break;
