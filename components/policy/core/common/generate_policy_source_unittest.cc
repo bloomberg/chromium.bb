@@ -40,7 +40,7 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
   ASSERT_TRUE(subschema.valid());
   EXPECT_EQ(base::Value::TYPE_STRING, subschema.type());
 
-  subschema = schema.GetProperty(key::kCookiesAllowedForUrls);
+  subschema = schema.GetProperty(key::kURLBlacklist);
   ASSERT_TRUE(subschema.valid());
   EXPECT_EQ(base::Value::TYPE_LIST, subschema.type());
   ASSERT_TRUE(subschema.GetItems().valid());
@@ -100,12 +100,14 @@ TEST(GeneratePolicySource, PolicyDetails) {
   EXPECT_EQ(5, details->id);
   EXPECT_EQ(0u, details->max_external_data_size);
 
+#if !defined(OS_IOS)
   details = GetChromePolicyDetails(key::kJavascriptEnabled);
   ASSERT_TRUE(details);
   EXPECT_TRUE(details->is_deprecated);
   EXPECT_FALSE(details->is_device_policy);
   EXPECT_EQ(9, details->id);
   EXPECT_EQ(0u, details->max_external_data_size);
+#endif
 
 #if defined(OS_CHROMEOS)
   details = GetChromePolicyDetails(key::kDevicePolicyRefreshRate);

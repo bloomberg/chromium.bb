@@ -653,7 +653,6 @@
         }],
 
         ['OS=="ios"', {
-          'configuration_policy%': 0,
           'disable_ftp_support%': 1,
           'enable_automation%': 0,
           'enable_extensions%': 0,

@@ -164,6 +164,13 @@
                 ['include', '^signin/'],
                 ['include', '^translate/'],
               ],
+              'conditions': [
+                ['configuration_policy==1', {
+                  'sources/': [
+                    ['include', '^policy/'],
+                  ],
+                }],
+              ],
             }],
             ['disable_nacl==0', {
               'sources': [
@@ -259,15 +266,19 @@
               ],
               'conditions': [
                 ['OS=="android" or OS=="ios"', {
-                  'sources!': [
-                    'policy/core/common/async_policy_provider_unittest.cc',
-                    'policy/core/common/cloud/component_cloud_policy_service_unittest.cc',
-                    'policy/core/common/cloud/component_cloud_policy_store_unittest.cc',
-                    'policy/core/common/cloud/component_cloud_policy_updater_unittest.cc',
-                    'policy/core/common/cloud/external_policy_data_fetcher_unittest.cc',
-                    'policy/core/common/cloud/external_policy_data_updater_unittest.cc',
-                    'policy/core/common/cloud/resource_cache_unittest.cc',
-                    'policy/core/common/config_dir_policy_loader_unittest.cc',
+                  # Note: 'sources!' is processed before any 'sources/', so the
+                  # ['include', '^policy/'] on iOS above will include all of the
+                  # policy source files again. Using 'source/' here too will get
+                  # these files excluded as expected.
+                  'sources/': [
+                    ['exclude', '^policy/core/common/async_policy_provider_unittest\\.cc'],
+                    ['exclude', '^policy/core/common/cloud/component_cloud_policy_service_unittest\\.cc'],
+                    ['exclude', '^policy/core/common/cloud/component_cloud_policy_store_unittest\\.cc'],
+                    ['exclude', '^policy/core/common/cloud/component_cloud_policy_updater_unittest\\.cc'],
+                    ['exclude', '^policy/core/common/cloud/external_policy_data_fetcher_unittest\\.cc'],
+                    ['exclude', '^policy/core/common/cloud/external_policy_data_updater_unittest\\.cc'],
+                    ['exclude', '^policy/core/common/cloud/resource_cache_unittest\\.cc'],
+                    ['exclude', '^policy/core/common/config_dir_policy_loader_unittest\\.cc'],
                   ],
                 }],
                 ['chromeos==1', {
