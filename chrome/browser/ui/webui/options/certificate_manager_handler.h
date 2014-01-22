@@ -17,10 +17,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/cryptohome_client.h"
-#endif
-
 namespace options {
 
 class CertIdMap;
@@ -133,6 +129,11 @@ class CertificateManagerHandler
   // Delete certificate and private key (if any).
   void Delete(const base::ListValue* args);
 
+  // Model initialization methods.
+  void OnCertificateManagerModelCreated(
+      scoped_ptr<CertificateManagerModel> model);
+  void CertificateManagerModelReady();
+
   // Populate the trees in all the tabs.
   void Populate(const base::ListValue* args);
 
@@ -156,17 +157,10 @@ class CertificateManagerHandler
       const std::string& title,
       const net::NSSCertDatabase::ImportCertFailureList& not_imported) const;
 
-#if defined(OS_CHROMEOS)
-  // Check whether Tpm token is ready and notifiy JS side.
-  void CheckTpmTokenReady(const base::ListValue* args);
-  void CheckTpmTokenReadyInternal(
-      chromeos::DBusMethodCallStatus call_status,
-      bool is_tpm_token_ready);
-#endif
-
   gfx::NativeWindow GetParentWindow() const;
 
   // The Certificates Manager model
+  bool requested_certificate_manager_model_;
   scoped_ptr<CertificateManagerModel> certificate_manager_model_;
 
   // For multi-step import or export processes, we need to store the path,

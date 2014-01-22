@@ -8,17 +8,68 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_context.h"
+#include "crypto/nss_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 
-CertificateManagerModel::CertificateManagerModel(Observer* observer)
-    : cert_db_(net::NSSCertDatabase::GetInstance()),
+using content::BrowserThread;
+
+// CertificateManagerModel is created on the UI thread. It needs a
+// NSSCertDatabase handle (and on ChromeOS it needs to get the TPM status) which
+// needs to be done on the IO thread.
+//
+// The initialization flow is roughly:
+//
+//               UI thread                              IO Thread
+//
+//   CertificateManagerModel::Create
+//                  \--------------------------------------v
+//                                CertificateManagerModel::GetCertDBOnIOThread
+//                                                         |
+//                                     GetNSSCertDatabaseForResourceContext
+//                                                         |
+//                               CertificateManagerModel::DidGetCertDBOnIOThread
+//                                                         |
+//                                       crypto::IsTPMTokenEnabledForNSS
+//                  v--------------------------------------/
+// CertificateManagerModel::DidGetCertDBOnUIThread
+//                  |
+//     new CertificateManagerModel
+//                  |
+//               callback
+
+// static
+void CertificateManagerModel::Create(
+    content::BrowserContext* browser_context,
+    CertificateManagerModel::Observer* observer,
+    const CreationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&CertificateManagerModel::GetCertDBOnIOThread,
+                 browser_context->GetResourceContext(),
+                 observer,
+                 callback));
+}
+
+CertificateManagerModel::CertificateManagerModel(
+    net::NSSCertDatabase* nss_cert_database,
+    bool is_tpm_available,
+    Observer* observer)
+    : cert_db_(nss_cert_database),
+      is_tpm_available_(is_tpm_available),
       observer_(observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 CertificateManagerModel::~CertificateManagerModel() {
@@ -150,4 +201,53 @@ bool CertificateManagerModel::Delete(net::X509Certificate* cert) {
 bool CertificateManagerModel::IsHardwareBacked(
     const net::X509Certificate* cert) const {
   return cert_db_->IsHardwareBacked(cert);
+}
+
+// static
+void CertificateManagerModel::DidGetCertDBOnUIThread(
+    net::NSSCertDatabase* cert_db,
+    bool is_tpm_available,
+    CertificateManagerModel::Observer* observer,
+    const CreationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  scoped_ptr<CertificateManagerModel> model(
+      new CertificateManagerModel(cert_db, is_tpm_available, observer));
+  callback.Run(model.Pass());
+}
+
+// static
+void CertificateManagerModel::DidGetCertDBOnIOThread(
+    CertificateManagerModel::Observer* observer,
+    const CreationCallback& callback,
+    net::NSSCertDatabase* cert_db) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  bool is_tpm_available = false;
+#if defined(OS_CHROMEOS)
+  is_tpm_available = crypto::IsTPMTokenEnabledForNSS();
+#endif
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CertificateManagerModel::DidGetCertDBOnUIThread,
+                 cert_db,
+                 is_tpm_available,
+                 observer,
+                 callback));
+}
+
+// static
+void CertificateManagerModel::GetCertDBOnIOThread(
+    content::ResourceContext* context,
+    CertificateManagerModel::Observer* observer,
+    const CreationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
+      context,
+      base::Bind(&CertificateManagerModel::DidGetCertDBOnIOThread,
+                 observer,
+                 callback));
+  if (cert_db)
+    DidGetCertDBOnIOThread(observer, callback, cert_db);
 }

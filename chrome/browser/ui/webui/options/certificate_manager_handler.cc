@@ -35,8 +35,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
 using base::UTF8ToUTF16;
@@ -290,12 +288,11 @@ void FileAccessProvider::DoWrite(const base::FilePath& path,
 //  CertificateManagerHandler
 
 CertificateManagerHandler::CertificateManagerHandler()
-    : use_hardware_backed_(false),
+    : requested_certificate_manager_model_(false),
+      use_hardware_backed_(false),
       file_access_provider_(new FileAccessProvider()),
       cert_id_map_(new CertIdMap),
-      weak_ptr_factory_(this) {
-  certificate_manager_model_.reset(new CertificateManagerModel(this));
-}
+      weak_ptr_factory_(this) {}
 
 CertificateManagerHandler::~CertificateManagerHandler() {
 }
@@ -476,13 +473,6 @@ void CertificateManagerHandler::RegisterMessages() {
       "populateCertificateManager",
       base::Bind(&CertificateManagerHandler::Populate,
                  base::Unretained(this)));
-
-#if defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback(
-      "checkTpmTokenReady",
-      base::Bind(&CertificateManagerHandler::CheckTpmTokenReady,
-                 base::Unretained(this)));
-#endif
 }
 
 void CertificateManagerHandler::CertificatesRefreshed() {
@@ -989,8 +979,41 @@ void CertificateManagerHandler::Delete(const base::ListValue* args) {
   }
 }
 
-void CertificateManagerHandler::Populate(const base::ListValue* args) {
+void CertificateManagerHandler::OnCertificateManagerModelCreated(
+    scoped_ptr<CertificateManagerModel> model) {
+  certificate_manager_model_ = model.Pass();
+  CertificateManagerModelReady();
+}
+
+void CertificateManagerHandler::CertificateManagerModelReady() {
+  base::FundamentalValue tpm_available_value(
+      certificate_manager_model_->is_tpm_available());
+  web_ui()->CallJavascriptFunction("CertificateManager.onModelReady",
+                                   tpm_available_value);
   certificate_manager_model_->Refresh();
+}
+
+void CertificateManagerHandler::Populate(const base::ListValue* args) {
+  if (certificate_manager_model_) {
+    // Already have a model, the webui must be re-loading.  Just re-run the
+    // webui initialization.
+    CertificateManagerModelReady();
+    return;
+  }
+
+  if (!requested_certificate_manager_model_) {
+    // Request that a model be created.
+    CertificateManagerModel::Create(
+        Profile::FromWebUI(web_ui()),
+        this,
+        base::Bind(&CertificateManagerHandler::OnCertificateManagerModelCreated,
+                   weak_ptr_factory_.GetWeakPtr()));
+    requested_certificate_manager_model_ = true;
+    return;
+  }
+
+  // We are already waiting for a CertificateManagerModel to be created, no need
+  // to do anything.
 }
 
 void CertificateManagerHandler::PopulateTree(
@@ -1104,26 +1127,6 @@ void CertificateManagerHandler::ShowImportErrors(
                                    error_value,
                                    cert_error_list);
 }
-
-#if defined(OS_CHROMEOS)
-void CertificateManagerHandler::CheckTpmTokenReady(
-    const base::ListValue* args) {
-  chromeos::CryptohomeClient* cryptohome_client =
-      chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
-  cryptohome_client->Pkcs11IsTpmTokenReady(
-      base::Bind(&CertificateManagerHandler::CheckTpmTokenReadyInternal,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CertificateManagerHandler::CheckTpmTokenReadyInternal(
-    chromeos::DBusMethodCallStatus call_status,
-    bool is_tpm_token_ready) {
-  base::FundamentalValue ready(
-      call_status == chromeos::DBUS_METHOD_CALL_SUCCESS && is_tpm_token_ready);
-  web_ui()->CallJavascriptFunction("CertificateManager.onCheckTpmTokenReady",
-                                   ready);
-}
-#endif
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
   return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();

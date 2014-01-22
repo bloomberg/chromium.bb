@@ -8,9 +8,16 @@
 #include <map>
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "net/cert/nss_cert_database.h"
+
+namespace content {
+class BrowserContext;
+class ResourceContext;
+}  // namespace content
 
 // CertificateManagerModel provides the data to be displayed in the certificate
 // manager dialog, and processes changes from the view.
@@ -20,6 +27,9 @@ class CertificateManagerModel {
   // organization.  If a cert does not have an organization name, the
   // subject's CertPrincipal::GetDisplayName() value is used instead.
   typedef std::map<std::string, net::CertificateList> OrgGroupingMap;
+
+  typedef base::Callback<void(scoped_ptr<CertificateManagerModel>)>
+      CreationCallback;
 
   // Enumeration of the possible columns in the certificate manager tree view.
   enum Column {
@@ -37,8 +47,16 @@ class CertificateManagerModel {
     virtual void CertificatesRefreshed() = 0;
   };
 
-  explicit CertificateManagerModel(Observer* observer);
+  // Creates a CertificateManagerModel. The model will be passed to the callback
+  // when it is ready. The caller must ensure the model does not outlive the
+  // |browser_context|.
+  static void Create(content::BrowserContext* browser_context,
+                     Observer* observer,
+                     const CreationCallback& callback);
+
   ~CertificateManagerModel();
+
+  bool is_tpm_available() const { return is_tpm_available_; }
 
   // Accessor for read-only access to the underlying NSSCertDatabase.
   const net::NSSCertDatabase* cert_db() const { return cert_db_; }
@@ -105,12 +123,32 @@ class CertificateManagerModel {
   bool IsHardwareBacked(const net::X509Certificate* cert) const;
 
  private:
+  CertificateManagerModel(net::NSSCertDatabase* nss_cert_database,
+                          bool is_tpm_available,
+                          Observer* observer);
+
+  // Methods used during initialization, see the comment at the top of the .cc
+  // file for details.
+  static void DidGetCertDBOnUIThread(
+      net::NSSCertDatabase* cert_db,
+      bool is_tpm_available,
+      CertificateManagerModel::Observer* observer,
+      const CreationCallback& callback);
+  static void DidGetCertDBOnIOThread(
+      CertificateManagerModel::Observer* observer,
+      const CreationCallback& callback,
+      net::NSSCertDatabase* cert_db);
+  static void GetCertDBOnIOThread(content::ResourceContext* context,
+                                  CertificateManagerModel::Observer* observer,
+                                  const CreationCallback& callback);
+
   // Callback used by Refresh() for when the cert slots have been unlocked.
   // This method does the actual refreshing.
   void RefreshSlotsUnlocked();
 
   net::NSSCertDatabase* cert_db_;
   net::CertificateList cert_list_;
+  bool is_tpm_available_;
 
   // The observer to notify when certificate list is refreshed.
   Observer* observer_;
