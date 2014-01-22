@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/test/color_util.h"
+#include "ui/gfx/test/gfx_util.h"
 
 #include <iomanip>
 #include <sstream>
@@ -22,7 +22,31 @@ std::string ColorAsString(SkColor color) {
   return stream.str();
 }
 
+bool FloatAlmostEqual(float a, float b) {
+  // FloatLE is the gtest predicate for less than or almost equal to.
+  return ::testing::FloatLE("a", "b", a, b) &&
+         ::testing::FloatLE("b", "a", b, a);
+}
+
 }  // namespace
+
+::testing::AssertionResult AssertBoxFloatEqual(const char* lhs_expr,
+                                               const char* rhs_expr,
+                                               const BoxF& lhs,
+                                               const BoxF& rhs) {
+  if (FloatAlmostEqual(lhs.x(), rhs.x()) &&
+      FloatAlmostEqual(lhs.y(), rhs.y()) &&
+      FloatAlmostEqual(lhs.z(), rhs.z()) &&
+      FloatAlmostEqual(lhs.width(), rhs.width()) &&
+      FloatAlmostEqual(lhs.height(), rhs.height()) &&
+      FloatAlmostEqual(lhs.depth(), rhs.depth())) {
+    return ::testing::AssertionSuccess();
+  }
+  return ::testing::AssertionFailure() << "Value of: " << rhs_expr
+                                       << "\n  Actual: " << rhs.ToString()
+                                       << "\nExpected: " << lhs_expr
+                                       << "\nWhich is: " << lhs.ToString();
+}
 
 ::testing::AssertionResult AssertSkColorsEqual(const char* lhs_expr,
                                                const char* rhs_expr,

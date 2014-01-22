@@ -1,17 +1,28 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_TEST_COLOR_UTIL_H_
-#define UI_GFX_TEST_COLOR_UTIL_H_
+#ifndef UI_GFX_TEST_GFX_UTIL_H_
+#define UI_GFX_TEST_GFX_UTIL_H_
 
 #include <iosfwd>
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/box_f.h"
+
 
 namespace gfx {
+
+// Checks that the box coordinates are each almost equal floats.
+#define EXPECT_BOXF_EQ(a, b) \
+  EXPECT_PRED_FORMAT2(::gfx::AssertBoxFloatEqual, a, b)
+
+::testing::AssertionResult AssertBoxFloatEqual(const char* lhs_expr,
+                                               const char* rhs_expr,
+                                               const BoxF& lhs,
+                                               const BoxF& rhs);
 
 #define EXPECT_SKCOLOR_EQ(a, b) \
   EXPECT_PRED_FORMAT2(::gfx::AssertSkColorsEqual, a, b)
@@ -23,4 +34,4 @@ namespace gfx {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_TEST_COLOR_UTIL_H_
+#endif  // UI_GFX_TEST_GFX_UTIL_H_

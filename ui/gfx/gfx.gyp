@@ -454,8 +454,8 @@
       'target_name': 'gfx_test_support',
       'type': 'static_library',
       'sources': [
-        'test/color_util.cc',
-        'test/color_util.h',
+        'test/gfx_util.cc',
+        'test/gfx_util.h',
       ],
       'dependencies': [
         '../../skia/skia.gyp:skia',
