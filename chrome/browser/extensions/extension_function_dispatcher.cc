@@ -253,8 +253,6 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                               extension_info_map->process_map(),
                               g_global_io_data.Get().api.get(),
                               browser_context, callback));
-  scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
-
   if (!function.get())
     return;
 
@@ -278,6 +276,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
+    scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
     LogSuccess(extension->id(),
                params.name,
                args.Pass(),
@@ -355,8 +354,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
                               extensions::ExtensionAPI::GetSharedInstance(),
                               browser_context_,
                               callback));
-  scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
-
   if (!function.get())
     return;
 
@@ -385,6 +382,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
+    scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
+
     // See crbug.com/39178.
     ExternalProtocolHandler::PermitLaunchUrl();
     LogSuccess(extension->id(), params.name, args.Pass(), browser_context_);
