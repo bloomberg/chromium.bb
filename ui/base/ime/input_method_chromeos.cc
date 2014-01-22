@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/input_method_ibus.h"
+#include "ui/base/ime/input_method_chromeos.h"
 
 #include <algorithm>
 #include <cstring>
@@ -36,8 +36,8 @@ chromeos::IBusEngineHandlerInterface* GetEngine() {
 
 namespace ui {
 
-// InputMethodIBus implementation -----------------------------------------
-InputMethodIBus::InputMethodIBus(
+// InputMethodChromeOS implementation -----------------------------------------
+InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
     : context_focused_(false),
       composing_text_(false),
@@ -52,7 +52,7 @@ InputMethodIBus::InputMethodIBus(
   OnInputMethodChanged();
 }
 
-InputMethodIBus::~InputMethodIBus() {
+InputMethodChromeOS::~InputMethodChromeOS() {
   AbandonAllPendingKeyEvents();
   context_focused_ = false;
   ConfirmCompositionText();
@@ -62,25 +62,26 @@ InputMethodIBus::~InputMethodIBus() {
   chromeos::IBusBridge::Get()->SetInputContextHandler(NULL);
 }
 
-void InputMethodIBus::OnFocus() {
+void InputMethodChromeOS::OnFocus() {
   InputMethodBase::OnFocus();
   UpdateContextFocusState();
 }
 
-void InputMethodIBus::OnBlur() {
+void InputMethodChromeOS::OnBlur() {
   ConfirmCompositionText();
   InputMethodBase::OnBlur();
   UpdateContextFocusState();
 }
 
-bool InputMethodIBus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                               NativeEventResult* result) {
+bool InputMethodChromeOS::OnUntranslatedIMEMessage(
+    const base::NativeEvent& event,
+    NativeEventResult* result) {
   return false;
 }
 
-void InputMethodIBus::ProcessKeyEventDone(uint32 id,
-                                          ui::KeyEvent* event,
-                                          bool is_handled) {
+void InputMethodChromeOS::ProcessKeyEventDone(uint32 id,
+                                              ui::KeyEvent* event,
+                                              bool is_handled) {
   if (pending_key_events_.find(id) == pending_key_events_.end())
    return;  // Abandoned key event.
 
@@ -104,7 +105,7 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
   pending_key_events_.erase(id);
 }
 
-bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
+bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
   DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
 
@@ -134,7 +135,7 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
   ui::KeyEvent* copied_event = new ui::KeyEvent(event);
   GetEngine()->ProcessKeyEvent(
       event,
-      base::Bind(&InputMethodIBus::ProcessKeyEventDone,
+      base::Bind(&InputMethodChromeOS::ProcessKeyEventDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  current_keyevent_id_,
                  // Pass the ownership of |copied_event|.
@@ -144,7 +145,8 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
   return true;
 }
 
-void InputMethodIBus::OnTextInputTypeChanged(const TextInputClient* client) {
+void InputMethodChromeOS::OnTextInputTypeChanged(
+    const TextInputClient* client) {
   if (IsTextInputClientFocused(client)) {
     ResetContext();
     UpdateContextFocusState();
@@ -155,7 +157,7 @@ void InputMethodIBus::OnTextInputTypeChanged(const TextInputClient* client) {
   InputMethodBase::OnTextInputTypeChanged(client);
 }
 
-void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
+void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!context_focused_ || !IsTextInputClientFocused(client))
     return;
 
@@ -210,36 +212,38 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
                                   selection_range.end() - text_range.start());
 }
 
-void InputMethodIBus::CancelComposition(const TextInputClient* client) {
+void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {
   if (context_focused_ && IsTextInputClientFocused(client))
     ResetContext();
 }
 
-void InputMethodIBus::OnInputLocaleChanged() {
+void InputMethodChromeOS::OnInputLocaleChanged() {
   // Not supported.
 }
 
-std::string InputMethodIBus::GetInputLocale() {
+std::string InputMethodChromeOS::GetInputLocale() {
   // Not supported.
   return "";
 }
 
-bool InputMethodIBus::IsActive() {
+bool InputMethodChromeOS::IsActive() {
   return true;
 }
 
-bool InputMethodIBus::IsCandidatePopupOpen() const {
+bool InputMethodChromeOS::IsCandidatePopupOpen() const {
   // TODO(yukishiino): Implement this method.
   return false;
 }
 
-void InputMethodIBus::OnWillChangeFocusedClient(TextInputClient* focused_before,
-                                                TextInputClient* focused) {
+void InputMethodChromeOS::OnWillChangeFocusedClient(
+    TextInputClient* focused_before,
+    TextInputClient* focused) {
   ConfirmCompositionText();
 }
 
-void InputMethodIBus::OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                               TextInputClient* focused) {
+void InputMethodChromeOS::OnDidChangeFocusedClient(
+    TextInputClient* focused_before,
+    TextInputClient* focused) {
   // Force to update the input type since client's TextInputStateChanged()
   // function might not be called if text input types before the client loses
   // focus and after it acquires focus again are the same.
@@ -251,7 +255,7 @@ void InputMethodIBus::OnDidChangeFocusedClient(TextInputClient* focused_before,
   OnCaretBoundsChanged(focused);
 }
 
-void InputMethodIBus::ConfirmCompositionText() {
+void InputMethodChromeOS::ConfirmCompositionText() {
   TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
     client->ConfirmCompositionText();
@@ -259,7 +263,7 @@ void InputMethodIBus::ConfirmCompositionText() {
   ResetContext();
 }
 
-void InputMethodIBus::ResetContext() {
+void InputMethodChromeOS::ResetContext() {
   if (!context_focused_ || !GetTextInputClient())
     return;
 
@@ -285,7 +289,7 @@ void InputMethodIBus::ResetContext() {
   character_composer_.Reset();
 }
 
-void InputMethodIBus::UpdateContextFocusState() {
+void InputMethodChromeOS::UpdateContextFocusState() {
   const bool old_context_focused = context_focused_;
   const TextInputType current_text_input_type = GetTextInputType();
   // Use switch here in case we are going to add more text input types.
@@ -325,7 +329,7 @@ void InputMethodIBus::UpdateContextFocusState() {
   }
 }
 
-void InputMethodIBus::ProcessKeyEventPostIME(
+void InputMethodChromeOS::ProcessKeyEventPostIME(
     const ui::KeyEvent& event,
     bool handled) {
   TextInputClient* client = GetTextInputClient();
@@ -358,7 +362,8 @@ void InputMethodIBus::ProcessKeyEventPostIME(
     DispatchKeyEventPostIME(event);
 }
 
-void InputMethodIBus::ProcessFilteredKeyPressEvent(const ui::KeyEvent& event) {
+void InputMethodChromeOS::ProcessFilteredKeyPressEvent(
+    const ui::KeyEvent& event) {
   if (NeedInsertChar()) {
     DispatchKeyEventPostIME(event);
   } else {
@@ -370,7 +375,7 @@ void InputMethodIBus::ProcessFilteredKeyPressEvent(const ui::KeyEvent& event) {
   }
 }
 
-void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
+void InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
     const ui::KeyEvent& event) {
   const TextInputClient* prev_client = GetTextInputClient();
   DispatchKeyEventPostIME(event);
@@ -408,7 +413,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
     client->InsertChar(ch, event_flags);
 }
 
-void InputMethodIBus::ProcessInputMethodResult(const ui::KeyEvent& event,
+void InputMethodChromeOS::ProcessInputMethodResult(const ui::KeyEvent& event,
                                                bool handled) {
   TextInputClient* client = GetTextInputClient();
   DCHECK(client);
@@ -440,21 +445,21 @@ void InputMethodIBus::ProcessInputMethodResult(const ui::KeyEvent& event,
   composition_changed_ = false;
 }
 
-bool InputMethodIBus::NeedInsertChar() const {
+bool InputMethodChromeOS::NeedInsertChar() const {
   return GetTextInputClient() &&
       (IsTextInputTypeNone() ||
        (!composing_text_ && result_text_.length() == 1));
 }
 
-bool InputMethodIBus::HasInputMethodResult() const {
+bool InputMethodChromeOS::HasInputMethodResult() const {
   return result_text_.length() || composition_changed_;
 }
 
-void InputMethodIBus::AbandonAllPendingKeyEvents() {
+void InputMethodChromeOS::AbandonAllPendingKeyEvents() {
   pending_key_events_.clear();
 }
 
-void InputMethodIBus::CommitText(const std::string& text) {
+void InputMethodChromeOS::CommitText(const std::string& text) {
   if (text.empty())
     return;
 
@@ -480,7 +485,7 @@ void InputMethodIBus::CommitText(const std::string& text) {
   }
 }
 
-void InputMethodIBus::UpdatePreeditText(const chromeos::IBusText& text,
+void InputMethodChromeOS::UpdatePreeditText(const chromeos::IBusText& text,
                                         uint32 cursor_pos,
                                         bool visible) {
   if (IsTextInputTypeNone())
@@ -522,7 +527,7 @@ void InputMethodIBus::UpdatePreeditText(const chromeos::IBusText& text,
   }
 }
 
-void InputMethodIBus::HidePreeditText() {
+void InputMethodChromeOS::HidePreeditText() {
   if (composition_.text.empty() || IsTextInputTypeNone())
     return;
 
@@ -538,7 +543,7 @@ void InputMethodIBus::HidePreeditText() {
   }
 }
 
-void InputMethodIBus::DeleteSurroundingText(int32 offset, uint32 length) {
+void InputMethodChromeOS::DeleteSurroundingText(int32 offset, uint32 length) {
   if (!composition_.text.empty())
     return;  // do nothing if there is ongoing composition.
   if (offset < 0 && static_cast<uint32>(-1 * offset) != length)
@@ -547,7 +552,7 @@ void InputMethodIBus::DeleteSurroundingText(int32 offset, uint32 length) {
     GetTextInputClient()->ExtendSelectionAndDelete(length, 0U);
 }
 
-bool InputMethodIBus::ExecuteCharacterComposer(const ui::KeyEvent& event) {
+bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {
   bool consumed = character_composer_.FilterKeyPress(event);
 
   chromeos::IBusText preedit;
@@ -563,7 +568,7 @@ bool InputMethodIBus::ExecuteCharacterComposer(const ui::KeyEvent& event) {
   return consumed;
 }
 
-void InputMethodIBus::ExtractCompositionText(
+void InputMethodChromeOS::ExtractCompositionText(
     const chromeos::IBusText& text,
     uint32 cursor_position,
     CompositionText* out_composition) const {

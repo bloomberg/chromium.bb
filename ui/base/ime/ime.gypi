@@ -34,8 +34,8 @@
     'input_method_delegate.h',
     'input_method_factory.cc',
     'input_method_factory.h',
-    'input_method_ibus.cc',
-    'input_method_ibus.h',
+    'input_method_chromeos.cc',
+    'input_method_chromeos.h',
     'input_method_imm32.cc',
     'input_method_imm32.h',
     'input_method_initializer.cc',
@@ -86,8 +86,8 @@
     }],
     ['chromeos==0 or use_x11==0', {
       'sources!': [
-        'input_method_ibus.cc',
-        'input_method_ibus.h',
+        'input_method_chromeos.cc',
+        'input_method_chromeos.h',
       ],
     }],
     ['chromeos==1', {

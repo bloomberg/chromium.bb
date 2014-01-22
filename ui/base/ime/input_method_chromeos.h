@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_INPUT_METHOD_IBUS_H_
-#define UI_BASE_IME_INPUT_METHOD_IBUS_H_
+#ifndef UI_BASE_IME_INPUT_METHOD_CHROMEOS_H_
+#define UI_BASE_IME_INPUT_METHOD_CHROMEOS_H_
 
 #include <set>
 #include <string>
@@ -26,12 +26,12 @@ class IBusText;
 namespace ui {
 
 // A ui::InputMethod implementation based on IBus.
-class UI_BASE_EXPORT InputMethodIBus
+class UI_BASE_EXPORT InputMethodChromeOS
     : public InputMethodBase,
       public chromeos::IBusInputContextHandlerInterface {
  public:
-  explicit InputMethodIBus(internal::InputMethodDelegate* delegate);
-  virtual ~InputMethodIBus();
+  explicit InputMethodChromeOS(internal::InputMethodDelegate* delegate);
+  virtual ~InputMethodChromeOS();
 
   // Overridden from InputMethod:
   virtual void OnFocus() OVERRIDE;
@@ -152,11 +152,11 @@ class UI_BASE_EXPORT InputMethodIBus
   TextInputType previous_textinput_type_;
 
   // Used for making callbacks.
-  base::WeakPtrFactory<InputMethodIBus> weak_ptr_factory_;
+  base::WeakPtrFactory<InputMethodChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodIBus);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOS);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_INPUT_METHOD_IBUS_H_
+#endif  // UI_BASE_IME_INPUT_METHOD_CHROMEOS_H_

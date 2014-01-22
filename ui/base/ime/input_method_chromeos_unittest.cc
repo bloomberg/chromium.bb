@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
+#include "ui/base/ime/input_method_chromeos.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_ibus.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/test/events_test_utils_x11.h"
@@ -59,10 +59,10 @@ enum KeyEventHandlerBehavior {
 }  // namespace
 
 
-class TestableInputMethodIBus : public InputMethodIBus {
+class TestableInputMethodChromeOS : public InputMethodChromeOS {
  public:
-  explicit TestableInputMethodIBus(internal::InputMethodDelegate* delegate)
-      : InputMethodIBus(delegate),
+  explicit TestableInputMethodChromeOS(internal::InputMethodDelegate* delegate)
+      : InputMethodChromeOS(delegate),
         process_key_event_post_ime_call_count_(0) {
   }
 
@@ -72,7 +72,7 @@ class TestableInputMethodIBus : public InputMethodIBus {
     bool handled;
   };
 
-  // InputMethodIBus override.
+  // InputMethodChromeOS override.
   virtual void ProcessKeyEventPostIME(const ui::KeyEvent& key_event,
                                       bool handled) OVERRIDE {
     process_key_event_post_ime_args_.event = &key_event;
@@ -93,8 +93,8 @@ class TestableInputMethodIBus : public InputMethodIBus {
   }
 
   // Change access rights for testing.
-  using InputMethodIBus::ExtractCompositionText;
-  using InputMethodIBus::ResetContext;
+  using InputMethodChromeOS::ExtractCompositionText;
+  using InputMethodChromeOS::ResetContext;
 
  private:
   ProcessKeyEventPostIMEArgs process_key_event_post_ime_args_;
@@ -192,15 +192,15 @@ class SetSurroundingTextVerifier {
   DISALLOW_COPY_AND_ASSIGN(SetSurroundingTextVerifier);
 };
 
-class InputMethodIBusTest : public internal::InputMethodDelegate,
+class InputMethodChromeOSTest : public internal::InputMethodDelegate,
                             public testing::Test,
                             public TextInputClient {
  public:
-  InputMethodIBusTest() {
+  InputMethodChromeOSTest() {
     ResetFlags();
   }
 
-  virtual ~InputMethodIBusTest() {
+  virtual ~InputMethodChromeOSTest() {
   }
 
   // testing::Test overrides:
@@ -217,7 +217,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     chromeos::IBusBridge::Get()->SetCandidateWindowHandler(
         mock_ime_candidate_window_handler_.get());
 
-    ime_.reset(new TestableInputMethodIBus(this));
+    ime_.reset(new TestableInputMethodChromeOS(this));
     ime_->SetFocusedTextInputClient(this);
   }
 
@@ -301,7 +301,9 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     return true;
   }
 
-  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE { return false; }
+  virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE {
+    return false;
+  }
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE { return false; }
   virtual bool GetTextFromRange(const gfx::Range& range,
                                 base::string16* text) const OVERRIDE {
@@ -348,7 +350,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     caret_bounds_ = gfx::Rect();
   }
 
-  scoped_ptr<TestableInputMethodIBus> ime_;
+  scoped_ptr<TestableInputMethodChromeOS> ime_;
 
   // Variables for remembering the parameters that are passed to
   // ui::internal::InputMethodDelegate functions.
@@ -379,24 +381,24 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   scoped_ptr<chromeos::MockIMECandidateWindowHandler>
       mock_ime_candidate_window_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodIBusTest);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOSTest);
 };
 
 // Tests public APIs in ui::InputMethod first.
 
-TEST_F(InputMethodIBusTest, GetInputLocale) {
-  // ui::InputMethodIBus does not support the API.
+TEST_F(InputMethodChromeOSTest, GetInputLocale) {
+  // ui::InputMethodChromeOS does not support the API.
   ime_->Init(true);
   EXPECT_EQ("", ime_->GetInputLocale());
 }
 
-TEST_F(InputMethodIBusTest, IsActive) {
+TEST_F(InputMethodChromeOSTest, IsActive) {
   ime_->Init(true);
-  // ui::InputMethodIBus always returns true.
+  // ui::InputMethodChromeOS always returns true.
   EXPECT_TRUE(ime_->IsActive());
 }
 
-TEST_F(InputMethodIBusTest, GetInputTextType) {
+TEST_F(InputMethodChromeOSTest, GetInputTextType) {
   ime_->Init(true);
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
@@ -407,7 +409,7 @@ TEST_F(InputMethodIBusTest, GetInputTextType) {
   EXPECT_EQ(TEXT_INPUT_TYPE_TEXT, ime_->GetTextInputType());
 }
 
-TEST_F(InputMethodIBusTest, CanComposeInline) {
+TEST_F(InputMethodChromeOSTest, CanComposeInline) {
   ime_->Init(true);
   EXPECT_TRUE(ime_->CanComposeInline());
   can_compose_inline_ = false;
@@ -415,14 +417,14 @@ TEST_F(InputMethodIBusTest, CanComposeInline) {
   EXPECT_FALSE(ime_->CanComposeInline());
 }
 
-TEST_F(InputMethodIBusTest, GetTextInputClient) {
+TEST_F(InputMethodChromeOSTest, GetTextInputClient) {
   ime_->Init(true);
   EXPECT_EQ(this, ime_->GetTextInputClient());
   ime_->SetFocusedTextInputClient(NULL);
   EXPECT_EQ(NULL, ime_->GetTextInputClient());
 }
 
-TEST_F(InputMethodIBusTest, GetInputTextType_WithoutFocusedClient) {
+TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedClient) {
   ime_->Init(true);
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
   ime_->SetFocusedTextInputClient(NULL);
@@ -437,7 +439,7 @@ TEST_F(InputMethodIBusTest, GetInputTextType_WithoutFocusedClient) {
   EXPECT_EQ(TEXT_INPUT_TYPE_PASSWORD, ime_->GetTextInputType());
 }
 
-TEST_F(InputMethodIBusTest, GetInputTextType_WithoutFocusedWindow) {
+TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedWindow) {
   ime_->Init(true);
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
   ime_->OnBlur();
@@ -452,7 +454,7 @@ TEST_F(InputMethodIBusTest, GetInputTextType_WithoutFocusedWindow) {
   EXPECT_EQ(TEXT_INPUT_TYPE_PASSWORD, ime_->GetTextInputType());
 }
 
-TEST_F(InputMethodIBusTest, GetInputTextType_WithoutFocusedWindow2) {
+TEST_F(InputMethodChromeOSTest, GetInputTextType_WithoutFocusedWindow2) {
   ime_->Init(false);  // the top-level is initially unfocused.
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE, ime_->GetTextInputType());
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
@@ -466,7 +468,7 @@ TEST_F(InputMethodIBusTest, GetInputTextType_WithoutFocusedWindow2) {
 
 // Confirm that IBusClient::FocusIn is called on "connected" if input_type_ is
 // TEXT.
-TEST_F(InputMethodIBusTest, FocusIn_Text) {
+TEST_F(InputMethodChromeOSTest, FocusIn_Text) {
   ime_->Init(true);
   // A context shouldn't be created since the daemon is not running.
   EXPECT_EQ(0U, on_input_method_changed_call_count_);
@@ -479,14 +481,14 @@ TEST_F(InputMethodIBusTest, FocusIn_Text) {
       1,
       mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
   // ui::TextInputClient::OnInputMethodChanged() should be called when
-  // ui::InputMethodIBus connects/disconnects to/from ibus-daemon and the
+  // ui::InputMethodChromeOS connects/disconnects to/from ibus-daemon and the
   // current text input type is not NONE.
   EXPECT_EQ(1U, on_input_method_changed_call_count_);
 }
 
 // Confirm that IBusClient::FocusIn is NOT called on "connected" if input_type_
 // is PASSWORD.
-TEST_F(InputMethodIBusTest, FocusIn_Password) {
+TEST_F(InputMethodChromeOSTest, FocusIn_Password) {
   ime_->Init(true);
   EXPECT_EQ(0U, on_input_method_changed_call_count_);
   input_type_ = TEXT_INPUT_TYPE_PASSWORD;
@@ -497,7 +499,7 @@ TEST_F(InputMethodIBusTest, FocusIn_Password) {
 }
 
 // Confirm that IBusClient::FocusOut is called as expected.
-TEST_F(InputMethodIBusTest, FocusOut_None) {
+TEST_F(InputMethodChromeOSTest, FocusOut_None) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->Init(true);
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
@@ -509,7 +511,7 @@ TEST_F(InputMethodIBusTest, FocusOut_None) {
 }
 
 // Confirm that IBusClient::FocusOut is called as expected.
-TEST_F(InputMethodIBusTest, FocusOut_Password) {
+TEST_F(InputMethodChromeOSTest, FocusOut_Password) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->Init(true);
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
@@ -521,7 +523,7 @@ TEST_F(InputMethodIBusTest, FocusOut_Password) {
 }
 
 // FocusIn/FocusOut scenario test
-TEST_F(InputMethodIBusTest, Focus_Scenario) {
+TEST_F(InputMethodChromeOSTest, Focus_Scenario) {
   ime_->Init(true);
   // Confirm that both FocusIn and FocusOut are NOT called.
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_in_call_count());
@@ -566,7 +568,7 @@ TEST_F(InputMethodIBusTest, Focus_Scenario) {
 }
 
 // Test if the new |caret_bounds_| is correctly sent to ibus-daemon.
-TEST_F(InputMethodIBusTest, OnCaretBoundsChanged) {
+TEST_F(InputMethodChromeOSTest, OnCaretBoundsChanged) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->Init(true);
   EXPECT_EQ(
@@ -584,14 +586,14 @@ TEST_F(InputMethodIBusTest, OnCaretBoundsChanged) {
       mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
   caret_bounds_ = gfx::Rect(0, 2, 3, 4);  // unchanged
   ime_->OnCaretBoundsChanged(this);
-  // Current InputMethodIBus implementation performs the IPC regardless of the
-  // bounds are changed or not.
+  // Current InputMethodChromeOS implementation performs the IPC
+  // regardless of the bounds are changed or not.
   EXPECT_EQ(
       4,
       mock_ime_candidate_window_handler_->set_cursor_bounds_call_count());
 }
 
-TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_NoAttribute) {
+TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_NoAttribute) {
   const char kSampleText[] = "Sample Text";
   const uint32 kCursorPos = 2UL;
 
@@ -613,7 +615,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_NoAttribute) {
   EXPECT_FALSE(composition_text.underlines[0].thick);
 }
 
-TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SingleUnderline) {
+TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
   const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
@@ -643,7 +645,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SingleUnderline) {
   EXPECT_FALSE(composition_text.underlines[0].thick);
 }
 
-TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_DoubleUnderline) {
+TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
   const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
@@ -673,7 +675,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_DoubleUnderline) {
   EXPECT_TRUE(composition_text.underlines[0].thick);
 }
 
-TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_ErrorUnderline) {
+TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_ErrorUnderline) {
   const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
@@ -702,7 +704,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_ErrorUnderline) {
   EXPECT_FALSE(composition_text.underlines[0].thick);
 }
 
-TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_Selection) {
+TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
   const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 2UL;
@@ -727,7 +729,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_Selection) {
   EXPECT_TRUE(composition_text.underlines[0].thick);
 }
 
-TEST_F(InputMethodIBusTest,
+TEST_F(InputMethodChromeOSTest,
        ExtractCompositionTextTest_SelectionStartWithCursor) {
   const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
                              "\xE3\x81\x88\xE3\x81\x8A";
@@ -757,7 +759,8 @@ TEST_F(InputMethodIBusTest,
   EXPECT_TRUE(composition_text.underlines[0].thick);
 }
 
-TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SelectionEndWithCursor) {
+TEST_F(InputMethodChromeOSTest,
+       ExtractCompositionTextTest_SelectionEndWithCursor) {
   const char kSampleText[] = "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86"
                              "\xE3\x81\x88\xE3\x81\x8A";
   const uint32 kCursorPos = 4UL;
@@ -786,7 +789,7 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SelectionEndWithCursor) {
   EXPECT_TRUE(composition_text.underlines[0].thick);
 }
 
-TEST_F(InputMethodIBusTest, SurroundingText_NoSelectionTest) {
+TEST_F(InputMethodChromeOSTest, SurroundingText_NoSelectionTest) {
   ime_->Init(true);
   // Click a text input form.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -814,7 +817,7 @@ TEST_F(InputMethodIBusTest, SurroundingText_NoSelectionTest) {
             mock_ime_engine_handler_->last_set_surrounding_anchor_pos());
 }
 
-TEST_F(InputMethodIBusTest, SurroundingText_SelectionTest) {
+TEST_F(InputMethodChromeOSTest, SurroundingText_SelectionTest) {
   ime_->Init(true);
   // Click a text input form.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -841,7 +844,7 @@ TEST_F(InputMethodIBusTest, SurroundingText_SelectionTest) {
             mock_ime_engine_handler_->last_set_surrounding_anchor_pos());
 }
 
-TEST_F(InputMethodIBusTest, SurroundingText_PartialText) {
+TEST_F(InputMethodChromeOSTest, SurroundingText_PartialText) {
   ime_->Init(true);
   // Click a text input form.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -867,7 +870,7 @@ TEST_F(InputMethodIBusTest, SurroundingText_PartialText) {
             mock_ime_engine_handler_->last_set_surrounding_anchor_pos());
 }
 
-TEST_F(InputMethodIBusTest, SurroundingText_BecomeEmptyText) {
+TEST_F(InputMethodChromeOSTest, SurroundingText_BecomeEmptyText) {
   ime_->Init(true);
   // Click a text input form.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -892,20 +895,20 @@ TEST_F(InputMethodIBusTest, SurroundingText_BecomeEmptyText) {
             mock_ime_engine_handler_->set_surrounding_text_call_count());
 }
 
-class InputMethodIBusKeyEventTest : public InputMethodIBusTest {
+class InputMethodChromeOSKeyEventTest : public InputMethodChromeOSTest {
  public:
-  InputMethodIBusKeyEventTest() {}
-  virtual ~InputMethodIBusKeyEventTest() {}
+  InputMethodChromeOSKeyEventTest() {}
+  virtual ~InputMethodChromeOSKeyEventTest() {}
 
   virtual void SetUp() OVERRIDE {
-    InputMethodIBusTest::SetUp();
+    InputMethodChromeOSTest::SetUp();
     ime_->Init(true);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodIBusKeyEventTest);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOSKeyEventTest);
 };
 
-TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
+TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseTest) {
   const int kFlags = ui::EF_SHIFT_DOWN;
   ScopedXI2Event xevent;
   xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, kFlags);
@@ -937,7 +940,7 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 }
 
-TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
+TEST_F(InputMethodChromeOSKeyEventTest, MultiKeyEventDelayResponseTest) {
   // Preparation
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
@@ -997,7 +1000,7 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
   EXPECT_FALSE(ime_->process_key_event_post_ime_args().handled);
 }
 
-TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
+TEST_F(InputMethodChromeOSKeyEventTest, KeyEventDelayResponseResetTest) {
   ScopedXI2Event xevent;
   xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_SHIFT_DOWN);
   const ui::KeyEvent event(xevent, true);

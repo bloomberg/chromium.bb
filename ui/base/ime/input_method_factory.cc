@@ -7,7 +7,7 @@
 #include "ui/base/ime/mock_input_method.h"
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-#include "ui/base/ime/input_method_ibus.h"
+#include "ui/base/ime/input_method_chromeos.h"
 #elif defined(OS_WIN)
 #include "base/win/metro.h"
 #include "ui/base/ime/input_method_imm32.h"
@@ -43,7 +43,7 @@ scoped_ptr<InputMethod> CreateInputMethod(
     return scoped_ptr<InputMethod>(new MockInputMethod(delegate));
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  return scoped_ptr<InputMethod>(new InputMethodIBus(delegate));
+  return scoped_ptr<InputMethod>(new InputMethodChromeOS(delegate));
 #elif defined(OS_WIN)
   if (base::win::IsTSFAwareRequired())
     return scoped_ptr<InputMethod>(new InputMethodTSF(delegate, widget));
