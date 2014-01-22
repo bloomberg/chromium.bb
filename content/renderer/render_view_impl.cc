@@ -3636,11 +3636,7 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame, int world_id) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidClearWindowObject(frame, world_id));
 
-  // Only install controllers into the main world.
-  if (!world_id)
-    return;
-
-  if (enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION))
+  if ((enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION) && (world_id == 0))
     DomAutomationController::Install(this, frame);
 
   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
