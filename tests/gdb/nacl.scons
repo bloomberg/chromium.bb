@@ -55,119 +55,6 @@ gdb_test_guest = env.ComponentProgram(
     EXTRA_LIBS=['${NONIRT_LIBS}'])
 gdb_test_guest = env.GetTranslatedNexe(gdb_test_guest)
 
-# TempFileArguments: gdb_test_guest-based tests below accept a
-# temporary file argument, and we encapsulate this here for brevity /
-# to avoid code duplication.
-def TempFileArguments():
-  temp_handle, temp_path = env.MakeTempFile(prefix='gdb_mmap')
-  os.close(temp_handle)
-  return ','.join(['-f', temp_path])
-
-node = env.CommandTest(
-    'gdb_stepi_after_break.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('stepi_after_break.py'),
-             '--nexe', gdb_test_guest,
-             '--nexe_args', TempFileArguments()] +
-            test_args)
-
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stepi_after_break_test')
-env.TestBindsFixedTcpPort(node)
-
-node = env.CommandTest(
-    'gdb_invalid_memory.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('invalid_memory.py'),
-             '--nexe', gdb_test_guest,
-             '--nexe_args', TempFileArguments()] + test_args)
-
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_invalid_memory_test')
-env.TestBindsFixedTcpPort(node)
-
-node = env.CommandTest(
-    'gdb_print_symbol.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('print_symbol.py'),
-             '--nexe', gdb_test_guest,
-             '--nexe_args', TempFileArguments()] + test_args)
-
-# This fails on ARM+PNaCl. The set_global_var function appears to be
-# getting the wrong argument value (68K vs 1), so the value of
-# global_var doesn't match the expected value.
-# TODO(mseaborn): Investigate and enable this test.
-# http://code.google.com/p/nativeclient/issues/detail?id=3252
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_print_symbol_test',
-                       is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
-env.TestBindsFixedTcpPort(node)
-
-node = env.CommandTest(
-    'gdb_stack_trace.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('stack_trace.py'),
-             '--nexe', gdb_test_guest,
-             '--nexe_args', TempFileArguments()] + test_args)
-
-# This fails on ARM+PNaCl because it gets an
-# unexpected value for a function argument from
-# the stack backtrace.
-# TODO(mseaborn): Investigate and enable this test.
-# http://code.google.com/p/nativeclient/issues/detail?id=3252
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stack_trace_test',
-                       is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
-env.TestBindsFixedTcpPort(node)
-
-node = env.CommandTest(
-    'gdb_step_from_func_start.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('step_from_func_start.py'),
-             '--nexe', gdb_test_guest,
-             '--nexe_args', TempFileArguments()] + test_args)
-
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_step_from_func_start_test')
-env.TestBindsFixedTcpPort(node)
-
-node = env.CommandTest(
-    'gdb_call_from_gdb.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('call_from_gdb.py'),
-             '--nexe', gdb_test_guest,
-             '--nexe_args', TempFileArguments()] + test_args)
-# This fails on MIPS, since GDB for MIPS executes inferior calls on stack
-# (call dummy location in MIPS GDB is set as ON_STACK method). Since the stack
-# is not executable under NaCl, this makes inferior call impossible to execute.
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_call_from_gdb_test',
-                       is_broken=env.Bit('target_mips32'))
-env.TestBindsFixedTcpPort(node)
-
-node = env.CommandTest(
-    'gdb_change_variable.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('change_variable.py'),
-             '--nexe', gdb_test_guest,
-             '--nexe_args', TempFileArguments()] + test_args)
-
-# This fails on ARM/MIPS+PNaCl because it is reading
-# local_var before it has been initialised.
-# TODO(mseaborn): Investigate and enable this test.
-# http://code.google.com/p/nativeclient/issues/detail?id=3252
-is_broken = ((env.Bit('bitcode') and env.Bit('target_arm')) or
-             env.Bit('target_mips32'))
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test',
-                       is_broken=is_broken)
-env.TestBindsFixedTcpPort(node)
-
-if not env.Bit('nacl_static_link'):
-  node = env.CommandTest(
-      'gdb_execute_nacl_manifest_twice.out',
-      extra_deps=extra_deps,
-      command=['${PYTHON}', env.File('execute_nacl_manifest_twice.py'),
-               '--nexe', gdb_test_guest,
-               '--nexe_args', TempFileArguments()] + test_args)
-
-  env.AddNodeToTestSuite(node, test_suites,
-                         'run_gdb_execute_nacl_manifest_twice_test')
-  env.TestBindsFixedTcpPort(node)
-
 # GDB treats multithreaded programs specially. Provide distinct nexe for
 # multithreaded tests to isolate multiple threads-specific issues.
 gdb_test_guest_thread = env.ComponentProgram(
@@ -175,33 +62,73 @@ gdb_test_guest_thread = env.ComponentProgram(
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 gdb_test_guest_thread = env.GetTranslatedNexe(gdb_test_guest_thread)
 
-node = env.CommandTest(
-    'gdb_break_continue_thread.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('break_continue_thread.py'),
-             '--nexe', gdb_test_guest_thread] + test_args)
 
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_break_continue_thread_test')
-env.TestBindsFixedTcpPort(node)
+# TempFileArguments: gdb_test_guest-based tests below accept a
+# temporary file argument, and we encapsulate this here for brevity /
+# to avoid code duplication.
+def TempFileArguments():
+  temp_handle, temp_path = env.MakeTempFile(prefix='nacl_gdb_test_')
+  os.close(temp_handle)
+  return ','.join(['-f', temp_path])
 
-node = env.CommandTest(
-    'gdb_syscall_thread.out',
-    extra_deps=extra_deps,
-    command=['${PYTHON}', env.File('syscall_thread.py'),
-             '--nexe', gdb_test_guest_thread] + test_args)
 
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_syscall_thread_test')
-env.TestBindsFixedTcpPort(node)
+def AddGdbTest(name, is_broken=False, is_thread_test=False):
+  if is_thread_test:
+    script_args = ['--nexe', gdb_test_guest_thread]
+  else:
+    script_args = ['--nexe', gdb_test_guest,
+                   '--nexe_args', TempFileArguments()]
+  node = env.CommandTest('%s.out' % name,
+                         extra_deps=extra_deps,
+                         command=(['${PYTHON}', env.File('%s.py' % name)]
+                                  + script_args
+                                  + test_args))
+  env.TestBindsFixedTcpPort(node)
+  env.AddNodeToTestSuite(node, test_suites, 'run_gdb_%s_test' % name,
+                         is_broken=is_broken)
+
+
+AddGdbTest('stepi_after_break')
+AddGdbTest('invalid_memory')
+
+# This fails on ARM+PNaCl. The set_global_var function appears to be
+# getting the wrong argument value (68K vs 1), so the value of
+# global_var doesn't match the expected value.
+# TODO(mseaborn): Investigate and enable this test.
+# http://code.google.com/p/nativeclient/issues/detail?id=3252
+AddGdbTest('print_symbol',
+           is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
+
+# This fails on ARM+PNaCl because it gets an
+# unexpected value for a function argument from
+# the stack backtrace.
+# TODO(mseaborn): Investigate and enable this test.
+# http://code.google.com/p/nativeclient/issues/detail?id=3252
+AddGdbTest('stack_trace',
+           is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
+
+AddGdbTest('step_from_func_start')
+
+# This fails on MIPS, since GDB for MIPS executes inferior calls on stack
+# (call dummy location in MIPS GDB is set as ON_STACK method). Since the stack
+# is not executable under NaCl, this makes inferior call impossible to execute.
+AddGdbTest('call_from_gdb', is_broken=env.Bit('target_mips32'))
+
+# This fails on ARM/MIPS+PNaCl because it is reading
+# local_var before it has been initialised.
+# TODO(mseaborn): Investigate and enable this test.
+# http://code.google.com/p/nativeclient/issues/detail?id=3252
+AddGdbTest('change_variable',
+           is_broken=((env.Bit('bitcode') and env.Bit('target_arm')) or
+                      env.Bit('target_mips32')))
+
+if not env.Bit('nacl_static_link'):
+  AddGdbTest('execute_nacl_manifest_twice')
+
+AddGdbTest('break_continue_thread', is_thread_test=True)
+AddGdbTest('syscall_thread', is_thread_test=True)
 
 # We don't run this test on non-x86 architectures or PNaCl since it
 # contains inline assembly.
 if env.Bit('target_x86') and not env.Bit('bitcode'):
-  node = env.CommandTest(
-      'gdb_mmap.out',
-      extra_deps=extra_deps,
-      command=['${PYTHON}', env.File('mmap.py'),
-               '--nexe', gdb_test_guest,
-               '--nexe_args', TempFileArguments()] + test_args)
-
-  env.AddNodeToTestSuite(node, test_suites, 'run_gdb_mmap_test')
-  env.TestBindsFixedTcpPort(node)
+  AddGdbTest('mmap')
