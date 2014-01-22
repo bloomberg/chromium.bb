@@ -462,6 +462,18 @@
         '../../testing/gtest.gyp:gtest',
       ],
     },
+    {
+      'target_name': 'gfx_unittests',
+      'type': 'executable',
+      'sources': [
+        'range/range_unittest.cc',
+      ],
+      'dependencies': [
+        '../../base/base.gyp:run_all_unittests',
+        '../../testing/gtest.gyp:gtest',
+        'gfx',
+      ],
+    }
   ],
   'conditions': [
     ['OS=="android"' , {
