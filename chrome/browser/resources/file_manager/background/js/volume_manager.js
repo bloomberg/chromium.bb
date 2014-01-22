@@ -265,38 +265,39 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
 
 /**
  * The order of the volume list based on root type.
- * @type {Array.<string>}
+ * @type {Array.<util.VolumeType>}
  * @const
  * @private
  */
 volumeManagerUtil.volumeListOrder_ = [
-  RootType.DRIVE,
-  RootType.DOWNLOADS,
-  RootType.ARCHIVE,
-  RootType.REMOVABLE,
-  RootType.CLOUD_DEVICE
+  util.VolumeType.DRIVE,
+  util.VolumeType.DOWNLOADS,
+  util.VolumeType.ARCHIVE,
+  util.VolumeType.REMOVABLE,
+  util.VolumeType.CLOUD_DEVICE
 ];
 
 /**
- * Compares mount paths to sort the volume list order.
- * @param {string} mountPath1 The mount path for the first volume.
- * @param {string} mountPath2 The mount path for the second volume.
- * @return {number} 0 if mountPath1 and mountPath2 are same, -1 if VolumeInfo
- *     mounted at mountPath1 should be listed before the one mounted at
- *     mountPath2, otherwise 1.
+ * Orders two volumes by volumeType and mountPath.
+ *
+ * The volumes at first are compared by volume type in the order of
+ * volumeListOrder_.  Then they are compared by volume ID.
+ *
+ * @param {VolumeInfo} volumeInfo1 Volume info to be compared.
+ * @param {VolumeInfo} volumeInfo2 Volume info to be compared.
+ * @return {number} Returns -1 if volume1 < volume2, returns 1 if volume2 >
+ *     volume1, returns 0 if volume1 === volume2.
+ * @private
  */
-volumeManagerUtil.compareMountPath = function(mountPath1, mountPath2) {
-  var order1 = volumeManagerUtil.volumeListOrder_.indexOf(
-      PathUtil.getRootType(mountPath1));
-  var order2 = volumeManagerUtil.volumeListOrder_.indexOf(
-      PathUtil.getRootType(mountPath2));
-  if (order1 !== order2)
-    return order1 < order2 ? -1 : 1;
-
-  if (mountPath1 !== mountPath2)
-    return mountPath1 < mountPath2 ? -1 : 1;
-
-  // The path is same.
+volumeManagerUtil.compareVolumeInfo_ = function(volumeInfo1, volumeInfo2) {
+  var typeIndex1 =
+      volumeManagerUtil.volumeListOrder_.indexOf(volumeInfo1.volumeType);
+  var typeIndex2 =
+      volumeManagerUtil.volumeListOrder_.indexOf(volumeInfo2.volumeType);
+  if (typeIndex1 !== typeIndex2)
+    return typeIndex1 < typeIndex2 ? -1 : 1;
+  if (volumeInfo1.volumeId !== volumeInfo2.volumeId)
+    return volumeInfo1.volumeId < volumeInfo2.volumeId ? -1 : 1;
   return 0;
 };
 
@@ -305,12 +306,16 @@ volumeManagerUtil.compareMountPath = function(mountPath1, mountPath2) {
  * @constructor
  */
 function VolumeInfoList() {
+  var field = 'volumeType,volumeId';
+
   /**
    * Holds VolumeInfo instances.
    * @type {cr.ui.ArrayDataModel}
    * @private
    */
   this.model_ = new cr.ui.ArrayDataModel([]);
+  this.model_.setCompareFunction(field, volumeManagerUtil.compareVolumeInfo_);
+  this.model_.sort(field, 'asc');
 
   Object.freeze(this);
 }
@@ -343,41 +348,34 @@ VolumeInfoList.prototype.removeEventListener = function(type, handler) {
  * @param {VolumeInfo} volumeInfo The information of the new volume.
  */
 VolumeInfoList.prototype.add = function(volumeInfo) {
-  var index = this.findLowerBoundIndex_(volumeInfo.mountPath);
-  if (index < this.length &&
-      this.item(index).mountPath === volumeInfo.mountPath) {
-    // Replace the VolumeInfo.
+  var index = this.findIndex(volumeInfo.volumeId);
+  if (index !== -1)
     this.model_.splice(index, 1, volumeInfo);
-  } else {
-    // Insert the VolumeInfo.
-    this.model_.splice(index, 0, volumeInfo);
-  }
+  else
+    this.model_.push(volumeInfo);
 };
 
 /**
- * Removes the VolumeInfo of the volume mounted at mountPath.
- * @param {string} mountPath The path to the location where the volume is
- *     mounted.
+ * Removes the VolumeInfo having the given ID.
+ * @param {string} volumeId ID of the volume.
  */
-VolumeInfoList.prototype.remove = function(mountPath) {
-  var index = this.findLowerBoundIndex_(mountPath);
-  if (index < this.length && this.item(index).mountPath === mountPath)
+VolumeInfoList.prototype.remove = function(volumeId) {
+  var index = this.findIndex(volumeId);
+  if (index !== -1)
     this.model_.splice(index, 1);
 };
 
 /**
- * Searches the information of the volume mounted at mountPath.
- * @param {string} mountPath The path to the location where the volume is
- *     mounted.
- * @return {VolumeInfo} The volume's information, or null if not found.
+ * Obtains an index from the volume ID.
+ * @param {string} volumeId Volume ID.
+ * @return {number} Index of the volume.
  */
-VolumeInfoList.prototype.find = function(mountPath) {
-  var index = this.findLowerBoundIndex_(mountPath);
-  if (index < this.length && this.item(index).mountPath === mountPath)
-    return this.item(index);
-
-  // Not found.
-  return null;
+VolumeInfoList.prototype.findIndex = function(volumeId) {
+  for (var i = 0; i < this.model_.length; i++) {
+    if (this.model_.item(i).volumeId === volumeId)
+      return i;
+  }
+  return -1;
 };
 
 /**
@@ -393,23 +391,6 @@ VolumeInfoList.prototype.findByPath = function(path) {
       return this.item(i);
   }
   return null;
-};
-
-/**
- * @param {string} mountPath The mount path of searched volume.
- * @return {number} The index of the volume if found, or the inserting
- *     position of the volume.
- * @private
- */
-VolumeInfoList.prototype.findLowerBoundIndex_ = function(mountPath) {
-  // Assuming the number of elements in the array data model is very small
-  // in most cases, use simple linear search, here.
-  for (var i = 0; i < this.length; i++) {
-    if (volumeManagerUtil.compareMountPath(
-            this.item(i).mountPath, mountPath) >= 0)
-      return i;
-  }
-  return this.length;
 };
 
 /**
@@ -594,7 +575,10 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     }
     var requestKey = this.makeRequestKey_('unmount', mountPath);
     var requested = requestKey in this.requests_;
-    var volumeInfo = this.volumeInfoList.find(mountPath);
+    var volumeInfoIndex =
+        this.volumeInfoList.findIndex(event.volumeMetadata.volumeId);
+    var volumeInfo = volumeInfoIndex != -1 ?
+        this.volumeInfoList.item(volumeInfoIndex) : null;
     if (event.status === 'success' && !requested && volumeInfo) {
       console.warn('Mounted volume without a request: ', mountPath);
       var e = new Event('externally-unmounted');
@@ -606,7 +590,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
     this.finishRequest_(requestKey, status);
 
     if (event.status === 'success')
-      this.volumeInfoList.remove(mountPath);
+      this.volumeInfoList.remove(event.volumeMetadata.volumeId);
   }
 };
 
