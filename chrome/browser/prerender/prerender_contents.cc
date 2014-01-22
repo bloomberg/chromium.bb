@@ -424,8 +424,16 @@ PrerenderContents::~PrerenderContents() {
   DCHECK(
       prerendering_has_been_cancelled() || final_status() == FINAL_STATUS_USED);
   DCHECK_NE(ORIGIN_MAX, origin());
-  prerender_manager_->RecordCookieStatus(origin(), experiment_id(),
-                                         cookie_status_);
+  // Since a lot of prerenders terminate before any meaningful cookie action
+  // would have happened, only record the cookie status for prerenders who
+  // were used, cancelled, or timed out.
+  if (prerendering_has_started_ &&
+      (final_status() == FINAL_STATUS_USED ||
+       final_status() == FINAL_STATUS_TIMED_OUT ||
+       final_status() == FINAL_STATUS_CANCELLED)) {
+    prerender_manager_->RecordCookieStatus(origin(), experiment_id(),
+                                           cookie_status_);
+  }
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
       origin(), experiment_id(), match_complete_status(), final_status());
 
