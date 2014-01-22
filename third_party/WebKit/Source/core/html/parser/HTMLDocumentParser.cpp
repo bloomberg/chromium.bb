@@ -659,6 +659,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
 
 void HTMLDocumentParser::startBackgroundParser()
 {
+    ASSERT(!isStopped());
     ASSERT(shouldUseThreading());
     ASSERT(!m_haveBackgroundParser);
     m_haveBackgroundParser = true;
@@ -964,7 +965,7 @@ void HTMLDocumentParser::resumeScheduledTasks()
 
 void HTMLDocumentParser::appendBytes(const char* data, size_t length)
 {
-    if (!length || isDetached())
+    if (!length || isStopped())
         return;
 
     if (shouldUseThreading()) {
@@ -996,6 +997,7 @@ void HTMLDocumentParser::flush()
 
 void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 {
+    ASSERT(decoder);
     DecodedDataDocumentParser::setDecoder(decoder);
 
     if (m_haveBackgroundParser)
