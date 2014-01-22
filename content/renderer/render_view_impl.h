@@ -503,8 +503,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
   virtual void registerProtocolHandler(const blink::WebString& scheme,
-                                       const blink::WebString& base_url,
-                                       const blink::WebString& url,
+                                       const blink::WebURL& base_url,
+                                       const blink::WebURL& url,
                                        const blink::WebString& title);
   virtual blink::WebPageVisibilityState visibilityState() const;
   virtual blink::WebUserMediaClient* userMediaClient();

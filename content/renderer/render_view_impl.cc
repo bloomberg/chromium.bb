@@ -5823,12 +5823,12 @@ double RenderViewImpl::zoomFactorToZoomLevel(double factor) const {
 }
 
 void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
-                                             const WebString& base_url,
-                                             const WebString& url,
+                                             const WebURL& base_url,
+                                             const WebURL& url,
                                              const WebString& title) {
   bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   GURL base(base_url);
-  GURL absolute_url = base.Resolve(base::UTF16ToUTF8(url));
+  GURL absolute_url = base.Resolve(base::UTF16ToUTF8(url.string()));
   if (base.GetOrigin() != absolute_url.GetOrigin()) {
     return;
   }
