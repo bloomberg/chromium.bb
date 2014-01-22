@@ -86,7 +86,7 @@ LabelableElement* HTMLLabelElement::control() const
 
 HTMLFormElement* HTMLLabelElement::formOwner() const
 {
-    return FormAssociatedElement::findAssociatedForm(this, 0);
+    return FormAssociatedElement::findAssociatedForm(this);
 }
 
 void HTMLLabelElement::setActive(bool down)

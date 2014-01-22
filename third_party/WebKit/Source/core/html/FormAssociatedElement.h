@@ -46,7 +46,7 @@ public:
     void ref() { refFormAssociatedElement(); }
     void deref() { derefFormAssociatedElement(); }
 
-    static HTMLFormElement* findAssociatedForm(const HTMLElement*, HTMLFormElement*);
+    static HTMLFormElement* findAssociatedForm(const HTMLElement*);
     HTMLFormElement* form() const { return m_form; }
     ValidityState* validity();
 
@@ -95,7 +95,10 @@ protected:
     void removedFrom(ContainerNode*);
     void didMoveToNewDocument(Document& oldDocument);
 
+    // FIXME: Remove usage of setForm. resetFormOwner should be enough, and
+    // setForm is confusing.
     void setForm(HTMLFormElement*);
+    void setFormWasSetByParser() { m_formWasSetByParser = true; }
     void formAttributeChanged();
 
     // If you add an override of willChangeForm() or didChangeForm() to a class
@@ -116,6 +119,7 @@ private:
     HTMLFormElement* m_form;
     OwnPtr<ValidityState> m_validityState;
     String m_customValidationMessage;
+    bool m_formWasSetByParser;
 };
 
 HTMLElement* toHTMLElement(FormAssociatedElement*);

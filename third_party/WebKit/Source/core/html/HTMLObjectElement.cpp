@@ -53,7 +53,10 @@ inline HTMLObjectElement::HTMLObjectElement(Document& document, HTMLFormElement*
     : HTMLPlugInElement(objectTag, document, createdByParser, ShouldNotPreferPlugInsForImages)
     , m_useFallbackContent(false)
 {
+    // FIXME: We don't need to pass findFormAncestor.
     setForm(form ? form : findFormAncestor());
+    if (form)
+        setFormWasSetByParser();
     ScriptWrappable::init(this);
 }
 
