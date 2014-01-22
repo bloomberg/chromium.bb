@@ -1483,6 +1483,8 @@ void MetricsService::StageNewLog() {
         // There's an initial stability log, ready to send.
         log_manager_.StageNextLogForUpload();
         has_initial_stability_log_ = false;
+        // Note: No need to call LoadPersistedUnsentLogs() here because unsent
+        // logs have already been loaded by PrepareInitialStabilityLog().
         state_ = SENDING_INITIAL_STABILITY_LOG;
       } else {
         // TODO(asvitkine): When the field trial is removed, the |log_type|
@@ -1492,10 +1494,8 @@ void MetricsService::StageNewLog() {
         MetricsLog::LogType log_type = SendSeparateInitialStabilityLog() ?
             MetricsLog::ONGOING_LOG : MetricsLog::INITIAL_LOG;
         PrepareInitialMetricsLog(log_type);
-        // If the stability log field trial is off, load unsent logs from local
-        // state here. Otherwise, they have already been loaded earlier.
-        if (log_type == MetricsLog::INITIAL_LOG)
-          log_manager_.LoadPersistedUnsentLogs();
+        // Load unsent logs (if any) from local state.
+        log_manager_.LoadPersistedUnsentLogs();
         state_ = SENDING_INITIAL_METRICS_LOG;
       }
       break;
