@@ -264,15 +264,19 @@ def write_global_constructors_partial_interface(interface_name, destination_file
 # Dependency resolution
 ################################################################################
 
-def include_path(idl_filename, interface_name, implemented_as=None):
+def include_path(idl_filename, implemented_as=None):
     """Returns relative path to header file in POSIX format; used in includes.
 
     POSIX format is used for consistency of output, so reference tests are
-    platform-independent."""
+    platform-independent.
+    """
     relative_path_local = os.path.relpath(idl_filename, source_path)
     relative_dir_local = os.path.dirname(relative_path_local)
     relative_dir_posix = relative_dir_local.replace(os.path.sep, posixpath.sep)
-    cpp_class_name = implemented_as or interface_name
+
+    idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
+    cpp_class_name = implemented_as or idl_file_basename
+
     return posixpath.join(relative_dir_posix, cpp_class_name + '.h')
 
 
@@ -286,16 +290,15 @@ def add_paths_to_partials_dict(partial_interface_files, partial_interface_name, 
 
 
 def generate_dependencies(idl_filename, interfaces_info, partial_interface_files):
-    interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
 
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     implemented_as = extended_attributes.get('ImplementedAs')
     this_include_path = (
+        include_path(idl_filename, implemented_as)
         # implemented interfaces with [LegacyImplementedInBaseClass] have no
         # header of their own, as they just use the header of the base class
-        include_path(idl_filename, interface_name, implemented_as)
         if 'LegacyImplementedInBaseClass' not in extended_attributes else None)
 
     # Handle partial interfaces
@@ -303,6 +306,9 @@ def generate_dependencies(idl_filename, interfaces_info, partial_interface_files
     if partial_interface_name:
         add_paths_to_partials_dict(partial_interface_files, partial_interface_name, full_path, this_include_path)
         return partial_interface_name
+
+    # If not a partial interface, the basename is the interface name
+    interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
 
     # Non-partial interfaces default to having bindings generated,
     # but are removed later if they are implemented by another interface

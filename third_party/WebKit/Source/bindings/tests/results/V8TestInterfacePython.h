@@ -67,8 +67,8 @@ public:
     {
         return static_cast<TestInterfacePythonImplementation*>(V8TestInterfaceEmpty::fromInternalPointer(object));
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfacePythonImplementation*, v8::Isolate*);
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfacePythonImplementation*, v8::Isolate*) { }
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
 };
