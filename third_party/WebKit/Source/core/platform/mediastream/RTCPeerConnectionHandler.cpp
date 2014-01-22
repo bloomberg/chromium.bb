@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 
-#include "core/platform/mediastream/RTCDataChannelHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/platform/mediastream/RTCStatsRequest.h"
 #include "platform/mediastream/MediaStreamComponent.h"
@@ -151,13 +150,13 @@ void RTCPeerConnectionHandler::getStats(PassRefPtr<RTCStatsRequest> request)
     m_webHandler->getStats(request);
 }
 
-PassOwnPtr<RTCDataChannelHandler> RTCPeerConnectionHandler::createDataChannel(const String& label, const blink::WebRTCDataChannelInit& init)
+PassOwnPtr<blink::WebRTCDataChannelHandler> RTCPeerConnectionHandler::createDataChannel(const String& label, const blink::WebRTCDataChannelInit& init)
 {
     blink::WebRTCDataChannelHandler* webHandler = m_webHandler->createDataChannel(label, init);
     if (!webHandler)
         return nullptr;
 
-    return RTCDataChannelHandler::create(webHandler);
+    return adoptPtr(webHandler);
 }
 
 PassOwnPtr<RTCDTMFSenderHandler> RTCPeerConnectionHandler::createDTMFSender(PassRefPtr<MediaStreamComponent> track)
@@ -212,7 +211,7 @@ void RTCPeerConnectionHandler::didRemoveRemoteStream(const blink::WebMediaStream
 void RTCPeerConnectionHandler::didAddRemoteDataChannel(blink::WebRTCDataChannelHandler* webHandler)
 {
     ASSERT(webHandler);
-    m_client->didAddRemoteDataChannel(RTCDataChannelHandler::create(webHandler));
+    m_client->didAddRemoteDataChannel(adoptPtr(webHandler));
 }
 
 } // namespace WebCore

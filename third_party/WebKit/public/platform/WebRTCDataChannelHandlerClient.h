@@ -42,10 +42,10 @@ public:
 
     virtual ~WebRTCDataChannelHandlerClient() { }
 
-    virtual void didChangeReadyState(ReadyState) const = 0;
-    virtual void didReceiveStringData(const WebString&) const = 0;
-    virtual void didReceiveRawData(const char*, size_t) const = 0;
-    virtual void didDetectError() const = 0;
+    virtual void didChangeReadyState(ReadyState) = 0;
+    virtual void didReceiveStringData(const WebString&) = 0;
+    virtual void didReceiveRawData(const char*, size_t) = 0;
+    virtual void didDetectError() = 0;
 };
 
 } // namespace blink

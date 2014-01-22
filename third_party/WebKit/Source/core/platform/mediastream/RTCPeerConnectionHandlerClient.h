@@ -35,12 +35,12 @@
 
 namespace blink {
 class WebRTCICECandidate;
+class WebRTCDataChannelHandler;
 }
 
 namespace WebCore {
 
 class MediaStreamDescriptor;
-class RTCDataChannelHandler;
 
 class RTCPeerConnectionHandlerClient {
 public:
@@ -78,7 +78,7 @@ public:
     virtual void didChangeIceConnectionState(IceConnectionState) = 0;
     virtual void didAddRemoteStream(PassRefPtr<MediaStreamDescriptor>) = 0;
     virtual void didRemoveRemoteStream(MediaStreamDescriptor*) = 0;
-    virtual void didAddRemoteDataChannel(PassOwnPtr<RTCDataChannelHandler>) = 0;
+    virtual void didAddRemoteDataChannel(PassOwnPtr<blink::WebRTCDataChannelHandler>) = 0;
 };
 
 } // namespace WebCore

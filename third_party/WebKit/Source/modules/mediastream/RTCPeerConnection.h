@@ -119,7 +119,7 @@ public:
     virtual void didChangeIceConnectionState(IceConnectionState) OVERRIDE;
     virtual void didAddRemoteStream(PassRefPtr<MediaStreamDescriptor>) OVERRIDE;
     virtual void didRemoveRemoteStream(MediaStreamDescriptor*) OVERRIDE;
-    virtual void didAddRemoteDataChannel(PassOwnPtr<RTCDataChannelHandler>) OVERRIDE;
+    virtual void didAddRemoteDataChannel(PassOwnPtr<blink::WebRTCDataChannelHandler>) OVERRIDE;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
