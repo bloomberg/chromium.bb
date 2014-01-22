@@ -6,6 +6,7 @@
 #define NET_BASE_UPLOAD_FILE_ELEMENT_READER_H_
 
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -50,20 +51,6 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
                    const CompletionCallback& callback) OVERRIDE;
 
  private:
-  // Deletes FileStream with |task_runner| to avoid blocking the IO thread.
-  // This class is used as a template argument of scoped_ptr.
-  class FileStreamDeleter {
-   public:
-    explicit FileStreamDeleter(base::TaskRunner* task_runner);
-    ~FileStreamDeleter();
-    void operator() (FileStream* file_stream) const;
-
-   private:
-    scoped_refptr<base::TaskRunner> task_runner_;
-  };
-
-  typedef scoped_ptr<FileStream, FileStreamDeleter> ScopedFileStreamPtr;
-
   FRIEND_TEST_ALL_PREFIXES(UploadDataStreamTest, FileSmallerThanLength);
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest,
                            UploadFileSmallerThanLength);
@@ -75,16 +62,15 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   // Resets this instance to the uninitialized state.
   void Reset();
 
-  // This method is used to implement Init().
-  void OnInitCompleted(ScopedFileStreamPtr* file_stream,
-                       uint64* content_length,
-                       const CompletionCallback& callback,
-                       int result);
+  // These methods are used to implement Init().
+  void OnOpenCompleted(const CompletionCallback& callback, int result);
+  void OnSeekCompleted(const CompletionCallback& callback, int64 result);
+  void OnGetFileInfoCompleted(const CompletionCallback& callback,
+                              base::File::Info* file_info,
+                              bool result);
 
   // This method is used to implement Read().
-  void OnReadCompleted(ScopedFileStreamPtr file_stream,
-                       const CompletionCallback& callback,
-                       int result);
+  int OnReadCompleted(const CompletionCallback& callback, int result);
 
   // Sets an value to override the result for GetContentLength().
   // Used for tests.
@@ -98,7 +84,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   const uint64 range_offset_;
   const uint64 range_length_;
   const base::Time expected_modification_time_;
-  ScopedFileStreamPtr file_stream_;
+  scoped_ptr<FileStream> file_stream_;
   uint64 content_length_;
   uint64 bytes_remaining_;
   base::WeakPtrFactory<UploadFileElementReader> weak_ptr_factory_;
