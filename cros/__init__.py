@@ -61,6 +61,9 @@ class CrosCommand(object):
   # between 0.35s-0.45s in MTV.
   upload_stats_timeout = 1
 
+  # Indicates whether command uses cache related commandline options.
+  use_caching_options = False
+
   def __init__(self, options):
     self.options = options
 

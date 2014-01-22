@@ -20,6 +20,7 @@ def GetOptions(my_commands):
     epilog = getattr(class_def, 'EPILOG', None)
     sub_parser = subparsers.add_parser(
         cmd_name, description=class_def.__doc__, epilog=epilog,
+        caching=class_def.use_caching_options,
         formatter_class=commandline.argparse.RawDescriptionHelpFormatter)
     class_def.AddParser(sub_parser)
 

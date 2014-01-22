@@ -397,6 +397,9 @@ class ChromeSDKCommand(cros.CrosCommand):
   # Override base class property to enable stats upload.
   upload_stats = True
 
+  # Override base class property to use cache related commandline options.
+  use_caching_options = True
+
   @property
   def upload_stats_timeout(self):
     # Give a longer timeout for interactive SDK shell invocations, since the
@@ -445,9 +448,6 @@ class ChromeSDKCommand(cros.CrosCommand):
         help='Sets up the environment for building with clang.  Due to a bug '
              'with ninja, requires --make and possibly --chrome-src to be set.')
     parser.add_argument(
-        '--clear-sdk-cache', action='store_true', default=False,
-        help='Removes everything in the SDK cache before starting.')
-    parser.add_argument(
         '--cwd', type=osutils.ExpandPath,
         help='Specifies a directory to switch to after setting up the SDK '
              'shell.  Defaults to the current directory.')
@@ -477,6 +477,11 @@ class ChromeSDKCommand(cros.CrosCommand):
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '
               'starting a bash shell.')
+
+    parser.add_option_to_group(
+        parser.caching_group, '--clear-sdk-cache', action='store_true',
+        default=False,
+        help='Removes everything in the SDK cache before starting.')
 
   def __init__(self, options):
     cros.CrosCommand.__init__(self, options)

@@ -34,7 +34,7 @@ class MockCommand(partial_mock.PartialMock):
     self.rc_mock.SetDefaultCmdResult()
     parser = commandline.ArgumentParser(caching=True)
     subparsers = parser.add_subparsers()
-    subparser = subparsers.add_parser(self.COMMAND)
+    subparser = subparsers.add_parser(self.COMMAND, caching=True)
     self.TARGET_CLASS.AddParser(subparser)
 
     args = base_args if base_args else []

@@ -157,7 +157,6 @@ class BaseParser(object):
 
   DEFAULT_LOG_LEVEL = "info"
   ALLOW_LOGGING = True
-  SUPPORTS_CACHING = False
 
   REPO_CACHE_DIR = '.cache'
   CHROME_CACHE_DIR = '.cros_cache'
@@ -186,8 +185,8 @@ class BaseParser(object):
         back to $REPO/.cache, finally falling back to $TMP.
         Note that the cache_dir is not created, just discerned where it
         should live.
-        If False, or caching is not given and the class attr SUPPORTS_CACHING
-        is False, then no --cache-dir option will be added.
+        If False, or caching is not given, then no --cache-dir option will be
+        added.
     """
     self.debug_enabled = False
     self.caching_group = None
@@ -201,7 +200,7 @@ class BaseParser(object):
                             kwargs.get('log_levels', self.DEFAULT_LOG_LEVELS))
     self.debug_enabled = (not kwargs.get('manual_debug', False)
                           and 'debug' in self.log_levels)
-    self.caching = kwargs.get('caching', self.SUPPORTS_CACHING)
+    self.caching = kwargs.get('caching', False)
 
   @staticmethod
   def PopUsedArgs(kwarg_dict):
