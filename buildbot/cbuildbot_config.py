@@ -624,7 +624,7 @@ class HWTestConfig(object):
 
   @property
   def timeout_mins(self):
-    return int(self.timeout/60)
+    return int(self.timeout / 60)
 
 
 def PGORecordTest(**kwargs):
@@ -842,6 +842,31 @@ internal = _config(
   overlays=constants.BOTH_OVERLAYS,
   manifest_repo_url=constants.MANIFEST_INT_URL,
 )
+
+# TODO(build/embedded): Decide on what brillo builders should look like and be
+# consistent. Currently sonic and other brillo builds differ too much.
+sonic = _config(
+  boards=['sonic'],
+  # Until these are configured and ready, disable them.
+  images=['base', 'dev'],
+  unittests=True,
+  upload_hw_test_artifacts=False,
+  build_tests=False,
+  vm_tests=None,
+  signer_tests=False,
+  hw_tests=[],
+)
+
+# Base brillo config don't build tests and they only need the base image.
+brillo = _config(
+  images=['base'],
+  packages=['chromeos-base/chromeos'],
+  build_tests=False,
+  sync_chrome=False,
+  hw_tests=[],
+)
+
+beaglebone = arm.derive(brillo, rootfs_verification=False)
 
 # This adds Chrome branding.
 official_chrome = _config(
@@ -1299,18 +1324,6 @@ internal_incremental = internal.derive(
   description='Incremental Builds (internal)',
 )
 
-sonic = _config(
-  boards=['sonic'],
-  # Until these are configured and ready, disable them.
-  images=['base', 'dev',],
-  unittests=True,
-  upload_hw_test_artifacts=False,
-  build_tests=False,
-  vm_tests=None,
-  signer_tests=False,
-  hw_tests=[],
-)
-
 internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
@@ -1321,7 +1334,8 @@ internal.add_config('test-ap',
   vm_tests=None,
   description='stumpy image used for WiFi testing',
   boards=['stumpy'],
-  images=['test'],  # We need Python and utilities found only in test.
+  # We need Python and utilities found only in test.
+  images=['test'],
   profile='testbed-ap',
 )
 
@@ -1551,25 +1565,6 @@ internal_arm_paladin.add_config('daisy-paladin',
   upload_hw_test_artifacts=True,
 )
 
-# arm full compile
-internal_arm_paladin.add_config('beaglebone-paladin',
-  boards=['beaglebone'],
-  packages=['chromeos-base/chromeos'],
-  images=['base'],
-  rootfs_verification=False,
-  important=True,
-  paladin_builder_name='beaglebone paladin',
-)
-
-internal_arm_paladin.add_config('beaglebone_servo-paladin',
-  boards=['beaglebone_servo'],
-  packages=['chromeos-base/chromeos'],
-  images=['base'],
-  rootfs_verification=False,
-  important=False,
-  paladin_builder_name='beaglebone_servo paladin',
-)
-
 internal_arm_paladin.add_config('daisy_spring-paladin',
   full_paladin,
   boards=['daisy_spring'],
@@ -1587,24 +1582,22 @@ internal_arm_paladin.add_config('nyan-paladin',
   important=False,
 )
 
+internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
+
+internal_beaglebone_paladin.add_config('beaglebone-paladin',
+  boards=['beaglebone'],
+  paladin_builder_name='beaglebone paladin',
+  trybot_list=True,
+)
+
+internal_beaglebone_paladin.add_config('beaglebone_servo-paladin',
+  boards=['beaglebone_servo'],
+  paladin_builder_name='beaglebone_servo paladin',
+  important=False,
+)
 
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
-)
-
-internal_arm_full = full.derive(internal, arm)
-
-internal_arm_full.add_config('daisy_winter-full',
-  boards=['daisy_winter'],
-  build_tests=False,
-  manifest='lasercats.xml',
-  # We don't need chrome.
-  sync_chrome=False,
-  chrome_sdk=False,
-  # Note that this forces build_packages to only build chromeos base packages.
-  packages=['chromeos-base/chromeos'],
-  images=['base'],
-  upload_hw_test_artifacts=True,
 )
 
 _toolchain_major.add_config('internal-toolchain-major', internal, official,
@@ -1885,28 +1878,6 @@ _release.add_config('zako-release',
 
 _arm_release = _release.derive(arm)
 
-_beaglebone_release_config = _arm_release.derive(
-  chrome_sdk=False,
-  build_tests=False,
-  dev_installer_prebuilts=False,
-  packages=['chromeos-base/chromeos'],
-  hw_tests=[],
-  images=['base'],
-  rootfs_verification=False,
-  signer_tests=False,
-  sync_chrome=False,
-  upload_hw_test_artifacts=True,
-)
-
-_config.add_group('beaglebone-release-group',
-  _beaglebone_release_config.add_config('beaglebone-release',
-    boards=['beaglebone'],
-  ),
-  _beaglebone_release_config.add_config('beaglebone_servo-release',
-    boards=['beaglebone_servo'],
-  ),
-)
-
 _arm_release.add_config('daisy-release',
   boards=['daisy'],
   critical_for_chrome=True,
@@ -1938,6 +1909,33 @@ _arm_release.add_config('peach_pi-release',
 _arm_release.add_config('nyan_big-release',
   boards=['nyan_big'],
   hw_tests=[],
+)
+
+# Brillo devices do not have Chrome or currently need for test or dev images.
+_arm_brillo_release = _arm_release.derive(brillo,
+  chrome_sdk=False,
+  dev_installer_prebuilts=False,
+  signer_tests=False,
+)
+
+_beaglebone_release = _arm_brillo_release.derive(beaglebone)
+
+_config.add_group('beaglebone-release-group',
+  _beaglebone_release.add_config('beaglebone-release',
+    boards=['beaglebone'],
+  ),
+  _beaglebone_release.add_config('beaglebone_servo-release',
+    boards=['beaglebone_servo'],
+  ),
+)
+
+# Note this is named full since it doesn't use manifest_versions and uses
+# different scheduling. However, it still pushes releases.
+_arm_brillo_release.add_config('daisy_winter-full',
+  boards=['daisy_winter'],
+
+  manifest='lasercats.xml',
+  manifest_version=False,
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
