@@ -177,6 +177,10 @@ ARM_USER_CPSR_FLAGS_MASK = (
     (1<<19) | (1<<18) | (1<<17) | (1<<16)) # GE bits
 
 
+def UsingQemu():
+  return SEL_LDR_COMMAND[0].endswith('/run_under_qemu_arm')
+
+
 def DecodeRegs(reply):
   defs = REG_DEFS[ARCH]
   names = [reg_name for reg_name, reg_fmt in defs]
@@ -475,6 +479,9 @@ class DebugStubTest(unittest.TestCase):
       self.CheckReadOnlyRegisters(connection)
 
   def test_jump_to_address_zero(self):
+    if UsingQemu():
+      # This test hangs under qemu-arm.
+      return
     with LaunchDebugStub('test_jump_to_address_zero') as connection:
       # Continue from initial breakpoint.
       reply = connection.RspRequest('c')
@@ -802,6 +809,10 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
     return child_thread_id
 
   def test_continuing_thread_with_others_suspended(self):
+    if UsingQemu():
+      # Suspending a running thread doesn't work under qemu-arm, so
+      # disable this test there.
+      return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
@@ -827,6 +838,10 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
             child_thread_val)
 
   def test_single_stepping_thread_with_others_suspended(self):
+    if UsingQemu():
+      # Suspending a running thread doesn't work under qemu-arm, so
+      # disable this test there.
+      return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)

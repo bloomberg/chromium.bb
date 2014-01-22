@@ -757,10 +757,6 @@ tests_to_disable_qemu = set([
     # Note, for now these tests disable both the irt and non-irt variants
     'run_atomic_ops_test',    # still broken with qemu 2012/06/12
     'run_atomic_ops_nexe_test',
-    # The debug stub test is not set up to insert QEMU at the right
-    # point, and service_runtime's thread suspension does not work
-    # under QEMU.
-    'run_debug_stub_test',
     'run_egyptian_cotton_test',  # still broken with qemu 2012/06/12
     'run_many_threads_sequential_test',
     'run_mmap_atomicity_test',   # still broken with qemu 2012/06/12
