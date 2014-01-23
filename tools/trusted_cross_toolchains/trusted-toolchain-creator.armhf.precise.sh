@@ -424,14 +424,7 @@ CleanupJailSymlinks() {
   done
 
   find usr/lib -type l -printf '%p %l\n' | while read link target; do
-    # Make sure we catch new bad links.
-    # libnss_db.so is an exception this since is actually a broken link
-    # in Ubuntu. See /usr/lib/x86_64-linux-gnu/libnss_db.so on a
-    # precise desktop.
-    # TODO(sbc): remove this exception if/when Ubuntu fixes this link.
-    if [ "${link}" == "usr/lib/arm-linux-gnueabihf/libnss_db.so" ] ; then
-      echo "ignoring known bad link: ${link}"
-    elif [ ! -r "${link}" ]; then
+    if [ ! -r "${link}" ]; then
       echo "ERROR: FOUND BAD LINK ${link}"
       exit -1
     fi
@@ -445,7 +438,7 @@ CleanupJailSymlinks() {
 #@     Build ARM emulator including some patches for better tracing
 #
 # Historic Notes:
-# Traditionally we were builidng static 32 bit images of qemu on a
+# Traditionally we were building static 32 bit images of qemu on a
 # 64bit system which would run then on both x86-32 and x86-64 systems.
 # The latest version of qemu contains new dependencies which
 # currently make it impossible to build such images on 64bit systems
@@ -518,7 +511,7 @@ BuildJail() {
   CleanupJailSymlinks
   InstallTrustedLinkerScript
   HacksAndPatches
-  #BuildAndInstallQemu
+  BuildAndInstallQemu
   CreateTarBall $1
 }
 

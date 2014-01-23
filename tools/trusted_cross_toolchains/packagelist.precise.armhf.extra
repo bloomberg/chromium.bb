@@ -87,8 +87,8 @@ main/libx/libxtst/libxtst6_1.2.0-4ubuntu0.1_armhf.deb
 main/libx/libxtst/libxtst-dev_1.2.0-4ubuntu0.1_armhf.deb
 main/n/nspr/libnspr4_4.9.5-0ubuntu0.12.04.1_armhf.deb
 main/n/nspr/libnspr4-dev_4.9.5-0ubuntu0.12.04.1_armhf.deb
-main/n/nss/libnss3_3.14.3-0ubuntu0.12.04.1_armhf.deb
-main/n/nss/libnss3-dev_3.14.3-0ubuntu0.12.04.1_armhf.deb
+main/n/nss/libnss3_3.15.3.1-0ubuntu0.12.04.1_armhf.deb
+main/n/nss/libnss3-dev_3.15.3.1-0ubuntu0.12.04.1_armhf.deb
 main/o/orbit2/liborbit2_2.14.19-0.1_armhf.deb
 main/p/pam/libpam0g_1.1.3-7ubuntu2_armhf.deb
 main/p/pam/libpam0g-dev_1.1.3-7ubuntu2_armhf.deb
@@ -99,8 +99,8 @@ main/p/pciutils/libpci-dev_3.1.8-2ubuntu5_armhf.deb
 main/p/pcre3/libpcre3_8.12-4_armhf.deb
 main/p/pcre3/libpcre3-dev_8.12-4_armhf.deb
 main/p/pcre3/libpcrecpp0_8.12-4_armhf.deb
-main/p/pixman/libpixman-1-0_0.24.4-1_armhf.deb
-main/p/pixman/libpixman-1-dev_0.24.4-1_armhf.deb
+main/p/pixman/libpixman-1-0_0.24.4-1ubuntu0.1_armhf.deb
+main/p/pixman/libpixman-1-dev_0.24.4-1ubuntu0.1_armhf.deb
 main/p/pulseaudio/libpulse0_1.1-0ubuntu15_armhf.deb
 main/p/pulseaudio/libpulse-dev_1.1-0ubuntu15_armhf.deb
 main/p/pulseaudio/libpulse-mainloop-glib0_1.1-0ubuntu15_armhf.deb
