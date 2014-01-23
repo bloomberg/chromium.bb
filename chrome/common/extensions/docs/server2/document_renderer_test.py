@@ -6,19 +6,15 @@
 import unittest
 
 from document_renderer import DocumentRenderer
-
-
-class _FakeTableOfContentsRenderer(object):
-  def __init__(self, string):
-    self._string = string
-
-  def Render(self, _):
-    return self._string, []
+from server_instance import ServerInstance
+from test_file_system import TestFileSystem
+from test_data.canned_data import CANNED_TEST_FILE_SYSTEM_DATA
 
 
 class DocumentRendererUnittest(unittest.TestCase):
   def setUp(self):
-    self._renderer = DocumentRenderer(_FakeTableOfContentsRenderer('t-o-c'))
+    self._renderer = ServerInstance.ForTest(
+        TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA)).document_renderer
 
   def testNothingToSubstitute(self):
     document = 'hello world'
@@ -45,7 +41,8 @@ class DocumentRendererUnittest(unittest.TestCase):
   def testTocs(self):
     document = ('here is a toc $(table_of_contents) '
                 'and another $(table_of_contents)')
-    expected_document = 'here is a toc t-o-c and another $(table_of_contents)'
+    expected_document = ('here is a toc <table-of-contents> '
+                         'and another $(table_of_contents)')
 
     text, warnings = self._renderer.Render(document)
     self.assertEqual(expected_document, text)
@@ -59,11 +56,11 @@ class DocumentRendererUnittest(unittest.TestCase):
     document = '<h1>title</h1> $(title) and $(table_of_contents)'
 
     text, warnings = self._renderer.Render(document)
-    self.assertEqual('<h1>title</h1> $(title) and t-o-c', text)
+    self.assertEqual('<h1>title</h1> $(title) and <table-of-contents>', text)
     self.assertEqual(['Found unexpected title "title"'], warnings)
 
     text, warnings = self._renderer.Render(document, render_title=True)
-    self.assertEqual('<h1>title</h1> title and t-o-c', text)
+    self.assertEqual('<h1>title</h1> title and <table-of-contents>', text)
     self.assertEqual([], warnings)
 
 

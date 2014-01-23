@@ -104,7 +104,8 @@ CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(EXTENSIONS, {
       'private': {
         'intro_tables': {
           'trunk_message.html': 'available on trunk'
-        }
+        },
+        'table_of_contents.html': '<table-of-contents>',
       }
     }
   }
