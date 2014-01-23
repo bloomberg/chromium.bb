@@ -78,18 +78,6 @@ class GitDiffFilterer(DiffFiltererWrapper):
     return re.sub("[a|b]/" + self._current_file, self._replacement_file, line)
 
 
-def ask_for_data(prompt, options):
-  if options.jobs > 1:
-    raise gclient_utils.Error("Background task requires input. Rerun "
-                              "gclient with --jobs=1 so that\n"
-                              "interaction is possible.")
-  try:
-    return raw_input(prompt)
-  except KeyboardInterrupt:
-    # Hide the exception.
-    sys.exit(1)
-
-
 ### SCM abstraction layer
 
 # Factory Method for SCM wrapper creation
@@ -473,7 +461,8 @@ class GitWrapper(SCMWrapper):
       if scm.GIT.IsGitSvn(self.checkout_path) and upstream_branch is not None:
         # Our git-svn branch (upstream_branch) is our upstream
         self._AttemptRebase(upstream_branch, files, options,
-                            newbase=revision, printed_path=printed_path)
+                            newbase=revision, printed_path=printed_path,
+                            merge=options.merge)
         printed_path = True
       else:
         # Can't find a merge-base since we don't know our upstream. That makes
@@ -483,12 +472,13 @@ class GitWrapper(SCMWrapper):
         if options.revision or deps_revision:
           upstream_branch = revision
         self._AttemptRebase(upstream_branch, files, options,
-                            printed_path=printed_path)
+                            printed_path=printed_path, merge=options.merge)
         printed_path = True
     elif rev_type == 'hash':
       # case 2
       self._AttemptRebase(upstream_branch, files, options,
-                          newbase=revision, printed_path=printed_path)
+                          newbase=revision, printed_path=printed_path,
+                          merge=options.merge)
       printed_path = True
     elif revision.replace('heads', 'remotes/' + self.remote) != upstream_branch:
       # case 4
@@ -509,25 +499,30 @@ class GitWrapper(SCMWrapper):
         print('Trying fast-forward merge to branch : %s' % upstream_branch)
       try:
         merge_args = ['merge']
-        if not options.merge:
+        if options.merge:
+          merge_args.append('--ff')
+        else:
           merge_args.append('--ff-only')
         merge_args.append(upstream_branch)
         merge_output = scm.GIT.Capture(merge_args, cwd=self.checkout_path)
       except subprocess2.CalledProcessError as e:
         if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
+          files = []
           if not printed_path:
             print('\n_____ %s%s' % (self.relpath, rev_str))
             printed_path = True
           while True:
             try:
-              action = ask_for_data(
-                  'Cannot fast-forward merge, attempt to rebase? '
-                  '(y)es / (q)uit / (s)kip : ', options)
+              action = self._AskForData(
+                  'Cannot %s, attempt to rebase? '
+                  '(y)es / (q)uit / (s)kip : ' %
+                      ('merge' if options.merge else 'fast-forward merge'),
+                  options)
             except ValueError:
               raise gclient_utils.Error('Invalid Character')
             if re.match(r'yes|y', action, re.I):
               self._AttemptRebase(upstream_branch, files, options,
-                                  printed_path=printed_path)
+                                  printed_path=printed_path, merge=False)
               printed_path = True
               break
             elif re.match(r'quit|q', action, re.I):
@@ -883,20 +878,40 @@ class GitWrapper(SCMWrapper):
          'an existing branch or use \'git checkout %s -b <branch>\' to\n'
          'create a new branch for your work.') % (revision, self.remote))
 
+  @staticmethod
+  def _AskForData(prompt, options):
+    if options.jobs > 1:
+      raise gclient_utils.Error("Background task requires input. Rerun "
+                                "gclient with --jobs=1 so that\n"
+                                "interaction is possible.")
+    try:
+      return raw_input(prompt)
+    except KeyboardInterrupt:
+      # Hide the exception.
+      sys.exit(1)
+
+
   def _AttemptRebase(self, upstream, files, options, newbase=None,
-                     branch=None, printed_path=False):
+                     branch=None, printed_path=False, merge=False):
     """Attempt to rebase onto either upstream or, if specified, newbase."""
     if files is not None:
       files.extend(self._Capture(['diff', upstream, '--name-only']).split())
     revision = upstream
     if newbase:
       revision = newbase
+    action = 'merge' if merge else 'rebase'
     if not printed_path:
-      print('\n_____ %s : Attempting rebase onto %s...' % (
-          self.relpath, revision))
+      print('\n_____ %s : Attempting %s onto %s...' % (
+          self.relpath, action, revision))
       printed_path = True
     else:
-      print('Attempting rebase onto %s...' % revision)
+      print('Attempting %s onto %s...' % (action, revision))
+
+    if merge:
+      merge_output = self._Capture(['merge', revision])
+      if options.verbose:
+        print(merge_output)
+      return
 
     # Build the rebase command here using the args
     # git rebase [options] [--onto <newbase>] <upstream> [<branch>]
@@ -916,7 +931,7 @@ class GitWrapper(SCMWrapper):
           re.match(r'cannot rebase: your index contains uncommitted changes',
                    e.stderr)):
         while True:
-          rebase_action = ask_for_data(
+          rebase_action = self._AskForData(
               'Cannot rebase because of unstaged changes.\n'
               '\'git reset --hard HEAD\' ?\n'
               'WARNING: destroys any uncommitted work in your current branch!'

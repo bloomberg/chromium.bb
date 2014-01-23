@@ -16,7 +16,6 @@ import os
 import sys
 import tempfile
 import unittest
-import __builtin__
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -752,6 +751,20 @@ from :3
 M 100644 :4 a
 M 100644 :5 b
 
+blob
+mark :7
+data 5
+Mooh
+
+commit refs/heads/feature
+mark :8
+author Bob <bob@example.com> 1390311986 -0000
+committer Bob <bob@example.com> 1390311986 -0000
+data 6
+Add C
+from :3
+M 100644 :7 c
+
 reset refs/heads/master
 from :3
 """
@@ -784,6 +797,12 @@ from :3
     Popen(['git', 'config', 'user.name', 'Some User'], stdout=PIPE,
         stderr=STDOUT, cwd=path).communicate()
     return True
+
+  def _GetAskForDataCallback(self, expected_prompt, return_value):
+    def AskForData(prompt, options):
+      self.assertEquals(prompt, expected_prompt)
+      return return_value
+    return AskForData
 
   def setUp(self):
     TestCaseUtils.setUp(self)
@@ -967,6 +986,51 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
     sys.stdout.close()
 
+  def testUpdateMerge(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    options.merge = True
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    scm._Run(['checkout', '-q', 'feature'], options)
+    rev = scm.revinfo(options, (), None)
+    file_list = []
+    scm.update(options, (), file_list)
+    self.assertEquals(file_list, [join(self.base_path, x)
+                                  for x in ['a', 'b', 'c']])
+    # The actual commit that is created is unstable, so we verify its tree and
+    # parents instead.
+    self.assertEquals(scm._Capture(['rev-parse', 'HEAD:']),
+                      'd2e35c10ac24d6c621e14a1fcadceb533155627d')
+    self.assertEquals(scm._Capture(['rev-parse', 'HEAD^1']), rev)
+    self.assertEquals(scm._Capture(['rev-parse', 'HEAD^2']),
+                      scm._Capture(['rev-parse', 'origin/master']))
+    sys.stdout.close()
+
+  def testUpdateRebase(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    scm._Run(['checkout', '-q', 'feature'], options)
+    file_list = []
+    # Fake a 'y' key press.
+    scm._AskForData = self._GetAskForDataCallback(
+        'Cannot fast-forward merge, attempt to rebase? '
+        '(y)es / (q)uit / (s)kip : ', 'y')
+    scm.update(options, (), file_list)
+    self.assertEquals(file_list, [join(self.base_path, x)
+                                  for x in ['a', 'b', 'c']])
+    # The actual commit that is created is unstable, so we verify its tree and
+    # parent instead.
+    self.assertEquals(scm._Capture(['rev-parse', 'HEAD:']),
+                      'd2e35c10ac24d6c621e14a1fcadceb533155627d')
+    self.assertEquals(scm._Capture(['rev-parse', 'HEAD^']),
+                      scm._Capture(['rev-parse', 'origin/master']))
+    sys.stdout.close()
+
   def testUpdateReset(self):
     if not self.enabled:
       return
@@ -1039,7 +1103,9 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_path = join(self.base_path, 'b')
     open(file_path, 'w').writelines('conflict\n')
     scm._Run(['commit', '-am', 'test'], options)
-    __builtin__.raw_input = lambda x: 'y'
+    scm._AskForData = self._GetAskForDataCallback(
+        'Cannot fast-forward merge, attempt to rebase? '
+        '(y)es / (q)uit / (s)kip : ', 'y')
     exception = ('Conflict while rebasing this branch.\n'
                  'Fix the conflict and run gclient again.\n'
                  'See \'man git-rebase\' for details.\n')
