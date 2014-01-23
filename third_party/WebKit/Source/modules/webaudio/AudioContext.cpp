@@ -86,7 +86,7 @@ bool AudioContext::isSampleRateRangeGood(float sampleRate)
 }
 
 // Don't allow more than this number of simultaneous AudioContexts talking to hardware.
-const unsigned MaxHardwareContexts = 4;
+const unsigned MaxHardwareContexts = 6;
 unsigned AudioContext::s_hardwareContextCount = 0;
 
 PassRefPtr<AudioContext> AudioContext::create(Document& document, ExceptionState& exceptionState)
