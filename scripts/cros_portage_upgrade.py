@@ -32,9 +32,6 @@ UPGRADED = 'Upgraded'
 
 # Arches we care about -- we actively develop/support/ship.
 STANDARD_BOARD_ARCHS = set(('amd64', 'arm', 'x86'))
-# All the rest.  Maybe someday we'll support them.
-NONSTANDARD_BOARD_ARCHS = set(('alpha', 'hppa', 'ia64', 'm68k', 'mips', 'ppc',
-                               'ppc64', 's390', 'sh', 'sparc'))
 
 # Files we do not include in our upgrades by convention.
 BLACKLISTED_FILES = set(['Manifest', 'ChangeLog*'])
@@ -757,25 +754,16 @@ class Upgrader(object):
 
   def _StabilizeEbuild(self, ebuild_path):
     """Edit keywords to stablize ebuild at |ebuild_path| on current arch."""
-    oper.Notice('Editing %r to mark it stable for %r' %
-                (ebuild_path, self._curr_arch))
-
-    # For unsupported arches, auto-stabilize them all since there's no
-    # reason not to, and it makes it easier to port to them in the future.
-    arches = set((self._curr_arch,)) | NONSTANDARD_BOARD_ARCHS
+    oper.Notice('Editing %r to mark it stable for everyone' % ebuild_path)
 
     # Regexp to search for KEYWORDS="...".
-    keywords_regexp = re.compile(r'^(\s*KEYWORDS="[^"]*")', re.MULTILINE)
-    # Regexp to find ~<arch> and replace with <arch>.
-    arch_regexp = re.compile(r'~((%s)["\s\n])' % ('|'.join(arches)))
+    keywords_regexp = re.compile(r'^(\s*KEYWORDS=")[^"]*(")', re.MULTILINE)
 
     # Read in entire ebuild.
     content = osutils.ReadFile(ebuild_path)
 
-    # Replace ~<arch> with <arch> in KEYWORDS.
-    arch_repl = lambda x: x.group(1)
-    keywords_repl = lambda x: re.sub(arch_regexp, arch_repl, x.group(1))
-    content = re.sub(keywords_regexp, keywords_repl, content)
+    # Replace all KEYWORDS with "*".
+    content = re.sub(keywords_regexp, r'\1*\2', content)
 
     # Write ebuild file back out.
     osutils.WriteFile(ebuild_path, content)
