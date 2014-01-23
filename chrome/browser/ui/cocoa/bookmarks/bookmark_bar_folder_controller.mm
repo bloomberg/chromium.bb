@@ -1152,13 +1152,14 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Generalize to be axis independent then share code.
 // http://crbug.com/35966
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point {
+  NSPoint localPoint = [folderView_ convertPoint:point fromView:nil];
   for (BookmarkButton* button in buttons_.get()) {
     // No early break -- makes no assumption about button ordering.
 
     // Intentionally NOT using NSPointInRect() so that scrolling into
     // a submenu doesn't cause it to be closed.
     if (ValueInRangeInclusive(NSMinY([button frame]),
-                              point.y,
+                              localPoint.y,
                               NSMaxY([button frame]))) {
 
       // Over a button but let's be a little more specific
@@ -1166,7 +1167,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       NSRect frame = [button frame];
       NSRect middleHalfOfButton = NSInsetRect(frame, 0, frame.size.height / 4);
       if (ValueInRangeInclusive(NSMinY(middleHalfOfButton),
-                                point.y,
+                                localPoint.y,
                                 NSMaxY(middleHalfOfButton))) {
         // It makes no sense to drop on a non-folder; there is no hover.
         if (![button isFolder])
