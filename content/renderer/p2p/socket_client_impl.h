@@ -48,9 +48,6 @@ class P2PSocketClientImpl : public P2PSocketClient {
                             const std::vector<char>& data,
                             net::DiffServCodePoint dscp) OVERRIDE;
 
-  // Setting socket options.
-  virtual void SetOption(P2PSocketOption option, int value) OVERRIDE;
-
   // Must be called before the socket is destroyed. The delegate may
   // not be called after |closed_task| is executed.
   virtual void Close() OVERRIDE;

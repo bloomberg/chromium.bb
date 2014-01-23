@@ -18,7 +18,6 @@
 
 IPC_ENUM_TRAITS(content::P2PSocketType)
 IPC_ENUM_TRAITS(net::DiffServCodePoint)
-IPC_ENUM_TRAITS(content::P2PSocketOption)
 
 IPC_STRUCT_TRAITS_BEGIN(net::NetworkInterface)
   IPC_STRUCT_TRAITS_MEMBER(name)
@@ -86,8 +85,3 @@ IPC_MESSAGE_CONTROL5(P2PHostMsg_Send,
 
 IPC_MESSAGE_CONTROL1(P2PHostMsg_DestroySocket,
                      int /* socket_id */)
-
-IPC_MESSAGE_CONTROL3(P2PHostMsg_SetOption,
-                     int /* socket_id */,
-                     content::P2PSocketOption /* socket option type */,
-                     int /* value */)

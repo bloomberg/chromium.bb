@@ -132,7 +132,6 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(P2PHostMsg_AcceptIncomingTcpConnection,
                         OnAcceptIncomingTcpConnection)
     IPC_MESSAGE_HANDLER(P2PHostMsg_Send, OnSend)
-    IPC_MESSAGE_HANDLER(P2PHostMsg_SetOption, OnSetOption)
     IPC_MESSAGE_HANDLER(P2PHostMsg_DestroySocket, OnDestroySocket)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -249,18 +248,6 @@ void P2PSocketDispatcherHost::OnSend(int socket_id,
   }
 
   socket->Send(socket_address, data, dscp, packet_id);
-}
-
-void P2PSocketDispatcherHost::OnSetOption(int socket_id,
-                                          P2PSocketOption option,
-                                          int value) {
-  P2PSocketHost* socket = LookupSocket(socket_id);
-  if (!socket) {
-    LOG(ERROR) << "Received P2PHostMsg_SetOption for invalid socket_id.";
-    return;
-  }
-
-  socket->SetOption(option, value);
 }
 
 void P2PSocketDispatcherHost::OnDestroySocket(int socket_id) {
