@@ -222,7 +222,7 @@ void PepperVideoSourceHost::SendGetFrameErrorReply(int32_t error) {
 
 void PepperVideoSourceHost::Close() {
   if (source_handler_.get() && !stream_url_.empty())
-    source_handler_->Close(stream_url_, frame_receiver_.get());
+    source_handler_->Close(frame_receiver_.get());
 
   source_handler_.reset(NULL);
   stream_url_.clear();

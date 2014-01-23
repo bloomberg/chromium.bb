@@ -61,8 +61,11 @@ VideoSourceHandler::VideoSourceHandler(
 }
 
 VideoSourceHandler::~VideoSourceHandler() {
-  // All the opened readers should have been closed by now.
-  DCHECK(reader_to_receiver_.empty());
+  for (SourceInfoMap::iterator it = reader_to_receiver_.begin();
+       it != reader_to_receiver_.end();
+       ++it) {
+    delete it->second;
+  }
 }
 
 bool VideoSourceHandler::Open(const std::string& url,
@@ -71,32 +74,17 @@ bool VideoSourceHandler::Open(const std::string& url,
   if (!source.get()) {
     return false;
   }
-  PpFrameReceiver* receiver = new PpFrameReceiver();
-  receiver->SetReader(reader);
-  source->AddSink(receiver);
-  reader_to_receiver_[reader] = receiver;
+  reader_to_receiver_[reader] = new SourceInfo(source, reader);
   return true;
 }
 
-bool VideoSourceHandler::Close(const std::string& url,
-                               FrameReaderInterface* reader) {
-  scoped_refptr<webrtc::VideoSourceInterface> source = GetFirstVideoSource(url);
-  if (!source.get()) {
-    LOG(ERROR) << "VideoSourceHandler::Close - Failed to get the video source "
-               << "from MediaStream with url: " << url;
+bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
+  SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
+  if (it == reader_to_receiver_.end()) {
     return false;
   }
-  PpFrameReceiver* receiver =
-      static_cast<PpFrameReceiver*>(GetReceiver(reader));
-  if (!receiver) {
-    LOG(ERROR) << "VideoSourceHandler::Close - Failed to find receiver that "
-               << "is associated with the given reader.";
-    return false;
-  }
-  receiver->SetReader(NULL);
-  source->RemoveSink(receiver);
-  reader_to_receiver_.erase(reader);
-  delete receiver;
+  delete it->second;
+  reader_to_receiver_.erase(it);
   return true;
 }
 
@@ -139,12 +127,25 @@ scoped_refptr<VideoSourceInterface> VideoSourceHandler::GetFirstVideoSource(
 
 VideoRenderer* VideoSourceHandler::GetReceiver(
     FrameReaderInterface* reader) {
-  std::map<FrameReaderInterface*, VideoRenderer*>::iterator it;
-  it = reader_to_receiver_.find(reader);
+  SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
   if (it == reader_to_receiver_.end()) {
     return NULL;
   }
-  return it->second;
+  return it->second->receiver_.get();
+}
+
+VideoSourceHandler::SourceInfo::SourceInfo(
+    scoped_refptr<webrtc::VideoSourceInterface> source,
+    FrameReaderInterface* reader)
+    : receiver_(new PpFrameReceiver()),
+      source_(source) {
+  source_->AddSink(receiver_.get());
+  receiver_->SetReader(reader);
+}
+
+VideoSourceHandler::SourceInfo::~SourceInfo() {
+  source_->RemoveSink(receiver_.get());
+  receiver_->SetReader(NULL);
 }
 
 }  // namespace content
