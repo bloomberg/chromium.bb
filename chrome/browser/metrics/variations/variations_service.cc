@@ -422,7 +422,11 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   bool success = request->GetResponseAsString(&seed_data);
   DCHECK(success);
 
-  if (seed_store_.StoreSeedData(seed_data, response_date))
+  std::string seed_signature;
+  request->GetResponseHeaders()->EnumerateHeader(NULL,
+                                                 "X-Seed-Signature",
+                                                 &seed_signature);
+  if (seed_store_.StoreSeedData(seed_data, seed_signature, response_date))
     RecordLastFetchTime();
 }
 

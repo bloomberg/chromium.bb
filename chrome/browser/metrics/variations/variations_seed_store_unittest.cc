@@ -53,6 +53,13 @@ std::string SerializeSeedBase64(const VariationsSeed& seed, std::string* hash) {
   return base64_serialized_seed;
 }
 
+// Checks whether the pref with name |pref_name| is at its default value in
+// |prefs|.
+bool PrefHasDefaultValue(const TestingPrefServiceSimple& prefs,
+                         const char* pref_name) {
+  return prefs.FindPreference(pref_name)->IsDefaultValue();
+}
+
 }  // namespace
 
 TEST(VariationsSeedStoreTest, LoadSeed) {
@@ -74,7 +81,7 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
   // Check that the loaded data is the same as the original.
   EXPECT_EQ(SerializeSeed(seed), SerializeSeed(loaded_seed));
   // Make sure the pref hasn't been changed.
-  EXPECT_FALSE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
   EXPECT_EQ(base64_seed, prefs.GetString(prefs::kVariationsSeed));
 
   // Check that loading a seed with the correct hash works.
@@ -90,24 +97,22 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
   prefs.SetString(prefs::kVariationsSeed,
                   SerializeSeedBase64(different_seed, &different_hash));
   ASSERT_NE(different_hash, prefs.GetString(prefs::kVariationsSeedHash));
-  EXPECT_FALSE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed));
-  EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
-  EXPECT_TRUE(
-      prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
-  EXPECT_TRUE(
-      prefs.FindPreference(prefs::kVariationsSeedHash)->IsDefaultValue());
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedHash));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
 
   // Check that loading a bad seed returns false and clears the pref.
   prefs.ClearPref(prefs::kVariationsSeed);
   prefs.SetString(prefs::kVariationsSeed, "this should fail");
-  EXPECT_FALSE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
   EXPECT_FALSE(seed_store.LoadSeed(&loaded_seed));
-  EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
-  EXPECT_TRUE(
-      prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
-  EXPECT_TRUE(
-      prefs.FindPreference(prefs::kVariationsSeedHash)->IsDefaultValue());
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedDate));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedHash));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeedSignature));
 
   // Check that having no seed in prefs results in a return value of false.
   prefs.ClearPref(prefs::kVariationsSeed);
@@ -124,9 +129,9 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
 
   VariationsSeedStore seed_store(&prefs);
 
-  EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, now));
+  EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(), now));
   // Make sure the pref was actually set.
-  EXPECT_FALSE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+  EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
 
   std::string loaded_serialized_seed = prefs.GetString(prefs::kVariationsSeed);
   std::string decoded_serialized_seed;
@@ -137,8 +142,8 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
 
   // Check if trying to store a bad seed leaves the pref unchanged.
   prefs.ClearPref(prefs::kVariationsSeed);
-  EXPECT_FALSE(seed_store.StoreSeedData("should fail", now));
-  EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
+  EXPECT_FALSE(seed_store.StoreSeedData("should fail", std::string(), now));
+  EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
 }
 
 }  // namespace chrome_variations

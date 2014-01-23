@@ -311,9 +311,22 @@ bool MasterPreferences::GetExtensionsBlock(
 }
 
 std::string MasterPreferences::GetVariationsSeed() const {
-  std::string variations_seed;
-  master_dictionary_->GetString(prefs::kVariationsSeed, &variations_seed);
-  return variations_seed;
+  return ExtractPrefString(prefs::kVariationsSeed);
+}
+
+std::string MasterPreferences::GetVariationsSeedSignature() const {
+  return ExtractPrefString(prefs::kVariationsSeedSignature);
+}
+
+std::string MasterPreferences::ExtractPrefString(
+    const std::string& name) const {
+  std::string result;
+  scoped_ptr<base::Value> pref_value;
+  if (master_dictionary_->Remove(name, &pref_value)) {
+    if (!pref_value->GetAsString(&result))
+      NOTREACHED();
+  }
+  return result;
 }
 
 // static

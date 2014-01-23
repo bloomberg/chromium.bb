@@ -940,6 +940,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     if (!master_prefs_->variations_seed.empty()) {
       local_state_->SetString(prefs::kVariationsSeed,
                               master_prefs_->variations_seed);
+      if (!master_prefs_->variations_seed_signature.empty()) {
+        local_state_->SetString(prefs::kVariationsSeedSignature,
+                                master_prefs_->variations_seed_signature);
+      }
       // Set the variation seed date to the current system time. If the user's
       // clock is incorrect, this may cause some field trial expiry checks to
       // not do the right thing until the next seed update from the server,

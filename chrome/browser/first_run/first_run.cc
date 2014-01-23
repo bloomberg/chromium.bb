@@ -564,6 +564,8 @@ void SetupMasterPrefsFromInstallPrefs(
       &out_prefs->import_bookmarks_path);
 
   out_prefs->variations_seed = install_prefs.GetVariationsSeed();
+  out_prefs->variations_seed_signature =
+      install_prefs.GetVariationsSeedSignature();
 
   install_prefs.GetString(
       installer::master_preferences::kDistroSuppressDefaultBrowserPromptPref,

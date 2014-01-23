@@ -30,10 +30,11 @@ class VariationsSeedStore {
   bool LoadSeed(VariationsSeed* seed);
 
   // Stores the given seed data (serialized protobuf data) to local state, along
-  // with the date when it was fetched. The |seed_data| will be Base64 encoded
-  // for storage. If the string is invalid, the existing prefs are left as is
-  // and the function returns false.
+  // with a base64-encoded digital signature for seed and the date when it was
+  // fetched. The |seed_data| will be base64 encoded for storage. If the string
+  // is invalid, the existing prefs are left as is and false is returned.
   bool StoreSeedData(const std::string& seed_data,
+                     const std::string& base64_seed_signature,
                      const base::Time& date_fetched);
 
   // Returns the serial number of the last loaded or stored seed.
@@ -45,6 +46,9 @@ class VariationsSeedStore {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
+  // Clears all prefs related to variations seed storage.
+  void ClearPrefs();
+
   // The pref service used to persist the variations seed.
   PrefService* local_state_;
 

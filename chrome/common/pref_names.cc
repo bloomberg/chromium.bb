@@ -1391,6 +1391,9 @@ const char kVariationsSeedDate[] = "variations_seed_date";
 // SHA-1 hash of the serialized variations seed data (hex encoded).
 const char kVariationsSeedHash[] = "variations_seed_hash";
 
+// Digital signature of the binary variations seed data, base64-encoded.
+const char kVariationsSeedSignature[] = "variations_seed_signature";
+
 // An enum value to indicate the execution phase the browser was in.
 const char kStabilityExecutionPhase[] =
     "user_experience_metrics.stability.execution_phase";

@@ -63,9 +63,7 @@ bool VariationsSeedStore::LoadSeed(VariationsSeed* seed) {
       !seed->ParseFromString(seed_data)) {
     VLOG(1) << "Variations seed data in local pref is corrupt, clearing the "
             << "pref.";
-    local_state_->ClearPref(prefs::kVariationsSeed);
-    local_state_->ClearPref(prefs::kVariationsSeedDate);
-    local_state_->ClearPref(prefs::kVariationsSeedHash);
+    ClearPrefs();
     RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT);
     return false;
   }
@@ -74,8 +72,10 @@ bool VariationsSeedStore::LoadSeed(VariationsSeed* seed) {
   return true;
 }
 
-bool VariationsSeedStore::StoreSeedData(const std::string& seed_data,
-                                        const base::Time& date_fetched) {
+bool VariationsSeedStore::StoreSeedData(
+    const std::string& seed_data,
+    const std::string& base64_seed_signature,
+    const base::Time& date_fetched) {
   if (seed_data.empty()) {
     VLOG(1) << "Variations seed data is empty, rejecting the seed.";
     return false;
@@ -96,6 +96,8 @@ bool VariationsSeedStore::StoreSeedData(const std::string& seed_data,
   local_state_->SetString(prefs::kVariationsSeedHash, HashSeed(seed_data));
   local_state_->SetInt64(prefs::kVariationsSeedDate,
                          date_fetched.ToInternalValue());
+  local_state_->SetString(prefs::kVariationsSeedSignature,
+                          base64_seed_signature);
   variations_serial_number_ = seed.serial_number();
 
   return true;
@@ -107,6 +109,14 @@ void VariationsSeedStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kVariationsSeedHash, std::string());
   registry->RegisterInt64Pref(prefs::kVariationsSeedDate,
                               base::Time().ToInternalValue());
+  registry->RegisterStringPref(prefs::kVariationsSeedSignature, std::string());
+}
+
+void VariationsSeedStore::ClearPrefs() {
+  local_state_->ClearPref(prefs::kVariationsSeed);
+  local_state_->ClearPref(prefs::kVariationsSeedDate);
+  local_state_->ClearPref(prefs::kVariationsSeedHash);
+  local_state_->ClearPref(prefs::kVariationsSeedSignature);
 }
 
 }  // namespace chrome_variations

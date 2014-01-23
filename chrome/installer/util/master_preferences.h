@@ -159,6 +159,9 @@ class MasterPreferences {
   // Returns the variations seed entry from the master prefs.
   std::string GetVariationsSeed() const;
 
+  // Returns the variations seed signature entry from the master prefs.
+  std::string GetVariationsSeedSignature() const;
+
   // Returns true iff the master preferences were successfully read from a file.
   bool read_from_file() const {
     return preferences_read_from_file_;
@@ -200,7 +203,11 @@ class MasterPreferences {
   // found in older master_preferences files.
   void EnforceLegacyPreferences();
 
- protected:
+  // Removes the specified string pref from the master preferences and returns
+  // its value. Should be used for master prefs that shouldn't be automatically
+  // copied over to profile preferences.
+  std::string ExtractPrefString(const std::string& name) const;
+
   scoped_ptr<base::DictionaryValue> master_dictionary_;
   base::DictionaryValue* distribution_;
   bool preferences_read_from_file_;
