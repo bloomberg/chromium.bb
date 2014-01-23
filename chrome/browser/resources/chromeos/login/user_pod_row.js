@@ -137,10 +137,8 @@ cr.define('login', function() {
       this.customButton.tabIndex = UserPodTabOrder.POD_INPUT;
       this.actionBoxAreaElement.tabIndex = UserPodTabOrder.ACTION_BOX;
 
-      // Mousedown has to be used instead of click to be able to prevent 'focus'
-      // event later.
-      this.addEventListener('mousedown',
-          this.handleMouseDown_.bind(this));
+      this.addEventListener('click',
+          this.handleClickOnPod_.bind(this));
 
       this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
@@ -681,10 +679,10 @@ cr.define('login', function() {
     },
 
     /**
-     * Handles mousedown event on a user pod.
-     * @param {Event} e Mousedown event.
+     * Handles click event on a user pod.
+     * @param {Event} e Click event.
      */
-    handleMouseDown_: function(e) {
+    handleClickOnPod_: function(e) {
       if (this.parentNode.disabled)
         return;
 
@@ -844,7 +842,7 @@ cr.define('login', function() {
     },
 
     /** @override */
-    handleMouseDown_: function(e) {
+    handleClickOnPod_: function(e) {
       if (this.parentNode.disabled)
         return;
 
@@ -971,7 +969,7 @@ cr.define('login', function() {
     },
 
     /** @override */
-    handleMouseDown_: function(e) {
+    handleClickOnPod_: function(e) {
       if (this.parentNode.disabled)
         return;
 
@@ -1543,10 +1541,6 @@ cr.define('login', function() {
         if (!pod)
           this.focusedPod_.isActionBoxMenuHovered = false;
       }
-
-      // Also stop event propagation.
-      if (pod && e.target == pod.imageElement)
-        e.stopPropagation();
     },
 
     /**
