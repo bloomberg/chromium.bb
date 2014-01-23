@@ -192,7 +192,9 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     mock: Upload to a testing bucket rather than the real one.
 
   Returns:
-    Happiness.
+    A dictionary that maps 'channel' -> ['gs://signer_instruction_uri1',
+                                         'gs://signer_instruction_uri2',
+                                         ...]
   """
   if versionrev is None:
     # Extract milestone/version from the directory name.
@@ -245,6 +247,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     cros_build_lib.Info('DRY RUN MODE ACTIVE: NOTHING WILL BE UPLOADED')
   cros_build_lib.Info('Signing for channels: %s', ' '.join(channels))
   cros_build_lib.Info('Signing for keysets : %s', ' '.join(keysets))
+
+  instruction_urls = {}
 
   def _ImageNameBase(image_type=None):
     lmid = ('%s-' % image_type) if image_type else ''
@@ -344,6 +348,9 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
           ctx.Copy(insns_path.name, gs_insns_path)
           MarkImageToBeSigned(ctx, gs_base, gs_insns_path, priority)
           cros_build_lib.Info('Signing %s image %s', image_type, gs_insns_path)
+          instruction_urls.setdefault(channel, []).append(gs_insns_path)
+
+  return instruction_urls
 
 
 def main(argv):

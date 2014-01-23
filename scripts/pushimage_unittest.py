@@ -176,7 +176,18 @@ class PushImageTests(cros_test_lib.MockTestCase):
 
   def testBasic(self):
     """Simple smoke test"""
-    pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0', profile='hi')
+    EXPECTED = {
+        'canary': [
+            'gs://chromeos-releases/canary-channel/test.board-hi/5126.0.0/'
+              'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions'],
+        'dev': [
+            'gs://chromeos-releases/dev-channel/test.board-hi/5126.0.0/'
+              'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions'],
+    }
+    urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                               profile='hi')
+
+    self.assertEqual(urls, EXPECTED)
 
   def testBasicMock(self):
     """Simple smoke test in mock mode"""
@@ -189,22 +200,34 @@ class PushImageTests(cros_test_lib.MockTestCase):
 
   def testNoInsns(self):
     """Boards w/out insn files should get skipped"""
-    pushimage.PushImage('/src', 'a bad bad board', 'R34-5126.0.0')
+    urls = pushimage.PushImage('/src', 'a bad bad board', 'R34-5126.0.0')
     self.assertEqual(self.gs_mock.call_count, 0)
+    self.assertEqual(urls, None)
 
   def testSignTypesRecovery(self):
     """Only sign the requested recovery type"""
-    pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
-                        sign_types=['recovery'])
+    EXPECTED = {
+        'canary': [
+            'gs://chromeos-releases/canary-channel/test.board/5126.0.0/'
+              'ChromeOS-recovery-R34-5126.0.0-test.board.instructions'],
+        'dev': [
+            'gs://chromeos-releases/dev-channel/test.board/5126.0.0/'
+              'ChromeOS-recovery-R34-5126.0.0-test.board.instructions'],
+    }
+
+    urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                               sign_types=['recovery'])
     self.assertEqual(self.gs_mock.call_count, 18)
     self.assertTrue(self.mark_mock.called)
+    self.assertEqual(urls, EXPECTED)
 
   def testSignTypesNone(self):
     """Verify nothing is signed when we request an unavailable type"""
-    pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
-                        sign_types=['nononononono'])
+    urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                               sign_types=['nononononono'])
     self.assertEqual(self.gs_mock.call_count, 16)
     self.assertFalse(self.mark_mock.called)
+    self.assertEqual(urls, {})
 
 
 class MainTests(cros_test_lib.MockTestCase):
