@@ -35,12 +35,13 @@
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
+#include "modules/websockets/NewWebSocketChannelImpl.h"
 #include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
@@ -72,8 +73,7 @@ PassRefPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context,
     Document* document = toDocument(context);
     Settings* settings = document->settings();
     if (settings && settings->experimentalWebSocketEnabled()) {
-        // FIXME: Create and return an "experimental" WebSocketChannel instead of a MainThreadWebSocketChannel.
-        return MainThreadWebSocketChannel::create(document, client, sourceURL, lineNumber);
+        return NewWebSocketChannelImpl::create(document, client, sourceURL, lineNumber);
     }
     return MainThreadWebSocketChannel::create(document, client, sourceURL, lineNumber);
 }
