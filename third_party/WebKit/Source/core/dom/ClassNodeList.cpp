@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-ClassNodeList::ClassNodeList(PassRefPtr<Node> rootNode, const AtomicString& classNames)
+ClassNodeList::ClassNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicString& classNames)
     : LiveNodeList(rootNode, ClassNodeListType, InvalidateOnClassAttrChange)
     , m_classNames(classNames, document().inQuirksMode())
     , m_originalClassNames(classNames)

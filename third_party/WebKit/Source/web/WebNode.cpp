@@ -44,6 +44,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/EmptyNodeList.h"
 #include "core/events/Event.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
@@ -192,7 +193,9 @@ void WebNode::simulateClick()
 
 WebNodeList WebNode::getElementsByTagName(const WebString& tag) const
 {
-    return WebNodeList(m_private->getElementsByTagName(tag));
+    if (m_private->isContainerNode())
+        return WebNodeList(toContainerNode(m_private.get())->getElementsByTagName(tag));
+    return WebNodeList(EmptyNodeList::create(m_private.get()));
 }
 
 WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) const

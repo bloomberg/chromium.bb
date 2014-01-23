@@ -23,6 +23,7 @@
 #define NodeRareData_h
 
 #include "core/dom/ChildNodeList.h"
+#include "core/dom/EmptyNodeList.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/QualifiedName.h"
@@ -45,20 +46,37 @@ class NodeListsNodeData {
 public:
     void clearChildNodeListCache()
     {
-        if (m_childNodeList)
-            m_childNodeList->invalidateCache();
+        if (m_childNodeList && m_childNodeList->isChildNodeList())
+            toChildNodeList(m_childNodeList)->invalidateCache();
     }
 
-    PassRefPtr<ChildNodeList> ensureChildNodeList(Node* node)
+    PassRefPtr<ChildNodeList> ensureChildNodeList(ContainerNode* node)
     {
         if (m_childNodeList)
-            return m_childNodeList;
+            return toChildNodeList(m_childNodeList);
         RefPtr<ChildNodeList> list = ChildNodeList::create(node);
         m_childNodeList = list.get();
         return list.release();
     }
 
+    PassRefPtr<EmptyNodeList> ensureEmptyChildNodeList(Node* node)
+    {
+        if (m_childNodeList)
+            return toEmptyNodeList(m_childNodeList);
+        RefPtr<EmptyNodeList> list = EmptyNodeList::create(node);
+        m_childNodeList = list.get();
+        return list.release();
+    }
+
     void removeChildNodeList(ChildNodeList* list)
+    {
+        ASSERT(m_childNodeList == list);
+        if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
+            return;
+        m_childNodeList = 0;
+    }
+
+    void removeEmptyChildNodeList(EmptyNodeList* list)
     {
         ASSERT(m_childNodeList == list);
         if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
@@ -81,7 +99,7 @@ public:
     typedef HashMap<QualifiedName, TagNodeList*> TagNodeListCacheNS;
 
     template<typename T>
-    PassRefPtr<T> addCacheWithAtomicName(Node* node, CollectionType collectionType, const AtomicString& name)
+    PassRefPtr<T> addCacheWithAtomicName(ContainerNode* node, CollectionType collectionType, const AtomicString& name)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), 0);
         if (!result.isNewEntry)
@@ -94,7 +112,7 @@ public:
 
     // FIXME: This function should be renamed since it doesn't have an atomic name.
     template<typename T>
-    PassRefPtr<T> addCacheWithAtomicName(Node* node, CollectionType collectionType)
+    PassRefPtr<T> addCacheWithAtomicName(ContainerNode* node, CollectionType collectionType)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), 0);
         if (!result.isNewEntry)
@@ -123,7 +141,7 @@ public:
         return list.release();
     }
 
-    PassRefPtr<TagNodeList> addCacheWithQualifiedName(Node* node, const AtomicString& namespaceURI, const AtomicString& localName)
+    PassRefPtr<TagNodeList> addCacheWithQualifiedName(ContainerNode* node, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         QualifiedName name(nullAtom, localName, namespaceURI);
         TagNodeListCacheNS::AddResult result = m_tagNodeListCacheNS.add(name, 0);
@@ -222,9 +240,8 @@ private:
 
     bool deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node*);
 
-    // FIXME: m_childNodeList should be merged into m_atomicNameCaches or at least be shared with HTMLCollection returned by Element::children
-    // but it's tricky because invalidateCaches shouldn't invalidate this cache and adoptTreeScope shouldn't call registerNodeList or unregisterNodeList.
-    ChildNodeList* m_childNodeList;
+    // Can be a ChildNodeList or an EmptyNodeList.
+    NodeList* m_childNodeList;
     NodeListAtomicNameCacheMap m_atomicNameCaches;
     NodeListNameCacheMap m_nameCaches;
     TagNodeListCacheNS m_tagNodeListCacheNS;

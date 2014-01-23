@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +29,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/NodeList.h"
+#ifndef EmptyNodeList_h
+#define EmptyNodeList_h
 
-#include "core/dom/EmptyNodeList.h"
-#include "core/dom/LiveNodeList.h"
-#include "core/dom/Node.h"
+#include "core/dom/NodeList.h"
 
 namespace WebCore {
 
-void NodeList::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<Node>& returnValue0, bool& returnValue1Enabled, unsigned& returnValue1)
-{
-    // Length property cannot be overridden.
-    DEFINE_STATIC_LOCAL(const AtomicString, length, ("length", AtomicString::ConstructFromLiteral));
-    if (name == length) {
-        returnValue1Enabled = true;
-        returnValue1 = this->length();
-        return;
+class EmptyNodeList FINAL : public NodeList {
+public:
+    static PassRefPtr<EmptyNodeList> create(Node* rootNode)
+    {
+        return adoptRef(new EmptyNodeList(rootNode));
     }
+    virtual ~EmptyNodeList();
 
-    Node* result = namedItem(name);
-    if (!result)
-        return;
+    Node* ownerNode() const { return m_owner.get(); }
 
-    returnValue0Enabled = true;
-    returnValue0 = result;
-}
+private:
+    explicit EmptyNodeList(Node* rootNode) : m_owner(rootNode) { }
 
-Node* NodeList::ownerNode() const
-{
-    if (isLiveNodeList())
-        return static_cast<const LiveNodeList*>(this)->ownerNode();
-    if (isEmptyNodeList())
-        return static_cast<const EmptyNodeList*>(this)->ownerNode();
-    return 0;
-}
+    virtual unsigned length() const OVERRIDE { return 0; }
+    virtual Node* item(unsigned) const OVERRIDE { return 0; }
+    virtual Node* namedItem(const AtomicString&) const OVERRIDE { return 0; }
 
+    virtual bool isEmptyNodeList() const OVERRIDE { return true; }
+
+    RefPtr<Node> m_owner;
+};
+
+DEFINE_TYPE_CASTS(EmptyNodeList, NodeList, nodeList, nodeList->isEmptyNodeList(), nodeList.isEmptyNodeList());
 
 } // namespace WebCore
+
+#endif // EmptyNodeList_h

@@ -34,7 +34,6 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ChildNodeList.h"
-#include "core/dom/ClassNodeList.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -44,7 +43,6 @@
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LiveNodeList.h"
-#include "core/dom/NameNodeList.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
@@ -79,7 +77,6 @@
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLStyleElement.h"
-#include "core/html/RadioNodeList.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
@@ -360,7 +357,9 @@ void Node::setNodeValue(const String&)
 
 PassRefPtr<NodeList> Node::childNodes()
 {
-    return ensureRareData().ensureNodeLists().ensureChildNodeList(this);
+    if (isContainerNode())
+        return ensureRareData().ensureNodeLists().ensureChildNodeList(toContainerNode(this));
+    return ensureRareData().ensureNodeLists().ensureEmptyChildNodeList(this);
 }
 
 Node& Node::lastDescendant() const
@@ -1257,48 +1256,6 @@ bool Node::inSameContainingBlockFlowElement(Node *n)
 }
 
 // FIXME: End of obviously misplaced HTML editing functions.  Try to move these out of Node.
-
-PassRefPtr<NodeList> Node::getElementsByTagName(const AtomicString& localName)
-{
-    if (localName.isNull())
-        return 0;
-
-    if (document().isHTMLDocument())
-        return ensureRareData().ensureNodeLists().addCacheWithAtomicName<HTMLTagNodeList>(this, HTMLTagNodeListType, localName);
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<TagNodeList>(this, TagNodeListType, localName);
-}
-
-PassRefPtr<NodeList> Node::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
-{
-    if (localName.isNull())
-        return 0;
-
-    if (namespaceURI == starAtom)
-        return getElementsByTagName(localName);
-
-    return ensureRareData().ensureNodeLists().addCacheWithQualifiedName(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localName);
-}
-
-// Takes an AtomicString in argument because it is common for elements to share the same name attribute.
-// Therefore, the NameNodeList factory function expects an AtomicString type.
-PassRefPtr<NodeList> Node::getElementsByName(const AtomicString& elementName)
-{
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<NameNodeList>(this, NameNodeListType, elementName);
-}
-
-// Takes an AtomicString in argument because it is common for elements to share the same set of class names.
-// Therefore, the ClassNodeList factory function expects an AtomicString type.
-PassRefPtr<NodeList> Node::getElementsByClassName(const AtomicString& classNames)
-{
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<ClassNodeList>(this, ClassNodeListType, classNames);
-}
-
-PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)
-{
-    ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
-    CollectionType type = onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType;
-    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<RadioNodeList>(this, type, name);
-}
 
 PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
 {

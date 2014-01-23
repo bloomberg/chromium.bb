@@ -38,7 +38,7 @@ class QualifiedName;
 
 class HTMLFormControlsCollection FINAL : public HTMLCollection {
 public:
-    static PassRefPtr<HTMLFormControlsCollection> create(Node*, CollectionType);
+    static PassRefPtr<HTMLFormControlsCollection> create(ContainerNode*, CollectionType);
 
     virtual ~HTMLFormControlsCollection();
 
@@ -46,7 +46,7 @@ public:
     void namedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Node>&);
 
 private:
-    explicit HTMLFormControlsCollection(Node*);
+    explicit HTMLFormControlsCollection(ContainerNode*);
 
     virtual void updateNameCache() const OVERRIDE;
 

@@ -28,19 +28,11 @@
 
 namespace WebCore {
 
-Node& LiveNodeListBase::rootNode() const
+ContainerNode& LiveNodeListBase::rootNode() const
 {
     if (isRootedAtDocument() && m_ownerNode->inDocument())
         return m_ownerNode->document();
     return *m_ownerNode;
-}
-
-ContainerNode* LiveNodeListBase::rootContainerNode() const
-{
-    Node& rootNode = this->rootNode();
-    if (!rootNode.isContainerNode())
-        return 0;
-    return toContainerNode(&rootNode);
 }
 
 void LiveNodeListBase::invalidateCache() const

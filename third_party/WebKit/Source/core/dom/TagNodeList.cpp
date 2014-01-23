@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-TagNodeList::TagNodeList(PassRefPtr<Node> rootNode, CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
+TagNodeList::TagNodeList(PassRefPtr<ContainerNode> rootNode, CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
     : LiveNodeList(rootNode, type, DoNotInvalidateOnAttributeChanges)
     , m_namespaceURI(namespaceURI)
     , m_localName(localName)
@@ -54,7 +54,7 @@ bool TagNodeList::nodeMatches(const Element& testNode) const
     return m_namespaceURI == starAtom || m_namespaceURI == testNode.namespaceURI();
 }
 
-HTMLTagNodeList::HTMLTagNodeList(PassRefPtr<Node> rootNode, const AtomicString& localName)
+HTMLTagNodeList::HTMLTagNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicString& localName)
     : TagNodeList(rootNode, HTMLTagNodeListType, starAtom, localName)
     , m_loweredLocalName(localName.lower())
 {

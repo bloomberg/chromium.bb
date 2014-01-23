@@ -160,7 +160,7 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
     return DoNotInvalidateOnAttributeChanges;
 }
 
-HTMLCollection::HTMLCollection(Node* ownerNode, CollectionType type, ItemAfterOverrideType itemAfterOverrideType)
+HTMLCollection::HTMLCollection(ContainerNode* ownerNode, CollectionType type, ItemAfterOverrideType itemAfterOverrideType)
     : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type),
         WebCore::shouldOnlyIncludeDirectChildren(type), type, itemAfterOverrideType)
     , m_isNameCacheValid(false)
@@ -168,7 +168,7 @@ HTMLCollection::HTMLCollection(Node* ownerNode, CollectionType type, ItemAfterOv
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLCollection> HTMLCollection::create(Node* base, CollectionType type)
+PassRefPtr<HTMLCollection> HTMLCollection::create(ContainerNode* base, CollectionType type)
 {
     return adoptRef(new HTMLCollection(base, type, DoesNotOverrideItemAfter));
 }
@@ -426,13 +426,7 @@ Node* LiveNodeListBase::item(unsigned offset) const
     if (isLengthCacheValid() && cachedLength() <= offset)
         return 0;
 
-    ContainerNode* root = rootContainerNode();
-    if (!root) {
-        // FIMXE: In someTextNode.childNodes case the root is Text. We shouldn't even make a LiveNodeList for that.
-        setLengthCache(0);
-        return 0;
-    }
-
+    ContainerNode& root = rootNode();
     if (isLengthCacheValid() && !overridesItemAfter() && isLastItemCloserThanLastOrCachedItem(offset)) {
         Node* lastItem = itemBefore(0);
         ASSERT(lastItem);
@@ -440,9 +434,9 @@ Node* LiveNodeListBase::item(unsigned offset) const
     } else if (!cachedItem() || isFirstItemCloserThanCachedItem(offset) || (overridesItemAfter() && offset < cachedItemOffset())) {
         Node* firstItem;
         if (isLiveNodeListType(type()))
-            firstItem = static_cast<const LiveNodeList*>(this)->traverseToFirstElement(*root);
+            firstItem = static_cast<const LiveNodeList*>(this)->traverseToFirstElement(root);
         else
-            firstItem = static_cast<const HTMLCollection*>(this)->traverseToFirstElement(*root);
+            firstItem = static_cast<const HTMLCollection*>(this)->traverseToFirstElement(root);
 
         if (!firstItem) {
             setLengthCache(0);
@@ -455,7 +449,7 @@ Node* LiveNodeListBase::item(unsigned offset) const
     if (cachedItemOffset() == offset)
         return cachedItem();
 
-    return itemBeforeOrAfterCachedItem(offset, *root);
+    return itemBeforeOrAfterCachedItem(offset, root);
 }
 
 inline Node* LiveNodeListBase::itemBeforeOrAfterCachedItem(unsigned offset, const ContainerNode& root) const
@@ -592,12 +586,9 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
 
-    ContainerNode* root = rootContainerNode();
-    if (!root)
-        return 0;
-
+    ContainerNode& root = rootNode();
     unsigned i = 0;
-    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, *root)) {
+    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
         if (checkForNameMatch(*element, /* checkName */ false, name)) {
             setItemCache(element, i);
             return element;
@@ -606,7 +597,7 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
     }
 
     i = 0;
-    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, *root)) {
+    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
         if (checkForNameMatch(*element, /* checkName */ true, name)) {
             setItemCache(element, i);
             return element;
@@ -622,11 +613,8 @@ void HTMLCollection::updateNameCache() const
     if (hasNameCache())
         return;
 
-    ContainerNode* root = rootContainerNode();
-    if (!root)
-        return;
-
-    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, *root)) {
+    ContainerNode& root = rootNode();
+    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
             appendIdCache(idAttrVal, element);

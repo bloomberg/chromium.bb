@@ -48,7 +48,7 @@ public:
         DoesNotOverrideItemAfter,
     };
 
-    LiveNodeListBase(Node* ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
+    LiveNodeListBase(ContainerNode* ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
         bool shouldOnlyIncludeDirectChildren, CollectionType collectionType, ItemAfterOverrideType itemAfterOverrideType)
         : m_ownerNode(ownerNode)
         , m_cachedItem(0)
@@ -59,6 +59,7 @@ public:
         , m_collectionType(collectionType)
         , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
     {
+        ASSERT(m_ownerNode);
         ASSERT(m_rootType == static_cast<unsigned>(rootType));
         ASSERT(m_invalidationType == static_cast<unsigned>(invalidationType));
         ASSERT(m_collectionType == static_cast<unsigned>(collectionType));
@@ -81,7 +82,7 @@ public:
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
     ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
     ALWAYS_INLINE CollectionType type() const { return static_cast<CollectionType>(m_collectionType); }
-    Node* ownerNode() const { return m_ownerNode.get(); }
+    ContainerNode* ownerNode() const { return m_ownerNode.get(); }
     ALWAYS_INLINE void invalidateCache(const QualifiedName* attrName) const
     {
         if (!attrName || shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
@@ -95,8 +96,7 @@ public:
 
 protected:
     Document& document() const { return m_ownerNode->document(); }
-    Node& rootNode() const;
-    ContainerNode* rootContainerNode() const;
+    ContainerNode& rootNode() const;
     bool overridesItemAfter() const { return m_overridesItemAfter; }
 
     ALWAYS_INLINE Node* cachedItem() const { return m_cachedItem; }
@@ -127,7 +127,7 @@ private:
     Node* itemBefore(const Node* previousItem) const;
     void invalidateIdNameCacheMaps() const;
 
-    RefPtr<Node> m_ownerNode;
+    RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
     mutable Node* m_cachedItem;
     mutable unsigned m_cachedLength;
     mutable unsigned m_cachedItemOffset;
@@ -168,7 +168,7 @@ ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeL
 
 class LiveNodeList : public NodeList, public LiveNodeListBase {
 public:
-    LiveNodeList(PassRefPtr<Node> ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
+    LiveNodeList(PassRefPtr<ContainerNode> ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
         : LiveNodeListBase(ownerNode.get(), rootType, invalidationType, collectionType == ChildNodeListType,
         collectionType, DoesNotOverrideItemAfter)
     { }

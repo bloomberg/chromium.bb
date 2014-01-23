@@ -31,7 +31,7 @@ namespace WebCore {
 
 class ChildNodeList FINAL : public LiveNodeList {
 public:
-    static PassRefPtr<ChildNodeList> create(PassRefPtr<Node> rootNode)
+    static PassRefPtr<ChildNodeList> create(PassRefPtr<ContainerNode> rootNode)
     {
         return adoptRef(new ChildNodeList(rootNode));
     }
@@ -39,10 +39,13 @@ public:
     virtual ~ChildNodeList();
 
 protected:
-    explicit ChildNodeList(PassRefPtr<Node> rootNode);
+    explicit ChildNodeList(PassRefPtr<ContainerNode> rootNode);
 
+    virtual bool isChildNodeList() const OVERRIDE { return true; }
     virtual bool nodeMatches(const Element&) const OVERRIDE;
 };
+
+DEFINE_TYPE_CASTS(ChildNodeList, NodeList, nodeList, nodeList->isChildNodeList(), nodeList.isChildNodeList());
 
 } // namespace WebCore
 

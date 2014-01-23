@@ -25,10 +25,12 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ChildListMutationScope.h"
+#include "core/dom/ClassNodeList.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
+#include "core/dom/NameNodeList.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -36,6 +38,7 @@
 #include "core/events/MutationEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLCollection.h"
+#include "core/html/RadioNodeList.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
@@ -45,6 +48,8 @@
 using namespace std;
 
 namespace WebCore {
+
+using namespace HTMLNames;
 
 static void dispatchChildInsertionEvents(Node&);
 static void dispatchChildRemovalEvents(Node&);
@@ -262,7 +267,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node& nextChil
     ASSERT(newChild);
     ASSERT(nextChild.parentNode() == this);
     ASSERT(!newChild->isDocumentFragment());
-    ASSERT(!hasTagName(HTMLNames::templateTag));
+    ASSERT(!hasTagName(templateTag));
 
     if (nextChild.previousSibling() == newChild || nextChild == newChild) // nothing to do
         return;
@@ -605,7 +610,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ASSERT(newChild);
     ASSERT(!newChild->parentNode()); // Use appendChild if you need to handle reparenting (and want DOM mutation events).
     ASSERT(!newChild->isDocumentFragment());
-    ASSERT(!hasTagName(HTMLNames::templateTag));
+    ASSERT(!hasTagName(templateTag));
 
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
@@ -965,6 +970,48 @@ void ContainerNode::updateTreeAfterInsertion(Node& child)
     ChildNodeInsertionNotifier(*this).notify(child);
 
     dispatchChildInsertionEvents(child);
+}
+
+PassRefPtr<NodeList> ContainerNode::getElementsByTagName(const AtomicString& localName)
+{
+    if (localName.isNull())
+        return 0;
+
+    if (document().isHTMLDocument())
+        return ensureRareData().ensureNodeLists().addCacheWithAtomicName<HTMLTagNodeList>(this, HTMLTagNodeListType, localName);
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<TagNodeList>(this, TagNodeListType, localName);
+}
+
+PassRefPtr<NodeList> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
+{
+    if (localName.isNull())
+        return 0;
+
+    if (namespaceURI == starAtom)
+        return getElementsByTagName(localName);
+
+    return ensureRareData().ensureNodeLists().addCacheWithQualifiedName(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localName);
+}
+
+// Takes an AtomicString in argument because it is common for elements to share the same name attribute.
+// Therefore, the NameNodeList factory function expects an AtomicString type.
+PassRefPtr<NodeList> ContainerNode::getElementsByName(const AtomicString& elementName)
+{
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<NameNodeList>(this, NameNodeListType, elementName);
+}
+
+// Takes an AtomicString in argument because it is common for elements to share the same set of class names.
+// Therefore, the ClassNodeList factory function expects an AtomicString type.
+PassRefPtr<NodeList> ContainerNode::getElementsByClassName(const AtomicString& classNames)
+{
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<ClassNodeList>(this, ClassNodeListType, classNames);
+}
+
+PassRefPtr<RadioNodeList> ContainerNode::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)
+{
+    ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
+    CollectionType type = onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType;
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<RadioNodeList>(this, type, name);
 }
 
 #ifndef NDEBUG

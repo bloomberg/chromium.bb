@@ -1930,6 +1930,8 @@
             'dom/ElementRareData.cpp',
             'dom/ElementRareData.h',
             'dom/ElementTraversal.h',
+            'dom/EmptyNodeList.cpp',
+            'dom/EmptyNodeList.h',
             'dom/Entity.h',
             'dom/ExecutionContextTask.cpp',
             'dom/ExecutionContextTask.h',

@@ -33,13 +33,13 @@ namespace WebCore {
 // NodeList that limits to a particular tag.
 class TagNodeList : public LiveNodeList {
 public:
-    static PassRefPtr<TagNodeList> create(PassRefPtr<Node> rootNode, const AtomicString& namespaceURI, const AtomicString& localName)
+    static PassRefPtr<TagNodeList> create(PassRefPtr<ContainerNode> rootNode, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         ASSERT(namespaceURI != starAtom);
         return adoptRef(new TagNodeList(rootNode, TagNodeListType, namespaceURI, localName));
     }
 
-    static PassRefPtr<TagNodeList> create(PassRefPtr<Node> rootNode, CollectionType type, const AtomicString& localName)
+    static PassRefPtr<TagNodeList> create(PassRefPtr<ContainerNode> rootNode, CollectionType type, const AtomicString& localName)
     {
         ASSERT_UNUSED(type, type == TagNodeListType);
         return adoptRef(new TagNodeList(rootNode, TagNodeListType, starAtom, localName));
@@ -48,7 +48,7 @@ public:
     virtual ~TagNodeList();
 
 protected:
-    TagNodeList(PassRefPtr<Node> rootNode, CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
+    TagNodeList(PassRefPtr<ContainerNode> rootNode, CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
 
     virtual bool nodeMatches(const Element&) const OVERRIDE;
 
@@ -58,7 +58,7 @@ protected:
 
 class HTMLTagNodeList FINAL : public TagNodeList {
 public:
-    static PassRefPtr<HTMLTagNodeList> create(PassRefPtr<Node> rootNode, CollectionType type, const AtomicString& localName)
+    static PassRefPtr<HTMLTagNodeList> create(PassRefPtr<ContainerNode> rootNode, CollectionType type, const AtomicString& localName)
     {
         ASSERT_UNUSED(type, type == HTMLTagNodeListType);
         return adoptRef(new HTMLTagNodeList(rootNode, localName));
@@ -67,7 +67,7 @@ public:
     bool nodeMatchesInlined(const Element&) const;
 
 private:
-    HTMLTagNodeList(PassRefPtr<Node> rootNode, const AtomicString& localName);
+    HTMLTagNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicString& localName);
 
     virtual bool nodeMatches(const Element&) const OVERRIDE;
 

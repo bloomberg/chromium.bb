@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-ChildNodeList::ChildNodeList(PassRefPtr<Node> node)
+ChildNodeList::ChildNodeList(PassRefPtr<ContainerNode> node)
     : LiveNodeList(node, ChildNodeListType, DoNotInvalidateOnAttributeChanges)
 {
 }

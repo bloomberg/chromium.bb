@@ -33,7 +33,7 @@ namespace WebCore {
 
 class HTMLCollection : public ScriptWrappable, public RefCounted<HTMLCollection>, public LiveNodeListBase {
 public:
-    static PassRefPtr<HTMLCollection> create(Node* base, CollectionType);
+    static PassRefPtr<HTMLCollection> create(ContainerNode* base, CollectionType);
     virtual ~HTMLCollection();
     virtual void invalidateCache() const OVERRIDE;
 
@@ -65,7 +65,7 @@ public:
     Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const;
 
 protected:
-    HTMLCollection(Node* base, CollectionType, ItemAfterOverrideType);
+    HTMLCollection(ContainerNode* base, CollectionType, ItemAfterOverrideType);
 
     virtual void updateNameCache() const;
     bool hasNameCache() const { return m_isNameCacheValid; }

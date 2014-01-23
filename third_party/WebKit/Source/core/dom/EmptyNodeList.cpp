@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,40 +30,16 @@
  */
 
 #include "config.h"
-#include "core/dom/NodeList.h"
+#include "EmptyNodeList.h"
 
-#include "core/dom/EmptyNodeList.h"
-#include "core/dom/LiveNodeList.h"
 #include "core/dom/Node.h"
+#include "core/dom/NodeRareData.h"
 
 namespace WebCore {
 
-void NodeList::anonymousNamedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<Node>& returnValue0, bool& returnValue1Enabled, unsigned& returnValue1)
+EmptyNodeList::~EmptyNodeList()
 {
-    // Length property cannot be overridden.
-    DEFINE_STATIC_LOCAL(const AtomicString, length, ("length", AtomicString::ConstructFromLiteral));
-    if (name == length) {
-        returnValue1Enabled = true;
-        returnValue1 = this->length();
-        return;
-    }
-
-    Node* result = namedItem(name);
-    if (!result)
-        return;
-
-    returnValue0Enabled = true;
-    returnValue0 = result;
+    m_owner->nodeLists()->removeEmptyChildNodeList(this);
 }
-
-Node* NodeList::ownerNode() const
-{
-    if (isLiveNodeList())
-        return static_cast<const LiveNodeList*>(this)->ownerNode();
-    if (isEmptyNodeList())
-        return static_cast<const EmptyNodeList*>(this)->ownerNode();
-    return 0;
-}
-
 
 } // namespace WebCore

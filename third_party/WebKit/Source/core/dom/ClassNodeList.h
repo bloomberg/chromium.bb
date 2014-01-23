@@ -41,7 +41,7 @@ class ClassNodeList FINAL : public LiveNodeList {
 public:
     // classNames argument is an AtomicString because it is common for Elements to share the same class names.
     // It is also used to construct a SpaceSplitString (m_classNames) and its constructor requires an AtomicString.
-    static PassRefPtr<ClassNodeList> create(PassRefPtr<Node> rootNode, CollectionType type, const AtomicString& classNames)
+    static PassRefPtr<ClassNodeList> create(PassRefPtr<ContainerNode> rootNode, CollectionType type, const AtomicString& classNames)
     {
         ASSERT_UNUSED(type, type == ClassNodeListType);
         return adoptRef(new ClassNodeList(rootNode, classNames));
@@ -52,7 +52,7 @@ public:
     bool nodeMatchesInlined(const Element&) const;
 
 private:
-    ClassNodeList(PassRefPtr<Node> rootNode, const AtomicString& classNames);
+    ClassNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicString& classNames);
 
     virtual bool nodeMatches(const Element&) const OVERRIDE;
 

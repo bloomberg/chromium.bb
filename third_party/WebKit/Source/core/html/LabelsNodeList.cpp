@@ -33,7 +33,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-LabelsNodeList::LabelsNodeList(Node* ownerNode)
+LabelsNodeList::LabelsNodeList(ContainerNode* ownerNode)
     : LiveNodeList(ownerNode, LabelsNodeListType, InvalidateOnForAttrChange, NodeListIsRootedAtDocument)
 {
 }
