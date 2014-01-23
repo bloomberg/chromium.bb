@@ -97,7 +97,7 @@
 #security-info a,
 #eula a,
 .step-extra-controls a {
-  color: #8c8c8c;
+  color: rgb(49, 106, 197); /* same as 'Learn more' link */
   font-size: 12px;
   text-decoration: none;
 }
