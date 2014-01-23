@@ -227,7 +227,7 @@ bool SVGAElement::childShouldCreateRenderer(const Node& child) const
     if (child.hasTagName(SVGNames::aTag))
         return false;
     if (parentNode() && parentNode()->isSVGElement())
-        return parentNode()->childShouldCreateRenderer(child);
+        return toSVGElement(parentNode())->childShouldCreateRenderer(child);
 
     return SVGGraphicsElement::childShouldCreateRenderer(child);
 }

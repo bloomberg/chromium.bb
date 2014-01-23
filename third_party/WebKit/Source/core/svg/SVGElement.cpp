@@ -976,23 +976,13 @@ void SVGElement::finishParsingChildren()
 
 bool SVGElement::childShouldCreateRenderer(const Node& child) const
 {
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, invalidTextContent, ());
-
-    if (invalidTextContent.isEmpty()) {
-        invalidTextContent.add(SVGNames::textPathTag);
+    if (child.hasTagName(SVGNames::textPathTag)
 #if ENABLE(SVG_FONTS)
-        invalidTextContent.add(SVGNames::altGlyphTag);
+        || child.hasTagName(SVGNames::altGlyphTag)
 #endif
-        invalidTextContent.add(SVGNames::tspanTag);
-    }
-    if (child.isSVGElement()) {
-        const SVGElement* svgChild = toSVGElement(&child);
-        if (invalidTextContent.contains(svgChild->tagQName()))
-            return false;
-
-        return svgChild->isValid();
-    }
-    return false;
+        || child.hasTagName(SVGNames::tspanTag))
+        return false;
+    return child.isSVGElement();
 }
 
 void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)

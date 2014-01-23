@@ -123,9 +123,8 @@ bool SVGForeignObjectElement::childShouldCreateRenderer(const Node& child) const
     // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS"> subdocuments.
     if (child.isSVGElement())
         return child.hasTagName(SVGNames::svgTag);
-
     // Skip over SVG rules which disallow non-SVG kids
-    return Element::childShouldCreateRenderer(child);
+    return true;
 }
 
 bool SVGForeignObjectElement::rendererIsNeeded(const RenderStyle& style)

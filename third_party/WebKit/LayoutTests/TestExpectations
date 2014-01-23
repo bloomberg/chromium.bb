@@ -846,6 +846,10 @@ Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaselin
 
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
+Bug(esprehn) svg/custom/system-language-crash.html [ NeedsRebaseline ]
+Bug(esprehn) svg/dynamic-updates/SVGSVGElement-dom-requiredFeatures.html [ NeedsRebaseline ]
+Bug(esprehn) svg/dynamic-updates/SVGSVGElement-svgdom-requiredFeatures.html [ NeedsRebaseline ]
+
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass ImageOnlyFailure ]
 

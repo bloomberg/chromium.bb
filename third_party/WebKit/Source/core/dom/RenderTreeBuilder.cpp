@@ -39,6 +39,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
+#include "core/svg/SVGElement.h"
 
 namespace WebCore {
 
@@ -102,15 +103,19 @@ bool RenderTreeBuilder::shouldCreateRenderer() const
 {
     if (!m_renderingParent)
         return false;
-    // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
-    if (m_node->isSVGElement() && !m_node->hasTagName(SVGNames::svgTag) && !m_renderingParent->isSVGElement())
+    if (m_node->isSVGElement()) {
+        // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
+        if (!m_node->hasTagName(SVGNames::svgTag) && !m_renderingParent->isSVGElement())
+            return false;
+        if (!toSVGElement(m_node)->isValid())
+            return false;
+    }
+    if (m_renderingParent->isSVGElement() && !toSVGElement(m_renderingParent)->childShouldCreateRenderer(*m_node))
         return false;
     RenderObject* parentRenderer = this->parentRenderer();
     if (!parentRenderer)
         return false;
     if (!parentRenderer->canHaveChildren())
-        return false;
-    if (!m_renderingParent->childShouldCreateRenderer(*m_node))
         return false;
     return true;
 }
