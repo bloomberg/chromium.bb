@@ -56,16 +56,6 @@ public:
         return m_propertyIsAnimVal == PropertyIsAnimVal;
     }
 
-    NewSVGPropertyTearOffBase* ownerList() const
-    {
-        return m_ownerList;
-    }
-
-    void setOwnerList(NewSVGPropertyTearOffBase* ownerList)
-    {
-        m_ownerList = ownerList;
-    }
-
     bool isReadOnlyProperty() const
     {
         return m_isReadOnlyProperty;
@@ -81,7 +71,7 @@ public:
         return isReadOnlyProperty() || isAnimVal();
     }
 
-    void commitChange();
+    virtual void commitChange();
 
     SVGElement* contextElement()
     {
@@ -98,7 +88,6 @@ public:
 protected:
     NewSVGPropertyTearOffBase(SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
         : m_contextElement(contextElement)
-        , m_ownerList(0)
         , m_propertyIsAnimVal(propertyIsAnimVal)
         , m_isReadOnlyProperty(false)
         , m_attributeName(attributeName)
@@ -108,7 +97,6 @@ protected:
 private:
     // These references are kept alive from V8 wrapper to prevent reference cycles
     SVGElement* m_contextElement;
-    NewSVGPropertyTearOffBase* m_ownerList;
 
     PropertyIsAnimValType m_propertyIsAnimVal;
     bool m_isReadOnlyProperty;

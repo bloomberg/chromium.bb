@@ -1,0 +1,19 @@
+This is a test of the SVGLengthList::appendItem() API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS list2.numberOfItems is 0
+PASS list1.numberOfItems is 4
+PASS list1.getItem(0).value is 1
+PASS list1.getItem(1).value is 2
+PASS list1.getItem(2).value is 3
+PASS list1.getItem(3).value is 10
+PASS list2.numberOfItems is 0
+The test passes if you only see 'PASS' messages, and test doesn't crash
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ABC
+ABC
+

@@ -49,7 +49,7 @@ PassRefPtr<SVGLengthList> AnimatableStrokeDasharrayList::toSVGLengthList() const
 {
     RefPtr<SVGLengthList> lengths = SVGLengthList::create();
     for (size_t i = 0; i < m_values.size(); ++i) {
-        RefPtr<SVGLength> length = toAnimatableSVGLength(m_values[i].get())->toSVGLength();
+        RefPtr<SVGLength> length = toAnimatableSVGLength(m_values[i].get())->toSVGLength()->clone();
         if (length->valueInSpecifiedUnits() < 0)
             length->setValueInSpecifiedUnits(0);
         lengths->append(length);

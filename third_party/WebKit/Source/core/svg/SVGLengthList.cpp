@@ -62,14 +62,15 @@ String SVGLengthList::valueAsString() const
 {
     StringBuilder builder;
 
-    Vector<RefPtr<SVGLength> >::const_iterator it = m_values.begin();
-    Vector<RefPtr<SVGLength> >::const_iterator itEnd = m_values.end();
+    ConstIterator it = begin();
+    ConstIterator itEnd = end();
     if (it != itEnd) {
-        builder.append((*it++)->valueAsString());
+        builder.append(it->valueAsString());
+        ++it;
 
         for (; it != itEnd; ++it) {
             builder.append(' ');
-            builder.append((*it)->valueAsString());
+            builder.append(it->valueAsString());
         }
     }
 
@@ -79,7 +80,7 @@ String SVGLengthList::valueAsString() const
 template <typename CharType>
 void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, ExceptionState& exceptionState)
 {
-    m_values.clear();
+    clear();
     while (ptr < end) {
         const CharType* start = ptr;
         while (ptr < end && *ptr != ',' && !isSVGSpace(*ptr))
@@ -94,7 +95,7 @@ void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, Exc
         length->setValueAsString(valueString, exceptionState);
         if (exceptionState.hadException())
             return;
-        m_values.append(length);
+        append(length);
         skipOptionalSVGSpacesOrDelimiter(ptr, end);
     }
 }
@@ -118,12 +119,12 @@ void SVGLengthList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contex
 {
     RefPtr<SVGLengthList> otherList = toSVGLengthList(other);
 
-    if (m_values.size() != otherList->m_values.size())
+    if (numberOfItems() != otherList->numberOfItems())
         return;
 
     SVGLengthContext lengthContext(contextElement);
-    for (size_t i = 0; i < m_values.size(); ++i)
-        m_values[i]->setValue(m_values[i]->value(lengthContext) + otherList->m_values[i]->value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
+    for (size_t i = 0; i < numberOfItems(); ++i)
+        at(i)->setValue(at(i)->value(lengthContext) + otherList->at(i)->value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
 }
 
 bool SVGLengthList::adjustFromToListValues(PassRefPtr<SVGLengthList> passFromList, PassRefPtr<SVGLengthList> passToList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded)
@@ -132,12 +133,12 @@ bool SVGLengthList::adjustFromToListValues(PassRefPtr<SVGLengthList> passFromLis
     RefPtr<SVGLengthList> toList = passToList;
 
     // If no 'to' value is given, nothing to animate.
-    size_t toListSize = toList->m_values.size();
+    size_t toListSize = toList->numberOfItems();
     if (!toListSize)
         return false;
 
     // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
-    size_t fromListSize = fromList->m_values.size();
+    size_t fromListSize = fromList->numberOfItems();
     if (fromListSize != toListSize && fromListSize) {
         if (percentage < 0.5) {
             if (!isToAnimation)
@@ -150,10 +151,10 @@ bool SVGLengthList::adjustFromToListValues(PassRefPtr<SVGLengthList> passFromLis
     }
 
     ASSERT(!fromListSize || fromListSize == toListSize);
-    if (resizeAnimatedListIfNeeded && m_values.size() < toListSize) {
-        size_t paddingCount = toListSize - m_values.size();
+    if (resizeAnimatedListIfNeeded && numberOfItems() < toListSize) {
+        size_t paddingCount = toListSize - numberOfItems();
         for (size_t i = 0; i < paddingCount; ++i)
-            m_values.append(SVGLength::create(m_mode));
+            append(SVGLength::create(m_mode));
     }
 
     return true;
@@ -168,28 +169,28 @@ void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement
     SVGLengthContext lengthContext(contextElement);
     ASSERT(m_mode == SVGLength::lengthModeForAnimatedLengthAttribute(animationElement->attributeName()));
 
-    size_t fromLengthListSize = fromList->m_values.size();
-    size_t toLengthListSize = toList->m_values.size();
-    size_t toAtEndOfDurationListSize = toAtEndOfDurationList->m_values.size();
+    size_t fromLengthListSize = fromList->numberOfItems();
+    size_t toLengthListSize = toList->numberOfItems();
+    size_t toAtEndOfDurationListSize = toAtEndOfDurationList->numberOfItems();
 
     if (!adjustFromToListValues(fromList, toList, percentage, animationElement->animationMode() == ToAnimation, true))
         return;
 
     for (size_t i = 0; i < toLengthListSize; ++i) {
-        float animatedNumber = m_values[i]->value(lengthContext);
-        SVGLengthType unitType = toList->m_values[i]->unitType();
+        float animatedNumber = at(i)->value(lengthContext);
+        SVGLengthType unitType = toList->at(i)->unitType();
         float effectiveFrom = 0;
         if (fromLengthListSize) {
             if (percentage < 0.5)
-                unitType = fromList->m_values[i]->unitType();
-            effectiveFrom = fromList->m_values[i]->value(lengthContext);
+                unitType = fromList->at(i)->unitType();
+            effectiveFrom = fromList->at(i)->value(lengthContext);
         }
-        float effectiveTo = toList->m_values[i]->value(lengthContext);
-        float effectiveToAtEnd = i < toAtEndOfDurationListSize ? toAtEndOfDurationList->m_values[i]->value(lengthContext) : 0;
+        float effectiveTo = toList->at(i)->value(lengthContext);
+        float effectiveToAtEnd = i < toAtEndOfDurationListSize ? toAtEndOfDurationList->at(i)->value(lengthContext) : 0;
 
         animationElement->animateAdditiveNumber(percentage, repeatCount, effectiveFrom, effectiveTo, effectiveToAtEnd, animatedNumber);
-        m_values[i]->setUnitType(unitType);
-        m_values[i]->setValue(animatedNumber, lengthContext, ASSERT_NO_EXCEPTION);
+        at(i)->setUnitType(unitType);
+        at(i)->setValue(animatedNumber, lengthContext, ASSERT_NO_EXCEPTION);
     }
 }
 

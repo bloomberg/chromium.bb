@@ -47,7 +47,10 @@ class NewSVGPropertyBase : public RefCounted<NewSVGPropertyBase> {
     WTF_MAKE_NONCOPYABLE(NewSVGPropertyBase);
 
 public:
-    virtual ~NewSVGPropertyBase() { }
+    virtual ~NewSVGPropertyBase()
+    {
+        ASSERT(!m_ownerList);
+    }
 
     // FIXME: remove this in WebAnimations transition.
     // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string implementation.
@@ -65,14 +68,31 @@ public:
         return m_type;
     }
 
+    NewSVGPropertyBase* ownerList() const
+    {
+        return m_ownerList;
+    }
+
+    void setOwnerList(NewSVGPropertyBase* ownerList)
+    {
+        // Previous owner list must be cleared before setting new owner list.
+        ASSERT((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
+
+        m_ownerList = ownerList;
+    }
+
 protected:
     explicit NewSVGPropertyBase(AnimatedPropertyType type)
         : m_type(type)
+        , m_ownerList(0)
     {
     }
 
 private:
     const AnimatedPropertyType m_type;
+
+    // FIXME: oilpan: This is kept as a raw ptr to break reference cycle. Should be Member in oilpan.
+    NewSVGPropertyBase* m_ownerList;
 };
 
 }

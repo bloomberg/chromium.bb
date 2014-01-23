@@ -884,6 +884,8 @@ crbug.com/336222 svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-a
 crbug.com/336222 svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html [ NeedsRebaseline ]
 crbug.com/336222 svg/filters/feDropShadow.svg [ NeedsRebaseline ]
 
+crbug.com/308818 svg/dom/SVGLengthList-appendItemFromClearedList.html [ NeedsRebaseline ]
+
 Bug(bungeman) [ Linux ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
 
 crbug.com/308818 svg/custom/intersection-list-null.svg [ NeedsRebaseline ]

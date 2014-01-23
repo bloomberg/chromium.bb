@@ -76,14 +76,7 @@ public:
             return 0;
         }
 
-        item = cloneIfNeeded(item);
-
-        RefPtr<ListPropertyType> ownerList;
-        if (item->ownerList())
-            ownerList = Derived::upcastFrom(item->ownerList())->target();
-
-        RefPtr<ItemPropertyType> value = toDerived()->target()->initialize(item->target(), ownerList);
-        item->setOwnerList(this);
+        RefPtr<ItemPropertyType> value = toDerived()->target()->initialize(cloneTargetIfNeeded(item));
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -109,14 +102,7 @@ public:
             return 0;
         }
 
-        item = cloneIfNeeded(item);
-
-        RefPtr<ListPropertyType> ownerList;
-        if (item->ownerList())
-            ownerList = Derived::upcastFrom(item->ownerList())->target();
-
-        RefPtr<ItemPropertyType> value = toDerived()->target()->insertItemBefore(item->target(), ownerList, index);
-        item->setOwnerList(this);
+        RefPtr<ItemPropertyType> value = toDerived()->target()->insertItemBefore(cloneTargetIfNeeded(item), index);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -136,14 +122,7 @@ public:
             return 0;
         }
 
-        item = cloneIfNeeded(item);
-
-        RefPtr<ListPropertyType> ownerList;
-        if (item->ownerList())
-            ownerList = Derived::upcastFrom(item->ownerList())->target();
-
-        RefPtr<ItemPropertyType> value = toDerived()->target()->replaceItem(item->target(), ownerList, index, exceptionState);
-        item->setOwnerList(this);
+        RefPtr<ItemPropertyType> value = toDerived()->target()->replaceItem(cloneTargetIfNeeded(item), index, exceptionState);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -154,7 +133,7 @@ public:
         RefPtr<ItemPropertyType> value = toDerived()->target()->removeItem(index, exceptionState);
         toDerived()->commitChange();
 
-        return createItemTearOff(value.release(), false);
+        return createItemTearOff(value.release());
     }
 
     PassRefPtr<ItemTearOffType> appendItem(PassRefPtr<ItemTearOffType> passItem, ExceptionState& exceptionState)
@@ -171,14 +150,7 @@ public:
             return 0;
         }
 
-        item = cloneIfNeeded(item);
-
-        RefPtr<ListPropertyType> ownerList;
-        if (item->ownerList())
-            ownerList = Derived::upcastFrom(item->ownerList())->target();
-
-        RefPtr<ItemPropertyType> value = toDerived()->target()->appendItem(item->target(), ownerList);
-        item->setOwnerList(this);
+        RefPtr<ItemPropertyType> value = toDerived()->target()->appendItem(cloneTargetIfNeeded(item));
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -190,7 +162,7 @@ protected:
     {
     }
 
-    PassRefPtr<ItemTearOffType> cloneIfNeeded(PassRefPtr<ItemTearOffType> passNewItem)
+    PassRefPtr<ItemPropertyType> cloneTargetIfNeeded(PassRefPtr<ItemTearOffType> passNewItem)
     {
         RefPtr<ItemTearOffType> newItem = passNewItem;
 
@@ -198,38 +170,28 @@ protected:
         // |newItem| belongs to a SVGElement, but it does not belong to an animated list
         // (for example: "textElement.x.baseVal.appendItem(rectElement.width.baseVal)")
         if (newItem->isImmutable()
-            || (newItem->contextElement() && !newItem->ownerList())) {
+            || (newItem->contextElement() && !newItem->target()->ownerList())) {
             // We have to copy the incoming |newItem|, as we're not allowed to insert this tear off as is into our wrapper cache.
             // Otherwise we'll end up having two tearoffs that operate on the same SVGProperty. Consider the example above:
             // SVGRectElements SVGAnimatedLength 'width' property baseVal points to the same tear off object
             // that's inserted into SVGTextElements SVGAnimatedLengthList 'x'. textElement.x.baseVal.getItem(0).value += 150 would
             // mutate the rectElement width _and_ the textElement x list. That's obviously wrong, take care of that.
-            return ItemTearOffType::create(newItem->target()->clone(), toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
+            return newItem->target()->clone();
         }
 
-        return newItem.release();
+        return newItem->target();
     }
 
-    PassRefPtr<ItemTearOffType> createItemTearOff(PassRefPtr<ItemPropertyType> value, bool setOwnerList = true)
+    PassRefPtr<ItemTearOffType> createItemTearOff(PassRefPtr<ItemPropertyType> value)
     {
         if (!value)
             return 0;
 
-        RefPtr<ItemTearOffType> tearoff = ItemTearOffType::create(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
-        if (setOwnerList)
-            tearoff->setOwnerList(this);
-        return tearoff.release();
+        return ItemTearOffType::create(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
     }
 
 private:
     Derived* toDerived() { return static_cast<Derived*>(this); }
-
-    static PassRefPtr<Derived> upcastFrom(PassRefPtr<NewSVGPropertyTearOffBase> passBase)
-    {
-        RefPtr<NewSVGPropertyTearOffBase> base = passBase;
-        ASSERT(base->type() == ListPropertyType::classType());
-        return static_pointer_cast<Derived>(base.release());
-    }
 };
 
 }
