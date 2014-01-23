@@ -119,8 +119,17 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
 #if defined(OS_CHROMEOS)
 // Ensure policy-installed certificates without web trust do not display
 // the managed setting indicator (only on Chrome OS).
+
+// Triggers a Blink ASSERT in Debug configurations: http://crbug.com/337102
+#if !defined(NDEBUG)
+#define MAYBE_PolicyCertificateWithoutWebTrustHasNoIndicator \
+    DISABLED_PolicyCertificateWithoutWebTrustHasNoIndicator
+#else
+#define MAYBE_PolicyCertificateWithoutWebTrustHasNoIndicator \
+    PolicyCertificateWithoutWebTrustHasNoIndicator
+#endif
 IN_PROC_BROWSER_TEST_F(CertificateManagerBrowserTest,
-                       PolicyCertificateWithoutWebTrustHasNoIndicator) {
+                       MAYBE_PolicyCertificateWithoutWebTrustHasNoIndicator) {
   LoadONCPolicy("certificate-authority.onc");
   NavigateToSettings();
   ClickElement("#certificatesManageButton");
@@ -129,11 +138,21 @@ IN_PROC_BROWSER_TEST_F(CertificateManagerBrowserTest,
 }
 #endif
 
+// Triggers a Blink ASSERT in Debug configurations: http://crbug.com/337102
 #if defined(OS_CHROMEOS)
 // Ensure policy-installed certificates with web trust display the
 // managed setting indicator (only on Chrome OS).
+
+// Triggers a Blink ASSERT in Debug configurations: http://crbug.com/337102
+#if !defined(NDEBUG)
+#define MAYBE_PolicyCertificateWithWebTrustHasIndicator \
+    DISABLED_PolicyCertificateWithWebTrustHasIndicator
+#else
+#define MAYBE_PolicyCertificateWithWebTrustHasIndicator \
+    PolicyCertificateWithWebTrustHasIndicator
+#endif
 IN_PROC_BROWSER_TEST_F(CertificateManagerBrowserTest,
-                       PolicyCertificateWithWebTrustHasIndicator) {
+                       MAYBE_PolicyCertificateWithWebTrustHasIndicator) {
   LoadONCPolicy("certificate-web-authority.onc");
   NavigateToSettings();
   ClickElement("#certificatesManageButton");
