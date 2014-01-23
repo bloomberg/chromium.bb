@@ -136,11 +136,11 @@ private:
     unsigned m_normalizedBufferLength;
     const TextRun& m_run;
 
-    int m_wordSpacingAdjustment; // Delta adjustment (pixels) for each word break.
+    float m_wordSpacingAdjustment; // Delta adjustment (pixels) for each word break.
     float m_padding; // Pixels to be distributed over the line at word breaks.
     float m_padPerWordBreak; // Pixels to be added to each word break.
     float m_padError; // m_padPerWordBreak might have a fractional component. Since we only add a whole number of padding pixels at each word break we accumulate error. This is the number of pixels that we are behind so far.
-    int m_letterSpacing; // Pixels to be added after each glyph.
+    float m_letterSpacing; // Pixels to be added after each glyph.
 
     Vector<hb_feature_t, 4> m_features;
     Vector<OwnPtr<HarfBuzzRun>, 16> m_harfBuzzRuns;

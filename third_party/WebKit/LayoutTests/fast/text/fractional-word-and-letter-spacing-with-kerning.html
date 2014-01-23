@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+div {
+    text-rendering: optimizeLegibility;
+}
+</style>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsTextWithPixelResults();
+</script>
+</head>
+<body>
+<div style="letter-spacing: 0.05em">
+This test ensures that we properly accumulate sub-pixel word and letter spacing: <a href="http://crbug.com/336358">bug 336358</a>.
+</div>
+<div style="word-spacing: 0.05em">
+Pack Emil's box with five dozen <a href="#pangram">liquor jugs</a>!
+</div>

@@ -1,0 +1,2 @@
+This test ensures that we properly accumulate sub-pixel word and letter spacing: bug 336358.
+Pack Emil's box with five dozen liquor jugs!

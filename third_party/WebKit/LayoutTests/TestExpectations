@@ -689,6 +689,8 @@ crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
 crbug.com/327447 [ Linux Win Debug ] animations/combo-transform-translate+scale.html [ Pass Failure ]
 
+crbug.com/336358 fast/text/fractional-word-and-letter-spacing-with-kerning.html [ NeedsRebaseline ]
+
 # Temporary catchall for linux aura inspector failures.
 crbug.com/336713 [ Linux ] inspector/elements/edit-dom-actions.html [ Failure Pass ]
 crbug.com/336713 [ Linux ] inspector/styles/styles-change-node-while-editing.html [ Failure Pass ]
