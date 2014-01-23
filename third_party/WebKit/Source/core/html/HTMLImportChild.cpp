@@ -43,7 +43,7 @@ HTMLImportChild::HTMLImportChild(const KURL& url, bool createdByParser)
     : HTMLImport(WaitingLoaderOrChildren, createdByParser)
     , m_url(url)
     , m_customElementMicrotaskStep(0)
-    , m_traversingClients(false)
+    , m_client(0)
 {
 }
 
@@ -58,16 +58,14 @@ HTMLImportChild::~HTMLImportChild()
         m_customElementMicrotaskStep = 0;
     }
 
-    for (size_t i = 0; i < m_clients.size(); ++i) {
-        TemporaryChange<bool> traversing(m_traversingClients, true);
-        m_clients[i]->importChildWasDestroyed(this);
-    }
+    if (m_client)
+        m_client->importChildWasDestroyed(this);
 }
 
 void HTMLImportChild::wasAlreadyLoaded()
 {
     ASSERT(!m_loader);
-    ASSERT(m_clients.size());
+    ASSERT(m_client);
 
     ensureLoader();
     loaderWasResolved();
@@ -98,10 +96,8 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
 
 void HTMLImportChild::didFinish()
 {
-    for (size_t i = 0; i < m_clients.size(); ++i) {
-        TemporaryChange<bool> traversing(m_traversingClients, true);
-        m_clients[i]->didFinish();
-    }
+    if (m_client)
+        m_client->didFinish();
 
     if (m_customElementMicrotaskStep) {
         m_customElementMicrotaskStep->importDidFinish();
@@ -219,19 +215,18 @@ bool HTMLImportChild::loaderHasError() const
 }
 
 
-void HTMLImportChild::addClient(HTMLImportChildClient* client)
+void HTMLImportChild::setClient(HTMLImportChildClient* client)
 {
-    ASSERT(!m_traversingClients);
-    ASSERT(!m_clients.contains(client));
-    m_clients.append(client);
+    ASSERT(client);
+    ASSERT(!m_client);
+    m_client = client;
 }
 
-void HTMLImportChild::removeClient(HTMLImportChildClient* client)
+void HTMLImportChild::clearClient()
 {
-    ASSERT(!m_traversingClients);
-    size_t i = m_clients.find(client);
-    ASSERT(i != kNotFound);
-    m_clients.remove(i);
+    // Doesn't check m_client nullity because we allow
+    // clearClient() to reenter.
+    m_client = 0;
 }
 
 } // namespace WebCore

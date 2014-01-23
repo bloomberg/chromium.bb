@@ -76,8 +76,8 @@ public:
     virtual void didBecomeReady() OVERRIDE;
     virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const OVERRIDE FINAL { return m_customElementMicrotaskStep; }
 
-    void addClient(HTMLImportChildClient*);
-    void removeClient(HTMLImportChildClient*);
+    void setClient(HTMLImportChildClient*);
+    void clearClient();
     bool loaderHasError() const;
 
 private:
@@ -98,8 +98,7 @@ private:
     KURL m_url;
     CustomElementMicrotaskImportStep* m_customElementMicrotaskStep;
     RefPtr<HTMLImportLoader> m_loader;
-    Vector<HTMLImportChildClient*> m_clients;
-    bool m_traversingClients;
+    HTMLImportChildClient* m_client;
 };
 
 } // namespace WebCore

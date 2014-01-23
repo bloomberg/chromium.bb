@@ -96,7 +96,7 @@ void LinkImport::clear()
 {
     m_owner = 0;
     if (m_child) {
-        m_child->removeClient(this);
+        m_child->clearClient();
         m_child = 0;
     }
 }
