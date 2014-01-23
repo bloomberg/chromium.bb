@@ -304,15 +304,14 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   // Find plugin to update.
   PluginInstaller* installer = NULL;
   scoped_ptr<PluginMetadata> plugin;
-  bool ret = finder->FindPluginWithIdentifier(identifier, &installer, &plugin);
-  DCHECK(ret);
-
-  plugin_placeholders_[placeholder_id] =
-      new PluginPlaceholderHost(this, placeholder_id,
-                                plugin->name(), installer);
-  OutdatedPluginInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()), installer,
-      plugin.Pass());
+  if (finder->FindPluginWithIdentifier(identifier, &installer, &plugin)) {
+    plugin_placeholders_[placeholder_id] = new PluginPlaceholderHost(
+        this, placeholder_id, plugin->name(), installer);
+    OutdatedPluginInfoBarDelegate::Create(InfoBarService::FromWebContents(
+        web_contents()), installer, plugin.Pass());
+  } else {
+    NOTREACHED();
+  }
 #else
   // If we don't support third-party plug-in installation, we shouldn't have
   // outdated plug-ins.
