@@ -17,15 +17,31 @@ class ExpandCommand(SubCommand):
   def __init__(self):
     super(ExpandCommand, self).__init__(
         'Usage: %prog expand <dump> <policy> <component> <depth>')
+    self._parser.add_option('--alternative-dirs', dest='alternative_dirs',
+                            metavar='/path/on/target@/path/on/host[:...]',
+                            help='Read files in /path/on/host/ instead of '
+                                 'files in /path/on/target/.')
 
   def do(self, sys_argv):
-    _, args = self._parse_args(sys_argv, 4)
+    options, args = self._parse_args(sys_argv, 4)
     dump_path = args[1]
     target_policy = args[2]
     component_name = args[3]
     depth = args[4]
-    (bucket_set, dump) = SubCommand.load_basic_files(dump_path, False)
+    alternative_dirs_dict = {}
+
     policy_set = PolicySet.load(SubCommand._parse_policy_list(target_policy))
+    if not policy_set[target_policy].find_rule(component_name):
+      sys.stderr.write("ERROR: Component %s not found in policy %s\n"
+          % (component_name, target_policy))
+      return 1
+
+    if options.alternative_dirs:
+      for alternative_dir_pair in options.alternative_dirs.split(':'):
+        target_path, host_path = alternative_dir_pair.split('@', 1)
+        alternative_dirs_dict[target_path] = host_path
+    (bucket_set, dump) = SubCommand.load_basic_files(
+        dump_path, False, alternative_dirs=alternative_dirs_dict)
 
     ExpandCommand._output(dump, policy_set[target_policy], bucket_set,
                           component_name, int(depth), sys.stdout)
