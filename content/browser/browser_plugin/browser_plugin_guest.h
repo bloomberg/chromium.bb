@@ -140,6 +140,8 @@ class CONTENT_EXPORT BrowserPluginGuest
     return embedder_web_contents_;
   }
 
+  // Returns the embedder's RenderWidgetHostView if it is available.
+  // Returns NULL otherwise.
   RenderWidgetHostView* GetEmbedderRenderWidgetHostView();
 
   bool focused() const { return focused_; }

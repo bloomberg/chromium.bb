@@ -182,6 +182,13 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
+  guest_->clear_damage_buffer();
+
+  if (!guest_->attached()) {
+    // If the guest doesn't have an embedder then there's nothing to give the
+    // the frame to.
+    return;
+  }
   if (frame->software_frame_data) {
     cc::SoftwareFrameData* frame_data = frame->software_frame_data.get();
 #ifdef OS_WIN
@@ -191,15 +198,13 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     base::SharedMemory shared_memory(frame_data->handle, true);
 #endif
 
-    RenderWidgetHostView* embedder_view =
+    RenderWidgetHostView* embedder_rwhv =
         guest_->GetEmbedderRenderWidgetHostView();
     base::ProcessHandle embedder_pid =
-        embedder_view->GetRenderWidgetHost()->GetProcess()->GetHandle();
+        embedder_rwhv->GetRenderWidgetHost()->GetProcess()->GetHandle();
 
     shared_memory.GiveToProcess(embedder_pid, &frame_data->handle);
   }
-
-  guest_->clear_damage_buffer();
 
   FrameMsg_CompositorFrameSwapped_Params guest_params;
   frame->AssignTo(&guest_params.frame);
@@ -234,17 +239,24 @@ void RenderWidgetHostViewGuest::InitAsFullscreen(
 }
 
 gfx::NativeView RenderWidgetHostViewGuest::GetNativeView() const {
-  return guest_->GetEmbedderRenderWidgetHostView()->GetNativeView();
+  RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();
+  if (!rwhv)
+    return gfx::NativeView();
+  return rwhv->GetNativeView();
 }
 
 gfx::NativeViewId RenderWidgetHostViewGuest::GetNativeViewId() const {
-  if (guest_->GetEmbedderRenderWidgetHostView())
-    return guest_->GetEmbedderRenderWidgetHostView()->GetNativeViewId();
-  return static_cast<gfx::NativeViewId>(NULL);
+  RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();
+  if (!rwhv)
+    return static_cast<gfx::NativeViewId>(NULL);
+  return rwhv->GetNativeViewId();
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
-  return guest_->GetEmbedderRenderWidgetHostView()->GetNativeViewAccessible();
+  RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();
+  if (!rwhv)
+    return gfx::NativeViewAccessible();
+  return rwhv->GetNativeViewAccessible();
 }
 
 void RenderWidgetHostViewGuest::MovePluginWindows(
@@ -391,8 +403,10 @@ void RenderWidgetHostViewGuest::WindowFrameChanged() {
 void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
   gfx::Point origin;
   gfx::Rect guest_bounds = GetViewBounds();
-  gfx::Rect embedder_bounds =
-      guest_->GetEmbedderRenderWidgetHostView()->GetViewBounds();
+  RenderWidgetHostView* rwhv = guest_->GetEmbedderRenderWidgetHostView();
+  gfx::Rect embedder_bounds;
+  if (rwhv)
+    embedder_bounds = rwhv->GetViewBounds();
 
   gfx::Vector2d guest_offset = gfx::Vector2d(
       // Horizontal offset of guest from embedder.
@@ -401,7 +415,7 @@ void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
       embedder_bounds.bottom() - guest_bounds.y());
 
   RenderWidgetHostViewMacDictionaryHelper helper(platform_view_);
-  helper.SetTargetView(guest_->GetEmbedderRenderWidgetHostView());
+  helper.SetTargetView(rwhv);
   helper.set_offset(guest_offset);
   helper.ShowDefinitionForSelection();
 }

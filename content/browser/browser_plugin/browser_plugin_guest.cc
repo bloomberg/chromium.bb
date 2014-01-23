@@ -690,6 +690,8 @@ BrowserPluginGuest* BrowserPluginGuest::CreateWithOpener(
 }
 
 RenderWidgetHostView* BrowserPluginGuest::GetEmbedderRenderWidgetHostView() {
+  if (!attached())
+    return NULL;
   return embedder_web_contents_->GetRenderWidgetHostView();
 }
 
