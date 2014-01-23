@@ -487,13 +487,9 @@ void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
     if (state != ui::SHOW_STATE_INACTIVE)
       Activate();
     // SetInitialFocus() should be always be called, even for
-    // SHOW_STATE_INACTIVE. When a frameless modal dialog is created by
-    // a widget of TYPE_WINDOW_FRAMELESS, Widget::Show() will call into
-    // this function with the window state SHOW_STATE_INACTIVE,
-    // SetInitialFoucs() has to be called so that the dialog can get focus.
-    // This also matches NativeWidgetWin which invokes SetInitialFocus
-    // regardless of show state.
-    SetInitialFocus();
+    // SHOW_STATE_INACTIVE. If the window has to stay inactive, the method will
+    // do the right thing.
+    SetInitialFocus(state);
   }
 }
 
@@ -966,9 +962,9 @@ NativeWidgetAura::~NativeWidgetAura() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, private:
 
-void NativeWidgetAura::SetInitialFocus() {
+void NativeWidgetAura::SetInitialFocus(ui::WindowShowState show_state) {
   // The window does not get keyboard messages unless we focus it.
-  if (!GetWidget()->SetInitialFocus())
+  if (!GetWidget()->SetInitialFocus(show_state))
     window_->Focus();
 }
 

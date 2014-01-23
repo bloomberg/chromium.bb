@@ -172,7 +172,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   virtual void HandleCreate() OVERRIDE;
   virtual void HandleDestroying() OVERRIDE;
   virtual void HandleDestroyed() OVERRIDE;
-  virtual bool HandleInitialFocus() OVERRIDE;
+  virtual bool HandleInitialFocus(ui::WindowShowState show_state) OVERRIDE;
   virtual void HandleDisplayChange() OVERRIDE;
   virtual void HandleBeginWMSizeMove() OVERRIDE;
   virtual void HandleEndWMSizeMove() OVERRIDE;

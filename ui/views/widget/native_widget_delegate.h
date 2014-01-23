@@ -140,6 +140,14 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   //
   virtual Widget* AsWidget() = 0;
   virtual const Widget* AsWidget() const = 0;
+
+  // Sets-up the focus manager with the view that should have focus when the
+  // window is shown the first time.  It takes the intended |show_state| of the
+  // window in order to decide whether the window should be focused now or
+  // later.  Returns true if the initial focus has been set or the window should
+  // not set the initial focus, or false if the caller should set the initial
+  // focus (if any).
+  virtual bool SetInitialFocus(ui::WindowShowState show_state) = 0;
 };
 
 }  // namespace internal

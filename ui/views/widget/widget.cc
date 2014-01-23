@@ -943,20 +943,6 @@ const TooltipManager* Widget::GetTooltipManager() const {
   return native_widget_->GetTooltipManager();
 }
 
-bool Widget::SetInitialFocus() {
-  View* v = widget_delegate_->GetInitiallyFocusedView();
-  if (!focus_on_creation_) {
-    // If not focusing the window now, tell the focus manager which view to
-    // focus when the window is restored.
-    if (v)
-      focus_manager_->SetStoredFocusView(v);
-    return true;
-  }
-  if (v)
-    v->RequestFocus();
-  return !!v;
-}
-
 gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
   return native_widget_->GetWorkAreaBoundsInScreen();
 }
@@ -1285,6 +1271,21 @@ Widget* Widget::AsWidget() {
 
 const Widget* Widget::AsWidget() const {
   return this;
+}
+
+bool Widget::SetInitialFocus(ui::WindowShowState show_state) {
+  View* v = widget_delegate_->GetInitiallyFocusedView();
+  if (!focus_on_creation_ || show_state == ui::SHOW_STATE_INACTIVE ||
+      show_state == ui::SHOW_STATE_MINIMIZED) {
+    // If not focusing the window now, tell the focus manager which view to
+    // focus when the window is restored.
+    if (v)
+      focus_manager_->SetStoredFocusView(v);
+    return true;
+  }
+  if (v)
+    v->RequestFocus();
+  return !!v;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

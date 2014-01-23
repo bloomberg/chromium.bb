@@ -664,12 +664,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   TooltipManager* GetTooltipManager();
   const TooltipManager* GetTooltipManager() const;
 
-  // Sets-up the focus manager with the view that should have focus when the
-  // window is shown the first time.  Returns true if the initial focus has been
-  // set or the widget should not set the initial focus, or false if the caller
-  // should set the initial focus (if any).
-  bool SetInitialFocus();
-
   void set_focus_on_creation(bool focus_on_creation) {
     focus_on_creation_ = focus_on_creation;
   }
@@ -739,6 +733,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
   virtual Widget* AsWidget() OVERRIDE;
   virtual const Widget* AsWidget() const OVERRIDE;
+  virtual bool SetInitialFocus(ui::WindowShowState show_state) OVERRIDE;
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch() OVERRIDE;

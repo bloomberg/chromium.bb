@@ -779,8 +779,9 @@ void DesktopWindowTreeHostWin::HandleDestroyed() {
   desktop_native_widget_aura_->OnHostClosed();
 }
 
-bool DesktopWindowTreeHostWin::HandleInitialFocus() {
-  return GetWidget()->SetInitialFocus();
+bool DesktopWindowTreeHostWin::HandleInitialFocus(
+    ui::WindowShowState show_state) {
+  return GetWidget()->SetInitialFocus(show_state);
 }
 
 void DesktopWindowTreeHostWin::HandleDisplayChange() {

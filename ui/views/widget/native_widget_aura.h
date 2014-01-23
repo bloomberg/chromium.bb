@@ -194,7 +194,7 @@ class VIEWS_EXPORT NativeWidgetAura
  private:
   class ActiveWindowObserver;
 
-  void SetInitialFocus();
+  void SetInitialFocus(ui::WindowShowState show_state);
 
   internal::NativeWidgetDelegate* delegate_;
 

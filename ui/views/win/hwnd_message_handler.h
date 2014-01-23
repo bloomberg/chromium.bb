@@ -140,8 +140,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   void Show();
   void ShowWindowWithState(ui::WindowShowState show_state);
-  // TODO(beng): distinguish from ShowWindowWithState().
-  void Show(int show_state);
   void ShowMaximizedWithBounds(const gfx::Rect& bounds);
   void Hide();
 

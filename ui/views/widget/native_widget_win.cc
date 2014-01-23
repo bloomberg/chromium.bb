@@ -701,8 +701,8 @@ void NativeWidgetWin::HandleDestroyed() {
   OnFinalMessage(GetNativeView());
 }
 
-bool NativeWidgetWin::HandleInitialFocus() {
-  return GetWidget()->SetInitialFocus();
+bool NativeWidgetWin::HandleInitialFocus(ui::WindowShowState show_state) {
+  return GetWidget()->SetInitialFocus(show_state);
 }
 
 void NativeWidgetWin::HandleDisplayChange() {

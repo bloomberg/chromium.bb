@@ -349,7 +349,7 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
     Activate();
   }
 
-  native_widget_delegate_->AsWidget()->SetInitialFocus();
+  native_widget_delegate_->AsWidget()->SetInitialFocus(show_state);
 }
 
 void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
@@ -480,7 +480,6 @@ void DesktopWindowTreeHostX11::Activate() {
     return;
 
   X11DesktopHandler::get()->ActivateWindow(xwindow_);
-  native_widget_delegate_->AsWidget()->SetInitialFocus();
 }
 
 void DesktopWindowTreeHostX11::Deactivate() {

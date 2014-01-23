@@ -633,30 +633,28 @@ void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {
       native_show_state = delegate_->GetInitialShowState();
       break;
   }
-  Show(native_show_state);
-}
 
-void HWNDMessageHandler::Show(int show_state) {
-  ShowWindow(hwnd(), show_state);
+  ShowWindow(hwnd(), native_show_state);
   // When launched from certain programs like bash and Windows Live Messenger,
   // show_state is set to SW_HIDE, so we need to correct that condition. We
   // don't just change show_state to SW_SHOWNORMAL because MSDN says we must
   // always first call ShowWindow with the specified value from STARTUPINFO,
   // otherwise all future ShowWindow calls will be ignored (!!#@@#!). Instead,
   // we call ShowWindow again in this case.
-  if (show_state == SW_HIDE) {
-    show_state = SW_SHOWNORMAL;
-    ShowWindow(hwnd(), show_state);
+  if (native_show_state == SW_HIDE) {
+    native_show_state = SW_SHOWNORMAL;
+    ShowWindow(hwnd(), native_show_state);
   }
 
   // We need to explicitly activate the window if we've been shown with a state
   // that should activate, because if we're opened from a desktop shortcut while
   // an existing window is already running it doesn't seem to be enough to use
   // one of these flags to activate the window.
-  if (show_state == SW_SHOWNORMAL || show_state == SW_SHOWMAXIMIZED)
+  if (native_show_state == SW_SHOWNORMAL ||
+      native_show_state == SW_SHOWMAXIMIZED)
     Activate();
 
-  if (!delegate_->HandleInitialFocus())
+  if (!delegate_->HandleInitialFocus(show_state))
     SetInitialFocus();
 }
 
