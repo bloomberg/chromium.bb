@@ -335,8 +335,7 @@ class WiFiServiceImpl : public WiFiService {
 
   // Get Frequency of currently connected network |network_guid|. If network is
   // not connected, then return |kFrequencyUnknown|.
-  Frequency WiFiServiceImpl::GetConnectedFrequency(
-      const std::string& network_guid);
+  Frequency GetConnectedFrequency(const std::string& network_guid);
 
   // Get desired connection freqency if it was set using |SetProperties|.
   // Default to |kFrequencyAny|.
