@@ -128,28 +128,25 @@ static int NumberOfWaveOutBuffers() {
 }
 
 AudioManagerWin::AudioManagerWin(AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(audio_log_factory) {
-  if (!CoreAudioUtil::IsSupported()) {
-    // Use the Wave API for device enumeration if XP or lower.
-    enumeration_type_ = kWaveEnumeration;
-  } else {
-    // Use the MMDevice API for device enumeration if Vista or higher.
-    enumeration_type_ = kMMDeviceEnumeration;
-  }
-
+    : AudioManagerBase(audio_log_factory),
+      enumeration_type_(kUninitializedEnumeration) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
+
+  // WARNING: This is executed on the UI loop, do not add any code here which
+  // loads libraries or attempts to call out into the OS.  Instead add such code
+  // to the InitializeOnAudioThread() method below.
 
   // Task must be posted last to avoid races from handing out "this" to the
   // audio thread.
   GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerWin::CreateDeviceListener, base::Unretained(this)));
+      &AudioManagerWin::InitializeOnAudioThread, base::Unretained(this)));
 }
 
 AudioManagerWin::~AudioManagerWin() {
   // It's safe to post a task here since Shutdown() will wait for all tasks to
   // complete before returning.
   GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
-      &AudioManagerWin::DestroyDeviceListener, base::Unretained(this)));
+      &AudioManagerWin::ShutdownOnAudioThread, base::Unretained(this)));
   Shutdown();
 }
 
@@ -161,19 +158,25 @@ bool AudioManagerWin::HasAudioInputDevices() {
   return (::waveInGetNumDevs() != 0);
 }
 
-void AudioManagerWin::CreateDeviceListener() {
+void AudioManagerWin::InitializeOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
-  // AudioDeviceListenerWin must be initialized on a COM thread and should only
-  // be used if WASAPI / Core Audio is supported.
   if (CoreAudioUtil::IsSupported()) {
+    // Use the MMDevice API for device enumeration if Vista or higher.
+    enumeration_type_ = kMMDeviceEnumeration;
+
+    // AudioDeviceListenerWin must be initialized on a COM thread and should
+    // only be used if WASAPI / Core Audio is supported.
     output_device_listener_.reset(new AudioDeviceListenerWin(BindToCurrentLoop(
         base::Bind(&AudioManagerWin::NotifyAllOutputDeviceChangeListeners,
                    base::Unretained(this)))));
+  } else {
+    // Use the Wave API for device enumeration if XP or lower.
+    enumeration_type_ = kWaveEnumeration;
   }
 }
 
-void AudioManagerWin::DestroyDeviceListener() {
+void AudioManagerWin::ShutdownOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   output_device_listener_.reset();
 }

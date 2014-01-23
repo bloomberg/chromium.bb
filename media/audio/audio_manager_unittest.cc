@@ -5,6 +5,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -37,6 +38,12 @@ class AudioManagerTest
       , com_init_(base::win::ScopedCOMInitializer::kMTA)
 #endif
   {
+    // Wait for audio thread initialization to complete.  Otherwise the
+    // enumeration type may not have been set yet.
+    base::WaitableEvent event(false, false);
+    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
+        &base::WaitableEvent::Signal, base::Unretained(&event)));
+    event.Wait();
   }
 
 #if defined(OS_WIN)

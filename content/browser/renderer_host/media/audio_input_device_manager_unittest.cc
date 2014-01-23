@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/public/common/media_stream_request.h"
@@ -56,6 +57,12 @@ class AudioInputDeviceManagerTest : public testing::Test {
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
     audio_manager_.reset(media::AudioManager::CreateForTesting());
+    // Wait for audio thread initialization to complete.  Otherwise the
+    // enumeration type may not have been set yet.
+    base::WaitableEvent event(false, false);
+    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
+        &base::WaitableEvent::Signal, base::Unretained(&event)));
+    event.Wait();
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get(),
