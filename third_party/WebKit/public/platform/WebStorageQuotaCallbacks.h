@@ -40,11 +40,6 @@ public:
     // Callback for WebFrameClient::queryStorageUsageAndQuota.
     virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) = 0;
 
-    // FIXME: Remove this interface after chromium-side changes are landed (http://crbug.com/332325).
-    // Callback for WebFrameClient::requestStorageQuota.
-    // This may return a smaller amount of quota than the requested.
-    virtual void didGrantStorageQuota(unsigned long long grantedQuotaInBytes) = 0;
-
     // Callback for WebFrameClient::requestStorageQuota.
     // This may return a smaller amount of quota than the requested.
     virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) = 0;

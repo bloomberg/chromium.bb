@@ -59,7 +59,6 @@ public:
     virtual ~WebStorageQuotaCallbacksImpl();
 
     virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) OVERRIDE;
-    virtual void didGrantStorageQuota(unsigned long long grantedQuotaInBytes) OVERRIDE;
     virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) OVERRIDE;
     virtual void didFail(blink::WebStorageQuotaError) OVERRIDE;
 
