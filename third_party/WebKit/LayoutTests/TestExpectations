@@ -875,10 +875,6 @@ crbug.com/334242 [ Win ] inspector-protocol/stylesheet-tracking-restart.html [ P
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
-crbug.com/336222 svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-attr.html [ NeedsRebaseline ]
-crbug.com/336222 svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html [ NeedsRebaseline ]
-crbug.com/336222 svg/filters/feDropShadow.svg [ NeedsRebaseline ]
-
 crbug.com/308818 svg/dom/SVGLengthList-appendItemFromClearedList.html [ NeedsRebaseline ]
 
 Bug(bungeman) [ Linux ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
