@@ -71,8 +71,7 @@ class IdlInterfaceFileNotFoundError(Exception):
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--event-names-file', help='output file')
-    parser.add_option('--main-idl-files-list', help='file listing main (compiled to Blink) IDL files')
-    parser.add_option('--support-idl-files-list', help='file listing support IDL files (not compiled to Blink, e.g. testing)')
+    parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interface-dependencies-file', help='output file')
     parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--window-constructors-file', help='output file')
@@ -98,10 +97,8 @@ def parse_options():
         parser.error('Must specify an output file using --dedicatedworkerglobalscope-constructors-file.')
     if options.serviceworkerglobalscope_constructors_file is None:
         parser.error('Must specify an output file using --serviceworkerglobalscope-constructors-file.')
-    if options.main_idl_files_list is None:
-        parser.error('Must specify a file listing main IDL files using --main-idl-files-list.')
-    if options.support_idl_files_list is None:
-        parser.error('Must specify a file listing support IDL files using --support-idl-files-list.')
+    if options.idl_files_list is None:
+        parser.error('Must specify a file listing IDL files using --idl-files-list.')
     if options.write_file_only_if_changed is None:
         parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
@@ -453,7 +450,7 @@ def generate_ancestors_and_inherited_extended_attributes(interface_name):
         interface_info['inherited_extended_attributes'] = inherited_extended_attributes
 
 
-def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames):
+def parse_idl_files(idl_files, global_constructors_filenames):
     """Compute dependencies between IDL files, and return constructors on global objects.
 
     Primary effect is computing info about main interfaces, stored in global
@@ -471,7 +468,7 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
 
     # Generate dependencies, and (for main IDL files), record
     # global_constructors and extended_attributes_by_interface.
-    for idl_filename in main_idl_files:
+    for idl_filename in idl_files:
         # Test skips partial interfaces
         if not generate_dependencies(idl_filename):
             record_global_constructors_and_extended_attributes(idl_filename, global_constructors)
@@ -486,10 +483,6 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
         if global_object in interfaces_info:
             # No include path needed, as already included in the header file
             add_paths_to_partials_dict(global_object, constructor_filename)
-
-    # Add support IDL files to the dependencies for supporting partial interface
-    for idl_filename in support_idl_files:
-        generate_dependencies(idl_filename)
 
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces implements.
@@ -526,10 +519,8 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
 
 def main():
     options = parse_options()
-    with open(options.main_idl_files_list) as idl_files_list:
-        main_idl_files = [line.rstrip('\n') for line in idl_files_list]
-    with open(options.support_idl_files_list) as idl_files_list:
-        support_idl_files = [line.rstrip('\n') for line in idl_files_list]
+    with open(options.idl_files_list) as idl_files_list:
+        idl_files = [line.rstrip('\n') for line in idl_files_list]
     only_if_changed = options.write_file_only_if_changed
     global_constructors_filenames = {
         'Window': options.window_constructors_file,
@@ -539,7 +530,7 @@ def main():
         'ServiceWorkerGlobalScope': options.serviceworkerglobalscope_constructors_file,
         }
 
-    global_constructors = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
+    global_constructors = parse_idl_files(idl_files, global_constructors_filenames)
 
     write_dependencies_file(options.interface_dependencies_file, only_if_changed)
     write_pickle_file(options.interfaces_info_file, interfaces_info, only_if_changed)

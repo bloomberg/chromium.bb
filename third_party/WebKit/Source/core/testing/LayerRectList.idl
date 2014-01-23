@@ -29,6 +29,7 @@
  */
 
 [
+    NoInterfaceObject,  // testing interfaces do not appear on global objects
 ] interface LayerRectList {
     readonly attribute unsigned long length;
     getter LayerRect item(unsigned long index);

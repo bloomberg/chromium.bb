@@ -52,7 +52,7 @@
     'msvs_disabled_warnings': [ 4267, 4334, ]
   },
   {
-    'target_name': 'modules_test_support',
+    'target_name': 'modules_testing',
     'type': 'static_library',
     'dependencies': [
       '../config.gyp:config',
@@ -63,7 +63,7 @@
       'INSIDE_BLINK',
     ],
     'sources': [
-      '<@(modules_testing_support_files)',
+      '<@(modules_testing_files)',
     ],
 
   }],

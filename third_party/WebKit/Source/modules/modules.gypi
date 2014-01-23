@@ -777,12 +777,12 @@
       'websockets/WorkerThreadableWebSocketChannel.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
-    'modules_testing_support_dependency_idl_files' : [
+    'modules_testing_dependency_idl_files' : [
       'geolocation/testing/InternalsGeolocation.idl',
       'speech/testing/InternalsSpeechSynthesis.idl',
       'vibration/testing/InternalsVibration.idl',
     ],
-    'modules_testing_support_files': [
+    'modules_testing_files': [
       'geolocation/testing/InternalsGeolocation.cpp',
       'geolocation/testing/InternalsGeolocation.h',
       'geolocation/testing/GeolocationClientMock.h',

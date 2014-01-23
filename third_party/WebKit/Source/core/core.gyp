@@ -858,7 +858,7 @@
       ],
     },
     {
-      'target_name': 'webcore_test_support',
+      'target_name': 'webcore_testing',
       'type': 'static_library',
       'dependencies': [
         '../config.gyp:config',
@@ -874,7 +874,7 @@
         'testing/v8',
       ],
       'sources': [
-        '<@(webcore_test_support_files)',
+        '<@(webcore_testing_files)',
         '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GCObservation.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GCObservation.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8MallocStatistics.cpp',

@@ -38,7 +38,7 @@
 
   'targets': [
     {
-      'target_name': 'generate_test_support_idls',
+      'target_name': 'generated_testing_idls',
       'type': 'none',
       'actions': [
         {
@@ -94,7 +94,7 @@
       'type': 'none',
       'hard_dependency': 1,
       'dependencies': [
-        'generate_test_support_idls',
+        'generated_testing_idls',
         '../config.gyp:config',
       ],
       'sources': [

@@ -29,7 +29,7 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,  // testing interfaces do not appear on global objects
 ] interface InternalProfilers {
     void startHeapProfiling(DOMString prefix);
     void stopHeapProfiling();

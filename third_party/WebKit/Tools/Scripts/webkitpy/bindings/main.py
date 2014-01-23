@@ -61,9 +61,8 @@ SKIP_PYTHON = set([
     'TestSVG.idl',
 ])
 
-real_input_directory = '.'  # Relative to Source/
+all_input_directory = '.'  # Relative to Source/
 test_input_directory = os.path.join('bindings', 'tests', 'idls')
-test_support_input_directory = os.path.join('bindings', 'tests', 'idls', 'testing')
 reference_directory = os.path.join('bindings', 'tests', 'results')
 reference_event_names_filename = os.path.join(reference_directory, 'EventInterfaces.in')
 
@@ -171,7 +170,7 @@ class BindingsTests(object):
             os.write(list_file, list_contents)
             return list_filename
 
-        def compute_dependencies(main_idl_files_list_filename,
+        def compute_dependencies(idl_files_list_filename,
                                  event_names_filename):
             # Dummy files, required by compute_dependencies but not checked
             _, window_constructors_file = provider.newtempfile()
@@ -181,8 +180,7 @@ class BindingsTests(object):
             _, serviceworkersglobalscope_constructors_file = provider.newtempfile()
             cmd = ['python',
                    'bindings/scripts/compute_dependencies.py',
-                   '--main-idl-files-list', main_idl_files_list_filename,
-                   '--support-idl-files-list', support_idl_files_list_filename,
+                   '--idl-files-list', idl_files_list_filename,
                    '--interface-dependencies-file', self.interface_dependencies_filename,
                    '--interfaces-info-file', self.interfaces_info_filename,
                    '--window-constructors-file', window_constructors_file,
@@ -195,28 +193,30 @@ class BindingsTests(object):
             self.run_command(cmd)
 
         test_idl_files_list_filename = write_list_file(idl_paths(test_input_directory))
-        support_idl_files_list_filename = write_list_file(idl_paths(test_support_input_directory))
-        real_idl_files_list_filename = write_list_file(idl_paths_recursive(real_input_directory))
+        all_idl_files_list_filename = write_list_file(idl_paths_recursive(all_input_directory))
 
         if self.reset_results and self.verbose:
             print 'Reset results: EventInterfaces.in'
         try:
-            # We need real interfaces_info, not just test interfaces_info, as
-            # some real interfaces are special-cased (e.g., Window).
-            _, dummy_event_names_filename = provider.newtempfile()
-            compute_dependencies(real_idl_files_list_filename,
-                                 dummy_event_names_filename)
-            with open(self.interfaces_info_filename) as interfaces_info_file:
-                real_interfaces_info = pickle.load(interfaces_info_file)
-
+            # We first compute dependencies for testing files only,
+            # so we can compare EventInterfaces.in.
             compute_dependencies(test_idl_files_list_filename,
                                  self.event_names_filename)
-            with open(self.interfaces_info_filename) as interfaces_info_file:
-                test_interfaces_info = pickle.load(interfaces_info_file)
 
-            test_interfaces_info.update(real_interfaces_info)
-            with open(self.interfaces_info_filename, 'w') as interfaces_info_file:
-                pickle.dump(test_interfaces_info, interfaces_info_file)
+            # We then compute dependencies for all IDL files, as code generator
+            # output depends on inheritance (both ancestor chain and inherited
+            # extended attributes), and some real interfaces are special-cased,
+            # such as Node.
+            # For example, when testing the behavior of interfaces that inherit
+            # from Node, we also need to know that these inherit from
+            # EventTarget, since this is also special-cased and Node inherits
+            # from EventTarget, but this inheritance information requires
+            # computing dependencies for the real Node.idl file.
+            #
+            # Don't overwrite the event names file generated for testing IDLs
+            _, dummy_event_names_filename = provider.newtempfile()
+            compute_dependencies(all_idl_files_list_filename,
+                                 dummy_event_names_filename)
         except ScriptError, e:
             print 'ERROR: compute_dependencies.py'
             print e.output
@@ -269,30 +269,28 @@ class BindingsTests(object):
         if self.generate_interface_dependencies():
             return False
 
-        for directory in [test_input_directory, test_support_input_directory]:
-            for input_filename in os.listdir(directory):
-                if not input_filename.endswith('.idl'):
-                    continue
-                if input_filename in DEPENDENCY_IDL_FILES:
-                    # Dependencies aren't built (they are used by the dependent)
-                    if self.verbose:
-                        print 'DEPENDENCY: %s' % input_filename
-                    continue
+        for input_filename in os.listdir(test_input_directory):
+            if not input_filename.endswith('.idl'):
+                continue
+            if input_filename in DEPENDENCY_IDL_FILES:
+                # Dependencies aren't built (they are used by the dependent)
+                if self.verbose:
+                    print 'DEPENDENCY: %s' % input_filename
+                continue
 
-                idl_path = os.path.join(directory, input_filename)
-                if self.generate_from_idl_pl(idl_path):
-                    return False
-                if self.reset_results and self.verbose:
-                    print 'Reset results: %s' % input_filename
-                if not self.test_python:
-                    continue
-                if (input_filename in SKIP_PYTHON or
-                    directory == test_support_input_directory):
-                    if self.verbose:
-                        print 'SKIP: %s' % input_filename
-                    continue
-                if self.generate_from_idl_py(idl_path):
-                    return False
+            idl_path = os.path.join(test_input_directory, input_filename)
+            if self.generate_from_idl_pl(idl_path):
+                return False
+            if self.reset_results and self.verbose:
+                print 'Reset results: %s' % input_filename
+            if not self.test_python:
+                continue
+            if input_filename in SKIP_PYTHON:
+                if self.verbose:
+                    print 'SKIP: %s' % input_filename
+                continue
+            if self.generate_from_idl_py(idl_path):
+                return False
 
         # Detect all changes
         passed = self.identical_file(reference_event_names_filename,

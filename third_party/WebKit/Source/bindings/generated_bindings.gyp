@@ -39,26 +39,28 @@
   ],
 
   'variables': {
+    # Generate individual bindings (include testing, exclude dependencies)
+    'interface_idl_files': [
+      '<@(core_idl_files)',
+      '<@(webcore_testing_idl_files)',
+      '<@(generated_webcore_testing_idl_files)',
+      '<@(modules_idl_files)',
+    ],
+    # Include in aggregate bindings (exclude testing and dependencies)
     'main_interface_idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
     ],
-    'main_idl_files': [
+    # Compute dependencies (include all static IDLs, exclude generated IDLs)
+    'idl_files': [
       '<@(core_idl_files)',
       '<@(core_dependency_idl_files)',
+      '<@(webcore_testing_idl_files)',
       '<@(modules_idl_files)',
       '<@(modules_dependency_idl_files)',
+      '<@(modules_testing_dependency_idl_files)',
     ],
-    'support_interface_idl_files': [
-      '<@(webcore_testing_support_idl_files)',
-    ],
-    'support_idl_files': [
-      '<@(webcore_testing_support_idl_files)',
-      '<@(modules_testing_support_dependency_idl_files)',
-    ],
-    'generated_support_idl_files': [
-      '<@(generated_webcore_testing_support_idl_files)',
-    ],
+
     'compiler_module_files': [
         'scripts/idl_compiler.py',
         '<(DEPTH)/third_party/ply/lex.py',
@@ -102,15 +104,15 @@
     ],
 
     'conditions': [
-      # The bindings generator can not write generated files if they are identical
-      # to the already existing file – that way they don't need to be recompiled.
-      # However, a reverse dependency having a newer timestamp than a
-      # generated binding can confuse some build systems, so only use this on
-      # ninja which explicitly supports this use case (gyp turns all actions into
-      # ninja restat rules).
+      # The bindings generator can skip writing generated files if they are
+      # identical to the already existing file, which avoids recompilation.
+      # However, a dependency (earlier build step) having a newer timestamp than
+      # an output (later build step) confuses some build systems, so only use
+      # this on ninja, which explicitly supports this use case (gyp turns all
+      # actions into ninja restat rules).
       ['"<(GENERATOR)"=="ninja"', {
         'write_file_only_if_changed': '--write-file-only-if-changed 1',
-      },{
+      }, {
         'write_file_only_if_changed': '--write-file-only-if-changed 0',
       }],
     ],
@@ -128,17 +130,14 @@
     'actions': [{
       'action_name': 'compute_interface_dependencies',
       'variables': {
-        # Write list of IDL files into a file, so that the command line won't
-        # exceed OS limits.
-        'main_idl_files_list': '<|(main_idl_files_list.tmp <@(main_idl_files))',
-        'support_idl_files_list': '<|(support_idl_files_list.tmp <@(support_idl_files))',
+        # Write list of IDL files to a file, so that the command line doesn't
+        # exceed OS length limits.
+        'idl_files_list': '<|(idl_files_list.tmp <@(idl_files))',
       },
       'inputs': [
         'scripts/compute_dependencies.py',
-        '<(main_idl_files_list)',
-        '<@(main_idl_files)',
-        '<(support_idl_files_list)',
-        '<@(support_idl_files)',
+        '<(idl_files_list)',
+        '<@(idl_files)',
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
@@ -150,10 +149,8 @@
        'action': [
          'python',
          'scripts/compute_dependencies.py',
-         '--main-idl-files-list',
-         '<(main_idl_files_list)',
-         '--support-idl-files-list',
-         '<(support_idl_files_list)',
+         '--idl-files-list',
+         '<(idl_files_list)',
          '--interface-dependencies-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
          '--interfaces-info-file',
@@ -172,7 +169,7 @@
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
          '<@(write_file_only_if_changed)',
        ],
-       'message': 'Resolving partial interfaces dependencies in all IDL files',
+       'message': 'Computing dependencies between IDL files, and generating global scope constructor IDLs files and list of Event interfaces',
       }]
     },
     {
@@ -184,12 +181,10 @@
       'dependencies': [
         'interface_dependencies',
         '../config.gyp:config',
-        '../core/core_generated.gyp:generate_test_support_idls',
+        '../core/core_generated.gyp:generated_testing_idls',
       ],
       'sources': [
-        '<@(main_interface_idl_files)',
-        '<@(support_interface_idl_files)',
-        '<@(generated_support_idl_files)',
+        '<@(interface_idl_files)',
       ],
       'rules': [{
         'rule_name': 'binding',
@@ -211,7 +206,7 @@
           #
           # If a new partial interface is added, need to regyp to update these
           # dependencies, as these are computed statically at gyp runtime.
-          '<!@pymod_do_main(list_idl_files_with_partial_interface <@(main_idl_files) <@(support_idl_files))',
+          '<!@pymod_do_main(list_idl_files_with_partial_interface <@(idl_files))',
           # Generated IDLs are all partial interfaces, hence everything
           # potentially depends on them.
           '<@(generated_global_constructors_idl_files)',
@@ -263,8 +258,8 @@
       'actions': [{
         'action_name': 'generate_aggregate_generated_bindings',
         'variables': {
-          # Write list of IDL files into a file, so that the command line won't
-          # exceed OS limits.
+          # Write list of IDL files to a file, so that the command line doesn't
+          # exceed OS length limits.
           'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
           },
         'inputs': [

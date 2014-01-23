@@ -80,8 +80,8 @@
                 ['component=="shared_library"', {
                     'dependencies': [
                         '../core/core.gyp:webcore_generated',
-                        '../core/core.gyp:webcore_test_support',
-                        '../modules/modules.gyp:modules_test_support',
+                        '../core/core.gyp:webcore_testing',
+                        '../modules/modules.gyp:modules_testing',
                         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/testing/gmock.gyp:gmock',
@@ -333,8 +333,8 @@
                     'type': 'static_library',
                     'dependencies': [
                         '../config.gyp:config',
-                        '../core/core.gyp:webcore_test_support',
-                        '../modules/modules.gyp:modules_test_support',
+                        '../core/core.gyp:webcore_testing',
+                        '../modules/modules.gyp:modules_testing',
                         '../wtf/wtf.gyp:wtf',
                         '<(DEPTH)/skia/skia.gyp:skia',
                     ],
