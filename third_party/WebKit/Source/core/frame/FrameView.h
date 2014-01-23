@@ -186,7 +186,6 @@ public:
     bool hasViewportConstrainedObjects() const { return m_viewportConstrainedObjects && m_viewportConstrainedObjects->size() > 0; }
 
     void handleLoadCompleted();
-    void resetDeferredRepaintDelay();
 
     void updateAnnotatedRegions();
     void updateControlTints();
@@ -329,9 +328,6 @@ protected:
 private:
     explicit FrameView(Frame*);
 
-    void flushDeferredRepaints();
-    void startDeferredRepaintTimer(double delay);
-
     void reset();
     void init();
 
@@ -392,12 +388,6 @@ private:
     void updateScrollableAreaSet();
 
     virtual void notifyPageThatContentAreaWillPaint() const OVERRIDE;
-
-    bool shouldUseLoadTimeDeferredRepaintDelay() const;
-    void deferredRepaintTimerFired(Timer<FrameView>*);
-    void doDeferredRepaints();
-    void updateDeferredRepaintDelayAfterRepaint();
-    double adjustedDeferredRepaintDelay() const;
 
     void updateWidgetsTimerFired(Timer<FrameView>*);
     bool updateWidgets();
@@ -475,10 +465,6 @@ private:
     bool m_inProgrammaticScroll;
     bool m_safeToPropagateScrollToParent;
 
-    unsigned m_repaintCount;
-    Vector<LayoutRect> m_repaintRects;
-    Timer<FrameView> m_deferredRepaintTimer;
-    double m_deferredRepaintDelay;
     double m_lastPaintTime;
 
     bool m_isTrackingRepaints; // Used for testing.

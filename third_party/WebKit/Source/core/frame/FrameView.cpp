@@ -88,28 +88,6 @@ using namespace HTMLNames;
 double FrameView::s_currentFrameTimeStamp = 0.0;
 bool FrameView::s_inPaintContents = false;
 
-
-// REPAINT_THROTTLING now chooses default values for throttling parameters.
-// Should be removed when applications start using runtime configuration.
-#if ENABLE(REPAINT_THROTTLING)
-// Normal delay
-static const double s_normalDeferredRepaintDelay = 0.016;
-// Negative value would mean that first few repaints happen without a delay
-static const double s_initialDeferredRepaintDelayDuringLoading = 0;
-// The delay grows on each repaint to this maximum value
-static const double s_maxDeferredRepaintDelayDuringLoading = 2.5;
-// On each repaint the delay increses by this amount
-static const double s_deferredRepaintDelayIncrementDuringLoading = 0.5;
-#else
-// FIXME: Repaint throttling could be good to have on all platform.
-// The balance between CPU use and repaint frequency will need some tuning for desktop.
-// More hooks may be needed to reset the delay on things like GIF and CSS animations.
-static const double s_normalDeferredRepaintDelay = 0;
-static const double s_initialDeferredRepaintDelayDuringLoading = 0;
-static const double s_maxDeferredRepaintDelayDuringLoading = 0;
-static const double s_deferredRepaintDelayIncrementDuringLoading = 0;
-#endif
-
 // The maximum number of updateWidgets iterations that should be done before returning.
 static const unsigned maxUpdateWidgetsIterations = 2;
 static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
@@ -171,7 +149,6 @@ FrameView::FrameView(Frame* frame)
     , m_wasScrolledByUser(false)
     , m_inProgrammaticScroll(false)
     , m_safeToPropagateScrollToParent(true)
-    , m_deferredRepaintTimer(this, &FrameView::deferredRepaintTimerFired)
     , m_isTrackingRepaints(false)
     , m_scrollCorner(0)
     , m_shouldAutoSize(false)
@@ -261,10 +238,6 @@ void FrameView::reset()
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
-    m_repaintCount = 0;
-    m_repaintRects.clear();
-    m_deferredRepaintDelay = s_initialDeferredRepaintDelayDuringLoading;
-    m_deferredRepaintTimer.stop();
     m_isTrackingRepaints = false;
     m_trackedRepaintRects.clear();
     m_lastPaintTime = 0;
@@ -1742,8 +1715,6 @@ HostWindow* FrameView::hostWindow() const
     return &page->chrome();
 }
 
-const unsigned cRepaintRectUnionThreshold = 25;
-
 void FrameView::repaintContentRectangle(const IntRect& r)
 {
     ASSERT(!m_frame->ownerElement());
@@ -1752,31 +1723,6 @@ void FrameView::repaintContentRectangle(const IntRect& r)
         IntRect repaintRect = r;
         repaintRect.move(-scrollOffset());
         m_trackedRepaintRects.append(repaintRect);
-    }
-
-    double delay = adjustedDeferredRepaintDelay();
-    if (m_deferredRepaintTimer.isActive() || delay) {
-        IntRect paintRect = r;
-        if (clipsRepaints() && !paintsEntireContents())
-            paintRect.intersect(visibleContentRect());
-        if (paintRect.isEmpty())
-            return;
-        if (m_repaintCount == cRepaintRectUnionThreshold) {
-            IntRect unionedRect;
-            for (unsigned i = 0; i < cRepaintRectUnionThreshold; ++i)
-                unionedRect.unite(pixelSnappedIntRect(m_repaintRects[i]));
-            m_repaintRects.clear();
-            m_repaintRects.append(unionedRect);
-        }
-        if (m_repaintCount < cRepaintRectUnionThreshold)
-            m_repaintRects.append(paintRect);
-        else
-            m_repaintRects[0].unite(paintRect);
-        m_repaintCount++;
-
-        startDeferredRepaintTimer(delay);
-
-        return;
     }
 
     ScrollView::repaintContentRectangle(r);
@@ -1815,90 +1761,11 @@ void FrameView::scrollbarExistenceDidChange()
     }
 }
 
-void FrameView::startDeferredRepaintTimer(double delay)
-{
-    if (m_deferredRepaintTimer.isActive())
-        return;
-
-    m_deferredRepaintTimer.startOneShot(delay);
-}
-
 void FrameView::handleLoadCompleted()
 {
     // Once loading has completed, allow autoSize one last opportunity to
     // reduce the size of the frame.
     autoSizeIfEnabled();
-    if (shouldUseLoadTimeDeferredRepaintDelay())
-        return;
-    m_deferredRepaintDelay = s_normalDeferredRepaintDelay;
-    flushDeferredRepaints();
-}
-
-void FrameView::flushDeferredRepaints()
-{
-    if (!m_deferredRepaintTimer.isActive())
-        return;
-    m_deferredRepaintTimer.stop();
-    doDeferredRepaints();
-}
-
-void FrameView::doDeferredRepaints()
-{
-    unsigned size = m_repaintRects.size();
-    for (unsigned i = 0; i < size; i++) {
-        ScrollView::repaintContentRectangle(pixelSnappedIntRect(m_repaintRects[i]));
-    }
-    m_repaintRects.clear();
-    m_repaintCount = 0;
-
-    updateDeferredRepaintDelayAfterRepaint();
-}
-
-bool FrameView::shouldUseLoadTimeDeferredRepaintDelay() const
-{
-    // Don't defer after the initial load of the page has been completed.
-    if (m_frame->tree().top()->document()->loadEventFinished())
-        return false;
-    Document* document = m_frame->document();
-    if (!document)
-        return false;
-    if (document->parsing())
-        return true;
-    if (document->fetcher()->requestCount())
-        return true;
-    return false;
-}
-
-void FrameView::updateDeferredRepaintDelayAfterRepaint()
-{
-    if (!shouldUseLoadTimeDeferredRepaintDelay()) {
-        m_deferredRepaintDelay = s_normalDeferredRepaintDelay;
-        return;
-    }
-    double incrementedRepaintDelay = m_deferredRepaintDelay + s_deferredRepaintDelayIncrementDuringLoading;
-    m_deferredRepaintDelay = std::min(incrementedRepaintDelay, s_maxDeferredRepaintDelayDuringLoading);
-}
-
-void FrameView::resetDeferredRepaintDelay()
-{
-    m_deferredRepaintDelay = 0;
-    if (m_deferredRepaintTimer.isActive()) {
-        m_deferredRepaintTimer.stop();
-        doDeferredRepaints();
-    }
-}
-
-double FrameView::adjustedDeferredRepaintDelay() const
-{
-    if (!m_deferredRepaintDelay)
-        return 0;
-    double timeSinceLastPaint = currentTime() - m_lastPaintTime;
-    return max(0., m_deferredRepaintDelay - timeSinceLastPaint);
-}
-
-void FrameView::deferredRepaintTimerFired(Timer<FrameView>*)
-{
-    doDeferredRepaints();
 }
 
 void FrameView::layoutTimerFired(Timer<FrameView>*)
@@ -2941,10 +2808,6 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     const Vector<RefPtr<FrameView> >::iterator end = frameViews.end();
     for (Vector<RefPtr<FrameView> >::iterator it = frameViews.begin(); it != end; ++it)
         (*it)->updateLayoutAndStyleIfNeededRecursive();
-
-    // updateLayoutAndStyleIfNeededRecursive is called when we need to make sure style and layout are up-to-date before
-    // painting, so we need to flush out any deferred repaints too.
-    flushDeferredRepaints();
 
     // When seamless is on, child frame can mark parent frame dirty. In such case, child frame
     // needs to call layout on parent frame recursively.

@@ -1734,7 +1734,6 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
     if (!view)
         return false;
 
-    view->resetDeferredRepaintDelay();
     RefPtr<MouseEvent> me = MouseEvent::create(eventType,
         true, true, m_frame->document()->domWindow(),
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
@@ -2028,9 +2027,6 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
 
 bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targetNode, bool /*cancelable*/, int clickCount, const PlatformMouseEvent& mouseEvent, bool setUnder)
 {
-    if (FrameView* view = m_frame->view())
-        view->resetDeferredRepaintDelay();
-
     updateMouseEventTargetNode(targetNode, mouseEvent, setUnder);
 
     bool swallowEvent = false;
@@ -3096,9 +3092,6 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
 
-    if (FrameView* view = m_frame->view())
-        view->resetDeferredRepaintDelay();
-
     // In IE, access keys are special, they are handled after default keydown processing, but cannot be canceled - this is hard to match.
     // On Mac OS X, we process them before dispatching keydown, as the default keydown handler implements Emacs key bindings, which may conflict
     // with access keys. Then we dispatch keydown, but suppress its default handling.
@@ -3395,9 +3388,6 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
         target = eventTargetNodeForDocument(m_frame->document());
     if (!target)
         return false;
-
-    if (FrameView* view = m_frame->view())
-        view->resetDeferredRepaintDelay();
 
     RefPtr<TextEvent> event = TextEvent::create(m_frame->domWindow(), text, inputType);
     event->setUnderlyingEvent(underlyingEvent);
