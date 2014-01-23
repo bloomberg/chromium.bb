@@ -158,7 +158,7 @@ public:
 
     // encrypted media extensions (WD)
     MediaKeys* mediaKeys() const { return m_mediaKeys.get(); }
-    void setMediaKeys(MediaKeys*);
+    void setMediaKeys(MediaKeys*, ExceptionState&);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(needkey);
 
     // controls
@@ -450,7 +450,18 @@ private:
     virtual bool hasCurrentSrc() const OVERRIDE FINAL { return !m_currentSrc.isEmpty(); }
     bool isAutoplaying() const { return m_autoplaying; }
 
+    // Currently we have both EME v0.1b and EME WD implemented in media element.
+    // But we do not want to support both at the same time. The one used first
+    // will be supported. Use |m_emeMode| to track this selection.
+    // FIXME: Remove EmeMode once EME v0.1b support is removed. See crbug.com/249976.
+    enum EmeMode { EmeModeNotSelected, EmeModePrefixed, EmeModeUnprefixed };
+
+    // check (and set if necessary) the encrypted media extensions (EME) mode
+    // (v0.1b or WD). Returns whether the mode is allowed and successfully set.
+    bool setEmeMode(EmeMode, ExceptionState&);
+
     blink::WebContentDecryptionModule* contentDecryptionModule();
+    void setMediaKeysInternal(MediaKeys*);
 
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_progressEventTimer;
@@ -558,6 +569,8 @@ private:
     RefPtr<MediaController> m_mediaController;
 
     friend class TrackDisplayUpdateScope;
+
+    EmeMode m_emeMode;
 
     RefPtr<MediaKeys> m_mediaKeys;
 };

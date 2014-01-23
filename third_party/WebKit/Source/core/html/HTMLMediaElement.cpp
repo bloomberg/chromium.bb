@@ -298,6 +298,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 #if ENABLE(WEB_AUDIO)
     , m_audioSourceNode(0)
 #endif
+    , m_emeMode(EmeModeNotSelected)
 {
     ASSERT(RuntimeEnabledFeatures::mediaEnabled());
 
@@ -342,7 +343,7 @@ HTMLMediaElement::~HTMLMediaElement()
 
     closeMediaSource();
 
-    setMediaKeys(0);
+    setMediaKeysInternal(0);
 
     removeElementFromDocumentMap(this, &document());
 
@@ -1741,15 +1742,27 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& contentType, const uns
     return true;
 }
 
+bool HTMLMediaElement::setEmeMode(EmeMode emeMode, ExceptionState& exceptionState)
+{
+    if (m_emeMode != EmeModeNotSelected && m_emeMode != emeMode) {
+        exceptionState.throwDOMException(InvalidStateError, "Mixed use of EME prefixed and unprefixed API not allowed.");
+        return false;
+    }
+    m_emeMode = emeMode;
+    return true;
+}
+
 blink::WebContentDecryptionModule* HTMLMediaElement::contentDecryptionModule()
 {
     return m_mediaKeys ? m_mediaKeys->contentDecryptionModule() : 0;
 }
 
-void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys)
+void HTMLMediaElement::setMediaKeysInternal(MediaKeys* mediaKeys)
 {
     if (m_mediaKeys == mediaKeys)
         return;
+
+    ASSERT(m_emeMode = EmeModeUnprefixed);
 
     if (m_mediaKeys)
         m_mediaKeys->setMediaElement(0);
@@ -1760,6 +1773,14 @@ void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys)
     // If a player is connected, tell it that the CDM has changed.
     if (m_player)
         m_player->setContentDecryptionModule(contentDecryptionModule());
+}
+
+void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys, ExceptionState& exceptionState)
+{
+    if (!setEmeMode(EmeModeUnprefixed, exceptionState))
+        return;
+
+    setMediaKeysInternal(mediaKeys);
 }
 
 void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
@@ -2176,6 +2197,9 @@ void HTMLMediaElement::closeMediaSource()
 
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
 {
+    if (!setEmeMode(EmeModePrefixed, exceptionState))
+        return;
+
     if (keySystem.isEmpty()) {
         exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
@@ -2204,6 +2228,9 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, Excepti
 
 void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
 {
+    if (!setEmeMode(EmeModePrefixed, exceptionState))
+        return;
+
     if (keySystem.isEmpty()) {
         exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
@@ -2242,6 +2269,9 @@ void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Arr
 
 void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionState& exceptionState)
 {
+    if (!setEmeMode(EmeModePrefixed, exceptionState))
+        return;
+
     if (keySystem.isEmpty()) {
         exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
         return;
@@ -3410,7 +3440,7 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     closeMediaSource();
 
-    setMediaKeys(0);
+    setMediaKeysInternal(0);
 
     clearMediaPlayerAndAudioSourceProviderClient();
 
@@ -3710,7 +3740,7 @@ void HTMLMediaElement::createMediaPlayer()
 
     m_player = MediaPlayer::create(this);
 
-    if (m_player)
+    if (m_emeMode == EmeModeUnprefixed && m_player)
         m_player->setContentDecryptionModule(contentDecryptionModule());
 
 #if ENABLE(WEB_AUDIO)
