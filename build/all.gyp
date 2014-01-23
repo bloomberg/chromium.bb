@@ -962,6 +962,7 @@
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../device/device_tests.gyp:device_unittests',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../ui/app_list/app_list.gyp:*',
