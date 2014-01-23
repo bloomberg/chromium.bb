@@ -1,0 +1,82 @@
+# This file is used for tests that only need to be suppressed on
+# the Chromium WebKit ASAN bots.
+
+# NULL deref in libflashplayer.so, http://crbug.com/145940
+# ==12527== ERROR: AddressSanitizer: SEGV on unknown address 0x7f628058b38b
+# AddressSanitizer can not provide additional info.
+#    #0 0x7f62d3d34cf0 in ?? ??:0
+#    #1 0x1fec5c261c15ff
+crbug.com/145940 [ Linux ] fast/images/embed-does-not-propagate-dimensions-to-object-ancestor.html [ Skip ]
+crbug.com/145940 [ Linux ] fast/loader/loadInProgress.html [ Skip ]
+crbug.com/145940 [ Linux ] fast/replaced/border-radius-clip.html [ Skip ]
+crbug.com/145940 [ Linux ] plugins/crash-restoring-plugin-page-from-page-cache.html [ Skip ]
+crbug.com/145940 [ Linux ] plugins/iframe-shims.html [ Skip ]
+
+
+# Use-after-free in NPP_SetWindow, http://crbug.com/144118
+# ==15959== ERROR: AddressSanitizer: heap-use-after-free on address 0x7f6c187f8481
+# READ of size 1 at 0x7f6c187f8481 thread T0
+#    #0 0x7f6c1aec6c7a in NPP_SetWindow
+crbug.com/144118 [ Linux ] plugins/destroy-on-setwindow.html [ Skip ]
+
+
+# Use-after-free in NPP_DestroyStream, http://crbug.com/166932
+# ==17332== ERROR: AddressSanitizer: heap-use-after-free on address 0x7f48e8a05a58
+# WRITE of size 1 at 0x7f48e8a05a58 thread T0
+#    #0 0x7f48eb06f7c5 in DocumentOpenInDestroyStream::NPP_DestroyStream
+crbug.com/166932 [ Linux ] plugins/embed-attributes-setting.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/embed-attributes-style.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/embed-inside-object.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/embed-prefers-plugins-for-images.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/form-value.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/get-empty-url.html [ Skip ]
+crbug.com/166932 [ Linux ] plugins/get-file-url.html [ Skip ]
+
+
+# NULL deref in HandleURLRequestInternal, http://crbug.com/142301
+# ==17931== ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000
+# AddressSanitizer can not provide additional info.
+#    #0 0x2a054b2 in webkit::npapi::WebPluginImpl::HandleURLRequestInternal
+crbug.com/142301 [ Linux ] plugins/get-url-notify-with-url-that-fails-to-load.html [ Skip ]
+
+# Crash in fast/js/string-replacement-outofmemory.html, http://crbug.com/173366
+# ==5971== ERROR: AddressSanitizer: SEGV on unknown address 0x0000bbadbeef
+# AddressSanitizer can not provide additional info.
+#     #0 0x8c2ee4 in WebCore::reportFatalErrorInMainThread
+crbug.com/173366 [ Linux ] fast/js/string-replacement-outofmemory.html [ Skip ]
+
+# Crash in fast/speechsynthesis/speech-synthesis-cancel.html:
+# ==10454==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x00000558b918 sp 0x7fff3153dcf0 bp 0x7fff3153dcf0 T0)
+# AddressSanitizer can not provide additional info.
+#     #0 0x558b917 in WebCore::PlatformSpeechSynthesisUtterance::client() const /mnt/data/b/build/slave/WebKit_Linux_ASAN/build/src/out/Release/../../third_party/WebKit/Source/core/platform/PlatformSpeechSynthesisUtterance.h:71:0
+crbug.com/250520 [ Linux ] fast/speechsynthesis/speech-synthesis-cancel.html [ Crash ]
+
+# These tests consistently fail on slow bots.
+crbug.com/231357 [ Linux ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/231357 [ Linux ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
+crbug.com/14885 [ Linux ] fast/js/JSON-stringify.html [ Failure ]
+
+# These tests flakily timeout on the ASAN bot
+crbug.com/247466 [ Linux ] inspector/debugger/live-edit-breakpoints.html [ Pass Timeout ]
+crbug.com/247466 [ Linux ] inspector/debugger/reveal-not-skipped.html [ Pass Timeout ]
+crbug.com/247466 [ Linux ] inspector/debugger/script-formatter-breakpoints.html [ Pass Timeout ]
+crbug.com/247466 [ Linux ] inspector/editor/text-editor-word-jumps.html [ Pass Timeout ]
+crbug.com/247466 [ Linux ] inspector/profiler/heap-snapshot-summary-sorting-fields.html [ Pass Timeout ]
+
+# These have been failing since at least chrome r203901, blink r151723 (no memory errors, just text failure):
+crbug.com/231357 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
+crbug.com/231357 [ Linux ] perf/mouse-event.html [ Crash ]
+
+crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
+crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
+crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
+
+crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-set-none.html [ Failure Pass ]
+crbug.com/290411 [ Linux ] fast/text/sub-pixel/text-scaling-pixel.html [ Failure Pass ]
+crbug.com/333901 [ Linux ] virtual/legacy-animations-engine/animations/timing-model.html [ Failure Pass ]
