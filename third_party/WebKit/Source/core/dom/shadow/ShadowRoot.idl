@@ -28,7 +28,6 @@
     NoInterfaceObject
 ] interface ShadowRoot : DocumentFragment {
     readonly attribute Element activeElement;
-    attribute boolean applyAuthorStyles;
     attribute boolean resetStyleInheritance;
     [RuntimeEnabled=ShadowDOM, ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot olderShadowRoot;
 

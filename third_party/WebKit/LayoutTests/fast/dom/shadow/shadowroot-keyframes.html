@@ -16,7 +16,6 @@
 <body>
   <div id="d1"></div>
   <div id="d2"></div>
-  <div id="d3"></div>
   <div id="result"></div>
 <script>
 if (window.testRunner)
@@ -34,15 +33,7 @@ shadowRootWithKeyframe.innerHTML = '<style>@-webkit-keyframes "anim" {' +
     '<div id="box"></div>';
 
 var shadowRootWithoutKeyframe = document.getElementById("d2").createShadowRoot();
-shadowRootWithoutKeyframe.applyAuthorStyles = false;
 shadowRootWithoutKeyframe.innerHTML = '<style>' +
-    '#box { height: 100px; width: 100px; background: red; ' +
-    '-webkit-animation: "anim" 0.5s both; }</style>' +
-    '<div id="box"></div>';
-
-var shadowRootWithApplyAuthorStyles = document.getElementById("d3").createShadowRoot();
-shadowRootWithApplyAuthorStyles.applyAuthorStyles = true;
-shadowRootWithApplyAuthorStyles.innerHTML = '<style>' +
     '#box { height: 100px; width: 100px; background: red; ' +
     '-webkit-animation: "anim" 0.5s both; }</style>' +
     '<div id="box"></div>';
@@ -50,7 +41,6 @@ shadowRootWithApplyAuthorStyles.innerHTML = '<style>' +
 window.setTimeout(function() {
     shouldBe("getBackgroundColor(shadowRootWithKeyframe.getElementById('box'))", '"rgb(0, 0, 255)"');
     shouldBe("getBackgroundColor(shadowRootWithoutKeyframe.getElementById('box'))", '"rgb(255, 0, 0)"');
-    shouldBe("getBackgroundColor(shadowRootWithApplyAuthorStyles.getElementById('box'))", '"rgb(0, 128, 0)"');
     if (window.testRunner)
         testRunner.notifyDone();
 }, 1000);
