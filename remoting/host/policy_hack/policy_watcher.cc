@@ -67,7 +67,7 @@ scoped_ptr<base::DictionaryValue> CopyGoodValuesAndAddDefaults(
       to->MergeDictionary(override_values);
     }
   }
-#endif // defined(NDEBUG)
+#endif  // defined(NDEBUG)
 
   return to.Pass();
 }
@@ -98,6 +98,9 @@ const char PolicyWatcher::kHostTokenUrlPolicyName[] =
 const char PolicyWatcher::kHostTokenValidationUrlPolicyName[] =
     "RemoteAccessHostTokenValidationUrl";
 
+const char PolicyWatcher::kHostTokenValidationCertIssuerPolicyName[] =
+    "RemoteAccessHostTokenValidationCertificateIssuer";
+
 const char PolicyWatcher::kHostAllowClientPairing[] =
     "RemoteAccessHostAllowClientPairing";
 
@@ -120,6 +123,8 @@ PolicyWatcher::PolicyWatcher(
                                kDefaultHostTalkGadgetPrefix);
   default_values_->SetString(kHostTokenUrlPolicyName, std::string());
   default_values_->SetString(kHostTokenValidationUrlPolicyName, std::string());
+  default_values_->SetString(kHostTokenValidationCertIssuerPolicyName,
+                             std::string());
   default_values_->SetBoolean(kHostAllowClientPairing, true);
 #if !defined(NDEBUG)
   default_values_->SetString(kHostDebugOverridePoliciesName, std::string());

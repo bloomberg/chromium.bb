@@ -14,6 +14,20 @@
 
 namespace remoting {
 
+struct ThirdPartyAuthConfig {
+  inline bool is_empty() const {
+    return token_url.is_empty() && token_validation_url.is_empty();
+  }
+
+  inline bool is_valid() const {
+    return token_url.is_valid() && token_validation_url.is_valid();
+  }
+
+  GURL token_url;
+  GURL token_validation_url;
+  std::string token_validation_cert_issuer;
+};
+
 // This class dispenses |TokenValidator| implementations that use a UrlFetcher
 // to contact a |token_validation_url| and exchange the |token| for a
 // |shared_secret|.
@@ -24,8 +38,7 @@ class TokenValidatorFactoryImpl
   // third party authentication service URLs, obtained via policy. |key_pair_|
   // is used by the host to authenticate with the service by signing the token.
   TokenValidatorFactoryImpl(
-      const GURL& token_url,
-      const GURL& token_validation_url,
+      const ThirdPartyAuthConfig& third_party_auth_config,
       scoped_refptr<RsaKeyPair> key_pair,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
 
@@ -37,8 +50,7 @@ class TokenValidatorFactoryImpl
                            const std::string& remote_jid) OVERRIDE;
 
  private:
-  GURL token_url_;
-  GURL token_validation_url_;
+  ThirdPartyAuthConfig third_party_auth_config_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
