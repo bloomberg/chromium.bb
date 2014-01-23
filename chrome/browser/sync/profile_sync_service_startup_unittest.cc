@@ -73,13 +73,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   virtual scoped_ptr<TestingProfile> CreateProfile() {
     TestingProfile::Builder builder;
-#if defined(OS_CHROMEOS)
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               FakeSigninManagerBase::Build);
-#else
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              FakeSigninManager::Build);
-#endif
     builder.AddTestingFactory(
         ProfileOAuth2TokenServiceFactory::GetInstance(),
         FakeProfileOAuth2TokenService::BuildAutoIssuingTokenService);

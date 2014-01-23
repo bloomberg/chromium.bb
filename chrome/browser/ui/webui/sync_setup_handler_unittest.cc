@@ -294,15 +294,9 @@ class SyncSetupHandlerTest : public testing::Test {
 
     mock_pss_->Initialize();
 
-#if defined(OS_CHROMEOS)
     mock_signin_ = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), FakeSigninManagerBase::Build));
-#else
-    mock_signin_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManager::Build));
-#endif
     handler_.reset(new TestingSyncSetupHandler(&web_ui_, profile_.get()));
   }
 
@@ -590,7 +584,7 @@ class SyncSetupHandlerNonCrosTest : public SyncSetupHandlerTest {
     SyncSetupHandlerTest::SetUp();
     mock_signin_ = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManager::Build));
+            profile_.get(), FakeSigninManagerBase::Build));
   }
 };
 

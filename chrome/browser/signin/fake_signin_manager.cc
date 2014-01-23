@@ -24,7 +24,11 @@ FakeSigninManagerBase::~FakeSigninManagerBase() {
 // static
 BrowserContextKeyedService* FakeSigninManagerBase::Build(
     content::BrowserContext* profile) {
+#if defined(OS_CHROMEOS)
   return new FakeSigninManagerBase();
+#else
+  return new FakeSigninManager(static_cast<Profile*>(profile));
+#endif
 }
 
 #if !defined (OS_CHROMEOS)
@@ -61,12 +65,6 @@ void FakeSigninManager::SignOut() {
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
-}
-
-// static
-BrowserContextKeyedService* FakeSigninManager::Build(
-    content::BrowserContext* profile) {
-  return new FakeSigninManager(static_cast<Profile*>(profile));
 }
 
 #endif  // !defined (OS_CHROMEOS)

@@ -7,7 +7,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/signin/fake_auth_status_provider.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -24,11 +26,14 @@ class SigninGlobalErrorTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     // Create a signed-in profile.
-    profile_.reset(new TestingProfile());
-
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeProfileOAuth2TokenService::Build);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
+    profile_ = builder.Build();
     SigninManagerBase* manager = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManagerBase::Build));
+        SigninManagerFactory::GetForProfile(profile_.get()));
     profile_->GetPrefs()->SetString(
         prefs::kGoogleServicesUsername, kTestAccountId);
     manager->Initialize(profile_.get(), NULL);

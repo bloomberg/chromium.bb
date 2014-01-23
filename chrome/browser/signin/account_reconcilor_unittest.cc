@@ -21,12 +21,6 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-typedef FakeSigninManagerBase FakeSigninManagerForTesting;
-#else
-typedef FakeSigninManager FakeSigninManagerForTesting;
-#endif
-
 const char kTestEmail[] = "user@gmail.com";
 
 class AccountReconcilorTest : public testing::Test {
@@ -64,7 +58,7 @@ void AccountReconcilorTest::SetUp() {
   builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                             FakeProfileOAuth2TokenService::Build);
   builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                            FakeSigninManagerForTesting::Build);
+                            FakeSigninManagerBase::Build);
   profile_ = builder.Build();
 
   signin_manager_ =

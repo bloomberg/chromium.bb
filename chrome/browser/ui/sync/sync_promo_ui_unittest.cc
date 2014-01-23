@@ -26,18 +26,11 @@ class SyncPromoUITest : public testing::Test {
 
  protected:
   void CreateSigninManager(const std::string& username) {
-    SigninManagerBase* signin_manager =
-#if defined(OS_CHROMEOS)
-        static_cast<FakeSigninManagerBase*>(
+    FakeSigninManagerForTesting* signin_manager =
+        static_cast<FakeSigninManagerForTesting*>(
             SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
                 profile_.get(),
                 &FakeSigninManagerBase::Build));
-#else
-        static_cast<FakeSigninManager*>(
-            SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile_.get(),
-                &FakeSigninManager::Build));
-#endif
     signin_manager->Initialize(profile_.get(), NULL);
 
     if (!username.empty()) {
