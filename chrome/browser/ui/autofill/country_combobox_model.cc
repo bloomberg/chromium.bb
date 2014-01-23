@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/models/combobox_model_observer.h"
 
@@ -26,13 +27,13 @@ CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager) {
   countries_.push_back(NULL);
 
   // The sorted list of countries.
-  std::vector<std::string> country_codes;
-  AutofillCountry::GetAvailableCountries(&country_codes);
+  const std::vector<std::string>& available_countries =
+      ::i18n::addressinput::GetRegionCodes();
   std::vector<AutofillCountry*> sorted_countries;
 
-  for (std::vector<std::string>::iterator iter = country_codes.begin();
-       iter != country_codes.end(); ++iter) {
-    sorted_countries.push_back(new AutofillCountry(*iter, app_locale));
+  for (std::vector<std::string>::const_iterator it =
+           available_countries.begin(); it != available_countries.end(); ++it) {
+    sorted_countries.push_back(new AutofillCountry(*it, app_locale));
   }
 
   l10n_util::SortStringsUsingMethod(app_locale,

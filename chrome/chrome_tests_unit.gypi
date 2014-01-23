@@ -2032,6 +2032,7 @@
             '../media/media.gyp:media_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
@@ -2526,6 +2527,9 @@
           ],
         }],
         ['OS=="android"', {
+          '!dependencies': [
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+          ],
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
