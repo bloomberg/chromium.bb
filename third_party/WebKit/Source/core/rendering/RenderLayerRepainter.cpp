@@ -191,7 +191,8 @@ void RenderLayerRepainter::setBackingNeedsRepaintInRect(const LayoutRect& r)
             offsetRect.move(-m_renderer->layer()->offsetFromSquashingLayerOrigin());
             m_renderer->groupedMapping()->squashingLayer()->setNeedsDisplayInRect(offsetRect);
         } else {
-            m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(pixelSnappedIntRect(r));
+            IntRect repaintRect = pixelSnappedIntRect(r.location() +  m_renderer->compositedLayerMapping()->subpixelAccumulation(), r.size());
+            m_renderer->compositedLayerMapping()->setContentsNeedDisplayInRect(repaintRect);
         }
     }
 }

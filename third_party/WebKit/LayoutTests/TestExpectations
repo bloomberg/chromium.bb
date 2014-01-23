@@ -815,6 +815,8 @@ crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-na
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
 
+crbug.com/334588 fast/repaint/child-of-sub-pixel-offset-composited-layer.html [ NeedsRebaseline ]
+
 # FIXME(crbug.com/329904): Remove these when hash-based autosizer is deemed fast enough, aka second pass optimization.
 crbug.com/329904 fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
 
