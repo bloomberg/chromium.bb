@@ -63,10 +63,6 @@ PASS form2['input1'] is defined.
 PASS form2['image1'] is defined.
 PASS form2['input-in-document'] is undefined.
 PASS form2['image-in-document'] is undefined.
-Association-by-parser should not work for non-Document trees
-PASS removed.querySelector('form')['image4'] is undefined.
-PASS removed.querySelector('input').form is null
-PASS removed.querySelector('object').form is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

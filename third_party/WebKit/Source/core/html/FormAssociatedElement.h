@@ -98,7 +98,7 @@ protected:
     // FIXME: Remove usage of setForm. resetFormOwner should be enough, and
     // setForm is confusing.
     void setForm(HTMLFormElement*);
-    void associateByParser(HTMLFormElement*);
+    void setFormWasSetByParser() { m_formWasSetByParser = true; }
     void formAttributeChanged();
 
     // If you add an override of willChangeForm() or didChangeForm() to a class

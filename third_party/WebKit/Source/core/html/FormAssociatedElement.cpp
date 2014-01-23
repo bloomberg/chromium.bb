@@ -129,14 +129,6 @@ void FormAssociatedElement::formRemovedFromTree(const Node* formRoot)
     resetFormOwner();
 }
 
-void FormAssociatedElement::associateByParser(HTMLFormElement* form)
-{
-    if (form && form->inDocument()) {
-        m_formWasSetByParser = true;
-        setForm(form);
-    }
-}
-
 void FormAssociatedElement::setForm(HTMLFormElement* newForm)
 {
     if (m_form == newForm)

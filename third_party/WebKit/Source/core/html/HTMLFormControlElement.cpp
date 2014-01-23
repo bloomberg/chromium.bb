@@ -59,8 +59,11 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
     , m_wasChangedSinceLastFormControlChangeEvent(false)
     , m_wasFocusedByMouse(false)
 {
+    // FIXME: We don't need to pass findFormAncestor.
+    setForm(form ? form : findFormAncestor());
+    if (form)
+        setFormWasSetByParser();
     setHasCustomStyleCallbacks();
-    associateByParser(form);
 }
 
 HTMLFormControlElement::~HTMLFormControlElement()

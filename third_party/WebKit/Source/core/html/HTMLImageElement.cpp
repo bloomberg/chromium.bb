@@ -51,7 +51,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     , m_formWasSetByParser(form)
 {
     ScriptWrappable::init(this);
-    if (form && form->inDocument())
+    if (form)
         form->registerImgElement(this);
 }
 
