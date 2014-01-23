@@ -25,6 +25,7 @@ int32 SerializeInt(IMkvWriter* writer, int64 value, int32 size);
 int32 GetUIntSize(uint64 value);
 int32 GetCodedUIntSize(uint64 value);
 uint64 EbmlMasterElementSize(uint64 type, uint64 value);
+uint64 EbmlElementSize(uint64 type, int64 value);
 uint64 EbmlElementSize(uint64 type, uint64 value);
 uint64 EbmlElementSize(uint64 type, float value);
 uint64 EbmlElementSize(uint64 type, const char* value);
@@ -112,6 +113,25 @@ uint64 WriteBlockWithAdditional(IMkvWriter* writer,
                                 uint64 track_number,
                                 int64 timecode,
                                 uint64 is_key);
+
+// Output an Mkv Block with a DiscardPadding element.
+// Inputs:
+//   data:            Pointer to the data.
+//   length:          Length of the data.
+//   discard_padding: DiscardPadding value.
+//   track_number:    Track to add the data to. Value returned by Add track
+//                    functions. Only values in the range [1, 126] are
+//                    permitted.
+//   timecode:        Relative timecode of the Block.  Only values in the
+//                    range [0, 2^15) are permitted.
+//   is_key:          Non-zero value specifies that frame is a key frame.
+uint64 WriteBlockWithDiscardPadding(IMkvWriter* writer,
+                                    const uint8* data,
+                                    uint64 length,
+                                    int64 discard_padding,
+                                    uint64 track_number,
+                                    int64 timecode,
+                                    uint64 is_key);
 
 // Output a void element. |size| must be the entire size in bytes that will be
 // void. The function will calculate the size of the void header and subtract

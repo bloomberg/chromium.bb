@@ -74,6 +74,10 @@ uint64 EbmlMasterElementSize(uint64 type, uint64 value) {
   return ebml_size;
 }
 
+uint64 EbmlElementSize(uint64 type, int64 value) {
+  return EbmlElementSize(type, static_cast<uint64>(value));
+}
+
 uint64 EbmlElementSize(uint64 type, uint64 value) {
   // Size of EBML ID
   int32 ebml_size = GetUIntSize(type);
@@ -464,7 +468,8 @@ uint64 WriteMetadataBlock(IMkvWriter* writer,
   return blockg_elem_size;
 }
 
-// Writes a WebM Block with Additional. The structure is as follows
+// Writes a WebM BlockGroup with BlockAdditional data. The structure is as
+// follows:
 // Indentation shows sub-levels
 // BlockGroup
 //  Block
@@ -549,6 +554,70 @@ uint64 WriteBlockWithAdditional(IMkvWriter* writer,
   if (!WriteEbmlElement(writer, kMkvBlockAdditional,
                         additional, additional_length))
     return 0;
+
+  return block_group_elem_size;
+}
+
+// Writes a WebM BlockGroup with DiscardPadding. The structure is as follows:
+// Indentation shows sub-levels
+// BlockGroup
+//  Block
+//    Data
+//  DiscardPadding
+uint64 WriteBlockWithDiscardPadding(IMkvWriter* writer,
+                                    const uint8* data,
+                                    uint64 length,
+                                    int64 discard_padding,
+                                    uint64 track_number,
+                                    int64 timecode,
+                                    uint64 is_key) {
+  if (!data || length < 1 || discard_padding <= 0)
+    return 0;
+
+  const uint64 block_payload_size = 4 + length;
+  const uint64 block_elem_size = EbmlMasterElementSize(kMkvBlock,
+                                                       block_payload_size) +
+                                 block_payload_size;
+  const uint64 discard_padding_elem_size = EbmlElementSize(kMkvDiscardPadding,
+                                                           discard_padding);
+  const uint64 block_group_payload_size = block_elem_size +
+                                          discard_padding_elem_size;
+  const uint64 block_group_elem_size = EbmlMasterElementSize(
+                                           kMkvBlockGroup,
+                                           block_group_payload_size) +
+                                       block_group_payload_size;
+
+  if (!WriteEbmlMasterElement(writer, kMkvBlockGroup,
+                              block_group_payload_size))
+    return 0;
+
+  if (!WriteEbmlMasterElement(writer, kMkvBlock, block_payload_size))
+    return 0;
+
+  if (WriteUInt(writer, track_number))
+    return 0;
+
+  if (SerializeInt(writer, timecode, 2))
+    return 0;
+
+  uint64 flags = 0;
+  if (is_key)
+    flags |= 0x80;
+  if (SerializeInt(writer, flags, 1))
+    return 0;
+
+  if (writer->Write(data, static_cast<uint32>(length)))
+    return 0;
+
+  if (WriteID(writer, kMkvDiscardPadding))
+    return 0;
+
+  const uint64 size = GetUIntSize(discard_padding);
+  if (WriteUInt(writer, size))
+    return false;
+
+  if (SerializeInt(writer, discard_padding, static_cast<int32>(size)))
+    return false;
 
   return block_group_elem_size;
 }

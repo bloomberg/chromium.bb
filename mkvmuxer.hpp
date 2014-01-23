@@ -90,6 +90,10 @@ class Frame {
   uint64 track_number() const { return track_number_; }
   void set_timestamp(uint64 timestamp) { timestamp_ = timestamp; }
   uint64 timestamp() const { return timestamp_; }
+  void set_discard_padding(uint64 discard_padding) {
+    discard_padding_ = discard_padding;
+  }
+  uint64 discard_padding() const { return discard_padding_; }
 
  private:
   // Id of the Additional data.
@@ -118,6 +122,9 @@ class Frame {
 
   // Timestamp of the data in nanoseconds.
   uint64 timestamp_;
+
+  // Discard padding for the frame.
+  int64 discard_padding_;
 };
 
 ///////////////////////////////////////////////////////////////
@@ -745,6 +752,24 @@ class Cluster {
                               uint64 abs_timecode,
                               bool is_key);
 
+  // Adds a frame to be output in the file. The frame is written out through
+  // |writer_| if successful. Returns true on success.
+  // Inputs:
+  //   frame: Pointer to the data.
+  //   length: Length of the data.
+  //   discard_padding: DiscardPadding element value.
+  //   track_number: Track to add the data to. Value returned by Add track
+  //                 functions.  The range of allowed values is [1, 126].
+  //   abs_timecode: Absolute (not relative to cluster) timestamp of the
+  //                 frame, expressed in timecode units.
+  //   is_key:       Flag telling whether or not this frame is a key frame.
+  bool AddFrameWithDiscardPadding(const uint8* frame,
+                                  uint64 length,
+                                  int64 discard_padding,
+                                  uint64 track_number,
+                                  uint64 abs_timecode,
+                                  bool is_key);
+
   // Writes a frame of metadata to the output medium; returns true on
   // success.
   // Inputs:
@@ -803,6 +828,35 @@ class Cluster {
                                          int64 timecode,
                                          uint64 is_key);
 
+  //  Signature that matches WriteBlockWithDiscardPadding
+  //  in the muxer utilities package.
+  typedef uint64 (*WriteBlockDiscardPadding)(IMkvWriter* writer,
+                                             const uint8* data,
+                                             uint64 length,
+                                             int64 discard_padding,
+                                             uint64 track_number,
+                                             int64 timecode,
+                                             uint64 is_key);
+
+  // Utility method that confirms that blocks can still be added, and that the
+  // cluster header has been written. Used by |DoWriteBlock*|. Returns true
+  // when successful.
+  template <typename Type>
+  bool PreWriteBlock(Type* write_function);
+
+  // Utility method used by the |DoWriteBlock*| methods that handles the book
+  // keeping required after each block is written.
+  void PostWriteBlock(uint64 element_size);
+
+  // To simplify things, we require that there be fewer than 127
+  // tracks -- this allows us to serialize the track number value for
+  // a stream using a single byte, per the Matroska encoding.
+  bool IsValidTrackNumber(uint64 track_number) const;
+
+  // Given |abs_timecode|, calculates timecode relative to most recent timecode.
+  // Returns -1 on failure, or a relative timecode.
+  int64 GetRelativeTimecode(int64 abs_timecode) const;
+
   //  Used to implement AddFrame and AddMetadata.
   bool DoWriteBlock(const uint8* frame,
                     uint64 length,
@@ -821,6 +875,15 @@ class Cluster {
                                   uint64 absolute_timecode,
                                   uint64 generic_arg,
                                   WriteBlockAdditional write_block);
+
+  // Used to implement AddFrameWithDiscardPadding
+  bool DoWriteBlockWithDiscardPadding(const uint8* frame,
+                                      uint64 length,
+                                      int64 discard_padding,
+                                      uint64 track_number,
+                                      uint64 absolute_timecode,
+                                      uint64 generic_arg,
+                                      WriteBlockDiscardPadding write_block);
 
   // Outputs the Cluster header to |writer_|. Returns true on success.
   bool WriteClusterHeader();
@@ -1054,6 +1117,24 @@ class Segment {
                               uint64 track_number,
                               uint64 timestamp,
                               bool is_key);
+
+  // Writes a frame with DiscardPadding to the output medium; returns true on
+  // success.
+  // Inputs:
+  //   frame: Pointer to the data.
+  //   length: Length of the data.
+  //   discard_padding: DiscardPadding element value.
+  //   track_number: Track to add the data to. Value returned by Add track
+  //                 functions.
+  //   timestamp:    Absolute timestamp of the frame, expressed in nanosecond
+  //                 units.
+  //   is_key:       Flag telling whether or not this frame is a key frame.
+  bool AddFrameWithDiscardPadding(const uint8* frame,
+                                  uint64 length,
+                                  int64 discard_padding,
+                                  uint64 track_number,
+                                  uint64 timestamp,
+                                  bool is_key);
 
   // Writes a Frame to the output medium. Chooses the correct way of writing
   // the frame (Block vs SimpleBlock) based on the parameters passed.

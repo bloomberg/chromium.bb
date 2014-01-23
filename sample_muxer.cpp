@@ -23,6 +23,7 @@
 
 #include "sample_muxer_metadata.h"
 
+using mkvmuxer::int64;
 using mkvmuxer::uint64;
 
 #ifdef _MSC_VER
@@ -475,6 +476,7 @@ int main(int argc, char* argv[]) {
           (track_type == Track::kVideo && output_video)) {
         const int frame_count = block->GetFrameCount();
         const bool is_key = block->IsKey();
+        const int64 discard_padding = block->GetDiscardPadding();
 
         for (int i = 0; i < frame_count; ++i) {
           const mkvparser::Block::Frame& frame = block->GetFrame(i);
@@ -494,11 +496,21 @@ int main(int argc, char* argv[]) {
           if (track_type == Track::kAudio)
             track_num = aud_track;
 
-          if (!muxer_segment.AddFrame(data,
-                                      frame.len,
-                                      track_num,
-                                      time_ns,
-                                      is_key)) {
+          bool frame_added = false;
+          if (discard_padding) {
+            frame_added =
+                muxer_segment.AddFrameWithDiscardPadding(data, frame.len,
+                                                         discard_padding,
+                                                         track_num,
+                                                         time_ns,
+                                                         is_key);
+          } else {
+            frame_added = muxer_segment.AddFrame(data, frame.len,
+                                                 track_num,
+                                                 time_ns,
+                                                 is_key);
+          }
+          if (!frame_added) {
             printf("\n Could not add frame.\n");
             return EXIT_FAILURE;
           }
