@@ -71,7 +71,7 @@ class SkPictureSerializer {
         layer_id_(0) {
     // Let skia register known effect subclasses. This basically enables
     // reflection on those subclasses required for picture serialization.
-    content::SkiaBenchmarkingExtension::InitSkGraphics();
+    content::SkiaBenchmarking::Initialize();
   }
 
   // Recursively serializes the layer tree.

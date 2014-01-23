@@ -86,7 +86,6 @@
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
-#include "content/renderer/skia_benchmarking_extension.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
@@ -394,11 +393,6 @@ void RenderThreadImpl::Init() {
   if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     RegisterExtension(MemoryBenchmarkingExtension::Get());
 #endif  // USE_TCMALLOC
-
-  if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking)) {
-    LOG(WARNING) << "Enabling unsafe Skia benchmarking extension.";
-    RegisterExtension(SkiaBenchmarkingExtension::Get());
-  }
 
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
