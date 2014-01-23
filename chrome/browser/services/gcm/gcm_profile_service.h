@@ -140,20 +140,19 @@ class GCMProfileService : public BrowserContextKeyedService,
               const GCMClient::OutgoingMessage& message);
 
   // Callbacks posted from IO thread to UI thread.
-  // TODO(fgorski): Update parameters to be passed by const ref.
-  void CheckInFinished(GCMClient::CheckinInfo checkin_info,
+  void CheckInFinished(const GCMClient::CheckinInfo& checkin_info,
                        GCMClient::Result result);
-  void RegisterFinished(std::string app_id,
-                        std::string registration_id,
+  void RegisterFinished(const std::string& app_id,
+                        const std::string& registration_id,
                         GCMClient::Result result);
-  void SendFinished(std::string app_id,
-                    std::string message_id,
+  void SendFinished(const std::string& app_id,
+                    const std::string& message_id,
                     GCMClient::Result result);
-  void MessageReceived(std::string app_id,
+  void MessageReceived(const std::string& app_id,
                        GCMClient::IncomingMessage message);
-  void MessagesDeleted(std::string app_id);
-  void MessageSendError(std::string app_id,
-                        std::string message_id,
+  void MessagesDeleted(const std::string& app_id);
+  void MessageSendError(const std::string& app_id,
+                        const std::string& message_id,
                         GCMClient::Result result);
   void CheckGCMClientLoadingFinished(bool is_loading);
   void GCMClientLoadingFinished();
@@ -165,7 +164,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   void DeleteRegistrationInfo(const std::string& app_id);
   void WriteRegistrationInfo(const std::string& app_id);
   void ReadRegistrationInfo(const std::string& app_id);
-  void ReadRegistrationInfoFinished(std::string app_id,
+  void ReadRegistrationInfoFinished(const std::string& app_id,
                                     scoped_ptr<base::Value> value);
   bool ParsePersistedRegistrationInfo(scoped_ptr<base::Value> value,
                                       RegistrationInfo* registration_info);

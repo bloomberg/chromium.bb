@@ -52,9 +52,6 @@ class GcmRegisterFunction : public GcmApiFunction {
  private:
   void CompleteFunctionWithResult(const std::string& registration_id,
                                   gcm::GCMClient::Result result);
-
-  std::string cert_;
-  std::vector<std::string> sender_ids_;
 };
 
 class GcmSendFunction : public GcmApiFunction {
@@ -76,9 +73,6 @@ class GcmSendFunction : public GcmApiFunction {
   // Validates that message data do not carry invalid keys and fit into
   // allowable size limits.
   bool ValidateMessageData(const gcm::GCMClient::MessageData& data) const;
-
-  std::string destination_id_;
-  gcm::GCMClient::OutgoingMessage outgoing_message_;
 };
 
 class GcmJsEventRouter : public gcm::GCMEventRouter {

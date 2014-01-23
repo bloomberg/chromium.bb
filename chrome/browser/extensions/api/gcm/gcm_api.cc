@@ -104,14 +104,10 @@ bool GcmRegisterFunction::DoWork() {
       api::gcm::Register::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // Caching the values so that it is possbile to safely pass them by reference.
-  sender_ids_ = params->sender_ids;
-  cert_ = SHA1HashHexString(GetExtension()->public_key());
-
   GCMProfileService()->Register(
       GetExtension()->id(),
-      sender_ids_,
-      cert_,
+      params->sender_ids,
+      SHA1HashHexString(GetExtension()->public_key()),
       base::Bind(&GcmRegisterFunction::CompleteFunctionWithResult, this));
 
   return true;
@@ -136,17 +132,16 @@ bool GcmSendFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(
       ValidateMessageData(params->message.data.additional_properties));
 
-  // Caching the values so that it is possbile to safely pass them by reference.
-  outgoing_message_.id = params->message.message_id;
-  outgoing_message_.data = params->message.data.additional_properties;
+  gcm::GCMClient::OutgoingMessage outgoing_message;
+  outgoing_message.id = params->message.message_id;
+  outgoing_message.data = params->message.data.additional_properties;
   if (params->message.time_to_live.get())
-    outgoing_message_.time_to_live = *params->message.time_to_live;
-  destination_id_ = params->message.destination_id;
+    outgoing_message.time_to_live = *params->message.time_to_live;
 
   GCMProfileService()->Send(
       GetExtension()->id(),
       params->message.destination_id,
-      outgoing_message_,
+      outgoing_message,
       base::Bind(&GcmSendFunction::CompleteFunctionWithResult, this));
 
   return true;

@@ -208,8 +208,7 @@ class GCMProfileService::IOWorker
   void SetUser(const std::string& username);
   void RemoveUser(const std::string& username);
   void CheckIn();
-  // TODO(fgorski): Update to pass by const ref.
-  void SetCheckinInfo(GCMClient::CheckinInfo checkin_info);
+  void SetCheckinInfo(const GCMClient::CheckinInfo& checkin_info);
   void CheckOut();
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids,
@@ -385,7 +384,7 @@ void GCMProfileService::IOWorker::CheckIn() {
 }
 
 void GCMProfileService::IOWorker::SetCheckinInfo(
-    GCMClient::CheckinInfo checkin_info) {
+    const GCMClient::CheckinInfo& checkin_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   checkin_info_ = checkin_info;
@@ -768,8 +767,8 @@ void GCMProfileService::Unregister(const std::string& app_id) {
                  app_id));
 }
 
-void GCMProfileService::CheckInFinished(GCMClient::CheckinInfo checkin_info,
-                                        GCMClient::Result result) {
+void GCMProfileService::CheckInFinished(
+    const GCMClient::CheckinInfo& checkin_info, GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Save the check-in info into the profile's prefs store.
@@ -791,8 +790,8 @@ void GCMProfileService::CheckInFinished(GCMClient::CheckinInfo checkin_info,
     testing_delegate_->CheckInFinished(checkin_info, result);
 }
 
-void GCMProfileService::RegisterFinished(std::string app_id,
-                                         std::string registration_id,
+void GCMProfileService::RegisterFinished(const std::string& app_id,
+                                         const std::string& registration_id,
                                          GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -822,8 +821,8 @@ void GCMProfileService::RegisterFinished(std::string app_id,
   callback.Run(registration_id, result);
 }
 
-void GCMProfileService::SendFinished(std::string app_id,
-                                     std::string message_id,
+void GCMProfileService::SendFinished(const std::string& app_id,
+                                     const std::string& message_id,
                                      GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -840,21 +839,21 @@ void GCMProfileService::SendFinished(std::string app_id,
   callback.Run(message_id, result);
 }
 
-void GCMProfileService::MessageReceived(std::string app_id,
+void GCMProfileService::MessageReceived(const std::string& app_id,
                                         GCMClient::IncomingMessage message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   GetEventRouter(app_id)->OnMessage(app_id, message);
 }
 
-void GCMProfileService::MessagesDeleted(std::string app_id) {
+void GCMProfileService::MessagesDeleted(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   GetEventRouter(app_id)->OnMessagesDeleted(app_id);
 }
 
-void GCMProfileService::MessageSendError(std::string app_id,
-                                         std::string message_id,
+void GCMProfileService::MessageSendError(const std::string& app_id,
+                                         const std::string& message_id,
                                          GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -939,7 +938,7 @@ void GCMProfileService::ReadRegistrationInfo(const std::string& app_id) {
 }
 
 void GCMProfileService::ReadRegistrationInfoFinished(
-    std::string app_id,
+    const std::string& app_id,
     scoped_ptr<base::Value> value) {
   RegistrationInfo registration_info;
   if (value &&
