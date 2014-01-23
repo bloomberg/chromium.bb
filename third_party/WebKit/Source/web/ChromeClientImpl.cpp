@@ -776,8 +776,8 @@ void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCach
     // Alert assistive technology about the accessibility object notification.
     if (!obj)
         return;
-
-    m_webView->client()->postAccessibilityEvent(WebAXObject(obj), toWebAXEvent(notification));
+    if (m_webView->client())
+        m_webView->client()->postAccessibilityEvent(WebAXObject(obj), toWebAXEvent(notification));
 }
 
 String ChromeClientImpl::acceptLanguages()
