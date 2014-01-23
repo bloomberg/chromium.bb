@@ -355,6 +355,10 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
                 TextRunPaintInfo textRunPaintInfo(textRun);
                 textRunPaintInfo.bounds = FloatRect(textRectOrigin, FloatSize(textWidth, fontMetrics.height()));
                 context->setFillColor(resolveColor(CSSPropertyColor));
+                if (textRun.direction() == RTL) {
+                    int availableWidth = cWidth - static_cast<int>(paddingWidth);
+                    textOrigin.move(availableWidth - ceilf(textWidth), 0);
+                }
                 if (errorPictureDrawn) {
                     if (usableWidth >= textWidth && fontMetrics.height() <= imageOffset.height())
                         context->drawBidiText(font, textRunPaintInfo, textOrigin);

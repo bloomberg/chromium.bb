@@ -629,7 +629,7 @@ crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pas
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
 crbug.com/326153 fast/html/imports/import-style-link.html [ Pass Failure ]
-
+crbug.com/326921 fast/text/bidi-img-alt-text.html [ NeedsRebaseline ]
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 crbug.com/305345 fast/events/mouseover-mouseout.html [ Failure Pass ]
