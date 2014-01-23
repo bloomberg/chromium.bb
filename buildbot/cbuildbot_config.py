@@ -1044,6 +1044,12 @@ chrome_pfq.add_config('daisy_spring-chrome-pfq',
   upload_hw_test_artifacts=True,
 )
 
+chrome_pfq.add_config('falco-chrome-pfq',
+  boards=['falco'],
+  upload_hw_test_artifacts=True,
+  important=False,
+)
+
 chromium_info = chromium_pfq.derive(
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
