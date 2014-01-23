@@ -57,7 +57,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebGeolocationClientMock.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebMIDIClientMock.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -293,10 +292,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("pathToLocalResource", &TestRunner::pathToLocalResource);
     bindMethod("setBackingScaleFactor", &TestRunner::setBackingScaleFactor);
     bindMethod("setPOSIXLocale", &TestRunner::setPOSIXLocale);
-    bindMethod("numberOfPendingGeolocationPermissionRequests", &TestRunner:: numberOfPendingGeolocationPermissionRequests);
-    bindMethod("setGeolocationPermission", &TestRunner::setGeolocationPermission);
-    bindMethod("setMockGeolocationPositionUnavailableError", &TestRunner::setMockGeolocationPositionUnavailableError);
-    bindMethod("setMockGeolocationPosition", &TestRunner::setMockGeolocationPosition);
     bindMethod("setMIDIAccessorResult", &TestRunner::setMIDIAccessorResult);
     bindMethod("setMIDISysExPermission", &TestRunner::setMIDISysExPermission);
     bindMethod("grantWebNotificationPermission", &TestRunner::grantWebNotificationPermission);
@@ -1794,43 +1789,6 @@ void TestRunner::setPOSIXLocale(const CppArgumentList& arguments, CppVariant* re
     result->setNull();
     if (arguments.size() == 1 && arguments[0].isString())
         m_delegate->setLocale(arguments[0].toString());
-}
-
-void TestRunner::numberOfPendingGeolocationPermissionRequests(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->set(m_proxy->geolocationClientMock()->numberOfPendingPermissionRequests());
-}
-
-// FIXME: For greater test flexibility, we should be able to set each page's geolocation mock individually.
-// https://bugs.webkit.org/show_bug.cgi?id=52368
-void TestRunner::setGeolocationPermission(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-    if (arguments.size() < 1 || !arguments[0].isBool())
-        return;
-    const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
-    for (unsigned i = 0; i < windowList.size(); ++i)
-        windowList.at(i)->geolocationClientMock()->setPermission(arguments[0].toBoolean());
-}
-
-void TestRunner::setMockGeolocationPosition(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-    if (arguments.size() < 3 || !arguments[0].isNumber() || !arguments[1].isNumber() || !arguments[2].isNumber())
-        return;
-    const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
-    for (unsigned i = 0; i < windowList.size(); ++i)
-        windowList.at(i)->geolocationClientMock()->setPosition(arguments[0].toDouble(), arguments[1].toDouble(), arguments[2].toDouble());
-}
-
-void TestRunner::setMockGeolocationPositionUnavailableError(const CppArgumentList& arguments, CppVariant* result)
-{
-    result->setNull();
-    if (arguments.size() != 1 || !arguments[0].isString())
-        return;
-    const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
-    for (unsigned i = 0; i < windowList.size(); ++i)
-        windowList.at(i)->geolocationClientMock()->setPositionUnavailableError(WebString::fromUTF8(arguments[0].toString()));
 }
 
 void TestRunner::setMIDIAccessorResult(const CppArgumentList& arguments, CppVariant* result)

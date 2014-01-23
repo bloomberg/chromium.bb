@@ -469,14 +469,6 @@ private:
     // Resets between tests.
     void setPOSIXLocale(const CppArgumentList&, CppVariant*);
 
-    // Gets the number of geolocation permissions requests pending.
-    void numberOfPendingGeolocationPermissionRequests(const CppArgumentList&, CppVariant*);
-
-    // Geolocation related functions.
-    void setGeolocationPermission(const CppArgumentList&, CppVariant*);
-    void setMockGeolocationPosition(const CppArgumentList&, CppVariant*);
-    void setMockGeolocationPositionUnavailableError(const CppArgumentList&, CppVariant*);
-
     // MIDI function to control permission handling.
     void setMIDIAccessorResult(const CppArgumentList&, CppVariant*);
     void setMIDISysExPermission(const CppArgumentList&, CppVariant*);

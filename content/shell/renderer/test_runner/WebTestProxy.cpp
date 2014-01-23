@@ -34,7 +34,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebGeolocationClientMock.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebMIDIClientMock.h"
 #include "third_party/WebKit/public/web/WebNode.h"
@@ -426,8 +425,6 @@ void WebTestProxyBase::reset()
     m_animateScheduled = false;
     m_resourceIdentifierMap.clear();
     m_logConsoleOutput = true;
-    if (m_geolocationClient.get())
-        m_geolocationClient->resetMock();
     if (m_midiClient.get())
         m_midiClient->resetMock();
 #if ENABLE_INPUT_SPEECH
@@ -664,13 +661,6 @@ void WebTestProxyBase::displayInvalidatedRegion()
 void WebTestProxyBase::discardBackingStore()
 {
     m_canvas.reset();
-}
-
-WebGeolocationClientMock* WebTestProxyBase::geolocationClientMock()
-{
-    if (!m_geolocationClient.get())
-        m_geolocationClient.reset(WebGeolocationClientMock::create());
-    return m_geolocationClient.get();
 }
 
 WebMIDIClientMock* WebTestProxyBase::midiClientMock()
@@ -949,11 +939,6 @@ void WebTestProxyBase::printPage(WebFrame* frame)
 WebNotificationPresenter* WebTestProxyBase::notificationPresenter()
 {
     return m_testInterfaces->testRunner()->notificationPresenter();
-}
-
-WebGeolocationClient* WebTestProxyBase::geolocationClient()
-{
-    return geolocationClientMock();
 }
 
 WebMIDIClient* WebTestProxyBase::webMIDIClient()

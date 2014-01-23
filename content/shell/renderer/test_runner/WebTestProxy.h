@@ -35,8 +35,6 @@ class WebDataSource;
 class WebDragData;
 class WebFileChooserCompletion;
 class WebFrame;
-class WebGeolocationClient;
-class WebGeolocationClientMock;
 class WebImage;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
@@ -117,7 +115,6 @@ public:
     void displayInvalidatedRegion();
     void discardBackingStore();
 
-    blink::WebGeolocationClientMock* geolocationClientMock();
     blink::WebMIDIClientMock* midiClientMock();
     MockWebSpeechInputController* speechInputControllerMock();
     MockWebSpeechRecognizer* speechRecognizerMock();
@@ -154,7 +151,6 @@ protected:
     blink::WebUserMediaClient* userMediaClient();
     void printPage(blink::WebFrame*);
     blink::WebNotificationPresenter* notificationPresenter();
-    blink::WebGeolocationClient* geolocationClient();
     blink::WebMIDIClient* webMIDIClient();
     blink::WebSpeechInputController* speechInputController(blink::WebSpeechInputListener*);
     blink::WebSpeechRecognizer* speechRecognizer();
@@ -225,7 +221,6 @@ private:
     bool m_logConsoleOutput;
     int m_chooserCount;
 
-    scoped_ptr<blink::WebGeolocationClientMock> m_geolocationClient;
     scoped_ptr<blink::WebMIDIClientMock> m_midiClient;
     scoped_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
     scoped_ptr<MockWebSpeechInputController> m_speechInputController;
@@ -330,10 +325,6 @@ public:
     virtual blink::WebNotificationPresenter* notificationPresenter()
     {
         return WebTestProxyBase::notificationPresenter();
-    }
-    virtual blink::WebGeolocationClient* geolocationClient()
-    {
-        return WebTestProxyBase::geolocationClient();
     }
     virtual blink::WebMIDIClient* webMIDIClient()
     {
