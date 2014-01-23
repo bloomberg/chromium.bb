@@ -6860,6 +6860,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EMBED_FLASH_FULLSCREEN_DESCRIPTION" desc="Description for the about:flags option to embed flash fullscreen within the browser tab.">
         Embeds Flash fullscreen windows within the tab contents area and fullscreens the browser window.  This makes the Flash fullscreen user experience consistent with all other browser fullscreen modes.  When disabled, Flash fullscreen will open in a separate fullscreened window.
       </message>
+      <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME" desc="Title for the flag to enable showing permissions requests in bubbles.">
+        Use Bubbles for Permission Requests
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION" desc="Description for the flag to enable showing permissions requests in bubbles.">
+        Show content permission requests (e.g. notifications, quota, camera use, microphone use) in bubbles instead of info bars.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

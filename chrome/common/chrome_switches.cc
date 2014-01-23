@@ -1627,6 +1627,9 @@ const char kRelauncherProcess[]             = "relauncher";
 const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
+// Use bubbles for content permissions requests instead of infobars.
+const char kEnablePermissionsBubbles[]      = "enable-permissions-bubbles";
+
 #if defined(OS_WIN)
 // Force-enables the profile shortcut manager. This is needed for tests since
 // they use a custom-user-data-dir which disables this.

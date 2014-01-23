@@ -1987,6 +1987,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kUseSystemTitleBar)
   },
 #endif
+#if defined(USE_AURA) || defined(OS_WIN)
+  {
+    "enable-permissions-bubbles",
+    IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
+    IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,
+    kOsCrOS | kOsWin,
+    SINGLE_VALUE_TYPE(switches::kEnablePermissionsBubbles)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

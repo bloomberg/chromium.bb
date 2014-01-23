@@ -202,6 +202,7 @@ extern const char kEnableOriginChipTrailingLocationBar[];
 extern const char kEnableOriginChipLeadingMenuButton[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
+extern const char kEnablePermissionsBubbles[];
 extern const char kEnableQueryExtraction[];
 extern const char kEnablePrivetStorage[];
 extern const char kEnableProfiling[];

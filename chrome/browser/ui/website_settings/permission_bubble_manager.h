@@ -29,6 +29,9 @@ class PermissionBubbleManager
       public content::WebContentsUserData<PermissionBubbleManager>,
       public PermissionBubbleView::Delegate {
  public:
+  // Return the flag-driven enabled state of permissions bubbles.
+  static bool Enabled();
+
   virtual ~PermissionBubbleManager();
 
   // Add a new consumer delegate to the permission bubble. Ownership of the

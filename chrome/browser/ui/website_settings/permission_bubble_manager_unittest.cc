@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_delegate.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -114,6 +116,13 @@ class PermissionBubbleManagerTest : public testing::Test {
 
 PermissionBubbleManagerTest::PermissionBubbleManagerTest()
     : manager_(new PermissionBubbleManager(NULL)) {
+}
+
+TEST_F(PermissionBubbleManagerTest, TestFlag) {
+  EXPECT_FALSE(PermissionBubbleManager::Enabled());
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnablePermissionsBubbles);
+  EXPECT_TRUE(PermissionBubbleManager::Enabled());
 }
 
 TEST_F(PermissionBubbleManagerTest, SingleRequest) {

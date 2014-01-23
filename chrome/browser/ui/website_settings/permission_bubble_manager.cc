@@ -4,9 +4,17 @@
 
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_delegate.h"
+#include "chrome/common/chrome_switches.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
+
+// static
+bool PermissionBubbleManager::Enabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePermissionsBubbles);
+}
 
 void PermissionBubbleManager::AddPermissionBubbleDelegate(
     PermissionBubbleDelegate* delegate) {
