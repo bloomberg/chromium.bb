@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/alias.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
@@ -1251,6 +1252,9 @@ void SSLClientSocketOpenSSL::TransportReadComplete(int result) {
     DCHECK(recv_buffer_.get());
     int ret = BIO_write(transport_bio_, recv_buffer_->data(), result);
     // A write into a memory BIO should always succeed.
+    // Force values on the stack for http://crbug.com/335557
+    base::debug::Alias(&result);
+    base::debug::Alias(&ret);
     CHECK_EQ(result, ret);
   }
   recv_buffer_ = NULL;
