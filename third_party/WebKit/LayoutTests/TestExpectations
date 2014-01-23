@@ -844,15 +844,6 @@ crbug.com/328749 virtual/threaded/transitions/position-background-transition.htm
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
-crbug.com/333014 svg/batik/filters/feTile.svg [ NeedsRebaseline ]
-crbug.com/333014 svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
-crbug.com/333014 svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
-crbug.com/333014 svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
-crbug.com/333014 svg/filters/fecomposite-two-regions.svg [ NeedsRebaseline ]
-crbug.com/333014 svg/filters/feTurbulence-scale.svg [ NeedsRebaseline ]
-crbug.com/333014 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
-crbug.com/335069 css3/filters/buffer-offset.html [ NeedsRebaseline ]
-
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
