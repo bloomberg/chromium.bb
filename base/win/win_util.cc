@@ -5,6 +5,7 @@
 #include "base/win/win_util.h"
 
 #include <aclapi.h>
+#include <lm.h>
 #include <shellapi.h>
 #include <shlobj.h>
 #include <shobjidl.h>  // Must be before propkey.
@@ -353,6 +354,16 @@ BOOL GetMonitorInfoWrapper(HMONITOR monitor, MONITORINFO* mi) {
   }
 #endif
   return ret;
+}
+
+bool IsEnrolledToDomain() {
+  LPWSTR domain;
+  NETSETUP_JOIN_STATUS join_status;
+  if(::NetGetJoinInformation(NULL, &domain, &join_status) != NERR_Success)
+    return false;
+  ::NetApiBufferFree(domain);
+
+  return join_status == ::NetSetupDomainName;
 }
 
 }  // namespace win

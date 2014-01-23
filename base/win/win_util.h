@@ -130,6 +130,9 @@ BASE_EXPORT bool DismissVirtualKeyboard();
 // see bug #247430 for more details.
 BASE_EXPORT BOOL GetMonitorInfoWrapper(HMONITOR monitor, MONITORINFO* mi);
 
+// Returns true if the machine is enrolled to a domain.
+BASE_EXPORT bool IsEnrolledToDomain();
+
 }  // namespace win
 }  // namespace base
 
