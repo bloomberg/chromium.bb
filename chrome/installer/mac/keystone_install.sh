@@ -1035,6 +1035,12 @@ main() {
                true)"
   note "old_brand = ${old_brand}"
 
+  local update_versioned_dir=
+  if [[ -z "${is_patch}" ]]; then
+    update_versioned_dir="${update_app}/${VERSIONS_DIR}/${update_version_app}"
+    note "update_versioned_dir = ${update_versioned_dir}"
+  fi
+
   if has_32_bit_only_cpu; then
     # On a 32-bit-only system, make sure that the update contains 32-bit code.
     note "system is 32-bit-only"
@@ -1043,8 +1049,8 @@ main() {
     if [[ -z "${is_patch}" ]]; then
       # For a full installer, the framework is available, so check it for
       # 32-bit code.
-      local old_framework_dir="${old_versioned_dir}/${FRAMEWORK_DIR}"
-      test_binary="${old_framework_dir}/${FRAMEWORK_NAME}"
+      local update_framework_dir="${update_versioned_dir}/${FRAMEWORK_DIR}"
+      test_binary="${update_framework_dir}/${FRAMEWORK_NAME}"
     else
       # No application code is guaranteed to be available at this point for a
       # patch updater, but goobspatch is built alongside and will have the
@@ -1104,11 +1110,7 @@ main() {
     rm -f "${new_versioned_dir}" 2> /dev/null || true
   fi
 
-  local update_versioned_dir
-  if [[ -z "${is_patch}" ]]; then
-    update_versioned_dir="${update_app}/${VERSIONS_DIR}/${update_version_app}"
-    note "update_versioned_dir = ${update_versioned_dir}"
-  else  # [[ -n "${is_patch}" ]]
+  if [[ -n "${is_patch}" ]]; then
     # dirpatcher won't patch into a directory that already exists.  Doing so
     # would be a bad idea, anyway.  If ${new_versioned_dir} already exists,
     # it may be something left over from a previous failed or incomplete
