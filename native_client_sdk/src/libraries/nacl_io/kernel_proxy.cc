@@ -269,22 +269,17 @@ int KernelProxy::chdir(const char* path) {
 }
 
 char* KernelProxy::getcwd(char* buf, size_t size) {
-  std::string cwd = GetCWD();
-
-  // If size is 0, allocate as much as we need.
-  if (size == 0) {
-    size = cwd.size() + 1;
+  if (NULL == buf) {
+    errno = EFAULT;
+    return NULL;
   }
+
+  std::string cwd = GetCWD();
 
   // Verify the buffer is large enough
   if (size <= cwd.size()) {
     errno = ERANGE;
     return NULL;
-  }
-
-  // Allocate the buffer if needed
-  if (buf == NULL) {
-    buf = static_cast<char*>(malloc(size));
   }
 
   strcpy(buf, cwd.c_str());

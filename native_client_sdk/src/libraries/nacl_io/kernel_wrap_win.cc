@@ -102,6 +102,17 @@ int _fstat64i32(int fd, struct _stat64i32* buf) {
 }
 
 char* _getcwd(char* buf, int size) {
+  // If size is 0, allocate as much as we need.
+  if (size == 0) {
+    char stack_buf[MAX_PATH + 1];
+    if (!ki_getcwd(stack_buf, MAX_PATH))
+      return NULL;
+    size = strlen(stack_buf) + 1;
+  }
+  // Allocate the buffer if needed
+  if (buf == NULL) {
+    buf = static_cast<char*>(malloc(size));
+  }
   return ki_getcwd(buf, size);
 }
 
@@ -225,4 +236,3 @@ void kernel_wrap_uninit() {
 EXTERN_C_END
 
 #endif   // defined(WIN32)
-
