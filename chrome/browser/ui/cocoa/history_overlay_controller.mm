@@ -135,9 +135,7 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 - (void)showPanelForView:(NSView*)view {
   parent_.reset([view retain]);
   [self setProgress:0 finished:NO];  // Set initial view position.
-  [[parent_ superview] addSubview:self.view
-                       positioned:NSWindowAbove
-                       relativeTo:parent_];
+  [parent_  addSubview:self.view];
   [[BrowserWindowController
       browserWindowControllerForView:[self view]] onOverlappedViewShown];
 }

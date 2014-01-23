@@ -17,9 +17,10 @@ class HistoryOverlayControllerTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
 
-    // The overlay controller shows the panel in the superview of a given
-    // view, so create the given view.
+    // The overlay controller shows the panel as a subview of the given view.
     test_view_.reset([[NSView alloc] initWithFrame:NSMakeRect(10, 10, 10, 10)]);
+
+    // We add it to the test_window for authenticity.
     [[test_window() contentView] addSubview:test_view_];
   }
 
@@ -35,13 +36,12 @@ class HistoryOverlayControllerTest : public CocoaTest {
 // is removed when the animation completes. The view should be added and
 // removed at the appropriate times.
 TEST_F(HistoryOverlayControllerTest, DismissClearsAnimationsAndRemovesView) {
-  NSView* content_view = [test_window() contentView];
-  EXPECT_EQ(1u, [[content_view subviews] count]);
+  EXPECT_EQ(0u, [[test_view() subviews] count]);
 
   base::scoped_nsobject<HistoryOverlayController> controller(
       [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
   [controller showPanelForView:test_view()];
-  EXPECT_EQ(2u, [[content_view subviews] count]);
+  EXPECT_EQ(1u, [[test_view() subviews] count]);
 
   scoped_ptr<base::MessagePumpNSRunLoop> message_pump(
       new base::MessagePumpNSRunLoop);
@@ -78,5 +78,5 @@ TEST_F(HistoryOverlayControllerTest, DismissClearsAnimationsAndRemovesView) {
   // After the animation runs, there should be no more animations.
   EXPECT_FALSE([[controller view] animations]);
 
-  EXPECT_EQ(1u, [[content_view subviews] count]);
+  EXPECT_EQ(0u, [[test_view() subviews] count]);
 }
