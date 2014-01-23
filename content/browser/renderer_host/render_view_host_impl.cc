@@ -437,6 +437,8 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   prefs.accelerated_filters_enabled =
       GpuProcessHost::gpu_enabled() &&
       command_line.HasSwitch(switches::kEnableAcceleratedFilters);
+  prefs.deferred_filters_enabled =
+      command_line.HasSwitch(switches::kEnableDeferredFilters);
   prefs.accelerated_compositing_for_3d_transforms_enabled =
       prefs.accelerated_compositing_for_animation_enabled =
           !command_line.HasSwitch(switches::kDisableAcceleratedLayers);

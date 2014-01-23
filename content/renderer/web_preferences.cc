@@ -243,6 +243,9 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   // Enable gpu-accelerated filters if requested on the command line.
   settings->setAcceleratedFiltersEnabled(prefs.accelerated_filters_enabled);
 
+  // Enable deferred filter rendering if requested on the command line.
+  settings->setDeferredFiltersEnabled(prefs.deferred_filters_enabled);
+
   // Enable gesture tap highlight if requested on the command line.
   settings->setGestureTapHighlightEnabled(prefs.gesture_tap_highlight_enabled);
 

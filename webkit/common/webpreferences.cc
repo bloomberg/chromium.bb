@@ -75,6 +75,7 @@ WebPreferences::WebPreferences()
       antialiased_2d_canvas_disabled(false),
       accelerated_2d_canvas_msaa_sample_count(0),
       accelerated_filters_enabled(false),
+      deferred_filters_enabled(false),
       gesture_tap_highlight_enabled(false),
       accelerated_compositing_for_plugins_enabled(false),
       memory_info_enabled(false),

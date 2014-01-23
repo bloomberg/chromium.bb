@@ -353,6 +353,9 @@ const char kDomAutomationController[]       = "dom-automation";
 // Enable gpu-accelerated SVG/W3C filters.
 const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 
+// Disable gpu-accelerated 2d canvas.
+const char kEnableDeferredFilters[]         = "enable-deferred-filters";
+
 // Enables accelerated compositing for backgrounds of root layers with
 // background-attachment: fixed. Requires kForceCompositingMode.
 const char kEnableAcceleratedFixedRootBackground[] =
