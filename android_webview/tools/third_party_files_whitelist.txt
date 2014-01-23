@@ -70,6 +70,8 @@ content/browser/renderer_host/web_input_event_aurax11.cc
 google_update/google_update_idl.idl
 # Copyright Eli Bendersky; BSD license. Tool only.
 mojo/public/bindings/parse/mojo_lexer.py
+# Native client not used in Android. Contains the word "Copyright"
+native_client_sdk/doc_generated/rest-devsite-examples.html
 # String '(c)' used in certificates organization names
 net/quic/crypto/common_cert_set_1_50.inc
 net/quic/crypto/common_cert_set_51_100.inc
