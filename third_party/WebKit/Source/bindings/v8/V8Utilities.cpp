@@ -121,10 +121,6 @@ bool getMessagePortArray(v8::Local<v8::Value> value, const String& propertyName,
         ports.resize(0);
         return true;
     }
-    if (!value->IsArray()) {
-        throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
-        return false;
-    }
     bool success = false;
     ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, propertyName, isolate, &success);
     return success;
@@ -135,10 +131,6 @@ bool getMessagePortArray(v8::Local<v8::Value> value, int argumentIndex, MessageP
     if (isUndefinedOrNull(value)) {
         ports.resize(0);
         return true;
-    }
-    if (!value->IsArray()) {
-        throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
-        return false;
     }
     bool success = false;
     ports = toRefPtrNativeArray<MessagePort, V8MessagePort>(value, argumentIndex, isolate, &success);

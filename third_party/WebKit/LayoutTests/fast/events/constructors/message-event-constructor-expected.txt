@@ -105,6 +105,7 @@ PASS new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test
 PASS new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: window, ports: [channel.port1, channel.port2, channel2.port1] }).ports[0] is channel.port1
 PASS new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: window, ports: [channel.port1, channel.port2, channel2.port1] }).ports[1] is channel.port2
 PASS new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: window, ports: [channel.port1, channel.port2, channel2.port1] }).ports[2] is channel2.port1
+PASS new MessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: window, ports: {length: 3, 0: channel.port1, 1: channel.port2, 2: channel2.port1} }).ports[2] is channel2.port1
 PASS successfullyParsed is true
 
 TEST COMPLETE
