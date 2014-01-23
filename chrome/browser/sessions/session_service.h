@@ -442,6 +442,9 @@ class SessionService : public BaseSessionService,
   void RecordUpdatedSessionNavigationOrTab(base::TimeDelta delta,
                                            bool use_long_period);
 
+  // Deletes session data if no windows are open for the current profile.
+  void MaybeDeleteSessionOnlyData();
+
   // Convert back/forward between the Browser and SessionService DB window
   // types.
   static WindowType WindowTypeForBrowserType(Browser::Type type);
