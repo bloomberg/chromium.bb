@@ -310,9 +310,9 @@ class VIEWS_EXPORT Textfield : public View,
   void PaintTextAndCursor(gfx::Canvas* canvas);
 
   // Helper function to call MoveCursorTo on the TextfieldModel.
-  bool MoveCursorTo(const gfx::Point& point, bool select);
+  void MoveCursorTo(const gfx::Point& point, bool select);
 
-  // Convenience method to call InputMethod::OnCaretBoundsChanged();
+  // Convenience method to notify the InputMethod and TouchSelectionController.
   void OnCaretBoundsChanged();
 
   // Convenience method to call TextfieldController::OnBeforeUserAction();
@@ -345,6 +345,12 @@ class VIEWS_EXPORT Textfield : public View,
   void RevealPasswordChar(int index);
 
   void CreateTouchSelectionControllerAndNotifyIt();
+
+  // Updates the selection clipboard to any non-empty text selection.
+  void UpdateSelectionClipboard() const;
+
+  // Pastes the selection clipboard for the specified mouse event.
+  void PasteSelectionClipboard(const ui::MouseEvent& event);
 
   // The text model.
   scoped_ptr<TextfieldModel> model_;
@@ -385,8 +391,9 @@ class VIEWS_EXPORT Textfield : public View,
   // The input type of this text field.
   ui::TextInputType text_input_type_;
 
-  // The duration to reveal the last typed char for password textfields.
+  // The duration and timer to reveal the last typed password character.
   base::TimeDelta password_reveal_duration_;
+  base::OneShotTimer<Textfield> password_reveal_timer_;
 
   // True if InputMethod::CancelComposition() should not be called.
   bool skip_input_method_cancel_composition_;
@@ -409,11 +416,6 @@ class VIEWS_EXPORT Textfield : public View,
   gfx::Range double_click_word_;
 
   scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
-
-  // A timer to control the duration of showing the last typed char in
-  // password text. When the timer is running, the last typed char is shown
-  // and when the time expires, the last typed char is password.
-  base::OneShotTimer<Textfield> password_reveal_timer_;
 
   // Context menu related members.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;

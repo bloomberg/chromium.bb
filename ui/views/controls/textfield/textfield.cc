@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "grit/ui_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -150,8 +151,8 @@ base::i18n::TextDirection Textfield::GetTextDirection() const {
 
 void Textfield::SelectAll(bool reversed) {
   model_->SelectAll(reversed);
-  OnCaretBoundsChanged();
-  SchedulePaint();
+  UpdateSelectionClipboard();
+  UpdateAfterChange(false, true);
 }
 
 base::string16 Textfield::GetSelectedText() const {
@@ -160,8 +161,7 @@ base::string16 Textfield::GetSelectedText() const {
 
 void Textfield::ClearSelection() {
   model_->ClearSelection();
-  OnCaretBoundsChanged();
-  SchedulePaint();
+  UpdateAfterChange(false, true);
 }
 
 bool Textfield::HasSelection() const {
@@ -244,10 +244,7 @@ const gfx::Range& Textfield::GetSelectedRange() const {
 
 void Textfield::SelectRange(const gfx::Range& range) {
   model_->SelectRange(range);
-  OnCaretBoundsChanged();
-  SchedulePaint();
-  NotifyAccessibilityEvent(
-      ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
+  UpdateAfterChange(false, true);
 }
 
 const gfx::SelectionModel& Textfield::GetSelectionModel() const {
@@ -256,8 +253,7 @@ const gfx::SelectionModel& Textfield::GetSelectionModel() const {
 
 void Textfield::SelectSelectionModel(const gfx::SelectionModel& sel) {
   model_->SelectSelectionModel(sel);
-  OnCaretBoundsChanged();
-  SchedulePaint();
+  UpdateAfterChange(false, true);
 }
 
 size_t Textfield::GetCursorPosition() const {
@@ -373,6 +369,7 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
       case ui::VKEY_A:
         if (control && !alt) {
           model_->SelectAll(false);
+          UpdateSelectionClipboard();
           cursor_changed = true;
         }
         break;
@@ -400,6 +397,7 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
             control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK,
             (key_code == ui::VKEY_RIGHT) ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT,
             shift);
+        UpdateSelectionClipboard();
         cursor_changed = render_text->selection() != selection_range;
         break;
       }
@@ -410,6 +408,7 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
           model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, shift);
         else
           model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, shift);
+        UpdateSelectionClipboard();
         cursor_changed = true;
         break;
       case ui::VKEY_BACK:
@@ -463,7 +462,6 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
-  OnBeforeUserAction();
   TrackMouseClicks(event);
 
   if (!controller_ || !controller_->HandleMouseEvent(this, event)) {
@@ -473,36 +471,46 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
     }
 
     if (event.IsOnlyLeftMouseButton()) {
+      OnBeforeUserAction();
       initiating_drag_ = false;
-      bool can_drag = true;
-
       switch (aggregated_clicks_) {
         case 0:
-          if (can_drag &&
-              GetRenderText()->IsPointInSelection(event.location())) {
+          if (GetRenderText()->IsPointInSelection(event.location()))
             initiating_drag_ = true;
-          } else {
+          else
             MoveCursorTo(event.location(), event.IsShiftDown());
-          }
           break;
         case 1:
-          MoveCursorTo(event.location(), false);
+          model_->MoveCursorTo(event.location(), false);
           model_->SelectWord();
+          UpdateAfterChange(false, true);
           double_click_word_ = GetRenderText()->selection();
-          OnCaretBoundsChanged();
           break;
         case 2:
-          model_->SelectAll(false);
-          OnCaretBoundsChanged();
+          SelectAll(false);
           break;
         default:
           NOTREACHED();
       }
+      OnAfterUserAction();
     }
-    SchedulePaint();
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    if (event.IsOnlyMiddleMouseButton()) {
+      if (GetRenderText()->IsPointInSelection(event.location())) {
+        OnBeforeUserAction();
+        ClearSelection();
+        ui::ScopedClipboardWriter(
+            ui::Clipboard::GetForCurrentThread(),
+            ui::CLIPBOARD_TYPE_SELECTION).WriteText(base::string16());
+        OnAfterUserAction();
+      } else if(!read_only()) {
+        PasteSelectionClipboard(event);
+      }
+    }
+#endif
   }
 
-  OnAfterUserAction();
   touch_selection_controller_.reset();
   return true;
 }
@@ -515,34 +523,33 @@ bool Textfield::OnMouseDragged(const ui::MouseEvent& event) {
     return true;
   }
 
-  if (!event.IsOnlyRightMouseButton()) {
-    OnBeforeUserAction();
-    MoveCursorTo(event.location(), true);
-    if (aggregated_clicks_ == 1) {
-      model_->SelectWord();
-      // Expand the selection so the initially selected word remains selected.
-      gfx::Range selection = GetRenderText()->selection();
-      const size_t min = std::min(selection.GetMin(),
-                                  double_click_word_.GetMin());
-      const size_t max = std::max(selection.GetMax(),
-                                  double_click_word_.GetMax());
-      const bool reversed = selection.is_reversed();
-      selection.set_start(reversed ? max : min);
-      selection.set_end(reversed ? min : max);
-      model_->SelectRange(selection);
-    }
-    SchedulePaint();
-    OnAfterUserAction();
+  OnBeforeUserAction();
+  model_->MoveCursorTo(event.location(), true);
+  if (aggregated_clicks_ == 1) {
+    model_->SelectWord();
+    // Expand the selection so the initially selected word remains selected.
+    gfx::Range selection = GetRenderText()->selection();
+    const size_t min = std::min(selection.GetMin(),
+                                double_click_word_.GetMin());
+    const size_t max = std::max(selection.GetMax(),
+                                double_click_word_.GetMax());
+    const bool reversed = selection.is_reversed();
+    selection.set_start(reversed ? max : min);
+    selection.set_end(reversed ? min : max);
+    model_->SelectRange(selection);
   }
+  UpdateAfterChange(false, true);
+  OnAfterUserAction();
   return true;
 }
 
 void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
   OnBeforeUserAction();
   // Cancel suspected drag initiations, the user was clicking in the selection.
-  if (initiating_drag_ && MoveCursorTo(event.location(), false))
-    SchedulePaint();
+  if (initiating_drag_)
+    MoveCursorTo(event.location(), false);
   initiating_drag_ = false;
+  UpdateSelectionClipboard();
   OnAfterUserAction();
 }
 
@@ -644,16 +651,14 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
 
       // We don't deselect if the point is in the selection
       // because TAP_DOWN may turn into a LONG_PRESS.
-      if (!GetRenderText()->IsPointInSelection(event->location()) &&
-          MoveCursorTo(event->location(), false))
-        SchedulePaint();
+      if (!GetRenderText()->IsPointInSelection(event->location()))
+        MoveCursorTo(event->location(), false);
       OnAfterUserAction();
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       OnBeforeUserAction();
-      if (MoveCursorTo(event->location(), true))
-        SchedulePaint();
+      MoveCursorTo(event->location(), true);
       OnAfterUserAction();
       event->SetHandled();
       break;
@@ -689,8 +694,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         model_->SelectWord();
         touch_selection_controller_.reset(
             ui::TouchSelectionController::create(this));
-        OnCaretBoundsChanged();
-        SchedulePaint();
+        UpdateAfterChange(false, true);
         OnAfterUserAction();
         if (touch_selection_controller_)
           event->SetHandled();
@@ -899,9 +903,7 @@ void Textfield::SelectRect(const gfx::Point& start, const gfx::Point& end) {
       end_caret.caret_affinity());
 
   OnBeforeUserAction();
-  model_->SelectSelectionModel(selection);
-  OnCaretBoundsChanged();
-  SchedulePaint();
+  SelectSelectionModel(selection);
   OnAfterUserAction();
 }
 
@@ -985,46 +987,32 @@ void Textfield::ExecuteCommand(int command_id, int event_flags) {
     return;
 
   bool text_changed = false;
+  OnBeforeUserAction();
   switch (command_id) {
     case IDS_APP_UNDO:
-      OnBeforeUserAction();
       text_changed = model_->Undo();
-      UpdateAfterChange(text_changed, text_changed);
-      OnAfterUserAction();
       break;
     case IDS_APP_CUT:
-      OnBeforeUserAction();
       text_changed = Cut();
-      UpdateAfterChange(text_changed, text_changed);
-      OnAfterUserAction();
       break;
     case IDS_APP_COPY:
-      OnBeforeUserAction();
       Copy();
-      OnAfterUserAction();
       break;
     case IDS_APP_PASTE:
-      OnBeforeUserAction();
       text_changed = Paste();
-      UpdateAfterChange(text_changed, text_changed);
-      OnAfterUserAction();
       break;
     case IDS_APP_DELETE:
-      OnBeforeUserAction();
       text_changed = model_->Delete();
-      UpdateAfterChange(text_changed, text_changed);
-      OnAfterUserAction();
       break;
     case IDS_APP_SELECT_ALL:
-      OnBeforeUserAction();
       SelectAll(false);
-      UpdateAfterChange(false, true);
-      OnAfterUserAction();
       break;
     default:
       NOTREACHED();
       break;
   }
+  UpdateAfterChange(text_changed, text_changed);
+  OnAfterUserAction();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1200,7 +1188,6 @@ bool Textfield::GetSelectionRange(gfx::Range* range) const {
 bool Textfield::SetSelectionRange(const gfx::Range& range) {
   if (!ImeEditingAllowed() || !range.IsValid())
     return false;
-
   OnBeforeUserAction();
   SelectRange(range);
   OnAfterUserAction();
@@ -1364,11 +1351,9 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
   canvas->Restore();
 }
 
-bool Textfield::MoveCursorTo(const gfx::Point& point, bool select) {
-  if (!model_->MoveCursorTo(point, select))
-    return false;
-  OnCaretBoundsChanged();
-  return true;
+void Textfield::MoveCursorTo(const gfx::Point& point, bool select) {
+  if (model_->MoveCursorTo(point, select))
+    UpdateAfterChange(false, true);
 }
 
 void Textfield::OnCaretBoundsChanged() {
@@ -1475,6 +1460,41 @@ void Textfield::CreateTouchSelectionControllerAndNotifyIt() {
   }
   if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();
+}
+
+void Textfield::UpdateSelectionClipboard() const {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (HasSelection()) {
+    ui::ScopedClipboardWriter(
+        ui::Clipboard::GetForCurrentThread(),
+        ui::CLIPBOARD_TYPE_SELECTION).WriteText(GetSelectedText());
+  }
+#endif
+}
+
+void Textfield::PasteSelectionClipboard(const ui::MouseEvent& event) {
+  DCHECK(event.IsOnlyMiddleMouseButton());
+  DCHECK(!read_only());
+  base::string16 selection_clipboard_text;
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::CLIPBOARD_TYPE_SELECTION, &selection_clipboard_text);
+  if (!selection_clipboard_text.empty()) {
+    OnBeforeUserAction();
+    gfx::Range range = GetSelectionModel().selection();
+    gfx::LogicalCursorDirection affinity = GetSelectionModel().caret_affinity();
+    const gfx::SelectionModel mouse =
+        GetRenderText()->FindCursorPosition(event.location());
+    model_->MoveCursorTo(mouse);
+    model_->InsertText(selection_clipboard_text);
+    // Update the new selection range as needed.
+    if (range.GetMin() >= mouse.caret_pos()) {
+      const size_t length = selection_clipboard_text.length();
+      range = gfx::Range(range.start() + length, range.end() + length);
+    }
+    model_->MoveCursorTo(gfx::SelectionModel(range, affinity));
+    UpdateAfterChange(true, true);
+    OnAfterUserAction();
+  }
 }
 
 }  // namespace views
