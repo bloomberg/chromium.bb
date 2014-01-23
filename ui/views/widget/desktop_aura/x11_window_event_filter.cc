@@ -98,6 +98,9 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
+  if (!target->delegate())
+    return;
+
   int component =
       target->delegate()->GetNonClientComponent(event->location());
   if (component == HTCLIENT)
