@@ -182,7 +182,13 @@ class WebMediaPlayerImpl
   // content::RenderViewObserver implementation.
   virtual void OnDestruct() OVERRIDE;
 
-  void Repaint();
+  // Notifies blink that the entire media element region has been invalidated.
+  // This path is slower than notifying the compositor directly as it performs
+  // more work and can trigger layouts. It should only be used in two cases:
+  //   1) Major state changes (e.g., first frame available, run time error
+  //      occured)
+  //   2) Compositing not available
+  void InvalidateOnMainThread();
 
   void OnPipelineSeek(media::PipelineStatus status);
   void OnPipelineEnded();
@@ -361,7 +367,7 @@ class WebMediaPlayerImpl
   scoped_refptr<media::VideoFrame> current_frame_;
   bool current_frame_painted_;
   uint32 frames_dropped_before_paint_;
-  bool pending_repaint_;
+  bool pending_invalidate_;
 
   gfx::Size natural_size_;
 

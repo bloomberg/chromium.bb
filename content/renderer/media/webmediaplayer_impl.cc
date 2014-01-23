@@ -159,7 +159,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       chunk_demuxer_(NULL),
       current_frame_painted_(false),
       frames_dropped_before_paint_(0),
-      pending_repaint_(false),
+      pending_invalidate_(false),
       video_frame_provider_client_(NULL),
       text_track_index_(0),
       web_cdm_(NULL) {
@@ -857,16 +857,16 @@ void WebMediaPlayerImpl::OnDestruct() {
   Destroy();
 }
 
-void WebMediaPlayerImpl::Repaint() {
+void WebMediaPlayerImpl::InvalidateOnMainThread() {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  TRACE_EVENT0("media", "WebMediaPlayerImpl:repaint");
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::InvalidateOnMainThread");
 
   {
     base::AutoLock auto_lock(lock_);
-    if (pending_repaint_) {
+    if (pending_invalidate_) {
       TRACE_EVENT_ASYNC_END0(
-          "media", "WebMediaPlayerImpl:repaintPending", this);
-      pending_repaint_ = false;
+          "media", "WebMediaPlayerImpl:invalidatePending", this);
+      pending_invalidate_ = false;
     }
   }
 
@@ -909,7 +909,10 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     // Any error that occurs before reaching ReadyStateHaveMetadata should
     // be considered a format error.
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-    Repaint();
+
+    // TODO(scherkus): This should be handled by HTMLMediaElement and controls
+    // should know when to invalidate themselves http://crbug.com/337015
+    InvalidateOnMainThread();
     return;
   }
 
@@ -918,8 +921,9 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   if (error == media::PIPELINE_ERROR_DECRYPT)
     EmeUMAHistogramCounts(current_key_system_, "DecryptError", 1);
 
-  // Repaint to trigger UI update.
-  Repaint();
+  // TODO(scherkus): This should be handled by HTMLMediaElement and controls
+  // should know when to invalidate themselves http://crbug.com/337015
+  InvalidateOnMainThread();
 }
 
 void WebMediaPlayerImpl::OnPipelineBufferingState(
@@ -951,8 +955,9 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
       break;
   }
 
-  // Repaint to trigger UI update.
-  Repaint();
+  // TODO(scherkus): This should be handled by HTMLMediaElement and controls
+  // should know when to invalidate themselves http://crbug.com/337015
+  InvalidateOnMainThread();
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
@@ -1052,7 +1057,10 @@ void WebMediaPlayerImpl::DataSourceInitialized(const GURL& gurl, bool success) {
 
   if (!success) {
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-    Repaint();
+
+    // TODO(scherkus): This should be handled by HTMLMediaElement and controls
+    // should know when to invalidate themselves http://crbug.com/337015
+    InvalidateOnMainThread();
     return;
   }
 
@@ -1283,13 +1291,18 @@ void WebMediaPlayerImpl::FrameReady(
   current_frame_painted_ = false;
   TRACE_EVENT_FLOW_BEGIN0("media", "WebMediaPlayerImpl:waitingForPaint", this);
 
-  if (pending_repaint_)
+  if (pending_invalidate_)
     return;
 
-  TRACE_EVENT_ASYNC_BEGIN0("media", "WebMediaPlayerImpl:repaintPending", this);
-  pending_repaint_ = true;
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "media", "WebMediaPlayerImpl:invalidatePending", this);
+  pending_invalidate_ = true;
+
+  // TODO(scherkus): Today we always invalidate on the main thread even when
+  // compositing is available, which is less efficient and involves more
+  // thread hops. Refer to http://crbug.com/335345 for details.
   main_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerImpl::Repaint, AsWeakPtr()));
+      &WebMediaPlayerImpl::InvalidateOnMainThread, AsWeakPtr()));
 }
 
 void WebMediaPlayerImpl::DoneWaitingForPaint(bool painting_frame) {
@@ -1304,9 +1317,10 @@ void WebMediaPlayerImpl::DoneWaitingForPaint(bool painting_frame) {
     return;
   }
 
-  // The frame wasn't painted, but we aren't waiting for a Repaint() call so
-  // assume that the frame wasn't painted because the video wasn't visible.
-  if (!pending_repaint_)
+  // The frame wasn't painted, but we aren't waiting for a
+  // InvalidateOnMainThread() call so assume that the frame wasn't painted
+  // because the video wasn't visible.
+  if (!pending_invalidate_)
     return;
 
   // The |current_frame_| wasn't painted, it is being replaced, and we haven't
