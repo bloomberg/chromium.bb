@@ -389,3 +389,140 @@ TEST(AnimationKeyframeEffectModel, ToKeyframeEffectModel)
 }
 
 } // namespace
+
+namespace WebCore {
+
+class KeyframeEffectModelTest : public ::testing::Test {
+public:
+    typedef KeyframeEffectModel::KeyframeVector KeyframeVector;
+
+    static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes)
+    {
+        return KeyframeEffectModel::normalizedKeyframes(keyframes);
+    }
+};
+
+TEST_F(KeyframeEffectModelTest, NotLooselySorted)
+{
+    KeyframeEffectModel::KeyframeVector keyframes(4);
+    keyframes[0] = Keyframe::create();
+    keyframes[1] = Keyframe::create();
+    keyframes[1]->setOffset(9);
+    keyframes[2] = Keyframe::create();
+    keyframes[3] = Keyframe::create();
+    keyframes[3]->setOffset(1);
+
+    const KeyframeVector result = normalizedKeyframes(keyframes);
+    EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(KeyframeEffectModelTest, LastOne)
+{
+    KeyframeEffectModel::KeyframeVector keyframes(3);
+    keyframes[0] = Keyframe::create();
+    keyframes[0]->setOffset(-1);
+    keyframes[1] = Keyframe::create();
+    keyframes[2] = Keyframe::create();
+    keyframes[2]->setOffset(2);
+
+    const KeyframeVector result = normalizedKeyframes(keyframes);
+    EXPECT_EQ(1U, result.size());
+    EXPECT_DOUBLE_EQ(1.0, result[0]->offset());
+}
+
+TEST_F(KeyframeEffectModelTest, FirstZero)
+{
+    KeyframeEffectModel::KeyframeVector keyframes(3);
+    keyframes[0] = Keyframe::create();
+    keyframes[0]->setOffset(-1);
+    keyframes[1] = Keyframe::create();
+    keyframes[2] = Keyframe::create();
+    keyframes[2]->setOffset(0.25);
+
+    const KeyframeVector result = normalizedKeyframes(keyframes);
+    EXPECT_EQ(2U, result.size());
+    EXPECT_DOUBLE_EQ(0.0, result[0]->offset());
+    EXPECT_DOUBLE_EQ(0.25, result[1]->offset());
+}
+
+TEST_F(KeyframeEffectModelTest, EvenlyDistributed1)
+{
+    KeyframeEffectModel::KeyframeVector keyframes(5);
+    keyframes[0] = Keyframe::create();
+    keyframes[0]->setOffset(0.125);
+    keyframes[1] = Keyframe::create();
+    keyframes[2] = Keyframe::create();
+    keyframes[3] = Keyframe::create();
+    keyframes[4] = Keyframe::create();
+    keyframes[4]->setOffset(0.625);
+
+    const KeyframeVector result = normalizedKeyframes(keyframes);
+    EXPECT_EQ(5U, result.size());
+    EXPECT_DOUBLE_EQ(0.125, result[0]->offset());
+    EXPECT_DOUBLE_EQ(0.25, result[1]->offset());
+    EXPECT_DOUBLE_EQ(0.375, result[2]->offset());
+    EXPECT_DOUBLE_EQ(0.5, result[3]->offset());
+    EXPECT_DOUBLE_EQ(0.625, result[4]->offset());
+}
+
+TEST_F(KeyframeEffectModelTest, EvenlyDistributed2)
+{
+    KeyframeEffectModel::KeyframeVector keyframes(8);
+    keyframes[0] = Keyframe::create();
+    keyframes[0]->setOffset(-0.1);
+    keyframes[1] = Keyframe::create();
+    keyframes[2] = Keyframe::create();
+    keyframes[3] = Keyframe::create();
+    keyframes[4] = Keyframe::create();
+    keyframes[4]->setOffset(0.75);
+    keyframes[5] = Keyframe::create();
+    keyframes[6] = Keyframe::create();
+    keyframes[7] = Keyframe::create();
+    keyframes[7]->setOffset(1.1);
+
+    const KeyframeVector result = normalizedKeyframes(keyframes);
+    EXPECT_EQ(6U, result.size());
+    EXPECT_DOUBLE_EQ(0.0, result[0]->offset());
+    EXPECT_DOUBLE_EQ(0.25, result[1]->offset());
+    EXPECT_DOUBLE_EQ(0.5, result[2]->offset());
+    EXPECT_DOUBLE_EQ(0.75, result[3]->offset());
+    EXPECT_DOUBLE_EQ(0.875, result[4]->offset());
+    EXPECT_DOUBLE_EQ(1.0, result[5]->offset());
+}
+
+TEST_F(KeyframeEffectModelTest, EvenlyDistributed3)
+{
+    KeyframeEffectModel::KeyframeVector keyframes(12);
+    keyframes[0] = Keyframe::create();
+    keyframes[0]->setOffset(0);
+    keyframes[1] = Keyframe::create();
+    keyframes[2] = Keyframe::create();
+    keyframes[3] = Keyframe::create();
+    keyframes[4] = Keyframe::create();
+    keyframes[4]->setOffset(0.5);
+    keyframes[5] = Keyframe::create();
+    keyframes[6] = Keyframe::create();
+    keyframes[7] = Keyframe::create();
+    keyframes[7]->setOffset(0.8);
+    keyframes[8] = Keyframe::create();
+    keyframes[9] = Keyframe::create();
+    keyframes[10] = Keyframe::create();
+    keyframes[11] = Keyframe::create();
+
+    const KeyframeVector result = normalizedKeyframes(keyframes);
+    EXPECT_EQ(12U, result.size());
+    EXPECT_DOUBLE_EQ(0.0, result[0]->offset());
+    EXPECT_DOUBLE_EQ(0.125, result[1]->offset());
+    EXPECT_DOUBLE_EQ(0.25, result[2]->offset());
+    EXPECT_DOUBLE_EQ(0.375, result[3]->offset());
+    EXPECT_DOUBLE_EQ(0.5, result[4]->offset());
+    EXPECT_DOUBLE_EQ(0.6, result[5]->offset());
+    EXPECT_DOUBLE_EQ(0.7, result[6]->offset());
+    EXPECT_DOUBLE_EQ(0.8, result[7]->offset());
+    EXPECT_DOUBLE_EQ(0.85, result[8]->offset());
+    EXPECT_DOUBLE_EQ(0.9, result[9]->offset());
+    EXPECT_DOUBLE_EQ(0.95, result[10]->offset());
+    EXPECT_DOUBLE_EQ(1.0, result[11]->offset());
+}
+
+} // namespace WebCore

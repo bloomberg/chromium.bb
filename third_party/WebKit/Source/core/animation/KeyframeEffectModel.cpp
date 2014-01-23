@@ -192,29 +192,68 @@ PassOwnPtr<AnimationEffect::CompositableValueList> KeyframeEffectModel::sample(i
     return map.release();
 }
 
-KeyframeEffectModel::KeyframeVector KeyframeEffectModel::normalizedKeyframes() const
+KeyframeEffectModel::KeyframeVector KeyframeEffectModel::normalizedKeyframes(const KeyframeVector& keyframes)
 {
-    KeyframeVector keyframes = getFrames();
+    // keyframes [beginIndex, endIndex) will remain after removing all keyframes if they are not
+    // loosely sorted by offset, and after removing keyframes with positional offset outide [0, 1].
+    size_t beginIndex = 0;
+    size_t endIndex = keyframes.size();
 
-    // Set offsets at 0.0 and 1.0 at ends if unset.
-    if (keyframes.size() >= 2) {
-        Keyframe* firstKeyframe = keyframes.first().get();
-        if (isNull(firstKeyframe->offset()))
-            firstKeyframe->setOffset(0.0);
+    // Becomes the most recent keyframe with an explicit offset.
+    size_t lastIndex = endIndex;
+    double lastOffset = std::numeric_limits<double>::quiet_NaN();
+
+    for (size_t i = 0; i < keyframes.size(); ++i) {
+        double offset = keyframes[i]->offset();
+        if (!isNull(offset)) {
+            if (lastIndex < i && offset < lastOffset) {
+                // The keyframes are not loosely sorted by offset. Exclude all.
+                endIndex = beginIndex;
+                break;
+            }
+
+            if (offset < 0) {
+                // Remove all keyframes up to and including this keyframe.
+                beginIndex = i + 1;
+            } else if (offset > 1) {
+                // Remove all keyframes from this keyframe onwards. Note we must complete our checking
+                // that the keyframes are loosely sorted by offset, so we can't exit the loop early.
+                endIndex = std::min(i, endIndex);
+            }
+
+            lastIndex = i;
+            lastOffset = offset;
+        }
     }
-    if (keyframes.size() >= 1) {
-        Keyframe* lastKeyframe = keyframes.last().get();
-        if (lastKeyframe && isNull(lastKeyframe->offset()))
-            lastKeyframe->setOffset(1.0);
+
+    KeyframeVector result;
+    if (beginIndex != endIndex) {
+        result.reserveCapacity(endIndex - beginIndex);
+        for (size_t i = beginIndex; i < endIndex; ++i) {
+            result.append(keyframes[i]->clone());
+        }
+
+        if (isNull(result[result.size() - 1]->offset()))
+            result[result.size() - 1]->setOffset(1);
+
+        if (result.size() > 1 && isNull(result[0]->offset()))
+            result[0]->setOffset(0);
+
+        lastIndex = 0;
+        lastOffset = result[0]->offset();
+        for (size_t i = 1; i < result.size(); ++i) {
+            double offset = result[i]->offset();
+            if (!isNull(offset)) {
+                if (lastIndex + 1 < i) {
+                    for (size_t j = 1; j < i - lastIndex; ++j)
+                        result[lastIndex + j]->setOffset(lastOffset + (offset - lastOffset) * j / (i - lastIndex));
+                }
+                lastIndex = i;
+                lastOffset = offset;
+            }
+        }
     }
-
-    // FIXME: Distribute offsets where missing.
-    for (KeyframeVector::iterator iter = keyframes.begin(); iter != keyframes.end(); ++iter)
-        ASSERT(!isNull((*iter)->offset()));
-
-    // Sort by offset.
-    std::stable_sort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
-    return keyframes;
+    return result;
 }
 
 void KeyframeEffectModel::ensureKeyframeGroups() const
@@ -223,7 +262,7 @@ void KeyframeEffectModel::ensureKeyframeGroups() const
         return;
 
     m_keyframeGroups = adoptPtr(new KeyframeGroupMap);
-    const KeyframeVector& keyframes = normalizedKeyframes();
+    const KeyframeVector keyframes = normalizedKeyframes(getFrames());
     for (KeyframeVector::const_iterator keyframeIter = keyframes.begin(); keyframeIter != keyframes.end(); ++keyframeIter) {
         const Keyframe* keyframe = keyframeIter->get();
         PropertySet keyframeProperties = keyframe->properties();

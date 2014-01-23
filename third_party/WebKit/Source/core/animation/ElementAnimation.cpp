@@ -90,12 +90,6 @@ Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary>
         double offset;
         if (keyframeDictionaryVector[i].get("offset", offset)) {
             keyframe->setOffset(offset);
-        } else {
-            // FIXME: Web Animations CSS engine does not yet implement handling of
-            // keyframes without specified offsets. This check can be removed when
-            // that funcitonality is implemented.
-            ASSERT_NOT_REACHED();
-            return 0;
         }
 
         String compositeString;

@@ -44,6 +44,8 @@ namespace WebCore {
 
 typedef HashSet<CSSPropertyID> PropertySet;
 
+class KeyframeEffectModelTest;
+
 // Represents the keyframes set through the API.
 class Keyframe : public RefCounted<Keyframe> {
 public:
@@ -136,7 +138,8 @@ public:
 private:
     KeyframeEffectModel(const KeyframeVector& keyframes);
 
-    KeyframeVector normalizedKeyframes() const;
+    static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes);
+
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
 
@@ -146,6 +149,8 @@ private:
     // property-specific lists.
     typedef HashMap<CSSPropertyID, OwnPtr<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
     mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
+
+    friend class KeyframeEffectModelTest;
 };
 
 DEFINE_TYPE_CASTS(KeyframeEffectModel, AnimationEffect, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
