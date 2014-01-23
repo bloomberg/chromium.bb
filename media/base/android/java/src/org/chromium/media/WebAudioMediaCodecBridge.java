@@ -79,6 +79,14 @@ class WebAudioMediaCodecBridge {
             }
         }
 
+        // If the duration is too long, set to 0 to force the caller
+        // not to preallocate space.  See crbug.com/326856.
+        // FIXME: What should be the limit? We're arbitrarily using
+        // about 2148 sec (35.8 min).
+        if (durationMicroseconds > 0x7fffffff) {
+            durationMicroseconds = 0;
+        }
+
         Log.d(LOG_TAG, "Initial: Tracks: " + extractor.getTrackCount() +
               " Format: " + format);
 
