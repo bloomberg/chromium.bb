@@ -138,6 +138,7 @@ public:
     Frame* frame();
     Document* master();
     HTMLImportsController* controller();
+    bool isRoot() const { return !isChild(); }
 
     bool isCreatedByParser() const { return m_createdByParser; }
     bool isBlockedFromRunningScript() const { return m_state <= BlockedFromRunningScript; }
@@ -147,6 +148,7 @@ public:
 
     void appendChild(HTMLImport*);
 
+    virtual bool isChild() const { return false; }
     virtual HTMLImportRoot* root() = 0;
     virtual Document* document() const = 0;
     virtual void wasDetachedFromDocument() = 0;

@@ -52,6 +52,8 @@
 #include "core/frame/PageConsole.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLImport.h"
+#include "core/html/HTMLImportChild.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
@@ -303,6 +305,8 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
         return InspectorPageAgent::ScriptResource;
     case Resource::Raw:
         return InspectorPageAgent::XHRResource;
+    case Resource::ImportResource:
+        // Fall through.
     case Resource::MainResource:
         return InspectorPageAgent::DocumentResource;
     default:
@@ -495,11 +499,9 @@ static PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> > buildArrayForC
     return cookies;
 }
 
-static Vector<Resource*> cachedResourcesForFrame(Frame* frame)
+static void cachedResourcesForDocument(Document* document, Vector<Resource*>& result)
 {
-    Vector<Resource*> result;
-
-    const ResourceFetcher::DocumentResourceMap& allResources = frame->document()->fetcher()->allResources();
+    const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
     ResourceFetcher::DocumentResourceMap::const_iterator end = allResources.end();
     for (ResourceFetcher::DocumentResourceMap::const_iterator it = allResources.begin(); it != end; ++it) {
         Resource* cachedResource = it->value.get();
@@ -521,6 +523,39 @@ static Vector<Resource*> cachedResourcesForFrame(Frame* frame)
         }
 
         result.append(cachedResource);
+    }
+}
+
+static Vector<Resource*> cachedResourcesForFrame(Frame* frame)
+{
+    Vector<Resource*> result;
+    Document* rootDocument = frame->document();
+
+    if (HTMLImport* rootImport = rootDocument->import()) {
+        for (HTMLImport* import = rootImport; import; import = traverseNext(import)) {
+            if (import->ownsLoader() || import->isRoot()) {
+                if (Document* document = import->document())
+                    cachedResourcesForDocument(document, result);
+            }
+        }
+    } else {
+        cachedResourcesForDocument(rootDocument, result);
+    }
+
+    return result;
+}
+
+static Vector<HTMLImportChild*> importsForFrame(Frame* frame)
+{
+    Vector<HTMLImportChild*> result;
+    Document* rootDocument = frame->document();
+
+    if (HTMLImport* rootImport = rootDocument->import()) {
+        // Skips root, that isn't a real import but just a placeholder.
+        for (HTMLImport* import = traverseNext(rootImport); import; import = traverseNext(import)) {
+            if (import->ownsLoader() && import->document())
+                result.append(toHTMLImportChild(import));
+        }
     }
 
     return result;
@@ -1064,6 +1099,16 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
             resourceObject->setCanceled(true);
         else if (cachedResource->status() == Resource::LoadError)
             resourceObject->setFailed(true);
+        subresources->addItem(resourceObject);
+    }
+
+    Vector<HTMLImportChild*> allImports = importsForFrame(frame);
+    for (Vector<HTMLImportChild*>::const_iterator it = allImports.begin(); it != allImports.end(); ++it) {
+        HTMLImportChild* import = *it;
+        RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
+            .setUrl(urlWithoutFragment(import->url()).string())
+            .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
+            .setMimeType(import->document()->suggestedMIMEType());
         subresources->addItem(resourceObject);
     }
 

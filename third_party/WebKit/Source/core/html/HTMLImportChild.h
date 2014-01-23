@@ -65,6 +65,7 @@ public:
     void importDestroyed();
 
     // HTMLImport
+    virtual bool isChild() const OVERRIDE { return true; }
     virtual HTMLImportRoot* root() OVERRIDE;
     virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
@@ -100,6 +101,12 @@ private:
     RefPtr<HTMLImportLoader> m_loader;
     HTMLImportChildClient* m_client;
 };
+
+inline HTMLImportChild* toHTMLImportChild(HTMLImport* import)
+{
+    ASSERT(!import || import->isChild());
+    return static_cast<HTMLImportChild*>(import);
+}
 
 } // namespace WebCore
 
