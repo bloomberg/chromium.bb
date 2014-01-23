@@ -363,11 +363,6 @@ class SpdyTestUtil {
   // Returns the constructed frame.  The caller takes ownership of the frame.
   SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) const;
 
-  // Construct an expected SPDY CREDENTIAL frame.
-  // |credential| is the credential to send.
-  // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdyCredential(const SpdyCredential& credential) const;
-
   // Construct a SPDY PING frame.
   // Returns the constructed frame.  The caller takes ownership of the frame.
   SpdyFrame* ConstructSpdyPing(uint32 ping_id) const;

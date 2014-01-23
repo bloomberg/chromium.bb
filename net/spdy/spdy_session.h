@@ -77,7 +77,7 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_UNSUPPORTED_VERSION = 4,
   SPDY_ERROR_DECOMPRESS_FAILURE = 5,
   SPDY_ERROR_COMPRESS_FAILURE = 6,
-  SPDY_ERROR_CREDENTIAL_FRAME_CORRUPT = 7,
+  // SPDY_ERROR_CREDENTIAL_FRAME_CORRUPT = 7, (removed).
   SPDY_ERROR_GOAWAY_FRAME_CORRUPT = 29,
   SPDY_ERROR_RST_STREAM_FRAME_CORRUPT = 30,
   SPDY_ERROR_INVALID_DATA_FRAME_FLAGS = 8,
@@ -114,7 +114,7 @@ SpdyProtocolErrorDetails NET_EXPORT_PRIVATE MapRstStreamStatusToProtocolError(
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
 // to be updated with new values, as do the mapping functions above.
-COMPILE_ASSERT(12 == SpdyFramer::LAST_ERROR,
+COMPILE_ASSERT(11 == SpdyFramer::LAST_ERROR,
                SpdyProtocolErrorDetails_SpdyErrors_mismatch);
 COMPILE_ASSERT(12 == RST_STREAM_NUM_STATUS_CODES,
                SpdyProtocolErrorDetails_RstStreamStatus_mismatch);

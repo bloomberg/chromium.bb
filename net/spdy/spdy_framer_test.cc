@@ -61,8 +61,6 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnHeaders, void(SpdyStreamId stream_id, bool fin));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
                                     uint32 delta_window_size));
-  MOCK_METHOD2(OnCredentialFrameData, bool(const char* credential_data,
-                                           size_t len));
   MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));
   MOCK_METHOD2(OnPushPromise, void(SpdyStreamId stream_id,
                                    SpdyStreamId promised_stream_id));
@@ -234,11 +232,6 @@ class SpdyFramerTestUtil {
     virtual void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) {
       LOG(FATAL);
     }
-    virtual bool OnCredentialFrameData(const char* /*credential_data*/,
-                                       size_t /*len*/) OVERRIDE {
-      LOG(FATAL) << "Unexpected CREDENTIAL Frame";
-      return false;
-    }
 
     virtual void OnPushPromise(SpdyStreamId stream_id,
                                SpdyStreamId promised_stream_id) OVERRIDE {
@@ -285,7 +278,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                         public SpdyFramerDebugVisitorInterface {
  public:
   static const size_t kDefaultHeaderBufferSize = 16 * 1024 * 1024;
-  static const size_t kDefaultCredentialBufferSize = 16 * 1024;
 
   explicit TestSpdyVisitor(SpdyMajorVersion version)
     : framer_(version),
@@ -315,10 +307,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       header_buffer_size_(kDefaultHeaderBufferSize),
       header_stream_id_(-1),
       header_control_type_(DATA),
-      header_buffer_valid_(false),
-      credential_buffer_(new char[kDefaultCredentialBufferSize]),
-      credential_buffer_length_(0),
-      credential_buffer_size_(kDefaultCredentialBufferSize) {
+      header_buffer_valid_(false) {
   }
 
   virtual void OnError(SpdyFramer* f) OVERRIDE {
@@ -439,28 +428,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     last_window_update_delta_ = delta_window_size;
   }
 
-  virtual bool OnCredentialFrameData(const char* credential_data,
-                                     size_t len) OVERRIDE {
-    if (len == 0) {
-      if (!framer_.ParseCredentialData(credential_buffer_.get(),
-                                       credential_buffer_length_,
-                                       &credential_)) {
-        LOG(INFO) << "Error parsing credential data.";
-        ++error_count_;
-      }
-      return true;
-    }
-    const size_t available =
-        credential_buffer_size_ - credential_buffer_length_;
-    if (len > available) {
-      return false;
-    }
-    memcpy(credential_buffer_.get() + credential_buffer_length_,
-           credential_data, len);
-    credential_buffer_length_ += len;
-    return true;
-  }
-
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id) OVERRIDE {
     InitHeaderStreaming(PUSH_PROMISE, stream_id);
@@ -558,11 +525,6 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyFrameType header_control_type_;
   bool header_buffer_valid_;
   SpdyHeaderBlock headers_;
-
-  scoped_ptr<char[]> credential_buffer_;
-  size_t credential_buffer_length_;
-  size_t credential_buffer_size_;
-  SpdyCredential credential_;
 };
 
 // Retrieves serialized headers from SYN_STREAM frame.
@@ -887,89 +849,6 @@ TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
       << SpdyFramer::ErrorCodeToString(framer.error_code());
-}
-
-TEST_P(SpdyFramerTest, CreateCredential) {
-  // CREDENTIAL only exists in SPDY 3.
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  SpdyFramer framer(spdy_version_);
-
-  {
-    const char kDescription[] = "CREDENTIAL frame";
-    const unsigned char kV3FrameData[] = {  // Also applies for V2.
-      0x80, spdy_version_ch_, 0x00, 0x0A,
-      0x00, 0x00, 0x00, 0x33,
-      0x00, 0x03, 0x00, 0x00,
-      0x00, 0x05, 'p',  'r',
-      'o',  'o',  'f',  0x00,
-      0x00, 0x00, 0x06, 'a',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0C, 'a',  'n',  'o',
-      't',  'h',  'e',  'r',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0A, 'f',  'i',  'n',
-      'a',  'l',  ' ',  'c',
-      'e',  'r',  't',
-    };
-    SpdyCredential credential;
-    credential.slot = 3;
-    credential.proof = "proof";
-    credential.certs.push_back("a cert");
-    credential.certs.push_back("another cert");
-    credential.certs.push_back("final cert");
-    scoped_ptr<SpdyFrame> frame(framer.CreateCredentialFrame(credential));
-    CompareFrame(kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));
-  }
-}
-
-TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
-  // CREDENTIAL only exists in SPDY 3.
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  SpdyFramer framer(spdy_version_);
-
-  {
-    const unsigned char kV3FrameData[] = {  // Also applies for V2.
-      0x80, spdy_version_ch_, 0x00, 0x0A,
-      0x00, 0x00, 0x00, 0x33,
-      0x00, 0x03, 0x00, 0x00,
-      0x00, 0x05, 'p',  'r',
-      'o',  'o',  'f',  0x00,
-      0x00, 0x00, 0x06, 'a',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0C, 'a',  'n',  'o',
-      't',  'h',  'e',  'r',
-      ' ',  'c',  'e',  'r',
-      't',  0x00,  0x00, 0x00,
-      0x0A, 'f',  'i',  'n',
-      'a',  'l',  ' ',  'c',
-      'e',  'r',  't',
-    };
-
-    SpdyCredential credential;
-    EXPECT_TRUE(SpdyFramer::ParseCredentialData(
-        reinterpret_cast<const char*>(kV3FrameData) +
-            framer.GetControlFrameHeaderSize(),
-        arraysize(kV3FrameData) - framer.GetControlFrameHeaderSize(),
-        &credential));
-    EXPECT_EQ(3u, credential.slot);
-    EXPECT_EQ("proof", credential.proof);
-    EXPECT_EQ("a cert", credential.certs.front());
-    credential.certs.erase(credential.certs.begin());
-    EXPECT_EQ("another cert", credential.certs.front());
-    credential.certs.erase(credential.certs.begin());
-    EXPECT_EQ("final cert", credential.certs.front());
-    credential.certs.erase(credential.certs.begin());
-    EXPECT_TRUE(credential.certs.empty());
-  }
 }
 
 TEST_P(SpdyFramerTest, DuplicateHeader) {
@@ -3691,190 +3570,70 @@ TEST_P(SpdyFramerTest, ReadWindowUpdate) {
   EXPECT_EQ(2u, visitor.last_window_update_delta_);
 }
 
-TEST_P(SpdyFramerTest, ReadCredentialFrame) {
-  // CREDENTIAL only exists in SPDY 3.
+TEST_P(SpdyFramerTest, ReceiveCredentialFrame) {
   if (!IsSpdy3()) {
     return;
   }
-
-  SpdyCredential credential;
-  credential.slot = 3;
-  credential.proof = "proof";
-  credential.certs.push_back("a cert");
-  credential.certs.push_back("another cert");
-  credential.certs.push_back("final cert");
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateCredentialFrame(credential));
-  EXPECT_TRUE(control_frame.get() != NULL);
+  const unsigned char kV3FrameData[] = {  // Also applies for V2.
+      0x80, spdy_version_ch_, 0x00, 0x0A,
+      0x00, 0x00, 0x00, 0x33,
+      0x00, 0x03, 0x00, 0x00,
+      0x00, 0x05, 'p',  'r',
+      'o',  'o',  'f',  0x00,
+      0x00, 0x00, 0x06, 'a',
+      ' ',  'c',  'e',  'r',
+      't',  0x00, 0x00, 0x00,
+      0x0C, 'a',  'n',  'o',
+      't',  'h',  'e',  'r',
+      ' ',  'c',  'e',  'r',
+      't',  0x00, 0x00, 0x00,
+      0x0A, 'f',  'i',  'n',
+      'a',  'l',  ' ',  'c',
+      'e',  'r',  't',
+  };
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
-  visitor.SimulateInFramer(
-      reinterpret_cast<unsigned char*>(control_frame->data()),
-      control_frame->size());
+  visitor.SimulateInFramer(kV3FrameData, arraysize(kV3FrameData));
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(control_frame->size() - framer.GetControlFrameHeaderSize(),
-            visitor.credential_buffer_length_);
-  EXPECT_EQ(credential.slot, visitor.credential_.slot);
-  EXPECT_EQ(credential.proof, visitor.credential_.proof);
-  EXPECT_EQ(credential.certs.size(), visitor.credential_.certs.size());
-  for (size_t i = 0; i < credential.certs.size(); i++) {
-    EXPECT_EQ(credential.certs[i], visitor.credential_.certs[i]);
-  }
 }
 
-TEST_P(SpdyFramerTest, ReadCredentialFrameOneByteAtATime) {
-  // CREDENTIAL only exists in SPDY 3.
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  SpdyCredential credential;
-  credential.slot = 3;
-  credential.proof = "proof";
-  credential.certs.push_back("a cert");
-  credential.certs.push_back("another cert");
-  credential.certs.push_back("final cert");
-  SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateCredentialFrame(credential));
-  EXPECT_TRUE(control_frame.get() != NULL);
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.use_compression_ = false;
-  // Read one byte at a time to make sure we handle edge cases
-  unsigned char* data =
-      reinterpret_cast<unsigned char*>(control_frame->data());
-  for (size_t idx = 0; idx < control_frame->size(); ++idx) {
-    visitor.SimulateInFramer(data + idx, 1);
-    ASSERT_EQ(0, visitor.error_count_);
-  }
-  EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(control_frame->size() - framer.GetControlFrameHeaderSize(),
-            visitor.credential_buffer_length_);
-  EXPECT_EQ(credential.slot, visitor.credential_.slot);
-  EXPECT_EQ(credential.proof, visitor.credential_.proof);
-  EXPECT_EQ(credential.certs.size(), visitor.credential_.certs.size());
-  for (size_t i = 0; i < credential.certs.size(); i++) {
-    EXPECT_EQ(credential.certs[i], visitor.credential_.certs[i]);
-  }
-}
-
-TEST_P(SpdyFramerTest, ReadCredentialFrameWithNoPayload) {
-  // CREDENTIAL only exists in SPDY 3.
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  SpdyCredential credential;
-  credential.slot = 3;
-  credential.proof = "proof";
-  credential.certs.push_back("a cert");
-  credential.certs.push_back("another cert");
-  credential.certs.push_back("final cert");
-  SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateCredentialFrame(credential));
-  EXPECT_TRUE(control_frame.get() != NULL);
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.use_compression_ = false;
-  SetFrameLength(control_frame.get(), 0, spdy_version_);
-  unsigned char* data =
-      reinterpret_cast<unsigned char*>(control_frame->data());
-  visitor.SimulateInFramer(data, framer.GetControlFrameHeaderSize());
-  EXPECT_EQ(1, visitor.error_count_);
-}
-
-TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptProof) {
-  // CREDENTIAL only exists in SPDY 3.
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  SpdyCredential credential;
-  credential.slot = 3;
-  credential.proof = "proof";
-  credential.certs.push_back("a cert");
-  credential.certs.push_back("another cert");
-  credential.certs.push_back("final cert");
-  SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateCredentialFrame(credential));
-  EXPECT_TRUE(control_frame.get() != NULL);
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.use_compression_ = false;
-  unsigned char* data =
-      reinterpret_cast<unsigned char*>(control_frame->data());
-  size_t offset = framer.GetControlFrameHeaderSize() + 4;
-  data[offset] = 0xFF;  // Proof length is past the end of the frame
-  visitor.SimulateInFramer(
-      data, control_frame->size());
-  EXPECT_EQ(1, visitor.error_count_);
-}
-
-TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptCertificate) {
-  // CREDENTIAL only exists in SPDY 3.
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  SpdyCredential credential;
-  credential.slot = 3;
-  credential.proof = "proof";
-  credential.certs.push_back("a cert");
-  credential.certs.push_back("another cert");
-  credential.certs.push_back("final cert");
-  SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyFrame> control_frame(
-      framer.CreateCredentialFrame(credential));
-  EXPECT_TRUE(control_frame.get() != NULL);
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.use_compression_ = false;
-  unsigned char* data =
-      reinterpret_cast<unsigned char*>(control_frame->data());
-  size_t offset = framer.GetCredentialMinimumSize() + 1;
-  data[offset] = 0xFF;  // Proof length is past the end of the frame
-  visitor.SimulateInFramer(
-      data, control_frame->size());
-  EXPECT_EQ(1, visitor.error_count_);
-}
-
-// Regression test for parsing issue found in b/8278897.
 TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
-  // CREDENTIAL only exists in SPDY 3.
   if (!IsSpdy3()) {
     return;
   }
-
-  SpdyCredential credential;
-  credential.slot = 3;
-  credential.proof = "proof";
-  credential.certs.push_back("a cert");
-  credential.certs.push_back("another cert");
-  credential.certs.push_back("final cert");
   SpdyFramer framer(spdy_version_);
-  scoped_ptr<SpdyFrame> credential_frame(
-      framer.CreateCredentialFrame(credential));
-  EXPECT_TRUE(credential_frame.get() != NULL);
+  const unsigned char kV3FrameData[] = {  // Also applies for V2.
+      0x80, spdy_version_ch_, 0x00, 0x0A,
+      0x00, 0x00, 0x00, 0x33,
+      0x00, 0x03, 0x00, 0x00,
+      0x00, 0x05, 'p',  'r',
+      'o',  'o',  'f',  0x00,
+      0x00, 0x00, 0x06, 'a',
+      ' ',  'c',  'e',  'r',
+      't',  0x00, 0x00, 0x00,
+      0x0C, 'a',  'n',  'o',
+      't',  'h',  'e',  'r',
+      ' ',  'c',  'e',  'r',
+      't',  0x00, 0x00, 0x00,
+      0x0A, 'f',  'i',  'n',
+      'a',  'l',  ' ',  'c',
+      'e',  'r',  't',
+  };
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
-  string multiple_frame_data(credential_frame->data(),
-                             credential_frame->size());
-  SpdyGoAwayIR goaway_ir(0, GOAWAY_OK, "test");
-  scoped_ptr<SpdyFrame> goaway_frame(framer.SerializeGoAway(goaway_ir));
-  multiple_frame_data.append(string(goaway_frame->data(),
-                                    goaway_frame->size()));
+  string multiple_frame_data(reinterpret_cast<const char*>(kV3FrameData),
+                             arraysize(kV3FrameData));
+  scoped_ptr<SpdyFrame> control_frame(
+      framer.SerializeWindowUpdate(net::SpdyWindowUpdateIR(1, 2)));
+  multiple_frame_data.append(string(control_frame->data(),
+                                    control_frame->size()));
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned const char*>(multiple_frame_data.data()),
       multiple_frame_data.length());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(credential_frame->size() - framer.GetControlFrameHeaderSize(),
-            visitor.credential_buffer_length_);
-  EXPECT_EQ(credential.slot, visitor.credential_.slot);
-  EXPECT_EQ(credential.proof, visitor.credential_.proof);
-  EXPECT_EQ(credential.certs.size(), visitor.credential_.certs.size());
-  for (size_t i = 0; i < credential.certs.size(); i++) {
-    EXPECT_EQ(credential.certs[i], visitor.credential_.certs[i]);
-  }
+  EXPECT_EQ(1u, visitor.last_window_update_stream_);
+  EXPECT_EQ(2u, visitor.last_window_update_delta_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
@@ -3935,7 +3694,6 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(16u, framer.GetGoAwayMinimumSize());
     EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(12u, framer.GetWindowUpdateSize());
-    EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
     EXPECT_EQ(8u, framer.GetBlockedSize());
     EXPECT_EQ(12u, framer.GetPushPromiseMinimumSize());
     EXPECT_EQ(8u, framer.GetFrameMinimumSize());
@@ -3951,7 +3709,6 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(IsSpdy2() ? 12u : 16u, framer.GetGoAwayMinimumSize());
     EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(16u, framer.GetWindowUpdateSize());
-    EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
     EXPECT_EQ(8u, framer.GetFrameMinimumSize());
     EXPECT_EQ(16777215u, framer.GetFrameMaximumSize());
     EXPECT_EQ(16777207u, framer.GetDataFrameMaximumPayload());
@@ -3983,9 +3740,6 @@ TEST_P(SpdyFramerTest, StateToStringTest) {
   EXPECT_STREQ("SPDY_CONTROL_FRAME_HEADER_BLOCK",
                SpdyFramer::StateToString(
                    SpdyFramer::SPDY_CONTROL_FRAME_HEADER_BLOCK));
-  EXPECT_STREQ("SPDY_CREDENTIAL_FRAME_PAYLOAD",
-               SpdyFramer::StateToString(
-                   SpdyFramer::SPDY_CREDENTIAL_FRAME_PAYLOAD));
   EXPECT_STREQ("SPDY_SETTINGS_FRAME_PAYLOAD",
                SpdyFramer::StateToString(
                    SpdyFramer::SPDY_SETTINGS_FRAME_PAYLOAD));
@@ -4485,44 +4239,6 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
       EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(42, PUSH_PROMISE, _));
       EXPECT_CALL(visitor, OnPushPromise(42, 57));
       EXPECT_CALL(visitor, OnControlFrameHeaderData(42, _, _))
-          .WillRepeatedly(testing::Return(true));
-    }
-
-    framer.ProcessInput(frame->data(), frame->size());
-    if (flags != 0) {
-      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
-                framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else {
-      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    }
-  }
-}
-
-TEST_P(SpdyFramerTest, CredentialFrameFlags) {
-  // CREDENTIAL only exists in SPDY 3.
-  if (!IsSpdy3()) {
-    return;
-  }
-
-  for (int flags = 0; flags < 256; ++flags) {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
-
-    testing::StrictMock<test::MockVisitor> visitor;
-    SpdyFramer framer(spdy_version_);
-    framer.set_visitor(&visitor);
-
-    SpdyCredential credential;
-    scoped_ptr<SpdyFrame> frame(framer.CreateCredentialFrame(credential));
-    SetFrameFlags(frame.get(), flags, spdy_version_);
-
-    if (flags != 0) {
-      EXPECT_CALL(visitor, OnError(_));
-    } else {
-      EXPECT_CALL(visitor, OnCredentialFrameData(_, _))
           .WillRepeatedly(testing::Return(true));
     }
 

@@ -276,8 +276,6 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_DECOMPRESS_FAILURE;
     case SpdyFramer::SPDY_COMPRESS_FAILURE:
       return SPDY_ERROR_COMPRESS_FAILURE;
-    case SpdyFramer::SPDY_CREDENTIAL_FRAME_CORRUPT:
-      return SPDY_ERROR_CREDENTIAL_FRAME_CORRUPT;
     case SpdyFramer::SPDY_GOAWAY_FRAME_CORRUPT:
       return SPDY_ERROR_GOAWAY_FRAME_CORRUPT;
     case SpdyFramer::SPDY_RST_STREAM_FRAME_CORRUPT:

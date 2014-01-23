@@ -684,37 +684,6 @@ class NET_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyWindowUpdateIR);
 };
 
-class NET_EXPORT_PRIVATE SpdyCredentialIR : public SpdyFrameIR {
- public:
-  typedef std::vector<std::string> CertificateList;
-
-  explicit SpdyCredentialIR(int16 slot);
-  virtual ~SpdyCredentialIR();
-
-  int16 slot() const { return slot_; }
-  void set_slot(int16 slot) {
-    // TODO(hkhalil): Verify valid slot range?
-    slot_ = slot;
-  }
-  base::StringPiece proof() const { return proof_; }
-  void set_proof(const base::StringPiece& proof) {
-    proof.CopyToString(&proof_);
-  }
-  const CertificateList* certificates() const { return &certificates_; }
-  void AddCertificate(const base::StringPiece& certificate) {
-    certificates_.push_back(certificate.as_string());
-  }
-
-  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
-
- private:
-  int16 slot_;
-  std::string proof_;
-  CertificateList certificates_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyCredentialIR);
-};
-
 class NET_EXPORT_PRIVATE SpdyBlockedIR
     : public NON_EXPORTED_BASE(SpdyFrameWithStreamIdIR) {
  public:
@@ -801,7 +770,6 @@ class SpdyFrameVisitor {
   virtual void VisitGoAway(const SpdyGoAwayIR& goaway) = 0;
   virtual void VisitHeaders(const SpdyHeadersIR& headers) = 0;
   virtual void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) = 0;
-  virtual void VisitCredential(const SpdyCredentialIR& credential) = 0;
   virtual void VisitBlocked(const SpdyBlockedIR& blocked) = 0;
   virtual void VisitPushPromise(const SpdyPushPromiseIR& push_promise) = 0;
   virtual void VisitData(const SpdyDataIR& data) = 0;

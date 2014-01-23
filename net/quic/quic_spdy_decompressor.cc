@@ -51,10 +51,6 @@ class SpdyFramerVisitor : public SpdyFramerVisitorInterface {
   virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {}
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE {}
-  virtual bool OnCredentialFrameData(const char* credential_data,
-                                     size_t len) OVERRIDE {
-    return false;
-  }
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id) OVERRIDE {}
   void set_visitor(QuicSpdyDecompressor::Visitor* visitor) {

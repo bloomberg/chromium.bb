@@ -871,11 +871,6 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySettings(
   return CreateFramer()->SerializeSettings(settings_ir);
 }
 
-SpdyFrame* SpdyTestUtil::ConstructSpdyCredential(
-    const SpdyCredential& credential) const {
-  return CreateFramer()->CreateCredentialFrame(credential);
-}
-
 SpdyFrame* SpdyTestUtil::ConstructSpdyPing(uint32 ping_id) const {
   SpdyPingIR ping_ir(ping_id);
   return CreateFramer()->SerializePing(ping_ir);

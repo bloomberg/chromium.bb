@@ -132,8 +132,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                            bool unidirectional) OVERRIDE;
   virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE;
   virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE;
-  virtual bool OnCredentialFrameData(const char* frame_data,
-                                     size_t len) OVERRIDE;
   virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                         const char* header_data,
                                         size_t len) OVERRIDE;

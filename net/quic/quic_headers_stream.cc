@@ -125,12 +125,6 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY WINDOW_UPDATE frame recevied.");
   }
 
-  virtual bool OnCredentialFrameData(const char* credential_data,
-                                     size_t len) OVERRIDE {
-    CloseConnection("SPDY CREDENTIAL frame recevied.");
-    return false;
-  }
-
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id) OVERRIDE {
     LOG(DFATAL) << "PUSH_PROMISE frame received from a SPDY/3 framer";

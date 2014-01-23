@@ -111,9 +111,6 @@ void SettingsFlagsAndId::ConvertFlagsAndIdForSpdy2(uint32* val) {
     std::swap(wire_array[1], wire_array[2]);
 }
 
-SpdyCredential::SpdyCredential() : slot(0) {}
-SpdyCredential::~SpdyCredential() {}
-
 bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
                                                    size_t len) {
   return true;
@@ -286,13 +283,6 @@ size_t SpdyFramer::GetWindowUpdateSize() const {
   }
 }
 
-size_t SpdyFramer::GetCredentialMinimumSize() const {
-  // Size, in bytes, of a CREDENTIAL frame sans variable-length certificate list
-  // and proof. Calculated as:
-  // control frame header + 2 (slot)
-  return GetControlFrameHeaderSize() + 2;
-}
-
 size_t SpdyFramer::GetBlockedSize() const {
   DCHECK_LE(4, protocol_version());
   // Size, in bytes, of a BLOCKED frame.
@@ -339,8 +329,6 @@ const char* SpdyFramer::StateToString(int state) {
       return "SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK";
     case SPDY_CONTROL_FRAME_HEADER_BLOCK:
       return "SPDY_CONTROL_FRAME_HEADER_BLOCK";
-    case SPDY_CREDENTIAL_FRAME_PAYLOAD:
-      return "SPDY_CREDENTIAL_FRAME_PAYLOAD";
     case SPDY_GOAWAY_FRAME_PAYLOAD:
       return "SPDY_GOAWAY_FRAME_PAYLOAD";
     case SPDY_RST_STREAM_FRAME_PAYLOAD:
@@ -499,13 +487,6 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
 
       case SPDY_CONTROL_FRAME_HEADER_BLOCK: {
         int bytes_read = ProcessControlFrameHeaderBlock(data, len);
-        len -= bytes_read;
-        data += bytes_read;
-        break;
-      }
-
-      case SPDY_CREDENTIAL_FRAME_PAYLOAD: {
-        size_t bytes_read = ProcessCredentialFramePayload(data, len);
         len -= bytes_read;
         data += bytes_read;
         break;
@@ -712,6 +693,13 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
     return;
   }
 
+  if (current_frame_type_ == CREDENTIAL) {
+    DCHECK_EQ(3, protocol_version());
+    DVLOG(1) << "CREDENTIAL control frame found. Ignoring.";
+    CHANGE_STATE(SPDY_IGNORE_REMAINING_PAYLOAD);
+    return;
+  }
+
   // Do some sanity checking on the control frame sizes and flags.
   switch (current_frame_type_) {
     case SYN_STREAM:
@@ -804,13 +792,6 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
-    case CREDENTIAL:
-      if (current_frame_length_ < GetCredentialMinimumSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (current_frame_flags_ != 0) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
-      }
-      break;
     case BLOCKED:
       if (current_frame_length_ != GetBlockedSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
@@ -846,13 +827,6 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
     DLOG(WARNING) << "Received control frame with way too big of a payload: "
                   << current_frame_length_;
     set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
-    return;
-  }
-
-  if (current_frame_type_ == CREDENTIAL) {
-    DCHECK_EQ(3, protocol_version());
-    // TODO(hkhalil): Send GOAWAY for non-SPDY3
-    CHANGE_STATE(SPDY_CREDENTIAL_FRAME_PAYLOAD);
     return;
   }
 
@@ -1543,24 +1517,6 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
   return original_len - len;
 }
 
-size_t SpdyFramer::ProcessCredentialFramePayload(const char* data, size_t len) {
-  if (len > 0) {
-    // Clamp to the actual remaining payload.
-    if (len > remaining_data_length_) {
-      len = remaining_data_length_;
-    }
-    bool processed_successfully = visitor_->OnCredentialFrameData(data, len);
-    remaining_data_length_ -= len;
-    if (!processed_successfully) {
-      set_error(SPDY_CREDENTIAL_FRAME_CORRUPT);
-    } else if (remaining_data_length_ == 0) {
-      visitor_->OnCredentialFrameData(NULL, 0);
-      CHANGE_STATE(SPDY_AUTO_RESET);
-    }
-  }
-  return len;
-}
-
 size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
   if (len == 0) {
     return 0;
@@ -1774,31 +1730,6 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     (*block)[name] = value;
   }
   return reader.GetBytesConsumed();
-}
-
-/* static */
-bool SpdyFramer::ParseCredentialData(const char* data, size_t len,
-                                     SpdyCredential* credential) {
-  DCHECK(credential);
-
-  SpdyFrameReader parser(data, len);
-  base::StringPiece temp;
-  if (!parser.ReadUInt16(&credential->slot)) {
-    return false;
-  }
-
-  if (!parser.ReadStringPiece32(&temp)) {
-    return false;
-  }
-  credential->proof = temp.as_string();
-
-  while (!parser.IsDoneReading()) {
-    if (!parser.ReadStringPiece32(&temp)) {
-      return false;
-    }
-    credential->certs.push_back(temp.as_string());
-  }
-  return true;
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeData(const SpdyDataIR& data) const {
@@ -2164,50 +2095,6 @@ SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
   return builder.take();
 }
 
-// TODO(hkhalil): Gut with SpdyCredential removal.
-SpdyFrame* SpdyFramer::CreateCredentialFrame(
-    const SpdyCredential& credential) const {
-  SpdyCredentialIR credential_ir(credential.slot);
-  credential_ir.set_proof(credential.proof);
-  for (std::vector<std::string>::const_iterator cert = credential.certs.begin();
-       cert != credential.certs.end();
-       ++cert) {
-    credential_ir.AddCertificate(*cert);
-  }
-  return SerializeCredential(credential_ir);
-}
-
-SpdySerializedFrame* SpdyFramer::SerializeCredential(
-    const SpdyCredentialIR& credential) const {
-  DCHECK_EQ(3, protocol_version());
-  size_t size = GetCredentialMinimumSize();
-  size += 4 + credential.proof().length();  // Room for proof.
-  for (SpdyCredentialIR::CertificateList::const_iterator it =
-       credential.certificates()->begin();
-       it != credential.certificates()->end();
-       ++it) {
-    size += 4 + it->length();  // Room for certificate.
-  }
-
-  SpdyFrameBuilder builder(size);
-  if (spdy_version_ < 4) {
-    builder.WriteControlFrameHeader(*this, CREDENTIAL, kNoFlags);
-  } else {
-    builder.WriteFramePrefix(*this, CREDENTIAL, kNoFlags, 0);
-  }
-  builder.WriteUInt16(credential.slot());
-  DCHECK_EQ(GetCredentialMinimumSize(), builder.length());
-  builder.WriteStringPiece32(credential.proof());
-  for (SpdyCredentialIR::CertificateList::const_iterator it =
-       credential.certificates()->begin();
-       it != credential.certificates()->end();
-       ++it) {
-    builder.WriteStringPiece32(*it);
-  }
-  DCHECK_EQ(size, builder.length());
-  return builder.take();
-}
-
 SpdyFrame* SpdyFramer::CreatePushPromise(
     SpdyStreamId stream_id,
     SpdyStreamId promised_stream_id,
@@ -2280,9 +2167,6 @@ class FrameSerializationVisitor : public SpdyFrameVisitor {
   virtual void VisitWindowUpdate(
       const SpdyWindowUpdateIR& window_update) OVERRIDE {
     frame_.reset(framer_->SerializeWindowUpdate(window_update));
-  }
-  virtual void VisitCredential(const SpdyCredentialIR& credential) OVERRIDE {
-    frame_.reset(framer_->SerializeCredential(credential));
   }
   virtual void VisitBlocked(const SpdyBlockedIR& blocked) OVERRIDE {
     frame_.reset(framer_->SerializeBlocked(blocked));

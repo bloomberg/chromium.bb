@@ -103,12 +103,6 @@ void BufferedSpdyFramer::OnSynReply(SpdyStreamId stream_id,
   InitHeaderStreaming(stream_id);
 }
 
-bool BufferedSpdyFramer::OnCredentialFrameData(const char* frame_data,
-                                               size_t len) {
-  DCHECK(false);
-  return false;
-}
-
 bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
                                                   const char* header_data,
                                                   size_t len) {

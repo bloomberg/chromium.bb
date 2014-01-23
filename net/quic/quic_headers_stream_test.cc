@@ -312,18 +312,6 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyWindowUpdateFrame) {
   headers_stream_->ProcessRawData(frame->data(), frame->size());
 }
 
-TEST_P(QuicHeadersStreamTest, ProcessSpdyCredentialFrame) {
-  SpdyCredentialIR data(1);
-  scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(
-                  QUIC_INVALID_HEADERS_STREAM_DATA,
-                  "SPDY CREDENTIAL frame recevied."))
-      .WillOnce(InvokeWithoutArgs(this,
-                                  &QuicHeadersStreamTest::CloseConnection));
-  headers_stream_->ProcessRawData(frame->data(), frame->size());
-}
-
 }  // namespace
 }  // namespace test
 }  // namespace net
