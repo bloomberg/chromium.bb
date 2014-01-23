@@ -348,6 +348,22 @@ void FrameLoader::receivedFirstData()
     dispatchDidClearWindowObjectsInAllWorlds();
 }
 
+static void didFailContentSecurityPolicyCheck(FrameLoader* loader)
+{
+    // load event and stopAllLoaders can detach the Frame, so protect it.
+    RefPtr<Frame> frame(loader->frame());
+
+    // Move the page to a unique origin, and cancel the load.
+    frame->document()->enforceSandboxFlags(SandboxOrigin);
+    loader->stopAllLoaders();
+
+    // Fire a load event, as timing attacks would otherwise reveal that the
+    // frame was blocked. This way, it looks like every other cross-origin
+    // page.
+    if (HTMLFrameOwnerElement* ownerElement = frame->ownerElement())
+        ownerElement->dispatchEvent(Event::create(EventTypeNames::load));
+}
+
 void FrameLoader::didBeginDocument(bool dispatch)
 {
     m_isComplete = false;
@@ -360,6 +376,11 @@ void FrameLoader::didBeginDocument(bool dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
 
     m_frame->document()->initContentSecurityPolicy(m_documentLoader ? ContentSecurityPolicyResponseHeaders(m_documentLoader->response()) : ContentSecurityPolicyResponseHeaders());
+
+    if (!m_frame->document()->contentSecurityPolicy()->allowAncestors(m_frame)) {
+        didFailContentSecurityPolicyCheck(this);
+        return;
+    }
 
     Settings* settings = m_frame->document()->settings();
     if (settings) {

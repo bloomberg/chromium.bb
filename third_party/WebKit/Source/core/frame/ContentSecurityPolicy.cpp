@@ -149,6 +149,7 @@ static const char styleSrc[] = "style-src";
 // CSP 1.1 Directives
 static const char baseURI[] = "base-uri";
 static const char formAction[] = "form-action";
+static const char frameAncestors[] = "frame-ancestors";
 static const char pluginTypes[] = "plugin-types";
 static const char reflectedXSS[] = "reflected-xss";
 static const char referrer[] = "referrer";
@@ -168,6 +169,7 @@ bool isDirectiveName(const String& name)
         || equalIgnoringCase(name, styleSrc)
         || equalIgnoringCase(name, baseURI)
         || equalIgnoringCase(name, formAction)
+        || equalIgnoringCase(name, frameAncestors)
         || equalIgnoringCase(name, pluginTypes)
         || equalIgnoringCase(name, reflectedXSS)
         || equalIgnoringCase(name, referrer)
@@ -893,6 +895,7 @@ public:
     bool allowConnectToSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowFormAction(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowBaseURI(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
+    bool allowAncestors(Frame*, ContentSecurityPolicy::ReportingStatus) const;
     bool allowScriptNonce(const String&) const;
     bool allowStyleNonce(const String&) const;
     bool allowScriptHash(const SourceHashValue&) const;
@@ -930,6 +933,7 @@ private:
     bool checkHash(SourceListDirective*, const SourceHashValue&) const;
     bool checkSource(SourceListDirective*, const KURL&) const;
     bool checkMediaType(MediaListDirective*, const String& type, const String& typeAttribute) const;
+    bool checkAncestors(SourceListDirective*, Frame*) const;
 
     void setEvalDisabledErrorMessage(const String& errorMessage) { m_evalDisabledErrorMessage = errorMessage; }
 
@@ -938,6 +942,7 @@ private:
 
     bool checkSourceAndReportViolation(SourceListDirective*, const KURL&, const String& effectiveDirective) const;
     bool checkMediaTypeAndReportViolation(MediaListDirective*, const String& type, const String& typeAttribute, const String& consoleMessage) const;
+    bool checkAncestorsAndReportViolation(SourceListDirective*, Frame*) const;
 
     bool denyIfEnforcingPolicy() const { return m_reportOnly; }
 
@@ -960,6 +965,7 @@ private:
     OwnPtr<SourceListDirective> m_defaultSrc;
     OwnPtr<SourceListDirective> m_fontSrc;
     OwnPtr<SourceListDirective> m_formAction;
+    OwnPtr<SourceListDirective> m_frameAncestors;
     OwnPtr<SourceListDirective> m_frameSrc;
     OwnPtr<SourceListDirective> m_imgSrc;
     OwnPtr<SourceListDirective> m_mediaSrc;
@@ -1045,6 +1051,18 @@ bool CSPDirectiveList::checkHash(SourceListDirective* directive, const SourceHas
 bool CSPDirectiveList::checkSource(SourceListDirective* directive, const KURL& url) const
 {
     return !directive || directive->allows(url);
+}
+
+bool CSPDirectiveList::checkAncestors(SourceListDirective* directive, Frame* frame) const
+{
+    if (!frame || !directive)
+        return true;
+
+    for (Frame* current = frame->tree().parent(); current; current = current->tree().parent()) {
+        if (!directive->allows(current->document()->url()))
+            return false;
+    }
+    return true;
 }
 
 bool CSPDirectiveList::checkMediaType(MediaListDirective* directive, const String& type, const String& typeAttribute) const
@@ -1148,6 +1166,15 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
         suffix = " Note that '" + effectiveDirective + "' was not explicitly set, so 'default-src' is used as a fallback.";
 
     reportViolation(directive->text(), effectiveDirective, prefix + url.elidedString() + "' because it violates the following Content Security Policy directive: \"" + directive->text() + "\"." + suffix + "\n", url);
+    return denyIfEnforcingPolicy();
+}
+
+bool CSPDirectiveList::checkAncestorsAndReportViolation(SourceListDirective* directive, Frame* frame) const
+{
+    if (checkAncestors(directive, frame))
+        return true;
+
+    reportViolation(directive->text(), "frame-ancestors", "Refused to display '" + frame->document()->url().elidedString() + " in a frame because an ancestor violates the following Content Security Policy directive: \"" + directive->text() + "\".", frame->document()->url());
     return denyIfEnforcingPolicy();
 }
 
@@ -1272,6 +1299,13 @@ bool CSPDirectiveList::allowBaseURI(const KURL& url, ContentSecurityPolicy::Repo
     return reportingStatus == ContentSecurityPolicy::SendReport ?
         checkSourceAndReportViolation(m_baseURI.get(), url, baseURI) :
         checkSource(m_baseURI.get(), url);
+}
+
+bool CSPDirectiveList::allowAncestors(Frame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    return reportingStatus == ContentSecurityPolicy::SendReport ?
+        checkAncestorsAndReportViolation(m_frameAncestors.get(), frame) :
+        checkAncestors(m_frameAncestors.get(), frame);
 }
 
 bool CSPDirectiveList::allowScriptNonce(const String& nonce) const
@@ -1563,6 +1597,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
             setCSPDirective<SourceListDirective>(name, value, m_baseURI);
         else if (equalIgnoringCase(name, formAction))
             setCSPDirective<SourceListDirective>(name, value, m_formAction);
+        else if (equalIgnoringCase(name, frameAncestors))
+            setCSPDirective<SourceListDirective>(name, value, m_frameAncestors);
         else if (equalIgnoringCase(name, pluginTypes))
             setCSPDirective<MediaListDirective>(name, value, m_pluginTypes);
         else if (equalIgnoringCase(name, reflectedXSS))
@@ -1746,6 +1782,16 @@ bool isAllowedByAllWithURL(const CSPDirectiveListVector& policies, const KURL& u
     return true;
 }
 
+template<bool (CSPDirectiveList::*allowed)(Frame*, ContentSecurityPolicy::ReportingStatus) const>
+bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, Frame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus)
+{
+    for (size_t i = 0; i < policies.size(); ++i) {
+        if (!(policies[i].get()->*allowed)(frame, reportingStatus))
+            return false;
+    }
+    return true;
+}
+
 bool ContentSecurityPolicy::allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return isAllowedByAllWithContext<&CSPDirectiveList::allowJavaScriptURLs>(m_policies, contextURL, contextLine, reportingStatus);
@@ -1892,6 +1938,11 @@ bool ContentSecurityPolicy::allowFormAction(const KURL& url, ContentSecurityPoli
 bool ContentSecurityPolicy::allowBaseURI(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return isAllowedByAllWithURL<&CSPDirectiveList::allowBaseURI>(m_policies, url, reportingStatus);
+}
+
+bool ContentSecurityPolicy::allowAncestors(Frame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    return isAllowedByAllWithFrame<&CSPDirectiveList::allowAncestors>(m_policies, frame, reportingStatus);
 }
 
 bool ContentSecurityPolicy::isActive() const

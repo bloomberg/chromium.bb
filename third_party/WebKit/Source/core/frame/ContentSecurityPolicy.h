@@ -110,6 +110,8 @@ public:
     bool allowConnectToSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
+    bool allowAncestors(Frame*, ReportingStatus = SendReport) const;
+
     // The nonce and hash allow functions are guaranteed to not have any side
     // effects, including reporting.
     bool allowScriptNonce(const String& nonce) const;

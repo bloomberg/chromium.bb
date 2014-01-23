@@ -1,0 +1,16 @@
+A 'frame-ancestors' CSP directive with a URL matching this origin should allow rendering.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+IFrame load event fired: the IFrame is cross-origin (or was blocked).
+PASS The IFrame should have been blocked (or cross-origin). It was.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+This is an IFrame sending a Content Security Policy header containing "frame-ancestors http://127.0.0.1:8000".
