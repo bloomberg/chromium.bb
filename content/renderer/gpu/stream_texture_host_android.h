@@ -26,8 +26,6 @@ class StreamTextureHost : public IPC::Listener {
   explicit StreamTextureHost(GpuChannelHost* channel);
   virtual ~StreamTextureHost();
 
-  bool Initialize(int32 stream_id);
-
   // Listener class that is listening to the stream texture updates. It is
   // implemented by StreamTextureProxyImpl.
   class Listener {
@@ -37,11 +35,7 @@ class StreamTextureHost : public IPC::Listener {
     virtual ~Listener() {}
   };
 
-  void SetListener(Listener* listener) { listener_ = listener; }
-
-  // Request the GPU process to create the surface texture and forward it
-  // to the renderer process.
-  void EstablishPeer(int32 primary_id, int32 secondary_id);
+  bool BindToCurrentThread(int32 stream_id, Listener* listener);
 
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -52,7 +46,6 @@ class StreamTextureHost : public IPC::Listener {
   void OnFrameAvailable();
   void OnMatrixChanged(const GpuStreamTextureMsg_MatrixChanged_Params& param);
 
-  int route_id_;
   int stream_id_;
   Listener* listener_;
   scoped_refptr<GpuChannelHost> channel_;

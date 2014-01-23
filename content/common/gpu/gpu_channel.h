@@ -24,10 +24,6 @@
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gpu_preference.h"
 
-#if defined(OS_ANDROID)
-#include "content/common/android/surface_texture_peer.h"
-#endif
-
 struct GPUCreateCommandBufferConfig;
 
 namespace base {
@@ -137,7 +133,7 @@ class GpuChannel : public IPC::Listener,
   void DestroySoon();
 
   // Generate a route ID guaranteed to be unique for this channel.
-  int GenerateRouteID();
+  int32 GenerateRouteID();
 
   // Called to add/remove a listener for a particular message routing ID.
   void AddRoute(int32 route_id, IPC::Listener* listener);
@@ -187,20 +183,6 @@ class GpuChannel : public IPC::Listener,
   void OnDestroyVideoEncoder(int32 route_id);
   void OnDevToolsStartEventsRecording(int32* route_id);
   void OnDevToolsStopEventsRecording();
-
-#if defined(OS_ANDROID)
-  // Register the StreamTextureProxy class with the gpu process so that all
-  // the callbacks will be correctly forwarded to the renderer.
-  void OnRegisterStreamTextureProxy(int32 stream_id, int32* route_id);
-
-  // Create a java surface texture object and send it to the renderer process
-  // through binder thread.
-  void OnEstablishStreamTexture(
-      int32 stream_id, int32 primary_id, int32 secondary_id);
-
-  // Set the size of StreamTexture.
-  void OnSetStreamTextureSize(int32 stream_id, const gfx::Size& size);
-#endif
 
   // Collect rendering stats.
   void OnCollectRenderingStatsForSurface(

@@ -5,30 +5,83 @@
 #include "content/common/gpu/stream_texture_manager_android.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/stream_texture.h"
+#include "ipc/ipc_listener.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
 
-StreamTextureManagerAndroid::StreamTextureAndroid::StreamTextureAndroid(
-    GpuChannel* channel, int service_id)
+namespace {
+
+class StreamTextureImpl : public gpu::StreamTexture,
+                          public IPC::Listener {
+ public:
+  StreamTextureImpl(GpuChannel* channel, int service_id, int32 route_id);
+  virtual ~StreamTextureImpl();
+
+  // gpu::StreamTexture implementation:
+  virtual void Update() OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
+
+  // IPC::Listener implementation:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+ private:
+  // Called when a new frame is available for the SurfaceTexture.
+  void OnFrameAvailable();
+
+  // IPC message handlers:
+  void OnStartListening();
+  void OnEstablishPeer(int32 primary_id, int32 secondary_id);
+  void OnSetSize(const gfx::Size& size) { size_ = size; }
+
+  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+
+  // Current transform matrix of the surface texture.
+  float current_matrix_[16];
+
+  // Current size of the surface texture.
+  gfx::Size size_;
+
+  // Whether the surface texture has been updated.
+  bool has_updated_;
+
+  GpuChannel* channel_;
+  int32 route_id_;
+  bool has_listener_;
+
+  base::WeakPtrFactory<StreamTextureImpl> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(StreamTextureImpl);
+};
+
+StreamTextureImpl::StreamTextureImpl(GpuChannel* channel,
+                                     int service_id,
+                                     int32 route_id)
     : surface_texture_(new gfx::SurfaceTexture(service_id)),
       size_(0, 0),
       has_updated_(false),
-      channel_(channel) {
+      channel_(channel),
+      route_id_(route_id),
+      has_listener_(false),
+      weak_factory_(this) {
   memset(current_matrix_, 0, sizeof(current_matrix_));
+  channel_->AddRoute(route_id, this);
 }
 
-StreamTextureManagerAndroid::StreamTextureAndroid::~StreamTextureAndroid() {
+StreamTextureImpl::~StreamTextureImpl() {
+  channel_->RemoveRoute(route_id_);
 }
 
-void StreamTextureManagerAndroid::StreamTextureAndroid::Update() {
+void StreamTextureImpl::Update() {
   surface_texture_->UpdateTexImage();
-  if (matrix_callback_.is_null())
+  if (!has_listener_)
     return;
 
   float mtx[16];
@@ -40,19 +93,48 @@ void StreamTextureManagerAndroid::StreamTextureAndroid::Update() {
 
     GpuStreamTextureMsg_MatrixChanged_Params params;
     memcpy(&params.m00, mtx, sizeof(mtx));
-    matrix_callback_.Run(params);
+    channel_->Send(new GpuStreamTextureMsg_MatrixChanged(route_id_, params));
   }
 }
 
-void StreamTextureManagerAndroid::StreamTextureAndroid::OnFrameAvailable(
-    int route_id) {
+void StreamTextureImpl::OnFrameAvailable() {
   has_updated_ = true;
-  channel_->Send(new GpuStreamTextureMsg_FrameAvailable(route_id));
+  DCHECK(has_listener_);
+  channel_->Send(new GpuStreamTextureMsg_FrameAvailable(route_id_));
 }
 
-gfx::Size StreamTextureManagerAndroid::StreamTextureAndroid::GetSize() {
+gfx::Size StreamTextureImpl::GetSize() {
   return size_;
 }
+
+bool StreamTextureImpl::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(StreamTextureImpl, message)
+    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_StartListening, OnStartListening)
+    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_EstablishPeer, OnEstablishPeer)
+    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_SetSize, OnSetSize)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  DCHECK(handled);
+  return handled;
+}
+
+void StreamTextureImpl::OnStartListening() {
+  DCHECK(!has_listener_);
+  has_listener_ = true;
+  surface_texture_->SetFrameAvailableCallback(base::Bind(
+      &StreamTextureImpl::OnFrameAvailable, weak_factory_.GetWeakPtr()));
+}
+
+void StreamTextureImpl::OnEstablishPeer(int32 primary_id, int32 secondary_id) {
+  base::ProcessHandle process = channel_->renderer_pid();
+
+  SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
+      process, surface_texture_, primary_id, secondary_id);
+}
+
+}  // anonymous namespace
 
 StreamTextureManagerAndroid::StreamTextureManagerAndroid(
     GpuChannel* channel)
@@ -71,10 +153,12 @@ GLuint StreamTextureManagerAndroid::CreateStreamTexture(uint32 service_id,
   // client_id: texture name given to the client in the renderer (unused here)
   // The return value here is what glCreateStreamTextureCHROMIUM() will return
   // to identify the stream (i.e. surface texture).
-  StreamTextureAndroid* texture = new StreamTextureAndroid(
-      channel_, service_id);
+  int32 route_id = channel_->GenerateRouteID();
+  StreamTextureImpl* texture =
+      new StreamTextureImpl(channel_, service_id, route_id);
   textures_from_service_id_.AddWithID(texture, service_id);
-  return textures_.Add(texture);
+  textures_.AddWithID(texture, route_id);
+  return route_id;
 }
 
 void StreamTextureManagerAndroid::DestroyStreamTexture(uint32 service_id) {
@@ -82,7 +166,7 @@ void StreamTextureManagerAndroid::DestroyStreamTexture(uint32 service_id) {
   if (texture) {
     textures_from_service_id_.Remove(service_id);
 
-    for (TextureMap::Iterator<StreamTextureAndroid> it(&textures_);
+    for (TextureMap::Iterator<gpu::StreamTexture> it(&textures_);
         !it.IsAtEnd(); it.Advance()) {
       if (it.GetCurrentValue() == texture) {
         textures_.Remove(it.GetCurrentKey());
@@ -95,52 +179,6 @@ void StreamTextureManagerAndroid::DestroyStreamTexture(uint32 service_id) {
 gpu::StreamTexture* StreamTextureManagerAndroid::LookupStreamTexture(
     uint32 service_id) {
   return textures_from_service_id_.Lookup(service_id);
-}
-
-void StreamTextureManagerAndroid::SendMatrixChanged(
-    int route_id,
-    const GpuStreamTextureMsg_MatrixChanged_Params& params) {
-  channel_->Send(new GpuStreamTextureMsg_MatrixChanged(route_id, params));
-}
-
-void StreamTextureManagerAndroid::RegisterStreamTextureProxy(
-    int32 stream_id, int32 route_id) {
-  StreamTextureAndroid* stream_texture = textures_.Lookup(stream_id);
-  if (stream_texture) {
-    // TODO(sievers): Post from binder thread to IO thread directly.
-    base::Closure frame_cb = base::Bind(
-          &StreamTextureAndroid::OnFrameAvailable,
-          stream_texture->AsWeakPtr(),
-          route_id);
-    StreamTextureAndroid::MatrixChangedCB matrix_cb = base::Bind(
-          &StreamTextureManagerAndroid::SendMatrixChanged,
-          base::Unretained(this),
-          route_id);
-    stream_texture->set_matrix_changed_callback(matrix_cb);
-    stream_texture->surface_texture()->SetFrameAvailableCallback(
-        frame_cb);
-  }
-}
-
-void StreamTextureManagerAndroid::EstablishStreamTexture(
-    int32 stream_id, int32 primary_id, int32 secondary_id) {
-  StreamTextureAndroid* stream_texture = textures_.Lookup(stream_id);
-  base::ProcessHandle process = channel_->renderer_pid();
-
-  if (stream_texture) {
-    SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
-        process,
-        stream_texture->surface_texture(),
-        primary_id,
-        secondary_id);
-  }
-}
-
-void StreamTextureManagerAndroid::SetStreamTextureSize(
-    int32 stream_id, const gfx::Size& size) {
-  StreamTextureAndroid* stream_texture = textures_.Lookup(stream_id);
-  if (stream_texture)
-    stream_texture->SetSize(size);
 }
 
 }  // namespace content

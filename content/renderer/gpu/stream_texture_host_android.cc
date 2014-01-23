@@ -12,8 +12,7 @@
 namespace content {
 
 StreamTextureHost::StreamTextureHost(GpuChannelHost* channel)
-    : route_id_(MSG_ROUTING_NONE),
-      stream_id_(0),
+    : stream_id_(0),
       listener_(NULL),
       channel_(channel),
       weak_ptr_factory_(this) {
@@ -21,17 +20,17 @@ StreamTextureHost::StreamTextureHost(GpuChannelHost* channel)
 }
 
 StreamTextureHost::~StreamTextureHost() {
-  if (channel_.get() && route_id_ != MSG_ROUTING_NONE)
-    channel_->RemoveRoute(route_id_);
+  if (channel_.get() && stream_id_)
+    channel_->RemoveRoute(stream_id_);
 }
 
-bool StreamTextureHost::Initialize(int32 stream_id) {
-  if (channel_.get() && stream_id) {
-    if (channel_->Send(new GpuChannelMsg_RegisterStreamTextureProxy(
-      stream_id, &route_id_))) {
-      stream_id_ = stream_id;
-      channel_->AddRoute(route_id_, weak_ptr_factory_.GetWeakPtr());
-    }
+bool StreamTextureHost::BindToCurrentThread(int32 stream_id,
+                                            Listener* listener) {
+  listener_ = listener;
+  if (channel_.get() && stream_id && !stream_id_) {
+    stream_id_ = stream_id;
+    channel_->AddRoute(stream_id, weak_ptr_factory_.GetWeakPtr());
+    channel_->Send(new GpuStreamTextureMsg_StartListening(stream_id));
     return true;
   }
 
@@ -51,12 +50,6 @@ bool StreamTextureHost::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void StreamTextureHost::EstablishPeer(int32 primary_id, int32 secondary_id) {
-  if (channel_.get()) {
-    channel_->Send(new GpuChannelMsg_EstablishStreamTexture(
-        stream_id_, primary_id, secondary_id));
-  }
-}
 void StreamTextureHost::OnChannelError() {
 }
 

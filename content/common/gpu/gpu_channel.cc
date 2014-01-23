@@ -706,8 +706,8 @@ void GpuChannel::DestroySoon() {
       FROM_HERE, base::Bind(&GpuChannel::OnDestroy, this));
 }
 
-int GpuChannel::GenerateRouteID() {
-  static int last_id = 0;
+int32 GpuChannel::GenerateRouteID() {
+  static int32 last_id = 0;
   return ++last_id;
 }
 
@@ -764,14 +764,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnDevToolsStartEventsRecording)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DevToolsStopEventsRecording,
                         OnDevToolsStopEventsRecording)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterStreamTextureProxy,
-                        OnRegisterStreamTextureProxy)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_EstablishStreamTexture,
-                        OnEstablishStreamTexture)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_SetStreamTextureSize,
-                        OnSetStreamTextureSize)
-#endif
     IPC_MESSAGE_HANDLER(
         GpuChannelMsg_CollectRenderingStatsForSurface,
         OnCollectRenderingStatsForSurface)
@@ -932,28 +924,6 @@ void GpuChannel::OnDevToolsStartEventsRecording(int32* route_id) {
 void GpuChannel::OnDevToolsStopEventsRecording() {
   devtools_gpu_agent_->StopEventsRecording();
 }
-
-#if defined(OS_ANDROID)
-void GpuChannel::OnRegisterStreamTextureProxy(
-    int32 stream_id, int32* route_id) {
-  // Note that route_id is only used for notifications sent out from here.
-  // StreamTextureManager owns all texture objects and for incoming messages
-  // it finds the correct object based on stream_id.
-  *route_id = GenerateRouteID();
-  stream_texture_manager_->RegisterStreamTextureProxy(stream_id, *route_id);
-}
-
-void GpuChannel::OnEstablishStreamTexture(
-    int32 stream_id, int32 primary_id, int32 secondary_id) {
-  stream_texture_manager_->EstablishStreamTexture(
-      stream_id, primary_id, secondary_id);
-}
-
-void GpuChannel::OnSetStreamTextureSize(
-    int32 stream_id, const gfx::Size& size) {
-  stream_texture_manager_->SetStreamTextureSize(stream_id, size);
-}
-#endif
 
 void GpuChannel::OnCollectRenderingStatsForSurface(
     int32 surface_id, GpuRenderingStats* stats) {

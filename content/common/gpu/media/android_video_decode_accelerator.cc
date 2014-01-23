@@ -14,6 +14,7 @@
 #include "media/base/limits.h"
 #include "media/video/picture.h"
 #include "ui/gl/android/scoped_java_surface.h"
+#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {

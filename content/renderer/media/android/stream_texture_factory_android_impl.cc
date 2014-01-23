@@ -42,9 +42,7 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
 };
 
 StreamTextureProxyImpl::StreamTextureProxyImpl(StreamTextureHost* host)
-    : host_(host), client_(NULL) {
-  host->SetListener(this);
-}
+    : host_(host), client_(NULL) {}
 
 StreamTextureProxyImpl::~StreamTextureProxyImpl() {}
 
@@ -63,7 +61,7 @@ void StreamTextureProxyImpl::SetClient(cc::VideoFrameProvider::Client* client) {
 
 void StreamTextureProxyImpl::BindToCurrentThread(int stream_id) {
   loop_ = base::MessageLoopProxy::current();
-  host_->Initialize(stream_id);
+  host_->BindToCurrentThread(stream_id, this);
 }
 
 void StreamTextureProxyImpl::OnFrameAvailable() {
@@ -101,7 +99,7 @@ StreamTextureProxy* StreamTextureFactoryImpl::CreateProxy() {
 void StreamTextureFactoryImpl::EstablishPeer(int32 stream_id, int player_id) {
   DCHECK(channel_.get());
   channel_->Send(
-      new GpuChannelMsg_EstablishStreamTexture(stream_id, view_id_, player_id));
+      new GpuStreamTextureMsg_EstablishPeer(stream_id, view_id_, player_id));
 }
 
 unsigned StreamTextureFactoryImpl::CreateStreamTexture(
@@ -135,7 +133,7 @@ void StreamTextureFactoryImpl::DestroyStreamTexture(unsigned texture_id) {
 
 void StreamTextureFactoryImpl::SetStreamTextureSize(
     int32 stream_id, const gfx::Size& size) {
-  channel_->Send(new GpuChannelMsg_SetStreamTextureSize(stream_id, size));
+  channel_->Send(new GpuStreamTextureMsg_SetSize(stream_id, size));
 }
 
 gpu::gles2::GLES2Interface* StreamTextureFactoryImpl::ContextGL() {
