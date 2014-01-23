@@ -11,7 +11,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
-
 namespace {
 
 static const int kTimeLimitMillis = 2000;
@@ -51,9 +50,7 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
     NOTREACHED();
     return RGBA_8888;
   }
-  virtual void OnRasterTasksFinished() OVERRIDE {
-    NOTREACHED();
-  }
+  virtual void OnRasterTasksFinished() OVERRIDE { NOTREACHED(); }
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {
     NOTREACHED();
   }
@@ -63,7 +60,8 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
 
     TaskMap perf_tasks;
     for (RasterTaskVector::const_iterator it = raster_tasks().begin();
-         it != raster_tasks().end(); ++it) {
+         it != raster_tasks().end();
+         ++it) {
       internal::RasterWorkerPoolTask* task = it->get();
 
       scoped_refptr<internal::WorkerPoolTask> new_perf_task(
@@ -91,12 +89,11 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
     scoped_refptr<internal::WorkerPoolTask> raster_finished_task(
         CreateRasterFinishedTask());
     internal::GraphNode* raster_finished_node =
-        CreateGraphNodeForTask(raster_finished_task.get(),
-                               priority++,
-                               &graph);
+        CreateGraphNodeForTask(raster_finished_task.get(), priority++, &graph);
 
     for (RasterTaskVector::const_iterator it = raster_tasks().begin();
-         it != raster_tasks().end(); ++it) {
+         it != raster_tasks().end();
+         ++it) {
       internal::RasterWorkerPoolTask* task = it->get();
 
       TaskMap::iterator perf_it = perf_tasks_.find(task);
@@ -104,11 +101,8 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
       if (perf_it != perf_tasks_.end()) {
         internal::WorkerPoolTask* perf_task = perf_it->second.get();
 
-        internal::GraphNode* perf_node =
-            CreateGraphNodeForRasterTask(perf_task,
-                                         task->dependencies(),
-                                         priority++,
-                                         &graph);
+        internal::GraphNode* perf_node = CreateGraphNodeForRasterTask(
+            perf_task, task->dependencies(), priority++, &graph);
 
         if (IsRasterTaskRequiredForActivation(task)) {
           raster_required_for_activation_finished_node->add_dependency();
@@ -139,9 +133,7 @@ class RasterWorkerPoolPerfTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     raster_worker_pool_ = PerfRasterWorkerPool::Create();
   }
-  virtual void TearDown() OVERRIDE {
-    raster_worker_pool_->Shutdown();
-  }
+  virtual void TearDown() OVERRIDE { raster_worker_pool_->Shutdown(); }
 
   void CreateTasks(RasterWorkerPool::RasterTask::Queue* tasks,
                    unsigned num_raster_tasks,
@@ -150,19 +142,18 @@ class RasterWorkerPoolPerfTest : public testing::Test {
     TaskVector image_decode_tasks;
 
     for (unsigned i = 0; i < num_image_decode_tasks; ++i) {
-      image_decode_tasks.push_back(
-          RasterWorkerPool::CreateImageDecodeTask(
-              NULL,
-              0,
-              NULL,
-              base::Bind(
-                  &RasterWorkerPoolPerfTest::OnImageDecodeTaskCompleted)));
+      image_decode_tasks.push_back(RasterWorkerPool::CreateImageDecodeTask(
+          NULL,
+          0,
+          NULL,
+          base::Bind(&RasterWorkerPoolPerfTest::OnImageDecodeTaskCompleted)));
     }
 
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
       RasterWorkerPool::Task::Set decode_tasks;
       for (TaskVector::iterator it = image_decode_tasks.begin();
-           it != image_decode_tasks.end(); ++it)
+           it != image_decode_tasks.end();
+           ++it)
         decode_tasks.Insert(*it);
 
       tasks->Append(
@@ -196,8 +187,12 @@ class RasterWorkerPoolPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("build_task_graph", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PrintResult("build_task_graph",
+                           "",
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
   }
 
  protected:
@@ -225,5 +220,4 @@ TEST_F(RasterWorkerPoolPerfTest, BuildTaskGraph) {
 }
 
 }  // namespace
-
 }  // namespace cc

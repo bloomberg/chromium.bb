@@ -31,11 +31,10 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                               bool was_canceled,
                               RasterThread raster_thread)> Reply;
 
-  TestRasterWorkerPoolTaskImpl(
-      const Resource* resource,
-      const Reply& reply,
-      internal::Task::Vector* dependencies,
-      bool use_gpu_rasterization)
+  TestRasterWorkerPoolTaskImpl(const Resource* resource,
+                               const Reply& reply,
+                               internal::Task::Vector* dependencies,
+                               bool use_gpu_rasterization)
       : internal::RasterWorkerPoolTask(resource,
                                        dependencies,
                                        use_gpu_rasterization),
@@ -104,7 +103,7 @@ class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
 };
 
 class RasterWorkerPoolTest : public testing::Test,
-                             public RasterWorkerPoolClient  {
+                             public RasterWorkerPoolClient {
  public:
   RasterWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
@@ -115,11 +114,9 @@ class RasterWorkerPoolTest : public testing::Test,
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), NULL, 0, false, 1).Pass();
+                             output_surface_.get(), NULL, 0, false, 1).Pass();
   }
-  virtual ~RasterWorkerPoolTest() {
-    resource_provider_.reset();
-  }
+  virtual ~RasterWorkerPoolTest() { resource_provider_.reset(); }
 
   // Overridden from testing::Test:
   virtual void TearDown() OVERRIDE {
@@ -130,8 +127,8 @@ class RasterWorkerPoolTest : public testing::Test,
   }
 
   // Overriden from RasterWorkerPoolClient:
-  virtual bool ShouldForceTasksRequiredForActivationToComplete() const
-      OVERRIDE {
+  virtual bool ShouldForceTasksRequiredForActivationToComplete()
+      const OVERRIDE {
     return false;
   }
   virtual void DidFinishRunningTasks() OVERRIDE {}
@@ -144,20 +141,17 @@ class RasterWorkerPoolTest : public testing::Test,
     return resource_provider_.get();
   }
 
-  RasterWorkerPool* worker_pool() {
-    return raster_worker_pool_.get();
-  }
+  RasterWorkerPool* worker_pool() { return raster_worker_pool_.get(); }
 
   void RunTest(bool use_map_image) {
     if (use_map_image) {
       raster_worker_pool_ = ImageRasterWorkerPool::Create(
           resource_provider(), context_provider_.get(), GL_TEXTURE_2D);
     } else {
-      raster_worker_pool_ =
-          PixelBufferRasterWorkerPool::Create(
-              resource_provider(),
-              context_provider_.get(),
-              std::numeric_limits<size_t>::max());
+      raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
+          resource_provider(),
+          context_provider_.get(),
+          std::numeric_limits<size_t>::max());
     }
 
     raster_worker_pool_->SetClient(this);
@@ -167,8 +161,8 @@ class RasterWorkerPoolTest : public testing::Test,
     ScheduleCheckForCompletedTasks();
 
     if (timeout_seconds_) {
-      timeout_.Reset(base::Bind(&RasterWorkerPoolTest::OnTimeout,
-                                base::Unretained(this)));
+      timeout_.Reset(
+          base::Bind(&RasterWorkerPoolTest::OnTimeout, base::Unretained(this)));
       base::MessageLoopProxy::current()->PostDelayedTask(
           FROM_HERE,
           timeout_.callback(),
@@ -187,16 +181,15 @@ class RasterWorkerPoolTest : public testing::Test,
     AfterTest();
   }
 
-  void EndTest() {
-    base::MessageLoop::current()->Quit();
-  }
+  void EndTest() { base::MessageLoop::current()->Quit(); }
 
   void ScheduleTasks() {
     RasterWorkerPool::RasterTask::Queue tasks;
 
     for (std::vector<RasterWorkerPool::RasterTask>::iterator it =
              tasks_.begin();
-         it != tasks_.end(); ++it)
+         it != tasks_.end();
+         ++it)
       tasks.Append(*it, false);
 
     worker_pool()->ScheduleTasks(&tasks);
@@ -286,18 +279,14 @@ class RasterWorkerPoolTest : public testing::Test,
 
 namespace {
 
-#define PIXEL_BUFFER_TEST_F(TEST_FIXTURE_NAME)                  \
-  TEST_F(TEST_FIXTURE_NAME, RunPixelBuffer) {                   \
-    RunTest(false);                                             \
-  }
+#define PIXEL_BUFFER_TEST_F(TEST_FIXTURE_NAME) \
+  TEST_F(TEST_FIXTURE_NAME, RunPixelBuffer) { RunTest(false); }
 
-#define IMAGE_TEST_F(TEST_FIXTURE_NAME)                         \
-  TEST_F(TEST_FIXTURE_NAME, RunImage) {                         \
-    RunTest(true);                                              \
-  }
+#define IMAGE_TEST_F(TEST_FIXTURE_NAME) \
+  TEST_F(TEST_FIXTURE_NAME, RunImage) { RunTest(true); }
 
-#define PIXEL_BUFFER_AND_IMAGE_TEST_F(TEST_FIXTURE_NAME)        \
-  PIXEL_BUFFER_TEST_F(TEST_FIXTURE_NAME);                       \
+#define PIXEL_BUFFER_AND_IMAGE_TEST_F(TEST_FIXTURE_NAME) \
+  PIXEL_BUFFER_TEST_F(TEST_FIXTURE_NAME);                \
   IMAGE_TEST_F(TEST_FIXTURE_NAME)
 
 class RasterWorkerPoolTestSofwareRaster : public RasterWorkerPoolTest {
@@ -353,9 +342,7 @@ class RasterWorkerPoolTestGpuRaster : public RasterWorkerPoolTest {
     ScheduleTasks();
   }
 
-  virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(1u, tasks_.size());
-  }
+  virtual void AfterTest() OVERRIDE { EXPECT_EQ(1u, tasks_.size()); }
 };
 PIXEL_BUFFER_AND_IMAGE_TEST_F(RasterWorkerPoolTestGpuRaster);
 
@@ -388,7 +375,7 @@ class RasterWorkerPoolTestHybridRaster : public RasterWorkerPoolTest {
   // Overridden from RasterWorkerPoolTest:
   virtual void BeginTest() OVERRIDE {
     AppendTask(0u, false);  // Software raster.
-    AppendTask(1u, true);  // GPU raster.
+    AppendTask(1u, true);   // GPU raster.
     ScheduleTasks();
   }
 
@@ -410,8 +397,7 @@ class RasterWorkerPoolTestFailedMapResource : public RasterWorkerPoolTest {
       bool was_canceled,
       TestRasterWorkerPoolTaskImpl::RasterThread raster_thread) OVERRIDE {
     EXPECT_FALSE(was_canceled);
-    EXPECT_EQ(TestRasterWorkerPoolTaskImpl::RASTER_THREAD_NONE,
-              raster_thread);
+    EXPECT_EQ(TestRasterWorkerPoolTaskImpl::RASTER_THREAD_NONE, raster_thread);
     EndTest();
   }
 
@@ -457,9 +443,7 @@ class RasterWorkerPoolTestFalseThrottling : public RasterWorkerPoolTest {
 
   virtual void AfterTest() OVERRIDE {}
 
-  virtual void DidFinishRunningTasks() OVERRIDE {
-    EndTest();
-  }
+  virtual void DidFinishRunningTasks() OVERRIDE { EndTest(); }
 
   base::Lock lock_;
 };
@@ -467,5 +451,4 @@ class RasterWorkerPoolTestFalseThrottling : public RasterWorkerPoolTest {
 PIXEL_BUFFER_AND_IMAGE_TEST_F(RasterWorkerPoolTestFalseThrottling);
 
 }  // namespace
-
 }  // namespace cc
