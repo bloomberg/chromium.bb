@@ -33,6 +33,5 @@
     "https://www-googleapis-test.sandbox.google.com/*",
     "https://www.googleapis.com/*"
   ],
-  "display_in_launcher": false,
   "display_in_new_tab_page": false
 }
