@@ -398,6 +398,7 @@ TabDragController::TabDragController()
       is_dragging_new_browser_(false),
       was_source_maximized_(false),
       was_source_fullscreen_(false),
+      did_restore_window_(false),
       end_run_loop_behavior_(END_RUN_LOOP_STOP_DRAGGING),
       waiting_for_run_loop_to_exit_(false),
       tab_strip_to_attach_to_after_exit_(NULL),
@@ -532,9 +533,8 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     Attach(source_tabstrip_, gfx::Point());
     if (detach_into_browser_ && static_cast<int>(drag_data_.size()) ==
         GetModel(source_tabstrip_)->count()) {
-#if defined(USE_ASH)
-      if (host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH &&
-          (was_source_maximized_ || was_source_fullscreen_)) {
+      if (was_source_maximized_ || was_source_fullscreen_) {
+        did_restore_window_ = true;
         // When all tabs in a maximized browser are dragged the browser gets
         // restored during the drag and maximized back when the drag ends.
         views::Widget* widget = GetAttachedBrowserWidget();
@@ -554,9 +554,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
                                          point_in_screen,
                                          &drag_bounds);
         widget->SetVisibilityChangedAnimationsEnabled(true);
-        is_dragging_new_browser_ = true;
       }
-#endif
       RunMoveLoop(GetWindowOffset(point_in_screen));
       return;
     }
@@ -877,6 +875,7 @@ void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
 
   if (tab_strip_changed) {
     is_dragging_new_browser_ = false;
+    did_restore_window_ = false;
     if (detach_into_browser_ &&
         DragBrowserToNewTabStrip(target_tabstrip, point_in_screen) ==
         DRAG_BROWSER_RESULT_STOP) {
@@ -1812,6 +1811,8 @@ void TabDragController::RevertDrag() {
   bool restore_frame = !detach_into_browser_ &&
                        attached_tabstrip_ != source_tabstrip_;
   if (attached_tabstrip_) {
+    if (did_restore_window_)
+      MaximizeAttachedWindow();
     if (attached_tabstrip_ == source_tabstrip_) {
       source_tabstrip_->StoppedDraggingTabs(
           tabs, initial_tab_positions_, move_behavior_ == MOVE_VISIBILE_TABS,
@@ -1906,23 +1907,15 @@ void TabDragController::CompleteDrag() {
   DCHECK(started_drag_);
 
   if (attached_tabstrip_) {
-    if (is_dragging_new_browser_) {
+    if (is_dragging_new_browser_ || did_restore_window_) {
       if (IsDockedOrSnapped(attached_tabstrip_)) {
-        DCHECK_EQ(host_desktop_type_, chrome::HOST_DESKTOP_TYPE_ASH);
         was_source_maximized_ = false;
         was_source_fullscreen_ = false;
       }
+
       // If source window was maximized - maximize the new window as well.
       if (was_source_maximized_ || was_source_fullscreen_)
-        GetAttachedBrowserWidget()->Maximize();
-#if defined(USE_ASH)
-      if (was_source_fullscreen_ &&
-          host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
-        // In fullscreen mode it is only possible to get here if the source
-        // was in "immersive fullscreen" mode, so toggle it back on.
-        ash::accelerators::ToggleFullscreen();
-      }
-#endif
+        MaximizeAttachedWindow();
     }
     attached_tabstrip_->StoppedDraggingTabs(
         GetTabsMatchingDraggedContents(attached_tabstrip_),
@@ -2011,6 +2004,18 @@ void TabDragController::CompleteDrag() {
   }
 
   CleanUpHiddenFrame();
+}
+
+void TabDragController::MaximizeAttachedWindow() {
+  GetAttachedBrowserWidget()->Maximize();
+#if defined(USE_ASH)
+  if (was_source_fullscreen_ &&
+      host_desktop_type_ == chrome::HOST_DESKTOP_TYPE_ASH) {
+    // In fullscreen mode it is only possible to get here if the source
+    // was in "immersive fullscreen" mode, so toggle it back on.
+    ash::accelerators::ToggleFullscreen();
+  }
+#endif
 }
 
 void TabDragController::ResetDelegates() {

@@ -414,6 +414,9 @@ class TabDragController : public content::WebContentsDelegate,
   // Finishes a succesful drag operation.
   void CompleteDrag();
 
+  // Maximizes the attached window.
+  void MaximizeAttachedWindow();
+
   // Resets the delegates of the WebContents.
   void ResetDelegates();
 
@@ -628,6 +631,10 @@ class TabDragController : public content::WebContentsDelegate,
 
   // True if |source_tabstrip_| was in immersive fullscreen before the drag.
   bool was_source_fullscreen_;
+
+  // True if the initial drag resulted in restoring the window (because it was
+  // maximized).
+  bool did_restore_window_;
 
   EndRunLoopBehavior end_run_loop_behavior_;
 

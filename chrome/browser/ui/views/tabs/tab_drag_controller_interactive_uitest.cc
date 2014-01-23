@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 #define MAYBE_DetachToOwnWindowFromMaximizedWindow \
   DetachToOwnWindowFromMaximizedWindow
 #endif
-// Drags from browser to separate window and releases mouse.
+// Drags from browser to a separate window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        MAYBE_DetachToOwnWindowFromMaximizedWindow) {
   // Maximize the initial browser window.
