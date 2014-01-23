@@ -121,6 +121,10 @@ bool AttemptFastNotify(const CommandLine& command_line) {
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
   startup_metric_utils::RecordExeMainEntryTime();
+
+  // Signal Chrome Elf that Chrome has begun to start.
+  SignalChromeElf();
+
   // Initialize the commandline singleton from the environment.
   CommandLine::Init(0, NULL);
   // The exit manager is in charge of calling the dtors of singletons.
@@ -130,9 +134,6 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 
   if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
     return 0;
-
-  // Signal Chrome Elf that Chrome has begun to start.
-  SignalChromeElf();
 
   MetroDriver metro_driver;
   if (metro_driver.in_metro_mode())
