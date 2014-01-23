@@ -225,7 +225,7 @@ void FrameView::reset()
     m_delayedLayout = false;
     m_doFullRepaint = true;
     m_layoutSchedulingEnabled = true;
-    m_inLayout = false;
+    m_inPerformLayout = false;
     m_doingPreLayoutStyleUpdate = false;
     m_inSynchronousPostLayout = false;
     m_layoutCount = 0;
@@ -287,7 +287,7 @@ void FrameView::init()
 
 void FrameView::prepareForDetach()
 {
-    RELEASE_ASSERT(!isInLayout());
+    RELEASE_ASSERT(!isInPerformLayout());
 
     if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
         scrollAnimator->cancelAnimations();
@@ -819,7 +819,11 @@ void FrameView::performPreLayoutTasks()
 
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
 {
+    ASSERT(!m_inPerformLayout);
+
     TRACE_EVENT0("webkit", "FrameView::performLayout");
+
+    TemporaryChange<bool> changeInPerformLayout(m_inPerformLayout, true);
 
     // performLayout is the actual guts of layout().
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
@@ -833,8 +837,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
             view->pushLayoutState(rootForThisLayout);
         }
         LayoutStateDisabler layoutStateDisabler(disableLayoutState ? rootForThisLayout->view() : 0);
-
-        m_inLayout = true;
 
         forceLayoutParentViewIfNeeded();
 
@@ -855,8 +857,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
     }
-
-    m_inLayout = false;
 
     if (inSubtreeLayout)
         rootForThisLayout->view()->popLayoutState(rootForThisLayout);
@@ -899,7 +899,7 @@ void FrameView::layout(bool allowSubtree)
     ASSERT(m_frame->view() == this);
     ASSERT(m_frame->page());
 
-    if (m_inLayout)
+    if (m_inPerformLayout)
         return;
 
     if (!m_frame->document()->isActive())

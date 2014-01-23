@@ -1750,7 +1750,7 @@ void Document::recalcStyle(StyleRecalcChange change)
 void Document::updateStyleIfNeeded()
 {
     ASSERT(isMainThread());
-    ASSERT(!view() || (!view()->isInLayout() && !view()->isPainting()));
+    ASSERT(!view() || (!view()->isInPerformLayout() && !view()->isPainting()));
 
     if (!needsStyleRecalc() && !childNeedsStyleRecalc() && !childNeedsDistributionRecalc() && m_useElementsNeedingUpdate.isEmpty())
         return;
@@ -1778,7 +1778,7 @@ void Document::updateLayout()
     ASSERT(isMainThread());
 
     RefPtr<FrameView> frameView = view();
-    if (frameView && frameView->isInLayout()) {
+    if (frameView && frameView->isInPerformLayout()) {
         // View layout should not be re-entrant.
         ASSERT_NOT_REACHED();
         return;

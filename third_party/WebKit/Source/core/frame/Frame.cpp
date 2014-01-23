@@ -354,7 +354,7 @@ void Frame::dispatchVisibilityStateChangeEvent()
 void Frame::willDetachFrameHost()
 {
     // We should never be detatching the page during a Layout.
-    RELEASE_ASSERT(!m_view || !m_view->isInLayout());
+    RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
 
     if (Frame* parent = tree().parent())
         parent->loader().checkLoadComplete();
@@ -378,7 +378,7 @@ void Frame::willDetachFrameHost()
 void Frame::detachFromFrameHost()
 {
     // We should never be detatching the page during a Layout.
-    RELEASE_ASSERT(!m_view || !m_view->isInLayout());
+    RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
     m_host = 0;
 }
 

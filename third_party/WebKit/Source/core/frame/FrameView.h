@@ -90,7 +90,7 @@ public:
     void scheduleRelayoutOfSubtree(RenderObject*);
     void unscheduleRelayout();
     bool layoutPending() const;
-    bool isInLayout() const { return m_inLayout; }
+    bool isInPerformLayout() const { return m_inPerformLayout; }
 
     RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
     void clearLayoutRoot() { m_layoutRoot = 0; }
@@ -436,7 +436,7 @@ private:
     RenderObject* m_layoutRoot;
 
     bool m_layoutSchedulingEnabled;
-    bool m_inLayout;
+    bool m_inPerformLayout;
     bool m_doingPreLayoutStyleUpdate;
     bool m_inSynchronousPostLayout;
     int m_layoutCount;

@@ -3871,7 +3871,7 @@ void RenderLayer::filterNeedsRepaint()
 {
     toElement(renderer()->node())->scheduleLayerUpdate();
     if (renderer()->view()) {
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && renderer()->frameView()->isInLayout())
+        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && renderer()->frameView()->isInPerformLayout())
             renderer()->setShouldDoFullRepaintAfterLayout(true);
         else
             renderer()->repaint();
