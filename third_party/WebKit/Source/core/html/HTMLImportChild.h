@@ -73,9 +73,12 @@ public:
     virtual bool isDone() const OVERRIDE;
     virtual bool hasLoader() const OVERRIDE;
     virtual bool ownsLoader() const OVERRIDE;
-    virtual void didUnblockFromCreatingDocument() OVERRIDE;
-    virtual void didBecomeReady() OVERRIDE;
     virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const OVERRIDE FINAL { return m_customElementMicrotaskStep; }
+    virtual void stateDidChange() OVERRIDE;
+
+#if !defined(NDEBUG)
+    virtual void showThis() OVERRIDE;
+#endif
 
     void setClient(HTMLImportChildClient*);
     void clearClient();

@@ -2286,6 +2286,8 @@
             'html/HTMLImportLoaderClient.h',
             'html/HTMLImportResourceOwner.cpp',
             'html/HTMLImportResourceOwner.h',
+            'html/HTMLImportStateResolver.cpp',
+            'html/HTMLImportStateResolver.h',
             'html/HTMLInputElement.cpp',
             'html/HTMLKeygenElement.cpp',
             'html/HTMLKeygenElement.h',

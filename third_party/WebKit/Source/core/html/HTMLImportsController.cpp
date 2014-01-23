@@ -48,8 +48,9 @@ void HTMLImportsController::provideTo(Document* master)
 
 HTMLImportsController::HTMLImportsController(Document* master)
     : m_master(master)
-    , m_unblockTimer(this, &HTMLImportsController::unblockTimerFired)
+    , m_recalcTimer(this, &HTMLImportsController::recalcTimerFired)
 {
+    recalcTreeState(this); // This recomputes initial state.
 }
 
 HTMLImportsController::~HTMLImportsController()
@@ -107,7 +108,7 @@ HTMLImportChild* HTMLImportsController::findLinkFor(const KURL& url, HTMLImport*
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
         HTMLImportChild* candidate = m_imports[i].get();
-        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && !candidate->isBlockedFromCreatingDocument())
+        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && candidate->hasLoader())
             return candidate;
     }
 
@@ -139,10 +140,6 @@ void HTMLImportsController::wasDetachedFromDocument()
     clear();
 }
 
-void HTMLImportsController::didFinishParsing()
-{
-}
-
 bool HTMLImportsController::hasLoader() const
 {
     return true;
@@ -153,24 +150,19 @@ bool HTMLImportsController::isDone() const
     return !m_master->parsing();
 }
 
-void HTMLImportsController::blockerGone()
+void HTMLImportsController::scheduleRecalcState()
 {
-    scheduleUnblock();
-}
-
-void HTMLImportsController::scheduleUnblock()
-{
-    if (m_unblockTimer.isActive())
+    if (m_recalcTimer.isActive())
         return;
-    m_unblockTimer.startOneShot(0);
+    m_recalcTimer.startOneShot(0);
 }
 
-void HTMLImportsController::unblockTimerFired(Timer<HTMLImportsController>*)
+void HTMLImportsController::recalcTimerFired(Timer<HTMLImportsController>*)
 {
     do {
-        m_unblockTimer.stop();
-        HTMLImport::unblock(this);
-    } while (m_unblockTimer.isActive());
+        m_recalcTimer.stop();
+        HTMLImport::recalcTreeState(this);
+    } while (m_recalcTimer.isActive());
 }
 
 } // namespace WebCore

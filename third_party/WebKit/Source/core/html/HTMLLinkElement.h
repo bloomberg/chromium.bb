@@ -148,6 +148,7 @@ public:
 
     void dispatchPendingEvent(LinkEventSender*);
     void scheduleEvent();
+    void dispatchEventImmediately();
     static void dispatchPendingLoadEvents();
 
     // From LinkLoaderClient

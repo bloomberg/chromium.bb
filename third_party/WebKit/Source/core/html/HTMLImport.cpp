@@ -32,6 +32,7 @@
 #include "core/html/HTMLImport.h"
 
 #include "core/dom/Document.h"
+#include "core/html/HTMLImportStateResolver.h"
 
 namespace WebCore {
 
@@ -52,154 +53,71 @@ HTMLImportsController* HTMLImport::controller()
 
 void HTMLImport::appendChild(HTMLImport* child)
 {
-    if (isBlockedFromRunningScript())
-        child->blockFromRunningScript();
     TreeNode<HTMLImport>::appendChild(child);
+
+    // This prevents HTML parser from going beyond the
+    // blockage line before the precise state is computed by recalcState().
     if (child->isCreatedByParser())
-        blockPredecessorsOf(child);
+        forceBlock();
+
+    stateWillChange();
 }
 
-bool HTMLImport::isBlockedFromCreatingDocument() const
+void HTMLImport::stateDidChange()
 {
-    if (hasLoader())
-        return false;
-    return previous() && previous()->isBlockingFollowersFromCreatingDocument();
+    if (!isStateBlockedFromRunningScript()) {
+        if (Document* document = this->document())
+            document->didLoadAllImports();
+    }
 }
 
-bool HTMLImport::isBlockedFromRunningScriptByPredecessors() const
+void HTMLImport::recalcState()
 {
-    HTMLImport* parent = this->parent();
-    if (!parent)
-        return false;
+    ASSERT(!isStateCacheValid());
+    m_cachedState = HTMLImportStateResolver(this).resolve();
+}
 
-    for (HTMLImport* sibling = parent->firstChild(); sibling; sibling = sibling->next()) {
-        if (sibling == this)
-            break;
-        if (sibling->isBlockingFollowersFromRunningScript())
-            return true;
+void HTMLImport::forceBlock()
+{
+    ASSERT(m_cachedState != Ready);
+    m_cachedState = BlockedFromCreatingDocument;
+}
+
+void HTMLImport::stateWillChange()
+{
+    root()->scheduleRecalcState();
+}
+
+void HTMLImport::recalcTreeState(HTMLImport* root)
+{
+    ASSERT(root == root->root());
+
+    HashMap<HTMLImport*, State> snapshot;
+    Vector<HTMLImport*> updated;
+
+    for (HTMLImport* i = root; i; i = traverseNext(i)) {
+        snapshot.add(i, i->state());
+        i->invalidateCachedState();
     }
 
-    return false;
-}
+    // The post-visit DFS order matters here because
+    // HTMLImportStateResolver in recalcState() Depends on
+    // |m_cachedState| of its children and precedents of ancestors.
+    // Accidental cycle dependency of state computation is prevented
+    // by invalidateCachedState() and isStateCacheValid() check.
+    for (HTMLImport* i = traverseFirstPostOrder(root); i; i = traverseNextPostOrder(i)) {
+        i->recalcState();
 
-void HTMLImport::waitLoaderOrChildren()
-{
-    if (WaitingLoaderOrChildren < m_state)
-        m_state = WaitingLoaderOrChildren;
-}
-
-void HTMLImport::blockFromRunningScript()
-{
-    if (BlockedFromRunningScript < m_state)
-        m_state = BlockedFromRunningScript;
-}
-
-void HTMLImport::becomeReady()
-{
-    if (!isBlocked())
-        return;
-    m_state = Ready;
-    didBecomeReady();
-}
-
-void HTMLImport::unblockFromRunningScript()
-{
-    if (!isBlockedFromRunningScript())
-        return;
-    m_state = WaitingLoaderOrChildren;
-    didUnblockFromRunningScript();
-}
-
-void HTMLImport::didUnblockFromRunningScript()
-{
-    ASSERT(!isBlockedFromCreatingDocument());
-    ASSERT(!isBlockedFromRunningScript());
-    if (Document* document = this->document())
-        document->didLoadAllImports();
-}
-
-void HTMLImport::didBecomeReady()
-{
-    ASSERT(isDone());
-}
-
-void HTMLImport::didUnblockFromCreatingDocument()
-{
-    ASSERT(!isBlockedFromCreatingDocument());
-}
-
-void HTMLImport::loaderWasResolved()
-{
-    unblockFromRunningScript();
-}
-
-void HTMLImport::loaderDidFinish()
-{
-    if (m_state == WaitingLoaderOrChildren)
-        becomeReady();
-    root()->blockerGone();
-}
-
-inline bool HTMLImport::isBlockingFollowersFromRunningScript() const
-{
-    if (!isCreatedByParser())
-        return false;
-    if (isBlockedFromRunningScript())
-        return true;
-    // Blocking here can result dead lock if the node doesn't own loader and has shared loader.
-    // Because the shared loader can point its ascendant and forms a cycle.
-    if (!ownsLoader())
-        return false;
-    return !isDone();
-}
-
-inline bool HTMLImport::isBlockingFollowersFromCreatingDocument() const
-{
-    return !isDone();
-}
-
-bool HTMLImport::unblock(HTMLImport* import)
-{
-    ASSERT(!import->isBlockedFromRunningScriptByPredecessors());
-
-    if (import->isBlockedFromCreatingDocument())
-        return false;
-    import->didUnblockFromCreatingDocument();
-
-    for (HTMLImport* child = import->firstChild(); child; child = child->next()) {
-        if (!unblock(child))
-            return false;
+        State newState = i->state();
+        State oldState = snapshot.get(i);
+        // Once the state reaches Ready, it shouldn't go back.
+        ASSERT(oldState != Ready || oldState <= newState);
+        if (newState != oldState)
+            updated.append(i);
     }
 
-    import->unblockFromRunningScript();
-    if (import->isDone())
-        import->becomeReady();
-
-    return !import->isBlockingFollowersFromRunningScript();
-}
-
-void HTMLImport::block(HTMLImport* import)
-{
-    for (HTMLImport* child = import; child; child = traverseNext(child, import))
-        child->blockFromRunningScript();
-}
-
-void HTMLImport::blockPredecessorsOf(HTMLImport* child)
-{
-    ASSERT(child->parent() == this);
-
-    for (HTMLImport* sibling = lastChild(); sibling; sibling = sibling->previous()) {
-        if (sibling == child)
-            break;
-        HTMLImport::block(sibling);
-    }
-
-    this->blockFromRunningScript();
-
-    if (HTMLImport* parent = this->parent()) {
-        if (isCreatedByParser())
-            parent->blockPredecessorsOf(this);
-    }
+    for (size_t i = 0; i < updated.size(); ++i)
+        updated[i]->stateDidChange();
 }
 
 bool HTMLImport::isMaster(Document* document)
@@ -208,5 +126,29 @@ bool HTMLImport::isMaster(Document* document)
         return true;
     return (document->import()->master() == document);
 }
+
+#if !defined(NDEBUG)
+void HTMLImport::show()
+{
+    root()->showTree(this, 0);
+}
+
+void HTMLImport::showTree(HTMLImport* highlight, unsigned depth)
+{
+    for (unsigned i = 0; i < depth*4; ++i)
+        fprintf(stderr, " ");
+
+    fprintf(stderr, "%s", this == highlight ? "*" : " ");
+    showThis();
+    fprintf(stderr, "\n");
+    for (HTMLImport* child = firstChild(); child; child = child->next())
+        child->showTree(highlight, depth + 1);
+}
+
+void HTMLImport::showThis()
+{
+    fprintf(stderr, "%p state=%d", this, m_cachedState);
+}
+#endif
 
 } // namespace WebCore

@@ -110,7 +110,9 @@ void LinkImport::didFinish()
 {
     if (!m_owner)
         return;
-    m_owner->scheduleEvent();
+    // Because didFinish() is called from import's own scheduler in HTMLImportsController,
+    // we don't need to scheduleEvent() here.
+    m_owner->dispatchEventImmediately();
 }
 
 void LinkImport::importChildWasDestroyed(HTMLImportChild* child)

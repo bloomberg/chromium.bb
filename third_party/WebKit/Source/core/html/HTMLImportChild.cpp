@@ -40,7 +40,7 @@
 namespace WebCore {
 
 HTMLImportChild::HTMLImportChild(const KURL& url, bool createdByParser)
-    : HTMLImport(WaitingLoaderOrChildren, createdByParser)
+    : HTMLImport(createdByParser)
     , m_url(url)
     , m_customElementMicrotaskStep(0)
     , m_client(0)
@@ -66,9 +66,7 @@ void HTMLImportChild::wasAlreadyLoaded()
 {
     ASSERT(!m_loader);
     ASSERT(m_client);
-
-    ensureLoader();
-    loaderWasResolved();
+    stateWillChange();
 }
 
 void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
@@ -88,7 +86,7 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     // preceding imports load the sharable imports.
     // In that case preceding one should win because it comes first in the tree order.
     // See also didUnblockFromCreatingDocument().
-    if (isBlockedFromCreatingDocument())
+    if (isStateBlockedFromCreatingDocument())
         return;
 
     ensureLoader();
@@ -108,7 +106,7 @@ void HTMLImportChild::didFinish()
 void HTMLImportChild::didFinishLoading()
 {
     clearResource();
-    loaderDidFinish();
+    stateWillChange();
 }
 
 Document* HTMLImportChild::importedDocument() const
@@ -151,19 +149,17 @@ void HTMLImportChild::didFinishParsing()
     m_loader->didFinishParsing();
 }
 
-// Once all preceding imports are loaded and "document blocking" ends,
-// HTMLImportChild can decide whether it should load the import by itself
-// or it can share existing one.
-void HTMLImportChild::didUnblockFromCreatingDocument()
+void HTMLImportChild::stateDidChange()
 {
-    HTMLImport::didUnblockFromCreatingDocument();
-    ensureLoader();
-}
+    HTMLImport::stateDidChange();
 
-void HTMLImportChild::didBecomeReady()
-{
-    HTMLImport::didBecomeReady();
-    didFinish();
+    // Once all preceding imports are loaded,
+    // HTMLImportChild can decide whether it should load the import by itself
+    // or it can share existing one.
+    if (!isStateBlockedFromCreatingDocument())
+        ensureLoader();
+    if (isStateReady())
+        didFinish();
 }
 
 void HTMLImportChild::ensureLoader()
@@ -179,7 +175,7 @@ void HTMLImportChild::ensureLoader()
 
 void HTMLImportChild::createLoader()
 {
-    ASSERT(!isBlockedFromCreatingDocument());
+    ASSERT(!isStateBlockedFromCreatingDocument());
     ASSERT(!m_loader);
     m_loader = HTMLImportLoader::create(this, parent()->document()->fetcher());
     m_loader->addClient(this);
@@ -191,7 +187,7 @@ void HTMLImportChild::shareLoader(HTMLImportChild* loader)
     ASSERT(!m_loader);
     m_loader = loader->m_loader;
     m_loader->addClient(this);
-    root()->blockerGone();
+    stateWillChange();
 }
 
 bool HTMLImportChild::isDone() const
@@ -228,5 +224,18 @@ void HTMLImportChild::clearClient()
     // clearClient() to reenter.
     m_client = 0;
 }
+
+
+#if !defined(NDEBUG)
+void HTMLImportChild::showThis()
+{
+    HTMLImport::showThis();
+    fprintf(stderr, " loader=%p own=%s async=%s url=%s",
+        m_loader.get(),
+        hasLoader() && ownsLoader() ? "Y" : "N",
+        isCreatedByParser() ? "Y" : "N",
+        url().string().utf8().data());
+}
+#endif
 
 } // namespace WebCore

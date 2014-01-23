@@ -87,50 +87,19 @@ class KURL;
 //
 // # Script Blocking
 //
-// The HTML parser blocks on <script> when preceding <link>s aren't finish loading imports.
-// Each HTMLImport instance tracks such a blocking state, that is called "script-blocked"
-// or HTMLImport::isBlockedFromRunningScript().
+// - An import blocks the HTML parser of its own imported document from running <script>
+//   until all of its children are loaded.
+//   Note that dynamically added import won't block the parser.
 //
-// ## Blocking Imports
-//
-// Each imports can become being script-blocked when new imports are added to the import tree.
-// For example, the parser of a parent import is blocked when new child import is given.
-// See HTMLImport::appendChild() to see how it is handled. Note that this blocking-ness is
-// transitive. HTMLImport::blockPredecessorsOf() flips the flags iteratively to fullfill this transitivity.
-//
-// ## Unblocking Imports
-//
-// The blocking state can change when one of the imports finish loading. The Document notices it through
-// HTMLImportRoot::blockerGone(). The blockerGone() triggers HTMLImport::unblockFromRunningScript(), which traverses
-// whole import tree and find unblock-able imports and unblock them.
-// Ready imported documents are notified through Document::didLoadAllImports() so that
-// it can resume its parser.
-//
-// # Document Blocking
-//
-// There is another type of blocking state that is called
-// "document-blocked". If the import is document-blocked, it cannot
-// create its own document object because sharable imported document
-// can appear later. The spec defines the loading order of the
-// import: The earlier one in the import-tree order should win and
-// later ones should share earlier one.
-//
-// The "document-blocked" state keeps the tree node from loading its
-// import until all preceding imports are ready t respect the
-// order. Note that the node may fetch the bytes from the URL
-// speculatively, even though it doesn't process it.
-//
-// The node is "document-unblocked" when there are unfinished,
-// preceeding import loading. Unblocking attempt for
-// "document-blocked" happens at the same timing as unblocking
-// "script-blocked".
+// - An import under loading also blocks imported documents that follow from being created.
+//   This is because an import can include another import that has same URLs of following ones.
+//   In such case, the preceding import should be loaded and following ones should be de-duped.
 //
 
 // The superclass of HTMLImportsController and HTMLImportChild
 // This represents the import tree data structure.
 class HTMLImport : public TreeNode<HTMLImport> {
 public:
-    static bool unblock(HTMLImport*);
     static bool isMaster(Document*);
 
     virtual ~HTMLImport() { }
@@ -141,10 +110,10 @@ public:
     bool isRoot() const { return !isChild(); }
 
     bool isCreatedByParser() const { return m_createdByParser; }
-    bool isBlockedFromRunningScript() const { return m_state <= BlockedFromRunningScript; }
-    bool isBlocked() const { return m_state < Ready; }
 
-    bool isBlockedFromCreatingDocument() const;
+    bool isStateBlockedFromRunningScript() const { return state() <= BlockedFromRunningScript; }
+    bool isStateBlockedFromCreatingDocument() const { return state() <= BlockedFromCreatingDocument; }
+    bool isStateReady() const { return state() == Ready; }
 
     void appendChild(HTMLImport*);
 
@@ -152,55 +121,62 @@ public:
     virtual HTMLImportRoot* root() = 0;
     virtual Document* document() const = 0;
     virtual void wasDetachedFromDocument() = 0;
-    virtual void didFinishParsing() = 0;
+    virtual void didFinishParsing() { };
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
     virtual bool hasLoader() const = 0;
     virtual bool ownsLoader() const { return false; }
     virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const { return 0; }
+    virtual void stateDidChange();
 
-protected:
     enum State {
+        BlockedFromCreatingDocument = 0,
         BlockedFromRunningScript,
-        WaitingLoaderOrChildren,
-        Ready
+        Active,
+        Ready,
+        Invalid
     };
 
-    explicit HTMLImport(State state, bool createdByParser = false)
-        : m_state(state)
+protected:
+    // Stating from most conservative state.
+    // It will be corrected through state update flow.
+    explicit HTMLImport(bool createdByParser = false)
+        : m_cachedState(BlockedFromCreatingDocument)
         , m_createdByParser(createdByParser)
     { }
 
-    virtual void didUnblockFromCreatingDocument();
-    virtual void didUnblockFromRunningScript();
-    virtual void didBecomeReady();
+    void stateWillChange();
+    State state() const;
+    static void recalcTreeState(HTMLImport* root);
 
-    void loaderWasResolved();
-    void loaderDidFinish();
+#if !defined(NDEBUG)
+    void show();
+    void showTree(HTMLImport* highlight, unsigned depth);
+    virtual void showThis();
+#endif
 
 private:
-    static void block(HTMLImport*);
+    void recalcState();
+    void forceBlock();
+    void invalidateCachedState() { m_cachedState = Invalid; }
+    bool isStateCacheValid() const { return m_cachedState != Invalid; }
 
-    void blockPredecessorsOf(HTMLImport* child);
-    void blockFromRunningScript();
-    void waitLoaderOrChildren();
-    void unblockFromRunningScript();
-    void becomeReady();
-
-    bool isBlockedFromRunningScriptByPredecessors() const;
-    bool isBlockingFollowersFromRunningScript() const;
-    bool isBlockingFollowersFromCreatingDocument() const;
-
-    State m_state;
-
+    State m_cachedState;
     bool m_createdByParser : 1;
 };
+
+inline HTMLImport::State HTMLImport::state() const
+{
+    ASSERT(isStateCacheValid());
+    return m_cachedState;
+}
+
 
 // An abstract class to decouple its sublcass HTMLImportsController.
 class HTMLImportRoot : public HTMLImport {
 public:
-    HTMLImportRoot() : HTMLImport(Ready) { }
+    HTMLImportRoot() { }
 
-    virtual void blockerGone() = 0;
+    virtual void scheduleRecalcState() = 0;
     virtual HTMLImportsController* toController() = 0;
     virtual HTMLImportChild* findLinkFor(const KURL&, HTMLImport* excluding = 0) const = 0;
 };

@@ -60,12 +60,11 @@ public:
     virtual HTMLImportRoot* root() OVERRIDE;
     virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
-    virtual void didFinishParsing() OVERRIDE;
     virtual bool isDone() const OVERRIDE;
     virtual bool hasLoader() const OVERRIDE;
 
     // HTMLImportRoot
-    virtual void blockerGone() OVERRIDE;
+    virtual void scheduleRecalcState() OVERRIDE;
     virtual HTMLImportsController* toController() OVERRIDE { return this; }
     virtual HTMLImportChild* findLinkFor(const KURL&, HTMLImport* excluding = 0) const OVERRIDE;
 
@@ -75,15 +74,14 @@ public:
     SecurityOrigin* securityOrigin() const;
     ResourceFetcher* fetcher() const;
 
-    void scheduleUnblock();
-    void unblockTimerFired(Timer<HTMLImportsController>*);
+    void recalcTimerFired(Timer<HTMLImportsController>*);
 
 private:
     HTMLImportChild* createChild(const KURL&, HTMLImport* parent, HTMLImportChildClient*);
     void clear();
 
     Document* m_master;
-    Timer<HTMLImportsController> m_unblockTimer;
+    Timer<HTMLImportsController> m_recalcTimer;
 
     // List of import which has been loaded or being loaded.
     typedef Vector<OwnPtr<HTMLImportChild> > ImportList;
