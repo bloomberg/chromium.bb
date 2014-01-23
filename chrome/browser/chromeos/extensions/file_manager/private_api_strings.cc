@@ -37,13 +37,8 @@ const char kGoogleDriveHelpUrl[] =
 const char kGoogleDriveRootUrl[] = "https://drive.google.com";
 
 // Printf format
-#if defined(OFFICIAL_BUILD)
 const char kHelpURLFormat[] =
-    "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html?answer=%d";
-#else
-const char kHelpURLFormat[] =
-    "http://support.google.com/chromeos/bin/answer.py?answer=%d";
-#endif
+    "https://support.google.com/chromebook/answer/%d";
 
 // Location of the help page for low space warning in the downloads directory.
 const int kDownloadsLowSpaceWarningHelpNumber = 1061547;
