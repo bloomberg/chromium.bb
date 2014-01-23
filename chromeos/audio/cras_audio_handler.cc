@@ -529,7 +529,7 @@ bool CrasAudioHandler::NonActiveDeviceUnplugged(
     size_t old_devices_size,
     size_t new_devices_size,
     uint64 current_active_node) {
-  return (new_devices_size <= old_devices_size &&
+  return (new_devices_size < old_devices_size &&
           GetDeviceFromId(current_active_node));
 }
 
