@@ -54,7 +54,6 @@
 #include "core/svg/SVGFontFaceElement.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontTraitsMask.h"
-#include "platform/fonts/SimpleFontData.h"
 
 namespace WebCore {
 
@@ -360,9 +359,7 @@ void FontFace::load()
     fontDescription.setFamily(fontFamily);
     fontDescription.setTraitsMask(static_cast<FontTraitsMask>(traitsMask()));
 
-    RefPtr<SimpleFontData> fontData = m_cssFontFace->getFontData(fontDescription);
-    if (fontData && fontData->customFontData())
-        fontData->customFontData()->beginLoadIfNeeded();
+    m_cssFontFace->load(fontDescription);
 }
 
 ScriptPromise FontFace::ready(ExecutionContext* context)

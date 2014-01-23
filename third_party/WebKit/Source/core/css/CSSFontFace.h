@@ -97,6 +97,7 @@ public:
 
     FontFace::LoadStatus loadStatus() const { return m_fontFace->loadStatus(); }
     void willUseFontData(const FontDescription&);
+    void load(const FontDescription&);
 
 private:
     CSSFontFace(PassRefPtr<FontFace> fontFace)

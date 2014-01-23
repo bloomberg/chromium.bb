@@ -203,11 +203,8 @@ bool CSSSegmentedFontFace::checkFont(const String& text) const
 void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, const String& text, PassRefPtr<LoadFontCallback> callback)
 {
     for (FontFaceList::iterator it = m_fontFaces.begin(); it != m_fontFaces.end(); ++it) {
-        if ((*it)->loadStatus() == FontFace::Unloaded && (*it)->ranges().intersectsWith(text)) {
-            RefPtr<SimpleFontData> fontData = (*it)->getFontData(fontDescription);
-            if (fontData->customFontData())
-                fontData->customFontData()->beginLoadIfNeeded();
-        }
+        if ((*it)->loadStatus() == FontFace::Unloaded && (*it)->ranges().intersectsWith(text))
+            (*it)->load(fontDescription);
     }
 
     if (callback) {

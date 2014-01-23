@@ -160,30 +160,42 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
 
 void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
 {
-    if (loadStatus() != FontFace::Unloaded || m_activeSource)
-        return;
-
     // Kicks off font load here only if the @font-face has no unicode-range.
     // @font-faces with unicode-range will be loaded when a GlyphPage for the
     // font is created.
     // FIXME: Pass around the text to render from RenderText, and kick download
     // if m_ranges intersects with the text. Make sure this does not cause
     // performance regression.
-    if (!m_ranges.isEntireRange())
-        return;
+    if (m_ranges.isEntireRange())
+        load(fontDescription);
+}
 
-    ASSERT(m_segmentedFontFace);
+void CSSFontFace::load(const FontDescription& fontDescription)
+{
+    if (loadStatus() != FontFace::Unloaded)
+        return;
+    setLoadStatus(FontFace::Loading);
 
     size_t size = m_sources.size();
     for (size_t i = 0; i < size; ++i) {
-        if (!m_sources[i]->isValid() || (m_sources[i]->isLocal() && !m_sources[i]->isLocalFontAvailable(fontDescription)))
+        if (!m_sources[i]->isValid())
             continue;
-        if (!m_sources[i]->isLocal() && !m_sources[i]->isLoaded()) {
-            m_activeSource = m_sources[i].get();
-            beginLoadIfNeeded(m_activeSource);
+        if (m_sources[i]->isLocal()) {
+            if (m_sources[i]->isLocalFontAvailable(fontDescription)) {
+                setLoadStatus(FontFace::Loaded);
+                return;
+            }
+        } else {
+            if (!m_sources[i]->isLoaded()) {
+                m_activeSource = m_sources[i].get();
+                beginLoadIfNeeded(m_activeSource);
+            } else {
+                setLoadStatus(FontFace::Loaded);
+            }
+            return;
         }
-        break;
     }
+    setLoadStatus(FontFace::Error);
 }
 
 void CSSFontFace::setLoadStatus(FontFace::LoadStatus newStatus)
