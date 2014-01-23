@@ -34,10 +34,6 @@ from utils import threading_utils
 from utils import tools
 
 
-# Mapping of the sys.platform value into Swarm OS value.
-OSES = {'win32': 'win', 'linux2': 'linux', 'darwin': 'mac'}
-
-
 def check_output(cmd, cwd):
   return subprocess.check_output([sys.executable] + cmd, cwd=cwd)
 
@@ -108,34 +104,26 @@ def archive_isolated_triggers(cwd, isolate_server, tree_isolated, tests):
 
 
 def trigger(
-    cwd, swarm_server, isolate_server, prefix, test_name, platform,
-    isolated_hash):
+    cwd, swarm_server, isolate_server, task_name, platform, isolated_hash):
   """Triggers a specified .isolated file."""
   cmd = [
       'swarming.py',
       'trigger',
       '--swarming', swarm_server,
       '--isolate-server', isolate_server,
-      '--task-prefix', prefix,
-      '--os', platform,
-      '--task',
+      '--dimension', 'os', platform,
+      '--task-name', task_name,
       isolated_hash,
-      # Test name.
-      'swarm_client_tests_%s_%s' % (platform, test_name),
-      # Number of shards.
-      '1',
-      # test filter.
-      '*',
   ]
   return capture(cmd, cwd)
 
 
-def collect(cwd, swarm_server, test_name):
+def collect(cwd, swarm_server, task_name):
   cmd = [
       'swarming.py',
       'collect',
       '--swarming', swarm_server,
-      test_name,
+      task_name,
   ]
   return capture(cmd, cwd)
 
@@ -149,33 +137,31 @@ class Runner(object):
     self.prefix = (
         getpass.getuser() + '-' + datetime.datetime.now().isoformat() + '-')
 
-  def trigger(self, test_name, platform, isolated_hash):
+  def trigger(self, task_name, platform, isolated_hash):
     returncode, stdout, duration = trigger(
         ROOT_DIR,
         self.swarm_server,
         self.isolate_server,
-        self.prefix,
-        test_name,
+        task_name,
         platform,
         isolated_hash)
-    step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
+    step_name = '%s (%3.2fs)' % (task_name, duration)
     if returncode:
       line = 'Failed to trigger %s\n%s' % (step_name, stdout)
       self.progress.update_item(line, index=1)
       return
     self.progress.update_item('Triggered %s' % step_name, index=1)
-    self.add_task(0, self.collect, test_name, platform)
+    self.add_task(0, self.collect, task_name, platform)
 
-  def collect(self, test_name, platform):
+  def collect(self, task_name, platform):
     returncode, stdout, duration = collect(
-        ROOT_DIR, self.swarm_server,
-        '%sswarm_client_tests_%s_%s' % (self.prefix, platform, test_name))
-    step_name = '%s/%s (%3.2fs)' % (platform, test_name, duration)
+        ROOT_DIR, self.swarm_server, task_name)
+    step_name = '%s (%3.2fs)' % (task_name, duration)
     if returncode:
       # Only print the output for failures, successes are unexciting.
       self.progress.update_item(
           'Failed %s:\n%s' % (step_name, stdout), index=1)
-      return (test_name, platform, stdout)
+      return (task_name, platform, stdout)
     self.progress.update_item('Passed %s' % step_name, index=1)
 
 
@@ -207,28 +193,26 @@ def run_swarm_tests_on_swarm(swarm_server, isolate_server, oses, tests, logs):
     for test_path, isolated in isolateds:
       test_name = os.path.basename(test_path).split('.')[0]
       for platform in oses:
-        pool.add_task(0, runner.trigger, test_name, platform, isolated)
+        task_name = '%s/%s/%s' % (test_name, platform, isolated)
+        pool.add_task(0, runner.trigger, task_name, platform, isolated)
 
     for failed_test in pool.iter_results():
       # collect() only return test case failures.
-      failed_tests.append(failed_test)
+      test_name, platform, stdout = failed_test
+      failed_tests.append(test_name)
       if logs:
         # Write the logs are they are retrieved.
         if not os.path.isdir(logs):
           os.makedirs(logs)
-        test, platform, stdout = failed_test
-        name = '%s_%s' % (platform, os.path.basename(test))
-        with open(os.path.join(logs, name + '.log'), 'wb') as f:
+        name = '%s_%s.log' % (platform, test_name.split('/', 1)[0])
+        with open(os.path.join(logs, name), 'wb') as f:
           f.write(stdout)
   duration = time.time() - start
   print('\nCompleted in %3.2fs' % duration)
   if failed_tests:
-    failed_tests_per_os = {}
-    for test, platform, _ in failed_tests:
-      failed_tests_per_os.setdefault(test, []).append(platform)
     print('Detected the following failures:')
-    for test, platforms in failed_tests_per_os.iteritems():
-      print('  %s on %s' % (test, ', '.join(sorted(platforms))))
+    for test in sorted(failed_tests):
+      print('  %s' % test)
   return bool(failed_tests)
 
 
@@ -263,10 +247,7 @@ def main():
 
   logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
 
-  # Note that the swarming and the isolate code use different strings for the
-  # different oses.
-  # TODO(maruel): Fix this inconsistency.
-  oses = OSES.keys()
+  oses = ['Linux', 'Mac', 'Windows']
   tests = [
       os.path.relpath(i, ROOT_DIR)
       for i in (
@@ -296,7 +277,7 @@ def main():
   if sys.platform in ('win32', 'cygwin'):
     # If we are on Windows, don't generate the tests for Linux and Mac since
     # they use symlinks and we can't create symlinks on windows.
-    oses = ['win32']
+    oses = ['Windows']
     if options.os != 'win32':
       print('Linux and Mac tests skipped since running on Windows.')
 
