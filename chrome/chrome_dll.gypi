@@ -92,12 +92,7 @@
                 '../ui/compositor/compositor.gyp:compositor',
               ],
             }],
-            ['OS=="win" and target_arch=="ia32" and MSVS_VERSION!="2013"', {
-              # TODO(scottmg): The assembler is very broken in VS2013 and
-              # crashes on the generated .asm file, so disable this for now.
-              # This should be revisited after a VS2013 update. See
-              # http://crbug.com/288948.
-              #
+            ['OS=="win" and target_arch=="ia32"', {
               # Add a dependency to custom import library for user32 delay
               # imports only in x86 builds.
               'dependencies': [
@@ -156,7 +151,7 @@
                       'OutputFile': '$(OutDir)\\initial\\chrome.dll',
                       'UseLibraryDependencyInputs': "true",
                     }],
-                    ['target_arch=="ia32" and MSVS_VERSION!="2013"', {
+                    ['target_arch=="ia32"', {
                       # Link against the XP-constrained user32 import library
                       # instead of the platform-SDK provided one to avoid
                       # inadvertently taking dependencies on post-XP user32
