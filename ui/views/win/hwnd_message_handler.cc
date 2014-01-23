@@ -593,6 +593,7 @@ void HWNDMessageHandler::CenterWindow(const gfx::Size& size) {
 void HWNDMessageHandler::SetRegion(HRGN region) {
   custom_window_region_.Set(region);
   ResetWindowRegion(false, true);
+  UpdateDwmNcRenderingPolicy();
 }
 
 void HWNDMessageHandler::StackAbove(HWND other_hwnd) {
@@ -832,9 +833,6 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
 void HWNDMessageHandler::FrameTypeChanged() {
   // Called when the frame type could possibly be changing (theme change or
   // DWM composition change).
-
-  // Update rendering of the DWM/glass frame depending on the new frame type.
-  UpdateDwmNcRenderingPolicy();
 
   // Don't redraw the window here, because we need to hide and show the window
   // which will also trigger a redraw.
@@ -1191,9 +1189,8 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
 void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
-  DWMNCRENDERINGPOLICY policy = DWMNCRP_ENABLED;
-  if (remove_standard_frame_ || delegate_->IsUsingCustomFrame())
-    policy = DWMNCRP_DISABLED;
+  DWMNCRENDERINGPOLICY policy = custom_window_region_ ? DWMNCRP_DISABLED
+                                                      : DWMNCRP_USEWINDOWSTYLE;
   DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY,
                         &policy, sizeof(DWMNCRENDERINGPOLICY));
 }
@@ -1356,7 +1353,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
               0);
 
   if (remove_standard_frame_) {
-    UpdateDwmNcRenderingPolicy();
     SetWindowLong(hwnd(), GWL_STYLE,
                   GetWindowLong(hwnd(), GWL_STYLE) & ~WS_CAPTION);
     SendFrameChanged();
