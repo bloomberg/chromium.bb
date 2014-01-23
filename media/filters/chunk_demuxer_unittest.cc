@@ -16,9 +16,9 @@
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/chunk_demuxer.h"
-#include "media/webm/cluster_builder.h"
-#include "media/webm/webm_constants.h"
-#include "media/webm/webm_crypto_helpers.h"
+#include "media/formats/webm/cluster_builder.h"
+#include "media/formats/webm/webm_constants.h"
+#include "media/formats/webm/webm_crypto_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;

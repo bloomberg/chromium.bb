@@ -10,8 +10,8 @@
 #include "base/strings/string_util.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/mp3/mp3_stream_parser.h"
-#include "media/webm/webm_stream_parser.h"
+#include "media/formats/mp3/mp3_stream_parser.h"
+#include "media/formats/webm/webm_stream_parser.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -19,10 +19,10 @@
 
 #if defined(USE_PROPRIETARY_CODECS)
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
-#include "media/mp2t/mp2t_stream_parser.h"
+#include "media/formats/mp2t/mp2t_stream_parser.h"
 #endif
-#include "media/mp4/es_descriptor.h"
-#include "media/mp4/mp4_stream_parser.h"
+#include "media/formats/mp4/es_descriptor.h"
+#include "media/formats/mp4/mp4_stream_parser.h"
 #endif
 
 namespace media {

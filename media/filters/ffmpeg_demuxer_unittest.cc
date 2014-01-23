@@ -17,7 +17,7 @@
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
-#include "media/webm/webm_crypto_helpers.h"
+#include "media/formats/webm/webm_crypto_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;

@@ -30,7 +30,7 @@
 #include "media/filters/ffmpeg_glue.h"
 #include "media/filters/ffmpeg_h264_to_annex_b_bitstream_converter.h"
 #include "media/filters/webvtt_util.h"
-#include "media/webm/webm_crypto_helpers.h"
+#include "media/formats/webm/webm_crypto_helpers.h"
 
 namespace media {
 
