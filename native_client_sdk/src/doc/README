@@ -21,7 +21,7 @@ How to build
 ------------
 
 To build the docs you will needs sphinx installed (and sphinx-build in your
-path).  On debian/ubuntu this command is part of the ``python-sphinx`` package.
+path). On debian/ubuntu this command is part of the ``python-sphinx`` package.
 
 There are many different output formats that can be generated using the targets
 in the included Makefile.  The three most commonly used ones are ``devsite``,

@@ -1,0 +1,468 @@
+{{+bindTo:partials.standard_nacl_article}}
+
+<section id="debugging">
+<span id="devcycle-debugging"></span><h1 id="debugging"><span id="devcycle-debugging"></span>Debugging</h1>
+<p>This document describes tools and techniques you can use to debug, monitor,
+and measure your application&#8217;s performance.</p>
+<div class="contents local topic" id="table-of-contents">
+<p class="topic-title first">Table Of Contents</p>
+<ul class="small-gap">
+<li><p class="first"><a class="reference internal" href="#diagnostic-information" id="id1">Diagnostic information</a></p>
+<ul class="small-gap">
+<li><a class="reference internal" href="#viewing-process-statistics-with-the-task-manager" id="id2">Viewing process statistics with the task manager</a></li>
+<li><a class="reference internal" href="#controlling-the-level-of-native-client-error-and-warning-messages" id="id3">Controlling the level of Native Client error and warning messages</a></li>
+</ul>
+</li>
+<li><p class="first"><a class="reference internal" href="#basic-debugging" id="id4">Basic debugging</a></p>
+<ul class="small-gap">
+<li><a class="reference internal" href="#writing-messages-to-the-javascript-console" id="id5">Writing messages to the JavaScript console</a></li>
+<li><p class="first"><a class="reference internal" href="#debugging-with-printf" id="id6">Debugging with printf</a></p>
+<ul class="small-gap">
+<li><a class="reference internal" href="#redirecting-output-to-log-files" id="id7">Redirecting output to log files</a></li>
+<li><a class="reference internal" href="#redirecting-output-to-the-javascript-console" id="id8">Redirecting output to the JavaScript console</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logging-calls-to-pepper-interfaces" id="id9">Logging calls to Pepper interfaces</a></li>
+<li><a class="reference internal" href="#debugging-with-visual-studio" id="id10">Debugging with Visual Studio</a></li>
+<li><p class="first"><a class="reference internal" href="#debugging-with-nacl-gdb" id="id11">Debugging with nacl-gdb</a></p>
+<ul class="small-gap">
+<li><a class="reference internal" href="#debugging-pnacl-pexes" id="id12">Debugging PNaCl pexes</a></li>
+<li><a class="reference internal" href="#running-nacl-gdb" id="id13">Running nacl-gdb</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p class="first"><a class="reference internal" href="#debugging-with-other-tools" id="id14">Debugging with other tools</a></p>
+<ul class="small-gap">
+<li><a class="reference internal" href="#open-source-profiling-tools" id="id15">Open source profiling tools</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="diagnostic-information">
+<h2 id="diagnostic-information">Diagnostic information</h2>
+<section id="viewing-process-statistics-with-the-task-manager">
+<h3 id="viewing-process-statistics-with-the-task-manager">Viewing process statistics with the task manager</h3>
+<p>You can use Chrome&#8217;s Task Manager to display information about a Native Client
+application:</p>
+<ol class="arabic simple">
+<li>Open the Task Manager by clicking the menu icon <img alt="menu-icon" src="/native-client/images/menu-icon.png" /> and choosing
+<strong>Tools &gt; Task manager</strong>.</li>
+<li>When the Task Manager window appears, verify that the columns displaying
+memory information are visible. If they are not, right click in the header
+row and select the memory items from the popup menu that appears.</li>
+</ol>
+<p>A browser window running a Native Client application will have at least two
+processes associated with it: a process for the app&#8217;s top level (the render
+process managing the page including its HTML and any JavaScript) and one or
+more processes for each instance of a Native Client module embedded in the page
+(each process running native code from one nexe file). The top-level process
+appears with the application&#8217;s icon and begins with the text &#8220;App:&#8221;. A Native
+Client process appears with a Chrome extension icon (a jigsaw puzzle piece
+<img alt="puzzle" src="/native-client/images/puzzle.png" />) and begins with the text &#8220;Native Client module&#8221; followed by the URL
+of its manifest file.</p>
+<p>From the Task Manager you can view the changing memory allocations of all the
+processes associated with a Native Client application. Each process has its own
+memory footprint. You can also see the rendering rate displayed as frames per
+second (FPS). Note that the computation of render frames can be performed in
+any process, but the rendering itself is always done in the top level
+application process, so look for the rendering rate there.</p>
+</section><section id="controlling-the-level-of-native-client-error-and-warning-messages">
+<h3 id="controlling-the-level-of-native-client-error-and-warning-messages">Controlling the level of Native Client error and warning messages</h3>
+<p>Native Client prints warning and error messages to stdout and stderr. You can
+increase the amount of Native Client&#8217;s diagnostic output by setting the
+following <a class="reference external" href="http://en.wikipedia.org/wiki/Environment_variable">environment variables</a>:</p>
+<ul class="small-gap">
+<li>NACL_DEBUG_ENABLE=1</li>
+<li>PPAPI_BROWSER_DEBUG=1</li>
+<li>NACL_PLUGIN_DEBUG=1</li>
+<li>NACL_PPAPI_PROXY_DEBUG=1</li>
+<li>NACL_SRPC_DEBUG=[1-255] (use a higher number for more verbose debug output)</li>
+<li>NACLVERBOSITY=[1-255]</li>
+</ul>
+</section></section><section id="basic-debugging">
+<h2 id="basic-debugging">Basic debugging</h2>
+<section id="writing-messages-to-the-javascript-console">
+<h3 id="writing-messages-to-the-javascript-console">Writing messages to the JavaScript console</h3>
+<p>You can send messages from your C/C++ code to JavaScript using the PostMessage
+call in the <a class="reference internal" href="/native-client/devguide/coding/message-system.html"><em>Pepper messaging system</em></a>. When the
+JavaScript code receives a message, its message event handler can call
+<a class="reference external" href="https://developer.mozilla.org/en/DOM/console.log">console.log()</a> to write
+the message to the JavaScript <a class="reference external" href="https://developers.google.com/chrome-developer-tools/docs/console">console</a> in
+Chrome&#8217;s Developer Tools.</p>
+</section><section id="debugging-with-printf">
+<h3 id="debugging-with-printf">Debugging with printf</h3>
+<p>Your C/C++ code can perform inline printf debugging to stdout and stderr by
+calling fprintf() directly, or by using cover functions like these:</p>
+<pre class="prettyprint">
+#include &lt;stdio.h&gt;
+void logmsg(const char* pMsg){
+  fprintf(stdout,&quot;logmsg: %s\n&quot;,pMsg);
+}
+void errormsg(const char* pMsg){
+  fprintf(stderr,&quot;logerr: %s\n&quot;,pMsg);
+}
+</pre>
+<p>By default stdout and stderr will appear in Chrome&#8217;s stdout and stderr stream
+but they can also be redirected as described below.</p>
+<section id="redirecting-output-to-log-files">
+<h4 id="redirecting-output-to-log-files">Redirecting output to log files</h4>
+<p>You can redirect stdout and stderr to output files by setting these environment variables:</p>
+<ul class="small-gap">
+<li><code>NACL_EXE_STDOUT=c:\nacl_stdout.log</code></li>
+<li><code>NACL_EXE_STDERR=c:\nacl_stderr.log</code></li>
+</ul>
+<p>There is another variable, <code>NACLLOG</code>, that you can use to redirect Native
+Client&#8217;s internally-generated messages. This variable is set to stderr by
+default; you can redirect these messages to an output file by setting the
+variable as follows:</p>
+<ul class="small-gap">
+<li><code>NACLLOG=c:\nacl.log</code></li>
+</ul>
+<aside class="note">
+<strong>Note:</strong> If you set the NACL_EXE_STDOUT, NACL_EXE_STDERR, or NACLLOG
+variables to redirect output to a file, you must run Chrome with the
+<code>--no-sandbox</code> flag.  You must also be careful that each variable points to
+a different file.
+</aside>
+</section><section id="redirecting-output-to-the-javascript-console">
+<h4 id="redirecting-output-to-the-javascript-console">Redirecting output to the JavaScript console</h4>
+<p>You can also cause output from printf statements in your C/C++ code to be
+relayed to the JavaScript side of your application through the Pepper messaging
+system, where you can then write the output to the JavaScript console. Follow
+these steps:</p>
+<ol class="arabic">
+<li><p class="first">Set the NACL_EXE_STDOUT and NACL_EXE_STDERR environment variables as
+follows:</p>
+<ul class="small-gap">
+<li><p class="first">NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage</p>
+</li>
+<li><p class="first">NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage</p>
+</li>
+</ul>
+<p>These settings tell Native Client to use PostMessage() to send output that
+your Native Client module writes to stdout and stderr to the JavaScript side
+of your application.</p>
+</li>
+<li><p class="first">Register a JavaScript handler to receive messages from your Native Client
+module:</p>
+<pre class="prettyprint">
+&lt;div id=&quot;nacl_container&quot;&gt;
+  &lt;script type=&quot;text/javascript&quot;&gt;
+    var container = document.getElementById('nacl_container');
+    container.addEventListener('message', handleMessage, true);
+  &lt;/script&gt;
+  &lt;embed id=&quot;nacl_module&quot;
+         src=&quot;my_application.nmf&quot;
+         type=&quot;application/x-nacl&quot; /&gt;
+&lt;/div&gt;
+</pre>
+</li>
+<li><p class="first">Implement a simple JavaScript handler that logs the messages it receives to
+the JavaScript console:</p>
+<pre class="prettyprint">
+function handleMessage(message_event) {
+  console.log(message_event.data);
+}
+</pre>
+<p>This handler works in the simple case where the only messages your Native
+Client module sends to JavaScript are messages with the output from stdout
+and stderr. If your Native Client module also sends other messages to
+JavaScript, your handler will need to be more complex.</p>
+<p>Once you&#8217;ve implemented a message handler and set up the environment
+variables as described above, you can check the JavaScript console to see
+output that your Native Client module prints to stdout and stderr. Keep in
+mind that your module makes a call to PostMessage() every time it flushes
+stdout or stderr.  Your application&#8217;s performance will degrade considerably
+if your module prints and flushes frequently, or if it makes frequent Pepper
+calls to begin with (e.g., to render).</p>
+</li>
+</ol>
+</section></section><section id="logging-calls-to-pepper-interfaces">
+<h3 id="logging-calls-to-pepper-interfaces">Logging calls to Pepper interfaces</h3>
+<p>You can log all Pepper calls your module makes by passing the following flags
+to Chrome on startup:</p>
+<pre class="prettyprint">
+--vmodule=ppb*=4 --enable-logging=stderr
+</pre>
+<p>The <code>vmodule</code> flag tells Chrome to log all calls to C Pepper interfaces that
+begin with &#8220;ppb&#8221; (that is, the interfaces that are implemented by the browser
+and that your module calls). The <code>enable-logging</code> flag tells Chrome to log
+the calls to stderr.</p>
+</section><section id="debugging-with-visual-studio">
+<span id="visual-studio"></span><h3 id="debugging-with-visual-studio"><span id="visual-studio"></span>Debugging with Visual Studio</h3>
+<p>If you develop on a Windows platform you can use the <a class="reference internal" href="/native-client/devguide/devcycle/vs-addin.html"><em>Native Client Visual
+Studio add-in</em></a> to write and debug your code. The add-in defines new
+project platforms that let you run your module in two different modes: As a
+Pepper plugin and as a Native Client module. When running as a Pepper plugin
+you can use the built-in Visual Studio debugger. When running as a Native
+Client module Visual Studio will launch an instance of nacl-gdb for you and
+link it to the running code.</p>
+</section><section id="debugging-with-nacl-gdb">
+<span id="using-gdb"></span><h3 id="debugging-with-nacl-gdb"><span id="using-gdb"></span>Debugging with nacl-gdb</h3>
+<p>The Native Client SDK includes a command-line debugger that you can use to
+debug Native Client modules. The debugger is based on the GNU debugger <a class="reference external" href="http://www.gnu.org/software/gdb/">gdb</a>, and is located at
+<code>toolchain/&lt;platform&gt;_x86_newlib/bin/x86_64-nacl-gdb</code> (where <em>&lt;platform&gt;</em>
+is the platform of your development machine: <code>win</code>, <code>mac</code>, or
+<code>linux</code>).</p>
+<p>Note that this same copy of GDB can be used to debug any NaCl program,
+whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
+<code>i686-nacl-gdb</code> is an alias for <code>x86_64-nacl-gdb</code>, and the <code>newlib</code>
+and <code>glibc</code> toolchains both contain the same version of GDB.</p>
+<section id="debugging-pnacl-pexes">
+<h4 id="debugging-pnacl-pexes">Debugging PNaCl pexes</h4>
+<p>If you want to use GDB to debug a program that is compiled with the PNaCl
+toolchain, you must convert the <code>pexe</code> file to a <code>nexe</code>.  (You can skip
+this step if you are using the GCC toolchain.)</p>
+<ul class="small-gap">
+<li>Firstly, make sure you are passing the <code>-g</code> <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>compile option</em></a> to <code>pnacl-clang</code> to enable generating debugging info.
+You might also want to omit <code>-O2</code> from the compile-time and link-time
+options, otherwise GDB not might be able to print variables&#8217; values when
+debugging (this is more of a problem with the PNaCl/LLVM toolchain than
+with GCC).</li>
+<li><p class="first">Secondly, use <code>pnacl-translate</code> to convert your <code>pexe</code> to one or more
+<code>nexe</code> files.  For example:</p>
+<pre>
+&lt;NACL_SDK_ROOT&gt;/toolchain/win_pnacl/bin/pnacl-translate ^
+  --allow-llvm-bitcode-input hello_world.pexe -arch x86-32 -o hello_world_x86_32.nexe
+&lt;NACL_SDK_ROOT&gt;/toolchain/win_pnacl/bin/pnacl-translate ^
+  --allow-llvm-bitcode-input hello_world.pexe -arch x86-64 -o hello_world_x86_64.nexe
+</pre>
+<p>For this, use the non-finalized <code>pexe</code> file produced by
+<code>pnacl-clang</code>, not the <code>pexe</code> file produced by <code>pnacl-finalize</code>.
+The latter <code>pexe</code> has debugging info stripped out.  The option
+<code>--allow-llvm-bitcode-input</code> tells <code>pnacl-translate</code> to accept a
+non-finalized <code>pexe</code>.</p>
+</li>
+<li><p class="first">Replace the <code>nmf</code> <a class="reference internal" href="/native-client/devguide/coding/application-structure.html#manifest-file"><em>manifest file</em></a> that points to
+your <code>pexe</code> file with one that points to the <code>nexe</code> files.  For the
+example <code>nexe</code> filenames above, the new <code>nmf</code> file would contain:</p>
+<pre>
+{
+  &quot;program&quot;: {
+    &quot;x86-32&quot;: {&quot;url&quot;: &quot;hello_world_x86_32.nexe&quot;},
+    &quot;x86-64&quot;: {&quot;url&quot;: &quot;hello_world_x86_64.nexe&quot;},
+  }
+}
+</pre>
+</li>
+<li>Change the <code>&lt;embed&gt;</code> HTML element to use
+<code>type=&quot;application/x-nacl&quot;</code> rather than
+<code>type=&quot;application/x-pnacl&quot;</code>.</li>
+<li>Copy the <code>nexe</code> and <code>nmf</code> files to the location that your local web
+server serves files from.</li>
+</ul>
+<aside class="note">
+<strong>Note:</strong> If you know whether Chrome is using the x86-32 or x86-64
+version of the NaCl sandbox on your system, you can translate the
+<code>pexe</code> once to a single x86-32 or x86-64 <code>nexe</code>.  Otherwise, you
+might find it easier to translate the <code>pexe</code> to both <code>nexe</code>
+formats as described above.
+</aside>
+</section><section id="running-nacl-gdb">
+<h4 id="running-nacl-gdb">Running nacl-gdb</h4>
+<p>Before you start using nacl-gdb, make sure you can <a class="reference internal" href="/native-client/devguide/devcycle/building.html"><em>build</em></a> your
+module and <a class="reference internal" href="/native-client/devguide/devcycle/running.html"><em>run</em></a> your application normally. This will verify
+that you have created all the required <a class="reference internal" href="/native-client/devguide/coding/application-structure.html"><em>application parts</em></a> (.html, .nmf, and .nexe files, shared
+libraries, etc.), that your server can access those resources, and that you&#8217;ve
+configured Chrome correctly to run your application.  The instructions below
+assume that you are using a <a class="reference internal" href="/native-client/devguide/devcycle/running.html#web-server"><em>local server</em></a> to run your
+application; one benefit of doing it this way is that you can check the web
+server output to confirm that your application is loading the correct
+resources. However, some people prefer to run their application as an unpacked
+extension, as described in <a class="reference internal" href="/native-client/devguide/devcycle/running.html"><em>Running Native Client Applications</em></a>.</p>
+<p>Follow the instructions below to debug your module with nacl-gdb:</p>
+<ol class="arabic">
+<li><p class="first">Compile your module with the <code>-g</code> flag so that your .nexe retains symbols
+and other debugging information (see the <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>recommended compile flags</em></a>).</p>
+</li>
+<li><p class="first">Launch a local web server (e.g., the <a class="reference internal" href="/native-client/devguide/devcycle/running.html#web-server"><em>web server</em></a> included
+in the SDK).</p>
+</li>
+<li><p class="first">Launch Chrome with these three required flags: <code>--enable-nacl --enable-nacl-debug --no-sandbox</code>.</p>
+<p>You may also want to use some of the optional flags listed below. A typical
+command looks like this:</p>
+<pre class="prettyprint">
+chrome --enable-nacl --enable-nacl-debug --no-sandbox --disable-hang-monitor localhost:5103
+</pre>
+<p><strong>Required flags:</strong></p>
+<dl class="docutils">
+<dt><code>--enable-nacl</code></dt>
+<dd><p class="first last">Enables Native Client for all applications, including those that are
+launched outside the Chrome Web Store.</p>
+</dd>
+<dt><code>--enable-nacl-debug</code></dt>
+<dd><p class="first last">Turns on the Native Client debug stub, opens TCP port 4014, and pauses
+Chrome to let the debugger connect.</p>
+</dd>
+<dt><code>--no-sandbox</code></dt>
+<dd><p class="first last">Turns off the Chrome sandbox (not the Native Client sandbox). This enables
+the stdout and stderr streams, and lets the debugger connect.</p>
+</dd>
+</dl>
+<p><strong>Optional flags:</strong></p>
+<dl class="docutils">
+<dt><code>--disable-hang-monitor</code></dt>
+<dd><p class="first last">Prevents Chrome from displaying a warning when a tab is unresponsive.</p>
+</dd>
+<dt><code>--user-data-dir=&lt;directory&gt;</code></dt>
+<dd><p class="first last">Specifies the <a class="reference external" href="http://www.chromium.org/user-experience/user-data-directory">user data directory</a> from which
+Chrome should load its state.  You can specify a different user data
+directory so that changes you make to Chrome in your debugging session do
+not affect your personal Chrome data (history, cookies, bookmarks, themes,
+and settings).</p>
+</dd>
+<dt><code>&lt;URL&gt;</code></dt>
+<dd><p class="first last">Specifies the URL Chrome should open when it launches. The local server
+that comes with the SDK listens on port 5103 by default, so the URL when
+you&#8217;re debugging is typically <code>localhost:5103</code> (assuming that your
+application&#8217;s page is called index.html and that you run the local server
+in the directory where that page is located).</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">Navigate to your application&#8217;s page in Chrome. (You don&#8217;t need to do this if
+you specified a URL when you launched Chrome in the previous step.) Chrome
+will start loading the application, then pause and wait until you start
+nacl-gdb and run the <code>continue</code> command.</p>
+</li>
+<li><p class="first">Go to the directory with your source code, and run nacl-gdb from there. For
+example:</p>
+<pre class="prettyprint">
+cd &lt;NACL_SDK_ROOT&gt;/examples/hello_world_gles
+&lt;NACL_SDK_ROOT&gt;/toolchain/win_x86_newlib/bin/x86_64-nacl-gdb
+</pre>
+<p>The debugger will start and show you a gdb prompt:</p>
+<pre class="prettyprint">
+(gdb)
+</pre>
+</li>
+<li><p class="first">Run the following three commands from the gdb command line:</p>
+<pre class="prettyprint">
+(gdb) nacl-manifest &lt;path-to-your-.nmf-file&gt;
+(gdb) nacl-irt &lt;path-to-Chrome-NaCl-integrated-runtime&gt;
+(gdb) target remote localhost:4014
+</pre>
+<p>These commands are described below:</p>
+<dl class="docutils">
+<dt><code>nacl-manifest &lt;path&gt;</code></dt>
+<dd><p class="first last">Tells the debugger about your Native Client application by pointing it to
+the application&#8217;s manifest (.nmf) file. The manifest file lists your
+application&#8217;s executable (.nexe) files, as well as any libraries that are
+linked with the application dynamically.</p>
+</dd>
+<dt><code>nacl-irt &lt;path&gt;</code></dt>
+<dd><p class="first last">Tells the debugger where to find the Native Client Integrated Runtime
+(IRT). The IRT is located in the same directory as the Chrome executable,
+or in a subdirectory named after the Chrome version. For example, if
+you&#8217;re running Chrome canary on Windows, the path to the IRT typically
+looks something like <code>C:/Users/&lt;username&gt;/AppData/Local/Google/Chrome
+SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe</code>.</p>
+</dd>
+<dt><code>target remote localhost:4014</code></dt>
+<dd><p class="first last">Tells the debugger how to connect to the debug stub in the Native Client
+application loader. This connection occurs through TCP port 4014 (note
+that this port is distinct from the port which the local web server uses
+to listen for incoming requests, typically port 5103).</p>
+</dd>
+</dl>
+<p>A couple of notes on how to specify path names in the nacl-gdb commands
+above:</p>
+<ul class="small-gap">
+<li><p class="first">You can use a forward slash to separate directories on Linux, Mac, and
+Windows. If you use a backslash to separate directories on Windows, you
+must escape the backslash by using a double backslash &#8220;\&#8221; between
+directories.</p>
+</li>
+<li><p class="first">If any directories in the path have spaces in their name, you must put
+quotation marks around the path.</p>
+</li>
+</ul>
+<p>As an example, here is a what these nacl-gdb commands might look like on
+Windows:</p>
+<pre class="prettyprint">
+nacl-manifest &quot;C:/&lt;NACL_SDK_ROOT&gt;/examples/hello_world_gles/newlib/Debug/hello_world_gles.nmf&quot;
+nacl-irt &quot;C:/Users/&lt;username&gt;/AppData/Local/Google/Chrome SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe&quot;
+target remote localhost:4014
+</pre>
+<p>To save yourself some typing, you can put put these nacl-gdb commands in a
+script file, and execute the file when you run nacl-gdb, like so:</p>
+<pre class="prettyprint">
+&lt;NACL_SDK_ROOT&gt;/toolchain/win_x86_newlib/bin/x86_64-nacl-gdb -x &lt;nacl-script-file&gt;
+</pre>
+<p>If nacl-gdb connects successfully to Chrome, it displays a message such as
+the one below, followed by a gdb prompt:</p>
+<pre class="prettyprint">
+0x000000000fc00200 in _start ()
+(gdb)
+</pre>
+<p>If nacl-gdb can&#8217;t connect to Chrome, it displays a message such as
+&#8220;<code>localhost:4014: A connection attempt failed</code>&#8221; or &#8220;<code>localhost:4014:
+Connection timed out.</code>&#8221; If you see a message like that, make sure that you
+have launched a web server, launched Chrome, and navigated to your
+application&#8217;s page before starting nacl-gdb.</p>
+</li>
+</ol>
+<p>Once nacl-gdb connects to Chrome, you can run standard gdb commands to execute
+your module and inspect its state. Some commonly used commands are listed
+below.</p>
+<dl class="docutils">
+<dt><code>break &lt;location&gt;</code></dt>
+<dd><p class="first">set a breakpoint at &lt;location&gt;, e.g.:</p>
+<pre class="last prettyprint">
+break hello_world.cc:79
+break hello_world::HelloWorldInstance::HandleMessage
+break Render
+</pre>
+</dd>
+<dt><code>continue</code></dt>
+<dd>resume normal execution of the program</dd>
+<dt><code>next</code></dt>
+<dd>execute the next source line, stepping over functions</dd>
+<dt><code>step</code></dt>
+<dd>execute the next source line, stepping into functions</dd>
+<dt><code>print &lt;expression&gt;</code></dt>
+<dd>print the value of &lt;expression&gt; (e.g., variables)</dd>
+<dt><code>backtrace</code></dt>
+<dd>print a stack backtrace</dd>
+<dt><code>info breakpoints</code></dt>
+<dd>print a table of all breakpoints</dd>
+<dt><code>delete &lt;breakpoint&gt;</code></dt>
+<dd>delete the specified breakpoint (you can use the breakpoint number displayed
+by the info command)</dd>
+<dt><code>help &lt;command&gt;</code></dt>
+<dd>print documentation for the specified gdb &lt;command&gt;</dd>
+<dt><code>quit</code></dt>
+<dd>quit gdb</dd>
+</dl>
+<p>See the <a class="reference external" href="http://sourceware.org/gdb/current/onlinedocs/gdb/#toc_Top">gdb documentation</a> for a
+comprehensive list of gdb commands. Note that you can abbreviate most commands
+to just their first letter (<code>b</code> for break, <code>c</code> for continue, and so on).</p>
+<p>To interrupt execution of your module, press &lt;Ctrl-c&gt;. When you&#8217;re done
+debugging, close the Chrome window and type <code>q</code> to quit gdb.</p>
+</section></section></section><section id="debugging-with-other-tools">
+<h2 id="debugging-with-other-tools">Debugging with other tools</h2>
+<p>If you cannot use the <a class="reference internal" href="#visual-studio"><em>Visual Studio add-in</em></a>, or you want
+to use a debugger other than nacl-gdb, you must manually build your module as a
+Pepper plugin (sometimes referred to as a &#8220;<a class="reference external" href="http://www.chromium.org/nativeclient/getting-started/getting-started-background-and-basics#TOC-Trusted-vs-Untrusted">trusted</a>&#8221;
+or &#8220;in-process&#8221; plugin).  Pepper plugins (.DLL files on Windows; .so files on
+Linux; .bundle files on Mac) are loaded directly in either the Chrome renderer
+process or a separate plugin process, rather than in Native Client. Building a
+module as a trusted Pepper plugin allows you to use standard debuggers and
+development tools on your system, but when you&#8217;re finished developing the
+plugin, you need to port it to Native Client (i.e., build the module with one
+of the toolchains in the NaCl SDK so that the module runs in Native Client).
+For details on this advanced development technique, see <a class="reference external" href="http://www.chromium.org/nativeclient/how-tos/debugging-documentation/debugging-a-trusted-plugin">Debugging a Trusted
+Plugin</a>.
+Note that starting with the <code>pepper_22</code> bundle, the NaCl SDK for Windows
+includes pre-built libraries and library source code, making it much easier to
+build a module into a .DLL.</p>
+<section id="open-source-profiling-tools">
+<h3 id="open-source-profiling-tools">Open source profiling tools</h3>
+<p>For the brave-hearted there are open source tools at <a class="reference external" href="http://www.chromium.org/nativeclient">Chromium.org</a> that describe how to do profiling on
+<a class="reference external" href="https://sites.google.com/a/chromium.org/dev/nativeclient/how-tos/profiling-nacl-apps-on-64-bit-windows">64-bit Windows</a>
+and <a class="reference external" href="http://www.chromium.org/nativeclient/how-tos/limited-profiling-with-oprofile-on-x86-64">Linux</a>
+machines.</p>
+</section></section></section>
+
+{{/partials.standard_nacl_article}}

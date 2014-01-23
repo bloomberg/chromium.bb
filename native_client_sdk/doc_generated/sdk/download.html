@@ -1,0 +1,278 @@
+{{+bindTo:partials.standard_nacl_article}}
+
+<section id="download-the-native-client-sdk">
+<span id="download"></span><h1 id="download-the-native-client-sdk"><span id="download"></span>Download the Native Client SDK</h1>
+<p>To build Native Client modules, you must download and install the Native
+Client Software Development Kit (SDK). This page provides an overview
+of the Native Client SDK, and instructions for how to download and
+install the SDK.</p>
+<section id="overview">
+<h2 id="overview">Overview</h2>
+<p>The Native Client SDK includes the following:</p>
+<dl class="docutils">
+<dt>support for multiple Pepper versions</dt>
+<dd>The SDK contains <strong>bundles</strong> that let you compile Native Client modules
+using different versions of the
+<a class="reference internal" href="/native-client/overview.html#link-pepper"><em>Pepper Plugin API</em></a> (e.g., Pepper 31 or Pepper Canary). Review the
+<a class="reference internal" href="/native-client/sdk/release-notes.html"><em>Release Notes</em></a> for a description of the new features
+included in each Pepper version to help you decide which bundle to
+use to develop your application. In general, Native Client modules
+compiled using a particular Pepper version will work in
+corresponding versions of Chrome and higher. For example, a module
+compiled using the Pepper 31 bundle will work in Chrome 31 and
+higher.</dd>
+<dt>update utility</dt>
+<dd>The <code>naclsdk</code> utility (<code>naclsdk.bat</code> on Windows) lets you download new
+bundles that are available, as well as new versions of existing bundles.</dd>
+<dt>toolchains</dt>
+<dd>Each platform includes three toolchains: one for compiling
+Portable Native Client (PNaCl) applications, one for compiling
+architecture-specific Native Client applications with newlib, and
+one for compiling architecture-specific Native Client applications with glibc.
+Newlib and glibc are two different implementations
+of the C standard library. All three toolchains contain
+Native Client-compatible versions of standard compilers, linkers,
+and other tools. See <a class="reference internal" href="/native-client/nacl-and-pnacl.html"><em>NaCl and PNaCl</em></a> to help
+you choose the right toolchain.</dd>
+<dt>examples</dt>
+<dd>Each example in the SDK includes C or C++ source files and header files
+illustrating how to use NaCl and Pepper, along with a Makefile to build
+the example using each of the toolchains.</dd>
+<dt>tools</dt>
+<dd>The SDK includes a number of additional tools that you can use for
+tasks such as validating Native Client modules and running modules
+from the command line.</dd>
+</dl>
+<p>Follow the steps below to download and install the Native Client SDK.</p>
+</section><section id="prerequisites">
+<h2 id="prerequisites">Prerequisites</h2>
+<ul class="small-gap">
+<li><p class="first"><strong>Python:</strong> Make sure you have Python 2.6 or 2.7 installed, and that the
+Python executable is in your path.</p>
+<ul class="small-gap">
+<li>On Mac/Linux, Python is likely preinstalled. Run the command <code>&quot;python
+-V</code>&#8221; in a terminal window, and make sure that the version of Python you
+have is 2.6.x or 2.7.x (if it&#8217;s not, upgrade to one of those versions).</li>
+<li>On Windows, you may need to install Python. Go to
+<a class="reference external" href="http://www.python.org/download/">http://www.python.org/download/</a> and
+select the latest 2.x version. In addition, be sure to add the Python
+directory (for example, <code>C:\python27</code>) to the PATH <a class="reference external" href="http://en.wikipedia.org/wiki/Environment_variable">environment
+variable</a>. After
+you&#8217;ve installed Python, run the command <code>&quot;python -V</code>&#8221; in a Command
+Prompt window and verify that the version of Python you have is 2.6.x or
+2.7.x.</li>
+<li>Note that Python 3.x is not yet supported.</li>
+</ul>
+</li>
+<li><strong>Make:</strong> On the Mac, you need to install the <code>make</code> command on your system
+before you can build and run the examples in the SDK. One easy way to get
+<code>make</code>, along with several other useful tools, is to install
+<a class="reference external" href="https://developer.apple.com/technologies/tools/">Xcode Developer Tools</a>.
+After installing Xcode, go to the Preferences menu, select
+Downloads and Components, and verify that Command Line Tools are installed.
+If you&#8217;d rather not install Xcode, you can download and build an
+<a class="reference external" href="http://mac.softpedia.com/dyn-postdownload.php?p=44632&amp;t=4&amp;i=1">open source version</a> of
+<code>make</code>. In order to build the command you may also need to download and
+install a copy of <a class="reference external" href="https://github.com/kennethreitz/osx-gcc-installer">gcc</a>.</li>
+</ul>
+</section><section id="download-and-install-the-sdk">
+<h2 id="download-and-install-the-sdk">Download and install the SDK</h2>
+<ol class="arabic">
+<li><p class="first">Download the SDK update utility: <a class="reference external" href="http://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip">nacl_sdk.zip</a>.</p>
+</li>
+<li><p class="first">Unzip the SDK update utility:</p>
+<ul class="small-gap">
+<li><p class="first">On Mac/Linux, run the command &#8220;<code>unzip nacl_sdk.zip</code>&#8221; in a terminal
+window.</p>
+</li>
+<li><p class="first">On Windows, right-click on the .zip file and select &#8220;Extract All...&#8221;. A
+dialog box will open; enter a location and click &#8220;Extract&#8221;.</p>
+</li>
+</ul>
+<p>Unzipping the SDK update utility creates a directory called <code>nacl_sdk</code> with
+the following files and directories:</p>
+<ul class="small-gap">
+<li><p class="first"><code>naclsdk</code> (and <code>naclsdk.bat</code> for Windows) &#8212; the front end of the update
+utility, i.e., the command you run to download the latest bundles</p>
+</li>
+<li><p class="first"><code>sdk_cache</code> &#8212; a directory with a manifest file that lists the bundles
+you have already downloaded</p>
+</li>
+<li><p class="first"><code>sdk_tools</code> &#8212; the back end of the update utility, also known as the
+&#8220;sdk_tools&#8221; bundle</p>
+</li>
+</ul>
+</li>
+<li><p class="first">To see the SDK bundles that are available for download, go to the <code>nacl_sdk</code>
+directory and run <code>naclsdk</code> with the <code>&quot;list&quot;</code> command.
+The SDK includes a separate bundle for each version of Chrome/Pepper.</p>
+<p>On Mac/Linux:</p>
+<pre class="prettyprint">
+$ cd nacl_sdk
+$ ./naclsdk list
+</pre>
+<p>On Windows:</p>
+<pre class="prettyprint">
+&gt; cd nacl_sdk
+&gt; naclsdk list
+</pre>
+<p>You should see output similar to this:</p>
+<pre class="prettyprint">
+Bundles:
+ I: installed
+ *: update available
+
+  I  sdk_tools (stable)
+     vs_addin (dev)
+     pepper_27 (post_stable)
+     pepper_28 (post_stable)
+     pepper_29 (post_stable)
+     pepper_30 (post_stable)
+     pepper_31 (stable)
+     pepper_32 (beta)
+     pepper_canary (canary)
+</pre>
+<p>The sample output above shows that there are a number of bundles available
+for download, and that you have already installed the latest revision of the
+<code>sdk_tools</code> bundle (it was included in the zip file you downloaded).
+Each bundle is labeled post-stable, stable, beta, dev, or canary.
+These labels usually correspond to the current versions of
+Chrome. (In the example above, Chrome 31 is stable, Chrome 32 is beta, etc.).
+We generally recommend that you download and use a &#8220;stable&#8221; bundle,
+as applications developed with &#8220;stable&#8221; bundles can be used by all current
+Chrome users. This is because Native Client is designed to be
+backward-compatible (for example, applications developed with the
+<code>pepper_31</code> bundle can run in Chrome 31, Chrome 32, etc.).
+Thus in the example above, <code>pepper_31</code> is the recommended bundle to use.</p>
+</li>
+<li><p class="first">Run <code>naclsdk</code> with the &#8220;update&#8221; command to download recommended bundles.</p>
+<p>On Mac/Linux:</p>
+<pre class="prettyprint">
+$ ./naclsdk update
+</pre>
+<p>On Windows:</p>
+<pre class="prettyprint">
+&gt; naclsdk update
+</pre>
+<p>By default, <code>naclsdk</code> only downloads bundles that are
+recommended&#8212;generally those that are &#8220;stable.&#8221; Continuing with the earlier example, the
+&#8220;update&#8221; command would only download the <code>pepper_31</code>
+bundle, since the bundles <code>pepper_32</code> and greater are not yet stable.
+If you want the <code>pepper_32</code> bundle, you must ask for it explicitly:</p>
+<pre class="prettyprint">
+$ ./naclsdk update pepper_32
+</pre>
+<p>Note that you never need to update the <code>sdk_tools</code> bundle&#8212;it is
+updated automatically (if necessary) whenever you run <code>naclsdk</code>.</p>
+</li>
+</ol>
+<aside class="note">
+The minimum SDK bundle that supports PNaCl is <code>pepper_31</code>.
+</aside>
+</section><section id="staying-up-to-date-and-getting-new-versions-of-bundles">
+<h2 id="staying-up-to-date-and-getting-new-versions-of-bundles">Staying up-to-date and getting new versions of bundles</h2>
+<ol class="arabic">
+<li><p class="first">Run <code>naclsdk</code> with the &#8220;list&#8221; command again; this will show you the list of
+available bundles and verify which bundles you have installed.</p>
+<p>On Mac/Linux:</p>
+<pre class="prettyprint">
+$ ./naclsdk list
+</pre>
+<p>On Windows:</p>
+<pre class="prettyprint">
+&gt; naclsdk list
+</pre>
+<p>Continuing with the earlier example, if you previously downloaded the
+<code>pepper_31</code> bundle, you should see output similar to this:</p>
+<pre class="prettyprint">
+Bundles:
+ I: installed
+ *: update available
+
+  I  sdk_tools (stable)
+     vs_addin (dev)
+     pepper_27 (post_stable)
+     pepper_28 (post_stable)
+     pepper_29 (post_stable)
+     pepper_30 (post_stable)
+  I  pepper_31 (stable)
+     pepper_32 (beta)
+     pepper_canary (canary)
+</pre>
+</li>
+<li><p class="first">Running <code>naclsdk</code> with the &#8220;update&#8221; command again will verify that your
+bundles are up-to-date, or warn if you there are new versions of previously
+installed bundles.</p>
+<p>On Mac/Linux:</p>
+<pre class="prettyprint">
+$ ./naclsdk update
+</pre>
+<p>On Windows:</p>
+<pre class="prettyprint">
+&gt; naclsdk update
+</pre>
+<p>Continuing with the earlier example, you should see output similar to this:</p>
+<pre class="prettyprint">
+pepper_31 is already up-to-date.
+</pre>
+</li>
+<li><p class="first">To check if there is a new version of a previously installed bundle, you can
+run the &#8220;list&#8221; command again:</p>
+<pre class="prettyprint">
+Bundles:
+ I: installed
+ *: update available
+
+  I  sdk_tools (stable)
+     vs_addin (dev)
+     pepper_27 (post_stable)
+     pepper_28 (post_stable)
+     pepper_29 (post_stable)
+     pepper_30 (post_stable)
+  I* pepper_31 (stable)
+     pepper_32 (beta)
+     pepper_canary (canary)
+</pre>
+<p>An asterisk next to a bundle indicates that there is an update
+available for that bundle. If you run  the &#8220;update&#8221; command now,
+<code>naclsdk</code> will warn you with a message similar to this:</p>
+<pre class="prettyprint">
+WARNING: pepper_31 already exists, but has an update available.
+Run update with the --force option to overwrite the existing directory.
+Warning: This will overwrite any modifications you have made within this directory.
+</pre>
+<p>To dowload the new version of a bundle and overwrite the existing directory
+for that bundle, run <code>naclsdk</code> with the <code>--force</code> option.</p>
+<p>On Mac/Linux:</p>
+<pre class="prettyprint">
+$ ./naclsdk update --force
+</pre>
+<p>On Windows:</p>
+<pre class="prettyprint">
+&gt; naclsdk update --force
+</pre>
+</li>
+<li><p class="first">For more information about the <code>naclsdk</code> utility, run:</p>
+<p>On Mac/Linux:</p>
+<pre class="prettyprint">
+$ ./naclsdk help
+</pre>
+<p>On Windows:</p>
+<pre class="prettyprint">
+&gt; naclsdk help
+</pre>
+</li>
+</ol>
+<p>Next steps:</p>
+<ul class="small-gap">
+<li>Browse through the <a class="reference internal" href="/native-client/sdk/release-notes.html"><em>Release Notes</em></a> for important
+information about the SDK and new bundles.</li>
+<li>If you&#8217;re just getting started with Native Client, we recommend reading
+the <a class="reference internal" href="/native-client/overview.html"><em>Technical Overview</em></a> and walking through the
+<a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html"><em>Getting Started Tutorial</em></a>.</li>
+<li>If you&#8217;d rather dive into information about the toolchains, see
+<a class="reference internal" href="/native-client/devguide/devcycle/building.html"><em>Building Native Client Modules</em></a>.</li>
+</ul>
+</section></section>
+
+{{/partials.standard_nacl_article}}
