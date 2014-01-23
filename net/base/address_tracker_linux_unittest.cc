@@ -23,18 +23,20 @@ class AddressTrackerLinuxTest : public testing::Test {
   AddressTrackerLinuxTest() : tracker_(base::Bind(&Noop), base::Bind(&Noop)) {}
 
   bool HandleAddressMessage(const Buffer& buf) {
+    Buffer writable_buf = buf;
     bool address_changed = false;
     bool link_changed = false;
-    tracker_.HandleMessage(&buf[0], buf.size(),
+    tracker_.HandleMessage(&writable_buf[0], buf.size(),
                            &address_changed, &link_changed);
     EXPECT_FALSE(link_changed);
     return address_changed;
   }
 
   bool HandleLinkMessage(const Buffer& buf) {
+    Buffer writable_buf = buf;
     bool address_changed = false;
     bool link_changed = false;
-    tracker_.HandleMessage(&buf[0], buf.size(),
+    tracker_.HandleMessage(&writable_buf[0], buf.size(),
                            &address_changed, &link_changed);
     EXPECT_FALSE(address_changed);
     return link_changed;
@@ -103,12 +105,15 @@ class NetlinkMessage {
   Buffer buffer_;
 };
 
-void MakeAddrMessage(uint16 type,
-                     uint8 flags,
-                     uint8 family,
-                     const IPAddressNumber& address,
-                     const IPAddressNumber& local,
-                     Buffer* output) {
+#define INFINITY_LIFE_TIME 0xFFFFFFFF
+
+void MakeAddrMessageWithCacheInfo(uint16 type,
+                                  uint8 flags,
+                                  uint8 family,
+                                  const IPAddressNumber& address,
+                                  const IPAddressNumber& local,
+                                  uint32 preferred_lifetime,
+                                  Buffer* output) {
   NetlinkMessage nlmsg(type);
   struct ifaddrmsg msg = {};
   msg.ifa_family = family;
@@ -118,7 +123,21 @@ void MakeAddrMessage(uint16 type,
     nlmsg.AddAttribute(IFA_ADDRESS, &address[0], address.size());
   if (local.size())
     nlmsg.AddAttribute(IFA_LOCAL, &local[0], local.size());
+  struct ifa_cacheinfo cache_info = {};
+  cache_info.ifa_prefered = preferred_lifetime;
+  cache_info.ifa_valid = INFINITY_LIFE_TIME;
+  nlmsg.AddAttribute(IFA_CACHEINFO, &cache_info, sizeof(cache_info));
   nlmsg.AppendTo(output);
+}
+
+void MakeAddrMessage(uint16 type,
+                     uint8 flags,
+                     uint8 family,
+                     const IPAddressNumber& address,
+                     const IPAddressNumber& local,
+                     Buffer* output) {
+  MakeAddrMessageWithCacheInfo(type, flags, family, address, local,
+                               INFINITY_LIFE_TIME, output);
 }
 
 void MakeLinkMessage(uint16 type, uint32 flags, uint32 index, Buffer* output) {
@@ -256,6 +275,46 @@ TEST_F(AddressTrackerLinuxTest, DeleteAddress) {
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(0u, map.size());
+}
+
+TEST_F(AddressTrackerLinuxTest, DeprecatedLifetime) {
+  const IPAddressNumber kEmpty;
+  const IPAddressNumber kAddr3(kAddress3, kAddress3 + arraysize(kAddress3));
+
+  Buffer buffer;
+  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET6, kEmpty, kAddr3, &buffer);
+  EXPECT_TRUE(HandleAddressMessage(buffer));
+  AddressTrackerLinux::AddressMap map = GetAddressMap();
+  EXPECT_EQ(1u, map.size());
+  EXPECT_EQ(1u, map.count(kAddr3));
+  EXPECT_EQ(0, map[kAddr3].ifa_flags);
+
+  // Verify 0 preferred lifetime implies deprecated.
+  buffer.clear();
+  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, 0, AF_INET6, kEmpty, kAddr3, 0,
+                               &buffer);
+  EXPECT_TRUE(HandleAddressMessage(buffer));
+  map = GetAddressMap();
+  EXPECT_EQ(1u, map.size());
+  EXPECT_EQ(IFA_F_DEPRECATED, map[kAddr3].ifa_flags);
+
+  // Verify properly flagged message doesn't imply change.
+  buffer.clear();
+  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, IFA_F_DEPRECATED, AF_INET6, kEmpty,
+                               kAddr3, 0, &buffer);
+  EXPECT_FALSE(HandleAddressMessage(buffer));
+  map = GetAddressMap();
+  EXPECT_EQ(1u, map.size());
+  EXPECT_EQ(IFA_F_DEPRECATED, map[kAddr3].ifa_flags);
+
+  // Verify implied deprecated doesn't imply change.
+  buffer.clear();
+  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, 0, AF_INET6, kEmpty, kAddr3, 0,
+                               &buffer);
+  EXPECT_FALSE(HandleAddressMessage(buffer));
+  map = GetAddressMap();
+  EXPECT_EQ(1u, map.size());
+  EXPECT_EQ(IFA_F_DEPRECATED, map[kAddr3].ifa_flags);
 }
 
 TEST_F(AddressTrackerLinuxTest, IgnoredMessage) {

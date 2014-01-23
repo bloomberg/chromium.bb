@@ -18,7 +18,12 @@ namespace internal {
 namespace {
 
 // Retrieves address from NETLINK address message.
-bool GetAddress(const struct nlmsghdr* header, IPAddressNumber* out) {
+// Sets |really_deprecated| for IPv6 addresses with preferred lifetimes of 0.
+bool GetAddress(const struct nlmsghdr* header,
+                IPAddressNumber* out,
+                bool* really_deprecated) {
+  if (really_deprecated)
+    *really_deprecated = false;
   const struct ifaddrmsg* msg =
       reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
   size_t address_length = 0;
@@ -53,6 +58,12 @@ bool GetAddress(const struct nlmsghdr* header, IPAddressNumber* out) {
         DCHECK_GE(RTA_PAYLOAD(attr), address_length);
         local = reinterpret_cast<unsigned char*>(RTA_DATA(attr));
         break;
+      case IFA_CACHEINFO: {
+        const struct ifa_cacheinfo *cache_info =
+            reinterpret_cast<const struct ifa_cacheinfo*>(RTA_DATA(attr));
+        if (really_deprecated)
+          *really_deprecated = (cache_info->ifa_prefered == 0);
+      } break;
       default:
         break;
     }
@@ -225,13 +236,12 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
   }
 }
 
-void AddressTrackerLinux::HandleMessage(const char* buffer,
+void AddressTrackerLinux::HandleMessage(char* buffer,
                                         size_t length,
                                         bool* address_changed,
                                         bool* link_changed) {
   DCHECK(buffer);
-  for (const struct nlmsghdr* header =
-          reinterpret_cast<const struct nlmsghdr*>(buffer);
+  for (struct nlmsghdr* header = reinterpret_cast<struct nlmsghdr*>(buffer);
        NLMSG_OK(header, length);
        header = NLMSG_NEXT(header, length)) {
     switch (header->nlmsg_type) {
@@ -244,10 +254,20 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       } return;
       case RTM_NEWADDR: {
         IPAddressNumber address;
-        if (GetAddress(header, &address)) {
+        bool really_deprecated;
+        if (GetAddress(header, &address, &really_deprecated)) {
           base::AutoLock lock(address_map_lock_);
-          const struct ifaddrmsg* msg =
+          struct ifaddrmsg* msg =
               reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
+          // Routers may frequently (every few seconds) output the IPv6 ULA
+          // prefix which can cause the linux kernel to frequently output two
+          // back-to-back messages, one without the deprecated flag and one with
+          // the deprecated flag but both with preferred lifetimes of 0. Avoid
+          // interpretting this as an actual change by canonicalizing the two
+          // messages by setting the deprecated flag based on the preferred
+          // lifetime also.  http://crbug.com/268042
+          if (really_deprecated)
+            msg->ifa_flags |= IFA_F_DEPRECATED;
           // Only indicate change if the address is new or ifaddrmsg info has
           // changed.
           AddressMap::iterator it = address_map_.find(address);
@@ -262,7 +282,7 @@ void AddressTrackerLinux::HandleMessage(const char* buffer,
       } break;
       case RTM_DELADDR: {
         IPAddressNumber address;
-        if (GetAddress(header, &address)) {
+        if (GetAddress(header, &address, NULL)) {
           base::AutoLock lock(address_map_lock_);
           if (address_map_.erase(address))
             *address_changed = true;
