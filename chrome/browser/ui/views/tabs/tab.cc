@@ -425,11 +425,12 @@ class Tab::TabCloseButton : public views::ImageButton {
     // If the button is hidden behind another tab, the hit test mask is empty.
     // Otherwise set the hit test mask to be the contents bounds.
     path->reset();
-    if (tab_bounds.Contains(button_bounds)) {
+    if (tab_bounds.Intersects(button_bounds)) {
       // Include the padding in the hit test mask for touch events.
       if (source == HIT_TEST_SOURCE_TOUCH)
         button_bounds = GetLocalBounds();
 
+      // TODO: this isn't quite right, really need to intersect the two regions.
       path->addRect(RectToSkRect(button_bounds));
     }
   }
