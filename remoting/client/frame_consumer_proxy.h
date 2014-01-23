@@ -33,7 +33,8 @@ class FrameConsumerProxy
   virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
                            const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
-                           const webrtc::DesktopRegion& region) OVERRIDE;
+                           const webrtc::DesktopRegion& region,
+                           const webrtc::DesktopRegion& shape) OVERRIDE;
   virtual void ReturnBuffer(webrtc::DesktopFrame* buffer) OVERRIDE;
   virtual void SetSourceSize(const webrtc::DesktopSize& source_size,
                              const webrtc::DesktopVector& dpi) OVERRIDE;

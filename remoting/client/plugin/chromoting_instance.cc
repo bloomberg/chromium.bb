@@ -39,7 +39,7 @@
 #include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_token_fetcher.h"
 #include "remoting/client/plugin/pepper_view.h"
-#include "remoting/client/rectangle_update_decoder.h"
+#include "remoting/client/software_video_renderer.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
@@ -634,23 +634,27 @@ void ChromotingInstance::ConnectWithConfig(const ClientConfig& config,
   view_weak_factory_.reset(
       new base::WeakPtrFactory<FrameConsumer>(view_.get()));
 
-  // RectangleUpdateDecoder runs on a separate thread so for now we wrap
+  // SoftwareVideoRenderer runs on a separate thread so for now we wrap
   // PepperView with a ref-counted proxy object.
   scoped_refptr<FrameConsumerProxy> consumer_proxy =
       new FrameConsumerProxy(plugin_task_runner_,
                              view_weak_factory_->GetWeakPtr());
 
+  SoftwareVideoRenderer* decoder =
+      new SoftwareVideoRenderer(context_.main_task_runner(),
+                                context_.decode_task_runner(),
+                                consumer_proxy);
+  view_->Initialize(decoder);
+  video_renderer_.reset(decoder);
+
   host_connection_.reset(new protocol::ConnectionToHost(true));
   scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));
-  client_.reset(new ChromotingClient(config, &context_,
-                                     host_connection_.get(), this,
-                                     consumer_proxy, audio_player.Pass()));
+  client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
+                                     this, video_renderer_.get(),
+                                     audio_player.Pass()));
 
-  view_->Initialize(client_->GetFrameProducer());
-
-  if (!plugin_view_.is_null()) {
+  if (!plugin_view_.is_null())
     view_->SetView(plugin_view_);
-  }
 
   // Connect the input pipeline to the protocol stub & initialize components.
   mouse_input_filter_.set_input_stub(host_connection_->input_stub());
@@ -906,9 +910,9 @@ void ChromotingInstance::HandleAllowMouseLockMessage() {
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {
-  if (!client_.get())
+  if (!video_renderer_.get())
     return NULL;
-  return client_->GetStats();
+  return video_renderer_->GetStats();
 }
 
 void ChromotingInstance::PostChromotingMessage(
@@ -937,7 +941,7 @@ void ChromotingInstance::SendOutgoingIq(const std::string& iq) {
 }
 
 void ChromotingInstance::SendPerfStats() {
-  if (!client_.get()) {
+  if (!video_renderer_.get()) {
     return;
   }
 
@@ -947,7 +951,7 @@ void ChromotingInstance::SendPerfStats() {
       base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  ChromotingStats* stats = client_->GetStats();
+  ChromotingStats* stats = video_renderer_->GetStats();
   data->SetDouble("videoBandwidth", stats->video_bandwidth()->Rate());
   data->SetDouble("videoFrameRate", stats->video_frame_rate()->Rate());
   data->SetDouble("captureLatency", stats->video_capture_ms()->Average());

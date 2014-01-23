@@ -2476,8 +2476,9 @@
         'client/frame_producer.h',
         'client/key_event_mapper.cc',
         'client/key_event_mapper.h',
-        'client/rectangle_update_decoder.cc',
-        'client/rectangle_update_decoder.h',
+        'client/software_video_renderer.cc',
+        'client/software_video_renderer.h',
+        'client/video_renderer.h',
       ],
     },  # end of target 'remoting_client'
 

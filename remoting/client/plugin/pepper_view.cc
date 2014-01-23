@@ -164,7 +164,8 @@ void PepperView::SetView(const pp::View& view) {
 void PepperView::ApplyBuffer(const webrtc::DesktopSize& view_size,
                              const webrtc::DesktopRect& clip_area,
                              webrtc::DesktopFrame* buffer,
-                             const webrtc::DesktopRegion& region) {
+                             const webrtc::DesktopRegion& region,
+                             const webrtc::DesktopRegion& shape) {
   DCHECK(context_->main_task_runner()->BelongsToCurrentThread());
 
   if (!frame_received_) {
@@ -181,6 +182,7 @@ void PepperView::ApplyBuffer(const webrtc::DesktopSize& view_size,
     Initialize(producer_);
   } else {
     FlushBuffer(clip_area, buffer, region);
+    instance_->SetDesktopShape(shape);
   }
 }
 
@@ -303,11 +305,6 @@ void PepperView::FlushBuffer(const webrtc::DesktopRect& clip_area,
   int error = graphics2d_.Flush(callback);
   CHECK(error == PP_OK_COMPLETIONPENDING);
   flush_pending_ = true;
-
-  // If the buffer we just rendered has a shape then pass that to JavaScript.
-  const webrtc::DesktopRegion* buffer_shape = producer_->GetBufferShape();
-  if (buffer_shape)
-    instance_->SetDesktopShape(*buffer_shape);
 }
 
 void PepperView::OnFlushDone(int result,

@@ -24,16 +24,17 @@ FrameConsumerProxy::FrameConsumerProxy(
 void FrameConsumerProxy::ApplyBuffer(const webrtc::DesktopSize& view_size,
                                      const webrtc::DesktopRect& clip_area,
                                      webrtc::DesktopFrame* buffer,
-                                     const webrtc::DesktopRegion& region) {
+                                     const webrtc::DesktopRegion& region,
+                                     const webrtc::DesktopRegion& shape) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(
         &FrameConsumerProxy::ApplyBuffer, this,
-        view_size, clip_area, buffer, region));
+        view_size, clip_area, buffer, region, shape));
     return;
   }
 
   if (frame_consumer_.get())
-    frame_consumer_->ApplyBuffer(view_size, clip_area, buffer, region);
+    frame_consumer_->ApplyBuffer(view_size, clip_area, buffer, region, shape);
 }
 
 void FrameConsumerProxy::ReturnBuffer(webrtc::DesktopFrame* buffer) {

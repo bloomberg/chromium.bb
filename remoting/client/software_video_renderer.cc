@@ -1,8 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/rectangle_update_decoder.h"
+#include "remoting/client/software_video_renderer.h"
+
+#include <list>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -74,7 +76,57 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
   scoped_ptr<VideoDecoder> parent_;
 };
 
-RectangleUpdateDecoder::RectangleUpdateDecoder(
+class SoftwareVideoRenderer::Core {
+ public:
+  Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+       scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
+       scoped_refptr<FrameConsumerProxy> consumer);
+  ~Core();
+
+  void Initialize(const protocol::SessionConfig& config);
+  void DrawBuffer(webrtc::DesktopFrame* buffer);
+  void InvalidateRegion(const webrtc::DesktopRegion& region);
+  void RequestReturnBuffers(const base::Closure& done);
+  void SetOutputSizeAndClip(
+      const webrtc::DesktopSize& view_size,
+      const webrtc::DesktopRect& clip_area);
+
+  // Decodes the contents of |packet|. DecodePacket may keep a reference to
+  // |packet| so the |packet| must remain alive and valid until |done| is
+  // executed.
+  void DecodePacket(scoped_ptr<VideoPacket> packet, const base::Closure& done);
+
+ private:
+  // Paints the invalidated region to the next available buffer and returns it
+  // to the consumer.
+  void SchedulePaint();
+  void DoPaint();
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
+  scoped_refptr<FrameConsumerProxy> consumer_;
+  scoped_ptr<VideoDecoder> decoder_;
+
+  // Remote screen size in pixels.
+  webrtc::DesktopSize source_size_;
+
+  // Vertical and horizontal DPI of the remote screen.
+  webrtc::DesktopVector source_dpi_;
+
+  // The current dimensions of the frame consumer view.
+  webrtc::DesktopSize view_size_;
+  webrtc::DesktopRect clip_area_;
+
+  // The drawing buffers supplied by the frame consumer.
+  std::list<webrtc::DesktopFrame*> buffers_;
+
+  // Flag used to coalesce runs of SchedulePaint()s into a single DoPaint().
+  bool paint_scheduled_;
+
+  base::WeakPtrFactory<Core> weak_factory_;
+};
+
+SoftwareVideoRenderer::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
     scoped_refptr<FrameConsumerProxy> consumer)
@@ -82,19 +134,14 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(
       decode_task_runner_(decode_task_runner),
       consumer_(consumer),
       paint_scheduled_(false),
-      latest_sequence_number_(0) {
+      weak_factory_(this) {
 }
 
-RectangleUpdateDecoder::~RectangleUpdateDecoder() {
+SoftwareVideoRenderer::Core::~Core() {
 }
 
-void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
-  if (!decode_task_runner_->BelongsToCurrentThread()) {
-    decode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::Initialize, this,
-                              config));
-    return;
-  }
+void SoftwareVideoRenderer::Core::Initialize(const SessionConfig& config) {
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
@@ -115,11 +162,9 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
   }
 }
 
-void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
-                                          const base::Closure& done) {
+void SoftwareVideoRenderer::Core::DecodePacket(scoped_ptr<VideoPacket> packet,
+                                                const base::Closure& done) {
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
-
-  base::ScopedClosureRunner done_runner(done);
 
   bool decoder_needs_reset = false;
   bool notify_size_or_dpi_change = false;
@@ -145,8 +190,10 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
   }
 
   // If we've never seen a screen size, ignore the packet.
-  if (source_size_.is_empty())
+  if (source_size_.is_empty()) {
+    main_task_runner_->PostTask(FROM_HERE, base::Bind(done));
     return;
+  }
 
   if (decoder_needs_reset)
     decoder_->Initialize(source_size_);
@@ -158,17 +205,22 @@ void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
   } else {
     LOG(ERROR) << "DecodePacket() failed.";
   }
+
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(done));
 }
 
-void RectangleUpdateDecoder::SchedulePaint() {
+void SoftwareVideoRenderer::Core::SchedulePaint() {
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
   if (paint_scheduled_)
     return;
   paint_scheduled_ = true;
   decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RectangleUpdateDecoder::DoPaint, this));
+      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::DoPaint,
+                            weak_factory_.GetWeakPtr()));
 }
 
-void RectangleUpdateDecoder::DoPaint() {
+void SoftwareVideoRenderer::Core::DoPaint() {
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
   DCHECK(paint_scheduled_);
   paint_scheduled_ = false;
 
@@ -184,24 +236,19 @@ void RectangleUpdateDecoder::DoPaint() {
   webrtc::DesktopFrame* buffer = buffers_.front();
   webrtc::DesktopRegion output_region;
   decoder_->RenderFrame(view_size_, clip_area_,
-                        buffer->data(),
-                        buffer->stride(),
-                        &output_region);
+                        buffer->data(), buffer->stride(), &output_region);
 
   // Notify the consumer that painting is done.
   if (!output_region.is_empty()) {
     buffers_.pop_front();
-    consumer_->ApplyBuffer(view_size_, clip_area_, buffer, output_region);
+    consumer_->ApplyBuffer(view_size_, clip_area_, buffer, output_region,
+                           *decoder_->GetImageShape());
   }
 }
 
-void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
-  if (!decode_task_runner_->BelongsToCurrentThread()) {
-    decode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::RequestReturnBuffers,
-        this, done));
-    return;
-  }
+void SoftwareVideoRenderer::Core::RequestReturnBuffers(
+    const base::Closure& done) {
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   while (!buffers_.empty()) {
     consumer_->ReturnBuffer(buffers_.front());
@@ -212,14 +259,8 @@ void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
     done.Run();
 }
 
-void RectangleUpdateDecoder::DrawBuffer(webrtc::DesktopFrame* buffer) {
-  if (!decode_task_runner_->BelongsToCurrentThread()) {
-    decode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::DrawBuffer,
-                              this, buffer));
-    return;
-  }
-
+void SoftwareVideoRenderer::Core::DrawBuffer(webrtc::DesktopFrame* buffer) {
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
   DCHECK(clip_area_.width() <= buffer->size().width() &&
          clip_area_.height() <= buffer->size().height());
 
@@ -227,14 +268,9 @@ void RectangleUpdateDecoder::DrawBuffer(webrtc::DesktopFrame* buffer) {
   SchedulePaint();
 }
 
-void RectangleUpdateDecoder::InvalidateRegion(
+void SoftwareVideoRenderer::Core::InvalidateRegion(
     const webrtc::DesktopRegion& region) {
-  if (!decode_task_runner_->BelongsToCurrentThread()) {
-    decode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::InvalidateRegion,
-                              this, region));
-    return;
-  }
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   if (decoder_.get()) {
     decoder_->Invalidate(view_size_, region);
@@ -242,15 +278,10 @@ void RectangleUpdateDecoder::InvalidateRegion(
   }
 }
 
-void RectangleUpdateDecoder::SetOutputSizeAndClip(
+void SoftwareVideoRenderer::Core::SetOutputSizeAndClip(
     const webrtc::DesktopSize& view_size,
     const webrtc::DesktopRect& clip_area) {
-  if (!decode_task_runner_->BelongsToCurrentThread()) {
-    decode_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSizeAndClip,
-                              this, view_size, clip_area));
-    return;
-  }
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   // The whole frame needs to be repainted if the scaling factor has changed.
   if (!view_size_.equals(view_size) && decoder_.get()) {
@@ -281,13 +312,38 @@ void RectangleUpdateDecoder::SetOutputSizeAndClip(
   }
 }
 
-const webrtc::DesktopRegion* RectangleUpdateDecoder::GetBufferShape() {
-  return decoder_->GetImageShape();
+SoftwareVideoRenderer::SoftwareVideoRenderer(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
+    scoped_refptr<FrameConsumerProxy> consumer)
+    : decode_task_runner_(decode_task_runner),
+      core_(new Core(main_task_runner, decode_task_runner, consumer)),
+      latest_sequence_number_(0),
+      weak_factory_(this) {
+  DCHECK(CalledOnValidThread());
 }
 
-void RectangleUpdateDecoder::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+SoftwareVideoRenderer::~SoftwareVideoRenderer() {
+  DCHECK(CalledOnValidThread());
+  decode_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
+
+void SoftwareVideoRenderer::Initialize(
+    const protocol::SessionConfig& config) {
+  DCHECK(CalledOnValidThread());
+  decode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::Initialize,
+                            base::Unretained(core_.get()), config));
+}
+
+ChromotingStats* SoftwareVideoRenderer::GetStats() {
+  DCHECK(CalledOnValidThread());
+  return &stats_;
+}
+
+void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                 const base::Closure& done) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
@@ -317,33 +373,53 @@ void RectangleUpdateDecoder::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   // Measure the latency between the last packet being received and presented.
   base::Time decode_start = base::Time::Now();
 
-  base::Closure decode_done = base::Bind(
-      &RectangleUpdateDecoder::OnPacketDone, this, decode_start, done);
+  base::Closure decode_done = base::Bind(&SoftwareVideoRenderer::OnPacketDone,
+                                         weak_factory_.GetWeakPtr(),
+                                         decode_start, done);
 
   decode_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &RectangleUpdateDecoder::DecodePacket, this,
-      base::Passed(&packet), decode_done));
+      &SoftwareVideoRenderer::Core::DecodePacket,
+      base::Unretained(core_.get()), base::Passed(&packet), decode_done));
 }
 
-void RectangleUpdateDecoder::OnPacketDone(base::Time decode_start,
+void SoftwareVideoRenderer::DrawBuffer(webrtc::DesktopFrame* buffer) {
+  decode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::DrawBuffer,
+                            base::Unretained(core_.get()), buffer));
+}
+
+void SoftwareVideoRenderer::InvalidateRegion(
+    const webrtc::DesktopRegion& region) {
+  decode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::InvalidateRegion,
+                            base::Unretained(core_.get()), region));
+}
+
+void SoftwareVideoRenderer::RequestReturnBuffers(const base::Closure& done) {
+  decode_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SoftwareVideoRenderer::Core::RequestReturnBuffers,
+                 base::Unretained(core_.get()), done));
+}
+
+void SoftwareVideoRenderer::SetOutputSizeAndClip(
+    const webrtc::DesktopSize& view_size,
+    const webrtc::DesktopRect& clip_area) {
+  decode_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SoftwareVideoRenderer::Core::SetOutputSizeAndClip,
+                 base::Unretained(core_.get()), view_size, clip_area));
+}
+
+void SoftwareVideoRenderer::OnPacketDone(base::Time decode_start,
                                           const base::Closure& done) {
-  if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &RectangleUpdateDecoder::OnPacketDone, this,
-        decode_start, done));
-    return;
-  }
+  DCHECK(CalledOnValidThread());
 
   // Record the latency between the packet being received and presented.
   stats_.video_decode_ms()->Record(
       (base::Time::Now() - decode_start).InMilliseconds());
 
   done.Run();
-}
-
-ChromotingStats* RectangleUpdateDecoder::GetStats() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  return &stats_;
 }
 
 }  // namespace remoting

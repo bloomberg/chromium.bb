@@ -10,7 +10,7 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
-#include "remoting/client/rectangle_update_decoder.h"
+#include "remoting/client/video_renderer.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/authentication_method.h"
@@ -29,18 +29,15 @@ ChromotingClient::ChromotingClient(
     ClientContext* client_context,
     protocol::ConnectionToHost* connection,
     ClientUserInterface* user_interface,
-    scoped_refptr<FrameConsumerProxy> frame_consumer,
+    VideoRenderer* video_renderer,
     scoped_ptr<AudioPlayer> audio_player)
     : config_(config),
       task_runner_(client_context->main_task_runner()),
       connection_(connection),
       user_interface_(user_interface),
+      video_renderer_(video_renderer),
       host_capabilities_received_(false),
       weak_factory_(this) {
-  rectangle_decoder_ =
-      new RectangleUpdateDecoder(client_context->main_task_runner(),
-                                 client_context->decode_task_runner(),
-                                 frame_consumer);
   if (audio_player) {
     audio_decode_scheduler_.reset(new AudioDecodeScheduler(
         client_context->main_task_runner(),
@@ -77,17 +74,8 @@ void ChromotingClient::Start(
                        this,
                        this,
                        this,
-                       rectangle_decoder_.get(),
+                       video_renderer_,
                        audio_decode_scheduler_.get());
-}
-
-FrameProducer* ChromotingClient::GetFrameProducer() {
-  return rectangle_decoder_.get();
-}
-
-ChromotingStats* ChromotingClient::GetStats() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return rectangle_decoder_->GetStats();
 }
 
 void ChromotingClient::SetCapabilities(
@@ -170,7 +158,7 @@ void ChromotingClient::OnAuthenticated() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Initialize the decoder.
-  rectangle_decoder_->Initialize(connection_->config());
+  video_renderer_->Initialize(connection_->config());
   if (connection_->config().is_audio_enabled())
     audio_decode_scheduler_->Initialize(connection_->config());
 

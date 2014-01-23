@@ -37,7 +37,8 @@ class FrameConsumer {
   virtual void ApplyBuffer(const webrtc::DesktopSize& view_size,
                            const webrtc::DesktopRect& clip_area,
                            webrtc::DesktopFrame* buffer,
-                           const webrtc::DesktopRegion& region) = 0;
+                           const webrtc::DesktopRegion& region,
+                           const webrtc::DesktopRegion& shape) = 0;
 
   // Accepts a buffer that couldn't be used for drawing for any reason (shutdown
   // is in progress, the view area has changed, etc.). The accepted buffer can

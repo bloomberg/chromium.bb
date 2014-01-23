@@ -42,9 +42,6 @@ class FrameProducer {
   virtual void SetOutputSizeAndClip(const webrtc::DesktopSize& view_size,
                                     const webrtc::DesktopRect& clip_area) = 0;
 
-  // Returns a reference to the shape of the most recently drawn buffer.
-  virtual const webrtc::DesktopRegion* GetBufferShape() = 0;
-
  protected:
   virtual ~FrameProducer() {}
 

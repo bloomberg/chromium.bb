@@ -12,6 +12,7 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/software_video_renderer.h"
 #include "remoting/jingle_glue/chromium_port_allocator.h"
 #include "remoting/jingle_glue/chromium_socket_factory.h"
 #include "remoting/jingle_glue/network_settings.h"
@@ -188,7 +189,7 @@ void ChromotingJniInstance::RecordPaintTime(int64 paint_time_ms) {
   }
 
   if (stats_logging_enabled_)
-    client_->GetStats()->video_paint_ms()->Record(paint_time_ms);
+    video_renderer_->GetStats()->video_paint_ms()->Record(paint_time_ms);
 }
 
 void ChromotingJniInstance::OnConnectionState(
@@ -298,11 +299,17 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   connection_.reset(new protocol::ConnectionToHost(true));
 
+  SoftwareVideoRenderer* renderer =
+      new SoftwareVideoRenderer(client_context_->main_task_runner(),
+                                client_context_->decode_task_runner(),
+                                frame_consumer_);
+  view_->set_frame_producer(renderer);
+  video_renderer_.reset(renderer);
+
   client_.reset(new ChromotingClient(
       client_config_, client_context_.get(), connection_.get(),
-      this, frame_consumer_, scoped_ptr<AudioPlayer>()));
+      this, video_renderer_.get(), scoped_ptr<AudioPlayer>()));
 
-  view_->set_frame_producer(client_->GetFrameProducer());
 
   signaling_.reset(new XmppSignalStrategy(
       net::ClientSocketFactory::GetDefaultFactory(),
@@ -373,7 +380,7 @@ void ChromotingJniInstance::LogPerfStats() {
   if (!stats_logging_enabled_)
     return;
 
-  ChromotingStats* stats = client_->GetStats();
+  ChromotingStats* stats = video_renderer_->GetStats();
   __android_log_print(ANDROID_LOG_INFO, "stats",
                       "Bandwidth:%.0f FrameRate:%.1f Capture:%.1f Encode:%.1f "
                       "Decode:%.1f Render:%.1f Latency:%.0f",
