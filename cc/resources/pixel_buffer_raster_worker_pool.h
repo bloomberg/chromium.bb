@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/containers/hash_tables.h"
 #include "cc/resources/raster_worker_pool.h"
 
@@ -33,7 +34,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
-  virtual GLenum GetResourceTarget() const OVERRIDE;
+  virtual unsigned GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
   virtual void CheckForCompletedTasks() OVERRIDE;
   virtual void OnRasterTasksFinished() OVERRIDE;

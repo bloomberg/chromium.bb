@@ -28,7 +28,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
-#include "cc/resources/worker_pool.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/child_histogram_message_filter.h"
@@ -435,17 +435,17 @@ void RenderThreadImpl::Init() {
   // it doesn't have to be the same thread RenderThreadImpl is created on.
   allocate_gpu_memory_buffer_thread_checker_.DetachFromThread();
 
-  if (command_line.HasSwitch(cc::switches::kNumRasterThreads)) {
+  if (command_line.HasSwitch(switches::kNumRasterThreads)) {
     int num_raster_threads;
     std::string string_value =
-        command_line.GetSwitchValueASCII(cc::switches::kNumRasterThreads);
+        command_line.GetSwitchValueASCII(switches::kNumRasterThreads);
     if (base::StringToInt(string_value, &num_raster_threads) &&
         num_raster_threads >= kMinRasterThreads &&
         num_raster_threads <= kMaxRasterThreads) {
-      cc::WorkerPool::SetNumRasterThreads(num_raster_threads);
+      cc::RasterWorkerPool::SetNumRasterThreads(num_raster_threads);
     } else {
       LOG(WARNING) << "Failed to parse switch " <<
-                      cc::switches::kNumRasterThreads  << ": " << string_value;
+                      switches::kNumRasterThreads  << ": " << string_value;
     }
   }
 

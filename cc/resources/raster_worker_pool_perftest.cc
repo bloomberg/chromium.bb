@@ -8,6 +8,7 @@
 #include "cc/test/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
@@ -19,8 +20,10 @@ static const int kTimeCheckInterval = 10;
 
 class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  // Overridden from internal::WorkerPoolTask:
+  // Overridden from internal::Task:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
+
+  // Overridden from internal::WorkerPoolTask:
   virtual void CompleteOnOriginThread() OVERRIDE {}
 
  private:
@@ -40,7 +43,7 @@ class PerfRasterWorkerPool : public RasterWorkerPool {
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
     NOTREACHED();
   }
-  virtual GLenum GetResourceTarget() const OVERRIDE {
+  virtual unsigned GetResourceTarget() const OVERRIDE {
     NOTREACHED();
     return GL_TEXTURE_2D;
   }

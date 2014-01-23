@@ -73,7 +73,10 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   raster_task_limit_bytes,
                   NULL) {}
 
-FakeTileManager::~FakeTileManager() {}
+FakeTileManager::~FakeTileManager() {
+  RasterWorkerPoolForTesting()->Shutdown();
+  RasterWorkerPoolForTesting()->CheckForCompletedTasks();
+}
 
 void FakeTileManager::AssignMemoryToTiles(
     const GlobalStateThatImpactsTilePriority& state) {

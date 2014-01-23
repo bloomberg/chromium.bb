@@ -28,7 +28,7 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
         reply_(reply) {
   }
 
-  // Overridden from internal::WorkerPoolTask:
+  // Overridden from internal::Task:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     TRACE_EVENT0("cc", "ImageWorkerPoolTaskImpl::RunOnWorkerThread");
     if (!buffer_)
@@ -39,6 +39,8 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
                              task_->resource()->size(),
                              stride_);
   }
+
+  // Overridden from internal::WorkerPoolTask:
   virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
   }
@@ -59,7 +61,7 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 ImageRasterWorkerPool::ImageRasterWorkerPool(
     ResourceProvider* resource_provider,
     ContextProvider* context_provider,
-    GLenum texture_target)
+    unsigned texture_target)
     : RasterWorkerPool(resource_provider, context_provider),
       texture_target_(texture_target),
       raster_tasks_pending_(false),
@@ -167,7 +169,7 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       "state", TracedValue::FromValue(StateAsValue().release()));
 }
 
-GLenum ImageRasterWorkerPool::GetResourceTarget() const {
+unsigned ImageRasterWorkerPool::GetResourceTarget() const {
   return texture_target_;
 }
 
@@ -223,7 +225,7 @@ scoped_ptr<base::Value> ImageRasterWorkerPool::StateAsValue() const {
 // static
 void ImageRasterWorkerPool::CreateGraphNodeForImageTask(
     internal::WorkerPoolTask* image_task,
-    const TaskVector& decode_tasks,
+    const internal::Task::Vector& decode_tasks,
     unsigned priority,
     bool is_required_for_activation,
     internal::GraphNode* raster_required_for_activation_finished_node,

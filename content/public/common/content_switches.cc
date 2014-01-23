@@ -720,6 +720,9 @@ const char kNoReferrers[]                   = "no-referrers";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 
+// Number of worker threads used to rasterize content.
+const char kNumRasterThreads[]              = "num-raster-threads";
+
 // Enables or disables history navigation in response to horizontal overscroll.
 // Set the value to '1' to enable the feature, and set to '0' to disable.
 // Defaults to enabled.
