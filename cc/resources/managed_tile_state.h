@@ -30,90 +30,72 @@ enum ManagedTileBin {
   // NOTE: Be sure to update ManagedTileBinAsValue and kBinPolicyMap when adding
   // or reordering fields.
 };
-scoped_ptr<base::Value> ManagedTileBinAsValue(
-    ManagedTileBin bin);
+scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin);
 
 // This is state that is specific to a tile that is
 // managed by the TileManager.
 class CC_EXPORT ManagedTileState {
  public:
   class CC_EXPORT TileVersion {
-    public:
-      enum Mode {
-        RESOURCE_MODE,
-        SOLID_COLOR_MODE,
-        PICTURE_PILE_MODE
-      };
+   public:
+    enum Mode { RESOURCE_MODE, SOLID_COLOR_MODE, PICTURE_PILE_MODE };
 
-      TileVersion();
-      ~TileVersion();
+    TileVersion();
+    ~TileVersion();
 
-      Mode mode() const {
-        return mode_;
-      }
+    Mode mode() const { return mode_; }
 
-      bool IsReadyToDraw() const;
+    bool IsReadyToDraw() const;
 
-      ResourceProvider::ResourceId get_resource_id() const {
-        DCHECK(mode_ == RESOURCE_MODE);
-        DCHECK(resource_);
+    ResourceProvider::ResourceId get_resource_id() const {
+      DCHECK(mode_ == RESOURCE_MODE);
+      DCHECK(resource_);
 
-        return resource_->id();
-      }
+      return resource_->id();
+    }
 
-      SkColor get_solid_color() const {
-        DCHECK(mode_ == SOLID_COLOR_MODE);
+    SkColor get_solid_color() const {
+      DCHECK(mode_ == SOLID_COLOR_MODE);
 
-        return solid_color_;
-      }
+      return solid_color_;
+    }
 
-      bool contents_swizzled() const {
-        DCHECK(resource_);
-        return !PlatformColor::SameComponentOrder(resource_->format());
-      }
+    bool contents_swizzled() const {
+      DCHECK(resource_);
+      return !PlatformColor::SameComponentOrder(resource_->format());
+    }
 
-      bool requires_resource() const {
-        return mode_ == RESOURCE_MODE ||
-               mode_ == PICTURE_PILE_MODE;
-      }
+    bool requires_resource() const {
+      return mode_ == RESOURCE_MODE || mode_ == PICTURE_PILE_MODE;
+    }
 
-      size_t GPUMemoryUsageInBytes() const;
+    size_t GPUMemoryUsageInBytes() const;
 
-      void SetSolidColorForTesting(SkColor color) {
-        set_solid_color(color);
-      }
-      void SetHasTextForTesting(bool has_text) {
-        has_text_ = has_text;
-      }
+    void SetSolidColorForTesting(SkColor color) { set_solid_color(color); }
+    void SetHasTextForTesting(bool has_text) { has_text_ = has_text; }
 
-    private:
-      friend class TileManager;
-      friend class PrioritizedTileSet;
-      friend class Tile;
-      friend class ManagedTileState;
+   private:
+    friend class TileManager;
+    friend class PrioritizedTileSet;
+    friend class Tile;
+    friend class ManagedTileState;
 
-      void set_use_resource() {
-        mode_ = RESOURCE_MODE;
-      }
+    void set_use_resource() { mode_ = RESOURCE_MODE; }
 
-      void set_solid_color(const SkColor& color) {
-        mode_ = SOLID_COLOR_MODE;
-        solid_color_ = color;
-      }
+    void set_solid_color(const SkColor& color) {
+      mode_ = SOLID_COLOR_MODE;
+      solid_color_ = color;
+    }
 
-      void set_has_text(bool has_text) {
-        has_text_ = has_text;
-      }
+    void set_has_text(bool has_text) { has_text_ = has_text; }
 
-      void set_rasterize_on_demand() {
-        mode_ = PICTURE_PILE_MODE;
-      }
+    void set_rasterize_on_demand() { mode_ = PICTURE_PILE_MODE; }
 
-      Mode mode_;
-      SkColor solid_color_;
-      bool has_text_;
-      scoped_ptr<ScopedResource> resource_;
-      RasterWorkerPool::RasterTask raster_task_;
+    Mode mode_;
+    SkColor solid_color_;
+    bool has_text_;
+    scoped_ptr<ScopedResource> resource_;
+    RasterWorkerPool::RasterTask raster_task_;
   };
 
   ManagedTileState();

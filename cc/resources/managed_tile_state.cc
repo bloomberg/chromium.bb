@@ -16,8 +16,7 @@ scoped_ptr<base::Value> ManagedTileBinAsValue(ManagedTileBin bin) {
       return scoped_ptr<base::Value>(
           base::Value::CreateStringValue("NOW_AND_READY_TO_DRAW_BIN"));
     case NOW_BIN:
-      return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("NOW_BIN"));
+      return scoped_ptr<base::Value>(base::Value::CreateStringValue("NOW_BIN"));
     case SOON_BIN:
       return scoped_ptr<base::Value>(
           base::Value::CreateStringValue("SOON_BIN"));
@@ -53,17 +52,12 @@ ManagedTileState::ManagedTileState()
       time_to_needed_in_seconds(std::numeric_limits<float>::infinity()),
       distance_to_visible_in_pixels(std::numeric_limits<float>::infinity()),
       visible_and_ready_to_draw(false),
-      scheduled_priority(0) {
-}
+      scheduled_priority(0) {}
 
 ManagedTileState::TileVersion::TileVersion()
-    : mode_(RESOURCE_MODE),
-      has_text_(false) {
-}
+    : mode_(RESOURCE_MODE), has_text_(false) {}
 
-ManagedTileState::TileVersion::~TileVersion() {
-  DCHECK(!resource_);
-}
+ManagedTileState::TileVersion::~TileVersion() { DCHECK(!resource_); }
 
 bool ManagedTileState::TileVersion::IsReadyToDraw() const {
   switch (mode_) {
@@ -83,8 +77,7 @@ size_t ManagedTileState::TileVersion::GPUMemoryUsageInBytes() const {
   return resource_->bytes();
 }
 
-ManagedTileState::~ManagedTileState() {
-}
+ManagedTileState::~ManagedTileState() {}
 
 scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   bool has_resource = false;
@@ -102,9 +95,9 @@ scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   state->Set("bin", ManagedTileBinAsValue(bin).release());
   state->Set("resolution", TileResolutionAsValue(resolution).release());
   state->Set("time_to_needed_in_seconds",
-      MathUtil::AsValueSafely(time_to_needed_in_seconds).release());
+             MathUtil::AsValueSafely(time_to_needed_in_seconds).release());
   state->Set("distance_to_visible_in_pixels",
-      MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
+             MathUtil::AsValueSafely(distance_to_visible_in_pixels).release());
   state->SetBoolean("required_for_activation", required_for_activation);
   state->SetBoolean(
       "is_solid_color",
