@@ -30,7 +30,8 @@ podrow.images-loading {
               0 2px 6px rgba(0, 0, 0, 0.15),
               0 3px 0 rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  display: inline-block;
+  display: flex;
+  flex-flow: row;
   padding: 10px 10px 3px;
   position: absolute;
   vertical-align: middle;
@@ -43,6 +44,7 @@ podrow.images-loading {
 }
 
 .pod .main-pane {
+  margin-right: 10px;
   position: relative;
   text-align: center;
   width: 160px;
@@ -105,6 +107,7 @@ podrow[ncolumns='6'] .pod {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 140px;
 }
 
 .name.init {
@@ -415,7 +418,6 @@ html[dir=rtl] .learn-more {
 .side-pane-divider {
   border-left: 1px solid lightgray;
   left: 180px;
-  position: absolute;
   right: auto;
   width: 1px;
 }
@@ -429,7 +431,6 @@ html[dir=rtl] .side-pane-divider {
   left: 185px;
   overflow: hidden;
   padding: 5px;
-  position: absolute;
   right: auto;
 }
 
@@ -479,9 +480,7 @@ html[dir=rtl] .side-pane-learn-more {
 .side-pane-container .enter-button {
   bottom: 5px;
   display: block;
-  left: auto;
-  position: absolute;
-  right: 5px;
+  float: right;
 }
 
 html[dir=rtl] .side-pane-container .enter-button {
@@ -492,6 +491,10 @@ html[dir=rtl] .side-pane-container .enter-button {
 .pod.public-account.expanded {
   padding: 10px;
   width: 400px;
+}
+
+.pod.public-account:not(expanded) {
+  max-height: 204px;
 }
 
 .pod.public-account.expanded .name,

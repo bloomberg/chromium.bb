@@ -240,8 +240,6 @@ class SigninScreenHandler
     UI_STATE_ACCOUNT_PICKER,
   };
 
-  typedef base::hash_set<std::string> WebUIObservers;
-
   friend class ReportDnsCacheClearedOnUIThread;
   friend class LocallyManagedUserCreationScreenHandler;
 
