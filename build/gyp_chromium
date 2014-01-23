@@ -121,8 +121,11 @@ def GetGypVarsForGN(supplemental_files):
   # to ignore all arguments other than "-D".
   cmdline_input_items = []
   for i in range(len(sys.argv))[1:]:
-    if sys.argv[i] == '-D' and i + 1 < len(sys.argv):
-      cmdline_input_items += [sys.argv[i + 1]]
+    if sys.argv[i].startswith('-D'):
+      if sys.argv[i] == '-D' and i + 1 < len(sys.argv):
+        cmdline_input_items += [sys.argv[i + 1]]
+      elif len(sys.argv[i]) > 2:
+        cmdline_input_items += [sys.argv[i][2:]]
   cmdline_items = ProcessGypDefinesItems(cmdline_input_items)
 
   return dict(supp_items + env_items + cmdline_items)
