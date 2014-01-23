@@ -98,7 +98,7 @@ void TopControlsManager::ScrollBegin() {
 }
 
 gfx::Vector2dF TopControlsManager::ScrollBy(
-    const gfx::Vector2dF pending_delta) {
+    const gfx::Vector2dF& pending_delta) {
   if (pinch_gesture_active_)
     return pending_delta;
 

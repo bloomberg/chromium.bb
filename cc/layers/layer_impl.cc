@@ -376,7 +376,7 @@ void LayerImpl::SetSentScrollDelta(gfx::Vector2d sent_scroll_delta) {
   sent_scroll_delta_ = sent_scroll_delta;
 }
 
-gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
+gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
   DCHECK(scrollable());
   gfx::Vector2dF min_delta = -scroll_offset_;
   gfx::Vector2dF max_delta = max_scroll_offset_ - scroll_offset_;
@@ -731,7 +731,7 @@ void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
   SetTransform(transform);
 }
 
-void LayerImpl::OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) {
+void LayerImpl::OnScrollOffsetAnimated(const gfx::Vector2dF& scroll_offset) {
   // Only layers in the active tree should need to do anything here, since
   // layers in the pending tree will find out about these changes as a
   // result of the call to SetScrollDelta.
@@ -1092,7 +1092,7 @@ void LayerImpl::SetScrollOffset(gfx::Vector2d scroll_offset) {
 }
 
 void LayerImpl::SetScrollOffsetAndDelta(gfx::Vector2d scroll_offset,
-                                        gfx::Vector2dF scroll_delta) {
+                                        const gfx::Vector2dF& scroll_delta) {
   bool changed = false;
 
   if (scroll_offset_ != scroll_offset) {
@@ -1139,7 +1139,7 @@ gfx::Vector2dF LayerImpl::ScrollDelta() const {
   return scroll_delta_;
 }
 
-void LayerImpl::SetScrollDelta(gfx::Vector2dF scroll_delta) {
+void LayerImpl::SetScrollDelta(const gfx::Vector2dF& scroll_delta) {
   SetScrollOffsetAndDelta(scroll_offset_, scroll_delta);
 }
 

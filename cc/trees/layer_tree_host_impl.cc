@@ -2069,7 +2069,7 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
     LayerImpl* layer_impl,
     float scale_from_viewport_to_screen_space,
     const gfx::PointF& viewport_point,
-    gfx::Vector2dF viewport_delta) {
+    const gfx::Vector2dF& viewport_delta) {
   // Layers with non-invertible screen space transforms should not have passed
   // the scroll hit test in the first place.
   DCHECK(layer_impl->screen_space_transform().IsInvertible());
@@ -2142,14 +2142,14 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
 }
 
 static gfx::Vector2dF ScrollLayerWithLocalDelta(LayerImpl* layer_impl,
-                                                gfx::Vector2dF local_delta) {
+    const gfx::Vector2dF& local_delta) {
   gfx::Vector2dF previous_delta(layer_impl->ScrollDelta());
   layer_impl->ScrollBy(local_delta);
   return layer_impl->ScrollDelta() - previous_delta;
 }
 
 bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
-                                 gfx::Vector2dF scroll_delta) {
+                                 const gfx::Vector2dF& scroll_delta) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
   if (!CurrentlyScrollingLayer())
     return false;
@@ -2350,7 +2350,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   return ScrollStarted;
 }
 
-void LayerTreeHostImpl::NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) {
+void LayerTreeHostImpl::NotifyCurrentFlingVelocity(
+    const gfx::Vector2dF& velocity) {
   current_fling_velocity_ = velocity;
 }
 

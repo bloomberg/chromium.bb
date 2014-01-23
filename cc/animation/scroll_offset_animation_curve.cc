@@ -16,14 +16,14 @@ const double kDurationDivisor = 60.0;
 namespace cc {
 
 scoped_ptr<ScrollOffsetAnimationCurve> ScrollOffsetAnimationCurve::Create(
-    gfx::Vector2dF target_value,
+    const gfx::Vector2dF& target_value,
     scoped_ptr<TimingFunction> timing_function) {
   return make_scoped_ptr(
       new ScrollOffsetAnimationCurve(target_value, timing_function.Pass()));
 }
 
 ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
-    gfx::Vector2dF target_value,
+    const gfx::Vector2dF& target_value,
     scoped_ptr<TimingFunction> timing_function)
     : target_value_(target_value),
       duration_(0.0),
@@ -31,7 +31,8 @@ ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
 
 ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() {}
 
-void ScrollOffsetAnimationCurve::SetInitialValue(gfx::Vector2dF initial_value) {
+void ScrollOffsetAnimationCurve::SetInitialValue(
+    const gfx::Vector2dF& initial_value) {
   initial_value_ = initial_value;
 
   // The duration of a scroll animation depends on the size of the scroll.

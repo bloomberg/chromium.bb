@@ -550,7 +550,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
-  virtual void OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) OVERRIDE;
+  virtual void OnScrollOffsetAnimated(
+      const gfx::Vector2dF& scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 

@@ -212,13 +212,14 @@ void SynchronousCompositorImpl::DidActivatePendingTree() {
 }
 
 void SynchronousCompositorImpl::SetMaxScrollOffset(
-    gfx::Vector2dF max_scroll_offset) {
+    const gfx::Vector2dF& max_scroll_offset) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
     compositor_client_->SetMaxRootLayerScrollOffset(max_scroll_offset);
 }
 
-void SynchronousCompositorImpl::SetTotalScrollOffset(gfx::Vector2dF new_value) {
+void SynchronousCompositorImpl::SetTotalScrollOffset(
+    const gfx::Vector2dF& new_value) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
     compositor_client_->SetTotalRootLayerScrollOffset(new_value);

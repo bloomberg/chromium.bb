@@ -19,11 +19,11 @@ class LayerScrollOffsetDelegate {
  public:
   // This is called by the compositor to notify the delegate what is the upper
   // total scroll offset bound.
-  virtual void SetMaxScrollOffset(gfx::Vector2dF max_scroll_offset) = 0;
+  virtual void SetMaxScrollOffset(const gfx::Vector2dF& max_scroll_offset) = 0;
 
   // This is called by the compositor when the scroll offset of the layer would
   // have otherwise changed.
-  virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) = 0;
+  virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) = 0;
 
   // This is called by the compositor to query the current scroll offset of the
   // layer.

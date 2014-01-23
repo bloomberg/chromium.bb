@@ -23,7 +23,8 @@ namespace cc {
 // the test scene went away.
 const float k_layer_epsilon = 1e-4f;
 
-inline static float PerpProduct(gfx::Vector2dF u, gfx::Vector2dF v) {
+inline static float PerpProduct(const gfx::Vector2dF& u,
+                                const gfx::Vector2dF& v) {
   return u.x() * v.y() - u.y() * v.x();
 }
 

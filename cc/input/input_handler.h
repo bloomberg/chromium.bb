@@ -85,7 +85,7 @@ class CC_EXPORT InputHandler {
   // to the client.
   // Should only be called if ScrollBegin() returned ScrollStarted.
   virtual bool ScrollBy(gfx::Point viewport_point,
-                        gfx::Vector2dF scroll_delta) = 0;
+                        const gfx::Vector2dF& scroll_delta) = 0;
 
   virtual bool ScrollVerticallyByPage(
       gfx::Point viewport_point,
@@ -95,7 +95,7 @@ class CC_EXPORT InputHandler {
   // ScrollIgnored if not.
   virtual ScrollStatus FlingScrollBegin() = 0;
 
-  virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) = 0;
+  virtual void NotifyCurrentFlingVelocity(const gfx::Vector2dF& velocity) = 0;
 
   virtual void MouseMoveAt(gfx::Point mouse_position) = 0;
 

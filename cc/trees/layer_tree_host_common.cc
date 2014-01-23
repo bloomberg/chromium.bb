@@ -672,7 +672,7 @@ static bool SubtreeShouldRenderToSeparateSurface(
 gfx::Transform ComputeSizeDeltaCompensation(
     LayerImpl* layer,
     LayerImpl* container,
-    gfx::Vector2dF position_offset) {
+    const gfx::Vector2dF& position_offset) {
   gfx::Transform result_transform;
 
   // To apply a translate in the container's layer space,
@@ -775,7 +775,7 @@ void ApplyPositionAdjustment(
 gfx::Transform ComputeScrollCompensationForThisLayer(
     LayerImpl* scrolling_layer,
     const gfx::Transform& parent_matrix,
-    gfx::Vector2dF scroll_delta) {
+    const gfx::Vector2dF& scroll_delta) {
   // For every layer that has non-zero scroll_delta, we have to compute a
   // transform that can undo the scroll_delta translation. In particular, we
   // want this matrix to premultiply a fixed-position layer's parent_matrix, so
@@ -815,7 +815,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
     Layer* current_layer,
     const gfx::Transform& current_parent_matrix,
     const gfx::Transform& current_scroll_compensation,
-    gfx::Vector2dF scroll_delta) {
+    const gfx::Vector2dF& scroll_delta) {
   // The main thread (i.e. Layer) does not need to worry about scroll
   // compensation.  So we can just return an identity matrix here.
   return gfx::Transform();
@@ -825,7 +825,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
     LayerImpl* layer,
     const gfx::Transform& parent_matrix,
     const gfx::Transform& current_scroll_compensation_matrix,
-    gfx::Vector2dF scroll_delta) {
+    const gfx::Vector2dF& scroll_delta) {
   // "Total scroll compensation" is the transform needed to cancel out all
   // scroll_delta translations that occurred since the nearest container layer,
   // even if there are render_surfaces in-between.

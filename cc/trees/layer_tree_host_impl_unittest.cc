@@ -2459,11 +2459,12 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
 
   virtual ~TestScrollOffsetDelegate() {}
 
-  virtual void SetMaxScrollOffset(gfx::Vector2dF max_scroll_offset) OVERRIDE {
+  virtual void SetMaxScrollOffset(
+      const gfx::Vector2dF& max_scroll_offset) OVERRIDE {
     max_scroll_offset_ = max_scroll_offset;
   }
 
-  virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE {
+  virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) OVERRIDE {
     last_set_scroll_offset_ = new_value;
   }
 
@@ -2485,7 +2486,7 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     return last_set_scroll_offset_;
   }
 
-  void set_getter_return_value(gfx::Vector2dF value) {
+  void set_getter_return_value(const gfx::Vector2dF& value) {
     getter_return_value_ = value;
   }
 

@@ -156,13 +156,13 @@ class CC_EXPORT MathUtil {
 
   // Returns the smallest angle between the given two vectors in degrees.
   // Neither vector is assumed to be normalized.
-  static float SmallestAngleBetweenVectors(gfx::Vector2dF v1,
-                                           gfx::Vector2dF v2);
+  static float SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
+                                           const gfx::Vector2dF& v2);
 
   // Projects the |source| vector onto |destination|. Neither vector is assumed
   // to be normalized.
-  static gfx::Vector2dF ProjectVector(gfx::Vector2dF source,
-                                      gfx::Vector2dF destination);
+  static gfx::Vector2dF ProjectVector(const gfx::Vector2dF& source,
+                                      const gfx::Vector2dF& destination);
 
   // Conversion to value.
   static scoped_ptr<base::Value> AsValue(gfx::Size s);

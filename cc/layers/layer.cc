@@ -1066,7 +1066,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   transform_ = transform;
 }
 
-void Layer::OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) {
+void Layer::OnScrollOffsetAnimated(const gfx::Vector2dF& scroll_offset) {
   // Do nothing. Scroll deltas will be sent from the compositor thread back
   // to the main thread in the same manner as during non-animated
   // compositor-driven scrolling.

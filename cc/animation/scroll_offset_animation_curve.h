@@ -16,12 +16,12 @@ class TimingFunction;
 class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
  public:
   static scoped_ptr<ScrollOffsetAnimationCurve> Create(
-      gfx::Vector2dF target_value,
+      const gfx::Vector2dF& target_value,
       scoped_ptr<TimingFunction> timing_function);
 
   virtual ~ScrollOffsetAnimationCurve();
 
-  void SetInitialValue(gfx::Vector2dF initial_value);
+  void SetInitialValue(const gfx::Vector2dF& initial_value);
   gfx::Vector2dF GetValue(double t) const;
 
   // AnimationCurve implementation
@@ -30,7 +30,7 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
 
  private:
-  ScrollOffsetAnimationCurve(gfx::Vector2dF target_value,
+  ScrollOffsetAnimationCurve(const gfx::Vector2dF& target_value,
                              scoped_ptr <TimingFunction> timing_function);
 
   gfx::Vector2dF initial_value_;

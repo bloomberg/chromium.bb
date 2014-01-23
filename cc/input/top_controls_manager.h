@@ -53,7 +53,7 @@ class CC_EXPORT TopControlsManager
                               bool animate);
 
   void ScrollBegin();
-  gfx::Vector2dF ScrollBy(const gfx::Vector2dF pending_delta);
+  gfx::Vector2dF ScrollBy(const gfx::Vector2dF& pending_delta);
   void ScrollEnd();
 
   // The caller should ensure that |Pinch{Begin,End}| are called within

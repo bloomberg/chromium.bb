@@ -73,8 +73,9 @@ class SynchronousCompositorImpl
   virtual void DidActivatePendingTree() OVERRIDE;
 
   // LayerScrollOffsetDelegate
-  virtual void SetMaxScrollOffset(gfx::Vector2dF max_scroll_offset) OVERRIDE;
-  virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
+  virtual void SetMaxScrollOffset(
+      const gfx::Vector2dF& max_scroll_offset) OVERRIDE;
+  virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) OVERRIDE;
   virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE;
   virtual bool IsExternalFlingActive() const OVERRIDE;
   virtual void SetTotalPageScaleFactor(float page_scale_factor) OVERRIDE;

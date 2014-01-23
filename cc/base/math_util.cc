@@ -492,16 +492,16 @@ gfx::Vector2dF MathUtil::ComputeTransform2dScaleComponents(
   return gfx::Vector2dF(x_scale, y_scale);
 }
 
-float MathUtil::SmallestAngleBetweenVectors(gfx::Vector2dF v1,
-                                            gfx::Vector2dF v2) {
+float MathUtil::SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
+                                            const gfx::Vector2dF& v2) {
   double dot_product = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
   // Clamp to compensate for rounding errors.
   dot_product = std::max(-1.0, std::min(1.0, dot_product));
   return static_cast<float>(Rad2Deg(std::acos(dot_product)));
 }
 
-gfx::Vector2dF MathUtil::ProjectVector(gfx::Vector2dF source,
-                                       gfx::Vector2dF destination) {
+gfx::Vector2dF MathUtil::ProjectVector(const gfx::Vector2dF& source,
+                                       const gfx::Vector2dF& destination) {
   float projected_length =
       gfx::DotProduct(source, destination) / destination.LengthSquared();
   return gfx::Vector2dF(projected_length * destination.x(),

@@ -114,7 +114,7 @@ class CC_EXPORT LayerTreeHostImpl
       gfx::Point viewport_point,
       InputHandler::ScrollInputType type) OVERRIDE;
   virtual bool ScrollBy(gfx::Point viewport_point,
-                        gfx::Vector2dF scroll_delta) OVERRIDE;
+                        const gfx::Vector2dF& scroll_delta) OVERRIDE;
   virtual bool ScrollVerticallyByPage(gfx::Point viewport_point,
                                       ScrollDirection direction) OVERRIDE;
   virtual void SetRootLayerScrollOffsetDelegate(
@@ -122,7 +122,8 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void OnRootLayerDelegatedScrollOffsetChanged() OVERRIDE;
   virtual void ScrollEnd() OVERRIDE;
   virtual InputHandler::ScrollStatus FlingScrollBegin() OVERRIDE;
-  virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) OVERRIDE;
+  virtual void NotifyCurrentFlingVelocity(
+      const gfx::Vector2dF& velocity) OVERRIDE;
   virtual void MouseMoveAt(gfx::Point viewport_point) OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,
@@ -471,7 +472,7 @@ class CC_EXPORT LayerTreeHostImpl
       LayerImpl* layer_impl,
       float scale_from_viewport_to_screen_space,
       const gfx::PointF& viewport_point,
-      gfx::Vector2dF viewport_delta);
+      const gfx::Vector2dF& viewport_delta);
 
   void UpdateMaxScrollOffset();
   void TrackDamageForAllSurfaces(

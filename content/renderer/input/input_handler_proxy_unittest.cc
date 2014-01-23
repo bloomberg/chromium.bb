@@ -47,7 +47,8 @@ class MockInputHandler : public cc::InputHandler {
                ScrollStatus(gfx::Point viewport_point,
                             cc::InputHandler::ScrollInputType type));
   MOCK_METHOD2(ScrollBy,
-               bool(gfx::Point viewport_point, gfx::Vector2dF scroll_delta));
+               bool(gfx::Point viewport_point,
+                    const gfx::Vector2dF& scroll_delta));
   MOCK_METHOD2(ScrollVerticallyByPage,
                bool(gfx::Point viewport_point,
                     cc::ScrollDirection direction));
@@ -66,7 +67,8 @@ class MockInputHandler : public cc::InputHandler {
                                        float page_scale,
                                        base::TimeDelta duration) OVERRIDE {}
 
-  virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) OVERRIDE {}
+  virtual void NotifyCurrentFlingVelocity(
+      const gfx::Vector2dF& velocity) OVERRIDE {}
   virtual void MouseMoveAt(gfx::Point mouse_position) OVERRIDE {}
 
   MOCK_METHOD1(HaveTouchEventHandlersAt,

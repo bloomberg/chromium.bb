@@ -146,7 +146,7 @@ class CC_EXPORT LayerAnimationController
   void NotifyObserversOpacityAnimated(float opacity);
   void NotifyObserversTransformAnimated(const gfx::Transform& transform);
   void NotifyObserversFilterAnimated(const FilterOperations& filter);
-  void NotifyObserversScrollOffsetAnimated(gfx::Vector2dF scroll_offset);
+  void NotifyObserversScrollOffsetAnimated(const gfx::Vector2dF& scroll_offset);
 
   void NotifyObserversAnimationWaitingForDeletion();
 

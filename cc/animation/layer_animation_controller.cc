@@ -768,7 +768,7 @@ void LayerAnimationController::NotifyObserversFilterAnimated(
 }
 
 void LayerAnimationController::NotifyObserversScrollOffsetAnimated(
-    gfx::Vector2dF scroll_offset) {
+    const gfx::Vector2dF& scroll_offset) {
   FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                     value_observers_,
                     OnScrollOffsetAnimated(scroll_offset));

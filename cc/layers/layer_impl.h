@@ -83,7 +83,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
-  virtual void OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) OVERRIDE;
+  virtual void OnScrollOffsetAnimated(
+      const gfx::Vector2dF& scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 
@@ -244,7 +245,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return is_container_for_fixed_position_layers_;
   }
 
-  void SetFixedContainerSizeDelta(gfx::Vector2dF delta) {
+  void SetFixedContainerSizeDelta(const gfx::Vector2dF& delta) {
     fixed_container_size_delta_ = delta;
   }
   gfx::Vector2dF fixed_container_size_delta() const {
@@ -369,13 +370,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void SetScrollOffset(gfx::Vector2d scroll_offset);
   void SetScrollOffsetAndDelta(gfx::Vector2d scroll_offset,
-                               gfx::Vector2dF scroll_delta);
+                               const gfx::Vector2dF& scroll_delta);
   gfx::Vector2d scroll_offset() const { return scroll_offset_; }
 
   void SetMaxScrollOffset(gfx::Vector2d max_scroll_offset);
   gfx::Vector2d max_scroll_offset() const { return max_scroll_offset_; }
 
-  void SetScrollDelta(gfx::Vector2dF scroll_delta);
+  void SetScrollDelta(const gfx::Vector2dF& scroll_delta);
   gfx::Vector2dF ScrollDelta() const;
 
   gfx::Vector2dF TotalScrollOffset() const;
@@ -385,7 +386,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Returns the delta of the scroll that was outside of the bounds of the
   // initial scroll
-  gfx::Vector2dF ScrollBy(gfx::Vector2dF scroll);
+  gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
 
   void SetScrollable(bool scrollable) { scrollable_ = scrollable; }
   bool scrollable() const { return scrollable_; }

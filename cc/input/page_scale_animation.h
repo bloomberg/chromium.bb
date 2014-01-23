@@ -25,7 +25,7 @@ class PageScaleAnimation {
  public:
   // Construct with the state at the beginning of the animation.
   static scoped_ptr<PageScaleAnimation> Create(
-      gfx::Vector2dF start_scroll_offset,
+      const gfx::Vector2dF& start_scroll_offset,
       float start_page_scale_factor,
       const gfx::SizeF& viewport_size,
       const gfx::SizeF& root_layer_size,
@@ -37,7 +37,7 @@ class PageScaleAnimation {
   // immediately after construction to set the final scroll and page scale.
 
   // Zoom while explicitly specifying the top-left scroll position.
-  void ZoomTo(gfx::Vector2dF target_scroll_offset,
+  void ZoomTo(const gfx::Vector2dF& target_scroll_offset,
               float target_page_scale_factor,
               double duration);
 
@@ -45,7 +45,7 @@ class PageScaleAnimation {
   // at the same position on the physical display throughout the animation,
   // unless the edges of the root layer are hit. The anchor is specified
   // as an offset from the content layer.
-  void ZoomWithAnchor(gfx::Vector2dF anchor,
+  void ZoomWithAnchor(const gfx::Vector2dF& anchor,
                       float target_page_scale_factor,
                       double duration);
 
@@ -69,7 +69,7 @@ class PageScaleAnimation {
   float target_page_scale_factor() const { return target_page_scale_factor_; }
 
  protected:
-  PageScaleAnimation(gfx::Vector2dF start_scroll_offset,
+  PageScaleAnimation(const gfx::Vector2dF& start_scroll_offset,
                      float start_page_scale_factor,
                      const gfx::SizeF& viewport_size,
                      const gfx::SizeF& root_layer_size,
