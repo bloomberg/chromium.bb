@@ -62,6 +62,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
     : HTMLElement(formTag, document)
     , m_associatedElementsBeforeIndex(0)
     , m_associatedElementsAfterIndex(0)
+    , m_weakPtrFactory(this)
     , m_wasUserSubmitted(false)
     , m_isSubmittingOrPreparingForSubmission(false)
     , m_shouldSubmit(false)
@@ -81,22 +82,6 @@ PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
 HTMLFormElement::~HTMLFormElement()
 {
     document().formController()->willDeleteForm(this);
-
-    // We don't need to notify the form destruction to associated elements if
-    // the form and its associated elements are destructed at the same time. But
-    // it's not always true.
-    // We need it in cases that an associated element is referred but the tree
-    // root is destructed.
-    // If we switch to Oilpan and associations between form and associated
-    // elements become strong references, these elements are destructed at once
-    // and we don't need to inform the form destruction.
-    // FIXME: We don't need to notify the destruction to associated elements
-    // which are descendants of this form, and don't need to notify at all in
-    // the case of Document destruction.
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i)
-        m_associatedElements[i]->formWillBeDestroyed();
-    for (unsigned i = 0; i < m_imageElements.size(); ++i)
-        m_imageElements[i]->m_form = 0;
 }
 
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
@@ -633,6 +618,11 @@ void HTMLFormElement::removeImgElement(HTMLImageElement* e)
     ASSERT(m_imageElements.find(e) != kNotFound);
     removeFromPastNamesMap(*e);
     removeFromVector(m_imageElements, e);
+}
+
+WeakPtr<HTMLFormElement> HTMLFormElement::createWeakPtr()
+{
+    return m_weakPtrFactory.createWeakPtr();
 }
 
 PassRefPtr<HTMLCollection> HTMLFormElement::elements()

@@ -49,8 +49,7 @@ private:
 };
 
 FormAssociatedElement::FormAssociatedElement()
-    : m_form(0)
-    , m_formWasSetByParser(false)
+    : m_formWasSetByParser(false)
 {
 }
 
@@ -139,14 +138,17 @@ void FormAssociatedElement::associateByParser(HTMLFormElement* form)
 
 void FormAssociatedElement::setForm(HTMLFormElement* newForm)
 {
-    if (m_form == newForm)
+    if (m_form.get() == newForm)
         return;
     willChangeForm();
     if (m_form)
         m_form->removeFormElement(this);
-    m_form = newForm;
-    if (m_form)
+    if (newForm) {
+        m_form = newForm->createWeakPtr();
         m_form->registerFormElement(*this);
+    } else {
+        m_form = WeakPtr<HTMLFormElement>();
+    }
     didChangeForm();
 }
 
@@ -156,18 +158,6 @@ void FormAssociatedElement::willChangeForm()
 
 void FormAssociatedElement::didChangeForm()
 {
-}
-
-void FormAssociatedElement::formWillBeDestroyed()
-{
-    // Unlike setForm(0), formWillBeDestroyed must not call
-    // HTMLFormElement::removeFormElement.
-    ASSERT(m_form);
-    if (!m_form)
-        return;
-    willChangeForm();
-    m_form = 0;
-    didChangeForm();
 }
 
 void FormAssociatedElement::resetFormOwner()
@@ -180,14 +170,14 @@ void FormAssociatedElement::resetFormOwner()
     // reassociateable or its form content attribute is not present, and the
     // element's form owner is its nearest form element ancestor after the
     // change to the ancestor chain, then do nothing, and abort these steps.
-    if (m_form && formId.isNull() && m_form == nearestForm)
+    if (m_form && formId.isNull() && m_form.get() == nearestForm)
         return;
 
-    HTMLFormElement* originalForm = m_form;
+    HTMLFormElement* originalForm = m_form.get();
     setForm(findAssociatedForm(element));
     // FIXME: Move didAssociateFormControl call to didChangeForm or
     // HTMLFormElement::registerFormElement.
-    if (m_form && m_form != originalForm && m_form->inDocument())
+    if (m_form && m_form.get() != originalForm && m_form->inDocument())
         element->document().didAssociateFormControl(element);
 }
 

@@ -88,6 +88,7 @@ public:
     WeakPtr(PassRefPtr<WeakReference<T> > ref) : m_ref(ref) { }
 
     T* get() const { return m_ref ? m_ref->get() : 0; }
+    T* operator->() const { return m_ref->get(); }
 
     typedef RefPtr<WeakReference<T> > (WeakPtr::*UnspecifiedBoolType);
     operator UnspecifiedBoolType() const { return get() ? &WeakPtr::m_ref : 0; }

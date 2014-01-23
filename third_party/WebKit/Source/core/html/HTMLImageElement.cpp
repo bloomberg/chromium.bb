@@ -45,14 +45,13 @@ using namespace HTMLNames;
 HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     : HTMLElement(imgTag, document)
     , m_imageLoader(this)
-    , m_form(0)
     , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
     , m_formWasSetByParser(false)
 {
     ScriptWrappable::init(this);
     if (form && form->inDocument()) {
-        m_form = form;
+        m_form = form->createWeakPtr();
         m_formWasSetByParser = true;
         m_form->registerImgElement(this);
     }
@@ -120,7 +119,7 @@ const AtomicString HTMLImageElement::imageSourceURL() const
 
 HTMLFormElement* HTMLImageElement::formOwner() const
 {
-    return m_form;
+    return m_form.get();
 }
 
 void HTMLImageElement::formRemovedFromTree(const Node* formRoot)
@@ -135,13 +134,16 @@ void HTMLImageElement::resetFormOwner()
     m_formWasSetByParser = false;
     HTMLFormElement* nearestForm = findFormAncestor();
     if (m_form) {
-        if (nearestForm == m_form)
+        if (nearestForm == m_form.get())
             return;
         m_form->removeImgElement(this);
     }
-    m_form = nearestForm;
-    if (m_form)
+    if (nearestForm) {
+        m_form = nearestForm->createWeakPtr();
         m_form->registerImgElement(this);
+    } else {
+        m_form = WeakPtr<HTMLFormElement>();
+    }
 }
 
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

@@ -30,6 +30,7 @@
 #include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/WeakPtr.h"
 
 namespace WTF{
 class TextEncoding;
@@ -69,6 +70,7 @@ public:
 
     void registerImgElement(HTMLImageElement*);
     void removeImgElement(HTMLImageElement*);
+    WeakPtr<HTMLFormElement> createWeakPtr();
 
     bool prepareForSubmission(Event*);
     void submit();
@@ -164,6 +166,7 @@ private:
     unsigned m_associatedElementsAfterIndex;
     Vector<FormAssociatedElement*> m_associatedElements;
     Vector<HTMLImageElement*> m_imageElements;
+    WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
 
     bool m_wasUserSubmitted;
     bool m_isSubmittingOrPreparingForSubmission;

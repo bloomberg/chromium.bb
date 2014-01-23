@@ -27,13 +27,13 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
 class HTMLFormElement;
 
 class HTMLImageElement FINAL : public HTMLElement {
-    friend class HTMLFormElement;
 public:
     static PassRefPtr<HTMLImageElement> create(Document&);
     static PassRefPtr<HTMLImageElement> create(Document&, HTMLFormElement*);
@@ -115,7 +115,8 @@ private:
     void resetFormOwner();
 
     HTMLImageLoader m_imageLoader;
-    HTMLFormElement* m_form;
+    // m_form should be a strong reference in Oilpan.
+    WeakPtr<HTMLFormElement> m_form;
     CompositeOperator m_compositeOperator;
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
