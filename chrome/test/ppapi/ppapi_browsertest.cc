@@ -484,9 +484,14 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
 TEST_PPAPI_NACL(HostResolverPrivate_Resolve)
 TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
 
-// URLLoader tests. These are split into multiple test fixtures because if we
-// run them all together, they tend to time out.
-IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader1) {
+// Flaky on official Windows builder. http://crbug.com/95005
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#define MAYBE_PPAPIURLLoader DISABLED_URLLoader
+#else
+#define MAYBE_PPAPIURLLoader URLLoader
+#endif
+// URLLoader tests.
+IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_PPAPIURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -498,10 +503,6 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader1) {
       LIST_TEST(URLLoader_CustomRequestHeader)
       LIST_TEST(URLLoader_FailsBogusContentLength)
       LIST_TEST(URLLoader_StreamToFile)
-  );
-}
-IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader2) {
-  RunTestViaHTTP(
       LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
       LIST_TEST(URLLoader_TrustedSameOriginRestriction)
       LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
@@ -519,7 +520,13 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader2) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader1) {
+// Timing out on Windows dbg. http://crbug.com/95005
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD))
+#define MAYBE_OutOfProcessURLLoader DISABLED_URLLoader
+#else
+#define MAYBE_OutOfProcessURLLoader URLLoader
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -531,10 +538,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader1) {
       LIST_TEST(URLLoader_CustomRequestHeader)
       LIST_TEST(URLLoader_FailsBogusContentLength)
       LIST_TEST(URLLoader_StreamToFile)
-  );
-}
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader2) {
-  RunTestViaHTTP(
       LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
       LIST_TEST(URLLoader_TrustedSameOriginRestriction)
       LIST_TEST(URLLoader_UntrustedCrossOriginRequest)
@@ -552,7 +555,14 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader2) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
+
+// Timing out on Windows dbg. http://crbug.com/95005
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD))
+#define MAYBE_NaClNewlibURLLoader DISABLED_NaClNewlibURLLoader
+#else
+#define MAYBE_NaClNewlibURLLoader NaClNewlibURLLoader
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_NaClNewlibURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -564,10 +574,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
       LIST_TEST(URLLoader_CustomRequestHeader)
       LIST_TEST(URLLoader_FailsBogusContentLength)
       LIST_TEST(URLLoader_StreamToFile)
-  );
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader2) {
-  RunTestViaHTTP(
       LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
       // We don't support Trusted APIs in NaCl.
       LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
@@ -588,16 +594,18 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader2) {
 }
 
 // Flaky on 32-bit linux bot; http://crbug.com/308906
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
-#define MAYBE_URLLoader_BasicFilePOST DISABLED_URLLoader_BasicFilePOST
+// Timing out on Windows dbg. http://crbug.com/95005
+#if (defined(OS_LINUX) && defined(ARCH_CPU_X86)) || \
+    (defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD)))
+#define MAYBE_NaCl_Glibc_URLLoader DISABLED_URLLoader
 #else
-#define MAYBE_URLLoader_BasicFilePOST URLLoader_BasicFilePOST
+#define MAYBE_NaCl_Glibc_URLLoader URLLoader
 #endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_URLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
-      LIST_TEST(MAYBE_URLLoader_BasicFilePOST)
+      LIST_TEST(URLLoader_BasicFilePOST)
       LIST_TEST(URLLoader_BasicFileRangePOST)
       LIST_TEST(URLLoader_CompoundBodyPOST)
       LIST_TEST(URLLoader_EmptyDataPOST)
@@ -605,10 +613,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader1) {
       LIST_TEST(URLLoader_CustomRequestHeader)
       LIST_TEST(URLLoader_FailsBogusContentLength)
       LIST_TEST(URLLoader_StreamToFile)
-  );
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader2) {
-  RunTestViaHTTP(
       LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
       // We don't support Trusted APIs in NaCl.
       LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
@@ -627,7 +631,14 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader2) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader1) {
+
+// Timing out on Windows dbg. http://crbug.com/95005
+#if defined(OS_WIN) && (!defined(NDEBUG) || defined(GOOGLE_CHROME_BUILD))
+#define MAYBE_NaClPNaClURLLoader DISABLED_NaClPNaClURLLoader
+#else
+#define MAYBE_NaClPNaClURLLoader NaClPNaClURLLoader
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_NaClPNaClURLLoader) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -639,10 +650,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader1) {
       LIST_TEST(URLLoader_CustomRequestHeader)
       LIST_TEST(URLLoader_FailsBogusContentLength)
       LIST_TEST(URLLoader_StreamToFile)
-  );
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader2) {
-  RunTestViaHTTP(
       LIST_TEST(URLLoader_UntrustedSameOriginRestriction)
       // We don't support Trusted APIs in NaCl.
       LIST_TEST(DISABLED_URLLoader_TrustedSameOriginRestriction)
@@ -951,8 +958,8 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest, MAYBE_PNaCl_FileIO_Private) {
   );
 }
 
-// Note, the FileRef tests are split into two, because all of them together
-// sometimes take too long on windows: crbug.com/336999
+// Note, the FileRef tests are split in to two, because all of them together
+// sometimes takes too long on windows: crbug.com/336999
 IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef1) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
@@ -1234,8 +1241,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
   );
 }
 
-// In-process WebSocket tests. Note, the WebSocket tests are split into two,
-// because all of them together sometimes take too long on windows:
+// In-process WebSocket tests. Note, the WebSocket tests are split in to two,
+// because all of them together sometimes takes too long on windows:
 // crbug.com/336999
 IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket1) {
   RunTestWithWebSocketServer(
