@@ -21,6 +21,8 @@
 description('Tests Set operations of FontFaceSet.');
 
 function runTests() {
+    nonCssConnectedFace = new FontFace("MyFont", "local(Arial)", {});
+
     shouldBe('document.fonts.size', '3');
 
     thisArg = {};
@@ -44,8 +46,27 @@ function runTests() {
     shouldBeTrue('document.fonts.has(faces[0])');
     shouldBeTrue('document.fonts.has(faces[1])');
     shouldBeTrue('document.fonts.has(faces[2])');
-    shouldBeFalse('document.fonts.has(new FontFace("MyFont", "local(Arial)", {}))');
+    shouldBeFalse('document.fonts.has(nonCssConnectedFace)');
     shouldThrow('document.fonts.has("Font1")', '"TypeError: Failed to execute \'has\' on \'FontFaceSet\': The argument is not a FontFace."');
+
+    shouldThrow('document.fonts.add(faces[0])', '"InvalidModificationError: Failed to execute \'add\' on \'FontFaceSet\': Cannot add a CSS-connected FontFace."');
+    shouldThrow('document.fonts.delete(faces[0])', '"InvalidModificationError: Failed to execute \'delete\' on \'FontFaceSet\': Cannot delete a CSS-connected FontFace."');
+
+    document.fonts.add(nonCssConnectedFace);
+    shouldBe('document.fonts.size', '4');
+    shouldBeTrue('document.fonts.has(nonCssConnectedFace)');
+    document.fonts.add(nonCssConnectedFace);
+    shouldBe('document.fonts.size', '4');
+    document.fonts.delete(nonCssConnectedFace);
+    shouldBe('document.fonts.size', '3');
+    shouldBeFalse('document.fonts.has(nonCssConnectedFace)');
+    document.fonts.delete(nonCssConnectedFace);
+    shouldBe('document.fonts.size', '3');
+
+    document.fonts.add(nonCssConnectedFace);
+    shouldBe('document.fonts.size', '4');
+    document.fonts.clear();
+    shouldBe('document.fonts.size', '3');
 }
 
 if (document.fonts)

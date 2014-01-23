@@ -33,6 +33,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FontResource.h"
@@ -117,6 +118,7 @@ CSSFontSelector::CSSFontSelector(Document* document)
     ASSERT(m_document);
     ASSERT(m_document->frame());
     FontCache::fontCache()->addClient(this);
+    FontFaceSet::from(document)->addFontFacesToCSSSegmentedFontFaceCache(&m_cssSegmentedFontFaceCache, this);
 }
 
 CSSFontSelector::~CSSFontSelector()

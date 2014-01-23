@@ -120,11 +120,6 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-static void flushPendingStyleChanges(Document* document)
-{
-    document->ensureStyleResolver();
-}
-
 FontFaceSet::FontFaceSet(Document* document)
     : ActiveDOMObject(document)
     , m_loadingCount(0)
@@ -141,6 +136,12 @@ FontFaceSet::~FontFaceSet()
 Document* FontFaceSet::document() const
 {
     return toDocument(executionContext());
+}
+
+void FontFaceSet::addFontFacesToCSSSegmentedFontFaceCache(CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache, CSSFontSelector* fontSelector)
+{
+    for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
+        cssSegmentedFontFaceCache->addCSSFontFace(fontSelector, (*it)->cssFontFace(), false);
 }
 
 const AtomicString& FontFaceSet::interfaceName() const
@@ -254,14 +255,68 @@ ScriptPromise FontFaceSet::ready()
     return promise;
 }
 
+void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
+{
+    if (!fontFace) {
+        exceptionState.throwTypeError("The argument is not a FontFace.");
+        return;
+    }
+    if (m_nonCSSConnectedFaces.contains(fontFace))
+        return;
+    if (isCSSConnectedFontFace(fontFace)) {
+        exceptionState.throwDOMException(InvalidModificationError, "Cannot add a CSS-connected FontFace.");
+        return;
+    }
+    CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
+    RefPtr<CSSFontFace> cssFontFace = fontFace->createCSSFontFace(document());
+    m_nonCSSConnectedFaces.add(fontFace);
+    fontSelector->fontFaceCache()->addCSSFontFace(fontSelector, cssFontFace, false);
+}
+
+void FontFaceSet::clear()
+{
+    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache = document()->styleEngine()->fontSelector()->fontFaceCache();
+    for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
+        cssSegmentedFontFaceCache->removeCSSFontFace((*it)->cssFontFace(), false);
+    m_nonCSSConnectedFaces.clear();
+}
+
+bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
+{
+    if (!fontFace) {
+        exceptionState.throwTypeError("The argument is not a FontFace.");
+        return false;
+    }
+    ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.find(fontFace);
+    if (it != m_nonCSSConnectedFaces.end()) {
+        m_nonCSSConnectedFaces.remove(it);
+        document()->styleEngine()->fontSelector()->fontFaceCache()->removeCSSFontFace(fontFace->cssFontFace(), false);
+        return true;
+    }
+    if (isCSSConnectedFontFace(fontFace))
+        exceptionState.throwDOMException(InvalidModificationError, "Cannot delete a CSS-connected FontFace.");
+    return false;
+}
+
 bool FontFaceSet::has(FontFace* fontFace, ExceptionState& exceptionState) const
 {
     if (!fontFace) {
         exceptionState.throwTypeError("The argument is not a FontFace.");
         return false;
     }
-    flushPendingStyleChanges(document());
-    return document()->styleEngine()->fontSelector()->fontFaceCache()->cssFontFaceList().contains(fontFace->cssFontFace());
+    return m_nonCSSConnectedFaces.contains(fontFace) || isCSSConnectedFontFace(fontFace);
+}
+
+const ListHashSet<RefPtr<CSSFontFace> >& FontFaceSet::cssConnectedFontFaceList() const
+{
+    Document* d = document();
+    d->ensureStyleResolver(); // Flush pending style changes.
+    return d->styleEngine()->fontSelector()->fontFaceCache()->cssConnectedFontFaces();
+}
+
+bool FontFaceSet::isCSSConnectedFontFace(FontFace* fontFace) const
+{
+    return cssConnectedFontFaceList().contains(fontFace->cssFontFace());
 }
 
 void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue& thisArg) const
@@ -276,12 +331,13 @@ void FontFaceSet::forEach(PassOwnPtr<FontFaceSetForEachCallback> callback) const
 
 void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callback, ScriptValue* thisArg) const
 {
-    flushPendingStyleChanges(document());
-    const ListHashSet<RefPtr<CSSFontFace> >& faces = document()->styleEngine()->fontSelector()->fontFaceCache()->cssFontFaceList();
+    const ListHashSet<RefPtr<CSSFontFace> >& cssConnectedFaces = cssConnectedFontFaceList();
     Vector<RefPtr<FontFace> > fontFaces;
-    fontFaces.reserveInitialCapacity(faces.size());
-    for (ListHashSet<RefPtr<CSSFontFace> >::const_iterator it = faces.begin(); it != faces.end(); ++it)
+    fontFaces.reserveInitialCapacity(cssConnectedFaces.size() + m_nonCSSConnectedFaces.size());
+    for (ListHashSet<RefPtr<CSSFontFace> >::const_iterator it = cssConnectedFaces.begin(); it != cssConnectedFaces.end(); ++it)
         fontFaces.append((*it)->fontFace());
+    for (ListHashSet<RefPtr<FontFace> >::const_iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it)
+        fontFaces.append(*it);
 
     for (size_t i = 0; i < fontFaces.size(); ++i) {
         FontFace* face = fontFaces[i].get();
@@ -294,8 +350,7 @@ void FontFaceSet::forEachInternal(PassOwnPtr<FontFaceSetForEachCallback> callbac
 
 unsigned long FontFaceSet::size() const
 {
-    flushPendingStyleChanges(document());
-    return document()->styleEngine()->fontSelector()->fontFaceCache()->cssFontFaceList().size();
+    return cssConnectedFontFaceList().size() + m_nonCSSConnectedFaces.size();
 }
 
 void FontFaceSet::fireDoneEventIfPossible()

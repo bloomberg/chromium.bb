@@ -48,12 +48,14 @@ public:
     // a result of egregious spaghettification in CSSFontFace/FontFaceSet.
     void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtr<CSSFontFace>);
     void remove(const StyleRuleFontFace*);
+    void addCSSFontFace(CSSFontSelector*, PassRefPtr<CSSFontFace>, bool cssConnected);
+    void removeCSSFontFace(CSSFontFace*, bool cssConnected);
 
     // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,
     // but this function uses FontDescription/family pair.
     CSSSegmentedFontFace* get(const FontDescription&, const AtomicString& family);
 
-    const ListHashSet<RefPtr<CSSFontFace> >& cssFontFaceList() const { return m_fontFaceList; }
+    const ListHashSet<RefPtr<CSSFontFace> >& cssConnectedFontFaces() const { return m_cssConnectedFontFaces; }
 
     unsigned version() const { return m_version; }
 
@@ -64,7 +66,7 @@ private:
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;
-    ListHashSet<RefPtr<CSSFontFace> > m_fontFaceList;
+    ListHashSet<RefPtr<CSSFontFace> > m_cssConnectedFontFaces;
 
     // FIXME: See if this could be ditched
     // Used to compare Font instances, and the usage seems suspect.

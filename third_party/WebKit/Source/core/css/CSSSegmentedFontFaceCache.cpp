@@ -50,11 +50,14 @@ CSSSegmentedFontFaceCache::CSSSegmentedFontFaceCache()
 void CSSSegmentedFontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, PassRefPtr<CSSFontFace> prpCssFontFace)
 {
     RefPtr<CSSFontFace> cssFontFace = prpCssFontFace;
-
     if (!m_styleRuleToFontFace.add(fontFaceRule, cssFontFace).isNewEntry)
         return;
-    m_fontFaceList.add(cssFontFace);
+    addCSSFontFace(cssFontSelector, cssFontFace, true);
+}
 
+void CSSSegmentedFontFaceCache::addCSSFontFace(CSSFontSelector* cssFontSelector, PassRefPtr<CSSFontFace> prpCssFontFace, bool cssConnected)
+{
+    RefPtr<CSSFontFace> cssFontFace = prpCssFontFace;
     FontFace* fontFace = cssFontFace->fontFace();
 
     OwnPtr<TraitsMap>& familyFontFaces = m_fontFaces.add(fontFace->family(), nullptr).iterator->value;
@@ -65,18 +68,24 @@ void CSSSegmentedFontFaceCache::add(CSSFontSelector* cssFontSelector, const Styl
     if (!segmentedFontFace)
         segmentedFontFace = CSSSegmentedFontFace::create(cssFontSelector, static_cast<FontTraitsMask>(fontFace->traitsMask()));
 
-    segmentedFontFace->appendFontFace(cssFontFace);
+    segmentedFontFace->addFontFace(cssFontFace, cssConnected);
+    if (cssConnected)
+        m_cssConnectedFontFaces.add(cssFontFace);
 
     ++m_version;
 }
 
 void CSSSegmentedFontFaceCache::remove(const StyleRuleFontFace* fontFaceRule)
 {
-    StyleRuleToFontFace::iterator styleRuleToFontFaceIter = m_styleRuleToFontFace.find(fontFaceRule);
-    if (styleRuleToFontFaceIter == m_styleRuleToFontFace.end())
-        return;
-    RefPtr<CSSFontFace> cssFontFace = styleRuleToFontFaceIter->value;
+    StyleRuleToFontFace::iterator it = m_styleRuleToFontFace.find(fontFaceRule);
+    if (it != m_styleRuleToFontFace.end()) {
+        removeCSSFontFace(it->value.get(), true);
+        m_styleRuleToFontFace.remove(it);
+    }
+}
 
+void CSSSegmentedFontFaceCache::removeCSSFontFace(CSSFontFace* cssFontFace, bool cssConnected)
+{
     FamilyToTraitsMap::iterator fontFacesIter = m_fontFaces.find(cssFontFace->fontFace()->family());
     if (fontFacesIter == m_fontFaces.end())
         return;
@@ -93,9 +102,10 @@ void CSSSegmentedFontFaceCache::remove(const StyleRuleFontFace* fontFaceRule)
         if (familyFontFaces->isEmpty())
             m_fontFaces.remove(fontFacesIter);
     }
-    m_fontFaceList.remove(styleRuleToFontFaceIter->value);
-    m_styleRuleToFontFace.remove(styleRuleToFontFaceIter);
     m_fonts.clear();
+    if (cssConnected)
+        m_cssConnectedFontFaces.remove(cssFontFace);
+
     ++m_version;
 }
 

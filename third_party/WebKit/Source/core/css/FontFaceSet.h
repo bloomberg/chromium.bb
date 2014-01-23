@@ -46,7 +46,10 @@
 
 namespace WebCore {
 
+class CSSFontFace;
 class CSSFontFaceSource;
+class CSSFontSelector;
+class CSSSegmentedFontFaceCache;
 class Dictionary;
 class Document;
 class ExceptionState;
@@ -69,6 +72,9 @@ public:
     ScriptPromise load(const String& font, const String& text, ExceptionState&);
     ScriptPromise ready();
 
+    void add(FontFace*, ExceptionState&);
+    void clear();
+    bool remove(FontFace*, ExceptionState&);
     void forEach(PassOwnPtr<FontFaceSetForEachCallback>, ScriptValue& thisArg) const;
     void forEach(PassOwnPtr<FontFaceSetForEachCallback>) const;
     bool has(FontFace*, ExceptionState&) const;
@@ -93,6 +99,8 @@ public:
 
     static PassRefPtr<FontFaceSet> from(Document*);
     static void didLayout(Document*);
+
+    void addFontFacesToCSSSegmentedFontFaceCache(CSSSegmentedFontFaceCache*, CSSFontSelector*);
 
 private:
     typedef RefCountedSupplement<Document, FontFaceSet> SupplementType;
@@ -124,12 +132,15 @@ private:
     bool resolveFontStyle(const String&, Font&);
     void handlePendingEventsAndPromisesSoon();
     void handlePendingEventsAndPromises();
+    const ListHashSet<RefPtr<CSSFontFace> >& cssConnectedFontFaceList() const;
+    bool isCSSConnectedFontFace(FontFace*) const;
 
     unsigned m_loadingCount;
     bool m_shouldFireLoadingEvent;
     Vector<OwnPtr<FontsReadyPromiseResolver> > m_readyResolvers;
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
+    ListHashSet<RefPtr<FontFace> > m_nonCSSConnectedFaces;
 
     AsyncMethodRunner<FontFaceSet> m_asyncRunner;
 
