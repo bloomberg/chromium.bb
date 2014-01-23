@@ -181,7 +181,6 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
     case CSSSelector::PseudoFirstLine:
         m_usesFirstLineRules = true;
         break;
-        break;
     case CSSSelector::PseudoHost:
         collectFeaturesFromSelectorList(selector->selectorList());
         break;

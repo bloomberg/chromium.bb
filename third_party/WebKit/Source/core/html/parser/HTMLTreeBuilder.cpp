@@ -2404,7 +2404,6 @@ ReprocessBuffer:
         // FIXME: parse error
         setInsertionMode(InBodyMode);
         goto ReprocessBuffer;
-        break;
     }
     case TextMode: {
         ASSERT(insertionMode() == TextMode);
@@ -2420,7 +2419,6 @@ ReprocessBuffer:
             return;
         defaultForInHeadNoscript();
         goto ReprocessBuffer;
-        break;
     }
     case InFramesetMode:
     case AfterFramesetMode: {

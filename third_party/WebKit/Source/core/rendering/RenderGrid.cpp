@@ -76,7 +76,7 @@ struct GridTrackForNormalization {
     }
 
     // Required by std::sort.
-    GridTrackForNormalization operator=(const GridTrackForNormalization& o)
+    GridTrackForNormalization& operator=(const GridTrackForNormalization& o)
     {
         m_track = o.m_track;
         m_flex = o.m_flex;
