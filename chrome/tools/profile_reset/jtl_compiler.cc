@@ -65,8 +65,9 @@ class InstructionSet {
                     jtl::STORE_NODE_BOOL, Arguments(String)));
     Add(Instruction("store_node_hash",
                     jtl::STORE_NODE_HASH, Arguments(String)));
-    Add(Instruction("store_node_effective_sld_hash",
-                    jtl::STORE_NODE_EFFECTIVE_SLD_HASH, Arguments(String)));
+    Add(Instruction("store_node_registerable_domain_hash",
+                    jtl::STORE_NODE_REGISTERABLE_DOMAIN_HASH,
+                    Arguments(String)));
     Add(Instruction("compare_bool", jtl::COMPARE_NODE_BOOL, Arguments(Bool)));
     Add(Instruction("compare_hashed",
                     jtl::COMPARE_NODE_HASH, Arguments(String)));

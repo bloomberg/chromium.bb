@@ -537,7 +537,7 @@ TEST(JtlInterpreter, CompareSubstring) {
   }
 }
 
-TEST(JtlInterpreter, StoreNodeEffectiveSLDHash) {
+TEST(JtlInterpreter, StoreNodeRegisterableDomainHash) {
   struct TestCase {
     std::string expected_value;
     const char* json;
@@ -549,10 +549,16 @@ TEST(JtlInterpreter, StoreNodeEffectiveSLDHash) {
     { GetHash("google"), "{ 'KEY_HASH_1': 'http://google.com./' }", true },
     { GetHash("google"), "{ 'KEY_HASH_1': 'http://..google.com/' }", true },
 
+    { GetHash("foo"), "{ 'KEY_HASH_1': 'http://foo.bar/path' }", true },
+    { GetHash("foo"), "{ 'KEY_HASH_1': 'http://sub.foo.bar' }", true },
+    { GetHash("foo"), "{ 'KEY_HASH_1': 'http://foo.appspot.com/' }", true },
+    { GetHash("foo"), "{ 'KEY_HASH_1': 'http://sub.foo.appspot.com' }", true },
+
     { std::string(), "{ 'KEY_HASH_1': 'http://google.com../' }", false },
-    { std::string(), "{ 'KEY_HASH_1': 'http://foo.bar/path' }", false },
+
     { std::string(), "{ 'KEY_HASH_1': 'http://bar/path' }", false },
     { std::string(), "{ 'KEY_HASH_1': 'http://co.uk/path' }", false },
+    { std::string(), "{ 'KEY_HASH_1': 'http://appspot.com/path' }", false },
     { std::string(), "{ 'KEY_HASH_1': 'http://127.0.0.1/path' }", false },
     { std::string(), "{ 'KEY_HASH_1': 'file:///C:/bar.html' }", false },
 
@@ -567,7 +573,7 @@ TEST(JtlInterpreter, StoreNodeEffectiveSLDHash) {
     SCOPED_TRACE(testing::Message() << "Iteration " << i);
     INIT_INTERPRETER(
         OP_NAVIGATE(KEY_HASH_1) +
-        OP_STORE_NODE_EFFECTIVE_SLD_HASH(VAR_HASH_1) +
+        OP_STORE_NODE_REGISTERABLE_DOMAIN_HASH(VAR_HASH_1) +
         OP_STORE_BOOL(VAR_HASH_2, VALUE_TRUE),
         cases[i].json);
     EXPECT_EQ(JtlInterpreter::OK, interpreter.result());

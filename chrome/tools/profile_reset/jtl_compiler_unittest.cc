@@ -56,8 +56,8 @@ TEST(JtlCompiler, CompileSingleInstructions) {
          OP_STORE_HASH(GetHash("name"), GetHash("value"))},
         {"store_node_bool(\"name\").", OP_STORE_NODE_BOOL(GetHash("name"))},
         {"store_node_hash(\"name\").", OP_STORE_NODE_HASH(GetHash("name"))},
-        {"store_node_effective_sld_hash(\"name\").",
-         OP_STORE_NODE_EFFECTIVE_SLD_HASH(GetHash("name"))},
+        {"store_node_registerable_domain_hash(\"name\").",
+         OP_STORE_NODE_REGISTERABLE_DOMAIN_HASH(GetHash("name"))},
         {"compare_stored_hashed(\"name\", \"value\", \"default\").",
          OP_COMPARE_STORED_HASH(
              GetHash("name"), GetHash("value"), GetHash("default"))},

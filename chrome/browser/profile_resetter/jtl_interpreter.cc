@@ -267,57 +267,59 @@ class StoreNodeValue : public Operation {
   DISALLOW_COPY_AND_ASSIGN(StoreNodeValue);
 };
 
-// Stores the effective SLD (second-level domain) of the URL represented by the
-// current node into working memory.
-class StoreNodeEffectiveSLD : public Operation {
+// Stores the hash of the registerable domain name -- as in, the portion of the
+// domain that is registerable, as opposed to controlled by a registrar; without
+// subdomains -- of the URL represented by the current node into working memory.
+class StoreNodeRegisterableDomain : public Operation {
  public:
-  explicit StoreNodeEffectiveSLD(const std::string& hashed_name)
+  explicit StoreNodeRegisterableDomain(const std::string& hashed_name)
       : hashed_name_(hashed_name) {
     DCHECK(IsStringUTF8(hashed_name));
   }
-  virtual ~StoreNodeEffectiveSLD() {}
+  virtual ~StoreNodeRegisterableDomain() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
     std::string possibly_invalid_url;
-    std::string effective_sld;
+    std::string domain;
     if (!context->current_node()->GetAsString(&possibly_invalid_url) ||
-        !GetEffectiveSLD(possibly_invalid_url, &effective_sld))
+        !GetRegisterableDomain(possibly_invalid_url, &domain))
       return true;
     context->working_memory()->Set(
-        hashed_name_, new base::StringValue(context->GetHash(effective_sld)));
+        hashed_name_, new base::StringValue(context->GetHash(domain)));
     return context->ContinueExecution();
   }
 
  private:
-  // If |possibly_invalid_url| is a valid URL that has an effective second-level
-  // domain part, outputs that in |effective_sld| and returns true.
-  // Returns false otherwise.
-  static bool GetEffectiveSLD(const std::string& possibly_invalid_url,
-                              std::string* effective_sld) {
+  // If |possibly_invalid_url| is a valid URL having a registerable domain name
+  // part, outputs that in |registerable_domain| and returns true. Otherwise,
+  // returns false.
+  static bool GetRegisterableDomain(const std::string& possibly_invalid_url,
+                                    std::string* registerable_domain) {
     namespace domains = net::registry_controlled_domains;
-    DCHECK(effective_sld);
+    DCHECK(registerable_domain);
     GURL url(possibly_invalid_url);
     if (!url.is_valid())
       return false;
-    std::string sld_and_registry = domains::GetDomainAndRegistry(
-        url.host(), domains::EXCLUDE_PRIVATE_REGISTRIES);
+    std::string registry_plus_one = domains::GetDomainAndRegistry(
+        url.host(), domains::INCLUDE_PRIVATE_REGISTRIES);
     size_t registry_length = domains::GetRegistryLength(
         url.host(),
-        domains::EXCLUDE_UNKNOWN_REGISTRIES,
-        domains::EXCLUDE_PRIVATE_REGISTRIES);
+        domains::INCLUDE_UNKNOWN_REGISTRIES,
+        domains::INCLUDE_PRIVATE_REGISTRIES);
     // Fail unless (1.) the URL has a host part; and (2.) that host part is a
-    // well-formed domain name that ends in, but is not in itself, as a whole,
-    // a recognized registry identifier that is acknowledged by ICANN.
+    // well-formed domain name consisting of at least one subcomponent; followed
+    // by either a recognized registry identifier, or exactly one subcomponent,
+    // which is then assumed to be the unknown registry identifier.
     if (registry_length == std::string::npos || registry_length == 0)
       return false;
-    DCHECK_LT(registry_length, sld_and_registry.size());
+    DCHECK_LT(registry_length, registry_plus_one.size());
     // Subtract one to cut off the dot separating the SLD and the registry.
-    effective_sld->assign(
-        sld_and_registry, 0, sld_and_registry.size() - registry_length - 1);
+    registerable_domain->assign(
+        registry_plus_one, 0, registry_plus_one.size() - registry_length - 1);
     return true;
   }
 
   std::string hashed_name_;
-  DISALLOW_COPY_AND_ASSIGN(StoreNodeEffectiveSLD);
+  DISALLOW_COPY_AND_ASSIGN(StoreNodeRegisterableDomain);
 };
 
 class CompareNodeBool : public Operation {
@@ -555,11 +557,11 @@ class Parser {
           operators.push_back(new StoreNodeValue<false>(hashed_name));
           break;
         }
-        case jtl_foundation::STORE_NODE_EFFECTIVE_SLD_HASH: {
+        case jtl_foundation::STORE_NODE_REGISTERABLE_DOMAIN_HASH: {
           std::string hashed_name;
           if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
-          operators.push_back(new StoreNodeEffectiveSLD(hashed_name));
+          operators.push_back(new StoreNodeRegisterableDomain(hashed_name));
           break;
         }
         case jtl_foundation::COMPARE_NODE_BOOL: {

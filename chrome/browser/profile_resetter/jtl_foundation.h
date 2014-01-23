@@ -106,17 +106,21 @@ enum OpCodes {
   // Parameters:
   // - a 32 byte hash of the parameter name.
   STORE_NODE_HASH = 0x15,
-  // Interprets the value of the current node as a URL, and stores the hash of
-  // its effective SLD (second-level domain) into the working memory. If the
-  // current node is not a string that represents a URL which has an SLD part,
-  // the program execution returns from the current instruction.
-  // Note: Effective SLD means the dot-separated part of the domain that is
-  // immediately below the portion that is controlled by a registrar.
-  // For instance, both "example.com" and "example.co.uk" will yield "example".
+  // Parses the value of the current node as a URL, extracts the subcomponent of
+  // the domain name that is immediately below the registrar-controlled portion,
+  // and stores the hash of this subcomponent into working memory. In case the
+  // domain name ends in a suffix not on the Public Suffix List (i.e. is neither
+  // an ICANN, nor a private domain suffix), the last subcomponent is assumed to
+  // be the registry, and the second-to-last subcomponent is extracted.
+  // If the current node is not a string that represents a URL, or if this URL
+  // does not have a domain component as described above, the program execution
+  // returns from the current instruction.
+  // For example, "foo.com", "www.foo.co.uk", "foo.appspot.com", and "foo.bar"
+  // will all yield (the hash of) "foo" as a result.
   // See the unit test for more details.
   // Parameters:
   // - a 32 byte hash of the parameter name.
-  STORE_NODE_EFFECTIVE_SLD_HASH = 0x16,
+  STORE_NODE_REGISTERABLE_DOMAIN_HASH = 0x16,
   // Compares the current node against a boolean value and continues execution
   // with the next operation in case of a match. If the current node does not
   // match or is not a boolean value, the program execution returns from the

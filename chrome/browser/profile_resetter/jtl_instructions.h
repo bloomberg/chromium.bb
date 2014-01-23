@@ -23,7 +23,8 @@
     std::string(1, '\x13') + name + value + default_value
 #define OP_STORE_NODE_BOOL(name) std::string(1, '\x14') + name
 #define OP_STORE_NODE_HASH(name) std::string(1, '\x15') + name
-#define OP_STORE_NODE_EFFECTIVE_SLD_HASH(name) std::string(1, '\x16') + name
+#define OP_STORE_NODE_REGISTERABLE_DOMAIN_HASH(name) \
+    std::string(1, '\x16') + name
 #define OP_COMPARE_NODE_BOOL(value) std::string(1, '\x20') + value
 #define OP_COMPARE_NODE_HASH(value) std::string(1, '\x21') + value
 #define OP_COMPARE_NODE_HASH_NOT(value) std::string(1, '\x22') + value
