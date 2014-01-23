@@ -992,9 +992,14 @@ static PP_Bool Pnacl_M34_PPB_MediaStreamAudioTrack_IsMediaStreamAudioTrack(PP_Re
   return iface->IsMediaStreamAudioTrack(resource);
 }
 
-static int32_t Pnacl_M34_PPB_MediaStreamAudioTrack_Configure(PP_Resource audio_track, uint32_t samples_per_frame, uint32_t max_buffered_frames) {
+static int32_t Pnacl_M34_PPB_MediaStreamAudioTrack_Configure(PP_Resource audio_track, const int32_t attrib_list[], struct PP_CompletionCallback* callback) {
   const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
-  return iface->Configure(audio_track, samples_per_frame, max_buffered_frames);
+  return iface->Configure(audio_track, attrib_list, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamAudioTrack_GetAttrib(PP_Resource audio_track, PP_MediaStreamAudioTrack_Attrib attrib, int32_t* value) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  return iface->GetAttrib(audio_track, attrib, value);
 }
 
 static void Pnacl_M34_PPB_MediaStreamAudioTrack_GetId(struct PP_Var* _struct_result, PP_Resource audio_track) {
@@ -1031,9 +1036,14 @@ static PP_Bool Pnacl_M34_PPB_MediaStreamVideoTrack_IsMediaStreamVideoTrack(PP_Re
   return iface->IsMediaStreamVideoTrack(resource);
 }
 
-static int32_t Pnacl_M34_PPB_MediaStreamVideoTrack_Configure(PP_Resource video_track, uint32_t max_buffered_frames) {
+static int32_t Pnacl_M34_PPB_MediaStreamVideoTrack_Configure(PP_Resource video_track, const int32_t attrib_list[], struct PP_CompletionCallback* callback) {
   const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
-  return iface->Configure(video_track, max_buffered_frames);
+  return iface->Configure(video_track, attrib_list, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamVideoTrack_GetAttrib(PP_Resource video_track, PP_MediaStreamVideoTrack_Attrib attrib, int32_t* value) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  return iface->GetAttrib(video_track, attrib, value);
 }
 
 static void Pnacl_M34_PPB_MediaStreamVideoTrack_GetId(struct PP_Var* _struct_result, PP_Resource video_track) {
@@ -4335,7 +4345,8 @@ static struct PPB_IMEInputEvent_1_0 Pnacl_Wrappers_PPB_IMEInputEvent_1_0 = {
 
 static struct PPB_MediaStreamAudioTrack_0_1 Pnacl_Wrappers_PPB_MediaStreamAudioTrack_0_1 = {
     .IsMediaStreamAudioTrack = (PP_Bool (*)(PP_Resource resource))&Pnacl_M34_PPB_MediaStreamAudioTrack_IsMediaStreamAudioTrack,
-    .Configure = (int32_t (*)(PP_Resource audio_track, uint32_t samples_per_frame, uint32_t max_buffered_frames))&Pnacl_M34_PPB_MediaStreamAudioTrack_Configure,
+    .Configure = (int32_t (*)(PP_Resource audio_track, const int32_t attrib_list[], struct PP_CompletionCallback callback))&Pnacl_M34_PPB_MediaStreamAudioTrack_Configure,
+    .GetAttrib = (int32_t (*)(PP_Resource audio_track, PP_MediaStreamAudioTrack_Attrib attrib, int32_t* value))&Pnacl_M34_PPB_MediaStreamAudioTrack_GetAttrib,
     .GetId = (struct PP_Var (*)(PP_Resource audio_track))&Pnacl_M34_PPB_MediaStreamAudioTrack_GetId,
     .HasEnded = (PP_Bool (*)(PP_Resource audio_track))&Pnacl_M34_PPB_MediaStreamAudioTrack_HasEnded,
     .GetFrame = (int32_t (*)(PP_Resource audio_track, PP_Resource* frame, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_MediaStreamAudioTrack_GetFrame,
@@ -4345,7 +4356,8 @@ static struct PPB_MediaStreamAudioTrack_0_1 Pnacl_Wrappers_PPB_MediaStreamAudioT
 
 static struct PPB_MediaStreamVideoTrack_0_1 Pnacl_Wrappers_PPB_MediaStreamVideoTrack_0_1 = {
     .IsMediaStreamVideoTrack = (PP_Bool (*)(PP_Resource resource))&Pnacl_M34_PPB_MediaStreamVideoTrack_IsMediaStreamVideoTrack,
-    .Configure = (int32_t (*)(PP_Resource video_track, uint32_t max_buffered_frames))&Pnacl_M34_PPB_MediaStreamVideoTrack_Configure,
+    .Configure = (int32_t (*)(PP_Resource video_track, const int32_t attrib_list[], struct PP_CompletionCallback callback))&Pnacl_M34_PPB_MediaStreamVideoTrack_Configure,
+    .GetAttrib = (int32_t (*)(PP_Resource video_track, PP_MediaStreamVideoTrack_Attrib attrib, int32_t* value))&Pnacl_M34_PPB_MediaStreamVideoTrack_GetAttrib,
     .GetId = (struct PP_Var (*)(PP_Resource video_track))&Pnacl_M34_PPB_MediaStreamVideoTrack_GetId,
     .HasEnded = (PP_Bool (*)(PP_Resource video_track))&Pnacl_M34_PPB_MediaStreamVideoTrack_HasEnded,
     .GetFrame = (int32_t (*)(PP_Resource video_track, PP_Resource* frame, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_MediaStreamVideoTrack_GetFrame,

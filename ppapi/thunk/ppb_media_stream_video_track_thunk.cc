@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_media_stream_video_track.idl modified Mon Jan 13 12:02:23 2014.
+// From ppb_media_stream_video_track.idl modified Thu Jan 23 08:56:57 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -23,12 +23,27 @@ PP_Bool IsMediaStreamVideoTrack(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
-int32_t Configure(PP_Resource video_track, uint32_t max_buffered_frames) {
+int32_t Configure(PP_Resource video_track,
+                  const int32_t attrib_list[],
+                  struct PP_CompletionCallback callback) {
   VLOG(4) << "PPB_MediaStreamVideoTrack::Configure()";
+  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track,
+                                                     callback,
+                                                     true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->Configure(attrib_list,
+                                                   enter.callback()));
+}
+
+int32_t GetAttrib(PP_Resource video_track,
+                  PP_MediaStreamVideoTrack_Attrib attrib,
+                  int32_t* value) {
+  VLOG(4) << "PPB_MediaStreamVideoTrack::GetAttrib()";
   EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track, true);
   if (enter.failed())
     return enter.retval();
-  return enter.object()->Configure(max_buffered_frames);
+  return enter.object()->GetAttrib(attrib, value);
 }
 
 struct PP_Var GetId(PP_Resource video_track) {
@@ -78,6 +93,7 @@ void Close(PP_Resource video_track) {
 const PPB_MediaStreamVideoTrack_0_1 g_ppb_mediastreamvideotrack_thunk_0_1 = {
   &IsMediaStreamVideoTrack,
   &Configure,
+  &GetAttrib,
   &GetId,
   &HasEnded,
   &GetFrame,

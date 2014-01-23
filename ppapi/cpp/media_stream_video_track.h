@@ -7,8 +7,9 @@
 
 #include <string>
 
-#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_media_stream_video_track.h"
 #include "ppapi/cpp/resource.h"
+#include "ppapi/cpp/var.h"
 
 /// @file
 /// This file defines the <code>MediaStreamVideoTrack</code> interface for a
@@ -18,6 +19,7 @@
 namespace pp {
 
 class VideoFrame;
+class CompletionCallback;
 template <typename T> class CompletionCallbackWithOutput;
 
 /// The <code>MediaStreamVideoTrack</code> class contains methods for
@@ -49,17 +51,40 @@ class MediaStreamVideoTrack : public Resource {
 
   /// Configures underlying frame buffers for incoming frames.
   /// If the application doesn't want to drop frames, then the
-  /// <code>max_buffered_frames</code> should be chosen such that inter-frame
-  /// processing time variability won't overrun the input buffer. If the buffer
-  /// is overfilled, then frames will be dropped. The application can detect
-  /// this by examining the timestamp on returned frames.
-  /// If <code>Configure()</code> is not used, default settings will be used.
+  /// <code>PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES</code> should be
+  /// chosen such that inter-frame processing time variability won't overrun the
+  /// input buffer. If the buffer is overfilled, then frames will be dropped.
+  /// The application can detect this by examining the timestamp on returned
+  /// frames. If <code>Configure()</code> is not called, default settings will
+  /// be used.
+  /// Example usage from plugin code:
+  /// @code
+  /// int32_t attribs[] = {
+  ///     PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES, 4,
+  ///     PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE};
+  /// track.Configure(attribs, callback);
+  /// @endcode
   ///
-  /// @param[in] max_buffered_frames The maximum number of video frames to
-  /// hold in the input buffer.
+  /// @param[in] attrib_list A list of attribute name-value pairs in which each
+  /// attribute is immediately followed by the corresponding desired value.
+  /// The list is terminated by
+  /// <code>PP_MEDIASTREAMVIDEOTRACK_ATTRIB_NONE</code>.
+  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+  /// completion of <code>Configure()</code>.
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
-  int32_t Configure(uint32_t max_buffered_frames);
+  int32_t Configure(const int32_t attributes[],
+                    const CompletionCallback& callback);
+
+  /// Gets attribute value for a given attribute name.
+  ///
+  /// @param[in] attrib A <code>PP_MediaStreamVideoTrack_Attrib</code> for
+  /// querying.
+  /// @param[out] value A int32_t for storing the attribute value.
+  ///
+  /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
+  int32_t GetAttrib(PP_MediaStreamVideoTrack_Attrib attrib,
+                    int32_t* value);
 
   /// Returns the track ID of the underlying MediaStream video track.
   std::string GetId() const;

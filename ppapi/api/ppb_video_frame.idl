@@ -30,7 +30,7 @@ enum PP_VideoFrame_Format {
   PP_VIDEOFRAME_FORMAT_YV16 = 2,
 
   /**
-   * 12bpp YVU planar 1x1 Y, 2x2 VU samples.
+   * 12bpp YVU planar 1x1 Y, 2x2 UV samples.
    */
   PP_VIDEOFRAME_FORMAT_I420 = 3,
 

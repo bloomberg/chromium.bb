@@ -5,6 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_MEDIA_STREAM_AUDIO_TRACK_API_H_
 #define PPAPI_THUNK_PPB_MEDIA_STREAM_AUDIO_TRACK_API_H_
 
+#include "ppapi/c/ppb_media_stream_audio_track.h"
+
 namespace ppapi {
 namespace thunk {
 
@@ -13,11 +15,12 @@ class PPAPI_THUNK_EXPORT PPB_MediaStreamAudioTrack_API {
   virtual ~PPB_MediaStreamAudioTrack_API() {}
   virtual PP_Var GetId() = 0;
   virtual PP_Bool HasEnded() = 0;
-  virtual int32_t Configure(uint32_t samples_per_frame,
-                            uint32_t max_buffered_frames) = 0;
-  virtual int32_t GetFrame(
-      PP_Resource* frame,
-      scoped_refptr<ppapi::TrackedCallback> callback) = 0;
+  virtual int32_t Configure(const int32_t attrib_list[],
+                            scoped_refptr<ppapi::TrackedCallback> callback) = 0;
+  virtual int32_t GetAttrib(PP_MediaStreamAudioTrack_Attrib attrib,
+                            int32_t* value) = 0;
+  virtual int32_t GetFrame(PP_Resource* frame,
+                           scoped_refptr<ppapi::TrackedCallback> callback) = 0;
   virtual int32_t RecycleFrame(PP_Resource frame) = 0;
   virtual void Close() = 0;
 };

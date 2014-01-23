@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_audio_frame.idl modified Mon Jan 13 11:39:02 2014.
+// From ppb_audio_frame.idl modified Wed Jan 22 09:11:35 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_audio_frame.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_audio_frame_api.h"
-#include "ppapi/thunk/ppb_instance_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -40,11 +38,11 @@ void SetTimestamp(PP_Resource frame, PP_TimeDelta timestamp) {
   enter.object()->SetTimestamp(timestamp);
 }
 
-uint32_t GetSampleSize(PP_Resource frame) {
+PP_AudioFrame_SampleSize GetSampleSize(PP_Resource frame) {
   VLOG(4) << "PPB_AudioFrame::GetSampleSize()";
   EnterResource<PPB_AudioFrame_API> enter(frame, true);
   if (enter.failed())
-    return 0;
+    return PP_AUDIOFRAME_SAMPLESIZE_UNKNOWN;
   return enter.object()->GetSampleSize();
 }
 
@@ -93,7 +91,7 @@ const PPB_AudioFrame_0_1 g_ppb_audioframe_thunk_0_1 = {
 
 }  // namespace
 
-const PPB_AudioFrame_0_1* GetPPB_AudioFrame_0_1_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_AudioFrame_0_1* GetPPB_AudioFrame_0_1_Thunk() {
   return &g_ppb_audioframe_thunk_0_1;
 }
 

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_frame.idl modified Wed Jan  8 14:06:25 2014. */
+/* From ppb_video_frame.idl modified Wed Jan 22 21:25:01 2014. */
 
 #ifndef PPAPI_C_PPB_VIDEO_FRAME_H_
 #define PPAPI_C_PPB_VIDEO_FRAME_H_
@@ -40,7 +40,7 @@ typedef enum {
    */
   PP_VIDEOFRAME_FORMAT_YV16 = 2,
   /**
-   * 12bpp YVU planar 1x1 Y, 2x2 VU samples.
+   * 12bpp YVU planar 1x1 Y, 2x2 UV samples.
    */
   PP_VIDEOFRAME_FORMAT_I420 = 3,
   /**

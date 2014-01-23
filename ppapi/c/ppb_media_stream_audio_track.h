@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_media_stream_audio_track.idl modified Tue Jan  7 17:05:06 2014. */
+/* From ppb_media_stream_audio_track.idl modified Thu Jan 23 14:08:10 2014. */
 
 #ifndef PPAPI_C_PPB_MEDIA_STREAM_AUDIO_TRACK_H_
 #define PPAPI_C_PPB_MEDIA_STREAM_AUDIO_TRACK_H_
@@ -26,10 +26,57 @@
 
 
 /**
- * @addtogroup Interfaces
+ * @addtogroup Enums
  * @{
  */
 /**
+ * This enumeration contains audio track attributes which are used by
+ * <code>Configure()</code>.
+ */
+typedef enum {
+  /**
+   * Attribute list terminator.
+   */
+  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE = 0,
+  /**
+   * The maximum number of frames to hold in the input buffer.
+   * Note: this is only used as advisory; the browser may allocate more or fewer
+   * based on available resources. How many frames to buffer depends on usage -
+   * request at least 2 to make sure latency doesn't cause lost frames. If
+   * the plugin expects to hold on to more than one frame at a time (e.g. to do
+   * multi-frame processing), it should request that many more.
+   */
+  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES = 1,
+  /**
+   * The sample rate of audio frames. The attribute value is a
+   * <code>PP_AudioFrame_SampleRate</code>.
+   */
+  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_RATE = 2,
+  /**
+   * The sample size of audio frames in bytes. The attribute value is a
+   * <code>PP_AudioFrame_SampleSize</code>.
+   */
+  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_SAMPLE_SIZE = 3,
+  /**
+   * The number of channels in audio frames.
+   *
+   * Supported values: 1, 2
+   */
+  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_CHANNELS = 4,
+  /**
+   * The duration of audio frames in milliseconds.
+   *
+   * Valid range: 10 to 10000
+   */
+  PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION = 5
+} PP_MediaStreamAudioTrack_Attrib;
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Interfaces
+ * @{
  */
 struct PPB_MediaStreamAudioTrack_0_1 { /* dev */
   /**
@@ -45,23 +92,50 @@ struct PPB_MediaStreamAudioTrack_0_1 { /* dev */
   /**
    * Configures underlying frame buffers for incoming frames.
    * If the application doesn't want to drop frames, then the
-   * <code>max_buffered_frames</code> should be chosen such that inter-frame
-   * processing time variability won't overrun the input buffer. If the buffer
-   * is overfilled, then frames will be dropped. The application can detect
-   * this by examining the timestamp on returned frames.
-   * If <code>Configure()</code> is not used, default settings will be used.
+   * <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES</code> should be
+   * chosen such that inter-frame processing time variability won't overrun the
+   * input buffer. If the buffer is overfilled, then frames will be dropped.
+   * The application can detect this by examining the timestamp on returned
+   * frames. If <code>Configure()</code> is not called, default settings will be
+   * used.
+   * Example usage from plugin code:
+   * @code
+   * int32_t attribs[] = {
+   *     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES, 4,
+   *     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION, 10,
+   *     PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE};
+   * track_if->Configure(track, attribs, callback);
+   * @endcode
    *
    * @param[in] audio_track A <code>PP_Resource</code> corresponding to an audio
    * resource.
-   * @param[in] samples_per_frame The number of audio samples in an audio frame.
-   * @param[in] max_buffered_frames The maximum number of audio frames to
-   * hold in the input buffer.
+   * @param[in] attrib_list A list of attribute name-value pairs in which each
+   * attribute is immediately followed by the corresponding desired value.
+   * The list is terminated by
+   * <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion of <code>Configure()</code>.
    *
    * @return An int32_t containing a result code from <code>pp_errors.h</code>.
    */
   int32_t (*Configure)(PP_Resource audio_track,
-                       uint32_t samples_per_frame,
-                       uint32_t max_buffered_frames);
+                       const int32_t attrib_list[],
+                       struct PP_CompletionCallback callback);
+  /**
+   * Gets attribute value for a given attribute name.
+   *
+   * @param[in] audio_track A <code>PP_Resource</code> corresponding to an audio
+   * resource.
+   * @param[in] attrib A <code>PP_MediaStreamAudioTrack_Attrib</code> for
+   * querying.
+   * @param[out] value A int32_t for storing the attribute value on success.
+   * Otherwise, the value will not be changed.
+   *
+   * @return An int32_t containing a result code from <code>pp_errors.h</code>.
+   */
+  int32_t (*GetAttrib)(PP_Resource audio_track,
+                       PP_MediaStreamAudioTrack_Attrib attrib,
+                       int32_t* value);
   /**
    * Returns the track ID of the underlying MediaStream audio track.
    *

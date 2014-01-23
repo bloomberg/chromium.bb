@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_media_stream_audio_track.idl modified Mon Jan 13 11:50:41 2014.
+// From ppb_media_stream_audio_track.idl modified Thu Jan 23 08:57:17 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_media_stream_audio_track.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_media_stream_audio_track_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -26,13 +24,26 @@ PP_Bool IsMediaStreamAudioTrack(PP_Resource resource) {
 }
 
 int32_t Configure(PP_Resource audio_track,
-                  uint32_t samples_per_frame,
-                  uint32_t max_buffered_frames) {
+                  const int32_t attrib_list[],
+                  struct PP_CompletionCallback callback) {
   VLOG(4) << "PPB_MediaStreamAudioTrack::Configure()";
+  EnterResource<PPB_MediaStreamAudioTrack_API> enter(audio_track,
+                                                     callback,
+                                                     true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->Configure(attrib_list,
+                                                   enter.callback()));
+}
+
+int32_t GetAttrib(PP_Resource audio_track,
+                  PP_MediaStreamAudioTrack_Attrib attrib,
+                  int32_t* value) {
+  VLOG(4) << "PPB_MediaStreamAudioTrack::GetAttrib()";
   EnterResource<PPB_MediaStreamAudioTrack_API> enter(audio_track, true);
   if (enter.failed())
     return enter.retval();
-  return enter.object()->Configure(samples_per_frame, max_buffered_frames);
+  return enter.object()->GetAttrib(attrib, value);
 }
 
 struct PP_Var GetId(PP_Resource audio_track) {
@@ -82,6 +93,7 @@ void Close(PP_Resource audio_track) {
 const PPB_MediaStreamAudioTrack_0_1 g_ppb_mediastreamaudiotrack_thunk_0_1 = {
   &IsMediaStreamAudioTrack,
   &Configure,
+  &GetAttrib,
   &GetId,
   &HasEnded,
   &GetFrame,
@@ -91,7 +103,8 @@ const PPB_MediaStreamAudioTrack_0_1 g_ppb_mediastreamaudiotrack_thunk_0_1 = {
 
 }  // namespace
 
-const PPB_MediaStreamAudioTrack_0_1* GetPPB_MediaStreamAudioTrack_0_1_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_MediaStreamAudioTrack_0_1*
+    GetPPB_MediaStreamAudioTrack_0_1_Thunk() {
   return &g_ppb_mediastreamaudiotrack_thunk_0_1;
 }
 

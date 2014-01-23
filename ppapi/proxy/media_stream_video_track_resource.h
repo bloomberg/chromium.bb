@@ -35,10 +35,12 @@ class PPAPI_PROXY_EXPORT MediaStreamVideoTrackResource
   // PPB_MediaStreamVideoTrack_API overrides:
   virtual PP_Var GetId() OVERRIDE;
   virtual PP_Bool HasEnded() OVERRIDE;
-  virtual int32_t Configure(uint32_t max_buffered_frames) OVERRIDE;
-  virtual int32_t GetFrame(
-      PP_Resource* frame,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t Configure(const int32_t attrib_list[],
+                            scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t GetAttrib(PP_MediaStreamVideoTrack_Attrib attrib,
+                            int32_t* value) OVERRIDE;
+  virtual int32_t GetFrame(PP_Resource* frame,
+                           scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t RecycleFrame(PP_Resource frame) OVERRIDE;
   virtual void Close() OVERRIDE;
 

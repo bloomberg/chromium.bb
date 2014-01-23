@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_frame.idl modified Thu Jan  9 14:39:24 2014. */
+/* From ppb_audio_frame.idl modified Wed Jan 22 21:25:31 2014. */
 
 #ifndef PPAPI_C_PPB_AUDIO_FRAME_H_
 #define PPAPI_C_PPB_AUDIO_FRAME_H_
@@ -20,6 +20,31 @@
  * Defines the <code>PPB_AudioFrame</code> interface.
  */
 
+
+/**
+ * @addtogroup Enums
+ * @{
+ */
+/**
+ * PP_AudioFrame_SampleRate is an enumeration of the different audio sample
+ * rates.
+ */
+typedef enum {
+  PP_AUDIOFRAME_SAMPLERATE_UNKNOWN = 0,
+  PP_AUDIOFRAME_SAMPLERATE_44100 = 44100
+} PP_AudioFrame_SampleRate;
+
+/**
+ * PP_AudioFrame_SampleSize is an enumeration of the different audio sample
+ * sizes.
+ */
+typedef enum {
+  PP_AUDIOFRAME_SAMPLESIZE_UNKNOWN = 0,
+  PP_AUDIOFRAME_SAMPLESIZE_16_BITS = 2
+} PP_AudioFrame_SampleSize;
+/**
+ * @}
+ */
 
 /**
  * @addtogroup Interfaces
@@ -63,7 +88,7 @@ struct PPB_AudioFrame_0_1 { /* dev */
    *
    * @return The sample size of the audio frame.
    */
-  uint32_t (*GetSampleSize)(PP_Resource frame);
+  PP_AudioFrame_SampleSize (*GetSampleSize)(PP_Resource frame);
   /**
    * Gets the number of channels in the audio frame.
    *

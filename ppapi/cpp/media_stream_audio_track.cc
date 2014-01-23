@@ -40,11 +40,21 @@ MediaStreamAudioTrack::MediaStreamAudioTrack(PassRef, PP_Resource resource)
 MediaStreamAudioTrack::~MediaStreamAudioTrack() {
 }
 
-int32_t MediaStreamAudioTrack::Configure(uint32_t samples_per_frame,
-                                         uint32_t frame_buffer_size) {
+int32_t MediaStreamAudioTrack::Configure(
+    const int32_t attributes[],
+    const CompletionCallback& callback) {
   if (has_interface<PPB_MediaStreamAudioTrack_0_1>()) {
     return get_interface<PPB_MediaStreamAudioTrack_0_1>()->Configure(
-        pp_resource(), samples_per_frame, frame_buffer_size);
+        pp_resource(), attributes, callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
+}
+
+int32_t MediaStreamAudioTrack::GetAttrib(PP_MediaStreamAudioTrack_Attrib attrib,
+                                         int32_t* value) {
+  if (has_interface<PPB_MediaStreamAudioTrack_0_1>()) {
+    return get_interface<PPB_MediaStreamAudioTrack_0_1>()->GetAttrib(
+        pp_resource(), attrib, value);
   }
   return PP_ERROR_NOINTERFACE;
 }
@@ -68,12 +78,12 @@ bool MediaStreamAudioTrack::HasEnded() const {
 }
 
 int32_t MediaStreamAudioTrack::GetFrame(
-    const CompletionCallbackWithOutput<AudioFrame>& cc) {
+    const CompletionCallbackWithOutput<AudioFrame>& callback) {
   if (has_interface<PPB_MediaStreamAudioTrack_0_1>()) {
     return get_interface<PPB_MediaStreamAudioTrack_0_1>()->GetFrame(
-        pp_resource(), cc.output(), cc.pp_completion_callback());
+        pp_resource(), callback.output(), callback.pp_completion_callback());
   }
-  return cc.MayForce(PP_ERROR_NOINTERFACE);
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 int32_t MediaStreamAudioTrack::RecycleFrame(const AudioFrame& frame) {

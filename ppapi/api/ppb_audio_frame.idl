@@ -13,6 +13,24 @@ label Chrome {
   [channel=dev] M34 = 0.1
 };
 
+/**
+ * PP_AudioFrame_SampleRate is an enumeration of the different audio sample
+ * rates.
+ */
+enum PP_AudioFrame_SampleRate {
+  PP_AUDIOFRAME_SAMPLERATE_UNKNOWN = 0,
+  PP_AUDIOFRAME_SAMPLERATE_44100 = 44100
+};
+
+/**
+ * PP_AudioFrame_SampleSize is an enumeration of the different audio sample
+ * sizes.
+ */
+enum PP_AudioFrame_SampleSize {
+  PP_AUDIOFRAME_SAMPLESIZE_UNKNOWN = 0,
+  PP_AUDIOFRAME_SAMPLESIZE_16_BITS = 2
+};
+
 interface PPB_AudioFrame {
   /**
    * Determines if a resource is an AudioFrame resource.
@@ -55,7 +73,8 @@ interface PPB_AudioFrame {
    *
    * @return The sample size of the audio frame.
    */
-  uint32_t GetSampleSize([in] PP_Resource frame);
+  [on_failure=PP_AUDIOFRAME_SAMPLESIZE_UNKNOWN]
+  PP_AudioFrame_SampleSize GetSampleSize([in] PP_Resource frame);
   
   /**
    * Gets the number of channels in the audio frame.

@@ -40,10 +40,21 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(PassRef, PP_Resource resource)
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {
 }
 
-int32_t MediaStreamVideoTrack::Configure(uint32_t frame_buffer_size) {
+int32_t MediaStreamVideoTrack::Configure(
+    const int32_t attributes[],
+    const CompletionCallback& callback) {
   if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return get_interface<PPB_MediaStreamVideoTrack_0_1>()->Configure(
-        pp_resource(), frame_buffer_size);
+        pp_resource(), attributes, callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
+}
+
+int32_t MediaStreamVideoTrack::GetAttrib(PP_MediaStreamVideoTrack_Attrib attrib,
+                                         int32_t* value) {
+  if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
+    return get_interface<PPB_MediaStreamVideoTrack_0_1>()->GetAttrib(
+        pp_resource(), attrib, value);
   }
   return PP_ERROR_NOINTERFACE;
 }
@@ -67,12 +78,12 @@ bool MediaStreamVideoTrack::HasEnded() const {
 }
 
 int32_t MediaStreamVideoTrack::GetFrame(
-    const CompletionCallbackWithOutput<VideoFrame>& cc) {
+    const CompletionCallbackWithOutput<VideoFrame>& callback) {
   if (has_interface<PPB_MediaStreamVideoTrack_0_1>()) {
     return get_interface<PPB_MediaStreamVideoTrack_0_1>()->GetFrame(
-        pp_resource(), cc.output(), cc.pp_completion_callback());
+        pp_resource(), callback.output(), callback.pp_completion_callback());
   }
-  return cc.MayForce(PP_ERROR_NOINTERFACE);
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 int32_t MediaStreamVideoTrack::RecycleFrame(const VideoFrame& frame) {

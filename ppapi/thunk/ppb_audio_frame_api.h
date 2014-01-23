@@ -16,7 +16,7 @@ class PPAPI_THUNK_EXPORT PPB_AudioFrame_API {
   virtual ~PPB_AudioFrame_API() {}
   virtual PP_TimeDelta GetTimestamp() = 0;
   virtual void SetTimestamp(PP_TimeDelta timestamp) = 0;
-  virtual uint32_t GetSampleSize() = 0;
+  virtual PP_AudioFrame_SampleSize GetSampleSize() = 0;
   virtual uint32_t GetNumberOfChannels() = 0;
   virtual uint32_t GetNumberOfSamples() = 0;
   virtual void* GetDataBuffer() = 0;

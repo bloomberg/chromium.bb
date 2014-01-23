@@ -39,9 +39,19 @@ PP_Bool MediaStreamVideoTrackResource::HasEnded() {
   return PP_FromBool(has_ended());
 }
 
-int32_t MediaStreamVideoTrackResource::Configure(uint32_t max_buffered_frames) {
+
+int32_t MediaStreamVideoTrackResource::Configure(
+    const int32_t attrib_list[],
+    scoped_refptr<TrackedCallback> callback) {
   // TODO(penghuang): redesign and implement Configure() to support format,
   // size, etc.
+  return PP_ERROR_NOTSUPPORTED;
+}
+
+int32_t MediaStreamVideoTrackResource::GetAttrib(
+    PP_MediaStreamVideoTrack_Attrib attrib,
+    int32_t* value) {
+  // TODO(penghuang): implement this function.
   return PP_ERROR_NOTSUPPORTED;
 }
 
