@@ -584,11 +584,27 @@ void StatusBubbleViews::Init() {
     ash::wm::GetWindowState(popup_->GetNativeWindow())->
         set_ignored_by_shelf(true);
 #endif
-    Reposition();
+    RepositionPopup();
   }
 }
 
 void StatusBubbleViews::Reposition() {
+  // In restored mode, the client area has a client edge between it and the
+  // frame.
+  int overlap = kShadowThickness;
+  // The extra pixels defined by kClientEdgeThickness is only drawn in frame
+  // content border on windows for non-aura build.
+#if !defined(USE_ASH)
+  overlap +=
+      IsFrameMaximized() ? 0 : views::NonClientFrameView::kClientEdgeThickness;
+#endif
+  int height = GetPreferredSize().height();
+  int base_view_height = base_view()->bounds().height();
+  gfx::Point origin(-overlap, base_view_height - height + overlap);
+  SetBounds(origin.x(), origin.y(), base_view()->bounds().width() / 3, height);
+}
+
+void StatusBubbleViews::RepositionPopup() {
   if (popup_.get()) {
     gfx::Point top_left;
     views::View::ConvertPointToScreen(base_view_, &top_left);
@@ -607,7 +623,7 @@ void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
   original_position_.SetPoint(x, y);
   position_.SetPoint(base_view_->GetMirroredXWithWidthInView(x, w), y);
   size_.SetSize(w, h);
-  Reposition();
+  RepositionPopup();
   if (popup_.get() && contains_mouse_)
     AvoidMouse(last_mouse_moved_location_);
 }
@@ -698,7 +714,7 @@ void StatusBubbleViews::MouseMoved(const gfx::Point& location,
                                    bool left_content) {
   contains_mouse_ = !left_content;
   if (left_content) {
-    Reposition();
+    RepositionPopup();
     return;
   }
   last_mouse_moved_location_ = location;
@@ -811,6 +827,12 @@ bool StatusBubbleViews::IsFrameVisible() {
 
   views::Widget* window = frame->GetTopLevelWidget();
   return !window || !window->IsMinimized();
+}
+
+bool StatusBubbleViews::IsFrameMaximized() {
+  views::Widget* frame = base_view_->GetWidget();
+  views::Widget* window = frame->GetTopLevelWidget();
+  return window && window->IsMaximized();
 }
 
 void StatusBubbleViews::ExpandBubble() {

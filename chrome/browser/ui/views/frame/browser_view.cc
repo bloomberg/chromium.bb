@@ -512,6 +512,7 @@ BrowserView* BrowserView::GetBrowserViewForBrowser(const Browser* browser) {
 
 void BrowserView::InitStatusBubble() {
   status_bubble_.reset(new StatusBubbleViews(contents_web_view_));
+  contents_web_view_->SetStatusBubble(status_bubble_.get());
 }
 
 gfx::Rect BrowserView::GetToolbarBounds() const {
@@ -1811,9 +1812,6 @@ void BrowserView::Layout() {
 
   // TODO(jamescook): Why was this in the middle of layout code?
   toolbar_->location_bar()->omnibox_view()->SetFocusable(IsToolbarVisible());
-
-  // The status bubble position requires that all other layout finish first.
-  LayoutStatusBubble();
 }
 
 void BrowserView::PaintChildren(gfx::Canvas* canvas) {
@@ -1929,7 +1927,7 @@ void BrowserView::InitViews() {
   infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);
 
-  contents_web_view_ = new views::WebView(browser_->profile());
+  contents_web_view_ = new ContentsWebView(browser_->profile());
   contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
   contents_web_view_->SetEmbedFullscreenWidgetMode(
       implicit_cast<content::WebContentsDelegate*>(browser_.get())->
@@ -2044,22 +2042,6 @@ BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
 ContentsLayoutManager* BrowserView::GetContentsLayoutManager() const {
   return static_cast<ContentsLayoutManager*>(
       contents_container_->GetLayoutManager());
-}
-
-void BrowserView::LayoutStatusBubble() {
-  // In restored mode, the client area has a client edge between it and the
-  // frame.
-  int overlap = StatusBubbleViews::kShadowThickness;
-  // The extra pixels defined by kClientEdgeThickness is only drawn in frame
-  // content border on windows for non-aura build.
-#if !defined(USE_ASH)
-  overlap +=
-      IsMaximized() ? 0 : views::NonClientFrameView::kClientEdgeThickness;
-#endif
-  int height = status_bubble_->GetPreferredSize().height();
-  int contents_height = status_bubble_->base_view()->bounds().height();
-  gfx::Point origin(-overlap, contents_height - height + overlap);
-  status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 
 bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {

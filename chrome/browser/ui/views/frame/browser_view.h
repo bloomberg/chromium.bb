@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/scroll_end_effect_controller.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
@@ -487,9 +488,6 @@ class BrowserView : public BrowserWindow,
   // Returns the ContentsLayoutManager.
   ContentsLayoutManager* GetContentsLayoutManager() const;
 
-  // Layout the Status Bubble.
-  void LayoutStatusBubble();
-
   // Prepare to show the Bookmark Bar for the specified WebContents.
   // Returns true if the Bookmark Bar can be shown (i.e. it's supported for this
   // Browser type) and there should be a subsequent re-layout to show it.
@@ -647,7 +645,7 @@ class BrowserView : public BrowserWindow,
   InfoBarContainerView* infobar_container_;
 
   // The view that contains the selected WebContents.
-  views::WebView* contents_web_view_;
+  ContentsWebView* contents_web_view_;
 
   // The view that contains devtools window for the selected WebContents.
   views::WebView* devtools_web_view_;

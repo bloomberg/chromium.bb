@@ -1860,6 +1860,8 @@
         'browser/ui/views/frame/browser_window_property_manager_win.h',
         'browser/ui/views/frame/contents_layout_manager.cc',
         'browser/ui/views/frame/contents_layout_manager.h',
+        'browser/ui/views/frame/contents_web_view.cc',
+        'browser/ui/views/frame/contents_web_view.h',
         'browser/ui/views/frame/desktop_browser_frame_aura.cc',
         'browser/ui/views/frame/desktop_browser_frame_aura.h',
         'browser/ui/views/frame/desktop_user_action_handler_aura.cc',
