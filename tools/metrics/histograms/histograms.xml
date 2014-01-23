@@ -20213,6 +20213,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Tab.FormActivityCountEvictedHistogram">
+  <summary>
+    A count of form activity (e.g. fields selected, characters typed) in a tab.
+    Recorded only for tabs that are evicted due to memory pressure and then
+    selected again.
+  </summary>
+</histogram>
+
 <histogram name="Tab.PerceivedRestoreTime" units="ms">
   <summary>
     User-perceived load time for a successful tab restore, measured from the
@@ -20294,6 +20302,14 @@ other types of suffix sets.
     Each time a tab is brought to the foreground, this histogram indicates if
     this is the first viewing of the tab since Chrome was put into foreground,
     or if it was a return to a tab that has already been shown in this session.
+  </summary>
+</histogram>
+
+<histogram name="Tab.TimeSinceFormActivityEvictedHistogram" units="ms">
+  <summary>
+    Time elapsed since there was form activity (e.g. fields selected, characters
+    typed) in a tab. Recorded only for tabs that are evicted due to memory
+    pressure and then selected again.
   </summary>
 </histogram>
 
