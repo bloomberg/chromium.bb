@@ -90,7 +90,7 @@ class PPAPI_PROXY_EXPORT FileSystemResource
   uint32_t callback_count_;
   int32_t callback_result_;
 
-  OffsetMap max_written_offsets_;
+  std::set<PP_Resource> files_;
   std::queue<QuotaRequest> pending_quota_requests_;
   int64_t reserved_quota_;
   bool reserving_quota_;

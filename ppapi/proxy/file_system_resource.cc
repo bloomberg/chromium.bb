@@ -5,9 +5,11 @@
 #include "ppapi/proxy/file_system_resource.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/file_growth.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_io_api.h"
@@ -93,17 +95,13 @@ PP_FileSystemType FileSystemResource::GetType() {
 }
 
 void FileSystemResource::OpenQuotaFile(PP_Resource file_io) {
-  DCHECK(max_written_offsets_.find(file_io) == max_written_offsets_.end());
-  EnterResourceNoLock<PPB_FileIO_API> enter(file_io, true);
-  DCHECK(!enter.failed());
-  PPB_FileIO_API* file_io_api = enter.object();
-  max_written_offsets_[file_io] = file_io_api->GetMaxWrittenOffset();
+  DCHECK(!ContainsKey(files_, file_io));
+  files_.insert(file_io);
 }
 
 void FileSystemResource::CloseQuotaFile(PP_Resource file_io) {
-  OffsetMap::iterator it = max_written_offsets_.find(file_io);
-  DCHECK(it != max_written_offsets_.end());
-  max_written_offsets_.erase(it);
+  DCHECK(ContainsKey(files_, file_io));
+  files_.erase(file_io);
 }
 
 int64_t FileSystemResource::RequestQuota(
@@ -176,15 +174,23 @@ void FileSystemResource::InitIsolatedFileSystemComplete(
 void FileSystemResource::ReserveQuota(int64_t amount) {
   DCHECK(!reserving_quota_);
   reserving_quota_ = true;
-  for (OffsetMap::iterator it = max_written_offsets_.begin();
-       it != max_written_offsets_.end(); ++it) {
-    EnterResourceNoLock<PPB_FileIO_API> enter(it->first, true);
-    DCHECK(!enter.failed());
+
+  // TODO(tzik): Use FileGrowthMap here after the IPC signature changed.
+  FileSizeMap file_sizes;
+  for (std::set<PP_Resource>::iterator it = files_.begin();
+       it != files_.end(); ++it) {
+    EnterResourceNoLock<PPB_FileIO_API> enter(*it, true);
+    if (enter.failed()) {
+      NOTREACHED();
+      continue;
+    }
     PPB_FileIO_API* file_io_api = enter.object();
-    it->second = file_io_api->GetMaxWrittenOffset();
+    file_sizes[*it] =
+        file_io_api->GetMaxWrittenOffset() +
+        file_io_api->GetAppendModeWriteAmount();
   }
   Call<PpapiPluginMsg_FileSystem_ReserveQuotaReply>(BROWSER,
-      PpapiHostMsg_FileSystem_ReserveQuota(amount, max_written_offsets_),
+      PpapiHostMsg_FileSystem_ReserveQuota(amount, file_sizes),
       base::Bind(&FileSystemResource::ReserveQuotaComplete,
                  this));
 }
@@ -192,15 +198,19 @@ void FileSystemResource::ReserveQuota(int64_t amount) {
 void FileSystemResource::ReserveQuotaComplete(
     const ResourceMessageReplyParams& params,
     int64_t amount,
-    const OffsetMap& max_written_offsets) {
+    const FileSizeMap& max_written_offsets) {
   DCHECK(reserving_quota_);
   reserving_quota_ = false;
   reserved_quota_ = amount;
 
-  for (OffsetMap::const_iterator it = max_written_offsets.begin();
+  for (FileSizeMap::const_iterator it = max_written_offsets.begin();
       it != max_written_offsets.end(); ++it) {
     EnterResourceNoLock<PPB_FileIO_API> enter(it->first, true);
-    DCHECK(!enter.failed());
+
+    // It is possible that the host has sent an offset for a file that has been
+    // destroyed in the plugin. Ignore it.
+    if (enter.failed())
+      continue;
     PPB_FileIO_API* file_io_api = enter.object();
     file_io_api->SetMaxWrittenOffset(it->second);
     file_io_api->SetAppendModeWriteAmount(0);
