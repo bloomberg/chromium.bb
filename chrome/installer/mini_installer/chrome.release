@@ -26,7 +26,6 @@ D3DCompiler_43.dll: %(VersionDir)s\
 d3dcompiler_46.dll: %(VersionDir)s\
 ffmpegsumo.dll: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
-icudtl.dat: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
 libGLESv2.dll: %(VersionDir)s\
 nacl64.exe: %(VersionDir)s\

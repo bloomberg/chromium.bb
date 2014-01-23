@@ -185,15 +185,6 @@
             'target_arch_flag': '--target_arch=x86',
           },
         }],
-        ['icu_use_data_file_flag == 0', {
-          'inputs': [
-            '<(PRODUCT_DIR)/icudt.dll',
-          ],
-        }, { # else icu_use_data_file_flag != 0
-          'inputs': [
-            '<(PRODUCT_DIR)/icudtl.dat',
-          ],
-        }],
       ],
       'inputs': [
         '<(create_installer_archive_py_path)',
@@ -204,6 +195,7 @@
         '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
         '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
         '<(PRODUCT_DIR)/locales/en-US.pak',
+        '<(PRODUCT_DIR)/icudt.dll',
       ],
       'outputs': [
         'xxx.out',

@@ -107,7 +107,7 @@ bool InitializeICU() {
     }
 #endif  // OS check
     if (!mapped_file.Initialize(data_path)) {
-      DLOG(ERROR) << "Couldn't mmap " << data_path.AsUTF8Unsafe();
+      DLOG(ERROR) << "Couldn't mmap " << data_path.value();
       return false;
     }
   }

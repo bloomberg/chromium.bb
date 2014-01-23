@@ -2235,19 +2235,13 @@
               'dns/dns_config_service_posix_unittest.cc',
               'http/http_auth_gssapi_posix_unittest.cc',
             ],
+            # This is needed to trigger the dll copy step on windows.
+            # TODO(mark): Specifying this here shouldn't be necessary.
             'dependencies': [
+              '../third_party/icu/icu.gyp:icudata',
               '../third_party/nss/nss.gyp:nspr',
               '../third_party/nss/nss.gyp:nss',
               'third_party/nss/ssl.gyp:libssl',
-            ],
-            'conditions': [
-              [ 'icu_use_data_file_flag == 0', {
-                # This is needed to trigger the dll copy step on windows.
-                # TODO(mark): Specifying this here shouldn't be necessary.
-                'dependencies': [
-                  '../third_party/icu/icu.gyp:icudata',
-                ],
-              }],
             ],
             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
             'msvs_disabled_warnings': [4267, ],
@@ -2347,19 +2341,16 @@
             ],
           },
         ],
+        # This is needed to trigger the dll copy step on windows.
+        # TODO(mark): Specifying this here shouldn't be necessary.
         [ 'OS == "win"', {
-            'conditions': [
-              [ 'icu_use_data_file_flag == 0', {
-                # This is needed to trigger the dll copy step on windows.
-                # TODO(mark): Specifying this here shouldn't be necessary.
-                'dependencies': [
-                  '../third_party/icu/icu.gyp:icudata',
-                ],
-              }],
+            'dependencies': [
+              '../third_party/icu/icu.gyp:icudata',
             ],
             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
             'msvs_disabled_warnings': [4267, ],
-        }],
+          },
+        ],
       ],
     },
     {
