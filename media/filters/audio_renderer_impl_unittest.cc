@@ -7,6 +7,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_buffer.h"
@@ -46,7 +47,8 @@ class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
-      : demuxer_stream_(DemuxerStream::AUDIO),
+      : needs_stop_(true),
+        demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()) {
     AudioDecoderConfig audio_config(kCodec,
                                     kSampleFormat,
@@ -63,6 +65,9 @@ class AudioRendererImplTest : public ::testing::Test {
 
     EXPECT_CALL(*decoder_, Reset(_))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ResetDecoder));
+
+    EXPECT_CALL(*decoder_, Stop(_))
+        .WillRepeatedly(Invoke(this, &AudioRendererImplTest::StopDecoder));
 
     // Set up audio properties.
     EXPECT_CALL(*decoder_, bits_per_channel())
@@ -88,9 +93,11 @@ class AudioRendererImplTest : public ::testing::Test {
 
   virtual ~AudioRendererImplTest() {
     SCOPED_TRACE("~AudioRendererImplTest()");
-    WaitableMessageLoopEvent event;
-    renderer_->Stop(event.GetClosure());
-    event.RunAndWait();
+    if (needs_stop_) {
+      WaitableMessageLoopEvent event;
+      renderer_->Stop(event.GetClosure());
+      event.RunAndWait();
+    }
   }
 
   void ExpectUnsupportedAudioDecoder() {
@@ -371,10 +378,24 @@ class AudioRendererImplTest : public ::testing::Test {
     time_ += time;
   }
 
+  void HoldStopDecoderCB() {
+    EXPECT_CALL(*decoder_, Stop(_)).WillRepeatedly(
+        Invoke(this, &AudioRendererImplTest::StopDecoderHoldCB));
+  }
+
+  void DispatchHeldStopDecoderCB() {
+    base::ResetAndReturn(&stop_decoder_cb_).Run();
+  }
+
+
   // Fixture members.
   base::MessageLoop message_loop_;
   scoped_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;
+
+  // Whether or not the test needs the destructor to call Stop() on
+  // |renderer_| at destruction.
+  bool needs_stop_;
 
  private:
   TimeTicks GetTime() {
@@ -383,6 +404,9 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void ReadDecoder(const AudioDecoder::ReadCB& read_cb) {
+    // We shouldn't ever call Read() after Stop():
+    EXPECT_TRUE(stop_decoder_cb_.is_null());
+
     // TODO(scherkus): Make this a DCHECK after threading semantics are fixed.
     if (base::MessageLoop::current() != &message_loop_) {
       message_loop_.PostTask(FROM_HERE, base::Bind(
@@ -406,6 +430,14 @@ class AudioRendererImplTest : public ::testing::Test {
     message_loop_.PostTask(FROM_HERE, reset_cb);
   }
 
+  void StopDecoder(const base::Closure& stop_cb) {
+    message_loop_.PostTask(FROM_HERE, stop_cb);
+  }
+
+  void StopDecoderHoldCB(const base::Closure& stop_cb) {
+    stop_decoder_cb_ = stop_cb;
+  }
+
   void DeliverBuffer(AudioDecoder::Status status,
                      const scoped_refptr<AudioBuffer>& buffer) {
     CHECK(!read_cb_.is_null());
@@ -427,6 +459,8 @@ class AudioRendererImplTest : public ::testing::Test {
 
   // Run during ReadDecoder() to unblock WaitForPendingRead().
   base::Closure wait_for_pending_read_cb_;
+
+  base::Closure stop_decoder_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
 };
@@ -769,7 +803,6 @@ TEST_F(AudioRendererImplTest, PendingRead_Pause) {
   Preroll(1000, PIPELINE_OK);
 }
 
-
 TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   Initialize();
 
@@ -798,7 +831,32 @@ TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   Preroll(1000, PIPELINE_OK);
 }
 
-TEST_F(AudioRendererImplTest, StopDuringFlush) {
+TEST_F(AudioRendererImplTest, PendingRead_Stop) {
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Partially drain internal buffer so we get a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  WaitForPendingRead();
+
+  Pause();
+
+  EXPECT_TRUE(IsReadPending());
+
+  WaitableMessageLoopEvent stop_event;
+  renderer_->Stop(stop_event.GetClosure());
+  needs_stop_ = false;
+
+  SatisfyPendingRead(kDataSize);
+
+  stop_event.RunAndWait();
+
+  EXPECT_FALSE(IsReadPending());
+}
+
+TEST_F(AudioRendererImplTest, PendingFlush_Stop) {
   Initialize();
 
   Preroll();
@@ -818,9 +876,40 @@ TEST_F(AudioRendererImplTest, StopDuringFlush) {
 
   SatisfyPendingRead(kDataSize);
 
-  // Request a Stop() before the flush completes.
+  WaitableMessageLoopEvent event;
+  renderer_->Stop(event.GetClosure());
+  event.RunAndWait();
+  needs_stop_ = false;
+}
+
+TEST_F(AudioRendererImplTest, PendingStop_Read) {
+  // This reproduces crbug.com/335181, basically an extra Read() call to the
+  // decoder can sneak into the gap between Stop() and its callback being run,
+  // which is potentially problematic if we wait until that callback runs to
+  // set the 'kStopped' state on the AudioRendererImpl.
+
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Delay calling the callback passed to AudioDecoder::Stop()
+  HoldStopDecoderCB();
+
+  // This will post at least one call to ARI::AttemptRead.
+  ConsumeAllBufferedData();
+
   WaitableMessageLoopEvent stop_event;
   renderer_->Stop(stop_event.GetClosure());
+  needs_stop_ = false;
+
+  // Now, after stopping, but before the callback is run, let some pending
+  // AttemptRead()'s go through... the AudioRendererImpl should ignore them,
+  // since the Stop() should have put us into the kStopped state.
+  base::RunLoop().RunUntilIdle();
+
+  // Now let the stop callback run.
+  DispatchHeldStopDecoderCB();
   stop_event.RunAndWait();
 }
 

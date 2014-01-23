@@ -120,7 +120,7 @@ void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
   DCHECK(init_cb_.is_null());  // No Reset() during pending initialization.
   DCHECK(reset_cb_.is_null());
 
-  reset_cb_ = closure;
+  reset_cb_ = BindToCurrentLoop(closure);
 
   decryptor_->ResetDecoder(Decryptor::kAudio);
 
@@ -145,6 +145,28 @@ void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
   DoReset();
 }
 
+void DecryptingAudioDecoder::Stop(const base::Closure& closure) {
+  DVLOG(2) << "Stop() - state: " << state_;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (decryptor_) {
+    decryptor_->RegisterNewKeyCB(Decryptor::kAudio, Decryptor::NewKeyCB());
+    decryptor_->DeinitializeDecoder(Decryptor::kAudio);
+    decryptor_ = NULL;
+  }
+  if (!set_decryptor_ready_cb_.is_null())
+    base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
+  pending_buffer_to_decode_ = NULL;
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+  if (!read_cb_.is_null())
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+  if (!reset_cb_.is_null())
+    base::ResetAndReturn(&reset_cb_).Run();
+  state_ = kStopped;
+  task_runner_->PostTask(FROM_HERE, closure);
+}
+
 int DecryptingAudioDecoder::bits_per_channel() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return bits_per_channel_;
@@ -161,11 +183,16 @@ int DecryptingAudioDecoder::samples_per_second() {
 }
 
 DecryptingAudioDecoder::~DecryptingAudioDecoder() {
+  DCHECK(state_ == kUninitialized || state_ == kStopped) << state_;
 }
 
 void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
   DVLOG(2) << "SetDecryptor()";
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (state_ == kStopped)
+    return;
+
   DCHECK_EQ(state_, kDecryptorRequested) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(!set_decryptor_ready_cb_.is_null());
@@ -175,7 +202,7 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
   if (!decryptor) {
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
     // TODO(xhwang): Add kError state. See http://crbug.com/251503
-    state_ = kDecodeFinished;
+    state_ = kStopped;
     return;
   }
 
@@ -205,6 +232,10 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
 void DecryptingAudioDecoder::FinishInitialization(bool success) {
   DVLOG(2) << "FinishInitialization()";
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (state_ == kStopped)
+    return;
+
   DCHECK_EQ(state_, kPendingDecoderInit) << state_;
   DCHECK(!init_cb_.is_null());
   DCHECK(reset_cb_.is_null());  // No Reset() before initialization finished.
@@ -212,7 +243,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
 
   if (!success) {
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
-    state_ = kDecodeFinished;
+    state_ = kStopped;
     return;
   }
 
@@ -344,6 +375,10 @@ void DecryptingAudioDecoder::DeliverFrame(
     const Decryptor::AudioBuffers& frames) {
   DVLOG(3) << "DeliverFrame() - status: " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (state_ == kStopped)
+    return;
+
   DCHECK_EQ(state_, kPendingDecode) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(pending_buffer_to_decode_.get());

@@ -90,10 +90,10 @@ void AudioDecoderSelector::Abort() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (audio_decoder_) {
-    // AudioDecoder doesn't provide a Stop() method. Also, |decrypted_stream_|
-    // is either NULL or already initialized. We don't need to Reset()
-    // |decrypted_stream_| in either case.
-    ReturnNullDecoder();
+    // |decrypted_stream_| is either NULL or already initialized. We don't
+    // need to Reset() |decrypted_stream_| in either case.
+    audio_decoder_->Stop(base::Bind(&AudioDecoderSelector::ReturnNullDecoder,
+                                    weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 

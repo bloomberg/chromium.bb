@@ -40,13 +40,16 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   virtual ChannelLayout channel_layout() OVERRIDE;
   virtual int samples_per_second() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
+  virtual void Stop(const base::Closure& closure) OVERRIDE;
 
  private:
+  void DoReset();
+  void DoStop();
+
   // Reads from the demuxer stream with corresponding callback method.
   void ReadFromDemuxerStream();
   void BufferReady(DemuxerStream::Status status,
                    const scoped_refptr<DecoderBuffer>& input);
-
 
   bool ConfigureDecoder();
   void CloseDecoder();
@@ -73,6 +76,8 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   base::TimeDelta last_input_timestamp_;
 
   ReadCB read_cb_;
+  base::Closure reset_cb_;
+  base::Closure stop_cb_;
 
   // Number of frames to be discarded from the start of the packet. This value
   // is respected for all packets except for the first one in the stream. For

@@ -97,6 +97,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // TODO(acolwell): Add a state machine graph.
   enum State {
     kUninitialized,
+    kInitializing,
     kPaused,
     kFlushing,
     kPrerolling,
@@ -214,6 +215,9 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Callback provided to Flush().
   base::Closure flush_cb_;
+
+  // Callback provided to Stop().
+  base::Closure stop_cb_;
 
   // Callback provided to Preroll().
   PipelineStatusCB preroll_cb_;
