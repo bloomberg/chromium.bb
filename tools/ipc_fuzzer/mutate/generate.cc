@@ -35,6 +35,8 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
+namespace ipc_fuzzer {
+
 // Interface implemented by those who generate basic types.  The types all
 // correspond to the types which a pickle from base/pickle.h can pickle,
 // plus the floating point types.
@@ -57,8 +59,6 @@ class Generator {
   virtual void GenerateBytes(void* data, int data_len) = 0;
 };
 
-namespace {
-
 template <typename T>
 void GenerateIntegralType(T* value) {
   *value = static_cast<T>(base::RandUint64());
@@ -77,8 +77,6 @@ void GenerateStringType(T* value) {
     temp_string += base::RandInt(0, 255);
   *value = temp_string;
 }
-
-}  // namespace
 
 class GeneratorImpl : public Generator {
  public:
@@ -769,7 +767,7 @@ void PopulateGeneratorFunctionVector(
 static const char kCountSwitch[] = "count";
 static const char kHelpSwitch[] = "help";
 
-int main(int argc, char** argv) {
+int GenerateMain(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   CommandLine::StringVector args = cmd->GetArgs();
@@ -790,7 +788,7 @@ int main(int argc, char** argv) {
             << " distinct messages present in chrome.\n";
 
   Generator* generator = new GeneratorImpl();
-  ipc_fuzzer::MessageVector message_vector;
+  MessageVector message_vector;
 
   int bad_count = 0;
   if (message_count < 0) {
@@ -814,10 +812,14 @@ int main(int argc, char** argv) {
 
   std::cerr << "Failed to generate " << bad_count << " messages.\n";
 
-  if (!ipc_fuzzer::MessageFile::Write(
-          base::FilePath(output_file_name), message_vector)) {
+  if (!MessageFile::Write(base::FilePath(output_file_name), message_vector))
     return EXIT_FAILURE;
-  }
 
   return EXIT_SUCCESS;
+}
+
+}  // namespace ipc_fuzzer
+
+int main(int argc, char** argv) {
+  return ipc_fuzzer::GenerateMain(argc, argv);
 }

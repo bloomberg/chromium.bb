@@ -35,6 +35,8 @@ namespace IPC {
 class Message;
 }  // namespace IPC
 
+namespace ipc_fuzzer {
+
 // Interface implemented by those who fuzz basic types.  The types all
 // correspond to the types which a pickle from base/pickle.h can pickle,
 // plus the floating point types.
@@ -57,8 +59,6 @@ class Fuzzer {
   virtual void FuzzData(char* data, int length) = 0;
   virtual void FuzzBytes(void* data, int data_len) = 0;
 };
-
-namespace {
 
 template <typename T>
 void FuzzIntegralType(T* value, unsigned int frequency) {
@@ -85,8 +85,6 @@ void FuzzStringType(T* value, unsigned int frequency,
     }
   }
 }
-
-}  // namespace
 
 // One such fuzzer implementation.
 class DefaultFuzzer : public Fuzzer {
@@ -656,7 +654,7 @@ void usage() {
 
 }  // namespace
 
-int main(int argc, char** argv) {
+int MutateMain(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   CommandLine::StringVector args = cmd->GetArgs();
@@ -694,8 +692,8 @@ int main(int argc, char** argv) {
   FuzzFunctionMap fuzz_function_map;
   PopulateFuzzFunctionMap(&fuzz_function_map);
 
-  ipc_fuzzer::MessageVector message_vector;
-  if (!ipc_fuzzer::MessageFile::Read(
+  MessageVector message_vector;
+  if (!MessageFile::Read(
           base::FilePath(input_file_name), &message_vector)) {
     return EXIT_FAILURE;
   }
@@ -716,10 +714,14 @@ int main(int argc, char** argv) {
   if (permute)
     std::random_shuffle(message_vector.begin(), message_vector.end());
 
-  if (!ipc_fuzzer::MessageFile::Write(
-          base::FilePath(output_file_name), message_vector)) {
+  if (!MessageFile::Write(base::FilePath(output_file_name), message_vector))
     return EXIT_FAILURE;
-  }
 
   return EXIT_SUCCESS;
+}
+
+}  // namespace ipc_fuzzer
+
+int main(int argc, char** argv) {
+  return ipc_fuzzer::MutateMain(argc, argv);
 }
