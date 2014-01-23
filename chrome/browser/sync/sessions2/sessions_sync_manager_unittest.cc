@@ -12,7 +12,9 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
+#include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/sessions2/notification_service_sessions_router.h"
+#include "chrome/browser/sync/sessions2/synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -35,6 +37,89 @@ using syncer::SyncData;
 namespace browser_sync {
 
 namespace {
+
+class SyncedWindowDelegateOverride : public SyncedWindowDelegate {
+ public:
+  explicit SyncedWindowDelegateOverride(SyncedWindowDelegate* wrapped)
+      : wrapped_(wrapped) {
+  }
+  virtual ~SyncedWindowDelegateOverride() {}
+
+  virtual bool HasWindow() const OVERRIDE {
+    return wrapped_->HasWindow();
+  }
+
+  virtual SessionID::id_type GetSessionId() const OVERRIDE {
+    return wrapped_->GetSessionId();
+  }
+
+  virtual int GetTabCount() const OVERRIDE {
+    return wrapped_->GetTabCount();
+  }
+
+  virtual int GetActiveIndex() const OVERRIDE {
+    return wrapped_->GetActiveIndex();
+  }
+
+  virtual bool IsApp() const OVERRIDE {
+    return wrapped_->IsApp();
+  }
+
+  virtual bool IsTypeTabbed() const OVERRIDE {
+    return wrapped_->IsTypeTabbed();
+  }
+
+  virtual bool IsTypePopup() const OVERRIDE {
+    return wrapped_->IsTypePopup();
+  }
+
+  virtual bool IsTabPinned(const SyncedTabDelegate* tab) const OVERRIDE {
+    return wrapped_->IsTabPinned(tab);
+  }
+
+  virtual SyncedTabDelegate* GetTabAt(int index) const OVERRIDE {
+    if (tab_overrides_.find(index) != tab_overrides_.end())
+      return tab_overrides_.find(index)->second;
+
+    return wrapped_->GetTabAt(index);
+  }
+
+  void OverrideTabAt(int index,
+                     SyncedTabDelegate* delegate,
+                     SessionID::id_type tab_id) {
+    tab_overrides_[index] = delegate;
+    tab_id_overrides_[index] = tab_id;
+  }
+
+  virtual SessionID::id_type GetTabIdAt(int index) const OVERRIDE {
+    if (tab_id_overrides_.find(index) != tab_id_overrides_.end())
+      return tab_id_overrides_.find(index)->second;
+    return wrapped_->GetTabIdAt(index);
+  }
+
+  virtual bool IsSessionRestoreInProgress() const OVERRIDE {
+    return wrapped_->IsSessionRestoreInProgress();
+  }
+
+ private:
+  std::map<int, SyncedTabDelegate*> tab_overrides_;
+  std::map<int, SessionID::id_type> tab_id_overrides_;
+  SyncedWindowDelegate* wrapped_;
+};
+
+class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
+ public:
+  TestSyncedWindowDelegatesGetter(
+      const std::set<SyncedWindowDelegate*>& delegates)
+      : delegates_(delegates) {}
+
+  virtual const std::set<SyncedWindowDelegate*> GetSyncedWindowDelegates()
+      OVERRIDE {
+    return delegates_;
+  }
+ private:
+  const std::set<SyncedWindowDelegate*> delegates_;
+};
 
 class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
  public:
@@ -244,6 +329,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   SyncedTabDelegateFake() : current_entry_index_(0),
                             pending_entry_index_(-1),
                             is_managed_(false),
+                            sync_id_(-1),
                             blocked_navigations_(NULL) {}
   virtual ~SyncedTabDelegateFake() {}
 
@@ -317,13 +403,16 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
 
   // Session sync related methods.
   virtual int GetSyncId() const OVERRIDE {
-   return -1;
+   return sync_id_;
   }
-  virtual void SetSyncId(int sync_id) OVERRIDE {}
+  virtual void SetSyncId(int sync_id) OVERRIDE {
+    sync_id_ = sync_id;
+  }
 
   void reset() {
     current_entry_index_ = 0;
     pending_entry_index_ = -1;
+    sync_id_ = -1;
     entries_.clear();
   }
 
@@ -331,6 +420,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
    int current_entry_index_;
    int pending_entry_index_;
    bool is_managed_;
+   int sync_id_;
    std::vector<const content::NavigationEntry*>* blocked_navigations_;
    ScopedVector<content::NavigationEntry> entries_;
 };
@@ -572,6 +662,86 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   EXPECT_EQ(1U, out.size());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[0].change_type());
   EXPECT_TRUE(out[0].sync_data().GetSpecifics().session().has_header());
+}
+
+// Ensure model association associates the pre-existing tabs.
+TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  AddTab(browser(), GURL("http://bar1"));
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+  AddTab(browser(), GURL("http://baz1"));
+  NavigateAndCommitActiveTab(GURL("http://baz2"));
+  const int kRestoredTabId = 1337;
+  const int kNewTabId = 2468;
+
+  syncer::SyncDataList in;
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(in, &out);
+
+  // Should be one header add, 3 tab add/update pairs, one header update.
+  ASSERT_EQ(8U, out.size());
+
+  // For input, we set up:
+  // * one "normal" fully loaded tab
+  // * one "frozen" tab with no WebContents and a tab_id change
+  // * one "frozen" tab with no WebContents and no tab_id change
+  SyncData t0(SyncData::CreateRemoteData(1, out[2].sync_data().GetSpecifics(),
+                                         base::Time()));
+  sync_pb::EntitySpecifics entity(out[4].sync_data().GetSpecifics());
+  entity.mutable_session()->mutable_tab()->set_tab_id(kRestoredTabId);
+  SyncData t1(SyncData::CreateRemoteData(2, entity, base::Time()));
+  SyncData t2(SyncData::CreateRemoteData(3, out[6].sync_data().GetSpecifics(),
+                                         base::Time()));
+  in.push_back(t0);
+  in.push_back(t1);
+  in.push_back(t2);
+  out.clear();
+  manager()->StopSyncing(syncer::SESSIONS);
+
+  const std::set<SyncedWindowDelegate*> windows(
+      SyncedWindowDelegate::GetSyncedWindowDelegates());
+  ASSERT_EQ(1U, windows.size());
+  SyncedTabDelegateFake t1_override, t2_override;
+  t1_override.SetSyncId(1);  // No WebContents by default.
+  t2_override.SetSyncId(2);  // No WebContents by default.
+  SyncedWindowDelegateOverride window_override(*windows.begin());
+  window_override.OverrideTabAt(1, &t1_override, kNewTabId);
+  window_override.OverrideTabAt(2, &t2_override,
+                                t2.GetSpecifics().session().tab().tab_id());
+  std::set<SyncedWindowDelegate*> delegates;
+  delegates.insert(&window_override);
+  scoped_ptr<TestSyncedWindowDelegatesGetter> getter(
+      new TestSyncedWindowDelegatesGetter(delegates));
+  manager()->synced_window_getter_.reset(getter.release());
+
+  syncer::SyncMergeResult result = manager()->MergeDataAndStartSyncing(
+      syncer::SESSIONS, in,
+      scoped_ptr<syncer::SyncChangeProcessor>(
+          new TestSyncProcessorStub(&out)),
+      scoped_ptr<syncer::SyncErrorFactory>(
+          new syncer::SyncErrorFactoryMock()));
+
+  // There should be two changes, one for the fully associated tab, and
+  // one for the tab_id update to t1.  t2 shouldn't need to be updated.
+  ASSERT_EQ(2U, FilterOutLocalHeaderChanges(&out)->size());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[0].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[1].change_type());
+  EXPECT_EQ(kNewTabId,
+            out[1].sync_data().GetSpecifics().session().tab().tab_id());
+
+  // Verify TabLinks.
+  SessionsSyncManager::TabLinksMap tab_map = manager()->local_tab_map_;
+  ASSERT_EQ(3U, tab_map.size());
+  int t2_tab_id = t2.GetSpecifics().session().tab().tab_id();
+  EXPECT_EQ(2, tab_map.find(t2_tab_id)->second->tab_node_id());
+  EXPECT_EQ(1, tab_map.find(kNewTabId)->second->tab_node_id());
+  int t0_tab_id = out[0].sync_data().GetSpecifics().session().tab().tab_id();
+  EXPECT_EQ(0, tab_map.find(t0_tab_id)->second->tab_node_id());
+  // TODO(tim): Once bug 337057 is fixed, we can issue an OnLocalTabModified
+  // from here (using an override similar to above) to return a new tab id
+  // and verify that we don't see any node creations in the SyncChangeProcessor
+  // (similar to how SessionsSyncManagerTest.OnLocalTabModified works.)
 }
 
 // Tests MergeDataAndStartSyncing with sync data but no local data.

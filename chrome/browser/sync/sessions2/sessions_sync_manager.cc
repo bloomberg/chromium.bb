@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
+#include "chrome/browser/sync/sessions2/synced_window_delegates_getter.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -55,7 +56,8 @@ SessionsSyncManager::SessionsSyncManager(
       delegate_(delegate),
       local_session_header_node_id_(TabNodePool2::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
-      local_event_router_(router.Pass()) {
+      local_event_router_(router.Pass()),
+      synced_window_getter_(new SyncedWindowDelegatesGetter()) {
 }
 
 LocalSessionEventRouter::~LocalSessionEventRouter() {}
@@ -103,7 +105,8 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   session_tracker_.SetLocalSessionTag(current_machine_tag_);
 
   // First, we iterate over sync data to update our session_tracker_.
-  if (!InitFromSyncModel(initial_sync_data, &new_changes)) {
+  syncer::SyncDataList restored_tabs;
+  if (!InitFromSyncModel(initial_sync_data, &restored_tabs, &new_changes)) {
     // The sync db didn't have a header node for us. Create one.
     sync_pb::EntitySpecifics specifics;
     sync_pb::SessionSpecifics* base_specifics = specifics.mutable_session();
@@ -125,7 +128,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 #endif
 
   // Check if anything has changed on the local client side.
-  AssociateWindows(RELOAD_TABS, &new_changes);
+  AssociateWindows(RELOAD_TABS, restored_tabs, &new_changes);
 
   merge_result.set_error(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
@@ -136,6 +139,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 
 void SessionsSyncManager::AssociateWindows(
     ReloadTabsOption option,
+    const syncer::SyncDataList& restored_tabs,
     syncer::SyncChangeList* change_output) {
   const std::string local_tag = current_machine_tag();
   sync_pb::SessionSpecifics specifics;
@@ -148,7 +152,7 @@ void SessionsSyncManager::AssociateWindows(
 
   session_tracker_.ResetSessionTracking(local_tag);
   std::set<SyncedWindowDelegate*> windows =
-      SyncedWindowDelegate::GetSyncedWindowDelegates();
+      synced_window_getter_->GetSyncedWindowDelegates();
 
   for (std::set<SyncedWindowDelegate*>::const_iterator i =
            windows.begin(); i != windows.end(); ++i) {
@@ -193,7 +197,8 @@ void SessionsSyncManager::AssociateWindows(
           // corresponding sync node unchanged.
           if (synced_tab->GetSyncId() > TabNodePool2::kInvalidTabNodeID &&
               tab_id > TabNodePool2::kInvalidTabID) {
-            UpdateTabIdIfNecessary(*synced_tab, tab_id, change_output);
+            AssociateRestoredPlaceholderTab(*synced_tab, tab_id,
+                                            restored_tabs, change_output);
             found_tabs = true;
             window_s.add_tab(tab_id);
           }
@@ -327,7 +332,7 @@ void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
   // Note, we always associate windows because it's possible a tab became
   // "interesting" by going to a valid URL, in which case it needs to be added
   // to the window's tab information.
-  AssociateWindows(DONT_RELOAD_TABS, &changes);
+  AssociateWindows(DONT_RELOAD_TABS, syncer::SyncDataList(), &changes);
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
@@ -536,6 +541,7 @@ bool SessionsSyncManager::GetAllForeignSessions(
 
 bool SessionsSyncManager::InitFromSyncModel(
     const syncer::SyncDataList& sync_data,
+    syncer::SyncDataList* restored_tabs,
     syncer::SyncChangeList* new_changes) {
   bool found_current_header = false;
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
@@ -570,6 +576,7 @@ bool SessionsSyncManager::InitFromSyncModel(
           // This is a valid old tab node, add it to the pool so it can be
           // reused for reassociation.
           local_tab_pool_.AddTabNode(specifics.tab_node_id());
+          restored_tabs->push_back(*it);
         }
       }
     }
@@ -856,29 +863,51 @@ void SessionsSyncManager::LocalTabDelegateToSpecifics(
   specifics->mutable_tab()->CopyFrom(tab_s);
 }
 
-void SessionsSyncManager::UpdateTabIdIfNecessary(
+void SessionsSyncManager::AssociateRestoredPlaceholderTab(
     const SyncedTabDelegate& tab_delegate,
     SessionID::id_type new_tab_id,
+    const syncer::SyncDataList& restored_tabs,
     syncer::SyncChangeList* change_output) {
   DCHECK_NE(tab_delegate.GetSyncId(), TabNodePool2::kInvalidTabNodeID);
-  SessionID::id_type old_tab_id =
-      local_tab_pool_.GetTabIdFromTabNodeId(tab_delegate.GetSyncId());
-  if (old_tab_id != new_tab_id) {
-    // Rewrite the tab.  We don't have a way to get the old
-    // specifics here currently.
-    // TODO(tim): Is this too slow?  Should we cache specifics?
-    sync_pb::EntitySpecifics specifics;
-    LocalTabDelegateToSpecifics(tab_delegate,
-                                specifics.mutable_session());
+  // Rewrite the tab using |restored_tabs| to retrieve the specifics.
+  if (restored_tabs.empty()) {
+    DLOG(WARNING) << "Can't Update tab ID.";
+    return;
+  }
+
+  for (syncer::SyncDataList::const_iterator it = restored_tabs.begin();
+       it != restored_tabs.end();
+       ++it) {
+    if (it->GetSpecifics().session().tab_node_id() !=
+        tab_delegate.GetSyncId()) {
+      continue;
+    }
+
+    sync_pb::EntitySpecifics entity;
+    sync_pb::SessionSpecifics* specifics = entity.mutable_session();
+    specifics->CopyFrom(it->GetSpecifics().session());
+    DCHECK(specifics->has_tab());
 
     // Update tab node pool with the new association.
-    local_tab_pool_.ReassociateTabNode(tab_delegate.GetSyncId(), new_tab_id);
+    local_tab_pool_.ReassociateTabNode(tab_delegate.GetSyncId(),
+                                       new_tab_id);
+    TabLink* tab_link = new TabLink(tab_delegate.GetSyncId(),
+                                    &tab_delegate);
+    local_tab_map_[new_tab_id] = make_linked_ptr<TabLink>(tab_link);
+
+    if (specifics->tab().tab_id() == new_tab_id)
+      return;
+
+    // The tab_id changed (e.g due to session restore), so update sync.
+    specifics->mutable_tab()->set_tab_id(new_tab_id);
     syncer::SyncData data = syncer::SyncData::CreateLocalData(
         TabNodePool2::TabIdToTag(current_machine_tag_,
-                                 tab_delegate.GetSyncId()),
-        current_session_name_, specifics);
+                                 specifics->tab_node_id()),
+        current_session_name_,
+        entity);
     change_output->push_back(syncer::SyncChange(
         FROM_HERE, syncer::SyncChange::ACTION_UPDATE, data));
+    return;
   }
 }
 
