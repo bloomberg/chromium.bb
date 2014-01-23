@@ -437,10 +437,10 @@ void AutofillAgent::OnSetAutofillActionPreview() {
 }
 
 void AutofillAgent::OnClearPreviewedForm() {
-  if (password_autofill_agent_->DidClearAutofillSelection(element_))
-    return;
-
   if (!element_.isNull()) {
+    if (password_autofill_agent_->DidClearAutofillSelection(element_))
+      return;
+
     ClearPreviewedFormWithElement(element_, was_query_node_autofilled_);
   } else {
     // TODO(isherman): There seem to be rare cases where this code *is*
@@ -616,6 +616,9 @@ void AutofillAgent::SetNodeText(const base::string16& value,
 }
 
 void AutofillAgent::HideAutofillUI() {
+  if (!element_.isNull())
+    OnClearPreviewedForm();
+
   Send(new AutofillHostMsg_HideAutofillUI(routing_id()));
 }
 
