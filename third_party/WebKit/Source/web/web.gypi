@@ -185,6 +185,7 @@
       'WebInputEventConversion.h',
       'WebKit.cpp',
       'WebLabelElement.cpp',
+      'WebLeakDetector.cpp',
       'WebMIDIClientMock.cpp',
       'WebMIDIPermissionRequest.cpp',
       'WebMediaPlayerClientImpl.cpp',
