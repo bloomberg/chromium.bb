@@ -54,7 +54,7 @@ public:
         AuthorShadowRoot
     };
 
-    static PassRefPtr<ShadowRoot> create(Document* document, ShadowRootType type)
+    static PassRefPtr<ShadowRoot> create(Document& document, ShadowRootType type)
     {
         return adoptRef(new ShadowRoot(document, type));
     }
@@ -127,7 +127,7 @@ public:
     StyleSheetList* styleSheets();
 
 private:
-    ShadowRoot(Document*, ShadowRootType);
+    ShadowRoot(Document&, ShadowRootType);
     virtual ~ShadowRoot();
 
     virtual void dispose() OVERRIDE;
@@ -164,7 +164,7 @@ inline Element* ShadowRoot::activeElement() const
 }
 
 DEFINE_NODE_TYPE_CASTS(ShadowRoot, isShadowRoot());
-DEFINE_TYPE_CASTS(ShadowRoot, TreeScope, treeScope, treeScope->rootNode() && treeScope->rootNode()->isShadowRoot(), treeScope.rootNode() && treeScope.rootNode()->isShadowRoot());
+DEFINE_TYPE_CASTS(ShadowRoot, TreeScope, treeScope, treeScope->rootNode().isShadowRoot(), treeScope.rootNode().isShadowRoot());
 
 } // namespace
 

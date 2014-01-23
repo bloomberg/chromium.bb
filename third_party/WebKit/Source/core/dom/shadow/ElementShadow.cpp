@@ -139,7 +139,7 @@ ElementShadow::~ElementShadow()
 
 ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
 {
-    RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(&shadowHost.document(), type);
+    RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
         root->lazyReattachIfAttached();

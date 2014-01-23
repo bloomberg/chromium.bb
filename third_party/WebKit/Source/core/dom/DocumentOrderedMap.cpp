@@ -116,7 +116,7 @@ inline Element* DocumentOrderedMap::get(StringImpl* key, const TreeScope* scope)
         return entry->element;
 
     // We know there's at least one node that matches; iterate to find the first one.
-    for (Element* element = ElementTraversal::firstWithin(*scope->rootNode()); element; element = ElementTraversal::next(*element)) {
+    for (Element* element = ElementTraversal::firstWithin(scope->rootNode()); element; element = ElementTraversal::next(*element)) {
         if (!keyMatches(key, element))
             continue;
         entry->element = element;
@@ -146,7 +146,7 @@ const Vector<Element*>& DocumentOrderedMap::getAllElementsById(StringImpl* key, 
 
     if (entry->orderedList.isEmpty()) {
         entry->orderedList.reserveCapacity(entry->count);
-        for (Element* element = entry->element ? entry->element : ElementTraversal::firstWithin(*scope->rootNode()); entry->orderedList.size() < entry->count; element = ElementTraversal::next(*element)) {
+        for (Element* element = entry->element ? entry->element : ElementTraversal::firstWithin(scope->rootNode()); entry->orderedList.size() < entry->count; element = ElementTraversal::next(*element)) {
             ASSERT(element);
             if (!keyMatchesId(key, element))
                 continue;

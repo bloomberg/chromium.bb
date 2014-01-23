@@ -55,9 +55,9 @@ enum ShadowRootUsageOriginType {
     ShadowRootUsageOriginMax
 };
 
-ShadowRoot::ShadowRoot(Document* document, ShadowRootType type)
+ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     : DocumentFragment(0, CreateShadowRoot)
-    , TreeScope(this, document)
+    , TreeScope(*this, document)
     , m_prev(0)
     , m_next(0)
     , m_numberOfStyles(0)
@@ -67,11 +67,10 @@ ShadowRoot::ShadowRoot(Document* document, ShadowRootType type)
     , m_registeredWithParentShadowRoot(false)
     , m_descendantInsertionPointsIsValid(false)
 {
-    ASSERT(document);
     ScriptWrappable::init(this);
 
     if (type == ShadowRoot::AuthorShadowRoot) {
-        ShadowRootUsageOriginType usageType = document->url().protocolIsInHTTPFamily() ? ShadowRootUsageOriginWeb : ShadowRootUsageOriginNotWeb;
+        ShadowRootUsageOriginType usageType = document.url().protocolIsInHTTPFamily() ? ShadowRootUsageOriginWeb : ShadowRootUsageOriginNotWeb;
         blink::Platform::current()->histogramEnumeration("WebCore.ShadowRoot.constructor", usageType, ShadowRootUsageOriginMax);
     }
 }

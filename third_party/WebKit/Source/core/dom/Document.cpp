@@ -395,7 +395,7 @@ private:
 
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
-    , TreeScope(this)
+    , TreeScope(*this)
     , m_hasNodesWithPlaceholderStyle(false)
     , m_needsNotifyRemoveAllPendingStylesheet(false)
     , m_evaluateMediaQueriesOnStyleRecalc(false)

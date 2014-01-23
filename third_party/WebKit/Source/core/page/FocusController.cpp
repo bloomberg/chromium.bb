@@ -76,7 +76,7 @@ FocusNavigationScope::FocusNavigationScope(TreeScope* treeScope)
 
 Node* FocusNavigationScope::rootNode() const
 {
-    return m_rootTreeScope->rootNode();
+    return &m_rootTreeScope->rootNode();
 }
 
 Element* FocusNavigationScope::owner() const

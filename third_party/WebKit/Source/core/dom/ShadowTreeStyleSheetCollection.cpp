@@ -113,7 +113,7 @@ bool ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
         }
     }
     if (change.requiresFullStyleRecalc)
-        toShadowRoot(m_treeScope.rootNode())->host()->setNeedsStyleRecalc();
+        toShadowRoot(m_treeScope.rootNode()).host()->setNeedsStyleRecalc();
 
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     collection.swap(*this);

@@ -51,7 +51,7 @@ using namespace HTMLNames;
 DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     : StyleSheetCollection(treeScope)
 {
-    ASSERT(treeScope.rootNode() == treeScope.rootNode()->document());
+    ASSERT(treeScope.rootNode() == treeScope.rootNode().document());
 }
 
 void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine* engine, DocumentStyleSheetCollector& collector)

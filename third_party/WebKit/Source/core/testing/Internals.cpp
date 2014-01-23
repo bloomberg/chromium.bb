@@ -383,7 +383,7 @@ Node* Internals::treeScopeRootNode(Node* node, ExceptionState& exceptionState)
         return 0;
     }
 
-    return node->treeScope().rootNode();
+    return &node->treeScope().rootNode();
 }
 
 Node* Internals::parentTreeScope(Node* node, ExceptionState& exceptionState)
@@ -393,7 +393,7 @@ Node* Internals::parentTreeScope(Node* node, ExceptionState& exceptionState)
         return 0;
     }
     const TreeScope* parentTreeScope = node->treeScope().parentTreeScope();
-    return parentTreeScope ? parentTreeScope->rootNode() : 0;
+    return parentTreeScope ? &parentTreeScope->rootNode() : 0;
 }
 
 bool Internals::hasSelectorForIdInShadow(Element* host, const AtomicString& idValue, ExceptionState& exceptionState)

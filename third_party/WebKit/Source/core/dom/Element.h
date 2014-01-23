@@ -860,7 +860,7 @@ inline void Node::removedFrom(ContainerNode* insertionPoint)
     ASSERT(insertionPoint->inDocument() || isContainerNode());
     if (insertionPoint->inDocument())
         clearFlag(InDocumentFlag);
-    if (isInShadowTree() && !treeScope().rootNode()->isShadowRoot())
+    if (isInShadowTree() && !treeScope().rootNode().isShadowRoot())
         clearFlag(IsInShadowTreeFlag);
 }
 

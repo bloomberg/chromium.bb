@@ -62,8 +62,8 @@ EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
 
     // Spec: The event handling for the non-exposed tree works as if the referenced element had been textually included
     // as a deeply cloned child of the 'use' element, except that events are dispatched to the SVGElementInstance objects.
-    Node* rootNode = referenceNode->treeScope().rootNode();
-    Element* shadowHostElement = rootNode->isShadowRoot() ? toShadowRoot(rootNode)->host() : 0;
+    Node& rootNode = referenceNode->treeScope().rootNode();
+    Element* shadowHostElement = rootNode.isShadowRoot() ? toShadowRoot(rootNode).host() : 0;
     // At this time, SVG nodes are not supported in non-<use> shadow trees.
     if (!shadowHostElement || !shadowHostElement->hasTagName(SVGNames::useTag))
         return referenceNode;
@@ -197,14 +197,14 @@ void EventPath::calculateAdjustedEventPath()
 #ifndef NDEBUG
 static inline bool movedFromOlderToYounger(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
 {
-    Node* rootNode = lastTreeScope.rootNode();
-    return rootNode->isShadowRoot() && toShadowRoot(rootNode)->youngerShadowRoot() == currentTreeScope.rootNode();
+    Node& rootNode = lastTreeScope.rootNode();
+    return rootNode.isShadowRoot() && toShadowRoot(rootNode).youngerShadowRoot() == currentTreeScope.rootNode();
 }
 
 static inline bool movedFromYoungerToOlder(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
 {
-    Node* rootNode = lastTreeScope.rootNode();
-    return rootNode->isShadowRoot() && toShadowRoot(rootNode)->olderShadowRoot() == currentTreeScope.rootNode();
+    Node& rootNode = lastTreeScope.rootNode();
+    return rootNode.isShadowRoot() && toShadowRoot(rootNode).olderShadowRoot() == currentTreeScope.rootNode();
 }
 #endif
 

@@ -94,7 +94,7 @@ public:
     // Used by the basic DOM mutation methods (e.g., appendChild()).
     void adoptIfNeeded(Node&);
 
-    Node* rootNode() const { return m_rootNode; }
+    Node& rootNode() const { return m_rootNode; }
 
     IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
 
@@ -127,8 +127,8 @@ public:
     Element* getElementByAccessKey(const String& key) const;
 
 protected:
-    TreeScope(ContainerNode*, Document*);
-    TreeScope(Document*);
+    TreeScope(ContainerNode&, Document&);
+    TreeScope(Document&);
     virtual ~TreeScope();
 
     void destroyTreeScopeData();
@@ -153,7 +153,7 @@ private:
 
     bool rootNodeHasTreeSharedParent() const;
 
-    Node* m_rootNode;
+    Node& m_rootNode;
     Document* m_document;
     TreeScope* m_parentTreeScope;
     int m_guardRefCount;

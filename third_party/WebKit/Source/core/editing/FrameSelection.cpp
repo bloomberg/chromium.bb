@@ -115,7 +115,7 @@ Node* FrameSelection::rootEditableElementOrTreeScopeRootNode() const
         return selectionRoot;
 
     Node* node = m_selection.base().containerNode();
-    return node ? node->treeScope().rootNode() : 0;
+    return node ? &node->treeScope().rootNode() : 0;
 }
 
 void FrameSelection::moveTo(const VisiblePosition &pos, EUserTriggered userTriggered, CursorAlignOnScroll align)

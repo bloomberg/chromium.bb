@@ -1155,8 +1155,8 @@ Node* Node::deprecatedShadowAncestorNode() const
 
 ShadowRoot* Node::containingShadowRoot() const
 {
-    Node* root = treeScope().rootNode();
-    return root && root->isShadowRoot() ? toShadowRoot(root) : 0;
+    Node& root = treeScope().rootNode();
+    return root.isShadowRoot() ? toShadowRoot(&root) : 0;
 }
 
 Node* Node::nonBoundaryShadowTreeRootNode()
@@ -2449,12 +2449,12 @@ inline void TreeScope::removedLastRefToScope()
         dispose();
 #if !ASSERT_DISABLED
         // We need to do this right now since guardDeref() can delete this.
-        rootNode()->m_inRemovedLastRefFunction = false;
+        rootNode().m_inRemovedLastRefFunction = false;
 #endif
         guardDeref();
     } else {
 #if !ASSERT_DISABLED
-        rootNode()->m_inRemovedLastRefFunction = false;
+        rootNode().m_inRemovedLastRefFunction = false;
 #endif
 #if SECURITY_ASSERT_ENABLED
         beginDeletion();
