@@ -20,7 +20,7 @@ function test()
             var profiles = WebInspector.panels.profiles;
             var type = profiles.getProfileType("CPU");
             while (type.getProfiles().length !== 0)
-                profiles._removeProfileHeader(type.getProfiles()[0]);
+                type.removeProfile(type.getProfiles()[0]);
             InspectorTest.addResult("Profile groups after removal:");
             for (var key in profiles._profileGroups)
                 InspectorTest.addResult(key + ": " + profiles._profileGroups[key].length);
