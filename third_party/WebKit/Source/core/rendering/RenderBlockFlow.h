@@ -203,7 +203,7 @@ public:
     static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
 
-    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*,
+    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*, TextDirection = LTR,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
     static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*,
@@ -213,10 +213,10 @@ public:
     static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, RenderStyle*,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
-    static TextRun constructTextRun(RenderObject* context, const Font&, const LChar* characters, int length, RenderStyle*,
+    static TextRun constructTextRun(RenderObject* context, const Font&, const LChar* characters, int length, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
-    static TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*,
+    static TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
     RootInlineBox* lineGridBox() const { return m_rareData ? m_rareData->m_lineGridBox : 0; }

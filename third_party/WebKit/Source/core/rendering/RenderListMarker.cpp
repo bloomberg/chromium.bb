@@ -1305,13 +1305,13 @@ void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
             context->drawText(font, textRunPaintInfo, textOrigin);
 
             UChar suffixSpace[2] = { suffix, ' ' };
-            TextRun suffixRun = RenderBlockFlow::constructTextRun(this, font, suffixSpace, 2, style());
+            TextRun suffixRun = RenderBlockFlow::constructTextRun(this, font, suffixSpace, 2, style(), LTR);
             TextRunPaintInfo suffixRunInfo(suffixRun);
             suffixRunInfo.bounds = marker;
             context->drawText(font, suffixRunInfo, textOrigin + IntSize(font.width(textRun), 0));
         } else {
             UChar spaceSuffix[2] = { ' ', suffix };
-            TextRun suffixRun = RenderBlockFlow::constructTextRun(this, font, spaceSuffix, 2, style());
+            TextRun suffixRun = RenderBlockFlow::constructTextRun(this, font, spaceSuffix, 2, style(), RTL);
             TextRunPaintInfo suffixRunInfo(suffixRun);
             suffixRunInfo.bounds = marker;
             context->drawText(font, suffixRunInfo, textOrigin);
@@ -1583,7 +1583,7 @@ void RenderListMarker::computePreferredLogicalWidths()
             else {
                 LayoutUnit itemWidth = font.width(m_text);
                 UChar suffixSpace[2] = { listMarkerSuffix(type, m_listItem->value()), ' ' };
-                LayoutUnit suffixSpaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, suffixSpace, 2, style()));
+                LayoutUnit suffixSpaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, suffixSpace, 2, style(), style()->direction()));
                 logicalWidth = itemWidth + suffixSpaceWidth;
             }
             break;
@@ -1809,7 +1809,7 @@ IntRect RenderListMarker::getRelativeMarkerRect()
             const Font& font = style()->font();
             int itemWidth = font.width(m_text);
             UChar suffixSpace[2] = { listMarkerSuffix(type, m_listItem->value()), ' ' };
-            int suffixSpaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, suffixSpace, 2, style()));
+            int suffixSpaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, suffixSpace, 2, style(), style()->direction()));
             relativeRect = IntRect(0, 0, itemWidth + suffixSpaceWidth, font.fontMetrics().height());
     }
 
