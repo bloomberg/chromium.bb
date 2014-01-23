@@ -73,7 +73,7 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
         if (syntheticItalic)
             style |= SkTypeface::kItalic;
 
-        RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromName(name.c_str(), static_cast<SkTypeface::Style>(style)));
+        RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->legacyCreateTypeface(name.c_str(), static_cast<SkTypeface::Style>(style)));
         syntheticBold = false;
         syntheticItalic = false;
         return FontPlatformData(typeface.release(), "", size, syntheticBold, syntheticItalic, orientation);
