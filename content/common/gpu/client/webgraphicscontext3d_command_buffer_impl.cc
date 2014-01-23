@@ -560,12 +560,6 @@ DELEGATE_TO_GL_5(renderbufferStorageMultisampleCHROMIUM,
                  RenderbufferStorageMultisampleCHROMIUM, WGC3Denum, WGC3Dsizei,
                  WGC3Denum, WGC3Dsizei, WGC3Dsizei)
 
-DELEGATE_TO_GL_1R(createStreamTextureCHROMIUM, CreateStreamTextureCHROMIUM,
-                  WebGLId, WebGLId)
-
-DELEGATE_TO_GL_1(destroyStreamTextureCHROMIUM, DestroyStreamTextureCHROMIUM,
-                 WebGLId)
-
 DELEGATE_TO_GL_1(activeTexture, ActiveTexture, WGC3Denum)
 
 DELEGATE_TO_GL_2(attachShader, AttachShader, WebGLId, WebGLId)

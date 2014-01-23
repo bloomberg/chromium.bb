@@ -1093,11 +1093,6 @@ DELEGATE_TO_GL_2(bindTexImage2DCHROMIUM, BindTexImage2DCHROMIUM,
 DELEGATE_TO_GL_2(releaseTexImage2DCHROMIUM, ReleaseTexImage2DCHROMIUM,
                  WGC3Denum, WGC3Dint)
 
-DELEGATE_TO_GL_1R(createStreamTextureCHROMIUM, CreateStreamTextureCHROMIUM,
-                  WebGLId, WebGLId)
-DELEGATE_TO_GL_1(destroyStreamTextureCHROMIUM, DestroyStreamTextureCHROMIUM,
-                 WebGLId)
-
 void* WebGraphicsContext3DInProcessCommandBufferImpl::mapBufferCHROMIUM(
     WGC3Denum target, WGC3Denum access) {
   ClearContext();
