@@ -10,6 +10,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
 namespace views {
 
@@ -30,6 +31,9 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
     displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
     screen_.reset(new DesktopScreenX11(displays));
     screen_->AddObserver(this);
+
+    // We want to have a synchronous activation behavior.
+    X11DesktopHandler::get()->SetWMSupportsActiveWindowForTests(false);
   }
 
   virtual void TearDown() OVERRIDE {
