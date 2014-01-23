@@ -15,7 +15,6 @@ from pylib import constants
 
 SLAVE_SCRIPTS_DIR = os.path.join(bb_utils.BB_BUILD_DIR, 'scripts', 'slave')
 VALID_HOST_TESTS = set(['check_webview_licenses', 'findbugs'])
-EXPERIMENTAL_TARGETS = ['android_experimental']
 
 DIR_BUILD_ROOT = os.path.dirname(constants.DIR_SOURCE_ROOT)
 
@@ -63,12 +62,6 @@ def Compile(options):
     RunCmd(cmd + ['--build-args=%s' % build_target],
         halt_on_failure=True,
         cwd=DIR_BUILD_ROOT)
-  if options.experimental:
-    for compile_target in EXPERIMENTAL_TARGETS:
-      bb_annotations.PrintNamedStep('Experimental Compile %s' % compile_target)
-      RunCmd(cmd + ['--build-args=%s' % compile_target],
-             flunk_on_failure=False,
-             cwd=DIR_BUILD_ROOT)
 
 
 def ZipBuild(options):

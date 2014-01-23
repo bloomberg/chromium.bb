@@ -168,11 +168,6 @@
       ],
     },  # target_name: android_builder_chromium_webrtc
     {
-      # TODO: Remove this target once bots no longer reference it.
-      'target_name': 'android_experimental',
-      'type': 'none',
-    },
-    {
       # Build the java portions of the binary size analysis tool.
       'target_name': 'binary_size_tool',
       'type': 'none',
