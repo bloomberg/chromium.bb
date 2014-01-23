@@ -514,7 +514,6 @@
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
-            '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../components/components.gyp:breakpad_component',
             '../components/components.gyp:policy',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',

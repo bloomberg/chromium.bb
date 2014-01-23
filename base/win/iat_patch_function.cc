@@ -56,23 +56,11 @@ DWORD ModifyCode(void* old_code, void* new_code, int length) {
   }
 
   // Change the page protection so that we can write.
-  MEMORY_BASIC_INFORMATION memory_info;
   DWORD error = NO_ERROR;
   DWORD old_page_protection = 0;
-
-  if (!::VirtualQuery(old_code, &memory_info, sizeof(memory_info))) {
-    error = GetLastError();
-    return error;
-  }
-
-  DWORD is_executable = (PAGE_EXECUTE | PAGE_EXECUTE_READ |
-                        PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY) &
-                        memory_info.Protect;
-
   if (VirtualProtect(old_code,
                      length,
-                     is_executable ? PAGE_EXECUTE_READWRITE :
-                                     PAGE_READWRITE,
+                     PAGE_READWRITE,
                      &old_page_protection)) {
 
     // Write the data.
@@ -86,6 +74,7 @@ DWORD ModifyCode(void* old_code, void* new_code, int length) {
                   &old_page_protection);
   } else {
     error = GetLastError();
+    NOTREACHED();
   }
 
   return error;
