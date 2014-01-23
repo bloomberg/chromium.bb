@@ -14,37 +14,23 @@
 namespace cc {
 namespace internal {
 
-Task::Task()
-    : did_schedule_(false),
-      did_run_(false) {
-}
+Task::Task() : did_schedule_(false), did_run_(false) {}
 
-Task::~Task() {
-  DCHECK(!did_run_ || did_schedule_);
-}
+Task::~Task() { DCHECK(!did_run_ || did_schedule_); }
 
-void Task::DidSchedule() {
-  did_schedule_ = true;
-}
+void Task::DidSchedule() { did_schedule_ = true; }
 
 void Task::WillRun() {
   DCHECK(did_schedule_);
   DCHECK(!did_run_);
 }
 
-void Task::DidRun() {
-  did_run_ = true;
-}
+void Task::DidRun() { did_run_ = true; }
 
-bool Task::HasFinishedRunning() const {
-  return did_run_;
-}
+bool Task::HasFinishedRunning() const { return did_run_; }
 
 GraphNode::GraphNode(Task* task, unsigned priority)
-    : task_(task),
-      priority_(priority),
-      num_dependencies_(0) {
-}
+    : task_(task), priority_(priority), num_dependencies_(0) {}
 
 GraphNode::~GraphNode() {}
 
@@ -52,8 +38,8 @@ TaskGraphRunner::TaskNamespace::TaskNamespace() {}
 
 TaskGraphRunner::TaskNamespace::~TaskNamespace() {}
 
-TaskGraphRunner::TaskGraphRunner(
-    size_t num_threads, const std::string& thread_name_prefix)
+TaskGraphRunner::TaskGraphRunner(size_t num_threads,
+                                 const std::string& thread_name_prefix)
     : lock_(),
       has_ready_to_run_tasks_cv_(&lock_),
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
@@ -63,13 +49,13 @@ TaskGraphRunner::TaskGraphRunner(
   base::AutoLock lock(lock_);
 
   while (workers_.size() < num_threads) {
-    scoped_ptr<base::DelegateSimpleThread> worker = make_scoped_ptr(
-        new base::DelegateSimpleThread(
+    scoped_ptr<base::DelegateSimpleThread> worker =
+        make_scoped_ptr(new base::DelegateSimpleThread(
             this,
             thread_name_prefix +
-            base::StringPrintf(
-                "Worker%u",
-                static_cast<unsigned>(workers_.size() + 1)).c_str()));
+                base::StringPrintf("Worker%u",
+                                   static_cast<unsigned>(workers_.size() + 1))
+                    .c_str()));
     worker->Start();
 #if defined(OS_ANDROID) || defined(OS_LINUX)
     worker->SetThreadPriority(base::kThreadPriority_Background);
@@ -139,8 +125,8 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
 
     DCHECK(!shutdown_);
 
-    scoped_ptr<TaskNamespace> task_namespace = namespaces_.take_and_erase(
-        token.id_);
+    scoped_ptr<TaskNamespace> task_namespace =
+        namespaces_.take_and_erase(token.id_);
 
     // Create task namespace if it doesn't exist.
     if (!task_namespace)
@@ -149,13 +135,15 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
     // First remove all completed tasks from |new_pending_tasks| and
     // adjust number of dependencies.
     for (Task::Vector::iterator it = task_namespace->completed_tasks.begin();
-         it != task_namespace->completed_tasks.end(); ++it) {
+         it != task_namespace->completed_tasks.end();
+         ++it) {
       Task* task = it->get();
 
       scoped_ptr<GraphNode> node = new_pending_tasks.take_and_erase(task);
       if (node) {
         for (GraphNode::Vector::const_iterator it = node->dependents().begin();
-             it != node->dependents().end(); ++it) {
+             it != node->dependents().end();
+             ++it) {
           GraphNode* dependent_node = *it;
           dependent_node->remove_dependency();
         }
@@ -164,7 +152,8 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
 
     // Build new running task set.
     for (TaskGraph::iterator it = task_namespace->running_tasks.begin();
-         it != task_namespace->running_tasks.end(); ++it) {
+         it != task_namespace->running_tasks.end();
+         ++it) {
       Task* task = it->first;
       // Transfer scheduled task value from |new_pending_tasks| to
       // |new_running_tasks| if currently running. Value must be set to
@@ -176,7 +165,8 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
     // Build new "ready to run" tasks queue.
     task_namespace->ready_to_run_tasks.clear();
     for (TaskGraph::iterator it = new_pending_tasks.begin();
-         it != new_pending_tasks.end(); ++it) {
+         it != new_pending_tasks.end();
+         ++it) {
       Task* task = it->first;
       DCHECK(task);
       GraphNode* node = it->second;
@@ -207,7 +197,8 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
 
     // The items left in |pending_tasks| need to be canceled.
     for (TaskGraph::const_iterator it = task_namespace->pending_tasks.begin();
-         it != task_namespace->pending_tasks.end(); ++it) {
+         it != task_namespace->pending_tasks.end();
+         ++it) {
       task_namespace->completed_tasks.push_back(it->first);
     }
 
@@ -232,7 +223,8 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
     // Build new "ready to run" task namespaces queue.
     ready_to_run_namespaces_.clear();
     for (TaskNamespaceMap::iterator it = namespaces_.begin();
-         it != namespaces_.end(); ++it) {
+         it != namespaces_.end();
+         ++it) {
       if (!it->second->ready_to_run_tasks.empty())
         ready_to_run_namespaces_.push_back(it->second);
     }
@@ -249,8 +241,8 @@ void TaskGraphRunner::SetTaskGraph(NamespaceToken token, TaskGraph* graph) {
   }
 }
 
-void TaskGraphRunner::CollectCompletedTasks(
-    NamespaceToken token, Task::Vector* completed_tasks) {
+void TaskGraphRunner::CollectCompletedTasks(NamespaceToken token,
+                                            Task::Vector* completed_tasks) {
   base::AutoLock lock(lock_);
 
   DCHECK(token.IsValid());
@@ -302,8 +294,7 @@ void TaskGraphRunner::Run() {
     std::pop_heap(task_namespace->ready_to_run_tasks.begin(),
                   task_namespace->ready_to_run_tasks.end(),
                   CompareTaskPriority);
-    scoped_refptr<Task> task(
-        task_namespace->ready_to_run_tasks.back()->task());
+    scoped_refptr<Task> task(task_namespace->ready_to_run_tasks.back()->task());
     task_namespace->ready_to_run_tasks.pop_back();
 
     // Add task namespace back to |ready_to_run_namespaces_| if not
@@ -319,8 +310,7 @@ void TaskGraphRunner::Run() {
     DCHECK(task_namespace->pending_tasks.contains(task.get()));
     DCHECK(!task_namespace->running_tasks.contains(task.get()));
     task_namespace->running_tasks.set(
-        task.get(),
-        task_namespace->pending_tasks.take_and_erase(task.get()));
+        task.get(), task_namespace->pending_tasks.take_and_erase(task.get()));
 
     // There may be more work available, so wake up another worker thread.
     has_ready_to_run_tasks_cv_.Signal();
@@ -345,7 +335,8 @@ void TaskGraphRunner::Run() {
       bool ready_to_run_namespaces_has_heap_properties = true;
 
       for (GraphNode::Vector::const_iterator it = node->dependents().begin();
-           it != node->dependents().end(); ++it) {
+           it != node->dependents().end();
+           ++it) {
         GraphNode* dependent_node = *it;
 
         dependent_node->remove_dependency();
@@ -363,8 +354,7 @@ void TaskGraphRunner::Run() {
           if (was_empty) {
             DCHECK(std::find(ready_to_run_namespaces_.begin(),
                              ready_to_run_namespaces_.end(),
-                             task_namespace) ==
-                   ready_to_run_namespaces_.end());
+                             task_namespace) == ready_to_run_namespaces_.end());
             ready_to_run_namespaces_.push_back(task_namespace);
           }
           ready_to_run_namespaces_has_heap_properties = false;

@@ -47,7 +47,8 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
-template <> struct hash<cc::internal::Task*> {
+template <>
+struct hash<cc::internal::Task*> {
   size_t operator()(cc::internal::Task* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
@@ -103,9 +104,7 @@ class CC_EXPORT NamespaceToken {
   NamespaceToken() : id_(0) {}
   ~NamespaceToken() {}
 
-  bool IsValid() const {
-    return id_ != 0;
-  }
+  bool IsValid() const { return id_ != 0; }
 
  private:
   friend class TaskGraphRunner;
@@ -140,8 +139,8 @@ class CC_EXPORT TaskGraphRunner : public base::DelegateSimpleThread::Delegate {
   void WaitForTasksToFinishRunning(NamespaceToken token);
 
   // Collect all completed tasks in |completed_tasks|.
-  void CollectCompletedTasks(
-      NamespaceToken token, Task::Vector* completed_tasks);
+  void CollectCompletedTasks(NamespaceToken token,
+                             Task::Vector* completed_tasks);
 
  private:
   struct TaskNamespace {
