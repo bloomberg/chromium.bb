@@ -105,6 +105,13 @@ enum {
                                    // files to be installed when managed user
                                    // session starts.
 
+#if defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
+  DIR_NATIVE_MESSAGING,         // System directory where native messaging host
+                                // manifest files are stored.
+  DIR_USER_NATIVE_MESSAGING,    // Directory with Native Messaging Hosts
+                                // installed per-user.
+#endif
+
   // Valid only in development environment; TODO(darin): move these
   DIR_GEN_TEST_DATA,            // Directory where generated test data resides.
   DIR_TEST_DATA,                // Directory where unit test data resides.

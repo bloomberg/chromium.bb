@@ -7,32 +7,24 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
+#include "chrome/common/chrome_paths.h"
 
 namespace extensions {
-
-namespace {
-
-const char kNativeMessagingDirectory[] =
-#if defined(OFFICIAL_BUILD) && defined(OS_MACOSX)
-    "/Library/Google/Chrome/NativeMessagingHosts";
-#elif defined(OFFICIAL_BUILD) && !defined(OS_MACOSX)
-    "/etc/opt/chrome/native-messaging-hosts";
-#elif !defined(OFFICIAL_BUILD) && defined(OS_MACOSX)
-    "/Library/Application Support/Chromium/NativeMessagingHosts";
-#else
-    "/etc/chromium/native-messaging-hosts";
-#endif
-
-}  // namespace
 
 // static
 base::FilePath NativeProcessLauncher::FindManifest(
     const std::string& native_host_name,
     std::string* error_message) {
-  return base::FilePath(kNativeMessagingDirectory).Append(
-      native_host_name + ".json");
+  base::FilePath result;
+  if (!PathService::Get(chrome::DIR_NATIVE_MESSAGING, &result)) {
+    NOTREACHED();
+    *error_message = "Can't find native messaging host " + native_host_name;
+    return base::FilePath();
+  }
+  return result.Append(native_host_name + ".json");
 }
 
 // static
