@@ -862,6 +862,8 @@ crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass
 
 crbug.com/333772 svg/animations/discard-check-removal-order.html [ Pass Failure ]
 
+crbug.com/264372 fast/text/font-smallcaps-layout.html [ NeedsRebaseline ]
+
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 
