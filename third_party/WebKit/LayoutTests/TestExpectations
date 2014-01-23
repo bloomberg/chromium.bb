@@ -746,6 +746,10 @@ crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ 
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
+# Fixing the way SVGs blend as background layers resulted in a rebaseline needed for these tests.
+crbug.com/229166 css3/compositing/background-blend-mode-svg-color.html [ NeedsRebaseline ]
+crbug.com/229166 css3/compositing/background-blend-mode-crossfade-image-gradient.html [ NeedsRebaseline ]
+
 crbug.com/312910 webaudio/audiobuffersource-loop-points.html [ Crash Timeout Pass ]
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
