@@ -146,13 +146,11 @@ class ParallelAuthenticatorTest : public testing::Test {
                           const std::string& password,
                           const std::string& username_hash_,
                           bool pending) {
-    EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(
-        username,
-        password,
-        std::string(),
-        username_hash_,
-        true,  // using_oauth
-        UserContext::AUTH_FLOW_OFFLINE)))
+    EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(username,
+                                                      password,
+                                                      std::string(),
+                                                      username_hash_,
+                                                      true /* using_oauth */)))
         .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
         .RetiresOnSaturation();
   }
@@ -209,13 +207,11 @@ class ParallelAuthenticatorTest : public testing::Test {
 };
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
-  EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(
-      username_,
-      password_,
-      std::string(),
-      username_hash_,
-      true,  // using oauth
-      UserContext::AUTH_FLOW_OFFLINE)))
+  EXPECT_CALL(consumer_, OnLoginSuccess(UserContext(username_,
+                                                    password_,
+                                                    std::string(),
+                                                    username_hash_,
+                                                    true /* using oauth */)))
       .Times(1)
       .RetiresOnSaturation();
 

@@ -386,12 +386,7 @@ class LoginUtilsTest : public testing::Test,
     const bool kHasCookies = false;
     const bool kHasActiveSession = false;
     LoginUtils::Get()->PrepareProfile(
-        UserContext(username,
-                    "password",
-                    std::string(),
-                    username,
-                    kUsingOAuth,
-                    UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML),
+        UserContext(username, "password", std::string(), username, kUsingOAuth),
         std::string(), kHasCookies, kHasActiveSession, this);
     device_settings_test_helper.Flush();
     RunUntilIdle();

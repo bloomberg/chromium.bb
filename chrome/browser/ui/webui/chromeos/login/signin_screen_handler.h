@@ -320,8 +320,7 @@ class SigninScreenHandler
                                     const std::string& password,
                                     const std::string& auth_code);
   void HandleCompleteLogin(const std::string& typed_email,
-                           const std::string& password,
-                           bool using_saml);
+                           const std::string& password);
   void HandleGetUsers();
   void HandleAuthenticateUser(const std::string& username,
                               const std::string& password);

@@ -24,16 +24,6 @@ extern const int kDefaultImagesCount;
 // back once user homedir is mounted. |username_hash| is used to identify
 // user homedir mount point.
 struct UserContext {
-  // The authentication flow used during sign-in.
-  enum AuthFlow {
-    // Online authentication against GAIA. GAIA did not redirect to a SAML IdP.
-    AUTH_FLOW_GAIA_WITHOUT_SAML,
-    // Online authentication against GAIA. GAIA redirected to a SAML IdP.
-    AUTH_FLOW_GAIA_WITH_SAML,
-    // Offline authentication against a cached password.
-    AUTH_FLOW_OFFLINE
-  };
-
   UserContext();
   UserContext(const std::string& username,
               const std::string& password,
@@ -46,8 +36,7 @@ struct UserContext {
               const std::string& password,
               const std::string& auth_code,
               const std::string& username_hash,
-              bool using_oauth,
-              AuthFlow auth_flow);
+              bool using_oauth);
   virtual ~UserContext();
   bool operator==(const UserContext& context) const;
   std::string username;
@@ -55,7 +44,6 @@ struct UserContext {
   std::string auth_code;
   std::string username_hash;
   bool using_oauth;
-  AuthFlow auth_flow;
 };
 
 // A class representing information about a previously logged in user.
@@ -162,14 +150,14 @@ class User {
   // True if image is being loaded from file.
   bool image_is_loading() const { return image_is_loading_; }
 
+  // OAuth token status for this user.
+  OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
+
   // The displayed user name.
   base::string16 display_name() const { return display_name_; }
 
   // The displayed (non-canonical) user email.
   virtual std::string display_email() const;
-
-  // OAuth token status for this user.
-  OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
 
   // True if the user's session can be locked (i.e. the user has a password with
   // which to unlock the session).
@@ -223,6 +211,10 @@ class User {
   // If |is_loading| is |true|, that means user image is being loaded from file.
   void SetStubImage(int image_index, bool is_loading);
 
+  void set_oauth_token_status(OAuthTokenStatus status) {
+    oauth_token_status_ = status;
+  }
+
   void set_display_name(const base::string16& display_name) {
     display_name_ = display_name;
   }
@@ -234,10 +226,6 @@ class User {
   }
 
   const UserImage& user_image() const { return user_image_; }
-
-  void set_oauth_token_status(OAuthTokenStatus status) {
-    oauth_token_status_ = status;
-  }
 
   void set_username_hash(const std::string& username_hash) {
     username_hash_ = username_hash;

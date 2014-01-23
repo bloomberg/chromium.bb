@@ -1011,21 +1011,14 @@ void SigninScreenHandler::UpdateAddButtonStatus() {
 }
 
 void SigninScreenHandler::HandleCompleteLogin(const std::string& typed_email,
-                                              const std::string& password,
-                                              bool using_saml) {
+                                              const std::string& password) {
   if (!delegate_)
     return;
-
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   delegate_->SetDisplayEmail(sanitized_email);
-  delegate_->CompleteLogin(UserContext(
-      sanitized_email,
-      password,
-      std::string(),  // auth_code
-      std::string(),  // username_hash
-      true,           // using_oauth
-      using_saml ? UserContext::AUTH_FLOW_GAIA_WITH_SAML
-                 : UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML));
+  delegate_->CompleteLogin(UserContext(sanitized_email,
+                                       password,
+                                       std::string()));  // auth_code
 
   if (test_expects_complete_login_) {
     VLOG(2) << "Complete test login for " << typed_email

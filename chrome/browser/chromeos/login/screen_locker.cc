@@ -261,8 +261,7 @@ void ScreenLocker::UnlockOnLoginSuccess() {
                     authentication_capture_->user_context.password,
                     authentication_capture_->user_context.auth_code,
                     authentication_capture_->user_context.username_hash,
-                    authentication_capture_->user_context.using_oauth,
-                    authentication_capture_->user_context.auth_flow));
+                    authentication_capture_->user_context.using_oauth));
   }
   authentication_capture_.reset();
   weak_factory_.InvalidateWeakPtrs();

@@ -237,10 +237,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
       new AuthAttemptState(
           UserContext(canonicalized,
                       user_context.password,
-                      user_context.auth_code,
-                      user_context.username_hash,
-                      user_context.using_oauth,
-                      user_context.auth_flow),
+                      user_context.auth_code),
           !UserManager::Get()->IsKnownUser(canonicalized)));
 
   // Reset the verified flag.
