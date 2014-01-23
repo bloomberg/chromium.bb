@@ -219,10 +219,10 @@ Press any key to continue exploring.
     Less than 1 minute left
   </message>
   <message name="IDS_DRIVE_OFFLINE_NOTIFICATION_MESSAGE" desc="Message shown in notification when Google Drive offline mode is automatically enabled.">
-    Google Drive can now be used offline.
+    Your Docs, Sheets, Slides, and Drawings files are being synced. Open the Google Drive app to access them online or offline.
   </message>
   <message name="IDS_DRIVE_OFFLINE_NOTIFICATION_BUTTON" desc="Label on button in notification when Google Drive offline mode is automatically enabled.">
-    Change your settings
+    Learn More
   </message>
   <message name="IDS_UPDATE_CANCEL" desc="Message telling to press Escape to cancel update on a non-official build">
     Press ESCAPE to skip (Non-official builds only).

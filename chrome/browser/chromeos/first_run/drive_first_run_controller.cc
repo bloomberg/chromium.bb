@@ -19,6 +19,10 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -59,6 +63,10 @@ const char kDriveHostedAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
 // Id of the notification shown when offline mode is enabled.
 const char kDriveOfflineNotificationId[] = "chrome://drive/enable-offline";
 
+// The URL of the support page opened when the notification button is clicked.
+const char kDriveOfflineSupportUrl[] =
+    "https://support.google.com/drive/answer/1628467";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +78,8 @@ const char kDriveOfflineNotificationId[] = "chrome://drive/enable-offline";
 class DriveOfflineNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
-  DriveOfflineNotificationDelegate() {}
+  explicit DriveOfflineNotificationDelegate(Profile* profile)
+      : profile_(profile) {}
 
   // message_center::NotificationDelegate overrides:
   virtual void Display() OVERRIDE {}
@@ -83,12 +92,23 @@ class DriveOfflineNotificationDelegate
   virtual ~DriveOfflineNotificationDelegate() {}
 
  private:
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(DriveOfflineNotificationDelegate);
 };
 
 void DriveOfflineNotificationDelegate::ButtonClick(int button_index) {
   DCHECK_EQ(0, button_index);
-  ash::Shell::GetInstance()->system_tray_delegate()->ShowDriveSettings();
+
+  // The support page will be localized based on the user's GAIA account.
+  const GURL url = GURL(kDriveOfflineSupportUrl);
+
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+       profile_,
+       chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowSingletonTabOverwritingNTP(
+      displayer.browser(),
+      chrome::GetSingletonTabNavigateParams(displayer.browser(), url));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -459,7 +479,7 @@ void DriveFirstRunController::ShowNotification() {
           message_center::NotifierId(message_center::NotifierId::APPLICATION,
                                      kDriveHostedAppId),
           data,
-          new DriveOfflineNotificationDelegate()));
+          new DriveOfflineNotificationDelegate(profile_)));
   notification->set_priority(message_center::LOW_PRIORITY);
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
