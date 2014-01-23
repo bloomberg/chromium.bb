@@ -461,6 +461,18 @@ struct GenerateTraits<base::TimeTicks> {
 };
 
 template <>
+struct GenerateTraits<base::PlatformFileInfo> {
+  static bool Generate(base::PlatformFileInfo* p, Generator* generator) {
+    return
+        GenerateParam(&p->size, generator) &&
+        GenerateParam(&p->is_directory, generator) &&
+        GenerateParam(&p->last_modified, generator) &&
+        GenerateParam(&p->last_accessed, generator) &&
+        GenerateParam(&p->creation_time, generator);
+  }
+};
+
+template <>
 struct GenerateTraits<GURL> {
   static bool Generate(GURL *p, Generator* generator) {
     const char url_chars[] = "Ahtp0:/.?+\%&#";
@@ -478,6 +490,21 @@ struct GenerateTraits<GURL> {
     else if (selector == 2)
       random_url = std::string("data:") + random_url;
     *p = GURL(random_url);
+    return true;
+  }
+};
+
+template <>
+struct GenerateTraits<net::HostPortPair> {
+  static bool Generate(net::HostPortPair *p, Generator* generator) {
+    std::string host;
+    uint16 port;
+    if (!GenerateParam(&host, generator))
+      return false;
+    if (!GenerateParam(&port, generator))
+      return false;
+    p->set_host(host);
+    p->set_port(port);
     return true;
   }
 };
