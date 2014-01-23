@@ -86,6 +86,10 @@ class CustomFrameView : public NonClientFrameView,
   // there was one).
   gfx::Rect IconBounds() const;
 
+  // Returns true if the title bar, caption buttons, and frame border should be
+  // drawn. If false, the client view occupies the full area of this view.
+  bool ShouldShowTitleBarAndBorder() const;
+
   // Returns true if the client edge should be drawn. This is true if
   // the window is not maximized.
   bool ShouldShowClientEdge() const;

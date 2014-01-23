@@ -17,11 +17,3 @@ OpaqueBrowserFrameViewPlatformSpecific::Create(
 }
 
 #endif
-
-bool OpaqueBrowserFrameViewPlatformSpecific::ShouldShowCaptionButtons() const {
-  return true;
-}
-
-bool OpaqueBrowserFrameViewPlatformSpecific::ShouldShowTitleBar() const {
-  return true;
-}

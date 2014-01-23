@@ -51,6 +51,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) OVERRIDE;
   virtual base::TimeDelta GetDefaultTextfieldObscuredRevealDuration() OVERRIDE;
+  virtual bool WindowManagerProvidesTitleBar(bool maximized) OVERRIDE;
 
  private:
   // Function to retrieve default opacity value mainly based on platform

@@ -48,6 +48,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
@@ -437,7 +438,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
 #endif
 
   views::WidgetDelegate* delegate = frame()->widget_delegate();
-  return platform_observer_->ShouldShowTitleBar() && delegate &&
+  return ShouldShowWindowTitleBar() && delegate &&
          delegate->ShouldShowWindowIcon();
 }
 
@@ -453,7 +454,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitle() const {
   // a window is being destroyed.
   // See more discussion at http://crosbug.com/8958
   views::WidgetDelegate* delegate = frame()->widget_delegate();
-  return platform_observer_->ShouldShowTitleBar() && delegate &&
+  return ShouldShowWindowTitleBar() && delegate &&
          delegate->ShouldShowWindowTitle();
 }
 
@@ -480,9 +481,15 @@ gfx::Size OpaqueBrowserFrameView::GetBrowserViewMinimumSize() const {
 }
 
 bool OpaqueBrowserFrameView::ShouldShowCaptionButtons() const {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Do not show caption buttons if the system title bar is being used.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
+    return false;
+#endif
+
   if (!OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons())
     return false;
-  return platform_observer_->ShouldShowCaptionButtons();
+  return ShouldShowWindowTitleBar();
 }
 
 bool OpaqueBrowserFrameView::ShouldShowAvatar() const {
@@ -602,6 +609,13 @@ int OpaqueBrowserFrameView::NonClientBorderThickness() const {
 
 gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
   return layout_->IconBounds();
+}
+
+bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
+  if (!views::ViewsDelegate::views_delegate)
+    return true;
+  return !views::ViewsDelegate::views_delegate->WindowManagerProvidesTitleBar(
+              IsMaximized());
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {

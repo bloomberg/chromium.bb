@@ -39,6 +39,10 @@
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
@@ -300,6 +304,17 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 base::TimeDelta
 ChromeViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
   return base::TimeDelta();
+}
+
+bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // On Ubuntu Unity, the system always provides a title bar for maximized
+  // windows.
+  views::LinuxUI* ui = views::LinuxUI::instance();
+  return maximized && ui && ui->UnityIsRunning();
+#endif
+
+  return false;
 }
 
 #if !defined(USE_AURA) && !defined(USE_CHROMEOS)

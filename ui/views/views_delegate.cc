@@ -17,4 +17,8 @@ ViewsDelegate::~ViewsDelegate() {
   ui::TouchSelectionControllerFactory::SetInstance(NULL);
 }
 
+bool ViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
+  return false;
+}
+
 }  // namespace views

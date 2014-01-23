@@ -18,6 +18,7 @@
 #include "ui/gfx/path.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -186,7 +187,7 @@ int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
 void CustomFrameView::GetWindowMask(const gfx::Size& size,
                                     gfx::Path* window_mask) {
   DCHECK(window_mask);
-  if (frame_->IsMaximized())
+  if (frame_->IsMaximized() || !ShouldShowTitleBarAndBorder())
     return;
 
   GetDefaultWindowMask(size, window_mask);
@@ -212,6 +213,9 @@ void CustomFrameView::UpdateWindowTitle() {
 // CustomFrameView, View overrides:
 
 void CustomFrameView::OnPaint(gfx::Canvas* canvas) {
+  if (!ShouldShowTitleBarAndBorder())
+    return;
+
   if (frame_->IsMaximized())
     PaintMaximizedFrameBorder(canvas);
   else
@@ -222,8 +226,11 @@ void CustomFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void CustomFrameView::Layout() {
-  LayoutWindowControls();
-  LayoutTitleBar();
+  if (ShouldShowTitleBarAndBorder()) {
+    LayoutWindowControls();
+    LayoutTitleBar();
+  }
+
   LayoutClientView();
 }
 
@@ -323,8 +330,17 @@ gfx::Rect CustomFrameView::IconBounds() const {
   return gfx::Rect(frame_thickness + kIconLeftSpacing, y, size, size);
 }
 
+bool CustomFrameView::ShouldShowTitleBarAndBorder() const {
+  if (ViewsDelegate::views_delegate) {
+    return !ViewsDelegate::views_delegate->WindowManagerProvidesTitleBar(
+                frame_->IsMaximized());
+  }
+
+  return true;
+}
+
 bool CustomFrameView::ShouldShowClientEdge() const {
-  return !frame_->IsMaximized();
+  return !frame_->IsMaximized() && ShouldShowTitleBarAndBorder();
 }
 
 void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
@@ -549,6 +565,11 @@ void CustomFrameView::LayoutTitleBar() {
 }
 
 void CustomFrameView::LayoutClientView() {
+  if (!ShouldShowTitleBarAndBorder()) {
+    client_view_bounds_ = bounds();
+    return;
+  }
+
   int top_height = NonClientTopBorderHeight();
   int border_thickness = NonClientBorderThickness();
   client_view_bounds_.SetRect(border_thickness, top_height,

@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_linux.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
-#include "chrome/common/chrome_switches.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,28 +25,6 @@ OpaqueBrowserFrameViewLinux::~OpaqueBrowserFrameViewLinux() {
   views::LinuxUI* ui = views::LinuxUI::instance();
   if (ui)
     ui->RemoveWindowButtonOrderObserver(this);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// OpaqueBrowserFrameViewLinux,
-//     OpaqueBrowserFrameViewPlatformSpecific implementation:
-
-bool OpaqueBrowserFrameViewLinux::ShouldShowCaptionButtons() const {
-  // Do not show caption buttons if the system title bar is being used.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseSystemTitleBar))
-    return false;
-
-  // On Ubuntu Unity, if the window is maximized, the system will provide
-  // caption buttons, so Chrome should not add its own.
-  views::LinuxUI* ui = views::LinuxUI::instance();
-  return !(view_->IsMaximized() && ui && ui->UnityIsRunning());
-}
-
-bool OpaqueBrowserFrameViewLinux::ShouldShowTitleBar() const {
-  // On Ubuntu Unity, if the window is maximized, the system will provide
-  // a title bar, so Chrome should not add its own.
-  views::LinuxUI* ui = views::LinuxUI::instance();
-  return !(view_->IsMaximized() && ui && ui->UnityIsRunning());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

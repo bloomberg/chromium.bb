@@ -119,6 +119,12 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns the default obscured text reveal duration.
   virtual base::TimeDelta GetDefaultTextfieldObscuredRevealDuration() = 0;
 
+  // Returns true if the operating system's window manager will always provide a
+  // title bar with caption buttons (ignoring the setting to
+  // |remove_standard_frame| in InitParams). If |maximized|, this applies to
+  // maximized windows; otherwise to restored windows.
+  virtual bool WindowManagerProvidesTitleBar(bool maximized);
+
  private:
   scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
 };
