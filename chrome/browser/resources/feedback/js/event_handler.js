@@ -25,6 +25,7 @@ var whitelistedExtensionIds = [
   'mlocfejafidcakdddnndjdngfmncfbeg', // Connectivity Diagnostics
   'ganomidahfnpdchomfgdoppjmmedlhia', // Connectivity Diagnostics
   'eemlkeanncmjljgehlbplemhmdmalhdc', // Connectivity Diagnostics
+  'kodldpbjkkmmnilagfdheibampofhaom', // Connectivity Diagnostics
   'kkebgepbbgbcmghedmmdfcbdcodlkngh', // Chrome OS Recovery Tool
   'jndclpdbaamdhonoechobihbbiimdgai'  // Chrome OS Recovery Tool
 ];
