@@ -138,6 +138,10 @@
   vertical-align: text-bottom;
 }
 
+#createManagedUserLogo span {
+  vertical-align: -10%;
+}
+
 #createManagedUserLinkPlaceholder,
 #createManagedUserNoManagerText {
   margin-top: 10px;
