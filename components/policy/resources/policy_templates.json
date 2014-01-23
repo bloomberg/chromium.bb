@@ -5899,7 +5899,7 @@
           'hash': { "type": "string" }
         },
       },
-      'supported_on': ['chrome_os:33-'],
+      'supported_on': ['chrome_os:34-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5923,7 +5923,7 @@
             "type": "string"
           },
           "hash": {
-            "description": "The SHA-1 hash of the avatar image.",
+            "description": "The SHA-256 hash of the avatar image.",
             "type": "string"
           }
         }

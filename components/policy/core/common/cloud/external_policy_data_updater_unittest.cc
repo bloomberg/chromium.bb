@@ -9,11 +9,11 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/sha1.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/external_policy_data_fetcher.h"
+#include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -109,7 +109,7 @@ ExternalPolicyDataUpdater::Request
     ExternalPolicyDataUpdaterTest::CreateRequest(const std::string& url) const {
   return ExternalPolicyDataUpdater::Request(
       url,
-      base::SHA1HashString(kExternalPolicyDataPayload),
+      crypto::SHA256HashString(kExternalPolicyDataPayload),
       kExternalPolicyDataMaxSize);
 }
 

@@ -12,12 +12,12 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/sha1.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "crypto/sha2.h"
 #include "policy/proto/chrome_extension_policy.pb.h"
 #include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,7 +45,7 @@ const char kTestPolicy[] =
     "}";
 
 std::string TestPolicyHash() {
-  return base::SHA1HashString(kTestPolicy);
+  return crypto::SHA256HashString(kTestPolicy);
 }
 
 bool NotEqual(const std::string& expected, const std::string& key) {
@@ -231,7 +231,7 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
 
   // Store policy with invalid JSON data.
   static const char kInvalidData[] = "{ not json }";
-  const std::string invalid_data_hash = base::SHA1HashString(kInvalidData);
+  const std::string invalid_data_hash = crypto::SHA256HashString(kInvalidData);
   builder_.payload().set_secure_hash(invalid_data_hash);
   EXPECT_FALSE(store_->Store(
       ns, CreateSerializedResponse(), invalid_data_hash, kInvalidData));

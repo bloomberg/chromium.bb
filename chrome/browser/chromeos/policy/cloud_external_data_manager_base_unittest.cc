@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
@@ -25,6 +24,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/core/common/policy_types.h"
+#include "crypto/sha2.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
@@ -159,11 +159,13 @@ void CloudExternalDataManagerBaseTest::SetUp() {
   // Make |k10BytePolicy| reference 10 bytes of external data.
   SetExternalDataReference(
       k10BytePolicy,
-      ConstructMetadata(k10BytePolicyURL, base::SHA1HashString(k10ByteData)));
+      ConstructMetadata(k10BytePolicyURL,
+                        crypto::SHA256HashString(k10ByteData)));
   // Make |k20BytePolicy| reference 20 bytes of external data.
   SetExternalDataReference(
       k20BytePolicy,
-      ConstructMetadata(k20BytePolicyURL, base::SHA1HashString(k20ByteData)));
+      ConstructMetadata(k20BytePolicyURL,
+                        crypto::SHA256HashString(k20ByteData)));
   cloud_policy_store_.NotifyStoreLoaded();
 
   request_content_getter_ = new net::TestURLRequestContextGetter(
@@ -336,7 +338,7 @@ TEST_F(CloudExternalDataManagerBaseTest, DownloadAndCache) {
   EXPECT_TRUE(CloudExternalDataStore(kCacheKey,
                                      message_loop_.message_loop_proxy(),
                                      resource_cache_.get()).Load(
-      k10BytePolicy, base::SHA1HashString(k10ByteData), 10, &data));
+      k10BytePolicy, crypto::SHA256HashString(k10ByteData), 10, &data));
   EXPECT_EQ(k10ByteData, data);
 }
 
@@ -395,10 +397,14 @@ TEST_F(CloudExternalDataManagerBaseTest, DownloadAndCacheAll) {
                                message_loop_.message_loop_proxy(),
                                resource_cache_.get());
   std::string data;
-  EXPECT_TRUE(cache.Load(k10BytePolicy, base::SHA1HashString(k10ByteData), 10,
+  EXPECT_TRUE(cache.Load(k10BytePolicy,
+                         crypto::SHA256HashString(k10ByteData),
+                         10,
                          &data));
   EXPECT_EQ(k10ByteData, data);
-  EXPECT_TRUE(cache.Load(k20BytePolicy, base::SHA1HashString(k20ByteData), 20,
+  EXPECT_TRUE(cache.Load(k20BytePolicy,
+                         crypto::SHA256HashString(k20ByteData),
+                         20,
                          &data));
   EXPECT_EQ(k20ByteData, data);
 }
@@ -452,7 +458,8 @@ TEST_F(CloudExternalDataManagerBaseTest, DownloadError) {
   // download to be retried immediately.
   SetExternalDataReference(
       k20BytePolicy,
-      ConstructMetadata(k20BytePolicyURL, base::SHA1HashString(k10ByteData)));
+      ConstructMetadata(k20BytePolicyURL,
+                        crypto::SHA256HashString(k10ByteData)));
   cloud_policy_store_.NotifyStoreLoaded();
 
   // Attempt to retrieve external data for |k20BytePolicy| again. Verify that
@@ -467,7 +474,8 @@ TEST_F(CloudExternalDataManagerBaseTest, DownloadError) {
   // download to be retried immediately.
   SetExternalDataReference(
       k20BytePolicy,
-      ConstructMetadata(k20BytePolicyURL, base::SHA1HashString(k20ByteData)));
+      ConstructMetadata(k20BytePolicyURL,
+                        crypto::SHA256HashString(k20ByteData)));
   cloud_policy_store_.NotifyStoreLoaded();
 
   // Serve external data for |k20BytePolicy| that does not match the hash
@@ -488,7 +496,8 @@ TEST_F(CloudExternalDataManagerBaseTest, DownloadError) {
   // the data being served.
   SetExternalDataReference(
       k20BytePolicy,
-      ConstructMetadata(k20BytePolicyURL, base::SHA1HashString(k10ByteData)));
+      ConstructMetadata(k20BytePolicyURL,
+                        crypto::SHA256HashString(k10ByteData)));
   cloud_policy_store_.NotifyStoreLoaded();
 
   // Attempt to retrieve external data for |k20BytePolicy| again. Verify that
@@ -518,7 +527,7 @@ TEST_F(CloudExternalDataManagerBaseTest, LoadFromCache) {
   EXPECT_TRUE(CloudExternalDataStore(kCacheKey,
                                      message_loop_.message_loop_proxy(),
                                      resource_cache_.get()).Store(
-      k10BytePolicy, base::SHA1HashString(k10ByteData), k10ByteData));
+      k10BytePolicy, crypto::SHA256HashString(k10ByteData), k10ByteData));
 
   // Instantiate an external_data_manager_ that uses the primed cache.
   SetUpExternalDataManager();
@@ -546,17 +555,17 @@ TEST_F(CloudExternalDataManagerBaseTest, PruneCacheOnStartup) {
                                        resource_cache_.get()));
   // Store valid external data for |k10BytePolicy| in the cache.
   EXPECT_TRUE(cache->Store(k10BytePolicy,
-                           base::SHA1HashString(k10ByteData),
+                           crypto::SHA256HashString(k10ByteData),
                            k10ByteData));
   // Store external data for |k20BytePolicy| that does not match the hash in its
   // external data reference.
   EXPECT_TRUE(cache->Store(k20BytePolicy,
-                           base::SHA1HashString(k10ByteData),
+                           crypto::SHA256HashString(k10ByteData),
                            k10ByteData));
   // Store external data for |kUnknownPolicy|, which is not a known policy and
   // therefore, cannot be referencing any external data.
   EXPECT_TRUE(cache->Store(kUnknownPolicy,
-                           base::SHA1HashString(k10ByteData),
+                           crypto::SHA256HashString(k10ByteData),
                            k10ByteData));
   cache.reset();
 
@@ -571,15 +580,21 @@ TEST_F(CloudExternalDataManagerBaseTest, PruneCacheOnStartup) {
   std::string data;
   // Verify that the valid external data for |k10BytePolicy| is still in the
   // cache.
-  EXPECT_TRUE(cache->Load(k10BytePolicy, base::SHA1HashString(k10ByteData),
-                          10, &data));
+  EXPECT_TRUE(cache->Load(k10BytePolicy,
+                          crypto::SHA256HashString(k10ByteData),
+                          10,
+                          &data));
   EXPECT_EQ(k10ByteData, data);
   // Verify that the external data for |k20BytePolicy| and |kUnknownPolicy| has
   // been pruned from the cache.
-  EXPECT_FALSE(cache->Load(k20BytePolicy, base::SHA1HashString(k10ByteData),
-                           20, &data));
-  EXPECT_FALSE(cache->Load(kUnknownPolicy, base::SHA1HashString(k10ByteData),
-                           20, &data));
+  EXPECT_FALSE(cache->Load(k20BytePolicy,
+                           crypto::SHA256HashString(k10ByteData),
+                           20,
+                           &data));
+  EXPECT_FALSE(cache->Load(kUnknownPolicy,
+                           crypto::SHA256HashString(k10ByteData),
+                           20,
+                           &data));
 }
 
 // Verifies that when the external data referenced by a policy is present in the
@@ -593,7 +608,7 @@ TEST_F(CloudExternalDataManagerBaseTest, PruneCacheOnChange) {
                                        message_loop_.message_loop_proxy(),
                                        resource_cache_.get()));
   EXPECT_TRUE(cache->Store(k20BytePolicy,
-                           base::SHA1HashString(k20ByteData),
+                           crypto::SHA256HashString(k20ByteData),
                            k20ByteData));
   cache.reset();
 
@@ -604,7 +619,8 @@ TEST_F(CloudExternalDataManagerBaseTest, PruneCacheOnChange) {
   // Modify the external data reference for |k20BytePolicy|.
   SetExternalDataReference(
       k20BytePolicy,
-      ConstructMetadata(k20BytePolicyURL, base::SHA1HashString(k10ByteData)));
+      ConstructMetadata(k20BytePolicyURL,
+                        crypto::SHA256HashString(k10ByteData)));
   cloud_policy_store_.NotifyStoreLoaded();
 
   // Verify that the old external data for |k20BytePolicy| has been pruned from
@@ -615,7 +631,9 @@ TEST_F(CloudExternalDataManagerBaseTest, PruneCacheOnChange) {
                                          message_loop_.message_loop_proxy(),
                                          resource_cache_.get()));
   std::string data;
-  EXPECT_FALSE(cache->Load(k20BytePolicy, base::SHA1HashString(k20ByteData), 20,
+  EXPECT_FALSE(cache->Load(k20BytePolicy,
+                           crypto::SHA256HashString(k20ByteData),
+                           20,
                            &data));
 }
 
@@ -630,12 +648,12 @@ TEST_F(CloudExternalDataManagerBaseTest, CacheCorruption) {
   // Store external data for |k10BytePolicy| that exceeds the maximal external
   // data size allowed for that policy.
   EXPECT_TRUE(cache->Store(k10BytePolicy,
-                           base::SHA1HashString(k20ByteData),
+                           crypto::SHA256HashString(k20ByteData),
                            k20ByteData));
   // Store external data for |k20BytePolicy| that is corrupted and does not
   // match the expected hash.
   EXPECT_TRUE(cache->Store(k20BytePolicy,
-                           base::SHA1HashString(k20ByteData),
+                           crypto::SHA256HashString(k20ByteData),
                            k10ByteData));
   cache.reset();
 
@@ -650,7 +668,8 @@ TEST_F(CloudExternalDataManagerBaseTest, CacheCorruption) {
   // external data being served.
   SetExternalDataReference(
       k10BytePolicy,
-      ConstructMetadata(k10BytePolicyURL, base::SHA1HashString(k20ByteData)));
+      ConstructMetadata(k10BytePolicyURL,
+                        crypto::SHA256HashString(k20ByteData)));
   cloud_policy_store_.NotifyStoreLoaded();
 
   // Retrieve external data for |k10BytePolicy|. Verify that the callback is
@@ -689,11 +708,15 @@ TEST_F(CloudExternalDataManagerBaseTest, CacheCorruption) {
   // that would allow the data originally written to the cache to be loaded.
   // When this fails, it is certain that the original data is no longer present
   // in the cache.
-  EXPECT_FALSE(cache->Load(k10BytePolicy, base::SHA1HashString(k20ByteData), 20,
+  EXPECT_FALSE(cache->Load(k10BytePolicy,
+                           crypto::SHA256HashString(k20ByteData),
+                           20,
                            &data));
   // Verify that the invalid external data for |k20BytePolicy| has been replaced
   // with the downloaded valid data in the cache.
-  EXPECT_TRUE(cache->Load(k20BytePolicy, base::SHA1HashString(k20ByteData), 20,
+  EXPECT_TRUE(cache->Load(k20BytePolicy,
+                          crypto::SHA256HashString(k20ByteData),
+                          20,
                           &data));
   EXPECT_EQ(k20ByteData, data);
 }
@@ -742,7 +765,8 @@ TEST_F(CloudExternalDataManagerBaseTest, PolicyChangeWhileDownloadPending) {
   // the downloaded data.
   SetExternalDataReference(
       k20BytePolicy,
-      ConstructMetadata(k20BytePolicyURL, base::SHA1HashString(k10ByteData)));
+      ConstructMetadata(k20BytePolicyURL,
+                        crypto::SHA256HashString(k10ByteData)));
   cloud_policy_store_.NotifyStoreLoaded();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, callback_data_.size());

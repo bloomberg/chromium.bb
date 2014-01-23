@@ -157,7 +157,9 @@ TEST(ExternalDataPolicyHandlerTest, InvalidHash) {
 TEST(ExternalDataPolicyHandlerTest, Valid) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", "http://localhost/");
-  dict->SetString("hash", "1234567890123456789012345678901234567890");
+  dict->SetString(
+      "hash",
+      "1234567890123456789012345678901234567890123456789012345678901234");
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage,
                  POLICY_LEVEL_MANDATORY,

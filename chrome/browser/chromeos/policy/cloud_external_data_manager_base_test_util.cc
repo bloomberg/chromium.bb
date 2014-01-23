@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -15,6 +14,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -30,7 +30,7 @@ void ExternalDataFetchCallback(scoped_ptr<std::string>* destination,
 scoped_ptr<base::DictionaryValue> ConstructExternalDataReference(
     const std::string& url,
     const std::string& data) {
-  const std::string hash = base::SHA1HashString(data);
+  const std::string hash = crypto::SHA256HashString(data);
   scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
   metadata->SetStringWithoutPathExpansion("url", url);
   metadata->SetStringWithoutPathExpansion("hash", base::HexEncode(hash.c_str(),

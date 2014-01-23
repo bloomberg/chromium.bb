@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/sequenced_task_runner.h"
-#include "base/sha1.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -20,6 +19,7 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "crypto/sha2.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -104,7 +104,7 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
       dm_protocol::kChromeExtensionPolicyType);
   builder_.policy_data().set_settings_entity_id(kTestExtension);
   builder_.payload().set_download_url(kTestDownload);
-  builder_.payload().set_secure_hash(base::SHA1HashString(kTestPolicy));
+  builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
 
   PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
   PolicyMap& policy = expected_bundle_.Get(ns);
@@ -205,7 +205,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, AlreadyCached) {
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
   EXPECT_TRUE(store_->Store(ns,
                             builder_.GetBlob(),
-                            base::SHA1HashString(kTestPolicy),
+                            crypto::SHA256HashString(kTestPolicy),
                             kTestPolicy));
   Mock::VerifyAndClearExpectations(&store_delegate_);
 

@@ -7,9 +7,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/sha1.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
+#include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -45,8 +45,8 @@ class CouldExternalDataStoreTest : public testing::Test {
 };
 
 CouldExternalDataStoreTest::CouldExternalDataStoreTest()
-    : kData1Hash(base::SHA1HashString(kData1)),
-      kData2Hash(base::SHA1HashString(kData2)),
+    : kData1Hash(crypto::SHA256HashString(kData1)),
+      kData2Hash(crypto::SHA256HashString(kData2)),
       task_runner_(new base::TestSimpleTaskRunner) {
 }
 

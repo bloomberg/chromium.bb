@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -25,6 +24,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
+#include "crypto/sha2.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -132,7 +132,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         dm_protocol::kChromeExtensionPolicyType);
     builder_.policy_data().set_settings_entity_id(kTestExtension);
     builder_.payload().set_download_url(kTestDownload);
-    builder_.payload().set_secure_hash(base::SHA1HashString(kTestPolicy));
+    builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
 
     expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                          base::Value::CreateStringValue("disabled"), NULL);
@@ -529,7 +529,8 @@ TEST_F(ComponentCloudPolicyServiceTest, SignOut) {
 TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   // Put the invalid test policy in the cache. One of its policies will be
   // loaded, the other should be filtered out by the schema.
-  builder_.payload().set_secure_hash(base::SHA1HashString(kInvalidTestPolicy));
+  builder_.payload().set_secure_hash(
+      crypto::SHA256HashString(kInvalidTestPolicy));
   EXPECT_TRUE(cache_->Store(
       "extension-policy", kTestExtension, CreateSerializedResponse()));
   EXPECT_TRUE(cache_->Store(

@@ -10,9 +10,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/external_policy_data_fetcher.h"
+#include "crypto/sha2.h"
 #include "net/base/backoff_entry.h"
 #include "url/gurl.h"
 
@@ -254,7 +254,7 @@ void ExternalPolicyDataUpdater::FetchJob::OnFetchFinished(
       break;
   }
 
-  if (base::SHA1HashString(*data) != request_.hash) {
+  if (crypto::SHA256HashString(*data) != request_.hash) {
     // Received |data| does not match expected hash. This may be because the
     // data being served is stale. Try again much later.
     OnFailed(&retry_much_later_entry_);

@@ -235,7 +235,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if data:
       settings.download_url = urlparse.urljoin(
           self.server.GetBaseURL(), 'externalpolicydata?key=%s' % policy_key)
-      settings.secure_hash = hashlib.sha1(data).digest()
+      settings.secure_hash = hashlib.sha256(data).digest()
     return settings.SerializeToString()
 
   def CheckGoogleLogin(self):

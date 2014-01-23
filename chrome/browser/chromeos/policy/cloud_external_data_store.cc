@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
+#include "crypto/sha2.h"
 
 namespace policy {
 
@@ -65,7 +65,7 @@ bool CloudExternalDataStore::Load(const std::string& policy,
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   const std::string subkey = GetSubkey(policy, hash);
   if (cache_->Load(cache_key_, subkey, data)) {
-    if (data->size() <= max_size && base::SHA1HashString(*data) == hash)
+    if (data->size() <= max_size && crypto::SHA256HashString(*data) == hash)
       return true;
     // If the data is larger than allowed or does not match the expected hash,
     // delete the entry.

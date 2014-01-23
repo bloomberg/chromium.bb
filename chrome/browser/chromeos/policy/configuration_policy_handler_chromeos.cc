@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_value_map.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -29,6 +28,7 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "crypto/sha2.h"
 #include "grit/component_strings.h"
 #include "policy/policy_constants.h"
 #include "url/gurl.h"
@@ -103,7 +103,7 @@ bool ExternalDataPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
 
   std::vector<uint8> hash;
   if (!base::HexStringToBytes(hash_string, &hash) ||
-      hash.size() != base::kSHA1Length) {
+      hash.size() != crypto::kSHA256Length) {
     errors->AddError(policy, kSubkeyHash, IDS_POLICY_VALUE_FORMAT_ERROR);
     return false;
   }
