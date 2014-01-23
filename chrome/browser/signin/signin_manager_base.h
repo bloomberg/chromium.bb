@@ -115,6 +115,8 @@ class SigninManagerBase : public BrowserContextKeyedService {
   void RemoveSigninDiagnosticsObserver(
       signin_internals_util::SigninDiagnosticsObserver* observer);
 
+  Profile* profile() { return profile_; }
+
  protected:
   // Used by subclass to clear authenticated_username_ instead of using
   // SetAuthenticatedUsername, which enforces special preconditions due

@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -144,8 +146,12 @@ void ProfileOAuth2TokenServiceRequest::Core::StartOnUIThread(
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   DCHECK(service);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  DCHECK(signin_manager);
   std::string account_id_to_use =
-      account_id.empty() ? service->GetPrimaryAccountId() : account_id;
+      account_id.empty() ? signin_manager->GetAuthenticatedAccountId()
+                         : account_id;
   request_.reset(
       service->StartRequest(account_id_to_use, scopes, this).release());
 }

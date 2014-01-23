@@ -385,7 +385,7 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
   }
 
   InitTokenService();
-  account_id_helper_.reset(new SigninAccountIdHelper(profile));
+  account_id_helper_.reset(new SigninAccountIdHelper(this));
 }
 
 void SigninManager::Shutdown() {

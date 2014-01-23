@@ -215,13 +215,16 @@ void SigninManagerAndroid::MergeSessionCompleted(
 }
 
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
   if (switches::IsNewProfileManagement()) {
     // New Mirror code path that just fires the events and let the
     // Account Reconcilor handles everything.
     AndroidProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
             profile_);
-    const std::string& primary_acct = token_service->GetPrimaryAccountId();
+    const std::string& primary_acct =
+        signin_manager->GetAuthenticatedAccountId();
     const std::vector<std::string>& ids = token_service->GetAccounts();
     token_service->ValidateAccounts(primary_acct, ids);
 
@@ -235,7 +238,7 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     merge_session_helper_.reset(new MergeSessionHelper(
         token_service, profile_->GetRequestContext(), this));
-    merge_session_helper_->LogIn(token_service->GetPrimaryAccountId());
+    merge_session_helper_->LogIn(signin_manager->GetAuthenticatedAccountId());
   }
 }
 
