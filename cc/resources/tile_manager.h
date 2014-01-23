@@ -93,8 +93,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       ManagedTileState::TileVersion& tile_version =
           mts.tile_versions[HIGH_QUALITY_NO_LCD_RASTER_MODE];
 
-      tile_version.resource_ = resource_pool_->AcquireResource(
-          gfx::Size(1, 1));
+      tile_version.resource_ = resource_pool_->AcquireResource(gfx::Size(1, 1));
 
       bytes_releasable_ += BytesConsumedIfAllocated(tiles[i]);
       ++resources_releasable_;
@@ -133,8 +132,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   virtual void Release(Tile* tile) OVERRIDE;
 
   // Overriden from RasterWorkerPoolClient:
-  virtual bool ShouldForceTasksRequiredForActivationToComplete() const
-      OVERRIDE;
+  virtual bool ShouldForceTasksRequiredForActivationToComplete() const OVERRIDE;
   virtual void DidFinishRunningTasks() OVERRIDE;
   virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE;
 
@@ -145,16 +143,14 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   virtual void ScheduleTasks(
       const TileVector& tiles_that_need_to_be_rasterized);
 
-  void AssignGpuMemoryToTiles(
-      PrioritizedTileSet* tiles,
-      TileVector* tiles_that_need_to_be_rasterized);
+  void AssignGpuMemoryToTiles(PrioritizedTileSet* tiles,
+                              TileVector* tiles_that_need_to_be_rasterized);
   void GetTilesWithAssignedBins(PrioritizedTileSet* tiles);
 
  private:
-  void OnImageDecodeTaskCompleted(
-      int layer_id,
-      SkPixelRef* pixel_ref,
-      bool was_canceled);
+  void OnImageDecodeTaskCompleted(int layer_id,
+                                  SkPixelRef* pixel_ref,
+                                  bool was_canceled);
   void OnRasterTaskCompleted(Tile::Id tile,
                              scoped_ptr<ScopedResource> resource,
                              RasterMode raster_mode,
@@ -170,8 +166,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
-  RasterWorkerPool::Task CreateImageDecodeTask(
-      Tile* tile, SkPixelRef* pixel_ref);
+  RasterWorkerPool::Task CreateImageDecodeTask(Tile* tile,
+                                               SkPixelRef* pixel_ref);
   RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
   void UpdatePrioritizedTileSetIfNeeded();
