@@ -58,7 +58,7 @@ class DumpReaderWin(DumpReader):
 
     def _get_stack_from_dump(self, dump_file):
         minidump = dump_file[:-3] + 'dmp'
-        cmd = [self._cdb_path, '-y', self._build_dir, '-c', '.ecxr;k30;q', '-z', minidump]
+        cmd = [self._cdb_path, '-y', self._build_dir, '-c', '.lines;.ecxr;k30;q', '-z', minidump]
         try:
             stack = self._host.executive.run_command(cmd)
         except:
