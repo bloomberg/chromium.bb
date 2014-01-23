@@ -733,20 +733,18 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 
   LazyCreate(resource);
 
-  if (resource->external) {
-    if (!resource->gl_id && resource->mailbox.IsTexture()) {
-      GLES2Interface* gl = ContextGL();
-      DCHECK(gl);
-      if (resource->mailbox.sync_point()) {
-        GLC(gl, gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point()));
-        resource->mailbox.ResetSyncPoint();
-      }
-      resource->gl_id = texture_id_allocator_->NextId();
-      GLC(gl, gl->BindTexture(resource->target, resource->gl_id));
-      GLC(gl,
-          gl->ConsumeTextureCHROMIUM(resource->target,
-                                     resource->mailbox.data()));
+  if (!resource->gl_id && resource->mailbox.IsTexture()) {
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    if (resource->mailbox.sync_point()) {
+      GLC(gl, gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point()));
+      resource->mailbox.ResetSyncPoint();
     }
+    resource->gl_id = texture_id_allocator_->NextId();
+    GLC(gl, gl->BindTexture(resource->target, resource->gl_id));
+    GLC(gl,
+        gl->ConsumeTextureCHROMIUM(resource->target,
+                                   resource->mailbox.data()));
   }
 
   resource->lock_for_read_count++;
@@ -1077,19 +1075,7 @@ void ResourceProvider::ReceiveFromChild(
       resource = Resource(
           pixels, bitmap.release(), it->size, GL_LINEAR, GL_CLAMP_TO_EDGE);
     } else {
-      GLuint texture_id;
-      // NOTE: If the parent is a browser and the child a renderer, the parent
-      // is not supposed to have its context wait, because that could induce
-      // deadlocks and/or security issues. The caller is responsible for
-      // waiting asynchronously, and resetting sync_point before calling this.
-      // However if the parent is a renderer (e.g. browser tag), it may be ok
-      // (and is simpler) to wait.
-      if (it->sync_point)
-        GLC(gl, gl->WaitSyncPointCHROMIUM(it->sync_point));
-      texture_id = texture_id_allocator_->NextId();
-      GLC(gl, gl->BindTexture(it->target, texture_id));
-      GLC(gl, gl->ConsumeTextureCHROMIUM(it->target, it->mailbox.name));
-      resource = Resource(texture_id,
+      resource = Resource(0,
                           it->size,
                           it->target,
                           it->filter,
@@ -1097,7 +1083,8 @@ void ResourceProvider::ReceiveFromChild(
                           GL_CLAMP_TO_EDGE,
                           TextureUsageAny,
                           it->format);
-      resource.mailbox.SetName(it->mailbox);
+      resource.mailbox =
+          TextureMailbox(it->mailbox, it->target, it->sync_point);
     }
     resource.child_id = child;
     // Don't allocate a texture for a child.

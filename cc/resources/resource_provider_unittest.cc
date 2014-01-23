@@ -173,6 +173,8 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     last_waited_sync_point_ = std::max(sync_point, last_waited_sync_point_);
   }
 
+  unsigned last_waited_sync_point() const { return last_waited_sync_point_; }
+
   virtual void texStorage2DEXT(GLenum target,
                                GLint levels,
                                GLuint internalformat,
@@ -683,7 +685,9 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     ASSERT_EQ(4u, list.size());
     EXPECT_NE(0u, list[0].sync_point);
     EXPECT_NE(0u, list[1].sync_point);
+    EXPECT_EQ(list[0].sync_point, list[1].sync_point);
     EXPECT_NE(0u, list[2].sync_point);
+    EXPECT_EQ(list[0].sync_point, list[2].sync_point);
     EXPECT_EQ(external_sync_point, list[3].sync_point);
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), list[0].target);
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), list[1].target);
@@ -694,6 +698,12 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id3));
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id4));
     resource_provider_->ReceiveFromChild(child_id, list);
+    EXPECT_NE(list[0].sync_point, context3d_->last_waited_sync_point());
+    {
+      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                              list[0].id);
+    }
+    EXPECT_EQ(list[0].sync_point, context3d_->last_waited_sync_point());
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_transfer);
   }
@@ -1589,6 +1599,10 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
                   bindTexture(GL_TEXTURE_2D, parent_texture_id));
       EXPECT_CALL(*parent_context, consumeTextureCHROMIUM(GL_TEXTURE_2D, _));
       parent_resource_provider->ReceiveFromChild(child_id, list);
+      {
+        ResourceProvider::ScopedReadLockGL lock(parent_resource_provider.get(),
+                                                list[0].id);
+      }
       Mock::VerifyAndClearExpectations(parent_context);
 
       parent_resource_provider->DeclareUsedResourcesFromChild(
