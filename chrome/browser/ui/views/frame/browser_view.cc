@@ -562,8 +562,7 @@ bool BrowserView::IsGuestSession() const {
 }
 
 bool BrowserView::IsRegularOrGuestSession() const {
-  Profile* profile = browser_->profile();
-  return (profile->IsGuestSession() || !profile->IsOffTheRecord());
+  return profiles::IsRegularOrGuestSession(browser_.get());
 }
 
 int BrowserView::GetOTRIconResourceID() const {

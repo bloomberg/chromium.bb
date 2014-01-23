@@ -25,7 +25,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "ui/gfx/rect.h"
 
-@class AvatarButtonController;
+@class AvatarBaseController;
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
@@ -104,9 +104,13 @@ class WebContents;
   NSInteger currentZoomStepDelta_;
 
   // The view controller that manages the incognito badge or the multi-profile
-  // avatar icon. The view is always in the view hierarchy, but will be hidden
-  // unless it's appropriate to show it.
-  base::scoped_nsobject<AvatarButtonController> avatarButtonController_;
+  // avatar button. Depending on whether the --new-profile-management flag is
+  // used, the multi-profile button can either be the avatar's icon badge or a
+  // button with the profile's name. If the flag is used, the button is always
+  // shown, otherwise the view will always be in the view hierarchy but will
+  // be hidden unless it's appropriate to show it (i.e. if there's more than
+  // one profile).
+  base::scoped_nsobject<AvatarBaseController> avatarButtonController_;
 
   // Lazily created view which draws the background for the floating set of bars
   // in presentation mode (for window types having a floating bar; it remains
@@ -222,7 +226,7 @@ class WebContents;
 - (Profile*)profile;
 
 // Access the avatar button controller.
-- (AvatarButtonController*)avatarButtonController;
+- (AvatarBaseController*)avatarButtonController;
 
 // Forces the toolbar (and transitively the location bar) to update its current
 // state.  If |tab| is non-NULL, we're switching (back?) to this tab and should
@@ -263,6 +267,9 @@ class WebContents;
 // Whether or not to show the avatar, which is either the incognito guy or the
 // user's profile avatar.
 - (BOOL)shouldShowAvatar;
+
+// Whether or not to show the new avatar button used by --new-profile-maagement.
+- (BOOL)shouldUseNewAvatarButton;
 
 - (BOOL)isBookmarkBarVisible;
 

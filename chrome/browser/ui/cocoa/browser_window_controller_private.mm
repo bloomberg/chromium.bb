@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_icon_controller.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -55,6 +56,10 @@ const CGFloat kAvatarRightOffset = 4;
 // The amount by which to shrink the tab strip (on the right) when the
 // incognito badge is present.
 const CGFloat kAvatarTabStripShrink = 18;
+
+// Width of the full screen icon. Used to position the AvatarButton to the
+// left of the icon.
+const CGFloat kFullscreenIconWidth = 30;
 
 // Insets for the location bar, used when the full toolbar is hidden.
 // TODO(viettrungluu): We can argue about the "correct" insetting; I like the
@@ -316,14 +321,26 @@ willPositionSheet:(NSWindow*)sheet
   // the right depends on it.
   if ([self shouldShowAvatar]) {
     NSView* avatarButton = [avatarButtonController_ view];
-    CGFloat buttonHeight = std::min(
-        static_cast<CGFloat>(profiles::kAvatarIconHeight), tabStripHeight);
-    [avatarButton setFrameSize:NSMakeSize(NSWidth([avatarButton frame]),
-                                          buttonHeight)];
-
-    // Actually place the badge *above* |maxY|, by +2 to miss the divider.
     CGFloat badgeXOffset = -kAvatarRightOffset;
-    CGFloat badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
+    CGFloat badgeYOffset = 0;
+    CGFloat buttonHeight;
+
+    if ([self shouldUseNewAvatarButton]) {
+      // The fullscreen icon is displayed to the right of the avatar button.
+      if (![self isFullscreen])
+        badgeXOffset -= kFullscreenIconWidth;
+
+      // Center the button vertically on the tabstrip.
+      buttonHeight = NSHeight([avatarButton frame]);
+      badgeYOffset = (tabStripHeight - buttonHeight) / 2;
+    } else {
+      buttonHeight = static_cast<CGFloat>(profiles::kAvatarIconHeight);
+      // Actually place the badge *above* |maxY|, by +2 to miss the divider.
+      badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
+
+    }
+    [avatarButton setFrameSize:NSMakeSize(NSWidth([avatarButton frame]),
+        std::min(buttonHeight, tabStripHeight))];
     NSPoint origin =
         NSMakePoint(width - NSWidth([avatarButton frame]) + badgeXOffset,
                     maxY + badgeYOffset);
@@ -343,9 +360,16 @@ willPositionSheet:(NSWindow*)sheet
     rightIndent += -[window fullScreenButtonOriginAdjustment].x;
   } else if ([self shouldShowAvatar]) {
     rightIndent += kAvatarTabStripShrink;
-    NSButton* labelButton = [avatarButtonController_ labelButtonView];
-    if (labelButton)
-      rightIndent += NSWidth([labelButton frame]) + kAvatarRightOffset;
+    if ([self shouldUseNewAvatarButton]) {
+      rightIndent += NSWidth([[avatarButtonController_ view] frame])
+        + kAvatarTabStripShrink;
+    } else {
+      NSButton* labelButton =
+          [static_cast<AvatarIconController*>(avatarButtonController_)
+              labelButtonView];
+      if (labelButton)
+        rightIndent += NSWidth([labelButton frame]) + kAvatarRightOffset;
+    }
   }
   [tabStripController_ setRightIndentForControls:rightIndent];
 
@@ -564,10 +588,11 @@ willPositionSheet:(NSWindow*)sheet
 
   // Move the incognito badge if present.
   if ([self shouldShowAvatar]) {
-    [[avatarButtonController_ view] removeFromSuperview];
-    [[avatarButtonController_ view] setHidden:YES];  // Will be shown in layout.
-    [[[destWindow contentView] superview] addSubview:
-        [avatarButtonController_ view]];
+    NSView* avatarButtonView = [avatarButtonController_ view];
+
+    [avatarButtonView removeFromSuperview];
+    [avatarButtonView setHidden:YES];  // Will be shown in layout.
+    [[[destWindow contentView] superview] addSubview: avatarButtonView];
   }
 
   // Add the tab strip after setting the content view and moving the incognito

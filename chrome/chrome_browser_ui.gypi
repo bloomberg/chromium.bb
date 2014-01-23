@@ -633,8 +633,12 @@
         'browser/ui/cocoa/bookmarks/bookmark_sync_promo_controller.mm',
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h',
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.mm',
+        'browser/ui/cocoa/browser/avatar_base_controller.h',
+        'browser/ui/cocoa/browser/avatar_base_controller.mm',
         'browser/ui/cocoa/browser/avatar_button_controller.h',
         'browser/ui/cocoa/browser/avatar_button_controller.mm',
+        'browser/ui/cocoa/browser/avatar_icon_controller.h',
+        'browser/ui/cocoa/browser/avatar_icon_controller.mm',
         'browser/ui/cocoa/browser/avatar_label_button.h',
         'browser/ui/cocoa/browser/avatar_label_button.mm',
         'browser/ui/cocoa/browser/avatar_menu_bubble_controller.h',
@@ -2820,7 +2824,7 @@
             'browser/ui/webui/signin/user_manager_ui.h',
             'browser/ui/webui/signin/user_manager_ui.cc',
           ],
-          'sources/': [ 
+          'sources/': [
             ['exclude', '^browser/ui/views/frame/opaque_browser_frame_view*'],
           ],
         }],

@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_base_controller.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_TRUE(fullscreen_button);
   EXPECT_FALSE([fullscreen_button isHidden]);
 
-  AvatarButtonController* avatar_controller =
+  AvatarBaseController* avatar_controller =
       [controller() avatarButtonController];
   NSView* avatar = [avatar_controller view];
   EXPECT_TRUE(avatar);

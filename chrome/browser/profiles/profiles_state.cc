@@ -120,4 +120,9 @@ std::vector<std::string> GetSecondaryAccountsForProfile(
   return accounts;
 }
 
+bool IsRegularOrGuestSession(Browser* browser) {
+  Profile* profile = browser->profile();
+  return profile->IsGuestSession() || !profile->IsOffTheRecord();
+}
+
 }  // namespace profiles

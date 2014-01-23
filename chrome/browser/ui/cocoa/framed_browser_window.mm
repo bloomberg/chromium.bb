@@ -314,13 +314,13 @@ const CGFloat kWindowGradientHeight = 24.0;
   // Vertically center the button.
   NSPoint origin = NSMakePoint(0, -6);
 
-  // If there is a profile avatar present, shift the button over by its
-  // width and some padding.
+  // If there is a profile avatar icon present, shift the button over by its
+  // width and some padding. The new avatar button is displayed to the right
+  // of the fullscreen icon, so it doesn't need to be shifted.
   BrowserWindowController* bwc =
       static_cast<BrowserWindowController*>([self windowController]);
-  if ([bwc shouldShowAvatar]) {
-    AvatarButtonController* avatarButtonVC = [bwc avatarButtonController];
-    NSView* avatarButton = [avatarButtonVC view];
+  if ([bwc shouldShowAvatar] && ![bwc shouldUseNewAvatarButton]) {
+    NSView* avatarButton = [[bwc avatarButtonController] view];
     origin.x = -(NSWidth([avatarButton frame]) + 3);
   } else {
     origin.x -= 6;

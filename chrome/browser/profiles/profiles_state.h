@@ -43,6 +43,11 @@ std::vector<std::string> GetSecondaryAccountsForProfile(
     Profile* profile,
     const std::string& primary_account);
 
+// Returns whether the |browser|'s profile is a non-incognito or guest profile.
+// The distinction is needed because guest profiles are implemented as
+// incognito profiles.
+bool IsRegularOrGuestSession(Browser* browser);
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_

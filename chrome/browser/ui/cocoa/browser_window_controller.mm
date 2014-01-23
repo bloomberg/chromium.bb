@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -35,7 +36,9 @@
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
+#import "chrome/browser/ui/cocoa/browser/avatar_icon_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -68,6 +71,7 @@
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/render_view_host.h"
@@ -523,7 +527,7 @@ enum {
   return browser_->profile();
 }
 
-- (AvatarButtonController*)avatarButtonController {
+- (AvatarBaseController*)avatarButtonController {
   return avatarButtonController_.get();
 }
 
@@ -1497,6 +1501,11 @@ enum {
   return AvatarMenu::ShouldShowAvatarMenu();
 }
 
+- (BOOL)shouldUseNewAvatarButton {
+  return switches::IsNewProfileManagement() &&
+      profiles::IsRegularOrGuestSession(browser_.get());
+}
+
 - (BOOL)isBookmarkBarVisible {
   return [bookmarkBarController_ isVisible];
 }
@@ -1710,12 +1719,18 @@ enum {
 // coordinate as the tab strip.
 - (void)installAvatar {
   // Install the image into the badge view. Hide it for now; positioning and
-  // sizing will be done by the layout code. The AvatarButton will choose which
-  // image to display based on the browser.
-  avatarButtonController_.reset(
+  // sizing will be done by the layout code. The AvatarIcon will choose which
+  // image to display based on the browser. The AvatarButton will display
+  // the browser profile's name unless the browser is incognito.
+  NSView* view;
+  if ([self shouldUseNewAvatarButton]) {
+    avatarButtonController_.reset(
       [[AvatarButtonController alloc] initWithBrowser:browser_.get()]);
-
-  NSView* view = [avatarButtonController_ view];
+  } else {
+    avatarButtonController_.reset(
+      [[AvatarIconController alloc] initWithBrowser:browser_.get()]);
+  }
+  view = [avatarButtonController_ view];
   [view setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [view setHidden:![self shouldShowAvatar]];
 
