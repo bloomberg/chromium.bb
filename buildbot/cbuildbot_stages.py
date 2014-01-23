@@ -3266,6 +3266,8 @@ class ArchiveStage(ArchivingStage):
       if 'factory_test' in config['images']:
         alias = commands.BuildFactoryTestImage(buildroot, board, extra_env)
         factory_test_symlink = self.GetImageDirSymlink(alias)
+        commands.MakeFactoryToolkit(
+            buildroot, board, factory_test_symlink, self._run.attrs.release_tag)
 
       # Build factory install image and create a symlink to it.
       factory_install_symlink = None

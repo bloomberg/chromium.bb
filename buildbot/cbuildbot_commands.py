@@ -1355,6 +1355,23 @@ def MakeNetboot(buildroot, board, image_dir):
   _RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 
+def MakeFactoryToolkit(buildroot, board, output_dir, version=None):
+  """Build a factory toolkit.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    board: Board type that was built on this machine.
+    output_dir: Directory for the resulting factory toolkit.
+    version: Version string to be included in ID string.
+  """
+  cmd = ['./make_factory_toolkit.sh',
+         '--board=%s' % board,
+         '--output_dir=%s' % git.ReinterpretPathForChroot(output_dir)]
+  if version is not None:
+    cmd.extend(['--version', version])
+  _RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
+
+
 def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
   """Build a recovery image.
 
@@ -1589,7 +1606,7 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
     os.path.join(image_root, _FACTORY_SHIM):
       ['*factory_install*.bin', '*partition*', os.path.join('netboot', '*')],
     os.path.join(image_root, _FACTORY_TEST):
-      ['*factory_image*.bin', '*partition*'],
+      ['*factory_image*.bin', '*partition*', 'install_factory_toolkit.run'],
     os.path.join(image_root, _FACTORY_TEST, _FACTORY_HWID):
       ['*'],
   }
