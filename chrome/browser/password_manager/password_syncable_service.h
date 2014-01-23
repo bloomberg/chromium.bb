@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/password_manager/password_store_change.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
@@ -49,6 +50,9 @@ class PasswordSyncableService : public syncer::SyncableService {
   virtual syncer::SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
+
+  // Notifies sync of changes to the password database.
+  void ActOnPasswordStoreChanges(const PasswordStoreChangeList& changes);
 
   // Returns the unique tag that will serve as the sync identifier for the
   // |password| entry.

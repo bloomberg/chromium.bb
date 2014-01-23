@@ -11,6 +11,24 @@
 #include "net/base/escape.h"
 #include "sync/api/sync_error_factory.h"
 
+namespace {
+
+syncer::SyncChange::SyncChangeType GetSyncChangeType(
+    PasswordStoreChange::Type type) {
+  switch (type) {
+    case PasswordStoreChange::ADD:
+      return syncer::SyncChange::ACTION_ADD;
+    case PasswordStoreChange::UPDATE:
+      return syncer::SyncChange::ACTION_UPDATE;
+    case PasswordStoreChange::REMOVE:
+      return syncer::SyncChange::ACTION_DELETE;
+  }
+  NOTREACHED();
+  return syncer::SyncChange::ACTION_INVALID;
+}
+
+}  // namespace
+
 PasswordSyncableService::PasswordSyncableService(
     scoped_refptr<PasswordStore> password_store)
     : password_store_(password_store) {
@@ -35,6 +53,8 @@ PasswordSyncableService::MergeDataAndStartSyncing(
 }
 
 void PasswordSyncableService::StopSyncing(syncer::ModelType type) {
+  sync_processor_.reset();
+  sync_error_factory_.reset();
 }
 
 syncer::SyncDataList PasswordSyncableService::GetAllSyncData(
@@ -51,6 +71,55 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
                           "Password Syncable Service Not Implemented.",
                           syncer::PASSWORDS);
   return error;
+}
+
+void PasswordSyncableService::ActOnPasswordStoreChanges(
+    const PasswordStoreChangeList& local_changes) {
+  if (!sync_processor_)
+    return;
+  syncer::SyncChangeList sync_changes;
+  for (PasswordStoreChangeList::const_iterator it = local_changes.begin();
+       it != local_changes.end();
+       ++it) {
+    sync_changes.push_back(syncer::SyncChange(FROM_HERE,
+                                              GetSyncChangeType(it->type()),
+                                              CreateSyncData(it->form())));
+  }
+  sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
+}
+
+// static
+std::string PasswordSyncableService::MakeTag(
+    const std::string& origin_url,
+    const std::string& username_element,
+    const std::string& username_value,
+    const std::string& password_element,
+    const std::string& signon_realm) {
+  return net::EscapePath(origin_url) + "|" +
+         net::EscapePath(username_element) + "|" +
+         net::EscapePath(username_value) + "|" +
+         net::EscapePath(password_element) + "|" +
+         net::EscapePath(signon_realm);
+}
+
+// static
+std::string PasswordSyncableService::MakeTag(
+    const autofill::PasswordForm& password) {
+  return MakeTag(password.origin.spec(),
+                 base::UTF16ToUTF8(password.username_element),
+                 base::UTF16ToUTF8(password.username_value),
+                 base::UTF16ToUTF8(password.password_element),
+                 password.signon_realm);
+}
+
+// static
+std::string PasswordSyncableService::MakeTag(
+    const sync_pb::PasswordSpecificsData& password) {
+  return MakeTag(password.origin(),
+                 password.username_element(),
+                 password.username_value(),
+                 password.password_element(),
+                 password.signon_realm());
 }
 
 void PasswordSyncableService::WriteToPasswordStore(
@@ -103,38 +172,3 @@ syncer::SyncData PasswordSyncableService::CreateSyncData(
   std::string tag = MakeTag(*password_specifics);
   return syncer::SyncData::CreateLocalData(tag, tag, password_data);
 }
-
-// static
-std::string PasswordSyncableService::MakeTag(
-    const std::string& origin_url,
-    const std::string& username_element,
-    const std::string& username_value,
-    const std::string& password_element,
-    const std::string& signon_realm) {
-  return net::EscapePath(origin_url) + "|" +
-         net::EscapePath(username_element) + "|" +
-         net::EscapePath(username_value) + "|" +
-         net::EscapePath(password_element) + "|" +
-         net::EscapePath(signon_realm);
-}
-
-// static
-std::string PasswordSyncableService::MakeTag(
-    const autofill::PasswordForm& password) {
-  return MakeTag(password.origin.spec(),
-                 base::UTF16ToUTF8(password.username_element),
-                 base::UTF16ToUTF8(password.username_value),
-                 base::UTF16ToUTF8(password.password_element),
-                 password.signon_realm);
-}
-
-// static
-std::string PasswordSyncableService::MakeTag(
-    const sync_pb::PasswordSpecificsData& password) {
-  return MakeTag(password.origin(),
-                 password.username_element(),
-                 password.username_value(),
-                 password.password_element(),
-                 password.signon_realm());
-}
-
