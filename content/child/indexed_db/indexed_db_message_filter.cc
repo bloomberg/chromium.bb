@@ -8,6 +8,7 @@
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_task_runner.h"
+#include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 
 namespace content {
@@ -54,6 +55,8 @@ void IndexedDBMessageFilter::OnStaleSuccessIDBDatabase(
     int32 ipc_database_callbacks_id,
     int32 ipc_database_id,
     const IndexedDBDatabaseMetadata& idb_metadata) {
+  if (ipc_database_id == kNoDatabase)
+    return;
   thread_safe_sender_->Send(
       new IndexedDBHostMsg_DatabaseClose(ipc_database_id));
 }
