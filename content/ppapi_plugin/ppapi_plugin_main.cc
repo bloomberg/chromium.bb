@@ -26,6 +26,10 @@
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/file_util.h"
+#endif
+
 #if defined(OS_LINUX)
 #include "content/public/common/sandbox_init.h"
 #endif
@@ -93,6 +97,12 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
     setenv("LANG", locale.c_str(), 0);
 #endif
   }
+
+#if defined(OS_CHROMEOS)
+  // Specifies $HOME explicitly because some plugins rely on $HOME but
+  // no other part of Chrome OS uses that.  See crbug.com/335290.
+  setenv("HOME", base::GetHomeDir().value().c_str(), 1);
+#endif
 
   base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrPPAPIMain");
