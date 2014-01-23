@@ -68,7 +68,8 @@ bool SessionStateDelegateChromeos::ShouldLockScreenBeforeSuspending() const {
       !unlock_users.empty()
           ? chromeos::UserManager::Get()->GetProfileByUser(unlock_users[0])
           : NULL;
-  return profile && profile->GetPrefs()->GetBoolean(prefs::kEnableScreenLock);
+  return profile &&
+      profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock);
 }
 
 void SessionStateDelegateChromeos::LockScreen() {

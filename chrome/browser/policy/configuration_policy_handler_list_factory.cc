@@ -364,7 +364,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,
-    prefs::kEnableScreenLock,
+    prefs::kEnableAutoScreenLock,
     base::Value::TYPE_BOOLEAN },
   { key::kChromeOsReleaseChannel,
     prefs::kChromeOsReleaseChannel,

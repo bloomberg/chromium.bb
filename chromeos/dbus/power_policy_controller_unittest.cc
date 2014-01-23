@@ -58,7 +58,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.use_video_activity = true;
   prefs.ac_brightness_percent = 87.0;
   prefs.battery_brightness_percent = 43.0;
-  prefs.enable_screen_lock = false;
+  prefs.enable_auto_screen_lock = false;
   prefs.presentation_screen_dim_delay_factor = 3.0;
   prefs.user_activity_screen_dim_delay_factor = 2.0;
   prefs.wait_for_initial_user_activity = true;
@@ -108,9 +108,9 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
 
-  // The enable-screen-lock pref should force the screen-lock delays to
+  // The enable-auto-screen-lock pref should force the screen-lock delays to
   // match the screen-off delays plus a constant value.
-  prefs.enable_screen_lock = true;
+  prefs.enable_auto_screen_lock = true;
   policy_controller_->ApplyPrefs(prefs);
   expected_policy.mutable_ac_delays()->set_screen_lock_ms(
       660000 + PowerPolicyController::kScreenLockAfterOffDelayMs);

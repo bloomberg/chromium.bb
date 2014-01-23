@@ -715,8 +715,8 @@ const char kLabsAdvancedFilesystemEnabled[] =
 // A boolean pref which turns on the mediaplayer.
 const char kLabsMediaplayerEnabled[] = "settings.labs.mediaplayer";
 
-// A boolean pref that turns on screen locker.
-const char kEnableScreenLock[] = "settings.enable_screen_lock";
+// A boolean pref that turns on automatic screen locking.
+const char kEnableAutoScreenLock[] = "settings.enable_screen_lock";
 
 // A boolean pref of whether to show mobile plan notifications.
 const char kShowPlanNotifications[] =

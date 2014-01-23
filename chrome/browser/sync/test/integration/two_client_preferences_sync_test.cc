@@ -512,17 +512,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kTapToClickEnabled) {
 
 // TCM ID - 6458824.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kEnableScreenLock) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kEnableAutoScreenLock) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableScreenLock));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableAutoScreenLock));
 
-  ChangeBooleanPref(0, prefs::kEnableScreenLock);
+  ChangeBooleanPref(0, prefs::kEnableAutoScreenLock);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableScreenLock));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableAutoScreenLock));
 
-  ChangeBooleanPref(1, prefs::kEnableScreenLock);
+  ChangeBooleanPref(1, prefs::kEnableAutoScreenLock);
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableScreenLock));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kEnableAutoScreenLock));
 }
 #endif  // OS_CHROMEOS
 

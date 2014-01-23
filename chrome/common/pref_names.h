@@ -234,7 +234,7 @@ extern const char kAutoclickDelayMs[];
 extern const char kShouldAlwaysShowAccessibilityMenu[];
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];
-extern const char kEnableScreenLock[];
+extern const char kEnableAutoScreenLock[];
 extern const char kShowPlanNotifications[];
 extern const char kShow3gPromoNotification[];
 extern const char kChromeOSReleaseNotesVersion[];

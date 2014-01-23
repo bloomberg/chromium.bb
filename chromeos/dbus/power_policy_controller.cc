@@ -84,7 +84,7 @@ PowerPolicyController::PrefValues::PrefValues()
       ac_brightness_percent(-1.0),
       battery_brightness_percent(-1.0),
       allow_screen_wake_locks(true),
-      enable_screen_lock(false),
+      enable_auto_screen_lock(false),
       presentation_screen_dim_delay_factor(1.0),
       user_activity_screen_dim_delay_factor(1.0),
       wait_for_initial_user_activity(false) {}
@@ -163,10 +163,10 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   delays->set_idle_warning_ms(values.ac_idle_warning_delay_ms);
   delays->set_idle_ms(values.ac_idle_delay_ms);
 
-  // If screen-locking is enabled, ensure that the screen is locked soon
+  // If auto screen-locking is enabled, ensure that the screen is locked soon
   // after it's turned off due to user inactivity.
   int64 lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
-  if (values.enable_screen_lock && delays->screen_off_ms() > 0 &&
+  if (values.enable_auto_screen_lock && delays->screen_off_ms() > 0 &&
       (delays->screen_lock_ms() <= 0 || lock_ms < delays->screen_lock_ms()) &&
       lock_ms < delays->idle_ms()) {
     delays->set_screen_lock_ms(lock_ms);
@@ -180,7 +180,7 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   delays->set_idle_ms(values.battery_idle_delay_ms);
 
   lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
-  if (values.enable_screen_lock && delays->screen_off_ms() > 0 &&
+  if (values.enable_auto_screen_lock && delays->screen_off_ms() > 0 &&
       (delays->screen_lock_ms() <= 0 || lock_ms < delays->screen_lock_ms()) &&
       lock_ms < delays->idle_ms()) {
     delays->set_screen_lock_ms(lock_ms);

@@ -53,7 +53,7 @@ class CHROMEOS_EXPORT PowerPolicyController
     double ac_brightness_percent;
     double battery_brightness_percent;
     bool allow_screen_wake_locks;
-    bool enable_screen_lock;
+    bool enable_auto_screen_lock;
     double presentation_screen_dim_delay_factor;
     double user_activity_screen_dim_delay_factor;
     bool wait_for_initial_user_activity;
@@ -63,10 +63,10 @@ class CHROMEOS_EXPORT PowerPolicyController
   static std::string GetPolicyDebugString(
       const power_manager::PowerManagementPolicy& policy);
 
-  // Delay in milliseconds between the screen being turned off and the
-  // screen being locked. Used if the |enable_screen_lock| pref is set but
-  // |*_screen_lock_delay_ms| are unset or set to higher values than what
-  // this constant would imply.
+  // Delay in milliseconds between the screen being turned off and the screen
+  // being locked. Used if the |enable_auto_screen_lock| pref is set but
+  // |*_screen_lock_delay_ms| are unset or set to higher values than what this
+  // constant would imply.
   static const int kScreenLockAfterOffDelayMs;
 
   PowerPolicyController();
