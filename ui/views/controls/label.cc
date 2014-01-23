@@ -216,7 +216,8 @@ gfx::Size Label::GetMinimumSize() {
   if ((!visible() && collapse_when_hidden_) || text_size.IsEmpty())
     return gfx::Size();
 
-  gfx::Size size(font_list_.GetStringWidth(base::string16(gfx::kEllipsisUTF16)),
+  gfx::Size size(gfx::GetStringWidth(base::string16(gfx::kEllipsisUTF16),
+                                     font_list_),
                  font_list_.GetHeight());
   size.SetToMin(text_size);  // The actual text may be shorter than an ellipsis.
   gfx::Insets insets = GetInsets();

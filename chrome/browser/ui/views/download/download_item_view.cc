@@ -42,6 +42,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mouse_constants.h"
@@ -771,7 +772,7 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
       base::string16 status_string =
           l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
                                      base::string16());
-      int status_string_width = font_list_.GetStringWidth(status_string);
+      int status_string_width = gfx::GetStringWidth(status_string, font_list_);
       // Then, elide the file name.
       base::string16 filename_string =
           gfx::ElideFilename(download()->GetFileNameToReportUser(), font_list_,

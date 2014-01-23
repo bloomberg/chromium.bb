@@ -225,19 +225,6 @@ int FontList::GetCapHeight() const {
   return GetPrimaryFont().GetCapHeight();
 }
 
-int FontList::GetStringWidth(const base::string16& text) const {
-  // Rely on the primary font metrics for the time being.
-  // TODO(yukishiino): Not only the first font, all the fonts in the list should
-  // be taken into account to compute the pixels needed to display |text|.
-  // Also this method, including one in Font class, should be deprecated and
-  // client code should call Canvas::GetStringWidth(text, font_list) directly.
-  // Our plan is as follows:
-  //   1. Introduce the FontList version of Canvas::GetStringWidth().
-  //   2. Make client code call Canvas::GetStringWidth().
-  //   3. Retire {Font,FontList}::GetStringWidth().
-  return GetPrimaryFont().GetStringWidth(text);
-}
-
 int FontList::GetExpectedTextWidth(int length) const {
   // Rely on the primary font metrics for the time being.
   return GetPrimaryFont().GetExpectedTextWidth(length);

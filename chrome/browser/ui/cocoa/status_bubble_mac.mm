@@ -22,6 +22,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 
 namespace {
 
@@ -629,7 +630,7 @@ void StatusBubbleMac::ExpandBubble() {
 
   // Scale width from gfx::Font in view coordinates to window coordinates.
   int required_width_for_string =
-      font_list_chr.GetStringWidth(expanded_url) +
+      gfx::GetStringWidth(expanded_url, font_list_chr) +
           kTextPadding * 2 + kBubbleViewTextPositionX;
   NSSize scaled_width = NSMakeSize(required_width_for_string, 0);
   scaled_width = [[parent_ contentView] convertSize:scaled_width toView:nil];
