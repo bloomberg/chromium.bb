@@ -440,6 +440,7 @@ crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-unpre
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-unprefixed-02.html [ Pass Failure ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-unprefixed-03.html [ Pass Failure ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-unprefixed-03.html [ Pass Failure ]
+crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
