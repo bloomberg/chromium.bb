@@ -21,12 +21,12 @@ class TaskGraphRunnerTestBase {
          unsigned id,
          unsigned dependent_id,
          unsigned dependent_count,
-         unsigned priority) : namespace_index(namespace_index),
-                              id(id),
-                              dependent_id(dependent_id),
-                              dependent_count(dependent_count),
-                              priority(priority) {
-    }
+         unsigned priority)
+        : namespace_index(namespace_index),
+          id(id),
+          dependent_id(dependent_id),
+          dependent_count(dependent_count),
+          priority(priority) {}
 
     int namespace_index;
     unsigned id;
@@ -45,8 +45,8 @@ class TaskGraphRunnerTestBase {
         namespace_token_[namespace_index]);
 
     internal::Task::Vector completed_tasks;
-    task_graph_runner_->CollectCompletedTasks(
-        namespace_token_[namespace_index], &completed_tasks);
+    task_graph_runner_->CollectCompletedTasks(namespace_token_[namespace_index],
+                                              &completed_tasks);
     for (internal::Task::Vector::const_iterator it = completed_tasks.begin();
          it != completed_tasks.end();
          ++it) {
@@ -77,9 +77,10 @@ class TaskGraphRunnerTestBase {
     internal::GraphNode::Map new_graph;
 
     for (std::vector<Task>::const_iterator it = tasks.begin();
-         it != tasks.end(); ++it) {
+         it != tasks.end();
+         ++it) {
       scoped_refptr<FakeTaskImpl> new_task(
-        new FakeTaskImpl(this, it->namespace_index, it->id));
+          new FakeTaskImpl(this, it->namespace_index, it->id));
       scoped_ptr<internal::GraphNode> node(
           new internal::GraphNode(new_task.get(), it->priority));
 
@@ -99,8 +100,8 @@ class TaskGraphRunnerTestBase {
       new_tasks.push_back(new_task.get());
     }
 
-    task_graph_runner_->SetTaskGraph(
-        namespace_token_[namespace_index], &new_graph);
+    task_graph_runner_->SetTaskGraph(namespace_token_[namespace_index],
+                                     &new_graph);
 
     dependents_[namespace_index].swap(new_dependents);
     tasks_[namespace_index].swap(new_tasks);
@@ -109,13 +110,8 @@ class TaskGraphRunnerTestBase {
  protected:
   class FakeTaskImpl : public internal::Task {
    public:
-    FakeTaskImpl(TaskGraphRunnerTestBase* test,
-                 int namespace_index,
-                 int id)
-      : test_(test),
-        namespace_index_(namespace_index),
-        id_(id) {
-    }
+    FakeTaskImpl(TaskGraphRunnerTestBase* test, int namespace_index, int id)
+        : test_(test), namespace_index_(namespace_index), id_(id) {}
 
     // Overridden from internal::Task:
     virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
@@ -142,8 +138,7 @@ class TaskGraphRunnerTestBase {
     FakeDependentTaskImpl(TaskGraphRunnerTestBase* test,
                           int namespace_index,
                           int id)
-        : FakeTaskImpl(test, namespace_index, id) {
-    }
+        : FakeTaskImpl(test, namespace_index, id) {}
 
     // Overridden from FakeTaskImpl:
     virtual void CompleteOnOriginThread() OVERRIDE {}
@@ -167,14 +162,12 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
  public:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    task_graph_runner_ = make_scoped_ptr(
-        new internal::TaskGraphRunner(GetParam(), "Test"));
+    task_graph_runner_ =
+        make_scoped_ptr(new internal::TaskGraphRunner(GetParam(), "Test"));
     for (int i = 0; i < kNamespaceCount; ++i)
       namespace_token_[i] = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() OVERRIDE {
-    task_graph_runner_.reset();
-  }
+  virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
 };
 
 TEST_P(TaskGraphRunnerTest, Basic) {
@@ -215,11 +208,13 @@ TEST_P(TaskGraphRunnerTest, Basic) {
 
 TEST_P(TaskGraphRunnerTest, Dependencies) {
   for (int i = 0; i < kNamespaceCount; ++i) {
-    ScheduleTasks(i, std::vector<Task>(1, Task(i,
-                                               0u,
-                                               1u,
-                                               1u,  // 1 dependent
-                                               0u)));
+    ScheduleTasks(i,
+                  std::vector<Task>(1,
+                                    Task(i,
+                                         0u,
+                                         1u,
+                                         1u,  // 1 dependent
+                                         0u)));
   }
 
   for (int i = 0; i < kNamespaceCount; ++i) {
@@ -234,11 +229,13 @@ TEST_P(TaskGraphRunnerTest, Dependencies) {
   }
 
   for (int i = 0; i < kNamespaceCount; ++i) {
-    ScheduleTasks(i, std::vector<Task>(1, Task(i,
-                                               2u,
-                                               3u,
-                                               2u,  // 2 dependents
-                                               0u)));
+    ScheduleTasks(i,
+                  std::vector<Task>(1,
+                                    Task(i,
+                                         2u,
+                                         3u,
+                                         2u,  // 2 dependents
+                                         0u)));
   }
 
   for (int i = 0; i < kNamespaceCount; ++i) {
@@ -263,29 +260,18 @@ class TaskGraphRunnerSingleThreadTest : public TaskGraphRunnerTestBase,
  public:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    task_graph_runner_ = make_scoped_ptr(
-        new internal::TaskGraphRunner(1, "Test"));
+    task_graph_runner_ =
+        make_scoped_ptr(new internal::TaskGraphRunner(1, "Test"));
     for (int i = 0; i < kNamespaceCount; ++i)
       namespace_token_[i] = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() OVERRIDE {
-    task_graph_runner_.reset();
-  }
+  virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
 };
 
 TEST_F(TaskGraphRunnerSingleThreadTest, Priority) {
   for (int i = 0; i < kNamespaceCount; ++i) {
-    Task tasks[] = {
-      Task(i,
-           0u,
-           2u,
-           1u,
-           1u),  // Priority 1
-      Task(i,
-           1u,
-           3u,
-           1u,
-           0u)   // Priority 0
+    Task tasks[] = {Task(i, 0u, 2u, 1u, 1u),  // Priority 1
+                    Task(i, 1u, 3u, 1u, 0u)   // Priority 0
     };
     ScheduleTasks(i, std::vector<Task>(tasks, tasks + arraysize(tasks)));
   }
