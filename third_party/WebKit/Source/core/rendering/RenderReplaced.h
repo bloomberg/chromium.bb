@@ -37,6 +37,7 @@ public:
 
     bool hasReplacedLogicalWidth() const;
     bool hasReplacedLogicalHeight() const;
+    LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = 0) const;
 
     virtual bool needsPreferredWidthsRecalculation() const OVERRIDE;
 
@@ -46,7 +47,6 @@ protected:
     virtual void layout() OVERRIDE;
 
     virtual LayoutSize intrinsicSize() const OVERRIDE FINAL { return m_intrinsicSize; }
-    LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = 0) const;
     virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const OVERRIDE;
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
