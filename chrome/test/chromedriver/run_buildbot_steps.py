@@ -307,20 +307,6 @@ def _MaybeUploadReleaseNotes():
     util.MarkBuildStepError()
 
 
-def _KillChromes():
-  chrome_map = {
-      'win': 'chrome.exe',
-      'mac': 'Chromium',
-      'linux': 'chrome',
-  }
-  if util.IsWindows():
-    cmd = ['taskkill', '/F', '/IM']
-  else:
-    cmd = ['killall', '-9']
-  cmd.append(chrome_map[util.GetPlatformName()])
-  util.RunCommand(cmd)
-
-
 def _CleanTmpDir():
   tmp_dir = tempfile.gettempdir()
   print 'cleaning temp directory:', tmp_dir
@@ -394,8 +380,6 @@ def main():
   if options.android_packages:
     platform = 'android'
 
-  if platform != 'android':
-    _KillChromes()
   _CleanTmpDir()
 
   if platform == 'android':

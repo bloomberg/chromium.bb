@@ -8,6 +8,7 @@
 import optparse
 import os
 import platform
+import shutil
 import sys
 import tempfile
 import traceback
@@ -111,6 +112,22 @@ def DownloadChrome(version_name, revision, download_site):
     traceback.print_exc()
     util.AddBuildStepText('Skip Java and Python tests')
     util.MarkBuildStepError()
+  temp_dir = util.MakeTempDir()
+  return (temp_dir, archive.DownloadChrome(revision, temp_dir, download_site))
+
+
+def _KillChromes():
+  chrome_map = {
+      'win': 'chrome.exe',
+      'mac': 'Chromium',
+      'linux': 'chrome',
+  }
+  if util.IsWindows():
+    cmd = ['taskkill', '/F', '/IM']
+  else:
+    cmd = ['killall', '-9']
+  cmd.append(chrome_map[util.GetPlatformName()])
+  util.RunCommand(cmd)
 
 
 def main():
@@ -188,6 +205,8 @@ def main():
         version_name = version[1]
         download_site = archive.Site.SNAPSHOT
       chrome_path = DownloadChrome(version_name, version[1], download_site)
+      temp_dir, chrome_path = DownloadChrome(version_name, version[1],
+                                             download_site)
       if not chrome_path:
         code = 1
         continue
@@ -200,6 +219,8 @@ def main():
                            chrome_version=version[0],
                            chrome_version_name='v%s' % version_name)
       code = code or code1 or code2
+      _KillChromes()
+      shutil.rmtree(temp_dir)
     cpp_tests = os.path.join(build_dir, cpp_tests_name)
     return RunCppTests(cpp_tests) or code
 
