@@ -13,9 +13,9 @@
 
 namespace {
 
-class MessageCenterTestSuite : public base::TestSuite {
+class KeyboardTestSuite : public base::TestSuite {
  public:
-  MessageCenterTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+  KeyboardTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
  protected:
   virtual void Initialize() OVERRIDE {
@@ -37,16 +37,16 @@ class MessageCenterTestSuite : public base::TestSuite {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardTestSuite);
 };
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  MessageCenterTestSuite test_suite(argc, argv);
+  KeyboardTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
       argc,
       argv,
-      base::Bind(&MessageCenterTestSuite::Run, base::Unretained(&test_suite)));
+      base::Bind(&KeyboardTestSuite::Run, base::Unretained(&test_suite)));
 }

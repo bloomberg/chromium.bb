@@ -90,11 +90,12 @@
         '../compositor/compositor.gyp:compositor',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
+        '../resources/ui_resources.gyp:ui_test_pak',
         '../ui.gyp:ui',
-        '../ui_unittests.gyp:run_ui_unittests',
         'keyboard',
       ],
       'sources': [
+        'test/run_all_unittests.cc',
         'keyboard_controller_unittest.cc',
       ],
       'conditions': [

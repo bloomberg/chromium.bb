@@ -13,9 +13,9 @@
 
 namespace {
 
-class MessageCenterTestSuite : public base::TestSuite {
+class AppListTestSuite : public base::TestSuite {
  public:
-  MessageCenterTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+  AppListTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
  protected:
   virtual void Initialize() OVERRIDE {
@@ -37,16 +37,16 @@ class MessageCenterTestSuite : public base::TestSuite {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(AppListTestSuite);
 };
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  MessageCenterTestSuite test_suite(argc, argv);
+  AppListTestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
       argc,
       argv,
-      base::Bind(&MessageCenterTestSuite::Run, base::Unretained(&test_suite)));
+      base::Bind(&AppListTestSuite::Run, base::Unretained(&test_suite)));
 }
