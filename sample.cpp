@@ -20,7 +20,8 @@
 #endif
 
 static const wchar_t* utf8towcs(const char* str) {
-  if (str == NULL) return NULL;
+  if (str == NULL)
+    return NULL;
 
   // TODO: this probably requires that the locale be
   // configured somehow:
@@ -36,6 +37,21 @@ static const wchar_t* utf8towcs(const char* str) {
   val[size] = L'\0';
 
   return val;
+}
+
+bool InputHasCues(const mkvparser::Segment* const segment) {
+  const mkvparser::Cues* const cues = segment->GetCues();
+  if (cues == NULL)
+    return false;
+
+  while (!cues->DoneParsing())
+    cues->LoadCuePoint();
+
+  const mkvparser::CuePoint* const cue_point = cues->GetFirst();
+  if (cue_point == NULL)
+    return false;
+
+  return true;
 }
 
 int main(int argc, char* argv[]) {
@@ -142,13 +158,13 @@ int main(int argc, char* argv[]) {
 
   const mkvparser::Tracks* pTracks = pSegment->GetTracks();
 
-  unsigned long i = 0;
-  const unsigned long j = pTracks->GetTracksCount();
+  unsigned long track_num = 0;
+  const unsigned long num_tracks = pTracks->GetTracksCount();
 
   printf("\n\t\t\t   Track Info\n");
 
-  while (i != j) {
-    const Track* const pTrack = pTracks->GetTrackByIndex(i++);
+  while (track_num != num_tracks) {
+    const Track* const pTrack = pTracks->GetTrackByIndex(track_num++);
 
     if (pTrack == NULL) continue;
 
@@ -286,6 +302,37 @@ int main(int argc, char* argv[]) {
     }
 
     pCluster = pSegment->GetNext(pCluster);
+  }
+
+  if (InputHasCues(pSegment.get())) {
+    // Walk them.
+    const mkvparser::Cues* const cues = pSegment->GetCues();
+    const mkvparser::CuePoint* cue = cues->GetFirst();
+    int cue_point_num = 1;
+
+    printf("\t\tCues\n");
+    do {
+      for (track_num = 1; track_num != num_tracks; ++track_num) {
+        const mkvparser::Track* const track =
+            pTracks->GetTrackByNumber(track_num);
+        const mkvparser::CuePoint::TrackPosition* const track_pos =
+            cue->Find(track);
+
+        if (track_pos != NULL) {
+          const char track_type =
+              (track->GetType() == mkvparser::Track::kVideo) ? 'V' : 'A';
+          printf("\t\t\tCue Point %4d Track %3u(%c) Time %14lld "
+                 "Block %4lld Pos %8x\n",
+                 cue_point_num,
+                 track_num, track_type,
+                 cue->GetTime(pSegment.get()),
+                 track_pos->m_block, track_pos->m_pos);
+        }
+      }
+
+      cue = cues->GetNext(cue);
+      ++cue_point_num;
+    } while (cue != NULL);
   }
 
   fflush(stdout);
