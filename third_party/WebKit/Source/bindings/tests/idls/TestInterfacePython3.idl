@@ -33,6 +33,6 @@
 // The more *minor* extended attribute should be put in this file.
 
 [
-    Custom=VisitDOMWrapper,  // Conflict with [SetReference] and [GenerateVisitDOMWrapper]
+    Custom=VisitDOMWrapper,  // Conflict with [SetWrapperReferenceTo] and [SetWrapperReferenceFrom]
 ] interface TestInterfacePython3 {
 };

@@ -20,7 +20,7 @@
 
 [
     DependentLifetime,
-    GenerateVisitDOMWrapper=ownerNode
+    SetWrapperReferenceFrom=ownerNode
 ] interface NodeList {
 
     getter Node item(unsigned long index);

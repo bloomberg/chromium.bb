@@ -31,7 +31,7 @@
 [
     ActiveDOMObject,
     NoInterfaceObject,
-    SetReference(MIDIAccess midiAccess),
+    SetWrapperReferenceTo(MIDIAccess midiAccess),
 ] interface MIDIInput : MIDIPort {
     attribute EventHandler onmidimessage;
 };

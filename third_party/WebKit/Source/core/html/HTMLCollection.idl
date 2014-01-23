@@ -21,7 +21,7 @@
 [
     Custom=Wrap,
     DependentLifetime,
-    GenerateVisitDOMWrapper=ownerNode,
+    SetWrapperReferenceFrom=ownerNode,
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     getter Node item([Default=Undefined] optional unsigned long index);

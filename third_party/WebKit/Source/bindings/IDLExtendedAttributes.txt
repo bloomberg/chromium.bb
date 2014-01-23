@@ -57,7 +57,6 @@ DoNotCheckSignature
 EnforceRange
 EventConstructor
 ExposeJSAccessors
-GenerateVisitDOMWrapper=document|element|owner|ownerNode
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*
@@ -85,7 +84,8 @@ Replaceable
 # Valid values for [RuntimeEnabled] are the Runtime Enabled Features, listed in
 # Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
-SetReference=*
+SetWrapperReferenceFrom=document|element|owner|ownerNode
+SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SpecialWrapFor=*
 StrictTypeChecking

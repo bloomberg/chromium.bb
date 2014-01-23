@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    SetReference(NodeFilter filter)
+    SetWrapperReferenceTo(NodeFilter filter)
 ] interface TreeWalker {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;

@@ -28,7 +28,7 @@
  */
 
 [
-    GenerateVisitDOMWrapper=ownerNode,
+    SetWrapperReferenceFrom=ownerNode,
     ImplementedAs=NamedFlow,
     NoInterfaceObject,
     RuntimeEnabled=CSSRegions,

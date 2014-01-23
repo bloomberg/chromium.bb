@@ -24,7 +24,7 @@
  */
 
 [
-    GenerateVisitDOMWrapper=element,
+    SetWrapperReferenceFrom=element,
 ] interface DOMStringMap {
     [ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter DOMString (unsigned long index);
     [ImplementedAs=anonymousIndexedSetter, RaisesException, NotEnumerable] setter DOMString (unsigned long index, DOMString value);

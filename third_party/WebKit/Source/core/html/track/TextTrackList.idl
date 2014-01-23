@@ -24,7 +24,7 @@
  */
 
 [
-    GenerateVisitDOMWrapper=owner,
+    SetWrapperReferenceFrom=owner,
     RuntimeEnabled=VideoTrack,
 ] interface TextTrackList : EventTarget {
     readonly attribute unsigned long length;

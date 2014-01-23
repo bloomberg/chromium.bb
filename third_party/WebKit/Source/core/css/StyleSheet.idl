@@ -21,7 +21,7 @@
 // Introduced in DOM Level 2:
 [
     Custom=Wrap,
-    GenerateVisitDOMWrapper=ownerNode,
+    SetWrapperReferenceFrom=ownerNode,
 ] interface StyleSheet {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString        type;
              attribute boolean          disabled;

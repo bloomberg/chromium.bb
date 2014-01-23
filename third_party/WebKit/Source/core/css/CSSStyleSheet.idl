@@ -20,7 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
-    GenerateVisitDOMWrapper=ownerNode,
+    SetWrapperReferenceFrom=ownerNode,
 ] interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule          ownerRule;
     readonly attribute CSSRuleList      cssRules;

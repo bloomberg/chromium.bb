@@ -19,7 +19,7 @@
  */
 
 [
-    GenerateVisitDOMWrapper=document,
+    SetWrapperReferenceFrom=document,
 ] interface DOMImplementation {
 
     // DOM Level 1

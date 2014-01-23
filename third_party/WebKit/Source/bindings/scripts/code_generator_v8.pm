@@ -502,7 +502,7 @@ sub HeaderFilesForInterface
 sub NeedsVisitDOMWrapper
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"GenerateVisitDOMWrapper"} || ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "VisitDOMWrapper") || $interface->extendedAttributes->{"SetReference"} || SVGTypeNeedsToHoldContextElement($interface->name);
+    return ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "VisitDOMWrapper") || $interface->extendedAttributes->{"SetWrapperReferenceFrom"} || $interface->extendedAttributes->{"SetWrapperReferenceTo"} || SVGTypeNeedsToHoldContextElement($interface->name);
 }
 
 sub GenerateVisitDOMWrapper
@@ -521,7 +521,7 @@ void ${v8ClassName}::visitDOMWrapper(void* object, const v8::Persistent<v8::Obje
 {
     ${nativeType}* impl = fromInternalPointer(object);
 END
-    my $needSetWrapperReferenceContext = SVGTypeNeedsToHoldContextElement($interface->name) || $interface->extendedAttributes->{"SetReference"};
+    my $needSetWrapperReferenceContext = SVGTypeNeedsToHoldContextElement($interface->name) || $interface->extendedAttributes->{"SetWrapperReferenceTo"};
     if ($needSetWrapperReferenceContext) {
         $code .= <<END;
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
@@ -538,7 +538,7 @@ END
     }
 END
     }
-    for my $setReference (@{$interface->extendedAttributes->{"SetReference"}}) {
+    for my $setReference (@{$interface->extendedAttributes->{"SetWrapperReferenceTo"}}) {
         my $setReferenceType = $setReference->type;
         my $setReferenceV8Type = "V8".$setReferenceType;
 
@@ -560,7 +560,7 @@ END
 END
     }
 
-    my $isReachableMethod = $interface->extendedAttributes->{"GenerateVisitDOMWrapper"};
+    my $isReachableMethod = $interface->extendedAttributes->{"SetWrapperReferenceFrom"};
     if ($isReachableMethod) {
         AddToImplIncludes("bindings/v8/V8GCController.h");
         AddToImplIncludes("core/dom/Element.h");

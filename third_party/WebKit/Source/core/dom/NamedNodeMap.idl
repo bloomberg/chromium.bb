@@ -19,7 +19,7 @@
  */
 
 [
-    GenerateVisitDOMWrapper=element,
+    SetWrapperReferenceFrom=element,
 ] interface NamedNodeMap {
 
     Node getNamedItem([Default=Undefined] optional DOMString name);
