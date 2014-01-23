@@ -4,10 +4,10 @@ Tests that jumping to previous location works as intended.
 Running: testSimpleMovements
 <Initial position> line: 0 column: 0 [blink-fs.js]
 <Mouse click (4, 7)> line: 4 column: 7 [blink-fs.js]
-<Typed in some text> line: 5 column: 7 [blink-fs.js]
+<Typed in some text> line: 5 column: 19 [blink-fs.js]
 <Rolled back> line: 0 column: 0 [blink-fs.js]
 <Typed in some text> line: 2 column: 0 [blink-fs.js]
-<Rolled over> line: 7 column: 7 [blink-fs.js]
+<Rolled over> line: 7 column: 19 [blink-fs.js]
 
 Running: testSequentialJumps
 <Mouse click (10, 3)> line: 10 column: 3 [blink-fs.js]
@@ -17,7 +17,7 @@ Running: testSequentialJumps
 <Rolled back> line: 12 column: 5 [blink-fs.js]
 <Rolled back> line: 11 column: 4 [blink-fs.js]
 <Rolled back> line: 10 column: 3 [blink-fs.js]
-<Rolled back> line: 7 column: 7 [blink-fs.js]
+<Rolled back> line: 7 column: 19 [blink-fs.js]
 <Rolled over> line: 10 column: 3 [blink-fs.js]
 <Rolled over> line: 11 column: 4 [blink-fs.js]
 <Rolled over> line: 12 column: 5 [blink-fs.js]
@@ -25,7 +25,7 @@ Running: testSequentialJumps
 
 Running: testDeletePreviousJumpLocations
 <Removed lines from 9 to 15> line: 9 column: 0 [blink-fs.js]
-<Rolled back> line: 7 column: 7 [blink-fs.js]
+<Rolled back> line: 7 column: 19 [blink-fs.js]
 <Rolled over> line: 9 column: 0 [blink-fs.js]
 
 Running: testDeleteNextJumpLocations

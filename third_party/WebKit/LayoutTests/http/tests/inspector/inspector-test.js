@@ -414,6 +414,11 @@ InspectorTest.textContentWithLineBreaks = function(node)
     return buffer;
 }
 
+InspectorTest.hideInspectorView = function()
+{
+    WebInspector.inspectorView.element.setAttribute("style", "display:none !important");
+}
+
 InspectorTest.StringOutputStream = function(callback)
 {
     this._callback = callback;

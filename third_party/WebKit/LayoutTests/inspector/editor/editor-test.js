@@ -11,15 +11,6 @@ InspectorTest.createTestEditor = function(clientHeight, textEditorDelegate)
     return textEditor;
 };
 
-InspectorTest.fillEditorWithText = function(textEditor, lineCount)
-{
-    var textModel = textEditor._textModel;
-    var lines = [];
-    for (var i = 0; i < lineCount; ++i)
-        lines.push(i);
-    textModel.setText(lines.join("\n"));
-}
-
 InspectorTest.textWithSelection = function(text, selection)
 {
     if (!selection)
@@ -68,6 +59,19 @@ InspectorTest.typeIn = function(typeText)
             eventSender.keyDown(typeText[charIndex]);
         }
     }
+}
+
+InspectorTest.typeInEditor = function(editor, text)
+{
+    var selection = editor.selection();
+    editor.editRange(editor.selection(), text);
+    var lines = text.split("\n");
+    var newSelection;
+    if (lines.length > 1)
+        newSelection = new WebInspector.TextRange.createFromLocation(selection.startLine + lines.length - 1, lines.pop().length);
+    else
+        newSelection = new WebInspector.TextRange.createFromLocation(selection.startLine, selection.endLine + lines[0].length);
+    editor.setSelection(newSelection);
 }
 
 }

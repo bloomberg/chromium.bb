@@ -21,36 +21,6 @@ function test()
         panel._historyManager.rollover();
     }
 
-    function clickAtEditor(editor, lineNumber, columnNumber)
-    {
-        editor.scrollToLine(lineNumber);
-        var coordinates = editor.cursorPositionToCoordinates(lineNumber, columnNumber);
-        eventSender.mouseMoveTo(coordinates.x, coordinates.y);
-        eventSender.mouseDown();
-        eventSender.mouseUp();
-        dumpSelection(editor, "Mouse click (" + lineNumber + ", " + columnNumber + ")");
-    }
-
-    function clickAndDump(editor, callback, lines, columns)
-    {
-        var iterationsAmount = lines.length;
-        function innerClickAndDump(iteration)
-        {
-            if (iteration === iterationsAmount) {
-                callback();
-                return;
-            }
-            clickAtEditor(editor, lines[iteration], columns[iteration]);
-            setTimeout(innerClickAndDump.bind(this, iteration + 1), 0);
-        }
-        innerClickAndDump(0);
-    }
-
-    function dumpLineColumn(line, column)
-    {
-        return "line: " + line + " column: " + column;
-    }
-
     function dumpSelection(editor, label)
     {
         var selection = editor.selection();
@@ -64,6 +34,28 @@ function test()
         InspectorTest.addResult(label + " " + selectionText + " " + fileName);
     }
 
+    function eventSenderClickAtEditor(editor, lineNumber, columnNumber)
+    {
+        editor.scrollToLine(lineNumber);
+        var coordinates = editor.cursorPositionToCoordinates(lineNumber, columnNumber);
+        eventSender.mouseMoveTo(coordinates.x, coordinates.y);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+        dumpSelection(editor, "Mouse click (" + lineNumber + ", " + columnNumber + ")");
+    }
+
+    function clickAndDump(editor, lines, columns)
+    {
+        for (var i = 0; i < lines.length; ++i) {
+            var lineNumber = lines[i];
+            var columnNumber = columns[i];
+            var originSelection = editor.selection();
+            editor.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
+            editor._delegate.onJumpToPosition(originSelection, editor.selection());
+            dumpSelection(editor, "Mouse click (" + lineNumber + ", " + columnNumber + ")");
+        }
+    }
+
     InspectorTest.runTestSuite([
         function testSimpleMovements(next)
         {
@@ -73,14 +65,14 @@ function test()
             {
                 var editor = panel.visibleView.textEditor;
                 dumpSelection(editor, "Initial position");
-                clickAtEditor(editor, 4, 7);
+                eventSenderClickAtEditor(editor, 4, 7, true);
 
-                InspectorTest.typeIn("\nSome more text here");
+                InspectorTest.typeInEditor(editor, "\nSome more text here");
                 dumpSelection(editor, "Typed in some text");
 
                 rollback();
                 dumpSelection(editor, "Rolled back");
-                InspectorTest.typeIn("\nSome more text here as well\n");
+                InspectorTest.typeInEditor(editor, "\nSome more text here as well\n");
                 dumpSelection(editor, "Typed in some text");
 
                 rollover();
@@ -92,21 +84,20 @@ function test()
         function testSequentialJumps(next)
         {
             var editor = panel.visibleView.textEditor;
+            // Hide inspector view to significantly speed up following tests from testsuite.
+            InspectorTest.hideInspectorView();
             const jumpsToDo = 4;
-            clickAndDump(editor, jumpBack, [10, 11, 12, 13], [3, 4, 5, 6]);
+            clickAndDump(editor, [10, 11, 12, 13], [3, 4, 5, 6]);
 
-            function jumpBack()
-            {
-                for (var i = 0; i < jumpsToDo; ++i) {
-                    rollback();
-                    dumpSelection(editor, "Rolled back");
-                }
-                for (var i = 0; i < jumpsToDo; ++i) {
-                    rollover();
-                    dumpSelection(editor, "Rolled over");
-                }
-                next();
+            for (var i = 0; i < jumpsToDo; ++i) {
+                rollback();
+                dumpSelection(editor, "Rolled back");
             }
+            for (var i = 0; i < jumpsToDo; ++i) {
+                rollover();
+                dumpSelection(editor, "Rolled over");
+            }
+            next();
         },
 
         function testDeletePreviousJumpLocations(next)
@@ -125,19 +116,16 @@ function test()
         {
             var editor = panel.visibleView.textEditor;
             const jumpsToDo = 4;
-            clickAndDump(editor, step2, [10, 11, 12, 13], [3, 4, 5, 6]);
+            clickAndDump(editor, [10, 11, 12, 13], [3, 4, 5, 6]);
 
-            function step2()
-            {
-                for (var i = 0; i < jumpsToDo; ++i)
-                    rollback();
-                dumpSelection(editor, "Rolled back 4 times");
-                editor.editRange(new WebInspector.TextRange(9, 0, 11, 0), "");
-                dumpSelection(editor, "Removed lines from 9 to 11");
-                rollover();
-                dumpSelection(editor, "Rolled over");
-                next();
-            }
+            for (var i = 0; i < jumpsToDo; ++i)
+                rollback();
+            dumpSelection(editor, "Rolled back 4 times");
+            editor.editRange(new WebInspector.TextRange(9, 0, 11, 0), "");
+            dumpSelection(editor, "Removed lines from 9 to 11");
+            rollover();
+            dumpSelection(editor, "Rolled over");
+            next();
         },
 
         function testCrossFileJump(next)
@@ -147,10 +135,7 @@ function test()
             {
                 var editor = panel.visibleView.textEditor;
                 dumpSelection(editor, "Opened workspace-test.js");
-                clickAndDump(editor, step2, [10, 11], [1, 1]);
-            }
-            function step2()
-            {
+                clickAndDump(editor, [10, 11], [1, 1]);
                 for (var i = 0; i < 4; ++i) {
                     rollback();
                     dumpSelection(panel.visibleView.textEditor, "Rolled back");
@@ -189,26 +174,27 @@ function test()
                 columns.push(7);
             }
             var editor = panel.visibleView.textEditor;
-            clickAndDump(editor, step2, lines, columns);
-            function step2()
-            {
-                for (var i = 0; i < jumpsAmount; ++i) {
-                    rollback();
-                    dumpSelection(editor, "Rolled back");
-                }
-                next();
+            clickAndDump(editor, lines, columns);
+            for (var i = 0; i < jumpsAmount; ++i) {
+                rollback();
+                dumpSelection(editor, "Rolled back");
             }
+            next();
         },
 
         function testInFileSearch(next)
         {
             var searchableView = panel.searchableView();
-            searchableView.showSearchField();
+
             dumpSelection(panel.visibleView.textEditor, "Before searching");
-            InspectorTest.typeIn("generate_");
+
+            searchableView.showSearchField();
+            searchableView._searchInputElement.value = "generate_";
+            searchableView._performSearch(true, true);
             for (var i = 0; i < 3; ++i)
                 searchableView.handleFindNextShortcut();
-            searchableView.closeSearch();
+            searchableView.handleCancelSearchShortcut();
+
             dumpSelection(panel.visibleView.textEditor, "After searching");
             rollback();
             dumpSelection(panel.visibleView.textEditor, "Rolled back");
