@@ -6,13 +6,20 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "jni/AccountManagementScreenHelper_jni.h"
 
 // static
-void AccountManagementScreenHelper::OpenAccountManagementScreen() {
+void AccountManagementScreenHelper::OpenAccountManagementScreen(
+    Profile* profile) {
+  DCHECK(profile);
+  DCHECK(ProfileAndroid::FromProfile(profile));
+
   Java_AccountManagementScreenHelper_openAccountManagementScreen(
       base::android::AttachCurrentThread(),
-      base::android::GetApplicationContext());
+      base::android::GetApplicationContext(),
+      ProfileAndroid::FromProfile(profile)->GetJavaObject().obj());
 }
 
 // static

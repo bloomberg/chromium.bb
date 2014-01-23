@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 
+class Profile;
+
 // The glue for Java-side implementation of AccountManagementScreenHelper.
 class AccountManagementScreenHelper {
  public:
@@ -16,7 +18,7 @@ class AccountManagementScreenHelper {
   static bool Register(JNIEnv* env);
 
   // Opens the account management screen.
-  static void OpenAccountManagementScreen();
+  static void OpenAccountManagementScreen(Profile* profile);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagementScreenHelper);

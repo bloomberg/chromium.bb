@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Stub entry points and implementation interface for the account management screen.
@@ -22,8 +23,9 @@ public class AccountManagementScreenHelper {
         /**
          * Opens the account management UI screen.
          * @param applicationContext The application context.
+         * @param profile The user profile.
          */
-        void openAccountManagementScreen(Context applicationContext);
+        void openAccountManagementScreen(Context applicationContext, Profile profile);
     }
 
     /**
@@ -36,10 +38,10 @@ public class AccountManagementScreenHelper {
     }
 
     @CalledByNative
-    private static void openAccountManagementScreen(Context applicationContext) {
+    private static void openAccountManagementScreen(Context applicationContext, Profile profile) {
         ThreadUtils.assertOnUiThread();
         if (sManager == null) return;
 
-        sManager.openAccountManagementScreen(applicationContext);
+        sManager.openAccountManagementScreen(applicationContext, profile);
     }
 }

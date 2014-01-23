@@ -30,18 +30,19 @@ const char kGaiaAuthExtensionID[] = "mfffpogegjflfpflabcdkioaeobkgjik";
 void ShowAvatarBubbleUIThread(int child_id, int route_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-#if !defined(OS_ANDROID)
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(child_id, route_id);
   if (!web_contents)
     return;
 
+#if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser)
     browser->window()->ShowAvatarBubbleFromAvatarButton();
   // TODO(guohui): need to handle the case when avatar button is not available.
 #else  // defined(OS_ANDROID)
-  AccountManagementScreenHelper::OpenAccountManagementScreen();
+  AccountManagementScreenHelper::OpenAccountManagementScreen(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
 #endif // OS_ANDROID
 }
 
