@@ -48,14 +48,14 @@ interface SVGSVGElement : SVGGraphicsElement {
     boolean animationsPaused();
     float getCurrentTime();
     void setCurrentTime(float seconds);
-    NodeList getIntersectionList([StrictTypeChecking] SVGRect rect,
-                                 [StrictTypeChecking] SVGElement referenceElement);
-    NodeList getEnclosureList([StrictTypeChecking] SVGRect rect,
-                              [StrictTypeChecking] SVGElement referenceElement);
-    boolean checkIntersection([StrictTypeChecking] SVGElement element,
-                              [StrictTypeChecking] SVGRect rect);
-    boolean checkEnclosure([StrictTypeChecking] SVGElement element,
-                           [StrictTypeChecking] SVGRect rect);
+    [StrictTypeChecking] NodeList getIntersectionList(SVGRect rect,
+                                                      SVGElement? referenceElement);
+    [StrictTypeChecking] NodeList getEnclosureList(SVGRect rect,
+                                                   SVGElement? referenceElement);
+    [StrictTypeChecking] boolean checkIntersection(SVGElement element,
+                                                   SVGRect rect);
+    [StrictTypeChecking] boolean checkEnclosure(SVGElement element,
+                                                SVGRect rect);
     void deselectAll();
 
     SVGNumber createSVGNumber();
