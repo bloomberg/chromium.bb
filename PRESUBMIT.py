@@ -889,6 +889,7 @@ def _CheckSpamLogging(input_api, output_api):
                 _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST +
                 (r"^base[\\\/]logging\.h$",
+                 r"^base[\\\/]logging\.cc$",
                  r"^chrome[\\\/]app[\\\/]chrome_main_delegate\.cc$",
                  r"^chrome[\\\/]browser[\\\/]chrome_browser_main\.cc$",
                  r"^chrome[\\\/]browser[\\\/]ui[\\\/]startup[\\\/]"

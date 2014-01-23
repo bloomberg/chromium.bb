@@ -83,6 +83,13 @@ VlogInfo* g_vlog_info_prev = NULL;
 const char* const log_severity_names[LOG_NUM_SEVERITIES] = {
   "INFO", "WARNING", "ERROR", "ERROR_REPORT", "FATAL" };
 
+const char* log_severity_name(int severity)
+{
+  if (severity >= 0 && severity < LOG_NUM_SEVERITIES)
+    return log_severity_names[severity];
+  return "UNKNOWN";
+}
+
 int min_log_level = 0;
 
 LoggingDestination logging_destination = LOG_DEFAULT;
@@ -711,7 +718,7 @@ void LogMessage::Init(const char* file, int line) {
   if (log_tickcount)
     stream_ << TickCount() << ':';
   if (severity_ >= 0)
-    stream_ << log_severity_names[severity_];
+    stream_ << log_severity_name(severity_);
   else
     stream_ << "VERBOSE" << -severity_;
 
