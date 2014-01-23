@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/inspector/network-test.js"></script>
+<script>
+function test()
+{
+    function makeXHR(url, headers)
+    {
+        var resolve;
+        var promise = new Promise(function(res) { resolve = res; });
+        InspectorTest.makeXHR('GET', url, true, undefined, undefined, headers, false, undefined, undefined, resolve);
+        return promise;
+    }
+
+    // Since this test could be run together with other inspector backend cache
+    // tests, we need to reset size limits to default ones.
+    InspectorTest.resetInspectorResourcesData(function() {
+        InspectorTest.recordNetwork();
+        var withoutCacheControl = 'resources/empty.html?without-cache-control';
+        var withCacheControl = 'resources/empty.html?with-cache-control';
+        var cacheControl = [['Cache-Control', 'no-cache']];
+        Promise.all([makeXHR(withoutCacheControl, []), makeXHR(withoutCacheControl, [])]).then(function() {
+            return Promise.all([makeXHR(withCacheControl, cacheControl), makeXHR(withCacheControl, cacheControl)]);
+        }).then(function() {
+            var requests = WebInspector.panel('network').requests;
+            for (var i = 0; i < requests.length; ++i) {
+                InspectorTest.addResult(requests[i].url);
+            }
+            InspectorTest.completeTest();
+        }, function() {
+            console.log('rejected');
+            InspectorTest.completeTest();
+        });
+    });
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that XHR respects 'Cache-Control' header.</p>
+</body>
+</html>

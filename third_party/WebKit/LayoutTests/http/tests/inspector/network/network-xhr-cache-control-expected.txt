@@ -1,0 +1,10 @@
+CONSOLE MESSAGE: line 6: XHR loaded: 1
+CONSOLE MESSAGE: line 6: XHR loaded: 2
+CONSOLE MESSAGE: line 6: XHR loaded: 3
+CONSOLE MESSAGE: line 6: XHR loaded: 4
+Tests that XHR respects 'Cache-Control' header.
+
+http://127.0.0.1:8000/inspector/network/resources/empty.html?without-cache-control
+http://127.0.0.1:8000/inspector/network/resources/empty.html?with-cache-control
+http://127.0.0.1:8000/inspector/network/resources/empty.html?with-cache-control
+

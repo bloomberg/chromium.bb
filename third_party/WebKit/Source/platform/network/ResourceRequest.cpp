@@ -302,11 +302,12 @@ bool ResourceRequest::compare(const ResourceRequest& a, const ResourceRequest& b
 
 bool ResourceRequest::isConditional() const
 {
-    return (m_httpHeaderFields.contains("If-Match") ||
-            m_httpHeaderFields.contains("If-Modified-Since") ||
-            m_httpHeaderFields.contains("If-None-Match") ||
-            m_httpHeaderFields.contains("If-Range") ||
-            m_httpHeaderFields.contains("If-Unmodified-Since"));
+    return (m_httpHeaderFields.contains("If-Match")
+        || m_httpHeaderFields.contains("If-Modified-Since")
+        || m_httpHeaderFields.contains("If-None-Match")
+        || m_httpHeaderFields.contains("If-Range")
+        || m_httpHeaderFields.contains("If-Unmodified-Since")
+        || m_httpHeaderFields.contains("Cache-Control"));
 }
 
 double ResourceRequest::defaultTimeoutInterval()
