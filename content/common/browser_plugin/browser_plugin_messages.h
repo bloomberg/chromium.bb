@@ -228,12 +228,9 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
 
 // Notify the guest renderer that some resources given to the embededer
 // are not used any more.
-IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_ReclaimCompositorResources,
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_ReclaimCompositorResources,
                     int /* instance_id */,
-                    int /* route_id */,
-                    uint32 /* output_surface_id */,
-                    int /* renderer_host_id */,
-                    cc::CompositorFrameAck /* ack */)
+                    FrameHostMsg_ReclaimCompositorResources_Params /* params */)
 
 // When a BrowserPlugin has been removed from the embedder's DOM, it informs
 // the browser process to cleanup the guest.

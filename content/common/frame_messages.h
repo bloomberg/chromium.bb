@@ -159,6 +159,9 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_CompositorFrameSwappedACK,
 // Indicates that the current frame has swapped out, after a SwapOut message.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)
 
+IPC_MESSAGE_ROUTED1(FrameHostMsg_ReclaimCompositorResources,
+                    FrameHostMsg_ReclaimCompositorResources_Params /* params */)
+
 // Instructs the frame to swap out for a cross-site transition, including
 // running the unload event handler. Expects a SwapOut_ACK message when
 // finished.

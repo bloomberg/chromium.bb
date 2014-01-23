@@ -28,10 +28,12 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/download/save_package.h"
+#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
@@ -3565,10 +3567,24 @@ NavigationEntry*
 }
 
 bool WebContentsImpl::CreateRenderViewForRenderManager(
-    RenderViewHost* render_view_host, int opener_route_id) {
+    RenderViewHost* render_view_host,
+    int opener_route_id,
+    CrossProcessFrameConnector* frame_connector) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderViewForRenderManager");
   // Can be NULL during tests.
-  RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
+  RenderWidgetHostView* rwh_view;
+  // TODO(kenrb): RenderWidgetHostViewChildFrame special casing is temporary
+  // until RenderWidgetHost is attached to RenderFrameHost. We need to special
+  // case this because RWH is still a base class of RenderViewHost, and child
+  // frame RWHVs are unique in that they do not have their own WebContents.
+  if (frame_connector) {
+    RenderWidgetHostViewChildFrame* rwh_view_child =
+        new RenderWidgetHostViewChildFrame(render_view_host);
+    frame_connector->set_view(rwh_view_child);
+    rwh_view = rwh_view_child;
+  } else {
+    rwh_view = view_->CreateViewForWidget(render_view_host);
+  }
 
   // Now that the RenderView has been created, we need to tell it its size.
   if (rwh_view)
@@ -3614,7 +3630,8 @@ WebContentsImpl::GetJavaWebContents() {
 
 bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
   return CreateRenderViewForRenderManager(GetRenderViewHost(),
-                                          MSG_ROUTING_NONE);
+                                          MSG_ROUTING_NONE,
+                                          NULL);
 }
 #endif
 

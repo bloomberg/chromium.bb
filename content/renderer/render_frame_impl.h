@@ -19,6 +19,8 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 
 class TransportDIB;
+struct FrameMsg_BuffersSwapped_Params;
+struct FrameMsg_CompositorFrameSwapped_Params;
 
 namespace blink {
 class WebMouseEvent;
@@ -33,6 +35,7 @@ class Rect;
 
 namespace content {
 
+class ChildFrameCompositingHelper;
 class PepperPluginInstanceImpl;
 class RendererPpapiHost;
 class RenderFrameObserver;
@@ -66,6 +69,10 @@ class CONTENT_EXPORT RenderFrameImpl
   bool is_swapped_out() const {
     return is_swapped_out_;
   }
+
+  // Out-of-process child frames receive a signal from RenderWidgetCompositor
+  // when a compositor frame has committed.
+  void DidCommitCompositorFrame();
 
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
@@ -318,6 +325,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
   void OnSwapOut();
+  void OnBuffersSwapped(const FrameMsg_BuffersSwapped_Params& params);
+  void OnCompositorFrameSwapped(const IPC::Message& message);
 
   // Stores the WebFrame we are associated with.
   blink::WebFrame* frame_;
@@ -337,6 +346,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // All the registered observers.
   ObserverList<RenderFrameObserver> observers_;
+
+  scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };

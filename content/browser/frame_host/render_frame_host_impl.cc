@@ -109,6 +109,10 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (delegate_->OnMessageReceived(this, msg))
     return true;
 
+  if (cross_process_frame_connector_ &&
+      cross_process_frame_connector_->OnMessageReceived(msg))
+    return true;
+
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameHostImpl, msg, msg_is_ok)

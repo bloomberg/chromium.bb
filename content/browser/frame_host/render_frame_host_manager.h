@@ -19,6 +19,7 @@
 
 namespace content {
 class BrowserContext;
+class CrossProcessFrameConnector;
 class InterstitialPageImpl;
 class FrameTreeNode;
 class NavigationControllerImpl;
@@ -60,7 +61,9 @@ class CONTENT_EXPORT RenderFrameHostManager
     // If you are attaching to an already-existing RenderView, you should call
     // InitWithExistingID.
     virtual bool CreateRenderViewForRenderManager(
-        RenderViewHost* render_view_host, int opener_route_id) = 0;
+        RenderViewHost* render_view_host,
+        int opener_route_id,
+        CrossProcessFrameConnector* cross_process_frame_connector) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
@@ -439,6 +442,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   InterstitialPageImpl* interstitial_page_;
 
   NotificationRegistrar registrar_;
+
+  // When |render_frame_host_| is in a different process from its parent in
+  // the frame tree, this class connects its associated RenderWidgetHostView
+  // to the proxy RenderFrameHost for the parent's renderer process. NULL
+  // when |render_frame_host_| is the frame tree root or is in the same
+  // process as its parent.
+  CrossProcessFrameConnector* cross_process_frame_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManager);
 };

@@ -32,6 +32,7 @@
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
@@ -387,6 +388,9 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameImpl, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapOut, OnSwapOut)
+    IPC_MESSAGE_HANDLER(FrameMsg_BuffersSwapped, OnBuffersSwapped)
+    IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
+                                OnCompositorFrameSwapped(msg))
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -428,9 +432,51 @@ void RenderFrameImpl::OnSwapOut() {
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
     render_view_->NavigateToSwappedOutURL(frame_);
+
+    render_view_->RegisterSwappedOutChildFrame(this);
   }
 
   Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
+}
+
+void RenderFrameImpl::OnBuffersSwapped(
+    const FrameMsg_BuffersSwapped_Params& params) {
+  if (!compositing_helper_.get()) {
+    compositing_helper_ =
+        ChildFrameCompositingHelper::CreateCompositingHelperForRenderFrame(
+            frame_, this, routing_id_);
+    compositing_helper_->EnableCompositing(true);
+  }
+  compositing_helper_->OnBuffersSwapped(
+      params.size,
+      params.mailbox_name,
+      params.gpu_route_id,
+      params.gpu_host_id,
+      render_view_->GetWebView()->deviceScaleFactor());
+}
+
+void RenderFrameImpl::OnCompositorFrameSwapped(const IPC::Message& message) {
+  FrameMsg_CompositorFrameSwapped::Param param;
+  if (!FrameMsg_CompositorFrameSwapped::Read(&message, &param))
+    return;
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  param.a.frame.AssignTo(frame.get());
+
+  if (!compositing_helper_.get()) {
+    compositing_helper_ =
+        ChildFrameCompositingHelper::CreateCompositingHelperForRenderFrame(
+            frame_, this, routing_id_);
+    compositing_helper_->EnableCompositing(true);
+  }
+  compositing_helper_->OnCompositorFrameSwapped(frame.Pass(),
+                                                param.a.producing_route_id,
+                                                param.a.output_surface_id,
+                                                param.a.producing_host_id);
+}
+
+void RenderFrameImpl::DidCommitCompositorFrame() {
+  if (compositing_helper_)
+    compositing_helper_->DidCommitCompositorFrame();
 }
 
 RenderView* RenderFrameImpl::GetRenderView() {
@@ -632,6 +678,8 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
 
   Send(new FrameHostMsg_Detach(routing_id_, parent_frame_id,
                                frame->identifier()));
+
+  render_view_->UnregisterSwappedOutChildFrame(this);
 
   // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
   // sent before setting |is_detaching_| to true. In contrast, Observers

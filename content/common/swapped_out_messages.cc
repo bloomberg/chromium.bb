@@ -40,6 +40,9 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_SwapOut_ACK::ID:
     // Frame detach must occur after the RenderView has swapped out.
     case FrameHostMsg_Detach::ID:
+    case FrameHostMsg_CompositorFrameSwappedACK::ID:
+    case FrameHostMsg_BuffersSwappedACK::ID:
+    case FrameHostMsg_ReclaimCompositorResources::ID:
       return true;
     default:
       break;

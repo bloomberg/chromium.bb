@@ -17,8 +17,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
-#include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_process_impl.h"
@@ -916,10 +916,11 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     current_damage_buffer_.reset();
     if (!compositing_helper_.get()) {
       compositing_helper_ =
-          new BrowserPluginCompositingHelper(container_,
-                                             browser_plugin_manager(),
-                                             guest_instance_id_,
-                                             render_view_routing_id_);
+          ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
+              container_,
+              browser_plugin_manager(),
+              guest_instance_id_,
+              render_view_routing_id_);
     }
   } else {
     if (paint_ack_received_) {

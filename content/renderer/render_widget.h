@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -67,6 +68,7 @@ class Range;
 namespace content {
 class ExternalPopupMenu;
 class PepperPluginInstanceImpl;
+class RenderFrameImpl;
 class RenderWidgetCompositor;
 class RenderWidgetTest;
 class ResizingModeSelector;
@@ -112,6 +114,10 @@ class CONTENT_EXPORT RenderWidget
   bool has_focus() const { return has_focus_; }
   bool is_fullscreen() const { return is_fullscreen_; }
   bool is_hidden() const { return is_hidden_; }
+
+  // Functions to track out-of-process frames for special notifications.
+  void RegisterSwappedOutChildFrame(RenderFrameImpl* frame);
+  void UnregisterSwappedOutChildFrame(RenderFrameImpl* frame);
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -792,6 +798,10 @@ class CONTENT_EXPORT RenderWidget
   float popup_origin_scale_for_emulation_;
 
   scoped_ptr<ResizingModeSelector> resizing_mode_selector_;
+
+  // A list of swapped out RenderFrames that need to be notified
+  // of compositing-related events (e.g. DidCommitCompositorFrame).
+  ObserverList<RenderFrameImpl> swapped_out_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

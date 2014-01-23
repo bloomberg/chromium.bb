@@ -168,7 +168,6 @@ void RenderWidgetHostViewChildFrame::RenderProcessGone(
 }
 
 void RenderWidgetHostViewChildFrame::Destroy() {
-  // TODO(ajwong): Why did Ken destroy the |frame_connector_| here?
   frame_connector_ = NULL;
 
   host_->SetView(NULL);
@@ -215,9 +214,13 @@ void RenderWidgetHostViewChildFrame::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) {
-  if (frame_connector_)
+  if (frame_connector_) {
     frame_connector_->ChildFrameCompositorFrameSwapped(
-        output_surface_id, frame.Pass());
+        output_surface_id,
+        host_->GetProcess()->GetID(),
+        host_->GetRoutingID(),
+        frame.Pass());
+  }
 }
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(

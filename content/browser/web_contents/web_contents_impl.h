@@ -491,7 +491,9 @@ class CONTENT_EXPORT WebContentsImpl
   // RenderFrameHostManager::Delegate ------------------------------------------
 
   virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host, int opener_route_id) OVERRIDE;
+      RenderViewHost* render_view_host,
+      int opener_route_id,
+      CrossProcessFrameConnector* frame_connector) OVERRIDE;
   virtual void BeforeUnloadFiredFromRenderManager(
       bool proceed, const base::TimeTicks& proceed_time,
       bool* proceed_to_fire_unload) OVERRIDE;

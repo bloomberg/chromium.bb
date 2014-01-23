@@ -21,7 +21,7 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
   if (view_)
-    view_->set_cross_process_child_frame(NULL);
+    view_->set_cross_process_frame_connector(NULL);
 }
 
 bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
@@ -30,23 +30,27 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
 
   IPC_BEGIN_MESSAGE_MAP_EX(CrossProcessFrameConnector, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BuffersSwappedACK, OnBuffersSwappedACK)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_CompositorFrameSwappedACK,
+                        OnCompositorFrameSwappedACK)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ReclaimCompositorResources,
+                        OnReclaimCompositorResources)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
 }
 
-void CrossProcessFrameConnector::SetView(
+void CrossProcessFrameConnector::set_view(
     RenderWidgetHostViewChildFrame* view) {
   // Detach ourselves from the previous |view_|.
   if (view_)
-    view_->set_cross_process_child_frame(NULL);
+    view_->set_cross_process_frame_connector(NULL);
 
   view_ = view;
 
   // Attach ourselves to the new view.
   if (view_)
-    view_->set_cross_process_child_frame(this);
+    view_->set_cross_process_frame_connector(this);
 }
 
 void CrossProcessFrameConnector::ChildFrameBuffersSwapped(
@@ -67,11 +71,16 @@ void CrossProcessFrameConnector::ChildFrameBuffersSwapped(
 
 void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
     uint32 output_surface_id,
+    int host_id,
+    int route_id,
     scoped_ptr<cc::CompositorFrame> frame) {
-}
-
-gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
-  return child_frame_rect_;
+  FrameMsg_CompositorFrameSwapped_Params params;
+  frame->AssignTo(&params.frame);
+  params.output_surface_id = output_surface_id;
+  params.producing_route_id = route_id;
+  params.producing_host_id = host_id;
+  frame_proxy_in_parent_renderer_->Send(new FrameMsg_CompositorFrameSwapped(
+      frame_proxy_in_parent_renderer_->routing_id(), params));
 }
 
 void CrossProcessFrameConnector::OnBuffersSwappedACK(
@@ -84,6 +93,26 @@ void CrossProcessFrameConnector::OnBuffersSwappedACK(
                                                  ack_params);
 
   // TODO(kenrb): Special case stuff for Win + Mac.
+}
+
+void CrossProcessFrameConnector::OnCompositorFrameSwappedACK(
+    const FrameHostMsg_CompositorFrameSwappedACK_Params& params) {
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(params.producing_route_id,
+                                                   params.output_surface_id,
+                                                   params.producing_host_id,
+                                                   params.ack);
+}
+
+void CrossProcessFrameConnector::OnReclaimCompositorResources(
+    const FrameHostMsg_ReclaimCompositorResources_Params& params) {
+  RenderWidgetHostImpl::SendReclaimCompositorResources(params.route_id,
+                                                       params.output_surface_id,
+                                                       params.renderer_host_id,
+                                                       params.ack);
+}
+
+gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
+  return child_frame_rect_;
 }
 
 }  // namespace content

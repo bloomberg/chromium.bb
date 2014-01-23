@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_COMPOSITING_HELPER_H_
-#define  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_COMPOSITING_HELPER_H_
+#ifndef CONTENT_RENDERER_CHILD_FRAME_COMPOSITING_HELPER_H_
+#define CONTENT_RENDERER_CHILD_FRAME_COMPOSITING_HELPER_H_
 
 #include <string>
 #include <vector>
@@ -31,6 +31,7 @@ class DelegatedRendererLayer;
 }
 
 namespace blink {
+class WebFrame;
 class WebPluginContainer;
 class WebLayer;
 }
@@ -40,18 +41,29 @@ class Rect;
 class Size;
 }
 
+struct FrameHostMsg_CompositorFrameSwappedACK_Params;
+struct FrameHostMsg_BuffersSwappedACK_Params;
+struct FrameHostMsg_ReclaimCompositorResources_Params;
+
 namespace content {
 
 class BrowserPluginManager;
+class RenderFrameImpl;
 
-class CONTENT_EXPORT BrowserPluginCompositingHelper :
-    public base::RefCounted<BrowserPluginCompositingHelper>,
-    public cc::DelegatedFrameResourceCollectionClient {
+class CONTENT_EXPORT ChildFrameCompositingHelper
+    : public base::RefCounted<ChildFrameCompositingHelper>,
+      public cc::DelegatedFrameResourceCollectionClient {
  public:
-  BrowserPluginCompositingHelper(blink::WebPluginContainer* container,
-                                 BrowserPluginManager* manager,
-                                 int instance_id,
-                                 int host_routing_id);
+  static ChildFrameCompositingHelper* CreateCompositingHelperForBrowserPlugin(
+      blink::WebPluginContainer* container,
+      BrowserPluginManager* manager,
+      int instance_id,
+      int host_routing_id);
+  static ChildFrameCompositingHelper* CreateCompositingHelperForRenderFrame(
+      blink::WebFrame* frame,
+      RenderFrameImpl* render_frame,
+      int host_routing_id);
+
   void CopyFromCompositingSurface(int request_id,
                                   gfx::Rect source_rect,
                                   gfx::Size dest_size);
@@ -75,8 +87,16 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
 
  protected:
   // Friend RefCounted so that the dtor can be non-public.
-  friend class base::RefCounted<BrowserPluginCompositingHelper>;
+  friend class base::RefCounted<ChildFrameCompositingHelper>;
+
  private:
+  ChildFrameCompositingHelper(blink::WebPluginContainer* container,
+                              blink::WebFrame* frame,
+                              BrowserPluginManager* manager,
+                              RenderFrameImpl* render_frame,
+                              int instance_id,
+                              int host_routing_id);
+
   enum SwapBuffersType {
     TEXTURE_IMAGE_TRANSPORT,
     GL_COMPOSITOR_FRAME,
@@ -94,7 +114,13 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
     unsigned software_frame_id;
     base::SharedMemory* shared_memory;
   };
-  virtual ~BrowserPluginCompositingHelper();
+  virtual ~ChildFrameCompositingHelper();
+  void SendCompositorFrameSwappedACKToBrowser(
+      FrameHostMsg_CompositorFrameSwappedACK_Params& params);
+  void SendBuffersSwappedACKToBrowser(
+      FrameHostMsg_BuffersSwappedACK_Params& params);
+  void SendReclaimCompositorResourcesToBrowser(
+      FrameHostMsg_ReclaimCompositorResources_Params& params);
   void CheckSizeAndAdjustLayerProperties(const gfx::Size& new_size,
                                          float device_scale_factor,
                                          cc::Layer* layer);
@@ -131,10 +157,14 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
   scoped_ptr<blink::WebLayer> web_layer_;
   blink::WebPluginContainer* container_;
+  blink::WebFrame* frame_;
 
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;
+  RenderFrameImpl* render_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_COMPOSITING_HELPER_H_
+#endif  // CONTENT_RENDERER_CHILD_FRAME_COMPOSITING_HELPER_H_

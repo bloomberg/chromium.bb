@@ -25,17 +25,17 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                              RenderFrameHostManager::Delegate* manager_delegate,
                              int64 frame_id,
                              const std::string& name)
-  : frame_tree_(frame_tree),
-    navigator_(navigator),
-    render_manager_(this,
-                    render_frame_delegate,
-                    render_view_delegate,
-                    render_widget_delegate,
-                    manager_delegate),
-    frame_tree_node_id_(next_frame_tree_node_id_++),
-    frame_id_(frame_id),
-    frame_name_(name) {
-}
+    : frame_tree_(frame_tree),
+      navigator_(navigator),
+      render_manager_(this,
+                      render_frame_delegate,
+                      render_view_delegate,
+                      render_widget_delegate,
+                      manager_delegate),
+      frame_tree_node_id_(next_frame_tree_node_id_++),
+      frame_id_(frame_id),
+      frame_name_(name),
+      parent_(NULL) {}
 
 FrameTreeNode::~FrameTreeNode() {
 }
@@ -54,6 +54,7 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
       render_manager_.current_host()->GetSiteInstance(),
       render_manager_.current_host()->GetRoutingID(),
       frame_routing_id);
+  child->set_parent(this);
   children_.push_back(child.release());
 }
 
@@ -65,8 +66,10 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
       break;
   }
 
-  if (iter != children_.end())
+  if (iter != children_.end()) {
+    (*iter)->set_parent(NULL);
     children_.erase(iter);
+  }
 }
 
 void FrameTreeNode::ResetForMainFrameSwap() {

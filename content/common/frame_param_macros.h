@@ -53,4 +53,11 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CompositorFrameSwappedACK_Params)
   IPC_STRUCT_MEMBER(cc::CompositorFrameAck, ack)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(FrameHostMsg_ReclaimCompositorResources_Params)
+  IPC_STRUCT_MEMBER(int, route_id)
+  IPC_STRUCT_MEMBER(uint32, output_surface_id)
+  IPC_STRUCT_MEMBER(int, renderer_host_id)
+  IPC_STRUCT_MEMBER(cc::CompositorFrameAck, ack)
+IPC_STRUCT_END()
+
 #endif  // CONTENT_COMMON_FRAME_PARAM_MACROS_H_

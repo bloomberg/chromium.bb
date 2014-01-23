@@ -47,6 +47,7 @@ struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct FrameHostMsg_BuffersSwappedACK_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
+struct FrameHostMsg_ReclaimCompositorResources_Params;
 struct ViewHostMsg_CreateWindow_Params;
 #if defined(OS_MACOSX)
 struct ViewHostMsg_ShowPopup_Params;
@@ -405,11 +406,9 @@ class CONTENT_EXPORT BrowserPluginGuest
                             const std::string& command);
 
   // Returns compositor resources reclaimed in the embedder to the guest.
-  void OnReclaimCompositorResources(int instance_id,
-                                    int route_id,
-                                    uint32 output_surface_id,
-                                    int renderer_host_id,
-                                    const cc::CompositorFrameAck& ack);
+  void OnReclaimCompositorResources(
+      int instance_id,
+      const FrameHostMsg_ReclaimCompositorResources_Params& params);
 
   // Overriden in tests.
   virtual void OnHandleInputEvent(int instance_id,

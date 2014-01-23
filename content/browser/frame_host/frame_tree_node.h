@@ -84,6 +84,8 @@ class CONTENT_EXPORT FrameTreeNode {
     return children_.size();
   }
 
+  FrameTreeNode* parent() const { return parent_; }
+
   FrameTreeNode* child_at(size_t index) const {
     return children_[index];
   }
@@ -101,6 +103,8 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
  private:
+  void set_parent(FrameTreeNode* parent) { parent_ = parent; }
+
   // The next available browser-global FrameTreeNode ID.
   static int64 next_frame_tree_node_id_;
 
@@ -130,6 +134,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // The assigned name of the frame. This name can be empty, unlike the unique
   // name generated internally in the DOM tree.
   std::string frame_name_;
+
+  // The parent node of this frame. NULL if this node is the root or if it has
+  // not yet been attached to the frame tree.
+  FrameTreeNode* parent_;
 
   // The immediate children of this specific frame.
   ScopedVector<FrameTreeNode> children_;

@@ -1330,14 +1330,11 @@ void BrowserPluginGuest::OnExtendSelectionAndDelete(
 
 void BrowserPluginGuest::OnReclaimCompositorResources(
     int instance_id,
-    int route_id,
-    uint32 output_surface_id,
-    int renderer_host_id,
-    const cc::CompositorFrameAck& ack) {
-  RenderWidgetHostImpl::SendReclaimCompositorResources(route_id,
-                                                       output_surface_id,
-                                                       renderer_host_id,
-                                                       ack);
+    const FrameHostMsg_ReclaimCompositorResources_Params& params) {
+  RenderWidgetHostImpl::SendReclaimCompositorResources(params.route_id,
+                                                       params.output_surface_id,
+                                                       params.renderer_host_id,
+                                                       params.ack);
 }
 
 void BrowserPluginGuest::OnHandleInputEvent(

@@ -30,7 +30,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   virtual ~RenderWidgetHostViewChildFrame();
 
-  void set_cross_process_child_frame(
+  void set_cross_process_frame_connector(
       CrossProcessFrameConnector* frame_connector) {
     frame_connector_ = frame_connector;
   }

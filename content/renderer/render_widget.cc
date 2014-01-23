@@ -40,6 +40,7 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
@@ -406,6 +407,7 @@ RenderWidget::~RenderWidget() {
     }
     current_paint_buf_ = NULL;
   }
+
   // If we are swapped out, we have released already.
   if (!is_swapped_out_ && RenderProcess::current())
     RenderProcess::current()->ReleaseProcess();
@@ -1897,6 +1899,8 @@ void RenderWidget::didBecomeReadyForAdditionalInput() {
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
+  FOR_EACH_OBSERVER(RenderFrameImpl, swapped_out_frames_,
+                    DidCommitCompositorFrame());
 }
 
 void RenderWidget::didCommitAndDrawCompositorFrame() {
@@ -2889,6 +2893,14 @@ RenderWidget::CreateGraphicsContext3D(
           false /* bind generates resources */,
           limits));
   return context.Pass();
+}
+
+void RenderWidget::RegisterSwappedOutChildFrame(RenderFrameImpl* frame) {
+  swapped_out_frames_.AddObserver(frame);
+}
+
+void RenderWidget::UnregisterSwappedOutChildFrame(RenderFrameImpl* frame) {
+  swapped_out_frames_.RemoveObserver(frame);
 }
 
 }  // namespace content

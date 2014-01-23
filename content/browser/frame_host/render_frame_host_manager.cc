@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
+#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -72,12 +73,15 @@ RenderFrameHostManager::RenderFrameHostManager(
       render_widget_delegate_(render_widget_delegate),
       render_frame_host_(NULL),
       pending_render_frame_host_(NULL),
-      interstitial_page_(NULL) {
-}
+      interstitial_page_(NULL),
+      cross_process_frame_connector_(NULL) {}
 
 RenderFrameHostManager::~RenderFrameHostManager() {
   if (pending_render_frame_host_)
     CancelPending();
+
+  if (cross_process_frame_connector_)
+    delete cross_process_frame_connector_;
 
   // We should always have a current RenderFrameHost except in some tests.
   // TODO(creis): Now that we aren't using Shutdown, make render_frame_host_ and
@@ -173,7 +177,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     // Note: we don't call InitRenderView here because we are navigating away
     // soon anyway, and we don't have the NavigationEntry for this host.
     delegate_->CreateRenderViewForRenderManager(
-        render_frame_host_->render_view_host(), MSG_ROUTING_NONE);
+        render_frame_host_->render_view_host(), MSG_ROUTING_NONE, NULL);
   }
 
   // If the renderer crashed, then try to create a new one to satisfy this
@@ -858,16 +862,45 @@ int RenderFrameHostManager::CreateRenderFrame(
   // remove it from the list of swapped out hosts if it commits.
   RenderFrameHostImpl* new_render_frame_host =
       GetSwappedOutRenderFrameHost(instance);
+
+  FrameTreeNode* parent_node = NULL;
+  if (frame_tree_node_)
+    parent_node = frame_tree_node_->parent();
+
   if (new_render_frame_host) {
     // Prevent the process from exiting while we're trying to use it.
-    if (!swapped_out)
+    if (!swapped_out) {
       new_render_frame_host->GetProcess()->AddPendingView();
+    } else {
+      // Detect if this is a cross-process child frame that is navigating
+      // back to the same SiteInstance as its parent.
+      if (parent_node && cross_process_frame_connector_ &&
+          render_frame_host_->GetSiteInstance() == parent_node->
+              render_manager()->current_frame_host()->GetSiteInstance()) {
+        delete cross_process_frame_connector_;
+        cross_process_frame_connector_ = NULL;
+      }
+    }
   } else {
     // Create a new RenderFrameHost if we don't find an existing one.
     // TODO(creis): Make new_render_frame_host a scoped_ptr.
     new_render_frame_host = CreateRenderFrameHost(instance, MSG_ROUTING_NONE,
                                                   MSG_ROUTING_NONE, swapped_out,
                                                   hidden);
+    if (parent_node && !cross_process_frame_connector_) {
+      // The proxy RenderFrameHost to the parent process is either the current
+      // RenderFrameHost, or it has been added to the swapped out list.
+      // TODO(kenrb): This will change when RenderFrameProxyHost is created.
+      RenderFrameHostImpl* proxy_to_parent = render_frame_host_;
+      if (render_frame_host_->render_view_host()->GetSiteInstance() !=
+          parent_node->render_manager()->current_host()->GetSiteInstance()) {
+        GetSwappedOutRenderFrameHost(
+            parent_node->render_manager()->current_host()->GetSiteInstance());
+      }
+      CHECK(proxy_to_parent);
+      cross_process_frame_connector_ =
+          new CrossProcessFrameConnector(proxy_to_parent);
+    }
 
     // If the new RFH is swapped out already, store it.  Otherwise prevent the
     // process from exiting while we're trying to navigate in it.
@@ -917,8 +950,8 @@ bool RenderFrameHostManager::InitRenderView(RenderViewHost* render_view_host,
     }
   }
 
-  return delegate_->CreateRenderViewForRenderManager(render_view_host,
-                                                     opener_route_id);
+  return delegate_->CreateRenderViewForRenderManager(
+      render_view_host, opener_route_id, cross_process_frame_connector_);
 }
 
 void RenderFrameHostManager::CommitPending() {
@@ -980,7 +1013,7 @@ void RenderFrameHostManager::CommitPending() {
   if (!render_frame_host_->render_view_host()->GetView()) {
     delegate_->RenderProcessGoneFromRenderManager(
         render_frame_host_->render_view_host());
-  } else if (!delegate_->IsHidden() && is_main_frame) {
+  } else if (!delegate_->IsHidden()) {
     render_frame_host_->render_view_host()->GetView()->Show();
   }
 

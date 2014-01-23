@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/browser_url_handler_impl.h"
+#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -91,7 +92,9 @@ WebPreferences TestWebContents::TestGetWebkitPrefs() {
 }
 
 bool TestWebContents::CreateRenderViewForRenderManager(
-    RenderViewHost* render_view_host, int opener_route_id) {
+    RenderViewHost* render_view_host,
+    int opener_route_id,
+    CrossProcessFrameConnector* frame_connector) {
   // This will go to a TestRenderViewHost.
   static_cast<RenderViewHostImpl*>(
       render_view_host)->CreateRenderView(base::string16(),

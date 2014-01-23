@@ -30,7 +30,7 @@ struct FrameMsg_BuffersSwapped_Params;
 
 namespace content {
 
-class BrowserPluginCompositingHelper;
+class ChildFrameCompositingHelper;
 class BrowserPluginManager;
 class MockBrowserPlugin;
 
@@ -361,7 +361,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Used for HW compositing.
   bool compositing_enabled_;
-  scoped_refptr<BrowserPluginCompositingHelper> compositing_helper_;
+  scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
   // Used to identify the plugin to WebBindings.
   scoped_ptr<struct _NPP> npp_;

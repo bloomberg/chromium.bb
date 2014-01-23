@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
+#include "content/renderer/child_frame_compositing_helper.h"
 
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
@@ -17,9 +17,11 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size_conversions.h"
@@ -28,17 +30,37 @@
 
 namespace content {
 
-BrowserPluginCompositingHelper::SwapBuffersInfo::SwapBuffersInfo()
+ChildFrameCompositingHelper::SwapBuffersInfo::SwapBuffersInfo()
     : route_id(0),
       output_surface_id(0),
       host_id(0),
       software_frame_id(0),
-      shared_memory(NULL) {
-}
+      shared_memory(NULL) {}
 
-BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
+ChildFrameCompositingHelper*
+ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
     blink::WebPluginContainer* container,
     BrowserPluginManager* manager,
+    int instance_id,
+    int host_routing_id) {
+  return new ChildFrameCompositingHelper(
+      container, NULL, manager, NULL, instance_id, host_routing_id);
+}
+
+ChildFrameCompositingHelper*
+ChildFrameCompositingHelper::CreateCompositingHelperForRenderFrame(
+    blink::WebFrame* frame,
+    RenderFrameImpl* render_frame,
+    int host_routing_id) {
+  return new ChildFrameCompositingHelper(
+      NULL, frame, NULL, render_frame, 0, host_routing_id);
+}
+
+ChildFrameCompositingHelper::ChildFrameCompositingHelper(
+    blink::WebPluginContainer* container,
+    blink::WebFrame* frame,
+    BrowserPluginManager* manager,
+    RenderFrameImpl* render_frame,
     int instance_id,
     int host_routing_id)
     : instance_id_(instance_id),
@@ -51,20 +73,64 @@ BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
       software_ack_pending_(false),
       opaque_(true),
       container_(container),
-      browser_plugin_manager_(manager) {
+      frame_(frame),
+      browser_plugin_manager_(manager),
+      render_frame_(render_frame) {}
+
+ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {}
+
+void ChildFrameCompositingHelper::SendCompositorFrameSwappedACKToBrowser(
+    FrameHostMsg_CompositorFrameSwappedACK_Params& params) {
+  // This function will be removed when BrowserPluginManager is removed and
+  // BrowserPlugin is modified to use a RenderFrame.
+  if (browser_plugin_manager_) {
+    browser_plugin_manager_->Send(
+        new BrowserPluginHostMsg_CompositorFrameSwappedACK(
+            host_routing_id_, instance_id_, params));
+  } else {
+    DCHECK(render_frame_);
+    render_frame_->Send(
+        new FrameHostMsg_CompositorFrameSwappedACK(host_routing_id_, params));
+  }
 }
 
-BrowserPluginCompositingHelper::~BrowserPluginCompositingHelper() {
+void ChildFrameCompositingHelper::SendBuffersSwappedACKToBrowser(
+    FrameHostMsg_BuffersSwappedACK_Params& params) {
+  // This function will be removed when BrowserPluginManager is removed and
+  // BrowserPlugin is modified to use a RenderFrame.
+  if (browser_plugin_manager_) {
+    browser_plugin_manager_->Send(new BrowserPluginHostMsg_BuffersSwappedACK(
+        host_routing_id_, instance_id_, params));
+  } else {
+    DCHECK(render_frame_);
+    render_frame_->Send(
+        new FrameHostMsg_BuffersSwappedACK(host_routing_id_, params));
+  }
 }
 
-void BrowserPluginCompositingHelper::CopyFromCompositingSurface(
+void ChildFrameCompositingHelper::SendReclaimCompositorResourcesToBrowser(
+    FrameHostMsg_ReclaimCompositorResources_Params& params) {
+  // This function will be removed when BrowserPluginManager is removed and
+  // BrowserPlugin is modified to use a RenderFrame.
+  if (browser_plugin_manager_) {
+    browser_plugin_manager_->Send(
+        new BrowserPluginHostMsg_ReclaimCompositorResources(
+            host_routing_id_, instance_id_, params));
+  } else {
+    DCHECK(render_frame_);
+    render_frame_->Send(
+        new FrameHostMsg_ReclaimCompositorResources(host_routing_id_, params));
+  }
+}
+
+void ChildFrameCompositingHelper::CopyFromCompositingSurface(
     int request_id,
     gfx::Rect source_rect,
     gfx::Size dest_size) {
   CHECK(background_layer_);
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
-          &BrowserPluginCompositingHelper::CopyFromCompositingSurfaceHasResult,
+          &ChildFrameCompositingHelper::CopyFromCompositingSurfaceHasResult,
           this,
           request_id,
           dest_size));
@@ -72,7 +138,7 @@ void BrowserPluginCompositingHelper::CopyFromCompositingSurface(
   background_layer_->RequestCopyOfOutput(request.Pass());
 }
 
-void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
+void ChildFrameCompositingHelper::DidCommitCompositorFrame() {
   if (software_ack_pending_) {
     FrameHostMsg_CompositorFrameSwappedACK_Params params;
     params.producing_host_id = last_host_id_;
@@ -83,11 +149,7 @@ void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
       unacked_software_frames_.pop_back();
     }
 
-    browser_plugin_manager_->Send(
-        new BrowserPluginHostMsg_CompositorFrameSwappedACK(
-            host_routing_id_,
-            instance_id_,
-            params));
+    SendCompositorFrameSwappedACKToBrowser(params);
 
     software_ack_pending_ = false;
   }
@@ -101,16 +163,12 @@ void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
   resource_collection_->TakeUnusedResourcesForChildCompositor(
       &params.ack.resources);
 
-  browser_plugin_manager_->Send(
-      new BrowserPluginHostMsg_CompositorFrameSwappedACK(
-          host_routing_id_,
-          instance_id_,
-          params));
+  SendCompositorFrameSwappedACKToBrowser(params);
 
   ack_pending_ = false;
 }
 
-void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
+void ChildFrameCompositingHelper::EnableCompositing(bool enable) {
   if (enable && !background_layer_.get()) {
     background_layer_ = cc::SolidColorLayer::Create();
     background_layer_->SetMasksToBounds(true);
@@ -119,10 +177,14 @@ void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
     web_layer_.reset(new webkit::WebLayerImpl(background_layer_));
   }
 
-  container_->setWebLayer(enable ? web_layer_.get() : NULL);
+  if (container_) {
+    container_->setWebLayer(enable ? web_layer_.get() : NULL);
+  } else {
+    frame_->setRemoteWebLayer(enable ? web_layer_.get() : NULL);
+  }
 }
 
-void BrowserPluginCompositingHelper::CheckSizeAndAdjustLayerProperties(
+void ChildFrameCompositingHelper::CheckSizeAndAdjustLayerProperties(
     const gfx::Size& new_size,
     float device_scale_factor,
     cc::Layer* layer) {
@@ -141,10 +203,9 @@ void BrowserPluginCompositingHelper::CheckSizeAndAdjustLayerProperties(
     background_layer_->SetIsDrawable(false);
 }
 
-void BrowserPluginCompositingHelper::MailboxReleased(
-    SwapBuffersInfo mailbox,
-    unsigned sync_point,
-    bool lost_resource) {
+void ChildFrameCompositingHelper::MailboxReleased(SwapBuffersInfo mailbox,
+                                                  unsigned sync_point,
+                                                  bool lost_resource) {
   if (mailbox.type == SOFTWARE_COMPOSITOR_FRAME) {
     delete mailbox.shared_memory;
     mailbox.shared_memory = NULL;
@@ -180,11 +241,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
       params.gpu_route_id = mailbox.route_id;
       params.mailbox_name = mailbox_name;
       params.sync_point = sync_point;
-      browser_plugin_manager_->Send(
-          new BrowserPluginHostMsg_BuffersSwappedACK(
-              host_routing_id_,
-              instance_id_,
-              params));
+      SendBuffersSwappedACKToBrowser(params);
       break;
     }
     case GL_COMPOSITOR_FRAME: {
@@ -196,12 +253,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
       params.ack.gl_frame_data->mailbox = mailbox.name;
       params.ack.gl_frame_data->size = mailbox.size;
       params.ack.gl_frame_data->sync_point = sync_point;
-
-      browser_plugin_manager_->Send(
-         new BrowserPluginHostMsg_CompositorFrameSwappedACK(
-             host_routing_id_,
-             instance_id_,
-             params));
+      SendCompositorFrameSwappedACKToBrowser(params);
       break;
     }
     case SOFTWARE_COMPOSITOR_FRAME:
@@ -209,7 +261,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
   }
 }
 
-void BrowserPluginCompositingHelper::OnContainerDestroy() {
+void ChildFrameCompositingHelper::OnContainerDestroy() {
   if (container_)
     container_->setWebLayer(NULL);
   container_ = NULL;
@@ -227,7 +279,7 @@ void BrowserPluginCompositingHelper::OnContainerDestroy() {
   web_layer_.reset();
 }
 
-void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
+void ChildFrameCompositingHelper::OnBuffersSwappedPrivate(
     const SwapBuffersInfo& mailbox,
     unsigned sync_point,
     float device_scale_factor) {
@@ -270,13 +322,12 @@ void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
   // when a new buffer arrives.
   // Visually, this will either display a smaller part of the buffer
   // or introduce a gutter around it.
-  CheckSizeAndAdjustLayerProperties(mailbox.size,
-                                    device_scale_factor,
-                                    texture_layer_.get());
+  CheckSizeAndAdjustLayerProperties(
+      mailbox.size, device_scale_factor, texture_layer_.get());
 
   bool is_software_frame = mailbox.type == SOFTWARE_COMPOSITOR_FRAME;
-  bool current_mailbox_valid = is_software_frame ?
-      mailbox.shared_memory != NULL : !mailbox.name.IsZero();
+  bool current_mailbox_valid = is_software_frame ? mailbox.shared_memory != NULL
+                                                 : !mailbox.name.IsZero();
   if (!is_software_frame && !last_mailbox_valid_) {
     SwapBuffersInfo empty_info = mailbox;
     empty_info.name.SetZero();
@@ -288,10 +339,11 @@ void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
   cc::TextureMailbox texture_mailbox;
   scoped_ptr<cc::SingleReleaseCallback> release_callback;
   if (current_mailbox_valid) {
-    release_callback = cc::SingleReleaseCallback::Create(
-        base::Bind(&BrowserPluginCompositingHelper::MailboxReleased,
-                   scoped_refptr<BrowserPluginCompositingHelper>(this),
-                   mailbox)).Pass();
+    release_callback =
+        cc::SingleReleaseCallback::Create(
+            base::Bind(&ChildFrameCompositingHelper::MailboxReleased,
+                       scoped_refptr<ChildFrameCompositingHelper>(this),
+                       mailbox)).Pass();
     if (is_software_frame)
       texture_mailbox = cc::TextureMailbox(mailbox.shared_memory, mailbox.size);
     else
@@ -304,7 +356,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
   last_mailbox_valid_ = current_mailbox_valid;
 }
 
-void BrowserPluginCompositingHelper::OnBuffersSwapped(
+void ChildFrameCompositingHelper::OnBuffersSwapped(
     const gfx::Size& size,
     const std::string& mailbox_name,
     int gpu_route_id,
@@ -320,11 +372,12 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   OnBuffersSwappedPrivate(swap_info, 0, device_scale_factor);
 }
 
-void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
+void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
     scoped_ptr<cc::CompositorFrame> frame,
     int route_id,
     uint32 output_surface_id,
     int host_id) {
+
   if (frame->gl_frame_data) {
     SwapBuffersInfo swap_info;
     swap_info.name = frame->gl_frame_data->mailbox;
@@ -354,8 +407,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
         new base::SharedMemory(frame_data->handle, true));
     const size_t size_in_bytes = 4 * frame_data->size.GetArea();
     if (!shared_memory->Map(size_in_bytes)) {
-      LOG(ERROR) << "Failed to map shared memory of size "
-                 << size_in_bytes;
+      LOG(ERROR) << "Failed to map shared memory of size " << size_in_bytes;
       // Send ACK right away.
       software_ack_pending_ = true;
       MailboxReleased(swap_info, 0, false);
@@ -364,8 +416,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     }
 
     swap_info.shared_memory = shared_memory.release();
-    OnBuffersSwappedPrivate(swap_info, 0,
-                            frame->metadata.device_scale_factor);
+    OnBuffersSwappedPrivate(swap_info, 0, frame->metadata.device_scale_factor);
     software_ack_pending_ = true;
     last_route_id_ = route_id;
     last_output_surface_id_ = output_surface_id;
@@ -434,37 +485,34 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
   ack_pending_ = true;
 }
 
-void BrowserPluginCompositingHelper::UpdateVisibility(bool visible) {
+void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   if (texture_layer_.get())
     texture_layer_->SetIsDrawable(visible);
   if (delegated_layer_.get())
     delegated_layer_->SetIsDrawable(visible);
 }
 
-void BrowserPluginCompositingHelper::UnusedResourcesAreAvailable() {
+void ChildFrameCompositingHelper::UnusedResourcesAreAvailable() {
   if (ack_pending_)
     return;
 
   SendReturnedDelegatedResources();
 }
 
-void BrowserPluginCompositingHelper::SendReturnedDelegatedResources() {
-  cc::CompositorFrameAck ack;
+void ChildFrameCompositingHelper::SendReturnedDelegatedResources() {
+  FrameHostMsg_ReclaimCompositorResources_Params params;
   if (resource_collection_)
-    resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
-  DCHECK(!ack.resources.empty());
+    resource_collection_->TakeUnusedResourcesForChildCompositor(
+        &params.ack.resources);
+  DCHECK(!params.ack.resources.empty());
 
-  browser_plugin_manager_->Send(
-      new BrowserPluginHostMsg_ReclaimCompositorResources(
-          host_routing_id_,
-          instance_id_,
-          last_route_id_,
-          last_output_surface_id_,
-          last_host_id_,
-          ack));
+  params.route_id = last_route_id_;
+  params.output_surface_id = last_output_surface_id_;
+  params.renderer_host_id = last_host_id_;
+  SendReclaimCompositorResourcesToBrowser(params);
 }
 
-void BrowserPluginCompositingHelper::SetContentsOpaque(bool opaque) {
+void ChildFrameCompositingHelper::SetContentsOpaque(bool opaque) {
   opaque_ = opaque;
 
   if (texture_layer_.get())
@@ -473,7 +521,7 @@ void BrowserPluginCompositingHelper::SetContentsOpaque(bool opaque) {
     delegated_layer_->SetContentsOpaque(opaque_);
 }
 
-void BrowserPluginCompositingHelper::CopyFromCompositingSurfaceHasResult(
+void ChildFrameCompositingHelper::CopyFromCompositingSurfaceHasResult(
     int request_id,
     gfx::Size dest_size,
     scoped_ptr<cc::CopyOutputResult> result) {
@@ -483,15 +531,15 @@ void BrowserPluginCompositingHelper::CopyFromCompositingSurfaceHasResult(
 
   SkBitmap resized_bitmap;
   if (bitmap) {
-    resized_bitmap = skia::ImageOperations::Resize(*bitmap,
-                       skia::ImageOperations::RESIZE_BEST,
-                       dest_size.width(),
-                       dest_size.height());
+    resized_bitmap =
+        skia::ImageOperations::Resize(*bitmap,
+                                      skia::ImageOperations::RESIZE_BEST,
+                                      dest_size.width(),
+                                      dest_size.height());
   }
   browser_plugin_manager_->Send(
       new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
-          host_routing_id_, instance_id_, request_id,
-          resized_bitmap));
+          host_routing_id_, instance_id_, request_id, resized_bitmap));
 }
 
 }  // namespace content

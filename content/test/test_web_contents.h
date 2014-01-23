@@ -57,7 +57,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   // Prevent interaction with views.
   virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host, int opener_route_id) OVERRIDE;
+      RenderViewHost* render_view_host,
+      int opener_route_id,
+      CrossProcessFrameConnector* frame_connector) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE {}
 
   // Returns a clone of this TestWebContents. The returned object is also a
