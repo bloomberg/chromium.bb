@@ -773,9 +773,9 @@ class ChromeDriverLogTest(unittest.TestCase):
   LOG_MESSAGE = 'unrecognized chrome option: %s' % UNEXPECTED_CHROMEOPTION_CAP
 
   def testChromeDriverLog(self):
-    tmp_log_path = tempfile.NamedTemporaryFile()
+    _, tmp_log_path = tempfile.mkstemp(prefix='chromedriver_log_')
     chromedriver_server = server.Server(
-        _CHROMEDRIVER_BINARY, log_path=tmp_log_path.name)
+        _CHROMEDRIVER_BINARY, log_path=tmp_log_path)
     try:
       driver = chromedriver.ChromeDriver(
           chromedriver_server.GetUrl(), chrome_binary=_CHROME_BINARY,
@@ -785,7 +785,7 @@ class ChromeDriverLogTest(unittest.TestCase):
       self.assertTrue(self.LOG_MESSAGE in e.message)
     finally:
       chromedriver_server.Kill()
-    with open(tmp_log_path.name, 'r') as f:
+    with open(tmp_log_path, 'r') as f:
       self.assertTrue(self.LOG_MESSAGE in f.read())
 
 
