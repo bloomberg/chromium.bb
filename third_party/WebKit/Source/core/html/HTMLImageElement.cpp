@@ -45,14 +45,17 @@ using namespace HTMLNames;
 HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     : HTMLElement(imgTag, document)
     , m_imageLoader(this)
-    , m_form(form)
+    , m_form(0)
     , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
-    , m_formWasSetByParser(form)
+    , m_formWasSetByParser(false)
 {
     ScriptWrappable::init(this);
-    if (form)
-        form->registerImgElement(this);
+    if (form && form->inDocument()) {
+        m_form = form;
+        m_formWasSetByParser = true;
+        m_form->registerImgElement(this);
+    }
 }
 
 PassRefPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
