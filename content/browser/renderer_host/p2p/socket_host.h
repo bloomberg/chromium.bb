@@ -46,6 +46,8 @@ class CONTENT_EXPORT P2PSocketHost {
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) = 0;
 
+  virtual bool SetOption(P2PSocketOption option, int value) = 0;
+
  protected:
   friend class P2PSocketHostTcpTestBase;
 

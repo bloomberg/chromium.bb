@@ -30,7 +30,7 @@ scoped_refptr<P2PSocketClient> P2PSocketClient::Create(
     const net::IPEndPoint& local_address,
     const net::IPEndPoint& remote_address,
     P2PSocketClientDelegate* delegate) {
-  P2PSocketClientImpl *impl = new P2PSocketClientImpl(
+  P2PSocketClientImpl* impl = new P2PSocketClientImpl(
       RenderThreadImpl::current()->p2p_socket_dispatcher());
   impl->Init(type, local_address, remote_address, delegate);
   return impl;
@@ -101,8 +101,24 @@ void P2PSocketClientImpl::SendWithDscp(
 }
 
 void P2PSocketClientImpl::Send(const net::IPEndPoint& address,
-                           const std::vector<char>& data) {
+                               const std::vector<char>& data) {
   SendWithDscp(address, data, net::DSCP_DEFAULT);
+}
+
+void P2PSocketClientImpl::SetOption(P2PSocketOption option,
+                                    int value) {
+  if (!ipc_message_loop_->BelongsToCurrentThread()) {
+    ipc_message_loop_->PostTask(
+        FROM_HERE, base::Bind(
+            &P2PSocketClientImpl::SetOption, this, option, value));
+    return;
+  }
+
+  DCHECK(state_ == STATE_OPEN || state_ == STATE_ERROR);
+  if (state_ == STATE_OPEN) {
+    dispatcher_->SendP2PMessage(new P2PHostMsg_SetOption(socket_id_,
+                                                         option, value));
+  }
 }
 
 void P2PSocketClientImpl::Close() {

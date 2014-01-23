@@ -143,4 +143,10 @@ P2PSocketHost* P2PSocketHostTcpServer::AcceptIncomingTcpConnection(
   return result.release();
 }
 
+bool P2PSocketHostTcpServer::SetOption(P2PSocketOption option,
+                                       int value) {
+  // Currently we don't have use case tcp server sockets are used for p2p.
+  return false;
+}
+
 }  // namespace content

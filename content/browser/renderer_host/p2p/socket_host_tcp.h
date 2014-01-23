@@ -46,6 +46,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
                     uint64 packet_id) OVERRIDE;
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) OVERRIDE;
+  virtual bool SetOption(P2PSocketOption option, int value) OVERRIDE;
 
  protected:
   // Derived classes will provide the implementation.

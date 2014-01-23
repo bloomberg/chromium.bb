@@ -74,6 +74,7 @@ class P2PSocketDispatcherHost
               const std::vector<char>& data,
               net::DiffServCodePoint dscp,
               uint64 packet_id);
+  void OnSetOption(int socket_id, P2PSocketOption option, int value);
   void OnDestroySocket(int socket_id);
 
   void DoGetNetworkList();
