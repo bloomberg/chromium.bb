@@ -174,7 +174,7 @@ void PrivetNotificationsListener::NotifyDeviceRemoved() {
   if (devices_active_ == 0) {
     delegate_->PrivetRemoveNotification();
   } else {
-    delegate_->PrivetNotify(devices_active_ > 1, true);
+    delegate_->PrivetNotify(devices_active_ > 1, false);
   }
 }
 
