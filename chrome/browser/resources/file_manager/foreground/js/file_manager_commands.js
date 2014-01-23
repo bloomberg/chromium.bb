@@ -69,8 +69,8 @@ CommandUtil.getCommandEntry = function(element) {
   } else if (element instanceof cr.ui.List) {
     // element is a normal List (eg. the file list on the right panel).
     var entry = element.selectedItem;
-    // Check if it is Entry or not by referring the fullPath member variable.
-    return entry && entry.fullPath ? entry : null;
+    // Check if it is Entry or not by checking for toURL().
+    return entry && 'toURL' in entry ? entry : null;
   } else {
     console.warn('Unsupported element');
     return null;
@@ -409,9 +409,7 @@ CommandHandler.COMMANDS_['format'] = {
     if (!root)
       root = directoryModel.getCurrentDirEntry();
 
-    // TODO(satorux): Stop assuming fullPath to be unique. crbug.com/320967
-    var mountPath = root.fullPath;
-    var volumeInfo = fileManager.volumeManager.getVolumeInfo(mountPath);
+    var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
     if (volumeInfo) {
       fileManager.confirm.show(
           loadTimeData.getString('FORMATTING_WARNING'),
@@ -795,7 +793,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = {
    */
   execute: function(event, fileManager) {
     var entry = CommandUtil.getCommandEntry(event.target);
-    if (entry && entry.fullPath)
+    if (entry)
       fileManager.removeFolderShortcut(entry);
   },
 

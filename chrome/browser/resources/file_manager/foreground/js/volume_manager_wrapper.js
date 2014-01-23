@@ -223,18 +223,6 @@ VolumeManagerWrapper.prototype.getVolumeInfo = function(mountPath) {
 };
 
 /**
- * Obtains a volume information from a file entry URL.
- * TODO(hirono): Check a file system to find a volume.
- *
- * @param {string} url URL of entry.
- * @return {VolumeInfo} Volume info.
- */
-VolumeManagerWrapper.prototype.getVolumeInfoByURL = function(url) {
-  return this.filterDisabledDriveVolume_(
-      this.volumeManager_ && this.volumeManager_.getVolumeInfoByURL(url));
-};
-
-/**
  * Obtains a volume information of the current profile.
  *
  * @param {util.VolumeType} volumeType Volume type.

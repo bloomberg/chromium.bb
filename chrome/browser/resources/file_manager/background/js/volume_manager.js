@@ -670,17 +670,6 @@ VolumeManager.prototype.getVolumeInfo = function(target) {
 };
 
 /**
- * Obtains a volume information from a file entry URL.
- * TODO(hirono): Check a file system to find a volume.
- *
- * @param {string} url URL of entry.
- * @return {VolumeInfo} Volume info.
- */
-VolumeManager.prototype.getVolumeInfoByURL = function(url) {
-  return this.getVolumeInfo(util.extractFilePath(url));
-};
-
-/**
  * Obtains a volume infomration of the current profile.
  *
  * @param {util.VolumeType} volumeType Volume type.
