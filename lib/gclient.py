@@ -38,10 +38,15 @@ def _UseGoloMirror():
   """Check whether to use the golo.chromium.org mirrors.
 
   This function returns whether or not we should use the mirrors from
-  golo.chromium.org, which are only accessible from within that subdomain.
+  golo.chromium.org, which we presume are only accessible from within
+  that subdomain, and a few other known exceptions.
   """
-  return cros_build_lib.GetHostName(fully_qualified=True).endswith(
-      '.golo.chromium.org')
+  host = cros_build_lib.GetHostName(fully_qualified=True)
+  GOLO_SUFFIXES = [
+      '.golo.chromium.org',
+      '.chrome.corp.google.com',
+  ]
+  return any([host.endswith(s) for s in GOLO_SUFFIXES])
 
 
 def GetBaseURLs():
