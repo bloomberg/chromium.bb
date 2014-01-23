@@ -46,8 +46,8 @@ namespace WebCore {
 PassRefPtr<EntrySync> EntrySync::create(EntryBase* entry)
 {
     if (entry->isFile())
-        return adoptRef(new FileEntrySync(entry->m_fileSystem, entry->m_fullPath));
-    return adoptRef(new DirectoryEntrySync(entry->m_fileSystem, entry->m_fullPath));
+        return FileEntrySync::create(entry->m_fileSystem, entry->m_fullPath);
+    return DirectoryEntrySync::create(entry->m_fileSystem, entry->m_fullPath);
 }
 
 PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionState& exceptionState)

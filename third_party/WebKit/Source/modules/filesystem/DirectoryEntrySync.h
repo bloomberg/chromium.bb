@@ -57,7 +57,6 @@ public:
     void removeRecursively(ExceptionState&);
 
 private:
-    friend class EntrySync;
     DirectoryEntrySync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
 };
 

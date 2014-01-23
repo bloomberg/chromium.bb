@@ -55,7 +55,6 @@ public:
     PassRefPtr<FileWriterSync> createWriter(ExceptionState&);
 
 private:
-    friend class EntrySync;
     FileEntrySync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);
 };
 
