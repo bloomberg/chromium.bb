@@ -1715,22 +1715,11 @@ class TextureLayerNoExtraCommitForMailboxTest
     root->SetAnchorPoint(gfx::PointF());
     root->SetIsDrawable(true);
 
-    solid_layer_ = SolidColorLayer::Create();
-    solid_layer_->SetBounds(gfx::Size(10, 10));
-    solid_layer_->SetIsDrawable(true);
-    solid_layer_->SetBackgroundColor(SK_ColorWHITE);
-    root->AddChild(solid_layer_);
-
-    parent_layer_ = Layer::Create();
-    parent_layer_->SetBounds(gfx::Size(10, 10));
-    parent_layer_->SetIsDrawable(true);
-    root->AddChild(parent_layer_);
-
     texture_layer_ = TextureLayer::CreateForMailbox(this);
     texture_layer_->SetBounds(gfx::Size(10, 10));
     texture_layer_->SetAnchorPoint(gfx::PointF());
     texture_layer_->SetIsDrawable(true);
-    parent_layer_->AddChild(texture_layer_);
+    root->AddChild(texture_layer_);
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
@@ -1778,8 +1767,6 @@ class TextureLayerNoExtraCommitForMailboxTest
   virtual void AfterTest() OVERRIDE {}
 
  private:
-  scoped_refptr<SolidColorLayer> solid_layer_;
-  scoped_refptr<Layer> parent_layer_;
   scoped_refptr<TextureLayer> texture_layer_;
 };
 
@@ -1938,6 +1925,86 @@ class TextureLayerChangeInvisibleMailboxTest
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerChangeInvisibleMailboxTest);
+
+// Test that TextureLayerImpl::ReleaseResources can be called which releases
+// the mailbox back to TextureLayerClient.
+class TextureLayerReleaseResourcesBase
+    : public LayerTreeTest,
+      public TextureLayerClient {
+ public:
+  // TextureLayerClient implementation.
+  virtual unsigned PrepareTexture() OVERRIDE {
+    NOTREACHED();
+    return 0;
+  }
+  virtual bool PrepareTextureMailbox(
+      TextureMailbox* mailbox,
+      scoped_ptr<SingleReleaseCallback>* release_callback,
+      bool use_shared_memory) OVERRIDE {
+    *mailbox = TextureMailbox(std::string(64, '1'));
+    *release_callback = SingleReleaseCallback::Create(
+        base::Bind(&TextureLayerReleaseResourcesBase::MailboxReleased,
+                   base::Unretained(this)));
+    return true;
+  }
+
+  void MailboxReleased(unsigned sync_point, bool lost_resource) {
+    mailbox_released_ = true;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeTest::SetupTree();
+
+    scoped_refptr<TextureLayer> texture_layer =
+        TextureLayer::CreateForMailbox(this);
+    texture_layer->SetBounds(gfx::Size(10, 10));
+    texture_layer->SetAnchorPoint(gfx::PointF());
+    texture_layer->SetIsDrawable(true);
+
+    layer_tree_host()->root_layer()->AddChild(texture_layer);
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    mailbox_released_ = false;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_TRUE(mailbox_released_);
+  }
+
+ private:
+  bool mailbox_released_;
+};
+
+class TextureLayerReleaseResourcesAfterCommit
+    : public TextureLayerReleaseResourcesBase {
+ public:
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerTreeImpl* tree = NULL;
+    if (host_impl->settings().impl_side_painting)
+      tree = host_impl->pending_tree();
+    else
+      tree = host_impl->active_tree();
+    tree->root_layer()->children()[0]->ReleaseResources();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerReleaseResourcesAfterCommit);
+
+class TextureLayerReleaseResourcesAfterActivate
+    : public TextureLayerReleaseResourcesBase {
+ public:
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    host_impl->active_tree()->root_layer()->children()[0]->ReleaseResources();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerReleaseResourcesAfterActivate);
 
 // Test recovering from a lost context.
 class TextureLayerLostContextTest
