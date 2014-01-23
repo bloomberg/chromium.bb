@@ -76,4 +76,4 @@ ExtensionServiceTest.InstallTheme
 TabStripModelTest.FastShutdown
 
 # http://crbug.com/336343
-LauncherContextMenuTest.NewIncognitoWindowMenuIsDisabledWhenIncognitoModeOff
+LauncherContextMenuTest.*
