@@ -40,13 +40,9 @@ class PerfControlTaskImpl : public internal::Task {
     can_finish_.Wait();
   }
 
-  void WaitForTaskToStartRunning() {
-    did_start_.Wait();
-  }
+  void WaitForTaskToStartRunning() { did_start_.Wait(); }
 
-  void AllowTaskToFinish() {
-    can_finish_.Signal();
-  }
+  void AllowTaskToFinish() { can_finish_.Signal(); }
 
  private:
   virtual ~PerfControlTaskImpl() {}
@@ -62,24 +58,20 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   TaskGraphRunnerPerfTest()
       : timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
-               kTimeCheckInterval) {
-  }
+               kTimeCheckInterval) {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    task_graph_runner_ = make_scoped_ptr(
-        new internal::TaskGraphRunner(1, "PerfTest"));
+    task_graph_runner_ =
+        make_scoped_ptr(new internal::TaskGraphRunner(1, "PerfTest"));
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() OVERRIDE {
-    task_graph_runner_.reset();
-  }
+  virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
 
   void AfterTest(const std::string& test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult
-    printf("*RESULT %s: %.2f runs/s\n",
-           test_name.c_str(),
-           timer_.LapsPerSecond());
+    printf(
+        "*RESULT %s: %.2f runs/s\n", test_name.c_str(), timer_.LapsPerSecond());
   }
 
   void RunScheduleTasksTest(const std::string& test_name,
@@ -94,13 +86,17 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       leaf_task->AllowTaskToFinish();
       task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
       internal::Task::Vector completed_tasks;
-      task_graph_runner_->CollectCompletedTasks(
-          namespace_token_, &completed_tasks);
+      task_graph_runner_->CollectCompletedTasks(namespace_token_,
+                                                &completed_tasks);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("schedule_tasks", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PrintResult("schedule_tasks",
+                           "",
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
   }
 
   void RunExecuteTasksTest(const std::string& test_name,
@@ -111,13 +107,13 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       ScheduleTasks(NULL, NULL, max_depth, num_children_per_node);
       task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
       internal::Task::Vector completed_tasks;
-      task_graph_runner_->CollectCompletedTasks(
-          namespace_token_, &completed_tasks);
+      task_graph_runner_->CollectCompletedTasks(namespace_token_,
+                                                &completed_tasks);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("execute_tasks", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    perf_test::PrintResult(
+        "execute_tasks", "", test_name, timer_.LapsPerSecond(), "runs/s", true);
   }
 
  private:
