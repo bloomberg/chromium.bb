@@ -174,7 +174,13 @@ TEST_F(GCMStoreImplTest, IncomingMessages) {
 
 // Verify saving some outgoing messages, reopening the directory, and then
 // removing those outgoing messages.
-TEST_F(GCMStoreImplTest, OutgoingMessages) {
+// Fails on linux_asan crbug.com/337560
+#if !defined(OS_POSIX)
+#define MAYBE_OutgoingMessages OutgoingMessages
+#else
+#define MAYBE_OutgoingMessages DISABLED_OutgoingMessages
+#endif
+TEST_F(GCMStoreImplTest, MAYBE_OutgoingMessages) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
   GCMStore::LoadResult load_result;
   gcm_store->Load(base::Bind(
@@ -228,7 +234,13 @@ TEST_F(GCMStoreImplTest, OutgoingMessages) {
 }
 
 // Verify incoming and outgoing messages don't conflict.
-TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
+// Fails on linux_asan crbug.com/337560
+#if !defined(OS_POSIX)
+#define MAYBE_IncomingAndOutgoingMessages IncomingAndOutgoingMessages
+#else
+#define MAYBE_IncomingAndOutgoingMessages DISABLED_IncomingAndOutgoingMessages
+#endif
+TEST_F(GCMStoreImplTest, MAYBE_IncomingAndOutgoingMessages) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
   GCMStore::LoadResult load_result;
   gcm_store->Load(base::Bind(
@@ -357,7 +369,13 @@ TEST_F(GCMStoreImplTest, UserSerialNumberMappings) {
 
 // Test that per-app message limits are enforced, persisted across restarts,
 // and updated as messages are removed.
-TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
+// Fails on linux_asan crbug.com/337560
+#if !defined(OS_POSIX)
+#define MAYBE_PerAppMessageLimits PerAppMessageLimits
+#else
+#define MAYBE_PerAppMessageLimits DISABLED_PerAppMessageLimits
+#endif
+TEST_F(GCMStoreImplTest, MAYBE_PerAppMessageLimits) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
   GCMStore::LoadResult load_result;
   gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,

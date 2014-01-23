@@ -294,7 +294,15 @@ TEST_F(MCSClientTest, SendMessageNoRMQ) {
 
 // Send a message without RMQ support while disconnected. Message send should
 // fail immediately, invoking callback.
-TEST_F(MCSClientTest, SendMessageNoRMQWhileDisconnected) {
+// Fails on linux_asan crbug.com/337560
+#if !defined(OS_POSIX)
+#define MAYBE_SendMessageNoRMQWhileDisconnected \
+    SendMessageNoRMQWhileDisconnected
+#else
+#define MAYBE_SendMessageNoRMQWhileDisconnected \
+    DISABLED_SendMessageNoRMQWhileDisconnected
+#endif
+TEST_F(MCSClientTest, MAYBE_SendMessageNoRMQWhileDisconnected) {
   BuildMCSClient();
   InitializeClient();
 
