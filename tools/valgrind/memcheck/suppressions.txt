@@ -5894,7 +5894,7 @@
    fun:NSSTrustDomain_TraverseCertificates
    fun:PK11_ListCerts
    fun:_ZN3net15NSSCertDatabase9ListCertsEPSt6vectorI13scoped_refptrINS_15X509CertificateEESaIS4_EE
-   fun:_ZN8chromeos12_GLOBAL__N_119LoadNSSCertificatesEPSt6vectorI13scoped_refptrIN3net15X509CertificateEESaIS5_EE
+   fun:_ZN8chromeos12_GLOBAL__N_119LoadNSSCertificates*
 }
 {
    bug_273398
@@ -6389,3 +6389,11 @@
    fun:_ZN7content12_GLOBAL__N_123CreateWebFrameTestProxyEPNS_14RenderViewImplEi
    fun:_ZN7content15RenderFrameImpl6CreateEPNS_14RenderViewImplEi
 }
+{
+   bug_337462
+   Memcheck:Uninitialized
+   fun:_ZN3ash8TouchUMA16RecordTouchEventEPN4aura6WindowERKN2ui10TouchEventE
+   fun:_ZN3ash8internal24SystemGestureEventFilter12OnTouchEventEPN2ui10TouchEventE
+   fun:_ZN2ui12EventHandler7OnEventEPNS_5EventE
+}
+
