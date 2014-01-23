@@ -3271,6 +3271,11 @@
                           '-fuse-ld=gold',
                         ],
                       }],
+                      ['asan==1', {
+                        'cflags': [
+                          '-marm', # Required for frame pointer based stack traces.
+                        ],
+                      }],
                     ],
                   }],
                 ],
