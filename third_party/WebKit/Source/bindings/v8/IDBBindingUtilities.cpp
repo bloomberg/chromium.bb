@@ -26,6 +26,7 @@
 #include "config.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "V8DOMStringList.h"
 #include "V8HiddenPropertyName.h"
 #include "V8IDBCursor.h"
@@ -53,7 +54,7 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer*, v8::Isolate*);
+static v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer*, v8::Isolate*);
 
 static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -72,7 +73,7 @@ static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object
     return v8::Undefined(isolate);
 }
 
-v8::Handle<v8::Value> toV8(const IDBKey* key, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Handle<v8::Value> toV8(const IDBKey* key, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!key) {
         // This should be undefined, not null.
@@ -106,7 +107,7 @@ v8::Handle<v8::Value> toV8(const IDBKey* key, v8::Handle<v8::Object> creationCon
     return v8Undefined();
 }
 
-v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
         return v8::Null(isolate);
@@ -167,7 +168,7 @@ v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> creationCo
 
 static const size_t maximumDepth = 2000;
 
-static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vector<v8::Handle<v8::Array> >& stack, v8::Isolate* isolate)
+static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vector<v8::Handle<v8::Array> >& stack, v8::Isolate* isolate, bool allowExperimentalTypes = false)
 {
     if (value->IsNumber() && !std::isnan(value->NumberValue()))
         return IDBKey::createNumber(value->NumberValue());
@@ -175,6 +176,14 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
         return IDBKey::createString(toCoreString(value.As<v8::String>()));
     if (value->IsDate() && !std::isnan(value->NumberValue()))
         return IDBKey::createDate(value->NumberValue());
+    if (value->IsUint8Array() && (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled())) {
+        // Per discussion in https://www.w3.org/Bugs/Public/show_bug.cgi?id=23332 the
+        // input type is constrained to Uint8Array to match the output type.
+        ArrayBufferView* view = WebCore::V8ArrayBufferView::toNative(value->ToObject());
+        const char* start = static_cast<const char*>(view->baseAddress());
+        size_t length = view->byteLength();
+        return IDBKey::createBinary(SharedBuffer::create(start, length));
+    }
     if (value->IsArray()) {
         v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
 
@@ -188,7 +197,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; ++i) {
             v8::Local<v8::Value> item = array->Get(v8::Int32::New(isolate, i));
-            RefPtr<IDBKey> subkey = createIDBKeyFromValue(item, stack, isolate);
+            RefPtr<IDBKey> subkey = createIDBKeyFromValue(item, stack, isolate, allowExperimentalTypes);
             if (!subkey)
                 subkeys.append(IDBKey::createInvalid());
             else
@@ -201,10 +210,10 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
     return 0;
 }
 
-static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, v8::Isolate* isolate, bool allowExperimentalTypes = false)
 {
     Vector<v8::Handle<v8::Array> > stack;
-    RefPtr<IDBKey> key = createIDBKeyFromValue(value, stack, isolate);
+    RefPtr<IDBKey> key = createIDBKeyFromValue(value, stack, isolate, allowExperimentalTypes);
     if (key)
         return key;
     return IDBKey::createInvalid();
@@ -297,7 +306,7 @@ static v8::Handle<v8::Value> ensureNthValueOnKeyPath(v8::Handle<v8::Value>& root
     return currentValue;
 }
 
-static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValue& value, const String& keyPath, v8::Isolate* isolate)
+static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValue& value, const String& keyPath, v8::Isolate* isolate, bool allowExperimentalTypes)
 {
     Vector<String> keyPathElements;
     IDBKeyPathParseError error;
@@ -310,21 +319,18 @@ static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValu
     v8::Handle<v8::Value> v8Key(getNthValueOnKeyPath(v8Value, keyPathElements, keyPathElements.size(), isolate));
     if (v8Key.IsEmpty())
         return 0;
-    return createIDBKeyFromValue(v8Key, isolate);
+    return createIDBKeyFromValue(v8Key, isolate, allowExperimentalTypes);
 }
 
-PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state, const ScriptValue& value, const IDBKeyPath& keyPath)
+static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValue& value, const IDBKeyPath& keyPath, v8::Isolate* isolate, bool allowExperimentalTypes = false)
 {
-    IDB_TRACE("createIDBKeyFromScriptValueAndKeyPath");
     ASSERT(!keyPath.isNull());
-    v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
-    ASSERT(isolate->InContext());
     v8::HandleScope handleScope(isolate);
     if (keyPath.type() == IDBKeyPath::ArrayType) {
         IDBKey::KeyArray result;
         const Vector<String>& array = keyPath.array();
         for (size_t i = 0; i < array.size(); ++i) {
-            RefPtr<IDBKey> key = createIDBKeyFromScriptValueAndKeyPath(value, array[i], isolate);
+            RefPtr<IDBKey> key = createIDBKeyFromScriptValueAndKeyPath(value, array[i], isolate, allowExperimentalTypes);
             if (!key)
                 return 0;
             result.append(key);
@@ -333,10 +339,17 @@ PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state,
     }
 
     ASSERT(keyPath.type() == IDBKeyPath::StringType);
-    return createIDBKeyFromScriptValueAndKeyPath(value, keyPath.string(), isolate);
+    return createIDBKeyFromScriptValueAndKeyPath(value, keyPath.string(), isolate, allowExperimentalTypes);
 }
 
-v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer* buffer, v8::Isolate* isolate)
+PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state, const ScriptValue& value, const IDBKeyPath& keyPath)
+{
+    IDB_TRACE("createIDBKeyFromScriptValueAndKeyPath");
+    v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    return createIDBKeyFromScriptValueAndKeyPath(value, keyPath, isolate);
+}
+
+static v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer* buffer, v8::Isolate* isolate)
 {
     ASSERT(isolate->InContext());
     if (!buffer)
@@ -440,7 +453,9 @@ void assertPrimaryKeyValidOrInjectable(DOMRequestState* state, PassRefPtr<Shared
     ScriptValue keyValue = idbKeyToScriptValue(state, key);
     ScriptValue scriptValue(deserializeIDBValueBuffer(buffer.get(), isolate), isolate);
 
-    RefPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPath(state, scriptValue, keyPath);
+    // This assertion is about already persisted data, so allow experimental types.
+    const bool allowExperimentalTypes = true;
+    RefPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPath(scriptValue, keyPath, isolate, allowExperimentalTypes);
     ASSERT(!expectedKey || expectedKey->isEqual(key.get()));
 
     bool injected = injectV8KeyIntoV8Value(keyValue.v8Value(), scriptValue.v8Value(), keyPath, isolate);

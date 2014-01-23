@@ -92,9 +92,41 @@ PASS indexedDB.cmp('𝄞','�') is -1
 PASS indexedDB.cmp('�','𝄞') is 1
 PASS indexedDB.cmp('𝄞','𝄞') is 0
 PASS indexedDB.cmp('�','�') is 0
-PASS indexedDB.cmp('�',[]) is -1
-PASS indexedDB.cmp([],'�') is 1
+PASS indexedDB.cmp('�',new Uint8Array()) is -1
+PASS indexedDB.cmp(new Uint8Array(),'�') is 1
 PASS indexedDB.cmp('�','�') is 0
+PASS indexedDB.cmp(new Uint8Array(),new Uint8Array()) is 0
+PASS indexedDB.cmp(new Uint8Array(),new Uint8Array([0])) is -1
+PASS indexedDB.cmp(new Uint8Array([0]),new Uint8Array()) is 1
+PASS indexedDB.cmp(new Uint8Array(),new Uint8Array()) is 0
+PASS indexedDB.cmp(new Uint8Array([0]),new Uint8Array([0])) is 0
+PASS indexedDB.cmp(new Uint8Array([0]),new Uint8Array([0, 0])) is -1
+PASS indexedDB.cmp(new Uint8Array([0, 0]),new Uint8Array([0])) is 1
+PASS indexedDB.cmp(new Uint8Array([0]),new Uint8Array([0])) is 0
+PASS indexedDB.cmp(new Uint8Array([0, 0]),new Uint8Array([0, 0])) is 0
+PASS indexedDB.cmp(new Uint8Array([0, 0]),new Uint8Array([0, 1])) is -1
+PASS indexedDB.cmp(new Uint8Array([0, 1]),new Uint8Array([0, 0])) is 1
+PASS indexedDB.cmp(new Uint8Array([0, 0]),new Uint8Array([0, 0])) is 0
+PASS indexedDB.cmp(new Uint8Array([0, 1]),new Uint8Array([0, 1])) is 0
+PASS indexedDB.cmp(new Uint8Array([0, 1]),new Uint8Array([1])) is -1
+PASS indexedDB.cmp(new Uint8Array([1]),new Uint8Array([0, 1])) is 1
+PASS indexedDB.cmp(new Uint8Array([0, 1]),new Uint8Array([0, 1])) is 0
+PASS indexedDB.cmp(new Uint8Array([1]),new Uint8Array([1])) is 0
+PASS indexedDB.cmp(new Uint8Array([1]),new Uint8Array([1, 0])) is -1
+PASS indexedDB.cmp(new Uint8Array([1, 0]),new Uint8Array([1])) is 1
+PASS indexedDB.cmp(new Uint8Array([1]),new Uint8Array([1])) is 0
+PASS indexedDB.cmp(new Uint8Array([1, 0]),new Uint8Array([1, 0])) is 0
+PASS indexedDB.cmp(new Uint8Array([1, 0]),new Uint8Array([1, 1])) is -1
+PASS indexedDB.cmp(new Uint8Array([1, 1]),new Uint8Array([1, 0])) is 1
+PASS indexedDB.cmp(new Uint8Array([1, 0]),new Uint8Array([1, 0])) is 0
+PASS indexedDB.cmp(new Uint8Array([1, 1]),new Uint8Array([1, 1])) is 0
+PASS indexedDB.cmp(new Uint8Array([1, 1]),new Uint8Array([255])) is -1
+PASS indexedDB.cmp(new Uint8Array([255]),new Uint8Array([1, 1])) is 1
+PASS indexedDB.cmp(new Uint8Array([1, 1]),new Uint8Array([1, 1])) is 0
+PASS indexedDB.cmp(new Uint8Array([255]),new Uint8Array([255])) is 0
+PASS indexedDB.cmp(new Uint8Array([255]),[]) is -1
+PASS indexedDB.cmp([],new Uint8Array([255])) is 1
+PASS indexedDB.cmp(new Uint8Array([255]),new Uint8Array([255])) is 0
 PASS indexedDB.cmp([],[]) is 0
 PASS indexedDB.cmp([],[-Infinity]) is -1
 PASS indexedDB.cmp([-Infinity],[]) is 1
@@ -184,9 +216,41 @@ PASS indexedDB.cmp(['𝄞'],['�']) is -1
 PASS indexedDB.cmp(['�'],['𝄞']) is 1
 PASS indexedDB.cmp(['𝄞'],['𝄞']) is 0
 PASS indexedDB.cmp(['�'],['�']) is 0
-PASS indexedDB.cmp(['�'],[[]]) is -1
-PASS indexedDB.cmp([[]],['�']) is 1
+PASS indexedDB.cmp(['�'],[new Uint8Array()]) is -1
+PASS indexedDB.cmp([new Uint8Array()],['�']) is 1
 PASS indexedDB.cmp(['�'],['�']) is 0
+PASS indexedDB.cmp([new Uint8Array()],[new Uint8Array()]) is 0
+PASS indexedDB.cmp([new Uint8Array()],[new Uint8Array([0])]) is -1
+PASS indexedDB.cmp([new Uint8Array([0])],[new Uint8Array()]) is 1
+PASS indexedDB.cmp([new Uint8Array()],[new Uint8Array()]) is 0
+PASS indexedDB.cmp([new Uint8Array([0])],[new Uint8Array([0])]) is 0
+PASS indexedDB.cmp([new Uint8Array([0])],[new Uint8Array([0, 0])]) is -1
+PASS indexedDB.cmp([new Uint8Array([0, 0])],[new Uint8Array([0])]) is 1
+PASS indexedDB.cmp([new Uint8Array([0])],[new Uint8Array([0])]) is 0
+PASS indexedDB.cmp([new Uint8Array([0, 0])],[new Uint8Array([0, 0])]) is 0
+PASS indexedDB.cmp([new Uint8Array([0, 0])],[new Uint8Array([0, 1])]) is -1
+PASS indexedDB.cmp([new Uint8Array([0, 1])],[new Uint8Array([0, 0])]) is 1
+PASS indexedDB.cmp([new Uint8Array([0, 0])],[new Uint8Array([0, 0])]) is 0
+PASS indexedDB.cmp([new Uint8Array([0, 1])],[new Uint8Array([0, 1])]) is 0
+PASS indexedDB.cmp([new Uint8Array([0, 1])],[new Uint8Array([1])]) is -1
+PASS indexedDB.cmp([new Uint8Array([1])],[new Uint8Array([0, 1])]) is 1
+PASS indexedDB.cmp([new Uint8Array([0, 1])],[new Uint8Array([0, 1])]) is 0
+PASS indexedDB.cmp([new Uint8Array([1])],[new Uint8Array([1])]) is 0
+PASS indexedDB.cmp([new Uint8Array([1])],[new Uint8Array([1, 0])]) is -1
+PASS indexedDB.cmp([new Uint8Array([1, 0])],[new Uint8Array([1])]) is 1
+PASS indexedDB.cmp([new Uint8Array([1])],[new Uint8Array([1])]) is 0
+PASS indexedDB.cmp([new Uint8Array([1, 0])],[new Uint8Array([1, 0])]) is 0
+PASS indexedDB.cmp([new Uint8Array([1, 0])],[new Uint8Array([1, 1])]) is -1
+PASS indexedDB.cmp([new Uint8Array([1, 1])],[new Uint8Array([1, 0])]) is 1
+PASS indexedDB.cmp([new Uint8Array([1, 0])],[new Uint8Array([1, 0])]) is 0
+PASS indexedDB.cmp([new Uint8Array([1, 1])],[new Uint8Array([1, 1])]) is 0
+PASS indexedDB.cmp([new Uint8Array([1, 1])],[new Uint8Array([255])]) is -1
+PASS indexedDB.cmp([new Uint8Array([255])],[new Uint8Array([1, 1])]) is 1
+PASS indexedDB.cmp([new Uint8Array([1, 1])],[new Uint8Array([1, 1])]) is 0
+PASS indexedDB.cmp([new Uint8Array([255])],[new Uint8Array([255])]) is 0
+PASS indexedDB.cmp([new Uint8Array([255])],[[]]) is -1
+PASS indexedDB.cmp([[]],[new Uint8Array([255])]) is 1
+PASS indexedDB.cmp([new Uint8Array([255])],[new Uint8Array([255])]) is 0
 PASS indexedDB.cmp([[]],[[]]) is 0
 PASS indexedDB.cmp([[]],[[], []]) is -1
 PASS indexedDB.cmp([[], []],[[]]) is 1
