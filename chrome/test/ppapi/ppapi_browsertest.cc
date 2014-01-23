@@ -958,7 +958,9 @@ IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest, MAYBE_PNaCl_FileIO_Private) {
   );
 }
 
-IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef) {
+// Note, the FileRef tests are split in to two, because all of them together
+// sometimes takes too long on windows: crbug.com/336999
+IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef1) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
       LIST_TEST(FileRef_GetFileSystemType)
@@ -966,6 +968,10 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef) {
       LIST_TEST(FileRef_GetPath)
       LIST_TEST(FileRef_GetParent)
       LIST_TEST(FileRef_MakeDirectory)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef2) {
+  RunTestViaHTTP(
       LIST_TEST(FileRef_QueryAndTouchFile)
       LIST_TEST(FileRef_DeleteFileAndDirectory)
       LIST_TEST(FileRef_RenameFileAndDirectory)
@@ -974,9 +980,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FileRef) {
       LIST_TEST(FileRef_ReadDirectoryEntries)
   );
 }
-// OutOfProcessPPAPITest.FileRef times out fairly often.
-// http://crbug.com/241646
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef1) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
       LIST_TEST(FileRef_GetFileSystemType)
@@ -984,6 +988,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef) {
       LIST_TEST(FileRef_GetPath)
       LIST_TEST(FileRef_GetParent)
       LIST_TEST(FileRef_MakeDirectory)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef2) {
+  RunTestViaHTTP(
       LIST_TEST(FileRef_QueryAndTouchFile)
       LIST_TEST(FileRef_DeleteFileAndDirectory)
       LIST_TEST(FileRef_RenameFileAndDirectory)
@@ -992,7 +1000,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef) {
       LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef1) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
       LIST_TEST(FileRef_GetFileSystemType)
@@ -1000,6 +1008,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef) {
       LIST_TEST(FileRef_GetPath)
       LIST_TEST(FileRef_GetParent)
       LIST_TEST(FileRef_MakeDirectory)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef2) {
+  RunTestViaHTTP(
       LIST_TEST(FileRef_QueryAndTouchFile)
       LIST_TEST(FileRef_DeleteFileAndDirectory)
       LIST_TEST(FileRef_RenameFileAndDirectory)
@@ -1010,11 +1022,13 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef) {
 }
 // Flaky on 32-bit linux bot; http://crbug.com/308908
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86)
-#define MAYBE_NaCl_Glibc_FileRef DISABLED_FileRef
+#define MAYBE_NaCl_Glibc_FileRef1 DISABLED_FileRef1
+#define MAYBE_NaCl_Glibc_FileRef2 DISABLED_FileRef2
 #else
-#define MAYBE_NaCl_Glibc_FileRef FileRef
+#define MAYBE_NaCl_Glibc_FileRef1 FileRef1
+#define MAYBE_NaCl_Glibc_FileRef2 FileRef2
 #endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileRef) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileRef1) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
       LIST_TEST(FileRef_GetFileSystemType)
@@ -1022,6 +1036,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileRef) {
       LIST_TEST(FileRef_GetPath)
       LIST_TEST(FileRef_GetParent)
       LIST_TEST(FileRef_MakeDirectory)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileRef2) {
+  RunTestViaHTTP(
       LIST_TEST(FileRef_QueryAndTouchFile)
       LIST_TEST(FileRef_DeleteFileAndDirectory)
       LIST_TEST(FileRef_RenameFileAndDirectory)
@@ -1030,7 +1048,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_NaCl_Glibc_FileRef) {
       LIST_TEST(DISABLED_FileRef_ReadDirectoryEntries)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileRef) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileRef1) {
   RunTestViaHTTP(
       LIST_TEST(FileRef_Create)
       LIST_TEST(FileRef_GetFileSystemType)
@@ -1038,6 +1056,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileRef) {
       LIST_TEST(FileRef_GetPath)
       LIST_TEST(FileRef_GetParent)
       LIST_TEST(FileRef_MakeDirectory)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, FileRef2) {
+  RunTestViaHTTP(
       LIST_TEST(FileRef_QueryAndTouchFile)
       LIST_TEST(FileRef_DeleteFileAndDirectory)
       LIST_TEST(FileRef_RenameFileAndDirectory)
@@ -1219,8 +1241,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
   );
 }
 
-// In-process WebSocket tests
-IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket) {
+// In-process WebSocket tests. Note, the WebSocket tests are split in to two,
+// because all of them together sometimes takes too long on windows:
+// crbug.com/336999
+IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket1) {
   RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_IsWebSocket)
       LIST_TEST(WebSocket_UninitializedPropertiesAccess)
@@ -1235,6 +1259,10 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket) {
       LIST_TEST(WebSocket_BinarySendReceive)
       LIST_TEST(WebSocket_StressedSendReceive)
       LIST_TEST(WebSocket_BufferedAmount)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket2) {
+  RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_AbortCallsWithCallback)
       LIST_TEST(WebSocket_AbortSendMessageCall)
       LIST_TEST(WebSocket_AbortCloseCall)
@@ -1253,7 +1281,7 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, WebSocket) {
 }
 
 // Out-of-process WebSocket tests
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket1) {
   RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_IsWebSocket)
       LIST_TEST(WebSocket_UninitializedPropertiesAccess)
@@ -1268,6 +1296,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket) {
       LIST_TEST(WebSocket_BinarySendReceive)
       LIST_TEST(WebSocket_StressedSendReceive)
       LIST_TEST(WebSocket_BufferedAmount)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket2) {
+  RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_AbortCallsWithCallback)
       LIST_TEST(WebSocket_AbortSendMessageCall)
       LIST_TEST(WebSocket_AbortCloseCall)
@@ -1286,7 +1318,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, WebSocket) {
 }
 
 // NaClNewlib WebSocket tests
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket1) {
   RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_IsWebSocket)
       LIST_TEST(WebSocket_UninitializedPropertiesAccess)
@@ -1301,6 +1333,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket) {
       LIST_TEST(WebSocket_BinarySendReceive)
       LIST_TEST(WebSocket_StressedSendReceive)
       LIST_TEST(WebSocket_BufferedAmount)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket2) {
+  RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_AbortCallsWithCallback)
       LIST_TEST(WebSocket_AbortSendMessageCall)
       LIST_TEST(WebSocket_AbortCloseCall)
@@ -1319,7 +1355,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, WebSocket) {
 }
 
 // NaClGLibc WebSocket tests
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket)) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket1)) {
   RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_IsWebSocket)
       LIST_TEST(WebSocket_UninitializedPropertiesAccess)
@@ -1334,6 +1370,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket)) {
       LIST_TEST(WebSocket_BinarySendReceive)
       LIST_TEST(WebSocket_StressedSendReceive)
       LIST_TEST(WebSocket_BufferedAmount)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket2)) {
+  RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_AbortCallsWithCallback)
       LIST_TEST(WebSocket_AbortSendMessageCall)
       LIST_TEST(WebSocket_AbortCloseCall)
@@ -1352,7 +1392,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(WebSocket)) {
 }
 
 // PNaCl WebSocket tests
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket1) {
   RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_IsWebSocket)
       LIST_TEST(WebSocket_UninitializedPropertiesAccess)
@@ -1367,6 +1407,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket) {
       LIST_TEST(WebSocket_BinarySendReceive)
       LIST_TEST(WebSocket_StressedSendReceive)
       LIST_TEST(WebSocket_BufferedAmount)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, WebSocket2) {
+  RunTestWithWebSocketServer(
       LIST_TEST(WebSocket_AbortCallsWithCallback)
       LIST_TEST(WebSocket_AbortSendMessageCall)
       LIST_TEST(WebSocket_AbortCloseCall)
