@@ -897,10 +897,13 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyWindowUpdate(
   return CreateFramer()->SerializeWindowUpdate(update_ir);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method in tests (prefer
+// SpdyRstStreamIR).
 SpdyFrame* SpdyTestUtil::ConstructSpdyRstStream(
     SpdyStreamId stream_id,
     SpdyRstStreamStatus status) const {
-  return CreateFramer()->CreateRstStream(stream_id, status);
+  SpdyRstStreamIR rst_ir(stream_id, status, "RST");
+  return CreateFramer()->SerializeRstStream(rst_ir);
 }
 
 SpdyFrame* SpdyTestUtil::ConstructSpdyGet(

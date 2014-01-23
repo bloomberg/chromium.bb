@@ -33,6 +33,16 @@ void SpdySynReplyIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitSynReply(*this);
 }
 
+SpdyRstStreamIR::SpdyRstStreamIR(SpdyStreamId stream_id,
+                                 SpdyRstStreamStatus status,
+                                 base::StringPiece description)
+    : SpdyFrameWithStreamIdIR(stream_id),
+      description_(description) {
+  set_status(status);
+}
+
+SpdyRstStreamIR::~SpdyRstStreamIR() {}
+
 void SpdyRstStreamIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitRstStream(*this);
 }

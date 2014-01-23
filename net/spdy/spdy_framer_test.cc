@@ -302,6 +302,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       last_push_promise_promised_stream_(0),
       data_bytes_(0),
       fin_frame_count_(0),
+      fin_opaque_data_(),
       fin_flag_count_(0),
       zero_length_data_frame_count_(0),
       control_frame_header_data_count_(0),
@@ -399,6 +400,14 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE {
     fin_frame_count_++;
+  }
+
+  virtual bool OnRstStreamFrameData(const char* rst_stream_data,
+                                    size_t len) OVERRIDE {
+    if ((rst_stream_data != NULL) && (len > 0)) {
+      fin_opaque_data_ += std::string(rst_stream_data, len);
+    }
+    return true;
   }
 
   virtual void OnSetting(SpdySettingsIds id,
@@ -531,6 +540,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyStreamId last_push_promise_promised_stream_;
   int data_bytes_;
   int fin_frame_count_;  // The count of RST_STREAM type frames received.
+  std::string fin_opaque_data_;
   int fin_flag_count_;  // The count of frames with the FIN flag set.
   int zero_length_data_frame_count_;  // The count of zero-length data frames.
   int control_frame_header_data_count_;  // The count of chunks received.
@@ -1323,9 +1333,12 @@ TEST_P(SpdyFramerTest, Basic) {
     0x00, 0x08, 0x00, 0x00,           // DATA on Stream #3
     0x00, 0x00, 0x00, 0x03,
 
-    0x00, 0x0c, 0x03, 0x00,           // RST_STREAM on Stream #3
+    0x00, 0x17, 0x03, 0x00,           // RST_STREAM on Stream #3
     0x00, 0x00, 0x00, 0x03,
     0x00, 0x00, 0x00, 0x00,
+    0x52, 0x45, 0x53, 0x45,           // opaque data
+    0x54, 0x53, 0x54, 0x52,
+    0x45, 0x41, 0x4d,
   };
 
   TestSpdyVisitor visitor(spdy_version_);
@@ -1337,15 +1350,34 @@ TEST_P(SpdyFramerTest, Basic) {
     visitor.SimulateInFramer(kV4Input, sizeof(kV4Input));
   }
 
-  EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(2, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(24, visitor.data_bytes_);
-  EXPECT_EQ(2, visitor.fin_frame_count_);
+
+  // TODO(jgraettinger): We expect to handle but not emit RST payloads.
+  if (false /*!FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/ &&
+      IsSpdy4()) {
+    // Last rst_stream is an INVALID_CONTROL_FRAME.
+    EXPECT_EQ(1, visitor.error_count_);
+    EXPECT_EQ(1, visitor.fin_frame_count_);
+  } else {
+    EXPECT_EQ(0, visitor.error_count_);
+    EXPECT_EQ(2, visitor.fin_frame_count_);
+  }
+
+  if (true /*FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/ &&
+      IsSpdy4()) {
+    base::StringPiece reset_stream = "RESETSTREAM";
+    EXPECT_EQ(reset_stream, visitor.fin_opaque_data_);
+  } else {
+    EXPECT_TRUE(visitor.fin_opaque_data_.empty());
+  }
+
   EXPECT_EQ(0, visitor.fin_flag_count_);
   EXPECT_EQ(0, visitor.zero_length_data_frame_count_);
   EXPECT_EQ(4, visitor.data_frame_count_);
+  visitor.fin_opaque_data_.clear();
 }
 
 // Test that the FIN flag on a data frame signifies EOF.
@@ -2441,13 +2473,24 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x01,
     };
     const unsigned char kV4FrameData[] = {
+      0x00, 0x0f, 0x03, 0x00,
+      0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x00, 0x01,
+      0x52, 0x53, 0x54
+    };
+    const unsigned char kV4FrameDataOld[] = {
       0x00, 0x0c, 0x03, 0x00,
       0x00, 0x00, 0x00, 0x01,
       0x00, 0x00, 0x00, 0x01,
     };
-    scoped_ptr<SpdyFrame> frame(
-        framer.CreateRstStream(1, RST_STREAM_PROTOCOL_ERROR));
-    if (IsSpdy4()) {
+    net::SpdyRstStreamIR rst_stream(1, RST_STREAM_PROTOCOL_ERROR, "RST");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
+    // TODO(jgraettinger): We expect to handle but not emit RST payloads.
+    if (IsSpdy4() &&
+        true /*!FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
+      CompareFrame(kDescription, *frame, kV4FrameDataOld,
+                   arraysize(kV4FrameDataOld));
+    } else if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
       CompareFrame(kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));
@@ -2467,8 +2510,10 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x7f, 0xff, 0xff, 0xff,
       0x00, 0x00, 0x00, 0x01,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(
-        0x7FFFFFFF, RST_STREAM_PROTOCOL_ERROR));
+    net::SpdyRstStreamIR rst_stream(0x7FFFFFFF,
+                                    RST_STREAM_PROTOCOL_ERROR,
+                                    "");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -2489,8 +2534,10 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x7f, 0xff, 0xff, 0xff,
       0x00, 0x00, 0x00, 0x06,
     };
-    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(
-        0x7FFFFFFF, RST_STREAM_INTERNAL_ERROR));
+    net::SpdyRstStreamIR rst_stream(0x7FFFFFFF,
+                                    RST_STREAM_INTERNAL_ERROR,
+                                    "");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
     if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
@@ -3882,7 +3929,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
   EXPECT_EQ(8u, framer.GetDataFrameMinimumSize());
   if (IsSpdy4()) {
     EXPECT_EQ(8u, framer.GetSynReplyMinimumSize());
-    EXPECT_EQ(12u, framer.GetRstStreamSize());
+    EXPECT_EQ(12u, framer.GetRstStreamMinimumSize());
     EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
     EXPECT_EQ(12u, framer.GetPingSize());
     EXPECT_EQ(16u, framer.GetGoAwayMinimumSize());
@@ -3898,7 +3945,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(8u, framer.GetControlFrameHeaderSize());
     EXPECT_EQ(18u, framer.GetSynStreamMinimumSize());
     EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetSynReplyMinimumSize());
-    EXPECT_EQ(16u, framer.GetRstStreamSize());
+    EXPECT_EQ(16u, framer.GetRstStreamMinimumSize());
     EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
     EXPECT_EQ(12u, framer.GetPingSize());
     EXPECT_EQ(IsSpdy2() ? 12u : 16u, framer.GetGoAwayMinimumSize());
@@ -4210,7 +4257,8 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
-    scoped_ptr<SpdyFrame> frame(framer.CreateRstStream(13, RST_STREAM_CANCEL));
+    net::SpdyRstStreamIR rst_stream(13, RST_STREAM_CANCEL, "");
+    scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags != 0) {

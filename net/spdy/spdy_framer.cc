@@ -119,6 +119,12 @@ bool SpdyFramerVisitorInterface::OnGoAwayFrameData(const char* goaway_data,
   return true;
 }
 
+bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
+    const char* rst_stream_data,
+    size_t len) {
+  return true;
+}
+
 SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : current_frame_buffer_(new char[kControlFrameBufferSize]),
       enable_compression_(true),
@@ -207,7 +213,7 @@ size_t SpdyFramer::GetSynReplyMinimumSize() const {
   return size;
 }
 
-size_t SpdyFramer::GetRstStreamSize() const {
+size_t SpdyFramer::GetRstStreamMinimumSize() const {
   // Size, in bytes, of a RST_STREAM frame.
   if (spdy_version_ < 4) {
     // Calculated as:
@@ -337,6 +343,8 @@ const char* SpdyFramer::StateToString(int state) {
       return "SPDY_CREDENTIAL_FRAME_PAYLOAD";
     case SPDY_GOAWAY_FRAME_PAYLOAD:
       return "SPDY_GOAWAY_FRAME_PAYLOAD";
+    case SPDY_RST_STREAM_FRAME_PAYLOAD:
+      return "SPDY_RST_STREAM_FRAME_PAYLOAD";
     case SPDY_SETTINGS_FRAME_PAYLOAD:
       return "SPDY_SETTINGS_FRAME_PAYLOAD";
   }
@@ -498,6 +506,13 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
 
       case SPDY_CREDENTIAL_FRAME_PAYLOAD: {
         size_t bytes_read = ProcessCredentialFramePayload(data, len);
+        len -= bytes_read;
+        data += bytes_read;
+        break;
+      }
+
+      case SPDY_RST_STREAM_FRAME_PAYLOAD: {
+        size_t bytes_read = ProcessRstStreamFramePayload(data, len);
         len -= bytes_read;
         data += bytes_read;
         break;
@@ -716,7 +731,13 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
       }
       break;
     case RST_STREAM:
-      if (current_frame_length_ != GetRstStreamSize()) {
+      // For SPDY versions < 4, the header has a fixed length.
+      // For SPDY version 4 and up, the RST_STREAM frame may include optional
+      // opaque data, so we only have a lower limit on the frame size.
+      if ((current_frame_length_ != GetRstStreamMinimumSize() &&
+           protocol_version() < 4) ||
+          (current_frame_length_ < GetRstStreamMinimumSize() &&
+           protocol_version() >= 4)) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -837,6 +858,11 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
 
   if (current_frame_type_ == GOAWAY) {
     CHANGE_STATE(SPDY_GOAWAY_FRAME_PAYLOAD);
+    return;
+  }
+
+  if (current_frame_type_ == RST_STREAM) {
+    CHANGE_STATE(SPDY_RST_STREAM_FRAME_PAYLOAD);
     return;
   }
 
@@ -1452,7 +1478,12 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
 
     // Use frame-specific handlers.
     switch (current_frame_type_) {
-      case RST_STREAM: {
+      case RST_STREAM:
+        // TODO(jgraettinger): Leaving this here for future, saner patching.
+        // RST_STREAM is separately handled by ProcessRstStreamFramePayload().
+        NOTREACHED();
+        if (false
+            /*!FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
           bool successful_read = true;
           if (spdy_version_ < 4) {
             successful_read = reader.ReadUInt31(&current_frame_stream_id_);
@@ -1518,9 +1549,9 @@ size_t SpdyFramer::ProcessCredentialFramePayload(const char* data, size_t len) {
     if (len > remaining_data_length_) {
       len = remaining_data_length_;
     }
-    bool processed_succesfully = visitor_->OnCredentialFrameData(data, len);
+    bool processed_successfully = visitor_->OnCredentialFrameData(data, len);
     remaining_data_length_ -= len;
-    if (!processed_succesfully) {
+    if (!processed_successfully) {
       set_error(SPDY_CREDENTIAL_FRAME_CORRUPT);
     } else if (remaining_data_length_ == 0) {
       visitor_->OnCredentialFrameData(NULL, 0);
@@ -1580,16 +1611,81 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
   }
 
   // Handle remaining data as opaque.
-  bool processed_succesfully = true;
+  bool processed_successfully = true;
   if (len > 0) {
-    processed_succesfully = visitor_->OnGoAwayFrameData(data, len);
+    processed_successfully = visitor_->OnGoAwayFrameData(data, len);
   }
   remaining_data_length_ -= original_len;
-  if (!processed_succesfully) {
-    set_error(SPDY_CREDENTIAL_FRAME_CORRUPT);
+  if (!processed_successfully) {
+    set_error(SPDY_GOAWAY_FRAME_CORRUPT);
   } else if (remaining_data_length_ == 0) {
     // Signal that there is not more opaque data.
     visitor_->OnGoAwayFrameData(NULL, 0);
+    CHANGE_STATE(SPDY_AUTO_RESET);
+  }
+  return original_len;
+}
+
+size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
+  if (len == 0) {
+    return 0;
+  }
+  // Clamp to the actual remaining payload.
+  if (len > remaining_data_length_) {
+    len = remaining_data_length_;
+  }
+  size_t original_len = len;
+
+  // Check if we had already read enough bytes to parse the fixed-length portion
+  // of the RST_STREAM frame.
+  const size_t header_size = GetRstStreamMinimumSize();
+  size_t unread_header_bytes = header_size - current_frame_buffer_length_;
+  bool already_parsed_header = (unread_header_bytes == 0);
+  if (!already_parsed_header) {
+    // Buffer the new RST_STREAM header bytes we got.
+    UpdateCurrentFrameBuffer(&data, &len, unread_header_bytes);
+
+    // Do we have enough to parse the constant size RST_STREAM header?
+    if (current_frame_buffer_length_ == header_size) {
+      // Parse out the last good stream id.
+      SpdyFrameReader reader(current_frame_buffer_.get(),
+                             current_frame_buffer_length_);
+      reader.Seek(GetControlFrameHeaderSize());  // Seek past frame header.
+      if (protocol_version() < 4) {
+        bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
+        DCHECK(successful_read);
+      }
+
+      SpdyRstStreamStatus status = RST_STREAM_INVALID;
+      uint32 status_raw = status;
+      bool successful_read = reader.ReadUInt32(&status_raw);
+      DCHECK(successful_read);
+      // We've read an unsigned integer, so it's enough to only check
+      // upper bound to ensure the value is in valid range.
+      if (status_raw > RST_STREAM_INVALID &&
+          status_raw < RST_STREAM_NUM_STATUS_CODES) {
+        status = static_cast<SpdyRstStreamStatus>(status_raw);
+      } else {
+        // TODO(hkhalil): Probably best to OnError here, depending on
+        // our interpretation of the spec. Keeping with existing liberal
+        // behavior for now.
+      }
+      // Finished parsing the RST_STREAM header, call frame handler.
+      visitor_->OnRstStream(current_frame_stream_id_, status);
+    }
+  }
+
+  // Handle remaining data as opaque.
+  bool processed_successfully = true;
+  if (len > 0) {
+    processed_successfully = visitor_->OnRstStreamFrameData(data, len);
+  }
+  remaining_data_length_ -= original_len;
+  if (!processed_successfully) {
+    set_error(SPDY_RST_STREAM_FRAME_CORRUPT);
+  } else if (remaining_data_length_ == 0) {
+    // Signal that there is not more opaque data.
+    visitor_->OnRstStreamFrameData(NULL, 0);
     CHANGE_STATE(SPDY_AUTO_RESET);
   }
   return original_len;
@@ -1869,27 +1965,38 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::CreateRstStream(
-    SpdyStreamId stream_id,
-    SpdyRstStreamStatus status) const {
-  SpdyRstStreamIR rst_stream(stream_id, status);
-  return SerializeRstStream(rst_stream);
-}
-
 SpdySerializedFrame* SpdyFramer::SerializeRstStream(
     const SpdyRstStreamIR& rst_stream) const {
-  SpdyFrameBuilder builder(GetRstStreamSize());
-  if (spdy_version_ < 4) {
+  // TODO(jgraettinger): For now, Chromium will support parsing RST_STREAM
+  // payloads, but will not emit them. SPDY4 is used for draft HTTP/2,
+  // which doesn't currently include RST_STREAM payloads. GFE flags have been
+  // commented but left in place to simplify future patching.
+  // Compute the output buffer size, taking opaque data into account.
+  uint16 expected_length = GetRstStreamMinimumSize();
+  if (protocol_version() >= 4 &&
+      false /*FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
+    expected_length += rst_stream.description().size();
+  }
+  SpdyFrameBuilder builder(expected_length);
+
+  // Serialize the RST_STREAM frame.
+  if (protocol_version() < 4) {
     builder.WriteControlFrameHeader(*this, RST_STREAM, 0);
     builder.WriteUInt32(rst_stream.stream_id());
   } else {
-    builder.WriteFramePrefix(*this,
-                             RST_STREAM,
-                             0,
-                             rst_stream.stream_id());
+    builder.WriteFramePrefix(*this, RST_STREAM, 0, rst_stream.stream_id());
   }
+
   builder.WriteUInt32(rst_stream.status());
-  DCHECK_EQ(GetRstStreamSize(), builder.length());
+
+  // In SPDY4 and up, RST_STREAM frames may also specify opaque data.
+  if (protocol_version() >= 4 && rst_stream.description().size() > 0 &&
+      false /*FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
+    builder.WriteBytes(rst_stream.description().data(),
+                       rst_stream.description().size());
+  }
+
+  DCHECK_EQ(expected_length, builder.length());
   return builder.take();
 }
 

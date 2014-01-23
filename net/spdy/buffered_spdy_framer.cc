@@ -264,10 +264,13 @@ SpdyFrame* BufferedSpdyFramer::CreateSynReply(
   return spdy_framer_.CreateSynReply(stream_id, flags, headers);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer
+// SpdyRstStreamIR).
 SpdyFrame* BufferedSpdyFramer::CreateRstStream(
     SpdyStreamId stream_id,
     SpdyRstStreamStatus status) const {
-  return spdy_framer_.CreateRstStream(stream_id, status);
+  SpdyRstStreamIR rst_ir(stream_id, status, "RST");
+  return spdy_framer_.SerializeRstStream(rst_ir);
 }
 
 // TODO(jgraettinger): Eliminate uses of this method (prefer

@@ -538,10 +538,11 @@ class NET_EXPORT_PRIVATE SpdySynReplyIR : public SpdyFrameWithNameValueBlockIR {
 
 class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
  public:
-  SpdyRstStreamIR(SpdyStreamId stream_id, SpdyRstStreamStatus status)
-      : SpdyFrameWithStreamIdIR(stream_id) {
-    set_status(status);
-  }
+  SpdyRstStreamIR(SpdyStreamId stream_id, SpdyRstStreamStatus status,
+                  base::StringPiece description);
+
+  virtual ~SpdyRstStreamIR();
+
   SpdyRstStreamStatus status() const {
     return status_;
   }
@@ -551,10 +552,17 @@ class NET_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameWithStreamIdIR {
     status_ = status;
   }
 
+  base::StringPiece description() const { return description_; }
+
+  void set_description(base::StringPiece description) {
+    description_ = description;
+  }
+
   virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   SpdyRstStreamStatus status_;
+  base::StringPiece description_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyRstStreamIR);
 };
@@ -709,14 +717,14 @@ class NET_EXPORT_PRIVATE SpdyCredentialIR : public SpdyFrameIR {
 
 class NET_EXPORT_PRIVATE SpdyBlockedIR
     : public NON_EXPORTED_BASE(SpdyFrameWithStreamIdIR) {
-  public:
-   explicit SpdyBlockedIR(SpdyStreamId stream_id)
-       : SpdyFrameWithStreamIdIR(stream_id) {}
+ public:
+  explicit SpdyBlockedIR(SpdyStreamId stream_id)
+      : SpdyFrameWithStreamIdIR(stream_id) {}
 
   virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
-  private:
-   DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
 };
 
 class NET_EXPORT_PRIVATE SpdyPushPromiseIR

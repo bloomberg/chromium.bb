@@ -231,6 +231,16 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // occurred while processing the data. Default implementation returns true.
   virtual bool OnGoAwayFrameData(const char* goaway_data, size_t len);
 
+  // Called when rst_stream frame opaque data is available.
+  // |rst_stream_data| A buffer containing the opaque RST_STREAM
+  // data chunk received.
+  // |len| The length of the header data buffer. A length of zero indicates
+  //       that the opaque data has been completely sent.
+  // When this function returns true the visitor indicates that it accepted
+  // all of the data. Returning false indicates that that an error has
+  // occurred while processing the data. Default implementation returns true.
+  virtual bool OnRstStreamFrameData(const char* rst_stream_data, size_t len);
+
   // Called when a BLOCKED frame has been parsed.
   virtual void OnBlocked(SpdyStreamId stream_id) {}
 
@@ -285,6 +295,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_CONTROL_FRAME_HEADER_BLOCK,
     SPDY_CREDENTIAL_FRAME_PAYLOAD,
     SPDY_GOAWAY_FRAME_PAYLOAD,
+    SPDY_RST_STREAM_FRAME_PAYLOAD,
     SPDY_SETTINGS_FRAME_PAYLOAD,
   };
 
@@ -299,6 +310,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_COMPRESS_FAILURE,             // There was an error compressing.
     SPDY_CREDENTIAL_FRAME_CORRUPT,     // CREDENTIAL frame could not be parsed.
     SPDY_GOAWAY_FRAME_CORRUPT,         // GOAWAY frame could not be parsed.
+    SPDY_RST_STREAM_FRAME_CORRUPT,     // RST_STREAM frame could not be parsed.
     SPDY_INVALID_DATA_FRAME_FLAGS,     // Data frame has invalid flags.
     SPDY_INVALID_CONTROL_FRAME_FLAGS,  // Control frame has invalid flags.
 
@@ -398,8 +410,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                             const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeSynReply(const SpdySynReplyIR& syn_reply);
 
-  SpdyFrame* CreateRstStream(SpdyStreamId stream_id,
-                             SpdyRstStreamStatus status) const;
   SpdySerializedFrame* SerializeRstStream(
       const SpdyRstStreamIR& rst_stream) const;
 
@@ -496,7 +506,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetControlFrameHeaderSize() const;
   size_t GetSynStreamMinimumSize() const;
   size_t GetSynReplyMinimumSize() const;
-  size_t GetRstStreamSize() const;
+  size_t GetRstStreamMinimumSize() const;
   size_t GetSettingsMinimumSize() const;
   size_t GetPingSize() const;
   size_t GetGoAwayMinimumSize() const;
@@ -575,6 +585,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessControlFrameHeaderBlock(const char* data, size_t len);
   size_t ProcessDataFramePayload(const char* data, size_t len);
   size_t ProcessGoAwayFramePayload(const char* data, size_t len);
+  size_t ProcessRstStreamFramePayload(const char* data, size_t len);
   size_t ProcessSettingsFramePayload(const char* data, size_t len);
 
 

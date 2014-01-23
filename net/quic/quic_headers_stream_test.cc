@@ -243,7 +243,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyDataFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessSpdyRstStreamFrame) {
-  SpdyRstStreamIR data(2, RST_STREAM_PROTOCOL_ERROR);
+  SpdyRstStreamIR data(2, RST_STREAM_PROTOCOL_ERROR, "");
   scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(

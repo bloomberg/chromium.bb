@@ -30206,6 +30206,7 @@ other types of suffix sets.
 <!-- More SpdyFramer::SpdyErrors -->
 
   <int value="29" label="GoAway Frame Corrupt"/>
+  <int value="30" label="RstStream Frame Corrupt"/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">
