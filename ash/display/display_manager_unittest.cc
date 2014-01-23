@@ -1194,6 +1194,8 @@ class ScreenShutdownTest : public test::AshTestBase {
     gfx::Screen* orig_screen =
         gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
     AshTestBase::TearDown();
+    if (!SupportsMultipleDisplays())
+      return;
     gfx::Screen* screen =
         gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
     EXPECT_NE(orig_screen, screen);
@@ -1208,7 +1210,7 @@ class ScreenShutdownTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ScreenShutdownTest);
 };
 
-TEST_F(DisplayManagerTest, ScreenAfterShutdown) {
+TEST_F(ScreenShutdownTest, ScreenAfterShutdown) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("500x300,800x400");
