@@ -16,7 +16,6 @@
   'WATCHLISTS': {
     'all': [
       'csharp+cc@chromium.org',
-      'maruel+cc@chromium.org',
       'vadimsh+cc@chromium.org',
     ],
   },
