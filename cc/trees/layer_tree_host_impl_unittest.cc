@@ -35,7 +35,6 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
-#include "cc/resources/etc1_pixel_ref.h"
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -55,6 +54,7 @@
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -5153,16 +5153,12 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
 
   EXPECT_EQ(0u, context3d->NumTextures());
 
-  SkImageInfo info = {4, 4, kPMColor_SkColorType, kPremul_SkAlphaType};
-  size_t rowBytes = info.minRowBytes();
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[rowBytes * info.fHeight]);
-  skia::RefPtr<ETC1PixelRef> etc1_pixel_ref =
-      skia::AdoptRef(new ETC1PixelRef(info, rowBytes, pixels.Pass()));
-  UIResourceBitmap bitmap(etc1_pixel_ref, gfx::Size(info.fWidth, info.fHeight));
-  // TODO(powel) Now that pixel_refs have info, the UIResourceBitmap
-  // constructor can get the can size from (pixelref->info().fWidth,
-  // pixelref->info().fHeight).
-
+  SkImageInfo info =
+      SkImageInfo::Make(4, 4, kPMColor_SkColorType, kPremul_SkAlphaType);
+  skia::RefPtr<SkPixelRef> pixel_ref =
+      skia::AdoptRef(SkMallocPixelRef::NewAllocate(info, 0, 0));
+  pixel_ref->setImmutable();
+  UIResourceBitmap bitmap(pixel_ref);
   UIResourceId ui_resource_id = 1;
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
   EXPECT_EQ(1u, context3d->NumTextures());
