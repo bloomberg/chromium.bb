@@ -13,13 +13,11 @@
         function displayMessage() {
             document.getElementById("label").textContent = "SMILElement animation time self-dependency is" +
                 ((document.getElementById("rectID").x.animVal.value > 0) ? " " : " not ") + "handled.";
+            testRunner.notifyDone();
         }
 
         function loaded() {
-            setTimeout('displayMessage()', 30);
-            if (window.testRunner) {
-                setTimeout('testRunner.notifyDone()', 40);
-            }
+            setTimeout('displayMessage()', 50);
         }
     </script>
 </svg>
