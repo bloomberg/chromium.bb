@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_paths.h"
@@ -901,9 +902,12 @@ void PrintPreviewHandler::OnSigninComplete() {
 }
 
 void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
-  Browser* browser = chrome::FindBrowserWithWebContents(GetInitiator());
+  Profile* profile = Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext());
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      profile, chrome::GetActiveDesktop());
   print_dialog_cloud::CreateCloudPrintSigninTab(
-      browser,
+      displayer.browser(),
       base::Bind(&PrintPreviewHandler::OnSigninComplete,
                  weak_factory_.GetWeakPtr()));
 }
