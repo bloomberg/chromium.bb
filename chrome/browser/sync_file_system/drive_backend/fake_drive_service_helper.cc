@@ -132,7 +132,7 @@ GDataErrorCode FakeDriveServiceHelper::UpdateFile(
   drive_uploader_->UploadExistingFile(
       file_id, temp_file,
       "application/octet-stream",
-      std::string(),  // etag
+      drive::DriveUploader::UploadExistingFileOptions(),
       base::Bind(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();

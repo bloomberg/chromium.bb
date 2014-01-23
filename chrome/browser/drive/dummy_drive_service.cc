@@ -163,7 +163,7 @@ CancelCallback DummyDriveService::InitiateUploadExistingFile(
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
-    const std::string& etag,
+    const InitiateUploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::ResumeUpload(

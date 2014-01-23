@@ -60,7 +60,7 @@ class FakeDriveUploader : public drive::DriveUploaderInterface {
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const std::string& etag,
+      const UploadExistingFileOptions& options,
       const drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE;
   virtual google_apis::CancelCallback ResumeUploadFile(

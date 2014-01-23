@@ -889,6 +889,8 @@ void APIUtil::UploadExistingFileInternal(
     return;
   }
 
+  drive::DriveUploader::UploadExistingFileOptions options;
+  options.etag = entry->etag();
   std::string mime_type = GetMimeTypeFromTitle(entry->title());
   UploadKey upload_key = RegisterUploadCallback(callback);
   ResourceEntryCallback did_upload_callback =
@@ -897,7 +899,7 @@ void APIUtil::UploadExistingFileInternal(
       entry->resource_id(),
       local_file_path,
       mime_type,
-      entry->etag(),
+      options,
       base::Bind(&UploadResultAdapter, did_upload_callback),
       google_apis::ProgressCallback());
 }

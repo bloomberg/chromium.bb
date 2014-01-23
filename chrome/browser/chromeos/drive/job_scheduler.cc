@@ -103,10 +103,12 @@ struct UploadExistingFileParams {
 google_apis::CancelCallback RunUploadExistingFile(
     DriveUploaderInterface* uploader,
     const UploadExistingFileParams& params) {
+  drive::DriveUploader::UploadExistingFileOptions options;
+  options.etag = params.etag;
   return uploader->UploadExistingFile(params.resource_id,
                                       params.local_file_path,
                                       params.content_type,
-                                      params.etag,
+                                      options,
                                       params.callback,
                                       params.progress_callback);
 }

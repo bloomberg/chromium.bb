@@ -994,7 +994,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
-    const std::string& etag,
+    const InitiateUploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1014,13 +1014,14 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     return CancelCallback();
   }
 
-  const FileResource* file = entry->change_resource.file();
-  if (!etag.empty() && etag != file->etag()) {
+  FileResource* file = entry->change_resource.mutable_file();
+  if (!options.etag.empty() && options.etag != file->etag()) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback, HTTP_PRECONDITION, GURL()));
     return CancelCallback();
   }
+  // TODO(hashimoto): Update |file|'s metadata with |options|.
 
   GURL session_url = GetNewUploadSessionUrl();
   upload_sessions_[session_url] =

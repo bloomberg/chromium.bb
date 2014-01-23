@@ -1818,7 +1818,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
       "test/foo",
       13,
       "file:2_file_resource_id",
-      std::string(),  // etag
+      FakeDriveService::InitiateUploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1836,7 +1836,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
       "test/foo",
       13,
       "non_existent",
-      std::string(),  // etag
+      FakeDriveService::InitiateUploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1848,13 +1848,16 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
 
+  FakeDriveService::InitiateUploadExistingFileOptions options;
+  options.etag = "invalid_etag";
+
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
       13,
       "file:2_file_resource_id",
-      "invalid_etag",
+      options,
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1866,13 +1869,16 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
 
+  FakeDriveService::InitiateUploadExistingFileOptions options;
+  options.etag = "\"HhMOFgxXHit7ImBr\"";
+
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
       13,
       "file:2_file_resource_id",
-      "\"HhMOFgxXHit7ImBr\"",
+      options,
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1956,13 +1962,16 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
 
+  FakeDriveService::InitiateUploadExistingFileOptions options;
+  options.etag = "\"HhMOFgxXHit7ImBr\"";
+
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
       contents.size(),
       "file:2_file_resource_id",
-      "\"HhMOFgxXHit7ImBr\"",
+      options,
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 

@@ -618,6 +618,7 @@
         'browser/drive/drive_notification_manager_factory.cc',
         'browser/drive/drive_notification_manager_factory.h',
         'browser/drive/drive_notification_observer.h',
+        'browser/drive/drive_service_interface.cc',
         'browser/drive/drive_service_interface.h',
         'browser/drive/drive_switches.cc',
         'browser/drive/drive_switches.h',

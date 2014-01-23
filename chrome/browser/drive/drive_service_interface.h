@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "google_apis/drive/auth_service_interface.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_common_callbacks.h"
@@ -41,6 +42,33 @@ class DriveServiceObserver {
 // URLFetcher that runs on UI thread.
 class DriveServiceInterface {
  public:
+  // Optional parameters for InitiateUploadExistingFile().
+  struct InitiateUploadExistingFileOptions {
+    InitiateUploadExistingFileOptions();
+    ~InitiateUploadExistingFileOptions();
+
+    // Expected ETag of the file. UPLOAD_ERROR_CONFLICT error is generated when
+    // matching fails.
+    // Pass the empty string to disable this behavior.
+    std::string etag;
+
+    // New parent of the file.
+    // Pass the empty string to keep the property unchanged.
+    std::string parent_resource_id;
+
+    // New title of the file.
+    // Pass the empty string to keep the property unchanged.
+    std::string title;
+
+    // New modified_date of the file.
+    // Pass the null Time to keep the property unchanged.
+    base::Time modified_date;
+
+    // New last_viewed_by_me_date of the file.
+    // Pass the null Time to keep the property unchanged.
+    base::Time last_viewed_by_me_date;
+  };
+
   virtual ~DriveServiceInterface() {}
 
   // Common service:
@@ -318,7 +346,7 @@ class DriveServiceInterface {
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
-      const std::string& etag,
+      const InitiateUploadExistingFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) = 0;
 
   // Resumes uploading of a document/file on the calling thread.

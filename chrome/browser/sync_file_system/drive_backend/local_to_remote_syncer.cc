@@ -396,11 +396,14 @@ void LocalToRemoteSyncer::DidGetMD5ForUpload(
   }
 
   sync_action_ = SYNC_ACTION_UPDATED;
+
+  drive::DriveUploader::UploadExistingFileOptions options;
+  options.etag = remote_file_tracker_->synced_details().etag();
   drive_uploader()->UploadExistingFile(
       remote_file_tracker_->file_id(),
       local_path_,
       "application/octet_stream",
-      remote_file_tracker_->synced_details().etag(),
+      options,
       base::Bind(&LocalToRemoteSyncer::DidUploadExistingFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback),

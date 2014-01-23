@@ -515,7 +515,7 @@ CancelCallback GDataWapiService::InitiateUploadExistingFile(
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
-    const std::string& etag,
+    const InitiateUploadExistingFileOptions& options,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -528,7 +528,7 @@ CancelCallback GDataWapiService::InitiateUploadExistingFile(
                                             content_type,
                                             content_length,
                                             resource_id,
-                                            etag));
+                                            options.etag));
 }
 
 CancelCallback GDataWapiService::ResumeUpload(
