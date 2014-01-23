@@ -3267,6 +3267,7 @@
                         'cflags': [
                           # TODO(hans) Enable integrated-as (crbug.com/124610).
                           '-no-integrated-as',
+                          '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
                         ],
 
                         'ldflags!': [

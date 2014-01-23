@@ -68,9 +68,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
   # linker.
   export PATH=$PATH:${CHROME_SRC}/build/android/${toolchain_arch}-gold
 
-  # Must have tools like arm-linux-androideabi-gcc on the path for ninja
-  export PATH=$PATH:${ANDROID_TOOLCHAIN}
-
   # Add Chromium Android development scripts to system path.
   # Must be after CHROME_SRC is set.
   export PATH=$PATH:${CHROME_SRC}/build/android
