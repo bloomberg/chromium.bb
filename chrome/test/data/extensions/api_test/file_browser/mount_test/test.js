@@ -64,7 +64,7 @@ var expectedArchiveVolume = {
   mountPath: '/archive/archive_mount_path',
   sourcePath: 'archive_path',
   volumeType: 'archive',
-  isReadOnly: false,
+  isReadOnly: true,
   profile: {displayName: "", isCurrentProfile: true}
 };
 

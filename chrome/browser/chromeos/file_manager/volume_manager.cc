@@ -129,7 +129,8 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
   } else {
     volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
     volume_info.is_parent = false;
-    volume_info.is_read_only = false;
+    volume_info.is_read_only =
+        (mount_point.mount_type == chromeos::MOUNT_TYPE_ARCHIVE);
   }
   volume_info.volume_id = GenerateVolumeId(volume_info);
 
