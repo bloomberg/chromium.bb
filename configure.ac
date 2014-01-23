@@ -185,6 +185,8 @@ AC_CANONICAL_HOST
 if test "x$LIBKMS" = xauto ; then
 	case $host_os in
 		linux*)		LIBKMS="yes" ;;
+		freebsd* | kfreebsd*-gnu)
+				LIBKMS="yes" ;;
 		*)		LIBKMS="no" ;;
 	esac
 fi
