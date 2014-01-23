@@ -22,7 +22,7 @@ struct SettingsOverrides : public Extension::ManifestData {
 
   static const SettingsOverrides* Get(const Extension* extension);
 
-  bool RequiresHideBookmarkButtonPermission() const;
+  bool RemovesBookmarkButton() const;
 
   scoped_ptr<api::manifest_types::ChromeSettingsOverrides::Bookmarks_ui>
       bookmarks_ui;

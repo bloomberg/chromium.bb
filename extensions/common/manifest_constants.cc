@@ -109,6 +109,7 @@ const char kPlugins[] = "plugins";
 const char kPluginsPath[] = "path";
 const char kPluginsPublic[] = "public";
 const char kPublicKey[] = "key";
+const char kRemoveButton[] = "remove_button";
 const char kResources[] = "resources";
 const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
@@ -631,6 +632,8 @@ const char kInsecureContentSecurityPolicy[] =
     " \"'unsafe-eval'\", \"http://127.0.0.1\", \"http://localhost\", or any"
     " \"https://\" or \"chrome-extension://\" origin. For more information,"
     " see http://developer.chrome.com/extensions/contentSecurityPolicy.html";
+const char kKeyIsDeprecatedWithReplacement[] =
+    "Key \"*\" is deprecated.  Key \"*\" should be used instead.";
 const char kLaunchPathAndExtentAreExclusive[] =
     "The 'app.launch.local_path' and 'app.urls' keys cannot both be set.";
 const char kLaunchPathAndURLAreExclusive[] =

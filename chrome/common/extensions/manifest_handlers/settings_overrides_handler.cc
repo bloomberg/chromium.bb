@@ -220,9 +220,9 @@ const SettingsOverrides* SettingsOverrides::Get(
       extension->GetManifestData(manifest_keys::kSettingsOverride));
 }
 
-bool SettingsOverrides::RequiresHideBookmarkButtonPermission() const {
-  return bookmarks_ui && bookmarks_ui->hide_bookmark_button &&
-      *bookmarks_ui->hide_bookmark_button;
+bool SettingsOverrides::RemovesBookmarkButton() const {
+  return bookmarks_ui && bookmarks_ui->remove_button &&
+      *bookmarks_ui->remove_button;
 }
 
 SettingsOverridesHandler::SettingsOverridesHandler() {}
@@ -240,6 +240,13 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
 
   scoped_ptr<SettingsOverrides> info(new SettingsOverrides);
   info->bookmarks_ui.swap(settings->bookmarks_ui);
+  // Support backward compatibility for deprecated key
+  // chrome_settings_overrides.bookmarks_ui.hide_bookmark_button.
+  if (info->bookmarks_ui && !info->bookmarks_ui->remove_button &&
+      info->bookmarks_ui->hide_bookmark_button) {
+    info->bookmarks_ui->remove_button.reset(
+        new bool(*info->bookmarks_ui->hide_bookmark_button));
+  }
   info->homepage = ParseHomepage(*settings, error);
   info->search_engine = ParseSearchEngine(settings.get(), error);
   info->startup_pages = ParseStartupPage(*settings, error);
@@ -250,7 +257,7 @@ bool SettingsOverridesHandler::Parse(Extension* extension,
     return false;
   }
   info->manifest_permission.reset(new ManifestPermissionImpl(
-      info->RequiresHideBookmarkButtonPermission()));
+      info->RemovesBookmarkButton()));
 
   APIPermissionSet* permission_set =
       PermissionsData::GetInitialAPIPermissions(extension);
@@ -285,13 +292,19 @@ bool SettingsOverridesHandler::Validate(
   const SettingsOverrides* settings_overrides =
       SettingsOverrides::Get(extension);
 
-  if (settings_overrides && settings_overrides->bookmarks_ui &&
-      !FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled()) {
-    warnings->push_back(InstallWarning(
-        ErrorUtils::FormatErrorMessage(
-            manifest_errors::kUnrecognizedManifestProperty,
-            manifest_keys::kHideBookmarkButton,
-            manifest_keys::kBookmarkUI)));
+  if (settings_overrides && settings_overrides->bookmarks_ui) {
+    if (!FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled()) {
+      warnings->push_back(InstallWarning(
+          ErrorUtils::FormatErrorMessage(
+              manifest_errors::kUnrecognizedManifestKey,
+              manifest_keys::kBookmarkUI)));
+    } else if (settings_overrides->bookmarks_ui->hide_bookmark_button) {
+      warnings->push_back(InstallWarning(
+            ErrorUtils::FormatErrorMessage(
+                manifest_errors::kKeyIsDeprecatedWithReplacement,
+                manifest_keys::kHideBookmarkButton,
+                manifest_keys::kRemoveButton)));
+    }
   }
 
   return true;
