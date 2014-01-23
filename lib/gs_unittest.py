@@ -9,6 +9,7 @@
 import functools
 import os
 import sys
+import unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
@@ -472,6 +473,8 @@ class GSContextTest(AbstractGSContextTest):
   # TODO(dgarrett): We should add a test that first fails then succeeds finding
   # GS files, but I can't figure out how to make the Mock do that.
 
+  # TODO(dgarrett): This hangs sometimes, reenable after crbug.com/337602.
+  @unittest.skip('Timeout is flakey: crbug.com/337602')
   def testWaitForGsPathsTimeout(self):
     self.gs_mock.AddCmdResult(['stat', '/path1'],
                               returncode=1,
