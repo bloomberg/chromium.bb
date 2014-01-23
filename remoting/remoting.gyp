@@ -780,6 +780,62 @@
             }],
           ],
         },  # end of target 'remoting_it2me_native_messaging_host'
+
+        # Generates native messaging manifest files.
+        {
+          'target_name': 'remoting_native_messaging_manifests',
+          'type': 'none',
+          'conditions': [
+            [ 'OS == "win"', {
+              'variables': {
+                'me2me_host_path': 'remoting_host.exe',
+                'it2me_host_path': 'remoting_assistance_host.exe',
+              },
+            }],
+            [ 'OS == "mac"', {
+              'variables': {
+                'me2me_host_path':
+                    '/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/native_messaging_host',
+                'it2me_host_path':
+                    '/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/remote_assistance_host',
+              },
+            }],
+            [ 'OS != "mac" and OS != "win"', {
+              'variables': {
+                'me2me_host_path':
+                    '/opt/google/chrome-remote-desktop/native-messaging-host',
+                'it2me_host_path':
+                    '/opt/google/chrome-remote-desktop/remote-assistance-host',
+              },
+            }],
+          ],  # conditions
+          'sources': [
+            'host/it2me/com.google.chrome.remote_assistance.json.jinja2',
+            'host/setup/com.google.chrome.remote_desktop.json.jinja2',
+          ],
+          'rules': [{
+            'rule_name': 'generate_manifest',
+            'extension': 'jinja2',
+            'inputs': [
+              '<(remoting_localize_path)',
+              '<(branding_path)',
+              '<(RULE_INPUT_PATH)',
+            ],
+            'outputs': [
+              '<(PRODUCT_DIR)/remoting/<(RULE_INPUT_ROOT)',
+            ],
+            'action': [
+              'python', '<(remoting_localize_path)',
+              '--define', 'ME2ME_HOST_PATH=<(me2me_host_path)',
+              '--define', 'IT2ME_HOST_PATH=<(me2me_host_path)',
+              '--variables', '<(branding_path)',
+              '--template', '<(RULE_INPUT_PATH)',
+              '--locale_output', '<@(_outputs)',
+              'en',
+            ],
+          }],
+        },  # end of target 'remoting_native_messaging_manifests'
+
         {
           'target_name': 'remoting_infoplist_strings',
           'type': 'none',
@@ -799,8 +855,7 @@
                     '--print_only <(remoting_locales))',
               ],
               'action': [
-                'python',
-                '<(remoting_localize_path)',
+                'python', '<(remoting_localize_path)',
                 '--locale_dir', '<(webapp_locale_dir)',
                 '--template', 'host/plugin/host_plugin-InfoPlist.strings.jinja2',
                 '--locale_output',
@@ -876,81 +931,79 @@
       ],  # end of 'targets'
     }],  # 'enable_remoting_host==1'
 
-    ['OS!="win" and enable_remoting_host==1', {
-      'conditions': [
-        ['OS=="linux" and branding=="Chrome" and chromeos==0', {
-          'variables': {
-            'deb_cmd': 'host/installer/linux/build-deb.sh',
-            'deb_filename': 'host/installer/<!(["<(deb_cmd)", "-p", "-s", "<(DEPTH)"])',
-            'packaging_outputs': [
-              '<(deb_filename)',
-              '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
-              '<(PRODUCT_DIR)/remoting_me2me_host.debug',
-              '<(PRODUCT_DIR)/remoting_start_host.debug',
-              '<(PRODUCT_DIR)/remoting_native_messaging_host.debug',
-            ]
-          },
-          'targets': [
+    ['OS=="linux" and branding=="Chrome" and chromeos==0', {
+      'variables': {
+        'build_deb_script': 'host/installer/linux/build-deb.sh',
+        'deb_filename': 'host/installer/<!(["<(build_deb_script)", "-p", "-s", "<(DEPTH)"])',
+        'packaging_outputs': [
+          '<(deb_filename)',
+          '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
+          '<(PRODUCT_DIR)/remoting_me2me_host.debug',
+          '<(PRODUCT_DIR)/remoting_start_host.debug',
+          '<(PRODUCT_DIR)/remoting_native_messaging_host.debug',
+        ]
+      },
+      'targets': [
+        {
+          # Store the installer package(s) into a zip file so there is a
+          # consistent filename to reference for build archiving (i.e. in
+          # FILES.cfg). This also avoids possible conflicts with "wildcard"
+          # package handling in other build/signing scripts.
+          'target_name': 'remoting_me2me_host_archive',
+          'type': 'none',
+          'dependencies': [
+            'remoting_me2me_host_deb_installer',
+          ],
+          'actions': [
             {
-              # Store the installer package(s) into a zip file so there is a
-              # consistent filename to reference for build archiving (i.e. in
-              # FILES.cfg). This also avoids possible conflicts with "wildcard"
-              # package handling in other build/signing scripts.
-              'target_name': 'remoting_me2me_host_archive',
-              'type': 'none',
-              'dependencies': [
-                'remoting_me2me_host_deb_installer',
+              'action_name': 'build_linux_installer_zip',
+              'inputs': [
+                '<@(packaging_outputs)',
               ],
-              'actions': [
-                {
-                  #'variables': {
-                  #  'deb_cmd': 'host/installer/linux/build-deb.sh',
-                  #},
-                  'action_name': 'build_linux_installer_zip',
-                  'inputs': [
-                    '<@(packaging_outputs)',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
-                  ],
-                  'action': [ 'zip', '-j', '-0', '<@(_outputs)', '<@(_inputs)' ],
-                },
+              'outputs': [
+                '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
               ],
-            },
-            {
-              'target_name': 'remoting_me2me_host_deb_installer',
-              'type': 'none',
-              'dependencies': [
-                'remoting_me2me_host',
-                'remoting_start_host',
-                'remoting_me2me_native_messaging_host',
-                'remoting_me2me_native_messaging_manifest',
-              ],
-              'actions': [
-                {
-                  'action_name': 'build_debian_package',
-                  'inputs': [
-                    '<(deb_cmd)',
-                    'host/installer/linux/Makefile',
-                    'host/installer/linux/debian/chrome-remote-desktop.init',
-                    'host/installer/linux/debian/chrome-remote-desktop.pam',
-                    'host/installer/linux/debian/compat',
-                    'host/installer/linux/debian/control',
-                    'host/installer/linux/debian/copyright',
-                    'host/installer/linux/debian/postinst',
-                    'host/installer/linux/debian/preinst',
-                    'host/installer/linux/debian/rules',
-                  ],
-                  'outputs': [
-                    '<@(packaging_outputs)',
-                  ],
-                  'action': [ '<(deb_cmd)', '-s', '<(DEPTH)' ],
-                },
-              ],
+              'action': [ 'zip', '-j', '-0', '<@(_outputs)', '<@(_inputs)' ],
             },
           ],
-        }],
+        },
+        {
+          'target_name': 'remoting_me2me_host_deb_installer',
+          'type': 'none',
+          'dependencies': [
+            'remoting_it2me_native_messaging_host',
+            'remoting_me2me_host',
+            'remoting_me2me_native_messaging_host',
+            'remoting_native_messaging_manifests',
+            'remoting_resources',
+            'remoting_start_host',
+          ],
+          'actions': [
+            {
+              'action_name': 'build_debian_package',
+              'inputs': [
+                '<(build_deb_script)',
+                'host/installer/linux/Makefile',
+                'host/installer/linux/debian/chrome-remote-desktop.init',
+                'host/installer/linux/debian/chrome-remote-desktop.pam',
+                'host/installer/linux/debian/compat',
+                'host/installer/linux/debian/control',
+                'host/installer/linux/debian/copyright',
+                'host/installer/linux/debian/postinst',
+                'host/installer/linux/debian/preinst',
+                'host/installer/linux/debian/rules',
+              ],
+              'outputs': [
+                '<@(packaging_outputs)',
+              ],
+              'action': [ '<(build_deb_script)', '-s', '<(DEPTH)' ],
+            },
+          ],
+        },
       ],
+    }],  # OS=="linux" and branding=="Chrome" and chromeos==0
+
+    ['OS!="win" and enable_remoting_host==1', {
       'targets': [
         {
           'target_name': 'remoting_me2me_host',
@@ -1184,7 +1237,7 @@
             'remoting_host_uninstaller',
             'remoting_me2me_host',
             'remoting_me2me_native_messaging_host',
-            'remoting_me2me_native_messaging_manifest',
+            'remoting_native_messaging_manifests',
           ],
           'variables': {
             'host_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
@@ -1851,7 +1904,7 @@
             'remoting_core',
             'remoting_desktop',
             'remoting_host_exe',
-            'remoting_me2me_native_messaging_manifest',
+            'remoting_native_messaging_manifests',
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remoting_core.dll',
@@ -2204,65 +2257,6 @@
       ],
     }, # end of target 'remoting_webapp'
 
-    # Generates 'me2me_native_messaging_manifest.json' to be included in the
-    # installation.
-    {
-      'target_name': 'remoting_me2me_native_messaging_manifest',
-      'type': 'none',
-      'dependencies': [
-        'remoting_resources',
-      ],
-      'variables': {
-        'input': 'host/setup/me2me_native_messaging_manifest.json',
-        'output': '<(PRODUCT_DIR)/remoting/com.google.chrome.remote_desktop.json',
-      },
-      'target_conditions': [
-        ['OS == "win" or OS == "mac" or OS == "linux"', {
-          'conditions': [
-            [ 'OS == "win"', {
-              'variables': {
-                'me2me_native_messaging_host_path': 'remoting_host.exe',
-              },
-            }], [ 'OS == "mac"', {
-              'variables': {
-                'me2me_native_messaging_host_path': '/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/native_messaging_host',
-              },
-            }], ['OS == "linux"', {
-              'variables': {
-                'me2me_native_messaging_host_path': '/opt/google/chrome-remote-desktop/native-messaging-host',
-              },
-            }], ['OS != "linux" and OS != "mac" and OS != "win"', {
-              'variables': {
-                'me2me_native_messaging_host_path': '/opt/google/chrome-remote-desktop/native-messaging-host',
-              },
-            }],
-          ],  # conditions
-          'actions': [
-            {
-              'action_name': 'generate_manifest',
-              'inputs': [
-                '<(remoting_localize_path)',
-                '<(input)',
-              ],
-              'outputs': [
-                '<(output)',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--define', 'ME2ME_NATIVE_MESSAGING_HOST_PATH=<(me2me_native_messaging_host_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', '<(input)',
-                '--locale_output',
-                '<(output)',
-                'en',
-              ],
-            },
-          ],  # actions
-        },
-       ],
-      ],  # target_conditions
-    },  # end of target 'remoting_me2me_native_messaging_manifest'
     {
       'target_name': 'remoting_resources',
       'type': 'none',

@@ -1,10 +1,12 @@
 APK_FILE_NAME=ChromeRemoteDesktop
 DAEMON_FILE_NAME=Chrome Remote Desktop Host Service
 HOST_PLUGIN_FILE_NAME=Chrome Remote Desktop Host
+IT2ME_HOST_DESCRIPTION=Remote Assistance Host for Chrome Remote Desktop
 MAC_BUNDLE_ID=com.google.Chrome
 MAC_CREATOR=rimZ
 MAC_HOST_BUNDLE_ID=com.google.chromeremotedesktop.me2me-host
 MAC_PREFPANE_BUNDLE_ID=com.google.chromeremotedesktop.preferences
-MAC_UNINSTALLER_NAME=Chrome Remote Desktop Host Uninstaller
-MAC_UNINSTALLER_BUNDLE_PREFIX=com.google.pkg
 MAC_UNINSTALLER_BUNDLE_ID=com.google.chromeremotedesktop.me2me-host-uninstaller
+MAC_UNINSTALLER_BUNDLE_PREFIX=com.google.pkg
+MAC_UNINSTALLER_NAME=Chrome Remote Desktop Host Uninstaller
+ME2ME_HOST_DESCRIPTION=Chrome Remote Desktop Host
