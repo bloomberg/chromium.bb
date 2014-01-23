@@ -22,15 +22,28 @@ namespace extensions {
 
 namespace {
 
+struct TestFlags {
+  bool expect_screens;
+  bool expect_windows;
+  content::DesktopMediaID selected_source;
+  bool cancelled;
+
+  // Following flags are set by FakeDesktopMediaPicker when it's created and
+  // deleted.
+  bool picker_created;
+  bool picker_deleted;
+};
+
 class FakeDesktopMediaPicker : public DesktopMediaPicker {
  public:
-  explicit FakeDesktopMediaPicker(const content::DesktopMediaID& source,
-                                  bool expect_cancelled)
-      : source_(source),
-        expect_cancelled_(expect_cancelled),
+  explicit FakeDesktopMediaPicker(TestFlags* expectation)
+      : expectation_(expectation),
         weak_factory_(this) {
+    expectation_->picker_created = true;
   }
-  virtual ~FakeDesktopMediaPicker() {}
+  virtual ~FakeDesktopMediaPicker() {
+    expectation_->picker_deleted = true;
+  }
 
   // DesktopMediaPicker interface.
   virtual void Show(gfx::NativeWindow context,
@@ -38,14 +51,14 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
                     const base::string16& app_name,
                     scoped_ptr<DesktopMediaList> model,
                     const DoneCallback& done_callback) OVERRIDE {
-    if (!expect_cancelled_) {
+    if (!expectation_->cancelled) {
       // Post a task to call the callback asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&FakeDesktopMediaPicker::CallCallback,
                      weak_factory_.GetWeakPtr(), done_callback));
     } else {
-      // If we expect the dialog to be canceled then store the callback to
+      // If we expect the dialog to be cancelled then store the callback to
       // retain reference to the callback handler.
       done_callback_ = done_callback;
     }
@@ -53,11 +66,10 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
 
  private:
   void CallCallback(DoneCallback done_callback) {
-    done_callback.Run(source_);
+    done_callback.Run(expectation_->selected_source);
   }
 
-  content::DesktopMediaID source_;
-  bool expect_cancelled_;
+  TestFlags* expectation_;
   DoneCallback done_callback_;
 
   base::WeakPtrFactory<FakeDesktopMediaPicker> weak_factory_;
@@ -68,47 +80,40 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
 class FakeDesktopMediaPickerFactory :
     public DesktopCaptureChooseDesktopMediaFunction::PickerFactory {
  public:
-  struct Expectation {
-    bool screens;
-    bool windows;
-    content::DesktopMediaID selected_source;
-    bool cancelled;
-  };
-
   FakeDesktopMediaPickerFactory() {}
   virtual ~FakeDesktopMediaPickerFactory() {}
 
-  void SetExpectations(const Expectation* expectation_array, int size) {
-    for (int i = 0; i < size; ++i) {
-      expectations_.push(expectation_array[i]);
-    }
+  void SetTestFlags(TestFlags* test_flags, int tests_count) {
+    test_flags_ = test_flags;
+    tests_count_ = tests_count;
+    current_test_ = 0;
   }
 
   // DesktopCaptureChooseDesktopMediaFunction::PickerFactory interface.
   virtual scoped_ptr<DesktopMediaList> CreateModel(
       bool show_screens,
       bool show_windows) OVERRIDE {
-    EXPECT_TRUE(!expectations_.empty());
-    if (!expectations_.empty()) {
-      EXPECT_EQ(expectations_.front().screens, show_screens);
-      EXPECT_EQ(expectations_.front().windows, show_windows);
-    }
+    EXPECT_LE(current_test_, tests_count_);
+    if (current_test_ >= tests_count_)
+      return scoped_ptr<DesktopMediaList>();
+    EXPECT_EQ(test_flags_[current_test_].expect_screens, show_screens);
+    EXPECT_EQ(test_flags_[current_test_].expect_windows, show_windows);
     return scoped_ptr<DesktopMediaList>(new FakeDesktopMediaList());
   }
+
   virtual scoped_ptr<DesktopMediaPicker> CreatePicker() OVERRIDE {
-    content::DesktopMediaID next_source;
-    bool expect_cancelled = false;
-    if (!expectations_.empty()) {
-      next_source = expectations_.front().selected_source;
-      expect_cancelled = expectations_.front().cancelled;
-      expectations_.pop();
-    }
+    EXPECT_LE(current_test_, tests_count_);
+    if (current_test_ >= tests_count_)
+      return scoped_ptr<DesktopMediaPicker>();
+    ++current_test_;
     return scoped_ptr<DesktopMediaPicker>(
-        new FakeDesktopMediaPicker(next_source, expect_cancelled));
+        new FakeDesktopMediaPicker(test_flags_ + current_test_ - 1));
   }
 
  private:
-  std::queue<Expectation> expectations_;
+  TestFlags* test_flags_;
+  int tests_count_;
+  int current_test_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopMediaPickerFactory);
 };
@@ -145,9 +150,9 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 #define MAYBE_ChooseDesktopMedia ChooseDesktopMedia
 #endif
 IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
-  // Each of the following expectations corresponds to one test in
+  // Each element in the following array corresponds to one test in
   // chrome/test/data/extensions/api_test/desktop_capture/test.js .
-  FakeDesktopMediaPickerFactory::Expectation picker_expectations[] = {
+  TestFlags test_flags[] = {
     // pickerUiCanceled()
     { true, true,
       content::DesktopMediaID() },
@@ -170,12 +175,11 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
     { true, true,
       content::DesktopMediaID(), true },
   };
-  picker_factory_.SetExpectations(picker_expectations,
-                                  arraysize(picker_expectations));
+  picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
   ASSERT_TRUE(RunExtensionTest("desktop_capture")) << message_;
 }
 
-// Does not work with Instant Extended. http://crbug.com/305391.
+// Test is flaky http://crbug.com/301887.
 IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
   // Initialize test server.
   base::FilePath test_data;
@@ -195,26 +199,40 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
   ui_test_utils::NavigateToURL(
       browser(), GetURLForPath("example.com", "/example.com.html"));
 
-  FakeDesktopMediaPickerFactory::Expectation picker_expectations[] = {
+  TestFlags test_flags[] = {
     { true, true,
       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
     { true, true,
       content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0) },
+    { true, true,
+      content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN, 0), true },
   };
-  picker_factory_.SetExpectations(picker_expectations,
-                                  arraysize(picker_expectations));
+  picker_factory_.SetTestFlags(test_flags, arraysize(test_flags));
 
   bool result;
 
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "getStream()", &result));
+      web_contents, "getStream()", &result));
   EXPECT_TRUE(result);
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "getStreamWithInvalidId()", &result));
+      web_contents, "getStreamWithInvalidId()", &result));
   EXPECT_TRUE(result);
+
+  // Verify that the picker is closed once the tab is closed.
+  content::WebContentsDestroyedWatcher destroyed_watcher(web_contents);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents, "openPickerDialogAndReturn()", &result));
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(test_flags[2].picker_created);
+  EXPECT_FALSE(test_flags[2].picker_deleted);
+
+  web_contents->Close();
+  destroyed_watcher.Wait();
+  EXPECT_TRUE(test_flags[2].picker_deleted);
 }
 
 }  // namespace extensions

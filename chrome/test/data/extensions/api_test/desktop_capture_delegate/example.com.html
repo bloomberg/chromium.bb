@@ -11,7 +11,6 @@ function sendToBrowser(msg) {
   domAutomationController.send(msg);
 }
 
-
 function requestStreamId(callback) {
   function onResponse(response) {
     if (chrome.runtime.lastError) {
@@ -54,6 +53,15 @@ function getStreamWithInvalidId() {
     }, sendToBrowser.bind(null, false), sendToBrowser.bind(null, true));
   };
   requestStreamId(onStreamId);
+}
+
+function openPickerDialogAndReturn() {
+  chrome.runtime.sendMessage(
+      extensionId, ["getStreamNoWait"], function(message) {
+        // Once the picker is shown request to close the tab. The picker should
+        // be destroyed as result.
+        sendToBrowser(true);
+      });
 }
 
 </script>

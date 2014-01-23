@@ -13,12 +13,14 @@
 #include "chrome/browser/media/desktop_media_picker.h"
 #include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/common/extensions/api/desktop_capture.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
 class DesktopCaptureChooseDesktopMediaFunction
-    : public ChromeAsyncExtensionFunction {
+    : public ChromeAsyncExtensionFunction,
+      public content::WebContentsObserver {
  public:
   DECLARE_EXTENSION_FUNCTION("desktopCapture.chooseDesktopMedia",
                              DESKTOPCAPTURE_CHOOSEDESKTOPMEDIA)
@@ -48,6 +50,10 @@ class DesktopCaptureChooseDesktopMediaFunction
 
   // ExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
+
+  // content::WebContentsObserver overrides.
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE;
 
   void OnPickerDialogResults(content::DesktopMediaID source);
 

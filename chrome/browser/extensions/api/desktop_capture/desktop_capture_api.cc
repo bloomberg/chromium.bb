@@ -113,6 +113,9 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
       return false;
     }
 
+    // Register to be notified when the tab is closed.
+    Observe(web_contents);
+
     render_view = web_contents->GetRenderViewHost();
     parent_window = web_contents->GetView()->GetTopLevelNativeWindow();
   } else {
@@ -123,7 +126,6 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
   }
   render_process_id_ = render_view->GetProcess()->GetID();
   render_view_id_ = render_view->GetRoutingID();
-
 
   bool show_screens = false;
   bool show_windows = false;
@@ -196,6 +198,11 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
                 base::UTF8ToUTF16(GetExtension()->name()),
                 media_list.Pass(), callback);
   return true;
+}
+
+void DesktopCaptureChooseDesktopMediaFunction::WebContentsDestroyed(
+    content::WebContents* web_contents) {
+  Cancel();
 }
 
 void DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults(
