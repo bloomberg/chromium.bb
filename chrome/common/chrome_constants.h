@@ -61,6 +61,7 @@ extern const base::FilePath::CharType kExtensionActivityLogFilename[];
 extern const base::FilePath::CharType kExtensionsCookieFilename[];
 extern const base::FilePath::CharType kFaviconsFilename[];
 extern const base::FilePath::CharType kFirstRunSentinel[];
+extern const base::FilePath::CharType kGCMStoreDirname[];
 extern const base::FilePath::CharType kHistoryFilename[];
 extern const base::FilePath::CharType kJumpListIconDirname[];
 extern const base::FilePath::CharType kLocalStateFilename[];

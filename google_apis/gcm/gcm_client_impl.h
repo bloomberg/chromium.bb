@@ -27,7 +27,6 @@ class SequencedTaskRunner;
 
 namespace net {
 class HttpNetworkSession;
-class URLRequestContextGetter;
 }
 
 namespace gcm {

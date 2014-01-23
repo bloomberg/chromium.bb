@@ -61,9 +61,9 @@ class GCMProfileService : public BrowserContextKeyedService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   explicit GCMProfileService(Profile* profile);
-  // Constructor for testing purpose.
-  GCMProfileService(Profile* profile, TestingDelegate* testing_delegate);
   virtual ~GCMProfileService();
+
+  void Initialize();
 
   // Registers |sender_id| for an app. A registration ID will be returned by
   // the GCM server.
@@ -87,6 +87,11 @@ class GCMProfileService : public BrowserContextKeyedService,
                     const std::string& receiver_id,
                     const GCMClient::OutgoingMessage& message,
                     SendCallback callback);
+
+  // For testing purpose.
+  void set_testing_delegate(TestingDelegate* testing_delegate) {
+    testing_delegate_ = testing_delegate;
+  }
 
  protected:
   // Flag that could be set by the testing code to enable GCM. Otherwise,
@@ -116,8 +121,6 @@ class GCMProfileService : public BrowserContextKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  void Init();
 
   // Allows a signed-in user to use the GCM. If the check-in info can be found
   // in the prefs store, use it directly. Otherwise, a check-in communication

@@ -88,8 +88,7 @@ class GCMProfileServiceTest : public testing::Test,
  public:
   static BrowserContextKeyedService* BuildGCMProfileService(
       content::BrowserContext* profile) {
-    return new GCMProfileService(
-        static_cast<Profile*>(profile), gps_testing_delegate_);
+    return new GCMProfileService(static_cast<Profile*>(profile));
   }
 
   static GCMClient* BuildGCMClient() {
@@ -141,14 +140,9 @@ class GCMProfileServiceTest : public testing::Test,
     // Mock a GCMEventRouter.
     gcm_event_router_mock_.reset(new GCMEventRouterMock(this));
 
-    // Set |gps_testing_delegate_| for it to be picked up by
-    // BuildGCMProfileService and pass it to GCMProfileService.
-    gps_testing_delegate_ = this;
-
     // This will create GCMProfileService that causes check-in to be initiated.
     GCMProfileService::enable_gcm_for_testing_ = true;
-    GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile(), &GCMProfileServiceTest::BuildGCMProfileService);
+    CreateGCMProfileServiceInstance();
 
     // Wait till the asynchronous check-in is done.
     WaitForCompleted();
@@ -167,6 +161,14 @@ class GCMProfileServiceTest : public testing::Test,
   // Overridden from GCMProfileService::TestingDelegate:
   virtual GCMEventRouter* GetEventRouter() const OVERRIDE {
     return gcm_event_router_mock_.get();
+  }
+
+  void CreateGCMProfileServiceInstance() {
+    GCMProfileService* gcm_profile_service = static_cast<GCMProfileService*>(
+        GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile(), &GCMProfileServiceTest::BuildGCMProfileService));
+    gcm_profile_service->set_testing_delegate(this);
+    gcm_profile_service->Initialize();
   }
 
   virtual void CheckInFinished(const GCMClient::CheckinInfo& checkin_info,
@@ -239,8 +241,6 @@ class GCMProfileServiceTest : public testing::Test,
 #endif
 
  private:
-  static GCMProfileService::TestingDelegate* gps_testing_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceTest);
 };
 
@@ -261,9 +261,6 @@ class ScopedGCMClientMockSimulateServerError {
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedGCMClientMockSimulateServerError);
 };
-
-GCMProfileService::TestingDelegate*
-GCMProfileServiceTest::gps_testing_delegate_ = NULL;
 
 GCMEventRouterMock::GCMEventRouterMock(GCMProfileServiceTest* test)
     : test_(test),
@@ -333,8 +330,7 @@ TEST_F(GCMProfileServiceTest, CheckInFromPrefsStore) {
 
   // Recreate GCMProfileService to test reading the check-in info from the
   // prefs store.
-  GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &GCMProfileServiceTest::BuildGCMProfileService);
+  CreateGCMProfileServiceInstance();
 
   EXPECT_EQ(saved_checkin_info.android_id, checkin_info_.android_id);
   EXPECT_EQ(saved_checkin_info.secret, checkin_info_.secret);
@@ -520,8 +516,7 @@ TEST_F(GCMProfileServiceRegisterTest, ReadRegistrationFromStateStore) {
   result_ = GCMClient::UNKNOWN_ERROR;
 
   // Simulate start-up by recreating GCMProfileService.
-  GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &GCMProfileServiceTest::BuildGCMProfileService);
+  CreateGCMProfileServiceInstance();
 
   // Simulate start-up by reloading extension.
   extension_service_->UnloadExtension(extension->id(),
@@ -563,8 +558,7 @@ TEST_F(GCMProfileServiceRegisterTest,
   GetGCMClientMock()->SetIsLoading(true);
 
   // Simulate start-up by recreating GCMProfileService.
-  GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &GCMProfileServiceTest::BuildGCMProfileService);
+  CreateGCMProfileServiceInstance();
 
   // Simulate start-up by reloading extension.
   extension_service_->UnloadExtension(extension->id(),

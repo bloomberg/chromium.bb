@@ -164,6 +164,7 @@ const base::FilePath::CharType kExtensionsCookieFilename[] =
     FPL("Extension Cookies");
 const base::FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
 const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
+const base::FilePath::CharType kGCMStoreDirname[] = FPL("GCM Store");
 const base::FilePath::CharType kHistoryFilename[] = FPL("History");
 const base::FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");

@@ -470,16 +470,6 @@ GCMProfileService::GCMProfileService(Profile* profile)
       testing_delegate_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(!profile->IsOffTheRecord());
-
-  Init();
-}
-
-GCMProfileService::GCMProfileService(Profile* profile,
-                                     TestingDelegate* testing_delegate)
-    : profile_(profile),
-      testing_delegate_(testing_delegate),
-      weak_ptr_factory_(this) {
-  Init();
 }
 
 GCMProfileService::~GCMProfileService() {
@@ -493,7 +483,7 @@ GCMProfileService::~GCMProfileService() {
                  username_));
 }
 
-void GCMProfileService::Init() {
+void GCMProfileService::Initialize() {
   delayed_task_controller_.reset(new DelayedTaskController);
 
   // This has to be done first since CheckIn depends on it.

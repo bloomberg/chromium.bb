@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
@@ -36,9 +37,14 @@ GCMProfileServiceFactory::~GCMProfileServiceFactory() {
 
 BrowserContextKeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  GCMClientFactory::BuildClientFromUI();
+
   Profile* profile = static_cast<Profile*>(context);
-  return gcm::GCMProfileService::IsGCMEnabled(profile) ?
-      new GCMProfileService(profile) : NULL;
+  if (!gcm::GCMProfileService::IsGCMEnabled(profile))
+    return NULL;
+  GCMProfileService* service = new GCMProfileService(profile);
+  service->Initialize();
+  return service;
 }
 
 content::BrowserContext* GCMProfileServiceFactory::GetBrowserContextToUse(
