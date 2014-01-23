@@ -231,7 +231,8 @@ void LoginPerformer::LoginAsLocallyManagedUser(
      user_context.password,
      user_context.auth_code,
      user_context.username_hash,
-     user_context.using_oauth);
+     user_context.using_oauth,
+     user_context.auth_flow);
 
   user_context_copy.password = authentication->TransformPassword(
       user_context_copy.username,

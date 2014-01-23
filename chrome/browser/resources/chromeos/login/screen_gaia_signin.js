@@ -422,7 +422,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                      credentials.authCode]);
       } else {
         chrome.send('completeLogin',
-                    [credentials.email, credentials.password]);
+                    [credentials.email,
+                     credentials.password,
+                     credentials.usingSAML]);
       }
 
       this.loading = true;

@@ -355,6 +355,7 @@ cr.define('cr.login', function() {
                              password: msg.password || this.password_,
                              authCode: msg.authCode,
                              useOffline: msg.method == 'offlineLogin',
+                             usingSAML: msg.usingSAML || false,
                              chooseWhatToSync: this.chooseWhatToSync_,
                              skipForNow: msg.skipForNow || false });
         return;
