@@ -30,17 +30,20 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "platform/Timer.h"
-#include "platform/mediastream/RTCDTMFSenderHandlerClient.h"
+#include "public/platform/WebRTCDTMFSenderHandlerClient.h"
 #include "wtf/RefCounted.h"
+
+namespace blink {
+class WebRTCDTMFSenderHandler;
+}
 
 namespace WebCore {
 
 class ExceptionState;
 class MediaStreamTrack;
-class RTCDTMFSenderHandler;
 class RTCPeerConnectionHandler;
 
-class RTCDTMFSender FINAL : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
+class RTCDTMFSender FINAL : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDTMFSenderHandlerClient, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(RTCDTMFSender);
 public:
     static PassRefPtr<RTCDTMFSender> create(ExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
@@ -66,19 +69,19 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCDTMFSender(ExecutionContext*, PassRefPtr<MediaStreamTrack>, PassOwnPtr<RTCDTMFSenderHandler>);
+    RTCDTMFSender(ExecutionContext*, PassRefPtr<MediaStreamTrack>, PassOwnPtr<blink::WebRTCDTMFSenderHandler>);
 
     void scheduleDispatchEvent(PassRefPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
 
-    // RTCDTMFSenderHandlerClient
-    virtual void didPlayTone(const String&) OVERRIDE;
+    // blink::WebRTCDTMFSenderHandlerClient
+    virtual void didPlayTone(const blink::WebString&) OVERRIDE;
 
     RefPtr<MediaStreamTrack> m_track;
     long m_duration;
     long m_interToneGap;
 
-    OwnPtr<RTCDTMFSenderHandler> m_handler;
+    OwnPtr<blink::WebRTCDTMFSenderHandler> m_handler;
 
     bool m_stopped;
 

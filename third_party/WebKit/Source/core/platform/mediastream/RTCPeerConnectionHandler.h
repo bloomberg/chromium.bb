@@ -39,6 +39,7 @@
 
 namespace blink {
 class WebMediaStream;
+class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
 class WebRTCSessionDescription;
@@ -49,7 +50,6 @@ namespace WebCore {
 
 class MediaStreamComponent;
 class RTCConfiguration;
-class RTCDTMFSenderHandler;
 class RTCPeerConnectionHandlerClient;
 class RTCSessionDescriptionRequest;
 class RTCStatsRequest;
@@ -80,7 +80,7 @@ public:
     void removeStream(PassRefPtr<MediaStreamDescriptor>);
     void getStats(PassRefPtr<RTCStatsRequest>);
     PassOwnPtr<blink::WebRTCDataChannelHandler> createDataChannel(const String& label, const blink::WebRTCDataChannelInit&);
-    PassOwnPtr<RTCDTMFSenderHandler> createDTMFSender(PassRefPtr<MediaStreamComponent>);
+    PassOwnPtr<blink::WebRTCDTMFSenderHandler> createDTMFSender(PassRefPtr<MediaStreamComponent>);
     void stop();
 
     // blink::WebRTCPeerConnectionHandlerClient implementation.

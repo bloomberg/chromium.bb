@@ -35,7 +35,6 @@
 #include "core/platform/mediastream/RTCStatsRequest.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/RTCConfiguration.h"
-#include "platform/mediastream/RTCDTMFSenderHandler.h"
 #include "platform/mediastream/RTCSessionDescriptionRequest.h"
 #include "platform/mediastream/RTCVoidRequest.h"
 #include "public/platform/Platform.h"
@@ -159,13 +158,13 @@ PassOwnPtr<blink::WebRTCDataChannelHandler> RTCPeerConnectionHandler::createData
     return adoptPtr(webHandler);
 }
 
-PassOwnPtr<RTCDTMFSenderHandler> RTCPeerConnectionHandler::createDTMFSender(PassRefPtr<MediaStreamComponent> track)
+PassOwnPtr<blink::WebRTCDTMFSenderHandler> RTCPeerConnectionHandler::createDTMFSender(PassRefPtr<MediaStreamComponent> track)
 {
     blink::WebRTCDTMFSenderHandler* webHandler = m_webHandler->createDTMFSender(track);
     if (!webHandler)
         return nullptr;
 
-    return RTCDTMFSenderHandler::create(webHandler);
+    return adoptPtr(webHandler);
 }
 
 void RTCPeerConnectionHandler::stop()
