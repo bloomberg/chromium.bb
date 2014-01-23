@@ -5,13 +5,39 @@
 #ifndef CONTENT_RENDERER_MEMORY_BENCHMARKING_EXTENSION_H_
 #define CONTENT_RENDERER_MEMORY_BENCHMARKING_EXTENSION_H_
 
-#include "v8/include/v8.h"
+#include "base/basictypes.h"
+#include "gin/wrappable.h"
+
+namespace blink {
+class WebFrame;
+}
+
+namespace gin {
+class Arguments;
+}
 
 namespace content {
 
-class MemoryBenchmarkingExtension {
+class MemoryBenchmarkingExtension
+    : public gin::Wrappable<MemoryBenchmarkingExtension> {
  public:
-  static v8::Extension* Get();
+  static gin::WrapperInfo kWrapperInfo;
+
+  static void Install(blink::WebFrame* frame);
+
+ private:
+  MemoryBenchmarkingExtension();
+  virtual ~MemoryBenchmarkingExtension();
+
+  // gin::Wrappable.
+  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) OVERRIDE;
+
+  bool IsHeapProfilerRunning();
+
+  void HeapProfilerDump(gin::Arguments* args);
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryBenchmarkingExtension);
 };
 
 }  // namespace content
