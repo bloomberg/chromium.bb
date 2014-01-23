@@ -123,10 +123,6 @@
 #include "content/child/npapi/np_channel_base.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
-#endif
-
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #endif
@@ -1309,13 +1305,16 @@ void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
 #endif
 
 #if defined(OS_MACOSX)
-void RenderThreadImpl::OnUpdateScrollbarTheme(float initial_button_delay,
-                                              float autoscroll_button_delay,
-                                              bool jump_on_track_click,
-                                              bool redraw) {
+void RenderThreadImpl::OnUpdateScrollbarTheme(
+    float initial_button_delay,
+    float autoscroll_button_delay,
+    bool jump_on_track_click,
+    blink::ScrollerStyle preferred_scroller_style,
+    bool redraw) {
   blink::WebScrollbarTheme::updateScrollbars(initial_button_delay,
                                              autoscroll_button_delay,
                                              jump_on_track_click,
+                                             preferred_scroller_style,
                                              redraw);
 }
 #endif

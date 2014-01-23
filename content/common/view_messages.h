@@ -65,6 +65,7 @@
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
+#include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
 #endif
 
 #undef IPC_MESSAGE_EXPORT
@@ -1280,11 +1281,14 @@ IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
                     std::vector<unsigned char> /* png */)
 
 #if defined(OS_MACOSX)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay);
+
 // Notification of a change in scrollbar appearance and/or behavior.
-IPC_MESSAGE_CONTROL4(ViewMsg_UpdateScrollbarTheme,
+IPC_MESSAGE_CONTROL5(ViewMsg_UpdateScrollbarTheme,
                      float /* initial_button_delay */,
                      float /* autoscroll_button_delay */,
                      bool /* jump_on_track_click */,
+                     blink::ScrollerStyle /* preferred_scroller_style */,
                      bool /* redraw */)
 #endif
 

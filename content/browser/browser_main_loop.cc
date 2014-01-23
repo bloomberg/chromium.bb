@@ -72,7 +72,7 @@
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "content/browser/theme_helper_mac.h"
 #endif
 
@@ -1030,11 +1030,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
             GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
             CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
   }
-#endif  // !defined(OS_IOS)
 
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
 #endif
+#endif  // !defined(OS_IOS)
+
   return result_code_;
 }
 

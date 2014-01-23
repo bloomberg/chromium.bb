@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
 
 namespace content {
 
@@ -17,10 +18,15 @@ class ThemeHelperMac : public NotificationObserver {
   // if none.
   static ThemeHelperMac* GetInstance();
 
+  // Returns the value of +[NSScroller preferredScrollStyle] as expressed
+  // as the blink enum value.
+  static blink::ScrollerStyle GetPreferredScrollerStyle();
+
   static void SendThemeChangeToAllRenderers(
       float initial_button_delay,
       float autoscroll_button_delay,
       bool jump_on_track_click,
+      blink::ScrollerStyle preferred_scroller_style,
       bool redraw);
 
  private:

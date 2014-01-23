@@ -24,6 +24,10 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(OS_MACOSX)
+#include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
+#endif
+
 class GrContext;
 class SkBitmap;
 struct ViewMsg_New_Params;
@@ -390,6 +394,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnUpdateScrollbarTheme(float initial_button_delay,
                               float autoscroll_button_delay,
                               bool jump_on_track_click,
+                              blink::ScrollerStyle preferred_scroller_style,
                               bool redraw);
 #endif
 
