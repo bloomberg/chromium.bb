@@ -4726,6 +4726,59 @@ static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::V
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(Dictionary, dictionaryArg, Dictionary(info[0], info.GetIsolate()));
+    if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObject", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
+        return;
+    }
+    imp->overloadedMethodC(dictionaryArg);
+}
+
+static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
+    imp->overloadedMethodC(doubleArg);
+}
+
+static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 1) && (info[0]->IsObject()))) {
+        overloadedMethodC1Method(info);
+        return;
+    }
+    if (((info.Length() == 1))) {
+        overloadedMethodC2Method(info);
+        return;
+    }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+}
+
+static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::overloadedMethodCMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void classMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj::classMethod();
@@ -5734,6 +5787,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 1},
     {"overloadedMethodA", TestObjV8Internal::overloadedMethodAMethodCallback, 0, 1},
     {"overloadedMethodB", TestObjV8Internal::overloadedMethodBMethodCallback, 0, 1},
+    {"overloadedMethodC", TestObjV8Internal::overloadedMethodCMethodCallback, 0, 1},
     {"classMethodWithClamp", TestObjV8Internal::classMethodWithClampMethodCallback, 0, 2},
     {"methodWithUnsignedLongSequence", TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, 0, 1},
     {"stringArrayFunction", TestObjV8Internal::stringArrayFunctionMethodCallback, 0, 1},

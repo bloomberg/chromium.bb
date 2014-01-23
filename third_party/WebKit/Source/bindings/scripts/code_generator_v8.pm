@@ -2185,17 +2185,29 @@ sub GenerateParametersCheckExpression
         my $value = "info[$parameterIndex]";
         my $type = $parameter->type;
 
-        # Only DOMString or wrapper types are checked.
+        # Only DOMString, wrapper types, and (to some degree) non-wrapper types
+        # are checked.
+        #
+        # FIXME: If distinguishing non-primitive type from primitive type,
+        # (e.g., sequence<DOMString> from DOMString or Dictionary from double)
+        # the non-primitive type must appear *first* in the IDL file,
+        # since we're not adding a check to primitive types.
+        # This can be avoided if compute overloads for whole overload set at
+        # once, rather than one method at a time, but that requires a complete
+        # rewrite of this algorithm.
+        #
         # For DOMString with StrictTypeChecking only Null, Undefined and Object
         # are accepted for compatibility. Otherwise, no restrictions are made to
         # match the non-overloaded behavior.
+        #
         # FIXME: Implement WebIDL overload resolution algorithm.
+        # https://code.google.com/p/chromium/issues/detail?id=293561
         if ($type eq "DOMString") {
             if ($parameter->extendedAttributes->{"StrictTypeChecking"}) {
                 push(@andExpression, "isUndefinedOrNull(${value}) || ${value}->IsString() || ${value}->IsObject()");
             }
         } elsif (IsCallbackInterface($parameter->type)) {
-            # For Callbacks only checks if the value is null or object.
+            # For Callbacks only checks if the value is null or function.
             push(@andExpression, "${value}->IsNull() || ${value}->IsFunction()");
         } elsif (GetArrayOrSequenceType($type)) {
             if ($parameter->isNullable) {
@@ -2208,6 +2220,13 @@ sub GenerateParametersCheckExpression
                 push(@andExpression, "${value}->IsNull() || V8${type}::hasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
             } else {
                 push(@andExpression, "V8${type}::hasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
+            }
+        } elsif ($nonWrapperTypes{$type}) {
+            # Non-wrapper types are just objects: we don't distinguish type
+            if ($parameter->isNullable) {
+                push(@andExpression, "${value}->IsNull() || ${value}->IsObject()");
+            } else {
+                push(@andExpression, "${value}->IsObject()");
             }
         }
 

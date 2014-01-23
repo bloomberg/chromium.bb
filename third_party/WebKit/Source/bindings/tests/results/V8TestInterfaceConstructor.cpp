@@ -123,7 +123,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         TestInterfaceConstructorV8Internal::constructor1(info);
         return;
     }
-    if (((info.Length() == 5) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[4]->IsArray())) || ((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[4]->IsArray())) || ((info.Length() == 7) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[4]->IsArray()) && (V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 5) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[3]->IsObject()) && (info[4]->IsArray())) || ((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsObject())) || ((info.Length() == 7) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsObject()) && (V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         TestInterfaceConstructorV8Internal::constructor2(info);
         return;
     }
