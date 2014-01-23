@@ -665,8 +665,9 @@ public:
     // Subclasses must reimplement this method to compute the size and position
     // of this object and all its descendants.
     virtual void layout() = 0;
-    virtual void didLayout(ResourceLoadPriorityOptimizer&);
-    virtual void didScroll(ResourceLoadPriorityOptimizer&);
+    virtual bool updateImageLoadingPriorities() { return false; }
+    void setHasPendingResourceUpdate(bool hasPendingResourceUpdate) { m_bitfields.setHasPendingResourceUpdate(hasPendingResourceUpdate); }
+    bool hasPendingResourceUpdate() const { return m_bitfields.hasPendingResourceUpdate(); }
 
     /* This function performs a layout only if one is needed. */
     void layoutIfNeeded() { if (needsLayout()) layout(); }
@@ -1132,10 +1133,11 @@ private:
             , m_selectionState(SelectionNone)
             , m_flowThreadState(NotInsideFlowThread)
             , m_boxDecorationState(NoBoxDecorations)
+            , m_hasPendingResourceUpdate(false)
         {
         }
 
-        // 32 bits have been used in the first word, and 2 in the second.
+        // 32 bits have been used in the first word, and 3 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintAfterLayout, ShouldDoFullRepaintAfterLayout);
         ADD_BOOLEAN_BITFIELD(shouldRepaintOverflowIfNeeded, ShouldRepaintOverflowIfNeeded);
@@ -1176,6 +1178,9 @@ private:
         unsigned m_boxDecorationState : 2; // BoxDecorationState
 
     public:
+
+        ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
+
         bool isOutOfFlowPositioned() const { return m_positionedState == IsOutOfFlowPositioned; }
         bool isRelPositioned() const { return m_positionedState == IsRelativelyPositioned; }
         bool isStickyPositioned() const { return m_positionedState == IsStickyPositioned; }

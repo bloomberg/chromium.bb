@@ -112,6 +112,7 @@ static const double s_deferredRepaintDelayIncrementDuringLoading = 0;
 
 // The maximum number of updateWidgets iterations that should be done before returning.
 static const unsigned maxUpdateWidgetsIterations = 2;
+static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
 static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLayer* layer, bool isRelayoutingSubtree, bool didFullRepaint)
 {
@@ -181,6 +182,7 @@ FrameView::FrameView(Frame* frame)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_partialLayout()
     , m_layoutSizeFixedToFrameSize(true)
+    , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
 {
     ASSERT(m_frame);
     init();
@@ -213,6 +215,9 @@ FrameView::~FrameView()
 {
     if (m_postLayoutTasksTimer.isActive())
         m_postLayoutTasksTimer.stop();
+
+    if (m_didScrollTimer.isActive())
+        m_didScrollTimer.stop();
 
     removeFromAXObjectCache();
     resetScrollbars();
@@ -867,8 +872,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
 
-        ResourceLoadPriorityOptimizer modifier;
-        rootForThisLayout->didLayout(modifier);
+        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
     }
 
     TextAutosizer* textAutosizer = frame().document()->textAutosizer();
@@ -877,9 +881,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
-
-        ResourceLoadPriorityOptimizer modifier;
-        rootForThisLayout->didLayout(modifier);
     }
 
     m_inLayout = false;
@@ -1680,9 +1681,15 @@ void FrameView::scrollPositionChanged()
             renderView->compositor()->frameViewDidScroll();
     }
 
+    if (m_didScrollTimer.isActive())
+        m_didScrollTimer.stop();
+    m_didScrollTimer.startOneShot(resourcePriorityUpdateDelayAfterScroll);
+}
+
+void FrameView::didScrollTimerFired(Timer<FrameView>*)
+{
     if (m_frame->document() && m_frame->document()->renderer()) {
-        ResourceLoadPriorityOptimizer modifier;
-        m_frame->document()->renderer()->didScroll(modifier);
+        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
     }
 }
 

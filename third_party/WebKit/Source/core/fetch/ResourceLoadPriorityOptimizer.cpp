@@ -30,8 +30,17 @@
 
 #include "config.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
+#include "core/rendering/RenderObject.h"
+
+#include "wtf/Vector.h"
 
 namespace WebCore {
+
+ResourceLoadPriorityOptimizer* ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()
+{
+    DEFINE_STATIC_LOCAL(ResourceLoadPriorityOptimizer, s_renderLoadOptimizer, ());
+    return &s_renderLoadOptimizer;
+}
 
 ResourceLoadPriorityOptimizer::ResourceAndVisibility::ResourceAndVisibility(ImageResource* image, VisibilityStatus v)
     : imageResource(image)
@@ -49,6 +58,37 @@ ResourceLoadPriorityOptimizer::ResourceLoadPriorityOptimizer()
 
 ResourceLoadPriorityOptimizer::~ResourceLoadPriorityOptimizer()
 {
+}
+
+void ResourceLoadPriorityOptimizer::addRenderObject(RenderObject* renderer)
+{
+    m_objects.add(renderer);
+    renderer->setHasPendingResourceUpdate(true);
+}
+
+void ResourceLoadPriorityOptimizer::removeRenderObject(RenderObject* renderer)
+{
+    if (!renderer->hasPendingResourceUpdate())
+        return;
+    m_objects.remove(renderer);
+    renderer->setHasPendingResourceUpdate(false);
+}
+
+void ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities()
+{
+    m_imageResources.clear();
+
+    Vector<RenderObject*> objectsToRemove;
+    for (RenderObjectSet::iterator it = m_objects.begin(); it != m_objects.end(); ++it) {
+        RenderObject* obj = *it;
+        if (!obj->updateImageLoadingPriorities()) {
+            objectsToRemove.append(obj);
+        }
+    }
+
+    for (Vector<RenderObject*>::iterator it = objectsToRemove.begin(); it != objectsToRemove.end(); ++it)
+        m_objects.remove(*it);
+
     updateImageResourcesWithLoadPriority();
 }
 

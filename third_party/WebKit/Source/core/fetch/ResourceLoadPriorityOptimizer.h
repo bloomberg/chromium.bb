@@ -36,6 +36,7 @@
 #include "platform/geometry/LayoutRect.h"
 
 #include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -46,11 +47,17 @@ public:
         NotVisible,
         Visible,
     };
-    ResourceLoadPriorityOptimizer();
-    ~ResourceLoadPriorityOptimizer();
     void notifyImageResourceVisibility(ImageResource*, VisibilityStatus);
+    void updateAllImageResourcePriorities();
+    void addRenderObject(RenderObject*);
+    void removeRenderObject(RenderObject*);
+
+    static ResourceLoadPriorityOptimizer* resourceLoadPriorityOptimizer();
 
 private:
+    ResourceLoadPriorityOptimizer();
+    ~ResourceLoadPriorityOptimizer();
+
     void updateImageResourcesWithLoadPriority();
 
     struct ResourceAndVisibility {
@@ -62,6 +69,9 @@ private:
 
     typedef HashMap<unsigned long, OwnPtr<ResourceAndVisibility> > ImageResourceMap;
     ImageResourceMap m_imageResources;
+
+    typedef HashSet<RenderObject*> RenderObjectSet;
+    RenderObjectSet m_objects;
 };
 
 }

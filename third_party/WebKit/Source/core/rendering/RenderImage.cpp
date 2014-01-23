@@ -62,6 +62,7 @@ RenderImage::RenderImage(Element* element)
     , m_imageDevicePixelRatio(1.0f)
 {
     updateAltText();
+    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
 RenderImage* RenderImage::createAnonymous(Document* document)
@@ -563,22 +564,10 @@ void RenderImage::layout()
     updateInnerContentRect();
 }
 
-void RenderImage::didLayout(ResourceLoadPriorityOptimizer& optimizer)
-{
-    RenderReplaced::didLayout(optimizer);
-    updateImageLoadingPriority(optimizer);
-}
-
-void RenderImage::didScroll(ResourceLoadPriorityOptimizer& optimizer)
-{
-    RenderReplaced::didScroll(optimizer);
-    updateImageLoadingPriority(optimizer);
-}
-
-void RenderImage::updateImageLoadingPriority(ResourceLoadPriorityOptimizer& optimizer)
+bool RenderImage::updateImageLoadingPriorities()
 {
     if (!m_imageResource || !m_imageResource->cachedImage() || m_imageResource->cachedImage()->isLoaded())
-        return;
+        return false;
 
     LayoutRect viewBounds = viewRect();
     LayoutRect objectBounds = absoluteContentBox();
@@ -594,7 +583,9 @@ void RenderImage::updateImageLoadingPriority(ResourceLoadPriorityOptimizer& opti
     ResourceLoadPriorityOptimizer::VisibilityStatus status = isVisible ?
         ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
 
-    optimizer.notifyImageResourceVisibility(m_imageResource->cachedImage(), status);
+    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(m_imageResource->cachedImage(), status);
+
+    return true;
 }
 
 void RenderImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const

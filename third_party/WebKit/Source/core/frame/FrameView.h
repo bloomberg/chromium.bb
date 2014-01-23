@@ -404,6 +404,7 @@ private:
 
     void scrollToAnchor();
     void scrollPositionChanged();
+    void didScrollTimerFired(Timer<FrameView>*);
 
     bool hasCustomScrollbars() const;
     bool shouldUseCustomScrollbars(Element*& customScrollbarElement, Frame*& customScrollbarFrame);
@@ -520,6 +521,8 @@ private:
     PartialLayoutState m_partialLayout;
     IntSize m_layoutSize;
     bool m_layoutSizeFixedToFrameSize;
+
+    Timer<FrameView> m_didScrollTimer;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

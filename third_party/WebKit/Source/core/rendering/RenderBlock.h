@@ -322,9 +322,7 @@ protected:
     void dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutScope&);
 
     virtual void layout() OVERRIDE;
-    virtual void didLayout(ResourceLoadPriorityOptimizer&) OVERRIDE;
-    virtual void didScroll(ResourceLoadPriorityOptimizer&) OVERRIDE;
-    void updateStyleImageLoadingPriorities(ResourceLoadPriorityOptimizer&);
+    virtual bool updateImageLoadingPriorities() OVERRIDE FINAL;
 
     void layoutPositionedObjects(bool relayoutChildren, bool fixedPositionObjectsOnly = false);
     void markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, SubtreeLayoutScope&);

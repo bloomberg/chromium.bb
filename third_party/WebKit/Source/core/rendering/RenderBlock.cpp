@@ -184,8 +184,11 @@ static void removeBlockFromDescendantAndContainerMaps(RenderBlock* block, Tracke
 
 static void appendImageIfNotNull(Vector<ImageResource*>& imageResources, const StyleImage* styleImage)
 {
-    if (styleImage && styleImage->cachedImage())
-        imageResources.append(styleImage->cachedImage());
+    if (styleImage && styleImage->cachedImage()) {
+        ImageResource* imageResource = styleImage->cachedImage();
+        if (imageResource && !imageResource->isLoaded())
+            imageResources.append(styleImage->cachedImage());
+    }
 }
 
 static void appendLayers(Vector<ImageResource*>& images, const FillLayer* styleLayer)
@@ -195,8 +198,26 @@ static void appendLayers(Vector<ImageResource*>& images, const FillLayer* styleL
     }
 }
 
+static void appendImagesFromStyle(Vector<ImageResource*>& images, RenderStyle& blockStyle)
+{
+    appendLayers(images, blockStyle.backgroundLayers());
+    appendLayers(images, blockStyle.maskLayers());
+
+    const ContentData* contentData = blockStyle.contentData();
+    if (contentData && contentData->isImage()) {
+        const ImageContentData* imageContentData = static_cast<const ImageContentData*>(contentData);
+        appendImageIfNotNull(images, imageContentData->image());
+    }
+    if (blockStyle.boxReflect())
+        appendImageIfNotNull(images, blockStyle.boxReflect()->mask().image());
+    appendImageIfNotNull(images, blockStyle.listStyleImage());
+    appendImageIfNotNull(images, blockStyle.borderImageSource());
+    appendImageIfNotNull(images, blockStyle.maskBoxImageSource());
+}
+
 RenderBlock::~RenderBlock()
 {
+    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeRenderObject(this);
     if (hasColumns())
         gColumnInfoMap->take(this);
     if (gPercentHeightDescendantsMap)
@@ -328,6 +349,15 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     // It's possible for our border/padding to change, but for the overall logical width of the block to
     // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.
     m_hasBorderOrPaddingLogicalWidthChanged = oldStyle && diff == StyleDifferenceLayout && needsLayout() && borderOrPaddingLogicalWidthChanged(oldStyle, newStyle);
+
+    // If the style has unloaded images, want to notify the ResourceLoadPriorityOptimizer so that
+    // network priorities can be set.
+    Vector<ImageResource*> images;
+    appendImagesFromStyle(images, *newStyle);
+    if (images.isEmpty())
+        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeRenderObject(this);
+    else
+        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
 RenderBlock* RenderBlock::continuationBefore(RenderObject* beforeChild)
@@ -1267,42 +1297,13 @@ void RenderBlock::layout()
     invalidateBackgroundObscurationStatus();
 }
 
-void RenderBlock::didLayout(ResourceLoadPriorityOptimizer& optimizer)
+bool RenderBlock::updateImageLoadingPriorities()
 {
-    RenderBox::didLayout(optimizer);
-    updateStyleImageLoadingPriorities(optimizer);
-}
-
-void RenderBlock::didScroll(ResourceLoadPriorityOptimizer& optimizer)
-{
-    RenderBox::didScroll(optimizer);
-    updateStyleImageLoadingPriorities(optimizer);
-}
-
-void RenderBlock::updateStyleImageLoadingPriorities(ResourceLoadPriorityOptimizer& optimizer)
-{
-    RenderStyle* blockStyle = style();
-    if (!blockStyle)
-        return;
-
     Vector<ImageResource*> images;
-
-    appendLayers(images, blockStyle->backgroundLayers());
-    appendLayers(images, blockStyle->maskLayers());
-
-    const ContentData* contentData = blockStyle->contentData();
-    if (contentData && contentData->isImage()) {
-        const ImageContentData* imageContentData = static_cast<const ImageContentData*>(contentData);
-        appendImageIfNotNull(images, imageContentData->image());
-    }
-    if (blockStyle->boxReflect())
-        appendImageIfNotNull(images, blockStyle->boxReflect()->mask().image());
-    appendImageIfNotNull(images, blockStyle->listStyleImage());
-    appendImageIfNotNull(images, blockStyle->borderImageSource());
-    appendImageIfNotNull(images, blockStyle->maskBoxImageSource());
+    appendImagesFromStyle(images, *style());
 
     if (images.isEmpty())
-        return;
+        return false;
 
     LayoutRect viewBounds = viewRect();
     LayoutRect objectBounds = absoluteContentBox();
@@ -1318,7 +1319,9 @@ void RenderBlock::updateStyleImageLoadingPriorities(ResourceLoadPriorityOptimize
         ResourceLoadPriorityOptimizer::Visible : ResourceLoadPriorityOptimizer::NotVisible;
 
     for (Vector<ImageResource*>::iterator it = images.begin(), end = images.end(); it != end; ++it)
-        optimizer.notifyImageResourceVisibility(*it, status);
+        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(*it, status);
+
+    return true;
 }
 
 void RenderBlock::relayoutShapeDescendantIfMoved(RenderBlock* child, LayoutSize offset)
