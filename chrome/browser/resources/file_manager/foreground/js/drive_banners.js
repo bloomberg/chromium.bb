@@ -577,9 +577,10 @@ FileListBannerController.prototype.showLowDownloadsSpaceWarning_ =
   if (show) {
     var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
     box.innerHTML = html;
-    var link = box.querySelector('a');
-    link.href = str('DOWNLOADS_LOW_SPACE_WARNING_HELP_URL');
-    link.target = '_blank';
+    box.querySelector('a').addEventListener('click', function(e) {
+      util.visitURL(str('DOWNLOADS_LOW_SPACE_WARNING_HELP_URL'));
+      e.preventDefault();
+    });
   } else {
     box.innerHTML = '';
   }
