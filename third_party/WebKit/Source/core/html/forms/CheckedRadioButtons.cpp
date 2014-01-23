@@ -193,7 +193,7 @@ void CheckedRadioButtons::addButton(HTMLInputElement* element)
     if (!m_nameToGroupMap)
         m_nameToGroupMap = adoptPtr(new NameToGroupMap);
 
-    OwnPtr<RadioButtonGroup>& group = m_nameToGroupMap->add(element->name().impl(), PassOwnPtr<RadioButtonGroup>()).iterator->value;
+    OwnPtr<RadioButtonGroup>& group = m_nameToGroupMap->add(element->name(), PassOwnPtr<RadioButtonGroup>()).iterator->value;
     if (!group)
         group = RadioButtonGroup::create();
     group->add(element);
@@ -207,7 +207,7 @@ void CheckedRadioButtons::updateCheckedState(HTMLInputElement* element)
     ASSERT(m_nameToGroupMap);
     if (!m_nameToGroupMap)
         return;
-    RadioButtonGroup* group = m_nameToGroupMap->get(element->name().impl());
+    RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
     ASSERT(group);
     group->updateCheckedState(element);
 }
@@ -220,7 +220,7 @@ void CheckedRadioButtons::requiredAttributeChanged(HTMLInputElement* element)
     ASSERT(m_nameToGroupMap);
     if (!m_nameToGroupMap)
         return;
-    RadioButtonGroup* group = m_nameToGroupMap->get(element->name().impl());
+    RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
     ASSERT(group);
     group->requiredAttributeChanged(element);
 }
@@ -229,7 +229,7 @@ HTMLInputElement* CheckedRadioButtons::checkedButtonForGroup(const AtomicString&
 {
     if (!m_nameToGroupMap)
         return 0;
-    RadioButtonGroup* group = m_nameToGroupMap->get(name.impl());
+    RadioButtonGroup* group = m_nameToGroupMap->get(name);
     return group ? group->checkedButton() : 0;
 }
 
@@ -240,7 +240,7 @@ bool CheckedRadioButtons::isInRequiredGroup(HTMLInputElement* element) const
         return false;
     if (!m_nameToGroupMap)
         return false;
-    RadioButtonGroup* group = m_nameToGroupMap->get(element->name().impl());
+    RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
     return group && group->isRequired() && group->contains(element);
 }
 
@@ -252,17 +252,15 @@ void CheckedRadioButtons::removeButton(HTMLInputElement* element)
     if (!m_nameToGroupMap)
         return;
 
-    NameToGroupMap::iterator it = m_nameToGroupMap->find(element->name().impl());
-    if (it == m_nameToGroupMap->end())
+    RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
+    if (!group)
         return;
-    it->value->remove(element);
-    if (it->value->isEmpty()) {
-        // FIXME: We may skip deallocating the empty RadioButtonGroup for
-        // performance improvement. If we do so, we need to change the key type
-        // of m_nameToGroupMap from StringImpl* to AtomicString.
-        m_nameToGroupMap->remove(it);
-        if (m_nameToGroupMap->isEmpty())
-            m_nameToGroupMap.clear();
+    group->remove(element);
+    if (group->isEmpty()) {
+        // We don't remove an empty RadioButtonGroup from m_nameToGroupMap for
+        // better performance.
+        ASSERT(!group->isRequired());
+        ASSERT_WITH_SECURITY_IMPLICATION(!group->checkedButton());
     }
 }
 
