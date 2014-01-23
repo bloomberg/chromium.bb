@@ -44,6 +44,8 @@ class CONTENT_EXPORT P2PSocketClient :
                             const std::vector<char>& data,
                             net::DiffServCodePoint dscp) = 0;
 
+  virtual void SetOption(P2PSocketOption option, int value) = 0;
+
   // Must be called before the socket is destroyed.
   virtual void Close() = 0;
 

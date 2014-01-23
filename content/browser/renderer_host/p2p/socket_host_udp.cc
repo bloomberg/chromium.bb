@@ -295,4 +295,20 @@ P2PSocketHost* P2PSocketHostUdp::AcceptIncomingTcpConnection(
   return NULL;
 }
 
+bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
+  DCHECK_EQ(STATE_OPEN, state_);
+  switch (option) {
+    case P2P_SOCKET_OPT_RCVBUF:
+      return socket_->SetReceiveBufferSize(value);
+    case P2P_SOCKET_OPT_SNDBUF:
+      return socket_->SetSendBufferSize(value);
+    case P2P_SOCKET_OPT_DSCP:
+      return (net::OK == socket_->SetDiffServCodePoint(
+          static_cast<net::DiffServCodePoint>(value))) ? true : false;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 }  // namespace content
