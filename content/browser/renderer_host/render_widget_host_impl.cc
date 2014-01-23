@@ -1831,6 +1831,12 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   DCHECK(!size.IsEmpty());
 
   TransportDIB* dib = process_->GetTransportDIB(id);
+  if (!dib) {
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH6"));
+    GetProcess()->ReceivedBadMessage();
+    return;
+  }
+
   DCHECK(dib->memory());
   DCHECK(dib->size() == SkBitmap::ComputeSize(SkBitmap::kARGB_8888_Config,
                                               size.width(), size.height()));
