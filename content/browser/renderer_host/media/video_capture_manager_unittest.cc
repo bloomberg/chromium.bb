@@ -239,6 +239,7 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
   // Before enumerating the devices, requesting formats should return false.
   int video_session_id = 0;
   media::VideoCaptureFormats supported_formats;
+  supported_formats.clear();
   EXPECT_FALSE(
       vcm_->GetDeviceSupportedFormats(video_session_id, &supported_formats));
 
@@ -254,6 +255,7 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
   message_loop_->RunUntilIdle();
 
   // Right after opening the device, we should see all its formats.
+  supported_formats.clear();
   EXPECT_TRUE(
       vcm_->GetDeviceSupportedFormats(video_session_id, &supported_formats));
   ASSERT_GT(supported_formats.size(), 1u);
@@ -267,6 +269,7 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
   VideoCaptureControllerID client_id = StartClient(video_session_id, true);
   message_loop_->RunUntilIdle();
   // After StartClient(), device's supported formats should stay the same.
+  supported_formats.clear();
   EXPECT_TRUE(
       vcm_->GetDeviceSupportedFormats(video_session_id, &supported_formats));
   ASSERT_GE(supported_formats.size(), 2u);
@@ -279,6 +282,7 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
 
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
   StopClient(client_id);
+  supported_formats.clear();
   EXPECT_TRUE(
       vcm_->GetDeviceSupportedFormats(video_session_id, &supported_formats));
   ASSERT_GE(supported_formats.size(), 2u);

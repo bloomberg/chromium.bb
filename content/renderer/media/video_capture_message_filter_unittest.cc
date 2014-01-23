@@ -34,6 +34,8 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
                     base::TimeTicks timestamp,
                     const media::VideoCaptureFormat& format));
   MOCK_METHOD1(OnStateChanged, void(VideoCaptureState state));
+  MOCK_METHOD1(OnDeviceSupportedFormatsEnumerated,
+               void(const media::VideoCaptureFormats& formats));
 
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE {
     ASSERT_TRUE(device_id != 0);
@@ -139,6 +141,23 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
   filter->OnMessageReceived(
       VideoCaptureMsg_StateChanged(delegate2.device_id(),
                                    VIDEO_CAPTURE_STATE_ENDED));
+}
+
+TEST(VideoCaptureMessageFilterTest, GetSomeDeviceCapabilities) {
+  scoped_refptr<VideoCaptureMessageFilter> filter(
+      new VideoCaptureMessageFilter());
+
+  IPC::TestSink channel;
+  filter->OnFilterAdded(&channel);
+  MockVideoCaptureDelegate delegate;
+  filter->AddDelegate(&delegate);
+  ASSERT_EQ(1, delegate.device_id());
+
+  // VideoCaptureMsg_OnDeviceCapabilitiesEnumerated
+  EXPECT_CALL(delegate, OnDeviceSupportedFormatsEnumerated(_));
+  media::VideoCaptureFormats supported_formats;
+  filter->OnMessageReceived(VideoCaptureMsg_DeviceSupportedFormatsEnumerated(
+      delegate.device_id(), supported_formats));
 }
 
 }  // namespace content

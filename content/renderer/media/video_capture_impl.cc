@@ -91,6 +91,14 @@ void VideoCaptureImpl::StopCapture(
                  base::Unretained(this), handler));
 }
 
+void VideoCaptureImpl::GetDeviceSupportedFormats(
+    const DeviceFormatsCallback& callback) {
+  DCHECK(!callback.is_null());
+  io_message_loop_proxy_->PostTask(FROM_HERE,
+      base::Bind(&VideoCaptureImpl::GetDeviceSupportedFormatsOnIOThread,
+                 base::Unretained(this), media::BindToCurrentLoop(callback)));
+}
+
 void VideoCaptureImpl::InitOnIOThread() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   message_filter_->AddDelegate(this);
@@ -170,6 +178,15 @@ void VideoCaptureImpl::StopCaptureOnIOThread(
     client_buffers_.clear();
     weak_this_factory_.InvalidateWeakPtrs();
   }
+}
+
+void VideoCaptureImpl::GetDeviceSupportedFormatsOnIOThread(
+    const DeviceFormatsCallback& callback) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  device_formats_callback_queue_.push_back(callback);
+  if (device_formats_callback_queue_.size() == 1)
+    Send(new VideoCaptureHostMsg_GetDeviceSupportedFormats(device_id_,
+                                                           session_id_));
 }
 
 void VideoCaptureImpl::OnBufferCreated(
@@ -299,6 +316,15 @@ void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {
     default:
       break;
   }
+}
+
+void VideoCaptureImpl::OnDeviceSupportedFormatsEnumerated(
+    const media::VideoCaptureFormats& supported_formats) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  for (size_t i = 0; i < device_formats_callback_queue_.size(); ++i)
+    device_formats_callback_queue_[i].Run(supported_formats);
+  device_formats_callback_queue_.clear();
+
 }
 
 void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {

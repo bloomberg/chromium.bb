@@ -289,7 +289,7 @@ bool VideoCaptureManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId capture_session_id,
     media::VideoCaptureFormats* supported_formats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  supported_formats->clear();
+  DCHECK(supported_formats->empty());
 
   std::map<media::VideoCaptureSessionId, MediaStreamDevice>::iterator it =
       sessions_.find(capture_session_id);

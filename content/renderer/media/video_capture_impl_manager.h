@@ -51,6 +51,8 @@ class CONTENT_EXPORT VideoCaptureHandle : media::VideoCapture {
   virtual void StopCapture(EventHandler* handler) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;
   virtual int CaptureFrameRate() OVERRIDE;
+  virtual void GetDeviceSupportedFormats(
+      const DeviceFormatsCallback& callback) OVERRIDE;
 
  private:
   friend class VideoCaptureImplManager;

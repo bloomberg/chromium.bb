@@ -41,6 +41,10 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
     // process.
     virtual void OnStateChanged(VideoCaptureState state) = 0;
 
+    // Called upon reception of device's supported formats back from browser.
+    virtual void OnDeviceSupportedFormatsEnumerated(
+        const media::VideoCaptureFormats& supported_formats) = 0;
+
     // Called when the delegate has been added to filter's delegate list.
     // |device_id| is the device id for the delegate.
     virtual void OnDelegateAdded(int32 device_id) = 0;
@@ -90,6 +94,11 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
 
   // State of browser process' video capture device has changed.
   void OnDeviceStateChanged(int device_id, VideoCaptureState state);
+
+  // Receive a device's supported formats back from browser process.
+  void OnDeviceSupportedFormatsEnumerated(
+      int device_id,
+      const media::VideoCaptureFormats& supported_formats);
 
   // Finds the delegate associated with |device_id|, NULL if not found.
   Delegate* find_delegate(int device_id) const;

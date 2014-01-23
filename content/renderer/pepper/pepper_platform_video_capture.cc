@@ -78,6 +78,11 @@ int PepperPlatformVideoCapture::CaptureFrameRate() {
   return handler_proxy_->state().frame_rate;
 }
 
+void PepperPlatformVideoCapture::GetDeviceSupportedFormats(
+    const DeviceFormatsCallback& callback) {
+  NOTREACHED();
+}
+
 void PepperPlatformVideoCapture::DetachEventHandler() {
   handler_ = NULL;
   StopCapture(NULL);

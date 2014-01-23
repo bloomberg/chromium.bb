@@ -8,6 +8,7 @@
 #ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_H_
 #define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -49,6 +50,9 @@ class MEDIA_EXPORT VideoCapture {
     virtual ~EventHandler() {}
   };
 
+  typedef base::Callback<void(const media::VideoCaptureFormats&)>
+      DeviceFormatsCallback;
+
   VideoCapture() {}
 
   // Request video capture to start capturing with |params|.
@@ -63,6 +67,12 @@ class MEDIA_EXPORT VideoCapture {
 
   virtual bool CaptureStarted() = 0;
   virtual int CaptureFrameRate() = 0;
+
+  // Request the device capture supported formats. This method can be called
+  // before startCapture() and/or after stopCapture() so a |callback| is used
+  // instead of replying via EventHandler.
+  virtual void GetDeviceSupportedFormats(
+      const DeviceFormatsCallback& callback) = 0;
 
  protected:
   virtual ~VideoCapture() {}

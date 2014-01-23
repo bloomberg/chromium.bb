@@ -29,6 +29,8 @@ class MockVideoCaptureEventHandler : public VideoCapture::EventHandler {
   MOCK_METHOD2(OnDeviceInfoReceived,
                void(VideoCapture* capture,
                     const VideoCaptureFormat& device_info));
+  MOCK_METHOD1(OnDeviceSupportedFormatsEnumerated,
+               void(const media::VideoCaptureFormats& supported_formats));
 };
 
 }  // namespace media

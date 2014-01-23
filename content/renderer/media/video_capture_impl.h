@@ -67,6 +67,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;
   virtual int CaptureFrameRate() OVERRIDE;
+  virtual void GetDeviceSupportedFormats(
+      const DeviceFormatsCallback& callback) OVERRIDE;
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
 
@@ -85,6 +87,8 @@ class CONTENT_EXPORT VideoCaptureImpl
       media::VideoCapture::EventHandler* handler,
       const media::VideoCaptureParams& params);
   void StopCaptureOnIOThread(media::VideoCapture::EventHandler* handler);
+  void GetDeviceSupportedFormatsOnIOThread(
+      const DeviceFormatsCallback& callback);
 
   // VideoCaptureMessageFilter::Delegate interface.
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
@@ -96,7 +100,12 @@ class CONTENT_EXPORT VideoCaptureImpl
       base::TimeTicks timestamp,
       const media::VideoCaptureFormat& format) OVERRIDE;
   virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
+  virtual void OnDeviceSupportedFormatsEnumerated(
+      const media::VideoCaptureFormats& supported_formats) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
+
+  void OnDeviceFormatsEnumeratedOnMainThread(
+      const media::VideoCaptureFormats& supported_formats);
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.
@@ -107,6 +116,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   void StopDevice();
   void RestartCapture();
   void StartCaptureInternal();
+
   virtual void Send(IPC::Message* message);
 
   // Helpers.
@@ -117,6 +127,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   int device_id_;
   const int session_id_;
+
+  // Vector of callbacks to be notified of device format enumerations, used only
+  // on IO Thread.
+  std::vector<DeviceFormatsCallback> device_formats_callback_queue_;
 
   // Buffers available for sending to the client.
   typedef std::map<int32, scoped_refptr<ClientBuffer> > ClientBufferMap;

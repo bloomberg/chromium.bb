@@ -40,6 +40,11 @@ int VideoCaptureHandle::CaptureFrameRate() {
   return impl_->CaptureFrameRate();
 }
 
+void VideoCaptureHandle::GetDeviceSupportedFormats(
+    const DeviceFormatsCallback& callback) {
+  impl_->GetDeviceSupportedFormats(callback);
+}
+
 VideoCaptureImplManager::VideoCaptureImplManager()
     : filter_(new VideoCaptureMessageFilter()),
       weak_factory_(this) {

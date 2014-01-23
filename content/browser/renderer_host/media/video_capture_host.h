@@ -122,6 +122,12 @@ class CONTENT_EXPORT VideoCaptureHost
   // referenced by |device_id|.
   void OnReceiveEmptyBuffer(int device_id, int buffer_id);
 
+  // IPC message: Get supported formats referenced by |capture_session_id|.
+  // |device_id| is needed for message back-routing purposes.
+  void OnGetDeviceSupportedFormats(
+      int device_id,
+      media::VideoCaptureSessionId capture_session_id);
+
   // Send a newly created buffer to the VideoCaptureMessageFilter.
   void DoSendNewBufferOnIOThread(
       const VideoCaptureControllerID& controller_id,
