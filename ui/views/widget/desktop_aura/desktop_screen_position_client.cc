@@ -86,11 +86,13 @@ void DesktopScreenPositionClient::SetBounds(
     return;
   }
 
-  DesktopNativeWidgetAura* desktop_native_widget =
-      DesktopNativeWidgetAura::ForWindow(window);
-  if (desktop_native_widget) {
-    root->GetDispatcher()->host()->SetBounds(bounds);
+  internal::NativeWidgetPrivate* desktop_native_widget =
+      DesktopNativeWidgetAura::ForWindow(root);
+  if (desktop_native_widget &&
+      desktop_native_widget->GetNativeView() == window) {
+    // |window| is the content_window.
     // Setting bounds of root resizes |window|.
+    root->GetDispatcher()->host()->SetBounds(bounds);
   } else {
     window->SetBounds(bounds);
   }

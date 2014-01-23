@@ -79,7 +79,8 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   // becomes the parent of the child window passed in.
   static aura::Window* CreateParentWindow(aura::Window* child_window,
                                           const gfx::Rect& bounds,
-                                          bool full_screen) {
+                                          bool full_screen,
+                                          bool root_is_always_on_top) {
     // This instance will get deleted when the widget is destroyed.
     DesktopNativeWidgetTopLevelHandler* top_level_handler =
         new DesktopNativeWidgetTopLevelHandler;
@@ -93,6 +94,8 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     init_params.layer_type = aura::WINDOW_LAYER_NOT_DRAWN;
     init_params.can_activate = full_screen;
+    init_params.keep_on_top = root_is_always_on_top;
+
     // This widget instance will get deleted when the window is
     // destroyed.
     top_level_handler->top_level_widget_ = new Widget();
@@ -172,9 +175,16 @@ class DesktopNativeWidgetAuraWindowTreeClient :
     bool is_fullscreen = window->GetProperty(aura::client::kShowStateKey) ==
         ui::SHOW_STATE_FULLSCREEN;
     bool is_menu = window->type() == ui::wm::WINDOW_TYPE_MENU;
+
     if (is_fullscreen || is_menu) {
+      bool root_is_always_on_top = false;
+      internal::NativeWidgetPrivate* native_widget =
+          DesktopNativeWidgetAura::ForWindow(root_window_);
+      if (native_widget)
+        root_is_always_on_top = native_widget->IsAlwaysOnTop();
+
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
-          window, bounds, is_fullscreen);
+          window, bounds, is_fullscreen, root_is_always_on_top);
     }
     return root_window_;
   }
@@ -228,7 +238,6 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       restore_focus_on_activate_(false),
       cursor_(gfx::kNullCursor),
       widget_type_(Widget::InitParams::TYPE_WINDOW) {
-  content_window_->SetProperty(kDesktopNativeWidgetAuraKey, this);
   aura::client::SetFocusChangeObserver(content_window_, this);
   aura::client::SetActivationChangeObserver(content_window_, this);
 }
@@ -386,6 +395,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   root_window_.reset(new aura::RootWindow(rw_params));
   root_window_->Init();
   root_window_->window()->AddChild(content_window_container_);
+  root_window_->window()->SetProperty(kDesktopNativeWidgetAuraKey, this);
 
   // The WindowsModalityController event filter should be at the head of the
   // pre target handlers list. This ensures that it handles input events first

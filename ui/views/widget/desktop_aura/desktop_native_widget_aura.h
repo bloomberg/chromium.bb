@@ -61,7 +61,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   explicit DesktopNativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~DesktopNativeWidgetAura();
 
-  // Maps from window to DesktopNativeWidgetAura.
+  // Maps from window to DesktopNativeWidgetAura. |window| must be a root
+  // window.
   static DesktopNativeWidgetAura* ForWindow(aura::Window* window);
 
   // Called by our DesktopWindowTreeHost after it has deleted native resources;
