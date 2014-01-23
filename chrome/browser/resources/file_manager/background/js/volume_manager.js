@@ -884,6 +884,7 @@ function EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly) {
    */
   this.isDriveBased =
       this.rootType === RootType.DRIVE ||
+      this.rootType === RootType.DRIVE_OTHER ||
       this.rootType === RootType.DRIVE_SHARED_WITH_ME ||
       this.rootType === RootType.DRIVE_RECENT ||
       this.rootType === RootType.DRIVE_OFFLINE;
