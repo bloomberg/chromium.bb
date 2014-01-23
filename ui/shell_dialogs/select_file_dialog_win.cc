@@ -517,7 +517,8 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
 
   // Returns the filter to be used while displaying the open/save file dialog.
   // This is computed from the extensions for the file types being opened.
-  base::string16 GetFilterForFileTypes(const FileTypeInfo& file_types);
+  // |file_types| can be NULL in which case the returned filter will be empty.
+  base::string16 GetFilterForFileTypes(const FileTypeInfo* file_types);
 
   bool has_multiple_file_type_choices_;
 
@@ -554,7 +555,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       aura::HandleSaveFile(
           base::UTF16ToWide(title),
           default_path,
-          GetFilterForFileTypes(*file_types),
+          GetFilterForFileTypes(file_types),
           file_type_index,
           default_extension,
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
@@ -566,7 +567,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       aura::HandleOpenFile(
           base::UTF16ToWide(title),
           default_path,
-          GetFilterForFileTypes(*file_types),
+          GetFilterForFileTypes(file_types),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
                      base::Unretained(listener_)),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
@@ -576,7 +577,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       aura::HandleOpenMultipleFiles(
           base::UTF16ToWide(title),
           default_path,
-          GetFilterForFileTypes(*file_types),
+          GetFilterForFileTypes(file_types),
           base::Bind(&ui::SelectFileDialog::Listener::MultiFilesSelected,
                      base::Unretained(listener_)),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
@@ -637,7 +638,7 @@ void SelectFileDialogImpl::ListenerDestroyed() {
 
 void SelectFileDialogImpl::ExecuteSelectFile(
     const ExecuteSelectParams& params) {
-  base::string16 filter = GetFilterForFileTypes(params.file_types);
+  base::string16 filter = GetFilterForFileTypes(&params.file_types);
 
   base::FilePath path = params.default_path;
   bool success = false;
@@ -881,10 +882,13 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
 }
 
 base::string16 SelectFileDialogImpl::GetFilterForFileTypes(
-    const FileTypeInfo& file_types) {
+    const FileTypeInfo* file_types) {
+  if (!file_types)
+    return base::string16();
+
   std::vector<base::string16> exts;
-  for (size_t i = 0; i < file_types.extensions.size(); ++i) {
-    const std::vector<base::string16>& inner_exts = file_types.extensions[i];
+  for (size_t i = 0; i < file_types->extensions.size(); ++i) {
+    const std::vector<base::string16>& inner_exts = file_types->extensions[i];
     base::string16 ext_string;
     for (size_t j = 0; j < inner_exts.size(); ++j) {
       if (!ext_string.empty())
@@ -896,8 +900,8 @@ base::string16 SelectFileDialogImpl::GetFilterForFileTypes(
   }
   return FormatFilterForExtensions(
       exts,
-      file_types.extension_description_overrides,
-      file_types.include_all_files);
+      file_types->extension_description_overrides,
+      file_types->include_all_files);
 }
 
 }  // namespace
