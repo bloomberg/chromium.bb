@@ -38,6 +38,7 @@ class ExceptionState;
 class Frame;
 class HTMLDocument;
 class KURL;
+class XMLDocument;
 
 class DOMImplementation : public ScriptWrappable {
     WTF_MAKE_FAST_ALLOCATED;
@@ -52,7 +53,7 @@ public:
     static bool hasFeature(const String& feature, const String& version);
     bool hasFeatureForBindings(const String& feature, const String& version);
     PassRefPtr<DocumentType> createDocumentType(const AtomicString& qualifiedName, const String& publicId, const String& systemId, ExceptionState&);
-    PassRefPtr<Document> createDocument(const AtomicString& namespaceURI, const AtomicString& qualifiedName, DocumentType*, ExceptionState&);
+    PassRefPtr<XMLDocument> createDocument(const AtomicString& namespaceURI, const AtomicString& qualifiedName, DocumentType*, ExceptionState&);
 
     DOMImplementation* getInterface(const String& feature);
 

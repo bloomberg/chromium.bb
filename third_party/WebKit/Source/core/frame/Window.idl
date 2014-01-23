@@ -195,9 +195,6 @@
     // Additional constructors.
     attribute TransitionEventConstructor WebKitTransitionEvent;
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute WebKitAnimationEventConstructor AnimationEvent;
-    // Mozilla has a separate XMLDocument object for XML documents.
-    // We just use Document for this.
-    attribute DocumentConstructor XMLDocument;
     attribute URLConstructor webkitURL; // FIXME: deprecate this.
     attribute MutationObserverConstructor WebKitMutationObserver; // FIXME: Add metrics to determine when we can remove this.
     attribute IDBCursorConstructor webkitIDBCursor;

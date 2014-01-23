@@ -94,6 +94,7 @@
 #include "core/dom/TransformSource.h"
 #include "core/dom/TreeWalker.h"
 #include "core/dom/VisitedLinkState.h"
+#include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -1202,10 +1203,13 @@ void Document::setContent(const String& content)
 
 String Document::suggestedMIMEType() const
 {
-    if (isXHTMLDocument())
-        return "application/xhtml+xml";
-    if (isSVGDocument())
-        return "image/svg+xml";
+    if (isXMLDocument()) {
+        if (isXHTMLDocument())
+            return "application/xhtml+xml";
+        if (isSVGDocument())
+            return "image/svg+xml";
+        return "application/xml";
+    }
     if (xmlStandalone())
         return "text/xml";
     if (isHTMLDocument())
@@ -3160,8 +3164,11 @@ PassRefPtr<Node> Document::cloneNode(bool deep)
 PassRefPtr<Document> Document::cloneDocumentWithoutChildren()
 {
     DocumentInit init(url());
-    if (isXHTMLDocument())
-        return createXHTML(init.withRegistrationContext(registrationContext()));
+    if (isXMLDocument()) {
+        if (isXHTMLDocument())
+            return XMLDocument::createXHTML(init.withRegistrationContext(registrationContext()));
+        return XMLDocument::create(init);
+    }
     return create(init);
 }
 

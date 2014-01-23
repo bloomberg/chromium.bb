@@ -83,7 +83,7 @@ ALERT: PASS: window.SyntaxError should be 'function SyntaxError() { [native code
 ALERT: PASS: window.Text should be 'function Text() { [native code] }' and is.
 ALERT: PASS: window.TypeError should be 'function TypeError() { [native code] }' and is.
 ALERT: PASS: window.URIError should be 'function URIError() { [native code] }' and is.
-ALERT: PASS: window.XMLDocument should be 'function Document() { [native code] }' and is.
+ALERT: PASS: window.XMLDocument should be 'function XMLDocument() { [native code] }' and is.
 ALERT: PASS: window.XMLSerializer should be 'function XMLSerializer() { [native code] }' and is.
 ALERT: PASS: window.XPathEvaluator should be 'function XPathEvaluator() { [native code] }' and is.
 ALERT: PASS: window.XPathResult should be 'function XPathResult() { [native code] }' and is.

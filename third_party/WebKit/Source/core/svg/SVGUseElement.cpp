@@ -150,7 +150,7 @@ void SVGUseElement::parseAttribute(const QualifiedName& name, const AtomicString
 #if !ASSERT_DISABLED
 static inline bool isWellFormedDocument(Document* document)
 {
-    if (document->isSVGDocument() || document->isXHTMLDocument())
+    if (document->isXMLDocument())
         return static_cast<XMLDocumentParser*>(document->parser())->wellFormed();
     return true;
 }

@@ -51,10 +51,10 @@ PASS document.createTreeWalker(root, 0, null, false).constructor.name is "TreeWa
 
 XML
 
-PASS classString(xmlDocument) is "Document"
-FAIL classString(xmlDocument.__proto__) should be DocumentPrototype. Was Object.
+PASS classString(xmlDocument) is "XMLDocument"
+FAIL classString(xmlDocument.__proto__) should be XMLDocumentPrototype. Was Object.
 PASS classString(xmlDocument.constructor) is "Function"
-PASS xmlDocument.constructor.name is "Document"
+PASS xmlDocument.constructor.name is "XMLDocument"
 PASS classString(xmlDocument.createCDATASection()) is "CDATASection"
 FAIL classString(xmlDocument.createCDATASection().__proto__) should be CDATASectionPrototype. Was Object.
 PASS classString(xmlDocument.createCDATASection().constructor) is "Function"

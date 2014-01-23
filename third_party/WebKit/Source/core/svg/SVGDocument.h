@@ -21,14 +21,14 @@
 #ifndef SVGDocument_h
 #define SVGDocument_h
 
-#include "core/dom/Document.h"
+#include "core/dom/XMLDocument.h"
 #include "platform/geometry/FloatPoint.h"
 
 namespace WebCore {
 
 class SVGSVGElement;
 
-class SVGDocument FINAL : public Document {
+class SVGDocument FINAL : public XMLDocument {
 public:
     static PassRefPtr<SVGDocument> create(const DocumentInit& initializer = DocumentInit())
     {

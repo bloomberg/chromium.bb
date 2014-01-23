@@ -206,6 +206,7 @@ enum DocumentClass {
     PluginDocumentClass = 1 << 3,
     MediaDocumentClass = 1 << 4,
     SVGDocumentClass = 1 << 5,
+    XMLDocumentClass = 1 << 6,
 };
 
 typedef unsigned char DocumentClassFlags;
@@ -216,10 +217,6 @@ public:
     static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
         return adoptRef(new Document(initializer));
-    }
-    static PassRefPtr<Document> createXHTML(const DocumentInit& initializer = DocumentInit())
-    {
-        return adoptRef(new Document(initializer, XHTMLDocumentClass));
     }
     virtual ~Document();
 
@@ -383,6 +380,7 @@ public:
 
     bool isHTMLDocument() const { return m_documentClasses & HTMLDocumentClass; }
     bool isXHTMLDocument() const { return m_documentClasses & XHTMLDocumentClass; }
+    bool isXMLDocument() const { return m_documentClasses & XMLDocumentClass; }
     bool isImageDocument() const { return m_documentClasses & ImageDocumentClass; }
     bool isSVGDocument() const { return m_documentClasses & SVGDocumentClass; }
     bool isPluginDocument() const { return m_documentClasses & PluginDocumentClass; }

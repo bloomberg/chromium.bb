@@ -36,6 +36,7 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLMediaElement.h"
@@ -202,17 +203,19 @@ DOMImplementation* DOMImplementation::getInterface(const String& /*feature*/)
     return 0;
 }
 
-PassRefPtr<Document> DOMImplementation::createDocument(const AtomicString& namespaceURI,
+PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& namespaceURI,
     const AtomicString& qualifiedName, DocumentType* doctype, ExceptionState& exceptionState)
 {
-    RefPtr<Document> doc;
+    RefPtr<XMLDocument> doc;
     DocumentInit init = DocumentInit::fromContext(m_document.contextDocument());
     if (namespaceURI == SVGNames::svgNamespaceURI) {
+        // FIXME: This should be an XMLDocument as per DOM4 but we need to get rid of SVGDocument first.
+        // SVGDocument no longer exists in SVG2.
         doc = SVGDocument::create(init);
     } else if (namespaceURI == HTMLNames::xhtmlNamespaceURI) {
-        doc = Document::createXHTML(init.withRegistrationContext(m_document.registrationContext()));
+        doc = XMLDocument::createXHTML(init.withRegistrationContext(m_document.registrationContext()));
     } else {
-        doc = Document::create(init);
+        doc = XMLDocument::create(init);
     }
 
     doc->setSecurityOrigin(m_document.securityOrigin()->isolatedCopy());
@@ -360,7 +363,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, const
     if (type == "text/html")
         return HTMLDocument::create(init);
     if (type == "application/xhtml+xml")
-        return Document::createXHTML(init);
+        return XMLDocument::createXHTML(init);
 
     PluginData* pluginData = 0;
     if (init.frame() && init.frame()->page() && init.frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
@@ -387,7 +390,7 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, const
     if (type == "image/svg+xml")
         return SVGDocument::create(init);
     if (isXMLMIMEType(type))
-        return Document::create(init);
+        return XMLDocument::create(init);
 
     return HTMLDocument::create(init);
 }

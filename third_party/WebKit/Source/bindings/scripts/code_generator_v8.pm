@@ -221,6 +221,7 @@ my %domNodeTypes = ("Attr" => 1,
                     "TestNode" => 1,
                     "TestInterfaceDocument" => 1,
                     "TestInterfaceNode" => 1,
+                    "XMLDocument" => 1,
                    );
 
 my %callbackFunctionTypeHash = ();

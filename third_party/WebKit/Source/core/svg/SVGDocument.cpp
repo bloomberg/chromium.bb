@@ -35,7 +35,7 @@
 namespace WebCore {
 
 SVGDocument::SVGDocument(const DocumentInit& initializer)
-    : Document(initializer, SVGDocumentClass)
+    : XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass)
 {
     ScriptWrappable::init(this);
 }

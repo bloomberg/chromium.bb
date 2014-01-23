@@ -39,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Node.h"
+#include "core/dom/XMLDocument.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/inspector/DOMEditor.h"
@@ -88,9 +89,9 @@ void DOMPatchSupport::patchDocument(const String& markup)
     if (m_document.isHTMLDocument())
         newDocument = HTMLDocument::create();
     else if (m_document.isXHTMLDocument())
-        newDocument = HTMLDocument::createXHTML();
-    else if (m_document.isSVGDocument())
-        newDocument = Document::create();
+        newDocument = XMLDocument::createXHTML();
+    else if (m_document.isXMLDocument())
+        newDocument = XMLDocument::create();
 
     ASSERT(newDocument);
     newDocument->setContextFeatures(m_document.contextFeatures());
