@@ -21,7 +21,7 @@ def main():
   desc = 'Wrapper to run chrome with child processes replaced by IPC fuzzers'
   parser = argparse.ArgumentParser(description=desc)
   parser.add_argument('--out-dir', dest='out_dir', default='out',
-                      help='ouput directory under src/ directory')
+                      help='output directory under src/ directory')
   parser.add_argument('--build-type', dest='build_type', default='Release',
                       help='Debug vs. Release build')
   parser.add_argument('--gdb-browser', dest='gdb_browser', default=False,
