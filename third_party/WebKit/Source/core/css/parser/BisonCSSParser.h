@@ -412,7 +412,7 @@ public:
 
     PassRefPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
     PassRefPtr<CSSPrimitiveValue> createPrimitiveStringValue(CSSParserValue*);
-    PassRefPtr<CSSPrimitiveValue> createPrimitiveVariableNameValue(CSSParserValue*);
+    PassRefPtr<CSSPrimitiveValue> createPrimitiveVariableReferenceValue(CSSParserValue*);
 
     CSSParserLocation currentLocation() { return m_tokenizer.currentLocation(); }
 

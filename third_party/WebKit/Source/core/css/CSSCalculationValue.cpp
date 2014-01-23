@@ -70,7 +70,7 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitTypes type)
     case CSSPrimitiveValue::CSS_VMIN:
     case CSSPrimitiveValue::CSS_VMAX:
         return CalcLength;
-    case CSSPrimitiveValue::CSS_VARIABLE_NAME:
+    case CSSPrimitiveValue::CSS_VARIABLE_REFERENCE:
         return CalcVariable;
     default:
         return CalcOther;
@@ -130,7 +130,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitTypes type)
     case CSSPrimitiveValue::CSS_CALC:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_NUMBER:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_LENGTH:
-    case CSSPrimitiveValue::CSS_VARIABLE_NAME:
+    case CSSPrimitiveValue::CSS_VARIABLE_REFERENCE:
     case CSSPrimitiveValue::CSS_PROPERTY_ID:
     case CSSPrimitiveValue::CSS_VALUE_ID:
         return false;
@@ -224,7 +224,7 @@ public:
 
     virtual bool hasVariableReference() const OVERRIDE
     {
-        return m_value->isVariableName();
+        return m_value->isVariableReference();
     }
 
     virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData& conversionData) const OVERRIDE
@@ -505,7 +505,7 @@ public:
             return CSSPrimitiveValue::CSS_UNKNOWN;
         }
         case CalcVariable:
-            return CSSPrimitiveValue::CSS_VARIABLE_NAME;
+            return CSSPrimitiveValue::CSS_VARIABLE_REFERENCE;
         case CalcPercentLength:
         case CalcPercentNumber:
         case CalcOther:

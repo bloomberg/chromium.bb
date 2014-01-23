@@ -29,9 +29,9 @@
 #ifndef CSSVariableValue_h
 #define CSSVariableValue_h
 
-#include "CSSPropertyNames.h"
-#include "core/css/CSSParserValues.h"
 #include "core/css/CSSValue.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

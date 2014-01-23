@@ -105,7 +105,7 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     case CSSPrimitiveValue::CSS_UNICODE_RANGE:
     case CSSPrimitiveValue::CSS_UNKNOWN:
     case CSSPrimitiveValue::CSS_URI:
-    case CSSPrimitiveValue::CSS_VARIABLE_NAME:
+    case CSSPrimitiveValue::CSS_VARIABLE_REFERENCE:
         return false;
     }
 
@@ -405,7 +405,7 @@ void CSSPrimitiveValue::cleanup()
     case CSS_URI:
     case CSS_ATTR:
     case CSS_COUNTER_NAME:
-    case CSS_VARIABLE_NAME:
+    case CSS_VARIABLE_REFERENCE:
     case CSS_PARSER_HEXCOLOR:
         if (m_value.string)
             m_value.string->deref();
@@ -782,7 +782,7 @@ String CSSPrimitiveValue::getStringValue(ExceptionState& exceptionState) const
         case CSS_STRING:
         case CSS_ATTR:
         case CSS_URI:
-        case CSS_VARIABLE_NAME:
+        case CSS_VARIABLE_REFERENCE:
             return m_value.string;
         case CSS_VALUE_ID:
             return valueName(m_value.valueID);
@@ -802,7 +802,7 @@ String CSSPrimitiveValue::getStringValue() const
         case CSS_STRING:
         case CSS_ATTR:
         case CSS_URI:
-        case CSS_VARIABLE_NAME:
+        case CSS_VARIABLE_REFERENCE:
             return m_value.string;
         case CSS_VALUE_ID:
             return valueName(m_value.valueID);
@@ -1070,7 +1070,7 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
         case CSS_VMAX:
             text = formatNumber(m_value.num, "vmax");
             break;
-        case CSS_VARIABLE_NAME:
+        case CSS_VARIABLE_REFERENCE:
             text = "var(" + String(m_value.string) + ")";
             break;
     }
@@ -1083,10 +1083,10 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
 
 String CSSPrimitiveValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
-    if (isVariableName()) {
-        AtomicString variableName(m_value.string);
-        if (variables.contains(variableName))
-            return variables.get(variableName);
+    if (isVariableReference()) {
+        AtomicString variableReference(m_value.string);
+        if (variables.contains(variableReference))
+            return variables.get(variableReference);
     }
     if (CSSCalcValue* calcValue = cssCalcValue())
         return calcValue->customSerializeResolvingVariables(variables);
@@ -1113,7 +1113,7 @@ bool CSSPrimitiveValue::hasVariableReference() const
         return rectValue->hasVariableReference();
     if (CSSBasicShape* shapeValue = getShapeValue())
         return shapeValue->hasVariableReference();
-    return isVariableName();
+    return isVariableReference();
 }
 
 PassRefPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() const
@@ -1250,7 +1250,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_COUNTER_NAME:
     case CSS_PARSER_IDENTIFIER:
     case CSS_PARSER_HEXCOLOR:
-    case CSS_VARIABLE_NAME:
+    case CSS_VARIABLE_REFERENCE:
         return equal(m_value.string, other.m_value.string);
     case CSS_COUNTER:
         return m_value.counter && other.m_value.counter && m_value.counter->equals(*other.m_value.counter);
