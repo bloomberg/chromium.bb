@@ -20,7 +20,6 @@
 
 [
     Constructor,
-    DependentLifetime,  // FIXME: should inherit from Node
 ] interface TestNode : Node {
     // These attributes are needed to test [PutForwards] in TestObject.idl.
     attribute DOMString href;

@@ -100,9 +100,14 @@ class InterfaceDependencyResolver:
         if interface_name not in self.interfaces_info:
             # No dependencies, nothing to do
             return
-        dependency_idl_filenames = self.interfaces_info[interface_name]['dependencies_full_paths']
+        interface_info = self.interfaces_info[interface_name]
+        if 'inherited_extended_attributes' in interface_info:
+            target_interface.extended_attributes.update(
+                interface_info['inherited_extended_attributes'])
 
-        merge_interface_dependencies(target_interface, dependency_idl_filenames, self.reader)
+        merge_interface_dependencies(target_interface,
+                                     interface_info['dependencies_full_paths'],
+                                     self.reader)
 
 
 def merge_interface_dependencies(target_interface, dependency_idl_filenames, reader):

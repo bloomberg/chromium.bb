@@ -28,7 +28,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    DependentLifetime,  // FIXME: should inherit from Node
-] interface TestInterfaceDocument : Document {
+interface TestInterfaceDocument : Document {
 };
