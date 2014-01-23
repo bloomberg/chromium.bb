@@ -17,8 +17,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/ui_base_types.h"
 
-const int kMessageTextMaxRows = 32;
-
 // Helper object that receives the notification that the dialog/sheet is
 // going away. Is responsible for cleaning itself up.
 @interface JavaScriptAppModalDialogHelper : NSObject<NSAlertDelegate> {
@@ -148,18 +146,6 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
   [alert_ setDelegate:helper_];
   NSString* informative_text =
       base::SysUTF16ToNSString(dialog_->message_text());
-
-  // Truncate long JS alerts - crbug.com/331219
-  NSArray * info_array =
-      [informative_text componentsSeparatedByCharactersInSet:
-          [NSCharacterSet newlineCharacterSet]];
-  if ([info_array count] > kMessageTextMaxRows) {
-    info_array = [info_array subarrayWithRange:NSMakeRange(
-         0, kMessageTextMaxRows)];
-    informative_text = [info_array componentsJoinedByString:@"\n"];
-    informative_text = [informative_text stringByAppendingString:@"\n..."];
-  }
-
   [alert_ setInformativeText:informative_text];
   NSString* message_text =
       base::SysUTF16ToNSString(dialog_->title());
