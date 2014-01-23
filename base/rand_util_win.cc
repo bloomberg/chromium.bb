@@ -28,4 +28,14 @@ uint64 RandUint64() {
   return (static_cast<uint64>(first_half) << 32) + second_half;
 }
 
+void RandBytes(void* output, size_t output_length) {
+  uint64 random_int;
+  const size_t random_int_size = sizeof(random_int);
+  for (size_t i = 0; i < output_length; i += random_int_size) {
+    random_int = base::RandUint64();
+    const size_t copy_count = std::min(output_length - i, random_int_size);
+    memcpy(((uint8*)output) + i, &random_int, copy_count);
+  }
+}
+
 }  // namespace base

@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -119,4 +122,23 @@ TEST(RandUtilTest, RandUint64ProducesBothValuesOfAllBits) {
   }
 
   FAIL() << "Didn't achieve all bit values in maximum number of tries.";
+}
+
+// Benchmark test for RandBytes().  Disabled since it's intentionally slow and
+// does not test anything that isn't already tested by the existing RandBytes()
+// tests.
+TEST(RandUtilTest, DISABLED_RandBytesPerf) {
+  // Benchmark the performance of |kTestIterations| of RandBytes() using a
+  // buffer size of |kTestBufferSize|.
+  const int kTestIterations = 10;
+  const size_t kTestBufferSize = 1 * 1024 * 1024;
+
+  scoped_ptr<uint8[]> buffer(new uint8[kTestBufferSize]);
+  const base::TimeTicks now = base::TimeTicks::HighResNow();
+  for (int i = 0; i < kTestIterations; ++i)
+    base::RandBytes(buffer.get(), kTestBufferSize);
+  const base::TimeTicks end = base::TimeTicks::HighResNow();
+
+  LOG(INFO) << "RandBytes(" << kTestBufferSize << ") took: "
+            << (end - now).InMicroseconds() << "µs";
 }

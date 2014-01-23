@@ -20,19 +20,16 @@ namespace {
 // we can use LazyInstance to handle opening it on the first access.
 class URandomFd {
  public:
-  URandomFd() {
-    fd_ = open("/dev/urandom", O_RDONLY);
+  URandomFd() : fd_(open("/dev/urandom", O_RDONLY)) {
     DCHECK_GE(fd_, 0) << "Cannot open /dev/urandom: " << errno;
   }
 
-  ~URandomFd() {
-    close(fd_);
-  }
+  ~URandomFd() { close(fd_); }
 
   int fd() const { return fd_; }
 
  private:
-  int fd_;
+  const int fd_;
 };
 
 base::LazyInstance<URandomFd>::Leaky g_urandom_fd = LAZY_INSTANCE_INITIALIZER;
@@ -44,13 +41,15 @@ namespace base {
 // NOTE: This function must be cryptographically secure. http://crbug.com/140076
 uint64 RandUint64() {
   uint64 number;
-
-  int urandom_fd = g_urandom_fd.Pointer()->fd();
-  bool success = ReadFromFD(urandom_fd, reinterpret_cast<char*>(&number),
-                            sizeof(number));
-  CHECK(success);
-
+  RandBytes(&number, sizeof(number));
   return number;
+}
+
+void RandBytes(void* output, size_t output_length) {
+  const int urandom_fd = g_urandom_fd.Pointer()->fd();
+  const bool success =
+      ReadFromFD(urandom_fd, static_cast<char*>(output), output_length);
+  CHECK(success);
 }
 
 int GetUrandomFD(void) {
