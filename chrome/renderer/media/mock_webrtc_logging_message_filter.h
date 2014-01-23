@@ -16,6 +16,10 @@ class MockWebRtcLoggingMessageFilter
   virtual void AddLogMessage(const std::string& message) OVERRIDE;
   virtual void LoggingStopped() OVERRIDE;
 
+  ChromeWebRtcLogMessageDelegate* log_message_delegate() {
+    return log_message_delegate_;
+  }
+
   std::string log_buffer_;
   bool logging_stopped_;
 

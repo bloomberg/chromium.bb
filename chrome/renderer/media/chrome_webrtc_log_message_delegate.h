@@ -41,6 +41,7 @@ class ChromeWebRtcLogMessageDelegate
   void OnStopLogging();
 
  private:
+  void LogMessageOnIOThread(const std::string& message);
   void SendLogBuffer();
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;

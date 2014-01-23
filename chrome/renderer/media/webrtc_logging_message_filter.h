@@ -34,6 +34,16 @@ class WebRtcLoggingMessageFilter
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
+  // Owned by this class. The only other pointer to it is in libjingle's logging
+  // file. That's a global pointer used on different threads, so we will leak
+  // this object when we go away to ensure that it outlives any log messages
+  // coming from libjingle.
+  // This is protected for unit test purposes.
+  // TODO(vrk): Remove ChromeWebRtcLogMessageDelegate's pointer to
+  // WebRtcLoggingMessageFilter so that we can write a unit test that doesn't
+  // need this accessor.
+  ChromeWebRtcLogMessageDelegate* log_message_delegate_;
+
  private:
   // IPC::ChannelProxy::MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -46,12 +56,6 @@ class WebRtcLoggingMessageFilter
   void OnStartLogging();
   void OnStopLogging();
   void Send(IPC::Message* message);
-
-  // Owned by this class. The only other pointer to it is in libjingle's logging
-  // file. That's a global pointer used on different threads, so we will leak
-  // this object when we go away to ensure that it outlives any log messages
-  // coming from libjingle.
-  ChromeWebRtcLogMessageDelegate* log_message_delegate_;
 
   IPC::Channel* channel_;
 

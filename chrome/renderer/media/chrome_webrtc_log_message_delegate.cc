@@ -23,15 +23,16 @@ ChromeWebRtcLogMessageDelegate::~ChromeWebRtcLogMessageDelegate() {
 }
 
 void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
-  if (!CalledOnValidThread()) {
-    io_message_loop_->PostTask(
-        FROM_HERE, base::Bind(
-            &ChromeWebRtcLogMessageDelegate::LogMessage,
-            base::Unretained(this),
-            message));
-    return;
-  }
+  io_message_loop_->PostTask(
+      FROM_HERE, base::Bind(
+          &ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread,
+          base::Unretained(this),
+          message));
+}
 
+void ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread(
+    const std::string& message) {
+  DCHECK(CalledOnValidThread());
   if (logging_started_ && message_filter_) {
     if (!log_buffer_.empty()) {
       // A delayed task has already been posted for sending the buffer contents.
