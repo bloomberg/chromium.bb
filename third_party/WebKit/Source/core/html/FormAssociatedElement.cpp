@@ -160,6 +160,8 @@ void FormAssociatedElement::didChangeForm()
 
 void FormAssociatedElement::formWillBeDestroyed()
 {
+    // Unlike setForm(0), formWillBeDestroyed must not call
+    // HTMLFormElement::removeFormElement.
     ASSERT(m_form);
     if (!m_form)
         return;
