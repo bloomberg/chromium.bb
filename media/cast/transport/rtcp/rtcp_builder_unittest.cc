@@ -90,7 +90,9 @@ TEST_F(RtcpBuilderTest, RtcpSenderReport) {
   rtcp_builder_->SendRtcpFromRtpSender(RtcpBuilder::kRtcpSr,
                                        &sender_info,
                                        NULL,
-                                       NULL);
+                                       NULL,
+                                       kSendingSsrc,
+                                       kCName);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -119,7 +121,9 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrr) {
       RtcpBuilder::kRtcpSr | RtcpBuilder::kRtcpDlrr,
       &sender_info,
       &dlrr_rb,
-      NULL);
+      NULL,
+      kSendingSsrc,
+      kCName);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -159,7 +163,9 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrrAndLog) {
           RtcpBuilder::kRtcpSenderLog,
       &sender_info,
       &dlrr_rb,
-      &sender_log);
+      &sender_log,
+      kSendingSsrc,
+      kCName);
 
   EXPECT_EQ(1, test_transport_.packet_count());
   EXPECT_TRUE(sender_log.empty());
@@ -198,7 +204,9 @@ TEST_F(RtcpBuilderTest, RtcpSenderReporWithTooManyLogFrames) {
       RtcpBuilder::kRtcpSr | RtcpBuilder::kRtcpSenderLog,
       &sender_info,
       NULL,
-      &sender_log);
+      &sender_log,
+      kSendingSsrc,
+      kCName);
 
   EXPECT_EQ(1, test_transport_.packet_count());
   EXPECT_EQ(41u, sender_log.size());

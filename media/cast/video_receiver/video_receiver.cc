@@ -83,9 +83,10 @@ class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
   RtpReceiver* rtp_receiver_;
 };
 
-VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                             const VideoReceiverConfig& video_config,
-                             transport::PacedPacketSender* const packet_sender)
+VideoReceiver::VideoReceiver(
+    scoped_refptr<CastEnvironment> cast_environment,
+    const VideoReceiverConfig& video_config,
+    transport::PacedPacketSender* const packet_sender)
       : cast_environment_(cast_environment),
         codec_(video_config.codec),
         target_delay_delta_(
@@ -128,17 +129,18 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
     video_decoder_.reset(new VideoDecoder(video_config, cast_environment));
   }
 
-  rtcp_.reset(
-      new Rtcp(cast_environment_,
-               NULL,
-               packet_sender,
-               NULL,
-               rtp_video_receiver_statistics_.get(),
-               video_config.rtcp_mode,
-               base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-               video_config.feedback_ssrc,
-               video_config.incoming_ssrc,
-               video_config.rtcp_c_name));
+  rtcp_.reset(new Rtcp(
+      cast_environment_,
+      NULL,
+      NULL,
+      packet_sender,
+      NULL,
+      rtp_video_receiver_statistics_.get(),
+      video_config.rtcp_mode,
+      base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
+      video_config.feedback_ssrc,
+      video_config.incoming_ssrc,
+      video_config.rtcp_c_name));
 }
 
 VideoReceiver::~VideoReceiver() {}

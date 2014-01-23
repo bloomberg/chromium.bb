@@ -59,8 +59,8 @@ class PacedSenderTest : public ::testing::Test {
 
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    paced_sender_.reset(
-        new PacedSender(&testing_clock_, &mock_transport_, task_runner_));
+    paced_sender_.reset(new PacedSender(&testing_clock_, NULL, &mock_transport_,
+                                        task_runner_));
   }
 
   PacketList CreatePacketList(size_t packet_size, int num_of_packets_in_frame) {

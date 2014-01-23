@@ -18,10 +18,13 @@
 
 namespace media {
 class VideoFrame;
+
+namespace cast {
+
+namespace transport {
+class PacketSender;
 }
 
-namespace media {
-namespace cast {
 // Callback in which the raw audio frame and play-out time will be returned
 // once decoding is complete.
 typedef base::Callback<void(scoped_ptr<PcmAudioFrame>, const base::TimeTicks&)>
@@ -70,7 +73,7 @@ class CastReceiver {
       scoped_refptr<CastEnvironment> cast_environment,
       const AudioReceiverConfig& audio_config,
       const VideoReceiverConfig& video_config,
-      PacketSender* const packet_sender);
+      transport::PacketSender* const packet_sender);
 
   // All received RTP and RTCP packets for the call should be inserted to this
   // PacketReceiver.

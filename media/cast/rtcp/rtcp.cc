@@ -61,7 +61,7 @@ RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
 class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
  public:
   LocalRtcpReceiverFeedback(Rtcp* rtcp,
-                           scoped_refptr<CastEnvironment> cast_environment)
+                            scoped_refptr<CastEnvironment> cast_environment)
       : rtcp_(rtcp), cast_environment_(cast_environment) {
   }
 
@@ -175,6 +175,7 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
 
 Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
            RtcpSenderFeedback* sender_feedback,
+           transport::CastTransportSender* const transport_sender,
            transport::PacedPacketSender* paced_packet_sender,
            RtpSenderStatistics* rtp_sender_statistics,
            RtpReceiverStatistics* rtp_receiver_statistics,
@@ -183,25 +184,25 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
            uint32 local_ssrc,
            uint32 remote_ssrc,
            const std::string& c_name)
-    : rtcp_interval_(rtcp_interval),
+    : cast_environment_(cast_environment),
+      transport_sender_(transport_sender),
+      rtcp_interval_(rtcp_interval),
       rtcp_mode_(rtcp_mode),
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
+      c_name_(c_name),
       rtp_sender_statistics_(rtp_sender_statistics),
       rtp_receiver_statistics_(rtp_receiver_statistics),
       receiver_feedback_(new LocalRtcpReceiverFeedback(this, cast_environment)),
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
       rtcp_sender_(new RtcpSender(cast_environment, paced_packet_sender,
                                   local_ssrc, c_name)),
-      rtcp_builder_(new
-          transport::RtcpBuilder(paced_packet_sender, local_ssrc, c_name)),
       last_report_received_(0),
       last_received_rtp_timestamp_(0),
       last_received_ntp_seconds_(0),
       last_received_ntp_fraction_(0),
       min_rtt_(base::TimeDelta::FromMilliseconds(kMaxRttMs)),
-      number_of_rtt_in_avg_(0),
-      cast_environment_(cast_environment) {
+      number_of_rtt_in_avg_(0) {
   rtcp_receiver_.reset(new RtcpReceiver(cast_environment,
                                         sender_feedback,
                                         receiver_feedback_.get(),
@@ -254,6 +255,7 @@ void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
 
 void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
                                    RtcpReceiverLogMessage* receiver_log) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   uint32 packet_type_flags = 0;
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
@@ -310,11 +312,12 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
 }
 
 void Rtcp::SendRtcpFromRtpSender(
-    transport::RtcpSenderLogMessage* sender_log_message) {
+    const transport::RtcpSenderLogMessage& sender_log_message) {
+  DCHECK(transport_sender_);
   uint32 packet_type_flags = RtcpSender::kRtcpSr;
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
-  if (sender_log_message) {
+  if (sender_log_message.size()) {
     packet_type_flags |= RtcpSender::kRtcpSenderLog;
   }
 
@@ -340,11 +343,28 @@ void Rtcp::SendRtcpFromRtpSender(
     dlrr.delay_since_last_rr = ConvertToNtpDiff(delay_seconds, delay_fraction);
   }
 
-  rtcp_builder_->SendRtcpFromRtpSender(packet_type_flags,
-                                       &sender_info,
-                                       &dlrr,
-                                       sender_log_message);
+  cast_environment_->PostTask(CastEnvironment::TRANSPORT, FROM_HERE,
+      base::Bind(&Rtcp::SendRtcpFromRtpSenderOnTransportThread,
+                 base::Unretained(this), packet_type_flags, sender_info, dlrr,
+                 sender_log_message, local_ssrc_, c_name_));
   UpdateNextTimeToSendRtcp();
+}
+
+void Rtcp::SendRtcpFromRtpSenderOnTransportThread(
+    uint32 packet_type_flags,
+    const transport::RtcpSenderInfo& sender_info,
+    const transport::RtcpDlrrReportBlock& dlrr,
+    const transport::RtcpSenderLogMessage& sender_log,
+    uint32 sending_ssrc,
+    std::string c_name) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
+  transport_sender_->SendRtcpFromRtpSender(packet_type_flags,
+                                           sender_info,
+                                           dlrr,
+                                           sender_log,
+                                           sending_ssrc,
+                                           c_name);
+
 }
 
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {

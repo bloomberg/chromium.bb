@@ -133,6 +133,7 @@ bool ScanRtcpReceiverLogMessage(
 namespace media {
 namespace cast {
 
+// TODO(mikhal): This is only used by the receiver. Consider renaming.
 RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
                        transport::PacedPacketSender* outgoing_transport,
                        uint32 sending_ssrc,

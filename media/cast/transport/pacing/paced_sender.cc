@@ -11,24 +11,54 @@ namespace media {
 namespace cast {
 namespace transport {
 
+namespace {
 static const int64 kPacingIntervalMs = 10;
 // Each frame will be split into no more than kPacingMaxBurstsPerFrame
 // bursts of packets.
 static const size_t kPacingMaxBurstsPerFrame = 3;
 
-PacedSender::PacedSender(base::TickClock* clock,
-                         PacketSender* transport,
-                         scoped_refptr<base::TaskRunner> transport_task_runner)
+void CreateUDPAddress(std::string ip_str, int port, net::IPEndPoint* address) {
+  net::IPAddressNumber ip_number;
+  bool rv = net::ParseIPLiteralToNumber(ip_str, &ip_number);
+  if (!rv)
+    return;
+  *address = net::IPEndPoint(ip_number, port);
+}
+}  // namespace
+
+PacedSender::PacedSender(
+    base::TickClock* clock,
+    const CastTransportConfig* const config,
+    PacketSender* external_transport,
+    const scoped_refptr<base::TaskRunner>& transport_task_runner)
     : clock_(clock),
-      transport_(transport),
+      external_transport_(external_transport),
+      config_(config),
       transport_task_runner_(transport_task_runner),
       burst_size_(1),
       packets_sent_in_burst_(0),
       weak_factory_(this) {
+  if (!external_transport) {
+    net::IPEndPoint local_end_point;
+    net::IPEndPoint receiver_end_point;
+    CreateUDPAddress(config_->local_ip_address, config_->receive_port,
+                     &local_end_point);
+    CreateUDPAddress(config_->receiver_ip_address, config_->send_port,
+                     &receiver_end_point);
+    // Set up transport in the absence of an external transport.
+    transport_.reset(new UdpTransport(transport_task_runner,
+                                      local_end_point, receiver_end_point));
+  }
   ScheduleNextSend();
 }
 
 PacedSender::~PacedSender() {}
+
+void PacedSender::SetPacketReceiver(
+    scoped_refptr<PacketReceiver> packet_receiver) {
+  DCHECK(!external_transport_);
+  transport_->StartReceiving(packet_receiver.get());
+}
 
 bool PacedSender::SendPackets(const PacketList& packets) {
   return SendPacketsToTransport(packets, &packet_list_);
@@ -47,10 +77,12 @@ bool PacedSender::SendPacketsToTransport(const PacketList& packets,
                              packets.begin(), packets.end());
     return true;
   }
+
   PacketList packets_to_send;
   PacketList::const_iterator first_to_store_it = packets.begin();
 
   size_t max_packets_to_send_now = burst_size_ - packets_sent_in_burst_;
+
   if (max_packets_to_send_now > 0) {
     size_t packets_to_send_now = std::min(max_packets_to_send_now,
                                           packets.size());
@@ -64,10 +96,13 @@ bool PacedSender::SendPacketsToTransport(const PacketList& packets,
   packets_sent_in_burst_ += packets_to_send.size();
   if (packets_to_send.empty()) return true;
 
-  return transport_->SendPackets(packets_to_send);
+  return TransmitPackets(packets_to_send);
 }
 
 bool PacedSender::SendRtcpPacket(const Packet& packet) {
+  if (external_transport_) {
+    return external_transport_->SendPacket(packet);
+  }
   // We pass the RTCP packets straight through.
   return transport_->SendPacket(packet);
 }
@@ -121,7 +156,14 @@ void PacedSender::SendStoredPackets() {
       packets_sent_in_burst_ = 0;
     }
   }
-  transport_->SendPackets(packets_to_resend);
+  TransmitPackets(packets_to_resend);
+}
+
+bool PacedSender::TransmitPackets(const PacketList& packets) {
+  if (external_transport_) {
+    return external_transport_->SendPackets(packets);
+  }
+  return transport_->SendPackets(packets);
 }
 
 void PacedSender::UpdateBurstSize(size_t packets_to_send) {
@@ -131,6 +173,10 @@ void PacedSender::UpdateBurstSize(size_t packets_to_send) {
   packets_to_send += (kPacingMaxBurstsPerFrame - 1);  // Round up.
   burst_size_ = std::max(packets_to_send / kPacingMaxBurstsPerFrame,
                          burst_size_);
+}
+
+void PacedSender::InsertFakeTransportForTesting(PacketSender* fake_transport) {
+  external_transport_ = fake_transport;
 }
 
 }  // namespace transport

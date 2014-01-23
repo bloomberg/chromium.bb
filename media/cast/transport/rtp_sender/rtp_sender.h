@@ -16,14 +16,13 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
 #include "media/cast/transport/rtp_sender/rtp_packetizer/rtp_packetizer.h"
 
 namespace media {
 namespace cast {
 namespace transport {
-
-class PacedPacketSender;
 
 // This object is only called from the main cast thread.
 // This class handles splitting encoded audio and video frames into packets and
@@ -32,9 +31,9 @@ class PacedPacketSender;
 class RtpSender {
  public:
   RtpSender(base::TickClock* clock,
-            const AudioSenderConfig* audio_config,
-            const VideoSenderConfig* video_config,
-            PacedPacketSender* transport);
+            const CastTransportConfig& config,
+            bool is_audio,
+            PacedSender* const transport);
 
   ~RtpSender();
 
@@ -56,7 +55,9 @@ class RtpSender {
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;
-  PacedPacketSender* transport_;
+  PacedSender* const transport_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtpSender);
 };
 
 }  // namespace transport

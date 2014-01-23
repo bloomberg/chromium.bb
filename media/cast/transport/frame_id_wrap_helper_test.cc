@@ -7,6 +7,7 @@
 
 namespace media {
 namespace cast {
+namespace transport {
 
 class FrameIdWrapHelperTest : public ::testing::Test {
  protected:
@@ -44,5 +45,6 @@ TEST_F(FrameIdWrapHelperTest, OutOfOrder) {
   EXPECT_EQ(257u, new_frame_id);
 }
 
+}  // namespace transport
 }  // namespace cast
 }  // namespace media

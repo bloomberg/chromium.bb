@@ -22,26 +22,24 @@ namespace transport {
 
 namespace {
 // RFC 3550 page 44, including end null.
-static const size_t kRtcpCnameSize = 256;
 static const uint32 kCast = ('C' << 24) + ('A' << 16) + ('S' << 8) + 'T';
 static const uint8 kSenderLogSubtype = 1;
 };
 
-RtcpBuilder::RtcpBuilder(PacedPacketSender* outgoing_transport,
-                         uint32 sending_ssrc,
-                         const std::string& c_name)
-     : ssrc_(sending_ssrc),
-       c_name_(c_name),
-       transport_(outgoing_transport) {
-  DCHECK_LT(c_name_.length(), kRtcpCnameSize) << "Invalid config";
+RtcpBuilder::RtcpBuilder(PacedSender* const outgoing_transport)
+    : transport_(outgoing_transport),
+      ssrc_(0) {
 }
 
 RtcpBuilder::~RtcpBuilder() {}
 
-void RtcpBuilder::SendRtcpFromRtpSender(uint32 packet_type_flags,
-                                        const RtcpSenderInfo* sender_info,
-                                        const RtcpDlrrReportBlock* dlrr,
-                                        RtcpSenderLogMessage* sender_log) {
+void RtcpBuilder::SendRtcpFromRtpSender(
+    uint32 packet_type_flags,
+    const RtcpSenderInfo& sender_info,
+    const RtcpDlrrReportBlock& dlrr,
+    const RtcpSenderLogMessage& sender_log,
+    uint32 sending_ssrc,
+    const std::string& c_name) {
   if (packet_type_flags & kRtcpRr ||
       packet_type_flags & kRtcpPli ||
       packet_type_flags & kRtcpRrtr ||
@@ -52,23 +50,21 @@ void RtcpBuilder::SendRtcpFromRtpSender(uint32 packet_type_flags,
       packet_type_flags & kRtcpNack) {
     NOTREACHED() << "Invalid argument";
   }
-
+  ssrc_ = sending_ssrc;
+  c_name_ = c_name;
   std::vector<uint8> packet;
   packet.reserve(kMaxIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
-    DCHECK(sender_info) << "Invalid argument";
-    BuildSR(*sender_info, NULL, &packet);
+    BuildSR(sender_info, &packet);
     BuildSdec(&packet);
   }
   if (packet_type_flags & kRtcpBye) {
     BuildBye(&packet);
   }
   if (packet_type_flags & kRtcpDlrr) {
-    DCHECK(dlrr) << "Invalid argument";
     BuildDlrrRb(dlrr, &packet);
   }
   if (packet_type_flags & kRtcpSenderLog) {
-    DCHECK(sender_log) << "Invalid argument";
     BuildSenderLog(sender_log, &packet);
   }
   if (packet.empty())
@@ -78,18 +74,17 @@ void RtcpBuilder::SendRtcpFromRtpSender(uint32 packet_type_flags,
 }
 
 void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
-                            const RtcpReportBlock* report_block,
-                            std::vector<uint8>* packet) const {
+                          std::vector<uint8>* packet) const {
   // Sender report.
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 52, kMaxIpPacketSize) << "Not enough buffer space";
   if (start_size + 52 > kMaxIpPacketSize) return;
 
-  uint16 number_of_rows = (report_block) ? 12 : 6;
+  uint16 number_of_rows = 6;
   packet->resize(start_size + 28);
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 28);
-  big_endian_writer.WriteU8(0x80 + (report_block ? 1 : 0));
+  big_endian_writer.WriteU8(0x80);
   big_endian_writer.WriteU8(kPacketTypeSenderReport);
   big_endian_writer.WriteU16(number_of_rows);
   big_endian_writer.WriteU32(ssrc_);
@@ -98,38 +93,6 @@ void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
   big_endian_writer.WriteU32(sender_info.rtp_timestamp);
   big_endian_writer.WriteU32(sender_info.send_packet_count);
   big_endian_writer.WriteU32(static_cast<uint32>(sender_info.send_octet_count));
-
-  if (report_block) {
-    AddReportBlocks(*report_block, packet);  // Adds 24 bytes.
-  }
-}
-
-void RtcpBuilder::AddReportBlocks(const RtcpReportBlock& report_block,
-                                    std::vector<uint8>* packet) const {
-  size_t start_size = packet->size();
-  DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
-
-  packet->resize(start_size + 24);
-
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 24);
-  big_endian_writer.WriteU32(report_block.media_ssrc);
-  big_endian_writer.WriteU8(report_block.fraction_lost);
-  big_endian_writer.WriteU8(report_block.cumulative_lost >> 16);
-  big_endian_writer.WriteU8(report_block.cumulative_lost >> 8);
-  big_endian_writer.WriteU8(report_block.cumulative_lost);
-
-  // Extended highest seq_no, contain the highest sequence number received.
-  big_endian_writer.WriteU32(report_block.extended_high_sequence_number);
-  big_endian_writer.WriteU32(report_block.jitter);
-
-  // Last SR timestamp; our NTP time when we received the last report.
-  // This is the value that we read from the send report packet not when we
-  // received it.
-  big_endian_writer.WriteU32(report_block.last_sr);
-
-  // Delay since last received report, time since we received the report.
-  big_endian_writer.WriteU32(report_block.delay_since_last_sr);
 }
 
 void RtcpBuilder::BuildSdec(std::vector<uint8>* packet) const {
@@ -206,7 +169,7 @@ void RtcpBuilder::BuildBye(std::vector<uint8>* packet) const {
   |                   delay since last RR (DLRR)                  |
   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 */
-void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock* dlrr,
+void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
                               std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
@@ -223,13 +186,12 @@ void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock* dlrr,
   big_endian_writer.WriteU8(0);  // Add reserved.
   big_endian_writer.WriteU16(3);  // Block length.
   big_endian_writer.WriteU32(ssrc_);  // Add the media (received RTP) SSRC.
-  big_endian_writer.WriteU32(dlrr->last_rr);
-  big_endian_writer.WriteU32(dlrr->delay_since_last_rr);
+  big_endian_writer.WriteU32(dlrr.last_rr);
+  big_endian_writer.WriteU32(dlrr.delay_since_last_rr);
 }
 
-void RtcpBuilder::BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
+void RtcpBuilder::BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
                                  std::vector<uint8>* packet) const {
-  DCHECK(sender_log_message);
   DCHECK(packet);
   size_t start_size = packet->size();
   size_t remaining_space = kMaxIpPacketSize - start_size;
@@ -241,7 +203,7 @@ void RtcpBuilder::BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
   size_t space_for_x_messages =
       (remaining_space - kRtcpCastLogHeaderSize) / kRtcpSenderFrameLogSize;
   size_t number_of_messages = std::min(space_for_x_messages,
-                                       sender_log_message->size());
+                                       sender_log_message.size());
 
   size_t log_size = kRtcpCastLogHeaderSize +
       number_of_messages * kRtcpSenderFrameLogSize;
@@ -254,15 +216,17 @@ void RtcpBuilder::BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU32(kCast);
 
+  std::list<RtcpSenderFrameLogMessage>::const_iterator it =
+      sender_log_message.begin();
   for (; number_of_messages > 0; --number_of_messages) {
-    DCHECK(!sender_log_message->empty());
-    const RtcpSenderFrameLogMessage& message = sender_log_message->front();
+    DCHECK(!sender_log_message.empty());
+    const RtcpSenderFrameLogMessage& message = *it;
     big_endian_writer.WriteU8(static_cast<uint8>(message.frame_status));
     // We send the 24 east significant bits of the RTP timestamp.
     big_endian_writer.WriteU8(static_cast<uint8>(message.rtp_timestamp >> 16));
     big_endian_writer.WriteU8(static_cast<uint8>(message.rtp_timestamp >> 8));
     big_endian_writer.WriteU8(static_cast<uint8>(message.rtp_timestamp));
-    sender_log_message->pop_front();
+    ++it;
   }
 }
 

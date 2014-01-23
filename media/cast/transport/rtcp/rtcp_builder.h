@@ -18,16 +18,16 @@ namespace transport {
 
 class RtcpBuilder {
  public:
-  RtcpBuilder(PacedPacketSender* const paced_packet_sender,
-              uint32 sending_ssrc,
-              const std::string& c_name);
+  explicit RtcpBuilder(PacedSender* const paced_packet_sender);
 
   virtual ~RtcpBuilder();
 
   void SendRtcpFromRtpSender(uint32 packet_type_flags,
-                             const RtcpSenderInfo* sender_info,
-                             const RtcpDlrrReportBlock* dlrr,
-                             RtcpSenderLogMessage* sender_log);
+                             const RtcpSenderInfo& sender_info,
+                             const RtcpDlrrReportBlock& dlrr,
+                             const RtcpSenderLogMessage& sender_log,
+                             uint32 ssrc,
+                             const std::string& c_name);
 
   enum RtcpPacketType {
     kRtcpSr     = 0x0002,
@@ -48,25 +48,20 @@ class RtcpBuilder {
 
  private:
   void BuildSR(const RtcpSenderInfo& sender_info,
-               const RtcpReportBlock* report_block,
                std::vector<uint8>* packet) const;
-
-  void AddReportBlocks(const RtcpReportBlock& report_block,
-                       std::vector<uint8>* packet) const;
 
   void BuildSdec(std::vector<uint8>* packet) const;
 
   void BuildBye(std::vector<uint8>* packet) const;
 
-  void BuildDlrrRb(const RtcpDlrrReportBlock* dlrr,
+  void BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
                    std::vector<uint8>* packet) const;
-  void BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
+  void BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
                       std::vector<uint8>* packet) const;
 
-  const uint32 ssrc_;
-  const std::string c_name_;
-
-  PacedPacketSender* const transport_;  // Not owned by this class.
+  PacedSender* const transport_;  // Not owned by this class.
+  uint32 ssrc_;
+  std::string c_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpBuilder);
 };

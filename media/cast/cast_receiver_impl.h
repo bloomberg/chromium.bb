@@ -25,7 +25,7 @@ class CastReceiverImpl : public CastReceiver {
   CastReceiverImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const AudioReceiverConfig& audio_config,
                    const VideoReceiverConfig& video_config,
-                   PacketSender* const packet_sender);
+                   transport::PacketSender* const packet_sender);
 
   virtual ~CastReceiverImpl();
 

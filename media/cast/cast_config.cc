@@ -8,7 +8,9 @@ namespace media {
 namespace cast {
 
 VideoSenderConfig::VideoSenderConfig()
-    : rtcp_interval(kDefaultRtcpIntervalMs),
+    : sender_ssrc(0),
+      incoming_feedback_ssrc(0),
+      rtcp_interval(kDefaultRtcpIntervalMs),
       rtcp_mode(kRtcpReducedSize),
       rtp_history_ms(kDefaultRtpHistoryMs),
       rtp_max_delay_ms(kDefaultRtpMaxDelayMs),

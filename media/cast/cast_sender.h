@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/transport/cast_transport_sender.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 
 namespace media {
@@ -47,15 +48,6 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
                            const base::TimeTicks& recorded_time,
                            const base::Closure& done_callback) = 0;
 
-  // The audio_frame must be valid until the callback is called.
-  // The callback is called from the main cast thread as soon as
-  // the cast sender is done with the frame; it does not mean that the encoded
-  // frame has been sent out.
-  virtual void InsertCodedAudioFrame(
-      const transport::EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time,
-      const base::Closure callback) = 0;
-
  protected:
   virtual ~FrameInput() {}
 
@@ -73,7 +65,7 @@ class CastSender {
       const AudioSenderConfig& audio_config,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      PacketSender* const packet_sender);
+      transport::CastTransportSender* const transport_sender);
   // TODO(pwestin): Add callback for status messages; initialized, errors etc.
 
   virtual ~CastSender() {}

@@ -32,7 +32,7 @@ class FrameInput;
 // and network socket.
 // This class is created on the render thread and destroyed on the IO
 // thread. All methods are accessible only on the IO thread.
-class CastSessionDelegate : public media::cast::PacketSender {
+class CastSessionDelegate : public media::cast::transport::PacketSender {
  public:
   typedef
   base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>

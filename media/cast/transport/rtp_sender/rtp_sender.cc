@@ -15,27 +15,26 @@ namespace cast {
 namespace transport {
 
 RtpSender::RtpSender(base::TickClock* clock,
-                     const AudioSenderConfig* audio_config,
-                     const VideoSenderConfig* video_config,
-                     PacedPacketSender* transport)
+                     const CastTransportConfig& config,
+                     bool is_audio,
+                     PacedSender* const transport)
     : config_(),
       transport_(transport) {
   // Store generic cast config and create packetizer config.
-  DCHECK(audio_config || video_config) << "Invalid argument";
-  if (audio_config) {
-    storage_.reset(new PacketStorage(clock, audio_config->rtp_history_ms));
+  if (is_audio) {
+    storage_.reset(new PacketStorage(clock, config.audio_rtp_history_ms));
     config_.audio = true;
-    config_.ssrc = audio_config->sender_ssrc;
-    config_.payload_type = audio_config->rtp_payload_type;
-    config_.frequency = audio_config->frequency;
-    config_.audio_codec = audio_config->codec;
+    config_.ssrc = config.audio_ssrc;
+    config_.payload_type = config.audio_rtp_payload_type;
+    config_.frequency = config.audio_frequency;
+    config_.audio_codec = config.audio_codec;
   } else {
-    storage_.reset(new PacketStorage(clock, video_config->rtp_history_ms));
+    storage_.reset(new PacketStorage(clock, config.audio_rtp_history_ms));
     config_.audio = false;
-    config_.ssrc = video_config->sender_ssrc;
-    config_.payload_type = video_config->rtp_payload_type;
+    config_.ssrc = config.video_ssrc;
+    config_.payload_type = config.video_rtp_payload_type;
     config_.frequency = kVideoFrequency;
-    config_.video_codec = video_config->codec;
+    config_.video_codec = config.video_codec;
   }
   // Randomly set start values.
   config_.sequence_number = base::RandInt(0, 65535);

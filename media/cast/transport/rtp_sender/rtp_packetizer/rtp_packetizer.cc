@@ -31,7 +31,7 @@ RtpPacketizerConfig::RtpPacketizerConfig()
 
 RtpPacketizerConfig::~RtpPacketizerConfig() {}
 
-RtpPacketizer::RtpPacketizer(PacedPacketSender* transport,
+RtpPacketizer::RtpPacketizer(PacedSender* const transport,
                              PacketStorage* packet_storage,
                              RtpPacketizerConfig rtp_packetizer_config)
     : config_(rtp_packetizer_config),

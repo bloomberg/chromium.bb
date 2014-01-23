@@ -16,26 +16,22 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/congestion_control/congestion_control.h"
 #include "media/cast/rtcp/rtcp.h"
-#include "media/cast/transport/rtp_sender/rtp_sender.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 
-namespace crypto {
-class Encryptor;
-class SymmetricKey;
-}
-
 namespace media {
 class VideoFrame;
-}
 
-namespace media {
 namespace cast {
 
 class VideoEncoder;
 class LocalRtcpVideoSenderFeedback;
 class LocalRtpVideoSenderStatistics;
 class LocalVideoEncoderCallback;
+
+namespace transport {
+class CastTransportSender;
+}
 
 // Not thread safe. Only called from the main cast thread.
 // This class owns all objects related to sending video, objects that create RTP
@@ -49,7 +45,7 @@ class VideoSender : public base::NonThreadSafe,
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
               const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-              transport::PacedPacketSender* const paced_packet_sender);
+              transport::CastTransportSender* const transport_sender);
 
   virtual ~VideoSender();
 
@@ -98,29 +94,28 @@ class VideoSender : public base::NonThreadSafe,
   void UpdateFramesInFlight();
 
   void SendEncodedVideoFrameMainThread(
-      scoped_ptr<transport::EncodedVideoFrame> video_frame,
+      scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
+      const base::TimeTicks& capture_time);
+
+  void SendEncodedVideoFrameToTransport(
+      scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
       const base::TimeTicks& capture_time);
 
   void InitializeTimers();
 
-  // Caller must allocate the destination |encrypted_video_frame| the data
-  // member will be resized to hold the encrypted size.
-  bool EncryptVideoFrame(const transport::EncodedVideoFrame& encoded_frame,
-                         transport::EncodedVideoFrame* encrypted_video_frame);
+  void ResendPacketsOnTransportThread(
+      const transport::MissingFramesAndPacketsMap& missing_packets);
 
   const base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;
 
   scoped_refptr<CastEnvironment> cast_environment_;
+  transport::CastTransportSender* const transport_sender_;
   scoped_ptr<LocalRtcpVideoSenderFeedback> rtcp_feedback_;
   scoped_ptr<LocalRtpVideoSenderStatistics> rtp_video_sender_statistics_;
   scoped_ptr<VideoEncoder> video_encoder_;
   scoped_ptr<Rtcp> rtcp_;
-  scoped_ptr<transport::RtpSender> rtp_sender_;
   uint8 max_unacked_frames_;
-  scoped_ptr<crypto::Encryptor> encryptor_;
-  scoped_ptr<crypto::SymmetricKey> encryption_key_;
-  std::string iv_mask_;
   int last_acked_frame_id_;
   int last_sent_frame_id_;
   int duplicate_ack_;

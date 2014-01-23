@@ -16,7 +16,7 @@ namespace media {
 namespace cast {
 namespace transport {
 
-class PacedPacketSender;
+class PacedSender;
 
 struct RtpPacketizerConfig {
   RtpPacketizerConfig();
@@ -46,7 +46,7 @@ struct RtpPacketizerConfig {
 // header to each packet.
 class RtpPacketizer {
  public:
-  RtpPacketizer(PacedPacketSender* transport,
+  RtpPacketizer(PacedSender* const transport,
                 PacketStorage* packet_storage,
                 RtpPacketizerConfig rtp_packetizer_config);
   ~RtpPacketizer();
@@ -78,7 +78,7 @@ class RtpPacketizer {
       uint32 time_stamp);
 
   RtpPacketizerConfig config_;
-  PacedPacketSender* transport_;
+  PacedSender* const transport_;  // Not owned by this class.
   PacketStorage* packet_storage_;
 
   base::TimeTicks time_last_sent_rtp_timestamp_;

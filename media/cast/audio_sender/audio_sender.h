@@ -16,11 +16,6 @@
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
 
-namespace crypto {
-class Encryptor;
-class SymmetricKey;
-}
-
 namespace media {
 class AudioBus;
 }
@@ -39,7 +34,7 @@ class AudioSender : public base::NonThreadSafe,
  public:
   AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               const AudioSenderConfig& audio_config,
-              transport::PacedPacketSender* const paced_packet_sender);
+              transport::CastTransportSender* const transport_sender);
 
   virtual ~AudioSender();
 
@@ -50,15 +45,6 @@ class AudioSender : public base::NonThreadSafe,
   void InsertAudio(const AudioBus* audio_bus,
                    const base::TimeTicks& recorded_time,
                    const base::Closure& done_callback);
-
-  // The audio_frame must be valid until the closure callback is called.
-  // The closure callback is called from the main cast thread as soon as
-  // the cast sender is done with the frame; it does not mean that the encoded
-  // frame has been sent out.
-  void InsertCodedAudioFrame(
-      const transport::EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time,
-      const base::Closure callback);
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(const uint8* packet, size_t length,
@@ -72,13 +58,15 @@ class AudioSender : public base::NonThreadSafe,
  private:
   friend class LocalRtcpAudioSenderFeedback;
 
+  void SendEncodedAudioFrameToTransport(
+      scoped_ptr<transport::EncodedAudioFrame> audio_frame,
+      const base::TimeTicks& recorded_time);
+
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
-  // Caller must allocate the destination |encrypted_frame|. The data member
-  // will be resized to hold the encrypted size.
-  bool EncryptAudioFrame(const transport::EncodedAudioFrame& audio_frame,
-                         transport::EncodedAudioFrame* encrypted_frame);
+  void ResendPacketsOnTransportThread(
+      const transport::MissingFramesAndPacketsMap& missing_packets);
 
   void ScheduleNextRtcpReport();
   void SendRtcpReport();
@@ -88,15 +76,12 @@ class AudioSender : public base::NonThreadSafe,
   base::WeakPtrFactory<AudioSender> weak_factory_;
 
   scoped_refptr<CastEnvironment> cast_environment_;
+  transport::CastTransportSender* const transport_sender_;
   scoped_refptr<AudioEncoder> audio_encoder_;
-  transport::RtpSender rtp_sender_;
   scoped_ptr<LocalRtpSenderStatistics> rtp_audio_sender_statistics_;
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;
   bool initialized_;
-  scoped_ptr<crypto::Encryptor> encryptor_;
-  scoped_ptr<crypto::SymmetricKey> encryption_key_;
-  std::string iv_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSender);
 };

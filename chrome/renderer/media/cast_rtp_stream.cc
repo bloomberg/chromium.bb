@@ -75,8 +75,6 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->frequency = params.payload.clock_rate;
   config->channels = params.payload.channels;
   config->bitrate = params.payload.max_bitrate;
-  config->aes_key = params.payload.aes_key;
-  config->aes_iv_mask = params.payload.aes_iv_mask;
   config->codec = media::cast::transport::kPcm16;
   if (params.payload.codec_name == kCodecNameOpus)
     config->codec = media::cast::transport::kOpus;
@@ -95,8 +93,6 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->height = params.payload.height;
   config->min_bitrate = config->start_bitrate = params.payload.min_bitrate;
   config->max_bitrate = params.payload.max_bitrate;
-  config->aes_key = params.payload.aes_key;
-  config->aes_iv_mask = params.payload.aes_iv_mask;
   if (params.payload.codec_name == kCodecNameVp8)
     config->codec = media::cast::transport::kVp8;
   else

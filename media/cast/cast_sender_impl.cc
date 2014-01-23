@@ -37,16 +37,7 @@ class LocalFrameInput : public FrameInput {
                            const base::Closure& done_callback) OVERRIDE {
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&AudioSender::InsertAudio, audio_sender_,
-            audio_bus, recorded_time, done_callback));
-  }
-
-  virtual void InsertCodedAudioFrame(
-      const transport::EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time,
-      const base::Closure callback) OVERRIDE {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&AudioSender::InsertCodedAudioFrame, audio_sender_,
-            audio_frame, recorded_time, callback));
+                   audio_bus, recorded_time, done_callback));
   }
 
  protected:
@@ -147,9 +138,9 @@ CastSender* CastSender::CreateCastSender(
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    PacketSender* const packet_sender) {
+    transport::CastTransportSender* const transport_sender) {
   return new CastSenderImpl(cast_environment, audio_config, video_config,
-                            gpu_factories, packet_sender);
+                            gpu_factories, transport_sender);
 }
 
 CastSenderImpl::CastSenderImpl(
@@ -157,12 +148,10 @@ CastSenderImpl::CastSenderImpl(
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    PacketSender* const packet_sender)
-    : pacer_(cast_environment->Clock(), packet_sender,
-          cast_environment->GetMessageTaskRunnerForThread(
-          CastEnvironment::TRANSPORT)),
-      audio_sender_(cast_environment, audio_config, &pacer_),
-      video_sender_(cast_environment, video_config, gpu_factories, &pacer_),
+    transport::CastTransportSender* const transport_sender)
+    : audio_sender_(cast_environment, audio_config, transport_sender),
+      video_sender_(cast_environment, video_config, gpu_factories,
+                    transport_sender),
       frame_input_(new LocalFrameInput(cast_environment,
                                        audio_sender_.AsWeakPtr(),
                                        video_sender_.AsWeakPtr())),

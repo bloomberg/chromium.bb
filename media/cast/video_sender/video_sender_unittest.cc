@@ -12,7 +12,8 @@
 #include "media/cast/test/fake_gpu_video_accelerator_factories.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/video_utility.h"
-#include "media/cast/transport/pacing/mock_paced_packet_sender.h"
+#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/transport/cast_transport_sender_impl.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/video_sender/video_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,6 +32,38 @@ static const int kHeight = 240;
 using testing::_;
 using testing::AtLeast;
 
+class TestPacketSender : public transport::PacketSender {
+ public:
+  TestPacketSender()
+      : number_of_rtp_packets_(0),
+        number_of_rtcp_packets_(0) {}
+
+  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
+    number_of_rtp_packets_ += static_cast<int>(packets.size());
+    return true;
+  }
+
+  // A singular packet implies a RTCP packet.
+  virtual bool SendPacket(const Packet& packet) OVERRIDE {
+    ++number_of_rtcp_packets_;
+    return true;
+  }
+
+  int number_of_rtp_packets() const {
+    return number_of_rtp_packets_;
+  }
+
+  int number_of_rtcp_packets() const {
+    return number_of_rtcp_packets_;
+  }
+
+ private:
+  int number_of_rtp_packets_;
+  int number_of_rtcp_packets_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
+};
+
 namespace {
 class PeerVideoSender : public VideoSender {
  public:
@@ -38,9 +71,9 @@ class PeerVideoSender : public VideoSender {
       scoped_refptr<CastEnvironment> cast_environment,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      transport::PacedPacketSender* const paced_packet_sender)
+      transport::CastTransportSender* const transport_sender)
       : VideoSender(cast_environment, video_config, gpu_factories,
-                    paced_packet_sender) {
+                    transport_sender) {
   }
   using VideoSender::OnReceivedCastFeedback;
 };
@@ -51,14 +84,27 @@ class VideoSenderTest : public ::testing::Test {
   VideoSenderTest() {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    cast_environment_ = new CastEnvironment(
+        &testing_clock_, task_runner_, task_runner_, task_runner_, task_runner_,
+        task_runner_, task_runner_, GetDefaultCastSenderLoggingConfig());
+    transport::CastTransportConfig transport_config;
+    transport_sender_.reset(new transport::CastTransportSenderImpl(
+        &testing_clock_, transport_config,
+        base::Bind(&UpdateCastTransportStatus), task_runner_));
+    transport_sender_->InsertFakeTransportForTesting(&transport_);
   }
 
   virtual ~VideoSenderTest() {}
+
+  static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+  }
 
   void InitEncoder(bool external) {
     VideoSenderConfig video_config;
     video_config.sender_ssrc = 1;
     video_config.incoming_feedback_ssrc = 2;
+    video_config.rtcp_c_name = "video_test@10.1.1.1";
     video_config.rtp_payload_type = 127;
     video_config.use_external_encoder = external;
     video_config.width = kWidth;
@@ -76,18 +122,11 @@ class VideoSenderTest : public ::testing::Test {
       video_sender_.reset(new PeerVideoSender(cast_environment_,
           video_config,
           new test::FakeGpuVideoAcceleratorFactories(task_runner_),
-          &mock_transport_));
+          transport_sender_.get()));
     } else {
       video_sender_.reset(new PeerVideoSender(cast_environment_, video_config,
-                                              NULL, &mock_transport_));
+                                              NULL, transport_sender_.get()));
     }
-  }
-
-  virtual void SetUp() {
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_,
-        task_runner_, GetDefaultCastSenderLoggingConfig());
   }
 
   scoped_refptr<media::VideoFrame> GetNewVideoFrame() {
@@ -99,16 +138,25 @@ class VideoSenderTest : public ::testing::Test {
     return video_frame;
   }
 
+  void RunTasks(int during_ms) {
+    for (int i = 0; i < during_ms; ++i) {
+      // Call process the timers every 1 ms.
+      testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
+      task_runner_->RunTasks();
+    }
+  }
+
   base::SimpleTestTickClock testing_clock_;
-  transport::MockPacedPacketSender mock_transport_;
+  TestPacketSender transport_;
+  scoped_ptr<transport::CastTransportSenderImpl> transport_sender_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerVideoSender> video_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoSenderTest);
 };
 
 TEST_F(VideoSenderTest, BuiltInEncoder) {
-  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(1);
-
   InitEncoder(false);
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
@@ -116,10 +164,11 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
+  EXPECT_GE(transport_.number_of_rtp_packets() +
+            transport_.number_of_rtcp_packets(), 1);
 }
 
 TEST_F(VideoSenderTest, ExternalEncoder) {
-  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(1);
   InitEncoder(true);
   task_runner_->RunTasks();
 
@@ -136,36 +185,29 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
 }
 
 TEST_F(VideoSenderTest, RtcpTimer) {
-  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(AtLeast(1));
-  EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
   InitEncoder(false);
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
   base::TimeTicks capture_time;
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
-  task_runner_->RunTasks();
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtcpIntervalMs * 3 / 2);
 
-  testing_clock_.Advance(max_rtcp_timeout);
-  task_runner_->RunTasks();
+  RunTasks(max_rtcp_timeout.InMilliseconds());
+  EXPECT_GE(transport_.number_of_rtp_packets(), 1);
+  EXPECT_GE(transport_.number_of_rtcp_packets(), 1);
 }
 
 TEST_F(VideoSenderTest, ResendTimer) {
-  EXPECT_CALL(mock_transport_, SendPackets(_)).Times(2);
-  EXPECT_CALL(mock_transport_, ResendPackets(_)).Times(1);
-
   InitEncoder(false);
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
   base::TimeTicks capture_time;
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
-
-  task_runner_->RunTasks();
 
   // ACK the key frame.
   RtcpCastMessage cast_feedback(1);
@@ -176,14 +218,15 @@ TEST_F(VideoSenderTest, ResendTimer) {
   video_frame = GetNewVideoFrame();
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
-  task_runner_->RunTasks();
-
   base::TimeDelta max_resend_timeout =
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtpMaxDelayMs);
 
   // Make sure that we do a re-send.
-  testing_clock_.Advance(max_resend_timeout);
-  task_runner_->RunTasks();
+  RunTasks(max_resend_timeout.InMilliseconds());
+  // Should have sent at least 3 packets.
+  EXPECT_GE(
+      transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
+      3);
 }
 
 }  // namespace cast

@@ -42,9 +42,6 @@ struct AudioSenderConfig {
   int channels;
   int bitrate;  // Set to <= 0 for "auto variable bitrate" (libopus knows best).
   transport::AudioCodec codec;
-
-  std::string aes_key;  // Binary string of size kAesKeySize.
-  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
 struct VideoSenderConfig {
@@ -75,9 +72,6 @@ struct VideoSenderConfig {
   int max_number_of_video_buffers_used;  // Max value depend on codec.
   transport::VideoCodec codec;
   int number_of_cores;
-
-  std::string aes_key;  // Binary string of size kAesKeySize.
-  std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
 struct AudioReceiverConfig {
@@ -142,33 +136,6 @@ struct PcmAudioFrame {
 
 typedef std::vector<uint8> Packet;
 typedef std::vector<Packet> PacketList;
-
-class PacketSender {
- public:
-  // All packets to be sent to the network will be delivered via these
-  // functions.
-  virtual bool SendPackets(const PacketList& packets) = 0;
-
-  virtual bool SendPacket(const Packet& packet) = 0;
-
-  virtual ~PacketSender() {}
-};
-
-class PacketReceiver : public base::RefCountedThreadSafe<PacketReceiver> {
- public:
-  // All packets received from the network should be delivered via this
-  // function.
-  virtual void ReceivedPacket(const uint8* packet, size_t length,
-                              const base::Closure callback) = 0;
-
-  static void DeletePacket(const uint8* packet);
-
- protected:
-  virtual ~PacketReceiver() {}
-
- private:
-  friend class base::RefCountedThreadSafe<PacketReceiver>;
-};
 
 }  // namespace cast
 }  // namespace media

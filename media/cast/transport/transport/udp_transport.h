@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/transport/cast_transport_config.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_server_socket.h"
 

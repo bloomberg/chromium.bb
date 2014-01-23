@@ -20,8 +20,8 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/pacing/paced_sender.h"
-#include "media/cast/transport/rtcp/rtcp_builder.h"
 
 namespace media {
 namespace cast {
@@ -63,9 +63,13 @@ class RtpReceiverStatistics {
 
 class Rtcp {
  public:
+  // Rtcp accepts two transports, one to be used by Cast senders
+  // (CastTransportSender) only, and the other (PacedPacketSender) should only
+  // be used by the Cast receivers and test applications.
   Rtcp(scoped_refptr<CastEnvironment> cast_environment,
        RtcpSenderFeedback* sender_feedback,
-       transport::PacedPacketSender* paced_packet_sender,
+       transport::CastTransportSender* const transport_sender,  // Send-side.
+       transport::PacedPacketSender* paced_packet_sender,  // Receive side.
        RtpSenderStatistics* rtp_sender_statistics,
        RtpReceiverStatistics* rtp_receiver_statistics,
        RtcpMode rtcp_mode,
@@ -88,7 +92,7 @@ class Rtcp {
   // not fit in the packet the |sender_log_message| will contain the remaining
   // unsent messages.
   void SendRtcpFromRtpSender(
-      transport::RtcpSenderLogMessage* sender_log_message);
+      const transport::RtcpSenderLogMessage& sender_log_message);
 
   // |cast_message| and |receiver_log| is optional; if |cast_message| is
   // provided the RTCP receiver report will append a Cast message containing
@@ -140,11 +144,21 @@ class Rtcp {
   void SaveLastSentNtpTime(const base::TimeTicks& now, uint32 last_ntp_seconds,
                            uint32 last_ntp_fraction);
 
+  void SendRtcpFromRtpSenderOnTransportThread(
+      uint32 packet_type_flags,
+      const transport::RtcpSenderInfo& sender_info,
+      const transport::RtcpDlrrReportBlock& dlrr,
+      const transport::RtcpSenderLogMessage& sender_log,
+      uint32 sending_ssrc,
+      std::string c_name);
+
   scoped_refptr<CastEnvironment> cast_environment_;
+  transport::CastTransportSender* const transport_sender_;
   const base::TimeDelta rtcp_interval_;
   const RtcpMode rtcp_mode_;
   const uint32 local_ssrc_;
   const uint32 remote_ssrc_;
+  const std::string c_name_;
 
   // Not owned by this class.
   RtpSenderStatistics* const rtp_sender_statistics_;
@@ -153,7 +167,6 @@ class Rtcp {
   scoped_ptr<LocalRtcpRttFeedback> rtt_feedback_;
   scoped_ptr<LocalRtcpReceiverFeedback> receiver_feedback_;
   scoped_ptr<RtcpSender> rtcp_sender_;
-  scoped_ptr<transport::RtcpBuilder> rtcp_builder_;
   scoped_ptr<RtcpReceiver> rtcp_receiver_;
 
   base::TimeTicks next_time_to_send_rtcp_;

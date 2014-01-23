@@ -132,6 +132,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
       base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval);
   rtcp_.reset(new Rtcp(cast_environment,
                        NULL,
+                       NULL,
                        packet_sender,
                        NULL,
                        rtp_audio_receiver_statistics_.get(),
@@ -180,7 +181,7 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
       }
       if (!decryptor_->Decrypt(base::StringPiece(reinterpret_cast<const char*>(
           payload_data), payload_size), &plaintext)) {
-        VLOG(0) << "Decryption error";
+        VLOG(1) << "Decryption error";
         return;
       }
     }
@@ -472,7 +473,7 @@ bool AudioReceiver::DecryptAudioFrame(
   }
   std::string decrypted_audio_data;
   if (!decryptor_->Decrypt((*audio_frame)->data, &decrypted_audio_data)) {
-    VLOG(0) << "Decryption error";
+    VLOG(1) << "Decryption error";
     // Give up on this frame, release it from jitter buffer.
     audio_buffer_->ReleaseFrame((*audio_frame)->frame_id);
     return false;

@@ -9,10 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "crypto/encryptor.h"
-#include "crypto/symmetric_key.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/transport/pacing/paced_sender.h"
+#include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/video_sender/external_video_encoder.h"
 #include "media/cast/video_sender/video_encoder_impl.h"
 
@@ -38,33 +36,31 @@ class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
 
 class LocalRtpVideoSenderStatistics : public RtpSenderStatistics {
  public:
-  explicit LocalRtpVideoSenderStatistics(transport::RtpSender* rtp_sender)
-     : rtp_sender_(rtp_sender) {
+  explicit LocalRtpVideoSenderStatistics(
+      transport::CastTransportSender* const transport_sender)
+     : transport_sender_(transport_sender) {
   }
 
   virtual void GetStatistics(const base::TimeTicks& now,
                              transport::RtcpSenderInfo* sender_info) OVERRIDE {
-    rtp_sender_->RtpStatistics(now, sender_info);
+    transport_sender_->RtpVideoStatistics(now, sender_info);
   }
 
  private:
-  transport::RtpSender* rtp_sender_;
+  transport::CastTransportSender* const transport_sender_;
 };
 
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-    transport::PacedPacketSender* const paced_packet_sender)
+    transport::CastTransportSender* const transport_sender)
     : rtp_max_delay_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
+      transport_sender_(transport_sender),
       rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
-      rtp_sender_(new transport::RtpSender(cast_environment->Clock(),
-                                           NULL,
-                                           &video_config,
-                                           paced_packet_sender)),
       last_acked_frame_id_(-1),
       last_sent_frame_id_(-1),
       duplicate_ack_(0),
@@ -82,7 +78,7 @@ VideoSender::VideoSender(
   DCHECK_GT(max_unacked_frames_, 0) << "Invalid argument";
 
   rtp_video_sender_statistics_.reset(
-      new LocalRtpVideoSenderStatistics(rtp_sender_.get()));
+      new LocalRtpVideoSenderStatistics(transport_sender));
 
   if (video_config.use_external_encoder) {
     video_encoder_.reset(new ExternalVideoEncoder(cast_environment,
@@ -92,24 +88,11 @@ VideoSender::VideoSender(
         max_unacked_frames_));
   }
 
-  if (video_config.aes_iv_mask.size() == kAesKeySize &&
-      video_config.aes_key.size() == kAesKeySize) {
-    iv_mask_ = video_config.aes_iv_mask;
-    encryption_key_.reset(crypto::SymmetricKey::Import(
-        crypto::SymmetricKey::AES, video_config.aes_key));
-    encryptor_.reset(new crypto::Encryptor());
-    encryptor_->Init(encryption_key_.get(),
-                     crypto::Encryptor::CTR,
-                     std::string());
-  } else if (video_config.aes_iv_mask.size() != 0 ||
-             video_config.aes_key.size() != 0) {
-    NOTREACHED() << "Invalid crypto configuration";
-  }
-
   rtcp_.reset(new Rtcp(
       cast_environment_,
       rtcp_feedback_.get(),
-      paced_packet_sender,
+      transport_sender_,
+      NULL,  // paced sender.
       rtp_video_sender_statistics_.get(),
       NULL,
       video_config.rtcp_mode,
@@ -148,58 +131,30 @@ void VideoSender::InsertRawVideoFrame(
 }
 
 void VideoSender::SendEncodedVideoFrameMainThread(
-    scoped_ptr<transport::EncodedVideoFrame> video_frame,
-    const base::TimeTicks& capture_time) {
-  SendEncodedVideoFrame(video_frame.get(), capture_time);
-}
-
-bool VideoSender::EncryptVideoFrame(
-    const transport::EncodedVideoFrame& video_frame,
-    transport::EncodedVideoFrame* encrypted_frame) {
-  DCHECK(encryptor_) << "Invalid state";
-
-  if (!encryptor_->SetCounter(GetAesNonce(video_frame.frame_id, iv_mask_))) {
-    NOTREACHED() << "Failed to set counter";
-    return false;
-  }
-
-  if (!encryptor_->Encrypt(video_frame.data, &encrypted_frame->data)) {
-    NOTREACHED() << "Encrypt error";
-    return false;
-  }
-  encrypted_frame->codec = video_frame.codec;
-  encrypted_frame->key_frame = video_frame.key_frame;
-  encrypted_frame->frame_id = video_frame.frame_id;
-  encrypted_frame->last_referenced_frame_id =
-      video_frame.last_referenced_frame_id;
-  return true;
-}
-
-void VideoSender::SendEncodedVideoFrame(
-    const transport::EncodedVideoFrame* encoded_frame,
+    scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
     const base::TimeTicks& capture_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
-
-  if (encryptor_) {
-    transport::EncodedVideoFrame encrypted_video_frame;
-
-    if (!EncryptVideoFrame(*encoded_frame, &encrypted_video_frame)) {
-      // Logging already done.
-      return;
-    }
-    rtp_sender_->IncomingEncodedVideoFrame(&encrypted_video_frame,
-                                           capture_time);
-  } else {
-    rtp_sender_->IncomingEncodedVideoFrame(encoded_frame, capture_time);
-  }
   if (encoded_frame->key_frame) {
     VLOG(1) << "Send encoded key frame; frame_id:"
             << static_cast<int>(encoded_frame->frame_id);
   }
+
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
+  cast_environment_->PostTask(
+      CastEnvironment::TRANSPORT, FROM_HERE,
+      base::Bind(&VideoSender::SendEncodedVideoFrameToTransport,
+                 base::Unretained(this), base::Passed(&encoded_frame),
+                 capture_time));
   UpdateFramesInFlight();
   InitializeTimers();
+}
+
+void VideoSender::SendEncodedVideoFrameToTransport(
+    scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
+    const base::TimeTicks& capture_time) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
+  transport_sender_->InsertCodedVideoFrame(encoded_frame.get(), capture_time);
 }
 
 void VideoSender::IncomingRtcpPacket(const uint8* packet, size_t length,
@@ -257,7 +212,8 @@ void VideoSender::SendRtcpReport() {
     video_logs.erase(rtp_timestamp);
     sender_log_message.push_back(frame_message);
   }
-  rtcp_->SendRtcpFromRtpSender(&sender_log_message);
+
+  rtcp_->SendRtcpFromRtpSender(sender_log_message);
   if (!sender_log_message.empty()) {
     VLOG(1) << "Failed to send all log messages";
   }
@@ -386,8 +342,11 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
       ResendFrame(static_cast<uint32>(resend_frame));
     }
   } else {
-    rtp_sender_->ResendPackets(cast_feedback.missing_frames_and_packets_);
-    last_send_time_ = now;
+    cast_environment_->PostTask(
+        CastEnvironment::TRANSPORT, FROM_HERE,
+        base::Bind(&VideoSender::ResendPacketsOnTransportThread,
+                   base::Unretained(this),
+                   cast_feedback.missing_frames_and_packets_));
 
     uint32 new_bitrate = 0;
     if (congestion_control_.OnNack(rtt, &new_bitrate)) {
@@ -435,8 +394,17 @@ void VideoSender::ResendFrame(uint32 resend_frame_id) {
   MissingFramesAndPacketsMap missing_frames_and_packets;
   PacketIdSet missing;
   missing_frames_and_packets.insert(std::make_pair(resend_frame_id, missing));
-  rtp_sender_->ResendPackets(missing_frames_and_packets);
+  cast_environment_->PostTask(
+      CastEnvironment::TRANSPORT, FROM_HERE,
+      base::Bind(&VideoSender::ResendPacketsOnTransportThread,
+                 base::Unretained(this), missing_frames_and_packets));
+}
+
+void VideoSender::ResendPacketsOnTransportThread(
+    const transport::MissingFramesAndPacketsMap& missing_packets) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::TRANSPORT));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
+  transport_sender_->ResendPackets(false, missing_packets);
 }
 
 }  // namespace cast

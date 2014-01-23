@@ -16,6 +16,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net',
       ],
       'sources': [
@@ -23,6 +24,8 @@
         'cast_transport_config.h', 
         'cast_transport_defines.h', 
         'cast_transport_sender.h',
+        'cast_transport_sender_impl.cc',
+        'cast_transport_sender_impl.h',
         'pacing/paced_sender.cc',
         'pacing/paced_sender.h',
         'rtcp/rtcp_builder.cc',
@@ -35,6 +38,10 @@
         'rtp_sender/rtp_sender.h',
         'transport/udp_transport.cc',
         'transport/udp_transport.h',
+        'transport_audio_sender.cc',  
+        'transport_audio_sender.h', 
+        'transport_video_sender.cc',  
+        'transport_video_sender.h',
       ], # source
     },
   ],  # targets,

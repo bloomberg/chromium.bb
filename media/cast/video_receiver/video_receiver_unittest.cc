@@ -165,5 +165,3 @@ TEST_F(VideoReceiverTest, GetOnePacketRawframe) {
 
 }  // namespace cast
 }  // namespace media
-
-

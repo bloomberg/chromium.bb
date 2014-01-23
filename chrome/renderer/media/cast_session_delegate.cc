@@ -92,7 +92,7 @@ void CastSessionDelegate::StartSendingInternal() {
       audio_config_,
       video_config_,
       NULL,
-      this));
+      NULL));
 
   for (size_t i = 0; i < frame_input_available_callbacks_.size(); ++i) {
     frame_input_available_callbacks_[i].Run(

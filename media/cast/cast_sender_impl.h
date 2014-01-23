@@ -10,7 +10,6 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/video_sender/video_sender.h"
 
 namespace media {
@@ -21,7 +20,6 @@ namespace media {
 namespace cast {
 
 class AudioSender;
-class PacedSender;
 class VideoSender;
 
 // This calls is a pure owner class that group all required sending objects
@@ -33,7 +31,7 @@ class CastSenderImpl : public CastSender {
       const AudioSenderConfig& audio_config,
       const VideoSenderConfig& video_config,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
-      PacketSender* const packet_sender);
+      transport::CastTransportSender* const transport_sender);
 
   virtual ~CastSenderImpl();
 
@@ -41,7 +39,6 @@ class CastSenderImpl : public CastSender {
   virtual scoped_refptr<transport::PacketReceiver> packet_receiver() OVERRIDE;
 
  private:
-  transport::PacedSender pacer_;
   AudioSender audio_sender_;
   VideoSender video_sender_;
   scoped_refptr<FrameInput> frame_input_;

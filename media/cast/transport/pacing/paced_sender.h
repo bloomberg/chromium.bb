@@ -16,8 +16,8 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "media/cast/cast_config.h"  // PacketSender
 #include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/transport/transport/udp_transport.h"
 
 namespace media {
 namespace cast {
@@ -40,16 +40,25 @@ class PacedSender : public PacedPacketSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<PacedSender> {
  public:
+  // The |external_transport| should only be used by the Cast receiver and for
+  // testing.
   PacedSender(base::TickClock* clock,
-              PacketSender* transport,
-              scoped_refptr<base::TaskRunner> transport_task_runner);
+              const CastTransportConfig* const config,
+              PacketSender* external_transport,
+              const scoped_refptr<base::TaskRunner>& transport_task_runner);
+
   virtual ~PacedSender();
+
+  // PacedPacketSender implementation.
+  virtual void SetPacketReceiver(scoped_refptr<PacketReceiver> packet_receiver);
 
   virtual bool SendPackets(const PacketList& packets) OVERRIDE;
 
   virtual bool ResendPackets(const PacketList& packets) OVERRIDE;
 
   virtual bool SendRtcpPacket(const Packet& packet) OVERRIDE;
+
+  void InsertFakeTransportForTesting(PacketSender* fake_transport);
 
  protected:
   // Schedule a delayed task on the main cast thread when it's time to send the
@@ -62,12 +71,18 @@ class PacedSender : public PacedPacketSender,
  private:
   bool SendPacketsToTransport(const PacketList& packets,
                               PacketList* packets_not_sent);
+
+  // Actually sends the packets to the transport. When set, packets will be sent
+  // to the external transport.
+  bool TransmitPackets(const PacketList& packets);
   void SendStoredPackets();
   void UpdateBurstSize(size_t num_of_packets);
 
   // Not owned by this class.
   base::TickClock* const clock_;
-  PacketSender* transport_;
+  scoped_ptr<UdpTransport> transport_;
+  PacketSender* external_transport_;  // Not owned by this class.
+  const CastTransportConfig* const config_;  // Not owned by this class.
   scoped_refptr<base::TaskRunner> transport_task_runner_;
 
   size_t burst_size_;

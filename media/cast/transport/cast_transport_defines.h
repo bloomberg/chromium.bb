@@ -16,12 +16,12 @@ namespace media {
 namespace cast {
 namespace transport {
 
+// TODO(mikhal): Implement and add more types.
 enum CastTransportStatus {
-  UNINITIALIZED,
-  INITIALIZED,
-  INVALID_CRYPTO_CONFIG,
-  SOCKET_ERROR,
-  // TODO(mikhal): Add.
+  TRANSPORT_UNINITIALIZED = 0,
+  TRANSPORT_INITIALIZED,
+  TRANSPORT_INVALID_CRYPTO_CONFIG,
+  TRANSPORT_SOCKET_ERROR
 };
 
 const size_t kMaxIpPacketSize = 1500;
@@ -46,54 +46,11 @@ enum RtcpPacketTypes {
   kPacketTypeHigh = 210,  // Port Mapping.
 };
 
-// Log messages form sender to receiver.
-enum RtcpSenderFrameStatus {
-  kRtcpSenderFrameStatusUnknown = 0,
-  kRtcpSenderFrameStatusDroppedByEncoder = 1,
-  kRtcpSenderFrameStatusDroppedByFlowControl = 2,
-  kRtcpSenderFrameStatusSentToNetwork = 3,
-};
+// Each uint16 represents one packet id within a cast frame.
+typedef std::set<uint16> PacketIdSet;
+// Each uint8 represents one cast frame.
+typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
 
-struct RtcpSenderFrameLogMessage {
-  RtcpSenderFrameStatus frame_status;
-  uint32 rtp_timestamp;
-};
-
-struct RtcpSenderInfo {
-  // First three members are used for lipsync.
-  // First two members are used for rtt.
-  uint32 ntp_seconds;
-  uint32 ntp_fraction;
-  uint32 rtp_timestamp;
-  uint32 send_packet_count;
-  size_t send_octet_count;
-};
-
-struct RtcpReportBlock {
-  uint32 remote_ssrc;  // SSRC of sender of this report.
-  uint32 media_ssrc;  // SSRC of the RTP packet sender.
-  uint8 fraction_lost;
-  uint32 cumulative_lost;  // 24 bits valid.
-  uint32 extended_high_sequence_number;
-  uint32 jitter;
-  uint32 last_sr;
-  uint32 delay_since_last_sr;
-};
-
-struct RtcpDlrrReportBlock {
-  uint32 last_rr;
-  uint32 delay_since_last_rr;
-};
-
-inline bool operator==(RtcpSenderInfo lhs, RtcpSenderInfo rhs) {
-  return lhs.ntp_seconds == rhs.ntp_seconds &&
-      lhs.ntp_fraction == rhs.ntp_fraction &&
-      lhs.rtp_timestamp == rhs.rtp_timestamp &&
-      lhs.send_packet_count == rhs.send_packet_count &&
-      lhs.send_octet_count == rhs.send_octet_count;
-}
-
-typedef std::list<RtcpSenderFrameLogMessage> RtcpSenderLogMessage;
 
 class FrameIdWrapHelper {
  public:
@@ -158,6 +115,13 @@ class FrameIdWrapHelper {
   uint32 frame_id_wrap_count_;
   Range range_;
 };
+
+inline uint32 GetVideoRtpTimestamp(const base::TimeTicks& time_ticks) {
+  base::TimeTicks zero_time;
+  base::TimeDelta recorded_delta = time_ticks - zero_time;
+  // Timestamp is in 90 KHz for video.
+  return static_cast<uint32>(recorded_delta.InMilliseconds() * 90);
+}
 
 }  // namespace transport
 }  // namespace cast

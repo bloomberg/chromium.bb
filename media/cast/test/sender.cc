@@ -18,6 +18,8 @@
 #include "media/cast/test/audio_utility.h"
 #include "media/cast/test/utility/input_helper.h"
 #include "media/cast/test/video_utility.h"
+#include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/transport/udp_transport.h"
 #include "ui/gfx/size.h"
 
@@ -290,6 +292,11 @@ class SendProcess {
 }  // namespace cast
 }  // namespace media
 
+namespace {
+void UpdateCastTransportStatus(media::cast::transport::CastTransportStatus
+                               status) {
+}
+}
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
@@ -304,7 +311,37 @@ int main(int argc, char** argv) {
   base::DefaultTickClock clock;
   base::MessageLoopForIO io_message_loop;
 
+  int remote_port, local_port;
+  media::cast::GetPorts(&remote_port, &local_port);
+
+  std::string remote_ip_address =
+      media::cast::GetIpAddress("Enter receiver IP.");
+  std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
+
+  media::cast::AudioSenderConfig audio_config =
+      media::cast::GetAudioSenderConfig();
+  media::cast::VideoSenderConfig video_config =
+      media::cast::GetVideoSenderConfig();
+
+  // Setting up transport config.
+  media::cast::transport::CastTransportConfig config;
+  config.receiver_ip_address = remote_ip_address;
+  config.local_ip_address = local_ip_address;
+  config.receive_port = local_port;
+  config.send_port = remote_port;
+  config.audio_ssrc = audio_config.sender_ssrc;
+  config.video_ssrc = video_config.sender_ssrc;
+  config.audio_rtp_payload_type = audio_config.rtp_payload_type;
+  config.video_rtp_payload_type = video_config.rtp_payload_type;
+
+  scoped_ptr<media::cast::transport::CastTransportSender> transport_sender(
+      media::cast::transport::
+      CastTransportSender::CreateCastTransportSender(&clock, config,
+      base::Bind(&UpdateCastTransportStatus),
+      io_message_loop.message_loop_proxy()));
+
   // Enable main and send side threads only. Disable logging.
+  // Running transport on the main thread.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(
       &clock,
@@ -316,44 +353,14 @@ int main(int argc, char** argv) {
       io_message_loop.message_loop_proxy(),
       media::cast::GetDefaultCastSenderLoggingConfig()));
 
-  media::cast::AudioSenderConfig audio_config =
-      media::cast::GetAudioSenderConfig();
-  media::cast::VideoSenderConfig video_config =
-      media::cast::GetVideoSenderConfig();
-
-  int remote_port, local_port;
-  media::cast::GetPorts(&remote_port, &local_port);
-
-  std::string remote_ip_address =
-      media::cast::GetIpAddress("Enter receiver IP.");
-  std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
-  net::IPAddressNumber remote_ip_number;
-  net::IPAddressNumber local_ip_number;
-
-  if (!net::ParseIPLiteralToNumber(remote_ip_address, &remote_ip_number)) {
-    LOG(ERROR) << "Invalid remote IP address.";
-    return 1;
-  }
-
-  if (!net::ParseIPLiteralToNumber(local_ip_address, &local_ip_number)) {
-    LOG(ERROR) << "Invalid local IP address.";
-    return 1;
-  }
-
-  net::IPEndPoint remote_end_point(remote_ip_number, remote_port);
-  net::IPEndPoint local_end_point(local_ip_number, local_port);
-  scoped_ptr<media::cast::transport::UdpTransport> transport(
-      new media::cast::transport::UdpTransport(
-          io_message_loop.message_loop_proxy(),
-          local_end_point,
-          remote_end_point));
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(cast_environment,
       audio_config,
       video_config,
-      NULL,  // VideoEncoderController.
-      transport.get()));
-  transport->StartReceiving(cast_sender->packet_receiver());
+      NULL,  // gpu_factories.
+      transport_sender.get()));
+
+  transport_sender->SetPacketReceiver(cast_sender->packet_receiver());
 
   media::cast::FrameInput* frame_input = cast_sender->frame_input();
   scoped_ptr<media::cast::SendProcess> send_process(new

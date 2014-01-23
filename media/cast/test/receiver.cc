@@ -223,7 +223,9 @@ int main(int argc, char** argv) {
   video_thread.Start();
 
   base::DefaultTickClock clock;
+
   // Enable receiver side threads, and disable logging.
+  // Running transport on main thread.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(
           &clock,

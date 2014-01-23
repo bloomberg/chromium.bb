@@ -137,7 +137,7 @@ CastReceiver* CastReceiver::CreateCastReceiver(
     scoped_refptr<CastEnvironment> cast_environment,
     const AudioReceiverConfig& audio_config,
     const VideoReceiverConfig& video_config,
-    PacketSender* const packet_sender) {
+    transport::PacketSender* const packet_sender) {
   return new CastReceiverImpl(cast_environment,
                               audio_config,
                               video_config,
@@ -148,10 +148,10 @@ CastReceiverImpl::CastReceiverImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const AudioReceiverConfig& audio_config,
     const VideoReceiverConfig& video_config,
-    PacketSender* const packet_sender)
-    : pacer_(cast_environment->Clock(), packet_sender,
-          cast_environment->GetMessageTaskRunnerForThread(
-          CastEnvironment::TRANSPORT)),
+    transport::PacketSender* const packet_sender)
+    : pacer_(cast_environment->Clock(), NULL, packet_sender,
+             cast_environment->GetMessageTaskRunnerForThread(
+             CastEnvironment::TRANSPORT)),
       audio_receiver_(cast_environment, audio_config, &pacer_),
       video_receiver_(cast_environment, video_config, &pacer_),
       frame_receiver_(new LocalFrameReceiver(cast_environment,

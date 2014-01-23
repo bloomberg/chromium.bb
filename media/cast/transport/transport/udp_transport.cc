@@ -85,7 +85,6 @@ void UdpTransport::ReceiveOnePacket() {
 
 void UdpTransport::OnReceived(int result) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
-
   if (result < 0) {
     LOG(ERROR) << "Failed to receive packet: " << result << "."
                << " Stop receiving packets.";
@@ -101,7 +100,6 @@ void UdpTransport::OnReceived(int result) {
             << recv_addr_.ToString() << ".";
     return;
   }
-
   // TODO(hclam): The interfaces should use net::IOBuffer to eliminate memcpy.
   uint8* data = new uint8[result];
   memcpy(data, recv_buf_->data(), result);
@@ -134,8 +132,7 @@ bool UdpTransport::SendPacket(const Packet& packet) {
       buf,
       static_cast<int>(packet.size()),
       remote_addr_,
-      base::Bind(&UdpTransport::OnSent,
-                 weak_factory_.GetWeakPtr(), buf));
+      base::Bind(&UdpTransport::OnSent, weak_factory_.GetWeakPtr(), buf));
   return ret == net::OK;
 }
 

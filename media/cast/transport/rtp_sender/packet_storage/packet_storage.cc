@@ -137,7 +137,6 @@ PacketList PacketStorage::GetPackets(
 
     if (packets_set.empty()) {
       VLOG(1) << "Missing all packets in frame " << static_cast<int>(frame_id);
-
       uint16 packet_id = 0;
       do {
         // Get packet from storage.

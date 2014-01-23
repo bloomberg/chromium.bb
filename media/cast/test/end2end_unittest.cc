@@ -26,6 +26,10 @@
 #include "media/cast/test/crypto_utility.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/video_utility.h"
+#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/cast_transport_sender.h"
+#include "media/cast/transport/cast_transport_sender_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -59,11 +63,13 @@ namespace {
 // |audio_bus| for destruction.
 void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
 }
+void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+}
 }  // namespace
 
 // Class that sends the packet direct from sender into the receiver with the
 // ability to drop packets between the two.
-class LoopBackTransport : public PacketSender {
+class LoopBackTransport : public transport::PacketSender {
  public:
   explicit LoopBackTransport(scoped_refptr<CastEnvironment> cast_environment)
       : packet_receiver_(NULL),
@@ -73,7 +79,7 @@ class LoopBackTransport : public PacketSender {
         cast_environment_(cast_environment) {
   }
 
-  void RegisterPacketReceiver(transport::PacketReceiver* packet_receiver) {
+  void SetPacketReceiver(transport::PacketReceiver* packet_receiver) {
     DCHECK(packet_receiver);
     packet_receiver_ = packet_receiver;
   }
@@ -333,16 +339,17 @@ CastLoggingConfig EnableCastLoggingConfig(bool sender) {
 class End2EndTest : public ::testing::Test {
  protected:
   End2EndTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
+      : start_time_(),
+        task_runner_(new test::FakeTaskRunner(&testing_clock_)),
+        transport_task_runner_(new test::FakeTaskRunner(&testing_clock_)),
         cast_environment_sender_(new CastEnvironment(&testing_clock_,
             task_runner_, task_runner_, task_runner_, task_runner_,
             task_runner_, task_runner_, EnableCastLoggingConfig(true))),
         cast_environment_receiver_(new CastEnvironment(&testing_clock_,
             task_runner_, task_runner_, task_runner_, task_runner_,
             task_runner_, task_runner_, EnableCastLoggingConfig(false))),
-        start_time_(),
-        sender_to_receiver_(cast_environment_sender_),
         receiver_to_sender_(cast_environment_receiver_),
+        sender_to_receiver_(cast_environment_sender_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
         test_receiver_video_callback_(new TestReceiverVideoCallback()) {
     testing_clock_.Advance(
@@ -402,6 +409,21 @@ class End2EndTest : public ::testing::Test {
         video_sender_config_.rtp_payload_type;
     video_receiver_config_.use_external_decoder = false;
     video_receiver_config_.codec = video_sender_config_.codec;
+
+    transport_config_.audio_ssrc = audio_sender_config_.sender_ssrc;
+    transport_config_.video_ssrc = video_sender_config_.sender_ssrc;
+    transport_config_.video_codec = video_sender_config_.codec;
+    transport_config_.audio_codec = audio_sender_config_.codec;
+    transport_config_.video_rtp_payload_type =
+        video_sender_config_.rtp_payload_type;
+    transport_config_.audio_rtp_payload_type =
+        audio_sender_config_.rtp_payload_type;
+    transport_config_.audio_frequency = audio_sender_config_.frequency;
+    transport_config_.audio_channels = audio_sender_config_.channels;
+    transport_config_.video_rtp_max_delay_ms =
+        video_sender_config_.rtp_max_delay_ms;
+    transport_config_.audio_rtp_max_delay_ms =
+        audio_sender_config_.rtp_max_delay_ms;
   }
 
   void Create() {
@@ -410,16 +432,21 @@ class End2EndTest : public ::testing::Test {
         audio_receiver_config_,
         video_receiver_config_,
         &receiver_to_sender_));
+    transport_sender_.reset(new transport::CastTransportSenderImpl(
+        &testing_clock_,
+        transport_config_,
+        base::Bind(&UpdateCastTransportStatus),
+        transport_task_runner_));
+    transport_sender_->InsertFakeTransportForTesting(&sender_to_receiver_);
 
     cast_sender_.reset(CastSender::CreateCastSender(cast_environment_sender_,
                                                     audio_sender_config_,
                                                     video_sender_config_,
                                                     NULL,
-                                                    &sender_to_receiver_));
+                                                    transport_sender_.get()));
 
-    receiver_to_sender_.RegisterPacketReceiver(cast_sender_->packet_receiver());
-    sender_to_receiver_.RegisterPacketReceiver(
-        cast_receiver_->packet_receiver());
+    receiver_to_sender_.SetPacketReceiver(cast_sender_->packet_receiver());
+    sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver());
 
     frame_input_ = cast_sender_->frame_input();
     frame_receiver_ = cast_receiver_->frame_receiver();
@@ -451,6 +478,7 @@ class End2EndTest : public ::testing::Test {
       // Call process the timers every 1 ms.
       testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
+      transport_task_runner_->RunTasks();
     }
   }
 
@@ -458,15 +486,18 @@ class End2EndTest : public ::testing::Test {
   VideoReceiverConfig video_receiver_config_;
   AudioSenderConfig audio_sender_config_;
   VideoSenderConfig video_sender_config_;
+  transport::CastTransportConfig transport_config_;
 
   base::SimpleTestTickClock testing_clock_;
+  base::TimeTicks start_time_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
+  scoped_refptr<test::FakeTaskRunner> transport_task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_sender_;
   scoped_refptr<CastEnvironment> cast_environment_receiver_;
-  base::TimeTicks start_time_;
 
-  LoopBackTransport sender_to_receiver_;
   LoopBackTransport receiver_to_sender_;
+  LoopBackTransport sender_to_receiver_;
+  scoped_ptr<transport::CastTransportSenderImpl> transport_sender_;
 
   scoped_ptr<CastReceiver> cast_receiver_;
   scoped_ptr<CastSender> cast_sender_;
@@ -489,7 +520,6 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
   int audio_diff = kFrameTimerMs;
   int i = 0;
 
-  std::cout << "Progress ";
   for (; i < 10; ++i) {
     int num_10ms_blocks = audio_diff / 10;
     audio_diff -= num_10ms_blocks * 10;
@@ -535,7 +565,6 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
         base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
             test_receiver_video_callback_));
 
-    std::cout << " " << i << std::flush;
     video_start++;
   }
   std::cout << std::endl;
@@ -769,7 +798,6 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
   int video_start = 50;
   base::TimeTicks send_time;
 
-  std::cout << "Progress ";
   int i = 0;
   for (; i < 20; ++i) {
     send_time = testing_clock_.NowTicks();
@@ -786,7 +814,6 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
               test_receiver_video_callback_));
     }
     RunTasks(kFrameTimerMs);
-    std::cout << " " << i << std::flush;
     video_start++;
   }
   std::cout << std::endl;
@@ -824,13 +851,13 @@ TEST_F(End2EndTest, ResetReferenceFrameId) {
 TEST_F(End2EndTest, CryptoVideo) {
   SetupConfig(transport::kPcm16, 32000, false, 1);
 
-  video_sender_config_.aes_iv_mask =
+  transport_config_.aes_iv_mask =
       ConvertFromBase16String("1234567890abcdeffedcba0987654321");
-  video_sender_config_.aes_key =
+  transport_config_.aes_key =
       ConvertFromBase16String("deadbeefcafeb0b0b0b0cafedeadbeef");
 
-  video_receiver_config_.aes_iv_mask = video_sender_config_.aes_iv_mask;
-  video_receiver_config_.aes_key = video_sender_config_.aes_key;
+  video_receiver_config_.aes_iv_mask = transport_config_.aes_iv_mask;
+  video_receiver_config_.aes_key = transport_config_.aes_key;
 
   Create();
 
@@ -864,13 +891,13 @@ TEST_F(End2EndTest, CryptoVideo) {
 TEST_F(End2EndTest, MAYBE_CryptoAudio) {
   SetupConfig(transport::kPcm16, 32000, false, 1);
 
-  audio_sender_config_.aes_iv_mask =
+  transport_config_.aes_iv_mask =
      ConvertFromBase16String("abcdeffedcba12345678900987654321");
-  audio_sender_config_.aes_key =
+  transport_config_.aes_key =
      ConvertFromBase16String("deadbeefcafecafedeadbeefb0b0b0b0");
 
-  audio_receiver_config_.aes_iv_mask = audio_sender_config_.aes_iv_mask;
-  audio_receiver_config_.aes_key = audio_sender_config_.aes_key;
+  audio_receiver_config_.aes_iv_mask = transport_config_.aes_iv_mask;
+  audio_receiver_config_.aes_key = transport_config_.aes_key;
 
   Create();
 

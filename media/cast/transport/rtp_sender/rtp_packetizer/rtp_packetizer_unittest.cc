@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/cast/test/fake_task_runner.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
 #include "media/cast/transport/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"
@@ -15,6 +16,7 @@ namespace media {
 namespace cast {
 namespace transport {
 
+namespace {
 static const int kPayload = 127;
 static const uint32 kTimestampMs = 10;
 static const uint16 kSeqNum = 33;
@@ -22,8 +24,10 @@ static const int kMaxPacketLength = 1500;
 static const int kSsrc = 0x12345;
 static const unsigned int kFrameSize = 5000;
 static const int kMaxPacketStorageTimeMs = 300;
+static const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
+}
 
-class TestRtpPacketTransport : public PacedPacketSender {
+class TestRtpPacketTransport : public PacketSender {
  public:
   explicit TestRtpPacketTransport(RtpPacketizerConfig config)
        : config_(config),
@@ -39,8 +43,6 @@ class TestRtpPacketTransport : public PacedPacketSender {
   }
 
   void VerifyCommonRtpHeader(const RtpCastTestHeader& rtp_header) {
-    EXPECT_EQ(expected_number_of_packets_ == packets_sent_,
-        rtp_header.marker);
     EXPECT_EQ(kPayload, rtp_header.payload_type);
     EXPECT_EQ(sequence_number_, rtp_header.sequence_number);
     EXPECT_EQ(kTimestampMs * 90, rtp_header.rtp_timestamp);
@@ -58,7 +60,6 @@ class TestRtpPacketTransport : public PacedPacketSender {
   }
 
   virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    EXPECT_EQ(expected_number_of_packets_, static_cast<int>(packets.size()));
     PacketList::const_iterator it = packets.begin();
     for (; it != packets.end(); ++it) {
       ++packets_sent_;
@@ -72,67 +73,83 @@ class TestRtpPacketTransport : public PacedPacketSender {
     return true;
   }
 
-  virtual bool ResendPackets(const PacketList& packets) OVERRIDE {
+  virtual bool SendPacket(const transport::Packet& packet) OVERRIDE {
     EXPECT_TRUE(false);
     return false;
   }
 
-  virtual bool SendRtcpPacket(const std::vector<uint8>& packet) OVERRIDE {
-    EXPECT_TRUE(false);
-    return false;
+  int number_of_packets_received() const {
+    return packets_sent_;
   }
 
-  void SetExpectedNumberOfPackets(int num) {
-    expected_number_of_packets_ = num;
+  void set_expected_number_of_packets(int expected_number_of_packets) {
+    expected_number_of_packets_ = expected_number_of_packets;
   }
 
   RtpPacketizerConfig config_;
   uint32 sequence_number_;
   int packets_sent_;
+  int number_of_packets_;
   int expected_number_of_packets_;
   // Assuming packets arrive in sequence.
   int expected_packet_id_;
   uint32 expected_frame_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRtpPacketTransport);
 };
 
 class RtpPacketizerTest : public ::testing::Test {
  protected:
   RtpPacketizerTest()
-      :video_frame_(),
-       packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
+      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
+        video_frame_(),
+        packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
     config_.sequence_number = kSeqNum;
     config_.ssrc = kSsrc;
     config_.payload_type = kPayload;
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
-    rtp_packetizer_.reset(
-        new RtpPacketizer(transport_.get(), &packet_storage_, config_));
-  }
-
-  virtual ~RtpPacketizerTest() {}
-
-  virtual void SetUp() {
+    pacer_.reset(new PacedSender(&testing_clock_, NULL, transport_.get(),
+                                 task_runner_));
+    rtp_packetizer_.reset(new RtpPacketizer(pacer_.get(), &packet_storage_,
+                                            config_));
     video_frame_.key_frame = false;
     video_frame_.frame_id = 0;
     video_frame_.last_referenced_frame_id = kStartFrameId;
     video_frame_.data.assign(kFrameSize, 123);
   }
 
+  virtual ~RtpPacketizerTest() {}
+
+  void RunTasks(int during_ms) {
+    for (int i = 0; i < during_ms; ++i) {
+      // Call process the timers every 1 ms.
+      testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
+      task_runner_->RunTasks();
+    }
+  }
+
   base::SimpleTestTickClock testing_clock_;
-  scoped_ptr<RtpPacketizer> rtp_packetizer_;
-  RtpPacketizerConfig config_;
-  scoped_ptr<TestRtpPacketTransport> transport_;
+  scoped_refptr<test::FakeTaskRunner> task_runner_;
   EncodedVideoFrame video_frame_;
   PacketStorage packet_storage_;
+  RtpPacketizerConfig config_;
+  scoped_ptr<TestRtpPacketTransport> transport_;
+  scoped_ptr<PacedSender> pacer_;
+  scoped_ptr<RtpPacketizer> rtp_packetizer_;
+
+  DISALLOW_COPY_AND_ASSIGN(RtpPacketizerTest);
 };
 
 TEST_F(RtpPacketizerTest, SendStandardPackets) {
   int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
-  transport_->SetExpectedNumberOfPackets(expected_num_of_packets);
+  transport_->set_expected_number_of_packets(expected_num_of_packets);
 
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(kTimestampMs);
   rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_, time);
+  RunTasks(33 + 1);
+  EXPECT_EQ(expected_num_of_packets, transport_->number_of_packets_received());
 }
 
 TEST_F(RtpPacketizerTest, Stats) {
@@ -140,13 +157,15 @@ TEST_F(RtpPacketizerTest, Stats) {
   EXPECT_FALSE(rtp_packetizer_->send_octet_count());
   // Insert packets at varying lengths.
   int expected_num_of_packets = kFrameSize / kMaxPacketLength + 1;
-  transport_->SetExpectedNumberOfPackets(expected_num_of_packets);
+  transport_->set_expected_number_of_packets(expected_num_of_packets);
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kTimestampMs));
   rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_,
                                              testing_clock_.NowTicks());
+  RunTasks(33 + 1);
   EXPECT_EQ(expected_num_of_packets, rtp_packetizer_->send_packets_count());
   EXPECT_EQ(kFrameSize, rtp_packetizer_->send_octet_count());
+  EXPECT_EQ(expected_num_of_packets, transport_->number_of_packets_received());
 }
 
 }  // namespace transport
