@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/net_log.h"
@@ -290,15 +291,9 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
                       using_spdy,
                       net_log);
     if (for_websockets_) {
-      WebSocketHandshakeStreamBase::CreateHelper* create_helper =
-          request->websocket_handshake_stream_create_helper();
-      DCHECK(create_helper);
-      bool use_relative_url = direct || request->url().SchemeIs("wss");
-      request->OnWebSocketHandshakeStreamReady(
-          NULL,
-          used_ssl_config,
-          used_proxy_info,
-          create_helper->CreateSpdyStream(spdy_session, use_relative_url));
+      // TODO(ricea): Restore this code path when WebSocket over SPDY
+      // implementation is ready.
+      NOTREACHED();
     } else {
       bool use_relative_url = direct || request->url().SchemeIs("https");
       request->OnStreamReady(

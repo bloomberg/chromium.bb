@@ -1131,7 +1131,64 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
+// TODO(ricea): This test can be removed once the new WebSocket stack supports
+// SPDY. Currently, even if we connect to a SPDY-supporting server, we need to
+// use plain SSL.
+TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStreamButGetSSL) {
+  SpdySessionDependencies session_deps(GetParam(),
+                                       ProxyService::CreateDirect());
+
+  MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
+  StaticSocketDataProvider socket_data(&mock_read, 1, NULL, 0);
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
+
+  SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+
+  HostPortPair host_port_pair("www.google.com", 80);
+  scoped_refptr<HttpNetworkSession>
+      session(SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  // Now request a stream.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("wss://www.google.com");
+  request_info.load_flags = 0;
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter1;
+  WebSocketStreamCreateHelper create_helper;
+  scoped_ptr<HttpStreamRequest> request1(
+      session->http_stream_factory_for_websocket()
+          ->RequestWebSocketHandshakeStream(request_info,
+                                            DEFAULT_PRIORITY,
+                                            ssl_config,
+                                            ssl_config,
+                                            &waiter1,
+                                            &create_helper,
+                                            BoundNetLog()));
+  waiter1.WaitForStream();
+  EXPECT_TRUE(waiter1.stream_done());
+  ASSERT_TRUE(NULL != waiter1.websocket_stream());
+  EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
+            waiter1.websocket_stream()->type());
+  EXPECT_TRUE(NULL == waiter1.stream());
+
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(0, GetSocketPoolGroupCount(
+      session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetTransportSocketPool(
+                HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_EQ(1, GetSocketPoolGroupCount(
+      session->GetSSLSocketPool(HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
+  EXPECT_TRUE(waiter1.used_proxy_info().is_direct());
+}
+
+// TODO(ricea): Re-enable once WebSocket-over-SPDY is implemented.
+TEST_P(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
@@ -1207,7 +1264,8 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
   EXPECT_TRUE(waiter1.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
+// TODO(ricea): Re-enable once WebSocket over SPDY is implemented.
+TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   UseAlternateProtocolsScopedSetter use_alternate_protocols(true);
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());

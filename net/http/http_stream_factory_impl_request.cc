@@ -318,13 +318,9 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
   // Cache this so we can still use it if the request is deleted.
   HttpStreamFactoryImpl* factory = factory_;
   if (factory->for_websockets_) {
-    DCHECK(websocket_handshake_stream_create_helper_);
-    bool use_relative_url = direct || url().SchemeIs("wss");
-    delegate_->OnWebSocketHandshakeStreamReady(
-        job->server_ssl_config(),
-        job->proxy_info(),
-        websocket_handshake_stream_create_helper_->CreateSpdyStream(
-            spdy_session, use_relative_url));
+    // TODO(ricea): Re-instate this code when WebSockets over SPDY is
+    // implemented.
+    NOTREACHED();
   } else {
     bool use_relative_url = direct || url().SchemeIs("https");
     delegate_->OnStreamReady(
