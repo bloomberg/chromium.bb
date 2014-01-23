@@ -121,7 +121,7 @@ LayoutRect RenderLayerClipper::childrenClipRect() const
     // FIXME: border-radius not accounted for.
     // FIXME: Regions not accounted for.
     RenderView* renderView = m_renderer->view();
-    RenderLayer* clippingRootLayer = m_renderer->layer()->clippingRootForPainting();
+    RenderLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     ClipRectsContext clipRectsContext(clippingRootLayer, 0, TemporaryClipRects);
@@ -135,7 +135,7 @@ LayoutRect RenderLayerClipper::selfClipRect() const
     // FIXME: border-radius not accounted for.
     // FIXME: Regions not accounted for.
     RenderView* renderView = m_renderer->view();
-    RenderLayer* clippingRootLayer = m_renderer->layer()->clippingRootForPainting();
+    RenderLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     ClipRectsContext clipRectsContext(clippingRootLayer, 0, PaintingClipRects);
@@ -147,7 +147,7 @@ LayoutRect RenderLayerClipper::localClipRect() const
 {
     // FIXME: border-radius not accounted for.
     // FIXME: Regions not accounted for.
-    RenderLayer* clippingRootLayer = m_renderer->layer()->clippingRootForPainting();
+    RenderLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     ClipRectsContext clipRectsContext(clippingRootLayer, 0, PaintingClipRects);
@@ -347,6 +347,28 @@ void RenderLayerClipper::parentClipRects(const ClipRectsContext& clipRectsContex
 
     parentClipper.updateClipRects(clipRectsContext);
     clipRects = *parentClipper.clipRects(clipRectsContext);
+}
+
+RenderLayer* RenderLayerClipper::clippingRootForPainting() const
+{
+    if (m_renderer->hasCompositedLayerMapping())
+        return const_cast<RenderLayer*>(m_renderer->layer());
+
+    const RenderLayer* current = m_renderer->layer();
+    while (current) {
+        if (current->isRootLayer())
+            return const_cast<RenderLayer*>(current);
+
+        current = current->compositingContainer();
+        ASSERT(current);
+        if (current->transform()
+            || (current->compositingState() == PaintsIntoOwnBacking)
+        )
+            return const_cast<RenderLayer*>(current);
+    }
+
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 } // namespace WebCore

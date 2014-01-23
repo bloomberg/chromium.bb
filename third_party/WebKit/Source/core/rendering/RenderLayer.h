@@ -105,6 +105,8 @@ public:
     RenderLayer* firstChild() const { return m_first; }
     RenderLayer* lastChild() const { return m_last; }
 
+    const RenderLayer* compositingContainer() const;
+
     void addChild(RenderLayer* newChild, RenderLayer* beforeChild = 0);
     RenderLayer* removeChild(RenderLayer*);
 
@@ -222,9 +224,6 @@ public:
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
     RenderLayer* enclosingPositionedAncestor() const;
-
-    // The layer relative to which clipping rects for this layer are computed.
-    RenderLayer* clippingRootForPainting() const;
 
     RenderLayer* enclosingOverflowClipLayer(IncludeSelfOrNot = IncludeSelf) const;
 

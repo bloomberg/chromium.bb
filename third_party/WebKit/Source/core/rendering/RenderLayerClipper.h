@@ -112,6 +112,9 @@ public:
 private:
     void parentClipRects(const ClipRectsContext&, ClipRects&) const;
 
+    // The layer relative to which clipping rects for this layer are computed.
+    RenderLayer* clippingRootForPainting() const;
+
     // FIXME: Could this be a RenderBox?
     RenderLayerModelObject* m_renderer;
 

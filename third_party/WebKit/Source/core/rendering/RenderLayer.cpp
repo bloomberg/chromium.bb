@@ -1038,9 +1038,9 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
     return curr;
 }
 
-static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
+const RenderLayer* RenderLayer::compositingContainer() const
 {
-    return layer->stackingNode()->isNormalFlowOnly() ? layer->parent() : (layer->stackingNode()->ancestorStackingContainerNode() ? layer->stackingNode()->ancestorStackingContainerNode()->layer() : 0);
+    return stackingNode()->isNormalFlowOnly() ? parent() : (stackingNode()->ancestorStackingContainerNode() ? stackingNode()->ancestorStackingContainerNode()->layer() : 0);
 }
 
 // FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
@@ -1053,7 +1053,7 @@ RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf
     if ((includeSelf == IncludeSelf) && compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking)
         return const_cast<RenderLayer*>(this);
 
-    for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
+    for (const RenderLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->compositingState() != NotComposited && curr->compositingState() != PaintsIntoGroupedBacking)
             return const_cast<RenderLayer*>(curr);
     }
@@ -1066,7 +1066,7 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
     if ((includeSelf == IncludeSelf) && (compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking))
         return const_cast<RenderLayer*>(this);
 
-    for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
+    for (const RenderLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->compositingState() == PaintsIntoOwnBacking || curr->compositingState() == PaintsIntoGroupedBacking)
             return const_cast<RenderLayer*>(curr);
     }
@@ -1124,28 +1124,6 @@ bool RenderLayer::hasAncestorWithFilterOutsets() const
             return true;
     }
     return false;
-}
-
-RenderLayer* RenderLayer::clippingRootForPainting() const
-{
-    if (hasCompositedLayerMapping())
-        return const_cast<RenderLayer*>(this);
-
-    const RenderLayer* current = this;
-    while (current) {
-        if (current->isRootLayer())
-            return const_cast<RenderLayer*>(current);
-
-        current = compositingContainer(current);
-        ASSERT(current);
-        if (current->transform()
-            || (current->compositingState() == PaintsIntoOwnBacking)
-        )
-            return const_cast<RenderLayer*>(current);
-    }
-
-    ASSERT_NOT_REACHED();
-    return 0;
 }
 
 bool RenderLayer::cannotBlitToWindow() const
