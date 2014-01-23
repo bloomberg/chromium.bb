@@ -21,9 +21,7 @@ class CC_EXPORT ResourcePool {
   static scoped_ptr<ResourcePool> Create(ResourceProvider* resource_provider,
                                          GLenum target,
                                          ResourceFormat format) {
-    return make_scoped_ptr(new ResourcePool(resource_provider,
-                                            target,
-                                            format));
+    return make_scoped_ptr(new ResourcePool(resource_provider, target, format));
   }
 
   virtual ~ResourcePool();
@@ -38,9 +36,7 @@ class CC_EXPORT ResourcePool {
   void ReduceResourceUsage();
   void CheckBusyResources();
 
-  size_t total_memory_usage_bytes() const {
-    return memory_usage_bytes_;
-  }
+  size_t total_memory_usage_bytes() const { return memory_usage_bytes_; }
   size_t acquired_memory_usage_bytes() const {
     return memory_usage_bytes_ - unused_memory_usage_bytes_;
   }

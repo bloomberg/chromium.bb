@@ -20,8 +20,7 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
       max_resource_count_(0),
       memory_usage_bytes_(0),
       unused_memory_usage_bytes_(0),
-      resource_count_(0) {
-}
+      resource_count_(0) {}
 
 ResourcePool::~ResourcePool() {
   while (!busy_resources_.empty()) {
@@ -38,7 +37,8 @@ ResourcePool::~ResourcePool() {
 
 scoped_ptr<ScopedResource> ResourcePool::AcquireResource(gfx::Size size) {
   for (ResourceList::iterator it = unused_resources_.begin();
-       it != unused_resources_.end(); ++it) {
+       it != unused_resources_.end();
+       ++it) {
     ScopedResource* resource = *it;
     DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
@@ -69,10 +69,9 @@ void ResourcePool::ReleaseResource(scoped_ptr<ScopedResource> resource) {
   busy_resources_.push_back(resource.release());
 }
 
-void ResourcePool::SetResourceUsageLimits(
-    size_t max_memory_usage_bytes,
-    size_t max_unused_memory_usage_bytes,
-    size_t max_resource_count) {
+void ResourcePool::SetResourceUsageLimits(size_t max_memory_usage_bytes,
+                                          size_t max_unused_memory_usage_bytes,
+                                          size_t max_resource_count) {
   max_memory_usage_bytes_ = max_memory_usage_bytes;
   max_unused_memory_usage_bytes_ = max_unused_memory_usage_bytes;
   max_resource_count_ = max_resource_count;
