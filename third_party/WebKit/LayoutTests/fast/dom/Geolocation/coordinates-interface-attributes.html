@@ -8,6 +8,12 @@
 description("Test the attribute handling of the Coordinates interface");
 window.jsTestIsAsync = true;
 
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
+
 // Format: [Input], [Expected]
 // Input: latitude, longitude, accuracy, providesAltitude, altitude, providesAltitudeAccuracy, altitudeAccuracy, providesHeading, heading, providesSpeed, speed.
 // Expected: latitude, longitude, accuracy, altitude, altitudeAccuracy, heading, speed.
@@ -25,7 +31,7 @@ var globalCoordinates = null;
 function runNextTest()
 {
     ++currentTestIndex;
-    testRunner.setMockGeolocationPosition.apply(testRunner, testSet[currentTestIndex][0]);
+    internals.setGeolocationPosition.apply(internals, [document].concat(testSet[currentTestIndex][0]));
 }
 
 function verifyResults()
@@ -39,11 +45,6 @@ function verifyResults()
     shouldBe('globalCoordinates.speed', 'testSet[currentTestIndex][1][6]');
     debug('');
 }
-
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-} else
-    debug('This test can not be without TestRunner.');
 
 var watchId = navigator.geolocation.watchPosition(function(position) {
     globalCoordinates = position.coords;

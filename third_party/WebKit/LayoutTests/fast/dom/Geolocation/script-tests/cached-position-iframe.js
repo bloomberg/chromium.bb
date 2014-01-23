@@ -1,9 +1,11 @@
 description('Tests that a cached position can be obtained in one frame after another frame has received a fresh position.');
 
-if (window.testRunner) {
-    testRunner.setMockGeolocationPosition(51.478, -0.166, 100);
-    testRunner.setGeolocationPermission(true);
-}
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPosition(document, 51.478, -0.166, 100);
+internals.setGeolocationPermission(document, true);
 
 window.onmessage = function (messageEvent) {
     debug(messageEvent.data.message);

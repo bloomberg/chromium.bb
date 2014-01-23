@@ -1,12 +1,16 @@
 description("Tests that when multiple requests are waiting for permission, no callbacks are invoked until permission is allowed.");
 
-if (window.testRunner)
-    window.testRunner.setMockGeolocationPosition(51.478, -0.166, 100);
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPosition(document, 51.478, -0.166, 100);
+
+var permissionSet = false;
 
 function allowPermission() {
     permissionSet = true;
-    if (window.testRunner)
-        testRunner.setGeolocationPermission(true);
+    internals.setGeolocationPermission(document, true);
 }
 
 var watchCallbackInvoked = false;

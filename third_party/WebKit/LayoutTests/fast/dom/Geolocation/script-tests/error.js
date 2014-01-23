@@ -2,11 +2,12 @@ description("Tests Geolocation error callback using the mock service.");
 
 var mockMessage = "debug";
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPositionUnavailableError(mockMessage);
-} else
-    debug('This test can not be run without the testRunner');
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
+internals.setGeolocationPositionUnavailableError(document, mockMessage);
 
 var error;
 navigator.geolocation.getCurrentPosition(function(p) {

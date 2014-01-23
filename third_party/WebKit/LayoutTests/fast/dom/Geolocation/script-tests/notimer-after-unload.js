@@ -1,6 +1,10 @@
 description("Tests that no timers will trigger for navigator.geolocation object after onunload.");
 
-if (window.testRunner) testRunner.setGeolocationPermission(true);
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
 
 document.body.onload = function() {
     location = "data:text/html,You should have seen one unload alert appear.<script>window.setTimeout('if (window.testRunner) testRunner.notifyDone();', 100);</script>";

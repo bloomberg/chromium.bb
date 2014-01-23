@@ -10,7 +10,6 @@ PASS navigator.geolocation.getCurrentPosition({}) threw exception TypeMismatchEr
 PASS navigator.geolocation.getCurrentPosition(objectThrowingException) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS navigator.geolocation.getCurrentPosition(emptyFunction) did not throw exception.
 PASS navigator.geolocation.getCurrentPosition(Math.abs) did not throw exception.
-PASS navigator.geolocation.getCurrentPosition(testRunner.setGeolocationPermission) did not throw exception.
 PASS navigator.geolocation.getCurrentPosition(true) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS navigator.geolocation.getCurrentPosition(42) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS navigator.geolocation.getCurrentPosition(Infinity) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
@@ -22,7 +21,6 @@ PASS navigator.geolocation.getCurrentPosition(emptyFunction, {}) threw exception
 PASS navigator.geolocation.getCurrentPosition(emptyFunction, objectThrowingException) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS navigator.geolocation.getCurrentPosition(emptyFunction, emptyFunction) did not throw exception.
 PASS navigator.geolocation.getCurrentPosition(emptyFunction, Math.abs) did not throw exception.
-PASS navigator.geolocation.getCurrentPosition(emptyFunction, testRunner.setGeolocationPermission) did not throw exception.
 PASS navigator.geolocation.getCurrentPosition(emptyFunction, true) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS navigator.geolocation.getCurrentPosition(emptyFunction, 42) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
 PASS navigator.geolocation.getCurrentPosition(emptyFunction, Infinity) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..

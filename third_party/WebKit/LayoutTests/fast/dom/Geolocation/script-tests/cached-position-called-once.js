@@ -1,9 +1,11 @@
 description('Tests that when a cached position is available the callback for getCurrentPosition is called only once. This is a regression test for http://crbug.com/311876 .');
 
-if (window.testRunner) {
-    testRunner.setMockGeolocationPosition(31.478, -0.166, 100);
-    testRunner.setGeolocationPermission(true);
-}
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPosition(document, 31.478, -0.166, 100);
+internals.setGeolocationPermission(document, true);
 
 // Only one success callback should be reported per call to getCurrentPosition.
 var reportCount = 0;

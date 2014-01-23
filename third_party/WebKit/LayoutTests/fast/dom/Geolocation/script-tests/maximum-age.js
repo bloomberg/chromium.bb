@@ -24,11 +24,12 @@ function checkError(e) {
     shouldBe('error.message', 'mockMessage');
 }
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
-} else
-    debug('This test can not be run without the testRunner');
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
+internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
 
 // Initialize the cached Position
 navigator.geolocation.getCurrentPosition(function(p) {
@@ -41,8 +42,7 @@ navigator.geolocation.getCurrentPosition(function(p) {
 
 function testZeroMaximumAge() {
     // Update the position provided by the mock service.
-    if (window.testRunner)
-        testRunner.setMockGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
+    internals.setGeolocationPosition(document, ++mockLatitude, ++mockLongitude, ++mockAccuracy);
     // The default maximumAge is zero, so we expect the updated position from the service.
     navigator.geolocation.getCurrentPosition(function(p) {
         checkPosition(p);
@@ -55,8 +55,7 @@ function testZeroMaximumAge() {
 
 function testNonZeroMaximumAge() {
     // Update the mock service to report an error.
-    if (window.testRunner)
-        testRunner.setMockGeolocationPositionUnavailableError(mockMessage);
+    internals.setGeolocationPositionUnavailableError(document, mockMessage);
     // The maximumAge is non-zero, so we expect the cached position, not the error from the service.
     navigator.geolocation.getCurrentPosition(function(p) {
         checkPosition(p);

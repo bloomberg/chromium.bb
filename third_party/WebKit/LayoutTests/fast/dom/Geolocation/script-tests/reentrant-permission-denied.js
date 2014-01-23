@@ -1,10 +1,11 @@
 description("Tests that reentrant calls to Geolocation methods from the error callback due to a PERMISSION_DENIED error are OK.");
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(false);
-    testRunner.setMockGeolocationPosition(51.478, -0.166, 100.0);
-} else
-    debug('This test can not be run without the testRunner');
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, false);
+internals.setGeolocationPosition(document, 51.478, -0.166, 100.0);
 
 var error;
 function checkPermissionError(e) {

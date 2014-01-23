@@ -778,10 +778,15 @@
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_support_dependency_idl_files' : [
+      'geolocation/testing/InternalsGeolocation.idl',
       'speech/testing/InternalsSpeechSynthesis.idl',
       'vibration/testing/InternalsVibration.idl',
     ],
     'modules_testing_support_files': [
+      'geolocation/testing/InternalsGeolocation.cpp',
+      'geolocation/testing/InternalsGeolocation.h',
+      'geolocation/testing/GeolocationClientMock.h',
+      'geolocation/testing/GeolocationClientMock.cpp',
       'speech/testing/InternalsSpeechSynthesis.cpp',
       'speech/testing/InternalsSpeechSynthesis.h',
       'speech/testing/PlatformSpeechSynthesizerMock.cpp',

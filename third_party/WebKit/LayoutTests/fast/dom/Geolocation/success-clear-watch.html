@@ -11,13 +11,14 @@ var mockLatitude = 51.478;
 var mockLongitude = -0.166;
 var mockAccuracy = 100;
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPosition(mockLatitude,
-                                          mockLongitude,
-                                          mockAccuracy);
-} else
-    debug('This test can not be run without the LayoutTestController');
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationPermission(document, true);
+internals.setGeolocationPosition(document,
+                                 mockLatitude,
+                                 mockLongitude,
+                                 mockAccuracy);
 
 var watchId = navigator.geolocation.watchPosition(function() {
     navigator.geolocation.clearWatch(watchId);

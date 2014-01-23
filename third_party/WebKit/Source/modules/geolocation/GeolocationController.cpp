@@ -36,6 +36,9 @@ namespace WebCore {
 GeolocationController::GeolocationController(Page* page, GeolocationClient* client)
     : PageLifecycleObserver(page)
     , m_client(client)
+#ifndef NDEBUG
+    , m_hasClientForTest(false)
+#endif
     , m_isClientUpdating(false)
 {
 }
@@ -145,6 +148,14 @@ GeolocationPosition* GeolocationController::lastPosition()
         return 0;
 
     return m_client->lastPosition();
+}
+
+void GeolocationController::setClientForTest(GeolocationClient* client)
+{
+    m_client = client;
+#ifndef NDEBUG
+    m_hasClientForTest = true;
+#endif
 }
 
 void GeolocationController::pageVisibilityChanged()

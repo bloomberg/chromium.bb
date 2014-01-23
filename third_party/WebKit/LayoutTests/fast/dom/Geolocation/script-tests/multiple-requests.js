@@ -4,13 +4,12 @@ var mockLatitude = 51.478;
 var mockLongitude = -0.166;
 var mockAccuracy = 100;
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPosition(mockLatitude,
-                                                    mockLongitude,
-                                                    mockAccuracy);
-} else
-    debug('This test can not be run without the testRunner');
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
+internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
 
 var watchCallbackInvoked = false;
 var oneShotCallbackInvoked = false;

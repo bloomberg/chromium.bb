@@ -4,12 +4,12 @@ var mockLongitude = -0.166;
 var mockAccuracy = 100.0;
 
 function loadNext() {
-    var geolocation = navigator.geolocation;
+    if (!window.testRunner || !window.internals)
+        debug('This test can not run without testRunner or internals');
 
-    if (window.testRunner) {
-       testRunner.setGeolocationPermission(true);
-       testRunner.setMockGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
-    }
+    internals.setGeolocationClientMock(document);
+    internals.setGeolocationPermission(document, true);
+    internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
 
     navigator.geolocation.watchPosition(window.opener.gotPosition);
 }

@@ -24,24 +24,23 @@ function checkError(e) {
     debug('');
 }
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
-} else
-    debug('This test can not be run without the testRunner');
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
+internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
 
 var state = 0;
 navigator.geolocation.watchPosition(function(p) {
     switch (state++) {
         case 0:
             checkPosition(p);
-            if (window.testRunner)
-                testRunner.setMockGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
+            internals.setGeolocationPosition(document, ++mockLatitude, ++mockLongitude, ++mockAccuracy);
             break;
         case 1:
             checkPosition(p);
-            if (window.testRunner)
-                testRunner.setMockGeolocationPositionUnavailableError(mockMessage);
+            internals.setGeolocationPositionUnavailableError(document, mockMessage);
             break;
         case 3:
             checkPosition(p);
@@ -55,8 +54,7 @@ navigator.geolocation.watchPosition(function(p) {
     switch (state++) {
         case 2:
             checkError(e);
-            if (window.testRunner)
-                testRunner.setMockGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
+            internals.setGeolocationPosition(document, ++mockLatitude, ++mockLongitude, ++mockAccuracy);
             break;
         default:
             testFailed('Error callback invoked unexpectedly');

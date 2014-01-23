@@ -1,9 +1,11 @@
 description("Tests that when a request is made on a Geolocation object and its Frame is disconnected before a callback is made, no callbacks are made.");
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPosition(51.478, -0.166, 100);
-}
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
+internals.setGeolocationPosition(document, 51.478, -0.166, 100);
 
 function onIframeLoaded() {
     iframeGeolocation = iframe.contentWindow.navigator.geolocation;

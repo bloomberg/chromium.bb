@@ -1,11 +1,13 @@
 description("Tests that when Geolocation permission has been denied prior to a call to a Geolocation method, the error callback is invoked with code PERMISSION_DENIED, when the Geolocation service has a good position.");
 
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+
 // Prime the Geolocation instance by denying permission.
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(false);
-    testRunner.setMockGeolocationPosition(51.478, -0.166, 100);
-} else
-    debug('This test can not be run without the testRunner');
+internals.setGeolocationPermission(document, false);
+internals.setGeolocationPosition(document, 51.478, -0.166, 100);
 
 var error;
 navigator.geolocation.getCurrentPosition(function(p) {

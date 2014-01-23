@@ -3,8 +3,11 @@
   <head>
     <script>
       function init() {
-          if (window.testRunner)
-              testRunner.setGeolocationPermission(false);
+          if (!window.testRunner || !window.internals)
+              debug('This test can not run without testRunner or internals');
+
+          internals.setGeolocationClientMock(document);
+          internals.setGeolocationPermission(document, false);
           window.parent.onIframeReady()
       }
     </script>

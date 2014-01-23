@@ -58,6 +58,12 @@ public:
 
     GeolocationPosition* lastPosition();
 
+    void setClientForTest(GeolocationClient*);
+#ifndef NDEBUG
+    bool hasClientForTest() { return m_hasClientForTest; }
+#endif
+    GeolocationClient* client() { return m_client; }
+
     // Inherited from PageLifecycleObserver.
     virtual void pageVisibilityChanged() OVERRIDE;
 
@@ -71,6 +77,9 @@ private:
     void stopUpdatingIfNeeded();
 
     GeolocationClient* m_client;
+#ifndef NDEBUG
+    bool m_hasClientForTest;
+#endif
 
     RefPtr<GeolocationPosition> m_lastPosition;
     typedef HashSet<RefPtr<Geolocation> > ObserversSet;

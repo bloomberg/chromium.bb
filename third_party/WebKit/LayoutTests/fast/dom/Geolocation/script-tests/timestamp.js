@@ -9,10 +9,12 @@ shouldBeTrue('now != 0');
 var t = null;
 var then = null;
 
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(true);
-    testRunner.setMockGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
-}
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+internals.setGeolocationPermission(document, true);
+internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
 
 function checkPosition(p) {
     t = p.timestamp;

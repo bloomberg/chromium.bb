@@ -9,13 +9,15 @@ var isReload = false;
 if ("#reload" == location.hash)
     isReload = true;
 
-if (window.testRunner) {
-    numPendingRequests = testRunner.numberOfPendingGeolocationPermissionRequests();
-    shouldBe('numPendingRequests', '0');
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
 
-    if (isReload)
-        finishJSTest();
-}
+internals.setGeolocationClientMock(document);
+numPendingRequests = internals.numberOfPendingGeolocationPermissionRequests(document);
+shouldBe('numPendingRequests', '0');
+
+if (isReload)
+    finishJSTest();
 
 if (!isReload) {
     // Kick off a position request and then reload the page, this should set up

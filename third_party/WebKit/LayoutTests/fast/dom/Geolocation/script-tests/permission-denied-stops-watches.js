@@ -1,12 +1,14 @@
 description("Tests that when Geolocation permission is denied, watches are stopped, as well as one-shots.");
 
+if (!window.testRunner || !window.internals)
+    debug('This test can not run without testRunner or internals');
+
+internals.setGeolocationClientMock(document);
+
 // Configure the mock Geolocation service to report a position to cause permission
 // to be requested, then deny it.
-if (window.testRunner) {
-    testRunner.setGeolocationPermission(false);
-    testRunner.setMockGeolocationPosition(51.478, -0.166, 100.0);
-} else
-    debug('This test can not be run without the testRunner');
+internals.setGeolocationPermission(document, false);
+internals.setGeolocationPosition(document, 51.478, -0.166, 100.0);
 
 var error;
 var errorCallbackInvoked = false;
@@ -26,8 +28,7 @@ navigator.geolocation.watchPosition(function(p) {
 
     // Update the mock Geolocation service to report a new position, then
     // yield to allow a chance for the success callback to be invoked.
-    if (window.testRunner)
-        testRunner.setMockGeolocationPosition(55.478, -0.166, 100);
+    internals.setGeolocationPosition(document, 55.478, -0.166, 100);
     window.setTimeout(finishJSTest, 0);
 });
 
