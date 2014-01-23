@@ -53,7 +53,7 @@ import jinja2
 templates_dir = os.path.join(module_path, os.pardir, os.pardir, 'templates')
 
 import v8_callback_interface
-from v8_globals import includes
+from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
@@ -64,6 +64,9 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
         interface = definitions.interfaces[interface_name]
     except KeyError:
         raise Exception('%s not in IDL definitions' % interface_name)
+
+    # Store other interfaces for introspection
+    interfaces.update(definitions.interfaces)
 
     # Set up Jinja
     if interface.is_callback:

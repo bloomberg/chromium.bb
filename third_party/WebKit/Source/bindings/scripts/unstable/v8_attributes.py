@@ -35,7 +35,7 @@ Until then, please work on the Perl IDL compiler.
 For details, see bug http://crbug.com/239771
 """
 
-from v8_globals import includes
+from v8_globals import includes, interfaces
 import v8_types
 import v8_utilities
 from v8_utilities import capitalize, cpp_name, has_extended_attribute, uncapitalize
@@ -118,6 +118,7 @@ def generate_attribute(interface, attribute):
         'name': attribute.name,
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'property_attributes': property_attributes(attribute),
+        'put_forwards': 'PutForwards' in extended_attributes,
         'setter_callback': setter_callback_name(interface, attribute),
         'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
@@ -130,12 +131,9 @@ def generate_attribute(interface, attribute):
         return contents
     if not has_custom_getter:
         generate_getter(interface, attribute, contents)
-    if not(attribute.is_read_only or has_custom_setter):
-        contents.update({
-            'cpp_setter': setter_expression(interface, attribute, contents),
-            'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
-                idl_type, extended_attributes, 'jsValue', 'cppValue'),
-        })
+    if (not has_custom_setter and
+        (not attribute.is_read_only or 'PutForwards' in extended_attributes)):
+        generate_setter(interface, attribute, contents)
 
     return contents
 
@@ -248,13 +246,41 @@ def is_keep_alive_for_gc(interface, attribute):
 # Setter
 ################################################################################
 
+def generate_setter(interface, attribute, contents):
+    extended_attributes = attribute.extended_attributes
+
+    if 'PutForwards' in extended_attributes:
+        target_interface_name = attribute.idl_type
+        target_attribute_name = extended_attributes['PutForwards']
+        target_interface = interfaces[target_interface_name]
+        try:
+            target_attribute = next(attribute
+                                    for attribute in target_interface.attributes
+                                    if attribute.name == target_attribute_name)
+        except StopIteration:
+            raise Exception('[PutForward] target not found:\n'
+                            'Attribute "%s" is not present in interface "%s"' %
+                            (target_attribute_name, target_interface_name))
+        # For setter expression, overwrite attribute name and IDL type with
+        # values of target attribute
+        attribute.name = target_attribute_name
+        attribute.idl_type = target_attribute.idl_type
+
+    contents.update({
+        'cpp_setter': setter_expression(interface, attribute, contents),
+        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
+            attribute.idl_type, extended_attributes, 'jsValue', 'cppValue'),
+    })
+
+
 def setter_expression(interface, attribute, contents):
-    arguments = v8_utilities.call_with_arguments(attribute, attribute.extended_attributes.get('SetterCallWith'))
+    extended_attributes = attribute.extended_attributes
+    arguments = v8_utilities.call_with_arguments(attribute, extended_attributes.get('SetterCallWith'))
 
     this_setter_base_name = setter_base_name(attribute, arguments)
     setter_name = v8_utilities.scoped_name(interface, attribute, this_setter_base_name)
 
-    if ('ImplementedBy' in attribute.extended_attributes and
+    if ('ImplementedBy' in extended_attributes and
         not attribute.is_static):
         arguments.append('imp')
     idl_type = attribute.idl_type
@@ -309,12 +335,12 @@ def scoped_content_attribute_name(attribute):
 # [Replaceable]
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
-    if ('Replaceable' in attribute.extended_attributes or
+    extended_attributes = attribute.extended_attributes
+    if ('Replaceable' in extended_attributes or
         is_constructor_attribute(attribute)):
         # FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors
         return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
-    # FIXME: support [PutForwards]
-    if attribute.is_read_only:
+    if attribute.is_read_only and 'PutForwards' not in extended_attributes:
         return '0'
     return '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_name, attribute.name)
 

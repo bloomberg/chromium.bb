@@ -211,6 +211,17 @@ def get_interface_extended_attributes_from_idl(file_contents):
     return extended_attributes
 
 
+def get_put_forward_interfaces_from_idl(file_contents):
+    put_forwards_pattern = (r'\[[^\]]*PutForwards=[^\]]*\]\s+'
+                            r'readonly\s+'
+                            r'attribute\s+'
+                            r'(\w+)')
+    return sorted(set(match.group(1)
+                      for match in re.finditer(put_forwards_pattern,
+                                               file_contents,
+                                               flags=re.DOTALL)))
+
+
 ################################################################################
 # Write files
 ################################################################################
@@ -315,6 +326,7 @@ def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_p
 
 
 def generate_dependencies(idl_filename):
+    """Compute dependencies for IDL file, returning True if main (non-partial) interface"""
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
 
@@ -330,7 +342,7 @@ def generate_dependencies(idl_filename):
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
     if partial_interface_name:
         add_paths_to_partials_dict(partial_interface_name, full_path, this_include_path)
-        return partial_interface_name
+        return False
 
     # If not a partial interface, the basename is the interface name
     interface_name, _ = os.path.splitext(os.path.basename(idl_filename))
@@ -341,13 +353,20 @@ def generate_dependencies(idl_filename):
         'full_path': full_path,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
         'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
+        # Interfaces that are referenced (used as types) and that we introspect
+        # during code generation (beyond interface-level data ([ImplementedAs],
+        # is_callback_interface, ancestors, and inherited extended attributes):
+        # deep dependencies.
+        # These cause rebuilds of referrers, due to the dependency, so these
+        # should be minimized; currently only targets of [PutForwards].
+        'referenced_interfaces': get_put_forward_interfaces_from_idl(idl_file_contents),
     }
     if this_include_path:
         interfaces_info[interface_name]['include_path'] = this_include_path
     if implemented_as:
         interfaces_info[interface_name]['implemented_as'] = implemented_as
 
-    return None
+    return True
 
 
 def remove_interfaces_implemented_somewhere():
@@ -470,7 +489,7 @@ def parse_idl_files(idl_files, global_constructors_filenames):
     # global_constructors and extended_attributes_by_interface.
     for idl_filename in idl_files:
         # Test skips partial interfaces
-        if not generate_dependencies(idl_filename):
+        if generate_dependencies(idl_filename):
             record_global_constructors_and_extended_attributes(idl_filename, global_constructors)
 
     for interface_name in parent_interfaces:

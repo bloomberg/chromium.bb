@@ -146,7 +146,12 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
         return;
     }
     {% endif %}
-    {% if not attribute.is_static %}
+    {% if attribute.put_forwards %}
+    {{cpp_class}}* proxyImp = {{v8_class}}::toNative(info.Holder());
+    {{attribute.idl_type}}* imp = proxyImp->{{attribute.name}}();
+    if (!imp)
+        return;
+    {% elif not attribute.is_static %}
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
