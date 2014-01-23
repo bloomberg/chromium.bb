@@ -18,6 +18,7 @@ import multiprocessing
 import os
 import poster
 import random
+import socket
 import textwrap
 import tempfile
 import time
@@ -143,6 +144,7 @@ def TestingSymUpload(sym_file, upload_url):
                                         returncode=returncode)
   if returncode:
     exceptions = (
+        socket.error('[socket.error] forced test fail'),
         httplib.BadStatusLine('[BadStatusLine] forced test fail'),
         urllib2.HTTPError(upload_url, 400, '[HTTPError] forced test fail',
                           {}, None),
@@ -261,7 +263,7 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     except urllib2.HTTPError as e:
       cros_build_lib.Warning('could not upload: %s: HTTP %s: %s',
                              os.path.basename(sym_file), e.code, e.reason)
-    except (urllib2.URLError, httplib.HTTPException) as e:
+    except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
       cros_build_lib.Warning('could not upload: %s: %s',
                              os.path.basename(sym_file), e)
     finally:
