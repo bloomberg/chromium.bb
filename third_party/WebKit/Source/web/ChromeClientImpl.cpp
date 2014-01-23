@@ -85,7 +85,6 @@
 #include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderWidget.h"
-#include "modules/geolocation/Geolocation.h"
 #include "platform/ColorChooser.h"
 #include "platform/ColorChooserClient.h"
 #include "platform/Cursor.h"

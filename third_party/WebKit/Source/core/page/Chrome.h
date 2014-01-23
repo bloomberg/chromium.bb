@@ -38,7 +38,6 @@ class DateTimeChooserClient;
 class FileChooser;
 class FloatRect;
 class Frame;
-class Geolocation;
 class HTMLInputElement;
 class HitTestResult;
 class IntRect;
