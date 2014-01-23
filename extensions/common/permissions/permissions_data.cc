@@ -572,18 +572,6 @@ bool PermissionsData::ParsePermissions(Extension* extension,
     return false;
   }
 
-  // TODO(jeremya/kalman) do this via the features system by exposing the
-  // app.window API to platform apps, with no dependency on any permissions.
-  // See http://crbug.com/120069.
-  if (extension->is_platform_app()) {
-    initial_required_permissions_->api_permissions.insert(
-        APIPermission::kAppCurrentWindowInternal);
-    initial_required_permissions_->api_permissions.insert(
-        APIPermission::kAppRuntime);
-    initial_required_permissions_->api_permissions.insert(
-        APIPermission::kAppWindow);
-  }
-
   initial_optional_permissions_.reset(new InitialPermissions);
   if (!ParseHelper(extension,
                    keys::kOptionalPermissions,

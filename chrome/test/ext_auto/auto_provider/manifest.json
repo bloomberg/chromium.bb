@@ -12,8 +12,6 @@
   "permissions": [
      "activeTab",
      "alarms",
-     "app.runtime",
-     "app.window",
      "audioCapture",
      "autotestPrivate",
      "background",

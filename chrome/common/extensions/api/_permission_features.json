@@ -54,14 +54,6 @@
       ]
     }
   ],
-  "app.runtime": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
-  "app.window": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
   "audio": [
     {
       "channel": "dev",
