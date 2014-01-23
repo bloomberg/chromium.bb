@@ -37,6 +37,7 @@ QuicHttpStream::QuicHttpStream(const base::WeakPtr<QuicClientSession>& session)
       response_status_(OK),
       response_headers_received_(false),
       read_buf_(new GrowableIOBuffer()),
+      closed_stream_received_bytes_(0),
       user_buffer_len_(0),
       weak_factory_(this) {
   DCHECK(session_);
@@ -206,6 +207,7 @@ int QuicHttpStream::ReadResponseBody(
 void QuicHttpStream::Close(bool not_reusable) {
   // Note: the not_reusable flag has no meaning for SPDY streams.
   if (stream_) {
+    closed_stream_received_bytes_ = stream_->stream_bytes_read();
     stream_->SetDelegate(NULL);
     stream_->Reset(QUIC_STREAM_CANCELLED);
     stream_ = NULL;
@@ -239,8 +241,11 @@ bool QuicHttpStream::IsConnectionReusable() const {
 }
 
 int64 QuicHttpStream::GetTotalReceivedBytes() const {
-  // TODO(eustas): Implement.
-  return 0;
+  if (stream_) {
+    return stream_->stream_bytes_read();
+  }
+
+  return closed_stream_received_bytes_;
 }
 
 bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
@@ -320,6 +325,7 @@ void QuicHttpStream::OnClose(QuicErrorCode error) {
     response_status_ = ERR_ABORTED;
   }
 
+  closed_stream_received_bytes_ = stream_->stream_bytes_read();
   stream_ = NULL;
   if (!callback_.is_null())
     DoCallback(response_status_);

@@ -145,6 +145,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   // TODO(rch): This is infinite buffering, which is bad.
   std::list<scoped_refptr<IOBufferWithSize> > response_body_;
 
+  // Number of bytes received when the stream was closed.
+  int64 closed_stream_received_bytes_;
+
   // The caller's callback to be used for asynchronous operations.
   CompletionCallback callback_;
 
