@@ -107,13 +107,12 @@ def RunCppTests(cpp_tests):
 def DownloadChrome(version_name, revision, download_site):
   util.MarkBuildStepStart('download %s' % version_name)
   try:
-    return archive.DownloadChrome(revision, util.MakeTempDir(), download_site)
+    temp_dir = util.MakeTempDir()
+    return (temp_dir, archive.DownloadChrome(revision, temp_dir, download_site))
   except Exception:
     traceback.print_exc()
     util.AddBuildStepText('Skip Java and Python tests')
     util.MarkBuildStepError()
-  temp_dir = util.MakeTempDir()
-  return (temp_dir, archive.DownloadChrome(revision, temp_dir, download_site))
 
 
 def _KillChromes():
