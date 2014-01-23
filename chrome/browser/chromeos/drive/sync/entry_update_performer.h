@@ -24,6 +24,7 @@ namespace drive {
 
 class JobScheduler;
 class ResourceEntry;
+struct ClientContext;
 
 namespace file_system {
 class OperationObserver;
@@ -49,17 +50,20 @@ class EntryUpdatePerformer {
   // Invokes |callback| when finished with the result of the operation.
   // |callback| must not be null.
   void UpdateEntry(const std::string& local_id,
+                   const ClientContext& context,
                    const FileOperationCallback& callback);
 
  private:
   // Part of UpdateEntry(). Called after local metadata look up.
-  void UpdateEntryAfterPrepare(const FileOperationCallback& callback,
+  void UpdateEntryAfterPrepare(const ClientContext& context,
+                               const FileOperationCallback& callback,
                                scoped_ptr<ResourceEntry> entry,
                                scoped_ptr<ResourceEntry> parent_entry,
                                FileError error);
 
   // Part of UpdateEntry(). Called after UpdateResource is completed.
   void UpdateEntryAfterUpdateResource(
+      const ClientContext& context,
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::GDataErrorCode status,

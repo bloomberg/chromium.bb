@@ -26,6 +26,7 @@ namespace drive {
 
 class JobScheduler;
 class ResourceEntry;
+struct ClientContext;
 
 namespace file_system {
 class OperationObserver;
@@ -49,11 +50,13 @@ class EntryRevertPerformer {
   // Invokes |callback| when finished with the result of the operation.
   // |callback| must not be null.
   void RevertEntry(const std::string& local_id,
+                   const ClientContext& context,
                    const FileOperationCallback& callback);
 
  private:
   // Part of RevertEntry(). Called after local metadata look up.
-  void RevertEntryAfterPrepare(const FileOperationCallback& callback,
+  void RevertEntryAfterPrepare(const ClientContext& context,
+                               const FileOperationCallback& callback,
                                scoped_ptr<ResourceEntry> entry,
                                FileError error);
 

@@ -64,7 +64,7 @@ class SyncClient {
   void AddUploadTask(const ClientContext& context, const std::string& local_id);
 
   // Adds a update task.
-  void AddUpdateTask(const std::string& local_id);
+  void AddUpdateTask(const ClientContext& context, const std::string& local_id);
 
   // Starts processing the backlog (i.e. pinned-but-not-filed files and
   // dirty-but-not-uploaded files). Kicks off retrieval of the local
@@ -118,7 +118,8 @@ class SyncClient {
                              const base::TimeDelta& delay);
 
   // Adds a UPDATE task.
-  void AddUpdateTaskInternal(const std::string& local_id,
+  void AddUpdateTaskInternal(const ClientContext& context,
+                             const std::string& local_id,
                              const base::TimeDelta& delay);
 
   // Adds the given task. If the same task is found, does nothing.

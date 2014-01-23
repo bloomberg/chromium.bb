@@ -96,6 +96,7 @@ EntryUpdatePerformer::~EntryUpdatePerformer() {
 }
 
 void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
+                                       const ClientContext& context,
                                        const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -110,12 +111,13 @@ void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
       base::Bind(&PrepareUpdate,
                  metadata_, local_id, entry_ptr, parent_entry_ptr),
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterPrepare,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
+                 weak_ptr_factory_.GetWeakPtr(), context, callback,
                  base::Passed(&entry),
                  base::Passed(&parent_entry)));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterPrepare(
+    const ClientContext& context,
     const FileOperationCallback& callback,
     scoped_ptr<ResourceEntry> entry,
     scoped_ptr<ResourceEntry> parent_entry,
@@ -130,7 +132,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
 
   // Trashed entry should be removed.
   if (entry->parent_local_id() == util::kDriveTrashDirLocalId) {
-    remove_performer_->Remove(entry->local_id(), callback);
+    remove_performer_->Remove(entry->local_id(), context, callback);
     return;
   }
 
@@ -146,12 +148,14 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   scheduler_->UpdateResource(
       entry->resource_id(), parent_entry->resource_id(),
       entry->title(), last_modified, last_accessed,
-      ClientContext(BACKGROUND),
+      context,
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
-                 weak_ptr_factory_.GetWeakPtr(), callback, entry->local_id()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 context, callback, entry->local_id()));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
+    const ClientContext& context,
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::GDataErrorCode status,
@@ -160,7 +164,7 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
 
   if (status == google_apis::HTTP_FORBIDDEN) {
     // Editing this entry is not allowed, revert local changes.
-    entry_revert_performer_->RevertEntry(local_id, callback);
+    entry_revert_performer_->RevertEntry(local_id, context, callback);
     return;
   }
 

@@ -24,6 +24,7 @@ namespace drive {
 
 class JobScheduler;
 class ResourceEntry;
+struct ClientContext;
 
 namespace file_system {
 class OperationObserver;
@@ -49,32 +50,38 @@ class RemovePerformer {
   //
   // |callback| must not be null.
   void Remove(const std::string& local_id,
+              const ClientContext& context,
               const FileOperationCallback& callback);
 
  private:
   // Part of Remove(). Called after GetResourceEntry() completion.
-  void RemoveAfterGetResourceEntry(const FileOperationCallback& callback,
+  void RemoveAfterGetResourceEntry(const ClientContext& context,
+                                   const FileOperationCallback& callback,
                                    const ResourceEntry* entry,
                                    FileError error);
 
   // Requests the server to move the specified resource to the trash.
-  void TrashResource(const FileOperationCallback& callback,
+  void TrashResource(const ClientContext& context,
+                     const FileOperationCallback& callback,
                      const std::string& resource_id,
                      const std::string& local_id);
 
   // Part of TrashResource(). Called after server-side removal is done.
   void TrashResourceAfterUpdateRemoteState(
+      const ClientContext& context,
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::GDataErrorCode status);
 
   // Requests the server to detach the specified resource from its parent.
-  void UnparentResource(const FileOperationCallback& callback,
+  void UnparentResource(const ClientContext& context,
+                        const FileOperationCallback& callback,
                         const std::string& resource_id,
                         const std::string& local_id);
 
   // Part of UnparentResource().
   void UnparentResourceAfterGetResourceEntry(
+      const ClientContext& context,
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::GDataErrorCode status,

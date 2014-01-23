@@ -6,6 +6,7 @@
 
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
@@ -68,6 +69,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry) {
   error = FILE_ERROR_FAILED;
   performer_->UpdateEntry(
       src_entry.local_id(),
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -98,7 +100,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_NotFound) {
   const std::string id = "this ID should result in NOT_FOUND";
   FileError error = FILE_ERROR_FAILED;
   performer_->UpdateEntry(
-      id, google_apis::test_util::CreateCopyResultCallback(&error));
+      id, ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }

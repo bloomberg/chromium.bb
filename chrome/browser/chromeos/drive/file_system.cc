@@ -777,7 +777,7 @@ void FileSystem::OnCacheFileUploadNeededByOperation(
 }
 
 void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
-  sync_client_->AddUpdateTask(local_id);
+  sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id);
 }
 
 void FileSystem::OnDriveSyncError(file_system::DriveSyncErrorType type,

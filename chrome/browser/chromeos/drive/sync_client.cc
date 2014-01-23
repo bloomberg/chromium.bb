@@ -228,9 +228,10 @@ void SyncClient::AddUploadTask(const ClientContext& context,
   AddUploadTaskInternal(context, local_id, delay_);
 }
 
-void SyncClient::AddUpdateTask(const std::string& local_id) {
+void SyncClient::AddUpdateTask(const ClientContext& context,
+                               const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddUpdateTaskInternal(local_id, base::TimeDelta::FromSeconds(0));
+  AddUpdateTaskInternal(context, local_id, base::TimeDelta::FromSeconds(0));
 }
 
 void SyncClient::AddFetchTaskInternal(const std::string& local_id,
@@ -268,13 +269,15 @@ void SyncClient::AddUploadTaskInternal(const ClientContext& context,
   AddTask(SyncTasks::key_type(UPLOAD, local_id), task, delay);
 }
 
-void SyncClient::AddUpdateTaskInternal(const std::string& local_id,
+void SyncClient::AddUpdateTaskInternal(const ClientContext& context,
+                                       const std::string& local_id,
                                        const base::TimeDelta& delay) {
   SyncTask task;
   task.task = base::Bind(
       &EntryUpdatePerformer::UpdateEntry,
       base::Unretained(entry_update_performer_.get()),
       local_id,
+      context,
       base::Bind(&SyncClient::OnUpdateComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_id));
@@ -348,7 +351,7 @@ void SyncClient::OnGetLocalIdsOfBacklog(
   for (size_t i = 0; i < to_update->size(); ++i) {
     const std::string& local_id = (*to_update)[i];
     DVLOG(1) << "Queuing to update: " << local_id;
-    AddUpdateTask(local_id);
+    AddUpdateTask(ClientContext(BACKGROUND), local_id);
   }
 }
 
@@ -465,11 +468,12 @@ void SyncClient::OnUpdateComplete(const std::string& local_id,
     switch (error) {
       case FILE_ERROR_NO_CONNECTION:
         // Add the task again so that we'll retry once the connection is back.
-        AddUpdateTaskInternal(local_id, base::TimeDelta::FromSeconds(0));
+        AddUpdateTaskInternal(ClientContext(BACKGROUND), local_id,
+                              base::TimeDelta::FromSeconds(0));
         break;
       case FILE_ERROR_SERVICE_UNAVAILABLE:
         // Add the task again so that we'll retry once the service is back.
-        AddUpdateTaskInternal(local_id, long_delay_);
+        AddUpdateTaskInternal(ClientContext(BACKGROUND), local_id, long_delay_);
         operation_observer_->OnDriveSyncError(
             file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
             local_id);

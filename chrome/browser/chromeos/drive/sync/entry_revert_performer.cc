@@ -85,6 +85,7 @@ EntryRevertPerformer::~EntryRevertPerformer() {
 }
 
 void EntryRevertPerformer::RevertEntry(const std::string& local_id,
+                                       const ClientContext& context,
                                        const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -97,11 +98,12 @@ void EntryRevertPerformer::RevertEntry(const std::string& local_id,
       base::Bind(&ResourceMetadata::GetResourceEntryById,
                  base::Unretained(metadata_), local_id, entry_ptr),
       base::Bind(&EntryRevertPerformer::RevertEntryAfterPrepare,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
+                 weak_ptr_factory_.GetWeakPtr(), context, callback,
                  base::Passed(&entry)));
 }
 
 void EntryRevertPerformer::RevertEntryAfterPrepare(
+    const ClientContext& context,
     const FileOperationCallback& callback,
     scoped_ptr<ResourceEntry> entry,
     FileError error) {
@@ -115,7 +117,7 @@ void EntryRevertPerformer::RevertEntryAfterPrepare(
 
   scheduler_->GetResourceEntry(
       entry->resource_id(),
-      ClientContext(BACKGROUND),
+      context,
       base::Bind(&EntryRevertPerformer::RevertEntryAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(), callback, entry->local_id()));
 }

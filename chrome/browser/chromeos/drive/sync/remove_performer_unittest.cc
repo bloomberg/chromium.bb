@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
 
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -27,6 +28,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
   FileError error = FILE_ERROR_FAILED;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &entry));
   performer.Remove(entry.local_id(),
+                   ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -37,6 +39,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
   const std::string resource_id = entry.resource_id();
 
   performer.Remove(entry.local_id(),
+                   ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -55,6 +58,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
   // Try removing non-existing file.
   error = FILE_ERROR_FAILED;
   performer.Remove("non-existing-id",
+                   ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
@@ -89,6 +93,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kPathInMyDrive, &entry));
   FileError error = FILE_ERROR_FAILED;
   performer.Remove(entry.local_id(),
+                   ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

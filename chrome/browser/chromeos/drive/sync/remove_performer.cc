@@ -68,6 +68,7 @@ RemovePerformer::~RemovePerformer() {
 }
 
 void RemovePerformer::Remove(const std::string& local_id,
+                             const ClientContext& context,
                              const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -82,11 +83,13 @@ void RemovePerformer::Remove(const std::string& local_id,
                  entry),
       base::Bind(&RemovePerformer::RemoveAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
+                 context,
                  callback,
                  base::Owned(entry)));
 }
 
 void RemovePerformer::RemoveAfterGetResourceEntry(
+    const ClientContext& context,
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
     FileError error) {
@@ -106,14 +109,16 @@ void RemovePerformer::RemoveAfterGetResourceEntry(
   // or not the current account is an owner of the file. The code below is
   // written under the assumption that |shared_with_me| coincides with that.
   if (entry->shared_with_me()) {
-    UnparentResource(callback, entry->resource_id(), entry->local_id());
+    UnparentResource(context, callback, entry->resource_id(),
+                     entry->local_id());
   } else {
     // Otherwise try sending the entry to trash.
-    TrashResource(callback, entry->resource_id(), entry->local_id());
+    TrashResource(context, callback, entry->resource_id(), entry->local_id());
   }
 }
 
-void RemovePerformer::TrashResource(const FileOperationCallback& callback,
+void RemovePerformer::TrashResource(const ClientContext& context,
+                                    const FileOperationCallback& callback,
                                     const std::string& resource_id,
                                     const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -121,12 +126,13 @@ void RemovePerformer::TrashResource(const FileOperationCallback& callback,
 
   scheduler_->TrashResource(
       resource_id,
-      ClientContext(BACKGROUND),
+      context,
       base::Bind(&RemovePerformer::TrashResourceAfterUpdateRemoteState,
-                 weak_ptr_factory_.GetWeakPtr(), callback, local_id));
+                 weak_ptr_factory_.GetWeakPtr(), context, callback, local_id));
 }
 
 void RemovePerformer::TrashResourceAfterUpdateRemoteState(
+    const ClientContext& context,
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::GDataErrorCode status) {
@@ -135,7 +141,7 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
 
   if (status == google_apis::HTTP_FORBIDDEN) {
     // Editing this entry is not allowed, revert local changes.
-    entry_revert_performer_->RevertEntry(local_id, callback);
+    entry_revert_performer_->RevertEntry(local_id, context, callback);
     observer_->OnDriveSyncError(
         file_system::DRIVE_SYNC_ERROR_DELETE_WITHOUT_PERMISSION, local_id);
     return;
@@ -153,21 +159,22 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
   callback.Run(error);
 }
 
-void RemovePerformer::UnparentResource(
-    const FileOperationCallback& callback,
-    const std::string& resource_id,
-    const std::string& local_id) {
+void RemovePerformer::UnparentResource(const ClientContext& context,
+                                       const FileOperationCallback& callback,
+                                       const std::string& resource_id,
+                                       const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   scheduler_->GetResourceEntry(
       resource_id,
-      ClientContext(BACKGROUND),
+      context,
       base::Bind(&RemovePerformer::UnparentResourceAfterGetResourceEntry,
-                 weak_ptr_factory_.GetWeakPtr(), callback, local_id));
+                 weak_ptr_factory_.GetWeakPtr(), context, callback, local_id));
 }
 
 void RemovePerformer::UnparentResourceAfterGetResourceEntry(
+    const ClientContext& context,
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::GDataErrorCode status,
@@ -211,7 +218,7 @@ void RemovePerformer::UnparentResourceAfterGetResourceEntry(
   scheduler_->RemoveResourceFromDirectory(
       parent_resource_id,
       entry.resource_id(),
-      ClientContext(BACKGROUND),
+      context,
       base::Bind(&RemovePerformer::UnparentResourceAfterUpdateRemoteState,
                  weak_ptr_factory_.GetWeakPtr(), callback, local_id));
 }
