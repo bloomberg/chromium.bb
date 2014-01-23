@@ -913,7 +913,7 @@ TEST(WTF_PartitionAllocDeathTest, LargeAllocs)
 }
 
 // Check that our immediate double-free detection works.
-TEST(WTF_PartitionAllocDeathTest, DoubleFree)
+TEST(WTF_PartitionAllocDeathTest, ImmediateDoubleFree)
 {
     TestSetup();
 
@@ -921,6 +921,25 @@ TEST(WTF_PartitionAllocDeathTest, DoubleFree)
     EXPECT_TRUE(ptr);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
+    EXPECT_DEATH(partitionFreeGeneric(genericAllocator.root(), ptr), "");
+
+    TestShutdown();
+}
+
+// Check that our refcount-based double-free detection works.
+TEST(WTF_PartitionAllocDeathTest, RefcountDoubleFree)
+{
+    TestSetup();
+
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize);
+    EXPECT_TRUE(ptr);
+    void* ptr2 = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize);
+    EXPECT_TRUE(ptr2);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+    partitionFreeGeneric(genericAllocator.root(), ptr2);
+    // This is not an immediate double-free so our immediate detection won't
+    // fire. However, it does take the "refcount" of the partition page to -1,
+    // which is illegal and should be trapped.
     EXPECT_DEATH(partitionFreeGeneric(genericAllocator.root(), ptr), "");
 
     TestShutdown();

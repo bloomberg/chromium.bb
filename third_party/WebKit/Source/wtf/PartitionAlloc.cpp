@@ -741,6 +741,9 @@ void partitionFreeSlowPath(PartitionPage* page)
         // Ensure that the page is full. That's the only valid case if we
         // arrive here.
         ASSERT(page->numAllocatedSlots < 0);
+        // A transition of numAllocatedSlots from 0 to -1 is not legal, and
+        // likely indicates a double-free.
+        RELEASE_ASSERT(page->numAllocatedSlots != -1);
         page->numAllocatedSlots = -page->numAllocatedSlots - 2;
         ASSERT(page->numAllocatedSlots == static_cast<int>(partitionBucketSlots(bucket) - 1));
         // Fully used page became partially used. It must be put back on the
