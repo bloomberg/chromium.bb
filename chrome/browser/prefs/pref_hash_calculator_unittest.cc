@@ -86,10 +86,11 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   scoped_ptr<base::Value> string_value(base::Value::CreateStringValue(
       "testing with special chars:\n<>{}:^^@#$\\/"));
 
+  // A dictionary with an empty dictionary in it.
   scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue);
   dict_value->Set("a", new base::StringValue("foo"));
   dict_value->Set("d", new base::StringValue("bad"));
-  dict_value->Set("b", new base::StringValue("bar"));
+  dict_value->Set("b", new base::DictionaryValue);
   dict_value->Set("c", new base::StringValue("baz"));
 
   scoped_ptr<base::ListValue> list_value(new base::ListValue);
@@ -138,16 +139,16 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
                 "pref.path", string_value.get(), kExpectedStringValue));
 
   static const char kExpectedDictValue[] =
-      "3F947A044DE9E421A735525385B4C789693682E6F6E3E4CB4741E58724B28F96";
+      "D6F83A24A39C01D38927B2C0A4CECE6C903A86AA5017DF83F41113A9F0AC51B9";
   EXPECT_EQ(PrefHashCalculator::VALID,
             PrefHashCalculator(kSeed, kDeviceId).Validate(
-                "pref.path1", dict_value.get(), kExpectedDictValue));
+                "pref.path", dict_value.get(), kExpectedDictValue));
 
   static const char kExpectedListValue[] =
-      "D8137B8E767D3D910DCD3821CAC61D26ABB042E6EC406AEB0E347ED73A3A4EC1";
+      "4E2CC0A9B8DF8C5049C53E8B139007792EC6295239545BC99BBF9CDE8A2F5E30";
   EXPECT_EQ(PrefHashCalculator::VALID,
             PrefHashCalculator(kSeed, kDeviceId).Validate(
-                "pref.path2", list_value.get(), kExpectedListValue));
+                "pref.path", list_value.get(), kExpectedListValue));
 
   // Also test every value type together in the same dictionary.
   base::DictionaryValue everything;
@@ -159,10 +160,10 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   everything.Set("list", list_value.release());
   everything.Set("dict", dict_value.release());
   static const char kExpectedEverythingValue[] =
-      "0A546480C7AB7699779B2FCFA326D65E0AE1446EA62398AE1D338119C6913943";
+      "67CE090380FBEA1CE37FD218B3815FB8D541DD20651DD39B1E7B62180C5C4B54";
   EXPECT_EQ(PrefHashCalculator::VALID,
             PrefHashCalculator(kSeed, kDeviceId).Validate(
-                "pref.path1", &everything, kExpectedEverythingValue));
+                "pref.path", &everything, kExpectedEverythingValue));
 }
 
 TEST(PrefHashCalculatorTest, TestCompatibilityWithPrefMetricsService) {
