@@ -5,8 +5,15 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_RESETTABLE_SETTINGS_SNAPSHOT_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_RESETTABLE_SETTINGS_SNAPSHOT_H_
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profile_resetter/profile_resetter.h"
 
 namespace base {
 class ListValue;
@@ -25,8 +32,9 @@ class ResettableSettingsSnapshot {
     HOMEPAGE = 1 << 1,
     DSE_URL = 1 << 2,
     EXTENSIONS = 1 << 3,
+    SHORTCUTS = 1 << 4,
 
-    ALL_FIELDS = STARTUP_MODE | HOMEPAGE | DSE_URL | EXTENSIONS,
+    ALL_FIELDS = STARTUP_MODE | HOMEPAGE | DSE_URL | EXTENSIONS | SHORTCUTS,
   };
 
   explicit ResettableSettingsSnapshot(Profile* profile);
@@ -47,6 +55,14 @@ class ResettableSettingsSnapshot {
     return enabled_extensions_;
   }
 
+  const std::vector<ShortcutCommand>& shortcuts() const {
+    return shortcuts_;
+  }
+
+  bool shortcuts_determined() const {
+    return shortcuts_determined_;
+  }
+
   // Substitutes |enabled_extensions_| with
   // |enabled_extensions_|\|snapshot.enabled_extensions_|.
   void Subtract(const ResettableSettingsSnapshot& snapshot);
@@ -58,7 +74,16 @@ class ResettableSettingsSnapshot {
   // were different.
   int FindDifferentFields(const ResettableSettingsSnapshot& snapshot) const;
 
+  // Collects the shortcuts asynchronously and calls |callback|. If the request
+  // has been made already, noop.
+  void RequestShortcuts(const base::Closure& callback);
+
  private:
+  // Fills the |shortcuts_| member and calls |callback|.
+  void SetShortcutsAndReport(
+      const base::Closure& callback,
+      const std::vector<ShortcutCommand>& shortcuts);
+
   // Startup pages. URLs are always stored sorted.
   SessionStartupPref startup_;
 
@@ -70,6 +95,18 @@ class ResettableSettingsSnapshot {
 
   // List of pairs [id, name] for enabled extensions. Always sorted.
   ExtensionList enabled_extensions_;
+
+  // Chrome shortcuts (e.g. icons on the Windows desktop, etc.) with non-empty
+  // arguments.
+  std::vector<ShortcutCommand> shortcuts_;
+
+  // |shortcuts_| were retrieved.
+  bool shortcuts_determined_;
+
+  // The flag to cancel shortcuts retrieving.
+  scoped_refptr<SharedCancellationFlag> cancellation_flag_;
+
+  base::WeakPtrFactory<ResettableSettingsSnapshot> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResettableSettingsSnapshot);
 };
@@ -91,8 +128,10 @@ void SendSettingsFeedback(const std::string& report,
                           Profile* profile,
                           SnapshotCaller caller);
 
-// Returns list of key/value pairs for all reported information from the
-// |profile| and some additional fields.
-base::ListValue* GetReadableFeedback(Profile* profile);
+// Returns list of key/value pairs for all available reported information
+// from the |profile| and some additional fields.
+scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
+    Profile* profile,
+    const ResettableSettingsSnapshot& snapshot);
 
 #endif  // CHROME_BROWSER_PROFILE_RESETTER_RESETTABLE_SETTINGS_SNAPSHOT_H_

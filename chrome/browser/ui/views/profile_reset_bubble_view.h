@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -28,6 +29,7 @@ class Link;
 class Browser;
 class Profile;
 class ProfileResetGlobalError;
+class ResettableSettingsSnapshot;
 
 // ProfileResetBubbleView warns the user that a settings reset might be needed.
 // It is intended to be used as the content of a bubble anchored off of the
@@ -74,6 +76,9 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
   // views::LinkListener method.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  // Sets the fully populated feedback data.
+  void UpdateFeedbackDetails();
+
   struct Controls {
     Controls() {
       Reset();
@@ -97,6 +102,9 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
     // Checkbox for the user to choose to report the settings or not.
     views::Checkbox* report_settings_checkbox;
   } controls_;
+
+  // The snapshot is used to show user feedback information.
+  scoped_ptr<ResettableSettingsSnapshot> snapshot_;
 
   // A version of the help image that is brighter.
   gfx::ImageSkia brighter_help_image_;
