@@ -52,7 +52,6 @@
 #include "apps/ui/native_app_window.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#include "base/metrics/field_trial.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
@@ -63,7 +62,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/variations/entropy_provider.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window.h"
@@ -830,11 +828,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
     // Enabling multi profile requires several flags to be set.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
-    field_trial_list_.reset(new base::FieldTrialList(
-        new metrics::SHA1EntropyProvider("42")));
-    base::FieldTrialList::CreateTrialsFromString(
-        "ChromeOSUseMultiProfiles/Enable/",
-        base::FieldTrialList::ACTIVATE_TRIALS);
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_.reset(
@@ -855,7 +848,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   virtual void TearDown() {
     ChromeLauncherControllerTest::TearDown();
     user_manager_enabler_.reset();
-    field_trial_list_.reset();
     for (ProfileToNameMap::iterator it = created_profiles_.begin();
          it != created_profiles_.end(); ++it)
       profile_manager_->DeleteTestingProfile(it->second);
@@ -971,7 +963,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
   scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
 
   ash::test::TestSessionStateDelegate* session_delegate_;
   ash::test::TestShellDelegate* shell_delegate_;

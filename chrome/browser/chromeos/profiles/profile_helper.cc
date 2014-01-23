@@ -95,7 +95,7 @@ std::string ProfileHelper::GetUserIdHashFromProfile(Profile* profile) {
   std::string profile_dir = profile->GetPath().BaseName().value();
   std::string prefix(chrome::kProfileDirPrefix);
   if (profile_dir.find(prefix) != 0) {
-    NOTREACHED();
+    // This happens when creating a TestingProfile in browser tests.
     return std::string();
   }
 
