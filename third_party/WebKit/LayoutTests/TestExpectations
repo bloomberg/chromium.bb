@@ -877,6 +877,4 @@ crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-
 
 crbug.com/308818 svg/dom/SVGLengthList-appendItemFromClearedList.html [ NeedsRebaseline ]
 
-Bug(bungeman) [ Linux ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
-
 crbug.com/308818 svg/custom/intersection-list-null.svg [ NeedsRebaseline ]
