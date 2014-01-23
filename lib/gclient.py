@@ -78,7 +78,7 @@ def GetTipOfTrunkSvnRevision(svn_url):
 def _GetGclientURLs(internal, use_pdf, rev):
   """Get the URLs to use in gclient file.
 
-  Args: See WriteConfigFile below.
+  See WriteConfigFile below.
   """
   results = []
   external_url, internal_url, pdf_url = GetBaseURLs()
@@ -103,7 +103,7 @@ def _GetGclientURLs(internal, use_pdf, rev):
 def _GetGclientSolutions(internal, use_pdf, rev):
   """Get the solutions array to write to the gclient file.
 
-  Args: See WriteConfigFile below.
+  See WriteConfigFile below.
   """
   urls = _GetGclientURLs(internal, use_pdf, rev)
   custom_deps, custom_vars = {}, {}
@@ -132,7 +132,7 @@ def _GetGclientSolutions(internal, use_pdf, rev):
 def _GetGclientSpec(internal, use_pdf, rev):
   """Return a formatted gclient spec.
 
-  Args: See WriteConfigFile below.
+  See WriteConfigFile below.
   """
   solutions = _GetGclientSolutions(internal=internal, use_pdf=use_pdf, rev=rev)
   return 'solutions = %s\n' % pprint.pformat(solutions)
