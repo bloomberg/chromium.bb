@@ -50,7 +50,7 @@ void V8FormData::appendMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, name, info[0]);
 
     v8::Handle<v8::Value> arg = info[1];
-    if (V8Blob::hasInstance(arg, info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (V8Blob::hasInstance(arg, info.GetIsolate())) {
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
         Blob* blob = V8Blob::toNative(object);
         ASSERT(blob);

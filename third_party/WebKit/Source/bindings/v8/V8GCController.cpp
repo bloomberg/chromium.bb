@@ -122,7 +122,7 @@ public:
         ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::maybeDOMWrapper(*wrapper));
-        ASSERT(V8Node::hasInstanceInAnyWorld(*wrapper, m_isolate));
+        ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
         Node* node = V8Node::toNative(*wrapper);
         // A minor DOM GC can handle only node wrappers in the main world.
         // Note that node->wrapper().IsEmpty() returns true for nodes that
@@ -266,7 +266,7 @@ public:
             m_isolate->SetObjectGroupId(*value, liveRootId());
 
         if (classId == v8DOMNodeClassId) {
-            ASSERT(V8Node::hasInstanceInAnyWorld(*wrapper, m_isolate));
+            ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
             Node* node = static_cast<Node*>(object);
             if (node->hasEventListeners())
                 addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));

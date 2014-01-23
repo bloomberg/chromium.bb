@@ -51,7 +51,7 @@ WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 
 WebBlob WebBlob::fromV8Value(v8::Handle<v8::Value> value)
 {
-    if (V8Blob::hasInstanceInAnyWorld(value, v8::Isolate::GetCurrent())) {
+    if (V8Blob::hasInstance(value, v8::Isolate::GetCurrent())) {
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
         Blob* blob = V8Blob::toNative(object);
         ASSERT(blob);

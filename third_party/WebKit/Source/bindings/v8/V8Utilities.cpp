@@ -92,7 +92,7 @@ bool extractTransferables(v8::Local<v8::Value> value, int argumentIndex, Message
             return false;
         }
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
-        if (V8MessagePort::hasInstance(transferrable, isolate, worldType(isolate))) {
+        if (V8MessagePort::hasInstance(transferrable, isolate)) {
             RefPtr<MessagePort> port = V8MessagePort::toNative(v8::Handle<v8::Object>::Cast(transferrable));
             // Check for duplicate MessagePorts.
             if (ports.contains(port)) {
@@ -100,7 +100,7 @@ bool extractTransferables(v8::Local<v8::Value> value, int argumentIndex, Message
                 return false;
             }
             ports.append(port.release());
-        } else if (V8ArrayBuffer::hasInstance(transferrable, isolate, worldType(isolate))) {
+        } else if (V8ArrayBuffer::hasInstance(transferrable, isolate)) {
             RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(transferrable));
             if (arrayBuffers.contains(arrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");

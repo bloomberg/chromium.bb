@@ -158,16 +158,10 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2::domTemplate(v
     return handleScope.Escape(templ);
 }
 
-bool V8TestInterfaceNamedConstructor2::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestInterfaceNamedConstructor2::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
-}
-
-bool V8TestInterfaceNamedConstructor2::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
+        || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
 v8::Handle<v8::Object> V8TestInterfaceNamedConstructor2::createWrapper(PassRefPtr<TestInterfaceNamedConstructor2> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

@@ -114,15 +114,15 @@ bool processBlobParts(v8::Local<v8::Object> blobParts, uint32_t blobPartsLength,
         if (item.IsEmpty())
             return false;
 
-        if (V8ArrayBuffer::hasInstance(item, isolate, worldType(isolate))) {
+        if (V8ArrayBuffer::hasInstance(item, isolate)) {
             ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBuffer);
             blobData.appendArrayBuffer(arrayBuffer);
-        } else if (V8ArrayBufferView::hasInstance(item, isolate, worldType(isolate))) {
+        } else if (V8ArrayBufferView::hasInstance(item, isolate)) {
             ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBufferView);
             blobData.appendArrayBufferView(arrayBufferView);
-        } else if (V8Blob::hasInstance(item, isolate, worldType(isolate))) {
+        } else if (V8Blob::hasInstance(item, isolate)) {
             Blob* blob = V8Blob::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(blob);
             blob->appendTo(blobData);

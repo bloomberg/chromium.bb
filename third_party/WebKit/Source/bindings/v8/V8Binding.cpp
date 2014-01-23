@@ -484,7 +484,7 @@ float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     RefPtr<XPathNSResolver> resolver;
-    if (V8XPathNSResolver::hasInstance(value, isolate, worldType(isolate)))
+    if (V8XPathNSResolver::hasInstance(value, isolate))
         resolver = V8XPathNSResolver::toNative(v8::Handle<v8::Object>::Cast(value));
     else if (value->IsObject())
         resolver = V8CustomXPathNSResolver::create(value->ToObject(), isolate);

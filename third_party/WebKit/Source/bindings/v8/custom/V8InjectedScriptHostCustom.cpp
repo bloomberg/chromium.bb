@@ -119,7 +119,7 @@ void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCal
         return;
     }
 
-    v8SetReturnValue(info, V8HTMLAllCollection::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())));
+    v8SetReturnValue(info, V8HTMLAllCollection::hasInstance(info[0], info.GetIsolate()));
 }
 
 void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -153,32 +153,31 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
         v8SetReturnValue(info, v8AtomicString(isolate, "regexp"));
         return;
     }
-    WrapperWorldType currentWorldType = worldType(isolate);
-    if (V8Node::hasInstance(value, isolate, currentWorldType)) {
+    if (V8Node::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "node"));
         return;
     }
-    if (V8NodeList::hasInstance(value, isolate, currentWorldType)) {
+    if (V8NodeList::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
-    if (V8HTMLCollection::hasInstance(value, isolate, currentWorldType)) {
+    if (V8HTMLCollection::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
-    if (V8Int8Array::hasInstance(value, isolate, currentWorldType) || V8Int16Array::hasInstance(value, isolate, currentWorldType) || V8Int32Array::hasInstance(value, isolate, currentWorldType)) {
+    if (V8Int8Array::hasInstance(value, isolate) || V8Int16Array::hasInstance(value, isolate) || V8Int32Array::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
-    if (V8Uint8Array::hasInstance(value, isolate, currentWorldType) || V8Uint16Array::hasInstance(value, isolate, currentWorldType) || V8Uint32Array::hasInstance(value, isolate, currentWorldType)) {
+    if (V8Uint8Array::hasInstance(value, isolate) || V8Uint16Array::hasInstance(value, isolate) || V8Uint32Array::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
-    if (V8Float32Array::hasInstance(value, isolate, currentWorldType) || V8Float64Array::hasInstance(value, isolate, currentWorldType)) {
+    if (V8Float32Array::hasInstance(value, isolate) || V8Float64Array::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
-    if (V8Uint8ClampedArray::hasInstance(value, isolate, currentWorldType)) {
+    if (V8Uint8ClampedArray::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
@@ -279,7 +278,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
         return;
 
     v8::Local<v8::Value> value = info[0];
-    if (!V8Node::hasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())))
+    if (!V8Node::hasInstance(value, info.GetIsolate()))
         return;
     Node* node = V8Node::toNative(value->ToObject());
     if (!node)
@@ -314,7 +313,7 @@ void V8InjectedScriptHost::inspectMethodCustom(const v8::FunctionCallbackInfo<v8
 
 void V8InjectedScriptHost::databaseIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() > 0 && V8Database::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && V8Database::hasInstance(info[0], info.GetIsolate())) {
         Database* database = V8Database::toNative(v8::Handle<v8::Object>::Cast(info[0]));
         if (database) {
             InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder()); {
@@ -327,7 +326,7 @@ void V8InjectedScriptHost::databaseIdMethodCustom(const v8::FunctionCallbackInfo
 
 void V8InjectedScriptHost::storageIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() > 0 && V8Storage::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && V8Storage::hasInstance(info[0], info.GetIsolate())) {
         Storage* storage = V8Storage::toNative(v8::Handle<v8::Object>::Cast(info[0]));
         if (storage) {
             InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());

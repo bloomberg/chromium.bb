@@ -126,9 +126,18 @@ v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
     return m_regexContext.newLocal(m_isolate);
 }
 
-bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, WrapperWorldType currentWorldType)
+bool V8PerIsolateData::hasInstanceInMainWorld(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
 {
-    TemplateMap& templates = templateMap(currentWorldType);
+    return hasInstance(info, value, m_templatesForMainWorld);
+}
+
+bool V8PerIsolateData::hasInstanceInNonMainWorld(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
+{
+    return hasInstance(info, value, m_templatesForNonMainWorld);
+}
+
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, TemplateMap& templates)
+{
     TemplateMap::iterator result = templates.find(info);
     if (result == templates.end())
         return false;

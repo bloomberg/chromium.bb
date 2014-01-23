@@ -49,7 +49,7 @@ void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     }
 
     v8::Handle<v8::Value> buffer = info[0];
-    if (!V8ArrayBufferView::hasInstance(buffer, info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (!V8ArrayBufferView::hasInstance(buffer, info.GetIsolate())) {
         exceptionState.throwTypeError("First argument is not an ArrayBufferView");
     } else {
         ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(buffer));

@@ -51,8 +51,7 @@ protected:
 
 class V8ArrayBuffer {
 public:
-    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
-    static bool hasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
+    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static ArrayBuffer* toNative(v8::Handle<v8::Object>);
     static void derefObject(void*);
     static const WrapperTypeInfo wrapperTypeInfo;

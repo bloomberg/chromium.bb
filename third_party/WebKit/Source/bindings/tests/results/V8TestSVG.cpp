@@ -95,7 +95,7 @@ static void animatedReflectedAttributeAttributeGetterCallback(v8::Local<v8::Stri
 static void animatedReflectedAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    V8TRYCATCH_VOID(SVGAnimatedString*, cppValue, V8SVGAnimatedString::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGAnimatedString::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(SVGAnimatedString*, cppValue, V8SVGAnimatedString::hasInstance(jsValue, info.GetIsolate()) ? V8SVGAnimatedString::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::animatedreflectedattributeAttr, WTF::getPtr(cppValue));
 }
@@ -125,7 +125,7 @@ static void mutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "mutablePoint", "TestSVG", info.Holder(), info.GetIsolate());
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     if (!WTF::getPtr(cppValue)) {
         exceptionState.throwTypeError("The provided value is not of type 'SVGPoint'.");
         exceptionState.throwIfNeeded();
@@ -158,7 +158,7 @@ static void immutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "immutablePoint", "TestSVG", info.Holder(), info.GetIsolate());
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     if (!WTF::getPtr(cppValue)) {
         exceptionState.throwTypeError("The provided value is not of type 'SVGPoint'.");
         exceptionState.throwIfNeeded();
@@ -244,7 +244,7 @@ static void svgPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info
         return;
     }
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[1], exceptionState), exceptionState);
     if (!item) {
         exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
@@ -270,12 +270,12 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    if (info.Length() > 0 && !info[0]->IsUndefined() && !V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !info[0]->IsUndefined() && !V8SVGPoint::hasInstance(info[0], info.GetIsolate())) {
         exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
         exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[1], exceptionState), exceptionState);
     if (!item) {
         exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
@@ -344,16 +344,10 @@ v8::Handle<v8::FunctionTemplate> V8TestSVG::domTemplate(v8::Isolate* isolate, Wr
     return handleScope.Escape(templ);
 }
 
-bool V8TestSVG::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestSVG::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
-}
-
-bool V8TestSVG::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
-{
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
-        || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
+    return V8PerIsolateData::from(isolate)->hasInstanceInMainWorld(&wrapperTypeInfo, jsValue)
+        || V8PerIsolateData::from(isolate)->hasInstanceInNonMainWorld(&wrapperTypeInfo, jsValue);
 }
 
 v8::Handle<v8::Object> V8TestSVG::createWrapper(PassRefPtr<TestSVG> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

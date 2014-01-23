@@ -51,12 +51,7 @@ const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
     0, 0, 0, 0, 0, WrapperTypeObjectPrototype
 };
 
-bool V8ArrayBuffer::hasInstance(v8::Handle<v8::Value> value, v8::Isolate*, WrapperWorldType)
-{
-    return value->IsArrayBuffer();
-}
-
-bool V8ArrayBuffer::hasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate*)
+bool V8ArrayBuffer::hasInstance(v8::Handle<v8::Value> value, v8::Isolate*)
 {
     return value->IsArrayBuffer();
 }

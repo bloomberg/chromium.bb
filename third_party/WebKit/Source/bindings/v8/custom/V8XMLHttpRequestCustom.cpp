@@ -198,10 +198,10 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     exceptionState.throwIfNeeded();
 }
 
-static bool isDocumentType(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static bool isDocumentType(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     // FIXME: add other document types.
-    return V8Document::hasInstance(value, isolate, currentWorldType) || V8HTMLDocument::hasInstance(value, isolate, currentWorldType);
+    return V8Document::hasInstance(value, isolate) || V8HTMLDocument::hasInstance(value, isolate);
 }
 
 void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -215,30 +215,29 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
         xmlHttpRequest->send(exceptionState);
     else {
         v8::Handle<v8::Value> arg = info[0];
-        WrapperWorldType currentWorldType = worldType(info.GetIsolate());
         if (isUndefinedOrNull(arg)) {
             xmlHttpRequest->send(exceptionState);
-        } else if (isDocumentType(arg, info.GetIsolate(), currentWorldType)) {
+        } else if (isDocumentType(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             Document* document = V8Document::toNative(object);
             ASSERT(document);
             xmlHttpRequest->send(document, exceptionState);
-        } else if (V8Blob::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
+        } else if (V8Blob::hasInstance(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             Blob* blob = V8Blob::toNative(object);
             ASSERT(blob);
             xmlHttpRequest->send(blob, exceptionState);
-        } else if (V8FormData::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
+        } else if (V8FormData::hasInstance(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             DOMFormData* domFormData = V8FormData::toNative(object);
             ASSERT(domFormData);
             xmlHttpRequest->send(domFormData, exceptionState);
-        } else if (V8ArrayBuffer::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
+        } else if (V8ArrayBuffer::hasInstance(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(object);
             ASSERT(arrayBuffer);
             xmlHttpRequest->send(arrayBuffer, exceptionState);
-        } else if (V8ArrayBufferView::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
+        } else if (V8ArrayBufferView::hasInstance(arg, info.GetIsolate())) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(object);
             ASSERT(arrayBufferView);

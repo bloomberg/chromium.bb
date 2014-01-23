@@ -73,7 +73,7 @@ void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackIn
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "add", "HTMLOptionsCollection", info.Holder(), info.GetIsolate());
-    if (!V8HTMLOptionElement::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (!V8HTMLOptionElement::hasInstance(info[0], info.GetIsolate())) {
         exceptionState.throwTypeError("The element provided was not an HTMLOptionElement.");
     } else {
         HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());

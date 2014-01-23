@@ -42,8 +42,7 @@ namespace WebCore {
 
 class V8TestSVG {
 public:
-    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
-    static bool hasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
+    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*, WrapperWorldType);
     static TestSVG* toNative(v8::Handle<v8::Object> object)
     {

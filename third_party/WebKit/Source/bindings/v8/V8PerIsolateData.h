@@ -127,7 +127,8 @@ public:
     v8::Handle<v8::FunctionTemplate> privateTemplateIfExists(WrapperWorldType, void* privatePointer);
     void setPrivateTemplate(WrapperWorldType, void* privatePointer, v8::Handle<v8::FunctionTemplate>);
 
-    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, WrapperWorldType);
+    bool hasInstanceInMainWorld(const WrapperTypeInfo*, v8::Handle<v8::Value>);
+    bool hasInstanceInNonMainWorld(const WrapperTypeInfo*, v8::Handle<v8::Value>);
 
     v8::Local<v8::Context> ensureRegexContext();
 
@@ -137,6 +138,7 @@ public:
 private:
     explicit V8PerIsolateData(v8::Isolate*);
     ~V8PerIsolateData();
+    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, TemplateMap&);
     static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>&);
 
     v8::Isolate* m_isolate;

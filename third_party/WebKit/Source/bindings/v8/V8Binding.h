@@ -457,7 +457,7 @@ namespace WebCore {
         for (uint32_t i = 0; i < length; ++i) {
             v8::Handle<v8::Value> element = object->Get(i);
 
-            if (V8T::hasInstance(element, isolate, worldType(isolate))) {
+            if (V8T::hasInstance(element, isolate)) {
                 v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
                 result.uncheckedAppend(V8T::toNative(elementObject));
             } else {
