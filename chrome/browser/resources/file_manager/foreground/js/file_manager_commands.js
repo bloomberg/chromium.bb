@@ -48,10 +48,10 @@ var CommandUtil = {};
 CommandUtil.getCommandEntry = function(element) {
   if (element instanceof NavigationList) {
     // element is a NavigationList.
-
     /** @type {NavigationModelItem} */
-    var selectedItem = element.selectedItem;
-    return selectedItem && selectedItem.entry;
+    var item = element.selectedItem;
+    return element.selectedItem &&
+        CommandUtil.getEntryFromNavigationModelItem_(item);
   } else if (element instanceof NavigationListItem) {
     // element is a subitem of NavigationList.
     /** @type {NavigationList} */
@@ -59,7 +59,7 @@ CommandUtil.getCommandEntry = function(element) {
     var index = navigationList.getIndexOfListItem(element);
     /** @type {NavigationModelItem} */
     var item = (index != -1) ? navigationList.dataModel.item(index) : null;
-    return item && item.entry;
+    return item && CommandUtil.getEntryFromNavigationModelItem_(item);
   } else if (element instanceof DirectoryTree) {
     // element is a DirectoryTree.
     return element.selectedItem.entry;
@@ -75,6 +75,20 @@ CommandUtil.getCommandEntry = function(element) {
     console.warn('Unsupported element');
     return null;
   }
+};
+
+/**
+ * Obtains an entry from the give navigation model item.
+ * @param {NavigationModelItem} item Navigation modle item.
+ * @return {Entry} Related entry.
+ * @private
+ */
+CommandUtil.getEntryFromNavigationModelItem_ = function(item) {
+  if (item.isVolume)
+    return item.volumeInfo.displayRoot;
+  if (item.isShortcut)
+    return item.entry;
+  return null;
 };
 
 /**

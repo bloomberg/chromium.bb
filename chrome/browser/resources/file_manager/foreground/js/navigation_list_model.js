@@ -49,6 +49,10 @@ NavigationModelShortcutItem.prototype = {
 function NavigationModelVolumeItem(label, volumeInfo) {
   NavigationModelItem.call(this, label);
   this.volumeInfo_ = volumeInfo;
+  // Start resovling the display root because it is used
+  // for determining executability of commands.
+  this.volumeInfo_.resolveDisplayRoot(
+      function() {}, function() {});
   Object.freeze(this);
 }
 

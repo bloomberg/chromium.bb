@@ -8,6 +8,9 @@ function setUp() {
     DRIVE_DIRECTORY_LABEL: 'My Drive',
     DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
   };
+
+  // Override VolumeInfo.prototype.resolveDisplayRoot.
+  VolumeInfo.prototype.resolveDisplayRoot = function() {};
 }
 
 function testModel() {

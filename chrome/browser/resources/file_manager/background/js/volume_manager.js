@@ -37,7 +37,8 @@ function VolumeInfo(
   this.root_ = root;
   this.displayRoot_ = null;
   this.fakeEntries_ = {};
-  this.resolveQueue_ = new AsyncUtil.Queue();
+  this.displayRoot_ = null;
+  this.displayRootPromise_ = null;
 
   if (volumeType === util.VolumeType.DRIVE) {
     this.fakeEntries[RootType.DRIVE_OFFLINE] = {
@@ -97,8 +98,8 @@ VolumeInfo.prototype = {
     return this.root_;
   },
   /**
-   * @return {DirectoryEntry} Display root path. It is null before
-   *     resolveDisplayRoot() is called.
+   * @return {DirectoryEntry} Display root path. It is null before finishing to
+   * resolve the entry.
    */
   get displayRoot() {
     return this.displayRoot_;
@@ -112,42 +113,35 @@ VolumeInfo.prototype = {
 };
 
 /**
- * Obtains the display root of the entry. It may take long time for Drive. Once
- * resolved, it is cached.
+ * Starts resolving the display root and obtains it.  It may take long time for
+ * Drive. Once resolved, it is cached.
  *
- * @param {function(DirectoryEntry)} onSuccess Success callback with the display
- *     root directory as an argument.
+ * @param {function(DirectoryEntry)} onSuccess Success callback with the
+ *     display root directory as an argument.
  * @param {function(FileError)} onFailure Failure callback.
  */
 VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
-  // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
-  // remove this if logic. Call onSuccess() always, instead.
-  if (this.volumeType !== util.VolumeType.DRIVE) {
-    if (this.root)
-      onSuccess(this.root);
-    else
-      onFailure(this.error);
-    return;
-  }
-
-  // For Drive, we need to resolve.
-  this.resolveQueue_.run(function(callback) {
-    if (this.displayRoot) {
-      onSuccess(this.displayRoot);
-      callback();
-      return;
+  if (!this.displayRootPromise_) {
+    // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
+    // remove this if logic. Call onSuccess() always, instead.
+    if (this.volumeType !== util.VolumeType.DRIVE) {
+      if (this.root)
+        this.displayRootPromise_ = Promise.resolve(this.root);
+      else
+        this.displayRootPromise_ = Promise.reject(this.error);
+    } else {
+      // For Drive, we need to resolve.
+      var displayRootURL = this.root.toURL() + '/root';
+      this.displayRootPromise_ = new Promise(
+          webkitResolveLocalFileSystemURL.bind(null, displayRootURL));
     }
-    var displayRootURL = this.root.toURL() + '/root';
-    webkitResolveLocalFileSystemURL(
-        displayRootURL, function(directoryEntry) {
-          this.displayRoot_ = directoryEntry;
-          onSuccess(directoryEntry);
-          callback();
-        }.bind(this), function(fileError) {
-          onFailure(fileError);
-          callback();
-        }.bind(this));
-  }.bind(this));
+
+    // Store the obtained displayRoot.
+    this.displayRootPromise_.then(function(displayRoot) {
+      this.displayRoot_ = displayRoot;
+    }.bind(this));
+  }
+  this.displayRootPromise_.then(onSuccess, onFailure);
 };
 
 /**
