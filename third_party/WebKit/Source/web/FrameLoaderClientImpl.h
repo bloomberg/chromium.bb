@@ -138,7 +138,7 @@ public:
 
     virtual void dispatchWillOpenSocketStream(WebCore::SocketStreamHandle*) OVERRIDE;
 
-    virtual void dispatchWillStartUsingPeerConnectionHandler(WebCore::RTCPeerConnectionHandler*) OVERRIDE;
+    virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) OVERRIDE;
 
     virtual void didRequestAutocomplete(PassRefPtr<WebCore::FormState>) OVERRIDE;
 

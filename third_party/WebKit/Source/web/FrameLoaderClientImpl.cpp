@@ -73,7 +73,6 @@
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/page/WindowFeatures.h"
-#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/rendering/HitTestResult.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
@@ -86,6 +85,7 @@
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"
+#include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 #include "public/platform/WebSocketStreamHandle.h"
@@ -702,9 +702,9 @@ void FrameLoaderClientImpl::dispatchWillOpenSocketStream(SocketStreamHandle* han
     m_webFrame->client()->willOpenSocketStream(SocketStreamHandleInternal::toWebSocketStreamHandle(handle));
 }
 
-void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler* handler)
+void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler* handler)
 {
-    m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), RTCPeerConnectionHandler::toWebRTCPeerConnectionHandler(handler));
+    m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), handler);
 }
 
 void FrameLoaderClientImpl::didRequestAutocomplete(PassRefPtr<FormState> formState)

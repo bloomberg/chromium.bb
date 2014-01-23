@@ -46,6 +46,7 @@ template<class T> class Handle;
 
 namespace blink {
 class WebCookieJar;
+class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
 class WebServiceWorkerProviderClient;
 }
@@ -76,7 +77,6 @@ class FetchRequest;
     class ResourceHandle;
     class ResourceRequest;
     class ResourceResponse;
-    class RTCPeerConnectionHandler;
     class SecurityOrigin;
     class SharedBuffer;
     class SharedWorkerRepositoryClient;
@@ -204,7 +204,7 @@ class FetchRequest;
 
         virtual void dispatchWillOpenSocketStream(SocketStreamHandle*) { }
 
-        virtual void dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler*) { }
+        virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) { }
 
         virtual void didRequestAutocomplete(PassRefPtr<FormState>) = 0;
 

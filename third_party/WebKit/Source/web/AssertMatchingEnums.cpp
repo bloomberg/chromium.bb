@@ -71,7 +71,6 @@
 #include "core/page/InjectedStyleSheet.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/frame/Settings.h"
-#include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
@@ -115,7 +114,6 @@
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebStorageQuotaError.h"
@@ -564,26 +562,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaStreamSource::TypeVideo, MediaStreamSource:
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaStreamSource::ReadyStateLive, MediaStreamSource::ReadyStateLive);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaStreamSource::ReadyStateMuted, MediaStreamSource::ReadyStateMuted);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaStreamSource::ReadyStateEnded, MediaStreamSource::ReadyStateEnded);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::SignalingStateStable, RTCPeerConnectionHandlerClient::SignalingStateStable);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalOffer, RTCPeerConnectionHandlerClient::SignalingStateHaveLocalOffer);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemoteOffer, RTCPeerConnectionHandlerClient::SignalingStateHaveRemoteOffer);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::SignalingStateHaveLocalPrAnswer, RTCPeerConnectionHandlerClient::SignalingStateHaveLocalPrAnswer);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::SignalingStateHaveRemotePrAnswer, RTCPeerConnectionHandlerClient::SignalingStateHaveRemotePrAnswer);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::SignalingStateClosed, RTCPeerConnectionHandlerClient::SignalingStateClosed);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateStarting, RTCPeerConnectionHandlerClient::IceConnectionStateNew);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateNew, RTCPeerConnectionHandlerClient::IceConnectionStateNew);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateChecking, RTCPeerConnectionHandlerClient::IceConnectionStateChecking);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateConnected, RTCPeerConnectionHandlerClient::IceConnectionStateConnected);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted, RTCPeerConnectionHandlerClient::IceConnectionStateCompleted);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateFailed, RTCPeerConnectionHandlerClient::IceConnectionStateFailed);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateDisconnected, RTCPeerConnectionHandlerClient::IceConnectionStateDisconnected);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEConnectionStateClosed, RTCPeerConnectionHandlerClient::IceConnectionStateClosed);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEGatheringStateNew, RTCPeerConnectionHandlerClient::IceGatheringStateNew);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEGatheringStateGathering, RTCPeerConnectionHandlerClient::IceGatheringStateGathering);
-COMPILE_ASSERT_MATCHING_ENUM(WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete, RTCPeerConnectionHandlerClient::IceGatheringStateComplete);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebSpeechRecognizerClient::OtherError, SpeechRecognitionError::ErrorCodeOther);
 COMPILE_ASSERT_MATCHING_ENUM(WebSpeechRecognizerClient::NoSpeechError, SpeechRecognitionError::ErrorCodeNoSpeech);

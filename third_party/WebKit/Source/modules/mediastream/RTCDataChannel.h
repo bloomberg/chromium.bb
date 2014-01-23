@@ -34,6 +34,7 @@
 
 namespace blink {
 class WebRTCDataChannelHandler;
+class WebRTCPeerConnectionHandler;
 struct WebRTCDataChannelInit;
 }
 
@@ -41,13 +42,12 @@ namespace WebCore {
 
 class Blob;
 class ExceptionState;
-class RTCPeerConnectionHandler;
 
 class RTCDataChannel FINAL : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDataChannelHandlerClient {
     REFCOUNTED_EVENT_TARGET(RTCDataChannel);
 public:
     static PassRefPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<blink::WebRTCDataChannelHandler>);
-    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
+    static PassRefPtr<RTCDataChannel> create(ExecutionContext*, blink::WebRTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
     virtual ~RTCDataChannel();
 
     String label() const;

@@ -2732,9 +2732,6 @@
             'platform/mediastream/MediaStreamCenter.h',
             'platform/mediastream/MediaStreamDescriptor.cpp',
             'platform/mediastream/MediaStreamDescriptor.h',
-            'platform/mediastream/RTCPeerConnectionHandler.cpp',
-            'platform/mediastream/RTCPeerConnectionHandler.h',
-            'platform/mediastream/RTCPeerConnectionHandlerClient.h',
             'platform/mediastream/RTCStatsRequest.h',
         ],
         'webcore_svg_files': [

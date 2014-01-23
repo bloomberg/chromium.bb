@@ -26,12 +26,12 @@
 #include "modules/mediastream/RTCDataChannel.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
-#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
+#include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 
@@ -58,9 +58,9 @@ PassRefPtr<RTCDataChannel> RTCDataChannel::create(ExecutionContext* context, Pas
     return adoptRef(new RTCDataChannel(context, handler));
 }
 
-PassRefPtr<RTCDataChannel> RTCDataChannel::create(ExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, const String& label, const blink::WebRTCDataChannelInit& init, ExceptionState& exceptionState)
+PassRefPtr<RTCDataChannel> RTCDataChannel::create(ExecutionContext* context, blink::WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const blink::WebRTCDataChannelInit& init, ExceptionState& exceptionState)
 {
-    OwnPtr<blink::WebRTCDataChannelHandler> handler = peerConnectionHandler->createDataChannel(label, init);
+    OwnPtr<blink::WebRTCDataChannelHandler> handler = adoptPtr(peerConnectionHandler->createDataChannel(label, init));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return 0;

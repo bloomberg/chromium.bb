@@ -35,18 +35,18 @@
 
 namespace blink {
 class WebRTCDTMFSenderHandler;
+class WebRTCPeerConnectionHandler;
 }
 
 namespace WebCore {
 
 class ExceptionState;
 class MediaStreamTrack;
-class RTCPeerConnectionHandler;
 
 class RTCDTMFSender FINAL : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public blink::WebRTCDTMFSenderHandlerClient, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(RTCDTMFSender);
 public:
-    static PassRefPtr<RTCDTMFSender> create(ExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
+    static PassRefPtr<RTCDTMFSender> create(ExecutionContext*, blink::WebRTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
     virtual ~RTCDTMFSender();
 
     bool canInsertDTMF() const;
