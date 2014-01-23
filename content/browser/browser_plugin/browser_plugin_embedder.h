@@ -93,6 +93,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   void StopDrag(BrowserPluginGuest* guest);
 
+  // Sends EndSystemDrag message to the guest that initiated the last drag/drop
+  // operation, if there's any.
   void SystemDragEnded();
 
  private:

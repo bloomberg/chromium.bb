@@ -173,8 +173,10 @@ void BrowserPluginEmbedder::DragSourceMovedTo(int client_x, int client_y,
 }
 
 void BrowserPluginEmbedder::SystemDragEnded() {
-  if (guest_started_drag_.get() &&
-      (guest_started_drag_.get() != guest_dragging_over_.get()))
+  // When the embedder's drag/drop operation ends, we need to pass the message
+  // to the guest that initiated the drag/drop operation. This will ensure that
+  // the guest's RVH state is reset properly.
+  if (guest_started_drag_.get())
     guest_started_drag_->EndSystemDrag();
   guest_started_drag_.reset();
   guest_dragging_over_.reset();
