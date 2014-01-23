@@ -263,6 +263,8 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
   if (query.word_phrase_query) {
     parser.ParseQueryWords(base::i18n::ToLower(*query.word_phrase_query),
                            &query_words);
+    if (query_words.empty())
+      return;
   }
 
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());

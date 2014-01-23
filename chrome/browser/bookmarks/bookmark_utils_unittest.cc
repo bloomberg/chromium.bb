@@ -47,6 +47,17 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
   std::vector<const BookmarkNode*> nodes;
   QueryFields query;
   query.word_phrase_query.reset(new base::string16);
+  // No nodes are returned for empty string.
+  *query.word_phrase_query = ASCIIToUTF16("");
+  GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
+  EXPECT_TRUE(nodes.empty());
+  nodes.clear();
+
+  // No nodes are returned for space-only string.
+  *query.word_phrase_query = ASCIIToUTF16("   ");
+  GetBookmarksMatchingProperties(&model, query, 100, string(), &nodes);
+  EXPECT_TRUE(nodes.empty());
+  nodes.clear();
 
   // Node "foo bar" and folder "foo" are returned in search results.
   *query.word_phrase_query = ASCIIToUTF16("foo");
