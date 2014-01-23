@@ -38,5 +38,27 @@
 .global pushAllRegisters
 .hidden pushAllRegisters
 pushAllRegisters:
-        /* FIXME: Implement the actual stub for mips. */
+        // Reserve space for callee-saved registers, return address,
+        // as well as for the callee arguments.
+        addiu $sp,$sp,-56
+        // Save the callee-saved registers and the return address.
+        sw $s0,16($sp)
+        sw $s1,20($sp)
+        sw $s2,24($sp)
+        sw $s3,28($sp)
+        sw $s4,32($sp)
+        sw $s5,36($sp)
+        sw $s6,40($sp)
+        sw $s7,44($sp)
+        sw $ra,48($sp)
+        // Pass the two first arguments untouched in a0 and a1 and the
+        // stack pointer to the callback.
+        move $t9,$a2
+        move $a2,$sp
+        jal $t9
+        // Restore return address, adjust stack and return. No
+        // callee-saved register was changed so we do not have to
+        // restore callee-saved registers.
+        lw $ra,48($sp)
+        addiu $sp,$sp,56
         jr $ra
