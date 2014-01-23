@@ -5,7 +5,7 @@
 // This is necessary because polymer currently doesn't handle the configuration
 // where native Custom Elements are available but native Shadow DOM is not.
 // TODO(bshe): remove this line when polymer supports the configuration.
-document.register = undefined;
+document.registerElement = undefined;
 
 <include src="../../../third_party/polymer/platform/platform.js"></include>
 <include src="../../../third_party/polymer/polymer/polymer.js"></include>
