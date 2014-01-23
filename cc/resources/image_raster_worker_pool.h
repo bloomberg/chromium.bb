@@ -17,10 +17,8 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
       ResourceProvider* resource_provider,
       ContextProvider* context_provider,
       unsigned texture_target) {
-    return make_scoped_ptr<RasterWorkerPool>(
-        new ImageRasterWorkerPool(resource_provider,
-                                  context_provider,
-                                  texture_target));
+    return make_scoped_ptr<RasterWorkerPool>(new ImageRasterWorkerPool(
+        resource_provider, context_provider, texture_target));
   }
 
   // Overridden from RasterWorkerPool:
@@ -35,8 +33,8 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
                         ContextProvider* context_provider,
                         unsigned texture_target);
 
-  void OnRasterTaskCompleted(
-      scoped_refptr<internal::RasterWorkerPoolTask> task, bool was_canceled);
+  void OnRasterTaskCompleted(scoped_refptr<internal::RasterWorkerPoolTask> task,
+                             bool was_canceled);
 
   scoped_ptr<base::Value> StateAsValue() const;
 

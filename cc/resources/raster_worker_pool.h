@@ -89,7 +89,8 @@ class CC_EXPORT RasterWorkerPoolTask
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
-template <> struct hash<cc::internal::RasterWorkerPoolTask*> {
+template <>
+struct hash<cc::internal::RasterWorkerPoolTask*> {
   size_t operator()(cc::internal::RasterWorkerPoolTask* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
@@ -260,8 +261,8 @@ class CC_EXPORT RasterWorkerPool {
   void SetTaskGraph(TaskGraph* graph);
 
   void SetRasterTasks(RasterTask::Queue* queue);
-  bool IsRasterTaskRequiredForActivation(
-      internal::RasterWorkerPoolTask* task) const;
+  bool IsRasterTaskRequiredForActivation(internal::RasterWorkerPoolTask* task)
+      const;
   // Run raster tasks that use GPU on current thread.
   void RunGpuRasterTasks(const RasterTaskVector& tasks);
 

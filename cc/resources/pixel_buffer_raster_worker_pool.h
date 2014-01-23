@@ -23,10 +23,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
       ResourceProvider* resource_provider,
       ContextProvider* context_provider,
       size_t max_transfer_buffer_usage_bytes) {
-    return make_scoped_ptr<RasterWorkerPool>(
-        new PixelBufferRasterWorkerPool(resource_provider,
-                                        context_provider,
-                                        max_transfer_buffer_usage_bytes));
+    return make_scoped_ptr<RasterWorkerPool>(new PixelBufferRasterWorkerPool(
+        resource_provider, context_provider, max_transfer_buffer_usage_bytes));
   }
 
   // Overridden from WorkerPool:
@@ -50,10 +48,9 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   void ScheduleCheckForCompletedRasterTasks();
   void CheckForCompletedRasterTasks();
   void ScheduleMoreTasks();
-  void OnRasterTaskCompleted(
-      scoped_refptr<internal::RasterWorkerPoolTask> task,
-      bool was_canceled,
-      bool needs_upload);
+  void OnRasterTaskCompleted(scoped_refptr<internal::RasterWorkerPoolTask> task,
+                             bool was_canceled,
+                             bool needs_upload);
   void DidCompleteRasterTask(internal::RasterWorkerPoolTask* task);
   unsigned PendingRasterTaskCount() const;
   bool HasPendingTasks() const;
