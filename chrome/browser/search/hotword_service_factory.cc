@@ -57,6 +57,9 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterIntegerPref(prefs::kHotwordOptInPopupTimesShown,
                              0,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHotwordSearchTimeoutEnabled,
+                             true,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 content::BrowserContext* HotwordServiceFactory::GetBrowserContextToUse(

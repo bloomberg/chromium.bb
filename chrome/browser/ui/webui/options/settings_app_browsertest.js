@@ -36,6 +36,7 @@ TEST_F('SettingsAppWebUITest', 'testOpenSettingsApp', function() {
   // Spot-check some regular settings items that should be hidden.
   assertFalse(isVisible('change-home-page-section'));
   assertFalse(isVisible('default-search-engine'));
+  assertFalse(isVisible('hotword-settings-section'));
   assertFalse(isVisible('privacy-section'));
   assertFalse(isVisible('startup-section'));
 });

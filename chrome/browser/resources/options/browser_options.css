@@ -156,6 +156,14 @@ input[type='range'] {
   padding-bottom: 0;
 }
 
+.hotword-settings {
+  -webkit-margin-start: 22px;
+}
+
+#hotword-search-description {
+  color: #9b9b9b;
+}
+
 /* Internet settings */
 
 #network-settings {

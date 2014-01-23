@@ -2090,6 +2090,10 @@ const char kHotwordSearchIncognitoEnabled[] =
 // longer shown.
 const char kHotwordOptInPopupTimesShown[] = "hotword.opt_in_popup_times_shown";
 
+// A boolean pref that controls whether hotword search voice trigger stops
+// listening after 5 minutes.
+const char kHotwordSearchTimeoutEnabled[] = "hotword.search_timeout_enabled";
+
 #if defined(OS_ANDROID)
 // Boolean that controls the global enabled-state of protected media identifier.
 const char kProtectedMediaIdentifierEnabled[] =

@@ -470,6 +470,9 @@ const char kBlockedPluginLearnMoreURL[] =
 const char kSpeechInputAboutURL[] =
     "https://support.google.com/chrome/?p=ui_speech_input";
 
+const char kHotwordLearnMoreURL[] =
+    "https://support.google.com/websearch/answer/3542118?p=ws_chromehotword&rd=1";
+
 const char kLearnMoreRegisterProtocolHandlerURL[] =
     "https://support.google.com/chrome/?p=ib_protocol_handler";
 

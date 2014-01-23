@@ -251,6 +251,13 @@ class BrowserOptionsHandler
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_FULL_PRINTING)
 
+  // Check if hotword is available. If it is, tell the javascript to show
+  // the hotword section of the settings page.
+  void SendHotwordAvailable();
+
+  // Callback for "requestHotwordAvailable" message.
+  void HandleRequestHotwordAvailable(const base::ListValue* args);
+
 #if defined(OS_CHROMEOS)
   // Opens the wallpaper manager component extension.
   void HandleOpenWallpaperManager(const base::ListValue* args);

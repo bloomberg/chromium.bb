@@ -128,6 +128,10 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('homePageOverlay');
       };
 
+      Preferences.getInstance().addEventListener('hotword.search_enabled',
+          this.onHotwordSearchPrefChanged_.bind(this));
+      chrome.send('requestHotwordAvailabile');
+
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
           chrome.send('openWallpaperManager');
@@ -878,6 +882,32 @@ cr.define('options', function() {
     },
 
     /**
+     * Activates the Hotword section from the System settings page.
+     * @private
+     */
+    showHotwordSection_: function() {
+      $('hotword-search').hidden = false;
+    },
+
+    /**
+     * Event listener for the 'hotword search enabled' preference. Shows/hides
+     * the UI for updating hotword settings..
+     * @param {Event} event The preference change event.
+     */
+    onHotwordSearchPrefChanged_: function(event) {
+      var section = $('hotword-settings-section');
+      var container = $('hotword-settings-section-container');
+      // event.value is a dictionary with details about the preference that was
+      // changed. Within that dictionary, |value| is the new value of the
+      // preference. In this case, the preference represents a Boolean so it
+      // can be checked for true/false.
+      if (event.value.value)
+        this.showSectionWithAnimation_(section, container);
+      else
+        this.hideSectionWithAnimation_(section, container);
+    },
+
+    /**
      * Event listener for the 'homepage is NTP' preference. Updates the label
      * next to the 'Change' button.
      * @param {Event} event The preference change event.
@@ -1585,6 +1615,7 @@ cr.define('options', function() {
     'showCreateProfileError',
     'showCreateProfileSuccess',
     'showCreateProfileWarning',
+    'showHotwordSection',
     'showManagedUserImportError',
     'showManagedUserImportSuccess',
     'showMouseControls',

@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -257,6 +258,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "homePageShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
+    { "hotwordSearchDescription", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
+    { "hotwordSearchIncognito", IDS_HOTWORD_SEARCH_INCOGNITO_PREF_CHKBOX },
+    { "hotwordSearchTimeout", IDS_HOTWORD_SEARCH_TIMEOUT_PREF_CHKBOX },
+    { "hotwordSearchTimeoutDescription",
+      IDS_HOTWORD_SEARCH_TIMEOUT_PREF_DESCRIPTION },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
@@ -477,6 +483,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString(
       "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
+  base::string16 hotword_url = base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL);
+  values->SetString(
+      "hotwordSearchEnable",
+      l10n_util::GetStringFUTF16(IDS_HOTWORD_SEARCH_PREF_CHKBOX, hotword_url));
 
 #if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -706,6 +716,10 @@ void BrowserOptionsHandler::RegisterMessages() {
                    base::Unretained(this)));
   }
 #endif
+  web_ui()->RegisterMessageCallback(
+      "requestHotwordAvailabile",
+      base::Bind(&BrowserOptionsHandler::HandleRequestHotwordAvailable,
+                 base::Unretained(this)));
 }
 
 void BrowserOptionsHandler::Uninitialize() {
@@ -1511,6 +1525,17 @@ void BrowserOptionsHandler::RemoveCloudPrintConnectorSection() {
 }
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_FULL_PRINTING)
+
+void BrowserOptionsHandler::SendHotwordAvailable() {
+  std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
+  if (group != "" && group != "Disabled")
+    web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
+}
+
+void BrowserOptionsHandler::HandleRequestHotwordAvailable(
+    const base::ListValue* args) {
+  SendHotwordAvailable();
+}
 
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::HandleOpenWallpaperManager(

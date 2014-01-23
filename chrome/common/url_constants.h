@@ -401,6 +401,9 @@ extern const char kBlockedPluginLearnMoreURL[];
 // The URL for the "About Voice Recognition" menu item.
 extern const char kSpeechInputAboutURL[];
 
+// The URL for the "Learn more" page for hotword search voice trigger.
+extern const char kHotwordLearnMoreURL[];
+
 // The URL for the "Learn more" page for register protocol handler infobars.
 extern const char kLearnMoreRegisterProtocolHandlerURL[];
 
