@@ -8,7 +8,7 @@
 #include "mojo/examples/sample_app/gles2_client_impl.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
-#include "mojo/public/gles2/gles2.h"
+#include "mojo/public/gles2/gles2_cpp.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
 #include "mojo/public/utility/run_loop.h"
@@ -86,12 +86,11 @@ extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   mojo::Environment env;
   mojo::RunLoop loop;
-  MojoGLES2Initialize();
+  mojo::GLES2Initializer gles2;
 
   mojo::examples::SampleApp app(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
   loop.Run();
 
-  MojoGLES2Terminate();
   return MOJO_RESULT_OK;
 }

@@ -7,9 +7,13 @@
 
 #include <GLES2/gl2.h>
 
+#include "base/memory/weak_ptr.h"
 #include "gin/handle.h"
 #include "gin/public/wrapper_info.h"
+#include "gin/runner.h"
 #include "gin/wrappable.h"
+#include "mojo/apps/js/bindings/handle.h"
+#include "mojo/public/gles2/gles2.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -26,8 +30,11 @@ class Context : public gin::Wrappable<Context> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  static gin::Handle<Context> Create(v8::Isolate* isolate, uint64_t encoded,
-                                     int width, int height);
+  // TODO(piman): lost context callback, draw animation frame callback.
+  static gin::Handle<Context> Create(
+      v8::Isolate* isolate,
+      mojo::Handle handle,
+      v8::Handle<v8::Function> did_create_callback);
 
   static void BufferData(GLenum target, const gin::ArrayBufferView& buffer,
                          GLenum usage);
@@ -50,9 +57,22 @@ class Context : public gin::Wrappable<Context> {
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) OVERRIDE;
 
-  Context(uint64_t encoded, int width, int height);
+  explicit Context(v8::Isolate* isolate,
+                   mojo::Handle handle,
+                   v8::Handle<v8::Function> did_create_callback);
+  virtual ~Context();
 
-  uint64_t encoded_;
+  void DidCreateContext(uint32_t width, uint32_t height);
+  static void DidCreateContextThunk(
+      void* closure,
+      uint32_t width,
+      uint32_t height);
+  void ContextLost();
+  static void ContextLostThunk(void* closure);
+
+  base::WeakPtr<gin::Runner> runner_;
+  v8::Persistent<v8::Function> did_create_callback_;
+  MojoGLES2Context context_;
 };
 
 }  // namespace gl

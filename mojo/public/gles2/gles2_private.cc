@@ -15,9 +15,9 @@ static mojo::GLES2Interface* g_gles2_interface = NULL;
 
 extern "C" {
 
-void MojoGLES2Initialize() {
+void MojoGLES2Initialize(MojoAsyncWaiter* async_waiter) {
   assert(g_gles2_support);
-  return g_gles2_support->Initialize();
+  return g_gles2_support->Initialize(async_waiter);
 }
 
 void MojoGLES2Terminate() {
@@ -25,15 +25,52 @@ void MojoGLES2Terminate() {
   return g_gles2_support->Terminate();
 }
 
-void MojoGLES2MakeCurrent(uint64_t encoded) {
+MojoGLES2Context MojoGLES2CreateContext(
+    MojoHandle handle,
+    MojoGLES2ContextCreated created_callback,
+    MojoGLES2ContextLost lost_callback,
+    MojoGLES2DrawAnimationFrame animation_callback,
+    void* closure) {
+  return g_gles2_support->CreateContext(mojo::MessagePipeHandle(handle),
+                                        created_callback,
+                                        lost_callback,
+                                        animation_callback,
+                                        closure);
+}
+
+void MojoGLES2DestroyContext(MojoGLES2Context context) {
+  return g_gles2_support->DestroyContext(context);
+}
+
+void MojoGLES2MakeCurrent(MojoGLES2Context context) {
   assert(g_gles2_support);
-  g_gles2_support->MakeCurrent(encoded);
+  g_gles2_support->MakeCurrent(context);
   g_gles2_interface = g_gles2_support->GetGLES2InterfaceForCurrentContext();
 }
 
 void MojoGLES2SwapBuffers() {
   assert(g_gles2_support);
   return g_gles2_support->SwapBuffers();
+}
+
+void MojoGLES2RequestAnimationFrames(MojoGLES2Context context) {
+  assert(g_gles2_support);
+  return g_gles2_support->RequestAnimationFrames(context);
+}
+
+void MojoGLES2CancelAnimationFrames(MojoGLES2Context context) {
+  assert(g_gles2_support);
+  return g_gles2_support->CancelAnimationFrames(context);
+}
+
+void* MojoGLES2GetGLES2Interface(MojoGLES2Context context) {
+  assert(g_gles2_support);
+  return g_gles2_support->GetGLES2Interface(context);
+}
+
+void* MojoGLES2GetContextSupport(MojoGLES2Context context) {
+  assert(g_gles2_support);
+  return g_gles2_support->GetContextSupport(context);
 }
 
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \

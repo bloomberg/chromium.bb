@@ -22,12 +22,17 @@ float CalculateDragDistance(const gfx::PointF& start, const Point& end) {
 }
 
 GLES2ClientImpl::GLES2ClientImpl(ScopedMessagePipeHandle pipe)
-    : getting_animation_frames_(false),
-      service_(pipe.Pass(), this) {
+    : getting_animation_frames_(false) {
+  context_ = MojoGLES2CreateContext(
+      pipe.release().value(),
+      &DidCreateContextThunk,
+      &ContextLostThunk,
+      &DrawAnimationFrameThunk,
+      this);
 }
 
 GLES2ClientImpl::~GLES2ClientImpl() {
-  service_->Destroy();
+  MojoGLES2DestroyContext(context_);
 }
 
 void GLES2ClientImpl::HandleInputEvent(const Event& event) {
@@ -70,17 +75,27 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
   }
 }
 
-void GLES2ClientImpl::DidCreateContext(uint64_t encoded,
-                                       uint32_t width,
+void GLES2ClientImpl::DidCreateContext(uint32_t width,
                                        uint32_t height) {
-  MojoGLES2MakeCurrent(encoded);
+  MojoGLES2MakeCurrent(context_);
 
   cube_.Init(width, height);
   RequestAnimationFrames();
 }
 
+void GLES2ClientImpl::DidCreateContextThunk(
+    void* closure,
+    uint32_t width,
+    uint32_t height) {
+  static_cast<GLES2ClientImpl*>(closure)->DidCreateContext(width, height);
+}
+
 void GLES2ClientImpl::ContextLost() {
   CancelAnimationFrames();
+}
+
+void GLES2ClientImpl::ContextLostThunk(void* closure) {
+  static_cast<GLES2ClientImpl*>(closure)->ContextLost();
 }
 
 void GLES2ClientImpl::DrawAnimationFrame() {
@@ -94,15 +109,19 @@ void GLES2ClientImpl::DrawAnimationFrame() {
   MojoGLES2SwapBuffers();
 }
 
+void GLES2ClientImpl::DrawAnimationFrameThunk(void* closure) {
+  static_cast<GLES2ClientImpl*>(closure)->DrawAnimationFrame();
+}
+
 void GLES2ClientImpl::RequestAnimationFrames() {
   getting_animation_frames_ = true;
-  service_->RequestAnimationFrames();
+  MojoGLES2RequestAnimationFrames(context_);
   last_time_ = GetTimeTicksNow();
 }
 
 void GLES2ClientImpl::CancelAnimationFrames() {
   getting_animation_frames_ = false;
-  service_->CancelAnimationFrames();
+  MojoGLES2CancelAnimationFrames(context_);
 }
 
 }  // namespace examples

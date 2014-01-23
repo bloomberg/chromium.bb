@@ -18,11 +18,27 @@ class MOJO_GLES2_IMPL_EXPORT GLES2SupportImpl : public GLES2Support {
 
   static void Init();
 
-  virtual void Initialize() OVERRIDE;
+  virtual void Initialize(MojoAsyncWaiter* async_waiter) OVERRIDE;
   virtual void Terminate() OVERRIDE;
-  virtual void MakeCurrent(uint64_t encoded) OVERRIDE;
+  virtual MojoGLES2Context CreateContext(
+      MessagePipeHandle handle,
+      MojoGLES2ContextCreated created_callback,
+      MojoGLES2ContextLost lost_callback,
+      MojoGLES2DrawAnimationFrame animation_callback,
+      void* closure) OVERRIDE;
+  virtual void DestroyContext(MojoGLES2Context context) OVERRIDE;
+  virtual void MakeCurrent(MojoGLES2Context context) OVERRIDE;
   virtual void SwapBuffers() OVERRIDE;
+  virtual void RequestAnimationFrames(MojoGLES2Context context) OVERRIDE;
+  virtual void CancelAnimationFrames(MojoGLES2Context context) OVERRIDE;
+  virtual void* GetGLES2Interface(MojoGLES2Context context) OVERRIDE;
+  virtual void* GetContextSupport(MojoGLES2Context context) OVERRIDE;
   virtual GLES2Interface* GetGLES2InterfaceForCurrentContext() OVERRIDE;
+
+ private:
+  GLES2SupportImpl();
+
+  MojoAsyncWaiter* async_waiter_;
 };
 
 }  // namespace gles2

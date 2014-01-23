@@ -8,6 +8,9 @@
 #include <stdint.h>
 
 #include "mojo/public/gles2/gles2_export.h"
+#include "mojo/public/gles2/gles2_types.h"
+#include "mojo/public/system/async_waiter.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 class GLES2Interface;
@@ -21,10 +24,21 @@ class MOJO_GLES2_EXPORT GLES2Support {
 
   static void Init(GLES2Support* gles2_support);
 
-  virtual void Initialize() = 0;
+  virtual void Initialize(MojoAsyncWaiter* async_waiter) = 0;
   virtual void Terminate() = 0;
-  virtual void MakeCurrent(uint64_t encoded) = 0;
+  virtual MojoGLES2Context CreateContext(
+      MessagePipeHandle handle,
+      MojoGLES2ContextCreated created_callback,
+      MojoGLES2ContextLost lost_callback,
+      MojoGLES2DrawAnimationFrame animation_callback,
+      void* closure) = 0;
+  virtual void DestroyContext(MojoGLES2Context context) = 0;
+  virtual void MakeCurrent(MojoGLES2Context context) = 0;
   virtual void SwapBuffers() = 0;
+  virtual void RequestAnimationFrames(MojoGLES2Context context) = 0;
+  virtual void CancelAnimationFrames(MojoGLES2Context context) = 0;
+  virtual void* GetGLES2Interface(MojoGLES2Context context) = 0;
+  virtual void* GetContextSupport(MojoGLES2Context context) = 0;
   virtual GLES2Interface* GetGLES2InterfaceForCurrentContext() = 0;
 };
 

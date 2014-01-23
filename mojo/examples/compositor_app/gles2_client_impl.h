@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
-#include "mojom/gles2.h"
+#include "mojo/public/gles2/gles2.h"
 #include "mojom/native_viewport.h"
 #include "ui/gfx/size.h"
 
@@ -16,14 +16,13 @@ namespace gpu {
 class ContextSupport;
 namespace gles2 {
 class GLES2Interface;
-class GLES2Implementation;
 }
 }
 
 namespace mojo {
 namespace examples {
 
-class GLES2ClientImpl : public GLES2Client {
+class GLES2ClientImpl {
  public:
   GLES2ClientImpl(
       ScopedMessagePipeHandle pipe,
@@ -34,16 +33,17 @@ class GLES2ClientImpl : public GLES2Client {
   gpu::ContextSupport* Support() const;
 
  private:
-  virtual void DidCreateContext(uint64_t encoded,
-                                uint32_t width,
-                                uint32_t height) MOJO_OVERRIDE;
-  virtual void ContextLost() MOJO_OVERRIDE;
-  virtual void DrawAnimationFrame() MOJO_OVERRIDE;
+  void DidCreateContext(uint32_t width, uint32_t height);
+  static void DidCreateContextThunk(
+      void* closure,
+      uint32_t width,
+      uint32_t height);
+  void ContextLost();
+  static void ContextLostThunk(void* closure);
 
   base::Callback<void(gfx::Size viewport_size)> context_created_callback_;
-  gpu::gles2::GLES2Implementation* impl_;
 
-  RemotePtr<GLES2> service_;
+  MojoGLES2Context context_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(GLES2ClientImpl);
 };

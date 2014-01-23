@@ -187,6 +187,8 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'mojo_gles2',
+        'mojo_gles2_bindings',
+        'mojo_environment_chromium',
       ],
       'defines': [
         'MOJO_GLES2_IMPL_IMPLEMENTATION',
@@ -195,6 +197,8 @@
         'gles2/gles2_impl_export.h',
         'gles2/gles2_support_impl.cc',
         'gles2/gles2_support_impl.h',
+        'gles2/gles2_client_impl.cc',
+        'gles2/gles2_client_impl.h',
       ],
     },
     {

@@ -14,7 +14,6 @@
         '../ui/gl/gl.gyp:gl',
         'mojo_environment_standalone',
         'mojo_gles2',
-        'mojo_gles2_bindings',
         'mojo_native_viewport_bindings',
         'mojo_shell_bindings',
         'mojo_system',

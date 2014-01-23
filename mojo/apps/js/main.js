@@ -11,7 +11,6 @@ define([
     'mojo/apps/js/bindings/gl',
     'mojo/apps/js/bindings/threading',
     'mojom/native_viewport',
-    'mojom/gles2',
     'mojom/shell',
 ], function(console,
             monotonicClock,
@@ -21,7 +20,6 @@ define([
             gljs,
             threading,
             nativeViewport,
-            gles2,
             shell) {
 
   const VERTEX_SHADER_SOURCE = [
@@ -297,7 +295,7 @@ define([
     this.remote_ = remote;
 
     var pipe = core.createMessagePipe();
-    new connector.Connection(pipe.handle0, GLES2ClientImpl, gles2.GLES2Proxy);
+    new GLES2ClientImpl(pipe.handle0);
 
     this.remote_.open();
     this.remote_.createGLES2Context(pipe.handle1);
@@ -313,20 +311,15 @@ define([
   };
 
 
-  function GLES2ClientImpl(remote) {
-    this.remote_ = remote;
+  function GLES2ClientImpl(remotePipe) {
+    this.gl_ = new gljs.Context(remotePipe, this.didCreateContext.bind(this));
     this.lastTime_ = monotonicClock.seconds();
     this.angle_ = 45;
   }
-  GLES2ClientImpl.prototype =
-      Object.create(gles2.GLES2ClientStub.prototype);
 
-  GLES2ClientImpl.prototype.didCreateContext = function(encoded,
-                                                        width,
-                                                        height) {
+  GLES2ClientImpl.prototype.didCreateContext = function(width, height) {
     this.width_ = width;
     this.height_ = height;
-    this.gl_ = new gljs.Context(encoded, width, height);
     this.program_ = loadProgram(this.gl_);
     this.positionLocation_ =
         this.gl_.getAttribLocation(this.program_, 'a_position');

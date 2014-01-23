@@ -7,14 +7,14 @@
 
 #include "mojo/examples/sample_app/spinning_cube.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
-#include "mojom/gles2.h"
+#include "mojo/public/gles2/gles2.h"
 #include "mojom/native_viewport.h"
 #include "ui/gfx/point_f.h"
 
 namespace mojo {
 namespace examples {
 
-class GLES2ClientImpl : public GLES2Client {
+class GLES2ClientImpl {
  public:
   explicit GLES2ClientImpl(ScopedMessagePipeHandle pipe);
   virtual ~GLES2ClientImpl();
@@ -22,11 +22,15 @@ class GLES2ClientImpl : public GLES2Client {
   void HandleInputEvent(const Event& event);
 
  private:
-  virtual void DidCreateContext(uint64_t encoded,
-                                uint32_t width,
-                                uint32_t height) MOJO_OVERRIDE;
-  virtual void ContextLost() MOJO_OVERRIDE;
-  virtual void DrawAnimationFrame() MOJO_OVERRIDE;
+  void DidCreateContext(uint32_t width, uint32_t height);
+  static void DidCreateContextThunk(
+      void* closure,
+      uint32_t width,
+      uint32_t height);
+  void ContextLost();
+  static void ContextLostThunk(void* closure);
+  void DrawAnimationFrame();
+  static void DrawAnimationFrameThunk(void* closure);
 
   void RequestAnimationFrames();
   void CancelAnimationFrames();
@@ -38,7 +42,7 @@ class GLES2ClientImpl : public GLES2Client {
   MojoTimeTicks drag_start_time_;
   bool getting_animation_frames_;
 
-  RemotePtr<GLES2> service_;
+  MojoGLES2Context context_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(GLES2ClientImpl);
 };

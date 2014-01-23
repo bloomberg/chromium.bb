@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "mojo/gles2/gles2_client_impl.h"
 #include "mojo/public/gles2/gles2_interface.h"
 #include "mojo/public/gles2/gles2_private.h"
 
@@ -40,29 +41,71 @@ base::LazyInstance<GLES2ImplForCommandBuffer> g_gles2_interface =
 
 }  // anonymous namespace
 
+GLES2SupportImpl::GLES2SupportImpl() : async_waiter_(NULL) {}
 GLES2SupportImpl::~GLES2SupportImpl() {}
 
 // static
 void GLES2SupportImpl::Init() { GLES2Support::Init(new GLES2SupportImpl()); }
 
-void GLES2SupportImpl::Initialize() {}
+void GLES2SupportImpl::Initialize(MojoAsyncWaiter* async_waiter) {
+  DCHECK(!async_waiter_);
+  DCHECK(async_waiter);
+  async_waiter_ = async_waiter;
+}
 
-void GLES2SupportImpl::Terminate() {}
+void GLES2SupportImpl::Terminate() {
+  DCHECK(!async_waiter_);
+  async_waiter_ = NULL;
+}
 
-void GLES2SupportImpl::MakeCurrent(uint64_t encoded) {
-  // Ack, Hans! It's the giant hack.
-  // TODO(abarth): Replace this hack with something more disciplined. Most
-  // likley, we should receive a MojoHandle that we use to wire up the
-  // client side of an out-of-process command buffer. Given that we're
-  // still in-process, we just reinterpret_cast the value into a GL interface.
-  gpu::gles2::GLES2Interface* gl_interface =
-      reinterpret_cast<gpu::gles2::GLES2Interface*>(
-          static_cast<uintptr_t>(encoded));
-  g_gles2_interface.Get().set_gpu_interface(gl_interface);
+MojoGLES2Context GLES2SupportImpl::CreateContext(
+    MessagePipeHandle handle,
+    MojoGLES2ContextCreated created_callback,
+    MojoGLES2ContextLost lost_callback,
+    MojoGLES2DrawAnimationFrame animation_callback,
+    void* closure) {
+  mojo::ScopedMessagePipeHandle scoped_handle =
+      mojo::ScopedMessagePipeHandle(mojo::MessagePipeHandle(handle));
+  return new GLES2ClientImpl(async_waiter_,
+                             scoped_handle.Pass(),
+                             created_callback,
+                             lost_callback,
+                             animation_callback,
+                             closure);
+}
+
+void GLES2SupportImpl::DestroyContext(MojoGLES2Context context) {
+  delete static_cast<GLES2ClientImpl*>(context);
+}
+
+void GLES2SupportImpl::MakeCurrent(MojoGLES2Context context) {
+  gpu::gles2::GLES2Interface* interface = NULL;
+  if (context) {
+    GLES2ClientImpl* client = static_cast<GLES2ClientImpl*>(context);
+    interface = client->interface();
+    DCHECK(interface);
+  }
+  g_gles2_interface.Get().set_gpu_interface(interface);
 }
 
 void GLES2SupportImpl::SwapBuffers() {
   g_gles2_interface.Get().gpu_interface()->SwapBuffers();
+}
+
+void GLES2SupportImpl::RequestAnimationFrames(MojoGLES2Context context) {
+  static_cast<GLES2ClientImpl*>(context)->RequestAnimationFrames();
+}
+
+void GLES2SupportImpl::CancelAnimationFrames(MojoGLES2Context context) {
+  static_cast<GLES2ClientImpl*>(context)->CancelAnimationFrames();
+}
+
+void* GLES2SupportImpl::GetGLES2Interface(MojoGLES2Context context) {
+  return static_cast<GLES2ClientImpl*>(context)->interface();
+}
+
+void* GLES2SupportImpl::GetContextSupport(MojoGLES2Context context) {
+  return static_cast<GLES2ClientImpl*>(context)->context_support();
 }
 
 GLES2Interface* GLES2SupportImpl::GetGLES2InterfaceForCurrentContext() {

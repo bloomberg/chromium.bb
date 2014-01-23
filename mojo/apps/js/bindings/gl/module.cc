@@ -4,15 +4,13 @@
 
 #include "mojo/apps/js/bindings/gl/module.h"
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/wrappable.h"
 #include "mojo/apps/js/bindings/gl/context.h"
+#include "mojo/apps/js/bindings/handle.h"
 
 namespace mojo {
 namespace js {
@@ -24,9 +22,11 @@ namespace {
 
 gin::WrapperInfo kWrapperInfo = { gin::kEmbedderNativeGin };
 
-gin::Handle<Context> CreateContext(const gin::Arguments& args, uint64_t encoded,
-                                   int width, int height) {
-  return Context::Create(args.isolate(), encoded, width, height);
+gin::Handle<Context> CreateContext(
+    const gin::Arguments& args,
+    mojo::Handle handle,
+    v8::Handle<v8::Function> did_create_callback) {
+  return Context::Create(args.isolate(), handle, did_create_callback);
 }
 
 }  // namespace

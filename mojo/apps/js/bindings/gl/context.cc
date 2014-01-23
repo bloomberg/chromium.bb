@@ -9,6 +9,7 @@
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/object_template_builder.h"
+#include "gin/per_context_data.h"
 #include "mojo/public/gles2/gles2.h"
 
 namespace gin {
@@ -31,9 +32,12 @@ namespace gl {
 
 gin::WrapperInfo Context::kWrapperInfo = { gin::kEmbedderNativeGin };
 
-gin::Handle<Context> Context::Create(v8::Isolate* isolate, uint64_t encoded,
-                                     int width, int height) {
-  return gin::CreateHandle(isolate, new Context(encoded, width, height));
+gin::Handle<Context> Context::Create(
+    v8::Isolate* isolate,
+    mojo::Handle handle,
+    v8::Handle<v8::Function> did_create_callback) {
+  return gin::CreateHandle(isolate,
+                           new Context(isolate, handle, did_create_callback));
 }
 
 void Context::BufferData(GLenum target, const gin::ArrayBufferView& buffer,
@@ -144,11 +148,55 @@ gin::ObjectTemplateBuilder Context::GetObjectTemplateBuilder(
       .SetMethod("viewport", glViewport);
 }
 
-Context::Context(uint64_t encoded, int width, int height)
-    : encoded_(encoded) {
+Context::Context(v8::Isolate* isolate,
+                 mojo::Handle handle,
+                 v8::Handle<v8::Function> did_create_callback) {
+  v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+  runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
+  did_create_callback_.Reset(isolate, did_create_callback);
+  context_ = MojoGLES2CreateContext(
+      handle.value(),
+      &DidCreateContextThunk,
+      &ContextLostThunk,
+      NULL,
+      this);
+}
+
+Context::~Context() {
+  MojoGLES2DestroyContext(context_);
+}
+
+void Context::DidCreateContext(uint32_t width, uint32_t height) {
   // TODO(aa): When we want to support multiple contexts, we should add
   // Context::MakeCurrent() for developers to switch between them.
-  MojoGLES2MakeCurrent(encoded_);
+  MojoGLES2MakeCurrent(context_);
+  if (!runner_)
+    return;
+  gin::Runner::Scope scope(runner_.get());
+  v8::Isolate* isolate = runner_->isolate();
+
+  v8::Handle<v8::Function> callback = v8::Local<v8::Function>::New(
+      isolate, did_create_callback_);
+
+  v8::Handle<v8::Value> args[] = {
+    gin::ConvertToV8(isolate, width),
+    gin::ConvertToV8(isolate, height),
+  };
+  runner_->Call(callback, runner_->global(), 2, args);
+}
+
+void Context::DidCreateContextThunk(
+    void* closure,
+    uint32_t width,
+    uint32_t height) {
+  static_cast<Context*>(closure)->DidCreateContext(width, height);
+}
+
+void Context::ContextLost() {
+}
+
+void Context::ContextLostThunk(void* closure) {
+  static_cast<Context*>(closure)->ContextLost();
 }
 
 }  // namespace gl

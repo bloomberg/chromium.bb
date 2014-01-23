@@ -5,7 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/apps/js/mojo_runner_delegate.h"
-#include "mojo/public/gles2/gles2.h"
+#include "mojo/public/gles2/gles2_cpp.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/system/macros.h"
 
@@ -37,10 +37,7 @@ void Start(MojoHandle pipe, const std::string& module) {
 }  // namespace mojo
 
 extern "C" MOJO_APPS_JS_EXPORT MojoResult CDECL MojoMain(MojoHandle pipe) {
-  MojoGLES2Initialize();
-
+  mojo::GLES2Initializer gles2;
   mojo::apps::Start(pipe, "mojo/apps/js/main");
-
-  MojoGLES2Terminate();
   return MOJO_RESULT_OK;
 }
