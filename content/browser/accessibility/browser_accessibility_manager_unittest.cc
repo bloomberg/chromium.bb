@@ -6,6 +6,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#if defined(OS_WIN)
+#include "content/browser/accessibility/browser_accessibility_win.h"
+#endif
 #include "content/common/accessibility_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,6 +38,15 @@ class CountedBrowserAccessibility : public BrowserAccessibility {
 
   int native_ref_count_;
   static int global_obj_count_;
+
+#if defined(OS_WIN)
+  // Adds some padding to prevent a heap-buffer-overflow when an instance of
+  // this class is casted into a BrowserAccessibilityWin pointer.
+  // http://crbug.com/235508
+  // TODO(dmazzoni): Fix this properly.
+  static const size_t kDataSize = sizeof(int) + sizeof(BrowserAccessibility);
+  uint8 padding_[sizeof(BrowserAccessibilityWin) - kDataSize];
+#endif
 };
 
 int CountedBrowserAccessibility::global_obj_count_ = 0;
