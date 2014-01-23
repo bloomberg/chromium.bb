@@ -140,8 +140,9 @@ SigninManager::~SigninManager() {
 void SigninManager::InitTokenService() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  if (token_service && !GetAuthenticatedUsername().empty())
-    token_service->LoadCredentials();
+  const std::string& account_id = GetAuthenticatedUsername();
+  if (token_service && !account_id.empty())
+    token_service->LoadCredentials(account_id);
 }
 
 std::string SigninManager::SigninTypeToString(
@@ -363,8 +364,6 @@ void SigninManager::SignOut() {
 void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
   SigninManagerBase::Initialize(profile, local_state);
 
-  InitTokenService();
-
   // local_state can be null during unit tests.
   if (local_state) {
     local_state_pref_registrar_.Init(local_state);
@@ -385,6 +384,7 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
     SignOut();
   }
 
+  InitTokenService();
   account_id_helper_.reset(new SigninAccountIdHelper(profile));
 }
 

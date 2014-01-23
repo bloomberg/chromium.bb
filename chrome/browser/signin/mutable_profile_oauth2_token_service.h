@@ -20,7 +20,7 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   // ProfileOAuth2TokenService overrides.
   virtual void Shutdown() OVERRIDE;
   virtual std::vector<std::string> GetAccounts() OVERRIDE;
-  virtual void LoadCredentials() OVERRIDE;
+  virtual void LoadCredentials(const std::string& primary_account_id) OVERRIDE;
   virtual void UpdateCredentials(const std::string& account_id,
                                  const std::string& refresh_token) OVERRIDE;
   virtual void RevokeAllCredentials() OVERRIDE;
@@ -90,10 +90,6 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
       WebDataServiceBase::Handle handle,
       const WDTypedResult* result) OVERRIDE;
 
-  // When migrating an old login-scoped refresh token, this returns the account
-  // ID with which the token was associated.
-  std::string GetAccountIdForMigratingRefreshToken();
-
   // Loads credentials into in memory stucture.
   void LoadAllCredentialsIntoMemory(
       const std::map<std::string, std::string>& db_tokens);
@@ -110,11 +106,18 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   // Revokes the refresh token on the server.
   void RevokeCredentialsOnServer(const std::string& refresh_token);
 
+  // Cancels any outstanding fetch for tokens from the web database.
+  void CancelWebTokenFetch();
+
   // In memory refresh token store mapping account_id to refresh_token.
   AccountInfoMap refresh_tokens_;
 
   // Handle to the request reading tokens from database.
   WebDataServiceBase::Handle web_data_service_request_;
+
+  // The primary account id of this service's profile during the loading of
+  // credentials.  This member is empty otherwise.
+  std::string loading_primary_account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenService);
 };

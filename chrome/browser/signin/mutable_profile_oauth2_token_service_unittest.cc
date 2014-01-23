@@ -6,9 +6,6 @@
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_account_id_helper.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/webdata/token_web_data.h"
@@ -49,8 +46,6 @@ class MutableProfileOAuth2TokenServiceTest :
     profile_.reset(new TestingProfile);
     profile_->CreateWebDataService();
 
-    SigninAccountIdHelper::SetDisableForTest(true);
-
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(),
                              "", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_service_ =
@@ -64,15 +59,9 @@ class MutableProfileOAuth2TokenServiceTest :
   virtual void TearDown() OVERRIDE {
     oauth2_service_->RemoveObserver(this);
     profile_.reset();
-    SigninAccountIdHelper::SetDisableForTest(false);
   }
 
   TestingProfile* profile() { return profile_.get(); }
-
-  void SetupSigninManager(const std::string& username) {
-    SigninManagerFactory::GetForProfile(profile())->
-        SetAuthenticatedUsername(username);
-  }
 
   void AddAuthTokenManually(const std::string& service,
                             const std::string& value)  {
@@ -140,8 +129,6 @@ class MutableProfileOAuth2TokenServiceTest :
 };
 
 TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
-  SetupSigninManager(kEmail);
-
   std::string main_account_id(kEmail);
   std::string main_refresh_token("old_refresh_token");
 
@@ -152,7 +139,7 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
                        main_refresh_token);
 
   // Force LoadCredentials.
-  oauth2_service_->LoadCredentials();
+  oauth2_service_->LoadCredentials(main_account_id);
   base::RunLoop().RunUntilIdle();
 
   // Legacy tokens get discarded, but the old refresh token is kept.
@@ -178,7 +165,7 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   ResetObserverCounts();
 
   // Force LoadCredentials.
-  oauth2_service_->LoadCredentials();
+  oauth2_service_->LoadCredentials(main_account_id);
   base::RunLoop().RunUntilIdle();
 
   // Again legacy tokens get discarded, but since the main porfile account
@@ -236,17 +223,21 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, PersistenceLoadCredentials) {
   oauth2_service_->RevokeAllCredentials();
   ResetObserverCounts();
   // Perform a load from an empty DB.
-  oauth2_service_->LoadCredentials();
+  oauth2_service_->LoadCredentials("account_id");
   base::RunLoop().RunUntilIdle();
   ExpectOneTokensLoadedNotification();
-  EXPECT_EQ(0U, oauth2_service_->refresh_tokens().size());
+  // LoadCredentials() guarantees that the account given to it as argument
+  // is in the refresh_token map.
+  EXPECT_EQ(1U, oauth2_service_->refresh_tokens().size());
+  EXPECT_TRUE(
+      oauth2_service_->refresh_tokens()["account_id"]->refresh_token().empty());
   // Setup a DB with tokens that don't require upgrade and clear memory.
   oauth2_service_->UpdateCredentials("account_id", "refresh_token");
   oauth2_service_->UpdateCredentials("account_id2", "refresh_token2");
   oauth2_service_->refresh_tokens().clear();
   ResetObserverCounts();
 
-  oauth2_service_->LoadCredentials();
+  oauth2_service_->LoadCredentials("account_id");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, token_revoked_count_);
@@ -301,18 +292,16 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, GetAccounts) {
 
 TEST_F(MutableProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  SetupSigninManager(kEmail);
   std::set<std::string> scope_list;
   scope_list.insert("scope");
-  oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
-                                    "refreshToken");
+  oauth2_service_->UpdateCredentials(kEmail, "refreshToken");
   ExpectOneTokenAvailableNotification();
   factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                            GetValidTokenResponse("token", 3600),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
-      oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_));
+  scoped_ptr<OAuth2TokenService::Request> request(
+      oauth2_service_->StartRequest(kEmail, scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
@@ -320,19 +309,17 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(1, oauth2_service_->cache_size_for_testing());
 
   // Signs out and signs in
-  oauth2_service_->RevokeCredentials(oauth2_service_->GetPrimaryAccountId());
+  oauth2_service_->RevokeCredentials(kEmail);
   ExpectOneTokenRevokedNotification();
 
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
-                                     "refreshToken");
+  oauth2_service_->UpdateCredentials(kEmail, "refreshToken");
   ExpectOneTokenAvailableNotification();
   factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
                            GetValidTokenResponse("another token", 3600),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  request = oauth2_service_->StartRequest(
-      oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_);
+  request = oauth2_service_->StartRequest(kEmail, scope_list, &consumer_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
@@ -346,18 +333,15 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, FetchTransientError) {
                            net::URLRequestStatus::FAILED);
 
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  SetupSigninManager(kEmail);
   std::set<std::string> scope_list;
   scope_list.insert("scope");
   oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
-  oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
-                                     "refreshToken");
+  oauth2_service_->UpdateCredentials(kEmail, "refreshToken");
   ExpectOneTokenAvailableNotification();
 
-  scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
-      oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_));
+  scoped_ptr<OAuth2TokenService::Request> request(
+      oauth2_service_->StartRequest(kEmail, scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
       oauth2_service_->signin_global_error()->GetLastAuthError());
 }
-

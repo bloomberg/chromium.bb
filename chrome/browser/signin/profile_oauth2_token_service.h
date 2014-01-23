@@ -53,10 +53,14 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
 
   // Loads credentials from a backing persistent store to make them available
   // after service is used between profile restarts.
-  // Usually it's not necessary to directly call this method.
-  // TODO(bauerb): Make this method protected once this class initializes itself
-  // automatically.
-  virtual void LoadCredentials();
+  //
+  // Only call this method if there is at least one account connected to the
+  // profile, otherwise startup will cause unneeded work on the IO thread.  The
+  // primary account is specified with the |primary_account_id| argument and
+  // should not be empty.  For a regular profile, the primary account id comes
+  // from SigninManager.  For a managed account, the id comes from
+  // ManagedUserService.
+  virtual void LoadCredentials(const std::string& primary_account_id);
 
   // Updates a |refresh_token| for an |account_id|. Credentials are persisted,
   // and available through |LoadCredentials| after service is restarted.

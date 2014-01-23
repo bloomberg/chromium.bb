@@ -536,10 +536,9 @@ void ManagedUserService::Init() {
         command_line->GetSwitchValueASCII(switches::kManagedUserSyncToken));
   }
 
-  // TODO(rogerta): Remove this once PO2TS has replaced TokenService.
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->LoadCredentials();
+  token_service->LoadCredentials(managed_users::kManagedUserPseudoEmail);
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile_);

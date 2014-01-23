@@ -117,15 +117,7 @@ MutableProfileOAuth2TokenService::~MutableProfileOAuth2TokenService() {
 }
 
 void MutableProfileOAuth2TokenService::Shutdown() {
-  if (web_data_service_request_ != 0) {
-    scoped_refptr<TokenWebData> token_web_data =
-        WebDataServiceFactory::GetTokenWebDataForProfile(
-            profile(), Profile::EXPLICIT_ACCESS);
-    DCHECK(token_web_data.get());
-    token_web_data->CancelRequest(web_data_service_request_);
-    web_data_service_request_  = 0;
-  }
-
+  CancelWebTokenFetch();
   CancelAllRequests();
   refresh_tokens_.clear();
 
@@ -145,11 +137,15 @@ MutableProfileOAuth2TokenService::GetRequestContext() {
   return profile()->GetRequestContext();
 }
 
-void MutableProfileOAuth2TokenService::LoadCredentials() {
+void MutableProfileOAuth2TokenService::LoadCredentials(
+    const std::string& primary_account_id) {
+  DCHECK(!primary_account_id.empty());
+  DCHECK(loading_primary_account_id_.empty());
   DCHECK_EQ(0, web_data_service_request_);
 
   CancelAllRequests();
   refresh_tokens().clear();
+  loading_primary_account_id_ = primary_account_id;
   scoped_refptr<TokenWebData> token_web_data =
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile(), Profile::EXPLICIT_ACCESS);
@@ -171,24 +167,28 @@ void MutableProfileOAuth2TokenService::OnWebDataServiceRequestDone(
     LoadAllCredentialsIntoMemory(token_result->GetValue());
   }
 
-  std::string account_id = GetPrimaryAccountId();
-
-  // If |account_id| is not empty, make sure that we have an entry in the
-  // map for it.  The entry could be missing if there is a corruption in
-  // the token DB while this profile is connected to an account.
-  if (!account_id.empty() && refresh_tokens().count(account_id) == 0) {
-    refresh_tokens()[account_id].reset(
-        new AccountInfo(this, account_id, std::string()));
+  // Make sure that we have an entry for |loading_primary_account_id_| in the
+  // map.  The entry could be missing if there is a corruption in the token DB
+  // while this profile is connected to an account.
+  DCHECK(!loading_primary_account_id_.empty());
+  if (refresh_tokens().count(loading_primary_account_id_) == 0) {
+    refresh_tokens()[loading_primary_account_id_].reset(
+        new AccountInfo(this, loading_primary_account_id_, std::string()));
   }
 
-  // If we don't have a refresh token for the primary account, signal a signin
-  // error.
-  if (!account_id.empty() && !RefreshTokenIsAvailable(account_id)) {
-    UpdateAuthError(
-        account_id,
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  // If we don't have a refresh token for a known account, signal an error.
+  for (AccountInfoMap::const_iterator i = refresh_tokens_.begin();
+       i != refresh_tokens_.end(); ++i) {
+    if (!RefreshTokenIsAvailable(i->first)) {
+      UpdateAuthError(
+          i->first,
+          GoogleServiceAuthError(
+              GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      break;
+    }
   }
+
+  loading_primary_account_id_.clear();
 }
 
 void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
@@ -222,10 +222,9 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
   }
 
   if (!old_login_token.empty()) {
-    std::string account_id = GetAccountIdForMigratingRefreshToken();
-
-    if (refresh_tokens().count(account_id) == 0)
-      UpdateCredentials(account_id, old_login_token);
+    DCHECK(!loading_primary_account_id_.empty());
+    if (refresh_tokens().count(loading_primary_account_id_) == 0)
+      UpdateCredentials(loading_primary_account_id_, old_login_token);
   }
 
   FireRefreshTokensLoaded();
@@ -297,7 +296,6 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
 
     UpdateAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());
     FireRefreshTokenAvailable(account_id);
-    // TODO(fgorski): Notify diagnostic observers.
   }
 }
 
@@ -312,8 +310,6 @@ void MutableProfileOAuth2TokenService::RevokeCredentials(
     refresh_tokens_.erase(account_id);
     ClearPersistedCredentials(account_id);
     FireRefreshTokenRevoked(account_id);
-
-    // TODO(fgorski): Notify diagnostic observers.
   }
 }
 
@@ -340,7 +336,7 @@ void MutableProfileOAuth2TokenService::ClearPersistedCredentials(
 
 void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
+  CancelWebTokenFetch();
   CancelAllRequests();
   ClearCache();
   AccountInfoMap tokens = refresh_tokens_;
@@ -348,24 +344,21 @@ void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
     RevokeCredentials(i->first);
 
   DCHECK_EQ(0u, refresh_tokens_.size());
-
-  // TODO(fgorski): Notify diagnostic observers.
-}
-
-std::string
-MutableProfileOAuth2TokenService::GetAccountIdForMigratingRefreshToken() {
-#if defined(ENABLE_MANAGED_USERS)
-  // TODO(bauerb): Make sure that only services that can deal with supervised
-  // users see the supervised user token.
-  if (profile()->IsManaged())
-    return managed_users::kManagedUserPseudoEmail;
-#endif
-
-  return GetPrimaryAccountId();
 }
 
 void MutableProfileOAuth2TokenService::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
   // RevokeServerRefreshToken deletes itself when done.
   new RevokeServerRefreshToken(refresh_token, GetRequestContext());
+}
+
+void MutableProfileOAuth2TokenService::CancelWebTokenFetch() {
+  if (web_data_service_request_ != 0) {
+    scoped_refptr<TokenWebData> token_web_data =
+        WebDataServiceFactory::GetTokenWebDataForProfile(
+            profile(), Profile::EXPLICIT_ACCESS);
+    DCHECK(token_web_data.get());
+    token_web_data->CancelRequest(web_data_service_request_);
+    web_data_service_request_  = 0;
+  }
 }

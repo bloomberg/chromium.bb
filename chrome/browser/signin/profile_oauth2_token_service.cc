@@ -77,7 +77,8 @@ std::vector<std::string> ProfileOAuth2TokenService::GetAccounts() {
   return std::vector<std::string>();
 }
 
-void ProfileOAuth2TokenService::LoadCredentials() {
+void ProfileOAuth2TokenService::LoadCredentials(
+    const std::string& primary_account_id) {
   // Empty implementation by default.
 }
 

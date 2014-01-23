@@ -255,7 +255,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   ProfileOAuth2TokenService* token_service =
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-  token_service->LoadCredentials();
+  token_service->LoadCredentials("test_user@gmail.com");
 
   sync_->SetSetupInProgress(false);
   // ProfileSyncService should try to start by requesting access token.
@@ -315,13 +315,10 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
               CreateSyncBackendHost(_, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-  ProfileOAuth2TokenService* token_service =
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
 
   sync_->Initialize();
   // Sync should not start because there are no tokens yet.
   EXPECT_FALSE(sync_->ShouldPushChanges());
-  token_service->LoadCredentials();
   sync_->SetSetupInProgress(false);
 
   // Sync should not start because there are still no tokens.

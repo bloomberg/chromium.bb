@@ -108,7 +108,7 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
     UserManager::Get()->SaveUserOAuthStatus(primary_account_id,
                                             User::OAUTH_TOKEN_STATUS_UNKNOWN);
 
-    token_service->LoadCredentials();
+    token_service->LoadCredentials(primary_account_id);
   }
 }
 
