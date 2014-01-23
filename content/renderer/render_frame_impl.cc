@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/char_iterator.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -584,8 +585,17 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   // Allocation of routing id failed, so we can't create a child frame. This can
   // happen if this RenderFrameImpl's IPCs are being filtered when in swapped
   // out state.
-  if (routing_id == MSG_ROUTING_NONE)
+  if (routing_id == MSG_ROUTING_NONE) {
+    base::debug::Alias(parent);
+    base::debug::Alias(&routing_id_);
+    bool render_view_is_swapped_out = GetRenderWidget()->is_swapped_out();
+    base::debug::Alias(&render_view_is_swapped_out);
+    bool render_view_is_closing = GetRenderWidget()->closing();
+    base::debug::Alias(&render_view_is_closing);
+    base::debug::Alias(&is_swapped_out_);
+    base::debug::DumpWithoutCrashing();
     return NULL;
+  }
 
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(render_view_,
                                                                 routing_id);
