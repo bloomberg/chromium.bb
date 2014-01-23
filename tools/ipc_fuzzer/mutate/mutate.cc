@@ -13,7 +13,6 @@
 
 #include "base/command_line.h"
 #include "base/pickle.h"
-#include "base/rand_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,6 +25,7 @@
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
 #include "tools/ipc_fuzzer/message_lib/message_cracker.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
+#include "tools/ipc_fuzzer/mutate/rand_util.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>
@@ -62,12 +62,12 @@ class Fuzzer {
 
 template <typename T>
 void FuzzIntegralType(T* value, unsigned int frequency) {
-  if (base::RandInt(0, frequency) == 0) {
-    switch (base::RandInt(0, 3)) {
+  if (RandEvent(frequency)) {
+    switch (RandInRange(4)) {
       case 0: (*value) = 0; break;
       case 1: (*value)--; break;
       case 2: (*value)++; break;
-      case 3: (*value) = base::RandUint64(); break;
+      case 3: (*value) = RandU64(); break;
     }
   }
 }
@@ -75,8 +75,8 @@ void FuzzIntegralType(T* value, unsigned int frequency) {
 template <typename T>
 void FuzzStringType(T* value, unsigned int frequency,
                     const T& literal1, const T& literal2) {
-  if (base::RandInt(0, frequency) == 0) {
-    switch (base::RandInt(0, 4)) {
+  if (RandEvent(frequency)) {
+    switch (RandInRange(5)) {
       case 4: (*value) = (*value) + (*value);   // FALLTHROUGH
       case 3: (*value) = (*value) + (*value);   // FALLTHROUGH
       case 2: (*value) = (*value) + (*value); break;
@@ -95,7 +95,7 @@ class DefaultFuzzer : public Fuzzer {
   virtual ~DefaultFuzzer() {}
 
   virtual void FuzzBool(bool* value) OVERRIDE {
-    if (base::RandInt(0, frequency_) == 0)
+    if (RandEvent(frequency_))
       (*value) = !(*value);
   }
 
@@ -132,13 +132,13 @@ class DefaultFuzzer : public Fuzzer {
   }
 
   virtual void FuzzFloat(float* value) OVERRIDE {
-    if (base::RandInt(0, frequency_) == 0)
-      *value = base::RandDouble();
+    if (RandEvent(frequency_))
+      *value = RandDouble();
   }
 
   virtual void FuzzDouble(double* value) OVERRIDE {
-    if (base::RandInt(0, frequency_) == 0)
-      *value = base::RandDouble();
+    if (RandEvent(frequency_))
+      *value = RandDouble();
   }
 
   virtual void FuzzString(std::string* value) OVERRIDE {
@@ -152,7 +152,7 @@ class DefaultFuzzer : public Fuzzer {
   }
 
   virtual void FuzzData(char* data, int length) OVERRIDE {
-    if (base::RandInt(0, frequency_) == 0) {
+    if (RandEvent(frequency_)) {
       for (int i = 0; i < length; ++i) {
         FuzzIntegralType<char>(&data[i], frequency_);
       }
@@ -685,6 +685,8 @@ int MutateMain(int argc, char** argv) {
     type_set.insert(atoi(type_string_vector[i].c_str()));
   }
 
+  InitRand();
+
   Fuzzer* fuzzer = FuzzerFactory::Create(fuzzer_name, frequency);
   if (!fuzzer)
     return EXIT_FAILURE;
@@ -693,10 +695,8 @@ int MutateMain(int argc, char** argv) {
   PopulateFuzzFunctionMap(&fuzz_function_map);
 
   MessageVector message_vector;
-  if (!MessageFile::Read(
-          base::FilePath(input_file_name), &message_vector)) {
+  if (!MessageFile::Read(base::FilePath(input_file_name), &message_vector))
     return EXIT_FAILURE;
-  }
 
   for (size_t i = 0; i < message_vector.size(); ++i) {
     IPC::Message* msg = message_vector[i];
@@ -711,8 +711,10 @@ int MutateMain(int argc, char** argv) {
     }
   }
 
-  if (permute)
-    std::random_shuffle(message_vector.begin(), message_vector.end());
+  if (permute) {
+    std::random_shuffle(message_vector.begin(), message_vector.end(),
+                        RandInRange);
+  }
 
   if (!MessageFile::Write(base::FilePath(output_file_name), message_vector))
     return EXIT_FAILURE;

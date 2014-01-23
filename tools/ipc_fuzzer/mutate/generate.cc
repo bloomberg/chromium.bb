@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/pickle.h"
-#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
+#include "tools/ipc_fuzzer/mutate/rand_util.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>
@@ -61,20 +61,20 @@ class Generator {
 
 template <typename T>
 void GenerateIntegralType(T* value) {
-  *value = static_cast<T>(base::RandUint64());
+  *value = static_cast<T>(RandU64());
 }
 
 template <typename T>
 void GenerateFloatingType(T* value) {
-  *value = 1000000.0 * (base::RandDouble() - 0.5);
+  *value = RandDouble();
 }
 
 template <typename T>
 void GenerateStringType(T* value) {
   T temp_string;
-  size_t length = base::RandInt(0, 299);
+  size_t length = RandInRange(300);
   for (size_t i = 0; i < length; ++i)
-    temp_string += base::RandInt(0, 255);
+    temp_string += RandInRange(256);
   *value = temp_string;
 }
 
@@ -84,7 +84,7 @@ class GeneratorImpl : public Generator {
   virtual ~GeneratorImpl() {}
 
   virtual void GenerateBool(bool* value) OVERRIDE {
-    *value = base::RandInt(0, 1);
+    *value = RandInRange(2);
   }
 
   virtual void GenerateInt(int* value) OVERRIDE {
@@ -346,7 +346,7 @@ template <class A>
 struct GenerateTraits<std::vector<A> > {
   static bool Generate(std::vector<A>* p, Generator* generator) {
     static int depth = 0;
-    size_t count = ++depth > 3 ? 0 : base::RandInt(0, 19);
+    size_t count = ++depth > 3 ? 0 : RandInRange(20);
     p->resize(count);
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&p->at(i), generator)) {
@@ -363,7 +363,7 @@ template <class A>
 struct GenerateTraits<std::set<A> > {
   static bool Generate(std::set<A>* p, Generator* generator) {
     static int depth = 0;
-    size_t count = ++depth > 3 ? 0 : base::RandInt(0, 19);
+    size_t count = ++depth > 3 ? 0 : RandInRange(20);
     A a;
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&a, generator)) {
@@ -382,7 +382,7 @@ template <class A, class B>
 struct GenerateTraits<std::map<A, B> > {
   static bool Generate(std::map<A, B>* p, Generator* generator) {
     static int depth = 0;
-    size_t count = ++depth > 3 ? 0 : base::RandInt(0, 19);
+    size_t count = ++depth > 3 ? 0 : RandInRange(20);
     std::pair<A, B> place_holder;
     for (size_t i = 0; i < count; ++i) {
       if (!GenerateParam(&place_holder, generator)) {
@@ -427,10 +427,10 @@ template <>
 struct GenerateTraits<base::FilePath> {
   static bool Generate(base::FilePath* p, Generator* generator) {
     const char path_chars[] = "ACz0/.~:";
-    size_t count = base::RandInt(0, 59);
+    size_t count = RandInRange(60);
     std::string random_path;
     for (size_t i = 0; i < count; ++i)
-      random_path += path_chars[base::RandInt(0, sizeof(path_chars) - 2)];
+      random_path += path_chars[RandInRange(sizeof(path_chars) - 1)];
     *p = base::FilePath(random_path);
     return true;
   }
@@ -439,7 +439,7 @@ struct GenerateTraits<base::FilePath> {
 template <>
 struct GenerateTraits<base::Time> {
   static bool Generate(base::Time* p, Generator* generator) {
-    *p = base::Time::FromInternalValue(base::RandUint64());
+    *p = base::Time::FromInternalValue(RandU64());
     return true;
   }
 };
@@ -447,7 +447,7 @@ struct GenerateTraits<base::Time> {
 template <>
 struct GenerateTraits<base::TimeDelta> {
   static bool Generate(base::TimeDelta* p, Generator* generator) {
-    *p = base::TimeDelta::FromInternalValue(base::RandUint64());
+    *p = base::TimeDelta::FromInternalValue(RandU64());
     return true;
   }
 };
@@ -455,7 +455,7 @@ struct GenerateTraits<base::TimeDelta> {
 template <>
 struct GenerateTraits<base::TimeTicks> {
   static bool Generate(base::TimeTicks* p, Generator* generator) {
-    *p = base::TimeTicks::FromInternalValue(base::RandUint64());
+    *p = base::TimeTicks::FromInternalValue(RandU64());
     return true;
   }
 };
@@ -476,11 +476,11 @@ template <>
 struct GenerateTraits<GURL> {
   static bool Generate(GURL *p, Generator* generator) {
     const char url_chars[] = "Ahtp0:/.?+\%&#";
-    size_t count = base::RandInt(0, 99);
+    size_t count = RandInRange(100);
     std::string random_url;
     for (size_t i = 0; i < count; ++i)
-      random_url += url_chars[base::RandInt(0, sizeof(url_chars) - 2)];
-    int selector = base::RandInt(0, 9);
+      random_url += url_chars[RandInRange(sizeof(url_chars) - 1)];
+    int selector = RandInRange(10);
     if (selector == 0)
       random_url = std::string("http://") + random_url;
     else if (selector == 1)
@@ -682,7 +682,7 @@ struct GenerateTraits<gfx::Vector2dF> {
     static bool Generate(enum_name* p, Generator* generator) {     \
       for (int shift = 30; shift; --shift) {                       \
         for (int tries = 0; tries < 2; ++tries) {                  \
-          int value = base::RandInt(0, 1 << shift);                \
+          int value = RandInRange(1 << shift);                     \
           if (condition) {                                         \
             *reinterpret_cast<int*>(p) = value;                    \
             return true;                                           \
@@ -710,7 +710,7 @@ struct GenerateTraits<gfx::Vector2dF> {
 
 #define IPC_EMPTY_ROUTED_GENERATE(name, in, out, ilist, olist)          \
   IPC::Message* generator_for_##name(Generator* generator) {            \
-    return new name(base::RandInt(0, MAX_FAKE_ROUTING_ID - 1));         \
+    return new name(RandInRange(MAX_FAKE_ROUTING_ID));                  \
   }
 
 #define IPC_ASYNC_CONTROL_GENERATE(name, in, out, ilist, olist)         \
@@ -727,7 +727,7 @@ struct GenerateTraits<gfx::Vector2dF> {
   IPC::Message* generator_for_##name(Generator* generator) {            \
     IPC_TUPLE_IN_##in ilist p;                                          \
     if (GenerateParam(&p, generator)) {                                 \
-      return new name(base::RandInt(0, MAX_FAKE_ROUTING_ID - 1)         \
+      return new name(RandInRange(MAX_FAKE_ROUTING_ID)                  \
                       IPC_COMMA_##in                                    \
                       IPC_MEMBERS_IN_##in(p));                          \
     }                                                                   \
@@ -751,7 +751,7 @@ struct GenerateTraits<gfx::Vector2dF> {
   IPC::Message* generator_for_##name(Generator* generator) {            \
     IPC_TUPLE_IN_##in ilist p;                                          \
     if (GenerateParam(&p, generator)) {                                 \
-      return new name(base::RandInt(0, MAX_FAKE_ROUTING_ID - 1)         \
+      return new name(RandInRange(MAX_FAKE_ROUTING_ID)                  \
                       IPC_COMMA_OR_##out(IPC_COMMA_##in)                \
                       IPC_MEMBERS_IN_##in(p)                            \
                       IPC_COMMA_AND_##out(IPC_COMMA_##in)               \
@@ -809,6 +809,8 @@ int GenerateMain(int argc, char** argv) {
   if (cmd->HasSwitch(kCountSwitch))
     message_count = atoi(cmd->GetSwitchValueASCII(kCountSwitch).c_str());
 
+  InitRand();
+
   GeneratorFunctionVector function_vector;
   PopulateGeneratorFunctionVector(&function_vector);
   std::cerr << "Counted " << function_vector.size()
@@ -829,7 +831,7 @@ int GenerateMain(int argc, char** argv) {
   } else {
     // Generate a random batch.
     for (int i = 0; i < message_count; ++i) {
-      size_t index = base::RandInt(0, function_vector.size() - 1);
+      size_t index = RandInRange(function_vector.size());
       if (IPC::Message* new_message = (*function_vector[index])(generator))
         message_vector.push_back(new_message);
       else
