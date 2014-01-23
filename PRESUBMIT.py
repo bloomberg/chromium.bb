@@ -1427,9 +1427,7 @@ def GetPreferredTrySlaves(project, change):
       'linux_asan',
       'linux_chromeos',
       'linux_clang',
-      # TODO(sbc): linux NaCl SDK bot temporarily disabled until the ARM cross
-      # compiler gets installed on the trybots: http://crbug.com/335303
-      #'linux_nacl_sdk_build',
+      'linux_nacl_sdk_build',
       'linux_rel',
       'mac',
       'mac_nacl_sdk_build',
