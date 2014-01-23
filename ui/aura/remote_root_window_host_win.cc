@@ -524,7 +524,9 @@ void RemoteWindowTreeHostWin::OnMouseButton(
 
   SetEventFlags(params.flags | key_event_flags());
   if (params.event_type == ui::ET_MOUSEWHEEL) {
-    ui::MouseWheelEvent wheel_event(mouse_event, 0, params.extra);
+    int x_offset = params.is_horizontal_wheel ? params.extra : 0;
+    int y_offset = !params.is_horizontal_wheel ? params.extra : 0;
+    ui::MouseWheelEvent wheel_event(mouse_event, x_offset, y_offset);
     delegate_->OnHostMouseEvent(&wheel_event);
   } else if (params.event_type == ui::ET_MOUSE_PRESSED) {
     // TODO(shrikant): Ideally modify code in event.cc by adding automatic

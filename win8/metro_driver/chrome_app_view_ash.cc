@@ -373,7 +373,8 @@ class ChromeAppViewAsh::PointerInfoHandler {
         update_kind_(winui::Input::PointerUpdateKind_Other),
         timestamp_(0),
         pointer_id_(0),
-        mouse_down_flags_(0) {}
+        mouse_down_flags_(0),
+        is_horizontal_wheel_(0) {}
 
   HRESULT Init(winui::Core::IPointerEventArgs* args) {
     HRESULT hr = args->get_CurrentPoint(&pointer_point_);
@@ -398,8 +399,12 @@ class ChromeAppViewAsh::PointerInfoHandler {
     if (FAILED(hr))
       return hr;
 
+    is_horizontal_wheel_ = 0;
+    properties->get_IsHorizontalMouseWheel(&is_horizontal_wheel_);
+
     x_ = point.X;
     y_ = point.Y;
+
     pointer_point_->get_Timestamp(&timestamp_);
     pointer_point_->get_PointerId(&pointer_id_);
     // Map the OS touch event id to a range allowed by the gesture recognizer.
@@ -483,6 +488,8 @@ class ChromeAppViewAsh::PointerInfoHandler {
 
   winui::Input::PointerUpdateKind update_kind() const { return update_kind_; }
 
+  bool is_horizontal_wheel() const { return !!is_horizontal_wheel_; }
+
  private:
   int x_;
   int y_;
@@ -495,6 +502,9 @@ class ChromeAppViewAsh::PointerInfoHandler {
   // Bitmask of ui::EventFlags corresponding to the buttons that are currently
   // down.
   uint32 mouse_down_flags_;
+
+  // Set to true for a horizontal wheel message.
+  boolean is_horizontal_wheel_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerInfoHandler);
 };
@@ -942,7 +952,8 @@ void ChromeAppViewAsh::SendMouseButton(int x,
                                        int extra,
                                        ui::EventType event_type,
                                        uint32 flags,
-                                       ui::EventFlags changed_button) {
+                                       ui::EventFlags changed_button,
+                                       bool is_horizontal_wheel) {
   MetroViewerHostMsg_MouseButtonParams params;
   params.x = static_cast<int32>(x);
   params.y = static_cast<int32>(y);
@@ -950,6 +961,7 @@ void ChromeAppViewAsh::SendMouseButton(int x,
   params.event_type = event_type;
   params.flags = static_cast<int32>(flags);
   params.changed_button = changed_button;
+  params.is_horizontal_wheel = is_horizontal_wheel;
   ui_channel_->Send(new MetroViewerHostMsg_MouseButton(params));
 }
 
@@ -976,7 +988,7 @@ void ChromeAppViewAsh::GenerateMouseEventFromMoveIfNecessary(
   }
   SendMouseButton(pointer.x(), pointer.y(), 0, event_type,
                   mouse_down_flags | GetKeyboardEventFlags(),
-                  pointer.changed_button());
+                  pointer.changed_button(), pointer.is_horizontal_wheel());
 }
 
 HRESULT ChromeAppViewAsh::OnActivate(
@@ -1050,7 +1062,7 @@ HRESULT ChromeAppViewAsh::OnPointerPressed(
     mouse_down_flags_ = pointer.mouse_down_flags();
     SendMouseButton(pointer.x(), pointer.y(), 0, ui::ET_MOUSE_PRESSED,
                     mouse_down_flags_ | GetKeyboardEventFlags(),
-                    pointer.changed_button());
+                    pointer.changed_button(), pointer.is_horizontal_wheel());
   } else {
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchDown(pointer.x(),
@@ -1074,7 +1086,8 @@ HRESULT ChromeAppViewAsh::OnPointerReleased(
     SendMouseButton(pointer.x(), pointer.y(), 0, ui::ET_MOUSE_RELEASED,
                     static_cast<uint32>(pointer.changed_button()) |
                     GetKeyboardEventFlags(),
-                    pointer.changed_button());
+                    pointer.changed_button(),
+                    pointer.is_horizontal_wheel());
   } else {
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchUp(pointer.x(),
@@ -1094,7 +1107,8 @@ HRESULT ChromeAppViewAsh::OnWheel(
     return hr;
   DCHECK(pointer.IsMouse());
   SendMouseButton(pointer.x(), pointer.y(), pointer.wheel_delta(),
-                  ui::ET_MOUSEWHEEL, ui::EF_NONE, ui::EF_NONE);
+                  ui::ET_MOUSEWHEEL, ui::EF_NONE, ui::EF_NONE,
+                  pointer.is_horizontal_wheel());
   return S_OK;
 }
 

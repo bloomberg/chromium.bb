@@ -26,6 +26,7 @@ IPC_STRUCT_BEGIN(MetroViewerHostMsg_MouseButtonParams)
   IPC_STRUCT_MEMBER(ui::EventType, event_type)
   IPC_STRUCT_MEMBER(uint32, flags)
   IPC_STRUCT_MEMBER(ui::EventFlags, changed_button)
+  IPC_STRUCT_MEMBER(bool, is_horizontal_wheel)
 
 IPC_STRUCT_END()
 

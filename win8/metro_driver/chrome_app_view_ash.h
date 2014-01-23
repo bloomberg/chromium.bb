@@ -131,7 +131,8 @@ class ChromeAppViewAsh
                        int extra,
                        ui::EventType event_type,
                        uint32 flags,
-                       ui::EventFlags changed_button);
+                       ui::EventFlags changed_button,
+                       bool is_horizontal_wheel);
 
   // Win8 only generates a mouse press for the initial button that goes down and
   // a release when the last button is released. Any intermediary presses (or
