@@ -52,9 +52,6 @@ class OmniboxViewViews
   // Initialize, create the underlying views, etc;
   void Init();
 
-  // Sets the colors of the text view according to the theme.
-  void SetBaseColor();
-
   // views::Textfield:
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

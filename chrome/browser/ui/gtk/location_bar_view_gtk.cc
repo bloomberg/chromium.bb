@@ -102,9 +102,6 @@ using extensions::Extension;
 
 namespace {
 
-// We are positioned with a little bit of extra space that we don't use now.
-const int kTopMargin = 1;
-const int kBottomMargin = 1;
 // We draw a border on the top and bottom (but not on left or right).
 const int kBorderThickness = 1;
 
@@ -904,11 +901,10 @@ void LocationBarViewGtk::Observe(int type,
         gtk_util::ForceFontSizePixels(tab_to_search_hint_trailing_label_,
                                       browser_defaults::kOmniboxFontPixelSize);
 
-        const int top_bottom = popup_window_mode_ ? kPopupEdgeThickness : 0;
+        const int left_right = popup_window_mode_ ? kPopupEdgeThickness : 0;
         gtk_alignment_set_padding(GTK_ALIGNMENT(omnibox_view_alignment_),
-                                  kTopMargin + kBorderThickness,
-                                  kBottomMargin + kBorderThickness,
-                                  top_bottom, top_bottom);
+                                  kBorderThickness, kBorderThickness,
+                                  left_right, left_right);
         gtk_alignment_set_padding(GTK_ALIGNMENT(tab_to_search_alignment_),
                                   1, 1, 0, 0);
         gtk_alignment_set_padding(GTK_ALIGNMENT(site_type_alignment_),

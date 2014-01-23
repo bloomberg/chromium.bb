@@ -194,7 +194,8 @@ OmniboxViewGtk::OmniboxViewGtk(OmniboxEditController* controller,
       update_popup_without_focus_(false),
       supports_pre_edit_(!gtk_check_version(2, 20, 0)),
       pre_edit_size_before_change_(0),
-      going_to_focus_(NULL) {
+      going_to_focus_(NULL),
+      font_baseline_shift_(0) {
   OmniboxPopupViewGtk* view = new OmniboxPopupViewGtk(
       GetFont(), this, model(), location_bar);
   view->Init();
@@ -219,9 +220,7 @@ OmniboxViewGtk::~OmniboxViewGtk() {
 void OmniboxViewGtk::Init() {
   SetEntryStyle();
 
-  // The height of the text view is going to change based on the font used.  We
-  // don't want to stretch the height, and we want it vertically centered.
-  alignment_.Own(gtk_alignment_new(0., 0.5, 1.0, 0.0));
+  alignment_.Own(gtk_alignment_new(0.0, 0.0, 1.0, 1.0));
   gtk_widget_set_name(alignment_.get(),
                       "chrome-autocomplete-edit-view");
 
@@ -325,8 +324,10 @@ void OmniboxViewGtk::Init() {
                    G_CALLBACK(&HandleCutClipboardThunk), this);
   g_signal_connect(text_view_, "paste-clipboard",
                    G_CALLBACK(&HandlePasteClipboardThunk), this);
+  g_signal_connect(text_view_, "expose-event",
+                   G_CALLBACK(&HandleExposeEventThunk), this);
   g_signal_connect_after(text_view_, "expose-event",
-                         G_CALLBACK(&HandleExposeEventThunk), this);
+                         G_CALLBACK(&HandleExposeEventAfterThunk), this);
   g_signal_connect(text_view_, "direction-changed",
                    G_CALLBACK(&HandleWidgetDirectionChangedThunk), this);
   g_signal_connect(text_view_, "delete-from-cursor",
@@ -780,70 +781,7 @@ void OmniboxViewGtk::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
 
-  SetBaseColor();
-}
-
-void OmniboxViewGtk::SetBaseColor() {
-  DCHECK(text_view_);
-
-  bool use_gtk = theme_service_->UsingNativeTheme();
-  if (use_gtk) {
-    gtk_widget_modify_cursor(text_view_, NULL, NULL);
-    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
-    gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, NULL);
-    gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, NULL);
-    gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, NULL);
-    gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, NULL);
-
-    gtk_util::UndoForceFontSize(text_view_);
-    gtk_util::UndoForceFontSize(gray_text_view_);
-
-    // Grab the text colors out of the style and set our tags to use them.
-    GtkStyle* style = gtk_rc_get_style(text_view_);
-
-    // style may be unrealized at this point, so calculate the halfway point
-    // between text[] and base[] manually instead of just using text_aa[].
-    GdkColor average_color = gtk_util::AverageColors(
-        style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
-
-    g_object_set(faded_text_tag_, "foreground-gdk", &average_color, NULL);
-    g_object_set(normal_text_tag_, "foreground-gdk",
-                 &style->text[GTK_STATE_NORMAL], NULL);
-  } else {
-    const GdkColor* background_color_ptr =
-        &LocationBarViewGtk::kBackgroundColor;
-    gtk_widget_modify_cursor(text_view_, &ui::kGdkBlack, &ui::kGdkGray);
-    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
-
-    GdkColor c;
-    // Override the selected colors so we don't leak colors from the current
-    // gtk theme into the chrome-theme.
-    c = gfx::SkColorToGdkColor(
-        theme_service_->get_active_selection_bg_color());
-    gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, &c);
-
-    c = gfx::SkColorToGdkColor(
-        theme_service_->get_active_selection_fg_color());
-    gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, &c);
-
-    c = gfx::SkColorToGdkColor(
-        theme_service_->get_inactive_selection_bg_color());
-    gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, &c);
-
-    c = gfx::SkColorToGdkColor(
-        theme_service_->get_inactive_selection_fg_color());
-    gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
-
-    // Until we switch to vector graphics, force the font size.
-    gtk_util::ForceFontSizePixels(text_view_, GetFont().GetFontSize());
-    gtk_util::ForceFontSizePixels(gray_text_view_, GetFont().GetFontSize());
-
-    g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
-    g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
-  }
-
-  AdjustVerticalAlignmentOfGrayTextView();
-  UpdateGrayTextViewColors();
+  OnBrowserThemeChanged();
 }
 
 void OmniboxViewGtk::UpdateGrayTextViewColors() {
@@ -1693,6 +1631,76 @@ bool OmniboxViewGtk::OnPerformDropImpl(const base::string16& text) {
   return false;
 }
 
+void OmniboxViewGtk::OnBrowserThemeChanged() {
+  DCHECK(text_view_);
+
+  bool use_gtk = theme_service_->UsingNativeTheme();
+  if (use_gtk) {
+    gtk_widget_modify_cursor(text_view_, NULL, NULL);
+    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, NULL);
+    gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, NULL);
+    gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, NULL);
+    gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, NULL);
+
+    gtk_util::UndoForceFontSize(text_view_);
+    gtk_util::UndoForceFontSize(gray_text_view_);
+
+    // Grab the text colors out of the style and set our tags to use them.
+    GtkStyle* style = gtk_rc_get_style(text_view_);
+
+    // style may be unrealized at this point, so calculate the halfway point
+    // between text[] and base[] manually instead of just using text_aa[].
+    GdkColor average_color = gtk_util::AverageColors(
+        style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
+
+    g_object_set(faded_text_tag_, "foreground-gdk", &average_color, NULL);
+    g_object_set(normal_text_tag_, "foreground-gdk",
+                 &style->text[GTK_STATE_NORMAL], NULL);
+  } else {
+    const GdkColor* background_color_ptr =
+        &LocationBarViewGtk::kBackgroundColor;
+    gtk_widget_modify_cursor(text_view_, &ui::kGdkBlack, &ui::kGdkGray);
+    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
+
+    GdkColor c;
+    // Override the selected colors so we don't leak colors from the current
+    // gtk theme into the chrome-theme.
+    c = gfx::SkColorToGdkColor(
+        theme_service_->get_active_selection_bg_color());
+    gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, &c);
+
+    c = gfx::SkColorToGdkColor(
+        theme_service_->get_active_selection_fg_color());
+    gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, &c);
+
+    c = gfx::SkColorToGdkColor(
+        theme_service_->get_inactive_selection_bg_color());
+    gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, &c);
+
+    c = gfx::SkColorToGdkColor(
+        theme_service_->get_inactive_selection_fg_color());
+    gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
+
+    // Until we switch to vector graphics, force the font size.
+    const gfx::Font& font = GetFont();
+    gtk_util::ForceFontSizePixels(text_view_, font.GetFontSize());
+    gtk_util::ForceFontSizePixels(gray_text_view_, font.GetFontSize());
+
+    g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
+    g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
+  }
+
+  const gfx::Font& font = GetFont();
+  const int cap_height = font.GetCapHeight();
+  const int internal_leading = font.GetBaseline() - cap_height;
+  font_baseline_shift_ =
+      (font.GetHeight() - cap_height) / 2.0 - internal_leading;
+
+  AdjustVerticalAlignmentOfGrayTextView();
+  UpdateGrayTextViewColors();
+}
+
 gfx::Font OmniboxViewGtk::GetFont() {
   if (!theme_service_->UsingNativeTheme()) {
     return gfx::Font(
@@ -1760,7 +1768,50 @@ gfx::Rect OmniboxViewGtk::WindowBoundsFromIters(GtkTextIter* iter1,
 }
 
 gboolean OmniboxViewGtk::HandleExposeEvent(GtkWidget* sender,
-                                           GdkEventExpose* expose) {
+                                           GdkEventExpose* event) {
+  // Adjust vertical alignment of |sender| before we start rendering it.
+  // GtkTextView is a multi-line text edit control and scrollable.  Thus we
+  // have to adjust the amount of scroll in order to put the content text at
+  // the center of Omnibox.
+
+  GtkTextView* text_view = GTK_TEXT_VIEW(sender);
+  GtkTextIter iter;
+  gtk_text_view_get_iter_at_location(text_view, &iter, 0, 0);
+  gint line_height = 0;
+  gtk_text_view_get_line_yrange(text_view, &iter, NULL, &line_height);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(alignment_.get(), &allocation);
+
+  const double shift =
+      (line_height - allocation.height) / 2.0 + font_baseline_shift_;
+
+  // If the desired shift is positive (upwards), we can scroll the control to
+  // accomplish it; but if the desired shift is downwards, we need to add extra
+  // padding atop the control.
+  const gdouble new_scroll = std::max(shift, 0.);
+  const guint new_top_padding = std::max(0., -shift);
+
+  // Changing the amount of scroll may fire another "expose-event", so avoid
+  // unnecessary change.
+  GtkAdjustment* adjustment = gtk_text_view_get_vadjustment(text_view);
+  if (new_scroll != gtk_adjustment_get_value(adjustment))
+    gtk_adjustment_set_value(adjustment, new_scroll);
+  guint top_padding = 0;
+  guint bottom_padding = 0;
+  guint left_padding = 0;
+  guint right_padding = 0;
+  gtk_alignment_get_padding(GTK_ALIGNMENT(alignment_.get()), &top_padding,
+                            &bottom_padding, &left_padding, &right_padding);
+  if (new_top_padding != top_padding)
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_.get()), new_top_padding,
+                              bottom_padding, left_padding, right_padding);
+
+  return FALSE;
+}
+
+gboolean OmniboxViewGtk::HandleExposeEventAfter(GtkWidget* sender,
+                                                GdkEventExpose* expose) {
   if (strikethrough_.cp_min >= strikethrough_.cp_max)
     return FALSE;
   DCHECK(text_view_);
