@@ -192,7 +192,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
     if (display.IsInternal()) {
       ui_scales = DisplayManager::GetScalesForDisplay(display_info);
       gfx::SizeF base_size = display_info.bounds_in_native().size();
-      base_size.Scale(1.0f / display.device_scale_factor());
+      base_size.Scale(1.0f / display_info.device_scale_factor());
       if (display_info.rotation() == gfx::Display::ROTATE_90 ||
           display_info.rotation() == gfx::Display::ROTATE_270) {
         float tmp = base_size.width();
