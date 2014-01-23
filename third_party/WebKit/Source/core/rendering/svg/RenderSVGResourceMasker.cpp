@@ -133,7 +133,10 @@ PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* 
 {
     ASSERT(context);
 
-    context->beginRecording(repaintRectInLocalCoordinates());
+    // Using strokeBoundingBox (instead of repaintRectInLocalCoordinates) to avoid the intersection
+    // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
+    // userSpaceOnUse units (http://crbug.com/294900).
+    context->beginRecording(strokeBoundingBox());
     for (Node* childNode = element()->firstChild(); childNode; childNode = childNode->nextSibling()) {
         RenderObject* renderer = childNode->renderer();
         if (!childNode->isSVGElement() || !renderer)

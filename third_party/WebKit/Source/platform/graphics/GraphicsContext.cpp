@@ -563,9 +563,10 @@ bool GraphicsContext::isRecording() const
 
 void GraphicsContext::drawDisplayList(DisplayList* displayList)
 {
+    ASSERT(displayList);
     ASSERT(!displayList->picture()->getRecordingCanvas());
 
-    if (paintingDisabled() || !displayList)
+    if (paintingDisabled() || displayList->bounds().isEmpty())
         return;
 
     realizeSave(SkCanvas::kMatrixClip_SaveFlag);
