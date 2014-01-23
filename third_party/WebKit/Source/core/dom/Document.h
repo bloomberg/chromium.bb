@@ -270,7 +270,7 @@ public:
 #endif
     bool hasLegacyViewportTag() const { return m_legacyViewportDescription.isLegacyViewportType(); }
 
-    void setReferrerPolicy(ReferrerPolicy referrerPolicy) { m_referrerPolicy = referrerPolicy; }
+    void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
 
     String outgoingReferrer();
@@ -1263,6 +1263,7 @@ private:
     ViewportDescription m_viewportDescription;
     ViewportDescription m_legacyViewportDescription;
 
+    bool m_didSetReferrerPolicy;
     ReferrerPolicy m_referrerPolicy;
 
     bool m_directionSetOnDocumentElement;

@@ -454,6 +454,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_hasFullscreenElementStack(false)
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
+    , m_didSetReferrerPolicy(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_directionSetOnDocumentElement(false)
     , m_writingModeSetOnDocumentElement(false)
@@ -3000,14 +3001,28 @@ void Document::processReferrerPolicy(const String& policy)
 {
     ASSERT(!policy.isNull());
 
-    m_referrerPolicy = ReferrerPolicyDefault;
+    if (equalIgnoringCase(policy, "never")) {
+        setReferrerPolicy(ReferrerPolicyNever);
+    } else if (equalIgnoringCase(policy, "always")) {
+        setReferrerPolicy(ReferrerPolicyAlways);
+    } else if (equalIgnoringCase(policy, "origin")) {
+        setReferrerPolicy(ReferrerPolicyOrigin);
+    } else if (equalIgnoringCase(policy, "default")) {
+        setReferrerPolicy(ReferrerPolicyDefault);
+    } else {
+        addConsoleMessage(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policy + "' is not one of 'always', 'default', 'never', or 'origin'. Defaulting to 'never'.");
+        setReferrerPolicy(ReferrerPolicyNever);
+    }
+}
 
-    if (equalIgnoringCase(policy, "never"))
-        m_referrerPolicy = ReferrerPolicyNever;
-    else if (equalIgnoringCase(policy, "always"))
-        m_referrerPolicy = ReferrerPolicyAlways;
-    else if (equalIgnoringCase(policy, "origin"))
-        m_referrerPolicy = ReferrerPolicyOrigin;
+void Document::setReferrerPolicy(ReferrerPolicy referrerPolicy)
+{
+    // FIXME: Can we adopt the CSP referrer policy merge algorithm? Or does the web rely on being able to modify the referrer policy in-flight?
+    if (m_didSetReferrerPolicy)
+        UseCounter::count(this, UseCounter::ResetReferrerPolicy);
+    m_didSetReferrerPolicy = true;
+
+    m_referrerPolicy = referrerPolicy;
 }
 
 String Document::outgoingReferrer()
