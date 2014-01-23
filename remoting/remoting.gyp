@@ -688,7 +688,7 @@
 
                 # Localized strings for 'Info.plist'
                 '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_resources/@{json_suffix}.lproj/InfoPlist.strings" '
+                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin-InfoPlist.strings/@{json_suffix}.lproj/InfoPlist.strings" '
                     '--print_only <(remoting_locales))',
               ],
               'mac_bundle_resources!': [
@@ -710,8 +710,7 @@
               ],
               'dependencies': [
                 'remoting_lib_idl',
-                'remoting_core_resources',
-                'remoting_version_resources',
+                'remoting_windows_resources',
               ],
               'include_dirs': [
                 '<(INTERMEDIATE_DIR)',
@@ -842,90 +841,32 @@
           'dependencies': [
             'remoting_resources',
           ],
-          'actions': [
-            {
-              'action_name': 'generate_host_plugin_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/plugin/host_plugin-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python', '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/plugin/host_plugin-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '<@(remoting_locales)',
-              ],
-            },
-            {
-              'action_name': 'generate_host_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/remoting_me2me_host-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/remoting_me2me_host-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/host_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '<@(remoting_locales)',
-              ],
-            },
-            {
-              'action_name': 'generate_preference_pane_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/preference_pane_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/preference_pane_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '<@(remoting_locales)',
-              ],
-            },
-            {
-              'action_name': 'generate_uninstaller_strings',
-              'inputs': [
-                '<(remoting_localize_path)',
-                'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
-              ],
-              'outputs': [
-                '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/uninstaller_resources/@{json_suffix}.lproj/InfoPlist.strings" '
-                    '--print_only <(remoting_locales))',
-              ],
-              'action': [
-                'python',
-                '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', 'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
-                '--locale_output',
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/uninstaller_resources/@{json_suffix}.lproj/InfoPlist.strings',
-                '<@(remoting_locales)',
-              ],
-            },
+          'sources': [
+            'host/plugin/host_plugin-InfoPlist.strings.jinja2',
+            'host/remoting_me2me_host-InfoPlist.strings.jinja2',
+            'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
+            'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
+          ],
+          'rules': [{
+            'rule_name': 'generate_strings',
+            'extension': 'jinja2',
+            'inputs': [
+              '<(remoting_localize_path)',
+              '<(RULE_INPUT_PATH)',
+            ],
+            'outputs': [
+              '<!@pymod_do_main(remoting_localize --locale_output '
+                  '"<(SHARED_INTERMEDIATE_DIR)/remoting/<(RULE_INPUT_ROOT)/@{json_suffix}.lproj/InfoPlist.strings" '
+                  '--print_only <(remoting_locales))',
+            ],
+            'action': [
+              'python', '<(remoting_localize_path)',
+              '--locale_dir', '<(webapp_locale_dir)',
+              '--template', '<(RULE_INPUT_PATH)',
+              '--locale_output',
+              '<(SHARED_INTERMEDIATE_DIR)/remoting/<(RULE_INPUT_ROOT)/@{json_suffix}.lproj/InfoPlist.strings',
+              '<@(remoting_locales)',
+            ]},
           ],
         },  # end of target 'remoting_infoplist_strings'
       ],  # end of 'targets'
@@ -1051,7 +992,7 @@
 
                 # Localized strings for 'Info.plist'
                 '<!@pymod_do_main(remoting_localize --locale_output '
-                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/host_resources/@{json_suffix}.lproj/InfoPlist.strings" '
+                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_me2me_host-InfoPlist.strings/@{json_suffix}.lproj/InfoPlist.strings" '
                     '--print_only <(remoting_locales))',
               ],
               'mac_bundle_resources!': [
@@ -1218,7 +1159,7 @@
 
             # Localized strings for 'Info.plist'
             '<!@pymod_do_main(remoting_localize --locale_output '
-                '"<(SHARED_INTERMEDIATE_DIR)/remoting/uninstaller_resources/@{json_suffix}.lproj/InfoPlist.strings" '
+                '"<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_uninstaller-InfoPlist.strings/@{json_suffix}.lproj/InfoPlist.strings" '
                 '--print_only <(remoting_locales))',
           ],
           'mac_bundle_resources!': [
@@ -1297,20 +1238,14 @@
                 '<(_zip_path)',
               ],
               'action': [
-                'python',
-                'host/installer/build-installer-archive.py',
+                'python', 'host/installer/build-installer-archive.py',
                 '<(_temp_dir)',
                 '<(_zip_path)',
-                '--source-file-roots',
-                '<@(remoting_host_installer_mac_roots)',
-                '--source-files',
-                '<@(_source_files)',
-                '--generated-files',
-                '<@(_generated_files)',
-                '--generated-files-dst',
-                '<@(_generated_files_dst)',
-                '--defs',
-                '<@(_defs)',
+                '--source-file-roots', '<@(remoting_host_installer_mac_roots)',
+                '--source-files', '<@(_source_files)',
+                '--generated-files', '<@(_generated_files)',
+                '--generated-files-dst', '<@(_generated_files_dst)',
+                '--defs', '<@(_defs)',
               ],
             },
           ],  # actions
@@ -1381,7 +1316,7 @@
 
             # Localized strings for 'Info.plist'
             '<!@pymod_do_main(remoting_localize --locale_output '
-                '"<(SHARED_INTERMEDIATE_DIR)/remoting/preference_pane_resources/@{json_suffix}.lproj/InfoPlist.strings" '
+                '"<(SHARED_INTERMEDIATE_DIR)/remoting/me2me_preference_pane-InfoPlist.strings/@{json_suffix}.lproj/InfoPlist.strings" '
                 '--print_only <(remoting_locales))',
           ],
           'mac_bundle_resources!': [
@@ -1521,7 +1456,7 @@
           ],
           'dependencies': [
             'remoting_core',
-            'remoting_version_resources',
+            'remoting_windows_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
@@ -1566,7 +1501,6 @@
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             'remoting_base',
             'remoting_breakpad',
-            'remoting_core_resources',
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
@@ -1577,7 +1511,7 @@
             'remoting_me2me_host_static',
             'remoting_native_messaging_base',
             'remoting_protocol',
-            'remoting_version_resources',
+            'remoting_windows_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/core.rc',
@@ -1662,40 +1596,6 @@
           },
         },  # end of target 'remoting_core'
         {
-          'target_name': 'remoting_core_resources',
-          'type': 'none',
-          'dependencies': [
-            'remoting_resources',
-          ],
-          'hard_dependency': 1,
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)',
-            ],
-          },
-          'sources': [
-            'host/win/core.rc.jinja2'
-          ],
-          'rules': [
-            {
-              'rule_name': 'version',
-              'extension': 'jinja2',
-              'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/core.rc'
-              ],
-              'action': [
-                'python', '<(remoting_localize_path)',
-                '--locale_dir', '<(webapp_locale_dir)',
-                '--template', '<(RULE_INPUT_PATH)',
-                '--output', '<@(_outputs)',
-                '--encoding', 'utf-16',
-                '<@(remoting_locales)',
-              ],
-              'message': 'Localizing the dialogs and strings'
-            },
-          ],
-        },  # end of target 'remoting_core_resources'
-        {
           'target_name': 'remoting_desktop',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -1704,7 +1604,7 @@
           ],
           'dependencies': [
             'remoting_core',
-            'remoting_version_resources',
+            'remoting_windows_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
@@ -1743,7 +1643,7 @@
           ],
           'dependencies': [
             'remoting_core',
-            'remoting_version_resources',
+            'remoting_windows_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
@@ -1799,8 +1699,7 @@
           ],
         },  # end of target 'remoting_host_messages'
 
-        # Generates localized the version information resources for the Windows
-        # binaries.
+        # Generates localized resources for the Windows binaries.
         # The substitution strings are taken from:
         #   - build/util/LASTCHANGE - the last source code revision.
         #   - chrome/VERSION - the major, build & patch versions.
@@ -1808,7 +1707,7 @@
         #       for chrome/VERSION).
         #   - translated webapp strings
         {
-          'target_name': 'remoting_version_resources',
+          'target_name': 'remoting_windows_resources',
           'type': 'none',
           'dependencies': [
             'remoting_resources',
@@ -1820,7 +1719,8 @@
             ],
           },
           'sources': [
-            'host/win/version.rc.jinja2'
+            'host/win/core.rc.jinja2',
+            'host/win/version.rc.jinja2',
           ],
           'rules': [
             {
@@ -1833,9 +1733,10 @@
                 '<(chrome_version_path)',
                 '<(lastchange_path)',
                 '<(remoting_version_path)',
+                '<(RULE_INPUT_PATH)',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/<(RULE_INPUT_ROOT)',
               ],
               'action': [
                 'python', '<(remoting_localize_path)',
@@ -1853,7 +1754,7 @@
               'message': 'Localizing the version information'
             },
           ],
-        },  # end of target 'remoting_version_resources'
+        },  # end of target 'remoting_windows_resources'
       ],  # end of 'targets'
     }],  # 'OS=="win"'
 
@@ -1967,20 +1868,14 @@
                 '<(_zip_path)',
               ],
               'action': [
-                'python',
-                'host/installer/build-installer-archive.py',
+                'python', 'host/installer/build-installer-archive.py',
                 '<(_temp_dir)',
                 '<(_zip_path)',
-                '--source-file-roots',
-                '<@(remoting_host_installer_win_roots)',
-                '--source-files',
-                '<@(_source_files)',
-                '--generated-files',
-                '<@(_generated_files)',
-                '--generated-files-dst',
-                '<@(_generated_files_dst)',
-                '--defs',
-                '<@(_defs)',
+                '--source-file-roots', '<@(remoting_host_installer_win_roots)',
+                '--source-files', '<@(_source_files)',
+                '--generated-files', '<@(_generated_files)',
+                '--generated-files-dst', '<@(_generated_files_dst)',
+                '--defs', '<@(_defs)',
               ],
             },
           ],  # actions
@@ -2267,12 +2162,6 @@
           'base/resources_unittest.cc',
           'host/continue_window_mac.mm',
           'host/disconnect_window_mac.mm',
-          'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
-          'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
-          'host/plugin/host_plugin-InfoPlist.strings.jinja2',
-          'host/win/core.rc.jinja2',
-          'host/win/host_messages.mc.jinja2',
-          'host/win/version.rc.jinja2',
           'webapp/background.js',
           'webapp/butter_bar.js',
           'webapp/client_screen.js',
