@@ -530,9 +530,8 @@
         'common/gpu/media/android_video_decode_accelerator.h',
       ],
     }],
-    ['OS=="android" and android_webview_build==0', {
+    ['OS=="android" and enable_webrtc==1', {
       'dependencies': [
-        '../media/media.gyp:media',
         '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
       'sources': [
