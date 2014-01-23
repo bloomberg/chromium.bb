@@ -1,0 +1,9 @@
+{
+  "name": "polymer-selector",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#0.1.1",
+    "polymer-selection": "Polymer/polymer-selection#0.1.1"
+  },
+  "version": "0.1.1"
+}
