@@ -442,39 +442,44 @@ class SchemaNodesGenerator:
       f.write('  { base::Value::%-18s %3d },  // %s\n' % (type, extra, comment))
     f.write('};\n\n')
 
-    f.write('const internal::PropertyNode kPropertyNodes[] = {\n'
-            '//  Property                                           #Schema\n')
-    for key, schema in self.property_nodes:
-      key += ','
-      f.write('  { %-50s %7d },\n' % (key, schema))
-    f.write('};\n\n')
+    if self.property_nodes:
+      f.write('const internal::PropertyNode kPropertyNodes[] = {\n'
+              '//  Property                                          #Schema\n')
+      for key, schema in self.property_nodes:
+        key += ','
+        f.write('  { %-50s %6d },\n' % (key, schema))
+      f.write('};\n\n')
 
-    f.write('const internal::PropertiesNode kProperties[] = {\n'
-            '//  Begin    End  Additional Properties\n')
-    for node in self.properties_nodes:
-      f.write('  { %5d, %5d, %5d },  // %s\n' % node)
-    f.write('};\n\n')
+    if self.properties_nodes:
+      f.write('const internal::PropertiesNode kProperties[] = {\n'
+              '//  Begin    End  Additional Properties\n')
+      for node in self.properties_nodes:
+        f.write('  { %5d, %5d, %5d },  // %s\n' % node)
+      f.write('};\n\n')
 
-    f.write('const internal::RestrictionNode kRestrictionNodes[] = {\n')
-    f.write('//   FIRST, SECOND\n')
-    for first, second in self.restriction_nodes:
-      f.write('  {{ %-8s %4s}},\n' % (first + ',', second))
-    f.write('};\n\n')
+    if self.restriction_nodes:
+      f.write('const internal::RestrictionNode kRestrictionNodes[] = {\n')
+      f.write('//   FIRST, SECOND\n')
+      for first, second in self.restriction_nodes:
+        f.write('  {{ %-8s %4s}},\n' % (first + ',', second))
+      f.write('};\n\n')
 
-    f.write('const int kIntegerEnumerations[] = {\n')
-    for possible_values in self.int_enums:
-      f.write('  %d,\n' % possible_values)
-    f.write('};\n\n')
+    if self.int_enums:
+      f.write('const int kIntegerEnumerations[] = {\n')
+      for possible_values in self.int_enums:
+        f.write('  %d,\n' % possible_values)
+      f.write('};\n\n')
 
-    f.write('const char* kStringEnumerations[] = {\n')
-    for possible_values in self.string_enums:
-      f.write('  %s,\n' % self.GetString(possible_values))
-    f.write('};\n\n')
+    if self.string_enums:
+      f.write('const char* kStringEnumerations[] = {\n')
+      for possible_values in self.string_enums:
+        f.write('  %s,\n' % self.GetString(possible_values))
+      f.write('};\n\n')
 
     f.write('const internal::SchemaData kChromeSchemaData = {\n'
-            '  kSchemas,\n'
-            '  kPropertyNodes,\n'
-            '  kProperties,\n');
+            '  kSchemas,\n')
+    f.write('  kPropertyNodes,\n' if self.property_nodes else '  NULL,\n')
+    f.write('  kProperties,\n' if self.properties_nodes else '  NULL,\n')
     f.write('  kRestrictionNodes,\n' if self.restriction_nodes else '  NULL,\n')
     f.write('  kIntegerEnumerations,\n' if self.int_enums else '  NULL,\n')
     f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
