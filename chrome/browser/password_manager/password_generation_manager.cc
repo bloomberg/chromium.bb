@@ -4,7 +4,6 @@
 
 #include "chrome/browser/password_manager/password_generation_manager.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/pref_names.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -20,7 +18,6 @@
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -34,15 +31,6 @@ PasswordGenerationManager::PasswordGenerationManager(
     : content::WebContentsObserver(contents) {}
 
 PasswordGenerationManager::~PasswordGenerationManager() {}
-
-// static
-void PasswordGenerationManager::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kPasswordGenerationEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-}
 
 void PasswordGenerationManager::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {
@@ -77,9 +65,8 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
 }
 
 // In order for password generation to be enabled, we need to make sure:
-// (1) Password sync is enabled,
-// (2) Password manager is enabled, and
-// (3) Password generation preference check box is checked.
+// (1) Password sync is enabled, and
+// (2) Password saving is enabled.
 bool PasswordGenerationManager::IsGenerationEnabled() const {
   if (!web_contents())
     return false;
@@ -102,11 +89,6 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
   }
   if (!password_sync_enabled) {
     DVLOG(2) << "Generation disabled because passwords are not being synced";
-    return false;
-  }
-
-  if (!profile->GetPrefs()->GetBoolean(prefs::kPasswordGenerationEnabled)) {
-    DVLOG(2) << "Generation disabled by user";
     return false;
   }
 

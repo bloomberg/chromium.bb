@@ -25,7 +25,6 @@ class PrefRegistrySyncable;
 //
 // -  Password manager is enabled
 // -  Password sync is enabled
-// -  Password generation pref is enabled
 //
 // NOTE: At the moment, the creation of the renderer PasswordGenerationManager
 // is controlled by a switch (--enable-password-generation) so this feature will
@@ -39,7 +38,6 @@ class PasswordGenerationManager
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PasswordGenerationManager> {
  public:
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   virtual ~PasswordGenerationManager();
 
   // Detect account creation forms from forms with autofill type annotated.

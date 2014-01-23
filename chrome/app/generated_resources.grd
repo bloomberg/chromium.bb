@@ -10616,9 +10616,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
         Enable phishing and malware protection
       </message>
-      <message name="IDS_OPTIONS_PASSWORD_GENERATION_ENABLED_LABEL" desc="The label of the 'Enable automatic password generation' checkbox">
-        Enable automatic password generation
-      </message>
       <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
         Check for server certificate revocation
       </message>

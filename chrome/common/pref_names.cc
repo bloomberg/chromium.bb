@@ -300,10 +300,6 @@ const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
 // the bookmark editor.
 const char kBookmarkEditorExpandedNodes[] = "bookmark_editor.expanded_nodes";
 
-// Boolean controlling whether password generation is enabled (will allow users
-// to generated passwords on account creation pages).
-const char kPasswordGenerationEnabled[] = "password_generation.enabled";
-
 // Boolean that is true if the password manager is on (will record new
 // passwords and fill in known passwords).
 const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";

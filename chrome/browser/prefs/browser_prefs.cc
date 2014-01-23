@@ -50,7 +50,6 @@
 #include "chrome/browser/network_time/network_time_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_prefs_manager.h"
-#include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -355,7 +354,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NetPrefObserver::RegisterProfilePrefs(registry);
   NetworkTimeService::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);
-  PasswordGenerationManager::RegisterProfilePrefs(registry);
   PasswordManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry);

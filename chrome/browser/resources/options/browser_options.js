@@ -1296,17 +1296,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Set the visibility of the password generation checkbox.
-     * @private
-     */
-    setPasswordGenerationSettingVisibility_: function(visible) {
-      if (visible)
-        $('password-generation-checkbox').style.display = 'block';
-      else
-        $('password-generation-checkbox').style.display = 'none';
-    },
-
-    /**
      * Set the font size selected item. This item actually reflects two
      * preferences: the default font size and the default fixed font size.
      *
@@ -1603,7 +1592,6 @@ cr.define('options', function() {
     'setHighContrastCheckboxState',
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',
-    'setPasswordGenerationSettingVisibility',
     'setProfilesInfo',
     'setSpokenFeedbackCheckboxState',
     'setThemesResetButtonEnabled',

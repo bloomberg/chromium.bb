@@ -69,7 +69,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -276,8 +275,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "passwordsAndAutofillGroupName",
       IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME },
     { "passwordManagerEnabled", IDS_OPTIONS_PASSWORD_MANAGER_ENABLE },
-    { "passwordGenerationEnabledDescription",
-      IDS_OPTIONS_PASSWORD_GENERATION_ENABLED_LABEL },
     { "privacyClearDataButton", IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
     { "privacyContentSettingsButton",
       IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON },
@@ -842,7 +839,6 @@ void BrowserOptionsHandler::InitializePage() {
   UpdateDefaultBrowserState();
 
   SetupMetricsReportingSettingVisibility();
-  SetupPasswordGenerationSettingVisibility();
   SetupFontSizeSelector();
   SetupPageZoomSelector();
   SetupAutoOpenFileTypes();
@@ -1587,13 +1583,6 @@ void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
         "BrowserOptions.setMetricsReportingSettingVisibility", visible);
   }
 #endif
-}
-
-void BrowserOptionsHandler::SetupPasswordGenerationSettingVisibility() {
-  base::FundamentalValue visible(
-      autofill::password_generation::IsPasswordGenerationEnabled());
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setPasswordGenerationSettingVisibility", visible);
 }
 
 void BrowserOptionsHandler::SetupFontSizeSelector() {
