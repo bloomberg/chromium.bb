@@ -32,7 +32,7 @@
 {
     'dependencies': [
       # Used by rule js2unit below.
-      '../v8/tools/gyp/v8.gyp:v8_shell#host',
+      '../v8/src/d8.gyp:d8#host',
     ],
   'rules': [
     {
@@ -58,7 +58,7 @@
       'msvs_external_rule': 1,
       'inputs': [
         '<(gypv8sh)',
-        '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
+        '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
         '<(mock_js)',
         '<(accessibility_audit_js)',
         '<(test_api_js)',
