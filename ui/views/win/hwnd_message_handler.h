@@ -543,8 +543,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Indicates if the window needs the WS_VSCROLL and WS_HSCROLL styles.
   bool needs_scroll_styles_;
 
-  // Set to true if we are in the context of a sizing or moving operation.
-  bool in_size_move_loop_;
+  // Set to true if we are in the context of a sizing operation.
+  bool in_size_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
