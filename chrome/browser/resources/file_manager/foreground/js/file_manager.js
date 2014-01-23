@@ -885,15 +885,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
+   * @param {Event} event Click event.
    * @private
    */
   FileManager.prototype.onBreadcrumbClick_ = function(event) {
-    // TODO(hirono): Use directoryModel#changeDirectoryEntry after implementing
-    // it.
-    if (event.entry === RootType.DRIVE_SHARED_WITH_ME)
-      this.directoryModel_.changeDirectory(RootDirectory.DRIVE_SHARED_WITH_ME);
-    else
-      this.directoryModel_.changeDirectory(event.entry.fullPath);
+    this.directoryModel_.changeDirectoryEntry(event.entry);
   };
 
   /**
@@ -1570,7 +1566,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
     if (util.isFakeEntry(directoryEntry)) {
-      this.directoryModel_.specialSearch(directoryEntry.fullPath, '');
+      this.directoryModel_.specialSearch(directoryEntry, '');
     } else {
       this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
         if (opt_selectionEntry)
@@ -2184,7 +2180,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onDirectoryAction_ = function(entry) {
-    return this.directoryModel_.changeDirectory(entry.fullPath);
+    return this.directoryModel_.changeDirectoryEntry(entry);
   };
 
   /**
@@ -2844,10 +2840,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         // TODO(mtomasz): Use Entry.getParent() instead.
         if (!this.getCurrentDirectoryEntry())
           break;
-        var path = this.getCurrentDirectoryEntry().fullPath;
-        if (path && !PathUtil.isRootPath(path)) {
-          var path = path.replace(/\/[^\/]+$/, '');
-          this.directoryModel_.changeDirectory(path);
+        var currentEntry = this.getCurrentDirectoryEntry();
+        var locationInfo = this.volumeManager_.getLocationInfo(currentEntry);
+        // TODO(mtomasz): There may be a tiny race in here.
+        if (locationInfo && !locationInfo.isRootEntry &&
+            !locationInfo.isSpecialSearchRoot) {
+          currentEntry.getParent(function(parentEntry) {
+            this.directoryModel_.changeDirectoryEntry(parentEntry);
+          }.bind(this), function() { /* Ignore errors. */});
         }
         break;
 
@@ -3512,19 +3512,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // requires the entry to be in the current directory model. For
       // consistency, the current directory is always changed regardless of
       // the file type.
-      entry.getParent(function(parent) {
+      entry.getParent(function(parentEntry) {
         var onDirectoryChanged = function(event) {
           self.directoryModel_.removeEventListener('scan-completed',
                                                    onDirectoryChanged);
           self.directoryModel_.selectEntry(entry.name);
           openIt();
         };
-        // changeDirectory() returns immediately. We should wait until the
+        // changeDirectoryEntry() returns immediately. We should wait until the
         // directory scan is complete.
         self.directoryModel_.addEventListener('scan-completed',
                                               onDirectoryChanged);
-        self.directoryModel_.changeDirectory(
-          parent.fullPath,
+        self.directoryModel_.changeDirectoryEntry(
+          parentEntry,
           function() {
             // Remove the listner if the change directory failed.
             self.directoryModel_.removeEventListener('scan-completed',

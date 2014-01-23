@@ -583,9 +583,25 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
       // TODO(mtomasz): Pass Entry instead of URL.
       fm.volumeManager.mountArchive(resolvedURLs[index],
         function(mountPath) {
-          tracker.stop();
-          if (!tracker.hasChanged)
-            fm.directoryModel.changeDirectory(mountPath);
+          if (tracker.hasChanged) {
+            tracker.stop();
+            return;
+          }
+          var volumeInfo = fm.volumeManager.getVolumeInfo(mountPath);
+          if (!volumeInfo) {
+            tracker.stop();
+            return;
+          }
+          volumeInfo.resolveDisplayRoot(function(displayRoot) {
+            if (tracker.hasChanged) {
+              tracker.stop();
+              return;
+            }
+            fm.directoryModel.changeDirectoryEntry(displayRoot);
+          }, function() {
+            console.warn('Failed to resolve the display root after mounting.');
+            tracker.stop();
+          });
         }, function(url, error) {
           tracker.stop();
           var path = util.extractFilePath(url);
