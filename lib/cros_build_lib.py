@@ -1433,7 +1433,7 @@ def GetDefaultBoard():
   return default_board
 
 
-def GetBoard(device_board, override_board=None):
+def GetBoard(device_board, override_board=None, force=False):
   """Gets the board name to use.
 
   Ask user to confirm when |override_board| and |device_board| are
@@ -1442,6 +1442,7 @@ def GetBoard(device_board, override_board=None):
   Args:
     device_board: The board detected on the device.
     override_board: Overrides the board.
+    force: Force using the default board if |device_board| is None.
 
   Returns:
     Returns the first non-None board in the following order:
@@ -1455,11 +1456,11 @@ def GetBoard(device_board, override_board=None):
 
   board = device_board or GetDefaultBoard()
   if not device_board:
-    msg = 'Cannot detect board name; using default board %s', board
-    if not BooleanPrompt(default=False, prolog=msg):
+    msg = 'Cannot detect board name; using default board %s.' % board
+    if not force and not BooleanPrompt(default=False, prolog=msg):
       Die('Exiting...')
 
-    logging.info(msg)
+    logging.warning(msg)
 
   return board
 

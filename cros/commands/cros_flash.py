@@ -8,6 +8,7 @@ import cStringIO
 import hashlib
 import logging
 import os
+import re
 import shutil
 import tempfile
 import urlparse
@@ -45,11 +46,14 @@ def _CheckBoardMismatch(xbuddy_path, board):
   else:
     xbuddy_board = path_list[0]
 
-  return xbuddy_board != board
+  # xbuddy_board can be 'peppy-paladin' or even 'trybot-peppy-paladin'.
+  # We check if the board name is in xbuddy_board.
+  pattern = r'^(.*-)?'+ re.escape(board) +'(-.*)?$'
+  return not re.match(pattern, xbuddy_board)
 
 
 # pylint: disable=E1101
-def GenerateXbuddyRequest(path, static_dir, board):
+def GenerateXbuddyRequest(path, static_dir, board, board_mismatch_ok=False):
   """Generate an xbuddy request used to retreive payloads.
 
   This function generates a xbuddy request based on |path|. If the
@@ -67,6 +71,7 @@ def GenerateXbuddyRequest(path, static_dir, board):
       or 'latest' for latest local build.
     static_dir: static directory of the local devserver.
     board: Current board.
+    board_mismatch_ok: If set True, ignore |board| mismatch.
 
   Returns:
     A xbuddy request.
@@ -78,11 +83,13 @@ def GenerateXbuddyRequest(path, static_dir, board):
   parsed = urlparse.urlparse(path)
   if parsed.scheme == 'xbuddy':
     xbuddy_path = '%s%s' % (parsed.netloc, parsed.path)
-    if board and _CheckBoardMismatch(xbuddy_path, board):
-      logging.warning(
-          '%s does not match device board %s.', xbuddy_path, board)
-      if not cros_build_lib.BooleanPrompt(default=False):
+    if _CheckBoardMismatch(xbuddy_path, board):
+      msg = '%s does not match current board %s.' % (xbuddy_path, board)
+      if not board_mismatch_ok and not cros_build_lib.BooleanPrompt(
+          default=False, prolog=msg):
         cros_build_lib.Die('Exiting Cros Flash...')
+
+      logging.warning(msg)
   else:
     if not os.path.exists(path):
       raise ValueError('Image path does not exist: %s' % path)
@@ -329,7 +336,8 @@ using-the-dev-server/xbuddy-for-devserver
 
     ds = ds_wrapper.DevServerWrapper(
         static_dir=static_dir, src_image=src_image)
-    req = GenerateXbuddyRequest(path, static_dir, board)
+    req = GenerateXbuddyRequest(
+        path, static_dir, board, board_mismatch_ok=self.yes)
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
       ds.Start()
@@ -369,6 +377,9 @@ using-the-dev-server/xbuddy-for-devserver
         'automatically detected. You can override the detected board with '
         'this option')
     advanced.add_argument(
+        '--yes', default=False, action='store_true',
+        help='Force yes to any prompt. Use with caution.')
+    advanced.add_argument(
         '--no-reboot', action='store_false', dest='reboot', default=True,
         help='Do not reboot after update. Default is always reboot.')
     advanced.add_argument(
@@ -400,6 +411,7 @@ using-the-dev-server/xbuddy-for-devserver
     self.image_as_payload_dir = False
     self.reboot = True
     self.wipe = True
+    self.yes = False
     self.tempdir = tempfile.mkdtemp(prefix='cros-flash')
 
   def Cleanup(self):
@@ -438,6 +450,7 @@ using-the-dev-server/xbuddy-for-devserver
     self.do_stateful_update =  options.stateful_update
     self.do_rootfs_update = options.rootfs_update
     self.clobber_stateful = options.clobber_stateful
+    self.yes = options.yes
 
   # pylint: disable=E1101
   def Run(self):
@@ -449,8 +462,9 @@ using-the-dev-server/xbuddy-for-devserver
           self.options.device, work_dir=self.DEVICE_WORK_DIR) as device:
 
         board = cros_build_lib.GetBoard(device_board=device.board,
-                                        override_board=self.options.board)
-        logging.info('Board is %s', device.board)
+                                        override_board=self.options.board,
+                                        force=self.yes)
+        logging.info('Board is %s', board)
 
         if self.image_as_payload_dir:
           payload_dir = self.options.image
