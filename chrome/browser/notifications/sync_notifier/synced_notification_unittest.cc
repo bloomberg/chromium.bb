@@ -37,84 +37,6 @@ bool UseRichNotifications() {
 
 namespace notifier {
 
-// Stub out the NotificationUIManager for unit testing.
-class StubNotificationUIManager : public NotificationUIManager {
- public:
-  StubNotificationUIManager()
-      : notification_(GURL(),
-                      GURL(),
-                      base::string16(),
-                      base::string16(),
-                      new MockNotificationDelegate("stub")) {}
-  virtual ~StubNotificationUIManager() {}
-
-  // Adds a notification to be displayed. Virtual for unit test override.
-  virtual void Add(const Notification& notification, Profile* profile)
-      OVERRIDE {
-    // Make a deep copy of the notification that we can inspect.
-    notification_ = notification;
-    profile_ = profile;
-  }
-
-  virtual bool Update(const Notification& notification, Profile* profile)
-      OVERRIDE {
-    // Make a deep copy of the notification that we can inspect.
-    notification_ = notification;
-    profile_ = profile;
-    return true;
-  }
-
-  // Returns true if any notifications match the supplied ID, either currently
-  // displayed or in the queue.
-  virtual const Notification* FindById(const std::string& id) const OVERRIDE {
-    return (notification_.id() == id) ? &notification_ : NULL;
-  }
-
-  // Removes any notifications matching the supplied ID, either currently
-  // displayed or in the queue.  Returns true if anything was removed.
-  virtual bool CancelById(const std::string& notification_id) OVERRIDE {
-    dismissed_id_ = notification_id;
-    return true;
-  }
-
-  virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
-      Profile* profile,
-      const GURL& source) OVERRIDE {
-    std::set<std::string> notification_ids;
-    if (source == notification_.origin_url() &&
-        profile->IsSameProfile(profile_))
-      notification_ids.insert(notification_.notification_id());
-    return notification_ids;
-  }
-
-  // Removes notifications matching the |source_origin| (which could be an
-  // extension ID). Returns true if anything was removed.
-  virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE {
-    return false;
-  }
-
-  // Removes notifications matching |profile|. Returns true if any were removed.
-  virtual bool CancelAllByProfile(Profile* profile) OVERRIDE {
-    return false;
-  }
-
-  // Cancels all pending notifications and closes anything currently showing.
-  // Used when the app is terminating.
-  virtual void CancelAll() OVERRIDE {}
-
-  // Test hook to get the notification so we can check it
-  const Notification& notification() const { return notification_; }
-
-  // Test hook to check the ID of the last notification cancelled.
-  std::string& dismissed_id() { return dismissed_id_; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
-  Notification notification_;
-  Profile* profile_;
-  std::string dismissed_id_;
-};
-
 class SyncedNotificationTest : public testing::Test {
  public:
   SyncedNotificationTest()
@@ -140,9 +62,13 @@ class SyncedNotificationTest : public testing::Test {
     notification2_.reset(new SyncedNotification(sync_data2_));
     notification3_.reset(new SyncedNotification(sync_data3_));
     notification4_.reset(new SyncedNotification(sync_data4_));
+
+    notification_manager_.reset(new StubNotificationUIManager(GURL(
+        kSyncedNotificationsWelcomeOrigin)));
   }
 
   virtual void TearDown() OVERRIDE {
+    notification_manager_.reset();
   }
 
   virtual void AddButtonBitmaps(SyncedNotification* notification,
@@ -151,6 +77,10 @@ class SyncedNotificationTest : public testing::Test {
       notification->button_bitmaps_.push_back(gfx::Image());
       notification->button_bitmaps_fetch_pending_.push_back(true);
     }
+  }
+
+  StubNotificationUIManager* notification_manager() {
+    return notification_manager_.get();
   }
 
   scoped_ptr<SyncedNotification> notification1_;
@@ -165,6 +95,7 @@ class SyncedNotificationTest : public testing::Test {
  private:
   base::MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
+  scoped_ptr<StubNotificationUIManager> notification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncedNotificationTest);
 };
@@ -325,12 +256,10 @@ TEST_F(SyncedNotificationTest, ShowTest) {
   if (!UseRichNotifications())
     return;
 
-  StubNotificationUIManager notification_manager;
-
   // Call the method under test using the pre-populated data.
-  notification1_->Show(&notification_manager, NULL, NULL);
+  notification1_->Show(notification_manager(), NULL, NULL);
 
-  const Notification notification = notification_manager.notification();
+  const Notification notification = notification_manager()->notification();
 
   // Check the base fields of the notification.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
@@ -348,12 +277,10 @@ TEST_F(SyncedNotificationTest, DismissTest) {
   if (!UseRichNotifications())
     return;
 
-  StubNotificationUIManager notification_manager;
-
   // Call the method under test using a dismissed notification.
-  notification4_->Show(&notification_manager, NULL, NULL);
+  notification4_->Show(notification_manager(), NULL, NULL);
 
-  EXPECT_EQ(std::string(kKey1), notification_manager.dismissed_id());
+  EXPECT_EQ(std::string(kKey1), notification_manager()->dismissed_id());
 }
 
 TEST_F(SyncedNotificationTest, AddBitmapToFetchQueueTest) {
@@ -374,10 +301,8 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   if (!UseRichNotifications())
     return;
 
-  StubNotificationUIManager notification_manager;
-
   // Set up the internal state that FetchBitmaps() would have set.
-  notification1_->notification_manager_ = &notification_manager;
+  notification1_->notification_manager_ = notification_manager();
 
   // Add the bitmaps to the queue for us to match up.
   notification1_->AddBitmapToFetchQueue(GURL(kIconUrl1));
@@ -407,11 +332,12 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
 
   // Since we check Show() thoroughly in its own test, we only check cursorily.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
-            notification_manager.notification().type());
+            notification_manager()->notification().type());
   EXPECT_EQ(std::string(kTitle1),
-            base::UTF16ToUTF8(notification_manager.notification().title()));
-  EXPECT_EQ(std::string(kText1),
-            base::UTF16ToUTF8(notification_manager.notification().message()));
+            base::UTF16ToUTF8(notification_manager()->notification().title()));
+  EXPECT_EQ(
+      std::string(kText1),
+      base::UTF16ToUTF8(notification_manager()->notification().message()));
 
   // TODO(petewil): Check that the bitmap in the notification is what we expect.
   // This fails today, the type info is different.
@@ -424,10 +350,8 @@ TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
   if (!UseRichNotifications())
     return;
 
-  StubNotificationUIManager notification_manager;
-
   // Set up the internal state that FetchBitmaps() would have set.
-  notification1_->notification_manager_ = &notification_manager;
+  notification1_->notification_manager_ = notification_manager();
 
   // Add the bitmaps to the queue for us to match up.
   notification1_->AddBitmapToFetchQueue(GURL(kIconUrl1));
@@ -463,11 +387,12 @@ TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
 
   // Since we check Show() thoroughly in its own test, we only check cursorily.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
-            notification_manager.notification().type());
+            notification_manager()->notification().type());
   EXPECT_EQ(std::string(kTitle1),
-            base::UTF16ToUTF8(notification_manager.notification().title()));
-  EXPECT_EQ(std::string(kText1),
-            base::UTF16ToUTF8(notification_manager.notification().message()));
+            base::UTF16ToUTF8(notification_manager()->notification().title()));
+  EXPECT_EQ(
+      std::string(kText1),
+      base::UTF16ToUTF8(notification_manager()->notification().message()));
 }
 
 // TODO(petewil): Add a test for a notification being read and or deleted.

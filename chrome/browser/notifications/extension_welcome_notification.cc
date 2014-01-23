@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/welcome_notification.h"
+#include "chrome/browser/notifications/extension_welcome_notification.h"
 
 #include "base/guid.h"
 #include "base/lazy_instance.h"
@@ -25,13 +25,11 @@
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 
-const char kChromeNowExtensionID[] = "pafkbggdmjlpgkdkcbjmhmfcdpncadgh";
-
+namespace {
 class WelcomeNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
-  WelcomeNotificationDelegate(const std::string& id, Profile* profile)
-      : profile_(profile) {}
+  explicit WelcomeNotificationDelegate(Profile* profile) : profile_(profile) {}
 
   // Overridden from NotificationDelegate:
   virtual void Display() OVERRIDE {}
@@ -55,8 +53,8 @@ class WelcomeNotificationDelegate
 
  private:
   void MarkAsDismissed() {
-    profile_->GetPrefs()->
-        SetBoolean(prefs::kWelcomeNotificationDismissed, true);
+    profile_->GetPrefs()->SetBoolean(prefs::kWelcomeNotificationDismissed,
+                                     true);
   }
 
   void OpenNotificationLearnMoreTab() {
@@ -75,28 +73,31 @@ class WelcomeNotificationDelegate
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeNotificationDelegate);
 };
+}  // namespace
 
-WelcomeNotification::WelcomeNotification(
+ExtensionWelcomeNotification::ExtensionWelcomeNotification(
+    const std::string& extension_id,
     Profile* profile,
     message_center::MessageCenter* message_center)
-    : profile_(profile),
+    : notifier_id_(message_center::NotifierId::APPLICATION, extension_id),
+      profile_(profile),
       message_center_(message_center) {
   welcome_notification_dismissed_pref_.Init(
-    prefs::kWelcomeNotificationDismissed,
-    profile_->GetPrefs(),
-    base::Bind(
-        &WelcomeNotification::OnWelcomeNotificationDismissedChanged,
-        base::Unretained(this)));
+      prefs::kWelcomeNotificationDismissed,
+      profile_->GetPrefs(),
+      base::Bind(
+          &ExtensionWelcomeNotification::OnWelcomeNotificationDismissedChanged,
+          base::Unretained(this)));
 }
 
-WelcomeNotification::~WelcomeNotification() {
+ExtensionWelcomeNotification::~ExtensionWelcomeNotification() {
   if (delayed_notification_) {
     delayed_notification_.reset();
     PrefServiceSyncable::FromProfile(profile_)->RemoveObserver(this);
   }
 }
 
-void WelcomeNotification::OnIsSyncingChanged() {
+void ExtensionWelcomeNotification::OnIsSyncingChanged() {
   DCHECK(delayed_notification_);
   PrefServiceSyncable* pref_service_syncable =
       PrefServiceSyncable::FromProfile(profile_);
@@ -108,10 +109,9 @@ void WelcomeNotification::OnIsSyncingChanged() {
   }
 }
 
-void WelcomeNotification::ShowWelcomeNotificationIfNecessary(
+void ExtensionWelcomeNotification::ShowWelcomeNotificationIfNecessary(
     const Notification& notification) {
-  message_center::NotifierId notifier_id = notification.notifier_id();
-  if ((notifier_id.id == kChromeNowExtensionID) && !delayed_notification_) {
+  if ((notification.notifier_id() == notifier_id_) && !delayed_notification_) {
     PrefServiceSyncable* pref_service_syncable =
         PrefServiceSyncable::FromProfile(profile_);
     if (pref_service_syncable->IsSyncing()) {
@@ -120,16 +120,14 @@ void WelcomeNotification::ShowWelcomeNotificationIfNecessary(
         PopUpRequest pop_up_request =
             pref_service->GetBoolean(
                 prefs::kWelcomeNotificationPreviouslyPoppedUp)
-            ? POP_UP_HIDDEN
-            : POP_UP_SHOWN;
+                ? POP_UP_HIDDEN
+                : POP_UP_SHOWN;
         if (pop_up_request == POP_UP_SHOWN) {
           pref_service->SetBoolean(
               prefs::kWelcomeNotificationPreviouslyPoppedUp, true);
         }
 
-        ShowWelcomeNotification(notifier_id,
-                                notification.display_source(),
-                                pop_up_request);
+        ShowWelcomeNotification(notification.display_source(), pop_up_request);
       }
     } else {
       delayed_notification_.reset(new Notification(notification));
@@ -139,20 +137,17 @@ void WelcomeNotification::ShowWelcomeNotificationIfNecessary(
 }
 
 // Static
-void WelcomeNotification::RegisterProfilePrefs(
+void ExtensionWelcomeNotification::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterBooleanPref(
-      prefs::kWelcomeNotificationDismissed,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(
-      prefs::kWelcomeNotificationPreviouslyPoppedUp,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWelcomeNotificationDismissed,
+                             false,
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp,
+                             false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-void WelcomeNotification::ShowWelcomeNotification(
-    const message_center::NotifierId notifier_id,
+void ExtensionWelcomeNotification::ShowWelcomeNotification(
     const base::string16& display_source,
     PopUpRequest pop_up_request) {
   message_center::ButtonInfo learn_more(
@@ -177,10 +172,9 @@ void WelcomeNotification::ShowWelcomeNotification(
             ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_NOTIFICATION_WELCOME_ICON),
             display_source,
-            notifier_id,
+            notifier_id_,
             rich_notification_data,
-            new WelcomeNotificationDelegate(
-                welcome_notification_id_, profile_)));
+            new WelcomeNotificationDelegate(profile_)));
 
     if (pop_up_request == POP_UP_HIDDEN)
       message_center_notification->set_shown_as_popup(true);
@@ -189,14 +183,14 @@ void WelcomeNotification::ShowWelcomeNotification(
   }
 }
 
-void WelcomeNotification::HideWelcomeNotification() {
+void ExtensionWelcomeNotification::HideWelcomeNotification() {
   if (!welcome_notification_id_.empty() &&
       message_center_->HasNotification(welcome_notification_id_)) {
     message_center_->RemoveNotification(welcome_notification_id_, false);
   }
 }
 
-void WelcomeNotification::OnWelcomeNotificationDismissedChanged() {
+void ExtensionWelcomeNotification::OnWelcomeNotificationDismissedChanged() {
   const bool welcome_notification_dismissed =
       profile_->GetPrefs()->GetBoolean(prefs::kWelcomeNotificationDismissed);
   if (welcome_notification_dismissed)

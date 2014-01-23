@@ -75,6 +75,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   std::string GetContainedNotificationTitle(int index) const;
   std::string GetContainedNotificationMessage(int index) const;
   std::string GetSendingServiceId() const;
+  const gfx::Image& GetAppIcon() const;
 
   // Use this to prevent toasting a notification.
   void SetToastState(bool toast_state);
