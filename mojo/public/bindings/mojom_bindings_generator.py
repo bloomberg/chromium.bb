@@ -6,14 +6,34 @@
 """The frontend for the Mojo bindings system."""
 
 
+import imp
 import os
 import sys
 from argparse import ArgumentParser
+from generators import mojom_data
 from parse import mojo_parser
 from parse import mojo_translate
-from generators import mojom_data
-from generators import mojom_cpp_generator
-from generators import mojom_js_generator
+
+
+def LoadGenerators(generators_string):
+  generators = []
+  for generator_name in [s.strip() for s in generators_string.split(",")]:
+    # "Built-in" generators:
+    if generator_name.lower() == "c++":
+      generator_module = __import__("generators.mojom_cpp_generator",
+                                    fromlist=["mojom_cpp_generator"])
+    elif generator_name.lower() == "javascript":
+      generator_module = __import__("generators.mojom_js_generator",
+                                    fromlist=["mojom_js_generator"])
+    # Specified generator python module:
+    elif generator_name.endswith(".py"):
+      generator_module = imp.load_source(os.path.basename(generator_name)[:-3],
+                                         generator_name)
+    else:
+      print "Unknown generator name %s" % generator_name
+      sys.exit(1)
+    generators.append(generator_module)
+  return generators
 
 
 def Main():
@@ -24,11 +44,14 @@ def Main():
                       help="include path for #includes")
   parser.add_argument("-o", "--output_dir", dest="output_dir", default=".",
                       help="output directory for generated files")
+  parser.add_argument("-g", "--generators", dest="generators_string",
+                      metavar="GENERATORS", default="c++,javascript",
+                      help="comma-separated list of generators")
   args = parser.parse_args()
 
   # TODO(vtl): Load these dynamically. (Also add a command-line option to
   # specify which generators.)
-  generator_modules = [mojom_cpp_generator, mojom_js_generator]
+  generator_modules = LoadGenerators(args.generators_string)
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
@@ -45,6 +68,8 @@ def Main():
                                              args.output_dir)
       generator.GenerateFiles()
 
+  return 0
+
 
 if __name__ == "__main__":
-  Main()
+  sys.exit(Main())
