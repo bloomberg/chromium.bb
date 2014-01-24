@@ -9,6 +9,8 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
+#include <vector>
+
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/env_observer.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -63,6 +65,11 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessagePumpDispatcher,
 
   // Handles changes in activation.
   void OnActiveWindowChanged(::Window window);
+
+  // Return the next window to activate based on the current list of windows.
+  // This should only be called if there is an active window. In other words, if
+  // current_window_ is different from None.
+  ::Window GetNextToActivateInStack(const std::vector< ::Window >& windows);
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
