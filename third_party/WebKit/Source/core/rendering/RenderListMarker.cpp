@@ -1301,21 +1301,19 @@ void RenderListMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffse
         }
 
         const UChar suffix = listMarkerSuffix(type, m_listItem->value());
+        UChar suffixStr[2] = {
+            style()->isLeftToRightDirection() ? suffix : ' ',
+            style()->isLeftToRightDirection() ? ' ' : suffix
+        };
+        TextRun suffixRun = RenderBlockFlow::constructTextRun(this, font, suffixStr, 2, style(), style()->direction());
+        TextRunPaintInfo suffixRunInfo(suffixRun);
+        suffixRunInfo.bounds = marker;
+
         if (style()->isLeftToRightDirection()) {
             context->drawText(font, textRunPaintInfo, textOrigin);
-
-            UChar suffixSpace[2] = { suffix, ' ' };
-            TextRun suffixRun = RenderBlockFlow::constructTextRun(this, font, suffixSpace, 2, style(), LTR);
-            TextRunPaintInfo suffixRunInfo(suffixRun);
-            suffixRunInfo.bounds = marker;
             context->drawText(font, suffixRunInfo, textOrigin + IntSize(font.width(textRun), 0));
         } else {
-            UChar spaceSuffix[2] = { ' ', suffix };
-            TextRun suffixRun = RenderBlockFlow::constructTextRun(this, font, spaceSuffix, 2, style(), RTL);
-            TextRunPaintInfo suffixRunInfo(suffixRun);
-            suffixRunInfo.bounds = marker;
             context->drawText(font, suffixRunInfo, textOrigin);
-
             context->drawText(font, textRunPaintInfo, textOrigin + IntSize(font.width(suffixRun), 0));
         }
     }
