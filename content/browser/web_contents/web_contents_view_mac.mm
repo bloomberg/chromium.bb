@@ -349,9 +349,11 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
   RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
       RenderWidgetHostView::CreateViewForWidget(render_widget_host));
   if (delegate()) {
-    NSObject<RenderWidgetHostViewMacDelegate>* rw_delegate =
-        delegate()->CreateRenderWidgetHostViewDelegate(render_widget_host);
-    view->SetDelegate(rw_delegate);
+    base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate> >
+        rw_delegate(
+            delegate()->CreateRenderWidgetHostViewDelegate(render_widget_host));
+
+    view->SetDelegate(rw_delegate.get());
   }
   view->SetAllowOverlappingViews(allow_overlapping_views_);
 

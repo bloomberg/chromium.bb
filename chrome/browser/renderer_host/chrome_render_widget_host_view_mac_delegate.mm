@@ -97,7 +97,6 @@ class SpellCheckObserver : public content::WebContentsObserver {
 
 - (void)viewGone:(NSView*)view {
   view_id_util::UnsetID(view);
-  [self autorelease];
 }
 
 // Handle an event. All incoming key and mouse events flow through this

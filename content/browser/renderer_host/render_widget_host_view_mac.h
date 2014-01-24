@@ -53,7 +53,9 @@ class RenderWidgetHostViewMacEditCommandHelper;
                 BrowserAccessibilityDelegateCocoa> {
  @private
   scoped_ptr<content::RenderWidgetHostViewMac> renderWidgetHostView_;
-  NSObject<RenderWidgetHostViewMacDelegate>* delegate_;  // weak
+  // This ivar is the cocoa delegate of the NSResponder.
+  base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
+      responderDelegate_;
   BOOL canBeKeyView_;
   BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
@@ -204,6 +206,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   RenderWidgetHostViewCocoa* cocoa_view() const { return cocoa_view_; }
 
+  // |delegate| is used to separate out the logic from the NSResponder delegate.
+  // |delegate| is retained by this class.
+  // |delegate| should be set at most once.
   CONTENT_EXPORT void SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate);
   void SetAllowOverlappingViews(bool overlapping);

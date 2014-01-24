@@ -152,8 +152,6 @@ static float ScaleFactor(NSView* view) {
 @interface RenderWidgetHostViewCocoa ()
 @property(nonatomic, assign) NSRange selectedRange;
 @property(nonatomic, assign) NSRange markedRange;
-@property(nonatomic, assign)
-    NSObject<RenderWidgetHostViewMacDelegate>* delegate;
 
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
@@ -169,6 +167,8 @@ static float ScaleFactor(NSView* view) {
 - (void)updateSoftwareLayerScaleFactor;
 - (void)checkForPluginImeCancellation;
 - (void)updateTabBackingStoreScaleFactor;
+- (void)setResponderDelegate:
+        (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 @end
 
 // A window subclass that allows the fullscreen window to become main and gain
@@ -445,7 +445,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 
 void RenderWidgetHostViewMac::SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate) {
-  [cocoa_view_ setDelegate:delegate];
+  [cocoa_view_ setResponderDelegate:delegate];
 }
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
@@ -1987,7 +1987,6 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
 @synthesize selectedRange = selectedRange_;
 @synthesize suppressNextEscapeKeyUp = suppressNextEscapeKeyUp_;
 @synthesize markedRange = markedRange_;
-@synthesize delegate = delegate_;
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
@@ -2024,11 +2023,20 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
   if (renderWidgetHostView_)
     renderWidgetHostView_->AcceleratedSurfaceRelease();
 
-  if (delegate_ && [delegate_ respondsToSelector:@selector(viewGone:)])
-    [delegate_ viewGone:self];
+  if (responderDelegate_ &&
+      [responderDelegate_ respondsToSelector:@selector(viewGone:)])
+    [responderDelegate_ viewGone:self];
+  responderDelegate_.reset();
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [super dealloc];
+}
+
+- (void)setResponderDelegate:
+            (NSObject<RenderWidgetHostViewMacDelegate>*)delegate {
+  DCHECK(!responderDelegate_);
+  responderDelegate_.reset([delegate retain]);
 }
 
 - (void)resetCursorRects {
@@ -2039,23 +2047,26 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
 }
 
 - (void)gotUnhandledWheelEvent {
-  if (delegate_ &&
-      [delegate_ respondsToSelector:@selector(gotUnhandledWheelEvent)]) {
-    [delegate_ gotUnhandledWheelEvent];
+  if (responderDelegate_ &&
+      [responderDelegate_
+          respondsToSelector:@selector(gotUnhandledWheelEvent)]) {
+    [responderDelegate_ gotUnhandledWheelEvent];
   }
 }
 
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
-  if (delegate_ && [delegate_
-      respondsToSelector:@selector(scrollOffsetPinnedToLeft:toRight:)]) {
-    [delegate_ scrollOffsetPinnedToLeft:left toRight:right];
+  if (responderDelegate_ &&
+      [responderDelegate_
+          respondsToSelector:@selector(scrollOffsetPinnedToLeft:toRight:)]) {
+    [responderDelegate_ scrollOffsetPinnedToLeft:left toRight:right];
   }
 }
 
 - (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar {
-  if (delegate_ &&
-      [delegate_ respondsToSelector:@selector(setHasHorizontalScrollbar:)]) {
-    [delegate_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
+  if (responderDelegate_ &&
+      [responderDelegate_
+          respondsToSelector:@selector(setHasHorizontalScrollbar:)]) {
+    [responderDelegate_ setHasHorizontalScrollbar:has_horizontal_scrollbar];
   }
 }
 
@@ -2066,15 +2077,15 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
   if ([super respondsToSelector:selector])
     return YES;
 
-  if (delegate_)
-    return [delegate_ respondsToSelector:selector];
+  if (responderDelegate_)
+    return [responderDelegate_ respondsToSelector:selector];
 
   return NO;
 }
 
 - (id)forwardingTargetForSelector:(SEL)selector {
-  if ([delegate_ respondsToSelector:selector])
-    return delegate_;
+  if ([responderDelegate_ respondsToSelector:selector])
+    return responderDelegate_.get();
 
   return [super forwardingTargetForSelector:selector];
 }
@@ -2145,8 +2156,9 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
 
 - (void)mouseEvent:(NSEvent*)theEvent {
   TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::mouseEvent");
-  if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
-    BOOL handled = [delegate_ handleEvent:theEvent];
+  if (responderDelegate_ &&
+      [responderDelegate_ respondsToSelector:@selector(handleEvent:)]) {
+    BOOL handled = [responderDelegate_ handleEvent:theEvent];
     if (handled)
       return;
   }
@@ -2257,8 +2269,9 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
 }
 
 - (EventHandled)keyEvent:(NSEvent*)theEvent {
-  if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
-    BOOL handled = [delegate_ handleEvent:theEvent];
+  if (responderDelegate_ &&
+      [responderDelegate_ respondsToSelector:@selector(handleEvent:)]) {
+    BOOL handled = [responderDelegate_ handleEvent:theEvent];
     if (handled)
       return kEventHandled;
   }
@@ -2514,22 +2527,22 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
 }
 
 - (void)beginGestureWithEvent:(NSEvent*)event {
-  [delegate_ beginGestureWithEvent:event];
+  [responderDelegate_ beginGestureWithEvent:event];
 }
 - (void)endGestureWithEvent:(NSEvent*)event {
-  [delegate_ endGestureWithEvent:event];
+  [responderDelegate_ endGestureWithEvent:event];
 }
 - (void)touchesMovedWithEvent:(NSEvent*)event {
-  [delegate_ touchesMovedWithEvent:event];
+  [responderDelegate_ touchesMovedWithEvent:event];
 }
 - (void)touchesBeganWithEvent:(NSEvent*)event {
-  [delegate_ touchesBeganWithEvent:event];
+  [responderDelegate_ touchesBeganWithEvent:event];
 }
 - (void)touchesCancelledWithEvent:(NSEvent*)event {
-  [delegate_ touchesCancelledWithEvent:event];
+  [responderDelegate_ touchesCancelledWithEvent:event];
 }
 - (void)touchesEndedWithEvent:(NSEvent*)event {
-  [delegate_ touchesEndedWithEvent:event];
+  [responderDelegate_ touchesEndedWithEvent:event];
 }
 
 // This method handles 2 different types of hardware events.
@@ -2555,8 +2568,9 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
 //     cancels the gesture, all remaining touches are forwarded to the content
 //     scroll logic. The user cannot trigger the navigation logic again.
 - (void)scrollWheel:(NSEvent*)event {
-  if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
-    BOOL handled = [delegate_ handleEvent:event];
+  if (responderDelegate_ &&
+      [responderDelegate_ respondsToSelector:@selector(handleEvent:)]) {
+    BOOL handled = [responderDelegate_ handleEvent:event];
     if (handled)
       return;
   }
@@ -3002,12 +3016,13 @@ void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-  if (delegate_ &&
-      [delegate_ respondsToSelector:@selector(validateUserInterfaceItem:
-                                                            isValidItem:)]) {
+  if (responderDelegate_ &&
+      [responderDelegate_
+          respondsToSelector:@selector(validateUserInterfaceItem:
+                                                     isValidItem:)]) {
     BOOL valid;
-    BOOL known = [delegate_ validateUserInterfaceItem:item
-                                          isValidItem:&valid];
+    BOOL known =
+        [responderDelegate_ validateUserInterfaceItem:item isValidItem:&valid];
     if (known)
       return valid;
   }
