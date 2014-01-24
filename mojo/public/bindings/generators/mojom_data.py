@@ -66,7 +66,8 @@ def StructFromData(kinds, data):
   struct.spec = 'x:' + struct.name
   kinds[struct.spec] = struct
   struct.fields = map(lambda field: FieldFromData(kinds, field), data['fields'])
-  struct.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
+  if data.has_key('enums'):
+    struct.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
   return struct
 
 def FieldToData(field):
@@ -122,7 +123,7 @@ def MethodFromData(kinds, data):
   method.ordinal = data.get('ordinal')
   method.default = data.get('default')
   method.parameters = map(
-    lambda parameter: ParameterFromData(kinds, parameter), data['parameters'])
+      lambda parameter: ParameterFromData(kinds, parameter), data['parameters'])
   return method
 
 def InterfaceToData(interface):
@@ -135,10 +136,11 @@ def InterfaceToData(interface):
 def InterfaceFromData(kinds, data):
   interface = mojom.Interface()
   interface.name = data['name']
-  interface.peer = data['peer']
+  interface.peer = data['peer'] if data.has_key('peer') else None
   interface.methods = map(
-    lambda method: MethodFromData(kinds, method), data['methods'])
-  interface.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
+      lambda method: MethodFromData(kinds, method), data['methods'])
+  if data.has_key('enums'):
+    interface.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
   return interface
 
 def EnumFieldFromData(kinds, data):
@@ -151,7 +153,7 @@ def EnumFromData(kinds, data):
   enum = mojom.Enum()
   enum.name = data['name']
   enum.fields = map(
-    lambda field: EnumFieldFromData(kinds, field), data['fields'])
+      lambda field: EnumFieldFromData(kinds, field), data['fields'])
   return enum
 
 def ModuleToData(module):
@@ -171,11 +173,12 @@ def ModuleFromData(data):
   module.name = data['name']
   module.namespace = data['namespace']
   module.structs = map(
-    lambda struct: StructFromData(kinds, struct), data['structs'])
+      lambda struct: StructFromData(kinds, struct), data['structs'])
   module.interfaces = map(
-    lambda interface: InterfaceFromData(kinds, interface), data['interfaces'])
-  module.enums = map(
-    lambda enum: EnumFromData(kinds, enum), data['enums'])
+      lambda interface: InterfaceFromData(kinds, interface), data['interfaces'])
+  if data.has_key('enums'):
+    module.enums = map(
+        lambda enum: EnumFromData(kinds, enum), data['enums'])
   return module
 
 def OrderedModuleFromData(data):
