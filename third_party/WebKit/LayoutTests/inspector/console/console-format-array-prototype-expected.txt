@@ -1,0 +1,62 @@
+CONSOLE MESSAGE: line 1: 
+CONSOLE MESSAGE: line 1: proto0
+CONSOLE MESSAGE: line 1: proto0,2,3
+CONSOLE MESSAGE: line 1: proto0,,,,,,,,,,proto10,,,,
+CONSOLE MESSAGE: line 1: proto0,,,,,,,,8,,proto10,,,,
+CONSOLE MESSAGE: line 1: 0,,,,,,,,,,10,,,,
+CONSOLE MESSAGE: line 1: proto0,,,4,,,,,,,proto10,,,,
+Tests that console logging dumps array values defined on Array.prototype[].
+
+
+
+> a0
+
+[0: "proto0", 10: "proto10"]
+
+[0: "proto0", 10: "proto10"] VM:1
+
+> a1
+
+["proto0", 10: "proto10"]
+
+["proto0", 10: "proto10"] VM:1
+
+> a2
+
+["proto0", 2, 3, 10: "proto10"]
+
+["proto0", 2, 3, 10: "proto10"] VM:1
+
+> a3
+
+["proto0", undefined × 9, "proto10", undefined × 4]
+
+["proto0", undefined × 9, "proto10", undefined × 4] VM:1
+
+> a4
+
+["proto0", undefined × 7, 8, undefined × 1, "proto10", undefined × 4]
+
+["proto0", undefined × 7, 8, undefined × 1, "proto10", undefined × 4] VM:1
+
+> a5
+
+[0, undefined × 9, 10, undefined × 4]
+
+[0, undefined × 9, 10, undefined × 4] VM:1
+
+> a6
+
+["proto0", undefined × 2, 4, undefined × 6, "proto10", undefined × 4, index0: 0, index1: 1, index2: 2, index3: 3, index4: 4…]
+
+["proto0", undefined × 2, 4, undefined × 6, "proto10", undefined × 4, index0: 0, index1: 1, index2: 2, index3: 3, index4: 4…]
+    3: 4
+    index0: 0
+    index1: 1
+    index2: 2
+    index3: 3
+    index4: 4
+    index5: 5
+    length: 15
+    __proto__: Array[11] VM:1
+
