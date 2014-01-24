@@ -123,7 +123,6 @@ public:
     virtual int popupInternalPaddingBottom(RenderStyle*) const OVERRIDE;
 
     // Media controls
-    virtual bool hasOwnDisabledStateHandlingFor(ControlPart) const OVERRIDE { return true; }
     virtual bool usesVerticalVolumeSlider() const OVERRIDE { return false; }
 
     // Provide a way to pass the default font size from the Settings object

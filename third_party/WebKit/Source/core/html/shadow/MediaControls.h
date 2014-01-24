@@ -53,8 +53,6 @@ class MediaControls : public HTMLDivElement {
     virtual void setMediaController(MediaControllerInterface*);
 
     virtual void reset();
-    virtual void reportedError();
-    virtual void loadedMetadata();
 
     virtual void show();
     virtual void hide();

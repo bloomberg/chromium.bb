@@ -87,16 +87,10 @@ void MediaControls::reset()
 
     updateCurrentTimeDisplay();
 
-    double duration = m_mediaController->duration();
-    if (std::isfinite(duration) || RenderTheme::theme().hasOwnDisabledStateHandlingFor(MediaSliderPart)) {
-        m_timeline->setDuration(duration);
-        m_timeline->setPosition(m_mediaController->currentTime());
-    }
+    m_timeline->setDuration(m_mediaController->duration());
+    m_timeline->setPosition(m_mediaController->currentTime());
 
-    if (m_mediaController->hasAudio() || RenderTheme::theme().hasOwnDisabledStateHandlingFor(MediaMuteButtonPart))
-        m_panelMuteButton->show();
-    else
-        m_panelMuteButton->hide();
+    m_panelMuteButton->show();
 
     if (m_volumeSlider) {
         if (!m_mediaController->hasAudio())
@@ -117,29 +111,6 @@ void MediaControls::reset()
     }
 
     makeOpaque();
-}
-
-void MediaControls::reportedError()
-{
-    Page* page = document().page();
-    if (!page)
-        return;
-
-    if (!RenderTheme::theme().hasOwnDisabledStateHandlingFor(MediaMuteButtonPart)) {
-        m_panelMuteButton->hide();
-        m_volumeSlider->hide();
-    }
-
-    if (m_toggleClosedCaptionsButton && !RenderTheme::theme().hasOwnDisabledStateHandlingFor(MediaToggleClosedCaptionsButtonPart))
-        m_toggleClosedCaptionsButton->hide();
-
-    if (m_fullScreenButton && !RenderTheme::theme().hasOwnDisabledStateHandlingFor(MediaEnterFullscreenButtonPart))
-        m_fullScreenButton->hide();
-}
-
-void MediaControls::loadedMetadata()
-{
-    reset();
 }
 
 void MediaControls::show()

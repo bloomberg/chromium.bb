@@ -1468,10 +1468,8 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
         noneSupported();
 
     updateDisplayState();
-    if (hasMediaControls()) {
+    if (hasMediaControls())
         mediaControls()->reset();
-        mediaControls()->reportedError();
-    }
 }
 
 void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
@@ -1591,7 +1589,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
             scheduleEvent(EventTypeNames::resize);
         scheduleEvent(EventTypeNames::loadedmetadata);
         if (hasMediaControls())
-            mediaControls()->loadedMetadata();
+            mediaControls()->reset();
         if (renderer())
             renderer()->updateFromElement();
     }

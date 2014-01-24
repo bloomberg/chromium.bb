@@ -184,7 +184,6 @@ protected:
     virtual bool paintMediaVolumeSliderContainer(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMediaVolumeSliderTrack(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMediaVolumeSliderThumb(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
-    virtual bool hasOwnDisabledStateHandlingFor(ControlPart) const OVERRIDE { return true; }
     virtual bool usesVerticalVolumeSlider() const OVERRIDE { return false; }
     virtual String formatMediaControlsTime(float time) const OVERRIDE;
     virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const OVERRIDE;
