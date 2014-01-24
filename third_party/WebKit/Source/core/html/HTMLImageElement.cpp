@@ -54,6 +54,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
         m_form = form->createWeakPtr();
         m_formWasSetByParser = true;
         m_form->associate(*this);
+        m_form->didAssociateByParser();
     }
 }
 

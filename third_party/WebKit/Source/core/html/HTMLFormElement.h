@@ -69,6 +69,7 @@ public:
     void associate(HTMLImageElement&);
     void disassociate(HTMLImageElement&);
     WeakPtr<HTMLFormElement> createWeakPtr();
+    void didAssociateByParser();
 
     bool prepareForSubmission(Event*);
     void submit();
@@ -111,7 +112,7 @@ public:
     CheckedRadioButtons& checkedRadioButtons() { return m_checkedRadioButtons; }
 
     const Vector<FormAssociatedElement*>& associatedElements() const { return m_associatedElements; }
-    const Vector<HTMLImageElement*>& imageElements() const { return m_imageElements; }
+    const Vector<HTMLImageElement*>& imageElements();
 
     void getTextFieldValues(StringPairVector& fieldNamesAndValues) const;
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Node>&);
@@ -140,6 +141,7 @@ private:
 
     unsigned formElementIndexWithFormAttribute(Element*, unsigned rangeStart, unsigned rangeEnd);
     unsigned formElementIndex(FormAssociatedElement&);
+    void collectImageElements(Node* root, Vector<HTMLImageElement*>&);
 
     // Returns true if the submission should proceed.
     bool validateInteractively(Event*);
@@ -163,8 +165,12 @@ private:
     unsigned m_associatedElementsBeforeIndex;
     unsigned m_associatedElementsAfterIndex;
     Vector<FormAssociatedElement*> m_associatedElements;
+    // Do not read m_imageElements directly. Use imageElements() instead.
     Vector<HTMLImageElement*> m_imageElements;
     WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
+    bool m_imageElementsAreDirty;
+    bool m_hasElementsAssociatedByParser;
+    bool m_didFinishParsingChildren;
 
     bool m_wasUserSubmitted;
     bool m_isSubmittingOrPreparingForSubmission;

@@ -63,6 +63,9 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_associatedElementsBeforeIndex(0)
     , m_associatedElementsAfterIndex(0)
     , m_weakPtrFactory(this)
+    , m_imageElementsAreDirty(false)
+    , m_hasElementsAssociatedByParser(false)
+    , m_didFinishParsingChildren(false)
     , m_wasUserSubmitted(false)
     , m_isSubmittingOrPreparingForSubmission(false)
     , m_shouldSubmit(false)
@@ -119,6 +122,15 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
     return InsertionDone;
 }
 
+template<class T>
+void notifyFormRemovedFromTree(const Vector<T*>& elements, Node* root)
+{
+    size_t size = elements.size();
+    for (size_t i = 0; i < size; ++i)
+        elements[i]->formRemovedFromTree(root);
+    ASSERT(size == elements.size());
+}
+
 void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
 {
     // FIXME: We don't need to notify formRemovedFromTree to associated elements
@@ -127,11 +139,19 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
     // with 'form' content attribute.
     Node* root = highestAncestor();
     Vector<FormAssociatedElement*> associatedElements(m_associatedElements);
-    for (unsigned i = 0; i < associatedElements.size(); ++i)
-        associatedElements[i]->formRemovedFromTree(root);
-    Vector<HTMLImageElement*> images(imageElements());
-    for (unsigned i = 0; i < images.size(); ++i)
-        images[i]->formRemovedFromTree(root);
+    notifyFormRemovedFromTree(associatedElements, root);
+
+    if (m_hasElementsAssociatedByParser) {
+        if (!m_imageElementsAreDirty) {
+            notifyFormRemovedFromTree(imageElements(), root);
+        } else {
+            Vector<HTMLImageElement*> images;
+            collectImageElements(insertionPoint->highestAncestor(), images);
+            notifyFormRemovedFromTree(images, root);
+            collectImageElements(root, images);
+            notifyFormRemovedFromTree(images, root);
+        }
+    }
     HTMLElement::removedFrom(insertionPoint);
 }
 
@@ -601,15 +621,13 @@ bool HTMLFormElement::isURLAttribute(const Attribute& attribute) const
 
 void HTMLFormElement::associate(HTMLImageElement& e)
 {
-    ASSERT(m_imageElements.find(&e) == kNotFound);
-    m_imageElements.append(&e);
+    m_imageElementsAreDirty = true;
 }
 
 void HTMLFormElement::disassociate(HTMLImageElement& e)
 {
-    ASSERT(m_imageElements.find(&e) != kNotFound);
+    m_imageElementsAreDirty = true;
     removeFromPastNamesMap(e);
-    removeFromVector(m_imageElements, &e);
 }
 
 WeakPtr<HTMLFormElement> HTMLFormElement::createWeakPtr()
@@ -617,9 +635,33 @@ WeakPtr<HTMLFormElement> HTMLFormElement::createWeakPtr()
     return m_weakPtrFactory.createWeakPtr();
 }
 
+void HTMLFormElement::didAssociateByParser()
+{
+    if (m_didFinishParsingChildren)
+        m_hasElementsAssociatedByParser = true;
+}
+
 PassRefPtr<HTMLCollection> HTMLFormElement::elements()
 {
     return ensureCachedHTMLCollection(FormControls);
+}
+
+void HTMLFormElement::collectImageElements(Node* root, Vector<HTMLImageElement*>& elements)
+{
+    elements.clear();
+    for (Node* node = root; node; node = NodeTraversal::next(*node)) {
+        if (node->isHTMLElement() && node->hasTagName(imgTag) && toHTMLElement(node)->formOwner() == this)
+            elements.append(toHTMLImageElement(node));
+    }
+}
+
+const Vector<HTMLImageElement*>& HTMLFormElement::imageElements()
+{
+    if (!m_imageElementsAreDirty)
+        return m_imageElements;
+    collectImageElements(m_hasElementsAssociatedByParser ? highestAncestor() : this, m_imageElements);
+    m_imageElementsAreDirty = false;
+    return m_imageElements;
 }
 
 String HTMLFormElement::name() const
@@ -767,6 +809,7 @@ void HTMLFormElement::finishParsingChildren()
 {
     HTMLElement::finishParsingChildren();
     document().formController()->restoreControlStateIn(*this);
+    m_didFinishParsingChildren = true;
 }
 
 void HTMLFormElement::copyNonAttributePropertiesFromElement(const Element& source)
