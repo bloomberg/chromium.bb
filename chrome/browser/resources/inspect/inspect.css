@@ -239,12 +239,10 @@ img {
 }
 
 #device-settings {
+  align-items: center;
   border-bottom: 1px solid #eee;
+  display: flex;
   padding: 5px 0;
-}
-
-#device-settings input {
-  vertical-align: middle;
 }
 
 #device-settings button {
@@ -359,15 +357,11 @@ img {
   opacity: 0.5;
 }
 
-#port-forwarding-enable {
-  vertical-align: middle;
-}
-
-#port-forwarding-config-buttons > button {
-  float: right;
+#port-forwarding-config-buttons {
+  align-items: center;
+  display: flex;
 }
 
 #port-forwarding-config-buttons > label {
-  position: relative;
-  top: 5px;
+  flex-grow: 1
 }
