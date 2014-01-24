@@ -316,27 +316,6 @@ const AtomicString& MediaControlPanelMuteButtonElement::shadowPseudoId() const
 
 // ----------------------------
 
-MediaControlVolumeSliderMuteButtonElement::MediaControlVolumeSliderMuteButtonElement(Document& document)
-    : MediaControlMuteButtonElement(document, MediaMuteButton)
-{
-}
-
-PassRefPtr<MediaControlVolumeSliderMuteButtonElement> MediaControlVolumeSliderMuteButtonElement::create(Document& document)
-{
-    RefPtr<MediaControlVolumeSliderMuteButtonElement> button = adoptRef(new MediaControlVolumeSliderMuteButtonElement(document));
-    button->ensureUserAgentShadowRoot();
-    button->setType("button");
-    return button.release();
-}
-
-const AtomicString& MediaControlVolumeSliderMuteButtonElement::shadowPseudoId() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls-volume-slider-mute-button", AtomicString::ConstructFromLiteral));
-    return id;
-}
-
-// ----------------------------
-
 MediaControlPlayButtonElement::MediaControlPlayButtonElement(Document& document)
     : MediaControlInputElement(document, MediaPlayButton)
 {

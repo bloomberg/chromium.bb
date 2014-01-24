@@ -117,18 +117,6 @@ private:
 
 // ----------------------------
 
-class MediaControlVolumeSliderMuteButtonElement FINAL : public MediaControlMuteButtonElement {
-public:
-    static PassRefPtr<MediaControlVolumeSliderMuteButtonElement> create(Document&);
-
-private:
-    explicit MediaControlVolumeSliderMuteButtonElement(Document&);
-    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
-};
-
-
-// ----------------------------
-
 class MediaControlPlayButtonElement FINAL : public MediaControlInputElement {
 public:
     static PassRefPtr<MediaControlPlayButtonElement> create(Document&);

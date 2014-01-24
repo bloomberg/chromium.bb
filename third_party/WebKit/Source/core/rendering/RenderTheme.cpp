@@ -320,8 +320,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
         return paintMediaSliderTrack(o, paintInfo, r);
     case MediaSliderThumbPart:
         return paintMediaSliderThumb(o, paintInfo, r);
-    case MediaVolumeSliderMuteButtonPart:
-        return paintMediaMuteButton(o, paintInfo, r);
     case MediaVolumeSliderContainerPart:
         return paintMediaVolumeSliderContainer(o, paintInfo, r);
     case MediaVolumeSliderPart:

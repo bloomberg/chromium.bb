@@ -301,14 +301,6 @@ video::-webkit-media-controls-toggle-closed-captions-button {
     color: inherit;
 }
 
-audio::-webkit-media-controls-volume-slider-mute-button, video::-webkit-media-controls-volume-slider-mute-button {
-    -webkit-appearance: media-volume-slider-mute-button;
-    display: none;
-    background-color: initial;
-    border: initial;
-    color: inherit;
-}
-
 audio::-webkit-media-controls-fullscreen-volume-slider, video::-webkit-media-controls-fullscreen-volume-slider {
     display: none;
 }
