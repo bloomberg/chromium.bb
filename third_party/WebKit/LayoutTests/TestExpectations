@@ -818,7 +818,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-child.html
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-iframe.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 
 crbug.com/334588 fast/repaint/child-of-sub-pixel-offset-composited-layer.html [ NeedsRebaseline ]
 
