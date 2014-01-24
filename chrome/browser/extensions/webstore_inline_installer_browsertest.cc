@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
@@ -10,17 +13,16 @@
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 using content::WebContents;
-using extensions::Extension;
-using extensions::TabHelper;
-using extensions::WebstoreInlineInstaller;
-using extensions::WebstoreInlineInstallerFactory;
-using extensions::WebstoreStandaloneInstaller;
+
+namespace extensions {
+
+namespace {
 
 const char kWebstoreDomain[] = "cws.com";
 const char kAppDomain[] = "app.com";
@@ -28,6 +30,8 @@ const char kNonAppDomain[] = "nonapp.com";
 const char kTestExtensionId[] = "ecglahbcnmdpdciemllbhojghbkagdje";
 const char kTestDataPath[] = "extensions/api_test/webstore_inline_install";
 const char kCrxFilename[] = "extension.crx";
+
+}  // namespace
 
 class WebstoreInlineInstallerTest : public WebstoreInstallerTest {
  public:
@@ -73,7 +77,6 @@ class ProgrammableInstallPrompt : public ExtensionInstallPrompt {
 };
 
 ExtensionInstallPrompt::Delegate* ProgrammableInstallPrompt::delegate_;
-
 
 // Fake inline installer which creates a programmable prompt in place of
 // the normal dialog UI.
@@ -136,3 +139,31 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
   web_contents->Close();
   ProgrammableInstallPrompt::Accept();
 }
+
+// Ensure that inline-installing a disabled extension simply re-enables it.
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
+                       ReinstallDisabledExtension) {
+  // Install an extension via inline install, and confirm it is successful.
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
+  RunTest("runTest");
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  ASSERT_TRUE(extension_service->GetExtensionById(kTestExtensionId, false));
+
+  // Disable the extension.
+  extension_service->DisableExtension(kTestExtensionId,
+                                      Extension::DISABLE_USER_ACTION);
+  ASSERT_FALSE(extension_service->IsExtensionEnabled(kTestExtensionId));
+
+  // Revisit the inline install site and reinstall the extension. It should
+  // simply be re-enabled, rather than try to install again.
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
+  RunTest("runTest");
+  ASSERT_TRUE(extension_service->IsExtensionEnabled(kTestExtensionId));
+}
+
+}  // namespace extensions
