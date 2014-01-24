@@ -33,6 +33,7 @@
 #include "core/html/MediaKeyError.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
+#include "platform/Logging.h"
 #include "platform/drm/ContentDecryptionModule.h"
 
 namespace WebCore {
@@ -50,6 +51,7 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionMod
     , m_keys(keys)
     , m_updateTimer(this, &MediaKeySession::updateTimerFired)
 {
+    WTF_LOG(Media, "MediaKeySession::MediaKeySession");
     ScriptWrappable::init(this);
     ASSERT(m_session);
 }
@@ -86,6 +88,8 @@ void MediaKeySession::initializeNewSession(const String& mimeType, const Uint8Ar
 
 void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "MediaKeySession::update");
+
     // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-update>:
     // The update(response) method must run the following steps:
     // 1. If the argument is null or an empty array, throw an INVALID_ACCESS_ERR.
@@ -124,6 +128,8 @@ void MediaKeySession::updateTimerFired(Timer<MediaKeySession>*)
 // Queue a task to fire a simple event named keymessage at the new object
 void MediaKeySession::message(const unsigned char* message, size_t messageLength, const KURL& destinationURL)
 {
+    WTF_LOG(Media, "MediaKeySession::message");
+
     MediaKeyMessageEventInit init;
     init.bubbles = false;
     init.cancelable = false;
@@ -137,6 +143,8 @@ void MediaKeySession::message(const unsigned char* message, size_t messageLength
 
 void MediaKeySession::ready()
 {
+    WTF_LOG(Media, "MediaKeySession::ready");
+
     RefPtr<Event> event = Event::create(EventTypeNames::ready);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
@@ -144,6 +152,8 @@ void MediaKeySession::ready()
 
 void MediaKeySession::close()
 {
+    WTF_LOG(Media, "MediaKeySession::close");
+
     RefPtr<Event> event = Event::create(EventTypeNames::close);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
@@ -152,6 +162,8 @@ void MediaKeySession::close()
 // Queue a task to fire a simple event named keyadded at the MediaKeySession object.
 void MediaKeySession::error(MediaKeyErrorCode errorCode, unsigned long systemCode)
 {
+    WTF_LOG(Media, "MediaKeySession::error: errorCode=%d, systemCode=%lu", errorCode, systemCode);
+
     MediaKeyError::Code mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
     switch (errorCode) {
     case UnknownError:

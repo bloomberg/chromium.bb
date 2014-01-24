@@ -30,6 +30,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
+#include "platform/Logging.h"
 #include "platform/UUID.h"
 #include "platform/drm/ContentDecryptionModule.h"
 #include "wtf/HashSet.h"
@@ -73,6 +74,7 @@ MediaKeys::MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule
     , m_cdm(cdm)
     , m_initializeNewSessionTimer(this, &MediaKeys::initializeNewSessionTimerFired)
 {
+    WTF_LOG(Media, "MediaKeys::MediaKeys");
     ScriptWrappable::init(this);
 }
 
@@ -83,6 +85,8 @@ MediaKeys::~MediaKeys()
 
 PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& contentType, Uint8Array* initData, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "MediaKeys::createSession");
+
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
     // The createSession(type, initData) method must run the following steps:
     // Note: The contents of initData are container-specific Initialization Data.

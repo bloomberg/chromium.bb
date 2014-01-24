@@ -1649,6 +1649,8 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
 
 void HTMLMediaElement::mediaPlayerKeyAdded(const String& keySystem, const String& sessionId)
 {
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyAdded");
+
     MediaKeyEventInit initializer;
     initializer.keySystem = keySystem;
     initializer.sessionId = sessionId;
@@ -1662,6 +1664,8 @@ void HTMLMediaElement::mediaPlayerKeyAdded(const String& keySystem, const String
 
 void HTMLMediaElement::mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode errorCode, unsigned short systemCode)
 {
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyError: sessionID=%s, errorCode=%d, systemCode=%d", sessionId.utf8().data(), errorCode, systemCode);
+
     MediaKeyError::Code mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
     switch (errorCode) {
     case MediaPlayerClient::UnknownError:
@@ -1699,6 +1703,8 @@ void HTMLMediaElement::mediaPlayerKeyError(const String& keySystem, const String
 
 void HTMLMediaElement::mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL)
 {
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyMessage: sessionID=%s", sessionId.utf8().data());
+
     MediaKeyEventInit initializer;
     initializer.keySystem = keySystem;
     initializer.sessionId = sessionId;
@@ -1714,6 +1720,8 @@ void HTMLMediaElement::mediaPlayerKeyMessage(const String& keySystem, const Stri
 
 bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& contentType, const unsigned char* initData, unsigned initDataLength)
 {
+    WTF_LOG(Media, "HTMLMediaElement::mediaPlayerKeyNeeded: contentType=%s", contentType.utf8().data());
+
     // Send event for WD EME.
     MediaKeyNeededEventInit initializer;
     initializer.contentType = contentType;
@@ -1759,6 +1767,7 @@ blink::WebContentDecryptionModule* HTMLMediaElement::contentDecryptionModule()
 
 void HTMLMediaElement::setMediaKeysInternal(MediaKeys* mediaKeys)
 {
+    WTF_LOG(Media, "HTMLMediaElement::setMediaKeys");
     if (m_mediaKeys == mediaKeys)
         return;
 
@@ -2197,6 +2206,8 @@ void HTMLMediaElement::closeMediaSource()
 
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "HTMLMediaElement::webkitGenerateKeyRequest");
+
     if (!setEmeMode(EmeModePrefixed, exceptionState))
         return;
 
@@ -2228,6 +2239,8 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, Excepti
 
 void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "HTMLMediaElement::webkitAddKey");
+
     if (!setEmeMode(EmeModePrefixed, exceptionState))
         return;
 
@@ -2269,6 +2282,8 @@ void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Arr
 
 void HTMLMediaElement::webkitCancelKeyRequest(const String& keySystem, const String& sessionId, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "HTMLMediaElement::webkitCancelKeyRequest");
+
     if (!setEmeMode(EmeModePrefixed, exceptionState))
         return;
 
