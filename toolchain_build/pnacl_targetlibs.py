@@ -40,7 +40,11 @@ TARGET_BCLIB_CFLAGS = '-g -O2 -mllvm -inline-threshold=5'
 NEWLIB_ISYSTEM_CFLAGS = ' '.join([
     '-isystem',
     command.path.join('%(abs_newlib)s', 'include')])
-
+# HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
+# pthread otherwise.
+LIBCXX_CFLAGS = ' '.join([TARGET_BCLIB_CFLAGS, NEWLIB_ISYSTEM_CFLAGS,
+                         '-DHAS_THREAD_LOCAL=1'])
+LIBSTDCXX_CFLAGS = ' '.join([TARGET_BCLIB_CFLAGS, NEWLIB_ISYSTEM_CFLAGS])
 
 def MakeCommand():
   make_command = ['make']
@@ -78,6 +82,13 @@ def CopyDriverForTargetLib(host):
       ]
 
 
+def BuildTargetBitcodeCmd(source, output):
+  return command.Command(
+    [PnaclTool('clang', msys=False),
+     '-Wall', '-Werror', '-O2', '-c', '-isystem', '%(newlib)s/include',
+     command.path.join('%(src)s', source),
+     '-o', command.path.join('%(output)s', output)])
+
 def TargetLibsSrc(GitSyncCmd):
   newlib_sys_nacl = command.path.join('%(output)s',
                                       'newlib', 'libc', 'sys', 'nacl')
@@ -111,6 +122,20 @@ def TargetLibsSrc(GitSyncCmd):
                                header))
               for header in ('pthread.h', 'semaphore.h')
        ]
+      },
+      'libcxx_src': {
+          'type': 'source',
+          'output_dirname': 'libcxx',
+          'commands': [
+              GitSyncCmd('libcxx'),
+          ]
+      },
+      'libcxxabi_src': {
+          'type': 'source',
+          'output_dirname': 'libcxxabi',
+          'commands': [
+              GitSyncCmd('libcxxabi'),
+          ]
       },
       'compiler_rt_src': {
           'type': 'source',
@@ -178,6 +203,130 @@ def BitcodeLibs(host):
                                         'nacl', 'nacl_random.h'),
                            os.path.join('%(output)s', 'include', 'nacl',
                                         'nacl_random.h')),
+          ],
+      },
+      'libcxx': {
+          'type': 'build',
+          'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
+                           H('llvm'), H('binutils_pnacl'), 'newlib'],
+          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+          'commands' :
+              CopyDriverForTargetLib(host) + [
+              command.SkipForIncrementalCommand(
+                  ['cmake', '-G', 'Unix Makefiles',
+                   '-DCMAKE_C_COMPILER_WORKS=1',
+                   '-DCMAKE_CXX_COMPILER_WORKS=1',
+                   '-DCMAKE_INSTALL_PREFIX=',
+                   '-DCMAKE_BUILD_TYPE=Release',
+                   '-DCMAKE_C_COMPILER=' + PnaclTool('clang'),
+                   '-DCMAKE_CXX_COMPILER=' + PnaclTool('clang++'),
+                   '-DCMAKE_AR=' + PnaclTool('ar'),
+                   '-DCMAKE_NM=' + PnaclTool('nm'),
+                   '-DCMAKE_RANLIB=' + PnaclTool('ranlib'),
+                   '-DCMAKE_LD=' + PnaclTool('illegal'),
+                   '-DCMAKE_AS=' + PnaclTool('illegal'),
+                   '-DCMAKE_OBJDUMP=' + PnaclTool('illegal'),
+                   '-DCMAKE_C_FLAGS=-std=gnu11 ' + LIBCXX_CFLAGS,
+                   '-DCMAKE_CXX_FLAGS=-std=gnu++11 ' + LIBCXX_CFLAGS,
+                   '-DLIT_EXECUTABLE=' + command.path.join(
+                       '%(llvm_src)s', 'utils', 'lit', 'lit.py'),
+                   '-DLLVM_LIT_ARGS=--verbose  --param shell_prefix="' +
+                    os.path.join(NACL_DIR,'run.py') + '-arch env --retries=1" '+
+                    '--param exe_suffix=".pexe" --param use_system_lib=true ' +
+                    '--param link_flags="-std=gnu++11 --pnacl-exceptions=sjlj"',
+                   '-DLIBCXX_ENABLE_CXX0X=0',
+                   '-DLIBCXX_ENABLE_SHARED=0',
+                   '-DLIBCXX_CXX_ABI=libcxxabi',
+                   '-DLIBCXX_LIBCXXABI_INCLUDE_PATHS=' + command.path.join(
+                       '%(abs_libcxxabi_src)s', 'include'),
+                   '%(libcxx_src)s']),
+              command.Copy(os.path.join('%(gcc_src)s', 'gcc',
+                                        'unwind-generic.h'),
+                           os.path.join('include', 'unwind.h')),
+              command.Command(MakeCommand() + ['VERBOSE=1']),
+              command.Command(['make', 'DESTDIR=%(abs_output)s', 'VERBOSE=1',
+                               'install']),
+          ],
+      },
+      'libstdcxx': {
+          'type': 'build',
+          'dependencies': ['gcc_src', 'gcc_src', H('llvm'), H('binutils_pnacl'),
+                           'newlib'],
+          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+          'commands' :
+              CopyDriverForTargetLib(host) + [
+              command.SkipForIncrementalCommand([
+                  'sh',
+                  command.path.join('%(gcc_src)s', 'libstdc++-v3',
+                                    'configure')] +
+                  TARGET_TOOLS + [
+                  'CC_FOR_BUILD=cc',
+                  'CC=' + PnaclTool('clang'),
+                  'CXX=' + PnaclTool('clang++'),
+                  'AR=' + PnaclTool('ar'),
+                  'NM=' + PnaclTool('nm'),
+                  'RAW_CXX_FOR_TARGET=' + PnaclTool('clang++'),
+                  'LD=' + PnaclTool('illegal'),
+                  'RANLIB=' + PnaclTool('ranlib'),
+                  'CFLAGS=' + LIBSTDCXX_CFLAGS,
+                  'CXXFLAGS=' + LIBSTDCXX_CFLAGS,
+                  'CPPFLAGS=' + NEWLIB_ISYSTEM_CFLAGS,
+                  'CFLAGS_FOR_TARGET=' + LIBSTDCXX_CFLAGS,
+                  'CXXFLAGS_FOR_TARGET=' + LIBSTDCXX_CFLAGS,
+                  '--host=arm-none-linux-gnueabi',
+                  '--prefix=',
+                  '--enable-cxx-flags=-D__SIZE_MAX__=4294967295',
+                  '--disable-multilib',
+                  '--disable-linux-futex',
+                  '--disable-libstdcxx-time',
+                  '--disable-sjlj-exceptions',
+                  '--disable-libstdcxx-pch',
+                  '--with-newlib',
+                  '--disable-shared',
+                  '--disable-rpath']),
+              command.Copy(os.path.join('%(gcc_src)s', 'gcc',
+                                        'unwind-generic.h'),
+                           os.path.join('include', 'unwind.h')),
+              command.Command(MakeCommand()),
+              command.Command(['make', 'DESTDIR=%(abs_output)s',
+                               'install-data']),
+              command.RemoveDirectory(os.path.join('%(output)s', 'share')),
+              command.Remove(os.path.join('%(output)s', 'lib',
+                                          'libstdc++*-gdb.py')),
+              command.Copy(os.path.join('src', '.libs', 'libstdc++.a'),
+                           os.path.join('%(output)s', 'lib', 'libstdc++.a')),
+          ],
+      },
+      'libs_support_bitcode': {
+          'type': 'build',
+          'dependencies': [ 'newlib', H('llvm'), H('binutils_pnacl')],
+          'inputs': { 'src': os.path.join(NACL_DIR,
+                                          'pnacl', 'support', 'bitcode'),
+                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+          'commands':
+              CopyDriverForTargetLib(host) + [
+              # Two versions of crt1.x exist, for different scenarios (with and
+              # without EH).  See:
+              # https://code.google.com/p/nativeclient/issues/detail?id=3069
+              command.Copy(command.path.join('%(src)s', 'crt1.x'),
+                           command.path.join('%(output)s', 'crt1.x')),
+              command.Copy(command.path.join('%(src)s', 'crt1_for_eh.x'),
+                           command.path.join('%(output)s', 'crt1_for_eh.x')),
+              # Install crti.bc (empty _init/_fini)
+              BuildTargetBitcodeCmd('crti.c', 'crti.bc'),
+              # Install crtbegin bitcode (__cxa_finalize for C++)
+              BuildTargetBitcodeCmd('crtbegin.c', 'crtbegin.bc'),
+              # Stubs for _Unwind_* functions when libgcc_eh is not included in
+              # the native link).
+              BuildTargetBitcodeCmd('unwind_stubs.c', 'unwind_stubs.bc'),
+              BuildTargetBitcodeCmd('sjlj_eh_redirect.c',
+                                    'sjlj_eh_redirect.bc'),
+              # libpnaclmm.a (__atomic_* library functions).
+              BuildTargetBitcodeCmd('pnaclmm.c', 'pnaclmm.bc'),
+              command.Command([
+                  PnaclTool('ar'), 'rc',
+                  command.path.join('%(output)s', 'libpnaclmm.a'),
+                  command.path.join('%(output)s', 'pnaclmm.bc')]),
           ],
       },
   }

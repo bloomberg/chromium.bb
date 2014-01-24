@@ -204,7 +204,8 @@ def FindBaseHost(tool):
   """ Find the base directory for host binaries (i.e. llvm/binutils) """
   if env.has('BPREFIXES'):
     for prefix in env.get('BPREFIXES'):
-      if os.path.exists(pathtools.join(prefix, 'bin', tool)):
+      if os.path.exists(pathtools.join(prefix, 'bin',
+                                       tool + env.getone('EXEC_EXT'))):
         return prefix
 
   base_pnacl = FindBasePNaCl()
