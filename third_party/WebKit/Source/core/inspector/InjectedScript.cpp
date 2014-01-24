@@ -79,10 +79,11 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String& obje
     makeEvalCall(errorString, function, result, wasThrown);
 }
 
-void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, const ScriptValue& callFrames, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown)
+void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, const ScriptValue& callFrames, const Vector<ScriptValue>& asyncCallStacks, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, RefPtr<RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
     ScriptFunctionCall function(injectedScriptObject(), "evaluateOnCallFrame");
     function.appendArgument(callFrames);
+    function.appendArgument(asyncCallStacks);
     function.appendArgument(callFrameId);
     function.appendArgument(expression);
     function.appendArgument(objectGroup);
@@ -231,11 +232,12 @@ void InjectedScript::releaseObject(const String& objectId)
     makeCall(function, &result);
 }
 
-PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& callFrames)
+PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& callFrames, int asyncOrdinal)
 {
     ASSERT(!hasNoValue());
     ScriptFunctionCall function(injectedScriptObject(), "wrapCallFrames");
     function.appendArgument(callFrames);
+    function.appendArgument(asyncOrdinal);
     bool hadException = false;
     ScriptValue callFramesValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);

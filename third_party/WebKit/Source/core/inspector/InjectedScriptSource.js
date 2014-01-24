@@ -78,20 +78,21 @@ function toStringDescription(obj)
  * Please use this bind, not the one from Function.prototype
  * @param {function(...)} func
  * @param {Object} thisObject
- * @param {...number} var_args
+ * @param {...} var_args
  */
 function bind(func, thisObject, var_args)
 {
     var args = slice(arguments, 2);
 
     /**
-     * @param {...number} var_args
+     * @param {...} var_args
      */
     function bound(var_args)
     {
         return func.apply(thisObject, args.concat(slice(arguments)));
     }
-    bound.toString = function() {
+    bound.toString = function()
+    {
         return "bound: " + func;
     };
     return bound;
@@ -564,7 +565,8 @@ InjectedScript.prototype = {
      * @return {*} resolved value
      * @throws {string} error message
      */
-    _resolveCallArgument: function(callArgumentJson) {
+    _resolveCallArgument: function(callArgumentJson)
+    {
         callArgumentJson = nullifyObjectProto(callArgumentJson);
         var objectId = callArgumentJson.objectId;
         if (objectId) {
@@ -591,13 +593,14 @@ InjectedScript.prototype = {
      * @param {boolean} injectCommandLineAPI
      * @param {boolean} returnByValue
      * @param {boolean} generatePreview
+     * @param {!Array.<!Object>=} scopeChain
      * @return {!Object}
      */
-    _evaluateAndWrap: function(evalFunction, object, expression, objectGroup, isEvalOnCallFrame, injectCommandLineAPI, returnByValue, generatePreview)
+    _evaluateAndWrap: function(evalFunction, object, expression, objectGroup, isEvalOnCallFrame, injectCommandLineAPI, returnByValue, generatePreview, scopeChain)
     {
         try {
             return { wasThrown: false,
-                     result: this._wrapObject(this._evaluateOn(evalFunction, object, objectGroup, expression, isEvalOnCallFrame, injectCommandLineAPI), objectGroup, returnByValue, generatePreview),
+                     result: this._wrapObject(this._evaluateOn(evalFunction, object, objectGroup, expression, isEvalOnCallFrame, injectCommandLineAPI, scopeChain), objectGroup, returnByValue, generatePreview),
                      __proto__: null };
         } catch (e) {
             return this._createThrownValue(e, objectGroup);
@@ -625,19 +628,38 @@ InjectedScript.prototype = {
      * @param {string} expression
      * @param {boolean} isEvalOnCallFrame
      * @param {boolean} injectCommandLineAPI
+     * @param {!Array.<!Object>=} scopeChain
      * @return {*}
      */
-    _evaluateOn: function(evalFunction, object, objectGroup, expression, isEvalOnCallFrame, injectCommandLineAPI)
+    _evaluateOn: function(evalFunction, object, objectGroup, expression, isEvalOnCallFrame, injectCommandLineAPI, scopeChain)
     {
         // Only install command line api object for the time of evaluation.
         // Surround the expression in with statements to inject our command line API so that
         // the window object properties still take more precedent than our API functions.
 
+        var injectScopeChain = scopeChain && scopeChain.length;
+
         try {
+            var prefix = "";
+            var suffix = "";
             if (injectCommandLineAPI && inspectedWindow.console) {
                 inspectedWindow.console._commandLineAPI = new CommandLineAPI(this._commandLineAPIImpl, isEvalOnCallFrame ? object : null);
-                expression = "with ((console && console._commandLineAPI) || { __proto__: null }) {\n" + expression + "\n}";
+                prefix = "with ((console && console._commandLineAPI) || { __proto__: null }) {";
+                suffix = "}";
             }
+            if (injectScopeChain && inspectedWindow.console) {
+                inspectedWindow.console._scopeChainForEval = scopeChain;
+                for (var i = 0; i < scopeChain.length; ++i) {
+                    prefix = "with ((console && console._scopeChainForEval[" + i + "]) || { __proto__: null }) {" + (suffix ? " " : "") + prefix;
+                    if (suffix)
+                        suffix += " }";
+                    else
+                        suffix = "}";
+                }
+            }
+
+            if (prefix)
+                expression = prefix + "\n" + expression + "\n" + suffix;
             var result = evalFunction.call(object, expression);
             if (objectGroup === "console")
                 this._lastResult = result;
@@ -645,14 +667,17 @@ InjectedScript.prototype = {
         } finally {
             if (injectCommandLineAPI && inspectedWindow.console)
                 delete inspectedWindow.console._commandLineAPI;
+            if (injectScopeChain && inspectedWindow.console)
+                delete inspectedWindow.console._scopeChainForEval;
         }
     },
 
     /**
-     * @param {Object} callFrame
-     * @return {!Array.<InjectedScript.CallFrameProxy>|boolean}
+     * @param {?Object} callFrame
+     * @param {number} asyncOrdinal
+     * @return {!Array.<!InjectedScript.CallFrameProxy>|boolean}
      */
-    wrapCallFrames: function(callFrame)
+    wrapCallFrames: function(callFrame, asyncOrdinal)
     {
         if (!callFrame)
             return false;
@@ -660,14 +685,15 @@ InjectedScript.prototype = {
         var result = [];
         var depth = 0;
         do {
-            result.push(new InjectedScript.CallFrameProxy(depth++, callFrame));
+            result.push(new InjectedScript.CallFrameProxy(depth++, callFrame, asyncOrdinal));
             callFrame = callFrame.caller;
         } while (callFrame);
         return result;
     },
 
     /**
-     * @param {Object} topCallFrame
+     * @param {!Object} topCallFrame
+     * @param {!Array.<!Object>} asyncCallStacks
      * @param {string} callFrameId
      * @param {string} expression
      * @param {string} objectGroup
@@ -676,16 +702,19 @@ InjectedScript.prototype = {
      * @param {boolean} generatePreview
      * @return {*}
      */
-    evaluateOnCallFrame: function(topCallFrame, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
+    evaluateOnCallFrame: function(topCallFrame, asyncCallStacks, callFrameId, expression, objectGroup, injectCommandLineAPI, returnByValue, generatePreview)
     {
-        var callFrame = this.callFrameForId(topCallFrame, callFrameId);
+        var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.evaluate("(" + callFrameId + ")"));
+        var callFrame = this._callFrameForParsedId(topCallFrame, parsedCallFrameId, asyncCallStacks);
         if (!callFrame)
             return "Could not find call frame with given id";
+        if (parsedCallFrameId["asyncOrdinal"])
+            return this._evaluateAndWrap(InjectedScriptHost.evaluate, InjectedScriptHost, expression, objectGroup, false, injectCommandLineAPI, returnByValue, generatePreview, callFrame.scopeChain);
         return this._evaluateAndWrap(callFrame.evaluate, callFrame, expression, objectGroup, true, injectCommandLineAPI, returnByValue, generatePreview);
     },
 
     /**
-     * @param {Object} topCallFrame
+     * @param {!Object} topCallFrame
      * @param {string} callFrameId
      * @return {*}
      */
@@ -701,7 +730,7 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Object} topCallFrame
+     * @param {!Object} topCallFrame
      * @param {string} callFrameId
      * @return {*} a stepIn position array ready for protocol JSON or a string error
      */
@@ -718,7 +747,7 @@ InjectedScript.prototype = {
 
     /**
      * Either callFrameId or functionObjectId must be specified.
-     * @param {Object} topCallFrame
+     * @param {!Object} topCallFrame
      * @param {string|boolean} callFrameId or false
      * @param {string|boolean} functionObjectId or false
      * @param {number} scopeNumber
@@ -762,13 +791,27 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Object} topCallFrame
+     * @param {!Object} topCallFrame
      * @param {string} callFrameId
-     * @return {Object}
+     * @return {?Object}
      */
     callFrameForId: function(topCallFrame, callFrameId)
     {
         var parsedCallFrameId = nullifyObjectProto(InjectedScriptHost.evaluate("(" + callFrameId + ")"));
+        return this._callFrameForParsedId(topCallFrame, parsedCallFrameId, []);
+    },
+
+    /**
+     * @param {!Object} topCallFrame
+     * @param {!Object} parsedCallFrameId
+     * @param {!Array.<!Object>} asyncCallStacks
+     * @return {?Object}
+     */
+    _callFrameForParsedId: function(topCallFrame, parsedCallFrameId, asyncCallStacks)
+    {
+        var asyncOrdinal = parsedCallFrameId["asyncOrdinal"]; // 1-based index
+        if (asyncOrdinal)
+            topCallFrame = asyncCallStacks[asyncOrdinal - 1];
         var ordinal = parsedCallFrameId["ordinal"];
         var callFrame = topCallFrame;
         while (--ordinal >= 0 && callFrame)
@@ -1148,10 +1191,11 @@ InjectedScript.RemoteObject.prototype = {
  * @constructor
  * @param {number} ordinal
  * @param {!Object} callFrame
+ * @param {number} asyncOrdinal
  */
-InjectedScript.CallFrameProxy = function(ordinal, callFrame)
+InjectedScript.CallFrameProxy = function(ordinal, callFrame, asyncOrdinal)
 {
-    this.callFrameId = "{\"ordinal\":" + ordinal + ",\"injectedScriptId\":" + injectedScriptId + "}";
+    this.callFrameId = "{\"ordinal\":" + ordinal + ",\"injectedScriptId\":" + injectedScriptId + (asyncOrdinal ? ",\"asyncOrdinal\":" + asyncOrdinal : "") + "}";
     this.functionName = (callFrame.type === "function" ? callFrame.functionName : "");
     this.location = { scriptId: toString(callFrame.sourceID), lineNumber: callFrame.line, columnNumber: callFrame.column, __proto__: null };
     this.scopeChain = this._wrapScopeChain(callFrame);
@@ -1185,7 +1229,8 @@ InjectedScript.CallFrameProxy.prototype = {
  * @param {string} groupId
  * @return {!DebuggerAgent.Scope}
  */
-InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeObject, groupId) {
+InjectedScript.CallFrameProxy._createScopeJson = function(scopeTypeCode, scopeObject, groupId)
+{
     const GLOBAL_SCOPE = 0;
     const LOCAL_SCOPE = 1;
     const WITH_SCOPE = 2;
@@ -1485,7 +1530,8 @@ CommandLineAPIImpl.prototype = {
         InjectedScriptHost.monitorFunction(fn);
     },
 
-    unmonitor: function(fn) {
+    unmonitor: function(fn)
+    {
         InjectedScriptHost.unmonitorFunction(fn);
     },
 

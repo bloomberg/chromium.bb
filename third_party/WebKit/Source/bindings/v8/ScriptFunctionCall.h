@@ -54,6 +54,7 @@ namespace WebCore {
         void appendArgument(unsigned long);
         void appendArgument(int);
         void appendArgument(bool);
+        void appendArgument(const Vector<ScriptValue>&);
 
     protected:
         ScriptState* m_scriptState;

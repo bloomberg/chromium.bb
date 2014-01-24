@@ -37,6 +37,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/ScriptArguments.h"
 #include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -44,38 +45,41 @@ class InjectedScriptModule;
 class Node;
 class SerializedScriptValue;
 
-
 class InjectedScript FINAL : public InjectedScriptBase {
 public:
     InjectedScript();
     virtual ~InjectedScript() { }
 
-    void evaluate(ErrorString*,
-                  const String& expression,
-                  const String& objectGroup,
-                  bool includeCommandLineAPI,
-                  bool returnByValue,
-                  bool generatePreview,
-                  RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-                  TypeBuilder::OptOutput<bool>* wasThrown);
-    void callFunctionOn(ErrorString*,
-                        const String& objectId,
-                        const String& expression,
-                        const String& arguments,
-                        bool returnByValue,
-                        bool generatePreview,
-                        RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-                        TypeBuilder::OptOutput<bool>* wasThrown);
-    void evaluateOnCallFrame(ErrorString*,
-                             const ScriptValue& callFrames,
-                             const String& callFrameId,
-                             const String& expression,
-                             const String& objectGroup,
-                             bool includeCommandLineAPI,
-                             bool returnByValue,
-                             bool generatePreview,
-                             RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-                             TypeBuilder::OptOutput<bool>* wasThrown);
+    void evaluate(
+        ErrorString*,
+        const String& expression,
+        const String& objectGroup,
+        bool includeCommandLineAPI,
+        bool returnByValue,
+        bool generatePreview,
+        RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
+        TypeBuilder::OptOutput<bool>* wasThrown);
+    void callFunctionOn(
+        ErrorString*,
+        const String& objectId,
+        const String& expression,
+        const String& arguments,
+        bool returnByValue,
+        bool generatePreview,
+        RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
+        TypeBuilder::OptOutput<bool>* wasThrown);
+    void evaluateOnCallFrame(
+        ErrorString*,
+        const ScriptValue& callFrames,
+        const Vector<ScriptValue>& asyncCallStacks,
+        const String& callFrameId,
+        const String& expression,
+        const String& objectGroup,
+        bool includeCommandLineAPI,
+        bool returnByValue,
+        bool generatePreview,
+        RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
+        TypeBuilder::OptOutput<bool>* wasThrown);
     void restartFrame(ErrorString*, const ScriptValue& callFrames, const String& callFrameId, RefPtr<JSONObject>* result);
     void getStepInPositions(ErrorString*, const ScriptValue& callFrames, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& positions);
     void setVariableValue(ErrorString*, const ScriptValue& callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr);
@@ -85,7 +89,7 @@ public:
     Node* nodeForObjectId(const String& objectId);
     void releaseObject(const String& objectId);
 
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > wrapCallFrames(const ScriptValue&);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > wrapCallFrames(const ScriptValue&, int asyncOrdinal);
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapObject(const ScriptValue&, const String& groupName, bool generatePreview = false) const;
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapTable(const ScriptValue& table, const ScriptValue& columns) const;

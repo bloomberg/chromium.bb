@@ -902,7 +902,17 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const
         muteConsole();
     }
 
-    injectedScript.evaluateOnCallFrame(errorString, m_currentCallStack, callFrameId, expression, objectGroup ? *objectGroup : "", includeCommandLineAPI ? *includeCommandLineAPI : false, returnByValue ? *returnByValue : false, generatePreview ? *generatePreview : false, &result, wasThrown);
+    Vector<ScriptValue> asyncCallStacks;
+    const AsyncCallStackTracker::AsyncCallChain* asyncChain = m_asyncCallStackTracker.isEnabled() ? m_asyncCallStackTracker.currentAsyncCallChain() : 0;
+    if (asyncChain) {
+        const AsyncCallStackTracker::AsyncCallStackVector& callStacks = asyncChain->callStacks();
+        asyncCallStacks.resize(callStacks.size());
+        AsyncCallStackTracker::AsyncCallStackVector::const_iterator it = callStacks.begin();
+        for (size_t i = 0; it != callStacks.end(); ++it, ++i)
+            asyncCallStacks[i] = (*it)->callFrames();
+    }
+
+    injectedScript.evaluateOnCallFrame(errorString, m_currentCallStack, asyncCallStacks, callFrameId, expression, objectGroup ? *objectGroup : "", includeCommandLineAPI ? *includeCommandLineAPI : false, returnByValue ? *returnByValue : false, generatePreview ? *generatePreview : false, &result, wasThrown);
 
     if (doNotPauseOnExceptionsAndMuteConsole ? *doNotPauseOnExceptionsAndMuteConsole : false) {
         unmuteConsole();
@@ -1036,7 +1046,7 @@ PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
         ASSERT_NOT_REACHED();
         return Array<CallFrame>::create();
     }
-    return injectedScript.wrapCallFrames(m_currentCallStack);
+    return injectedScript.wrapCallFrames(m_currentCallStack, 0);
 }
 
 PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
@@ -1055,9 +1065,10 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
     if (callStacks.isEmpty())
         return 0;
     RefPtr<StackTrace> result;
+    int asyncOrdinal = callStacks.size();
     for (AsyncCallStackTracker::AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
         RefPtr<StackTrace> next = StackTrace::create()
-            .setCallFrames(injectedScript.wrapCallFrames((*it)->callFrames()))
+            .setCallFrames(injectedScript.wrapCallFrames((*it)->callFrames(), asyncOrdinal--))
             .release();
         next->setDescription((*it)->description());
         if (result)
