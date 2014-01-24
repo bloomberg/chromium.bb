@@ -37,6 +37,7 @@
 #include "media/base/pipeline.h"
 #include "media/base/text_track.h"
 #include "media/filters/skcanvas_video_renderer.h"
+#include "media/filters/video_frame_painter.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -263,12 +264,6 @@ class WebMediaPlayerImpl
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
-  // Called when a paint or a new frame arrives to indicate that we are
-  // no longer waiting for |current_frame_| to be painted.
-  // |painting_frame| is set to true if |current_frame_| is being painted.
-  // False indicates |current_frame_| is being replaced with a new frame.
-  void DoneWaitingForPaint(bool painting_frame);
-
   blink::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
@@ -356,19 +351,9 @@ class WebMediaPlayerImpl
   // through GenerateKeyRequest() directly from WebKit.
   std::string init_data_type_;
 
-  // Video frame rendering members.
-  //
-  // |lock_| protects |current_frame_|, |current_frame_painted_|, and
-  // |frames_dropped_before_paint_| since new frames arrive on the video
-  // rendering thread, yet are accessed for rendering on either the main thread
-  // or compositing thread depending on whether accelerated compositing is used.
-  mutable base::Lock lock_;
+  // Video rendering members.
+  media::VideoFramePainter painter_;
   media::SkCanvasVideoRenderer skcanvas_video_renderer_;
-  scoped_refptr<media::VideoFrame> current_frame_;
-  bool current_frame_painted_;
-  uint32 frames_dropped_before_paint_;
-  bool pending_invalidate_;
-
   gfx::Size natural_size_;
 
   // The compositor layer for displaying the video content when using composited

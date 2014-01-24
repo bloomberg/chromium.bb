@@ -157,9 +157,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       supports_save_(true),
       starting_(false),
       chunk_demuxer_(NULL),
-      current_frame_painted_(false),
-      frames_dropped_before_paint_(0),
-      pending_invalidate_(false),
+      painter_(
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::InvalidateOnMainThread),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChange)),
       video_frame_provider_client_(NULL),
       text_track_index_(0),
       web_cdm_(NULL) {
@@ -515,15 +515,9 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
         frame_->view()->isAcceleratedCompositingActive());
   }
 
-  // Avoid locking and potentially blocking the video rendering thread while
-  // painting in software.
-  scoped_refptr<media::VideoFrame> video_frame;
-  {
-    base::AutoLock auto_lock(lock_);
-    DoneWaitingForPaint(true);
-    video_frame = current_frame_;
-  }
+
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
+  scoped_refptr<media::VideoFrame> video_frame = painter_.GetCurrentFrame(true);
   gfx::Rect gfx_rect(rect);
   skcanvas_video_renderer_.Paint(video_frame.get(), canvas, gfx_rect, alpha);
 }
@@ -556,9 +550,9 @@ unsigned WebMediaPlayerImpl::droppedFrameCount() const {
 
   media::PipelineStatistics stats = pipeline_->GetStatistics();
 
-  base::AutoLock auto_lock(lock_);
-  unsigned frames_dropped =
-      stats.video_frames_dropped + frames_dropped_before_paint_;
+  unsigned frames_dropped = stats.video_frames_dropped +
+      const_cast<media::VideoFramePainter*>(&painter_)
+          ->GetFramesDroppedBeforePaint();
   DCHECK_LE(frames_dropped, stats.video_frames_decoded);
   return frames_dropped;
 }
@@ -587,11 +581,11 @@ void WebMediaPlayerImpl::SetVideoFrameProviderClient(
 }
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerImpl::GetCurrentFrame() {
-  base::AutoLock auto_lock(lock_);
-  DoneWaitingForPaint(true);
+  scoped_refptr<media::VideoFrame> current_frame =
+      painter_.GetCurrentFrame(true);
   TRACE_EVENT_ASYNC_BEGIN0(
       "media", "WebMediaPlayerImpl:compositing", this);
-  return current_frame_;
+  return current_frame;
 }
 
 void WebMediaPlayerImpl::PutCurrentFrame(
@@ -612,11 +606,8 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  scoped_refptr<media::VideoFrame> video_frame;
-  {
-    base::AutoLock auto_lock(lock_);
-    video_frame = current_frame_;
-  }
+  scoped_refptr<media::VideoFrame> video_frame =
+      painter_.GetCurrentFrame(false);
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl:copyVideoTextureToPlatformTexture");
 
@@ -861,16 +852,7 @@ void WebMediaPlayerImpl::InvalidateOnMainThread() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::InvalidateOnMainThread");
 
-  {
-    base::AutoLock auto_lock(lock_);
-    if (pending_invalidate_) {
-      TRACE_EVENT_ASYNC_END0(
-          "media", "WebMediaPlayerImpl:invalidatePending", this);
-      pending_invalidate_ = false;
-    }
-  }
-
-  TRACE_EVENT0("media", "WebMediaPlayerImpl:clientRepaint");
+  painter_.DidFinishInvalidating();
   client_->repaint();
 }
 
@@ -1276,60 +1258,10 @@ void WebMediaPlayerImpl::OnNaturalSizeChange(gfx::Size size) {
 
 void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
-  base::AutoLock auto_lock(lock_);
-
-  if (current_frame_ &&
-      current_frame_->natural_size() != frame->natural_size()) {
-    main_loop_->PostTask(FROM_HERE, base::Bind(
-        &WebMediaPlayerImpl::OnNaturalSizeChange, AsWeakPtr(),
-        frame->natural_size()));
-  }
-
-  DoneWaitingForPaint(false);
-
-  current_frame_ = frame;
-  current_frame_painted_ = false;
-  TRACE_EVENT_FLOW_BEGIN0("media", "WebMediaPlayerImpl:waitingForPaint", this);
-
-  if (pending_invalidate_)
-    return;
-
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "media", "WebMediaPlayerImpl:invalidatePending", this);
-  pending_invalidate_ = true;
-
   // TODO(scherkus): Today we always invalidate on the main thread even when
   // compositing is available, which is less efficient and involves more
   // thread hops. Refer to http://crbug.com/335345 for details.
-  main_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerImpl::InvalidateOnMainThread, AsWeakPtr()));
-}
-
-void WebMediaPlayerImpl::DoneWaitingForPaint(bool painting_frame) {
-  lock_.AssertAcquired();
-  if (!current_frame_ || current_frame_painted_)
-    return;
-
-  TRACE_EVENT_FLOW_END0("media", "WebMediaPlayerImpl:waitingForPaint", this);
-
-  if (painting_frame) {
-    current_frame_painted_ = true;
-    return;
-  }
-
-  // The frame wasn't painted, but we aren't waiting for a
-  // InvalidateOnMainThread() call so assume that the frame wasn't painted
-  // because the video wasn't visible.
-  if (!pending_invalidate_)
-    return;
-
-  // The |current_frame_| wasn't painted, it is being replaced, and we haven't
-  // even gotten the chance to request a repaint for it yet. Mark it as dropped.
-  TRACE_EVENT0("media", "WebMediaPlayerImpl:frameDropped");
-  DVLOG(1) << "Frame dropped before being painted: "
-           << current_frame_->GetTimestamp().InSecondsF();
-  if (frames_dropped_before_paint_ < kuint32max)
-    frames_dropped_before_paint_++;
+  painter_.UpdateCurrentFrame(frame);
 }
 
 }  // namespace content
