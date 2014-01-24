@@ -41,6 +41,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/test_context_factory.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"

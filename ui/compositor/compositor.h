@@ -160,43 +160,6 @@ class COMPOSITOR_EXPORT CompositorLock
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);
 };
 
-// This is only to be used for test. It allows execution of other tasks on
-// the current message loop before the current task finishs (there is a
-// potential for re-entrancy).
-class COMPOSITOR_EXPORT DrawWaiterForTest : public CompositorObserver {
- public:
-  // Waits for a draw to be issued by the compositor. If the test times out
-  // here, there may be a logic error in the compositor code causing it
-  // not to draw.
-  static void Wait(Compositor* compositor);
-
-  // Waits for a commit instead of a draw.
-  static void WaitForCommit(Compositor* compositor);
-
- private:
-  DrawWaiterForTest();
-  virtual ~DrawWaiterForTest();
-
-  void WaitImpl(Compositor* compositor);
-
-  // CompositorObserver implementation.
-  virtual void OnCompositingDidCommit(Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingStarted(Compositor* compositor,
-                                    base::TimeTicks start_time) OVERRIDE;
-  virtual void OnCompositingEnded(Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingAborted(Compositor* compositor) OVERRIDE;
-  virtual void OnCompositingLockStateChanged(Compositor* compositor) OVERRIDE;
-  virtual void OnUpdateVSyncParameters(Compositor* compositor,
-                                       base::TimeTicks timebase,
-                                       base::TimeDelta interval) OVERRIDE;
-
-  scoped_ptr<base::RunLoop> wait_run_loop_;
-
-  bool wait_for_commit_;
-
-  DISALLOW_COPY_AND_ASSIGN(DrawWaiterForTest);
-};
-
 // Compositor object to take care of GPU painting.
 // A Browser compositor object is responsible for generating the final
 // displayable form of pixels comprising a single widget's contents. It draws an

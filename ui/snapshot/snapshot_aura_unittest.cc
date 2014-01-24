@@ -14,6 +14,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/image/image.h"

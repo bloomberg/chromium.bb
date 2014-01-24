@@ -115,58 +115,6 @@ void CompositorLock::CancelLock() {
   compositor_ = NULL;
 }
 
-// static
-void DrawWaiterForTest::Wait(Compositor* compositor) {
-  DrawWaiterForTest waiter;
-  waiter.wait_for_commit_ = false;
-  waiter.WaitImpl(compositor);
-}
-
-// static
-void DrawWaiterForTest::WaitForCommit(Compositor* compositor) {
-  DrawWaiterForTest waiter;
-  waiter.wait_for_commit_ = true;
-  waiter.WaitImpl(compositor);
-}
-
-DrawWaiterForTest::DrawWaiterForTest() {
-}
-
-DrawWaiterForTest::~DrawWaiterForTest() {
-}
-
-void DrawWaiterForTest::WaitImpl(Compositor* compositor) {
-  compositor->AddObserver(this);
-  wait_run_loop_.reset(new base::RunLoop());
-  wait_run_loop_->Run();
-  compositor->RemoveObserver(this);
-}
-
-void DrawWaiterForTest::OnCompositingDidCommit(Compositor* compositor) {
-  if (wait_for_commit_)
-    wait_run_loop_->Quit();
-}
-
-void DrawWaiterForTest::OnCompositingStarted(Compositor* compositor,
-                                             base::TimeTicks start_time) {
-}
-
-void DrawWaiterForTest::OnCompositingEnded(Compositor* compositor) {
-  if (!wait_for_commit_)
-    wait_run_loop_->Quit();
-}
-
-void DrawWaiterForTest::OnCompositingAborted(Compositor* compositor) {
-}
-
-void DrawWaiterForTest::OnCompositingLockStateChanged(Compositor* compositor) {
-}
-
-void DrawWaiterForTest::OnUpdateVSyncParameters(Compositor* compositor,
-                                                base::TimeTicks timebase,
-                                                base::TimeDelta interval) {
-}
-
 class PostedSwapQueue {
  public:
   PostedSwapQueue() : pending_swap_(NULL) {

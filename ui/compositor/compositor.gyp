@@ -87,6 +87,8 @@
         'compositor',
       ],
       'sources': [
+        'test/draw_waiter_for_test.cc',
+        'test/draw_waiter_for_test.h',
         'test/test_layers.cc',
         'test/test_layers.h',
         'test/test_context_factory.cc',
