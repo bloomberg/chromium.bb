@@ -1346,10 +1346,9 @@ internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
 
 internal.add_config('test-ap',
   vm_tests=None,
-  description='stumpy image used for WiFi testing',
-  boards=['stumpy'],
-  # We need Python and utilities found only in test.
-  images=['test'],
+  description='WiFi AP images used in testing',
+  boards=['stumpy', 'panther'],
+  images=['test'],  # We need Python and utilities found only in test.
   profile='testbed-ap',
 )
 
