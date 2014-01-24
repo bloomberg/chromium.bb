@@ -50,7 +50,6 @@ locales\*.pak: %(VersionDir)s\Locales
 chrome_200_percent.pak: %(VersionDir)s\
 
 [TOUCH]
-chrome_touch_100_percent.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 delegate_execute.exe: %(VersionDir)s\

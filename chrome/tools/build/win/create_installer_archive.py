@@ -90,7 +90,7 @@ def CompressUsingLZMA(build_dir, compressed_file, input_file):
 
 
 def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
-                             enable_hidpi, enable_touch_ui):
+                             enable_hidpi):
   """Copies the files required for installer archive.
   Copies all common files required for various distributions of Chromium and
   also files for the specific Chromium build specified by distribution.
@@ -103,8 +103,6 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
                                  staging_dir, build_dir)
   if enable_hidpi == '1':
     CopySectionFilesToStagingDir(config, 'HIDPI', staging_dir, build_dir)
-  if enable_touch_ui == '1':
-    CopySectionFilesToStagingDir(config, 'TOUCH', staging_dir, build_dir)
 
 
 def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
@@ -511,12 +509,12 @@ def main(options):
   if options.build_dir != options.output_dir:
     CopyAllFilesToStagingDir(config, options.distribution,
                              staging_dir, options.output_dir,
-                             options.enable_hidpi, options.enable_touch_ui)
+                             options.enable_hidpi)
 
   # Now copy the remainder of the files from the build dir.
   CopyAllFilesToStagingDir(config, options.distribution,
                            staging_dir, options.build_dir,
-                           options.enable_hidpi, options.enable_touch_ui)
+                           options.enable_hidpi)
 
   if options.component_build == '1':
     DoComponentBuildTasks(staging_dir, options.build_dir,
@@ -574,9 +572,6 @@ def _ParseOptions():
       help='Name used to prefix names of generated archives.')
   parser.add_option('--enable_hidpi', default='0',
       help='Whether to include HiDPI resource files.')
-  parser.add_option('--enable_touch_ui', default='0',
-      help='Whether to include resource files from the "TOUCH" section of the '
-           'input file.')
   parser.add_option('--component_build', default='0',
       help='Whether this archive is packaging a component build. This will '
            'also turn off compression of chrome.7z into chrome.packed.7z and '

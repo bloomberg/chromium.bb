@@ -163,15 +163,6 @@
             'enable_hidpi_flag': '',
           },
         }],
-        ['enable_touch_ui == 1', {
-          'variables': {
-            'enable_touch_ui_flag': '--enable_touch_ui=1',
-          },
-        }, {
-          'variables': {
-            'enable_touch_ui_flag': '',
-          },
-        }],
         ['target_arch=="x64"', {
           'inputs!': [
             '<(PRODUCT_DIR)/nacl64.exe',
@@ -221,7 +212,6 @@
         '--input_file=<(RULE_INPUT_PATH)',
         '--resource_file_path=<(INTERMEDIATE_DIR)/packed_files.rc',
         '<(enable_hidpi_flag)',
-        '<(enable_touch_ui_flag)',
         '<(target_arch_flag)',
         # TODO(sgk):  may just use environment variables
         #'--distribution=$(CHROMIUM_BUILD)',

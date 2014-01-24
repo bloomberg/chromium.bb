@@ -18,9 +18,6 @@
     <output filename="grit/theme_resources_map.h" type="resource_map_header" context="default_100_percent" />
     <output filename="theme_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="theme_resources_200_percent.pak" type="data_package" context="default_200_percent" />
-    <output filename="theme_resources_touch_100_percent.pak" type="data_package" context="touch_100_percent" />
-    <output filename="theme_resources_touch_140_percent.pak" type="data_package" context="touch_140_percent" />
-    <output filename="theme_resources_touch_180_percent.pak" type="data_package" context="touch_180_percent" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">
@@ -621,12 +618,7 @@
       <if expr="(is_macosx or is_ios) and not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="mac/otr_icon.png" />
       </if>
-      <if expr="context.startswith('default_')">
-        <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="common/otr_icon.png" />
-      </if>
-      <if expr="not context.startswith('default_')">
-        <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon_fullscreen.png" />
-      </if>
+      <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="common/otr_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_OVERLAY_DROP_SHADOW" file="common/overlay_drop_shadow.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" />
