@@ -21,7 +21,7 @@ void TestUserWallpaperDelegate::UpdateWallpaper() {
     Shell::GetInstance()->desktop_background_controller()->SetCustomWallpaper(
         custom_wallpaper_, WALLPAPER_LAYOUT_STRETCH);
   }
-  update_wallpaper_count_ ++;
+  update_wallpaper_count_++;
 }
 
 int TestUserWallpaperDelegate::GetUpdateWallpaperCountAndReset() {
