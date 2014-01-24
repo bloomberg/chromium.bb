@@ -14,7 +14,6 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
-#include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_graphics_2d_dev.h"
@@ -49,6 +48,7 @@
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_file_mapping.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_fullscreen.h"
@@ -143,6 +143,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Core_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileMapping_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_2;
@@ -186,7 +187,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
@@ -413,6 +413,25 @@ static int32_t Pnacl_M25_PPB_FileIO_ReadToArray(PP_Resource file_io, int64_t off
 }
 
 /* End wrapper methods for PPB_FileIO_1_1 */
+
+/* Begin wrapper methods for PPB_FileMapping_0_1 */
+
+static int32_t Pnacl_M34_PPB_FileMapping_Map(PP_Instance instance, PP_Resource file_io, int64_t length, uint32_t map_protection, uint32_t map_flags, int64_t offset, void** address, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
+  return iface->Map(instance, file_io, length, map_protection, map_flags, offset, address, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_FileMapping_Unmap(PP_Instance file_io, const void* address, int64_t length, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
+  return iface->Unmap(file_io, address, length, *callback);
+}
+
+static int64_t Pnacl_M34_PPB_FileMapping_GetMapPageSize(PP_Instance file_io) {
+  const struct PPB_FileMapping_0_1 *iface = Pnacl_WrapperInfo_PPB_FileMapping_0_1.real_iface;
+  return iface->GetMapPageSize(file_io);
+}
+
+/* End wrapper methods for PPB_FileMapping_0_1 */
 
 /* Begin wrapper methods for PPB_FileRef_1_0 */
 
@@ -1980,25 +1999,6 @@ static int32_t Pnacl_M19_PPB_FileChooser_Dev_Show(PP_Resource chooser, struct PP
 }
 
 /* End wrapper methods for PPB_FileChooser_Dev_0_6 */
-
-/* Begin wrapper methods for PPB_FileIO_Dev_0_1 */
-
-static int32_t Pnacl_M31_PPB_FileIO_Dev_Map(PP_Resource file_io, int64_t length, uint32_t map_protection, uint32_t map_flags, int64_t offset, void** address, struct PP_CompletionCallback* callback) {
-  const struct PPB_FileIO_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_Dev_0_1.real_iface;
-  return iface->Map(file_io, length, map_protection, map_flags, offset, address, *callback);
-}
-
-static void Pnacl_M31_PPB_FileIO_Dev_Unmap(PP_Resource file_io, void* address, int64_t length) {
-  const struct PPB_FileIO_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_Dev_0_1.real_iface;
-  iface->Unmap(file_io, address, length);
-}
-
-static int64_t Pnacl_M31_PPB_FileIO_Dev_GetMapPageSize(PP_Resource file_io) {
-  const struct PPB_FileIO_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_FileIO_Dev_0_1.real_iface;
-  return iface->GetMapPageSize(file_io);
-}
-
-/* End wrapper methods for PPB_FileIO_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Find_Dev_0_3 */
 
@@ -4190,6 +4190,12 @@ static struct PPB_FileIO_1_1 Pnacl_Wrappers_PPB_FileIO_1_1 = {
     .ReadToArray = (int32_t (*)(PP_Resource file_io, int64_t offset, int32_t max_read_length, struct PP_ArrayOutput* output, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_FileIO_ReadToArray
 };
 
+static struct PPB_FileMapping_0_1 Pnacl_Wrappers_PPB_FileMapping_0_1 = {
+    .Map = (int32_t (*)(PP_Instance instance, PP_Resource file_io, int64_t length, uint32_t map_protection, uint32_t map_flags, int64_t offset, void** address, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileMapping_Map,
+    .Unmap = (int32_t (*)(PP_Instance file_io, const void* address, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileMapping_Unmap,
+    .GetMapPageSize = (int64_t (*)(PP_Instance file_io))&Pnacl_M34_PPB_FileMapping_GetMapPageSize
+};
+
 static struct PPB_FileRef_1_0 Pnacl_Wrappers_PPB_FileRef_1_0 = {
     .Create = (PP_Resource (*)(PP_Resource file_system, const char* path))&Pnacl_M14_PPB_FileRef_Create,
     .IsFileRef = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_FileRef_IsFileRef,
@@ -4634,12 +4640,6 @@ static struct PPB_FileChooser_Dev_0_6 Pnacl_Wrappers_PPB_FileChooser_Dev_0_6 = {
     .Create = (PP_Resource (*)(PP_Instance instance, PP_FileChooserMode_Dev mode, struct PP_Var accept_types))&Pnacl_M19_PPB_FileChooser_Dev_Create,
     .IsFileChooser = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_FileChooser_Dev_IsFileChooser,
     .Show = (int32_t (*)(PP_Resource chooser, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_FileChooser_Dev_Show
-};
-
-static struct PPB_FileIO_Dev_0_1 Pnacl_Wrappers_PPB_FileIO_Dev_0_1 = {
-    .Map = (int32_t (*)(PP_Resource file_io, int64_t length, uint32_t map_protection, uint32_t map_flags, int64_t offset, void** address, struct PP_CompletionCallback callback))&Pnacl_M31_PPB_FileIO_Dev_Map,
-    .Unmap = (void (*)(PP_Resource file_io, void* address, int64_t length))&Pnacl_M31_PPB_FileIO_Dev_Unmap,
-    .GetMapPageSize = (int64_t (*)(PP_Resource file_io))&Pnacl_M31_PPB_FileIO_Dev_GetMapPageSize
 };
 
 /* Not generating wrapper interface for PPB_Find_Dev_0_3 */
@@ -5255,6 +5255,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileMapping_0_1 = {
+  .iface_macro = PPB_FILEMAPPING_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileMapping_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0 = {
   .iface_macro = PPB_FILEREF_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileRef_1_0,
@@ -5510,12 +5516,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6 = {
   .iface_macro = PPB_FILECHOOSER_DEV_INTERFACE_0_6,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileChooser_Dev_0_6,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_Dev_0_1 = {
-  .iface_macro = PPB_FILEIO_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileIO_Dev_0_1,
   .real_iface = NULL
 };
 
@@ -5848,6 +5848,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Core_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_1,
+  &Pnacl_WrapperInfo_PPB_FileMapping_0_1,
   &Pnacl_WrapperInfo_PPB_FileRef_1_0,
   &Pnacl_WrapperInfo_PPB_FileRef_1_1,
   &Pnacl_WrapperInfo_PPB_FileRef_1_2,
@@ -5890,7 +5891,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6,
-  &Pnacl_WrapperInfo_PPB_FileIO_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Font_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
