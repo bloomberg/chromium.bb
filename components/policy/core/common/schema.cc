@@ -82,6 +82,28 @@ bool SchemaTypeToValueType(const std::string& type_string,
   return false;
 }
 
+bool StrategyAllowInvalidOnTopLevel(SchemaOnErrorStrategy strategy) {
+  return strategy == SCHEMA_ALLOW_INVALID ||
+         strategy == SCHEMA_ALLOW_INVALID_TOPLEVEL ||
+         strategy == SCHEMA_ALLOW_INVALID_TOPLEVEL_AND_ALLOW_UNKNOWN;
+}
+
+bool StrategyAllowUnknownOnTopLevel(SchemaOnErrorStrategy strategy) {
+  return strategy != SCHEMA_STRICT;
+}
+
+SchemaOnErrorStrategy StrategyForNextLevel(SchemaOnErrorStrategy strategy) {
+  static SchemaOnErrorStrategy next_level_strategy[] = {
+    SCHEMA_STRICT,         // SCHEMA_STRICT
+    SCHEMA_STRICT,         // SCHEMA_ALLOW_UNKNOWN_TOPLEVEL
+    SCHEMA_ALLOW_UNKNOWN,  // SCHEMA_ALLOW_UNKNOWN
+    SCHEMA_STRICT,         // SCHEMA_ALLOW_INVALID_TOPLEVEL
+    SCHEMA_ALLOW_UNKNOWN,  // SCHEMA_ALLOW_INVALID_TOPLEVEL_AND_ALLOW_UNKNOWN
+    SCHEMA_ALLOW_INVALID,  // SCHEMA_ALLOW_INVALID
+  };
+  return next_level_strategy[(int)strategy];
+}
+
 }  // namespace
 
 // Contains the internal data representation of a Schema. This can either wrap
@@ -609,14 +631,25 @@ Schema Schema::Wrap(const SchemaData* data) {
   return Schema(storage, storage->root_node());
 }
 
-bool Schema::Validate(const base::Value& value) const {
+bool Schema::Validate(const base::Value& value,
+                      SchemaOnErrorStrategy strategy,
+                      std::string* error) const {
   if (!valid()) {
-    // Schema not found, invalid entry.
+    *error = "The schema is invalid.";
     return false;
   }
 
-  if (!value.IsType(type()))
+  if (!value.IsType(type())) {
+    // Allow the integer to double promotion. Note that range restriction on
+    // double is not supported now.
+    if (value.IsType(base::Value::TYPE_INTEGER) &&
+        type() == base::Value::TYPE_DOUBLE) {
+      return true;
+    }
+
+    *error = "The value type doesn't match the schema type.";
     return false;
+  }
 
   const base::DictionaryValue* dict = NULL;
   const base::ListValue* list = NULL;
@@ -625,24 +658,135 @@ bool Schema::Validate(const base::Value& value) const {
   if (value.GetAsDictionary(&dict)) {
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
-      if (!GetProperty(it.key()).Validate(it.value()))
-        return false;
+      Schema subschema = GetProperty(it.key());
+      if (!subschema.valid()) {
+        // Unknown property was detected.
+        if (!StrategyAllowUnknownOnTopLevel(strategy)) {
+          *error = "Unknown property: " + it.key();
+          return false;
+        }
+      } else {
+        std::string sub_error;
+        if (!subschema.Validate(
+                 it.value(), StrategyForNextLevel(strategy), &sub_error)) {
+          // Invalid property was detected.
+          if (!StrategyAllowInvalidOnTopLevel(strategy)) {
+            *error = sub_error;
+            return false;
+          }
+        }
+      }
     }
   } else if (value.GetAsList(&list)) {
-    for (base::ListValue::const_iterator it = list->begin();
-         it != list->end(); ++it) {
-      if (!*it || !GetItems().Validate(**it))
-        return false;
+    for (base::ListValue::const_iterator it = list->begin(); it != list->end();
+         ++it) {
+      if (!*it ||
+          !GetItems().Validate(**it, StrategyForNextLevel(strategy), error)) {
+        // Invalid list item was detected.
+        if (!StrategyAllowInvalidOnTopLevel(strategy))
+          return false;
+      }
     }
   } else if (value.GetAsInteger(&int_value)) {
-    return node_->extra == kInvalid ||
-        ValidateIntegerRestriction(node_->extra, int_value);
+    if (node_->extra != kInvalid &&
+        !ValidateIntegerRestriction(node_->extra, int_value)) {
+      *error = "Invalid value for integer";
+      return false;
+    }
   } else if (value.GetAsString(&str_value)) {
-    return node_->extra == kInvalid ||
-        ValidateStringRestriction(node_->extra, str_value.c_str());
+    if (node_->extra != kInvalid &&
+        !ValidateStringRestriction(node_->extra, str_value.c_str())) {
+      *error = "Invalid value for string";
+      return false;
+    }
   }
 
   return true;
+}
+
+bool Schema::Normalize(base::Value* value,
+                       SchemaOnErrorStrategy strategy,
+                       std::string* error) const {
+  if (!valid()) {
+    *error = "The schema is invalid.";
+    return false;
+  }
+
+  if (!value->IsType(type())) {
+    // Allow the integer to double promotion. Note that range restriction on
+    // double is not supported now.
+    if (value->IsType(base::Value::TYPE_INTEGER) &&
+        type() == base::Value::TYPE_DOUBLE) {
+      return true;
+    }
+
+    *error = "The value type doesn't match the schema type.";
+    return false;
+  }
+
+  base::DictionaryValue* dict = NULL;
+  base::ListValue* list = NULL;
+  if (value->GetAsDictionary(&dict)) {
+    std::vector<std::string> drop_list;  // Contains the keys to drop.
+    for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
+         it.Advance()) {
+      Schema subschema = GetProperty(it.key());
+      if (!subschema.valid()) {
+        // Unknown property was detected.
+        if (StrategyAllowUnknownOnTopLevel(strategy)) {
+          drop_list.push_back(it.key());
+        } else {
+          *error = "Unknown property: " + it.key();
+          return false;
+        }
+      } else {
+        base::Value* sub_value = NULL;
+        dict->GetWithoutPathExpansion(it.key(), &sub_value);
+        std::string sub_error;
+        if (!subschema.Normalize(
+                 sub_value, StrategyForNextLevel(strategy), &sub_error)) {
+          // Invalid property was detected.
+          if (StrategyAllowInvalidOnTopLevel(strategy)) {
+            drop_list.push_back(it.key());
+          } else {
+            *error = sub_error;
+            return false;
+          }
+        }
+      }
+    }
+    for (std::vector<std::string>::const_iterator it = drop_list.begin();
+         it != drop_list.end();
+         ++it) {
+      dict->RemoveWithoutPathExpansion(*it, NULL);
+    }
+    return true;
+  } else if (value->GetAsList(&list)) {
+    std::vector<size_t> drop_list;  // Contains the indexes to drop.
+    for (size_t index = 0; index < list->GetSize(); index++) {
+      base::Value* sub_value = NULL;
+      std::string sub_error;
+      list->Get(index, &sub_value);
+      if (!sub_value ||
+          !GetItems().Normalize(
+               sub_value, StrategyForNextLevel(strategy), &sub_error)) {
+        // Invalid list item was detected.
+        if (StrategyAllowInvalidOnTopLevel(strategy)) {
+          drop_list.push_back(index);
+        } else {
+          *error = sub_error;
+          return false;
+        }
+      }
+    }
+    for (std::vector<size_t>::reverse_iterator it = drop_list.rbegin();
+         it != drop_list.rend(); ++it) {
+      list->Remove(*it, NULL);
+    }
+    return true;
+  }
+
+  return Validate(*value, strategy, error);
 }
 
 // static

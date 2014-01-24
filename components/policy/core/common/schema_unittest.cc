@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/schema.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/schema_internal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,6 +50,18 @@ const char kTestSchema[] =
     "      },"
     "      \"additionalProperties\": { \"type\": \"string\" }"
     "    },"
+    "    \"ObjectOfObject\": {"
+    "      \"type\": \"object\","
+    "      \"properties\": {"
+    "        \"Object\": {"
+    "          \"type\": \"object\","
+    "          \"properties\": {"
+    "            \"one\": { \"type\": \"string\" },"
+    "            \"two\": { \"type\": \"integer\" }"
+    "          }"
+    "        }"
+    "      }"
+    "    },"
     "    \"IntegerWithEnums\": {"
     "      \"type\": \"integer\","
     "      \"enum\": [1, 2, 3]"
@@ -65,6 +78,27 @@ const char kTestSchema[] =
     "      \"type\": \"integer\","
     "      \"minimum\": 1,"
     "      \"maximum\": 3"
+    "    },"
+    "    \"ObjectOfArray\": {"
+    "      \"type\": \"object\","
+    "      \"properties\": {"
+    "        \"List\": {"
+    "          \"type\": \"array\","
+    "          \"items\": { \"type\": \"integer\" }"
+    "        }"
+    "      }"
+    "    },"
+    "    \"ArrayOfObjectOfArray\": {"
+    "      \"type\": \"array\","
+    "      \"items\": {"
+    "        \"type\": \"object\","
+    "        \"properties\": {"
+    "          \"List\": {"
+    "            \"type\": \"array\","
+    "            \"items\": { \"type\": \"string\" }"
+    "          }"
+    "        }"
+    "      }"
     "    }"
     "  }"
     "}";
@@ -76,6 +110,33 @@ bool ParseFails(const std::string& content) {
     return false;
   EXPECT_FALSE(error.empty());
   return true;
+}
+
+void TestSchemaValidation(Schema schema,
+                          const base::Value& value,
+                          SchemaOnErrorStrategy strategy,
+                          bool expected_return_value) {
+  std::string error;
+  static const char kNoErrorReturned[] = "No error returned.";
+
+  // Test that Schema::Validate() works as expected.
+  error = kNoErrorReturned;
+  bool returned = schema.Validate(value, strategy, &error);
+  EXPECT_EQ(returned, expected_return_value) << error;
+
+  // Test that Schema::Normalize() will return the same value as
+  // Schema::Validate().
+  error = kNoErrorReturned;
+  scoped_ptr<base::Value> cloned_value(value.DeepCopy());
+  returned = schema.Normalize(cloned_value.get(), strategy, &error);
+  EXPECT_EQ(returned, expected_return_value) << error;
+
+  // Test that Schema::Normalize() have actually dropped invalid and unknown
+  // properties.
+  if (expected_return_value) {
+    EXPECT_TRUE(schema.Validate(*cloned_value.get(), SCHEMA_STRICT, &error));
+    EXPECT_TRUE(schema.Normalize(cloned_value.get(), SCHEMA_STRICT, &error));
+  }
 }
 
 std::string SchemaObjectWrapper(const std::string& subschema) {
@@ -277,6 +338,7 @@ TEST(SchemaTest, ValidSchema) {
   } kExpectedProperties[] = {
     { "Array",                base::Value::TYPE_LIST },
     { "ArrayOfArray",         base::Value::TYPE_LIST },
+    { "ArrayOfObjectOfArray", base::Value::TYPE_LIST },
     { "ArrayOfObjects",       base::Value::TYPE_LIST },
     { "Boolean",              base::Value::TYPE_BOOLEAN },
     { "Integer",              base::Value::TYPE_INTEGER },
@@ -286,6 +348,8 @@ TEST(SchemaTest, ValidSchema) {
     { "Null",                 base::Value::TYPE_NULL },
     { "Number",               base::Value::TYPE_DOUBLE },
     { "Object",               base::Value::TYPE_DICTIONARY },
+    { "ObjectOfArray",        base::Value::TYPE_DICTIONARY },
+    { "ObjectOfObject",       base::Value::TYPE_DICTIONARY },
     { "String",               base::Value::TYPE_STRING },
     { "StringWithEnums",      base::Value::TYPE_STRING },
   };
@@ -467,11 +531,11 @@ TEST(SchemaTest, Validate) {
   ASSERT_TRUE(schema.valid()) << error;
 
   base::DictionaryValue bundle;
-  EXPECT_TRUE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, true);
 
   // Wrong type, expected integer.
   bundle.SetBoolean("Integer", true);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
 
   // Wrong type, expected list of strings.
   {
@@ -479,7 +543,7 @@ TEST(SchemaTest, Validate) {
     base::ListValue list;
     list.AppendInteger(1);
     bundle.Set("Array", list.DeepCopy());
-    EXPECT_FALSE(schema.Validate(bundle));
+    TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   }
 
   // Wrong type in a sub-object.
@@ -488,13 +552,13 @@ TEST(SchemaTest, Validate) {
     base::DictionaryValue dict;
     dict.SetString("one", "one");
     bundle.Set("Object", dict.DeepCopy());
-    EXPECT_FALSE(schema.Validate(bundle));
+    TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   }
 
   // Unknown name.
   bundle.Clear();
   bundle.SetBoolean("Unknown", true);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
 
   // All of these will be valid.
   bundle.Clear();
@@ -545,47 +609,169 @@ TEST(SchemaTest, Validate) {
   bundle.SetString("StringWithEnums", "two");
   bundle.SetInteger("IntegerWithRange", 3);
 
-  EXPECT_TRUE(schema.Validate(bundle));
-
-  bundle.SetString("boom", "bang");
-  EXPECT_FALSE(schema.Validate(bundle));
-  bundle.Remove("boom", NULL);
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, true);
 
   bundle.SetInteger("IntegerWithEnums", 0);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnums", 1);
 
   bundle.SetInteger("IntegerWithEnumsGaps", 0);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 9);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 10);
-  EXPECT_TRUE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, true);
   bundle.SetInteger("IntegerWithEnumsGaps", 11);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 19);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 21);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 29);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 30);
-  EXPECT_TRUE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, true);
   bundle.SetInteger("IntegerWithEnumsGaps", 31);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 100);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithEnumsGaps", 20);
 
   bundle.SetString("StringWithEnums", "FOUR");
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetString("StringWithEnums", "two");
 
   bundle.SetInteger("IntegerWithRange", 4);
-  EXPECT_FALSE(schema.Validate(bundle));
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
   bundle.SetInteger("IntegerWithRange", 3);
 
+  // Unknown top level property.
+  bundle.SetString("boom", "bang");
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
+  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
+  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_UNKNOWN, true);
+  bundle.Remove("boom", NULL);
+
+  // Invalid top level property.
+  bundle.SetInteger("Boolean", 12345);
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, false);
+  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+  TestSchemaValidation(schema, bundle, SCHEMA_ALLOW_INVALID, true);
+  bundle.SetBoolean("Boolean", true);
+
+  // Tests on ObjectOfObject.
+  {
+    Schema subschema = schema.GetProperty("ObjectOfObject");
+    ASSERT_TRUE(subschema.valid());
+    base::DictionaryValue root;
+
+    // Unknown property.
+    root.SetBoolean("Object.three", false);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    root.Remove("Object.three", NULL);
+
+    // Invalid property.
+    root.SetInteger("Object.one", 12345);
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    root.Remove("Object.one", NULL);
+  }
+
+  // Tests on ArrayOfObjects.
+  {
+    Schema subschema = schema.GetProperty("ArrayOfObjects");
+    ASSERT_TRUE(subschema.valid());
+    base::ListValue root;
+
+    // Unknown property.
+    base::DictionaryValue* dict_value = new base::DictionaryValue();
+    dict_value->SetBoolean("three", true);
+    root.Append(dict_value);  // Pass ownership to root.
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    root.Remove(root.GetSize() - 1, NULL);
+
+    // Invalid property.
+    dict_value = new base::DictionaryValue();
+    dict_value->SetBoolean("two", true);
+    root.Append(dict_value);  // Pass ownership to root.
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+    root.Remove(root.GetSize() - 1, NULL);
+  }
+
+  // Tests on ObjectOfArray.
+  {
+    Schema subschema = schema.GetProperty("ObjectOfArray");
+    ASSERT_TRUE(subschema.valid());
+    base::DictionaryValue root;
+
+    base::ListValue* list_value = new base::ListValue();
+    root.Set("List", list_value);  // Pass ownership to root.
+
+    // No errors.
+    list_value->Append(new base::FundamentalValue(12345));
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+
+    // Invalid list item.
+    list_value->Append(new base::StringValue("blabla"));
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+  }
+
+  // Tests on ArrayOfObjectOfArray.
+  {
+    Schema subschema = schema.GetProperty("ArrayOfObjectOfArray");
+    ASSERT_TRUE(subschema.valid());
+    base::ListValue root;
+
+    base::ListValue* list_value = new base::ListValue();
+    base::DictionaryValue* dict_value = new base::DictionaryValue();
+    dict_value->Set("List", list_value);  // Pass ownership to dict_value.
+    root.Append(dict_value);  // Pass ownership to root.
+
+    // No errors.
+    list_value->Append(new base::StringValue("blabla"));
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+
+    // Invalid list item.
+    list_value->Append(new base::FundamentalValue(12345));
+    TestSchemaValidation(subschema, root, SCHEMA_STRICT, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN_TOPLEVEL, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_UNKNOWN, false);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID_TOPLEVEL, true);
+    TestSchemaValidation(subschema, root, SCHEMA_ALLOW_INVALID, true);
+  }
+
+  // Test that integer to double promotion is allowed.
+  bundle.SetInteger("Number", 31415);
+  TestSchemaValidation(schema, bundle, SCHEMA_STRICT, true);
 }
+
 TEST(SchemaTest, InvalidReferences) {
   // References to undeclared schemas fail.
   EXPECT_TRUE(ParseFails(

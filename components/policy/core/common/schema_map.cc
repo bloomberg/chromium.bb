@@ -4,6 +4,7 @@
 
 #include "components/policy/core/common/schema_map.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
@@ -63,8 +64,14 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
       const base::Value* policy_value = it_map->second.value;
       Schema policy_schema = schema->GetProperty(policy_name);
       ++it_map;
-      if (!policy_value || !policy_schema.Validate(*policy_value))
+      std::string error;
+      if (!policy_value ||
+          !policy_schema.Validate(*policy_value, SCHEMA_STRICT, &error)) {
+        LOG(ERROR) << "Dropping policy " << policy_name << " for "
+                   << it->first.component_id
+                   << " because it's not valid: " << error;
         map->Erase(policy_name);
+      }
     }
   }
 }

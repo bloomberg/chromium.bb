@@ -22,6 +22,26 @@ struct POLICY_EXPORT PropertiesNode;
 
 }  // namespace internal
 
+// Option flags passed to Schema::Validate() and Schema::Normalize(), describing
+// the strategy to handle unknown properties or invalid values for dict type.
+// Note that in Schema::Normalize() allowed errors will be dropped and thus
+// ignored.
+enum SchemaOnErrorStrategy {
+  // No errors will be allowed.
+  SCHEMA_STRICT = 0,
+  // Unknown properties in the top-level dictionary will be ignored.
+  SCHEMA_ALLOW_UNKNOWN_TOPLEVEL,
+  // Unknown properties in any dictionary will be ignored.
+  SCHEMA_ALLOW_UNKNOWN,
+  // Mismatched values will be ignored at the toplevel.
+  SCHEMA_ALLOW_INVALID_TOPLEVEL,
+  // Mismatched values will be ignored at the top-level value.
+  // Unknown properties in any dictionary will be ignored.
+  SCHEMA_ALLOW_INVALID_TOPLEVEL_AND_ALLOW_UNKNOWN,
+  // Mismatched values will be ignored.
+  SCHEMA_ALLOW_INVALID,
+};
+
 // Describes the expected type of one policy. Also recursively describes the
 // types of inner elements, for structured types.
 // Objects of this class refer to external, immutable data and are cheap to
@@ -57,8 +77,21 @@ class POLICY_EXPORT Schema {
 
   base::Value::Type type() const;
 
-  // Returns true if |value| conforms to this Schema.
-  bool Validate(const base::Value& value) const;
+  // Validate |value| against current schema, |strategy| is the strategy to
+  // handle unknown properties or invalid values. Allowed errors will be
+  // ignored. If |value| don't conform the schema, false will be returned and
+  // |error| will contain the detailed reason.
+  bool Validate(const base::Value& value,
+                SchemaOnErrorStrategy strategy,
+                std::string* error) const;
+
+  // Validate |value| against current schema, |strategy| is the strategy to
+  // handle unknown properties or invalid values. Allowed errors will be
+  // dropped in place. If |value| don't conform the schema, false will be
+  // returned and |error| will contain the detailed message.
+  bool Normalize(base::Value* value,
+                 SchemaOnErrorStrategy strategy,
+                 std::string* error) const;
 
   // Used to iterate over the known properties of TYPE_DICTIONARY schemas.
   class POLICY_EXPORT Iterator {
