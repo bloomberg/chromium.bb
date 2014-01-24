@@ -8,6 +8,13 @@
  */
 var ASPECT_RATIO = 4.5;
 
+var RowAlignment = {
+  STRETCH: "stretch",
+  LEFT: "left",
+  RIGHT: "right",
+  CENTER: "center"
+}
+
 /**
  * Ratio of key height and font size.
  * @type {number}
@@ -35,3 +42,22 @@ var SWIPE_DIRECTION = {
   DOWN: 0x8
 };
 
+/**
+ * The default weight of a key in the X direction.
+ * @type {number}
+ */
+var DEFAULT_KEY_WEIGHT_X = 100;
+
+/**
+ * The default weight of a key in the Y direction.
+ * @type {number}
+ */
+var DEFAULT_KEY_WEIGHT_Y = 60;
+
+/**
+ * The top padding on each key.
+ * @type {number}
+ */
+// TODO(rsadam): Remove this variable once figure out how to calculate this
+// number before the key is rendered.
+var KEY_PADDING_TOP = 2;

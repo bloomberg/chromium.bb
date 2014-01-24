@@ -316,7 +316,8 @@ function testFingerOutType(testDoneCallback) {
  * Tests that flicking upwards on a key with hintText types the hint text.
  * @param {Function} testDoneCallback The callback function on completion.
  */
-function testSwipeFlick(testDoneCallback) {
+// TODO(rsadam): Reenable when crbug.com/323211 is fixed.
+function disabled_testSwipeFlick(testDoneCallback) {
   var mockEvent = function(xOffset, yOffset, target, relatedTarget) {
     var bounds = target.getBoundingClientRect();
     return {

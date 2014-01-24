@@ -14,10 +14,12 @@
     attributes="keyset layout inputType inputTypeToLayoutMap">
   <template>
     <style>
-      @host {
-        * {
-          position: relative;
-        }
+      :host {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
       }
     </style>
     <!-- The ID for a keyset follows the naming convention of combining the
@@ -29,6 +31,7 @@
     <content id="content"></content>
     <kb-keyboard-overlay id="overlay" hidden></kb-keyboard-overlay>
     <kb-key-codes id="keyCodeMetadata"></kb-key-codes>
+
   </template>
   <script>
     /**
@@ -303,6 +306,7 @@
       inputType: null,
       lastPressedKey: null,
       shift: null,
+      stale: true,
       swipeHandler: null,
       voiceInput_: null,
 
@@ -767,7 +771,6 @@
         if (!menu) {
            console.error('Missing options menu.');
         }
-
         menu.hidden = false;
         overlay.hidden = false;
         var left = details.left + details.width - menu.clientWidth;
@@ -791,6 +794,7 @@
        * keyset for the new layout.
        */
       layoutChanged: function() {
+        this.stale = true;
         if (!this.selectDefaultKeyset()) {
           this.fire('stateChange', {state: 'loadingKeyset'});
 

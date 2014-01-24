@@ -1,15 +1,545 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+(function(exports) {
+  /**
+   * Alignment options for a keyset.
+   * @param {Object=} opt_keyset The keyset to calculate the dimensions for.
+   *    Defaults to the current active keyset.
+   */
+  var AlignmentOptions = function(opt_keyset) {
+    var keyboard = document.getElementById('keyboard');
+    var keyset = opt_keyset || keyboard.activeKeyset;
+    this.calculate(keyset);
+  }
 
-var onResize = function() {
-  var x = window.innerWidth;
-  var y = window.innerHeight;
-  var height =  (x > ASPECT_RATIO * y) ? y : Math.floor(x / ASPECT_RATIO);
-  keyboard.style.height = height + 'px';
-  keyboard.style.width = Math.floor(ASPECT_RATIO * height) + 'px';
-  keyboard.style.fontSize = (height / FONT_SIZE_RATIO / ROW_LENGTH) + 'px';
-};
+  AlignmentOptions.prototype = {
+    /**
+     * The width of a regular key in logical pixels.
+     * @type {number}
+     */
+    keyWidth: 0,
+
+    /**
+     * The horizontal space between two keys in logical pixels.
+     * @type {number}
+     */
+    pitchX: 0,
+
+    /**
+     * The vertical space between two keys in logical pixels.
+     * @type {number}
+     */
+    pitchY: 0,
+
+    /**
+     * The width in logical pixels the row should expand within.
+     * @type {number}
+     */
+    availableWidth: 0,
+
+    /**
+     * The x-coordinate in logical pixels of the left most edge of the keyset.
+     * @type {number}
+     */
+    offsetLeft: 0,
+
+    /**
+     * The x-coordinate of the right most edge in logical pixels of the keyset.
+     * @type {number}
+     */
+    offsetRight: 0,
+
+    /**
+     * The height in logical pixels of all keys.
+     * @type {number}
+     */
+    keyHeight: 0,
+
+    /**
+     * The height in logical pixels the keyset should stretch to fit.
+     * @type {number}
+     */
+    availableHeight: 0,
+
+    /**
+     * The y-coordinate in logical pixels of the top most edge of the keyset.
+     * @type {number}
+     */
+    offsetTop: 0,
+
+    /**
+     * The y-coordinate in logical pixels of the bottom most edge of the keyset.
+     * @type {number}
+     */
+    offsetBottom: 0,
+
+    /**
+     * Recalculates the alignment options for a specific keyset.
+     * @param {Object} keyset The keyset to align.
+     */
+    calculate: function (keyset) {
+      var rows = keyset.querySelectorAll('kb-row').array();
+      // Pick candidate row. This is the row with the most keys.
+      var row = rows[0];
+      var candidateLength = rows[0].childElementCount;
+      for (var i = 1; i < rows.length; i++) {
+        if (rows[i].childElementCount > candidateLength) {
+          row = rows[i];
+          candidateLength = rows[i].childElementCount;
+        }
+      }
+      var allKeys = row.children;
+
+      // Calculates widths first.
+      // Weight of a single interspace.
+      var pitches = keyset.pitch.split();
+      var pitchWeightX;
+      var pitchWeightY;
+      pitchWeightX = parseFloat(pitches[0]);
+      pitchWeightY = pitches.length < 2 ? pitchWeightX : parseFloat(pitch[1]);
+
+      // Sum of all keys in the current row.
+      var keyWeightSumX = 0;
+      for (var i=0; i< allKeys.length; i++) {
+        keyWeightSumX += allKeys[i].weight;
+      }
+
+      var interspaceWeightSumX = (allKeys.length -1) * pitchWeightX;
+      // Total weight of the row in X.
+      var totalWeightX = keyWeightSumX + interspaceWeightSumX +
+          keyset.weightLeft + keyset.weightRight;
+
+      var totalWeightY = (DEFAULT_KEY_WEIGHT_Y * rows.length) +
+                        (pitchWeightY * (rows.length - 1)) +
+                        keyset.weightTop +
+                        keyset.weightBottom;
+
+      // Calculate width and height of the window.
+      var bounds = exports.getKeyboardBounds();
+
+      var width;
+      var height;
+      var pixelPerWeight;
+      if (totalWeightX/bounds.width < totalWeightY/bounds.height) {
+        height = bounds.height;
+        pixelPerWeight = bounds.height/totalWeightY;
+        width = Math.floor(pixelPerWeight * totalWeightX)
+      }
+      else {
+        width = bounds.width;
+        pixelPerWeight = bounds.width/totalWeightX;
+        height = Math.floor(pixelPerWeight * totalWeightY);
+      }
+      // Calculate pitch.
+      this.pitchX = Math.floor(pitchWeightX * pixelPerWeight);
+      this.pitchY = Math.floor(pitchWeightY * pixelPerWeight);
+
+      // Convert weight to pixels on x axis.
+      this.keyWidth = Math.floor(DEFAULT_KEY_WEIGHT_X * pixelPerWeight);
+      var offsetLeft = Math.floor(keyset.weightLeft * pixelPerWeight);
+      var offsetRight = Math.floor(keyset.weightRight * pixelPerWeight);
+      this.availableWidth = width - offsetLeft - offsetRight;
+
+      // Calculates weight to pixels on the y axis.
+      this.keyHeight = Math.floor(DEFAULT_KEY_WEIGHT_Y * pixelPerWeight);
+      var offsetTop = Math.floor(keyset.weightTop * pixelPerWeight);
+      var offsetBottom = Math.floor(keyset.weightBottom * pixelPerWeight);
+      this.availableHeight = height - offsetTop - offsetBottom;
+
+      var dX = bounds.width - width;
+      this.offsetLeft = offsetLeft + Math.floor(dX/2);
+      this.offsetRight = offsetRight + Math.ceil(dX/2)
+
+      var dY = bounds.height - height;
+      this.offsetBottom = offsetBottom + dY;
+      this.offsetTop = offsetTop;
+    },
+  };
+
+  /**
+   * Calculate width and height of the window.
+   * @private
+   * @return {Array.<String, number>} The bounds of the keyboard container.
+   */
+  function getKeyboardBounds_() {
+    return {
+      "width": window.innerWidth,
+      "height": window.innerHeight
+    };
+  }
+  /**
+   * Callback function for when the window is resized.
+   */
+  var onResize = function() {
+    var bounds = exports.getKeyboardBounds();
+    var height =  (bounds.width > ASPECT_RATIO * bounds.height) ?
+        bounds.height : Math.floor(bounds.width / ASPECT_RATIO);
+    var keyboard = $('keyboard');
+    keyboard.style.fontSize = (height / FONT_SIZE_RATIO / ROW_LENGTH) + 'px';
+    keyboard.stale = true;
+    var keyset = keyboard.activeKeyset;
+    if (keyset)
+      realignAll();
+  };
+
+  /**
+   * Keeps track of number of loaded keysets.
+   * @param {number} n The number of keysets.
+   * @param {function()} fn Callback function on completion.
+   */
+  var Counter = function(n, fn) {
+    this.count = 0;
+    this.nKeysets = n;
+    this.callback = fn;
+  }
+
+  Counter.prototype = {
+    tick: function() {
+      this.count++;
+      if (this.count == this.nKeysets)
+        this.callback();
+    }
+  }
+
+  /**
+   * Keeps track of keysets loaded and triggers a realign when all are ready.
+   * @type {Counter}
+   */
+  var alignmentCounter = undefined;
+
+  /**
+   * Request realignment for a new keyset that was just loaded.
+   */
+  function requestRealign () {
+    var keyboard = $('keyboard');
+    if (!keyboard.stale)
+      return;
+    if (!alignmentCounter) {
+      var layout = keyboard.layout;
+      var length =
+          keyboard.querySelectorAll('kb-keyset[id^=' + layout + ']').length;
+      alignmentCounter = new Counter(length, function(){
+        realign(false);
+        alignmentCounter = undefined;
+      });
+    }
+    alignmentCounter.tick();
+  }
+
+  /**
+   * Updates a specific key to the position specified.
+   * @param {Object} key The key to update.
+   * @param {number} width The new width of the key.
+   * @param {number} height The new height of the key.
+   * @param {number} left The left corner of the key.
+   * @param {number} top The top corner of the key.
+   */
+  function updateKey(key, width, height, left, top) {
+    key.style.position = 'absolute';
+    key.style.width = width + 'px';
+    key.style.height = (height - KEY_PADDING_TOP) + 'px';
+    key.style.left = left + 'px';
+    key.style.top = (top + KEY_PADDING_TOP) + 'px';
+  }
+
+  /**
+   * Returns the key closest to given x-coordinate
+   * @param {Array.<kb-key>} allKeys Sorted array of all possible key
+   *     candidates.
+   * @param {number} x The x-coordinate.
+   * @param {number} pitch The pitch of the row.
+   * @param {boolean} alignLeft whether to search with respect to the left or
+   *   or right edge.
+   */
+  function findClosestKey(allKeys, x, pitch, alignLeft) {
+    var n = allKeys.length;
+    // Simple binary search.
+    var binarySearch = function (start, end, testFn) {
+      if (start >= end) {
+        console.error("Unable to find key.");
+        return;
+      }
+      var mid = Math.floor((start+end)/2);
+      var result = testFn(mid);
+      if (result == 0)
+        return allKeys[mid];
+      if (result < 0)
+        return binarySearch(start, mid, testFn);
+      else
+        return binarySearch(mid + 1, end, testFn);
+    }
+    // Test function.
+    var testFn = function(i) {
+      var ERROR_THRESH = 1;
+      var key = allKeys[i];
+      var left = parseFloat(key.style.left);
+      if (!alignLeft)
+        left += parseFloat(key.style.width);
+      var deltaRight = 0.5*(parseFloat(key.style.width) + pitch)
+      deltaLeft = 0.5 * pitch;
+      if (i > 0)
+        deltaLeft += 0.5*parseFloat(allKeys[i-1].style.width);
+      var high = Math.ceil(left + deltaRight) + ERROR_THRESH;
+      var low = Math.floor(left - deltaLeft) - ERROR_THRESH;
+      if (x <= high && x >= low)
+        return 0;
+      return x >= high? 1 : -1;
+    }
+
+    return binarySearch(0, allKeys.length -1, testFn);
+  }
+
+  /**
+   * Redistributes the total width amongst the keys in the range provided.
+   * @param {Array.<kb-key>} allKeys Ordered list of keys to stretch.
+   * @param {number} pitch The space between two keys.
+   * @param {number} xOffset The x-coordinate of the key who's index is start.
+   * @param {number} width The total extraneous width to distribute.
+   * @param {number} keyHeight The height of each key.
+   * @param {number} yOffset The y-coordinate of the top edge of the row.
+   */
+  function redistribute(allKeys, pitch, xOffset, width, keyHeight, yOffset) {
+    var weight = 0;
+    for (var i = 0; i < allKeys.length; i++) {
+      weight += allKeys[i].weight;
+    }
+    var availableWidth = width - (allKeys.length - 1) * pitch;
+    var pixelsPerWeight = width / weight;
+    for (var i = 0; i < allKeys.length; i++) {
+      var keyWidth = Math.floor(allKeys[i].weight * pixelsPerWeight);
+      if (i == allKeys.length -1) {
+        keyWidth =  availableWidth;
+      }
+      updateKey(allKeys[i], keyWidth, keyHeight, xOffset, yOffset)
+      availableWidth -= keyWidth;
+      xOffset += keyWidth + pitch;
+    }
+  }
+
+  /**
+   * Aligns a row such that the spacebar is perfectly aligned with the row above
+   * it. A precondition is that all keys in this row can be stretched as needed.
+   * @param {!kb-row} row The current row to be aligned.
+   * @param {!kb-row} prevRow The row above the current row.
+   * @param {!AlignmentOptions} params The parameters used to align the keyset.
+   * @param {number} heightOffset The height offset caused by the rows above.
+   */
+  function realignSpacebarRow(row, prevRow, params, heightOffset) {
+    var allKeys = row.children;
+    var stretchWeightBeforeSpace = 0;
+    var stretchBefore = 0;
+    var stretchWeightAfterSpace = 0;
+    var stretchAfter = 0;
+    var spaceIndex = -1;
+
+    for (var i=0; i< allKeys.length; i++) {
+      if (spaceIndex == -1) {
+        if (allKeys[i].classList.contains('space')) {
+          spaceIndex = i;
+          continue;
+        } else {
+          stretchWeightBeforeSpace += allKeys[i].weight;
+          stretchBefore++;
+        }
+      } else {
+        stretchWeightAfterSpace += allKeys[i].weight;
+        stretchAfter++;
+      }
+    }
+    if (spaceIndex == -1) {
+      console.error("No spacebar found in this row.");
+      return;
+    }
+    var totalWeight = stretchWeightBeforeSpace +
+                      stretchWeightAfterSpace +
+                      allKeys[spaceIndex].weight;
+    var widthForKeys = params.availableWidth -
+                       (params.pitchX * (allKeys.length - 1 ))
+    // Number of pixels to assign per unit weight.
+    var pixelsPerWeight = widthForKeys/totalWeight;
+    // Predicted left edge of the space bar.
+    var spacePredictedLeft = params.offsetLeft +
+                          (spaceIndex * params.pitchX) +
+                          (stretchWeightBeforeSpace * pixelsPerWeight);
+    var prevRowKeys = prevRow.children;
+    // Find closest keys to the spacebar in order to align it to them.
+    var leftKey =
+        findClosestKey(prevRowKeys, spacePredictedLeft, params.pitchX, true);
+
+    var spacePredictedRight = spacePredictedLeft +
+        allKeys[spaceIndex].weight * (params.keyWidth/100);
+
+    var rightKey =
+        findClosestKey(prevRowKeys, spacePredictedRight, params.pitchX, false);
+
+    var yOffset = params.offsetTop + heightOffset;
+    // Fix left side.
+    var leftEdge = parseFloat(leftKey.style.left);
+    var leftWidth = leftEdge - params.offsetLeft - params.pitchX;
+    var leftKeys = allKeys.array().slice(0, spaceIndex);
+    redistribute(leftKeys,
+                 params.pitchX,
+                 params.offsetLeft,
+                 leftWidth,
+                 params.keyHeight,
+                 yOffset);
+    // Fix right side.
+    var rightEdge = parseFloat(rightKey.style.left) +
+        parseFloat(rightKey.style.width);
+    var spacebarWidth = rightEdge - leftEdge;
+    updateKey(allKeys[spaceIndex],
+              spacebarWidth,
+              params.keyHeight,
+              leftEdge,
+              yOffset);
+    var rightWidth =
+        params.availableWidth - (rightEdge - params.offsetLeft + params.pitchX);
+    var rightKeys = allKeys.array().slice(spaceIndex + 1);
+    redistribute(rightKeys,
+                 params.pitchX,
+                 rightEdge + params.pitchX,//xOffset.
+                 rightWidth,
+                 params.keyHeight,
+                 yOffset);
+  }
+
+  /**
+   * Realigns a given row based on the parameters provided.
+   * @param {!kb-row} row The row to realign.
+   * @param {!AlignmentOptions} params The parameters used to align the keyset.
+   * @param {number} heightOffset The offset caused by rows above it.
+   */
+  function realignRow(row, params, heightOffset) {
+    var all = row.children;
+    var stretch = [];
+    var stretchWeightSum = 0;
+    var allSum = 0;
+
+    for (var i = 0; i < all.length; i++) {
+      var key = all[i];
+      if (key.weight == DEFAULT_KEY_WEIGHT_X){
+        allSum += params.keyWidth;
+        continue;
+      }
+      stretch.push(key)
+      var width =
+          Math.floor((params.keyWidth/DEFAULT_KEY_WEIGHT_X) * key.weight);
+      allSum += width;
+      stretchWeightSum += key.weight;
+    }
+    var nStretch = stretch.length;
+    var nRegular = all.length - nStretch;
+    // Extra space.
+    var extra = params.availableWidth -
+                allSum -
+                (params.pitchX * (all.length -1));
+    var xOffset = params.offsetLeft;
+    var alignment = row.align;
+    switch (alignment) {
+      case RowAlignment.STRETCH:
+        var extraPerWeight = extra/stretchWeightSum;
+        for (var i = 0; i < stretch.length; i++) {
+          var bonus = Math.floor(stretch[i].weight * extraPerWeight);
+          extra -= bonus;
+          // All left-over pixels assigned to right most key.
+          if (i == (stretch.length - 1))
+            stretch[i].setAttribute('bonus', bonus + extra);
+          else
+            stretch[i].setAttribute('bonus', bonus);
+        }
+        break;
+      case RowAlignment.CENTER:
+        xOffset += Math.floor(extra/2)
+        break;
+      case RowAlignment.JUSTIFY:
+        xOffset += extra;
+        break;
+      default:
+        break;
+    };
+
+    var yOffset = params.offsetTop + heightOffset;
+    var left = xOffset;
+    for (var i = 0; i < all.length; i++) {
+      var key = all[i];
+      var width = params.keyWidth;
+      if (key.weight != DEFAULT_KEY_WEIGHT_X) {
+        width = Math.floor((params.keyWidth/DEFAULT_KEY_WEIGHT_X) * key.weight)
+        var bonus = key.getAttribute('bonus')
+        if (bonus)
+          width += parseInt(bonus)
+      }
+      updateKey(key, width, params.keyHeight, left, yOffset)
+      left += (width + params.pitchX);
+    }
+  }
+
+  /**
+   * Realigns the keysets in all layouts of the keyboard.
+   */
+  function realignAll() {
+    var keyboard = $('keyboard');
+    var layoutParams = {};
+
+    var idToLayout = function(id) {
+      var parts = id.split('-');
+      parts.pop();
+      return parts.join('-');
+    }
+
+    var keysets = keyboard.querySelectorAll('kb-keyset').array();
+    for (var i=0; i< keysets.length; i++) {
+      var keyset = keysets[i];
+      var layout = idToLayout(keyset.id);
+      // Caches the layouts size parameters since all keysets in the same layout
+      // will have the same specs.
+      if (!(layout in layoutParams))
+        layoutParams[layout] = new AlignmentOptions(keyset);
+      realignKeyset(keyset, layoutParams[layout]);
+    }
+  }
+
+  /**
+   * Realigns the keysets in the current layout of the keyboard.
+   */
+  function realign() {
+    var keyboard = $('keyboard');
+    var params = new AlignmentOptions();
+    var layout = keyboard.layout;
+    var keysets =
+        keyboard.querySelectorAll('kb-keyset[id^=' + layout + ']').array();
+    for (var i = 0; i<keysets.length ; i++) {
+      realignKeyset(keysets[i], params);
+    }
+    keyboard.stale = false;
+  }
+
+  /*
+   * Realigns a given keyset.
+   * @param {Object} keyset The keyset to realign.
+   * @param {!AlignmentOptions} params The parameters used to align the keyset.
+   */
+  function realignKeyset(keyset, params) {
+    var rows = keyset.querySelectorAll('kb-row').array();
+    var heightOffset  = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.querySelector('.space') && (i > 1)) {
+        realignSpacebarRow(row, rows[i-1], params, heightOffset)
+      } else {
+        realignRow(row, params, heightOffset);
+      }
+      heightOffset += (params.keyHeight + params.pitchY);
+    }
+  }
+  window.addEventListener('realign', requestRealign);
+
+  addEventListener('resize', onResize);
+  addEventListener('load', onResize);
+
+  exports.getKeyboardBounds = getKeyboardBounds_;
+})(this);
 
 /**
  * Recursively replace all kb-key-import elements with imported documents.
@@ -53,21 +583,8 @@ function expandHTML(importedContent) {
 function flattenKeysets(content) {
   var importedContent = importHTML(content);
   expandHTML(importedContent);
-  var rows = importedContent.querySelectorAll('kb-row');
-  for (var i = 0 ; i < rows.length; i++) {
-    var allKeys = rows[i].children;
-    for (var j = 0; j< allKeys.length; j++) {
-      var weight = allKeys[j].getAttribute('weight');
-      if (weight)
-        allKeys[j].style.webkitBoxFlex = weight;
-    }
-  }
   return importedContent;
 }
-
-addEventListener('resize', onResize);
-
-addEventListener('load', onResize);
 
 // Prevents all default actions of touch. Keyboard should use its own gesture
 // recognizer.

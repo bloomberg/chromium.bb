@@ -4,14 +4,13 @@
   -- found in the LICENSE file.
   -->
 
-<polymer-element name="kb-keyset" attributes="nextKeyset isDefault"
+<polymer-element name="kb-keyset"
+    attributes="nextKeyset isDefault pitch weightRight
+        weightTop weightBottom"
     on-key-up="{{keyUp}}" on-key-longpress="{{keyLongpress}}">
   <template>
     <style>
       :host {
-        -webkit-box-flex: 1;
-        -webkit-box-orient: vertical;
-        display: -webkit-box;
       }
       :host:not(.activeKeyset) {
         display: none;
@@ -26,6 +25,19 @@
     Polymer('kb-keyset', {
       isDefault: false,
       nextKeyset: undefined,
+      // Weight offsets for positioning the keyset.
+      weightBottom: 15,
+      weightLeft: 10,
+      weightRight: 10,
+      weightTop: 15,
+
+      /**
+       * Weight assigned to space between keys, of the form "xPitch yPitch".
+       * Defaults to xPitch = yPitch if it's only a single number.
+       * @type {string}
+       */
+      pitch: "10",
+
       // TODO(bshe): support select keyset on down, long and dbl events.
       keyUp: function(event, detail) {
         switch (detail.char) {
@@ -95,12 +107,12 @@
       },
 
       enteredView: function() {
-        if (this.isDefault) {
-          var self = this;
-          Platform.endOfMicrotask(function() {
+        var self = this;
+        Platform.endOfMicrotask(function(){
+          self.fire('realign');
+          if (self.isDefault)
             self.show();
-          });
-        }
+        });
       }
     });
   </script>

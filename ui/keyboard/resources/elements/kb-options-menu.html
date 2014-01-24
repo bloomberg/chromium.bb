@@ -8,19 +8,20 @@
     on-pointerup="up" on-pointerover="over" on-pointerout="out">
   <template>
     <style>
-      @host {
-        * {
-          -webkit-padding-end: 5px;
-          -webkit-padding-start: 5px;
-          color: #fff;
-          display: -webkit-box;
-          font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
-          font-weight: 300;
-          height: 28px;
-        }
-        *.active {
-          background-color: #848490;
-        }
+      :host {
+        -webkit-padding-end: 5px;
+        -webkit-padding-start: 5px;
+        color: #fff;
+        display: -webkit-box;
+        font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
+        font-size: 18px;
+        font-weight: 300;
+        height: 28px;
+      }
+
+      :host.active {
+        background-color: #848490;
+      }
     </style>
     <span>{{label}}</span>
   </template>
@@ -82,17 +83,16 @@
 <polymer-element name="kb-options-menu" noscript>
   <template>
     <style>
-      @host {
-        * {
-          -webkit-box-orient: vertical;
-          background-color: #3b3b3e;
-          border-radius: 2px;
-          display: -webkit-box;
-          left: 0;
-          position: absolute;
-          top: 0;
-          z-index: 1;
-        }
+      :host {
+        -webkit-box-orient: vertical;
+        background-color: #3b3b3e;
+        border-radius: 2px;
+        display: -webkit-box;
+        left: 0;
+        position: absolute;
+        top: 0;
+        white-space:nowrap;
+        z-index: 1;
       }
     </style>
     <!-- TODO(kevers): This is a temporary placeholder to enable testing
@@ -114,15 +114,14 @@
     on-pointerup="up">
   <template>
     <style>
-      @host {
-        * {
+      :host {
           background-color: rgba(0, 0, 0, 0.6);
           bottom: 0;
           left: 0;
           position: absolute;
           right: 0;
           top: 0;
-        }
+          z-index: 1;
       }
     </style>
     <!-- Insert popups here. -->

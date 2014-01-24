@@ -5,20 +5,11 @@
 */
 
 body {
-  -webkit-box-pack: center;
   -webkit-user-select: none;
   background-color: #0b0b0b;
-  display: -webkit-box;
   margin: 0;
   overflow: hidden;
   padding: 0;
-}
-
-kb-keyboard {
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
-  max-width: 1280px;
-  width: 1280px;
 }
 
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
@@ -38,7 +29,6 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
   background-color: #2a2a2c;
   border-top: 2px solid #3a3a3c;
   font-size: 70%;
-  margin-left: 0.35em;
 }
 
 

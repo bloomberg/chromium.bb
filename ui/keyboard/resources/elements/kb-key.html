@@ -13,7 +13,6 @@
          * handling of {{}} in CSS rules. Switch back to
          * "-webkit-box-flex: {{weight}}" once the regression is fixed
          * (https://github.com/Polymer/polymer/issues/270). */
-        -webkit-box-flex: 100;
         background-color: #3b3b3e;
         /* TODO(rsadam): remove when {{}} regression is fixed */
         background-image: none;
@@ -24,11 +23,8 @@
         border-top: 2px solid #4b4b4e;
         border-radius: 2px;
         color: #ffffff;
-        display: -webkit-box;
         font-family: 'Open Sans', 'Noto Sans UI', sans-serif;
         font-weight: 300;
-        margin-left: 0.25em;
-        position: relative;
       }
 
       ::part(key) {
@@ -142,17 +138,6 @@
         details.keyName = this.keyName;
         details.shiftModifier = this.shiftModifier;
         return details;
-      },
-
-      /**
-       * Adjusts the CSS rules for rendering the key to reflect the new
-       * weight. The preferred way is to use {{weight}} directly in the CSS
-       * rules; however, this is currently broken in the Polymer library.
-       * TODO(kevers): Cleanup once handling of {{}} in CSS rules is fixed.
-       */
-      weightChanged: function() {
-        if (this.weight > 0)
-          this.style.webkitBoxFlex = this.weight;
       },
     });
   </script>
