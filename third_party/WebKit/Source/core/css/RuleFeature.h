@@ -48,10 +48,7 @@ struct RuleFeature {
 
 class RuleFeatureSet {
 public:
-    RuleFeatureSet()
-        : m_usesFirstLineRules(false)
-        , m_maxDirectAdjacentSelectors(0)
-    { }
+    RuleFeatureSet() { }
 
     void add(const RuleFeatureSet&);
     void clear();
@@ -60,48 +57,66 @@ public:
     void collectFeaturesFromRuleData(const RuleData&);
 
     bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
-    bool usesFirstLineRules() const { return m_usesFirstLineRules; }
+    bool usesFirstLineRules() const { return m_metadata.usesFirstLineRules; }
 
-    unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
-    void setMaxDirectAdjacentSelectors(unsigned value)  { m_maxDirectAdjacentSelectors = std::max(value, m_maxDirectAdjacentSelectors); }
+    unsigned maxDirectAdjacentSelectors() const { return m_metadata.maxDirectAdjacentSelectors; }
+    void setMaxDirectAdjacentSelectors(unsigned value)  { m_metadata.maxDirectAdjacentSelectors = std::max(value, m_metadata.maxDirectAdjacentSelectors); }
 
     inline bool hasSelectorForAttribute(const AtomicString& attributeName) const
     {
         ASSERT(!attributeName.isEmpty());
-        return attrsInRules.contains(attributeName);
+        return m_metadata.attrsInRules.contains(attributeName);
     }
 
     inline bool hasSelectorForClass(const AtomicString& classValue) const
     {
         ASSERT(!classValue.isEmpty());
-        return classesInRules.contains(classValue);
+        return m_metadata.classesInRules.contains(classValue);
     }
 
     inline bool hasSelectorForId(const AtomicString& idValue) const
     {
-        ASSERT(!idValue.isEmpty());
-        return idsInRules.contains(idValue);
+        return m_metadata.idsInRules.contains(idValue);
     }
 
-    HashSet<AtomicString> idsInRules;
-    HashSet<AtomicString> classesInRules;
-    HashSet<AtomicString> attrsInRules;
+    int hasIdsInSelectors() const
+    {
+        return m_metadata.idsInRules.size() > 0;
+    }
+
+    // Marks the given attribute name as "appearing in a selector". Used for
+    // CSS properties such as content: ... attr(...) ...
+    void addAttributeInASelector(const AtomicString& attributeName);
+
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
 
 private:
-    void collectFeaturesFromSelectorList(const CSSSelectorList*);
-
-    bool m_usesFirstLineRules;
-    unsigned m_maxDirectAdjacentSelectors;
-
     typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
+    struct FeatureMetadata {
+        FeatureMetadata()
+            : usesFirstLineRules(false)
+            , foundSiblingSelector(false)
+            , maxDirectAdjacentSelectors(0)
+        { }
+        void add(const FeatureMetadata& other);
+        void clear();
 
+        bool usesFirstLineRules;
+        bool foundSiblingSelector;
+        unsigned maxDirectAdjacentSelectors;
+        HashSet<AtomicString> idsInRules;
+        HashSet<AtomicString> classesInRules;
+        HashSet<AtomicString> attrsInRules;
+    };
+
+    void collectFeaturesFromSelector(const CSSSelector*, FeatureMetadata&);
+    void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&);
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
-
     bool updateClassInvalidationSets(const CSSSelector*);
 
     InvalidationSetMap m_classInvalidationSets;
+    FeatureMetadata m_metadata;
 };
 
 } // namespace WebCore

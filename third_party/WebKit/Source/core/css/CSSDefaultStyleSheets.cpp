@@ -160,7 +160,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
         changedDefaultStyle = true;
     }
 
-    ASSERT(defaultStyle->features().idsInRules.isEmpty());
+    ASSERT(!defaultStyle->features().hasIdsInSelectors());
     ASSERT(defaultStyle->features().siblingRules.isEmpty());
 }
 

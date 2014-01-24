@@ -122,40 +122,28 @@ bool RuleFeatureSet::updateClassInvalidationSets(const CSSSelector* selector)
     return true;
 }
 
+void RuleFeatureSet::addAttributeInASelector(const AtomicString& attributeName)
+{
+    m_metadata.attrsInRules.add(attributeName);
+}
+
+
 void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
 {
-    bool foundSiblingSelector = false;
-    unsigned maxDirectAdjacentSelectors = 0;
-    for (const CSSSelector* selector = ruleData.selector(); selector; selector = selector->tagHistory()) {
-        collectFeaturesFromSelector(selector);
 
-        if (const CSSSelectorList* selectorList = selector->selectorList()) {
-            for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(subSelector)) {
-                // FIXME: Shouldn't this be checking subSelector->isSiblingSelector()?
-                if (!foundSiblingSelector && selector->isSiblingSelector())
-                    foundSiblingSelector = true;
-                if (subSelector->isDirectAdjacentSelector())
-                    maxDirectAdjacentSelectors++;
-                collectFeaturesFromSelector(subSelector);
-            }
-        } else {
-            if (!foundSiblingSelector && selector->isSiblingSelector())
-                foundSiblingSelector = true;
-            if (selector->isDirectAdjacentSelector())
-                maxDirectAdjacentSelectors++;
-        }
-    }
+    FeatureMetadata metadata;
+    collectFeaturesFromSelector(ruleData.selector(), metadata);
+    m_metadata.add(metadata);
     if (RuntimeEnabledFeatures::targetedStyleRecalcEnabled()) {
         bool selectorUsesClassInvalidationSet = updateClassInvalidationSets(ruleData.selector());
         if (!selectorUsesClassInvalidationSet) {
-            for (HashSet<AtomicString>::const_iterator it = classesInRules.begin(); it != classesInRules.end(); ++it) {
+            for (HashSet<AtomicString>::const_iterator it = metadata.classesInRules.begin(); it != metadata.classesInRules.end(); ++it) {
                 DescendantInvalidationSet& invalidationSet = ensureClassInvalidationSet(*it);
                 invalidationSet.setWholeSubtreeInvalid();
             }
         }
     }
-    setMaxDirectAdjacentSelectors(maxDirectAdjacentSelectors);
-    if (foundSiblingSelector)
+    if (metadata.foundSiblingSelector)
         siblingRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
     if (ruleData.containsUncommonAttributeSelector())
         uncommonAttributeRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
@@ -171,40 +159,45 @@ DescendantInvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const Atom
 
 void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
 {
-    if (selector->m_match == CSSSelector::Id)
-        idsInRules.add(selector->value());
-    else if (selector->m_match == CSSSelector::Class)
-        classesInRules.add(selector->value());
-    else if (selector->isAttributeSelector())
-        attrsInRules.add(selector->attribute().localName());
-    switch (selector->pseudoType()) {
-    case CSSSelector::PseudoFirstLine:
-        m_usesFirstLineRules = true;
-        break;
-    case CSSSelector::PseudoHost:
-        collectFeaturesFromSelectorList(selector->selectorList());
-        break;
-    default:
-        break;
+    collectFeaturesFromSelector(selector, m_metadata);
+}
+
+void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector, RuleFeatureSet::FeatureMetadata& metadata)
+{
+    for (; selector; selector = selector->tagHistory()) {
+        if (selector->m_match == CSSSelector::Id)
+            metadata.idsInRules.add(selector->value());
+        else if (selector->m_match == CSSSelector::Class)
+            metadata.classesInRules.add(selector->value());
+        else if (selector->isAttributeSelector())
+            metadata.attrsInRules.add(selector->attribute().localName());
+
+        if (selector->pseudoType() == CSSSelector::PseudoFirstLine)
+            metadata.usesFirstLineRules = true;
+        if (selector->isDirectAdjacentSelector())
+            metadata.maxDirectAdjacentSelectors++;
+        if (selector->isSiblingSelector())
+            metadata.foundSiblingSelector = true;
+
+        collectFeaturesFromSelectorList(selector->selectorList(), metadata);
     }
 }
 
-void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* selectorList)
+void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* selectorList, RuleFeatureSet::FeatureMetadata& metadata)
 {
     if (!selectorList)
         return;
 
     for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(selector)) {
         for (const CSSSelector* subSelector = selector; subSelector; subSelector = subSelector->tagHistory())
-            collectFeaturesFromSelector(subSelector);
+            collectFeaturesFromSelector(subSelector, metadata);
     }
 }
 
-void RuleFeatureSet::add(const RuleFeatureSet& other)
+void RuleFeatureSet::FeatureMetadata::add(const FeatureMetadata& other)
 {
-    for (InvalidationSetMap::const_iterator it = other.m_classInvalidationSets.begin(); it != other.m_classInvalidationSets.end(); ++it) {
-        ensureClassInvalidationSet(it->key).combine(*it->value);
-    }
+    usesFirstLineRules = usesFirstLineRules || other.usesFirstLineRules;
+    maxDirectAdjacentSelectors = std::max(maxDirectAdjacentSelectors, other.maxDirectAdjacentSelectors);
 
     HashSet<AtomicString>::const_iterator end = other.idsInRules.end();
     for (HashSet<AtomicString>::const_iterator it = other.idsInRules.begin(); it != end; ++it)
@@ -215,21 +208,36 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
     end = other.attrsInRules.end();
     for (HashSet<AtomicString>::const_iterator it = other.attrsInRules.begin(); it != end; ++it)
         attrsInRules.add(*it);
+}
+
+void RuleFeatureSet::FeatureMetadata::clear()
+{
+
+    idsInRules.clear();
+    classesInRules.clear();
+    attrsInRules.clear();
+    usesFirstLineRules = false;
+    foundSiblingSelector = false;
+    maxDirectAdjacentSelectors = 0;
+}
+
+void RuleFeatureSet::add(const RuleFeatureSet& other)
+{
+    for (InvalidationSetMap::const_iterator it = other.m_classInvalidationSets.begin(); it != other.m_classInvalidationSets.end(); ++it) {
+        ensureClassInvalidationSet(it->key).combine(*it->value);
+    }
+
+    m_metadata.add(other.m_metadata);
+
     siblingRules.append(other.siblingRules);
     uncommonAttributeRules.append(other.uncommonAttributeRules);
-    m_usesFirstLineRules = m_usesFirstLineRules || other.m_usesFirstLineRules;
-    m_maxDirectAdjacentSelectors = std::max(m_maxDirectAdjacentSelectors, other.maxDirectAdjacentSelectors());
 }
 
 void RuleFeatureSet::clear()
 {
-    idsInRules.clear();
-    classesInRules.clear();
-    attrsInRules.clear();
+    m_metadata.clear();
     siblingRules.clear();
     uncommonAttributeRules.clear();
-    m_usesFirstLineRules = false;
-    m_maxDirectAdjacentSelectors = 0;
 }
 
 } // namespace WebCore

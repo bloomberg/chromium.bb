@@ -32,9 +32,9 @@ PASS backgroundColorOf('host/targetB') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host/targetC') is "rgb(0, 128, 0)"
 :ancestor is updated when its matched ancestor changes className or id.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
-FAIL backgroundColorOf('host') should be rgba(0, 0, 0, 0). Was rgb(0, 128, 0).
+PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
-FAIL backgroundColorOf('host') should be rgba(0, 0, 0, 0). Was rgb(0, 128, 0).
+PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 Compare :ancestor with :ancestor.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host') is "rgb(255, 0, 0)"
