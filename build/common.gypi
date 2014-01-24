@@ -1924,6 +1924,11 @@
           }],
         ],
       }],
+
+      ['OS=="win" and clang==1', {
+        'chromium_win_pch': 0,
+      }],
+
       # The seccomp-bpf sandbox is only supported on three architectures
       # currently.
       # Do not disable seccomp_bpf anywhere without talking to
@@ -2528,6 +2533,11 @@
             },
             'conditions': [
               ['buildtype=="Official"', {
+                'msvs_settings': {
+                  'VCCLCompilerTool': { 'WarnAsError': 'false' },
+                }
+              }],
+              ['clang==1', {
                 'msvs_settings': {
                   'VCCLCompilerTool': { 'WarnAsError': 'false' },
                 }
@@ -4642,6 +4652,53 @@
               'VCManifestTool': {
                 'EmbedManifest': 'false',
               }
+            }],
+          ],
+          'conditions': [
+            ['clang==1', {
+              # Building with Clang on Windows is a work in progress and very
+              # experimental. See crbug.com/82385.
+              'VCCLCompilerTool': {
+                'WarnAsError': 'false',
+                'RuntimeTypeInfo': 'false',
+                'AdditionalOptions': [
+                  '/fallback',
+
+                  # Many files use intrinsics without including this header.
+                  # TODO(hans): Fix those files, or move this to sub-GYPs.
+                  '/FIIntrin.h',
+
+                  # TODO(hans): Make this list shorter eventually.
+                  '-Qunused-arguments',
+                  '-Wno-c++11-compat-deprecated-writable-strings',
+                  '-Wno-char-subscripts',
+                  '-Wno-deprecated-declarations',
+                  '-Wno-deprecated-register',
+                  '-Wno-empty-body',
+                  '-Wno-enum-conversion',
+                  '-Wno-incompatible-pointer-types',
+                  '-Wno-logical-op-parentheses',
+                  '-Wno-microsoft',
+                  '-Wno-missing-braces',
+                  '-Wno-msvc-include',
+                  '-Wno-null-dereference',
+                  '-Wno-overloaded-virtual',
+                  '-Wno-parentheses',
+                  '-Wno-pointer-sign',
+                  '-Wno-reorder',
+                  '-Wno-return-type-c-linkage',
+                  '-Wno-self-assign',
+                  '-Wno-switch',
+                  '-Wno-tautological-compare',
+                  '-Wno-unknown-pragmas',
+                  '-Wno-unsequenced',
+                  '-Wno-unused-function',
+                  '-Wno-unused-private-field',
+                  '-Wno-unused-value',
+                  '-Wno-unused-variable',
+                  '-ferror-limit=1',
+                ],
+              },
             }],
           ],
         },

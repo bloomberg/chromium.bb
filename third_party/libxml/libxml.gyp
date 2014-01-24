@@ -233,7 +233,7 @@
             }, {  # else: OS!="win"
               'product_name': 'xml2',
             }],
-            ['clang == 1', {
+            ['clang==1', {
               'xcode_settings': {
                 'WARNING_CFLAGS': [
                   # libxml passes `const unsigned char*` through `const char*`.
@@ -252,6 +252,14 @@
                 # See http://crbug.com/138571#c8
                 '-Wno-ignored-attributes',
               ],
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'AdditionalOptions': [
+                    # VS2012's standard lib doesn't provide nan().
+                    '/U__STDC_VERSION__',
+                  ],
+                },
+              },
             }],
           ],
         }],
