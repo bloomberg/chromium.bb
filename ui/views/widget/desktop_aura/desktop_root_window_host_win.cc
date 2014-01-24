@@ -17,6 +17,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/win/shell.h"
+#include "ui/compositor/compositor_constants.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path.h"
@@ -143,6 +144,11 @@ void DesktopWindowTreeHostWin::Init(
 
   gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(params.bounds);
   message_handler_->Init(parent_hwnd, pixel_bounds);
+  if (params.type == Widget::InitParams::TYPE_MENU) {
+    ::SetProp(GetAcceleratedWidget(),
+              kForceSoftwareCompositor,
+              reinterpret_cast<HANDLE>(true));
+  }
   CreateCompositor(GetAcceleratedWidget());
 
   rw_create_params->host = this;

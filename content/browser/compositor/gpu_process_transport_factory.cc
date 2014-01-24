@@ -31,6 +31,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_constants.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -183,6 +184,14 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   if (!data)
     data = CreatePerCompositorData(compositor);
 
+  bool force_software_renderer = false;
+#if defined(OS_WIN)
+  if (::GetProp(compositor->widget(), kForceSoftwareCompositor)) {
+    force_software_renderer = reinterpret_cast<bool>(
+        ::RemoveProp(compositor->widget(), kForceSoftwareCompositor));
+  }
+#endif
+
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
 
   // Software fallback does not happen on Chrome OS.
@@ -192,7 +201,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing) &&
-      !software_fallback) {
+      !force_software_renderer && !software_fallback) {
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
         "Compositor");
