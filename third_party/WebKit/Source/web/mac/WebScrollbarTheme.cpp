@@ -31,28 +31,35 @@
 #include "config.h"
 #include "WebScrollbarTheme.h"
 
-#import <AppKit/AppKit.h>
-
 #include "platform/scroll/ScrollbarThemeMacCommon.h"
-#include "platform/mac/NSScrollerImpDetails.h"
 
 using namespace WebCore;
 
 namespace blink {
 
-COMPILE_ASSERT(ScrollerStyleLegacy == NSScrollerStyleLegacy, ScrollerStyle_Legacy_must_be_equal);
-COMPILE_ASSERT(ScrollerStyleOverlay == NSScrollerStyleOverlay, ScrollerStyle_Overlay_must_be_equal);
+#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+// TODO(rsesek): Reenable this after making sure it actually builds.
+//COMPILE_ASSERT(ScrollerStyleLegacy == NSScrollerStyleLegacy, ScrollerStyle_Legacy_must_be_equal);
+//COMPILE_ASSERT(ScrollerStyleOverlay == NSScrollerStyleOverlay, ScrollerStyle_Overlay_must_be_equal);
+#endif
 
 void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
-    bool jumpOnTrackClick, ScrollerStyle preferredScrollerStyle, bool redraw)
+    bool jumpOnTrackClick, bool redraw)
 {
     ScrollbarTheme* theme = ScrollbarTheme::theme();
     if (theme->isMockTheme())
         return;
 
     static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
-        initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, preferredScrollerStyle, redraw);
+        initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, redraw);
+}
+
+void WebScrollbarTheme::updateScrollbars(
+    float initialButtonDelay, float autoscrollButtonDelay,
+    bool jumpOnTrackClick, ScrollerStyle preferredScrollerStyle, bool redraw)
+{
+    updateScrollbars(initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, redraw);
 }
 
 } // namespace blink

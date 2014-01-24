@@ -85,7 +85,7 @@ ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(ScrollbarTheme
 }
 
 void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
-    ASSERT(isOverlayAPIAvailable());
+    ASSERT(isScrollbarOverlayAPIAvailable());
 
     GraphicsContextStateSaver stateSaver(*context);
     context->translate(rect.x(), rect.y());
@@ -101,7 +101,7 @@ void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context,
 }
 
 void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
-    ASSERT(isOverlayAPIAvailable());
+    ASSERT(isScrollbarOverlayAPIAvailable());
 
     GraphicsContextStateSaver stateSaver(*context);
     context->translate(rect.x(), rect.y());

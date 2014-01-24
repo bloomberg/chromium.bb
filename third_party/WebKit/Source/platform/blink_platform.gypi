@@ -651,6 +651,7 @@
       'mac/LocalCurrentGraphicsContext.h',
       'mac/LocalCurrentGraphicsContext.mm',
       'mac/NSScrollerImpDetails.h',
+      'mac/NSScrollerImpDetails.mm',
       'mac/ScrollAnimatorMac.h',
       'mac/ScrollAnimatorMac.mm',
       'mac/ScrollElasticityController.h',

@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#include "RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarThemeMacCommon.h"
 
 #include <Carbon/Carbon.h>
@@ -75,14 +74,13 @@ namespace WebCore {
 static float gInitialButtonDelay = 0.5f;
 static float gAutoscrollButtonDelay = 0.05f;
 static bool gJumpOnTrackClick = false;
-static NSScrollerStyle gPreferredScrollerStyle = NSScrollerStyleLegacy;
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
     static ScrollbarThemeMacCommon* theme = NULL;
     if (theme)
         return theme;
-    if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
+    if (isScrollbarOverlayAPIAvailable()) {
         DEFINE_STATIC_LOCAL(ScrollbarThemeMacOverlayAPI, overlayTheme, ());
         theme = &overlayTheme;
     } else {
@@ -293,26 +291,18 @@ ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()
 {
 }
 
-void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, bool jumpOnTrackClick, NSScrollerStyle preferredScrollerStyle, bool redraw)
+void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, bool jumpOnTrackClick, bool redraw)
 {
     updateButtonPlacement();
     gInitialButtonDelay = initialButtonDelay;
     gAutoscrollButtonDelay = autoscrollButtonDelay;
     gJumpOnTrackClick = jumpOnTrackClick;
-    bool sendScrollerStyleNotification = gPreferredScrollerStyle != preferredScrollerStyle;
-    gPreferredScrollerStyle = preferredScrollerStyle;
     if (redraw && !scrollbarSet().isEmpty()) {
         ScrollbarSet::iterator end = scrollbarSet().end();
         for (ScrollbarSet::iterator it = scrollbarSet().begin(); it != end; ++it) {
             (*it)->styleChanged();
             (*it)->invalidate();
         }
-    }
-    if (sendScrollerStyleNotification) {
-        [[NSNotificationCenter defaultCenter]
-            postNotificationName:@"NSPreferredScrollerStyleDidChangeNotification"
-                          object:nil
-                        userInfo:@{ @"NSScrollerStyle" : @(gPreferredScrollerStyle) }];
     }
 }
 
@@ -356,23 +346,6 @@ int ScrollbarThemeMacCommon::scrollbarPartToHIPressedState(ScrollbarPart part)
         default:
             return 0;
     }
-}
-
-// static
-NSScrollerStyle ScrollbarThemeMacCommon::recommendedScrollerStyle()
-{
-    if (RuntimeEnabledFeatures::overlayScrollbarsEnabled())
-        return NSScrollerStyleOverlay;
-    return gPreferredScrollerStyle;
-}
-
-// static
-bool ScrollbarThemeMacCommon::isOverlayAPIAvailable()
-{
-    static bool apiAvailable =
-        [NSClassFromString(@"NSScrollerImp") respondsToSelector:@selector(scrollerImpWithStyle:controlSize:horizontal:replacingScrollerImp:)]
-        && [NSClassFromString(@"NSScrollerImpPair") instancesRespondToSelector:@selector(scrollerStyle)];
-    return apiAvailable;
 }
 
 } // namespace WebCore
