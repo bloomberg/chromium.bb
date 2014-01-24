@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderFlowThread.h"

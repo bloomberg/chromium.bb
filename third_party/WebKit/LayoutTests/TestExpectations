@@ -815,8 +815,7 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-descenda
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/oscillation-javascript-fontsize-change.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-child.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca-and-cluster.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca.html [ ImageOnlyFailure ]
+crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-iframe.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
 
 crbug.com/334588 fast/repaint/child-of-sub-pixel-offset-composited-layer.html [ NeedsRebaseline ]

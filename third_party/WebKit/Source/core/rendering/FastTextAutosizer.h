@@ -32,6 +32,7 @@
 #define FastTextAutosizer_h
 
 #include "core/rendering/RenderObject.h"
+#include "core/rendering/TextAutosizer.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -66,15 +67,27 @@ public:
 
 private:
     struct Cluster {
-        explicit Cluster(const RenderBlock* root, bool autosize, float multiplier)
+        explicit Cluster(const RenderBlock* root, bool autosize, Cluster* parent)
             : m_root(root)
+            , m_parent(parent)
             , m_autosize(autosize)
-            , m_multiplier(multiplier)
+            , m_multiplier(0)
         {
         }
+
         const RenderBlock* m_root;
-        const bool m_autosize;
+        Cluster* m_parent;
+        bool m_autosize;
+        // The multiplier is computed lazily (see: clusterMultiplier) because it must be calculated
+        // after the lowest block containing all text has entered layout (the
+        // m_blocksThatHaveBegunLayout assertions cover this). Note: the multiplier is still
+        // calculated when m_autosize is false because child clusters may depend on this multiplier.
         float m_multiplier;
+    };
+
+    enum TextLeafSearch {
+        First,
+        Last
     };
 
     typedef HashSet<const RenderBlock*> BlockSet;
@@ -108,17 +121,24 @@ private:
     Cluster* maybeGetOrCreateCluster(const RenderBlock*);
     Cluster* addSupercluster(AtomicString, const RenderBlock*);
     const RenderBlock* deepestCommonAncestor(BlockSet&);
-    float computeMultiplier(const RenderBlock*);
+    float clusterMultiplier(Cluster*);
     void applyMultiplier(RenderObject*, float);
 
+    Cluster* currentCluster() const;
+
     RenderObject* nextChildSkippingChildrenOfBlocks(const RenderObject*, const RenderObject*);
+    const RenderBlock* findDeepestBlockContainingAllText(const RenderBlock*);
+    // Returns the first text leaf that is in the current cluster and not in a descendent cluster.
+    // The TraversalDirection controls whether we return the first or the last text leaf.
+    const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch);
 
     const Document* m_document;
     int m_frameWidth; // Frame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
     float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
 #ifndef NDEBUG
-    bool m_renderViewInfoPrepared; // Used for assertions.
+    bool m_renderViewInfoPrepared;
+    BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.
 #endif
 
     // Clusters are created and destroyed during layout. The map key is the
