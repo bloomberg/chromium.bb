@@ -132,10 +132,6 @@ stage_install_common() {
     install -m 644 "${BUILDDIR}/ui_resources_100_percent.pak" "${STAGEDIR}/${INSTALLDIR}/"
   fi
 
-  # ICU data file; only necessary when icu_use_data_file_flag is set to 1
-  # in build/common.gypi.
-  install -m 644 "${BUILDDIR}/icudtl.dat" "${STAGEDIR}/${INSTALLDIR}/"
-
   # sandbox
   # Rename sandbox binary with hyphen instead of underscore because that's what
   # the code looks for, but the build targets can't use hyphens (scons bug?)
