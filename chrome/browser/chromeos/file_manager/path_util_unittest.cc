@@ -12,29 +12,6 @@ namespace file_manager {
 namespace util {
 namespace {
 
-TEST(FileManagerPathUtilTest, MyDriveFolderMigration) {
-  TestingProfile profile;
-  base::FilePath path;
-
-  EXPECT_TRUE(MigratePathFromOldFormat(
-      &profile,
-      base::FilePath::FromUTF8Unsafe("/special/drive"),
-      &path));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive/root"), path);
-
-  EXPECT_TRUE(MigratePathFromOldFormat(
-      &profile,
-      base::FilePath::FromUTF8Unsafe("/special/drive/a/b"),
-      &path));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive/root/a/b"), path);
-
-  // Path already in the drive/root format should not be converted.
-  EXPECT_FALSE(MigratePathFromOldFormat(
-      &profile,
-      base::FilePath::FromUTF8Unsafe("/special/drive/root/a/b"),
-      &path));
-}
-
 TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   TestingProfile profile;
 

@@ -26,13 +26,12 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile);
 //
 // Here's the list of relocations we have made so far.
 //
-// M28: crbug.com/229304
+// M27: crbug.com/229304, Migration code for this is removed in M34.
 //   The "Google Drive" folder is moved from /special/drive to
 //   /special/drive/root to stored shared files outside of "My Drive" in
 //   /special/drive/other.
 //
-// [TODO(kinaba) not yet happening at this point crbug/309556]
-// M32: crbug.com/313539
+// M34: crbug.com/313539
 //   The "Downloads" folder is changed from /home/chronos/user/Downloads to
 //   /home/chronos/u-<hash>/Downloads to support multi profiles.
 //

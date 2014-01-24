@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -36,12 +35,7 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
 bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_path,
                               base::FilePath* new_path) {
-  // /special/drive/xxx => /special/drive/root/xxx
-  if (drive::util::NeedsNamespaceMigration(old_path)) {
-    *new_path = drive::util::ConvertToMyDriveNamespace(old_path);
-    return true;
-  }
-
+  // M34:
   // /home/chronos/user/Downloads/xxx => /home/chronos/u-hash/Downloads/xxx
   //
   // Old path format comes either from stored old settings or from the initial

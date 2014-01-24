@@ -26,7 +26,7 @@ namespace drive {
 class DriveAppRegistry;
 class DriveServiceInterface;
 class FileSystemInterface;
-class ResourceEntry;
+
 
 namespace util {
 
@@ -84,9 +84,6 @@ DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile);
 // or disabled), returns NULL.
 DriveServiceInterface* GetDriveServiceByProfile(Profile* profile);
 
-// Returns the Drive mount path as string.
-const std::string& GetDriveMountPointPathAsString();
-
 // Returns the gdata file resource url formatted as "drive:<path>"
 GURL FilePathToDriveURL(const base::FilePath& path);
 
@@ -98,15 +95,6 @@ void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url);
 
 // Returns true if the given path is under the Drive mount point.
 bool IsUnderDriveMountPoint(const base::FilePath& path);
-
-// Returns true if the given path is under the Drive mount point and needs to be
-// migrated to the new namespace. http://crbug.com/174233.
-bool NeedsNamespaceMigration(const base::FilePath& path);
-
-// Returns new FilePath with a namespace "root" inserted at the 3rd component.
-// e.g. "/special/drive/root/dir" for "/special/drive/dir".
-// NeedsNamespaceMigration(path) should be true (after the TODOs are resolved).
-base::FilePath ConvertToMyDriveNamespace(const base::FilePath& path);
 
 // Extracts the Drive path from the given path located under the Drive mount
 // point. Returns an empty path if |path| is not under the Drive mount point.

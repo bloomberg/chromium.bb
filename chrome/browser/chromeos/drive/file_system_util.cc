@@ -47,10 +47,8 @@ namespace util {
 
 namespace {
 
-const char kDriveMountPointPath[] = "/special/drive";
-
-const base::FilePath::CharType kDriveMyDriveMountPointPath[] =
-    FILE_PATH_LITERAL("/special/drive/root");
+const base::FilePath::CharType kDriveMountPointPath[] =
+    FILE_PATH_LITERAL("/special/drive");
 
 const base::FilePath::CharType kDriveMyDriveRootPath[] =
     FILE_PATH_LITERAL("drive/root");
@@ -61,12 +59,6 @@ const base::FilePath::CharType kFileCacheVersionDir[] =
 const char kSlash[] = "/";
 const char kDot = '.';
 const char kEscapedChars[] = "_";
-
-const base::FilePath& GetDriveMyDriveMountPointPath() {
-  CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mydrive_mount_path,
-      (kDriveMyDriveMountPointPath));
-  return drive_mydrive_mount_path;
-}
 
 std::string ReadStringFromGDocFile(const base::FilePath& file_path,
                                    const std::string& key) {
@@ -122,19 +114,19 @@ void CheckDirectoryExistsAfterGetResourceEntry(
 
 const base::FilePath& GetDriveGrandRootPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, grand_root_path,
-      (util::kDriveGrandRootDirName));
+      (kDriveGrandRootDirName));
   return grand_root_path;
 }
 
 const base::FilePath& GetDriveMyDriveRootPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_root_path,
-      (util::kDriveMyDriveRootPath));
+      (kDriveMyDriveRootPath));
   return drive_root_path;
 }
 
 const base::FilePath& GetDriveMountPointPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mount_path,
-      (base::FilePath::FromUTF8Unsafe(kDriveMountPointPath)));
+      (kDriveMountPointPath));
   return drive_mount_path;
 }
 
@@ -175,12 +167,6 @@ DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
   return integration_service ? integration_service->drive_service() : NULL;
 }
 
-const std::string& GetDriveMountPointPathAsString() {
-  CR_DEFINE_STATIC_LOCAL(std::string, drive_mount_path_string,
-      (kDriveMountPointPath));
-  return drive_mount_path_string;
-}
-
 GURL FilePathToDriveURL(const base::FilePath& path) {
   std::string url(base::StringPrintf("%s:%s",
                                      chrome::kDriveScheme,
@@ -212,33 +198,6 @@ void MaybeSetDriveURL(Profile* profile, const base::FilePath& path, GURL* url) {
 bool IsUnderDriveMountPoint(const base::FilePath& path) {
   return GetDriveMountPointPath() == path ||
          GetDriveMountPointPath().IsParent(path);
-}
-
-bool NeedsNamespaceMigration(const base::FilePath& path) {
-  // Before migration, "My Drive" which was represented as "drive.
-  // The user might use some path pointing a directory in "My Drive".
-  // e.g. "drive/downloads_dir"
-  // We changed the path for the "My Drive" to "drive/root", hence the user pref
-  // pointing to the old path needs update to the new path.
-  // e.g. "drive/root/downloads_dir"
-  // If |path| already points to some directory in "drive/root", there's no need
-  // to update it.
-  return IsUnderDriveMountPoint(path) &&
-         !(GetDriveMyDriveMountPointPath() == path ||
-           GetDriveMyDriveMountPointPath().IsParent(path));
-}
-
-base::FilePath ConvertToMyDriveNamespace(const base::FilePath& path) {
-  DCHECK(NeedsNamespaceMigration(path));
-
-  // Need to migrate "/special/drive(.*)" to "/special/drive/root(.*)".
-  // Append the relative path from "/special/drive".
-  base::FilePath new_path(GetDriveMyDriveMountPointPath());
-  GetDriveMountPointPath().AppendRelativePath(path, &new_path);
-  DVLOG(1) << "Migrate download.default_directory setting from "
-      << path.AsUTF8Unsafe() << " to " << new_path.AsUTF8Unsafe();
-  DCHECK(!NeedsNamespaceMigration(new_path));
-  return new_path;
 }
 
 base::FilePath ExtractDrivePath(const base::FilePath& path) {
