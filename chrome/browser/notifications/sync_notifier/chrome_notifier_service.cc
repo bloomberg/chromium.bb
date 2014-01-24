@@ -659,11 +659,11 @@ void ChromeNotifierService::RegisterProfilePrefs(
   // Register the pref for the list of enabled services.
   registry->RegisterListPref(
       prefs::kEnabledSyncedNotificationSendingServices,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   // Register the pref for the list of initialized services.
   registry->RegisterListPref(
       prefs::kInitializedSyncedNotificationSendingServices,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   // Register the preference for first run status, defaults to "true",
   // meaning that this is the first run of the Synced Notification feature.
   registry->RegisterBooleanPref(
