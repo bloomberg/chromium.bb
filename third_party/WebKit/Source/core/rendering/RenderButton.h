@@ -40,6 +40,7 @@ public:
     virtual bool isRenderButton() const OVERRIDE { return true; }
 
     virtual bool canBeSelectionLeaf() const OVERRIDE { return node() && node()->rendererIsEditable(); }
+    virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return true; }
 
     virtual void addChild(RenderObject* newChild, RenderObject *beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject*) OVERRIDE;
