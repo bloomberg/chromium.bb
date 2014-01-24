@@ -407,10 +407,12 @@ void PrintPreviewDialogController::OnRenderProcessExited(
 
   for (size_t i = 0; i < closed_preview_dialogs.size(); ++i) {
     RemovePreviewDialog(closed_preview_dialogs[i]);
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        closed_preview_dialogs[i]->GetWebUI()->GetController());
-    if (print_preview_ui)
-      print_preview_ui->OnPrintPreviewDialogClosed();
+    if (content::WebUI* web_ui = closed_preview_dialogs[i]->GetWebUI()) {
+      PrintPreviewUI* print_preview_ui =
+          static_cast<PrintPreviewUI*>(web_ui->GetController());
+      if (print_preview_ui)
+        print_preview_ui->OnPrintPreviewDialogClosed();
+    }
   }
 
   for (size_t i = 0; i < closed_initiators.size(); ++i)
@@ -529,10 +531,12 @@ void PrintPreviewDialogController::RemoveInitiator(
   PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
 
   // initiator is closed. Close the print preview dialog too.
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(preview_dialog->GetWebUI()->GetController());
-  if (print_preview_ui)
-    print_preview_ui->OnInitiatorClosed();
+  if (content::WebUI* web_ui = preview_dialog->GetWebUI()) {
+    PrintPreviewUI* print_preview_ui =
+        static_cast<PrintPreviewUI*>(web_ui->GetController());
+    if (print_preview_ui)
+      print_preview_ui->OnInitiatorClosed();
+  }
 }
 
 void PrintPreviewDialogController::RemovePreviewDialog(
@@ -549,10 +553,12 @@ void PrintPreviewDialogController::RemovePreviewDialog(
 
       // Print preview WebContents is destroyed. Notify |PrintPreviewUI| to
       // abort the initiator preview request.
-      PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-          preview_dialog->GetWebUI()->GetController());
-      if (print_preview_ui)
-        print_preview_ui->OnPrintPreviewDialogDestroyed();
+      if (content::WebUI* web_ui = preview_dialog->GetWebUI()) {
+        PrintPreviewUI* print_preview_ui =
+            static_cast<PrintPreviewUI*>(web_ui->GetController());
+        if (print_preview_ui)
+          print_preview_ui->OnPrintPreviewDialogDestroyed();
+      }
 
       preview_operations_.erase(preview_operations_.begin() + i);
       delete operation;
