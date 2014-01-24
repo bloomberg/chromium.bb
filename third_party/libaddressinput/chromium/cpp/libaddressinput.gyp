@@ -48,8 +48,7 @@
         'src/util/string_split.cc',
       ],
       'defines': [
-        # TODO(rouslan): Use https://i18napis.appspot.com.
-        'VALIDATION_DATA_URL="https://i18napis-canary-hrd.appspot.com/ssl-aggregate-address/"',
+        'VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-aggregate-address/"',
       ],
       'dependencies': [
         'grit.gyp:generated_messages',
