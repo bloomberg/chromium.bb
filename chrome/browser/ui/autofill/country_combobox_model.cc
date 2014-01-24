@@ -9,9 +9,13 @@
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/models/combobox_model_observer.h"
+
+// TODO(rouslan): Remove this check. http://crbug.com/337587
+#if defined(ENABLE_AUTOFILL_DIALOG)
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
+#endif
 
 namespace autofill {
 
@@ -27,10 +31,15 @@ CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager) {
   countries_.push_back(NULL);
 
   // The sorted list of countries.
+#if defined(ENABLE_AUTOFILL_DIALOG)
   const std::vector<std::string>& available_countries =
       ::i18n::addressinput::GetRegionCodes();
-  std::vector<AutofillCountry*> sorted_countries;
+#else
+  std::vector<std::string> available_countries;
+  AutofillCountry::GetAvailableCountries(&available_countries);
+#endif
 
+  std::vector<AutofillCountry*> sorted_countries;
   for (std::vector<std::string>::const_iterator it =
            available_countries.begin(); it != available_countries.end(); ++it) {
     sorted_countries.push_back(new AutofillCountry(*it, app_locale));

@@ -3344,12 +3344,12 @@
             'browser/ui/autofill/data_model_wrapper.h',
           ],
         }],
-        ['enable_autofill_dialog==1 and OS!="android"', {
+        ['enable_autofill_dialog==1 and OS!="android" and OS!="ios"', {
           'dependencies': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
           ],
-        }, { # enable_autofill_dialog!=1 or OS=="android"
+        }, { # enable_autofill_dialog!=1 or OS=="android" or OS=="ios"
           'sources!': [
             'browser/ui/autofill/autofill_dialog_controller_impl.cc',
             'browser/ui/autofill/autofill_dialog_controller_impl.h',
