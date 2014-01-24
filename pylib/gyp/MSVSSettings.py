@@ -403,6 +403,9 @@ def ConvertVCMacrosToMSBuild(s):
   return s
 
 
+_EXCLUDED_SUFFIX_RE = re.compile('^(.*)_excluded$')
+
+
 def ConvertToMSBuildSettings(msvs_settings, stderr=sys.stderr):
   """Converts MSVS settings (VS2008 and earlier) to MSBuild settings (VS2010+).
 
@@ -429,10 +432,19 @@ def ConvertToMSBuildSettings(msvs_settings, stderr=sys.stderr):
             print >> stderr, ('Warning: while converting %s/%s to MSBuild, '
                               '%s' % (msvs_tool_name, msvs_setting, e))
         else:
-          # We don't know this setting.  Give a warning.
-          print >> stderr, ('Warning: unrecognized setting %s/%s '
-                            'while converting to MSBuild.' %
-                            (msvs_tool_name, msvs_setting))
+          # This may be unrecognized because it's an exclusion list. If the
+          # setting name has the _excluded suffix, then check the root name.
+          unrecognized = True
+          m = re.match(_EXCLUDED_SUFFIX_RE, msvs_setting)
+          if m:
+            root_msvs_setting = m.group(1)
+            unrecognized = root_msvs_setting not in msvs_tool
+
+          if unrecognized:
+            # We don't know this setting. Give a warning.
+            print >> stderr, ('Warning: unrecognized setting %s/%s '
+                              'while converting to MSBuild.' %
+                              (msvs_tool_name, msvs_setting))
     else:
       print >> stderr, ('Warning: unrecognized tool %s while converting to '
                         'MSBuild.' % msvs_tool_name)
