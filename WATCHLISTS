@@ -703,7 +703,7 @@
     'cc': ['cc-bugs@chromium.org'],
     'chrome_elf': ['caitkp+watch@chromium.org',],
     'chrome_views': ['tfarina@chromium.org'],
-    'chromedriver': ['chrisgao@chromium.org', 'frankf@chromium.org'],
+    'chromedriver': ['frankf@chromium.org', 'stgao@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
                   'stevenjb+watch@chromium.org'],
     'chromeos_attestation' : ['dkrahn+watch@chromium.org'],

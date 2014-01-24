@@ -95,12 +95,11 @@ Status PrepareCommandLine(int port,
   CommandLine command(program);
   Switches switches;
 
-  // TODO(chrisgao): Add "disable-sync" when chrome 30- is not supported.
-  // For chrome 30-, it leads to crash when opening chrome://settings.
   for (size_t i = 0; i < arraysize(kCommonSwitches); ++i)
     switches.SetSwitch(kCommonSwitches[i]);
   switches.SetSwitch("disable-hang-monitor");
   switches.SetSwitch("disable-prompt-on-repost");
+  switches.SetSwitch("disable-sync");
   switches.SetSwitch("full-memory-crash-report");
   switches.SetSwitch("no-first-run");
   switches.SetSwitch("disable-background-networking");
