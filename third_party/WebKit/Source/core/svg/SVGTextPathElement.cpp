@@ -129,16 +129,6 @@ RenderObject* SVGTextPathElement::createRenderer(RenderStyle*)
     return new RenderSVGTextPath(this);
 }
 
-bool SVGTextPathElement::childShouldCreateRenderer(const Node& child) const
-{
-    if (child.isTextNode()
-        || child.hasTagName(SVGNames::aTag)
-        || child.hasTagName(SVGNames::tspanTag))
-        return true;
-
-    return false;
-}
-
 bool SVGTextPathElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (parentNode()

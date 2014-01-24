@@ -23,6 +23,7 @@
 
 #include "SVGNames.h"
 #include "core/rendering/svg/SVGPathData.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
 
@@ -31,6 +32,20 @@ namespace WebCore {
 RenderSVGTextPath::RenderSVGTextPath(Element* element)
     : RenderSVGInline(element)
 {
+}
+
+bool RenderSVGTextPath::isChildAllowed(RenderObject* child, RenderStyle*) const
+{
+    if (child->isText())
+        return !SVGRenderSupport::isEmptySVGInlineText(child);
+
+#if ENABLE(SVG_FONTS)
+    // 'altGlyph' is supported by the content model for 'textPath', but...
+    if (child->node()->hasTagName(SVGNames::altGlyphTag))
+        return false;
+#endif
+
+    return child->isSVGInline() && !child->isSVGTextPath();
 }
 
 Path RenderSVGTextPath::layoutPath() const

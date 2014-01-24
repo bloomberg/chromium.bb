@@ -43,19 +43,6 @@ RenderObject* SVGTSpanElement::createRenderer(RenderStyle*)
     return new RenderSVGTSpan(this);
 }
 
-bool SVGTSpanElement::childShouldCreateRenderer(const Node& child) const
-{
-    if (child.isTextNode()
-        || child.hasTagName(SVGNames::aTag)
-#if ENABLE(SVG_FONTS)
-        || child.hasTagName(SVGNames::altGlyphTag)
-#endif
-        || child.hasTagName(SVGNames::tspanTag))
-        return true;
-
-    return false;
-}
-
 bool SVGTSpanElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (parentNode()

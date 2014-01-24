@@ -49,7 +49,7 @@ private:
     explicit SVGAltGlyphElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAltGlyphElement)
         DECLARE_ANIMATED_STRING(Href, href)

@@ -32,6 +32,8 @@ public:
     Path layoutPath() const;
     float startOffset() const;
 
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+
     virtual bool isSVGTextPath() const OVERRIDE { return true; }
 
 private:

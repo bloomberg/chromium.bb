@@ -24,11 +24,29 @@
 
 #include "core/rendering/svg/RenderSVGTSpan.h"
 
+#include "SVGNames.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
+
 namespace WebCore {
 
 RenderSVGTSpan::RenderSVGTSpan(Element* element)
     : RenderSVGInline(element)
 {
+}
+
+bool RenderSVGTSpan::isChildAllowed(RenderObject* child, RenderStyle*) const
+{
+    // Always allow text (except empty textnodes).
+    if (child->isText())
+        return !SVGRenderSupport::isEmptySVGInlineText(child);
+
+#if ENABLE(SVG_FONTS)
+    // Only allow other types of  children if this is not an 'altGlyph'.
+    if (node()->hasTagName(SVGNames::altGlyphTag))
+        return false;
+#endif
+
+    return child->isSVGInline() && !child->isSVGTextPath();
 }
 
 }
