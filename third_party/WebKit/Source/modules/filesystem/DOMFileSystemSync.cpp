@@ -169,7 +169,7 @@ PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, E
     RefPtr<CreateFileHelper::CreateFileResult> result(CreateFileHelper::CreateFileResult::create());
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, CreateFileHelper::create(result, fileEntry->name(), fileSystemURL, type()));
     if (result->m_failed) {
-        exceptionState.throwUninformativeAndGenericDOMException(result->m_code);
+        exceptionState.throwDOMException(result->m_code, "Could not create '" + fileEntry->name() + "'.");
         return 0;
     }
     return result->m_file;
