@@ -2001,6 +2001,8 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
   TRACE_EVENT1("foo", "event5", "float_neghalf", -.5f);
   TRACE_EVENT1("foo", "event6", "float_infinity",
       std::numeric_limits<float>::infinity());
+  TRACE_EVENT1("foo", "event6b", "float_neg_infinity",
+      -std::numeric_limits<float>::infinity());
   TRACE_EVENT1("foo", "event7", "double_nan",
       std::numeric_limits<double>::quiet_NaN());
   void* p = 0;
@@ -2063,21 +2065,27 @@ TEST_F(TraceEventTestFixture, PrimitiveArgs) {
   EXPECT_TRUE(value->GetAsDouble(&double_value));
   EXPECT_EQ(-0.5, double_value);
 
-  // Infinity can only be serlized to JSON as null.
+  // Infinity is serialized to JSON as a string.
   dict = FindNamePhase("event6", "X");
   ASSERT_TRUE(dict);
   dict->GetDictionary("args", &args_dict);
   ASSERT_TRUE(args_dict);
-  EXPECT_TRUE(args_dict->Get("float_infinity", &value));
-  EXPECT_TRUE(value->IsType(Value::TYPE_NULL));
+  EXPECT_TRUE(args_dict->GetString("float_infinity", &str_value));
+  EXPECT_STREQ("Infinity", str_value.c_str());
+  dict = FindNamePhase("event6b", "X");
+  ASSERT_TRUE(dict);
+  dict->GetDictionary("args", &args_dict);
+  ASSERT_TRUE(args_dict);
+  EXPECT_TRUE(args_dict->GetString("float_neg_infinity", &str_value));
+  EXPECT_STREQ("-Infinity", str_value.c_str());
 
-  // NaN can only be serlized to JSON as null.
+  // NaN is serialized to JSON as a string.
   dict = FindNamePhase("event7", "X");
   ASSERT_TRUE(dict);
   dict->GetDictionary("args", &args_dict);
   ASSERT_TRUE(args_dict);
-  EXPECT_TRUE(args_dict->Get("double_nan", &value));
-  EXPECT_TRUE(value->IsType(Value::TYPE_NULL));
+  EXPECT_TRUE(args_dict->GetString("double_nan", &str_value));
+  EXPECT_STREQ("NaN", str_value.c_str());
 
   // NULL pointers should be serialized as "0x0".
   dict = FindNamePhase("event8", "X");

@@ -656,10 +656,14 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
           // "-.1" bad "-0.1" good
           real.insert(1, "0");
         }
-      } else {
+      } else if (IsNaN(val)){
         // The JSON spec doesn't allow NaN and Infinity (since these are
-        // objects in EcmaScript).  In practice null is substituted for them.
-        real = "null";
+        // objects in EcmaScript).  Use strings instead.
+        real = "\"NaN\"";
+      } else if (val < 0) {
+        real = "\"-Infinity\"";
+      } else {
+        real = "\"Infinity\"";
       }
       StringAppendF(out, "%s", real.c_str());
       break;
