@@ -25,7 +25,7 @@ TEST(WebSocketDeflaterTest, Construct) {
   ASSERT_TRUE(deflater.Finish());
   scoped_refptr<IOBufferWithSize> actual =
       deflater.GetOutput(deflater.CurrentOutputSize());
-  EXPECT_EQ(std::string("\x02\00", 2), ToString(actual.get()));
+  EXPECT_EQ(std::string("\00", 1), ToString(actual.get()));
   ASSERT_EQ(0u, deflater.CurrentOutputSize());
 }
 
@@ -93,8 +93,8 @@ TEST(WebSocketDeflaterTest, GetMultipleDeflatedOutput) {
 
   actual = deflater.GetOutput(deflater.CurrentOutputSize());
   EXPECT_EQ(std::string("\xf2\x48\xcd\xc9\xc9\x07\x00\x00\x00\xff\xff"
-                        "\x02\x00\x00\x00\xff\xff"
-                        "\xf2\x00\x11\x00\x00", 22),
+                        "\x00\x00\x00\xff\xff"
+                        "\xf2\x00\x11\x00\x00", 21),
             ToString(actual.get()));
   ASSERT_EQ(0u, deflater.CurrentOutputSize());
 }

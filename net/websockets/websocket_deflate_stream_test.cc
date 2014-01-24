@@ -1032,7 +1032,7 @@ TEST_F(WebSocketDeflateStreamTest, WriteEmptyMessage) {
   EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_passed[0]->header.opcode);
   EXPECT_TRUE(frames_passed[0]->header.final);
   EXPECT_TRUE(frames_passed[0]->header.reserved1);
-  EXPECT_EQ(std::string("\x02\x00", 2), ToString(frames_passed[0]));
+  EXPECT_EQ(std::string("\x00", 1), ToString(frames_passed[0]));
 }
 
 TEST_F(WebSocketDeflateStreamTest, WriteUncompressedMessage) {
