@@ -14,6 +14,12 @@ from third_party.handlebar import Handlebar
 from third_party.markdown import markdown
 
 
+_MIMETYPE_OVERRIDES = {
+  # SVG is not supported by mimetypes.guess_type on AppEngine.
+  '.svg': 'image/svg+xml',
+}
+
+
 class ContentAndType(object):
   '''Return value from ContentProvider.GetContentAndType.
   '''
@@ -56,8 +62,9 @@ class ContentProvider(object):
   @SingleFile
   def _CompileContent(self, path, text):
     assert text is not None, path
-    mimetype = mimetypes.guess_type(path)[0]
-    if posixpath.splitext(path)[1] == '.md':
+    _, ext = posixpath.splitext(path)
+    mimetype = _MIMETYPE_OVERRIDES.get(ext, mimetypes.guess_type(path)[0])
+    if ext == '.md':
       # See http://pythonhosted.org/Markdown/extensions
       # for details on "extensions=".
       content = markdown(ToUnicode(text),
