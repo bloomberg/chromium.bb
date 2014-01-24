@@ -35,6 +35,10 @@ PluginTest.*
 DomSerializerTests.*
 
 # http://crbug.com/297230
+DumpAccessibilityTreeTest.AccessibilityAriaLevel
+DumpAccessibilityTreeTest.AccessibilityAriaProgressbar
+DumpAccessibilityTreeTest.AccessibilityListMarkers
+DumpAccessibilityTreeTest.AccessibilityUl
 DumpAccessibilityTreeTest.AccessibilityCanvas
 RendererAccessibilityTest.DetachAccessibilityObject
 RendererAccessibilityTest.EditableTextModeFocusEvents
