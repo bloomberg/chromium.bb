@@ -147,17 +147,19 @@ class RtcpPeer : public Rtcp {
 class RtcpTest : public ::testing::Test {
  protected:
   RtcpTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
+      : testing_clock_(new base::SimpleTestTickClock()),
+        task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        cast_environment_(new CastEnvironment(
+            scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, GetDefaultCastSenderLoggingConfig())),
-        sender_to_receiver_(&testing_clock_),
-        receiver_to_sender_(cast_environment_, &testing_clock_) {
-    testing_clock_.Advance(
+            task_runner_, task_runner_, GetDefaultCastSenderLoggingConfig())),
+        sender_to_receiver_(testing_clock_),
+        receiver_to_sender_(cast_environment_, testing_clock_) {
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     transport::CastTransportConfig transport_config;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
-        &testing_clock_,
+        testing_clock_,
         transport_config,
         base::Bind(&UpdateCastTransportStatus), task_runner_));
     transport_sender_->InsertFakeTransportForTesting(&sender_to_receiver_);
@@ -173,12 +175,12 @@ class RtcpTest : public ::testing::Test {
   void RunTasks(int during_ms) {
     for (int i = 0; i < during_ms; ++i) {
       // Call process the timers every 1 ms.
-      testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
+      testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
     }
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   RtcpTestPacketSender sender_to_receiver_;
@@ -207,8 +209,8 @@ TEST_F(RtcpTest, TimeToSend) {
                 kRtcpIntervalMs * 3 / 2),
             rtcp.TimeToSendNextRtcpReport());
   base::TimeDelta delta = rtcp.TimeToSendNextRtcpReport() - start_time;
-  testing_clock_.Advance(delta);
-  EXPECT_EQ(testing_clock_.NowTicks(), rtcp.TimeToSendNextRtcpReport());
+  testing_clock_->Advance(delta);
+  EXPECT_EQ(testing_clock_->NowTicks(), rtcp.TimeToSendNextRtcpReport());
 }
 
 TEST_F(RtcpTest, BasicSenderReport) {

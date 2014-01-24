@@ -27,9 +27,11 @@ class TestRtpPayloadFeedback : public RtpPayloadFeedback {
 class AudioDecoderTest : public ::testing::Test {
  protected:
   AudioDecoderTest() {
-    testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1234));
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+    testing_clock_ = new base::SimpleTestTickClock();
+    testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1234));
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    cast_environment_ = new CastEnvironment(
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
         GetDefaultCastReceiverLoggingConfig());
   }
@@ -41,7 +43,8 @@ class AudioDecoderTest : public ::testing::Test {
   }
 
   TestRtpPayloadFeedback cast_feedback_;
-  base::SimpleTestTickClock testing_clock_;
+  // Owned by CastEnvironment.
+  base::SimpleTestTickClock* testing_clock_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<AudioDecoder> audio_decoder_;
@@ -162,7 +165,7 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
   }
   // Test cast callback.
   audio_decoder_->SendCastMessage();
-  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(33));
+  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(33));
   audio_decoder_->SendCastMessage();
 }
 

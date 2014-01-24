@@ -72,9 +72,6 @@ class CastSessionDelegate : public media::cast::transport::PacketSender {
   base::Thread audio_encode_thread_;
   base::Thread video_encode_thread_;
 
-  // Clock used by CastSender.
-  base::DefaultTickClock clock_;
-
   // Configuration for audio and video.
   media::cast::AudioSenderConfig audio_config_;
   media::cast::VideoSenderConfig video_config_;

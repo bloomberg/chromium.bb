@@ -90,13 +90,15 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
  public:
   AudioEncoderTest() {
     InitializeMediaLibraryForTesting();
-    testing_clock_.Advance(
+    testing_clock_ = new base::SimpleTestTickClock();
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
   virtual void SetUp() {
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    cast_environment_ = new CastEnvironment(
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
         GetDefaultCastSenderLoggingConfig());
   }
@@ -110,26 +112,26 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
 
     CreateObjectsForCodec(codec);
 
-    receiver_->SetRecordedTimeLowerBound(testing_clock_.NowTicks());
+    receiver_->SetRecordedTimeLowerBound(testing_clock_->NowTicks());
     for (size_t i = 0; i < scenario.num_durations; ++i) {
       const base::TimeDelta duration =
           base::TimeDelta::FromMilliseconds(scenario.durations_in_ms[i]);
       receiver_->SetRecordedTimeUpperBound(
-          testing_clock_.NowTicks() + duration);
+          testing_clock_->NowTicks() + duration);
 
       const scoped_ptr<AudioBus> bus(
           audio_bus_factory_->NextAudioBus(duration));
 
       const int last_count = release_callback_count_;
       audio_encoder_->InsertAudio(
-          bus.get(), testing_clock_.NowTicks(),
+          bus.get(), testing_clock_->NowTicks(),
           base::Bind(&AudioEncoderTest::IncrementReleaseCallbackCounter,
                      base::Unretained(this)));
       task_runner_->RunTasks();
       EXPECT_EQ(1, release_callback_count_ - last_count)
           << "Release callback was not invoked once.";
 
-      testing_clock_.Advance(duration);
+      testing_clock_->Advance(duration);
     }
 
     DVLOG(1) << "Received " << receiver_->frames_received()
@@ -163,7 +165,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
     ++release_callback_count_;
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_; // Owned by CastEnvironment.
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
   scoped_ptr<TestEncodedAudioFrameReceiver> receiver_;

@@ -153,8 +153,10 @@ class RtcpReceiverCastLogVerification : public RtcpReceiverFeedback {
 class RtcpReceiverTest : public ::testing::Test {
  protected:
   RtcpReceiverTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
+      : testing_clock_(new base::SimpleTestTickClock()),
+        task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        cast_environment_(new CastEnvironment(
+            scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
             task_runner_, GetDefaultCastReceiverLoggingConfig())),
         rtcp_receiver_(new RtcpReceiver(cast_environment_,
@@ -201,7 +203,7 @@ class RtcpReceiverTest : public ::testing::Test {
     rtcp_receiver_->IncomingRtcpPacket(&rtcp_parser);
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   MockRtcpReceiverFeedback mock_receiver_feedback_;

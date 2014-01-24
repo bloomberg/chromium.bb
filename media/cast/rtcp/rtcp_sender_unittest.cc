@@ -61,17 +61,19 @@ class TestRtcpTransport : public transport::PacedPacketSender {
 class RtcpSenderTest : public ::testing::Test {
  protected:
   RtcpSenderTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
+      : testing_clock_(new base::SimpleTestTickClock()),
+        task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        cast_environment_(new CastEnvironment(
+            scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, GetDefaultCastSenderLoggingConfig())),
+            task_runner_, task_runner_, GetDefaultCastSenderLoggingConfig())),
         rtcp_sender_(new RtcpSender(cast_environment_,
                                     &test_transport_,
                                     kSendingSsrc,
                                     kCName)) {
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestRtcpTransport test_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;

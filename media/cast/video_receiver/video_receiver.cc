@@ -13,6 +13,7 @@
 #include "crypto/symmetric_key.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/framer/framer.h"
+#include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/video_receiver/video_decoder.h"
 
 namespace media {
@@ -443,6 +444,7 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
       cast_environment_->Logging()->GetVideoRtcpRawData();
 
   while (!video_logs.empty()) {
+    // TODO(hclam): Avoid calling begin() within a loop.
     VideoRtcpRawMap::iterator it = video_logs.begin();
     uint32 rtp_timestamp = it->first;
     std::pair<VideoRtcpRawMap::iterator, VideoRtcpRawMap::iterator>
@@ -452,6 +454,8 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
 
     VideoRtcpRawMap::const_iterator event_it = frame_range.first;
     for (; event_it != frame_range.second; ++event_it) {
+      if (!RtcpSender::IsReceiverEvent(event_it->second.type))
+        continue;
       RtcpReceiverEventLogMessage event_log_message;
       event_log_message.type = event_it->second.type;
       event_log_message.event_timestamp = event_it->second.timestamp;

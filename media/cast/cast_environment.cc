@@ -22,7 +22,7 @@ namespace media {
 namespace cast {
 
 CastEnvironment::CastEnvironment(
-    base::TickClock* clock,
+    scoped_ptr<base::TickClock> clock,
     scoped_refptr<TaskRunner> main_thread_proxy,
     scoped_refptr<TaskRunner> audio_encode_thread_proxy,
     scoped_refptr<TaskRunner> audio_decode_thread_proxy,
@@ -30,7 +30,7 @@ CastEnvironment::CastEnvironment(
     scoped_refptr<TaskRunner> video_decode_thread_proxy,
     scoped_refptr<TaskRunner> transport_thread_proxy,
     const CastLoggingConfig& config)
-    : clock_(clock),
+    : clock_(clock.Pass()),
       main_thread_proxy_(main_thread_proxy),
       audio_encode_thread_proxy_(audio_encode_thread_proxy),
       audio_decode_thread_proxy_(audio_decode_thread_proxy),
@@ -113,7 +113,7 @@ bool CastEnvironment::CurrentlyOn(ThreadId identifier) {
 }
 
 base::TickClock* CastEnvironment::Clock() const {
-  return clock_;
+  return clock_.get();
 }
 
 LoggingImpl* CastEnvironment::Logging() {

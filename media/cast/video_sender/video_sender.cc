@@ -185,12 +185,14 @@ void VideoSender::SendRtcpReport() {
       cast_environment_->Logging()->GetVideoRtcpRawData();
 
   while (!video_logs.empty()) {
+    // TODO(hclam): Avoid calling begin() within a loop.
     VideoRtcpRawMap::iterator it = video_logs.begin();
     uint32 rtp_timestamp = it->first;
 
     transport::RtcpSenderFrameLogMessage frame_message;
     frame_message.rtp_timestamp = rtp_timestamp;
     frame_message.frame_status = transport::kRtcpSenderFrameStatusUnknown;
+    bool ignore_event = false;
 
     switch (it->second.type) {
       case kVideoFrameCaptured:
@@ -206,11 +208,11 @@ void VideoSender::SendRtcpReport() {
             transport::kRtcpSenderFrameStatusSentToNetwork;
         break;
       default:
-        NOTREACHED();
-        break;
+        ignore_event = true;
     }
     video_logs.erase(rtp_timestamp);
-    sender_log_message.push_back(frame_message);
+    if (!ignore_event)
+      sender_log_message.push_back(frame_message);
   }
 
   rtcp_->SendRtcpFromRtpSender(sender_log_message);

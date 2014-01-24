@@ -82,15 +82,17 @@ class PeerVideoSender : public VideoSender {
 class VideoSenderTest : public ::testing::Test {
  protected:
   VideoSenderTest() {
-    testing_clock_.Advance(
+    testing_clock_ = new base::SimpleTestTickClock();
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
     cast_environment_ = new CastEnvironment(
-        &testing_clock_, task_runner_, task_runner_, task_runner_, task_runner_,
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(),
+        task_runner_, task_runner_, task_runner_, task_runner_,
         task_runner_, task_runner_, GetDefaultCastSenderLoggingConfig());
     transport::CastTransportConfig transport_config;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
-        &testing_clock_, transport_config,
+        testing_clock_, transport_config,
         base::Bind(&UpdateCastTransportStatus), task_runner_));
     transport_sender_->InsertFakeTransportForTesting(&transport_);
   }
@@ -142,12 +144,12 @@ class VideoSenderTest : public ::testing::Test {
   void RunTasks(int during_ms) {
     for (int i = 0; i < during_ms; ++i) {
       // Call process the timers every 1 ms.
-      testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
+      testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
     }
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestPacketSender transport_;
   scoped_ptr<transport::CastTransportSenderImpl> transport_sender_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
@@ -232,4 +234,3 @@ TEST_F(VideoSenderTest, ResendTimer) {
 
 }  // namespace cast
 }  // namespace media
-

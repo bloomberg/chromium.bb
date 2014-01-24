@@ -38,7 +38,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
     TRANSPORT,
   };
 
-  CastEnvironment(base::TickClock* clock,
+  CastEnvironment(scoped_ptr<base::TickClock> clock,
                   scoped_refptr<base::TaskRunner> main_thread_proxy,
                   scoped_refptr<base::TaskRunner> audio_encode_thread_proxy,
                   scoped_refptr<base::TaskRunner> audio_decode_thread_proxy,
@@ -77,7 +77,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
  private:
   friend class base::RefCountedThreadSafe<CastEnvironment>;
 
-  base::TickClock* const clock_;  // Not owned by this class.
+  scoped_ptr<base::TickClock> clock_;
   scoped_refptr<base::TaskRunner> main_thread_proxy_;
   scoped_refptr<base::TaskRunner> audio_encode_thread_proxy_;
   scoped_refptr<base::TaskRunner> audio_decode_thread_proxy_;

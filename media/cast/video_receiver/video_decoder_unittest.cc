@@ -40,16 +40,18 @@ class DecodeTestFrameCallback :
 class VideoDecoderTest : public ::testing::Test {
  protected:
   VideoDecoderTest()
-    : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
-      cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-          task_runner_, task_runner_, task_runner_, task_runner_,
-          task_runner_, GetDefaultCastReceiverLoggingConfig())),
-      test_callback_(new DecodeTestFrameCallback()) {
+      : testing_clock_(new base::SimpleTestTickClock()),
+        task_runner_(new test::FakeTaskRunner(testing_clock_)),
+        cast_environment_(new CastEnvironment(
+            scoped_ptr<base::TickClock>(testing_clock_), task_runner_,
+            task_runner_, task_runner_, task_runner_, task_runner_,
+            task_runner_, GetDefaultCastReceiverLoggingConfig())),
+        test_callback_(new DecodeTestFrameCallback()) {
     // Configure to vp8.
     config_.codec = transport::kVp8;
     config_.use_external_decoder = false;
     decoder_.reset(new VideoDecoder(config_, cast_environment_));
-    testing_clock_.Advance(
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
@@ -57,7 +59,7 @@ class VideoDecoderTest : public ::testing::Test {
 
   scoped_ptr<VideoDecoder> decoder_;
   VideoReceiverConfig config_;
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<DecodeTestFrameCallback> test_callback_;

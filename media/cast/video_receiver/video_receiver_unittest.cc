@@ -71,13 +71,15 @@ class VideoReceiverTest : public ::testing::Test {
     // Configure to use vp8 software implementation.
     config_.codec = transport::kVp8;
     config_.use_external_decoder = false;
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+    testing_clock_ = new base::SimpleTestTickClock();
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    cast_environment_ = new CastEnvironment(
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_,
         task_runner_, GetDefaultCastReceiverLoggingConfig());
     receiver_.reset(new
         PeerVideoReceiver(cast_environment_, config_, &mock_transport_));
-    testing_clock_.Advance(
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     video_receiver_callback_ = new TestVideoReceiverCallback();
   }
@@ -101,7 +103,7 @@ class VideoReceiverTest : public ::testing::Test {
   scoped_ptr<PeerVideoReceiver> receiver_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
 
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;

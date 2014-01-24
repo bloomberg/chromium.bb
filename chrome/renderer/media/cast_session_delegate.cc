@@ -76,7 +76,7 @@ void CastSessionDelegate::StartSendingInternal() {
   // There's no need to decode so no thread assigned for decoding.
   // Get default logging: All disabled.
   cast_environment_ = new CastEnvironment(
-      &clock_,
+      scoped_ptr<base::TickClock>(new base::DefaultTickClock()).Pass(),
       base::MessageLoopProxy::current(),
       audio_encode_thread_.message_loop_proxy(),
       NULL,

@@ -85,9 +85,11 @@ class VideoEncoderImplTest : public ::testing::Test {
 
   virtual ~VideoEncoderImplTest() {}
 
-  virtual void SetUp() {
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+  virtual void SetUp() OVERRIDE {
+    testing_clock_ = new base::SimpleTestTickClock();
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    cast_environment_ = new CastEnvironment(
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_,
         task_runner_, GetDefaultCastSenderLoggingConfig());
   }
@@ -97,7 +99,7 @@ class VideoEncoderImplTest : public ::testing::Test {
        max_unacked_frames));
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;

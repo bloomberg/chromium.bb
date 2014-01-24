@@ -65,11 +65,13 @@ class AudioSenderTest : public ::testing::Test {
  protected:
   AudioSenderTest() {
     InitializeMediaLibraryForTesting();
-    testing_clock_.Advance(
+    testing_clock_ = new base::SimpleTestTickClock();
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
     cast_environment_ = new CastEnvironment(
-        &testing_clock_, task_runner_, task_runner_, task_runner_, task_runner_,
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(),
+        task_runner_, task_runner_, task_runner_, task_runner_,
         task_runner_, task_runner_, GetDefaultCastSenderLoggingConfig());
     audio_config_.codec = transport::kOpus;
     audio_config_.use_external_encoder = false;
@@ -82,7 +84,7 @@ class AudioSenderTest : public ::testing::Test {
     transport_config.audio_rtp_payload_type = 127;
     transport_config.audio_channels = 2;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
-        &testing_clock_,
+        testing_clock_,
         transport_config,
         base::Bind(&UpdateCastTransportStatus), task_runner_));
     transport_sender_->InsertFakeTransportForTesting(&transport_);
@@ -97,7 +99,7 @@ class AudioSenderTest : public ::testing::Test {
     EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestPacketSender transport_;
   scoped_ptr<transport::CastTransportSenderImpl> transport_sender_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
@@ -145,7 +147,7 @@ TEST_F(AudioSenderTest, RtcpTimer) {
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
       base::TimeDelta::FromMilliseconds(1 + kDefaultRtcpIntervalMs * 3 / 2);
-  testing_clock_.Advance(max_rtcp_timeout);
+  testing_clock_->Advance(max_rtcp_timeout);
   task_runner_->RunTasks();
   EXPECT_GE(transport_.number_of_rtp_packets(), 1);
   EXPECT_EQ(transport_.number_of_rtcp_packets(), 1);

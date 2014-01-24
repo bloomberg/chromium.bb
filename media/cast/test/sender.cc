@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
   audio_thread.Start();
   video_thread.Start();
 
-  base::DefaultTickClock clock;
+  scoped_ptr<base::TickClock> clock(new base::DefaultTickClock());
   base::MessageLoopForIO io_message_loop;
 
   int remote_port, local_port;
@@ -336,7 +336,7 @@ int main(int argc, char** argv) {
 
   scoped_ptr<media::cast::transport::CastTransportSender> transport_sender(
       media::cast::transport::
-      CastTransportSender::CreateCastTransportSender(&clock, config,
+      CastTransportSender::CreateCastTransportSender(clock.get(), config,
       base::Bind(&UpdateCastTransportStatus),
       io_message_loop.message_loop_proxy()));
 
@@ -344,7 +344,7 @@ int main(int argc, char** argv) {
   // Running transport on the main thread.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(
-      &clock,
+      clock.Pass(),
       io_message_loop.message_loop_proxy(),
       audio_thread.message_loop_proxy(),
       NULL,

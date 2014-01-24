@@ -20,6 +20,33 @@ static const size_t kRtcpReceiverFrameLogSize = 8;
 static const size_t kRtcpReceiverEventLogSize = 4;
 
 namespace {
+
+// Converts a log event type to an integer value.
+int ConvertEventTypeToWireFormat(const media::cast::CastLoggingEvent& event) {
+  switch (event) {
+    case media::cast::kAudioAckSent:
+      return 1;
+    case media::cast::kAudioPlayoutDelay:
+      return 2;
+    case media::cast::kAudioFrameDecoded:
+      return 3;
+    case media::cast::kAudioPacketReceived:
+      return 4;
+    case media::cast::kVideoAckSent:
+      return 5;
+    case media::cast::kVideoFrameDecoded:
+      return 6;
+    case media::cast::kVideoRenderDelay:
+      return 7;
+    case media::cast::kVideoPacketReceived:
+      return 8;
+    case media::cast::kDuplicatePacketReceived:
+      return 9;
+    default:
+      return 0;  // Not an interesting event.
+  }
+}
+
 uint16 MergeEventTypeAndTimestampForWireFormat(
     const media::cast::CastLoggingEvent& event,
     const base::TimeDelta& time_delta) {
@@ -30,38 +57,8 @@ uint16 MergeEventTypeAndTimestampForWireFormat(
   uint16 event_type_and_timestamp_delta =
       static_cast<uint16>(time_delta_ms & 0xfff);
 
-  uint16 event_type = 0;
-  switch (event) {
-    case media::cast::kAudioAckSent:
-      event_type = 1;
-      break;
-    case media::cast::kAudioPlayoutDelay:
-      event_type = 2;
-      break;
-    case media::cast::kAudioFrameDecoded:
-      event_type = 3;
-      break;
-    case media::cast::kAudioPacketReceived:
-      event_type = 4;
-      break;
-    case media::cast::kVideoAckSent:
-      event_type = 5;
-      break;
-    case media::cast::kVideoFrameDecoded:
-      event_type = 6;
-      break;
-    case media::cast::kVideoRenderDelay:
-      event_type = 7;
-      break;
-    case media::cast::kVideoPacketReceived:
-      event_type = 8;
-      break;
-    case media::cast::kDuplicatePacketReceived:
-      event_type = 9;
-      break;
-    default:
-      NOTREACHED();
-  }
+  uint16 event_type = ConvertEventTypeToWireFormat(event);
+  DCHECK(event_type);
   DCHECK(!(event_type & 0xfff0));
   return (event_type << 12) + event_type_and_timestamp_delta;
 }
@@ -146,6 +143,11 @@ RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
 }
 
 RtcpSender::~RtcpSender() {}
+
+// static
+bool RtcpSender::IsReceiverEvent(const media::cast::CastLoggingEvent& event) {
+  return ConvertEventTypeToWireFormat(event) != 0;
+}
 
 void RtcpSender::SendRtcpFromRtpReceiver(
     uint32 packet_type_flags,

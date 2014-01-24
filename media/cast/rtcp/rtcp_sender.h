@@ -28,6 +28,10 @@ class RtcpSender {
 
   virtual ~RtcpSender();
 
+  // Returns true if |event| is an interesting receiver event.
+  // Such an event should be sent via RTCP.
+  static bool IsReceiverEvent(const media::cast::CastLoggingEvent& event);
+
   void SendRtcpFromRtpReceiver(uint32 packet_type_flags,
                                const transport::RtcpReportBlock* report_block,
                                const RtcpReceiverReferenceTimeReport* rrtr,

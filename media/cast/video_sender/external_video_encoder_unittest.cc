@@ -89,8 +89,10 @@ class ExternalVideoEncoderTest : public ::testing::Test {
   virtual ~ExternalVideoEncoderTest() {}
 
   virtual void SetUp() {
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+    testing_clock_ = new base::SimpleTestTickClock();
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    cast_environment_ = new CastEnvironment(
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
         GetDefaultCastSenderLoggingConfig());
     video_encoder_.reset(new ExternalVideoEncoder(
@@ -99,7 +101,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
         new test::FakeGpuVideoAcceleratorFactories(task_runner_)));
   }
 
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<TestVideoEncoderCallback> test_video_encoder_callback_;
   VideoSenderConfig video_config_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;

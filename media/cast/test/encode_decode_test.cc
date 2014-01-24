@@ -73,14 +73,16 @@ class EncodeDecodeTestFrameCallback :
 class EncodeDecodeTest : public ::testing::Test {
  protected:
   EncodeDecodeTest()
-      : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
+      : testing_clock_(new base::SimpleTestTickClock()),
+        task_runner_(new test::FakeTaskRunner(testing_clock_)),
         // CastEnvironment will only be used by the vp8 decoder; Enable only the
         // video decoder and main threads.
-        cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
+        cast_environment_(new CastEnvironment(
+            scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
             NULL, NULL, NULL, task_runner_, NULL,
             GetDefaultCastReceiverLoggingConfig())),
         test_callback_(new EncodeDecodeTestFrameCallback()) {
-    testing_clock_.Advance(
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     encoder_config_.max_number_of_video_buffers_used = 1;
     encoder_config_.number_of_cores = 1;
@@ -112,7 +114,7 @@ class EncodeDecodeTest : public ::testing::Test {
   scoped_ptr<Vp8Encoder> encoder_;
   scoped_ptr<Vp8Decoder> decoder_;
   scoped_refptr<media::VideoFrame> video_frame_;
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<EncodeDecodeTestFrameCallback> test_callback_;

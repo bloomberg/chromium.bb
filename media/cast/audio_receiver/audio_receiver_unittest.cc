@@ -75,10 +75,12 @@ class AudioReceiverTest : public ::testing::Test {
     audio_config_.codec = transport::kPcm16;
     audio_config_.use_external_decoder = false;
     audio_config_.feedback_ssrc = 1234;
-    testing_clock_.Advance(
+    testing_clock_ = new base::SimpleTestTickClock();
+    testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+    task_runner_ = new test::FakeTaskRunner(testing_clock_);
+    cast_environment_ = new CastEnvironment(
+        scoped_ptr<base::TickClock>(testing_clock_).Pass(), task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_,
         task_runner_, GetDefaultCastReceiverLoggingConfig());
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();
@@ -108,7 +110,7 @@ class AudioReceiverTest : public ::testing::Test {
   AudioReceiverConfig audio_config_;
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
-  base::SimpleTestTickClock testing_clock_;
+  base::SimpleTestTickClock* testing_clock_; // Owned by CastEnvironment.
   transport::MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerAudioReceiver> receiver_;
@@ -124,7 +126,8 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
       payload_.size(), rtp_header_);
   transport::EncodedAudioFrame audio_frame;
   base::TimeTicks playout_time;
-  test_audio_encoder_callback_->SetExpectedResult(0, testing_clock_.NowTicks());
+  test_audio_encoder_callback_->SetExpectedResult(
+      0, testing_clock_->NowTicks());
 
   AudioFrameEncodedCallback frame_encoded_callback =
       base::Bind(&TestAudioEncoderCallback::DeliverEncodedAudioFrame,
@@ -151,7 +154,8 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
 
   transport::EncodedAudioFrame audio_frame;
   base::TimeTicks playout_time;
-  test_audio_encoder_callback_->SetExpectedResult(0, testing_clock_.NowTicks());
+  test_audio_encoder_callback_->SetExpectedResult(
+      0, testing_clock_->NowTicks());
 
   task_runner_->RunTasks();
   EXPECT_EQ(1, test_audio_encoder_callback_->number_times_called());
@@ -160,11 +164,11 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
 
   uint32 ntp_high;
   uint32 ntp_low;
-  ConvertTimeTicksToNtp(testing_clock_.NowTicks(), &ntp_high, &ntp_low);
+  ConvertTimeTicksToNtp(testing_clock_->NowTicks(), &ntp_high, &ntp_low);
   rtcp_packet.AddSrWithNtp(audio_config_.feedback_ssrc, ntp_high, ntp_low,
       rtp_header_.webrtc.header.timestamp);
 
-  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(20));
+  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
 
   receiver_->IncomingPacket(rtcp_packet.Packet(), rtcp_packet.Length(),
       base::Bind(AudioReceiverTest::DummyDeletePacket, rtcp_packet.Packet()));
@@ -177,7 +181,7 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   rtp_header_.reference_frame_id = 0;
   rtp_header_.webrtc.header.timestamp = 960;
   test_audio_encoder_callback_->SetExpectedResult(2,
-      testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(100));
+      testing_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(100));
 
   receiver_->IncomingParsedRtpPacket(payload_.data(), payload_.size(),
                                      rtp_header_);
@@ -190,12 +194,13 @@ TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {
   // Through on one more pending callback.
   receiver_->GetEncodedAudioFrame(frame_encoded_callback);
 
-  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(100));
 
   task_runner_->RunTasks();
   EXPECT_EQ(2, test_audio_encoder_callback_->number_times_called());
 
-  test_audio_encoder_callback_->SetExpectedResult(3, testing_clock_.NowTicks());
+  test_audio_encoder_callback_->SetExpectedResult(
+      3, testing_clock_->NowTicks());
 
   // Through on one more pending audio frame.
   rtp_header_.frame_id = 3;

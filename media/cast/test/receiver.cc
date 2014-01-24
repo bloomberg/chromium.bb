@@ -225,13 +225,13 @@ int main(int argc, char** argv) {
   audio_thread.Start();
   video_thread.Start();
 
-  base::DefaultTickClock clock;
+  scoped_ptr<base::TickClock> clock(new base::DefaultTickClock());
 
   // Enable receiver side threads, and disable logging.
   // Running transport on main thread.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(
-          &clock,
+          clock.Pass(),
           main_message_loop.message_loop_proxy(),
           NULL,
           audio_thread.message_loop_proxy(),
