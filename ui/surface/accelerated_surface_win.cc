@@ -848,11 +848,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     ReleaseDC(window_, dc);
   }
 
-  for (size_t i = 0; i < latency_info_.size(); i++) {
-    latency_info_[i].AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-  }
-
   hidden_ = false;
 
   D3DDISPLAYMODE display_mode;
