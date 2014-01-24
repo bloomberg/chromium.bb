@@ -746,7 +746,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     return hasInvalidControls;
 }
 
-Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName) const
+Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName)
 {
     if (pastName.isEmpty() || !m_pastNamesMap)
         return 0;
@@ -756,7 +756,7 @@ Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName) con
         return 0;
     ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(node)->formOwner() == this);
     if (node->hasTagName(imgTag)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(m_imageElements.find(node) != kNotFound);
+        ASSERT_WITH_SECURITY_IMPLICATION(imageElements().find(node) != kNotFound);
     } else if (node->hasTagName(objectTag)) {
         ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLObjectElement(node)) != kNotFound);
     } else {

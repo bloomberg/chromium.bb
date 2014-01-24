@@ -151,7 +151,7 @@ private:
     // are any invalid controls in this form.
     bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*, HTMLFormControlElement::CheckValidityDispatchEvents = HTMLFormControlElement::CheckValidityDispatchEventsAllowed);
 
-    Node* elementFromPastNamesMap(const AtomicString&) const;
+    Node* elementFromPastNamesMap(const AtomicString&);
     void addToPastNamesMap(Node*, const AtomicString& pastName);
     void removeFromPastNamesMap(HTMLElement&);
 
