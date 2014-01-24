@@ -31,5 +31,4 @@
 ] interface WorkerLocation {
 };
 
-// force rebuild: crbug.com/307023
 WorkerLocation implements URLUtilsReadOnly;

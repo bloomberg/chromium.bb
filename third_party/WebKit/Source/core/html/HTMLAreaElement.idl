@@ -27,5 +27,4 @@ interface HTMLAreaElement : HTMLElement {
     [Reflect] attribute DOMString target;
 };
 
-// force rebuild: crbug.com/307023
 HTMLAreaElement implements URLUtils;

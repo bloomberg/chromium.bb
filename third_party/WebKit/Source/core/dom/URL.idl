@@ -36,5 +36,4 @@
     [CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
 };
 
-// force rebuild: crbug.com/307023
 URL implements URLUtils;

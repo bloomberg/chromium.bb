@@ -34,5 +34,4 @@ interface HTMLAnchorElement : HTMLElement {
     readonly attribute DOMString text;
 };
 
-// force rebuild: crbug.com/307023
 HTMLAnchorElement implements URLUtils;
