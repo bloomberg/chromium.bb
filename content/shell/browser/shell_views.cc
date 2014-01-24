@@ -211,6 +211,19 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     }
 
     layout->AddPaddingRow(0, 5);
+
+    InitAccelerators();
+  }
+  void InitAccelerators() {
+    static const ui::KeyboardCode keys[] = { ui::VKEY_F5,
+                                             ui::VKEY_BROWSER_BACK,
+                                             ui::VKEY_BROWSER_FORWARD };
+    for (size_t i = 0; i < arraysize(keys); ++i) {
+      GetFocusManager()->RegisterAccelerator(
+        ui::Accelerator(keys[i], ui::EF_NONE),
+        ui::AcceleratorManager::kNormalPriority,
+        this);
+    }
   }
   // Overridden from TextfieldController
   virtual void ContentsChanged(views::Textfield* sender,
@@ -263,6 +276,23 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       const ViewHierarchyChangedDetails& details) OVERRIDE {
     if (details.is_add && details.child == this) {
       InitShellWindow();
+    }
+  }
+
+  // Overridden from AcceleratorTarget:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE {
+    switch (accelerator.key_code()) {
+    case ui::VKEY_F5:
+      shell_->Reload();
+      return true;
+    case ui::VKEY_BROWSER_BACK:
+      shell_->GoBackOrForward(-1);
+      return true;
+    case ui::VKEY_BROWSER_FORWARD:
+      shell_->GoBackOrForward(1);
+      return true;
+    default:
+      return views::WidgetDelegateView::AcceleratorPressed(accelerator);
     }
   }
 
