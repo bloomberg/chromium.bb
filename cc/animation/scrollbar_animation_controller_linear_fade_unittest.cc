@@ -4,7 +4,7 @@
 
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 
-#include "cc/layers/painted_scrollbar_layer_impl.h"
+#include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,16 +18,31 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    scroll_layer_ = LayerImpl::Create(host_impl_.active_tree(), 1);
-    scrollbar_layer_ = PaintedScrollbarLayerImpl::Create(
-        host_impl_.active_tree(), 2, HORIZONTAL);
+    const int kThumbThickness = 10;
+    const bool kIsLeftSideVerticalScrollbar = false;
+    const bool kIsOverlayScrollbar = true;  // Allow opacity animations.
 
-    scroll_layer_->SetMaxScrollOffset(gfx::Vector2d(50, 50));
-    scroll_layer_->SetBounds(gfx::Size(50, 50));
-    scroll_layer_->SetHorizontalScrollbarLayer(scrollbar_layer_.get());
+    scoped_ptr<LayerImpl> scroll_layer =
+        LayerImpl::Create(host_impl_.active_tree(), 1);
+    scrollbar_layer_ =
+        SolidColorScrollbarLayerImpl::Create(host_impl_.active_tree(),
+                                             2,
+                                             HORIZONTAL,
+                                             kThumbThickness,
+                                             kIsLeftSideVerticalScrollbar,
+                                             kIsOverlayScrollbar);
+    clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);
+    scroll_layer->SetScrollClipLayer(clip_layer_->id());
+    LayerImpl* scroll_layer_ptr = scroll_layer.get();
+    clip_layer_->AddChild(scroll_layer.Pass());
+
+    scrollbar_layer_->SetClipLayerById(clip_layer_->id());
+    scrollbar_layer_->SetScrollLayerById(scroll_layer_ptr->id());
+    clip_layer_->SetBounds(gfx::Size(100, 100));
+    scroll_layer_ptr->SetBounds(gfx::Size(50, 50));
 
     scrollbar_controller_ = ScrollbarAnimationControllerLinearFade::Create(
-        scroll_layer_.get(),
+        scroll_layer_ptr,
         base::TimeDelta::FromSeconds(2),
         base::TimeDelta::FromSeconds(3));
   }
@@ -35,8 +50,8 @@ class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
   scoped_ptr<ScrollbarAnimationControllerLinearFade> scrollbar_controller_;
-  scoped_ptr<LayerImpl> scroll_layer_;
-  scoped_ptr<PaintedScrollbarLayerImpl> scrollbar_layer_;
+  scoped_ptr<LayerImpl> clip_layer_;
+  scoped_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
 };
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, HiddenInBegin) {

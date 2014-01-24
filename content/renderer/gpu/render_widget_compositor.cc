@@ -268,6 +268,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   if (cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport) ||
       cmd->HasSwitch(switches::kEnableOverlayScrollbars)) {
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+    settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
   }
 #endif
 

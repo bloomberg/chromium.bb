@@ -112,15 +112,17 @@ float ScrollbarAnimationControllerLinearFade::OpacityAtTime(
 
 void ScrollbarAnimationControllerLinearFade::ApplyOpacityToScrollbars(
     float opacity) {
-  ScrollbarLayerImplBase* horizontal_scrollbar =
-      scroll_layer_->horizontal_scrollbar_layer();
-  if (horizontal_scrollbar)
-    horizontal_scrollbar->SetOpacity(opacity);
+  if (!scroll_layer_->scrollbars())
+    return;
 
-  ScrollbarLayerImplBase* vertical_scrollbar =
-      scroll_layer_->vertical_scrollbar_layer();
-  if (vertical_scrollbar)
-    vertical_scrollbar->SetOpacity(opacity);
+  LayerImpl::ScrollbarSet* scrollbars = scroll_layer_->scrollbars();
+  for (LayerImpl::ScrollbarSet::iterator it = scrollbars->begin();
+       it != scrollbars->end();
+       ++it) {
+    ScrollbarLayerImplBase* scrollbar = *it;
+    if (scrollbar->is_overlay_scrollbar())
+      scrollbar->SetOpacity(opacity);
+  }
 }
 
 }  // namespace cc
