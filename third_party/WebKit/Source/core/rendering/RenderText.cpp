@@ -1406,11 +1406,7 @@ void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
         return;
 
     setTextInternal(text);
-    // If preferredLogicalWidthsDirty() of an orphan child is true, RenderObjectChildList::
-    // insertChildNode() fails to set true to owner. To avoid that, we call
-    // setNeedsLayoutAndPrefWidthsRecalc() only if this RenderText has parent.
-    if (parent())
-        setNeedsLayoutAndPrefWidthsRecalc();
+    setNeedsLayoutAndPrefWidthsRecalc();
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
