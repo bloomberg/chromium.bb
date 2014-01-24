@@ -258,12 +258,8 @@ instruction=mov    0xfffffffc(%esp) -> %eax
 chrome.dll!WebCore::RenderStyle::resetBorder*
 
 INVALID HEAP ARGUMENT
-name=http://crbug.com/101537
-*!scoped_ptr<_TOKEN_USER>*
-
-INVALID HEAP ARGUMENT
-name=http://crbug.com/101717 (1)
-*!scoped_ptr<_TOKEN_DEFAULT_DACL>*
+name=http://crbug.com/101537, http://crbug.com/101717 (1)
+*!scoped_ptr<>*
 
 INVALID HEAP ARGUMENT
 name=http://crbug.com/101717 (2)
@@ -271,12 +267,12 @@ name=http://crbug.com/101717 (2)
 
 INVALID HEAP ARGUMENT
 name=http://crbug.com/101717 (3)
-*!scoped_ptr<_UNICODE_STRING>::~scoped_ptr<_UNICODE_STRING>
+*!scoped_ptr<>::~scoped_ptr<>
 *!sandbox::GetHandleName
 
 INVALID HEAP ARGUMENT
 name=http://crbug.com/101717 (4)
-*!scoped_ptr<_OBJECT_NAME_INFORMATION>::~scoped_ptr<_OBJECT_NAME_INFORMATION>
+*!scoped_ptr<>::~scoped_ptr<>
 *!sandbox::GetPathFromHandle
 
 GDI USAGE ERROR
@@ -361,7 +357,7 @@ name=http://crbug.com/158090
 ...
 content.dll!content::*::FontCache::PreCacheFont
 content.dll!content::FontCacheDispatcher::OnPreCacheFont
-content.dll!DispatchToMethod<content::FontCacheDispatcher*
+content.dll!DispatchToMethod<>
 
 GDI USAGE ERROR
 name=http://crbug.com/158090 c#4
@@ -400,13 +396,13 @@ MSVCR100D.dll!operator new
 *!operator new
 *!operator new[]
 *!`anonymous namespace'::SecurityTest_NewOverflow_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 WARNING
 name=Security test (calloc overflow)
 *!`anonymous namespace'::CallocReturnsNull
 *!`anonymous namespace'::SecurityTest_CallocOverflow_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 GDI USAGE ERROR
 name=http://crbug.com/234484

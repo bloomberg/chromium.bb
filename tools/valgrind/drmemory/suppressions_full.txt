@@ -463,7 +463,7 @@ ntdll.dll!RtlInitializeCriticalSectionAndSpinCount
 
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=471 a
-*!media::AudioRendererAlgorithmOLA::Crossfade<unsigned char>
+*!media::AudioRendererAlgorithmOLA::Crossfade<>
 *!media::AudioRendererAlgorithmOLA::FillBuffer
 *!media::AudioRendererAlgorithmOLATest_FillBuffer_*
 
@@ -995,12 +995,12 @@ ntdll.dll!...
 ntdll.dll!RtlInitializeCriticalSection
 *!_Mtxinit
 *!std::_Mutex::_Mutex
-*!std::basic_streambuf<*>
+*!std::basic_streambuf<>
 
 # stdext::hash_map<> seems to swap uninitialized floats.
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=931
-*!std::swap<float>
+*!std::swap<>
 *!std::_Hash<*
 
 # syscall false positive on handling NtQuerySystemInformation, fix in soon.
@@ -1075,12 +1075,12 @@ LEAK
 name=http://crbug.com/79933 (4)
 *!generic_cpp_alloc
 *!operator new
-*!std::_Allocate<net::SSLConfigService::Observer *>
-*!std::allocator<net::SSLConfigService::Observer *>::allocate
-*!std::vector<net::SSLConfigService::Observer *,std::allocator<net::SSLConfigService::Observer *> >::_Insert_n
-*!std::vector<net::SSLConfigService::Observer *,std::allocator<net::SSLConfigService::Observer *> >::insert
-*!std::vector<net::SSLConfigService::Observer *,std::allocator<net::SSLConfigService::Observer *> >::push_back
-*!ObserverListBase<net::SSLConfigService::Observer>::AddObserver
+*!std::_Allocate<>
+*!std::allocator<>::allocate
+*!std::vector<>::_Insert_n
+*!std::vector<>::insert
+*!std::vector<>::push_back
+*!ObserverListBase<>::AddObserver
 ...
 *!net::HttpNetworkSession::HttpNetworkSession
 *!notifier::ProxyResolvingClientSocket::ProxyResolvingClientSocket
@@ -1092,7 +1092,7 @@ name=http://crbug.com/79933 (4)
 *!talk_base::TaskRunner::InternalRunTasks
 *!talk_base::TaskRunner::RunTasks
 *!notifier::TaskPump::CheckAndRunTasks
-*!base::internal::RunnableAdapter<void (__thiscall notifier::TaskPump::*)(void)>::Run
+*!base::internal::RunnableAdapter<>::Run
 
 # Test intentionally leaks an object.
 LEAK
@@ -1221,8 +1221,8 @@ LEAK
 name=http://crbug.com/91465
 *!generic_cpp_alloc
 *!operator new
-*!browser_sync::internal::WeakHandleCore<browser_sync::JsBackend>::*
-*!browser_sync::WeakHandle<browser_sync::JsBackend>::*
+*!browser_sync::internal::WeakHandleCore<>::*
+*!browser_sync::WeakHandle<>::*
 *!syncer::SyncManager::SyncInternal::Init
 
 LEAK
@@ -1251,7 +1251,7 @@ name=http://crbug.com/92166
 # Possible real Chromium issue in DoCrossfade.
 UNINITIALIZED READ
 name=http://crbug.com/110049
-*!media::DoCrossfade<*>
+*!media::DoCrossfade<>
 *!media::Crossfade
 *!media::AudioRendererAlgorithmBase::FillBuffer
 
@@ -1288,7 +1288,7 @@ name=http://crbug.com/117427 a
 *!net::HostResolverImpl::CacheResult
 *!net::HostResolverImpl::Job::CompleteRequests
 *!net::HostResolverImpl::Job::OnProcTaskComplete
-*!base::internal::RunnableAdapter<void (__thiscall net::HostResolverImpl::Job::*)(int,net::AddressList const &)>::Run
+*!base::internal::RunnableAdapter<>::Run
 
 # Probably related to 117427.  Someone is not tearing down DNS resolution during
 # testing.
@@ -1297,7 +1297,7 @@ name=http://crbug.com/117427 b
 *!generic_cpp_alloc
 *!operator new
 *!base::internal::WeakReferenceOwner::GetRef
-*!base::SupportsWeakPtr<net::HostResolverImpl>::AsWeakPtr
+*!base::SupportsWeakPtr<>::AsWeakPtr
 *!net::HostResolverImpl::Job::Job
 *!net::HostResolverImpl::Resolve
 *!net::SingleRequestHostResolver::Resolve
@@ -1307,13 +1307,13 @@ name=http://crbug.com/117427 b
 *!net::ConnectJob::Connect
 *!net::internal::ClientSocketPoolBaseHelper::RequestSocketInternal
 *!net::internal::ClientSocketPoolBaseHelper::RequestSocket
-*!net::ClientSocketPoolBase<net::TransportSocketParams>::RequestSocket
+*!net::ClientSocketPoolBase<>::RequestSocket
 *!net::TransportClientSocketPool::RequestSocket
-*!net::ClientSocketHandle::Init<net::TransportSocketParams,net::TransportClientSocketPool>
+*!net::ClientSocketHandle::Init<>
 *!net::`anonymous namespace'::InitSocketPoolHelper
 *!net::InitSocketHandleForRawConnect
 *!notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
-*!base::internal::RunnableAdapter<void (__thiscall notifier::ProxyResolvingClientSocket::*)(int)>::Run
+*!base::internal::RunnableAdapter<>::Run
 
 # IE frame possible leak of COM object.
 LEAK
