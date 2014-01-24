@@ -99,6 +99,8 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
                       action:@selector(onExtensionName:)
                keyEquivalent:@""];
   [item setTarget:self];
+  [item setEnabled:extensions::ManifestURL::GetHomepageURL(
+      extension_).is_valid()];
 
   // Separator.
   [menu addItem:[NSMenuItem separatorItem]];
