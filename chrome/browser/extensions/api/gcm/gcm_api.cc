@@ -30,6 +30,7 @@ const size_t kGooglePrefixLength = arraysize(kGoogleRestrictedPrefix) - 1;
 // Error messages.
 const char kInvalidParameter[] =
     "Function was called with invalid parameters.";
+const char kNotSignedIn[] = "Profile was not signed in.";
 const char kAsyncOperationPending[] =
     "Asynchronous operation is pending.";
 const char kNetworkError[] = "Network error occured.";
@@ -48,6 +49,8 @@ const char* GcmResultToError(gcm::GCMClient::Result result) {
       return "";
     case gcm::GCMClient::INVALID_PARAMETER:
       return kInvalidParameter;
+    case gcm::GCMClient::NOT_SIGNED_IN:
+      return kNotSignedIn;
     case gcm::GCMClient::ASYNC_OPERATION_PENDING:
       return kAsyncOperationPending;
     case gcm::GCMClient::NETWORK_ERROR:

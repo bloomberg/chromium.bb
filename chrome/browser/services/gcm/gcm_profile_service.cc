@@ -206,7 +206,7 @@ class GCMProfileService::IOWorker
   // Called on IO thread.
   void Initialize();
   void SetUser(const std::string& username);
-  void RemoveUser(const std::string& username);
+  void RemoveUser();
   void CheckIn();
   void SetCheckinInfo(const GCMClient::CheckinInfo& checkin_info);
   void CheckOut();
@@ -367,14 +367,13 @@ void GCMProfileService::IOWorker::SetUser(const std::string& username) {
   gcm_client_->SetUserDelegate(username_, this);
 }
 
-void GCMProfileService::IOWorker::RemoveUser(const std::string& username) {
+void GCMProfileService::IOWorker::RemoveUser() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  DCHECK(!username.empty());
 
   if (username_.empty())
     return;
-  username_.clear();
   gcm_client_->SetUserDelegate(username_, NULL);
+  username_.clear();
 }
 
 void GCMProfileService::IOWorker::CheckIn() {
@@ -393,8 +392,8 @@ void GCMProfileService::IOWorker::SetCheckinInfo(
 void GCMProfileService::IOWorker::CheckOut() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  username_.clear();
   checkin_info_.Reset();
+  RemoveUser();
 }
 
 void GCMProfileService::IOWorker::Register(
@@ -479,8 +478,7 @@ GCMProfileService::~GCMProfileService() {
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&GCMProfileService::IOWorker::RemoveUser,
-                 io_worker_,
-                 username_));
+                 io_worker_));
 }
 
 void GCMProfileService::Initialize() {
@@ -523,6 +521,12 @@ void GCMProfileService::Register(const std::string& app_id,
                                  RegisterCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty() && !sender_ids.empty() && !callback.is_null());
+
+  // If the profile was not signed in, bail out.
+  if (username_.empty()) {
+    callback.Run(std::string(), GCMClient::NOT_SIGNED_IN);
+    return;
+  }
 
   // If previous register operation is still in progress, bail out.
   if (register_callbacks_.find(app_id) != register_callbacks_.end()) {
@@ -589,6 +593,12 @@ void GCMProfileService::Send(const std::string& app_id,
                              SendCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty() && !receiver_id.empty() && !callback.is_null());
+
+  // If the profile was not signed in, bail out.
+  if (username_.empty()) {
+    callback.Run(std::string(), GCMClient::NOT_SIGNED_IN);
+    return;
+  }
 
   // If the message with send ID is still in progress, bail out.
   std::pair<std::string, std::string> key(app_id, message.id);
@@ -833,11 +843,19 @@ void GCMProfileService::MessageReceived(const std::string& app_id,
                                         GCMClient::IncomingMessage message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  // Drop the event if signed out.
+  if (username_.empty())
+    return;
+
   GetEventRouter(app_id)->OnMessage(app_id, message);
 }
 
 void GCMProfileService::MessagesDeleted(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Drop the event if signed out.
+  if (username_.empty())
+    return;
 
   GetEventRouter(app_id)->OnMessagesDeleted(app_id);
 }
@@ -846,6 +864,10 @@ void GCMProfileService::MessageSendError(const std::string& app_id,
                                          const std::string& message_id,
                                          GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Drop the event if signed out.
+  if (username_.empty())
+    return;
 
   GetEventRouter(app_id)->OnSendError(app_id, message_id, result);
 }

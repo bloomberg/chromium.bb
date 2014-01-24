@@ -35,7 +35,7 @@ class PrefRegistrySyncable;
 namespace gcm {
 
 class GCMEventRouter;
-class GCMProfileServiceTest;
+class GCMProfileServiceTestConsumer;
 
 // Acts as a bridge between GCM API and GCMClient layer. It is profile based.
 class GCMProfileService : public BrowserContextKeyedService,
@@ -99,11 +99,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   static bool enable_gcm_for_testing_;
 
  private:
-  friend class GCMProfileServiceTest;
-  friend class GCMProfileServiceRegisterTest;
-  FRIEND_TEST_ALL_PREFIXES(GCMProfileServiceTest, CheckInFromPrefsStore);
-  FRIEND_TEST_ALL_PREFIXES(GCMProfileServiceTest, CheckOut);
-  FRIEND_TEST_ALL_PREFIXES(GCMProfileServiceRegisterTest, Unregister);
+  friend class GCMProfileServiceTestConsumer;
 
   class DelayedTaskController;
   class IOWorker;

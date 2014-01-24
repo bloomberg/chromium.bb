@@ -23,6 +23,8 @@ class GCM_EXPORT GCMClient {
     SUCCESS,
     // Invalid parameter.
     INVALID_PARAMETER,
+    // Profile not signed in.
+    NOT_SIGNED_IN,
     // Previous asynchronous operation is still pending to finish. Certain
     // operation, like register, is only allowed one at a time.
     ASYNC_OPERATION_PENDING,

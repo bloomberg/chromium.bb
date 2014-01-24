@@ -157,16 +157,20 @@ GCMClient::CheckinInfo GCMClientMock::GetCheckinInfoFromUsername(
 // static
 std::string GCMClientMock::GetRegistrationIdFromSenderIds(
     const std::vector<std::string>& sender_ids) {
+  // GCMProfileService normalizes the sender IDs by making them sorted.
+  std::vector<std::string> normalized_sender_ids = sender_ids;
+  std::sort(normalized_sender_ids.begin(), normalized_sender_ids.end());
+
   // Simulate the registration_id by concaternating all sender IDs.
   // Set registration_id to empty to denote an error if sender_ids contains a
   // hint.
   std::string registration_id;
   if (sender_ids.size() != 1 ||
       sender_ids[0].find("error") == std::string::npos) {
-    for (size_t i = 0; i < sender_ids.size(); ++i) {
+    for (size_t i = 0; i < normalized_sender_ids.size(); ++i) {
       if (i > 0)
         registration_id += ",";
-      registration_id += sender_ids[i];
+      registration_id += normalized_sender_ids[i];
     }
   }
   return registration_id;
@@ -176,27 +180,32 @@ GCMClient::Delegate* GCMClientMock::GetDelegate(
     const std::string& username) const {
   std::map<std::string, Delegate*>::const_iterator iter =
       delegates_.find(username);
-  DCHECK(iter != delegates_.end());
-  return iter->second;
+  return iter == delegates_.end() ? NULL : iter->second;
 }
 
 void GCMClientMock::CheckInFinished(std::string username,
                                     CheckinInfo checkin_info) {
-  GetDelegate(username)->OnCheckInFinished(
+  GCMClient::Delegate* delegate = GetDelegate(username);
+  DCHECK(delegate);
+  delegate->OnCheckInFinished(
       checkin_info, checkin_info.IsValid() ? SUCCESS : SERVER_ERROR);
 }
 
 void GCMClientMock::RegisterFinished(std::string username,
                                      std::string app_id,
                                      std::string registrion_id) {
-  GetDelegate(username)->OnRegisterFinished(
+  GCMClient::Delegate* delegate = GetDelegate(username);
+  DCHECK(delegate);
+  delegate->OnRegisterFinished(
       app_id, registrion_id, registrion_id.empty() ? SERVER_ERROR : SUCCESS);
 }
 
 void GCMClientMock::SendFinished(std::string username,
                                  std::string app_id,
                                  std::string message_id) {
-  GetDelegate(username)->OnSendFinished(app_id, message_id, SUCCESS);
+  GCMClient::Delegate* delegate = GetDelegate(username);
+  DCHECK(delegate);
+  delegate->OnSendFinished(app_id, message_id, SUCCESS);
 
   // Simulate send error if message id contains a hint.
   if (message_id.find("error") != std::string::npos) {
@@ -214,17 +223,23 @@ void GCMClientMock::SendFinished(std::string username,
 void GCMClientMock::MessageReceived(std::string username,
                                     std::string app_id,
                                     IncomingMessage message) {
-  GetDelegate(username)->OnMessageReceived(app_id, message);
+  GCMClient::Delegate* delegate = GetDelegate(username);
+  if (delegate)
+    delegate->OnMessageReceived(app_id, message);
 }
 
 void GCMClientMock::MessagesDeleted(std::string username, std::string app_id) {
-  GetDelegate(username)->OnMessagesDeleted(app_id);
+  GCMClient::Delegate* delegate = GetDelegate(username);
+  if (delegate)
+    delegate->OnMessagesDeleted(app_id);
 }
 
 void GCMClientMock::MessageSendError(std::string username,
                                      std::string app_id,
                                      std::string message_id) {
-  GetDelegate(username)->OnMessageSendError(app_id, message_id, NETWORK_ERROR);
+  GCMClient::Delegate* delegate = GetDelegate(username);
+  if (delegate)
+    delegate->OnMessageSendError(app_id, message_id, NETWORK_ERROR);
 }
 
 void GCMClientMock::LoadingCompleted() {
