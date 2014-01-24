@@ -43,6 +43,7 @@ namespace WebCore {
 
 class ContainerNode;
 class CSSStyleSheet;
+class DocumentStyleSheetCollector;
 class StyleEngine;
 class Node;
 class StyleSheet;
@@ -56,6 +57,9 @@ class StyleSheetList;
 class StyleSheetCollectionBase {
     WTF_MAKE_NONCOPYABLE(StyleSheetCollectionBase); WTF_MAKE_FAST_ALLOCATED;
 public:
+    friend class ActiveDocumentStyleSheetCollector;
+    friend class ImportedDocumentStyleSheetCollector;
+
     StyleSheetCollectionBase();
     ~StyleSheetCollectionBase();
 
@@ -65,6 +69,7 @@ public:
     const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
 
     void swap(StyleSheetCollectionBase&);
+    void swapSheetsForSheetList(Vector<RefPtr<StyleSheet> >&);
     void appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);

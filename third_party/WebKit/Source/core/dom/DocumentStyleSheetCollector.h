@@ -27,31 +27,39 @@
 #ifndef DocumentStyleSheetCollector_h
 #define DocumentStyleSheetCollector_h
 
-#include "core/dom/StyleSheetCollection.h"
-#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class DocumentStyleSheetCollector FINAL {
+class CSSStyleSheet;
+class StyleSheetCollectionBase;
+class StyleSheet;
+
+class DocumentStyleSheetCollector {
 public:
-    DocumentStyleSheetCollector(TreeScope& root)
-        : m_root(root)
-    { }
+    friend class ImportedDocumentStyleSheetCollector;
 
-    bool isCollectingForList(TreeScope&) const;
-    void setCollectionTo(StyleSheetCollectionBase&);
+    DocumentStyleSheetCollector(Vector<RefPtr<StyleSheet> >& sheetsForList, Vector<RefPtr<CSSStyleSheet> >& activeList);
+    ~DocumentStyleSheetCollector();
 
-    void appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& sheets)  { m_collection.appendActiveStyleSheets(sheets); }
-    void appendActiveStyleSheet(CSSStyleSheet* sheet) { m_collection.appendActiveStyleSheet(sheet); }
-    void appendSheetForList(StyleSheet* sheet) { m_collection.appendSheetForList(sheet); }
-    StyleSheetCollectionBase& collection() { return m_collection; }
-    void markVisited(Document* document) { m_documentsVisited.add(document); }
-    bool hasVisited(Document* document) const { return m_documentsVisited.contains(document); }
+    void appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&);
+    void appendActiveStyleSheet(CSSStyleSheet*);
+    void appendSheetForList(StyleSheet*);
 
 private:
-    TreeScope& m_root;
-    StyleSheetCollectionBase m_collection;
-    HashSet<Document*> m_documentsVisited;
+    Vector<RefPtr<StyleSheet> >& m_styleSheetsForStyleSheetList;
+    Vector<RefPtr<CSSStyleSheet> >& m_activeAuthorStyleSheets;
+};
+
+class ActiveDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {
+public:
+    ActiveDocumentStyleSheetCollector(StyleSheetCollectionBase&);
+};
+
+class ImportedDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {
+public:
+    ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector&, Vector<RefPtr<StyleSheet> >&);
 };
 
 } // namespace WebCore

@@ -107,7 +107,7 @@ public:
     void addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet);
 
     void clearMediaQueryRuleSetStyleSheets();
-    void collectDocumentStyleSheets(DocumentStyleSheetCollector&);
+    void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
     bool updateActiveStyleSheets(StyleResolverUpdateMode);
 
     String preferredStylesheetSetName() const { return m_preferredStylesheetSetName; }

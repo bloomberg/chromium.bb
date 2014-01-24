@@ -34,6 +34,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleInvalidationAnalysis.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/DocumentStyleSheetCollector.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ShadowTreeStyleSheetCollection.h"
@@ -348,9 +349,13 @@ void StyleEngine::clearMediaQueryRuleSetStyleSheets()
     clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes);
 }
 
-void StyleEngine::collectDocumentStyleSheets(DocumentStyleSheetCollector& collector)
+void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector)
 {
-    m_documentStyleSheetCollection.collectStyleSheets(this, collector);
+    ASSERT(!isMaster());
+    Vector<RefPtr<StyleSheet> > sheetsForList;
+    ImportedDocumentStyleSheetCollector subcollector(parentCollector, sheetsForList);
+    m_documentStyleSheetCollection.collectStyleSheets(this, subcollector);
+    m_documentStyleSheetCollection.swapSheetsForSheetList(sheetsForList);
 }
 
 bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)

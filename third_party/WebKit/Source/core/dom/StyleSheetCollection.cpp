@@ -53,6 +53,13 @@ void StyleSheetCollectionBase::swap(StyleSheetCollectionBase& other)
     m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
 }
 
+void StyleSheetCollectionBase::swapSheetsForSheetList(Vector<RefPtr<StyleSheet> >& sheets)
+{
+    // Only called for collection of HTML Imports that never has active sheets.
+    ASSERT(m_activeAuthorStyleSheets.isEmpty());
+    m_styleSheetsForStyleSheetList.swap(sheets);
+}
+
 void StyleSheetCollectionBase::appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& sheets)
 {
     m_activeAuthorStyleSheets.append(sheets);
@@ -67,7 +74,6 @@ void StyleSheetCollectionBase::appendSheetForList(StyleSheet* sheet)
 {
     m_styleSheetsForStyleSheetList.append(sheet);
 }
-
 
 StyleSheetCollection::StyleSheetCollection(TreeScope& treeScope)
     : m_treeScope(treeScope)

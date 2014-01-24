@@ -66,6 +66,7 @@ public:
     virtual bool isCreatedByParser() const OVERRIDE;
 
     Document* importedDocument() const;
+    bool ownsLoader() const;
 
 private:
     void clear();

@@ -27,18 +27,45 @@
 #include "config.h"
 #include "core/dom/DocumentStyleSheetCollector.h"
 
-#include "core/dom/Document.h"
+#include "core/css/CSSStyleSheet.h"
+#include "core/css/StyleSheet.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 
 namespace WebCore {
 
-bool DocumentStyleSheetCollector::isCollectingForList(TreeScope& scope) const
+DocumentStyleSheetCollector::DocumentStyleSheetCollector(Vector<RefPtr<StyleSheet> >& sheetsForList, Vector<RefPtr<CSSStyleSheet> >& activeList)
+    : m_styleSheetsForStyleSheetList(sheetsForList)
+    , m_activeAuthorStyleSheets(activeList)
 {
-    return m_root == scope;
 }
 
-void DocumentStyleSheetCollector::setCollectionTo(StyleSheetCollectionBase& collection)
+DocumentStyleSheetCollector::~DocumentStyleSheetCollector()
 {
-    m_collection.swap(collection);
+}
+
+void DocumentStyleSheetCollector::appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& sheets)
+{
+    m_activeAuthorStyleSheets.append(sheets);
+}
+
+void DocumentStyleSheetCollector::appendActiveStyleSheet(CSSStyleSheet* sheet)
+{
+    m_activeAuthorStyleSheets.append(sheet);
+}
+
+void DocumentStyleSheetCollector::appendSheetForList(StyleSheet* sheet)
+{
+    m_styleSheetsForStyleSheetList.append(sheet);
+}
+
+ActiveDocumentStyleSheetCollector::ActiveDocumentStyleSheetCollector(StyleSheetCollectionBase& collection)
+    : DocumentStyleSheetCollector(collection.m_styleSheetsForStyleSheetList, collection.m_activeAuthorStyleSheets)
+{
+}
+
+ImportedDocumentStyleSheetCollector::ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector& collector, Vector<RefPtr<StyleSheet> >& sheetForList)
+    : DocumentStyleSheetCollector(sheetForList, collector.m_activeAuthorStyleSheets)
+{
 }
 
 }

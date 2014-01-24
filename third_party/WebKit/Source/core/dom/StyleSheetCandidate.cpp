@@ -31,6 +31,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/StyleEngine.h"
+#include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/svg/SVGStyleElement.h"
@@ -57,7 +58,12 @@ bool StyleSheetCandidate::isImport() const
 Document* StyleSheetCandidate::importedDocument() const
 {
     ASSERT(isImport());
-    return toHTMLLinkElement(m_node).import();
+    // The stylesheet update traversal shouldn't go into shared import
+    // to prevent it from stepping into cycle.
+    HTMLLinkElement& element = toHTMLLinkElement(m_node);
+    if (!element.importOwnsLoader())
+        return 0;
+    return element.import();
 }
 
 bool StyleSheetCandidate::isAlternate() const

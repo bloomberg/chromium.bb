@@ -81,10 +81,7 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
             Document* document = candidate.importedDocument();
             if (!document)
                 continue;
-            if (collector.hasVisited(document))
-                continue;
-            collector.markVisited(document);
-            document->styleEngine()->collectDocumentStyleSheets(collector);
+            document->styleEngine()->updateStyleSheetsInImport(collector);
             continue;
         }
 
@@ -101,19 +98,18 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
 
         if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
             engine->selectStylesheetSetName(candidate.title());
-        if (collector.isCollectingForList(m_treeScope))
-            collector.appendSheetForList(sheet);
+        collector.appendSheetForList(sheet);
         if (candidate.canBeActivated(engine->preferredStylesheetSetName()))
             collector.appendActiveStyleSheet(toCSSStyleSheet(sheet));
     }
 }
 
-static void collectActiveCSSStyleSheetsFromSeamlessParents(StyleSheetCollectionBase& collection, Document* document)
+static void collectActiveCSSStyleSheetsFromSeamlessParents(DocumentStyleSheetCollector& collector, Document* document)
 {
     HTMLIFrameElement* seamlessParentIFrame = document->seamlessParentIFrame();
     if (!seamlessParentIFrame)
         return;
-    collection.appendActiveStyleSheets(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
+    collector.appendActiveStyleSheets(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
 }
 
 void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, DocumentStyleSheetCollector& collector)
@@ -121,17 +117,18 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Docum
     ASSERT(document()->styleEngine() == engine);
     collector.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
     collector.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
-    collectActiveCSSStyleSheetsFromSeamlessParents(collector.collection(), document());
+    collectActiveCSSStyleSheetsFromSeamlessParents(collector, document());
     collectStyleSheetsFromCandidates(engine, collector);
 }
 
 bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
 {
-    DocumentStyleSheetCollector collector(m_treeScope);
+    StyleSheetCollectionBase collection;
+    ActiveDocumentStyleSheetCollector collector(collection);
     collectStyleSheets(engine, collector);
 
     StyleSheetChange change;
-    analyzeStyleSheetChange(updateMode, collector.collection(), change);
+    analyzeStyleSheetChange(updateMode, collection, change);
 
     if (change.styleResolverUpdateType == Reconstruct) {
         engine->clearMasterResolver();
@@ -146,15 +143,17 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
             if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector)
                 engine->resetFontSelector();
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
-            styleResolver->lazyAppendAuthorStyleSheets(0, collector.collection().activeAuthorStyleSheets());
+            styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
         } else {
-            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collector.collection().activeAuthorStyleSheets());
+            styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
         }
     } else if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector) {
         engine->resetFontSelector();
     }
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
-    collector.setCollectionTo(*this);
+
+    collection.swap(*this);
+
     updateUsesRemUnits();
 
     return change.requiresFullStyleRecalc;
