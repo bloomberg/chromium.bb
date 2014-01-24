@@ -140,7 +140,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if (!isUndefinedOrNull(jsValue) && !V8{{attribute.idl_type}}::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (!isUndefinedOrNull(jsValue) && !V8{{attribute.idl_type}}::hasInstance(jsValue, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
         exceptionState.throwIfNeeded();
         return;

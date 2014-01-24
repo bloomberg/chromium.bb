@@ -138,7 +138,7 @@ template <typename T> void V8_USE(T) { }
 {% block constructor_callback %}{% endblock %}
 {% block configure_class_template %}{% endblock %}
 {% block get_template %}{% endblock %}
-{% block has_instance_and_has_instance_in_any_world %}{% endblock %}
+{% block has_instance %}{% endblock %}
 {% block install_per_context_attributes %}{% endblock %}
 {% block install_per_context_methods %}{% endblock %}
 {% block to_active_dom_object %}{% endblock %}
