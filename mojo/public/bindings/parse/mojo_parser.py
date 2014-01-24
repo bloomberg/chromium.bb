@@ -18,8 +18,8 @@ try:
   from ply import yacc
 except ImportError:
   module_path, module_name = os.path.split(__file__)
-  third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir,
-                             os.pardir, os.pardir, 'third_party')
+  third_party = os.path.join(
+      module_path, os.pardir, os.pardir, os.pardir, os.pardir, 'third_party')
   sys.path.append(third_party)
   # pylint: disable=F0401
   from ply import lex
@@ -53,7 +53,7 @@ class Parser(object):
 
   def p_definitions(self, p):
     """definitions : definition definitions
-                   | """
+                   |"""
     if len(p) > 1:
       p[0] = ListFromConcat(p[1], p[2])
 
@@ -90,7 +90,7 @@ class Parser(object):
   def p_struct_body(self, p):
     """struct_body : field struct_body
                    | enum struct_body
-                   | """
+                   |"""
     if len(p) > 1:
       p[0] = ListFromConcat(p[1], p[2])
 
@@ -105,8 +105,7 @@ class Parser(object):
       p[0] = p[2]
 
   def p_interface(self, p):
-    """interface : attribute_section INTERFACE NAME LBRACE interface_body \
-                       RBRACE SEMI"""
+    """interface : attribute_section INTERFACE NAME LBRACE interface_body RBRACE SEMI"""
     p[0] = ('INTERFACE', p[3], p[1], p[5])
 
   def p_interface_body(self, p):
@@ -173,7 +172,7 @@ class Parser(object):
   def p_enum_fields(self, p):
     """enum_fields : enum_field
                    | enum_field COMMA enum_fields
-                   | """
+                   |"""
     if len(p) == 2:
       p[0] = ListFromConcat(p[1])
     elif len(p) > 3:
@@ -195,8 +194,7 @@ class Parser(object):
 
   def p_conditional_expression(self, p):
     """conditional_expression : binary_expression
-                              | binary_expression CONDOP expression COLON \
-                                    conditional_expression"""
+                              | binary_expression CONDOP expression COLON conditional_expression"""
     # Just pass the arguments through. I don't think it's possible to preserve
     # the spaces of the original, so just put a single space between them.
     p[0] = ' '.join(p[1:])
@@ -205,8 +203,7 @@ class Parser(object):
   # evaluate them, we don't need that here.
   def p_binary_expression(self, p):
     """binary_expression : unary_expression
-                         | binary_expression binary_operator \
-                               binary_expression"""
+                         | binary_expression binary_operator binary_expression"""
     p[0] = ' '.join(p[1:])
 
   def p_binary_operator(self, p):

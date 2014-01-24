@@ -28,8 +28,9 @@ def main(args):
 
   if errors:
     print '\nFailed tests.'
-  return min(errors, 127)  # Make sure the return value doesn't "wrap".
+  return errors
 
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
+
