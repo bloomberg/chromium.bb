@@ -27,3 +27,4 @@ Local Modifications:
 * Modified netinet/in.h not to use u_int32_t.
 * Added SOCK_CLOEXEC and SOCK_NONBLOCK socket type flags.
 * Make sure SA_SIGINFO is defined under __native_client__
+* Removed ss_len field from sockaddr_storage in sys/socket.h.
