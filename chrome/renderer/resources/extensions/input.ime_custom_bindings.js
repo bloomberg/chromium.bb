@@ -18,12 +18,14 @@ binding.registerCustomHook(function(api) {
 
     var result = false;
     try {
-      result = Event.prototype.dispatchToListener(callback, args);
+      result = $Function.call(Event.prototype.dispatchToListener,
+          this, callback, args);
     } catch (e) {
       console.error('Error in event handler for onKeyEvent: ' + e.stack);
     }
-    if (!input_ime.onKeyEvent.async)
+    if (!input_ime.onKeyEvent.async) {
       input_ime.keyEventHandled(keyData.requestId, result);
+    }
   };
 
   input_ime.onKeyEvent.addListener = function(cb, opt_extraInfo) {
@@ -35,7 +37,7 @@ binding.registerCustomHook(function(api) {
         }
       }
     }
-    Event.prototype.addListener.call(this, cb, null);
+    $Function.call(Event.prototype.addListener, this, cb);
   };
 });
 

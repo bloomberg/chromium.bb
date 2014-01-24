@@ -438,6 +438,10 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
   std::string event_bindings_str =
       base::StringPrintf("extensions::%s", kEventBindings);
 
+  std::string event_dispatch_to_listener_str =
+      base::StringPrintf("publicClass.%s [as dispatchToListener]",
+                         kAnonymousFunction);
+
   CheckRuntimeError(
       errors[0],
       extension->id(),
@@ -447,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
           "Stack trace: ReferenceError: baz is not defined",
       logging::LOG_ERROR,
       extension->url().Resolve(kBackgroundPageName),
-      6u);
+      8u);
 
   const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
 
@@ -456,10 +460,15 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
                   "extensions::SafeBuiltins",
                   std::string("Function.target.") + kAnonymousFunction);
   CheckStackFrame(
-      stack_trace[2], event_bindings_str, "Event.dispatchToListener");
-  CheckStackFrame(stack_trace[3], event_bindings_str, "Event.dispatch_");
-  CheckStackFrame(stack_trace[4], event_bindings_str, "dispatchArgs");
-  CheckStackFrame(stack_trace[5], event_bindings_str, "dispatchEvent");
+      stack_trace[2], event_bindings_str, "EventImpl.dispatchToListener");
+  CheckStackFrame(stack_trace[3],
+                  "extensions::SafeBuiltins",
+                  std::string("Function.target.") + kAnonymousFunction);
+  CheckStackFrame(stack_trace[4], "extensions::utils",
+                  event_dispatch_to_listener_str);
+  CheckStackFrame(stack_trace[5], event_bindings_str, "EventImpl.dispatch_");
+  CheckStackFrame(stack_trace[6], event_bindings_str, "dispatchArgs");
+  CheckStackFrame(stack_trace[7], event_bindings_str, "dispatchEvent");
 }
 
 // Test that we can catch an error for calling an API with improper arguments.

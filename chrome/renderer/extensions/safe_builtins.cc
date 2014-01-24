@@ -66,7 +66,7 @@ const char kScript[] =
     "// Save only what is needed to make tests that override builtins pass.\n"
     "saveBuiltin(Object,\n"
     "            ['hasOwnProperty'],\n"
-    "            ['defineProperty', 'getOwnPropertyDescriptor',\n"
+    "            ['create', 'defineProperty', 'getOwnPropertyDescriptor',\n"
     "             'getPrototypeOf', 'keys']);\n"
     "saveBuiltin(Function,\n"
     "            ['apply', 'bind', 'call']);\n"
