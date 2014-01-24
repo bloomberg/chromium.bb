@@ -50,7 +50,7 @@ TEST(ListSetTest, ListSetConstIterator) {
 TEST(ListSetTest, ListSetPrimitive) {
   list_set<int> set;
   EXPECT_TRUE(set.empty());
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   {
     list_set<int>::iterator it = set.begin();
     EXPECT_EQ(set.end(), it);
@@ -58,16 +58,16 @@ TEST(ListSetTest, ListSetPrimitive) {
 
   for (int i = 5; i > 0; --i)
     set.insert(i);
-  EXPECT_EQ(static_cast<size_t>(5), set.size());
+  EXPECT_EQ(5u, set.size());
   EXPECT_FALSE(set.empty());
 
   set.erase(3);
-  EXPECT_EQ(static_cast<size_t>(4), set.size());
+  EXPECT_EQ(4u, set.size());
 
-  EXPECT_EQ(static_cast<size_t>(1), set.count(2));
+  EXPECT_EQ(1u, set.count(2));
   set.erase(2);
-  EXPECT_EQ(static_cast<size_t>(0), set.count(2));
-  EXPECT_EQ(static_cast<size_t>(3), set.size());
+  EXPECT_EQ(0u, set.count(2));
+  EXPECT_EQ(3u, set.size());
 
   {
     list_set<int>::iterator it = set.begin();
@@ -84,7 +84,7 @@ TEST(ListSetTest, ListSetPrimitive) {
   set.erase(4);
   set.erase(5);
 
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   EXPECT_TRUE(set.empty());
   {
     list_set<int>::iterator it = set.begin();
@@ -111,7 +111,7 @@ class Wrapped {
 
 TEST(ListSetTest, ListSetObject) {
   list_set<Wrapped<int> > set;
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   {
     list_set<Wrapped<int> >::iterator it = set.begin();
     EXPECT_EQ(set.end(), it);
@@ -121,7 +121,7 @@ TEST(ListSetTest, ListSetObject) {
   set.insert(Wrapped<int>(1));
   set.insert(Wrapped<int>(2));
 
-  EXPECT_EQ(static_cast<size_t>(3), set.size());
+  EXPECT_EQ(3u, set.size());
 
   {
     list_set<Wrapped<int> >::iterator it = set.begin();
@@ -138,7 +138,7 @@ TEST(ListSetTest, ListSetObject) {
   set.erase(Wrapped<int>(1));
   set.erase(Wrapped<int>(2));
 
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   {
     list_set<Wrapped<int> >::iterator it = set.begin();
     EXPECT_EQ(set.end(), it);
@@ -151,7 +151,7 @@ TEST(ListSetTest, ListSetPointer) {
   scoped_ptr<Wrapped<int> > w2(new Wrapped<int>(2));
 
   list_set<Wrapped<int>*> set;
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   {
     list_set<Wrapped<int>*>::iterator it = set.begin();
     EXPECT_EQ(set.end(), it);
@@ -161,7 +161,7 @@ TEST(ListSetTest, ListSetPointer) {
   set.insert(w1.get());
   set.insert(w2.get());
 
-  EXPECT_EQ(static_cast<size_t>(3), set.size());
+  EXPECT_EQ(3u, set.size());
 
   {
     list_set<Wrapped<int>*>::iterator it = set.begin();
@@ -178,7 +178,7 @@ TEST(ListSetTest, ListSetPointer) {
   set.erase(w1.get());
   set.erase(w2.get());
 
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   {
     list_set<Wrapped<int>*>::iterator it = set.begin();
     EXPECT_EQ(set.end(), it);
@@ -199,7 +199,7 @@ class RefCounted : public base::RefCounted<RefCounted<T> > {
 
 TEST(ListSetTest, ListSetRefCounted) {
   list_set<scoped_refptr<RefCounted<int> > > set;
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   {
     list_set<scoped_refptr<RefCounted<int> > >::iterator it = set.begin();
     EXPECT_EQ(set.end(), it);
@@ -213,7 +213,7 @@ TEST(ListSetTest, ListSetRefCounted) {
   set.insert(r1);
   set.insert(r2);
 
-  EXPECT_EQ(static_cast<size_t>(3), set.size());
+  EXPECT_EQ(3u, set.size());
 
   {
     list_set<scoped_refptr<RefCounted<int> > >::iterator it = set.begin();
@@ -230,7 +230,7 @@ TEST(ListSetTest, ListSetRefCounted) {
   set.erase(r1);
   set.erase(r2);
 
-  EXPECT_EQ(static_cast<size_t>(0), set.size());
+  EXPECT_EQ(0u, set.size());
   {
     list_set<scoped_refptr<RefCounted<int> > >::iterator it = set.begin();
     EXPECT_EQ(set.end(), it);

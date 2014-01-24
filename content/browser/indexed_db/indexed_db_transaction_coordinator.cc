@@ -148,7 +148,7 @@ bool IndexedDBTransactionCoordinator::CanStartTransaction(
   DCHECK(queued_transactions_.count(transaction));
   switch (transaction->mode()) {
     case indexed_db::TRANSACTION_VERSION_CHANGE:
-      DCHECK_EQ(static_cast<size_t>(1), queued_transactions_.size());
+      DCHECK_EQ(1u, queued_transactions_.size());
       DCHECK(started_transactions_.empty());
       DCHECK(locked_scope.empty());
       return true;

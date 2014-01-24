@@ -1317,7 +1317,7 @@ void IndexedDBDatabase::ProcessPendingCalls() {
                                      pending_call->ReleaseConnection(),
                                      pending_call->transaction_id(),
                                      pending_call->version());
-    DCHECK_EQ(static_cast<size_t>(1), ConnectionCount());
+    DCHECK_EQ(1u, ConnectionCount());
     // Fall through would be a no-op, since transaction must complete
     // asynchronously.
     DCHECK(IsDeleteDatabaseBlocked());

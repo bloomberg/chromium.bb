@@ -78,7 +78,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeByte) {
     EncodeByte(n, &v);
 
     unsigned char res;
-    ASSERT_GT(v.size(), static_cast<size_t>(0));
+    ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
     EXPECT_TRUE(DecodeByte(&slice, &res));
     EXPECT_EQ(n, res);
@@ -176,13 +176,13 @@ static std::string WrappedEncodeInt(int64 value) {
 }
 
 TEST(IndexedDBLevelDBCodingTest, EncodeInt) {
-  EXPECT_EQ(static_cast<size_t>(1), WrappedEncodeInt(0).size());
-  EXPECT_EQ(static_cast<size_t>(1), WrappedEncodeInt(1).size());
-  EXPECT_EQ(static_cast<size_t>(1), WrappedEncodeInt(255).size());
-  EXPECT_EQ(static_cast<size_t>(2), WrappedEncodeInt(256).size());
-  EXPECT_EQ(static_cast<size_t>(4), WrappedEncodeInt(0xffffffff).size());
+  EXPECT_EQ(1u, WrappedEncodeInt(0).size());
+  EXPECT_EQ(1u, WrappedEncodeInt(1).size());
+  EXPECT_EQ(1u, WrappedEncodeInt(255).size());
+  EXPECT_EQ(2u, WrappedEncodeInt(256).size());
+  EXPECT_EQ(4u, WrappedEncodeInt(0xffffffff).size());
 #ifdef NDEBUG
-  EXPECT_EQ(static_cast<size_t>(8), WrappedEncodeInt(-1).size());
+  EXPECT_EQ(8u, WrappedEncodeInt(-1).size());
 #endif
 }
 
@@ -229,7 +229,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     int64 n = test_cases[i];
     std::string v = WrappedEncodeInt(n);
-    ASSERT_GT(v.size(), static_cast<size_t>(0));
+    ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
     int64 value;
     EXPECT_TRUE(DecodeInt(&slice, &value));
@@ -237,7 +237,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeInt) {
     EXPECT_TRUE(slice.empty());
 
     // Verify decoding at an offset, to detect unaligned memory access.
-    v.insert(v.begin(), static_cast<size_t>(1), static_cast<char>(0));
+    v.insert(v.begin(), 1u, static_cast<char>(0));
     slice = StringPiece(&*v.begin() + 1, v.size() - 1);
     EXPECT_TRUE(DecodeInt(&slice, &value));
     EXPECT_EQ(n, value);
@@ -257,17 +257,15 @@ static std::string WrappedEncodeVarInt(int64 value) {
 }
 
 TEST(IndexedDBLevelDBCodingTest, EncodeVarInt) {
-  EXPECT_EQ(static_cast<size_t>(1), WrappedEncodeVarInt(0).size());
-  EXPECT_EQ(static_cast<size_t>(1), WrappedEncodeVarInt(1).size());
-  EXPECT_EQ(static_cast<size_t>(2), WrappedEncodeVarInt(255).size());
-  EXPECT_EQ(static_cast<size_t>(2), WrappedEncodeVarInt(256).size());
-  EXPECT_EQ(static_cast<size_t>(5), WrappedEncodeVarInt(0xffffffff).size());
-  EXPECT_EQ(static_cast<size_t>(8),
-            WrappedEncodeVarInt(0xfffffffffffffLL).size());
-  EXPECT_EQ(static_cast<size_t>(9),
-            WrappedEncodeVarInt(0x7fffffffffffffffLL).size());
+  EXPECT_EQ(1u, WrappedEncodeVarInt(0).size());
+  EXPECT_EQ(1u, WrappedEncodeVarInt(1).size());
+  EXPECT_EQ(2u, WrappedEncodeVarInt(255).size());
+  EXPECT_EQ(2u, WrappedEncodeVarInt(256).size());
+  EXPECT_EQ(5u, WrappedEncodeVarInt(0xffffffff).size());
+  EXPECT_EQ(8u, WrappedEncodeVarInt(0xfffffffffffffLL).size());
+  EXPECT_EQ(9u, WrappedEncodeVarInt(0x7fffffffffffffffLL).size());
 #ifdef NDEBUG
-  EXPECT_EQ(static_cast<size_t>(10), WrappedEncodeVarInt(-100).size());
+  EXPECT_EQ(10u, WrappedEncodeVarInt(-100).size());
 #endif
 }
 
@@ -288,7 +286,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeVarInt) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     int64 n = test_cases[i];
     std::string v = WrappedEncodeVarInt(n);
-    ASSERT_GT(v.size(), static_cast<size_t>(0));
+    ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
     int64 res;
     EXPECT_TRUE(DecodeVarInt(&slice, &res));
@@ -298,11 +296,11 @@ TEST(IndexedDBLevelDBCodingTest, DecodeVarInt) {
     slice = StringPiece(&*v.begin(), v.size() - 1);
     EXPECT_FALSE(DecodeVarInt(&slice, &res));
 
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
+    slice = StringPiece(&*v.begin(), 0u);
     EXPECT_FALSE(DecodeVarInt(&slice, &res));
 
     // Verify decoding at an offset, to detect unaligned memory access.
-    v.insert(v.begin(), static_cast<size_t>(1), static_cast<char>(0));
+    v.insert(v.begin(), 1u, static_cast<char>(0));
     slice = StringPiece(&*v.begin() + 1, v.size() - 1);
     EXPECT_TRUE(DecodeVarInt(&slice, &res));
     EXPECT_EQ(n, res);
@@ -320,16 +318,11 @@ TEST(IndexedDBLevelDBCodingTest, EncodeString) {
   const base::char16 test_string_a[] = {'f', 'o', 'o', '\0'};
   const base::char16 test_string_b[] = {0xdead, 0xbeef, '\0'};
 
-  EXPECT_EQ(static_cast<size_t>(0),
-            WrappedEncodeString(ASCIIToUTF16("")).size());
-  EXPECT_EQ(static_cast<size_t>(2),
-            WrappedEncodeString(ASCIIToUTF16("a")).size());
-  EXPECT_EQ(static_cast<size_t>(6),
-            WrappedEncodeString(ASCIIToUTF16("foo")).size());
-  EXPECT_EQ(static_cast<size_t>(6),
-            WrappedEncodeString(base::string16(test_string_a)).size());
-  EXPECT_EQ(static_cast<size_t>(4),
-            WrappedEncodeString(base::string16(test_string_b)).size());
+  EXPECT_EQ(0u, WrappedEncodeString(ASCIIToUTF16("")).size());
+  EXPECT_EQ(2u, WrappedEncodeString(ASCIIToUTF16("a")).size());
+  EXPECT_EQ(6u, WrappedEncodeString(ASCIIToUTF16("foo")).size());
+  EXPECT_EQ(6u, WrappedEncodeString(base::string16(test_string_a)).size());
+  EXPECT_EQ(4u, WrappedEncodeString(base::string16(test_string_b)).size());
 }
 
 TEST(IndexedDBLevelDBCodingTest, DecodeString) {
@@ -358,7 +351,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeString) {
     EXPECT_TRUE(slice.empty());
 
     // Verify decoding at an offset, to detect unaligned memory access.
-    v.insert(v.begin(), static_cast<size_t>(1), static_cast<char>(0));
+    v.insert(v.begin(), 1u, static_cast<char>(0));
     slice = StringPiece(&*v.begin() + 1, v.size() - 1);
     EXPECT_TRUE(DecodeString(&slice, &result));
     EXPECT_EQ(test_case, result);
@@ -376,16 +369,12 @@ TEST(IndexedDBLevelDBCodingTest, EncodeStringWithLength) {
   const base::char16 test_string_a[] = {'f', 'o', 'o', '\0'};
   const base::char16 test_string_b[] = {0xdead, 0xbeef, '\0'};
 
-  EXPECT_EQ(static_cast<size_t>(1),
-            WrappedEncodeStringWithLength(base::string16()).size());
-  EXPECT_EQ(static_cast<size_t>(3),
-            WrappedEncodeStringWithLength(ASCIIToUTF16("a")).size());
-  EXPECT_EQ(static_cast<size_t>(7),
-            WrappedEncodeStringWithLength(
-                base::string16(test_string_a)).size());
-  EXPECT_EQ(static_cast<size_t>(5),
-            WrappedEncodeStringWithLength(
-                base::string16(test_string_b)).size());
+  EXPECT_EQ(1u, WrappedEncodeStringWithLength(base::string16()).size());
+  EXPECT_EQ(3u, WrappedEncodeStringWithLength(ASCIIToUTF16("a")).size());
+  EXPECT_EQ(
+      7u, WrappedEncodeStringWithLength(base::string16(test_string_a)).size());
+  EXPECT_EQ(
+      5u, WrappedEncodeStringWithLength(base::string16(test_string_b)).size());
 }
 
 TEST(IndexedDBLevelDBCodingTest, DecodeStringWithLength) {
@@ -409,7 +398,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeStringWithLength) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     base::string16 s = test_cases[i];
     std::string v = WrappedEncodeStringWithLength(s);
-    ASSERT_GT(v.size(), static_cast<size_t>(0));
+    ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
     base::string16 res;
     EXPECT_TRUE(DecodeStringWithLength(&slice, &res));
@@ -419,11 +408,11 @@ TEST(IndexedDBLevelDBCodingTest, DecodeStringWithLength) {
     slice = StringPiece(&*v.begin(), v.size() - 1);
     EXPECT_FALSE(DecodeStringWithLength(&slice, &res));
 
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
+    slice = StringPiece(&*v.begin(), 0u);
     EXPECT_FALSE(DecodeStringWithLength(&slice, &res));
 
     // Verify decoding at an offset, to detect unaligned memory access.
-    v.insert(v.begin(), static_cast<size_t>(1), static_cast<char>(0));
+    v.insert(v.begin(), 1u, static_cast<char>(0));
     slice = StringPiece(&*v.begin() + 1, v.size() - 1);
     EXPECT_TRUE(DecodeStringWithLength(&slice, &res));
     EXPECT_EQ(s, res);
@@ -496,13 +485,13 @@ static std::string WrappedEncodeBinary(std::string value) {
 TEST(IndexedDBLevelDBCodingTest, EncodeBinary) {
   const unsigned char binary_data[] = {0x00, 0x01, 0xfe, 0xff};
   EXPECT_EQ(
-      static_cast<size_t>(1),
+      1u,
       WrappedEncodeBinary(std::string(binary_data, binary_data + 0)).size());
   EXPECT_EQ(
-      static_cast<size_t>(2),
+      2u,
       WrappedEncodeBinary(std::string(binary_data, binary_data + 1)).size());
   EXPECT_EQ(
-      static_cast<size_t>(5),
+      5u,
       WrappedEncodeBinary(std::string(binary_data, binary_data + 4)).size());
 }
 
@@ -517,7 +506,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeBinary) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     std::string value = test_cases[i];
     std::string v = WrappedEncodeBinary(value);
-    ASSERT_GT(v.size(), static_cast<size_t>(0));
+    ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
     std::string result;
     EXPECT_TRUE(DecodeBinary(&slice, &result));
@@ -527,11 +516,11 @@ TEST(IndexedDBLevelDBCodingTest, DecodeBinary) {
     slice = StringPiece(&*v.begin(), v.size() - 1);
     EXPECT_FALSE(DecodeBinary(&slice, &result));
 
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
+    slice = StringPiece(&*v.begin(), 0u);
     EXPECT_FALSE(DecodeBinary(&slice, &result));
 
     // Verify decoding at an offset, to detect unaligned memory access.
-    v.insert(v.begin(), static_cast<size_t>(1), static_cast<char>(0));
+    v.insert(v.begin(), 1u, static_cast<char>(0));
     slice = StringPiece(&*v.begin() + 1, v.size() - 1);
     EXPECT_TRUE(DecodeBinary(&slice, &result));
     EXPECT_EQ(value, result);
@@ -546,8 +535,8 @@ static std::string WrappedEncodeDouble(double value) {
 }
 
 TEST(IndexedDBLevelDBCodingTest, EncodeDouble) {
-  EXPECT_EQ(static_cast<size_t>(8), WrappedEncodeDouble(0).size());
-  EXPECT_EQ(static_cast<size_t>(8), WrappedEncodeDouble(3.14).size());
+  EXPECT_EQ(8u, WrappedEncodeDouble(0).size());
+  EXPECT_EQ(8u, WrappedEncodeDouble(3.14).size());
 }
 
 TEST(IndexedDBLevelDBCodingTest, DecodeDouble) {
@@ -558,7 +547,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeDouble) {
   for (size_t i = 0; i < test_cases.size(); ++i) {
     double value = test_cases[i];
     std::string v = WrappedEncodeDouble(value);
-    ASSERT_GT(v.size(), static_cast<size_t>(0));
+    ASSERT_GT(v.size(), 0u);
     StringPiece slice(v);
     double result;
     EXPECT_TRUE(DecodeDouble(&slice, &result));
@@ -568,11 +557,11 @@ TEST(IndexedDBLevelDBCodingTest, DecodeDouble) {
     slice = StringPiece(&*v.begin(), v.size() - 1);
     EXPECT_FALSE(DecodeDouble(&slice, &result));
 
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
+    slice = StringPiece(&*v.begin(), 0u);
     EXPECT_FALSE(DecodeDouble(&slice, &result));
 
     // Verify decoding at an offset, to detect unaligned memory access.
-    v.insert(v.begin(), static_cast<size_t>(1), static_cast<char>(0));
+    v.insert(v.begin(), 1u, static_cast<char>(0));
     slice = StringPiece(&*v.begin() + 1, v.size() - 1);
     EXPECT_TRUE(DecodeDouble(&slice, &result));
     EXPECT_EQ(value, result);
@@ -613,7 +602,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKey) {
     slice = StringPiece(&*v.begin(), v.size() - 1);
     EXPECT_FALSE(DecodeIDBKey(&slice, &decoded_key));
 
-    slice = StringPiece(&*v.begin(), static_cast<size_t>(0));
+    slice = StringPiece(&*v.begin(), 0u);
     EXPECT_FALSE(DecodeIDBKey(&slice, &decoded_key));
   }
 }

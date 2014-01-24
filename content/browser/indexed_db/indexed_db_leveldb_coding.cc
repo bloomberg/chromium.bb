@@ -325,15 +325,13 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
     case WebIDBKeyTypeDate: {
       EncodeByte(kIndexedDBKeyDateTypeByte, into);
       EncodeDouble(value.date(), into);
-      DCHECK_EQ(static_cast<size_t>(9),
-                static_cast<size_t>(into->size() - previous_size));
+      DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
     }
     case WebIDBKeyTypeNumber: {
       EncodeByte(kIndexedDBKeyNumberTypeByte, into);
       EncodeDouble(value.number(), into);
-      DCHECK_EQ(static_cast<size_t>(9),
-                static_cast<size_t>(into->size() - previous_size));
+      DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
     }
   }

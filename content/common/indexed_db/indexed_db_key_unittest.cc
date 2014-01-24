@@ -19,23 +19,23 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   std::vector<size_t> estimates;
 
   keys.push_back(IndexedDBKey());
-  estimates.push_back(static_cast<size_t>(16));  // Overhead.
+  estimates.push_back(16u);  // Overhead.
 
   keys.push_back(IndexedDBKey(blink::WebIDBKeyTypeNull));
-  estimates.push_back(static_cast<size_t>(16));
+  estimates.push_back(16u);
 
   double number = 3.14159;
   keys.push_back(IndexedDBKey(number, blink::WebIDBKeyTypeNumber));
-  estimates.push_back(static_cast<size_t>(24));  // Overhead + sizeof(double).
+  estimates.push_back(24u);  // Overhead + sizeof(double).
 
   double date = 1370884329.0;
   keys.push_back(IndexedDBKey(date, blink::WebIDBKeyTypeDate));
-  estimates.push_back(static_cast<size_t>(24));  // Overhead + sizeof(double).
+  estimates.push_back(24u);  // Overhead + sizeof(double).
 
   const base::string16 string(1024, static_cast<base::char16>('X'));
   keys.push_back(IndexedDBKey(string));
   // Overhead + string length * sizeof(base::char16).
-  estimates.push_back(static_cast<size_t>(2064));
+  estimates.push_back(2064u);
 
   const size_t array_size = 1024;
   IndexedDBKey::KeyArray array;
@@ -45,7 +45,7 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   }
   keys.push_back(IndexedDBKey(array));
   // Overhead + array length * (Overhead + sizeof(double)).
-  estimates.push_back(static_cast<size_t>(24592));
+  estimates.push_back(24592u);
 
   ASSERT_EQ(keys.size(), estimates.size());
   for (size_t i = 0; i < keys.size(); ++i) {
