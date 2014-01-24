@@ -734,7 +734,6 @@ void WebTestProxyBase::animateNow()
     if (m_animateScheduled) {
         m_animateScheduled = false;
         webWidget()->animate(0.0);
-        webWidget()->layout();
     }
 }
 
