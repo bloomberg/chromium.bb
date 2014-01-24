@@ -220,46 +220,10 @@ void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect
     image->drawPattern(context, srcRect, scale, phase, op, destRect, blendMode, repeatSpacing);
 }
 
-static const Vector<uint8_t>& getLinearRgbLUT()
-{
-    DEFINE_STATIC_LOCAL(Vector<uint8_t>, linearRgbLUT, ());
-    if (linearRgbLUT.isEmpty()) {
-        linearRgbLUT.reserveCapacity(256);
-        for (unsigned i = 0; i < 256; i++) {
-            float color = i  / 255.0f;
-            color = (color <= 0.04045f ? color / 12.92f : pow((color + 0.055f) / 1.055f, 2.4f));
-            color = std::max(0.0f, color);
-            color = std::min(1.0f, color);
-            linearRgbLUT.append(static_cast<uint8_t>(round(color * 255)));
-        }
-    }
-    return linearRgbLUT;
-}
-
-static const Vector<uint8_t>& getDeviceRgbLUT()
-{
-    DEFINE_STATIC_LOCAL(Vector<uint8_t>, deviceRgbLUT, ());
-    if (deviceRgbLUT.isEmpty()) {
-        deviceRgbLUT.reserveCapacity(256);
-        for (unsigned i = 0; i < 256; i++) {
-            float color = i / 255.0f;
-            color = (powf(color, 1.0f / 2.4f) * 1.055f) - 0.055f;
-            color = std::max(0.0f, color);
-            color = std::min(1.0f, color);
-            deviceRgbLUT.append(static_cast<uint8_t>(round(color * 255)));
-        }
-    }
-    return deviceRgbLUT;
-}
-
 void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace)
 {
-    if (srcColorSpace == dstColorSpace)
-        return;
-
-    // only sRGB <-> linearRGB are supported at the moment
-    if ((srcColorSpace != ColorSpaceLinearRGB && srcColorSpace != ColorSpaceDeviceRGB)
-        || (dstColorSpace != ColorSpaceLinearRGB && dstColorSpace != ColorSpaceDeviceRGB))
+    const uint8_t* lookUpTable = ColorSpaceUtilities::getConversionLUT(dstColorSpace, srcColorSpace);
+    if (!lookUpTable)
         return;
 
     // FIXME: Disable color space conversions on accelerated canvases (for now).
@@ -269,9 +233,6 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
     const SkBitmap& bitmap = m_surface->bitmap();
     if (bitmap.isNull())
         return;
-
-    const Vector<uint8_t>& lookUpTable = dstColorSpace == ColorSpaceLinearRGB ?
-        getLinearRgbLUT() : getDeviceRgbLUT();
 
     ASSERT(bitmap.config() == SkBitmap::kARGB_8888_Config);
     IntSize size = m_surface->size();
@@ -292,17 +253,8 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
 PassRefPtr<SkColorFilter> ImageBuffer::createColorSpaceFilter(ColorSpace srcColorSpace,
     ColorSpace dstColorSpace)
 {
-    if ((srcColorSpace == dstColorSpace)
-        || (srcColorSpace != ColorSpaceLinearRGB && srcColorSpace != ColorSpaceDeviceRGB)
-        || (dstColorSpace != ColorSpaceLinearRGB && dstColorSpace != ColorSpaceDeviceRGB))
-        return 0;
-
-    const uint8_t* lut = 0;
-    if (dstColorSpace == ColorSpaceLinearRGB)
-        lut = &getLinearRgbLUT()[0];
-    else if (dstColorSpace == ColorSpaceDeviceRGB)
-        lut = &getDeviceRgbLUT()[0];
-    else
+    const uint8_t* lut = ColorSpaceUtilities::getConversionLUT(dstColorSpace, srcColorSpace);
+    if (!lut)
         return 0;
 
     return adoptRef(SkTableColorFilter::CreateARGB(0, lut, lut, lut));

@@ -539,6 +539,7 @@
       'graphics/Canvas2DLayerManager.h',
       'graphics/Color.cpp',
       'graphics/Color.h',
+      'graphics/ColorSpace.cpp',
       'graphics/ColorSpace.h',
       'graphics/CompositingReasons.h',
       'graphics/CrossfadeGeneratedImage.cpp',

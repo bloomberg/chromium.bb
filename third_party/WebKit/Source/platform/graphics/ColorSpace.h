@@ -27,6 +27,7 @@
 #define ColorSpace_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/Color.h"
 
 namespace WebCore {
 
@@ -35,6 +36,20 @@ enum ColorSpace {
     ColorSpaceSRGB,
     ColorSpaceLinearRGB
 };
+
+namespace ColorSpaceUtilities {
+
+// Get a pointer to a 8-bit lookup table that will convert color components
+// in the |srcColorSpace| to the |dstColorSpace|.
+// If the conversion cannot be performed, or is a no-op (identity transform),
+// then 0 is returned.
+// (Note that a round-trip - f(B,A)[f(A,B)[x]] - is not lossless in general.)
+const uint8_t* getConversionLUT(ColorSpace dstColorSpace, ColorSpace srcColorSpace = ColorSpaceDeviceRGB);
+
+// Convert a Color assumed to be in the |srcColorSpace| into the |dstColorSpace|.
+Color convertColor(const Color& srcColor, ColorSpace dstColorSpace, ColorSpace srcColorSpace = ColorSpaceDeviceRGB);
+
+} // namespace ColorSpaceUtilities
 
 } // namespace WebCore
 

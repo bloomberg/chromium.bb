@@ -88,7 +88,7 @@ void FEDropShadow::applySoftware()
     GraphicsContext* resultContext = resultImage->context();
     ASSERT(resultContext);
 
-    Color color = m_shadowColor.combineWithAlpha(m_shadowOpacity);
+    Color color = adaptColorToOperatingColorSpace(m_shadowColor.combineWithAlpha(m_shadowOpacity));
     SkAutoTUnref<SkImageFilter> blurFilter(new SkBlurImageFilter(blurRadius.width(), blurRadius.height()));
     SkAutoTUnref<SkColorFilter> colorFilter(SkColorFilter::CreateModeFilter(color.rgb(), SkXfermode::kSrcIn_Mode));
     SkPaint paint;
@@ -113,7 +113,7 @@ PassRefPtr<SkImageFilter> FEDropShadow::createImageFilter(SkiaImageFilterBuilder
     float dy = filter()->applyVerticalScale(m_dy);
     float stdX = filter()->applyHorizontalScale(m_stdX);
     float stdY = filter()->applyVerticalScale(m_stdY);
-    Color color = m_shadowColor.combineWithAlpha(m_shadowOpacity);
+    Color color = adaptColorToOperatingColorSpace(m_shadowColor.combineWithAlpha(m_shadowOpacity));
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
     return adoptRef(new SkDropShadowImageFilter(SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(stdX), SkFloatToScalar(stdY), color.rgb(), input.get(), &cropRect));
 }

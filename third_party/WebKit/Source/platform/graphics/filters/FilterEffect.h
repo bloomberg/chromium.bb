@@ -26,6 +26,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/ColorSpace.h"
 
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -182,6 +183,8 @@ protected:
     ImageBuffer* createImageBufferResult();
     Uint8ClampedArray* createUnmultipliedImageResult();
     Uint8ClampedArray* createPremultipliedImageResult();
+
+    Color adaptColorToOperatingColorSpace(const Color& deviceColor);
 
     // Return true if the filter will only operate correctly on valid RGBA values, with
     // alpha in [0,255] and each color component in [0, alpha].

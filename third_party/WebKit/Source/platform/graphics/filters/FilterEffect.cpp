@@ -458,6 +458,12 @@ Uint8ClampedArray* FilterEffect::createPremultipliedImageResult()
     return m_premultipliedImageResult.get();
 }
 
+Color FilterEffect::adaptColorToOperatingColorSpace(const Color& deviceColor)
+{
+    // |deviceColor| is assumed to be DeviceRGB.
+    return ColorSpaceUtilities::convertColor(deviceColor, operatingColorSpace());
+}
+
 void FilterEffect::transformResultColorSpace(ColorSpace dstColorSpace)
 {
     if (!hasResult() || dstColorSpace == m_resultColorSpace)
