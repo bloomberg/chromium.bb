@@ -8,12 +8,12 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/canvas_image_source.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 namespace drag_utils {
@@ -41,37 +41,33 @@ class FileDragImageSource : public gfx::CanvasImageSource {
 
   // Overridden from gfx::CanvasImageSource.
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
-    // Set up our text portion
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Font font = rb.GetFont(ResourceBundle::BaseFont);
-
     // Paint the icon.
     canvas->DrawImageInt(icon_, (size().width() - icon_.width()) / 2, 0);
 
     base::string16 name = file_name_.BaseName().LossyDisplayName();
     const int flags = gfx::Canvas::TEXT_ALIGN_CENTER;
+    const gfx::FontList font_list;
 #if defined(OS_WIN)
     // Paint the file name. We inset it one pixel to allow room for the halo.
-    canvas->DrawStringWithHalo(name, font, kFileDragImageTextColor,
-                               SK_ColorWHITE, 1,
-                               icon_.height() + kLinkDragImageVPadding + 1,
-                               size().width() - 2, font.GetHeight(), flags);
+    const gfx::Rect rect(1, icon_.height() + kLinkDragImageVPadding + 1,
+                         size().width() - 2, font_list.GetHeight());
+    canvas->DrawStringRectWithHalo(name, font_list, kFileDragImageTextColor,
+                                   SK_ColorWHITE, rect, flags);
 #else
     // NO_SUBPIXEL_RENDERING is required when drawing to a non-opaque canvas.
-    canvas->DrawStringInt(name, font, kFileDragImageTextColor,
-                          0, icon_.height() + kLinkDragImageVPadding,
-                          size().width(), font.GetHeight(),
-                          flags | gfx::Canvas::NO_SUBPIXEL_RENDERING);
+    const gfx::Rect rect(0, icon_.height() + kLinkDragImageVPadding,
+                         size().width(), font_list.GetHeight());
+    canvas->DrawStringRectWithFlags(name, font_list, kFileDragImageTextColor,
+                                    rect,
+                                    flags | gfx::Canvas::NO_SUBPIXEL_RENDERING);
 #endif
   }
 
  private:
   gfx::Size CalculateSize(const gfx::ImageSkia& icon) const {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Font font = rb.GetFont(ResourceBundle::BaseFont);
     const int width = kFileDragImageMaxWidth;
     // Add +2 here to allow room for the halo.
-    const int height = font.GetHeight() + icon.height() +
+    const int height = gfx::FontList().GetHeight() + icon.height() +
                        kLinkDragImageVPadding + 2;
     return gfx::Size(width, height);
   }
