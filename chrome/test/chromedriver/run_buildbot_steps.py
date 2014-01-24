@@ -16,24 +16,20 @@ import platform as platform_module
 import re
 import shutil
 import StringIO
-import subprocess
 import sys
 import tempfile
 import time
 import urllib2
 
-import archive
-import chrome_paths
-import util
-
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 GS_CHROMEDRIVER_BUCKET = 'gs://chromedriver'
 GS_CHROMEDRIVER_DATA_BUCKET = 'gs://chromedriver-data'
+GS_CHROMEDRIVER_RELEASE_URL = 'http://chromedriver.storage.googleapis.com'
 GS_CONTINUOUS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/continuous'
 GS_PREBUILTS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/prebuilts'
 GS_SERVER_LOGS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/server_logs'
 SERVER_LOGS_LINK = (
-  'http://chromedriver-data.storage.googleapis.com/server_logs')
+    'http://chromedriver-data.storage.googleapis.com/server_logs')
 TEST_LOG_FORMAT = '%s_log.json'
 
 SCRIPT_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir, os.pardir,
@@ -43,8 +39,12 @@ SITE_CONFIG_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
                                'site_config')
 sys.path.append(SCRIPT_DIR)
 sys.path.append(SITE_CONFIG_DIR)
+
+import archive
+import chrome_paths
 from slave import gsutil_download
 from slave import slave_utils
+import util
 
 
 def _ArchivePrebuilts(revision):
@@ -84,6 +84,9 @@ def _DownloadPrebuilts():
 
 def _GetTestResultsLog(platform):
   """Gets the test results log for the given platform.
+
+  Args:
+    platform: The platform that the test results log is for.
 
   Returns:
     A dictionary where the keys are SVN revisions and the values are booleans
@@ -145,8 +148,8 @@ def _GetSupportedChromeVersions():
   # const int kMinimumSupportedChromeVersion[] = {27, 0, 1453, 0};
   with open(os.path.join(_THIS_DIR, 'chrome', 'version.cc'), 'r') as f:
     lines = f.readlines()
-    chrome_min_version_line = filter(
-        lambda x: 'kMinimumSupportedChromeVersion' in x, lines)
+    chrome_min_version_line = [
+        x for x in lines if 'kMinimumSupportedChromeVersion' in x]
   chrome_min_version = chrome_min_version_line[0].split('{')[1].split(',')[0]
   with open(os.path.join(chrome_paths.GetSrc(), 'chrome', 'VERSION'), 'r') as f:
     chrome_max_version = f.readlines()[0].split('=')[1].strip()
@@ -186,6 +189,7 @@ def _RevisionState(test_results_log, revision):
 
 
 def _ArchiveGoodBuild(platform, revision):
+  """Archive chromedriver binary if the build is green."""
   assert platform != 'android'
   util.MarkBuildStepStart('archive build')
 
@@ -210,16 +214,22 @@ def _ArchiveGoodBuild(platform, revision):
   os.remove(latest_file)
 
 
+def _WasReleased(version, platform):
+  """Check if the specified version is released for the given platform."""
+  result, _ = slave_utils.GSUtilListBucket(
+      '%s/%s/chromedriver_%s.zip' % (GS_CHROMEDRIVER_BUCKET, version, platform),
+      [])
+  return result == 0
+
+
 def _MaybeRelease(platform):
   """Releases a release candidate if conditions are right."""
   assert platform != 'android'
 
+  version = _GetVersion()
+
   # Check if the current version has already been released.
-  result, _ = slave_utils.GSUtilListBucket(
-      '%s/%s/chromedriver_%s*' % (
-          GS_CHROMEDRIVER_BUCKET, _GetVersion(), platform),
-      [])
-  if result == 0:
+  if _WasReleased(version, platform):
     return
 
   # Fetch Android test results.
@@ -228,12 +238,12 @@ def _MaybeRelease(platform):
   # Fetch release candidates.
   result, output = slave_utils.GSUtilListBucket(
       '%s/chromedriver_%s_%s*' % (
-          GS_CONTINUOUS_URL, platform, _GetVersion()),
+          GS_CONTINUOUS_URL, platform, version),
       [])
   assert result == 0 and output, 'No release candidates found'
   candidates = [b.split('/')[-1] for b in output.strip().split('\n')]
-  candidate_pattern = re.compile('chromedriver_%s_%s\.\d+\.zip'
-      % (platform, _GetVersion()))
+  candidate_pattern = re.compile(
+      r'chromedriver_%s_%s\.\d+\.zip' % (platform, version))
 
   # Release the first candidate build that passed Android, if any.
   for candidate in candidates:
@@ -246,30 +256,35 @@ def _MaybeRelease(platform):
       print 'Android tests did not pass at revision', revision
     elif android_result == 'passed':
       print 'Android tests passed at revision', revision
-      _Release('%s/%s' % (GS_CONTINUOUS_URL, candidate), platform)
+      _Release('%s/%s' % (GS_CONTINUOUS_URL, candidate), version, platform)
       break
     else:
       print 'Android tests have not run at a revision as recent as', revision
 
 
-def _Release(build, platform):
+def _Release(build, version, platform):
   """Releases the given candidate build."""
   release_name = 'chromedriver_%s.zip' % platform
   util.MarkBuildStepStart('releasing %s' % release_name)
   slave_utils.GSUtilCopy(
-      build, '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, _GetVersion(), release_name))
+      build, '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, version, release_name))
 
-  _MaybeUploadReleaseNotes()
+  _MaybeUploadReleaseNotes(version)
+  _MaybeUpdateLatestRelease(version)
 
 
-def _MaybeUploadReleaseNotes():
+def _GetWebPageContent(url):
+  """Return the content of the web page specified by the given url."""
+  return urllib2.urlopen(url).read()
+
+
+def _MaybeUploadReleaseNotes(version):
   """Upload release notes if conditions are right."""
   # Check if the current version has already been released.
-  version = _GetVersion()
   notes_name = 'notes.txt'
   notes_url = '%s/%s/%s' % (GS_CHROMEDRIVER_BUCKET, version, notes_name)
   prev_version = '.'.join([version.split('.')[0],
-                          str(int(version.split('.')[1]) - 1)])
+                           str(int(version.split('.')[1]) - 1)])
   prev_notes_url = '%s/%s/%s' % (
       GS_CHROMEDRIVER_BUCKET, prev_version, notes_name)
 
@@ -280,14 +295,14 @@ def _MaybeUploadReleaseNotes():
   fixed_issues = []
   query = ('https://code.google.com/p/chromedriver/issues/csv?'
            'q=status%3AToBeReleased&colspec=ID%20Summary')
-  issues = StringIO.StringIO(urllib2.urlopen(query).read().split('\n', 1)[1])
+  issues = StringIO.StringIO(_GetWebPageContent(query).split('\n', 1)[1])
   for issue in csv.reader(issues):
     if not issue:
       continue
-    id = issue[0]
+    issue_id = issue[0]
     desc = issue[1]
     labels = issue[2]
-    fixed_issues += ['Resolved issue %s: %s [%s]' % (id, desc, labels)]
+    fixed_issues += ['Resolved issue %s: %s [%s]' % (issue_id, desc, labels)]
 
   old_notes = ''
   temp_notes_fname = tempfile.mkstemp()[1]
@@ -304,6 +319,33 @@ def _MaybeUploadReleaseNotes():
     f.write(new_notes)
 
   if slave_utils.GSUtilCopy(temp_notes_fname, notes_url, mimetype='text/plain'):
+    util.MarkBuildStepError()
+
+
+def _MaybeUpdateLatestRelease(version):
+  """Update the file LATEST_RELEASE with the latest release version number."""
+  latest_release_fname = 'LATEST_RELEASE'
+  latest_release_url = '%s/%s' % (GS_CHROMEDRIVER_BUCKET, latest_release_fname)
+
+  # Check if LATEST_RELEASE is up-to-date.
+  latest_released_version = _GetWebPageContent(
+      '%s/%s' % (GS_CHROMEDRIVER_RELEASE_URL, latest_release_fname))
+  if version == latest_released_version:
+    return
+
+  # Check if chromedriver was released on all supported platforms.
+  supported_platforms = ['linux32', 'linux64', 'mac32', 'win32']
+  for platform in supported_platforms:
+    if not _WasReleased(version, platform):
+      return
+
+  util.MarkBuildStepStart('updating LATEST_RELEASE to %s' % version)
+
+  temp_latest_release_fname = tempfile.mkstemp()[1]
+  with open(temp_latest_release_fname, 'w') as f:
+    f.write(version)
+  if slave_utils.GSUtilCopy(temp_latest_release_fname, latest_release_url,
+                            mimetype='text/plain'):
     util.MarkBuildStepError()
 
 
@@ -365,11 +407,12 @@ def main():
   parser = optparse.OptionParser()
   parser.add_option(
       '', '--android-packages',
-      help='Comma separated list of application package names, '
-           'if running tests on Android.')
+      help=('Comma separated list of application package names, '
+            'if running tests on Android.'))
   parser.add_option(
       '-r', '--revision', type='int', help='Chromium revision')
-  parser.add_option('', '--update-log', action='store_true',
+  parser.add_option(
+      '', '--update-log', action='store_true',
       help='Update the test results log (only applicable to Android)')
   options, _ = parser.parse_args()
 
