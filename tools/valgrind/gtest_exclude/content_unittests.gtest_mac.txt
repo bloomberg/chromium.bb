@@ -48,6 +48,7 @@ WebRTCAudioDeviceTest.WebRtcRecordingSetupTime
 FontSerializationTest.StyledFonts
 MacSandboxTest.FontLoadingTest
 VideoCaptureManagerTest.ManipulateDeviceAndCheckCapabilities
+VideoCaptureManagerTest.StartDeviceAndGetDeviceFormatInUse
 
 # http://crbug.com/280583
 DesktopCaptureDeviceTest.ScreenResolutionChangeVariableResolution
