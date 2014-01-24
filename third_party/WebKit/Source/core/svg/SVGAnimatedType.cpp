@@ -61,9 +61,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedPath:
         delete m_data.path;
         break;
-    case AnimatedPoints:
-        delete m_data.pointList;
-        break;
     case AnimatedPreserveAspectRatio:
         delete m_data.preserveAspectRatio;
         break;
@@ -78,8 +75,15 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedLength:
     case AnimatedLengthList:
     case AnimatedRect:
+    case AnimatedPoints:
         // handled by RefPtr
         break;
+
+    // There is no SVGAnimatedPoint
+    case AnimatedPoint:
+        ASSERT_NOT_REACHED();
+        break;
+
     case AnimatedUnknown:
         ASSERT_NOT_REACHED();
         break;
@@ -158,14 +162,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPath(PassOwnPtr<SVGPathByteSt
     return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPointList(SVGPointList* pointList)
-{
-    ASSERT(pointList);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedPoints));
-    animatedType->m_data.pointList = pointList;
-    return animatedType.release();
-}
-
 PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPreserveAspectRatio(SVGPreserveAspectRatio* preserveAspectRatio)
 {
     ASSERT(preserveAspectRatio);
@@ -214,6 +210,7 @@ String SVGAnimatedType::valueAsString()
     // Below properties have migrated to new property implementation.
     case AnimatedLength:
     case AnimatedLengthList:
+    case AnimatedPoints:
     case AnimatedRect:
         return m_newProperty->valueAsString();
 
@@ -226,7 +223,7 @@ String SVGAnimatedType::valueAsString()
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:
     case AnimatedPath:
-    case AnimatedPoints:
+    case AnimatedPoint:
     case AnimatedPreserveAspectRatio:
     case AnimatedTransformList:
     case AnimatedUnknown:
@@ -257,6 +254,7 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     // Below properties have migrated to new property implementation.
     case AnimatedLength:
     case AnimatedLengthList:
+    case AnimatedPoints:
     case AnimatedRect:
         // Always use createForAnimation call path for these implementations.
         return false;
@@ -270,7 +268,7 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:
     case AnimatedPath:
-    case AnimatedPoints:
+    case AnimatedPoint:
     case AnimatedPreserveAspectRatio:
     case AnimatedTransformList:
     case AnimatedUnknown:

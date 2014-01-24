@@ -35,6 +35,7 @@
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
+#include "core/svg/SVGPointList.h"
 
 namespace WebCore {
 
@@ -81,9 +82,15 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
         return property.release();
     }
 
+    // These types don't appear in the table in SVGElement::cssPropertyToTypeMap() and thus don't need support.
+    case AnimatedBoolean:
+    case AnimatedPoint:
+    case AnimatedPoints:
+    case AnimatedRect:
+        ASSERT_NOT_REACHED();
+
     // These properties are not yet migrated to NewProperty implementation. see http://crbug.com/308818
     case AnimatedAngle:
-    case AnimatedBoolean:
     case AnimatedColor:
     case AnimatedEnumeration:
     case AnimatedInteger:
@@ -92,9 +99,7 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:
     case AnimatedPath:
-    case AnimatedPoints:
     case AnimatedPreserveAspectRatio:
-    case AnimatedRect:
     case AnimatedString:
     case AnimatedTransformList:
         ASSERT_NOT_REACHED();

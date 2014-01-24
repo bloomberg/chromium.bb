@@ -25,6 +25,7 @@
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGraphicsElement.h"
+#include "core/svg/SVGPointTearOff.h"
 
 namespace WebCore {
 
@@ -79,11 +80,11 @@ public:
     unsigned getNumberOfChars();
     float getComputedTextLength();
     float getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState&);
-    SVGPoint getStartPositionOfChar(unsigned charnum, ExceptionState&);
-    SVGPoint getEndPositionOfChar(unsigned charnum, ExceptionState&);
+    PassRefPtr<SVGPointTearOff> getStartPositionOfChar(unsigned charnum, ExceptionState&);
+    PassRefPtr<SVGPointTearOff> getEndPositionOfChar(unsigned charnum, ExceptionState&);
     PassRefPtr<SVGRectTearOff> getExtentOfChar(unsigned charnum, ExceptionState&);
     float getRotationOfChar(unsigned charnum, ExceptionState&);
-    int getCharNumAtPosition(const SVGPoint&);
+    int getCharNumAtPosition(PassRefPtr<SVGPointTearOff>, ExceptionState&);
     void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);
 
     static SVGTextContentElement* elementFromRenderer(RenderObject*);

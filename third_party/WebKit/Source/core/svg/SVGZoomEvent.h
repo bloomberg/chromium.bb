@@ -38,12 +38,12 @@ public:
     float previousScale() const;
     void setPreviousScale(float);
 
-    SVGPoint previousTranslate() const;
+    PassRefPtr<SVGPointTearOff> previousTranslate() const;
 
     float newScale() const;
     void setNewScale(float);
 
-    SVGPoint newTranslate() const;
+    PassRefPtr<SVGPointTearOff> newTranslate() const;
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
@@ -53,8 +53,8 @@ private:
     float m_newScale;
     float m_previousScale;
 
-    SVGPoint m_newTranslate;
-    SVGPoint m_previousTranslate;
+    FloatPoint m_newTranslate;
+    FloatPoint m_previousTranslate;
 };
 
 } // namespace WebCore

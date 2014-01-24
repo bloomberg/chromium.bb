@@ -46,8 +46,6 @@ struct SkPoint;
 
 namespace WebCore {
 
-class AffineTransform;
-class TransformationMatrix;
 class IntPoint;
 class IntSize;
 class LayoutPoint;
@@ -142,11 +140,6 @@ public:
 #endif
 
     operator SkPoint() const;
-
-    // FIXME: These are only used by SVGPoint and should probably move there.
-    // http://crbug.com/302829
-    FloatPoint matrixTransform(const TransformationMatrix&) const;
-    FloatPoint matrixTransform(const AffineTransform&) const;
 
 private:
     float m_x, m_y;

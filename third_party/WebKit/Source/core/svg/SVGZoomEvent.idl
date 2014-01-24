@@ -26,8 +26,8 @@
 interface SVGZoomEvent : UIEvent {
     readonly attribute SVGRect zoomRectScreen;
     readonly attribute float previousScale;
-    [Immutable] readonly attribute SVGPoint previousTranslate;
+    readonly attribute SVGPoint previousTranslate;
     readonly attribute float newScale;
-    [Immutable] readonly attribute SVGPoint newTranslate;
+    readonly attribute SVGPoint newTranslate;
 };
 

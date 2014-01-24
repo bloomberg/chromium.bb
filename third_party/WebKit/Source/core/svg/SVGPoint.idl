@@ -20,9 +20,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface SVGPoint {
-    [StrictTypeChecking] attribute float x;
-    [StrictTypeChecking] attribute float y;
+[
+    ImplementedAs=SVGPointTearOff,
+    SetWrapperReferenceTo(SVGElement contextElement)
+] interface SVGPoint {
+    [StrictTypeChecking, RaisesException=Setter] attribute float x;
+    [StrictTypeChecking, RaisesException=Setter] attribute float y;
 
     [MeasureAs=SVGPointMatrixTransform, StrictTypeChecking] SVGPoint matrixTransform(SVGMatrix matrix);
 };

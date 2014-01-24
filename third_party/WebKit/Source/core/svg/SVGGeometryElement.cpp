@@ -35,6 +35,7 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/RenderSVGShape.h"
+#include "core/svg/SVGPointTearOff.h"
 
 namespace WebCore {
 
@@ -43,7 +44,7 @@ SVGGeometryElement::SVGGeometryElement(const QualifiedName& tagName, Document& d
 {
 }
 
-bool SVGGeometryElement::isPointInFill(const SVGPoint& point) const
+bool SVGGeometryElement::isPointInFill(PassRefPtr<SVGPointTearOff> point) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -54,10 +55,10 @@ bool SVGGeometryElement::isPointInFill(const SVGPoint& point) const
     HitTestRequest request(HitTestRequest::ReadOnly);
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, renderer()->style()->pointerEvents());
     hitRules.canHitStroke = false;
-    return toRenderSVGShape(renderer())->nodeAtFloatPointInternal(request, point, hitRules);
+    return toRenderSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
-bool SVGGeometryElement::isPointInStroke(const SVGPoint& point) const
+bool SVGGeometryElement::isPointInStroke(PassRefPtr<SVGPointTearOff> point) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -68,7 +69,7 @@ bool SVGGeometryElement::isPointInStroke(const SVGPoint& point) const
     HitTestRequest request(HitTestRequest::ReadOnly);
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, renderer()->style()->pointerEvents());
     hitRules.canHitFill = false;
-    return toRenderSVGShape(renderer())->nodeAtFloatPointInternal(request, point, hitRules);
+    return toRenderSVGShape(renderer())->nodeAtFloatPointInternal(request, point->target()->value(), hitRules);
 }
 
 }

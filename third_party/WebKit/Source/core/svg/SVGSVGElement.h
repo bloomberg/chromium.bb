@@ -28,6 +28,7 @@
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGLengthTearOff.h"
+#include "core/svg/SVGPointTearOff.h"
 #include "core/svg/SVGZoomAndPan.h"
 
 namespace WebCore {
@@ -81,11 +82,9 @@ public:
     float currentScale() const;
     void setCurrentScale(float scale);
 
-    SVGPoint& currentTranslate() { return m_translation; }
+    FloatPoint currentTranslate() { return m_translation->value(); }
     void setCurrentTranslate(const FloatPoint&);
-
-    // Only used from the bindings.
-    void updateCurrentTranslate();
+    PassRefPtr<SVGPointTearOff> currentTranslateFromJavascript();
 
     SMILTimeContainer* timeContainer() const { return m_timeContainer.get(); }
 
@@ -110,7 +109,7 @@ public:
     static float createSVGNumber();
     static PassRefPtr<SVGLengthTearOff> createSVGLength();
     static SVGAngle createSVGAngle();
-    static SVGPoint createSVGPoint();
+    static PassRefPtr<SVGPointTearOff> createSVGPoint();
     static SVGMatrix createSVGMatrix();
     static PassRefPtr<SVGRectTearOff> createSVGRect();
     static SVGTransform createSVGTransform();
@@ -156,6 +155,8 @@ private:
 
     void inheritViewAttributes(SVGViewElement*);
 
+    void updateCurrentTranslate();
+
     enum CollectIntersectionOrEnclosure {
         CollectIntersectionList,
         CollectEnclosureList
@@ -177,8 +178,10 @@ private:
     bool m_useCurrentView;
     SVGZoomAndPanType m_zoomAndPan;
     RefPtr<SMILTimeContainer> m_timeContainer;
-    SVGPoint m_translation;
+    RefPtr<SVGPoint> m_translation;
     RefPtr<SVGViewSpec> m_viewSpec;
+
+    friend class SVGCurrentTranslateTearOff;
 };
 
 inline bool isSVGSVGElement(const Node& node)

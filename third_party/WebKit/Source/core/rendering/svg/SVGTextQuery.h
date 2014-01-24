@@ -21,7 +21,7 @@
 #define SVGTextQuery_h
 
 #include "core/rendering/svg/SVGTextFragment.h"
-#include "core/svg/SVGPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/Vector.h"
 
@@ -42,7 +42,7 @@ public:
     FloatPoint endPositionOfCharacter(unsigned position) const;
     float rotationOfCharacter(unsigned position) const;
     FloatRect extentOfCharacter(unsigned position) const;
-    int characterNumberAtPosition(const SVGPoint&) const;
+    int characterNumberAtPosition(const FloatPoint&) const;
 
     // Public helper struct. Private classes in SVGTextQuery inherit from it.
     struct Data;

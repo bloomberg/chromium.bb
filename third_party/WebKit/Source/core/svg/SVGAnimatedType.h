@@ -24,7 +24,6 @@
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGNumberList.h"
-#include "core/svg/SVGPointList.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/NewSVGAnimatedProperty.h"
@@ -48,7 +47,6 @@ public:
     static PassOwnPtr<SVGAnimatedType> createNumberList(SVGNumberList*);
     static PassOwnPtr<SVGAnimatedType> createNumberOptionalNumber(std::pair<float, float>*);
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
-    static PassOwnPtr<SVGAnimatedType> createPointList(SVGPointList*);
     static PassOwnPtr<SVGAnimatedType> createPreserveAspectRatio(SVGPreserveAspectRatio*);
     static PassOwnPtr<SVGAnimatedType> createString(String*);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
@@ -112,12 +110,6 @@ public:
         return m_data.path;
     }
 
-    SVGPointList& pointList()
-    {
-        ASSERT(m_type == AnimatedPoints);
-        return *m_data.pointList;
-    }
-
     SVGPreserveAspectRatio& preserveAspectRatio()
     {
         ASSERT(m_type == AnimatedPreserveAspectRatio);
@@ -165,7 +157,6 @@ private:
         std::pair<float, float>* numberOptionalNumber;
         SVGPathByteStream* path;
         SVGPreserveAspectRatio* preserveAspectRatio;
-        SVGPointList* pointList;
         String* string;
         SVGTransformList* transformList;
     } m_data;

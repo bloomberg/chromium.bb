@@ -28,51 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPointList_h
-#define SVGPointList_h
+#ifndef SVGPointListTearOff_h
+#define SVGPointListTearOff_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/svg/SVGPoint.h"
-#include "core/svg/properties/NewSVGListPropertyHelper.h"
+#include "core/svg/SVGPointList.h"
+#include "core/svg/properties/NewSVGListPropertyTearOffHelper.h"
 
 namespace WebCore {
 
-class SVGPointListTearOff;
-
-class SVGPointList FINAL : public NewSVGListPropertyHelper<SVGPointList, SVGPoint> {
+class SVGPointListTearOff FINAL :
+    public NewSVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>,
+    public ScriptWrappable {
 public:
-    typedef SVGPointListTearOff TearOffType;
-
-    static PassRefPtr<SVGPointList> create()
+    static PassRefPtr<SVGPointListTearOff> create(PassRefPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
     {
-        return adoptRef(new SVGPointList());
+        return adoptRef(new SVGPointListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
-    virtual ~SVGPointList();
-
-    PassRefPtr<SVGPointList> clone();
-
-    void setValueAsString(const String&, ExceptionState&);
-
-    // NewSVGPropertyBase:
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
-    virtual String valueAsString() const OVERRIDE;
-
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
-
-    static AnimatedPropertyType classType() { return AnimatedPoints; }
-
 private:
-    SVGPointList();
-
-    bool adjustFromToListValues(PassRefPtr<SVGPointList> fromList, PassRefPtr<SVGPointList> toList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded);
-
-    template <typename CharType>
-    bool parse(const CharType*& ptr, const CharType* end);
+    SVGPointListTearOff(PassRefPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+        : NewSVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>(target, contextElement, propertyIsAnimVal, attributeName)
+    {
+        ScriptWrappable::init(this);
+    }
 };
 
 } // namespace WebCore
 
-#endif // SVGPointList_h
+#endif // SVGPointListTearOff_h_

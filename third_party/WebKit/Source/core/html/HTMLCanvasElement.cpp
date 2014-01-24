@@ -50,6 +50,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/WebGLImageBufferSurface.h"
+#include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {

@@ -536,7 +536,7 @@ bool SVGTextQuery::characterNumberAtPositionCallback(Data* queryData, const SVGT
     return false;
 }
 
-int SVGTextQuery::characterNumberAtPosition(const SVGPoint& position) const
+int SVGTextQuery::characterNumberAtPosition(const FloatPoint& position) const
 {
     if (m_textBoxes.isEmpty())
         return -1;

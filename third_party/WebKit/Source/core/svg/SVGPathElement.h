@@ -56,7 +56,7 @@ public:
     static PassRefPtr<SVGPathElement> create(Document&);
 
     float getTotalLength();
-    SVGPoint getPointAtLength(float distance);
+    PassRefPtr<SVGPointTearOff> getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);
 
     PassRefPtr<SVGPathSegClosePath> createSVGPathSegClosePath(SVGPathSegRole role = PathSegUndefinedRole);

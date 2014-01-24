@@ -34,7 +34,7 @@ public:
 
     unsigned pathSegmentIndex();
     float totalLength();
-    SVGPoint currentPoint();
+    FloatPoint currentPoint();
 
     void setCurrentTraversalState(PathTraversalState* traversalState) { m_traversalState = traversalState; }
     void setDesiredLength(float);

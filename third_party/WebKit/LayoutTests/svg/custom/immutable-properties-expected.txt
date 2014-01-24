@@ -11,13 +11,14 @@ PASS zoomRectScreen.x = 100; threw exception NoModificationAllowedError: Failed 
 PASS zoomEvent.previousScale is 0
 PASS zoomEvent.previousScale is 0
 PASS previousTranslate.x is 0
-PASS previousTranslate.x is 300
+PASS previousTranslate.x = 300; threw exception NoModificationAllowedError: Failed to set the 'x' property on 'SVGPoint': The attribute is read-only..
 PASS zoomEvent.previousTranslate.x is 0
 PASS zoomEvent.newScale is 0
+FAIL zoomEvent.newScale = 200; should throw an exception. Was 200.
 PASS zoomEvent.newScale is 0
 PASS newTranslate.x is 0
-PASS newTranslate.x is 300
-PASS zoomEvent.newTranslate.x is 0
+PASS newTranslate.x = 300; threw exception NoModificationAllowedError: Failed to set the 'x' property on 'SVGPoint': The attribute is read-only..
+PASS newTranslate.x is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

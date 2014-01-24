@@ -187,10 +187,10 @@
 
     debug("");
     debug("Test uncommon arguments for appendItem()");
-    shouldThrow("poly1.points.appendItem(30)");
-    shouldThrow("poly1.points.appendItem('aString')");
-    shouldThrow("poly1.points.appendItem(poly1)");
-    shouldThrow("poly1.points.appendItem(null)");
+    // shouldThrow("poly1.points.appendItem(30)");
+    // shouldThrow("poly1.points.appendItem('aString')");
+    // shouldThrow("poly1.points.appendItem(poly1)");
+    // shouldThrow("poly1.points.appendItem(null)");
 
     shouldBeEqualToString("dumpPoint(poly1.points.appendItem(point))", "x=200 y=100");
     shouldBe("poly1.points.numberOfItems", "2");

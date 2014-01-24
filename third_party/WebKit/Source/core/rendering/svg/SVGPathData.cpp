@@ -72,32 +72,26 @@ static void updatePathFromPathElement(SVGElement* element, Path& path)
     buildPathFromByteStream(toSVGPathElement(element)->pathByteStream(), path);
 }
 
-static void updatePathFromPolygonElement(SVGElement* element, Path& path)
-{
-    SVGPointList& points = toSVGPolygonElement(element)->pointsCurrentValue();
-    if (points.isEmpty())
-        return;
-
-    path.moveTo(points.first());
-
-    unsigned size = points.size();
-    for (unsigned i = 1; i < size; ++i)
-        path.addLineTo(points.at(i));
-
-    path.closeSubpath();
-}
-
 static void updatePathFromPolylineElement(SVGElement* element, Path& path)
 {
-    SVGPointList& points = toSVGPolylineElement(element)->pointsCurrentValue();
-    if (points.isEmpty())
+    RefPtr<SVGPointList> points = toSVGPolyElement(element)->points()->currentValue();
+    if (points->isEmpty())
         return;
 
-    path.moveTo(points.first());
+    SVGPointList::ConstIterator it = points->begin();
+    SVGPointList::ConstIterator itEnd = points->end();
+    ASSERT(it != itEnd);
+    path.moveTo(it->value());
+    ++it;
 
-    unsigned size = points.size();
-    for (unsigned i = 1; i < size; ++i)
-        path.addLineTo(points.at(i));
+    for (; it != itEnd; ++it)
+        path.addLineTo(it->value());
+}
+
+static void updatePathFromPolygonElement(SVGElement* element, Path& path)
+{
+    updatePathFromPolylineElement(element, path);
+    path.closeSubpath();
 }
 
 static void updatePathFromRectElement(SVGElement* element, Path& path)

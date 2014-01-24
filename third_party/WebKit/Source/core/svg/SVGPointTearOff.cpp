@@ -28,16 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedPointList_h
-#define SVGAnimatedPointList_h
+#include "config.h"
 
-#include "core/svg/SVGPointListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/SVGPointTearOff.h"
+
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGMatrix.h"
 
 namespace WebCore {
 
-typedef NewSVGAnimatedProperty<SVGPointList> SVGAnimatedPointList;
+SVGPointTearOff::SVGPointTearOff(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+    : NewSVGPropertyTearOff<SVGPoint>(target, contextElement, propertyIsAnimVal, attributeName)
+{
+    ScriptWrappable::init(this);
+}
 
-} // namespace WebCore
+void SVGPointTearOff::setX(float f, ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
+    }
 
-#endif
+    target()->setX(f);
+    commitChange();
+}
+
+void SVGPointTearOff::setY(float f, ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
+    }
+
+    target()->setY(f);
+    commitChange();
+}
+
+PassRefPtr<SVGPointTearOff> SVGPointTearOff::matrixTransform(SVGMatrix matrix)
+{
+    FloatPoint point = target()->matrixTransform(matrix);
+    return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
+}
+
+}

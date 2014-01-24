@@ -46,6 +46,7 @@
 #include "core/svg/SVGPathSegMovetoAbs.h"
 #include "core/svg/SVGPathSegMovetoRel.h"
 #include "core/svg/SVGPathUtilities.h"
+#include "core/svg/SVGPointTearOff.h"
 #include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 
 namespace WebCore {
@@ -96,11 +97,11 @@ float SVGPathElement::getTotalLength()
     return totalLength;
 }
 
-SVGPoint SVGPathElement::getPointAtLength(float length)
+PassRefPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
 {
-    SVGPoint point;
+    FloatPoint point;
     getPointAtLengthOfSVGPathByteStream(pathByteStream(), length, point);
-    return point;
+    return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
 unsigned SVGPathElement::getPathSegAtLength(float length)

@@ -331,10 +331,10 @@ void RenderSVGRoot::buildLocalToBorderBoxTransform()
     SVGSVGElement* svg = toSVGSVGElement(node());
     ASSERT(svg);
     float scale = style()->effectiveZoom();
-    SVGPoint translate = svg->currentTranslate();
+    FloatPoint translate = svg->currentTranslate();
     LayoutSize borderAndPadding(borderLeft() + paddingLeft(), borderTop() + paddingTop());
     m_localToBorderBoxTransform = svg->viewBoxToViewTransform(contentWidth() / scale, contentHeight() / scale);
-    if (borderAndPadding.isEmpty() && scale == 1 && translate == SVGPoint::zero())
+    if (borderAndPadding.isEmpty() && scale == 1 && translate == FloatPoint::zero())
         return;
     m_localToBorderBoxTransform = AffineTransform(scale, 0, 0, scale, borderAndPadding.width() + translate.x(), borderAndPadding.height() + translate.y()) * m_localToBorderBoxTransform;
 }

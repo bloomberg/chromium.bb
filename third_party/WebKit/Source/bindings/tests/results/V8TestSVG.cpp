@@ -45,8 +45,6 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
-#include "core/svg/properties/SVGPropertyTearOff.h"
-#include "core/svg/properties/SVGStaticPropertyTearOff.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -111,7 +109,7 @@ static void animatedReflectedAttributeAttributeSetterCallback(v8::Local<v8::Stri
 static void mutablePointAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(SVGStaticPropertyTearOff<TestSVG, SVGPoint>::create(imp, imp->mutablePoint(), &TestSVG::updateMutablePoint)), imp);
+    v8SetReturnValueFast(info, imp->mutablePoint(), imp);
 }
 
 static void mutablePointAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -123,15 +121,9 @@ static void mutablePointAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void mutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "mutablePoint", "TestSVG", info.Holder(), info.GetIsolate());
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    if (!WTF::getPtr(cppValue)) {
-        exceptionState.throwTypeError("The provided value is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    imp->setMutablePoint(WTF::getPtr(cppValue)->propertyReference());
+    V8TRYCATCH_VOID(SVGPointTearOff*, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    imp->setMutablePoint(WTF::getPtr(cppValue));
 }
 
 static void mutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -144,7 +136,7 @@ static void mutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 static void immutablePointAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePoint())), imp);
+    v8SetReturnValueFast(info, imp->immutablePoint(), imp);
 }
 
 static void immutablePointAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -156,15 +148,9 @@ static void immutablePointAttributeGetterCallback(v8::Local<v8::String>, const v
 
 static void immutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "immutablePoint", "TestSVG", info.Holder(), info.GetIsolate());
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    if (!WTF::getPtr(cppValue)) {
-        exceptionState.throwTypeError("The provided value is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    imp->setImmutablePoint(WTF::getPtr(cppValue)->propertyReference());
+    V8TRYCATCH_VOID(SVGPointTearOff*, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    imp->setImmutablePoint(WTF::getPtr(cppValue));
 }
 
 static void immutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -199,7 +185,7 @@ static void getSVGDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->mutablePointFunction())));
+    v8SetReturnValue(info, imp->mutablePointFunction());
 }
 
 static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -212,7 +198,7 @@ static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())));
+    v8SetReturnValue(info, imp->immutablePointFunction());
 }
 
 static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -225,7 +211,7 @@ static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<
 static void immutablePointFunctionTypedefMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunctionTypedef())));
+    v8SetReturnValue(info, imp->immutablePointFunctionTypedef());
 }
 
 static void immutablePointFunctionTypedefMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -244,14 +230,9 @@ static void svgPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info
         return;
     }
     TestSVG* imp = V8TestSVG::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(SVGPointTearOff*, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[1], exceptionState), exceptionState);
-    if (!item) {
-        exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->svgPointMethod(item->propertyReference(), index))));
+    v8SetReturnValue(info, imp->svgPointMethod(item, index));
 }
 
 static void svgPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -275,17 +256,12 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
         exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(SVGPointTearOff*, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate()) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[1], exceptionState), exceptionState);
-    if (!item) {
-        exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    SVGPoint result = imp->strictSVGPointMethod(item->propertyReference(), index, exceptionState);
+    RefPtr<SVGPointTearOff> result = imp->strictSVGPointMethod(item, index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(result)));
+    v8SetReturnValue(info, result.release());
 }
 
 static void strictSVGPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

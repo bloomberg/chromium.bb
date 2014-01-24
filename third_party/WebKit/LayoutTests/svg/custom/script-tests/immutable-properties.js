@@ -29,23 +29,20 @@ shouldBe("zoomEvent.previousScale", "0")
 var previousTranslate = zoomEvent.previousTranslate;
 
 shouldBe("previousTranslate.x", "0");
-previousTranslate.x = 300;
+shouldThrow("previousTranslate.x = 300;");
 
-shouldBe("previousTranslate.x", "300");
 shouldBe("zoomEvent.previousTranslate.x", "0");
 
 // 'newScale' property
 shouldBe("zoomEvent.newScale", "0");
-zoomEvent.newScale = 200;
+shouldThrow("zoomEvent.newScale = 200;");
 shouldBe("zoomEvent.newScale", "0");
 
 // 'newTranslate' property
-var newTranslate = zoomEvent.previousTranslate;
+var newTranslate = zoomEvent.newTranslate;
 
 shouldBe("newTranslate.x", "0");
-newTranslate.x = 300;
-
-shouldBe("newTranslate.x", "300");
-shouldBe("zoomEvent.newTranslate.x", "0");
+shouldThrow("newTranslate.x = 300;");
+shouldBe("newTranslate.x", "0");
 
 var successfullyParsed = true;

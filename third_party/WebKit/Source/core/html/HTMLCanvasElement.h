@@ -37,6 +37,7 @@
 
 namespace WebCore {
 
+class AffineTransform;
 class CanvasContextAttributes;
 class CanvasRenderingContext;
 class GraphicsContext;

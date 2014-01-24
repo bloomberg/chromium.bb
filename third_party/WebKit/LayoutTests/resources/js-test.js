@@ -160,7 +160,7 @@ function isMinusZero(n)
 
 function isNewSVGTearOffType(v)
 {
-    return ['[object SVGLength]', '[object SVGLengthList]'].indexOf(""+v) != -1;
+    return ['[object SVGLength]', '[object SVGLengthList]', '[object SVGPoint]', '[object SVGPointList]'].indexOf(""+v) != -1;
 }
 
 function isResultCorrect(actual, expected)

@@ -32,14 +32,15 @@
 #define SVGGeometryElement_h
 
 #include "core/svg/SVGGraphicsElement.h"
-#include "core/svg/SVGPoint.h"
 
 namespace WebCore {
 
+class SVGPointTearOff;
+
 class SVGGeometryElement : public SVGGraphicsElement {
 public:
-    bool isPointInFill(const SVGPoint&) const;
-    bool isPointInStroke(const SVGPoint&) const;
+    bool isPointInFill(PassRefPtr<SVGPointTearOff>) const;
+    bool isPointInStroke(PassRefPtr<SVGPointTearOff>) const;
 
 protected:
     SVGGeometryElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);

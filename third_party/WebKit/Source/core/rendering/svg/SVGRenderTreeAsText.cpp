@@ -344,7 +344,7 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
         writeNameValuePair(ts, "cy", element->cy()->currentValue()->value(lengthContext));
         writeNameValuePair(ts, "r", element->r()->currentValue()->value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::polygonTag) || svgElement->hasTagName(SVGNames::polylineTag)) {
-        writeNameAndQuotedValue(ts, "points", toSVGPolyElement(svgElement)->pointsCurrentValue().valueAsString());
+        writeNameAndQuotedValue(ts, "points", toSVGPolyElement(svgElement)->points()->currentValue()->valueAsString());
     } else if (svgElement->hasTagName(SVGNames::pathTag)) {
         String pathString;
         // FIXME: We should switch to UnalteredParsing here - this will affect the path dumping output of dozens of tests.

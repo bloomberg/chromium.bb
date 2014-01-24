@@ -21,19 +21,15 @@
 #define SVGAnimatorFactory_h
 
 #include "core/svg/SVGAnimatedAngle.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedInteger.h"
 #include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
-#include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGAnimatedLengthList.h"
 #include "core/svg/SVGAnimatedNewPropertyAnimator.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGAnimatedPath.h"
-#include "core/svg/SVGAnimatedPointList.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGAnimatedString.h"
@@ -69,8 +65,6 @@ public:
             return adoptPtr(new SVGAnimatedNumberOptionalNumberAnimator(animationElement, contextElement));
         case AnimatedPath:
             return adoptPtr(new SVGAnimatedPathAnimator(animationElement, contextElement));
-        case AnimatedPoints:
-            return adoptPtr(new SVGAnimatedPointListAnimator(animationElement, contextElement));
         case AnimatedPreserveAspectRatio:
             return adoptPtr(new SVGAnimatedPreserveAspectRatioAnimator(animationElement, contextElement));
         case AnimatedString:
@@ -82,7 +76,13 @@ public:
         case AnimatedLength:
         case AnimatedLengthList:
         case AnimatedRect:
+        case AnimatedPoints:
             return adoptPtr(new SVGAnimatedNewPropertyAnimator(attributeType, animationElement, contextElement));
+
+        // SVGAnimatedPoint does not exist.
+        case AnimatedPoint:
+            ASSERT_NOT_REACHED();
+
         case AnimatedUnknown:
             break;
         }

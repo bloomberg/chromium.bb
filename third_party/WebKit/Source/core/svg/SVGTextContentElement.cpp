@@ -111,28 +111,30 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
     return SVGTextQuery(renderer()).subStringLength(charnum, nchars);
 }
 
-SVGPoint SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
+PassRefPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
-        return FloatPoint();
+        return 0;
     }
 
-    return SVGTextQuery(renderer()).startPositionOfCharacter(charnum);
+    FloatPoint point = SVGTextQuery(renderer()).startPositionOfCharacter(charnum);
+    return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
-SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
+PassRefPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
-        return FloatPoint();
+        return 0;
     }
 
-    return SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
+    FloatPoint point = SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
+    return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
 PassRefPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
@@ -160,10 +162,10 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
     return SVGTextQuery(renderer()).rotationOfCharacter(charnum);
 }
 
-int SVGTextContentElement::getCharNumAtPosition(const SVGPoint& point)
+int SVGTextContentElement::getCharNumAtPosition(PassRefPtr<SVGPointTearOff> point, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
-    return SVGTextQuery(renderer()).characterNumberAtPosition(point);
+    return SVGTextQuery(renderer()).characterNumberAtPosition(point->target()->value());
 }
 
 void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, ExceptionState& exceptionState)

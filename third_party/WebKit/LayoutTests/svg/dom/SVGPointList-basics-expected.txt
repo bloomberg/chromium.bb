@@ -34,7 +34,7 @@ PASS dumpPoint(poly1.points.getItem(3)) is "x=0 y=100"
 PASS poly1.getAttribute('points').formatPointsAttribute() is "0 0 100 0 100 100 0 100"
 
 Test uncommon arguments for getItem()
-PASS poly1.points.getItem(30) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGPointList': The index provided (30) is greater than the maximum bound (4)..
+PASS poly1.points.getItem(30) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS poly1.points.getItem('aString') is poly1.points.getItem(0)
 PASS poly1.points.getItem(poly1) is poly1.points.getItem(0)
 PASS poly1.points.getItem(null) is poly1.points.getItem(0)
@@ -139,10 +139,6 @@ PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=100"
 PASS poly1.getAttribute('points').formatPointsAttribute() is "0 100"
 
 Test uncommon arguments for appendItem()
-PASS poly1.points.appendItem(30) threw exception TypeError: Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
-PASS poly1.points.appendItem('aString') threw exception TypeError: Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
-PASS poly1.points.appendItem(poly1) threw exception TypeError: Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
-PASS poly1.points.appendItem(null) threw exception TypeError: Failed to execute 'appendItem' on 'SVGPointList': parameter 1 is not of type 'SVGPoint'..
 PASS dumpPoint(poly1.points.appendItem(point)) is "x=200 y=100"
 PASS poly1.points.numberOfItems is 2
 PASS dumpPoint(poly1.points.getItem(0)) is "x=0 y=100"

@@ -79,6 +79,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_useCurrentView(false)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
+    , m_translation(SVGPoint::create())
 {
     ScriptWrappable::init(this);
 
@@ -207,9 +208,34 @@ void SVGSVGElement::setCurrentScale(float scale)
     frame->setPageZoomFactor(scale);
 }
 
-void SVGSVGElement::setCurrentTranslate(const FloatPoint& translation)
+class SVGCurrentTranslateTearOff : public SVGPointTearOff {
+public:
+    static PassRefPtr<SVGCurrentTranslateTearOff> create(SVGSVGElement* contextElement)
+    {
+        return adoptRef(new SVGCurrentTranslateTearOff(contextElement));
+    }
+
+    virtual void commitChange() OVERRIDE
+    {
+        ASSERT(contextElement());
+        toSVGSVGElement(contextElement())->updateCurrentTranslate();
+    }
+
+private:
+    SVGCurrentTranslateTearOff(SVGSVGElement* contextElement)
+        : SVGPointTearOff(contextElement->m_translation, contextElement, PropertyIsNotAnimVal)
+    {
+    }
+};
+
+PassRefPtr<SVGPointTearOff> SVGSVGElement::currentTranslateFromJavascript()
 {
-    m_translation = translation;
+    return SVGCurrentTranslateTearOff::create(this);
+}
+
+void SVGSVGElement::setCurrentTranslate(const FloatPoint& point)
+{
+    m_translation->setValue(point);
     updateCurrentTranslate();
 }
 
@@ -395,9 +421,9 @@ SVGAngle SVGSVGElement::createSVGAngle()
     return SVGAngle();
 }
 
-SVGPoint SVGSVGElement::createSVGPoint()
+PassRefPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()
 {
-    return SVGPoint();
+    return SVGPointTearOff::create(SVGPoint::create(), 0, PropertyIsNotAnimVal);
 }
 
 SVGMatrix SVGSVGElement::createSVGMatrix()
