@@ -1887,11 +1887,13 @@ class Generator:
         Generator.method_handler_list.append("            &InspectorBackendDispatcherImpl::%s_%s," % (domain_name, json_command_name))
         Generator.backend_method_declaration_list.append("    void %s_%s(long callId, JSONObject* requestMessageObject);" % (domain_name, json_command_name))
 
+        backend_agent_interface_list = [] if "redirect" in json_command else Generator.backend_agent_interface_list
+
         ad_hoc_type_output = []
-        Generator.backend_agent_interface_list.append(ad_hoc_type_output)
+        backend_agent_interface_list.append(ad_hoc_type_output)
         ad_hoc_type_writer = Writer(ad_hoc_type_output, "        ")
 
-        Generator.backend_agent_interface_list.append("        virtual void %s(ErrorString*" % json_command_name)
+        backend_agent_interface_list.append("        virtual void %s(ErrorString*" % json_command_name)
 
         method_in_code = ""
         method_out_code = ""
@@ -1906,7 +1908,7 @@ class Generator:
             error_type_model = error_type_binding.get_type_model().get_optional()
             error_annotated_type = error_type_model.get_command_return_pass_model().get_output_parameter_type()
             agent_call_param_list.append(", %serrorData" % error_type_model.get_command_return_pass_model().get_output_argument_prefix())
-            Generator.backend_agent_interface_list.append(", %s errorData" % error_annotated_type)
+            backend_agent_interface_list.append(", %s errorData" % error_annotated_type)
             method_in_code += "    %s errorData;\n" % error_type_model.get_command_return_pass_model().get_return_var_type()
 
             setter_argument = error_type_model.get_command_return_pass_model().get_output_to_raw_expression() % "errorData"
@@ -1960,7 +1962,7 @@ class Generator:
 
                 method_in_code += code
                 agent_call_param_list.append(param)
-                Generator.backend_agent_interface_list.append(", %s in_%s" % (formal_param_type_pattern % non_optional_type_model.get_command_return_pass_model().get_return_var_type(), json_param_name))
+                backend_agent_interface_list.append(", %s in_%s" % (formal_param_type_pattern % non_optional_type_model.get_command_return_pass_model().get_return_var_type(), json_param_name))
 
         if json_command.get("async") == True:
             callback_name = Capitalizer.lower_camel_case_to_upper(json_command_name) + "Callback"
@@ -2005,7 +2007,7 @@ class Generator:
             normal_response_cook_text += "        if (!error.length()) \n"
             normal_response_cook_text += "            return;\n"
             normal_response_cook_text += "        callback->disable();\n"
-            Generator.backend_agent_interface_list.append(", PassRefPtr<%s> callback" % callback_name)
+            backend_agent_interface_list.append(", PassRefPtr<%s> callback" % callback_name)
         else:
             if "returns" in json_command:
                 method_out_code += "\n"
@@ -2045,7 +2047,7 @@ class Generator:
                     if optional:
                         param_name = "opt_" + param_name
 
-                    Generator.backend_agent_interface_list.append(", %s %s" % (annotated_type, param_name))
+                    backend_agent_interface_list.append(", %s %s" % (annotated_type, param_name))
                     response_cook_list.append(cook)
 
                     method_out_code += code
@@ -2056,9 +2058,15 @@ class Generator:
                 if len(normal_response_cook_text) != 0:
                     normal_response_cook_text = "        if (!error.length()) {\n" + normal_response_cook_text + "        }"
 
+        # Redirect to another agent's implementation.
+        agent_field = "m_" + agent_field_name
+        if "redirect" in json_command:
+            domain_fixes = DomainNameFixes.get_fixed_data(json_command.get("redirect"))
+            agent_field = "m_" + domain_fixes.agent_field_name
+
         Generator.backend_method_implementation_list.append(Templates.backend_method.substitute(None,
             domainName=domain_name, methodName=json_command_name,
-            agentField="m_" + agent_field_name,
+            agentField=agent_field,
             methodInCode=method_in_code,
             methodOutCode=method_out_code,
             agentCallParams="".join(agent_call_param_list),
@@ -2071,7 +2079,7 @@ class Generator:
         Generator.backend_method_name_declaration_index_list.append("    %d," % Generator.backend_method_name_declaration_current_index)
         Generator.backend_method_name_declaration_current_index += len(declaration_command_name) - 1
 
-        Generator.backend_agent_interface_list.append(") = 0;\n")
+        backend_agent_interface_list.append(") = 0;\n")
 
     class CallbackMethodStructTemplate:
         @staticmethod

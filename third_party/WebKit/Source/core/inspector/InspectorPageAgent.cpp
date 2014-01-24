@@ -71,7 +71,6 @@
 #include "core/page/Page.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
-#include "modules/geolocation/GeolocationController.h"
 #include "platform/Cookie.h"
 #include "platform/JSONValues.h"
 #include "platform/UserGestureIndicator.h"
@@ -329,7 +328,6 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
-    , m_geolocationOverridden(false)
     , m_ignoreScriptsEnabledNotification(false)
     , m_deviceMetricsOverridden(false)
     , m_emulateViewportEnabled(false)
@@ -1149,49 +1147,6 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
     m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
     if (mainFrame() && mainFrame()->settings())
         mainFrame()->settings()->setTouchEventEmulationEnabled(enabled);
-}
-
-void InspectorPageAgent::setGeolocationOverride(ErrorString* error, const double* latitude, const double* longitude, const double* accuracy)
-{
-    GeolocationController* controller = GeolocationController::from(m_page);
-    GeolocationPosition* position = 0;
-    if (!controller) {
-        *error = "Internal error: unable to override geolocation";
-        return;
-    }
-    position = controller->lastPosition();
-    if (!m_geolocationOverridden && position)
-        m_platformGeolocationPosition = position;
-
-    m_geolocationOverridden = true;
-    if (latitude && longitude && accuracy)
-        m_geolocationPosition = GeolocationPosition::create(currentTimeMS(), *latitude, *longitude, *accuracy);
-    else
-        m_geolocationPosition.clear();
-
-    controller->positionChanged(0); // Kick location update.
-}
-
-void InspectorPageAgent::clearGeolocationOverride(ErrorString*)
-{
-    if (!m_geolocationOverridden)
-        return;
-    m_geolocationOverridden = false;
-    m_geolocationPosition.clear();
-
-    GeolocationController* controller = GeolocationController::from(m_page);
-    if (controller && m_platformGeolocationPosition.get())
-        controller->positionChanged(m_platformGeolocationPosition.get());
-}
-
-GeolocationPosition* InspectorPageAgent::overrideGeolocationPosition(GeolocationPosition* position)
-{
-    if (m_geolocationOverridden) {
-        if (position)
-            m_platformGeolocationPosition = position;
-        return m_geolocationPosition.get();
-    }
-    return position;
 }
 
 void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)

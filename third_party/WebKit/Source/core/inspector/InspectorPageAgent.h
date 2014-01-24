@@ -34,7 +34,6 @@
 
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "modules/geolocation/GeolocationPosition.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
@@ -109,8 +108,6 @@ public:
     virtual void setShowScrollBottleneckRects(ErrorString*, bool show) OVERRIDE;
     virtual void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*) OVERRIDE;
     virtual void setScriptExecutionDisabled(ErrorString*, bool) OVERRIDE;
-    virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*) OVERRIDE;
-    virtual void clearGeolocationOverride(ErrorString*) OVERRIDE;
     virtual void setDeviceOrientationOverride(ErrorString*, double, double, double) OVERRIDE;
     virtual void clearDeviceOrientationOverride(ErrorString*) OVERRIDE;
     virtual void setTouchEmulationEnabled(ErrorString*, bool) OVERRIDE;
@@ -122,9 +119,6 @@ public:
     virtual void handleJavaScriptDialog(ErrorString*, bool accept, const String* promptText) OVERRIDE;
     virtual void queryUsageAndQuota(WebCore::ErrorString*, const WTF::String&, WTF::RefPtr<WebCore::TypeBuilder::Page::Quota>&, WTF::RefPtr<WebCore::TypeBuilder::Page::Usage>&) OVERRIDE;
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) OVERRIDE;
-
-    // Geolocation override helper.
-    GeolocationPosition* overrideGeolocationPosition(GeolocationPosition*);
 
     // Text autosizing override helpers.
     bool overrideTextAutosizing(bool);
@@ -203,12 +197,9 @@ private:
     HashMap<String, Frame*> m_identifierToFrame;
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;
     bool m_enabled;
-    bool m_geolocationOverridden;
     bool m_ignoreScriptsEnabledNotification;
     bool m_deviceMetricsOverridden;
     bool m_emulateViewportEnabled;
-    RefPtr<GeolocationPosition> m_geolocationPosition;
-    RefPtr<GeolocationPosition> m_platformGeolocationPosition;
 };
 
 

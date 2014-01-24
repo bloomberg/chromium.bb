@@ -334,6 +334,7 @@
       'geolocation/Coordinates.cpp',
       'geolocation/Geolocation.cpp',
       'geolocation/GeolocationController.cpp',
+      'geolocation/GeolocationInspectorAgent.cpp',
       'geolocation/NavigatorGeolocation.cpp',
       'geolocation/NavigatorGeolocation.h',
       'imagebitmap/ImageBitmapFactories.cpp',

@@ -35,6 +35,7 @@
 
 namespace WebCore {
 
+class GeolocationInspectorAgent;
 class GeolocationClient;
 class GeolocationError;
 class GeolocationPosition;
@@ -83,6 +84,7 @@ private:
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;
     bool m_isClientUpdating;
+    GeolocationInspectorAgent* m_inspectorAgent;
 };
 
 } // namespace WebCore

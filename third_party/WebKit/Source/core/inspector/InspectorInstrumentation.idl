@@ -536,9 +536,6 @@ interface InspectorOverrides {
     bool shouldPauseDedicatedWorkerOnStart(ExecutionContext* context);
 
     [Page, Inline=FastReturn]
-    GeolocationPosition* overrideGeolocationPosition(Page* page, [DefaultReturn] GeolocationPosition* position);
-
-    [Page, Inline=FastReturn]
     float overrideFontScaleFactor(Page* page, [DefaultReturn] float fontScaleFactor);
 
     [Page, Inline=FastReturn]

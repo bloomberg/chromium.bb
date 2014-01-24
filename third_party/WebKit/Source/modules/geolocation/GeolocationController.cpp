@@ -24,11 +24,13 @@
  */
 
 #include "config.h"
+
 #include "modules/geolocation/GeolocationController.h"
 
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorController.h"
 #include "modules/geolocation/GeolocationClient.h"
 #include "modules/geolocation/GeolocationError.h"
+#include "modules/geolocation/GeolocationInspectorAgent.h"
 #include "modules/geolocation/GeolocationPosition.h"
 
 namespace WebCore {
@@ -38,7 +40,11 @@ GeolocationController::GeolocationController(Page* page, GeolocationClient* clie
     , m_client(client)
     , m_hasClientForTest(false)
     , m_isClientUpdating(false)
+    , m_inspectorAgent()
 {
+    OwnPtr<GeolocationInspectorAgent> geolocationAgent(GeolocationInspectorAgent::create(this));
+    m_inspectorAgent = geolocationAgent.get();
+    page->inspectorController().registerModuleAgent(geolocationAgent.release());
 }
 
 void GeolocationController::startUpdatingIfNeeded()
@@ -117,7 +123,7 @@ void GeolocationController::cancelPermissionRequest(Geolocation* geolocation)
 
 void GeolocationController::positionChanged(GeolocationPosition* position)
 {
-    position = InspectorInstrumentation::overrideGeolocationPosition(page(), position);
+    position = m_inspectorAgent->overrideGeolocationPosition(position);
     if (!position) {
         errorOccurred(GeolocationError::create(GeolocationError::PositionUnavailable, "PositionUnavailable").get());
         return;
