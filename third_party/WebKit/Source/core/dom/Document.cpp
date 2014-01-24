@@ -503,7 +503,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 
     InspectorCounters::incrementCounter(InspectorCounters::DocumentCounter);
 
-    m_lifecyle.advanceTo(DocumentLifecycle::Inactive);
+    m_lifecycle.advanceTo(DocumentLifecycle::Inactive);
 
     // Since CSSFontSelector requires Document::m_fetcher and StyleEngine owns
     // CSSFontSelector, need to initialize m_styleEngine after initializing
@@ -617,7 +617,7 @@ void Document::dispose()
     if (svgExtensions())
         accessSVGExtensions()->pauseAnimations();
 
-    m_lifecyle.advanceTo(DocumentLifecycle::Disposed);
+    m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
     lifecycleNotifier().notifyDocumentWasDisposed();
 }
 
@@ -1991,7 +1991,7 @@ void Document::clearStyleResolver()
 
 void Document::attach(const AttachContext& context)
 {
-    ASSERT(m_lifecyle.state() == DocumentLifecycle::Inactive);
+    ASSERT(m_lifecycle.state() == DocumentLifecycle::Inactive);
     ASSERT(!m_axObjectCache || this != topDocument());
 
     m_renderView = new RenderView(this);
@@ -2005,13 +2005,13 @@ void Document::attach(const AttachContext& context)
 
     ContainerNode::attach(context);
 
-    m_lifecyle.advanceTo(DocumentLifecycle::Active);
+    m_lifecycle.advanceTo(DocumentLifecycle::Active);
 }
 
 void Document::detach(const AttachContext& context)
 {
     ASSERT(isActive());
-    m_lifecyle.advanceTo(DocumentLifecycle::Stopping);
+    m_lifecycle.advanceTo(DocumentLifecycle::Stopping);
 
     if (page())
         page()->documentDetached(this);
@@ -2080,7 +2080,7 @@ void Document::detach(const AttachContext& context)
         m_mediaQueryMatcher->documentDestroyed();
 
     lifecycleNotifier().notifyDocumentWasDetached();
-    m_lifecyle.advanceTo(DocumentLifecycle::Stopped);
+    m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 }
 
 void Document::prepareForDestruction()

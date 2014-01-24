@@ -1003,8 +1003,8 @@ public:
     Frame* executingFrame();
 
     DocumentLifecycleNotifier& lifecycleNotifier();
-    bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
-    bool isStopped() const { return m_lifecyle.state() == DocumentLifecycle::Stopped; }
+    bool isActive() const { return m_lifecycle.state() == DocumentLifecycle::Active; }
+    bool isStopped() const { return m_lifecycle.state() == DocumentLifecycle::Stopped; }
 
     enum HttpRefreshType {
         HttpRefreshFromHeader,
@@ -1103,7 +1103,7 @@ private:
     void processHttpEquivXFrameOptions(const AtomicString& content);
     void processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content);
 
-    DocumentLifecycle m_lifecyle;
+    DocumentLifecycle m_lifecycle;
 
     bool m_hasNodesWithPlaceholderStyle;
     bool m_needsNotifyRemoveAllPendingStylesheet;
