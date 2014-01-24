@@ -64,6 +64,10 @@ enum UMAEventType {
 };
 
 struct WindowTouchDetails {
+  WindowTouchDetails()
+      : max_distance_from_start_squared_(0) {
+  }
+
   // Move and start times of the touch points. The key is the touch-id.
   std::map<int, base::TimeDelta> last_move_time_;
   std::map<int, base::TimeDelta> last_start_time_;
