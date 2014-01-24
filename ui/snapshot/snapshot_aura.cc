@@ -40,45 +40,17 @@ void OnFrameScalingFinished(
   callback.Run(gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(scaled_bitmap)));
 }
 
-void RotateBitmap(SkBitmap* bitmap, gfx::Display::Rotation rotation) {
-  switch (rotation) {
-    case gfx::Display::ROTATE_0:
-      break;
-    case gfx::Display::ROTATE_90:
-      *bitmap = SkBitmapOperations::Rotate(*bitmap,
-                                           SkBitmapOperations::ROTATION_270_CW);
-      break;
-    case gfx::Display::ROTATE_180:
-      *bitmap = SkBitmapOperations::Rotate(*bitmap,
-                                           SkBitmapOperations::ROTATION_180_CW);
-      break;
-    case gfx::Display::ROTATE_270:
-      *bitmap = SkBitmapOperations::Rotate(*bitmap,
-                                           SkBitmapOperations::ROTATION_90_CW);
-      break;
-  }
+SkBitmap ScaleBitmap(const SkBitmap& input_bitmap,
+                     const gfx::Size& target_size) {
+  return skia::ImageOperations::Resize(
+      input_bitmap,
+      skia::ImageOperations::RESIZE_GOOD,
+      target_size.width(),
+      target_size.height(),
+      static_cast<SkBitmap::Allocator*>(NULL));
 }
 
-SkBitmap ScaleAndRotateBitmap(const SkBitmap& input_bitmap,
-                              gfx::Size target_size_pre_rotation,
-                              gfx::Display::Rotation rotation) {
-  SkBitmap bitmap;
-  bitmap =
-      skia::ImageOperations::Resize(input_bitmap,
-                                    skia::ImageOperations::RESIZE_GOOD,
-                                    target_size_pre_rotation.width(),
-                                    target_size_pre_rotation.height(),
-                                    static_cast<SkBitmap::Allocator*>(NULL));
-  RotateBitmap(&bitmap, rotation);
-  return bitmap;
-}
-
-scoped_refptr<base::RefCountedBytes> ScaleRotateAndEncodeBitmap(
-    const SkBitmap& input_bitmap,
-    gfx::Size target_size_pre_rotation,
-    gfx::Display::Rotation rotation) {
-  SkBitmap bitmap =
-      ScaleAndRotateBitmap(input_bitmap, target_size_pre_rotation, rotation);
+scoped_refptr<base::RefCountedBytes> EncodeBitmap(const SkBitmap& bitmap) {
   scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
   unsigned char* pixels =
       reinterpret_cast<unsigned char*>(bitmap.pixelRef()->pixels());
@@ -94,10 +66,9 @@ scoped_refptr<base::RefCountedBytes> ScaleRotateAndEncodeBitmap(
   return png_data;
 }
 
-void ScaleAndRotateCopyOutputResult(
+void ScaleCopyOutputResult(
     const GrabWindowSnapshotAsyncCallback& callback,
     const gfx::Size& target_size,
-    gfx::Display::Rotation rotation,
     scoped_refptr<base::TaskRunner> background_task_runner,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty()) {
@@ -112,15 +83,12 @@ void ScaleAndRotateCopyOutputResult(
   base::PostTaskAndReplyWithResult(
       background_task_runner,
       FROM_HERE,
-      base::Bind(
-          ScaleAndRotateBitmap, *result->TakeBitmap(), target_size, rotation),
+      base::Bind(ScaleBitmap, *result->TakeBitmap(), target_size),
       base::Bind(&OnFrameScalingFinished, callback));
 }
 
-void ScaleRotateAndEncodeCopyOutputResult(
+void EncodeCopyOutputResult(
     const GrabWindowSnapshotAsyncPNGCallback& callback,
-    const gfx::Size& target_size,
-    gfx::Display::Rotation rotation,
     scoped_refptr<base::TaskRunner> background_task_runner,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty()) {
@@ -134,36 +102,9 @@ void ScaleRotateAndEncodeCopyOutputResult(
   // somewhere so that it can be reused here.
   base::PostTaskAndReplyWithResult(background_task_runner,
                                    FROM_HERE,
-                                   base::Bind(ScaleRotateAndEncodeBitmap,
-                                              *result->TakeBitmap(),
-                                              target_size,
-                                              rotation),
+                                   base::Bind(EncodeBitmap,
+                                              *result->TakeBitmap()),
                                    callback);
-}
-
-gfx::Rect GetTargetBoundsFromWindow(gfx::NativeWindow window,
-                                    gfx::Rect snapshot_bounds) {
-  gfx::RectF read_pixels_bounds = snapshot_bounds;
-
-  // We must take into account the window's position on the desktop.
-  read_pixels_bounds.Offset(
-      window->GetBoundsInRootWindow().origin().OffsetFromOrigin());
-  aura::WindowEventDispatcher* dispatcher = window->GetDispatcher();
-  if (dispatcher)
-    dispatcher->host()->GetRootTransform().TransformRect(&read_pixels_bounds);
-
-  gfx::Rect read_pixels_bounds_in_pixel =
-      gfx::ToEnclosingRect(read_pixels_bounds);
-
-  // Sometimes (i.e. when using Aero on Windows) the compositor's size is
-  // smaller than the window bounds. So trim appropriately.
-  ui::Compositor* compositor = window->layer()->GetCompositor();
-  read_pixels_bounds_in_pixel.Intersect(gfx::Rect(compositor->size()));
-
-  DCHECK_LE(0, read_pixels_bounds.x());
-  DCHECK_LE(0, read_pixels_bounds.y());
-
-  return read_pixels_bounds_in_pixel;
 }
 
 }  // namespace
@@ -197,31 +138,11 @@ void GrabWindowSnapshotAndScaleAsync(
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncCallback& callback) {
-  // target_size is post-rotation, and so logically this is a rotate and then
-  // scale operation.  However, it will usually be more efficient to scale first
-  // (given that this is mostly used for thumbnails) and then rotate.
-  gfx::Display::Rotation rotation = gfx::Screen::GetScreenFor(window)
-                                        ->GetDisplayNearestWindow(window)
-                                        .rotation();
-  gfx::Size rotated_target_size;
-  switch (rotation) {
-    case gfx::Display::ROTATE_0:
-    case gfx::Display::ROTATE_180:
-      rotated_target_size = target_size;
-      break;
-    case gfx::Display::ROTATE_90:
-    case gfx::Display::ROTATE_270:
-      rotated_target_size =
-          gfx::Size(target_size.height(), target_size.width());
-      break;
-  };
-
   MakeAsyncCopyRequest(window,
                        source_rect,
-                       base::Bind(&ScaleAndRotateCopyOutputResult,
+                       base::Bind(&ScaleCopyOutputResult,
                                   callback,
-                                  rotated_target_size,
-                                  rotation,
+                                  target_size,
                                   background_task_runner));
 }
 
@@ -230,16 +151,10 @@ void GrabWindowSnapshotAsync(
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  gfx::Size target_size = GetTargetBoundsFromWindow(window, source_rect).size();
-  gfx::Display::Rotation rotation = gfx::Screen::GetScreenFor(window)
-                                        ->GetDisplayNearestWindow(window)
-                                        .rotation();
   MakeAsyncCopyRequest(window,
                        source_rect,
-                       base::Bind(&ScaleRotateAndEncodeCopyOutputResult,
+                       base::Bind(&EncodeCopyOutputResult,
                                   callback,
-                                  target_size,
-                                  rotation,
                                   background_task_runner));
 }
 

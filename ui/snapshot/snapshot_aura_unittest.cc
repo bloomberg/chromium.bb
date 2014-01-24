@@ -24,7 +24,10 @@
 
 namespace ui {
 namespace {
-const SkColor kPaintColor = SK_ColorRED;
+
+SkColor GetExpectedColorForPoint(int x, int y) {
+  return SkColorSetRGB(std::min(x, 255), std::min(y, 255), 0);
+}
 
 // Paint simple rectangle on the specified aura window.
 class TestPaintingWindowDelegate : public aura::test::TestWindowDelegate {
@@ -37,7 +40,10 @@ class TestPaintingWindowDelegate : public aura::test::TestWindowDelegate {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(gfx::Rect(window_size_), kPaintColor);
+    for (int y = 0; y < window_size_.height(); ++y) {
+      for (int x = 0; x < window_size_.width(); ++x)
+        canvas->FillRect(gfx::Rect(x, y, 1, 1), GetExpectedColorForPoint(x, y));
+    }
   }
 
  private:
@@ -46,16 +52,25 @@ class TestPaintingWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestPaintingWindowDelegate);
 };
 
-size_t GetFailedPixelsCount(const gfx::Image& image) {
+size_t GetFailedPixelsCountWithScaleFactor(const gfx::Image& image,
+                                           int scale_factor) {
   const SkBitmap* bitmap = image.ToSkBitmap();
   uint32* bitmap_data = reinterpret_cast<uint32*>(
       bitmap->pixelRef()->pixels());
   size_t result = 0;
-  for (int i = 0; i < bitmap->width() * bitmap->height(); ++i) {
-    if (static_cast<SkColor>(bitmap_data[i]) != kPaintColor)
-      ++result;
+  for (int y = 0; y < bitmap->height(); y += scale_factor) {
+    for (int x = 0; x < bitmap->width(); x += scale_factor) {
+      if (static_cast<SkColor>(bitmap_data[x + y * bitmap->width()]) !=
+          GetExpectedColorForPoint(x / scale_factor, y / scale_factor)) {
+        ++result;
+      }
+    }
   }
   return result;
+}
+
+size_t GetFailedPixelsCount(const gfx::Image& image) {
+  return GetFailedPixelsCountWithScaleFactor(image, 1);
 }
 
 }  // namespace
@@ -175,8 +190,7 @@ TEST_F(SnapshotAuraTest, PartialBounds) {
   WaitForDraw();
 
   gfx::Image snapshot = GrabSnapshotForTestWindow();
-  EXPECT_EQ(test_bounds.size().ToString(),
-            snapshot.Size().ToString());
+  EXPECT_EQ(test_bounds.size().ToString(), snapshot.Size().ToString());
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
@@ -188,8 +202,7 @@ TEST_F(SnapshotAuraTest, Rotated) {
   WaitForDraw();
 
   gfx::Image snapshot = GrabSnapshotForTestWindow();
-  EXPECT_EQ(test_bounds.size().ToString(),
-            snapshot.Size().ToString());
+  EXPECT_EQ(test_bounds.size().ToString(), snapshot.Size().ToString());
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
@@ -203,7 +216,6 @@ TEST_F(SnapshotAuraTest, UIScale) {
 
   // Snapshot always captures the physical pixels.
   gfx::SizeF snapshot_size(test_bounds.size());
-  snapshot_size.Scale(1.0f / kUIScale);
 
   gfx::Image snapshot = GrabSnapshotForTestWindow();
   EXPECT_EQ(gfx::ToRoundedSize(snapshot_size).ToString(),
@@ -225,7 +237,7 @@ TEST_F(SnapshotAuraTest, DeviceScaleFactor) {
   gfx::Image snapshot = GrabSnapshotForTestWindow();
   EXPECT_EQ(gfx::ToRoundedSize(snapshot_size).ToString(),
             snapshot.Size().ToString());
-  EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
+  EXPECT_EQ(0u, GetFailedPixelsCountWithScaleFactor(snapshot, 2));
 }
 
 TEST_F(SnapshotAuraTest, RotateAndUIScale) {
@@ -239,7 +251,6 @@ TEST_F(SnapshotAuraTest, RotateAndUIScale) {
 
   // Snapshot always captures the physical pixels.
   gfx::SizeF snapshot_size(test_bounds.size());
-  snapshot_size.Scale(1.0f / kUIScale);
 
   gfx::Image snapshot = GrabSnapshotForTestWindow();
   EXPECT_EQ(gfx::ToRoundedSize(snapshot_size).ToString(),
@@ -259,12 +270,12 @@ TEST_F(SnapshotAuraTest, RotateAndUIScaleAndScaleFactor) {
 
   // Snapshot always captures the physical pixels.
   gfx::SizeF snapshot_size(test_bounds.size());
-  snapshot_size.Scale(2.0f / kUIScale);
+  snapshot_size.Scale(2.0f);
 
   gfx::Image snapshot = GrabSnapshotForTestWindow();
   EXPECT_EQ(gfx::ToRoundedSize(snapshot_size).ToString(),
             snapshot.Size().ToString());
-  EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
+  EXPECT_EQ(0u, GetFailedPixelsCountWithScaleFactor(snapshot, 2));
 }
 
 }  // namespace ui
