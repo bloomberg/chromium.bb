@@ -74,3 +74,6 @@ ExtensionServiceTest.InstallTheme
 
 # http://crbug.com/302156
 TabStripModelTest.FastShutdown
+
+# http://crbug.com/336343
+LauncherContextMenuTest.*
