@@ -69,7 +69,9 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
         m_clipRect = prev->m_clipRect;
 
     if (renderer->hasOverflowClip()) {
-        LayoutRect clipRect(toPoint(m_paintOffset) + renderer->view()->layoutDelta(), renderer->cachedSizeForOverflowClip());
+        LayoutSize deltaSize = RuntimeEnabledFeatures::repaintAfterLayoutEnabled() ? LayoutSize() : renderer->view()->layoutDelta();
+
+        LayoutRect clipRect(toPoint(m_paintOffset) + deltaSize, renderer->cachedSizeForOverflowClip());
         if (m_clipped)
             m_clipRect.intersect(clipRect);
         else {
@@ -113,11 +115,13 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
             m_shapeInsideInfo = m_next->m_shapeInsideInfo;
     }
 
-    m_layoutDelta = m_next->m_layoutDelta;
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        m_layoutDelta = m_next->m_layoutDelta;
 #if !ASSERT_DISABLED
-    m_layoutDeltaXSaturated = m_next->m_layoutDeltaXSaturated;
-    m_layoutDeltaYSaturated = m_next->m_layoutDeltaYSaturated;
+        m_layoutDeltaXSaturated = m_next->m_layoutDeltaXSaturated;
+        m_layoutDeltaYSaturated = m_next->m_layoutDeltaYSaturated;
 #endif
+    }
 
     m_isPaginated = m_pageLogicalHeight || m_columnInfo || renderer->isRenderFlowThread();
 

@@ -1473,9 +1473,11 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
 
     LayoutRect dirtyRect(r);
 
-    // FIXME: layoutDelta needs to be applied in parts before/after transforms and
-    // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
-    dirtyRect.move(view->layoutDelta());
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        // FIXME: layoutDelta needs to be applied in parts before/after transforms and
+        // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
+        dirtyRect.move(view->layoutDelta());
+    }
 
     RenderLayerModelObject* repaintContainer = containerForRepaint();
     computeRectForRepaint(repaintContainer, dirtyRect);

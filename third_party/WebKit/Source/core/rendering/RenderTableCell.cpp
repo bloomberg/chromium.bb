@@ -360,10 +360,12 @@ LayoutRect RenderTableCell::clippedOverflowRectForRepaint(const RenderLayerModel
     LayoutPoint location(max<LayoutUnit>(left, -visualOverflowRect().x()), max<LayoutUnit>(top, -visualOverflowRect().y()));
     LayoutRect r(-location.x(), -location.y(), location.x() + max(width() + right, visualOverflowRect().maxX()), location.y() + max(height() + bottom, visualOverflowRect().maxY()));
 
-    if (RenderView* v = view()) {
-        // FIXME: layoutDelta needs to be applied in parts before/after transforms and
-        // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
-        r.move(v->layoutDelta());
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        if (RenderView* v = view()) {
+            // FIXME: layoutDelta needs to be applied in parts before/after transforms and
+            // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
+            r.move(v->layoutDelta());
+        }
     }
     computeRectForRepaint(repaintContainer, r);
     return r;

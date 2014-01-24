@@ -425,7 +425,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     LayoutUnit oldLogicalTop = logicalTopForChild(child);
 
 #if !ASSERT_DISABLED
-    LayoutSize oldLayoutDelta = view()->layoutDelta();
+    LayoutSize oldLayoutDelta = RuntimeEnabledFeatures::repaintAfterLayoutEnabled() ? LayoutSize() : view()->layoutDelta();
 #endif
     // Go ahead and position the child as though it didn't collapse with the top.
     setLogicalTopForChild(child, logicalTopEstimate, ApplyLayoutDelta);
@@ -540,7 +540,8 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
         maxFloatLogicalBottom = max(maxFloatLogicalBottom, addOverhangingFloats(childRenderBlockFlow, !childNeededLayout));
 
     if (childOffset.width() || childOffset.height()) {
-        view()->addLayoutDelta(childOffset);
+        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+            view()->addLayoutDelta(childOffset);
 
         // If the child moved, we have to repaint it as well as any floating/positioned
         // descendants. An exception is if we need a layout. In this case, we know we're going to
@@ -564,7 +565,9 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
             setLogicalHeight(newHeight);
     }
 
-    ASSERT(view()->layoutDeltaMatches(oldLayoutDelta));
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        ASSERT(view()->layoutDeltaMatches(oldLayoutDelta));
+    }
 }
 
 LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopAfterClear, LayoutUnit estimateWithoutPagination, RenderBox* child, bool atBeforeSideOfBlock)

@@ -112,10 +112,12 @@ public:
     // If we're doing a full repaint m_layoutState will be 0, but in that case layoutDelta doesn't matter.
     LayoutSize layoutDelta() const
     {
+        ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
         return m_layoutState ? m_layoutState->m_layoutDelta : LayoutSize();
     }
     void addLayoutDelta(const LayoutSize& delta)
     {
+        ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
         if (m_layoutState) {
             m_layoutState->m_layoutDelta += delta;
 #if !ASSERT_DISABLED
@@ -128,6 +130,7 @@ public:
 #if !ASSERT_DISABLED
     bool layoutDeltaMatches(const LayoutSize& delta)
     {
+        ASSERT(!RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
         if (!m_layoutState)
             return false;
         return (delta.width() == m_layoutState->m_layoutDelta.width() || m_layoutState->m_layoutDeltaXSaturated) && (delta.height() == m_layoutState->m_layoutDelta.height() || m_layoutState->m_layoutDeltaYSaturated);

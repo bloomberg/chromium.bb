@@ -184,7 +184,9 @@ void RenderView::layoutContent(const LayoutState& state)
 #ifndef NDEBUG
 void RenderView::checkLayoutState(const LayoutState& state)
 {
-    ASSERT(layoutDeltaMatches(LayoutSize()));
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        ASSERT(layoutDeltaMatches(LayoutSize()));
+    }
     ASSERT(!m_layoutStateDisableCount);
     ASSERT(m_layoutState == &state);
 }

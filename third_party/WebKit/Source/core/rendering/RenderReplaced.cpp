@@ -621,7 +621,7 @@ LayoutRect RenderReplaced::clippedOverflowRectForRepaint(const RenderLayerModelO
     LayoutRect r = unionRect(localSelectionRect(false), visualOverflowRect());
 
     RenderView* v = view();
-    if (v) {
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && v) {
         // FIXME: layoutDelta needs to be applied in parts before/after transforms and
         // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
         r.move(v->layoutDelta());

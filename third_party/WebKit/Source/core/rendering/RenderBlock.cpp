@@ -1654,11 +1654,11 @@ void RenderBlock::determineLogicalLeftPositionForChild(RenderBox* child, ApplyLa
 void RenderBlock::setLogicalLeftForChild(RenderBox* child, LayoutUnit logicalLeft, ApplyLayoutDeltaMode applyDelta)
 {
     if (isHorizontalWritingMode()) {
-        if (applyDelta == ApplyLayoutDelta)
+        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             view()->addLayoutDelta(LayoutSize(child->x() - logicalLeft, 0));
         child->setX(logicalLeft);
     } else {
-        if (applyDelta == ApplyLayoutDelta)
+        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             view()->addLayoutDelta(LayoutSize(0, child->y() - logicalLeft));
         child->setY(logicalLeft);
     }
@@ -1667,11 +1667,11 @@ void RenderBlock::setLogicalLeftForChild(RenderBox* child, LayoutUnit logicalLef
 void RenderBlock::setLogicalTopForChild(RenderBox* child, LayoutUnit logicalTop, ApplyLayoutDeltaMode applyDelta)
 {
     if (isHorizontalWritingMode()) {
-        if (applyDelta == ApplyLayoutDelta)
+        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             view()->addLayoutDelta(LayoutSize(0, child->y() - logicalTop));
         child->setY(logicalTop);
     } else {
-        if (applyDelta == ApplyLayoutDelta)
+        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             view()->addLayoutDelta(LayoutSize(child->x() - logicalTop, 0));
         child->setX(logicalTop);
     }

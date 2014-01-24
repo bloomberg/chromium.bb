@@ -993,7 +993,8 @@ void RenderTableSection::layoutRows()
 
             LayoutSize childOffset(cell->location() - oldCellRect.location());
             if (childOffset.width() || childOffset.height()) {
-                view()->addLayoutDelta(childOffset);
+                if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+                    view()->addLayoutDelta(childOffset);
 
                 // If the child moved, we have to repaint it as well as any floating/positioned
                 // descendants.  An exception is if we need a layout.  In this case, we know we're going to
@@ -1817,7 +1818,9 @@ void RenderTableSection::setLogicalPositionForCell(RenderTableCell* cell, unsign
         cellLocation.setX(table()->columnPositions()[effectiveColumn] + horizontalBorderSpacing);
 
     cell->setLogicalLocation(cellLocation);
-    view()->addLayoutDelta(oldCellLocation - cell->location());
+
+    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+        view()->addLayoutDelta(oldCellLocation - cell->location());
 }
 
 } // namespace WebCore
