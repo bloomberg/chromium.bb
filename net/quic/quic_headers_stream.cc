@@ -173,17 +173,17 @@ QuicHeadersStream::QuicHeadersStream(QuicSession* session)
 QuicHeadersStream::~QuicHeadersStream() {}
 
 size_t QuicHeadersStream::WriteHeaders(QuicStreamId stream_id,
-                                     const SpdyHeaderBlock& headers,
-                                     bool fin) {
+                                       const SpdyHeaderBlock& headers,
+                                       bool fin) {
   scoped_ptr<SpdySerializedFrame> frame;
   if (session()->is_server()) {
     SpdySynReplyIR syn_reply(stream_id);
-    *syn_reply.GetMutableNameValueBlock() = headers;
+    syn_reply.set_name_value_block(headers);
     syn_reply.set_fin(fin);
     frame.reset(spdy_framer_.SerializeFrame(syn_reply));
   } else {
     SpdySynStreamIR syn_stream(stream_id);
-    *syn_stream.GetMutableNameValueBlock() = headers;
+    syn_stream.set_name_value_block(headers);
     syn_stream.set_fin(fin);
     frame.reset(spdy_framer_.SerializeFrame(syn_stream));
   }

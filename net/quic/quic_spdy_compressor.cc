@@ -39,8 +39,10 @@ string QuicSpdyCompressor::CompressHeadersInternal(
   // TODO(rch): Modify the SpdyFramer to expose a
   // CreateCompressedHeaderBlock method, or some such.
   SpdyStreamId stream_id = 3;    // unused.
-  scoped_ptr<SpdyFrame> frame(spdy_framer_.CreateHeaders(
-      stream_id, CONTROL_FLAG_NONE, &headers));
+
+  SpdyHeadersIR headers_ir(stream_id);
+  headers_ir.set_name_value_block(headers);
+  scoped_ptr<SpdyFrame> frame(spdy_framer_.SerializeHeaders(headers_ir));
 
   // The size of the spdy HEADER frame's fixed prefix which
   // needs to be stripped off from the resulting frame.

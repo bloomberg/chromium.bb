@@ -1767,27 +1767,6 @@ SpdySerializedFrame* SpdyFramer::SerializeDataFrameHeader(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::CreateSynStream(
-    SpdyStreamId stream_id,
-    SpdyStreamId associated_stream_id,
-    SpdyPriority priority,
-    uint8 credential_slot,
-    SpdyControlFlags flags,
-    const SpdyHeaderBlock* headers) {
-  DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN & ~CONTROL_FLAG_UNIDIRECTIONAL);
-
-  SpdySynStreamIR syn_stream(stream_id);
-  syn_stream.set_associated_to_stream_id(associated_stream_id);
-  syn_stream.set_priority(priority);
-  syn_stream.set_slot(credential_slot);
-  syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
-  syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
-  // TODO(hkhalil): Avoid copy here.
-  *(syn_stream.GetMutableNameValueBlock()) = *headers;
-
-  return SerializeSynStream(syn_stream);
-}
-
 SpdySerializedFrame* SpdyFramer::SerializeSynStream(
     const SpdySynStreamIR& syn_stream) {
   uint8 flags = 0;
@@ -1841,20 +1820,6 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   }
 
   return builder.take();
-}
-
-SpdyFrame* SpdyFramer::CreateSynReply(
-    SpdyStreamId stream_id,
-    SpdyControlFlags flags,
-    const SpdyHeaderBlock* headers) {
-  DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN);
-
-  SpdySynReplyIR syn_reply(stream_id);
-  syn_reply.set_fin(flags & CONTROL_FLAG_FIN);
-  // TODO(hkhalil): Avoid copy here.
-  *(syn_reply.GetMutableNameValueBlock()) = *headers;
-
-  return SerializeSynReply(syn_reply);
 }
 
 SpdySerializedFrame* SpdyFramer::SerializeSynReply(
@@ -2023,21 +1988,6 @@ SpdySerializedFrame* SpdyFramer::SerializeGoAway(
   return builder.take();
 }
 
-SpdyFrame* SpdyFramer::CreateHeaders(
-    SpdyStreamId stream_id,
-    SpdyControlFlags flags,
-    const SpdyHeaderBlock* header_block) {
-  // Basically the same as CreateSynReply().
-  DCHECK_EQ(0, flags & (!CONTROL_FLAG_FIN));
-
-  SpdyHeadersIR headers(stream_id);
-  headers.set_fin(flags & CONTROL_FLAG_FIN);
-  // TODO(hkhalil): Avoid copy here.
-  *(headers.GetMutableNameValueBlock()) = *header_block;
-
-  return SerializeHeaders(headers);
-}
-
 SpdySerializedFrame* SpdyFramer::SerializeHeaders(
     const SpdyHeadersIR& headers) {
   uint8 flags = 0;
@@ -2093,17 +2043,6 @@ SpdySerializedFrame* SpdyFramer::SerializeWindowUpdate(
   builder.WriteUInt32(window_update.delta());
   DCHECK_EQ(GetWindowUpdateSize(), builder.length());
   return builder.take();
-}
-
-SpdyFrame* SpdyFramer::CreatePushPromise(
-    SpdyStreamId stream_id,
-    SpdyStreamId promised_stream_id,
-    const SpdyHeaderBlock* header_block) {
-  SpdyPushPromiseIR push_promise(stream_id, promised_stream_id);
-  // TODO(hkhalil): Avoid copy here.
-  *(push_promise.GetMutableNameValueBlock()) = *header_block;
-
-  return SerializePushPromise(push_promise);
 }
 
 SpdyFrame* SpdyFramer::SerializePushPromise(

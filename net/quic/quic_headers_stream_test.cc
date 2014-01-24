@@ -207,13 +207,13 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
         scoped_ptr<SpdySerializedFrame> frame;
         if (is_server()) {
           SpdySynStreamIR syn_stream(stream_id);
-          *syn_stream.GetMutableNameValueBlock() = headers_;
+          syn_stream.set_name_value_block(headers_);
           syn_stream.set_fin(fin);
           frame.reset(framer_.SerializeSynStream(syn_stream));
           EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0));
         } else {
           SpdySynReplyIR syn_reply(stream_id);
-          *syn_reply.GetMutableNameValueBlock() = headers_;
+          syn_reply.set_name_value_block(headers_);
           syn_reply.set_fin(fin);
           frame.reset(framer_.SerializeSynReply(syn_reply));
         }

@@ -240,6 +240,8 @@ bool BufferedSpdyFramer::HasError() {
   return spdy_framer_.HasError();
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer
+// SpdySynStreamIR).
 SpdyFrame* BufferedSpdyFramer::CreateSynStream(
     SpdyStreamId stream_id,
     SpdyStreamId associated_stream_id,
@@ -247,15 +249,28 @@ SpdyFrame* BufferedSpdyFramer::CreateSynStream(
     uint8 credential_slot,
     SpdyControlFlags flags,
     const SpdyHeaderBlock* headers) {
-  return spdy_framer_.CreateSynStream(stream_id, associated_stream_id, priority,
-                                      credential_slot, flags, headers);
+  SpdySynStreamIR syn_stream(stream_id);
+  syn_stream.set_associated_to_stream_id(associated_stream_id);
+  syn_stream.set_priority(priority);
+  syn_stream.set_slot(credential_slot);
+  syn_stream.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+  syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
+  // TODO(hkhalil): Avoid copy here.
+  syn_stream.set_name_value_block(*headers);
+  return spdy_framer_.SerializeSynStream(syn_stream);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer
+// SpdySynReplyIR).
 SpdyFrame* BufferedSpdyFramer::CreateSynReply(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     const SpdyHeaderBlock* headers) {
-  return spdy_framer_.CreateSynReply(stream_id, flags, headers);
+  SpdySynReplyIR syn_reply(stream_id);
+  syn_reply.set_fin(flags & CONTROL_FLAG_FIN);
+  // TODO(hkhalil): Avoid copy here.
+  syn_reply.set_name_value_block(*headers);
+  return spdy_framer_.SerializeSynReply(syn_reply);
 }
 
 // TODO(jgraettinger): Eliminate uses of this method (prefer
@@ -298,11 +313,15 @@ SpdyFrame* BufferedSpdyFramer::CreateGoAway(
   return spdy_framer_.SerializeGoAway(go_ir);
 }
 
+// TODO(jgraettinger): Eliminate uses of this method (prefer SpdyHeadersIR).
 SpdyFrame* BufferedSpdyFramer::CreateHeaders(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
     const SpdyHeaderBlock* headers) {
-  return spdy_framer_.CreateHeaders(stream_id, flags, headers);
+  SpdyHeadersIR headers_ir(stream_id);
+  headers_ir.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+  headers_ir.set_name_value_block(*headers);
+  return spdy_framer_.SerializeHeaders(headers_ir);
 }
 
 // TODO(jgraettinger): Eliminate uses of this method (prefer

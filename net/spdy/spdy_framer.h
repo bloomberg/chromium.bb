@@ -358,33 +358,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Serializes just the data frame header, excluding actual data payload.
   SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
 
-  // Creates and serializes a SYN_STREAM frame.
-  // |stream_id| is the id for this stream.
-  // |associated_stream_id| is the associated stream id for this stream.
-  // |priority| is the priority (GetHighestPriority()-GetLowestPriority) for
-  //    this stream.
-  // |credential_slot| is the CREDENTIAL slot to be used for this request.
-  // |flags| is the flags to use with the data.
-  //    To mark this frame as the last frame, enable CONTROL_FLAG_FIN.
-  // |compressed| specifies whether the frame should be compressed.
-  // |headers| is the header block to include in the frame.
-  SpdyFrame* CreateSynStream(SpdyStreamId stream_id,
-                             SpdyStreamId associated_stream_id,
-                             SpdyPriority priority,
-                             uint8 credential_slot,
-                             SpdyControlFlags flags,
-                             const SpdyHeaderBlock* headers);
+  // Serializes a SYN_STREAM frame.
   SpdySerializedFrame* SerializeSynStream(const SpdySynStreamIR& syn_stream);
 
-  // Create a SYN_REPLY SpdyFrame.
-  // |stream_id| is the stream for this frame.
-  // |flags| is the flags to use with the data.
-  //    To mark this frame as the last frame, enable CONTROL_FLAG_FIN.
-  // |compressed| specifies whether the frame should be compressed.
-  // |headers| is the header block to include in the frame.
-  SpdyFrame* CreateSynReply(SpdyStreamId stream_id,
-                            SpdyControlFlags flags,
-                            const SpdyHeaderBlock* headers);
+  // Serialize a SYN_REPLY SpdyFrame.
   SpdySerializedFrame* SerializeSynReply(const SpdySynReplyIR& syn_reply);
 
   SpdySerializedFrame* SerializeRstStream(
@@ -404,12 +381,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // to completion.
   SpdySerializedFrame* SerializeGoAway(const SpdyGoAwayIR& goaway) const;
 
-  // Creates and serializes a HEADERS frame. The HEADERS frame is used
-  // for sending additional headers outside of a SYN_STREAM/SYN_REPLY. The
-  // arguments are the same as for CreateSynReply.
-  SpdyFrame* CreateHeaders(SpdyStreamId stream_id,
-                           SpdyControlFlags flags,
-                           const SpdyHeaderBlock* headers);
+  // Serializes a HEADERS frame. The HEADERS frame is used
+  // for sending additional headers outside of a SYN_STREAM/SYN_REPLY.
   SpdySerializedFrame* SerializeHeaders(const SpdyHeadersIR& headers);
 
   // Serializes a WINDOW_UPDATE frame. The WINDOW_UPDATE
@@ -423,13 +396,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // is purely advisory and optional.
   SpdySerializedFrame* SerializeBlocked(const SpdyBlockedIR& blocked) const;
 
-  // Creates and serializes a PUSH_PROMISE frame. The PUSH_PROMISE frame is used
+  // Serializes a PUSH_PROMISE frame. The PUSH_PROMISE frame is used
   // to inform the client that it will be receiving an additional stream
   // in response to the original request. The frame includes synthesized
   // headers to explain the upcoming data.
-  SpdyFrame* CreatePushPromise(SpdyStreamId stream_id,
-                               SpdyStreamId promised_stream_id,
-                               const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializePushPromise(
       const SpdyPushPromiseIR& push_promise);
 

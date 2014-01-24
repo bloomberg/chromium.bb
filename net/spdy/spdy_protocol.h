@@ -439,7 +439,10 @@ class NET_EXPORT_PRIVATE SpdyFrameWithNameValueBlockIR
   const SpdyNameValueBlock& name_value_block() const {
     return name_value_block_;
   }
-  SpdyNameValueBlock* GetMutableNameValueBlock() { return &name_value_block_; }
+  void set_name_value_block(const SpdyNameValueBlock& name_value_block) {
+    // Deep copy.
+    name_value_block_ = name_value_block;
+  }
   void SetHeader(const base::StringPiece& name,
                  const base::StringPiece& value) {
     name_value_block_[name.as_string()] = value.as_string();

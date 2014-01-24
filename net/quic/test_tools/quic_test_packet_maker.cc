@@ -114,7 +114,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
   EXPECT_LT(QUIC_VERSION_12, version_);
   InitializeHeader(sequence_number, should_include_version);
   SpdySynStreamIR syn_stream(stream_id);
-  *syn_stream.GetMutableNameValueBlock() = headers;
+  syn_stream.set_name_value_block(headers);
   syn_stream.set_fin(fin);
   syn_stream.set_priority(0);
   scoped_ptr<SpdySerializedFrame> spdy_frame(
@@ -134,7 +134,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
   EXPECT_LT(QUIC_VERSION_12, version_);
   InitializeHeader(sequence_number, should_include_version);
   SpdySynReplyIR syn_reply(stream_id);
-  *syn_reply.GetMutableNameValueBlock() = headers;
+  syn_reply.set_name_value_block(headers);
   syn_reply.set_fin(fin);
   scoped_ptr<SpdySerializedFrame> spdy_frame(
       spdy_response_framer_.SerializeSynReply(syn_reply));
