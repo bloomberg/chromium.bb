@@ -35,6 +35,7 @@
 namespace WebCore {
 
 class CSSSelector;
+class ContainerNode;
 class Document;
 class Element;
 class ExceptionState;
@@ -47,8 +48,8 @@ class SelectorDataList {
 public:
     void initialize(const CSSSelectorList&);
     bool matches(Element&) const;
-    PassRefPtr<NodeList> queryAll(Node& rootNode) const;
-    PassRefPtr<Element> queryFirst(Node& rootNode) const;
+    PassRefPtr<NodeList> queryAll(ContainerNode& rootNode) const;
+    PassRefPtr<Element> queryFirst(ContainerNode& rootNode) const;
 
 private:
     struct SelectorData {
@@ -57,27 +58,27 @@ private:
         bool isFastCheckable;
     };
 
-    bool canUseFastQuery(const Node& rootNode) const;
-    bool selectorMatches(const SelectorData&, Element&, const Node&) const;
+    bool canUseFastQuery(const ContainerNode& rootNode) const;
+    bool selectorMatches(const SelectorData&, Element&, const ContainerNode&) const;
 
     template <typename SelectorQueryTrait>
-    void collectElementsByClassName(Node& rootNode, const AtomicString& className, typename SelectorQueryTrait::OutputType&) const;
+    void collectElementsByClassName(ContainerNode& rootNode, const AtomicString& className, typename SelectorQueryTrait::OutputType&) const;
     template <typename SelectorQueryTrait>
-    void collectElementsByTagName(Node& rootNode, const QualifiedName& tagName, typename SelectorQueryTrait::OutputType&) const;
+    void collectElementsByTagName(ContainerNode& rootNode, const QualifiedName& tagName, typename SelectorQueryTrait::OutputType&) const;
 
     template <typename SelectorQueryTrait>
-    void findTraverseRootsAndExecute(Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void findTraverseRootsAndExecute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
 
     enum MatchTraverseRootState { DoesNotMatchTraverseRoots, MatchesTraverseRoots };
     template <typename SelectorQueryTrait>
-    void executeForTraverseRoot(const SelectorData&, Node* traverseRoot, MatchTraverseRootState, Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void executeForTraverseRoot(const SelectorData&, Node* traverseRoot, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     template <typename SelectorQueryTrait, typename SimpleNodeListType>
-    void executeForTraverseRoots(const SelectorData&, SimpleNodeListType& traverseRoots, MatchTraverseRootState, Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void executeForTraverseRoots(const SelectorData&, SimpleNodeListType& traverseRoots, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
 
     template <typename SelectorQueryTrait>
-    void executeSlow(Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void executeSlow(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     template <typename SelectorQueryTrait>
-    void execute(Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    void execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     const CSSSelector* selectorForIdLookup(const CSSSelector*) const;
 
     Vector<SelectorData> m_selectors;
@@ -89,8 +90,8 @@ class SelectorQuery {
 public:
     explicit SelectorQuery(const CSSSelectorList&);
     bool matches(Element&) const;
-    PassRefPtr<NodeList> queryAll(Node& rootNode) const;
-    PassRefPtr<Element> queryFirst(Node& rootNode) const;
+    PassRefPtr<NodeList> queryAll(ContainerNode& rootNode) const;
+    PassRefPtr<Element> queryFirst(ContainerNode& rootNode) const;
 private:
     SelectorDataList m_selectors;
     CSSSelectorList m_selectorList;

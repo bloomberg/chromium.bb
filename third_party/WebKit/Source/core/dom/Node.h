@@ -596,9 +596,6 @@ public:
     virtual bool willRespondToMouseClickEvents();
     virtual bool willRespondToTouchEvents();
 
-    PassRefPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
-    PassRefPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
-
     unsigned short compareDocumentPosition(const Node*) const;
 
     enum ShadowTreesTreatment {

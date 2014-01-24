@@ -201,7 +201,9 @@ WebNodeList WebNode::getElementsByTagName(const WebString& tag) const
 WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) const
 {
     TrackExceptionState exceptionState;
-    WebElement element(m_private->querySelector(tag, exceptionState));
+    WebElement element;
+    if (m_private->isContainerNode())
+        element = toContainerNode(m_private.get())->querySelector(tag, exceptionState);
     ec = exceptionState.code();
     return element;
 }

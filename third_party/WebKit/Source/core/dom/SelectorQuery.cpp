@@ -63,7 +63,7 @@ enum ClassElementListBehavior { AllElements, OnlyRoots };
 template <ClassElementListBehavior onlyRoots>
 class ClassElementList {
 public:
-    ClassElementList(Node& rootNode, const AtomicString& className)
+    ClassElementList(ContainerNode& rootNode, const AtomicString& className)
         : m_className(className)
         , m_rootNode(rootNode)
         , m_currentElement(nextInternal(ElementTraversal::firstWithin(rootNode))) { }
@@ -92,7 +92,7 @@ private:
     }
 
     const AtomicString& m_className;
-    Node& m_rootNode;
+    ContainerNode& m_rootNode;
     Element* m_currentElement;
 };
 
@@ -109,7 +109,7 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
         m_selectors.uncheckedAppend(SelectorData(selector, SelectorCheckerFastPath::canUse(selector)));
 }
 
-inline bool SelectorDataList::selectorMatches(const SelectorData& selectorData, Element& element, const Node& rootNode) const
+inline bool SelectorDataList::selectorMatches(const SelectorData& selectorData, Element& element, const ContainerNode& rootNode) const
 {
     if (selectorData.isFastCheckable && !element.isSVGElement()) {
         SelectorCheckerFastPath selectorCheckerFastPath(selectorData.selector, element);
@@ -121,7 +121,7 @@ inline bool SelectorDataList::selectorMatches(const SelectorData& selectorData, 
     SelectorChecker selectorChecker(element.document(), SelectorChecker::QueryingRules);
     SelectorChecker::SelectorCheckingContext selectorCheckingContext(selectorData.selector, &element, SelectorChecker::VisitedMatchDisabled);
     selectorCheckingContext.behaviorAtBoundary = SelectorChecker::StaysWithinTreeScope;
-    selectorCheckingContext.scope = !rootNode.isDocumentNode() && rootNode.isContainerNode() ? &toContainerNode(rootNode) : 0;
+    selectorCheckingContext.scope = !rootNode.isDocumentNode() ? &rootNode : 0;
     return selectorChecker.match(selectorCheckingContext, DOMSiblingTraversalStrategy()) == SelectorChecker::SelectorMatches;
 }
 
@@ -136,14 +136,14 @@ bool SelectorDataList::matches(Element& targetElement) const
     return false;
 }
 
-PassRefPtr<NodeList> SelectorDataList::queryAll(Node& rootNode) const
+PassRefPtr<NodeList> SelectorDataList::queryAll(ContainerNode& rootNode) const
 {
     Vector<RefPtr<Node> > result;
     execute<AllElementsSelectorQueryTrait>(rootNode, result);
     return StaticNodeList::adopt(result);
 }
 
-PassRefPtr<Element> SelectorDataList::queryFirst(Node& rootNode) const
+PassRefPtr<Element> SelectorDataList::queryFirst(ContainerNode& rootNode) const
 {
     Element* matchedElement = 0;
     execute<SingleElementSelectorQueryTrait>(rootNode, matchedElement);
@@ -151,7 +151,7 @@ PassRefPtr<Element> SelectorDataList::queryFirst(Node& rootNode) const
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::collectElementsByClassName(Node& rootNode, const AtomicString& className,  typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::collectElementsByClassName(ContainerNode& rootNode, const AtomicString& className,  typename SelectorQueryTrait::OutputType& output) const
 {
     for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         if (element->hasClass() && element->classNames().contains(className)) {
@@ -163,7 +163,7 @@ void SelectorDataList::collectElementsByClassName(Node& rootNode, const AtomicSt
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::collectElementsByTagName(Node& rootNode, const QualifiedName& tagName,  typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const QualifiedName& tagName,  typename SelectorQueryTrait::OutputType& output) const
 {
     for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         if (SelectorChecker::tagMatches(*element, tagName)) {
@@ -174,12 +174,12 @@ void SelectorDataList::collectElementsByTagName(Node& rootNode, const QualifiedN
     }
 }
 
-inline bool SelectorDataList::canUseFastQuery(const Node& rootNode) const
+inline bool SelectorDataList::canUseFastQuery(const ContainerNode& rootNode) const
 {
     return m_selectors.size() == 1 && rootNode.inDocument() && !rootNode.document().inQuirksMode();
 }
 
-inline bool ancestorHasClassName(Node& rootNode, const AtomicString& className)
+inline bool ancestorHasClassName(ContainerNode& rootNode, const AtomicString& className)
 {
     if (!rootNode.isElementNode())
         return false;
@@ -200,7 +200,7 @@ inline bool ancestorHasClassName(Node& rootNode, const AtomicString& className)
 // The travseralRoots may be empty, regardless of the returned bool value, if this method finds that the selectors won't
 // match any element.
 template <typename SelectorQueryTrait>
-void SelectorDataList::findTraverseRootsAndExecute(Node& rootNode, typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::findTraverseRootsAndExecute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     // We need to return the matches in document order. To use id lookup while there is possiblity of multiple matches
     // we would need to sort the results. For now, just traverse the document in that case.
@@ -213,7 +213,7 @@ void SelectorDataList::findTraverseRootsAndExecute(Node& rootNode, typename Sele
     for (const CSSSelector* selector = m_selectors[0].selector; selector; selector = selector->tagHistory()) {
         if (selector->m_match == CSSSelector::Id && !rootNode.document().containsMultipleElementsWithId(selector->value())) {
             Element* element = rootNode.treeScope().getElementById(selector->value());
-            Node* adjustedNode = &rootNode;
+            ContainerNode* adjustedNode = &rootNode;
             if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
                 adjustedNode = element;
             else if (!element || isRightmostSelector)
@@ -262,7 +262,7 @@ void SelectorDataList::findTraverseRootsAndExecute(Node& rootNode, typename Sele
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::executeForTraverseRoot(const SelectorData& selector, Node* traverseRoot, MatchTraverseRootState matchTraverseRoot, Node& rootNode, typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::executeForTraverseRoot(const SelectorData& selector, Node* traverseRoot, MatchTraverseRootState matchTraverseRoot, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     if (!traverseRoot)
         return;
@@ -283,7 +283,7 @@ void SelectorDataList::executeForTraverseRoot(const SelectorData& selector, Node
 }
 
 template <typename SelectorQueryTrait, typename SimpleNodeListType>
-void SelectorDataList::executeForTraverseRoots(const SelectorData& selector, SimpleNodeListType& traverseRoots, MatchTraverseRootState matchTraverseRoots, Node& rootNode, typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::executeForTraverseRoots(const SelectorData& selector, SimpleNodeListType& traverseRoots, MatchTraverseRootState matchTraverseRoots, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     if (traverseRoots.isEmpty())
         return;
@@ -315,7 +315,7 @@ void SelectorDataList::executeForTraverseRoots(const SelectorData& selector, Sim
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::executeSlow(Node& rootNode, typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::executeSlow(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         for (unsigned i = 0; i < m_selectors.size(); ++i) {
@@ -341,7 +341,7 @@ const CSSSelector* SelectorDataList::selectorForIdLookup(const CSSSelector* firs
 }
 
 template <typename SelectorQueryTrait>
-void SelectorDataList::execute(Node& rootNode, typename SelectorQueryTrait::OutputType& output) const
+void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType& output) const
 {
     if (!canUseFastQuery(rootNode)) {
         executeSlow<SelectorQueryTrait>(rootNode, output);
@@ -408,12 +408,12 @@ bool SelectorQuery::matches(Element& element) const
     return m_selectors.matches(element);
 }
 
-PassRefPtr<NodeList> SelectorQuery::queryAll(Node& rootNode) const
+PassRefPtr<NodeList> SelectorQuery::queryAll(ContainerNode& rootNode) const
 {
     return m_selectors.queryAll(rootNode);
 }
 
-PassRefPtr<Element> SelectorQuery::queryFirst(Node& rootNode) const
+PassRefPtr<Element> SelectorQuery::queryFirst(ContainerNode& rootNode) const
 {
     return m_selectors.queryFirst(rootNode);
 }

@@ -35,6 +35,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/SelectorQuery.h"
 #include "core/events/MutationEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLCollection.h"
@@ -908,6 +909,32 @@ Node *ContainerNode::childNode(unsigned index) const
     for (i = 0; n != 0 && i < index; i++)
         n = n->nextSibling();
     return n;
+}
+
+PassRefPtr<Element> ContainerNode::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
+{
+    if (selectors.isEmpty()) {
+        exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
+        return 0;
+    }
+
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
+    if (!selectorQuery)
+        return 0;
+    return selectorQuery->queryFirst(*this);
+}
+
+PassRefPtr<NodeList> ContainerNode::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
+{
+    if (selectors.isEmpty()) {
+        exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
+        return 0;
+    }
+
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
+    if (!selectorQuery)
+        return 0;
+    return selectorQuery->queryAll(*this);
 }
 
 static void dispatchChildInsertionEvents(Node& child)

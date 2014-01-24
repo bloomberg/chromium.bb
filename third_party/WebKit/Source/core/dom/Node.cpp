@@ -47,7 +47,6 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Range.h"
-#include "core/dom/SelectorQuery.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TagNodeList.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
@@ -1256,32 +1255,6 @@ bool Node::inSameContainingBlockFlowElement(Node *n)
 }
 
 // FIXME: End of obviously misplaced HTML editing functions.  Try to move these out of Node.
-
-PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
-{
-    if (selectors.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
-        return 0;
-    }
-
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
-    if (!selectorQuery)
-        return 0;
-    return selectorQuery->queryFirst(*this);
-}
-
-PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
-{
-    if (selectors.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
-        return 0;
-    }
-
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
-    if (!selectorQuery)
-        return 0;
-    return selectorQuery->queryAll(*this);
-}
 
 Document* Node::ownerDocument() const
 {

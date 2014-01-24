@@ -96,6 +96,9 @@ public:
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;
 
+    PassRefPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
+    PassRefPtr<NodeList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
+
     void insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
     void replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
     void removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);

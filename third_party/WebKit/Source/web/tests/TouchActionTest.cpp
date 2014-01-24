@@ -121,7 +121,7 @@ protected:
     void runShadowDOMTest(std::string file);
     void sendTouchEvent(WebView*, WebInputEvent::Type, WebCore::IntPoint clientPoint);
     WebView* setupTest(std::string file, TouchActionTrackingWebViewClient&);
-    void runTestOnTree(WebCore::Node* root, WebView*, TouchActionTrackingWebViewClient&);
+    void runTestOnTree(WebCore::ContainerNode* root, WebView*, TouchActionTrackingWebViewClient&);
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -175,7 +175,7 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
     return webView;
 }
 
-void TouchActionTest::runTestOnTree(WebCore::Node* root, WebView* webView, TouchActionTrackingWebViewClient& client)
+void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webView, TouchActionTrackingWebViewClient& client)
 {
     // Find all elements to test the touch-action of in the document.
     WebCore::TrackExceptionState es;

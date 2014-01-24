@@ -558,11 +558,11 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
 {
     *elementId = 0;
     Node* node = assertNode(errorString, nodeId);
-    if (!node)
+    if (!node || !node->isContainerNode())
         return;
 
     TrackExceptionState exceptionState;
-    RefPtr<Element> element = node->querySelector(AtomicString(selectors), exceptionState);
+    RefPtr<Element> element = toContainerNode(node)->querySelector(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -575,11 +575,11 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
 void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int> >& result)
 {
     Node* node = assertNode(errorString, nodeId);
-    if (!node)
+    if (!node || !node->isContainerNode())
         return;
 
     TrackExceptionState exceptionState;
-    RefPtr<NodeList> nodes = node->querySelectorAll(AtomicString(selectors), exceptionState);
+    RefPtr<NodeList> nodes = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
