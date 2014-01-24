@@ -36,7 +36,6 @@
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -56,9 +55,9 @@ PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks:
     // A given object can only be used as a Custom Element prototype
     // once; see customElementIsInterfacePrototypeObject
 #define SET_HIDDEN_PROPERTY(Value, Name) \
-    ASSERT(prototype->GetHiddenValue(V8HiddenPropertyName::customElement##Name(isolate)).IsEmpty()); \
+    ASSERT(getHiddenValue(isolate, prototype, "customElement" #Name).IsEmpty()); \
     if (!Value.IsEmpty()) \
-        prototype->SetHiddenValue(V8HiddenPropertyName::customElement##Name(isolate), Value);
+        setHiddenValue(isolate, prototype, "customElement" #Name, Value);
 
     CALLBACK_LIST(SET_HIDDEN_PROPERTY)
 #undef SET_HIDDEN_PROPERTY

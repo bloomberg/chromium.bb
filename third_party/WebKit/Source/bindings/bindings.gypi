@@ -106,8 +106,6 @@
             'v8/V8GCController.h',
             'v8/V8GCForContextDispose.cpp',
             'v8/V8GCForContextDispose.h',
-            'v8/V8HiddenPropertyName.cpp',
-            'v8/V8HiddenPropertyName.h',
             'v8/V8Initializer.cpp',
             'v8/V8Initializer.h',
             'v8/V8LazyEventListener.cpp',

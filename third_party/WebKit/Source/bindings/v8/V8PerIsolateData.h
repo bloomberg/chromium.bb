@@ -41,7 +41,6 @@ namespace WebCore {
 class DOMDataStore;
 class GCEventData;
 class StringCache;
-class V8HiddenPropertyName;
 struct WrapperTypeInfo;
 
 class ExternalStringVisitor;
@@ -84,8 +83,6 @@ public:
     v8::Persistent<v8::Value>& ensureLiveRoot();
 
     DOMDataList& allStores() { return m_domDataList; }
-
-    V8HiddenPropertyName* hiddenPropertyName() { return m_hiddenPropertyName.get(); }
 
     void registerDOMDataStore(DOMDataStore* domDataStore)
     {
@@ -151,7 +148,6 @@ private:
     Vector<DOMDataStore*> m_domDataList;
     DOMDataStore* m_workerDomDataStore;
 
-    OwnPtr<V8HiddenPropertyName> m_hiddenPropertyName;
     ScopedPersistent<v8::Value> m_liveRoot;
     ScopedPersistent<v8::Context> m_regexContext;
 

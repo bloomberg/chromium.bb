@@ -68,7 +68,6 @@
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8EventListenerList.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
@@ -135,7 +134,7 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Propert
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "readonlyTestInterfaceEmptyAttribute", wrapper);
+        setHiddenValue(info.GetIsolate(), info.Holder(), "readonlyTestInterfaceEmptyAttribute", wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -1617,14 +1616,14 @@ static void cachedAttributeAnyAttributeAttributeGetter(const v8::PropertyCallbac
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedAttributeAnyAttribute");
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     if (!imp->isValueDirty()) {
-        v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
+        v8::Handle<v8::Value> jsValue = getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
         }
     }
     ScriptValue jsValue = imp->cachedAttributeAnyAttribute();
-    info.Holder()->SetHiddenValue(propertyName, jsValue.v8Value());
+    setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
     v8SetReturnValue(info, jsValue.v8Value());
 }
 
@@ -1640,7 +1639,7 @@ static void cachedAttributeAnyAttributeAttributeSetter(v8::Local<v8::Value> jsVa
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
     imp->setCachedAttributeAnyAttribute(cppValue);
-    info.Holder()->DeleteHiddenValue(v8AtomicString(info.GetIsolate(), "cachedAttributeAnyAttribute")); // Invalidate the cached value.
+    deleteHiddenValue(info.GetIsolate(), info.Holder(), "cachedAttributeAnyAttribute"); // Invalidate the cached value.
 }
 
 static void cachedAttributeAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

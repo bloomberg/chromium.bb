@@ -42,7 +42,6 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCController.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8NPObject.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8ScriptRunner.h"

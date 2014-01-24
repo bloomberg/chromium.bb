@@ -1263,7 +1263,7 @@ static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::Pro
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "${funcName}"));
+    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "${funcName}");
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -1307,7 +1307,7 @@ static void ${implClassName}OriginSafeMethodSetter(v8::Local<v8::String> name, v
         return;
     }
 
-    info.This()->SetHiddenValue(name, jsValue);
+    setHiddenValue(info.GetIsolate(), info.This(), name, jsValue);
 }
 
 static void ${implClassName}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -1541,7 +1541,7 @@ END
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "${attrName}");
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     if (!imp->$attrCached()) {
-        v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
+        v8::Handle<v8::Value> jsValue = getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
@@ -1650,7 +1650,6 @@ END
             return;
         }
 
-        AddToImplIncludes("bindings/v8/V8HiddenPropertyName.h");
         # Check for a wrapper in the wrapper cache. If there is one, we know that a hidden reference has already
         # been created. If we don't find a wrapper, we create both a wrapper and a hidden reference.
         my $nativeReturnType = GetNativeType($attrType);
@@ -1664,7 +1663,7 @@ END
         $code .= "        return;\n";
         $code .= "    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());\n";
         $code .= "    if (!wrapper.IsEmpty()) {\n";
-        $code .= "        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), \"${attrName}\", wrapper);\n";
+        $code .= "        setHiddenValue(info.GetIsolate(), info.Holder(), \"${attrName}\", wrapper);\n";
         $code .= "        v8SetReturnValue(info, wrapper);\n";
         $code .= "    }\n";
         $code .= "}\n";
@@ -1723,7 +1722,7 @@ END
         $code .= <<END;
     RefPtr<SerializedScriptValue> serialized = $getterString;
     ScriptValue jsValue = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
-    info.Holder()->SetHiddenValue(propertyName, jsValue);
+    setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue);
     v8SetReturnValue(info, jsValue);
 END
         } else {
@@ -1733,7 +1732,7 @@ END
 END
             }
             $code .= <<END;
-    info.Holder()->SetHiddenValue(propertyName, jsValue.v8Value());
+    setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
     v8SetReturnValue(info, jsValue.v8Value());
 END
         }
@@ -2160,7 +2159,7 @@ END
 
     if ($attrCached) {
         $code .= <<END;
-    info.Holder()->DeleteHiddenValue(v8AtomicString(info.GetIsolate(), "${attrName}")); // Invalidate the cached value.
+    deleteHiddenValue(info.GetIsolate(), info.Holder(), "${attrName}"); // Invalidate the cached value.
 END
     }
 
@@ -3002,7 +3001,7 @@ END
         $implementation{nameSpaceInternal}->add(<<END);
         options.get("${attrName}", ${attrName});
         if (!${attrName}.IsEmpty())
-            info.Holder()->SetHiddenValue(V8HiddenPropertyName::${attrName}(info.GetIsolate()), ${attrName});
+            setHiddenValue(info.GetIsolate(), info.Holder(), "${attrName}", ${attrName});
 END
     }
 

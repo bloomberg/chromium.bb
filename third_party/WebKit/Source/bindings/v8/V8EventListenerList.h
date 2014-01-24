@@ -31,11 +31,8 @@
 #ifndef V8EventListenerList_h
 #define V8EventListenerList_h
 
+#include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListener.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
-
-#include <v8.h>
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -65,7 +62,7 @@ public:
     static void clearWrapper(v8::Handle<v8::Object> listenerObject, bool isAttribute, v8::Isolate* isolate)
     {
         v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute, isolate);
-        listenerObject->DeleteHiddenValue(wrapperProperty);
+        deleteHiddenValue(isolate, listenerObject, wrapperProperty);
     }
 
     static PassRefPtr<EventListener> getEventListener(v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
@@ -75,7 +72,7 @@ private:
     {
         ASSERT(isolate->InContext());
         v8::HandleScope scope(isolate);
-        v8::Local<v8::Value> listener = object->GetHiddenValue(wrapperProperty);
+        v8::Local<v8::Value> listener = getHiddenValue(isolate, object, wrapperProperty);
         if (listener.IsEmpty())
             return 0;
         return static_cast<V8EventListener*>(v8::External::Cast(*listener)->Value());
@@ -83,7 +80,7 @@ private:
 
     static inline v8::Handle<v8::String> getHiddenProperty(bool isAttribute, v8::Isolate* isolate)
     {
-        return isAttribute ? V8HiddenPropertyName::attributeListener(isolate) : V8HiddenPropertyName::listener(isolate);
+        return isAttribute ? v8AtomicString(isolate, "attributeListener") : v8AtomicString(isolate, "listener");
     }
 };
 
@@ -105,7 +102,7 @@ PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v
 
     RefPtr<V8EventListener> wrapperPtr = WrapperType::create(object, isAttribute, isolate);
     if (wrapperPtr)
-        object->SetHiddenValue(wrapperProperty, v8::External::New(isolate, wrapperPtr.get()));
+        setHiddenValue(isolate, object, wrapperProperty, v8::External::New(isolate, wrapperPtr.get()));
 
     return wrapperPtr;
 }

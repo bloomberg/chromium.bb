@@ -28,7 +28,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "V8DOMStringList.h"
-#include "V8HiddenPropertyName.h"
 #include "V8IDBCursor.h"
 #include "V8IDBCursorWithValue.h"
 #include "V8IDBDatabase.h"
@@ -124,7 +123,7 @@ static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> cre
         // so that event listeners are retained.
         v8::Handle<v8::Value> cursor = toV8(impl->idbCursor(), creationContext, isolate);
         v8::Handle<v8::Value> request = toV8(impl->idbCursor()->request(), creationContext, isolate);
-        cursor->ToObject()->SetHiddenValue(V8HiddenPropertyName::idbCursorRequest(isolate), request);
+        setHiddenValue(isolate, cursor->ToObject(), "idbCursorRequest", request);
         return cursor;
     }
     case IDBAny::IDBCursorWithValueType: {
@@ -132,7 +131,7 @@ static v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> cre
         // so that event listeners are retained.
         v8::Handle<v8::Value> cursor = toV8(impl->idbCursorWithValue(), creationContext, isolate);
         v8::Handle<v8::Value> request = toV8(impl->idbCursorWithValue()->request(), creationContext, isolate);
-        cursor->ToObject()->SetHiddenValue(V8HiddenPropertyName::idbCursorRequest(isolate), request);
+        setHiddenValue(isolate, cursor->ToObject(), "idbCursorRequest", request);
         return cursor;
     }
     case IDBAny::IDBDatabaseType:

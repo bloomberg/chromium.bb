@@ -35,7 +35,6 @@
 #include "V8HTMLDocument.h"
 #include "V8Window.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8ScriptRunner.h"

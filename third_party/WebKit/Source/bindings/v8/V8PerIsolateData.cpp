@@ -30,7 +30,6 @@
 #include "bindings/v8/ScriptGCEvent.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
 
@@ -40,7 +39,6 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     : m_isolate(isolate)
     , m_stringCache(adoptPtr(new StringCache()))
     , m_workerDomDataStore(0)
-    , m_hiddenPropertyName(adoptPtr(new V8HiddenPropertyName()))
     , m_constructorMode(ConstructorMode::CreateNewObject)
     , m_recursionLevel(0)
 #ifndef NDEBUG

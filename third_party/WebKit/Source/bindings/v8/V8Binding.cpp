@@ -649,10 +649,45 @@ DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
     return DOMWrapperWorld::isolatedWorld(isolate->GetCurrentContext());
 }
 
+v8::Local<v8::Value> getHiddenValue(v8::Isolate* isolate, v8::Handle<v8::Object> object, const char* key)
+{
+    return getHiddenValue(isolate, object, v8AtomicString(isolate, key));
+}
+
+v8::Local<v8::Value> getHiddenValue(v8::Isolate* isolate, v8::Handle<v8::Object> object, v8::Handle<v8::String> key)
+{
+    return object->GetHiddenValue(key);
+}
+
+bool setHiddenValue(v8::Isolate* isolate, v8::Handle<v8::Object> object, const char* key, v8::Handle<v8::Value> value)
+{
+    return setHiddenValue(isolate, object, v8AtomicString(isolate, key), value);
+}
+
+bool setHiddenValue(v8::Isolate* isolate, v8::Handle<v8::Object> object, v8::Handle<v8::String> key, v8::Handle<v8::Value> value)
+{
+    return object->SetHiddenValue(key, value);
+}
+
+bool deleteHiddenValue(v8::Isolate* isolate, v8::Handle<v8::Object> object, const char* key)
+{
+    return deleteHiddenValue(isolate, object, v8AtomicString(isolate, key));
+}
+
+bool deleteHiddenValue(v8::Isolate* isolate, v8::Handle<v8::Object> object, v8::Handle<v8::String> key)
+{
+    return object->DeleteHiddenValue(key);
+}
+
+v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, ScriptWrappable* wrappable, const char* key)
+{
+    return getHiddenValueFromMainWorldWrapper(isolate, wrappable, v8AtomicString(isolate, key));
+}
+
 v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, ScriptWrappable* wrappable, v8::Handle<v8::String> key)
 {
     v8::Local<v8::Object> wrapper = wrappable->newLocalWrapper(isolate);
-    return wrapper.IsEmpty() ? v8::Local<v8::Value>() : wrapper->GetHiddenValue(key);
+    return wrapper.IsEmpty() ? v8::Local<v8::Value>() : getHiddenValue(isolate, wrapper, key);
 }
 
 static gin::IsolateHolder* mainIsolateHolder = 0;

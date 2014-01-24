@@ -685,7 +685,14 @@ namespace WebCore {
         return v8::Function::New(isolate, function, environment);
     }
 
-    v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String> key);
+    v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*);
+    v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
+    bool setHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*, v8::Handle<v8::Value>);
+    bool setHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>, v8::Handle<v8::Value>);
+    bool deleteHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, const char*);
+    bool deleteHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
+    v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, const char*);
+    v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String>);
 
     v8::Isolate* mainThreadIsolate();
     v8::Isolate* toIsolate(ExecutionContext*);

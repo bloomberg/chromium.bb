@@ -40,7 +40,6 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8DOMConfiguration.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
@@ -149,7 +148,7 @@ static void initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGet
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "initializedByEventConstructorReadonlyUint8ArrayAttribute", wrapper);
+        setHiddenValue(info.GetIsolate(), info.Holder(), "initializedByEventConstructorReadonlyUint8ArrayAttribute", wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -169,7 +168,7 @@ static void initializedByEventConstructorReadonlyTestInterfaceEmptyAttributeAttr
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute", wrapper);
+        setHiddenValue(info.GetIsolate(), info.Holder(), "initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute", wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -208,7 +207,7 @@ static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttri
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute", wrapper);
+        setHiddenValue(info.GetIsolate(), info.Holder(), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute", wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -281,7 +280,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         options.get("initializedByEventConstructorReadonlyAnyAttribute", initializedByEventConstructorReadonlyAnyAttribute);
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
-            info.Holder()->SetHiddenValue(V8HiddenPropertyName::initializedByEventConstructorReadonlyAnyAttribute(info.GetIsolate()), initializedByEventConstructorReadonlyAnyAttribute);
+            setHiddenValue(info.GetIsolate(), info.Holder(), "initializedByEventConstructorReadonlyAnyAttribute", initializedByEventConstructorReadonlyAnyAttribute);
     }
     RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())

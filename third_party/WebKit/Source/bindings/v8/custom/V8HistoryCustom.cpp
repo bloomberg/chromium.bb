@@ -35,7 +35,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/History.h"
 
@@ -45,7 +44,7 @@ void V8History::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Va
 {
     History* history = V8History::toNative(info.Holder());
 
-    v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
+    v8::Handle<v8::Value> value = getHiddenValue(info.GetIsolate(), info.Holder(), "state");
 
     if (!value.IsEmpty() && !history->stateChanged()) {
         v8SetReturnValue(info, value);
@@ -54,7 +53,7 @@ void V8History::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Va
 
     RefPtr<SerializedScriptValue> serialized = history->state();
     value = serialized ? serialized->deserialize(info.GetIsolate()) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
-    info.Holder()->SetHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()), value);
+    setHiddenValue(info.GetIsolate(), info.Holder(), "state", value);
 
     v8SetReturnValue(info, value);
 }
@@ -71,7 +70,7 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
     History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, exceptionState);
-    info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
+    deleteHiddenValue(info.GetIsolate(), info.Holder(), "state");
     exceptionState.throwIfNeeded();
 }
 
@@ -87,7 +86,7 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
 
     History* history = V8History::toNative(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, exceptionState);
-    info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
+    deleteHiddenValue(info.GetIsolate(), info.Holder(), "state");
     exceptionState.throwIfNeeded();
 }
 

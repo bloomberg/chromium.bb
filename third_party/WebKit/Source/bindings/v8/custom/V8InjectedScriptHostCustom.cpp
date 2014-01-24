@@ -44,7 +44,6 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
 #include "bindings/v8/custom/V8Float64ArrayCustom.h"
