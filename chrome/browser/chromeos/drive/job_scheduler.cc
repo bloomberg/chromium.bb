@@ -95,6 +95,7 @@ struct UploadExistingFileParams {
   std::string resource_id;
   base::FilePath local_file_path;
   std::string content_type;
+  drive::DriveUploader::UploadExistingFileOptions options;
   std::string etag;
   UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
@@ -104,12 +105,10 @@ struct UploadExistingFileParams {
 google_apis::CancelCallback RunUploadExistingFile(
     DriveUploaderInterface* uploader,
     const UploadExistingFileParams& params) {
-  drive::DriveUploader::UploadExistingFileOptions options;
-  options.etag = params.etag;
   return uploader->UploadExistingFile(params.resource_id,
                                       params.local_file_path,
                                       params.content_type,
-                                      options,
+                                      params.options,
                                       params.callback,
                                       params.progress_callback);
 }
@@ -655,7 +654,7 @@ void JobScheduler::UploadExistingFile(
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& content_type,
-    const std::string& etag,
+    const drive::DriveUploader::UploadExistingFileOptions& options,
     const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -668,7 +667,7 @@ void JobScheduler::UploadExistingFile(
   params.resource_id = resource_id;
   params.local_file_path = local_file_path;
   params.content_type = content_type;
-  params.etag = etag;
+  params.options = options;
 
   ResumeUploadParams resume_params;
   resume_params.local_file_path = params.local_file_path;

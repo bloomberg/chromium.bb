@@ -29,7 +29,6 @@ struct ClientContext;
 namespace file_system {
 class DownloadOperation;
 class OperationObserver;
-class ContentUpdatePerformer;
 }
 
 namespace internal {
@@ -88,8 +87,7 @@ class SyncClient {
   // Types of sync tasks.
   enum SyncType {
     FETCH,  // Fetch a file from the Drive server.
-    UPLOAD,  // Upload a file to the Drive server.
-    UPDATE,  // Updates an entry's metadata on the Drive server.
+    UPDATE,  // Updates an entry's metadata or content on the Drive server.
   };
 
   // States of sync tasks.
@@ -112,11 +110,6 @@ class SyncClient {
   void AddFetchTaskInternal(const std::string& local_id,
                             const base::TimeDelta& delay);
 
-  // Adds a UPLOAD task.
-  void AddUploadTaskInternal(const ClientContext& context,
-                             const std::string& local_id,
-                             const base::TimeDelta& delay);
-
   // Adds a UPDATE task.
   void AddUpdateTaskInternal(const ClientContext& context,
                              const std::string& local_id,
@@ -132,7 +125,6 @@ class SyncClient {
 
   // Called when the local IDs of files in the backlog are obtained.
   void OnGetLocalIdsOfBacklog(const std::vector<std::string>* to_fetch,
-                              const std::vector<std::string>* to_upload,
                               const std::vector<std::string>* to_update);
 
   // Adds fetch tasks.
@@ -162,9 +154,6 @@ class SyncClient {
 
   // Used to fetch pinned files.
   scoped_ptr<file_system::DownloadOperation> download_operation_;
-
-  // Used to upload committed files.
-  scoped_ptr<file_system::ContentUpdatePerformer> content_update_performer_;
 
   // Used to update entry metadata.
   scoped_ptr<EntryUpdatePerformer> entry_update_performer_;

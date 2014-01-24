@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/sync/content_update_performer.h"
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
@@ -45,14 +44,11 @@ const int kDelaySeconds = 5;
 const int kLongDelaySeconds = 600;
 
 // Iterates entries and appends IDs to |to_fetch| if the file is pinned but not
-// fetched (not present locally), to |to_upload| if the file is dirty but not
-// uploaded, or to |to_remove| if the entry is in the trash.
+// fetched (not present locally), to |to_update| if the file needs update.
 void CollectBacklog(ResourceMetadata* metadata,
                     std::vector<std::string>* to_fetch,
-                    std::vector<std::string>* to_upload,
                     std::vector<std::string>* to_update) {
   DCHECK(to_fetch);
-  DCHECK(to_upload);
   DCHECK(to_update);
 
   scoped_ptr<ResourceMetadata::Iterator> it = metadata->GetIterator();
@@ -64,12 +60,13 @@ void CollectBacklog(ResourceMetadata* metadata,
       continue;
     }
 
+    bool should_update = false;
     switch (entry.metadata_edit_state()) {
       case ResourceEntry::CLEAN:
         break;
       case ResourceEntry::SYNCING:
       case ResourceEntry::DIRTY:
-        to_update->push_back(local_id);
+        should_update = true;
         break;
     }
 
@@ -79,8 +76,10 @@ void CollectBacklog(ResourceMetadata* metadata,
         to_fetch->push_back(local_id);
 
       if (cache_entry.is_dirty())
-        to_upload->push_back(local_id);
+        should_update = true;
     }
+    if (should_update)
+      to_update->push_back(local_id);
   }
   DCHECK(!it->HasError());
 }
@@ -149,15 +148,11 @@ SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
           metadata,
           cache,
           temporary_file_directory)),
-      content_update_performer_(
-          new file_system::ContentUpdatePerformer(blocking_task_runner,
-                                                  scheduler,
-                                                  metadata,
-                                                  cache)),
       entry_update_performer_(new EntryUpdatePerformer(blocking_task_runner,
                                                        observer,
                                                        scheduler,
-                                                       metadata)),
+                                                       metadata,
+                                                       cache)),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
       long_delay_(base::TimeDelta::FromSeconds(kLongDelaySeconds)),
       weak_ptr_factory_(this) {
@@ -172,16 +167,14 @@ void SyncClient::StartProcessingBacklog() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string>* to_fetch = new std::vector<std::string>;
-  std::vector<std::string>* to_upload = new std::vector<std::string>;
-  std::vector<std::string>* to_remove = new std::vector<std::string>;
+  std::vector<std::string>* to_update = new std::vector<std::string>;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&CollectBacklog, metadata_, to_fetch, to_upload, to_remove),
+      base::Bind(&CollectBacklog, metadata_, to_fetch, to_update),
       base::Bind(&SyncClient::OnGetLocalIdsOfBacklog,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(to_fetch),
-                 base::Owned(to_upload),
-                 base::Owned(to_remove)));
+                 base::Owned(to_update)));
 }
 
 void SyncClient::StartCheckingExistingPinnedFiles() {
@@ -225,13 +218,14 @@ void SyncClient::RemoveFetchTask(const std::string& local_id) {
 void SyncClient::AddUploadTask(const ClientContext& context,
                                const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddUploadTaskInternal(context, local_id, delay_);
+  // TODO(hashimoto): Remove this method.
+  AddUpdateTask(context, local_id);
 }
 
 void SyncClient::AddUpdateTask(const ClientContext& context,
                                const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddUpdateTaskInternal(context, local_id, base::TimeDelta::FromSeconds(0));
+  AddUpdateTaskInternal(context, local_id, delay_);
 }
 
 void SyncClient::AddFetchTaskInternal(const std::string& local_id,
@@ -250,23 +244,6 @@ void SyncClient::AddFetchTaskInternal(const std::string& local_id,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_id));
   AddTask(SyncTasks::key_type(FETCH, local_id), task, delay);
-}
-
-void SyncClient::AddUploadTaskInternal(const ClientContext& context,
-                                       const std::string& local_id,
-                                       const base::TimeDelta& delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  SyncTask task;
-  task.task = base::Bind(
-      &file_system::ContentUpdatePerformer::UpdateFileByLocalId,
-      base::Unretained(content_update_performer_.get()),
-      local_id,
-      context,
-      base::Bind(&SyncClient::OnUploadFileComplete,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 local_id));
-  AddTask(SyncTasks::key_type(UPLOAD, local_id), task, delay);
 }
 
 void SyncClient::AddUpdateTaskInternal(const ClientContext& context,
@@ -330,28 +307,21 @@ void SyncClient::StartTask(const SyncTasks::key_type& key) {
 
 void SyncClient::OnGetLocalIdsOfBacklog(
     const std::vector<std::string>* to_fetch,
-    const std::vector<std::string>* to_upload,
     const std::vector<std::string>* to_update) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Give priority to upload tasks over fetch tasks, so that dirty files are
   // uploaded as soon as possible.
-  for (size_t i = 0; i < to_upload->size(); ++i) {
-    const std::string& local_id = (*to_upload)[i];
-    DVLOG(1) << "Queuing to upload: " << local_id;
-    AddUploadTaskInternal(ClientContext(BACKGROUND), local_id, delay_);
+  for (size_t i = 0; i < to_update->size(); ++i) {
+    const std::string& local_id = (*to_update)[i];
+    DVLOG(1) << "Queuing to update: " << local_id;
+    AddUpdateTask(ClientContext(BACKGROUND), local_id);
   }
 
   for (size_t i = 0; i < to_fetch->size(); ++i) {
     const std::string& local_id = (*to_fetch)[i];
     DVLOG(1) << "Queuing to fetch: " << local_id;
     AddFetchTaskInternal(local_id, delay_);
-  }
-
-  for (size_t i = 0; i < to_update->size(); ++i) {
-    const std::string& local_id = (*to_update)[i];
-    DVLOG(1) << "Queuing to update: " << local_id;
-    AddUpdateTask(ClientContext(BACKGROUND), local_id);
   }
 }
 
@@ -419,38 +389,6 @@ void SyncClient::OnFetchFileComplete(const std::string& local_id,
             local_id);
         LOG(WARNING) << "Failed to fetch " << local_id
                      << ": " << FileErrorToString(error);
-    }
-  }
-}
-
-void SyncClient::OnUploadFileComplete(const std::string& local_id,
-                                      FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!OnTaskComplete(UPLOAD, local_id))
-    return;
-
-  if (error == FILE_ERROR_OK) {
-    DVLOG(1) << "Uploaded " << local_id;
-  } else {
-    switch (error) {
-      case FILE_ERROR_NO_CONNECTION:
-        // Add the task again so that we'll retry once the connection is back.
-        AddUploadTaskInternal(ClientContext(BACKGROUND), local_id, delay_);
-        break;
-      case FILE_ERROR_SERVICE_UNAVAILABLE:
-        // Add the task again so that we'll retry once the service is back.
-        AddUploadTaskInternal(ClientContext(BACKGROUND), local_id, long_delay_);
-        operation_observer_->OnDriveSyncError(
-            file_system::DRIVE_SYNC_ERROR_SERVICE_UNAVAILABLE,
-            local_id);
-        break;
-      default:
-        operation_observer_->OnDriveSyncError(
-            file_system::DRIVE_SYNC_ERROR_MISC,
-            local_id);
-        LOG(WARNING) << "Failed to upload " << local_id << ": "
-                     << FileErrorToString(error);
     }
   }
 }

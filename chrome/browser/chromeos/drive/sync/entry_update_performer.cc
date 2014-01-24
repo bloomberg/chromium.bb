@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -16,30 +17,75 @@ using content::BrowserThread;
 
 namespace drive {
 namespace internal {
+
+struct EntryUpdatePerformer::LocalState {
+  LocalState() : should_content_update(false) {
+  }
+
+  ResourceEntry entry;
+  ResourceEntry parent_entry;
+  base::FilePath drive_file_path;
+  base::FilePath cache_file_path;
+  bool should_content_update;
+};
+
 namespace {
 
 // Looks up ResourceEntry for source entry and its parent.
 FileError PrepareUpdate(ResourceMetadata* metadata,
+                        FileCache* cache,
                         const std::string& local_id,
-                        ResourceEntry* entry,
-                        ResourceEntry* parent_entry) {
-  FileError error = metadata->GetResourceEntryById(local_id, entry);
+                        EntryUpdatePerformer::LocalState* local_state) {
+  FileError error = metadata->GetResourceEntryById(local_id,
+                                                   &local_state->entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  error = metadata->GetResourceEntryById(entry->parent_local_id(),
-                                         parent_entry);
+  error = metadata->GetResourceEntryById(local_state->entry.parent_local_id(),
+                                         &local_state->parent_entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  switch (entry->metadata_edit_state()) {
+  local_state->drive_file_path = metadata->GetFilePath(local_id);
+  if (local_state->drive_file_path.empty())
+    return FILE_ERROR_NOT_FOUND;
+
+  // Check if content update is needed or not.
+  FileCacheEntry cache_entry;
+  if (cache->GetCacheEntry(local_id, &cache_entry) &&
+      cache_entry.is_dirty() &&
+      !cache->IsOpenedForWrite(local_id)) {
+    // Update cache entry's MD5 if needed.
+    if (cache_entry.md5().empty()) {
+      error = cache->UpdateMd5(local_id);
+      if (error != FILE_ERROR_OK)
+        return error;
+      if (!cache->GetCacheEntry(local_id, &cache_entry))
+        return FILE_ERROR_NOT_FOUND;
+    }
+
+    if (cache_entry.md5() == local_state->entry.file_specific_info().md5()) {
+      error = cache->ClearDirty(local_id);
+      if (error != FILE_ERROR_OK)
+        return error;
+    } else {
+      error = cache->GetFile(local_id, &local_state->cache_file_path);
+      if (error != FILE_ERROR_OK)
+        return error;
+
+      local_state->should_content_update = true;
+    }
+  }
+
+  // Update metadata_edit_state.
+  switch (local_state->entry.metadata_edit_state()) {
     case ResourceEntry::CLEAN:  // Nothing to do.
     case ResourceEntry::SYNCING:  // Error during the last update. Go ahead.
       break;
 
     case ResourceEntry::DIRTY:
-      entry->set_metadata_edit_state(ResourceEntry::SYNCING);
-      error = metadata->RefreshEntry(*entry);
+      local_state->entry.set_metadata_edit_state(ResourceEntry::SYNCING);
+      error = metadata->RefreshEntry(local_state->entry);
       if (error != FILE_ERROR_OK)
         return error;
       break;
@@ -48,12 +94,15 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
 }
 
 FileError FinishUpdate(ResourceMetadata* metadata,
-                       const std::string& local_id) {
+                       FileCache* cache,
+                       const std::string& local_id,
+                       scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   ResourceEntry entry;
   FileError error = metadata->GetResourceEntryById(local_id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
 
+  // Update metadata_edit_state and MD5.
   switch (entry.metadata_edit_state()) {
     case ResourceEntry::CLEAN:  // Nothing to do.
     case ResourceEntry::DIRTY:  // Entry was edited again during the update.
@@ -61,10 +110,21 @@ FileError FinishUpdate(ResourceMetadata* metadata,
 
     case ResourceEntry::SYNCING:
       entry.set_metadata_edit_state(ResourceEntry::CLEAN);
-      error = metadata->RefreshEntry(entry);
-      if (error != FILE_ERROR_OK)
-        return error;
       break;
+  }
+  if (!entry.file_info().is_directory())
+    entry.mutable_file_specific_info()->set_md5(resource_entry->file_md5());
+  error = metadata->RefreshEntry(entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  // Clear dirty bit unless the file has been edited during update.
+  FileCacheEntry cache_entry;
+  if (cache->GetCacheEntry(local_id, &cache_entry) &&
+      cache_entry.md5() == entry.file_specific_info().md5()) {
+    error = cache->ClearDirty(local_id);
+    if (error != FILE_ERROR_OK)
+      return error;
   }
   return FILE_ERROR_OK;
 }
@@ -75,10 +135,12 @@ EntryUpdatePerformer::EntryUpdatePerformer(
     base::SequencedTaskRunner* blocking_task_runner,
     file_system::OperationObserver* observer,
     JobScheduler* scheduler,
-    ResourceMetadata* metadata)
+    ResourceMetadata* metadata,
+    FileCache* cache)
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
+      cache_(cache),
       remove_performer_(new RemovePerformer(blocking_task_runner,
                                             observer,
                                             scheduler,
@@ -101,26 +163,21 @@ void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  scoped_ptr<ResourceEntry> parent_entry(new ResourceEntry);
-  ResourceEntry* entry_ptr = entry.get();
-  ResourceEntry* parent_entry_ptr = parent_entry.get();
+  scoped_ptr<LocalState> local_state(new LocalState);
+  LocalState* local_state_ptr = local_state.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&PrepareUpdate,
-                 metadata_, local_id, entry_ptr, parent_entry_ptr),
+      base::Bind(&PrepareUpdate, metadata_, cache_, local_id, local_state_ptr),
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterPrepare,
                  weak_ptr_factory_.GetWeakPtr(), context, callback,
-                 base::Passed(&entry),
-                 base::Passed(&parent_entry)));
+                 base::Passed(&local_state)));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     const ClientContext& context,
     const FileOperationCallback& callback,
-    scoped_ptr<ResourceEntry> entry,
-    scoped_ptr<ResourceEntry> parent_entry,
+    scoped_ptr<LocalState> local_state,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -131,27 +188,52 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   }
 
   // Trashed entry should be removed.
-  if (entry->parent_local_id() == util::kDriveTrashDirLocalId) {
-    remove_performer_->Remove(entry->local_id(), context, callback);
+  if (local_state->entry.parent_local_id() == util::kDriveTrashDirLocalId) {
+    remove_performer_->Remove(local_state->entry.local_id(), context, callback);
     return;
   }
 
-  if (entry->metadata_edit_state() == ResourceEntry::CLEAN) {
+  base::Time last_modified = base::Time::FromInternalValue(
+      local_state->entry.file_info().last_modified());
+  base::Time last_accessed = base::Time::FromInternalValue(
+      local_state->entry.file_info().last_accessed());
+
+  // Perform content update.
+  if (local_state->should_content_update) {
+    drive::DriveUploader::UploadExistingFileOptions options;
+    options.title = local_state->entry.title();
+    options.parent_resource_id = local_state->parent_entry.resource_id();
+    options.modified_date = last_modified;
+    options.last_viewed_by_me_date = last_accessed;
+    scheduler_->UploadExistingFile(
+        local_state->entry.resource_id(),
+        local_state->drive_file_path,
+        local_state->cache_file_path,
+        local_state->entry.file_specific_info().content_mime_type(),
+        options,
+        context,
+        base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   context,
+                   callback,
+                   local_state->entry.local_id()));
+    return;
+  }
+
+  // No need to perform update.
+  if (local_state->entry.metadata_edit_state() == ResourceEntry::CLEAN) {
     callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  base::Time last_modified =
-      base::Time::FromInternalValue(entry->file_info().last_modified());
-  base::Time last_accessed =
-      base::Time::FromInternalValue(entry->file_info().last_accessed());
+  // Perform metadata update.
   scheduler_->UpdateResource(
-      entry->resource_id(), parent_entry->resource_id(),
-      entry->title(), last_modified, last_accessed,
+      local_state->entry.resource_id(), local_state->parent_entry.resource_id(),
+      local_state->entry.title(), last_modified, last_accessed,
       context,
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                  weak_ptr_factory_.GetWeakPtr(),
-                 context, callback, entry->local_id()));
+                 context, callback, local_state->entry.local_id()));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
@@ -177,7 +259,8 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FinishUpdate, metadata_, local_id),
+      base::Bind(&FinishUpdate,
+                 metadata_, cache_, local_id, base::Passed(&resource_entry)),
       callback);
 }
 

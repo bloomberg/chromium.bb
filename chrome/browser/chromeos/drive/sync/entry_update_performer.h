@@ -33,6 +33,7 @@ class OperationObserver;
 namespace internal {
 
 class EntryRevertPerformer;
+class FileCache;
 class RemovePerformer;
 class ResourceMetadata;
 
@@ -42,7 +43,8 @@ class EntryUpdatePerformer {
   EntryUpdatePerformer(base::SequencedTaskRunner* blocking_task_runner,
                        file_system::OperationObserver* observer,
                        JobScheduler* scheduler,
-                       ResourceMetadata* metadata);
+                       ResourceMetadata* metadata,
+                       FileCache* cache);
   ~EntryUpdatePerformer();
 
   // Requests the server to update the metadata of the entry specified by
@@ -53,12 +55,13 @@ class EntryUpdatePerformer {
                    const ClientContext& context,
                    const FileOperationCallback& callback);
 
+  struct LocalState;
+
  private:
   // Part of UpdateEntry(). Called after local metadata look up.
   void UpdateEntryAfterPrepare(const ClientContext& context,
                                const FileOperationCallback& callback,
-                               scoped_ptr<ResourceEntry> entry,
-                               scoped_ptr<ResourceEntry> parent_entry,
+                               scoped_ptr<LocalState> local_state,
                                FileError error);
 
   // Part of UpdateEntry(). Called after UpdateResource is completed.
@@ -72,6 +75,7 @@ class EntryUpdatePerformer {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
+  FileCache* cache_;
   scoped_ptr<RemovePerformer> remove_performer_;
   scoped_ptr<EntryRevertPerformer> entry_revert_performer_;
 

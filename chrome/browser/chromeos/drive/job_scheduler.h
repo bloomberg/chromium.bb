@@ -184,7 +184,7 @@ class JobScheduler
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const std::string& etag,
+      const drive::DriveUploader::UploadExistingFileOptions& options,
       const ClientContext& context,
       const google_apis::GetResourceEntryCallback& callback);
 
