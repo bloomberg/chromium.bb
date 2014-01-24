@@ -432,11 +432,15 @@ FileTransferController.prototype = {
     if (item === this.dropTarget_)
       return;
 
-    var entry = item && list.dataModel.item(item.listIndex).entry;
-    if (entry)
+    var modelItem = item && list.dataModel.item(item.listIndex);
+    if (modelItem.isShortcut) {
       this.setDropTarget_(item, event.dataTransfer, entry);
-    else
+    } else if (modelItem.isVolume && modelItem.volumeInfo.displayRoot) {
+      this.setDropTarget_(
+          item, event.dataTransfer, modelItem.volumeInfo.displayRoot);
+    } else {
       this.clearDropTarget_();
+    }
   },
 
   /**
