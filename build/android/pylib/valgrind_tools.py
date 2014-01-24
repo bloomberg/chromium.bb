@@ -22,6 +22,7 @@ Call tool.CleanUpEnvironment().
 """
 
 import os.path
+import subprocess
 import sys
 from glob import glob
 
@@ -85,16 +86,11 @@ class BaseTool(object):
 class AddressSanitizerTool(BaseTool):
   """AddressSanitizer tool."""
 
-  TMP_DIR = '/data/local/tmp/asan'
-  WRAPPER_NAME = 'asanwrapper.sh'
+  WRAPPER_NAME = '/system/bin/asanwrapper'
+  EXTRA_OPTIONS = 'allocator_may_return_null=1,strict_memcmp=0'
 
   def __init__(self, adb):
     self._adb = adb
-    self._wrap_properties = ['wrap.com.google.android.apps.ch',
-                             'wrap.org.chromium.native_test',
-                             'wrap.org.chromium.content_shell',
-                             'wrap.org.chromium.chrome.testsh',
-                             'wrap.org.chromium.android_webvi']
     # Configure AndroidCommands to run utils (such as md5sum_bin) under ASan.
     # This is required because ASan is a compiler-based tool, and md5sum
     # includes instrumented code from base.
@@ -102,17 +98,14 @@ class AddressSanitizerTool(BaseTool):
 
   def CopyFiles(self):
     """Copies ASan tools to the device."""
-    files = (['tools/android/asan/asanwrapper.sh'] +
-              glob('third_party/llvm-build/Release+Asserts/lib/clang/*/lib/'
-                   'linux/libclang_rt.asan-arm-android.so'))
-    for f in files:
-      self._adb.PushIfNeeded(os.path.join(DIR_SOURCE_ROOT, f),
-                             os.path.join(AddressSanitizerTool.TMP_DIR,
-                                          os.path.basename(f)))
+    subprocess.call([os.path.join(DIR_SOURCE_ROOT,
+                                  'tools/android/asan/asan_device_setup.sh'),
+                     '--device', self._adb.GetDevice(),
+                     '--extra-options', AddressSanitizerTool.EXTRA_OPTIONS])
+    self._adb.WaitForDevicePm()
 
   def GetTestWrapper(self):
-    return os.path.join(AddressSanitizerTool.TMP_DIR,
-                        AddressSanitizerTool.WRAPPER_NAME)
+    return AddressSanitizerTool.WRAPPER_NAME
 
   def GetUtilWrapper(self):
     """Returns the wrapper for utilities, such as forwarder.
@@ -124,15 +117,9 @@ class AddressSanitizerTool(BaseTool):
 
   def SetupEnvironment(self):
     self._adb.EnableAdbRoot()
-    self._adb.RunShellCommand('setenforce 0')
-    for prop in self._wrap_properties:
-      self._adb.RunShellCommand('setprop %s "logwrapper %s"' % (
-          prop, self.GetTestWrapper()))
     SetChromeTimeoutScale(self._adb, self.GetTimeoutScale())
 
   def CleanUpEnvironment(self):
-    for prop in self._wrap_properties:
-      self._adb.RunShellCommand('setprop %s ""' % (prop,))
     SetChromeTimeoutScale(self._adb, None)
 
   def GetTimeoutScale(self):
