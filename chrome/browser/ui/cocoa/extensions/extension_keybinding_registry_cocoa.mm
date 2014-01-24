@@ -59,8 +59,6 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
     type = chrome::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC;
   } else if (command_name == values::kBrowserActionCommandEvent) {
     type = chrome::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC;
-  } else if (command_name == values::kScriptBadgeCommandEvent) {
-    type = chrome::NOTIFICATION_EXTENSION_COMMAND_SCRIPT_BADGE_MAC;
   } else {
     // Not handled by using notifications. Route it through the Browser Event
     // Router using the base class (it will iterate through all targets).
@@ -132,20 +130,6 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
     ui::Accelerator accelerator(page_action.accelerator());
     event_targets_[accelerator].push_back(
         std::make_pair(extension->id(), page_action.command_name()));
-    // We should have only one target. See comment about |event_targets_|.
-    DCHECK_EQ(1u, event_targets_[accelerator].size());
-  }
-
-  // Add the Script Badge (if any).
-  extensions::Command script_badge;
-  if (command_service->GetScriptBadgeCommand(
-          extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
-          &script_badge,
-          NULL)) {
-    ui::Accelerator accelerator(script_badge.accelerator());
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), script_badge.command_name()));
     // We should have only one target. See comment about |event_targets_|.
     DCHECK_EQ(1u, event_targets_[accelerator].size());
   }

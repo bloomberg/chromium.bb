@@ -131,10 +131,6 @@ class PageActionImageView : public views::ImageView,
   // show the popup).
   scoped_ptr<ui::Accelerator> page_action_keybinding_;
 
-  // The extension command accelerator this script badge is listening for (to
-  // show the popup).
-  scoped_ptr<ui::Accelerator> script_badge_keybinding_;
-
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   // Fade-in animation for the icon with observer scoped to this.

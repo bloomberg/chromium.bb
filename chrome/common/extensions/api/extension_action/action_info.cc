@@ -20,14 +20,13 @@ namespace keys = manifest_keys;
 
 namespace {
 
-// The manifest data container for the ActionInfos for BrowserActions and
-// ScriptBadges.
+// The manifest data container for the ActionInfos for BrowserActions,
+// PageActions and SystemIndicators.
 struct ActionInfoData : public Extension::ManifestData {
   explicit ActionInfoData(ActionInfo* action_info);
   virtual ~ActionInfoData();
 
-  // The action associated with the BrowserAction or ScriptBadge.
-  // This is never NULL for ScriptBadge.
+  // The action associated with the BrowserAction.
   scoped_ptr<ActionInfo> action_info;
 };
 
@@ -189,11 +188,6 @@ const ActionInfo* ActionInfo::GetPageActionInfo(const Extension* extension) {
 }
 
 // static
-const ActionInfo* ActionInfo::GetScriptBadgeInfo(const Extension* extension) {
-  return GetActionInfo(extension, keys::kScriptBadge);
-}
-
-// static
 const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
     const Extension* extension) {
   return GetActionInfo(extension, keys::kSystemIndicator);
@@ -208,12 +202,6 @@ void ActionInfo::SetBrowserActionInfo(Extension* extension, ActionInfo* info) {
 // static
 void ActionInfo::SetPageActionInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(keys::kPageAction,
-                             new ActionInfoData(info));
-}
-
-// static
-void ActionInfo::SetScriptBadgeInfo(Extension* extension, ActionInfo* info) {
-  extension->SetManifestData(keys::kScriptBadge,
                              new ActionInfoData(info));
 }
 

@@ -164,15 +164,6 @@ bool CommandService::GetPageActionCommand(
       extension_id, type, command, active, PAGE_ACTION);
 }
 
-bool CommandService::GetScriptBadgeCommand(
-    const std::string& extension_id,
-    QueryType type,
-    extensions::Command* command,
-    bool* active) {
-  return GetExtensionActionCommand(
-      extension_id, type, command, active, SCRIPT_BADGE);
-}
-
 bool CommandService::GetNamedCommands(const std::string& extension_id,
                                       QueryType type,
                                       CommandScope scope,
@@ -227,8 +218,7 @@ bool CommandService::AddKeybindingPref(
   // Media Keys are allowed to be used by named command only.
   DCHECK(!IsMediaKey(accelerator) ||
          (command_name != manifest_values::kPageActionCommandEvent &&
-          command_name != manifest_values::kBrowserActionCommandEvent &&
-          command_name != manifest_values::kScriptBadgeCommandEvent));
+          command_name != manifest_values::kBrowserActionCommandEvent));
 
   DictionaryPrefUpdate updater(profile_->GetPrefs(),
                                prefs::kExtensionCommands);
@@ -410,19 +400,6 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
                         false);  // Page actions can't be global.
     }
   }
-
-  const extensions::Command* script_badge_command =
-      CommandsInfo::GetScriptBadgeCommand(extension);
-  if (script_badge_command) {
-    if (!chrome::IsChromeAccelerator(
-        script_badge_command->accelerator(), profile_)) {
-      AddKeybindingPref(script_badge_command->accelerator(),
-                        extension->id(),
-                        script_badge_command->command_name(),
-                        false,   // Overwriting not allowed.
-                        false);  // Script badges can't be global.
-    }
-  }
 }
 
 void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
@@ -498,9 +475,6 @@ bool CommandService::GetExtensionActionCommand(
       break;
     case PAGE_ACTION:
       requested_command = CommandsInfo::GetPageActionCommand(extension);
-      break;
-    case SCRIPT_BADGE:
-      requested_command = CommandsInfo::GetScriptBadgeCommand(extension);
       break;
   }
   if (!requested_command)

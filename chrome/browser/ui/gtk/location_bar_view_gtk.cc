@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -59,7 +58,6 @@
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/omnibox/omnibox_view_gtk.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
-#include "chrome/browser/ui/gtk/script_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/gtk/zoom_bubble_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
@@ -119,7 +117,6 @@ const int kHboxBorder = 2;
 
 // Padding between the elements in the bar.
 const int kInnerPadding = 2;
-const int kScriptBadgeInnerPadding = 9;
 
 // Colors used to draw the EV certificate rounded bubble.
 const GdkColor kEvSecureTextColor = GDK_COLOR_RGB(0x07, 0x95, 0x00);
@@ -150,11 +147,6 @@ const GdkColor kContentSettingBorderColor = GDK_COLOR_RGB(0xe9, 0xb9, 0x66);
 // Colors for the background gradient.
 const GdkColor kContentSettingTopColor = GDK_COLOR_RGB(0xff, 0xf8, 0xd4);
 const GdkColor kContentSettingBottomColor = GDK_COLOR_RGB(0xff, 0xe6, 0xaf);
-
-inline int InnerPadding() {
-  return extensions::FeatureSwitch::script_badges()->IsEnabled() ?
-      kScriptBadgeInnerPadding : kInnerPadding;
-}
 
 // If widget is visible, increment the int pointed to by count.
 // Suitible for use with gtk_container_foreach.
@@ -326,8 +318,6 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       LocationBar(browser->profile()),
       zoom_image_(NULL),
       manage_passwords_icon_image_(NULL),
-      script_bubble_button_image_(NULL),
-      num_running_scripts_(0u),
       star_image_(NULL),
       starred_(false),
       star_sized_(false),
@@ -359,7 +349,6 @@ LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should be children of / owned by the alignment.
   zoom_.Destroy();
   manage_passwords_icon_.Destroy();
-  script_bubble_button_.Destroy();
   star_.Destroy();
   hbox_.Destroy();
   content_setting_hbox_.Destroy();
@@ -372,7 +361,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   theme_service_ = GtkThemeService::GetFrom(profile());
 
   // Create the widget first, so we can pass it to the OmniboxViewGtk.
-  hbox_.Own(gtk_hbox_new(FALSE, InnerPadding()));
+  hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
   gtk_container_set_border_width(GTK_CONTAINER(hbox_.get()), kHboxBorder);
   // We will paint for the alignment, to paint the background and border.
   gtk_widget_set_app_paintable(hbox_.get(), TRUE);
@@ -394,7 +383,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // Put |tab_to_search_box_|, |omnibox_view_|, and |tab_to_search_hint_| into
   // a sub hbox, so that we can make this part horizontally shrinkable without
   // affecting other elements in the location bar.
-  entry_box_ = gtk_hbox_new(FALSE, InnerPadding());
+  entry_box_ = gtk_hbox_new(FALSE, kInnerPadding);
   gtk_widget_show(entry_box_);
   gtk_widget_set_size_request(entry_box_, 0, -1);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), entry_box_, TRUE, TRUE, 0);
@@ -483,10 +472,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
   }
 
-  CreateScriptBubbleButton();
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), script_bubble_button_.get(), FALSE,
-                   FALSE, 0);
-
   CreateZoomButton();
   gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
 
@@ -494,7 +479,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(hbox_.get()), manage_passwords_icon_.get(), FALSE,
                    FALSE, 0);
 
-  content_setting_hbox_.Own(gtk_hbox_new(FALSE, InnerPadding() + 1));
+  content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding + 1));
   gtk_widget_set_name(content_setting_hbox_.get(),
                       "chrome-content-setting-hbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), content_setting_hbox_.get(),
@@ -509,7 +494,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                      content_setting_view->widget(), FALSE, FALSE, 0);
   }
 
-  page_action_hbox_.Own(gtk_hbox_new(FALSE, InnerPadding()));
+  page_action_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
   gtk_widget_set_name(page_action_hbox_.get(),
                       "chrome-page-action-hbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_.get(),
@@ -600,7 +585,6 @@ void LocationBarViewGtk::SetStarred(bool starred) {
 
 void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateZoomIcon();
-  UpdateScriptBubbleIcon();
   UpdateStarIcon();
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
@@ -720,8 +704,6 @@ void LocationBarViewGtk::UpdateManagePasswordsIconAndBubble() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  UpdateScriptBubbleIcon();
-
   std::vector<ExtensionAction*> new_page_actions;
 
   WebContents* contents = GetWebContents();
@@ -913,7 +895,6 @@ void LocationBarViewGtk::Observe(int type,
 
       UpdateZoomIcon();
       UpdateManagePasswordsIcon();
-      UpdateScriptBubbleIcon();
       UpdateStarIcon();
       UpdateSiteTypeArea();
       UpdateContentSettingsIcons();
@@ -1054,39 +1035,6 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
     }
   }
 
-  // Draw ExtensionAction backgrounds and borders, if necessary.  The borders
-  // appear exactly between the elements, so they can't draw the borders
-  // themselves.
-  gfx::CanvasSkiaPaint canvas(event, /*opaque=*/false);
-  for (ScopedVector<PageActionViewGtk>::const_iterator
-           page_action_view = page_action_views_.begin();
-       page_action_view != page_action_views_.end();
-       ++page_action_view) {
-    if ((*page_action_view)->IsVisible()) {
-      // Figure out where the page action is drawn so we can draw
-      // borders to its left and right.
-      GtkAllocation allocation;
-      gtk_widget_get_allocation((*page_action_view)->widget(), &allocation);
-      ExtensionAction* action = (*page_action_view)->page_action();
-      gfx::Rect bounds(allocation);
-      // Make the bounding rectangle include the whole vertical range of the
-      // location bar, and the mid-point pixels between adjacent page actions.
-      //
-      // For odd InnerPadding()s, "InnerPadding() + 1" includes the mid-point
-      // between two page actions in the bounding rectangle.  For even paddings,
-      // the +1 is dropped, which is right since there is no pixel at the
-      // mid-point.
-      bounds.Inset(-(InnerPadding() + 1) / 2,
-                   theme_service_->UsingNativeTheme() ? -1 : 0);
-      location_bar_util::PaintExtensionActionBackground(
-          *action, SessionID::IdForTab(GetWebContents()),
-          &canvas, bounds,
-          theme_service_->get_location_bar_text_color(),
-          theme_service_->get_location_bar_bg_color());
-    }
-  }
-  // Destroying |canvas| draws the background.
-
   return FALSE;  // Continue propagating the expose.
 }
 
@@ -1209,15 +1157,6 @@ gboolean LocationBarViewGtk::OnManagePasswordsIconButtonPress(
   return FALSE;
 }
 
-gboolean LocationBarViewGtk::OnScriptBubbleButtonPress(GtkWidget* widget,
-                                                       GdkEventButton* event) {
-  if (event->button == 1 && GetWebContents()) {
-    ScriptBubbleGtk::Show(script_bubble_button_image_, GetWebContents());
-    return TRUE;
-  }
-  return FALSE;
-}
-
 void LocationBarViewGtk::OnStarButtonSizeAllocate(GtkWidget* sender,
                                                   GtkAllocation* allocation) {
   if (!on_star_sized_.is_null()) {
@@ -1233,21 +1172,6 @@ gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
     return FALSE;
   chrome::ExecuteCommand(browser_, IDC_BOOKMARK_PAGE_FROM_STAR);
   return TRUE;
-}
-
-gboolean LocationBarViewGtk::OnScriptBubbleButtonExpose(GtkWidget* widget,
-                                                        GdkEventExpose* event) {
-  gfx::CanvasSkiaPaint canvas(event, false);
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  badge_util::PaintBadge(&canvas,
-                         gfx::Rect(allocation),
-                         base::UintToString(num_running_scripts_),
-                         SK_ColorWHITE,
-                         SkColorSetRGB(0, 170, 0),
-                         allocation.width,
-                         extensions::ActionInfo::TYPE_PAGE);
-  return FALSE;
 }
 
 void LocationBarViewGtk::UpdateSiteTypeArea() {
@@ -1438,8 +1362,8 @@ void LocationBarViewGtk::ShowZoomBubble() {
 }
 
 void LocationBarViewGtk::AdjustChildrenVisibility() {
-  int text_width = omnibox_view_->GetTextWidth();
-  int available_width = entry_box_width_ - text_width - InnerPadding();
+  int text_width = omnibox_view_->TextWidth();
+  int available_width = entry_box_width_ - text_width - kInnerPadding;
 
   // Only one of |tab_to_search_alignment_| and |tab_to_search_hint_| can be
   // visible at the same time.
@@ -1467,7 +1391,7 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
       full_box_width = partial_box_width + full_partial_width_diff;
     }
 
-    if (partial_box_width >= entry_box_width_ - InnerPadding()) {
+    if (partial_box_width >= entry_box_width_ - kInnerPadding) {
       gtk_widget_hide(tab_to_search_alignment_);
     } else if (full_box_width >= available_width) {
       gtk_widget_hide(tab_to_search_full_label_);
@@ -1485,7 +1409,7 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
     gtk_widget_size_request(tab_to_search_hint_trailing_label_, &trailing);
     int full_width = leading.width + icon.width + trailing.width;
 
-    if (icon.width >= entry_box_width_ - InnerPadding()) {
+    if (icon.width >= entry_box_width_ - kInnerPadding) {
       gtk_widget_hide(tab_to_search_hint_);
     } else if (full_width >= available_width) {
       gtk_widget_hide(tab_to_search_hint_leading_label_);
@@ -1512,7 +1436,7 @@ GtkWidget* LocationBarViewGtk::CreateIconButton(
 
   GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0,
-                            0, InnerPadding());
+                            0, kInnerPadding);
   gtk_container_add(GTK_CONTAINER(alignment), *image);
 
   GtkWidget* result = gtk_event_box_new();
@@ -1546,20 +1470,6 @@ void LocationBarViewGtk::CreateManagePasswordsIconButton() {
   manage_passwords_icon_.Own(CreateIconButton(
       &manage_passwords_icon_image_, 0, VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON, 0,
       OnManagePasswordsIconButtonPressThunk));
-}
-
-void LocationBarViewGtk::CreateScriptBubbleButton() {
-  script_bubble_button_.Own(CreateIconButton(&script_bubble_button_image_,
-                                             0,
-                                             VIEW_ID_SCRIPT_BUBBLE,
-                                             IDS_TOOLTIP_SCRIPT_BUBBLE,
-                                             OnScriptBubbleButtonPressThunk));
-  gtk_image_set_from_pixbuf(
-      GTK_IMAGE(script_bubble_button_image_),
-      theme_service_->GetImageNamed(
-          IDR_EXTENSIONS_SCRIPT_BUBBLE).ToGdkPixbuf());
-  g_signal_connect_after(script_bubble_button_image_, "expose-event",
-                         G_CALLBACK(&OnScriptBubbleButtonExposeThunk), this);
 }
 
 void LocationBarViewGtk::CreateStarButton() {
@@ -1631,23 +1541,6 @@ void LocationBarViewGtk::UpdateManagePasswordsIcon() {
   }
 }
 
-void LocationBarViewGtk::UpdateScriptBubbleIcon() {
-  num_running_scripts_ = 0;
-  if (GetWebContents()) {
-    extensions::TabHelper* tab_helper =
-        extensions::TabHelper::FromWebContents(GetWebContents());
-    if (tab_helper && tab_helper->script_bubble_controller()) {
-      num_running_scripts_ = tab_helper->script_bubble_controller()->
-          extensions_running_scripts().size();
-    }
-  }
-
-  if (num_running_scripts_ == 0u)
-    gtk_widget_hide(script_bubble_button_.get());
-  else
-    gtk_widget_show(script_bubble_button_.get());
-}
-
 void LocationBarViewGtk::UpdateStarIcon() {
   if (!star_.get())
     return;
@@ -1679,7 +1572,7 @@ bool LocationBarViewGtk::ShouldOnlyShowLocation() {
 LocationBarViewGtk::PageToolViewGtk::PageToolViewGtk()
     : alignment_(gtk_alignment_new(0, 0, 1, 1)),
       event_box_(gtk_event_box_new()),
-      hbox_(gtk_hbox_new(FALSE, InnerPadding())),
+      hbox_(gtk_hbox_new(FALSE, kInnerPadding)),
       image_(gtk_image_new()),
       label_(gtk_label_new(NULL)),
       animation_(this),
@@ -1948,37 +1841,16 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
         new ui::Accelerator(command_page_action.accelerator()));
   }
 
-  extensions::Command command_script_badge;
-  if (command_service->GetScriptBadgeCommand(
-          extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
-          &command_script_badge,
-          NULL)) {
-    // Found the script badge shortcut command, register it.
-    script_badge_keybinding_.reset(
-        new ui::Accelerator(command_script_badge.accelerator()));
-  }
-
-  if (page_action_keybinding_.get() || script_badge_keybinding_.get()) {
+  if (page_action_keybinding_.get()) {
     accel_group_ = gtk_accel_group_new();
     gtk_window_add_accel_group(window_, accel_group_);
 
-    if (page_action_keybinding_.get()) {
-      gtk_accel_group_connect(
-          accel_group_,
-          ui::GetGdkKeyCodeForAccelerator(*page_action_keybinding_),
-          ui::GetGdkModifierForAccelerator(*page_action_keybinding_),
-          GtkAccelFlags(0),
-          g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
-    }
-    if (script_badge_keybinding_.get()) {
-      gtk_accel_group_connect(
-          accel_group_,
-          ui::GetGdkKeyCodeForAccelerator(*script_badge_keybinding_),
-          ui::GetGdkModifierForAccelerator(*script_badge_keybinding_),
-          GtkAccelFlags(0),
-          g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
-    }
+    gtk_accel_group_connect(
+        accel_group_,
+        ui::GetGdkKeyCodeForAccelerator(*page_action_keybinding_),
+        ui::GetGdkModifierForAccelerator(*page_action_keybinding_),
+        GtkAccelFlags(0),
+        g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
 
     // Since we've added an accelerator, we'll need to unregister it before
     // the window is closed, so we listen for the window being closed.
@@ -1996,17 +1868,10 @@ void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {
           ui::GetGdkKeyCodeForAccelerator(*page_action_keybinding_),
           ui::GetGdkModifierForAccelerator(*page_action_keybinding_));
     }
-    if (script_badge_keybinding_.get()) {
-      gtk_accel_group_disconnect_key(
-          accel_group_,
-          ui::GetGdkKeyCodeForAccelerator(*script_badge_keybinding_),
-          ui::GetGdkModifierForAccelerator(*script_badge_keybinding_));
-    }
     gtk_window_remove_accel_group(window_, accel_group_);
     g_object_unref(accel_group_);
     accel_group_ = NULL;
     page_action_keybinding_.reset(NULL);
-    script_badge_keybinding_.reset(NULL);
   }
 }
 
@@ -2055,14 +1920,6 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
       context_menu_.reset(
           new MenuGtk(NULL, context_menu_model_.get()));
       context_menu_->PopupForWidget(sender, event->button, event->time);
-      break;
-
-    case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
-      ExtensionPopupGtk::Show(
-          extensions::ExtensionInfoUI::GetURL(extension->id()),
-          owner_->browser_,
-          event_box_.get(),
-          ExtensionPopupGtk::SHOW);
       break;
   }
 

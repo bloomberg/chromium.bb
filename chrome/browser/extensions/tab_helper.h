@@ -37,8 +37,6 @@ class Image;
 namespace extensions {
 class Extension;
 class LocationBarController;
-class ScriptBadgeController;
-class ScriptBubbleController;
 class ScriptExecutor;
 class WebstoreInlineInstallerFactory;
 
@@ -169,10 +167,6 @@ class TabHelper : public content::WebContentsObserver,
     return active_tab_permission_granter_.get();
   }
 
-  ScriptBubbleController* script_bubble_controller() {
-    return script_bubble_controller_.get();
-  }
-
   // Sets a non-extension app icon associated with WebContents and fires an
   // INVALIDATE_TYPE_TITLE navigation state change to trigger repaint of title.
   void SetAppIcon(const SkBitmap& app_icon);
@@ -288,8 +282,6 @@ class TabHelper : public content::WebContentsObserver,
   scoped_ptr<LocationBarController> location_bar_controller_;
 
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
-
-  scoped_ptr<ScriptBubbleController> script_bubble_controller_;
 
   scoped_ptr<FaviconDownloader> favicon_downloader_;
 

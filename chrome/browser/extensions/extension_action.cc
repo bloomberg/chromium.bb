@@ -210,8 +210,6 @@ int ExtensionAction::GetIconSizeForType(
       // TODO(dewittj) Report the actual icon size of the system
       // indicator.
       return extension_misc::EXTENSION_ICON_ACTION;
-    case extensions::ActionInfo::TYPE_SCRIPT_BADGE:
-      return extension_misc::EXTENSION_ICON_BITTY;
     default:
       NOTREACHED();
       return 0;
@@ -260,13 +258,6 @@ bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
     return false;
 
   SetValue(&appearance_, tab_id, new_appearance);
-
-  // When showing a script badge for the first time on a web page, fade it in.
-  // Other transitions happen instantly.
-  if (old_appearance == INVISIBLE && tab_id != kDefaultTabId &&
-      action_type_ == extensions::ActionInfo::TYPE_SCRIPT_BADGE) {
-    RunIconAnimation(tab_id);
-  }
 
   return true;
 }
@@ -378,22 +369,4 @@ gfx::ImageSkia ExtensionAction::ApplyIconAnimation(
 
   return gfx::ImageSkia(new AnimatedIconImageSource(icon, animation),
                         icon.size());
-}
-
-namespace {
-// Used to create a Callback owning an IconAnimation.
-void DestroyIconAnimation(scoped_ptr<ExtensionAction::IconAnimation>) {}
-}
-void ExtensionAction::RunIconAnimation(int tab_id) {
-  scoped_ptr<IconAnimation> icon_animation(new IconAnimation());
-  icon_animation_[tab_id] = icon_animation->AsWeakPtr();
-  icon_animation->Start();
-  // After the icon is finished fading in (plus some padding to handle random
-  // timer delays), destroy it. We use a delayed task so that the Animation is
-  // deleted even if it hasn't finished by the time the MessageLoop is
-  // destroyed.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DestroyIconAnimation, base::Passed(&icon_animation)),
-      base::TimeDelta::FromMilliseconds(kIconFadeInDurationMs * 2));
 }

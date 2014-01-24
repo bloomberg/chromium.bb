@@ -47,11 +47,6 @@ class ExtensionActionAPI : public ProfileKeyedAPI {
                                  const std::string& url,
                                  int button);
 
-  // Fires the onClicked event for script_badge.
-  static void ScriptBadgeExecuted(Profile* profile,
-                                  const ExtensionAction& script_badge,
-                                  int tab_id);
-
   // Fires the onClicked event for browser_action.
   static void BrowserActionExecuted(Profile* profile,
                                     const ExtensionAction& browser_action,
@@ -114,12 +109,12 @@ class ExtensionActionStorageManager
   content::NotificationRegistrar registrar_;
 };
 
-// Implementation of the browserAction, pageAction, and scriptBadge APIs.
+// Implementation of the browserAction and pageAction APIs.
 //
-// Divergent behaviour between the three is minimal (pageAction and scriptBadge
-// have required tabIds while browserAction's are optional, they have different
-// internal browser notification requirements, and not all functions are defined
-// for all APIs).
+// Divergent behaviour between the two is minimal (pageAction has required
+// tabIds while browserAction's are optional, they have different internal
+// browser notification requirements, and not all functions are defined for all
+// APIs).
 class ExtensionActionFunction : public ChromeSyncExtensionFunction {
  public:
   static bool ParseCSSColorString(const std::string& color_string,
@@ -365,38 +360,6 @@ class BrowserActionOpenPopupFunction : public ChromeAsyncExtensionFunction,
   bool response_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionOpenPopupFunction);
-};
-
-//
-// scriptBadge.* aliases for supported scriptBadge APIs.
-//
-
-class ScriptBadgeSetPopupFunction : public ExtensionActionSetPopupFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("scriptBadge.setPopup", SCRIPTBADGE_SETPOPUP)
-
- protected:
-  virtual ~ScriptBadgeSetPopupFunction() {}
-};
-
-class ScriptBadgeGetPopupFunction : public ExtensionActionGetPopupFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("scriptBadge.getPopup", SCRIPTBADGE_GETPOPUP)
-
- protected:
-  virtual ~ScriptBadgeGetPopupFunction() {}
-};
-
-// scriptBadge.getAttention(tabId)
-class ScriptBadgeGetAttentionFunction : public ExtensionActionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("scriptBadge.getAttention",
-                             SCRIPTBADGE_GETATTENTION)
-
-  virtual bool RunExtensionAction() OVERRIDE;
-
- protected:
-  virtual ~ScriptBadgeGetAttentionFunction();
 };
 
 }  // namespace extensions

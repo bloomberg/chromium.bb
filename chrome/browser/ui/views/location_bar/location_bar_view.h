@@ -44,7 +44,6 @@ class ManagePasswordsIconView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
-class ScriptBubbleIconView;
 class SelectedKeywordView;
 class SiteChipView;
 class StarView;
@@ -383,13 +382,6 @@ class LocationBarView : public LocationBar,
   // changed, or PageActionWithBadgeView were created/destroyed.
   bool RefreshPageActionViews();
 
-  // Returns the number of scripts currently running on the page.
-  size_t ScriptBubbleScriptsRunning();
-
-  // Updates the Script Bubble Icon, to reflect the number of content scripts
-  // running on the page. Returns true if the visibility of the bubble changed.
-  bool RefreshScriptBubble();
-
   // Updates the view for the zoom icon based on the current tab's zoom. Returns
   // true if the visibility of the view changed.
   bool RefreshZoomView();
@@ -485,9 +477,6 @@ class LocationBarView : public LocationBar,
 
   // The page action icon views.
   PageActionViews page_action_views_;
-
-  // The script bubble.
-  ScriptBubbleIconView* script_bubble_icon_view_;
 
   // The Site Chip.
   SiteChipView* site_chip_view_;

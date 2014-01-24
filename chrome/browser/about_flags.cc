@@ -678,22 +678,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppWindowControls)
   },
   {
-    "script-badges",
-    IDS_FLAGS_SCRIPT_BADGES_NAME,
-    IDS_FLAGS_SCRIPT_BADGES_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(extensions::switches::kScriptBadges)
-  },
-  {
-    "script-bubble",
-    IDS_FLAGS_SCRIPT_BUBBLE_NAME,
-    IDS_FLAGS_SCRIPT_BUBBLE_DESCRIPTION,
-    kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
-        extensions::switches::kScriptBubble, "1",
-        extensions::switches::kScriptBubble, "0")
-  },
-  {
     "apps-new-install-bubble",
     IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME,
     IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_DESCRIPTION,

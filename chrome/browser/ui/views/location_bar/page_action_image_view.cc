@@ -72,20 +72,6 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
         ui::AcceleratorManager::kHighPriority,
         this);
   }
-
-  extensions::Command script_badge_command;
-  if (command_service->GetScriptBadgeCommand(
-          extension->id(),
-          extensions::CommandService::ACTIVE_ONLY,
-          &script_badge_command,
-          NULL)) {
-    script_badge_keybinding_.reset(
-        new ui::Accelerator(script_badge_command.accelerator()));
-    owner_->GetFocusManager()->RegisterAccelerator(
-        *script_badge_keybinding_.get(),
-        ui::AcceleratorManager::kHighPriority,
-        this);
-  }
 }
 
 PageActionImageView::~PageActionImageView() {
@@ -93,11 +79,6 @@ PageActionImageView::~PageActionImageView() {
     if (page_action_keybinding_.get()) {
       owner_->GetFocusManager()->UnregisterAccelerator(
           *page_action_keybinding_.get(), this);
-    }
-
-    if (script_badge_keybinding_.get()) {
-      owner_->GetFocusManager()->UnregisterAccelerator(
-          *script_badge_keybinding_.get(), this);
     }
   }
 
@@ -131,12 +112,6 @@ void PageActionImageView::ExecuteAction(
       // TODO(kalman): if this changes, update this class to pass the real
       // mouse button through to the LocationBarController.
       NOTREACHED();
-      break;
-
-    case LocationBarController::ACTION_SHOW_SCRIPT_POPUP:
-      ShowPopupWithURL(
-          extensions::ExtensionInfoUI::GetURL(page_action_->extension_id()),
-          show_action);
       break;
   }
 }

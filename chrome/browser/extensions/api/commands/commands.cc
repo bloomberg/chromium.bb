@@ -44,14 +44,6 @@ bool GetAllCommandsFunction::RunImpl() {
     command_list->Append(CreateCommandValue(page_action, active));
   }
 
-  extensions::Command script_badge;
-  if (command_service->GetScriptBadgeCommand(extension_->id(),
-          extensions::CommandService::ALL,
-          &script_badge,
-          &active)) {
-    command_list->Append(CreateCommandValue(script_badge, active));
-  }
-
   extensions::CommandMap named_commands;
   command_service->GetNamedCommands(extension_->id(),
                                     extensions::CommandService::ALL,

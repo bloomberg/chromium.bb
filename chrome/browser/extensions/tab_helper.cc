@@ -21,8 +21,6 @@
 #include "chrome/browser/extensions/favicon_downloader.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/page_action_controller.h"
-#include "chrome/browser/extensions/script_badge_controller.h"
-#include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
@@ -195,6 +193,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       pending_web_app_action_(NONE),
       script_executor_(new ScriptExecutor(web_contents,
                                           &script_execution_observers_)),
+      location_bar_controller_(new PageActionController(web_contents)),
       image_loader_ptr_factory_(this),
       webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
@@ -206,18 +205,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       web_contents,
       SessionID::IdForTab(web_contents),
       Profile::FromBrowserContext(web_contents->GetBrowserContext())));
-  if (FeatureSwitch::script_badges()->IsEnabled()) {
-    location_bar_controller_.reset(
-        new ScriptBadgeController(web_contents, this));
-  } else {
-    location_bar_controller_.reset(
-        new PageActionController(web_contents));
-  }
-
-  if (FeatureSwitch::script_bubble()->IsEnabled()) {
-    script_bubble_controller_.reset(
-        new ScriptBubbleController(web_contents, this));
-  }
 
   // If more classes need to listen to global content script activity, then
   // a separate routing class with an observer interface should be written.
@@ -238,10 +225,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 content::NotificationService::AllSources());
-
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::NotificationService::AllSources());
 }
 
@@ -769,14 +752,6 @@ void TabHelper::Observe(int type,
       if (pending_web_app_action_ == CREATE_HOSTED_APP)
         pending_web_app_action_ = NONE;
       break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      if (script_bubble_controller_) {
-        script_bubble_controller_->OnExtensionUnloaded(
-            content::Details<extensions::UnloadedExtensionInfo>(
-                details)->extension->id());
-        break;
-      }
     }
   }
 }

@@ -63,13 +63,6 @@ const char kGlobalCommands[] = "global-commands";
 // Default is yes.
 const char kPromptForExternalExtensions[] = "prompt-for-external-extensions";
 
-// Enables or disables extension scripts badges in the location bar.
-const char kScriptBadges[] = "script-badges";
-
-// Enable or diable the "script bubble" icon in the URL bar that tells you how
-// many extensions are running scripts on a page.
-const char kScriptBubble[] = "script-bubble";
-
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =
     "show-component-extension-options";

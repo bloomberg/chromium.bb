@@ -229,11 +229,6 @@ ExtensionActionAPI::ExtensionActionAPI(Profile* profile) {
   registry->RegisterFunction<PageActionSetPopupFunction>();
   registry->RegisterFunction<PageActionGetTitleFunction>();
   registry->RegisterFunction<PageActionGetPopupFunction>();
-
-  // Script Badges
-  registry->RegisterFunction<ScriptBadgeGetAttentionFunction>();
-  registry->RegisterFunction<ScriptBadgeGetPopupFunction>();
-  registry->RegisterFunction<ScriptBadgeSetPopupFunction>();
 }
 
 ExtensionActionAPI::~ExtensionActionAPI() {
@@ -306,20 +301,6 @@ void ExtensionActionAPI::PageActionExecuted(Profile* profile,
 }
 
 // static
-void ExtensionActionAPI::ScriptBadgeExecuted(
-    Profile* profile,
-    const ExtensionAction& script_badge,
-    int tab_id) {
-  WebContents* web_contents = NULL;
-  if (!extensions::ExtensionTabUtil::GetTabById(
-          tab_id, profile, profile->IsOffTheRecord(),
-          NULL, NULL, &web_contents, NULL)) {
-    return;
-  }
-  ExtensionActionExecuted(profile, script_badge, web_contents);
-}
-
-// static
 void ExtensionActionAPI::DispatchEventToExtension(
     Profile* profile,
     const std::string& extension_id,
@@ -368,9 +349,6 @@ void ExtensionActionAPI::ExtensionActionExecuted(
       break;
     case ActionInfo::TYPE_PAGE:
       event_name = "pageAction.onClicked";
-      break;
-    case ActionInfo::TYPE_SCRIPT_BADGE:
-      event_name = "scriptBadge.onClicked";
       break;
     case ActionInfo::TYPE_SYSTEM_INDICATOR:
       // The System Indicator handles its own clicks.
@@ -503,9 +481,7 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 bool ExtensionActionFunction::RunImpl() {
   ExtensionActionManager* manager = ExtensionActionManager::Get(GetProfile());
   const Extension* extension = GetExtension();
-  if (StartsWithASCII(name(), "scriptBadge.", false)) {
-    extension_action_ = manager->GetScriptBadge(*extension);
-  } else if (StartsWithASCII(name(), "systemIndicator.", false)) {
+  if (StartsWithASCII(name(), "systemIndicator.", false)) {
     extension_action_ = manager->GetSystemIndicator(*extension);
   } else {
     extension_action_ = manager->GetBrowserAction(*extension);
@@ -606,9 +582,6 @@ void ExtensionActionFunction::NotifyChange() {
                      ->GetPageAction(*extension_.get())) {
         NotifyLocationBarChange();
       }
-      return;
-    case ActionInfo::TYPE_SCRIPT_BADGE:
-      NotifyLocationBarChange();
       return;
     case ActionInfo::TYPE_SYSTEM_INDICATOR:
       NotifySystemIndicatorChange();
@@ -878,17 +851,6 @@ void BrowserActionOpenPopupFunction::Observe(
   SendResponse(true);
   response_sent_ = true;
   registrar_.RemoveAll();
-}
-
-//
-// ScriptBadgeGetAttentionFunction
-//
-
-ScriptBadgeGetAttentionFunction::~ScriptBadgeGetAttentionFunction() {}
-
-bool ScriptBadgeGetAttentionFunction::RunExtensionAction() {
-  tab_helper().location_bar_controller()->GetAttentionFor(extension_id());
-  return true;
 }
 
 }  // namespace extensions

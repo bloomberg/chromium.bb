@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
-#include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -91,7 +90,6 @@ void ExtensionActionManager::Observe(
           content::Details<UnloadedExtensionInfo>(details)->extension;
       page_actions_.erase(extension->id());
       browser_actions_.erase(extension->id());
-      script_badges_.erase(extension->id());
       system_indicators_.erase(extension->id());
       break;
     }
@@ -135,10 +133,6 @@ ExtensionAction* GetOrCreateOrNull(
 
 ExtensionAction* ExtensionActionManager::GetPageAction(
     const extensions::Extension& extension) const {
-  // The action box changes the meaning of the page action area, so we
-  // need to convert page actions into browser actions.
-  if (FeatureSwitch::script_badges()->IsEnabled())
-    return NULL;
   return GetOrCreateOrNull(&page_actions_, extension.id(),
                            ActionInfo::TYPE_PAGE,
                            ActionInfo::GetPageActionInfo(&extension),
@@ -147,17 +141,10 @@ ExtensionAction* ExtensionActionManager::GetPageAction(
 
 ExtensionAction* ExtensionActionManager::GetBrowserAction(
     const extensions::Extension& extension) const {
-  const ActionInfo* action_info = ActionInfo::GetBrowserActionInfo(&extension);
-  ActionInfo::Type action_type = ActionInfo::TYPE_BROWSER;
-  if (FeatureSwitch::script_badges()->IsEnabled() &&
-      ActionInfo::GetPageActionInfo(&extension)) {
-    // The action box changes the meaning of the page action area, so we
-    // need to convert page actions into browser actions.
-    action_info = ActionInfo::GetPageActionInfo(&extension);
-    action_type = ActionInfo::TYPE_PAGE;
-  }
   return GetOrCreateOrNull(&browser_actions_, extension.id(),
-                           action_type, action_info, profile_);
+                           ActionInfo::TYPE_BROWSER,
+                           ActionInfo::GetBrowserActionInfo(&extension),
+                           profile_);
 }
 
 ExtensionAction* ExtensionActionManager::GetSystemIndicator(
@@ -172,14 +159,6 @@ ExtensionAction* ExtensionActionManager::GetSystemIndicator(
   return GetOrCreateOrNull(&system_indicators_, extension.id(),
                            ActionInfo::TYPE_SYSTEM_INDICATOR,
                            ActionInfo::GetSystemIndicatorInfo(&extension),
-                           profile_);
-}
-
-ExtensionAction* ExtensionActionManager::GetScriptBadge(
-    const extensions::Extension& extension) const {
-  return GetOrCreateOrNull(&script_badges_, extension.id(),
-                           ActionInfo::TYPE_SCRIPT_BADGE,
-                           ActionInfo::GetScriptBadgeInfo(&extension),
                            profile_);
 }
 

@@ -25,12 +25,10 @@ struct CommandsInfo : public Extension::ManifestData {
   // Get*Command[s] in CommandService).
   scoped_ptr<Command> browser_action_command;
   scoped_ptr<Command> page_action_command;
-  scoped_ptr<Command> script_badge_command;
   CommandMap named_commands;
 
   static const Command* GetBrowserActionCommand(const Extension* extension);
   static const Command* GetPageActionCommand(const Extension* extension);
-  static const Command* GetScriptBadgeCommand(const Extension* extension);
   static const CommandMap* GetNamedCommands(const Extension* extension);
 };
 

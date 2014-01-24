@@ -180,12 +180,4 @@ const int kExtensionActionIconSizes[] = {
 const size_t kNumExtensionActionIconSizes =
     arraysize(kExtensionActionIconSizes);
 
-const int kScriptBadgeIconSizes[] = {
-  EXTENSION_ICON_BITTY,  // 16
-  2 * EXTENSION_ICON_BITTY  // 32
-};
-
-const size_t kNumScriptBadgeIconSizes =
-    arraysize(kScriptBadgeIconSizes);
-
 }  // namespace extension_misc

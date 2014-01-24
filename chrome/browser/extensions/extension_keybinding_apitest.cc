@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -42,17 +41,6 @@ class CommandsApiTest : public ExtensionApiTest {
         SessionID::IdForTab(web_contents),
         APIPermission::kTab);
   }
-};
-
-class ScriptBadgesCommandsApiTest : public ExtensionApiTest {
- public:
-  ScriptBadgesCommandsApiTest() {
-    // We cannot add this to CommandsApiTest because then PageActions get
-    // treated like BrowserActions and the PageAction test starts failing.
-    FeatureSwitch::script_badges()->SetOverrideValue(
-        FeatureSwitch::OVERRIDE_ENABLED);
-  }
-  virtual ~ScriptBadgesCommandsApiTest() {}
 };
 
 // Test the basic functionality of the Keybinding API:
@@ -163,47 +151,31 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
   ASSERT_TRUE(result);
 }
 
-// Checked-in in a disabled state, because the necessary functionality to
-// automatically verify that the test works hasn't been implemented for the
-// script badges yet (see http://crbug.com/140016). The test results, can be
-// verified manually by running the test and verifying that the synthesized
-// popup for script badges appear. When bug 140016 has been fixed, the popup
-// code can signal to the test that the test passed.
-// TODO(finnur): Enable this test once the bug is fixed.
-IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, DISABLED_ScriptBadge) {
-  ASSERT_TRUE(test_server()->Start());
-  ASSERT_TRUE(RunExtensionTest("keybinding/script_badge")) << message_;
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension) << message_;
-
-  {
-    ResultCatcher catcher;
-    // Tell the extension to update the script badge state.
-    ui_test_utils::NavigateToURL(
-        browser(), GURL(extension->GetResourceURL("show.html")));
-    ASSERT_TRUE(catcher.GetNextResult());
-  }
-
-  {
-    ResultCatcher catcher;
-    // Activate the shortcut (Ctrl+Shift+F).
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-        browser(), ui::VKEY_F, true, true, false, false));
-    ASSERT_TRUE(catcher.GetNextResult());
-  }
-}
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_SynthesizedCommand DISABLED_SynthesizedCommand
+#else
+#define MAYBE_SynthesizedCommand SynthesizedCommand
+#endif
 
 // This test validates that the getAll query API function returns registered
 // commands as well as synthesized ones and that inactive commands (like the
 // synthesized ones are in nature) have no shortcuts.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, SynthesizedCommand) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_SynthesizedCommand) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/synthesized")) << message_;
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_DontOverwriteSystemShortcuts DISABLED_DontOverwriteSystemShortcuts
+#else
+#define MAYBE_DontOverwriteSystemShortcuts DontOverwriteSystemShortcuts
+#endif
+
 // This test validates that an extension cannot request a shortcut that is
 // already in use by Chrome.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_DontOverwriteSystemShortcuts) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -272,57 +244,6 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_AllowDuplicatedMediaKeys) {
   // We should get two success result.
   ASSERT_TRUE(catcher.GetNextResult());
   ASSERT_TRUE(catcher.GetNextResult());
-}
-
-// This test validates that update (including removal) of keybinding preferences
-// works correctly.
-IN_PROC_BROWSER_TEST_F(CommandsApiTest, UpdateKeybindingPrefsTest) {
-#if defined(OS_MACOSX)
-  // Send "Tab" on OS X to move the focus, otherwise the omnibox will intercept
-  // the key presses we send below.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_TAB, false, false, false, false));
-#endif
-  ResultCatcher catcher;
-  ASSERT_TRUE(RunExtensionTest("keybinding/command_update"));
-  ASSERT_TRUE(catcher.GetNextResult());
-  const Extension* extension = GetSingleLoadedExtension();
-
-  CommandService* command_service = CommandService::Get(browser()->profile());
-  extensions::CommandMap named_commands;
-  command_service->GetNamedCommands(extension->id(),
-                                    extensions::CommandService::ACTIVE_ONLY,
-                                    extensions::CommandService::ANY_SCOPE,
-                                    &named_commands);
-  EXPECT_EQ(3u, named_commands.size());
-
-  const char kCommandNameC[] = "command_C";
-  command_service->RemoveKeybindingPrefs(extension->id(), kCommandNameC);
-  command_service->GetNamedCommands(extension->id(),
-                                    extensions::CommandService::ACTIVE_ONLY,
-                                    extensions::CommandService::ANY_SCOPE,
-                                    &named_commands);
-  EXPECT_EQ(2u, named_commands.size());
-
-  // Send "Alt+C", it shouldn't work because it has been removed.
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_C, false, false, true, false));
-
-  const char kCommandNameB[] = "command_B";
-  const char kKeyStroke[] = "Alt+A";
-  command_service->UpdateKeybindingPrefs(extension->id(),
-                                         kCommandNameB,
-                                         kKeyStroke);
-  command_service->GetNamedCommands(extension->id(),
-                                    extensions::CommandService::ACTIVE_ONLY,
-                                    extensions::CommandService::ANY_SCOPE,
-                                    &named_commands);
-  EXPECT_EQ(1u, named_commands.size());
-
-  // Activate the shortcut (Alt+A).
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), ui::VKEY_A, false, false, true, false));
-  ASSERT_TRUE(catcher.GetNextResult()) << message_;
 }
 
 }  // namespace extensions

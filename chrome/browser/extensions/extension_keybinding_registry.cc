@@ -80,8 +80,7 @@ void ExtensionKeybindingRegistry::Init() {
 bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(
     const std::string& command) const {
   return command == manifest_values::kPageActionCommandEvent ||
-         command == manifest_values::kBrowserActionCommandEvent ||
-         command == manifest_values::kScriptBadgeCommandEvent;
+         command == manifest_values::kBrowserActionCommandEvent;
 }
 
 bool ExtensionKeybindingRegistry::NotifyEventTargets(

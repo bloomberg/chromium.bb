@@ -23,17 +23,12 @@ class LocationBarController {
     ACTION_NONE,
     ACTION_SHOW_POPUP,
     ACTION_SHOW_CONTEXT_MENU,
-    ACTION_SHOW_SCRIPT_POPUP,
   };
 
   virtual ~LocationBarController() {}
 
   // Gets the action data for all extensions.
   virtual std::vector<ExtensionAction*> GetCurrentActions() const = 0;
-
-  // Invites the user to click on |extension_id|'s script badge, due to a
-  // scriptBadge.getAttention() call.
-  virtual void GetAttentionFor(const std::string& extension_id) = 0;
 
   // Notifies this that the badge for an extension has been clicked with some
   // mouse button (1 for left, 2 for middle, and 3 for right click), and

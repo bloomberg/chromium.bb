@@ -28,7 +28,6 @@ struct ActionInfo {
   enum Type {
     TYPE_BROWSER,
     TYPE_PAGE,
-    TYPE_SCRIPT_BADGE,
     TYPE_SYSTEM_INDICATOR,
   };
 
@@ -43,9 +42,6 @@ struct ActionInfo {
   // Returns the extension's page action, if any.
   static const ActionInfo* GetPageActionInfo(const Extension* extension);
 
-  // Returns the extension's script badge.
-  static const ActionInfo* GetScriptBadgeInfo(const Extension* etxension);
-
   // Returns the extension's system indicator, if any.
   static const ActionInfo* GetSystemIndicatorInfo(const Extension* extension);
 
@@ -54,9 +50,6 @@ struct ActionInfo {
 
   // Sets the extension's page action. |extension| takes ownership of |info|.
   static void SetPageActionInfo(Extension* extension, ActionInfo* info);
-
-  // Sets the extension's script badge. |extension| takes ownership of |info|.
-  static void SetScriptBadgeInfo(Extension* extension, ActionInfo* info);
 
   // Sets the extension's system indicator. |extension| takes ownership of
   // |info|.

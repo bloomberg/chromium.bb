@@ -32,8 +32,7 @@ static const char kCommandKeyNotSupported[] =
 
 bool IsNamedCommand(const std::string& command_name) {
   return command_name != values::kPageActionCommandEvent &&
-         command_name != values::kBrowserActionCommandEvent &&
-         command_name != values::kScriptBadgeCommandEvent;
+         command_name != values::kBrowserActionCommandEvent;
 }
 
 bool DoesRequireModifier(const std::string& accelerator) {
@@ -517,8 +516,7 @@ base::DictionaryValue* Command::ToValue(const Extension* extension,
   base::string16 command_description;
   bool extension_action = false;
   if (command_name() == values::kBrowserActionCommandEvent ||
-      command_name() == values::kPageActionCommandEvent ||
-      command_name() == values::kScriptBadgeCommandEvent) {
+      command_name() == values::kPageActionCommandEvent) {
     command_description =
         l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE);
     extension_action = true;

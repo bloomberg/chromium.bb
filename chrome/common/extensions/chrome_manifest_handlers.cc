@@ -7,7 +7,6 @@
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
-#include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
@@ -70,7 +69,6 @@ void RegisterChromeManifestHandlers() {
   (new PluginsHandler)->Register();
   (new RequirementsHandler)->Register();  // Depends on plugins.
   (new SettingsOverridesHandler)->Register();
-  (new ScriptBadgeHandler)->Register();
   (new SocketsManifestHandler)->Register();
   (new SpellcheckHandler)->Register();
   (new StorageSchemaManifestHandler)->Register();

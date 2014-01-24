@@ -308,9 +308,6 @@ namespace extension_misc {
   extern const int kExtensionActionIconSizes[];
   extern const size_t kNumExtensionActionIconSizes;
 
-  // List of sizes for extension icons that can be defined in the manifest.
-  extern const int kScriptBadgeIconSizes[];
-  extern const size_t kNumScriptBadgeIconSizes;
 }  // namespace extension_misc
 
 namespace extensions {

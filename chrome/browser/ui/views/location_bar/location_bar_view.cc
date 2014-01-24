@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/search/search.h"
@@ -49,7 +48,6 @@
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
-#include "chrome/browser/ui/views/location_bar/script_bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
@@ -208,7 +206,6 @@ LocationBarView::LocationBarView(Browser* browser,
       generated_credit_card_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
-      script_bubble_icon_view_(NULL),
       site_chip_view_(NULL),
       translate_icon_view_(NULL),
       star_view_(NULL),
@@ -371,10 +368,6 @@ void LocationBarView::Init() {
   manage_passwords_icon_view_->set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
   AddChildView(manage_passwords_icon_view_);
 
-  script_bubble_icon_view_ = new ScriptBubbleIconView(delegate());
-  script_bubble_icon_view_->SetVisible(false);
-  AddChildView(script_bubble_icon_view_);
-
   translate_icon_view_ = new TranslateIconView(command_updater());
   translate_icon_view_->SetVisible(false);
   AddChildView(translate_icon_view_);
@@ -514,10 +507,8 @@ int LocationBarView::GetItemPadding() {
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH)
     return kTouchItemPadding;
 
-  const int kDesktopScriptBadgeItemPadding = 9;
   const int kDesktopItemPadding = 3;
-  return extensions::FeatureSwitch::script_badges()->IsEnabled() ?
-      kDesktopScriptBadgeItemPadding : kDesktopItemPadding;
+  return kDesktopItemPadding;
 }
 
 // DropdownBarHostDelegate
@@ -547,7 +538,6 @@ void LocationBarView::UpdateManagePasswordsIconAndBubble() {
 void LocationBarView::UpdatePageActions() {
   size_t count_before = page_action_views_.size();
   bool changed = RefreshPageActionViews();
-  changed |= RefreshScriptBubble();
   if (page_action_views_.size() != count_before) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
@@ -767,12 +757,6 @@ void LocationBarView::Layout() {
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(),
         translate_icon_view_);
-  }
-  if (script_bubble_icon_view_->visible()) {
-    trailing_decorations.AddDecoration(
-        vertical_edge_thickness(), location_height,
-        GetBuiltInHorizontalPaddingForChildViews(),
-        script_bubble_icon_view_);
   }
   if (open_pdf_in_reader_view_->visible()) {
     trailing_decorations.AddDecoration(
@@ -1027,7 +1011,6 @@ void LocationBarView::Update(const WebContents* contents) {
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
   RefreshPageActionViews();
-  RefreshScriptBubble();
   RefreshTranslateIcon();
   RefreshManagePasswordsIconView();
   open_pdf_in_reader_view_->Update(
@@ -1435,8 +1418,6 @@ bool LocationBarView::RefreshPageActionViews() {
     View* right_anchor = open_pdf_in_reader_view_;
     if (!right_anchor)
       right_anchor = star_view_;
-    if (!right_anchor)
-      right_anchor = script_bubble_icon_view_;
     DCHECK(right_anchor);
 
     // |page_action_views_| are ordered right-to-left.  Add them as children in
@@ -1469,34 +1450,6 @@ bool LocationBarView::RefreshPageActionViews() {
     }
   }
   return changed;
-}
-
-size_t LocationBarView::ScriptBubbleScriptsRunning() {
-  WebContents* contents = delegate_->GetWebContents();
-  if (!contents)
-    return false;
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(contents);
-  if (!extensions_tab_helper)
-    return false;
-  extensions::ScriptBubbleController* script_bubble_controller =
-      extensions_tab_helper->script_bubble_controller();
-  if (!script_bubble_controller)
-    return false;
-  size_t script_count =
-      script_bubble_controller->extensions_running_scripts().size();
-  return script_count;
-}
-
-bool LocationBarView::RefreshScriptBubble() {
-  if (!script_bubble_icon_view_)
-    return false;
-  size_t script_count = ScriptBubbleScriptsRunning();
-  const bool was_visible = script_bubble_icon_view_->visible();
-  script_bubble_icon_view_->SetVisible(script_count > 0);
-  if (script_count > 0)
-    script_bubble_icon_view_->SetScriptCount(script_count);
-  return was_visible != script_bubble_icon_view_->visible();
 }
 
 bool LocationBarView::RefreshZoomView() {

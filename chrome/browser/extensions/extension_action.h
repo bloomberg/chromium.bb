@@ -33,8 +33,7 @@ class Rect;
 class Size;
 }
 
-// ExtensionAction encapsulates the state of a browser action, page action, or
-// script badge.
+// ExtensionAction encapsulates the state of a browser action or page action.
 // Instances can have both global and per-tab state. If a property does not have
 // a per-tab value, the global value is used instead.
 class ExtensionAction {
@@ -43,11 +42,12 @@ class ExtensionAction {
   // parameter.
   static const int kDefaultTabId;
 
+  // TODO(jyasskin): Simplify the Appearance enum.
   enum Appearance {
     // The action icon is hidden.
     INVISIBLE,
     // The action is trying to get the user's attention but isn't yet
-    // running on the page.  Currently only used for script badges.
+    // running on the page.  Was only used for script badges.
     WANTS_ATTENTION,
     // The action icon is visible with its normal appearance.
     ACTIVE,
@@ -94,8 +94,6 @@ class ExtensionAction {
     void RemoveObserver(Observer* observer);
 
    private:
-    // Construct using ExtensionAction::RunIconAnimation().
-    friend class ExtensionAction;
     IconAnimation();
 
     base::WeakPtr<IconAnimation> AsWeakPtr();
@@ -253,9 +251,6 @@ class ExtensionAction {
   base::WeakPtr<IconAnimation> GetIconAnimation(int tab_id) const;
 
  private:
-  // Runs an animation on a tab.
-  void RunIconAnimation(int tab_id);
-
   // If the icon animation is running on tab |tab_id|, applies it to
   // |orig| and returns the result. Otherwise, just returns |orig|.
   gfx::ImageSkia ApplyIconAnimation(int tab_id,

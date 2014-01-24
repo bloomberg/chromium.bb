@@ -94,17 +94,6 @@ class CommandService : public ProfileKeyedAPI,
                             extensions::Command* command,
                             bool* active);
 
-  // Gets the command (if any) for the script badge of an extension given
-  // its |extension_id|. The function consults the master list to see if
-  // the command is active. Returns false if the extension has no script
-  // badge. Returns false if the command is not active and |type| requested
-  // is ACTIVE_ONLY. |command| contains the command found and |active| (if not
-  // NULL) contains whether |command| is active.
-  bool GetScriptBadgeCommand(const std::string& extension_id,
-                             QueryType type,
-                             extensions::Command* command,
-                             bool* active);
-
   // Gets the active command (if any) for the named commands of an extension
   // given its |extension_id|. The function consults the master list to see if
   // the command is active. Returns an empty map if the extension has no
@@ -172,8 +161,7 @@ class CommandService : public ProfileKeyedAPI,
   // An enum specifying the types of icons that can have a command.
   enum ExtensionActionType {
     BROWSER_ACTION,
-    PAGE_ACTION,
-    SCRIPT_BADGE,
+    PAGE_ACTION
   };
 
   // Assigns initial keybinding for a given |extension|'s page action, browser

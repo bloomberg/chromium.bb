@@ -164,14 +164,6 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
       extensions_list->Append(page_action.ToValue((extension->get()), active));
     }
 
-    extensions::Command script_badge;
-    if (command_service->GetScriptBadgeCommand((*extension)->id(),
-                                              CommandService::ALL,
-                                              &script_badge,
-                                              &active)) {
-      extensions_list->Append(script_badge.ToValue((extension->get()), active));
-    }
-
     extensions::CommandMap named_commands;
     if (command_service->GetNamedCommands((*extension)->id(),
                                           CommandService::ALL,

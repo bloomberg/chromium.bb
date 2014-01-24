@@ -27,8 +27,6 @@ class PageActionController : public LocationBarController,
 
   // LocationBarController implementation.
   virtual std::vector<ExtensionAction*> GetCurrentActions() const OVERRIDE;
-  // Page actions can't try to get attention.
-  virtual void GetAttentionFor(const std::string& extension_id) OVERRIDE {}
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
   virtual void NotifyChange() OVERRIDE;

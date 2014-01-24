@@ -307,8 +307,6 @@ class LocationBarViewGtk : public OmniboxEditController,
 
     // The keybinding accelerator registered to show the page action popup.
     scoped_ptr<ui::Accelerator> page_action_keybinding_;
-    // The keybinding accelerator registered to show the script badge popup.
-    scoped_ptr<ui::Accelerator> script_badge_keybinding_;
 
     // This is used for post-install visual feedback. The page_action icon
     // is briefly shown even if it hasn't been enabled by its extension.
@@ -354,14 +352,10 @@ class LocationBarViewGtk : public OmniboxEditController,
                        GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean,
                        OnManagePasswordsIconButtonPress, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnScriptBubbleButtonPress,
-                       GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnStarButtonSizeAllocate,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
                        GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean,
-                       OnScriptBubbleButtonExpose, GdkEventExpose*);
 
   // Updates the site type area: changes the icon and shows/hides the EV
   // certificate information.
@@ -399,14 +393,12 @@ class LocationBarViewGtk : public OmniboxEditController,
       gboolean (click_callback)(GtkWidget*, GdkEventButton*, gpointer));
   void CreateZoomButton();
   void CreateManagePasswordsIconButton();
-  void CreateScriptBubbleButton();
   void CreateStarButton();
 
   // Helpers to update state of the various buttons that show up in the
   // location bar.
   void UpdateZoomIcon();
   void UpdateManagePasswordsIcon();
-  void UpdateScriptBubbleIcon();
   void UpdateStarIcon();
 
   // Shows the managepassword bubble in case there is a password to be saved.
@@ -426,10 +418,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Manage passwords button.
   ui::OwnedWidgetGtk manage_passwords_icon_;
   GtkWidget* manage_passwords_icon_image_;
-
-  ui::OwnedWidgetGtk script_bubble_button_;
-  GtkWidget* script_bubble_button_image_;
-  size_t num_running_scripts_;
 
   // Star button.
   ui::OwnedWidgetGtk star_;

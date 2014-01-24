@@ -171,12 +171,6 @@ WebUIController* NewWebUI<ExtensionWebUI>(WebUI* web_ui,
                                           const GURL& url) {
   return new ExtensionWebUI(web_ui, url);
 }
-
-template<>
-WebUIController* NewWebUI<extensions::ExtensionInfoUI>(WebUI* web_ui,
-                                                       const GURL& url) {
-  return new extensions::ExtensionInfoUI(web_ui, url);
-}
 #endif  // defined(ENABLE_EXTENSIONS)
 
 // Special case for older about: handlers.
@@ -478,10 +472,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 
 #if defined(ENABLE_EXTENSIONS)
-  if (url.host() == chrome::kChromeUIExtensionInfoHost &&
-      extensions::FeatureSwitch::script_badges()->IsEnabled()) {
-    return &NewWebUI<extensions::ExtensionInfoUI>;
-  }
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<extensions::ExtensionsUI>;
 #endif
