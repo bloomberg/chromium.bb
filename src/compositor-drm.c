@@ -669,6 +669,7 @@ drm_output_repaint(struct weston_output *output_base,
 	return 0;
 
 err_pageflip:
+	output->cursor_view = NULL;
 	if (output->next) {
 		drm_output_release_fb(output, output->next);
 		output->next = NULL;
