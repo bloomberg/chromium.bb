@@ -205,7 +205,7 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
                  weak_factory_.GetWeakPtr(),
                  scoped_refptr<DevToolsProtocol::Command>(), format, quality,
                  last_compositor_frame_metadata_),
-      false);
+      SkBitmap::kARGB_8888_Config);
 }
 
 void RendererOverridesHandler::ParseCaptureParameters(
@@ -462,7 +462,7 @@ RendererOverridesHandler::PageCaptureScreenshot(
       base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
                  weak_factory_.GetWeakPtr(), command, format, quality,
                  last_compositor_frame_metadata_),
-      false);
+      SkBitmap::kARGB_8888_Config);
   return command->AsyncResponsePromise();
 }
 

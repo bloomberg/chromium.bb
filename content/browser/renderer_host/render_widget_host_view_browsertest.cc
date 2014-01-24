@@ -735,7 +735,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       rwhvp->CopyFromCompositingSurface(copy_rect,
                                         output_size,
                                         callback,
-                                        false);
+                                        SkBitmap::kARGB_8888_Config);
     }
     run_loop.Run();
   }

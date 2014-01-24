@@ -632,7 +632,15 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    bool readback_config_rgb565) {
+    const SkBitmap::Config bitmap_config) {
+  // Only ARGB888 and RGB565 supported as of now.
+  bool format_support = ((bitmap_config == SkBitmap::kRGB_565_Config) ||
+                         (bitmap_config == SkBitmap::kARGB_8888_Config));
+  if (!format_support) {
+    DCHECK(format_support);
+    callback.Run(false, SkBitmap());
+    return;
+  }
   base::TimeTicks start_time = base::TimeTicks::Now();
   if (!using_synchronous_compositor_ && !IsSurfaceAvailableForCopy()) {
     callback.Run(false, SkBitmap());
@@ -644,7 +652,8 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   if (!gl_helper)
     return;
   bool check_rgb565_support = gl_helper->CanUseRgb565Readback();
-  if (readback_config_rgb565 && !check_rgb565_support) {
+  if ((bitmap_config == SkBitmap::kRGB_565_Config) &&
+      !check_rgb565_support) {
     LOG(ERROR) << "Readbackformat rgb565  not supported";
     callback.Run(false, SkBitmap());
     return;
@@ -677,7 +686,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       request = cc::CopyOutputRequest::CreateRequest(base::Bind(
           &RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult,
           dst_size_in_pixel,
-          readback_config_rgb565,
+          bitmap_config,
           start_time,
           callback));
   }
@@ -1400,7 +1409,7 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
 // static
 void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
-    bool readback_config_rgb565,
+    const SkBitmap::Config bitmap_config,
     const base::TimeTicks& start_time,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
@@ -1412,9 +1421,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     return;
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  SkBitmap::Config bitmap_config = readback_config_rgb565 ?
-                                   SkBitmap::kRGB_565_Config :
-                                   SkBitmap::kARGB_8888_Config;
   bitmap->setConfig(bitmap_config,
                     dst_size_in_pixel.width(),
                     dst_size_in_pixel.height(),
@@ -1448,7 +1454,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
       gfx::Rect(result->size()),
       dst_size_in_pixel,
       pixels,
-      readback_config_rgb565,
+      bitmap_config,
       base::Bind(&CopyFromCompositingSurfaceFinished,
                  callback,
                  base::Passed(&release_callback),

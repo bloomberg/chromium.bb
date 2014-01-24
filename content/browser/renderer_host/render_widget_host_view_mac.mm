@@ -1135,8 +1135,8 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    bool readback_config_rgb565) {
-  if (readback_config_rgb565) {
+    const SkBitmap::Config config) {
+  if (config != SkBitmap::kARGB_8888_Config) {
     NOTIMPLEMENTED();
     callback.Run(false, SkBitmap());
   }

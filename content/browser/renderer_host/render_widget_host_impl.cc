@@ -725,7 +725,7 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
     view_->CopyFromCompositingSurface(accelerated_copy_rect,
                                       accelerated_dst_size,
                                       callback,
-                                      false);
+                                      SkBitmap::kARGB_8888_Config);
     return;
   }
 

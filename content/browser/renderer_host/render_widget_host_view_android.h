@@ -139,7 +139,7 @@ class RenderWidgetHostViewAndroid
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
-      bool readback_config_rgb565) OVERRIDE;
+      const SkBitmap::Config config) OVERRIDE;
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
@@ -274,7 +274,7 @@ class RenderWidgetHostViewAndroid
   // of the copy.
   static void PrepareTextureCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
-      bool readback_config_rgb565,
+      const SkBitmap::Config config,
       const base::TimeTicks& start_time,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);

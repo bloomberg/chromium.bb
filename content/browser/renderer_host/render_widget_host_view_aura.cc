@@ -1089,7 +1089,15 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    bool readback_config_rgb565) {
+    const SkBitmap::Config config) {
+  // Only ARGB888 and RGB565 supported as of now.
+  bool format_support = ((config == SkBitmap::kRGB_565_Config) ||
+                         (config == SkBitmap::kARGB_8888_Config));
+  if (!format_support) {
+    DCHECK(format_support);
+    callback.Run(false, SkBitmap());
+    return;
+  }
   if (!CanCopyToBitmap()) {
     callback.Run(false, SkBitmap());
     return;
@@ -1100,7 +1108,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult,
           dst_size_in_pixel,
-          readback_config_rgb565,
+          config,
           callback));
   gfx::Rect src_subrect_in_pixel =
       ConvertRectToPixel(current_device_scale_factor_, src_subrect);
@@ -1833,7 +1841,7 @@ void RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor(
 // static
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,
-    bool readback_config_rgb565,
+    const SkBitmap::Config config,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty()) {
@@ -1842,7 +1850,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResult(
   }
 
   if (result->HasTexture()) {
-    PrepareTextureCopyOutputResult(dst_size_in_pixel, readback_config_rgb565,
+    PrepareTextureCopyOutputResult(dst_size_in_pixel, config,
                                    callback,
                                    result.Pass());
     return;
@@ -1866,7 +1874,7 @@ static void CopyFromCompositingSurfaceFinished(
 // static
 void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
-    bool readback_config_rgb565,
+    const SkBitmap::Config config,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   base::ScopedClosureRunner scoped_callback_runner(
@@ -1908,7 +1916,7 @@ void RenderWidgetHostViewAura::PrepareTextureCopyOutputResult(
       gfx::Rect(result->size()),
       dst_size_in_pixel,
       pixels,
-      readback_config_rgb565,
+      config,
       base::Bind(&CopyFromCompositingSurfaceFinished,
                  callback,
                  base::Passed(&release_callback),

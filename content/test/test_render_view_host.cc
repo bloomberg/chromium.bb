@@ -115,7 +115,7 @@ void TestRenderWidgetHostView::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
-    bool readback_config_rgb565) {
+    const SkBitmap::Config config) {
   callback.Run(false, SkBitmap());
 }
 
