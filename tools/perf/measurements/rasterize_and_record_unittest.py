@@ -4,7 +4,7 @@
 from measurements import rasterize_and_record
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
-from telemetry.unittest import options_for_unittests
+from telemetry.unittest import DisabledTest, options_for_unittests
 
 
 class RasterizeAndRecordUnitTest(
@@ -23,6 +23,7 @@ class RasterizeAndRecordUnitTest(
     self._options.start_wait_time = 0.0
     self._options.stop_wait_time = 2.0
 
+  @DisabledTest
   def testRasterizeAndRecord(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record.RasterizeAndRecord()
