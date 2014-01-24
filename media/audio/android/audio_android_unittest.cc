@@ -668,7 +668,8 @@ TEST_P(AudioAndroidInputTest, StartInputStreamCallbacks) {
 // callback sequence is sane. The only change we make in this test is to select
 // a 10ms buffer size instead of the default size.
 // TODO(henrika): possibly add support for more variations.
-TEST_P(AudioAndroidInputTest, StartInputStreamCallbacksNonDefaultParameters) {
+// Disabled per crbug/337867
+TEST_P(AudioAndroidInputTest, DISABLED_StartInputStreamCallbacksNonDefaultParameters) {
   AudioParameters native_params = GetInputStreamParameters();
   AudioParameters params(native_params.format(),
                          native_params.channel_layout(),
