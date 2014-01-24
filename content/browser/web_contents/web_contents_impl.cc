@@ -2135,7 +2135,11 @@ void WebContentsImpl::OnDidFinishLoad(
     int64 frame_id,
     const GURL& url,
     bool is_main_frame) {
-  GURL validated_url(url);
+  if (!render_view_message_source_) {
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD2"));
+    GetRenderProcessHost()->ReceivedBadMessage();
+    return;
+  }
 
   // --site-per-process mode has a short-term hack allowing cross-process
   // subframe pages to commit thinking they are top-level.  Correct it here to
@@ -2144,6 +2148,7 @@ void WebContentsImpl::OnDidFinishLoad(
       render_view_message_source_ != GetRenderViewHost())
     is_main_frame = false;
 
+  GURL validated_url(url);
   RenderProcessHost* render_process_host =
       render_view_message_source_->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
