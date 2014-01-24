@@ -9,6 +9,14 @@
 {%- macro set_default(field) -%}
 {%-   if field.kind|is_string_kind -%}
 set_{{field.name}}(mojo::String({{field.default}}));
+{%-   elif field.kind|is_array_kind -%}
+{
+  {{field.kind|cpp_wrapper_type}}::Builder tmp({{field.default|length}});
+{%-     for element in field.default %}
+  tmp[{{loop.index0}}] = {{element}};
+{%-     endfor %}
+  set_{{field.name}}(tmp.Finish());
+}
 {%-   elif field.kind|is_object_kind -%}
 {
   {{field.kind|cpp_wrapper_type}}::Builder tmp;

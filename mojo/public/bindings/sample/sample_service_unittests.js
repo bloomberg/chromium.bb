@@ -93,6 +93,11 @@ define([
     var foo = new sample.Foo();
     expect(foo.name).toBe("Fooby");
     expect(foo.a).toBeTruthy();
+
+    expect(foo.data.length).toBe(3);
+    expect(foo.data[0]).toBe(1);
+    expect(foo.data[1]).toBe(2);
+    expect(foo.data[2]).toBe(3);
   }
 
   function ServiceImpl() {

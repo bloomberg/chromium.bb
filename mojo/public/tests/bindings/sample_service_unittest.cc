@@ -321,6 +321,10 @@ TEST(BindingsSampleTest, DefaultValues) {
   ASSERT_FALSE(foo.name().is_null());
   EXPECT_EQ("Fooby", foo.name().To<std::string>());
   EXPECT_TRUE(foo.a());
+  EXPECT_EQ(3u, foo.data().size());
+  EXPECT_EQ(1, foo.data()[0]);
+  EXPECT_EQ(2, foo.data()[1]);
+  EXPECT_EQ(3, foo.data()[2]);
 }
 
 }  // namespace sample

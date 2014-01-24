@@ -100,6 +100,7 @@ class Parser(object):
 
   def p_default(self, p):
     """default : EQUALS expression
+               | EQUALS expression_array
                | """
     if len(p) > 2:
       p[0] = p[2]
@@ -188,6 +189,23 @@ class Parser(object):
       p[0] = ('ENUM_FIELD', p[1], p[3])
 
   ### Expressions ###
+
+  def p_expression_array(self, p):
+    """expression_array : expression
+                        | LBRACKET expression_array_elements RBRACKET """
+    if len(p) < 3:
+      p[0] = p[1]
+    else:
+      p[0] = p[2]
+
+  def p_expression_array_elements(self, p):
+    """expression_array_elements : expression
+                                 | expression COMMA expression_array_elements
+                                 | """
+    if len(p) == 2:
+      p[0] = ListFromConcat(p[1])
+    elif len(p) > 3:
+      p[0] = ListFromConcat(p[1], p[3])
 
   def p_expression(self, p):
     """expression : conditional_expression"""

@@ -107,6 +107,7 @@ class Generator(mojom_generator.Generator):
     "is_handle_kind": mojom_generator.IsHandleKind,
     "is_object_kind": mojom_generator.IsObjectKind,
     "is_string_kind": mojom_generator.IsStringKind,
+    "is_array_kind": lambda kind: isinstance(kind, mojom.Array),
     "is_struct_with_handles": IsStructWithHandles,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "struct_from_method": mojom_generator.GetStructFromMethod,

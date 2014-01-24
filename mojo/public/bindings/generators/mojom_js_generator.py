@@ -33,7 +33,12 @@ _kind_to_javascript_default_value = {
 
 def JavaScriptDefaultValue(field):
   if field.default:
-    return field.default
+    if isinstance(field.default, list):
+      # TODO(mpcomplete): This will need to be more sophisticated to support
+      # arrays of objects/arrays.
+      return "[" + ", ".join(field.default) + "]"
+    else:
+      return field.default
   if field.kind in mojom.PRIMITIVES:
     return _kind_to_javascript_default_value[field.kind]
   if isinstance(field.kind, mojom.Struct):

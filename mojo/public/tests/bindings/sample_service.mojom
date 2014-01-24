@@ -28,7 +28,7 @@ struct Foo {
   bool c @4;
   Bar bar @5;
   Bar[] extra_bars @7;
-  uint8[] data @6;
+  uint8[] data = [1,2,3] @6;
   handle<message_pipe> source @9;
   handle<data_pipe_consumer>[] input_streams @10;
   handle<data_pipe_producer>[] output_streams @11;
