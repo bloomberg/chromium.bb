@@ -22,29 +22,39 @@ const char kWhitelistedId[] = "cbkkbcmdlboombapidmoeolnmdacpkch";
 
 scoped_refptr<const extensions::Extension> CreateExtensionFromValues(
     const std::string& id,
+    extensions::Manifest::Location location,
     base::DictionaryValue* values) {
   values->SetString(extensions::manifest_keys::kName, "test");
   values->SetString(extensions::manifest_keys::kVersion, "0.1");
   std::string error;
   return extensions::Extension::Create(base::FilePath(),
-                                       extensions::Manifest::INTERNAL,
+                                       location,
                                        *values,
                                        extensions::Extension::NO_FLAGS,
                                        id,
                                        &error);
 }
 
-scoped_refptr<const extensions::Extension> CreateExtension(
+scoped_refptr<const extensions::Extension> CreateRegularExtension(
     const std::string& id) {
   base::DictionaryValue values;
-  return CreateExtensionFromValues(id, &values);
+  return CreateExtensionFromValues(id, extensions::Manifest::INTERNAL, &values);
+}
+
+scoped_refptr<const extensions::Extension> CreateExternalComponentExtension() {
+  base::DictionaryValue values;
+  return CreateExtensionFromValues(std::string(),
+                                   extensions::Manifest::EXTERNAL_COMPONENT,
+                                   &values);
 }
 
 scoped_refptr<const extensions::Extension> CreateHostedApp() {
   base::DictionaryValue values;
   values.Set(extensions::manifest_keys::kApp, new base::DictionaryValue);
   values.Set(extensions::manifest_keys::kWebURLs, new base::ListValue);
-  return CreateExtensionFromValues(std::string(), &values);
+  return CreateExtensionFromValues(std::string(),
+                                   extensions::Manifest::INTERNAL,
+                                   &values);
 }
 
 scoped_refptr<const extensions::Extension> CreatePlatformApp() {
@@ -54,7 +64,9 @@ scoped_refptr<const extensions::Extension> CreatePlatformApp() {
              new base::DictionaryValue);
   values.Set(extensions::manifest_keys::kPlatformAppBackgroundPage,
              new base::StringValue("background.html"));
-  return CreateExtensionFromValues(std::string(), &values);
+  return CreateExtensionFromValues(std::string(),
+                                   extensions::Manifest::INTERNAL,
+                                   &values);
 }
 
 }  // namespace
@@ -63,27 +75,36 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   DeviceLocalAccountManagementPolicyProvider
       provider(policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
 
-  // Verify that if an extension's type has been whitelisted for use in
-  // device-local accounts, the extension can be installed.
-  scoped_refptr<const extensions::Extension> extension = CreateHostedApp();
+  // Verify that if an extension's location has been whitelisted for use in
+  // public sessions, the extension can be installed.
+  scoped_refptr<const extensions::Extension> extension =
+      CreateExternalComponentExtension();
   ASSERT_TRUE(extension);
   base::string16 error;
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_EQ(base::string16(), error);
   error.clear();
 
-  // Verify that if an extension's ID has been explicitly whitelisted for use in
+  // Verify that if an extension's type has been whitelisted for use in
   // device-local accounts, the extension can be installed.
-  extension = CreateExtension(kWhitelistedId);
+  extension = CreateHostedApp();
   ASSERT_TRUE(extension);
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_EQ(base::string16(), error);
   error.clear();
 
-  // Verify that if neither the type nor the ID of an extension have been
-  // whitelisted for use in device-local accounts, the extension cannot be
+  // Verify that if an extension's ID has been explicitly whitelisted for use in
+  // device-local accounts, the extension can be installed.
+  extension = CreateRegularExtension(kWhitelistedId);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+  EXPECT_EQ(base::string16(), error);
+  error.clear();
+
+  // Verify that if neither the location, type nor the ID of an extension have
+  // been  whitelisted for use in public sessions, the extension cannot be
   // installed.
-  extension = CreateExtension(std::string());
+  extension = CreateRegularExtension(std::string());
   ASSERT_TRUE(extension);
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_NE(base::string16(), error);
@@ -102,6 +123,15 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   EXPECT_EQ(base::string16(), error);
   error.clear();
 
+  // Verify that an extension whose location has been whitelisted for use in
+  // other types of device-local accounts cannot be installed in a single-app
+  // kiosk session.
+  extension = CreateExternalComponentExtension();
+  ASSERT_TRUE(extension);
+  EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+  EXPECT_NE(base::string16(), error);
+  error.clear();
+
   // Verify that an extension whose type has been whitelisted for use in other
   // types of device-local accounts cannot be installed in a single-app kiosk
   // session.
@@ -114,7 +144,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   // Verify that an extension whose ID has been whitelisted for use in other
   // types of device-local accounts cannot be installed in a single-app kiosk
   // session.
-  extension = CreateExtension(kWhitelistedId);
+  extension = CreateRegularExtension(kWhitelistedId);
   ASSERT_TRUE(extension);
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_NE(base::string16(), error);

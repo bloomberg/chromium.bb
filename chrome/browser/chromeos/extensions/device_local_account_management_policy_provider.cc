@@ -17,8 +17,8 @@ namespace chromeos {
 
 namespace {
 
-// Apps/extensions explicitly whitelisted for use in device-local accounts.
-const char* kDeviceLocalAccountWhitelist[] = {
+// Apps/extensions explicitly whitelisted for use in public sessions.
+const char* kPublicSessionWhitelist[] = {
   // Public sessions in general:
   "cbkkbcmdlboombapidmoeolnmdacpkch",  // Chrome RDP
   "djflhoibgkdhkhhcedjiklpkjnoahfmg",  // User Agent Switcher
@@ -92,23 +92,27 @@ std::string DeviceLocalAccountManagementPolicyProvider::
 bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
     const extensions::Extension* extension,
     base::string16* error) const {
-  if (account_type_ == policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
-    // For single-app kiosk sessions, allow only platform apps.
-    if (extension->GetType() == extensions::Manifest::TYPE_PLATFORM_APP)
+  if (account_type_ == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION) {
+    // Allow extension if it is an externally hosted component of Chrome.
+    if (extension->location() ==
+        extensions::Manifest::EXTERNAL_COMPONENT) {
       return true;
+    }
 
-  } else {
-    // Allow extension if its type is whitelisted for use in device-local
-    // accounts.
+    // Allow extension if its type is whitelisted for use in public sessions.
     if (extension->GetType() == extensions::Manifest::TYPE_HOSTED_APP)
       return true;
 
-    // Allow extension if its specific ID is whitelisted for use in device-local
-    // accounts.
-    for (size_t i = 0; i < arraysize(kDeviceLocalAccountWhitelist); ++i) {
-      if (extension->id() == kDeviceLocalAccountWhitelist[i])
+    // Allow extension if its specific ID is whitelisted for use in public
+    // sessions.
+    for (size_t i = 0; i < arraysize(kPublicSessionWhitelist); ++i) {
+      if (extension->id() == kPublicSessionWhitelist[i])
         return true;
     }
+  } else if (account_type_ == policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
+    // For single-app kiosk sessions, allow only platform apps.
+    if (extension->GetType() == extensions::Manifest::TYPE_PLATFORM_APP)
+      return true;
   }
 
   // Disallow all other extensions.
