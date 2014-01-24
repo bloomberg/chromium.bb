@@ -478,22 +478,16 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   // Process and consume the data in the processor until there is not enough
   // data in the processor.
   int16* output = NULL;
-  int new_volume = 0;
   while (audio_processor->ProcessAndConsumeData(
-      audio_delay, current_volume, key_pressed, &new_volume, &output)) {
+      audio_delay, current_volume, key_pressed, &output)) {
     // Feed the post-processed data to the tracks.
     for (TrackList::ItemList::const_iterator it = tracks.begin();
          it != tracks.end(); ++it) {
       (*it)->Capture(output, audio_delay, current_volume, key_pressed,
                      need_audio_processing);
     }
-
-    if (new_volume) {
-      SetVolume(new_volume);
-
-      // Update the |current_volume| to avoid passing the old volume to AGC.
-      current_volume = new_volume;
-    }
+    // TODO(xians): Apply the new volume after AGC is working with the
+    // MediaStreamAudioProcessor.
   }
 }
 
