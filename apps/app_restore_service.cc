@@ -12,10 +12,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
@@ -26,7 +25,7 @@
 using extensions::Extension;
 using extensions::ExtensionHost;
 using extensions::ExtensionPrefs;
-using extensions::ExtensionSystem;
+using extensions::ExtensionRegistry;
 
 namespace apps {
 
@@ -50,13 +49,12 @@ AppRestoreService::AppRestoreService(Profile* profile)
 }
 
 void AppRestoreService::HandleStartup(bool should_restore_apps) {
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  const extensions::ExtensionSet* extensions = extension_service->extensions();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+  const extensions::ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile_)->enabled_extensions();
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
 
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-      it != extensions->end(); ++it) {
+  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
+      it != extensions.end(); ++it) {
     const Extension* extension = it->get();
     if (extension_prefs->IsExtensionRunning(extension->id())) {
       RecordAppStop(extension->id());
@@ -74,8 +72,7 @@ void AppRestoreService::HandleStartup(bool should_restore_apps) {
 }
 
 bool AppRestoreService::IsAppRestorable(const std::string& extension_id) {
-  return extensions::ExtensionPrefs::Get(profile_) ->IsExtensionRunning(
-      extension_id);
+  return ExtensionPrefs::Get(profile_)->IsExtensionRunning(extension_id);
 }
 
 // static
@@ -113,22 +110,16 @@ void AppRestoreService::Shutdown() {
 }
 
 void AppRestoreService::RecordAppStart(const std::string& extension_id) {
-  ExtensionPrefs* extension_prefs =
-      ExtensionSystem::Get(profile_)->extension_service()->extension_prefs();
-  extension_prefs->SetExtensionRunning(extension_id, true);
+  ExtensionPrefs::Get(profile_)->SetExtensionRunning(extension_id, true);
 }
 
 void AppRestoreService::RecordAppStop(const std::string& extension_id) {
-  ExtensionPrefs* extension_prefs =
-      ExtensionSystem::Get(profile_)->extension_service()->extension_prefs();
-  extension_prefs->SetExtensionRunning(extension_id, false);
+  ExtensionPrefs::Get(profile_)->SetExtensionRunning(extension_id, false);
 }
 
 void AppRestoreService::RecordAppActiveState(const std::string& id,
                                              bool is_active) {
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
 
   // If the extension isn't running then we will already have recorded whether
   // it is active or not.

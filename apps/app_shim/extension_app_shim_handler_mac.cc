@@ -16,8 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
@@ -29,7 +27,10 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "ui/base/cocoa/focus_window_set.h"
+
+using extensions::ExtensionRegistry;
 
 namespace {
 
@@ -162,11 +163,9 @@ const extensions::Extension*
 ExtensionAppShimHandler::Delegate::GetAppExtension(
     Profile* profile,
     const std::string& extension_id) {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  DCHECK(extension_service);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   const extensions::Extension* extension =
-      extension_service->GetExtensionById(extension_id, false);
+      registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
   return extension && extension->is_platform_app() ? extension : NULL;
 }
 

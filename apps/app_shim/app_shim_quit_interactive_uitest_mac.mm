@@ -13,12 +13,12 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 
 using extensions::PlatformAppBrowserTest;
@@ -71,8 +71,10 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
         extension_app_shim_handler();
 
     // Attach a host for the app.
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile());
     extension_id_ =
-        GetExtensionByPath(extension_service()->extensions(), app_path_)->id();
+        GetExtensionByPath(&registry->enabled_extensions(), app_path_)->id();
     host_.reset(new FakeHost(profile()->GetPath().BaseName(),
                              extension_id_,
                              handler_));

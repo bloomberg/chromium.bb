@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_runtime.h"
@@ -389,8 +388,8 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
     return;
   }
 
-  extensions::ExtensionPrefs* extension_prefs = ExtensionSystem::Get(profile)->
-      extension_service()->extension_prefs();
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(profile);
   bool had_windows = extension_prefs->IsActive(extension->id());
   extension_prefs->SetIsActive(extension->id(), false);
   bool listening_to_launch = event_router->

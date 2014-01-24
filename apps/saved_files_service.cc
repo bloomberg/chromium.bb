@@ -12,8 +12,6 @@
 #include "base/value_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
