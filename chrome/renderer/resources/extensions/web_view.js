@@ -49,6 +49,20 @@ var CreateEvent = function(name) {
   return new EventBindings.Event(name, undefined, eventOpts);
 };
 
+// WEB_VIEW_EVENTS is a map of stable <webview> DOM event names to their
+//     associated extension event descriptor objects.
+// An event listener will be attached to the extension event |evt| specified in
+//     the descriptor.
+// |fields| specifies the public-facing fields in the DOM event that are
+//     accessible to <webview> developers.
+// |customHandler| allows a handler function to be called each time an extension
+//     event is caught by its event listener. The DOM event should be dispatched
+//     within this handler function. With no handler function, the DOM event
+//     will be dispatched by default each time the extension event is caught.
+// |cancelable| (default: false) specifies whether the event's default
+//     behavior can be canceled. If the default action associated with the event
+//     is prevented, then its dispatch function will return false in its event
+//     handler. The event must have a custom handler for this to be meaningful.
 var WEB_VIEW_EVENTS = {
   'close': {
     evt: CreateEvent('webview.onClose'),
