@@ -24,6 +24,7 @@
 #include "cc/debug/micro_benchmark.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -262,11 +263,11 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       !widget->UsingSynchronousRendererCompositor() &&
       !cmd->HasSwitch(cc::switches::kDisable4444Textures);
 #elif !defined(OS_MACOSX)
-  if (cmd->HasSwitch(switches::kEnableOverlayScrollbars)) {
+  if (IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::Thinning;
   }
   if (cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport) ||
-      cmd->HasSwitch(switches::kEnableOverlayScrollbars)) {
+      IsOverlayScrollbarEnabled()) {
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   }
 #endif

@@ -4,6 +4,8 @@
 
 #include "content/public/common/content_switches.h"
 
+#include "base/command_line.h"
+
 namespace switches {
 
 // The number of MSAA samples for canvas2D. Requires MSAA support by GPU to
@@ -262,6 +264,9 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
+// Disables overlay scrollbars on Aura or Linux. Does nothing on Mac.
+const char kDisableOverlayScrollbar[]       = "disable-overlay-scrollbar";
+
 // Allows P2P sockets to talk UDP to other servers without using STUN first.
 // For development only, use with caution.
 // TODO(hubbe): Remove this flag.
@@ -507,7 +512,7 @@ const char kEnableOverlayFullscreenVideoSubtitle[] =
     "enable-overlay-fullscreen-video-subtitle";
 
 // Enables overlay scrollbars on Aura or Linux. Does nothing on Mac.
-const char kEnableOverlayScrollbars[]       = "enable-overlay-scrollbars";
+const char kEnableOverlayScrollbar[]        = "enable-overlay-scrollbar";
 
 // Forward overscroll event data from the renderer to the browser.
 const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";

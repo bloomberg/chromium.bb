@@ -5,6 +5,7 @@
 #include "content/child/runtime_features.h"
 
 #include "base/command_line.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
@@ -173,7 +174,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableOverlayFullscreenVideo))
     WebRuntimeFeatures::enableOverlayFullscreenVideo(true);
 
-  if (command_line.HasSwitch(switches::kEnableOverlayScrollbars))
+  if (IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::enableOverlayScrollbars(true);
 
   if (command_line.HasSwitch(switches::kEnableInputModeAttribute))

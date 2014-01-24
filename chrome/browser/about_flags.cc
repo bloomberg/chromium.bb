@@ -304,6 +304,16 @@ const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
 };
 #endif
 
+#if defined(USE_AURA) || defined(OS_LINUX)
+const Experiment::Choice kOverlayScrollbarChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableOverlayScrollbar, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableOverlayScrollbar, ""}
+};
+#endif
+
 const Experiment::Choice kMapImageChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -732,15 +742,17 @@ const Experiment kExperiments[] = {
     kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
   },
+#if defined(USE_AURA) || defined(OS_LINUX)
   {
-    "enable-overlay-scrollbars",
+    "overlay-scrollbars",
     IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_NAME,
     IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_DESCRIPTION,
     // Uses the system preference on Mac (a different implementation).
     // On Android, this is always enabled.
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableOverlayScrollbars)
+    kOsLinux | kOsCrOS | kOsWin,
+    MULTI_VALUE_TYPE(kOverlayScrollbarChoices)
   },
+#endif
   {
     "enable-panels",
     IDS_FLAGS_ENABLE_PANELS_NAME,

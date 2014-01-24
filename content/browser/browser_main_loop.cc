@@ -324,8 +324,7 @@ BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
       created_threads_(false),
       // ContentMainRunner should have enabled tracing of the browser process
       // when kTraceStartup is in the command line.
-      is_tracing_startup_(
-          parameters.command_line.HasSwitch(switches::kTraceStartup)) {
+      is_tracing_startup_(base::debug::TraceLog::GetInstance()->IsEnabled()) {
   DCHECK(!g_current_browser_main_loop);
   g_current_browser_main_loop = this;
 }
