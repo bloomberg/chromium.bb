@@ -15,6 +15,7 @@
 
 namespace crypto {
 class Encryptor;
+class SymmetricKey;
 }
 
 namespace media {
@@ -59,6 +60,7 @@ class TransportVideoSender : public base::NonThreadSafe {
   const base::TimeDelta rtp_max_delay_;
 
   RtpSender rtp_sender_;
+  scoped_ptr<crypto::SymmetricKey> key_;
   scoped_ptr<crypto::Encryptor> encryptor_;
   std::string iv_mask_;
 
