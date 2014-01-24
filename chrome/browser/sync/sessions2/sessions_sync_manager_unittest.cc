@@ -142,16 +142,21 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
 
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
       const OVERRIDE {
-    return syncer::SyncDataList();
+    return sync_data_to_return_;
   }
 
   void FailProcessSyncChangesWith(const syncer::SyncError& error) {
     error_ = error;
   }
 
+  void SetSyncDataToReturn(const syncer::SyncDataList& data) {
+    sync_data_to_return_ = data;
+  }
+
  private:
   syncer::SyncError error_;
   syncer::SyncChangeList* output_;
+  syncer::SyncDataList sync_data_to_return_;
 };
 
 syncer::SyncChange MakeRemoteChange(
@@ -261,6 +266,10 @@ class SessionsSyncManagerTest
     test_processor_->FailProcessSyncChangesWith(syncer::SyncError(
         FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "Error",
         syncer::SESSIONS));
+  }
+
+  void SetSyncData(const syncer::SyncDataList& data) {
+     test_processor_->SetSyncDataToReturn(data);
   }
 
   syncer::SyncChangeList* FilterOutLocalHeaderChanges(
@@ -1083,6 +1092,69 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
   std::vector<std::vector<SessionID::id_type> > session_reference;
   session_reference.push_back(tab_list1);
   helper()->VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
+}
+
+// Tests that the SessionsSyncManager can handle a remote client deleting
+// sync nodes that belong to this local session.
+TEST_F(SessionsSyncManagerTest, ProcessRemoteDeleteOfLocalSession) {
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
+  ASSERT_EQ(2U, out.size());
+  sync_pb::EntitySpecifics entity(out[0].sync_data().GetSpecifics());
+  SyncData d(SyncData::CreateRemoteData(1, entity, base::Time()));
+  SetSyncData(syncer::SyncDataList(&d, &d + 1));
+  out.clear();
+
+  syncer::SyncChangeList changes;
+  changes.push_back(
+      MakeRemoteChange(1, entity.session(), SyncChange::ACTION_DELETE));
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+  EXPECT_TRUE(manager()->local_tab_pool_out_of_sync_);
+  EXPECT_TRUE(out.empty());  // ChangeProcessor shouldn't see any activity.
+
+  // This should trigger repair of the TabNodePool.
+  const GURL foo1("http://foo/1");
+  AddTab(browser(), foo1);
+  EXPECT_FALSE(manager()->local_tab_pool_out_of_sync_);
+
+  // AddTab triggers two notifications, one for the tab insertion and one for
+  // committing the NavigationEntry. The first notification results in a tab
+  // we don't associate although we do update the header node.  The second
+  // notification triggers association of the tab, and the subsequent window
+  // update.  So we should see 4 changes at the SyncChangeProcessor.
+  ASSERT_EQ(4U, out.size());
+
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[0].change_type());
+  ASSERT_TRUE(out[0].sync_data().GetSpecifics().session().has_header());
+  EXPECT_EQ(SyncChange::ACTION_ADD, out[1].change_type());
+  int tab_node_id = out[1].sync_data().GetSpecifics().session().tab_node_id();
+  EXPECT_EQ(TabNodePool2::TabIdToTag(
+                manager()->current_machine_tag(), tab_node_id),
+            out[1].sync_data().GetTag());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[2].change_type());
+  ASSERT_TRUE(out[2].sync_data().GetSpecifics().session().has_tab());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[3].change_type());
+  ASSERT_TRUE(out[3].sync_data().GetSpecifics().session().has_header());
+
+  // Verify the actual content.
+  const sync_pb::SessionHeader& session_header =
+      out[3].sync_data().GetSpecifics().session().header();
+  ASSERT_EQ(1, session_header.window_size());
+  EXPECT_EQ(1, session_header.window(0).tab_size());
+  const sync_pb::SessionTab& tab1 =
+      out[2].sync_data().GetSpecifics().session().tab();
+  ASSERT_EQ(1, tab1.navigation_size());
+  EXPECT_EQ(foo1.spec(), tab1.navigation(0).virtual_url());
+
+  // Verify TabNodePool integrity.
+  EXPECT_EQ(1U, manager()->local_tab_pool_.Capacity());
+  EXPECT_TRUE(manager()->local_tab_pool_.Empty());
+
+  // Verify TabLinks.
+  SessionsSyncManager::TabLinksMap tab_map = manager()->local_tab_map_;
+  ASSERT_EQ(1U, tab_map.size());
+  int tab_id = out[2].sync_data().GetSpecifics().session().tab().tab_id();
+  EXPECT_EQ(tab_node_id, tab_map.find(tab_id)->second->tab_node_id());
 }
 
 // Test that receiving a session delete from sync removes the session

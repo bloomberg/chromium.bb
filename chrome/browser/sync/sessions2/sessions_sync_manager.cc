@@ -51,6 +51,7 @@ SessionsSyncManager::SessionsSyncManager(
     SyncInternalApiDelegate* delegate,
     scoped_ptr<LocalSessionEventRouter> router)
     : favicon_cache_(profile, kMaxSyncFavicons),
+      local_tab_pool_out_of_sync_(true),
       sync_prefs_(profile->GetPrefs()),
       profile_(profile),
       delegate_(delegate),
@@ -129,6 +130,7 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 
   // Check if anything has changed on the local client side.
   AssociateWindows(RELOAD_TABS, restored_tabs, &new_changes);
+  local_tab_pool_out_of_sync_ = false;
 
   merge_result.set_error(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
@@ -312,6 +314,17 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
       base::Time::Now();
 }
 
+void SessionsSyncManager::RebuildAssociations() {
+  syncer::SyncDataList data(
+      sync_processor_->GetAllSyncData(syncer::SESSIONS));
+  scoped_ptr<syncer::SyncErrorFactory> error_handler(error_handler_.Pass());
+  scoped_ptr<syncer::SyncChangeProcessor> processor(sync_processor_.Pass());
+
+  StopSyncing(syncer::SESSIONS);
+  MergeDataAndStartSyncing(
+      syncer::SESSIONS, data, processor.Pass(), error_handler.Pass());
+}
+
 void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
   const content::NavigationEntry* entry = modified_tab->GetActiveEntry();
   if (!modified_tab->IsBeingDestroyed() &&
@@ -324,6 +337,14 @@ void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
         chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
         content::Source<Profile>(profile_),
         content::Details<const syncer::ModelTypeSet>(&types));
+  }
+
+  if (local_tab_pool_out_of_sync_) {
+    // If our tab pool is corrupt, pay the price of a full re-association to
+    // fix things up.  This takes care of the new tab modification as well.
+    RebuildAssociations();
+    DCHECK(!local_tab_pool_out_of_sync_);
+    return;
   }
 
   syncer::SyncChangeList changes;
@@ -482,9 +503,9 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
         if (current_machine_tag() == session.session_tag()) {
           // Another client has attempted to delete our local data (possibly by
           // error or a clock is inaccurate). Just ignore the deletion for now
-          // to avoid any possible ping-pong delete/reassociate sequence.
-          // TODO(tim): Bug 98892.  This corrupts TabNodePool. Perform full
-          // re-association.
+          // to avoid any possible ping-pong delete/reassociate sequence, but
+          // remember that this happened as our TabNodePool is inconsistent.
+          local_tab_pool_out_of_sync_ = true;
           LOG(WARNING) << "Local session data deleted. Ignoring until next "
                        << "local navigation event.";
         } else if (session.has_header()) {

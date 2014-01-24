@@ -150,7 +150,6 @@ void NotificationServiceSessionsRouter::StartRoutingTo(
 
 void NotificationServiceSessionsRouter::Stop() {
   weak_ptr_factory_.InvalidateWeakPtrs();
-  registrar_.RemoveAll();
   handler_ = NULL;
 }
 

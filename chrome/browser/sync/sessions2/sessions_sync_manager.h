@@ -204,6 +204,8 @@ class SessionsSyncManager : public syncer::SyncableService,
                            AssociateWindowsDontReloadTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            SwappedOutOnRestore);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
+                           ProcessRemoteDeleteOfLocalSession);
 
   void InitializeCurrentMachineTag();
 
@@ -329,6 +331,10 @@ class SessionsSyncManager : public syncer::SyncableService,
       const syncer::SyncDataList& restored_tabs,
       syncer::SyncChangeList* change_output);
 
+  // Stops and re-starts syncing to rebuild association mappings.
+  // See |local_tab_pool_out_of_sync_|.
+  void RebuildAssociations();
+
   // Mapping of current open (local) tabs to their sync identifiers.
   TabLinksMap local_tab_map_;
 
@@ -337,6 +343,15 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Pool of used/available sync nodes associated with local tabs.
   TabNodePool2 local_tab_pool_;
+
+  // Tracks whether our local representation of which sync nodes map to what
+  // tabs (belonging to the current local session) is inconsistent.  This can
+  // happen if a foreign client deems our session as "stale" and decides to
+  // delete it. Rather than respond by bullishly re-creating our nodes
+  // immediately, which could lead to ping-pong sequences, we give the benefit
+  // of the doubt and hold off until another local navigation occurs, which
+  // proves that we are still relevant.
+  bool local_tab_pool_out_of_sync_;
 
   SyncPrefs sync_prefs_;
 
