@@ -32,10 +32,10 @@
 #include "core/animation/ElementAnimation.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/parser/BisonCSSParser.h"
-#include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
@@ -60,22 +60,113 @@ CSSPropertyID ElementAnimation::camelCaseCSSPropertyNameToID(const String& prope
     return id;
 }
 
-Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
+void ElementAnimation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
+{
+    // FIXME: This method needs to be refactored to handle invalid
+    // null, NaN, Infinity values better.
+    // See: http://www.w3.org/TR/WebIDL/#es-double
+    double startDelay = 0;
+    timingInputDictionary.get("delay", startDelay);
+    if (!std::isnan(startDelay) && !std::isinf(startDelay))
+        timing.startDelay = startDelay;
+
+    String fillMode;
+    timingInputDictionary.get("fill", fillMode);
+    if (fillMode == "none") {
+        timing.fillMode = Timing::FillModeNone;
+    } else if (fillMode == "backwards") {
+        timing.fillMode = Timing::FillModeBackwards;
+    } else if (fillMode == "both") {
+        timing.fillMode = Timing::FillModeBoth;
+    } else if (fillMode == "forwards") {
+        timing.fillMode = Timing::FillModeForwards;
+    }
+
+    double iterationStart = 0;
+    timingInputDictionary.get("iterationStart", iterationStart);
+    if (!std::isnan(iterationStart) && !std::isinf(iterationStart))
+        timing.iterationStart = std::max<double>(iterationStart, 0);
+
+    double iterationCount = 1;
+    timingInputDictionary.get("iterations", iterationCount);
+    if (!std::isnan(iterationCount))
+        timing.iterationCount = std::max<double>(iterationCount, 0);
+
+    v8::Local<v8::Value> iterationDurationValue;
+    bool hasIterationDurationValue = timingInputDictionary.get("duration", iterationDurationValue);
+    if (hasIterationDurationValue) {
+        double iterationDuration = iterationDurationValue->NumberValue();
+        if (!std::isnan(iterationDuration) && iterationDuration >= 0) {
+            timing.iterationDuration = iterationDuration;
+            timing.hasIterationDuration = true;
+        }
+    }
+
+    double playbackRate = 1;
+    timingInputDictionary.get("playbackRate", playbackRate);
+    if (!std::isnan(playbackRate) && !std::isinf(playbackRate))
+        timing.playbackRate = playbackRate;
+
+    String direction;
+    timingInputDictionary.get("direction", direction);
+    if (direction == "reverse") {
+        timing.direction = Timing::PlaybackDirectionReverse;
+    } else if (direction == "alternate") {
+        timing.direction = Timing::PlaybackDirectionAlternate;
+    } else if (direction == "alternate-reverse") {
+        timing.direction = Timing::PlaybackDirectionAlternateReverse;
+    }
+
+    timing.assertValid();
+}
+
+static bool checkDocumentAndRenderer(Element* element)
+{
+    if (!element->inActiveDocument())
+        return false;
+    element->document().updateStyleIfNeeded();
+    if (!element->renderer())
+        return false;
+    return true;
+}
+
+Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
     // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
     // animation application time.
-    if (!element->inActiveDocument())
-        return 0;
-    element->document().updateStyleIfNeeded();
-    if (!element->renderer())
+    if (!checkDocumentAndRenderer(element))
         return 0;
 
-    return startAnimation(element, keyframeDictionaryVector, duration);
+    return startAnimation(element, keyframeDictionaryVector, timingInput);
 }
 
-Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double duration)
+Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
+{
+    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+
+    // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
+    // animation application time.
+    if (!checkDocumentAndRenderer(element))
+        return 0;
+
+    return startAnimation(element, keyframeDictionaryVector, timingInput);
+}
+
+Animation* ElementAnimation::animate(Element* element, Vector<Dictionary> keyframeDictionaryVector)
+{
+    ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+
+    // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
+    // animation application time.
+    if (!checkDocumentAndRenderer(element))
+        return 0;
+
+    return startAnimation(element, keyframeDictionaryVector);
+}
+
+static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* element, Vector<Dictionary> keyframeDictionaryVector)
 {
     KeyframeEffectModel::KeyframeVector keyframes;
     Vector<RefPtr<MutableStylePropertySet> > propertySetVector;
@@ -102,7 +193,7 @@ Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary>
 
         for (size_t j = 0; j < keyframeProperties.size(); ++j) {
             String property = keyframeProperties[j];
-            CSSPropertyID id = camelCaseCSSPropertyNameToID(property);
+            CSSPropertyID id = ElementAnimation::camelCaseCSSPropertyNameToID(property);
 
             // FIXME: There is no way to store invalid properties or invalid values
             // in a Keyframe object, so for now I just skip over them. Eventually we
@@ -120,15 +211,47 @@ Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary>
 
     // FIXME: Replace this with code that just parses, when that code is available.
     RefPtr<KeyframeEffectModel> effect = StyleResolver::createKeyframeEffectModel(*element, propertySetVector, keyframes);
+    return effect;
+}
 
-    // FIXME: Totally hardcoded Timing for now. Will handle timing parameters later.
+Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
+{
+    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
+
     Timing timing;
-    // FIXME: Currently there is no way to tell whether or not an iterationDuration
-    // has been specified (becauser the default argument is 0). So any animation
-    // created using Element.animate() will have a timing with hasIterationDuration()
-    // == true.
-    timing.hasIterationDuration = true;
-    timing.iterationDuration = std::max<double>(duration, 0);
+    populateTiming(timing, timingInput);
+
+    RefPtr<Animation> animation = Animation::create(element, effect, timing);
+    DocumentTimeline* timeline = element->document().timeline();
+    ASSERT(timeline);
+    timeline->play(animation.get());
+
+    return animation.get();
+}
+
+Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
+{
+    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
+
+    Timing timing;
+    if (!std::isnan(timingInput)) {
+        timing.hasIterationDuration = true;
+        timing.iterationDuration = std::max<double>(timingInput, 0);
+    }
+
+    RefPtr<Animation> animation = Animation::create(element, effect, timing);
+    DocumentTimeline* timeline = element->document().timeline();
+    ASSERT(timeline);
+    timeline->play(animation.get());
+
+    return animation.get();
+}
+
+Animation* ElementAnimation::startAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector)
+{
+    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
+
+    Timing timing;
 
     RefPtr<Animation> animation = Animation::create(element, effect, timing);
     DocumentTimeline* timeline = element->document().timeline();
