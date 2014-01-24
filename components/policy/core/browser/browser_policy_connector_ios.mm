@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/proxy_policy_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
@@ -59,7 +60,11 @@ BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
     scoped_ptr<ConfigurationPolicyHandlerList> handler_list,
     const std::string& user_agent)
     : BrowserPolicyConnector(handler_list.Pass()),
-      user_agent_(user_agent) {}
+      user_agent_(user_agent),
+      global_user_cloud_policy_provider_(new ProxyPolicyProvider) {
+  AddPolicyProvider(scoped_ptr<ConfigurationPolicyProvider>(
+      global_user_cloud_policy_provider_));
+}
 
 BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
 
@@ -78,9 +83,12 @@ void BrowserPolicyConnectorIOS::Init(
 
   BrowserPolicyConnector::Init(
       local_state, request_context, device_management_service.Pass());
-
-  // TODO(joaodasilva): add a ProxyPolicyProvider so that user cloud policy
-  // can override Local State prefs on iOS. http://crbug.com/275292
 }
+
+void BrowserPolicyConnectorIOS::SetUserPolicyDelegate(
+    ConfigurationPolicyProvider* user_policy_provider) {
+  global_user_cloud_policy_provider_->SetDelegate(user_policy_provider);
+}
+
 
 }  // namespace policy
