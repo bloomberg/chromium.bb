@@ -55,15 +55,15 @@ class DeviceManagementServiceConfiguration
 
 }  // namespace
 
-BrowserPolicyConnectorIos::BrowserPolicyConnectorIos(
+BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
     scoped_ptr<ConfigurationPolicyHandlerList> handler_list,
     const std::string& user_agent)
     : BrowserPolicyConnector(handler_list.Pass()),
       user_agent_(user_agent) {}
 
-BrowserPolicyConnectorIos::~BrowserPolicyConnectorIos() {}
+BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
 
-void BrowserPolicyConnectorIos::Init(
+void BrowserPolicyConnectorIOS::Init(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
   scoped_ptr<DeviceManagementService::Configuration> configuration(

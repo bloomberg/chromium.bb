@@ -15,13 +15,13 @@
 namespace policy {
 
 // Extends BrowserPolicyConnector with the setup for iOS builds.
-class POLICY_EXPORT BrowserPolicyConnectorIos : public BrowserPolicyConnector {
+class POLICY_EXPORT BrowserPolicyConnectorIOS : public BrowserPolicyConnector {
  public:
-  BrowserPolicyConnectorIos(
+  BrowserPolicyConnectorIOS(
       scoped_ptr<ConfigurationPolicyHandlerList> handler_list,
       const std::string& user_agent);
 
-  virtual ~BrowserPolicyConnectorIos();
+  virtual ~BrowserPolicyConnectorIOS();
 
   virtual void Init(
       PrefService* local_state,
@@ -30,7 +30,7 @@ class POLICY_EXPORT BrowserPolicyConnectorIos : public BrowserPolicyConnector {
  private:
   std::string user_agent_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnectorIos);
+  DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnectorIOS);
 };
 
 }  // namespace policy
