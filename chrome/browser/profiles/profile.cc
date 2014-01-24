@@ -76,6 +76,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSafeBrowsingEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kSafeBrowsingDownloadReportingEnabled,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingReportingEnabled,
       false,
