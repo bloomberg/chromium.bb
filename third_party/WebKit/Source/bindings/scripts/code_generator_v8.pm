@@ -1946,7 +1946,7 @@ sub GenerateNormalAttributeSetter
 
     my $raisesException = $attribute->extendedAttributes->{"RaisesException"};
     my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Setter");
-    my $hasStrictTypeChecking = 1 if $attribute->extendedAttributes->{"StrictTypeChecking"} && IsWrapperType($attrType);  # Currently only actually check interface types
+    my $hasStrictTypeChecking = 1 if ($interface->extendedAttributes->{"StrictTypeChecking"} || $attribute->extendedAttributes->{"StrictTypeChecking"}) && IsWrapperType($attrType);  # Currently only actually check interface types
 
     # Can throw exceptions from accessors or during type conversion.
     my $isIntegerType = IsIntegerType($attribute->type);
@@ -2729,7 +2729,7 @@ END
             # Per the Web IDL and ECMAScript specifications, incoming values can always be converted
             # to both strings and numbers, so do not throw TypeError if the argument is of these
             # types.
-            if ($function->extendedAttributes->{"StrictTypeChecking"}) {
+            if ($function->extendedAttributes->{"StrictTypeChecking"} || $interface->extendedAttributes->{"StrictTypeChecking"}) {
                 my $argValue = "info[$paramIndex]";
                 my $argType = $parameter->type;
                 if (IsWrapperType($argType)) {

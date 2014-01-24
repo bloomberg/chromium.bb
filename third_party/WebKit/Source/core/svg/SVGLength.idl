@@ -22,7 +22,8 @@
 
 [
     ImplementedAs=SVGLengthTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement)
+    SetWrapperReferenceTo(SVGElement contextElement),
+    StrictTypeChecking,
 ] interface SVGLength {
     // Length Unit Types
     const unsigned short SVG_LENGTHTYPE_UNKNOWN    = 0;
@@ -38,14 +39,13 @@
     const unsigned short SVG_LENGTHTYPE_PC         = 10;
 
     readonly attribute unsigned short unitType;
-    [StrictTypeChecking, RaisesException] attribute float value;
+    [RaisesException] attribute float value;
 
-    [StrictTypeChecking, RaisesException=Setter] attribute float valueInSpecifiedUnits;
-    [TreatNullAs=NullString, StrictTypeChecking, RaisesException=Setter] attribute DOMString valueAsString;
+    [RaisesException=Setter] attribute float valueInSpecifiedUnits;
+    [TreatNullAs=NullString, RaisesException=Setter] attribute DOMString valueAsString;
 
-    [StrictTypeChecking, RaisesException] void newValueSpecifiedUnits(unsigned short unitType,
-                                                     float valueInSpecifiedUnits);
+    [RaisesException] void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits);
 
-    [StrictTypeChecking, RaisesException] void convertToSpecifiedUnits(unsigned short unitType);
+    [RaisesException] void convertToSpecifiedUnits(unsigned short unitType);
 };
 

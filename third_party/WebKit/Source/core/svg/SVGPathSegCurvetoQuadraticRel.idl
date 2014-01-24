@@ -24,10 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPathSegCurvetoQuadraticRel : SVGPathSeg {
-    [StrictTypeChecking] attribute float x;
-    [StrictTypeChecking] attribute float y;
-    [StrictTypeChecking] attribute float x1;
-    [StrictTypeChecking] attribute float y1;
+[
+    StrictTypeChecking,
+] interface SVGPathSegCurvetoQuadraticRel : SVGPathSeg {
+    attribute float x;
+    attribute float y;
+    attribute float x1;
+    attribute float y1;
 };
 

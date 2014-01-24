@@ -24,8 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPathSegMovetoAbs : SVGPathSeg {
-    [StrictTypeChecking] attribute float x;
-    [StrictTypeChecking] attribute float y;
+[
+    StrictTypeChecking,
+] interface SVGPathSegMovetoAbs : SVGPathSeg {
+    attribute float x;
+    attribute float y;
 };
-

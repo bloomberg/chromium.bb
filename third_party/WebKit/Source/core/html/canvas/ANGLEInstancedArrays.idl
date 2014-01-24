@@ -29,12 +29,13 @@
  */
 
 [
+    DoNotCheckConstants,
     NoInterfaceObject,
-    DoNotCheckConstants
+    StrictTypeChecking,
 ] interface ANGLEInstancedArrays {
     const unsigned long VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE = 0x88FE;
 
-    [StrictTypeChecking] void drawArraysInstancedANGLE(unsigned long mode, long first, long count, long primcount);
-    [StrictTypeChecking] void drawElementsInstancedANGLE(unsigned long mode, long count, unsigned long type, long long offset, long primcount);
-    [StrictTypeChecking] void vertexAttribDivisorANGLE(unsigned long index, long divisor);
+    void drawArraysInstancedANGLE(unsigned long mode, long first, long count, long primcount);
+    void drawElementsInstancedANGLE(unsigned long mode, long count, unsigned long type, long long offset, long primcount);
+    void vertexAttribDivisorANGLE(unsigned long index, long divisor);
 };

@@ -22,11 +22,11 @@
 
 [
     ImplementedAs=SVGRectTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement)
+    SetWrapperReferenceTo(SVGElement contextElement),
+    StrictTypeChecking,
 ] interface SVGRect {
-    [StrictTypeChecking, RaisesException=Setter] attribute float x;
-    [StrictTypeChecking, RaisesException=Setter] attribute float y;
-    [StrictTypeChecking, RaisesException=Setter] attribute float width;
-    [StrictTypeChecking, RaisesException=Setter] attribute float height;
+    [RaisesException=Setter] attribute float x;
+    [RaisesException=Setter] attribute float y;
+    [RaisesException=Setter] attribute float width;
+    [RaisesException=Setter] attribute float height;
 };
-

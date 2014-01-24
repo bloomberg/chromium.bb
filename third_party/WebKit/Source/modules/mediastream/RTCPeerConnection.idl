@@ -80,4 +80,3 @@
     attribute EventHandler oniceconnectionstatechange;
     attribute EventHandler ondatachannel;
 };
-

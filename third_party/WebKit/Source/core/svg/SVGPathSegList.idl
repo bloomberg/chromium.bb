@@ -24,15 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPathSegList {
+[
+    StrictTypeChecking,
+] interface SVGPathSegList {
     readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
-    [StrictTypeChecking, RaisesException] SVGPathSeg initialize(SVGPathSeg newItem);
-    [StrictTypeChecking, RaisesException] SVGPathSeg getItem(unsigned long index);
-    [StrictTypeChecking, RaisesException] SVGPathSeg insertItemBefore(SVGPathSeg newItem, unsigned long index);
-    [StrictTypeChecking, RaisesException] SVGPathSeg replaceItem(SVGPathSeg newItem, unsigned long index);
-    [StrictTypeChecking, RaisesException] SVGPathSeg removeItem(unsigned long index);
-    [StrictTypeChecking, RaisesException] SVGPathSeg appendItem(SVGPathSeg newItem);
+    [RaisesException] SVGPathSeg initialize(SVGPathSeg newItem);
+    [RaisesException] SVGPathSeg getItem(unsigned long index);
+    [RaisesException] SVGPathSeg insertItemBefore(SVGPathSeg newItem, unsigned long index);
+    [RaisesException] SVGPathSeg replaceItem(SVGPathSeg newItem, unsigned long index);
+    [RaisesException] SVGPathSeg removeItem(unsigned long index);
+    [RaisesException] SVGPathSeg appendItem(SVGPathSeg newItem);
 };
-

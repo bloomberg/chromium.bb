@@ -24,10 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPathSegCurvetoCubicSmoothAbs : SVGPathSeg {
-    [StrictTypeChecking] attribute float x;
-    [StrictTypeChecking] attribute float y;
-    [StrictTypeChecking] attribute float x2;
-    [StrictTypeChecking] attribute float y2;
+[
+    StrictTypeChecking,
+] interface SVGPathSegCurvetoCubicSmoothAbs : SVGPathSeg {
+    attribute float x;
+    attribute float y;
+    attribute float x2;
+    attribute float y2;
 };
-

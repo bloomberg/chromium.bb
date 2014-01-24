@@ -23,8 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPreserveAspectRatio {
-    // Alignment Types
+[
+    StrictTypeChecking,
+] interface SVGPreserveAspectRatio {
+    // Alignment types
     const unsigned short SVG_PRESERVEASPECTRATIO_UNKNOWN = 0;
     const unsigned short SVG_PRESERVEASPECTRATIO_NONE = 1;
     const unsigned short SVG_PRESERVEASPECTRATIO_XMINYMIN = 2;
@@ -37,13 +39,12 @@ interface SVGPreserveAspectRatio {
     const unsigned short SVG_PRESERVEASPECTRATIO_XMIDYMAX = 9;
     const unsigned short SVG_PRESERVEASPECTRATIO_XMAXYMAX = 10;
 
-    // Meet-or-slice Types
+    // Meet-or-slice types
     const unsigned short SVG_MEETORSLICE_UNKNOWN = 0;
     const unsigned short SVG_MEETORSLICE_MEET = 1;
     const unsigned short SVG_MEETORSLICE_SLICE = 2;
 
-    [StrictTypeChecking, RaisesException=Setter] attribute unsigned short align;
+    [RaisesException=Setter] attribute unsigned short align;
 
-    [StrictTypeChecking, RaisesException=Setter] attribute unsigned short meetOrSlice;
+    [RaisesException=Setter] attribute unsigned short meetOrSlice;
 };
-

@@ -96,6 +96,12 @@ static void testInterfacePythonAttributeAttributeGetterCallback(v8::Local<v8::St
 
 static void testInterfacePythonAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfacePythonAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    if (!isUndefinedOrNull(jsValue) && !V8TestInterfacePython::hasInstance(jsValue, info.GetIsolate())) {
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterfacePython'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_VOID(TestInterfacePythonImplementation*, cppValue, V8TestInterfacePython::hasInstance(jsValue, info.GetIsolate()) ? V8TestInterfacePython::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setTestInterfacePythonAttribute(WTF::getPtr(cppValue));
@@ -279,6 +285,12 @@ static void implementsNodeAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "implementsNodeAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    if (!isUndefinedOrNull(jsValue) && !V8Node::hasInstance(jsValue, info.GetIsolate())) {
+        exceptionState.throwTypeError("The provided value is not of type 'Node'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     TestImplements::setImplementsNodeAttribute(imp, WTF::getPtr(cppValue));
@@ -334,6 +346,12 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(v8::Loc
 
 static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "implementsRuntimeEnabledNodeAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
+    if (!isUndefinedOrNull(jsValue) && !V8Node::hasInstance(jsValue, info.GetIsolate())) {
+        exceptionState.throwTypeError("The provided value is not of type 'Node'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate()) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     TestImplements::setImplementsRuntimeEnabledNodeAttribute(imp, WTF::getPtr(cppValue));
@@ -612,6 +630,28 @@ static void partial2StaticLongAttributeAttributeSetterCallback(v8::Local<v8::Str
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterfacePython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
+    if (info.Length() > 0 && !info[0]->IsUndefined() && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArg", "TestInterfacePython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+        return;
+    }
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    imp->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
+}
+
+static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfacePythonImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void voidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
@@ -661,6 +701,11 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    if (info.Length() > 1 && !info[1]->IsUndefined() && !V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate())) {
+        exceptionState.throwTypeError("parameter 2 is not of type 'TestInterfaceEmpty'.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate()) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
     RefPtr<TestInterfaceEmpty> result = TestImplements::implementsComplexMethod(scriptContext, imp, strArg, testInterfaceEmptyArg, exceptionState);
@@ -864,6 +909,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfacePythonAtt
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfacePythonMethods[] = {
+    {"voidMethodTestInterfaceEmptyArg", TestInterfacePythonImplementationV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"voidMethod", TestInterfacePythonImplementationV8Internal::voidMethodMethodCallback, TestInterfacePythonImplementationV8Internal::voidMethodMethodCallbackForMainWorld, 0},
     {"implementsVoidMethod", TestInterfacePythonImplementationV8Internal::implementsVoidMethodMethodCallback, 0, 0},
     {"implementsComplexMethod", TestInterfacePythonImplementationV8Internal::implementsComplexMethodMethodCallback, 0, 2},

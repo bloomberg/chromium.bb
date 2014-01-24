@@ -22,7 +22,9 @@
 
 // TODO: no css::ViewCSS available!
 // TODO: no events::DocumentEvent available!
-interface SVGSVGElement : SVGGraphicsElement {
+[
+    // StrictTypeChecking,  // FIXME: createSVGTransformFromMatrix doesn't have [StrictTypeChecking]
+] interface SVGSVGElement : SVGGraphicsElement {
     readonly attribute SVGAnimatedLength x;
     readonly attribute SVGAnimatedLength y;
     readonly attribute SVGAnimatedLength width;
@@ -71,4 +73,3 @@ interface SVGSVGElement : SVGGraphicsElement {
 
 SVGSVGElement implements SVGFitToViewBox;
 SVGSVGElement implements SVGZoomAndPan;
-

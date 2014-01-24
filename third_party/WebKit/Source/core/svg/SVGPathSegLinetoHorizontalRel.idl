@@ -24,7 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPathSegLinetoHorizontalRel : SVGPathSeg {
-    [StrictTypeChecking] attribute float x;
+[
+    StrictTypeChecking,
+] interface SVGPathSegLinetoHorizontalRel : SVGPathSeg {
+    attribute float x;
 };
-

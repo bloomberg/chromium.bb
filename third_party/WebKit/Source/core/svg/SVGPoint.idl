@@ -22,11 +22,11 @@
 
 [
     ImplementedAs=SVGPointTearOff,
-    SetWrapperReferenceTo(SVGElement contextElement)
+    SetWrapperReferenceTo(SVGElement contextElement),
+    StrictTypeChecking,
 ] interface SVGPoint {
-    [StrictTypeChecking, RaisesException=Setter] attribute float x;
-    [StrictTypeChecking, RaisesException=Setter] attribute float y;
+    [RaisesException=Setter] attribute float x;
+    [RaisesException=Setter] attribute float y;
 
-    [MeasureAs=SVGPointMatrixTransform, StrictTypeChecking] SVGPoint matrixTransform(SVGMatrix matrix);
+    [MeasureAs=SVGPointMatrixTransform] SVGPoint matrixTransform(SVGMatrix matrix);
 };
-

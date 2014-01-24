@@ -21,8 +21,9 @@
  */
 
 [
-    ImplementedAs=SVGNumberTearOff
+    ImplementedAs=SVGNumberTearOff,
+    StrictTypeChecking,
 ] interface SVGNumber {
-    [StrictTypeChecking, RaisesException=Setter] attribute float value;
+    [RaisesException=Setter] attribute float value;
 };
 

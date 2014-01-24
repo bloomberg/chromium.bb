@@ -24,8 +24,8 @@
  */
 
 [
+    ActiveDOMObject,
     RuntimeEnabled=Media,
-    ActiveDOMObject
 ] interface HTMLMediaElement : HTMLElement {
 
     // error state

@@ -109,7 +109,9 @@ def generate_method(interface, method):
         'is_raises_exception': is_raises_exception,
         'is_read_only': 'ReadOnly' in extended_attributes,
         'is_static': is_static,
-        'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
+        'is_strict_type_checking':
+            'StrictTypeChecking' in extended_attributes or
+            'StrictTypeChecking' in interface.extended_attributes,
         'is_variadic': arguments and arguments[-1].is_variadic,
         'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
         'name': name,

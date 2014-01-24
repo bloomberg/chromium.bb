@@ -24,8 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGAnimatedNumber {
-    [StrictTypeChecking, RaisesException=Setter] attribute float baseVal;
+[
+    StrictTypeChecking,
+] interface SVGAnimatedNumber {
+    [RaisesException=Setter] attribute float baseVal;
     readonly attribute float animVal;
 };
-
