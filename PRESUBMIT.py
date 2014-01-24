@@ -101,74 +101,86 @@ def CheckChangeOnCommit(input_api, output_api):
   return report
 
 
-def GetPreferredTrySlaves(_, change):
-
-  # This is a heuristic to (conservatively) detect if the change only
-  # affects the pnacl toolchain and not the main builders, and run the
-  # appropriate trybots.
-  is_pnacl_toolchain_only = True
-  for f in change.AffectedFiles(include_dirs=True):
-    if not f.LocalPath().startswith('pnacl'):
-      is_pnacl_toolchain_only = False
-  if is_pnacl_toolchain_only:
-    return [
-        'nacl-toolchain-linux-pnacl-x86_64',
-        'nacl-toolchain-linux-pnacl-x86_32',
-        'nacl-toolchain-mac-pnacl-x86_32',
-        'nacl-toolchain-win7-pnacl-x86_64',
+DEFAULT_TRYBOTS = [
+    'nacl-precise32_newlib_dbg',
+    'nacl-precise32_newlib_opt',
+    'nacl-precise32_glibc_opt',
+    'nacl-precise64_newlib_dbg',
+    'nacl-precise64_newlib_opt',
+    'nacl-precise64_glibc_opt',
+    'nacl-mac10.6_newlib_opt',
+    'nacl-mac10.6_glibc_opt',
+    'nacl-mac10.6_64_newlib_dbg',
+    'nacl-mac10.6_64_glibc_opt',
+    'nacl-mac10.7_newlib_opt',
+    'nacl-mac10.7_glibc_opt',
+    'nacl-mac10.7_64_newlib_dbg',
+    'nacl-mac10.7_64_glibc_opt',
+    'nacl-mac10.8_32_newlib_dbg',
+    'nacl-mac10.8_32_glibc_opt',
+    'nacl-mac10.8_64_newlib_dbg',
+    'nacl-mac10.8_64_glibc_opt',
+    'nacl-win32_newlib_opt',
+    'nacl-win32_glibc_opt',
+    'nacl-win64_newlib_dbg',
+    'nacl-win64_newlib_opt',
+    'nacl-win64_glibc_opt',
+    'nacl-win8-64_newlib_dbg',
+    'nacl-win8-64_newlib_opt',
+    'nacl-arm_opt_panda',
+    # arm-nacl-gcc bots
+    'nacl-win7_64_arm_newlib_opt',
+    'nacl-mac10.7_arm_newlib_opt',
+    'nacl-precise64_arm_newlib_opt',
+    # Clang bots
+    'nacl-precise_64-newlib-dbg-clang',
+    'nacl-mac10.6-newlib-dbg-clang',
+    # pnacl scons bots
+    'nacl-precise_64-newlib-arm_qemu-pnacl',
+    'nacl-precise_64-newlib-x86_32-pnacl',
+    'nacl-precise_64-newlib-x86_64-pnacl',
+    # pnacl spec2k bots
+    'nacl-arm_perf_panda',
+    'nacl-precise_64-newlib-x86_32-pnacl-spec',
+    'nacl-precise_64-newlib-x86_64-pnacl-spec',
     ]
 
-  # If the change only affects the new toolchain_build scheme,
-  # then run only the trybots doing that build.
-  if all(IsFileInDirectories(file.AbsoluteLocalPath(),
-                             [os.path.join(NaClTopDir(), 'toolchain_build')])
-         for file in change.AffectedFiles(include_dirs=True)):
-    return [
-        'nacl-toolchain-precise64-newlib-arm',
-        'nacl-toolchain-mac-newlib-arm',
-        'nacl-toolchain-win7-newlib-arm',
-        ]
+PNACL_TOOLCHAIN_TRYBOTS = [
+    'nacl-toolchain-linux-pnacl-x86_64',
+    'nacl-toolchain-linux-pnacl-x86_32',
+    'nacl-toolchain-mac-pnacl-x86_32',
+    'nacl-toolchain-win7-pnacl-x86_64',
+    ]
 
-  return [
-      'nacl-precise32_newlib_dbg',
-      'nacl-precise32_newlib_opt',
-      'nacl-precise32_glibc_opt',
-      'nacl-precise64_newlib_dbg',
-      'nacl-precise64_newlib_opt',
-      'nacl-precise64_glibc_opt',
-      'nacl-mac10.6_newlib_opt',
-      'nacl-mac10.6_glibc_opt',
-      'nacl-mac10.6_64_newlib_dbg',
-      'nacl-mac10.6_64_glibc_opt',
-      'nacl-mac10.7_newlib_opt',
-      'nacl-mac10.7_glibc_opt',
-      'nacl-mac10.7_64_newlib_dbg',
-      'nacl-mac10.7_64_glibc_opt',
-      'nacl-mac10.8_32_newlib_dbg',
-      'nacl-mac10.8_32_glibc_opt',
-      'nacl-mac10.8_64_newlib_dbg',
-      'nacl-mac10.8_64_glibc_opt',
-      'nacl-win32_newlib_opt',
-      'nacl-win32_glibc_opt',
-      'nacl-win64_newlib_dbg',
-      'nacl-win64_newlib_opt',
-      'nacl-win64_glibc_opt',
-      'nacl-win8-64_newlib_dbg',
-      'nacl-win8-64_newlib_opt',
-      'nacl-arm_opt_panda',
-      # arm-nacl-gcc bots
-      'nacl-win7_64_arm_newlib_opt',
-      'nacl-mac10.7_arm_newlib_opt',
-      'nacl-precise64_arm_newlib_opt',
-      # Clang bots
-      'nacl-precise_64-newlib-dbg-clang',
-      'nacl-mac10.6-newlib-dbg-clang',
-      # pnacl scons bots
-      'nacl-precise_64-newlib-arm_qemu-pnacl',
-      'nacl-precise_64-newlib-x86_32-pnacl',
-      'nacl-precise_64-newlib-x86_64-pnacl',
-      # pnacl spec2k bots
-      'nacl-arm_perf_panda',
-      'nacl-precise_64-newlib-x86_32-pnacl-spec',
-      'nacl-precise_64-newlib-x86_64-pnacl-spec',
-  ]
+TOOLCHAIN_BUILD_TRYBOTS = [
+    'nacl-toolchain-precise64-newlib-arm',
+    'nacl-toolchain-mac-newlib-arm',
+    'nacl-toolchain-win7-newlib-arm',
+    ]
+
+
+def GetPreferredTrySlaves(_, change):
+
+  has_pnacl = False
+  has_toolchain_build = False
+  has_others = False
+
+  for file in change.AffectedFiles(include_dirs=True):
+    if IsFileInDirectories(file.AbsoluteLocalPath(),
+                           [os.path.join(NaClTopDir(), 'pnacl')]):
+      has_pnacl = True
+    elif IsFileInDirectories(file.AbsoluteLocalPath(),
+                             [os.path.join(NaClTopDir(), 'toolchain_build')]):
+      has_toolchain_build = True
+    else:
+      has_others = True
+
+  trybots = []
+  if has_pnacl:
+    trybots += PNACL_TOOLCHAIN_BOTS
+  if has_toolchain_build:
+    trybots += TOOLCHAIN_BUILD_BOTS
+  if has_others:
+    trybots += DEFAULT_TRYBOTS
+
+  return trybots
