@@ -21,7 +21,7 @@
 #ifndef SVGFEGaussianBlurElement_h
 #define SVGFEGaussianBlurElement_h
 
-#include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
 
@@ -33,6 +33,9 @@ public:
 
     void setStdDeviation(float stdDeviationX, float stdDeviationY);
 
+    SVGAnimatedNumber* stdDeviationX() { return m_stdDeviation->firstNumber(); }
+    SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
+
 private:
     explicit SVGFEGaussianBlurElement(Document&);
 
@@ -41,13 +44,9 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
-    static const AtomicString& stdDeviationXIdentifier();
-    static const AtomicString& stdDeviationYIdentifier();
-
+    RefPtr<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEGaussianBlurElement)
         DECLARE_ANIMATED_STRING(In1, in1)
-        DECLARE_ANIMATED_NUMBER(StdDeviationX, stdDeviationX)
-        DECLARE_ANIMATED_NUMBER(StdDeviationY, stdDeviationY)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

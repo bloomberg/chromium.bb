@@ -38,7 +38,7 @@ PassRefPtr<SVGFEPointLightElement> SVGFEPointLightElement::create(Document& docu
 
 PassRefPtr<LightSource> SVGFEPointLightElement::lightSource() const
 {
-    return PointLightSource::create(FloatPoint3D(xCurrentValue(), yCurrentValue(), zCurrentValue()));
+    return PointLightSource::create(FloatPoint3D(x()->currentValue()->value(), y()->currentValue()->value(), z()->currentValue()->value()));
 }
 
 }

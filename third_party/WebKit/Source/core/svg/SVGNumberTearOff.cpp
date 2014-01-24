@@ -28,42 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedNumber_h
-#define SVGAnimatedNumber_h
+#include "config.h"
 
 #include "core/svg/SVGNumberTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 
-class SVGAnimatedNumberOptionalNumber;
+SVGNumberTearOff::SVGNumberTearOff(PassRefPtr<SVGNumber> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+    : NewSVGPropertyTearOff<SVGNumber>(target, contextElement, propertyIsAnimVal, attributeName)
+{
+    ScriptWrappable::init(this);
+}
 
-// SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumber
-class SVGAnimatedNumber : public NewSVGAnimatedProperty<SVGNumber> {
-public:
-    static PassRefPtr<SVGAnimatedNumber> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGNumber> initialValue)
-    {
-        return adoptRef(new SVGAnimatedNumber(contextElement, attributeName, initialValue));
+void SVGNumberTearOff::setValue(float f, ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
     }
 
-    virtual void synchronizeAttribute() OVERRIDE;
+    target()->setValue(f);
+    commitChange();
+}
 
-    void setParentOptionalNumber(SVGAnimatedNumberOptionalNumber* numberOptionalNumber)
-    {
-        m_parentNumberOptionalNumber = numberOptionalNumber;
-    }
-
-protected:
-    SVGAnimatedNumber(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGNumber> initialValue)
-        : NewSVGAnimatedProperty<SVGNumber>(contextElement, attributeName, initialValue)
-        , m_parentNumberOptionalNumber(0)
-    {
-    }
-
-    // FIXME: oilpan: This is kept as raw ptr as this is a back ptr. Change this to Member<> in oilpan.
-    SVGAnimatedNumberOptionalNumber* m_parentNumberOptionalNumber;
-};
-
-} // namespace WebCore
-
-#endif // SVGAnimatedNumber_h
+}

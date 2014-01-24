@@ -38,7 +38,7 @@ PassRefPtr<SVGFEDistantLightElement> SVGFEDistantLightElement::create(Document& 
 
 PassRefPtr<LightSource> SVGFEDistantLightElement::lightSource() const
 {
-    return DistantLightSource::create(azimuthCurrentValue(), elevationCurrentValue());
+    return DistantLightSource::create(azimuth()->currentValue()->value(), elevation()->currentValue()->value());
 }
 
 }

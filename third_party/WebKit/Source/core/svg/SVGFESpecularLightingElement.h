@@ -24,6 +24,7 @@
 
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFELightElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FESpecularLighting.h"
@@ -35,6 +36,11 @@ public:
     static PassRefPtr<SVGFESpecularLightingElement> create(Document&);
     void lightElementAttributeChanged(const SVGFELightElement*, const QualifiedName&);
 
+    SVGAnimatedNumber* specularConstant() { return m_specularConstant.get(); }
+    SVGAnimatedNumber* specularExponent() { return m_specularExponent.get(); }
+    SVGAnimatedNumber* surfaceScale() { return m_surfaceScale.get(); }
+    SVGAnimatedNumber* kernelUnitLengthX() { return m_kernelUnitLength->firstNumber(); }
+    SVGAnimatedNumber* kernelUnitLengthY() { return m_kernelUnitLength->secondNumber(); }
 private:
     explicit SVGFESpecularLightingElement(Document&);
 
@@ -47,13 +53,12 @@ private:
     static const AtomicString& kernelUnitLengthXIdentifier();
     static const AtomicString& kernelUnitLengthYIdentifier();
 
+    RefPtr<SVGAnimatedNumber> m_specularConstant;
+    RefPtr<SVGAnimatedNumber> m_specularExponent;
+    RefPtr<SVGAnimatedNumber> m_surfaceScale;
+    RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFESpecularLightingElement)
         DECLARE_ANIMATED_STRING(In1, in1)
-        DECLARE_ANIMATED_NUMBER(SpecularConstant, specularConstant)
-        DECLARE_ANIMATED_NUMBER(SpecularExponent, specularExponent)
-        DECLARE_ANIMATED_NUMBER(SurfaceScale, surfaceScale)
-        DECLARE_ANIMATED_NUMBER(KernelUnitLengthX, kernelUnitLengthX)
-        DECLARE_ANIMATED_NUMBER(KernelUnitLengthY, kernelUnitLengthY)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

@@ -59,6 +59,8 @@ public:
     PassRefPtr<SVGPointTearOff> getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);
 
+    SVGAnimatedNumber* pathLength() { return m_pathLength.get(); }
+
     PassRefPtr<SVGPathSegClosePath> createSVGPathSegClosePath(SVGPathSegRole role = PathSegUndefinedRole);
     PassRefPtr<SVGPathSegMovetoAbs> createSVGPathSegMovetoAbs(float x, float y, SVGPathSegRole role = PathSegUndefinedRole);
     PassRefPtr<SVGPathSegMovetoRel> createSVGPathSegMovetoRel(float x, float y, SVGPathSegRole role = PathSegUndefinedRole);
@@ -118,8 +120,8 @@ private:
     mutable SVGSynchronizableAnimatedProperty<SVGPathSegList> m_pathSegList;
     bool m_isAnimValObserved;
 
+    RefPtr<SVGAnimatedNumber> m_pathLength;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPathElement)
-        DECLARE_ANIMATED_NUMBER(PathLength, pathLength)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

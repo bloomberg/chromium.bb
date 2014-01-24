@@ -21,52 +21,182 @@
 #include "config.h"
 #include "core/svg/SVGNumberList.h"
 
+#include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-template<typename CharType>
-void SVGNumberList::parseInternal(const CharType*& ptr, const CharType* end)
+inline PassRefPtr<SVGNumberList> toSVGNumberList(PassRefPtr<NewSVGPropertyBase> passBase)
 {
-    // The spec strangely doesn't allow leading whitespace.  We might choose to violate that intentionally. (section 4.1)
-    while (ptr < end) {
-        float number = 0;
-        if (!parseNumber(ptr, end, number))
-            return;
-        append(number);
-    }
+    RefPtr<NewSVGPropertyBase> base = passBase;
+    ASSERT(base->type() == SVGNumberList::classType());
+    return static_pointer_cast<SVGNumberList>(base.release());
 }
 
-void SVGNumberList::parse(const String& value)
+SVGNumberList::SVGNumberList()
 {
-    clear();
-    if (value.isEmpty())
-        return;
-    if (value.is8Bit()) {
-        const LChar* ptr = value.characters8();
-        const LChar* end = ptr + value.length();
-        parseInternal(ptr, end);
-    } else {
-        const UChar* ptr = value.characters16();
-        const UChar* end = ptr + value.length();
-        parseInternal(ptr, end);
-    }
+}
+
+SVGNumberList::~SVGNumberList()
+{
+}
+
+PassRefPtr<SVGNumberList> SVGNumberList::clone()
+{
+    RefPtr<SVGNumberList> svgNumberList = SVGNumberList::create();
+    svgNumberList->deepCopy(this);
+    return svgNumberList.release();
+}
+
+PassRefPtr<NewSVGPropertyBase> SVGNumberList::cloneForAnimation(const String& value) const
+{
+    RefPtr<SVGNumberList> svgNumberList = SVGNumberList::create();
+    svgNumberList->setValueAsString(value, IGNORE_EXCEPTION);
+    return svgNumberList.release();
 }
 
 String SVGNumberList::valueAsString() const
 {
     StringBuilder builder;
 
-    unsigned size = this->size();
-    for (unsigned i = 0; i < size; ++i) {
-        if (i > 0)
-            builder.append(' ');
+    ConstIterator it = begin();
+    ConstIterator itEnd = end();
+    if (it != itEnd) {
+        builder.append(it->valueAsString());
+        ++it;
 
-        builder.append(at(i).valueAsString());
+        for (; it != itEnd; ++it) {
+            builder.append(' ');
+            builder.append(it->valueAsString());
+        }
     }
 
     return builder.toString();
+}
+
+template <typename CharType>
+bool SVGNumberList::parse(const CharType*& ptr, const CharType* end)
+{
+    clear();
+
+    while (ptr < end) {
+        float number = 0;
+        if (!parseNumber(ptr, end, number))
+            return false;
+        append(SVGNumber::create(number));
+    }
+
+    return true;
+}
+
+void SVGNumberList::setValueAsString(const String& value, ExceptionState& exceptionState)
+{
+    if (value.isEmpty()) {
+        clear();
+        return;
+    }
+
+    bool valid = false;
+    if (value.is8Bit()) {
+        const LChar* ptr = value.characters8();
+        const LChar* end = ptr + value.length();
+        valid = parse(ptr, end);
+    } else {
+        const UChar* ptr = value.characters16();
+        const UChar* end = ptr + value.length();
+        valid = parse(ptr, end);
+    }
+
+    if (!valid) {
+        exceptionState.throwDOMException(SyntaxError, "Problem parsing number list \""+value+"\"");
+        // No call to |clear()| here. SVG policy is to use valid items before error.
+        // Spec: http://www.w3.org/TR/SVG/single-page.html#implnote-ErrorProcessing
+    }
+}
+
+void SVGNumberList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contextElement)
+{
+    RefPtr<SVGNumberList> otherList = toSVGNumberList(other);
+
+    if (numberOfItems() != otherList->numberOfItems())
+        return;
+
+    for (size_t i = 0; i < numberOfItems(); ++i)
+        at(i)->setValue(at(i)->value() + otherList->at(i)->value());
+}
+
+bool SVGNumberList::adjustFromToListValues(PassRefPtr<SVGNumberList> passFromList, PassRefPtr<SVGNumberList> passToList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded)
+{
+    RefPtr<SVGNumberList> fromList = passFromList;
+    RefPtr<SVGNumberList> toList = passToList;
+
+    // If no 'to' value is given, nothing to animate.
+    size_t toListSize = toList->numberOfItems();
+    if (!toListSize)
+        return false;
+
+    // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
+    size_t fromListSize = fromList->numberOfItems();
+    if (fromListSize != toListSize && fromListSize) {
+        if (percentage < 0.5) {
+            if (!isToAnimation)
+                deepCopy(fromList);
+        } else {
+            deepCopy(toList);
+        }
+
+        return false;
+    }
+
+    ASSERT(!fromListSize || fromListSize == toListSize);
+    if (resizeAnimatedListIfNeeded && numberOfItems() < toListSize) {
+        size_t paddingCount = toListSize - numberOfItems();
+        for (size_t i = 0; i < paddingCount; ++i)
+            append(SVGNumber::create());
+    }
+
+    return true;
+}
+
+void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+{
+    RefPtr<SVGNumberList> fromList = toSVGNumberList(fromValue);
+    RefPtr<SVGNumberList> toList = toSVGNumberList(toValue);
+    RefPtr<SVGNumberList> toAtEndOfDurationList = toSVGNumberList(toAtEndOfDurationValue);
+
+    size_t fromListSize = fromList->numberOfItems();
+    size_t toListSize = toList->numberOfItems();
+    size_t toAtEndOfDurationListSize = toAtEndOfDurationList->numberOfItems();
+
+    if (!adjustFromToListValues(fromList, toList, percentage, animationElement->animationMode() == ToAnimation, true))
+        return;
+
+    for (size_t i = 0; i < toListSize; ++i) {
+        float effectiveFrom = fromListSize ? fromList->at(i)->value() : 0;
+        float effectiveTo = toListSize ? toList->at(i)->value() : 0;
+        float effectiveToAtEnd = i < toAtEndOfDurationListSize ? toAtEndOfDurationList->at(i)->value() : 0;
+
+        float animated = at(i)->value();
+        animationElement->animateAdditiveNumber(percentage, repeatCount, effectiveFrom, effectiveTo, effectiveToAtEnd, animated);
+        at(i)->setValue(animated);
+    }
+}
+
+float SVGNumberList::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*)
+{
+    // FIXME: Distance calculation is not possible for SVGNumberList right now. We need the distance for every single value.
+    return -1;
+}
+
+Vector<float> SVGNumberList::toFloatVector() const
+{
+    Vector<float> vec;
+    vec.reserveInitialCapacity(numberOfItems());
+    for (size_t i = 0; i < numberOfItems(); ++i)
+        vec.uncheckedAppend(at(i)->value());
+    return vec;
 }
 
 }

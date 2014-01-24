@@ -23,7 +23,6 @@
 #include "core/css/StyleColor.h"
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGColor.h"
-#include "core/svg/SVGNumberList.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/NewSVGAnimatedProperty.h"
@@ -43,9 +42,6 @@ public:
     static PassOwnPtr<SVGAnimatedType> createEnumeration(unsigned*);
     static PassOwnPtr<SVGAnimatedType> createInteger(int*);
     static PassOwnPtr<SVGAnimatedType> createIntegerOptionalInteger(std::pair<int, int>*);
-    static PassOwnPtr<SVGAnimatedType> createNumber(float*);
-    static PassOwnPtr<SVGAnimatedType> createNumberList(SVGNumberList*);
-    static PassOwnPtr<SVGAnimatedType> createNumberOptionalNumber(std::pair<float, float>*);
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
     static PassOwnPtr<SVGAnimatedType> createPreserveAspectRatio(SVGPreserveAspectRatio*);
     static PassOwnPtr<SVGAnimatedType> createString(String*);
@@ -84,24 +80,6 @@ public:
     {
         ASSERT(m_type == AnimatedIntegerOptionalInteger);
         return *m_data.integerOptionalInteger;
-    }
-
-    float& number()
-    {
-        ASSERT(m_type == AnimatedNumber);
-        return *m_data.number;
-    }
-
-    SVGNumberList& numberList()
-    {
-        ASSERT(m_type == AnimatedNumberList);
-        return *m_data.numberList;
-    }
-
-    pair<float, float>& numberOptionalNumber()
-    {
-        ASSERT(m_type == AnimatedNumberOptionalNumber);
-        return *m_data.numberOptionalNumber;
     }
 
     SVGPathByteStream* path()
@@ -152,9 +130,6 @@ private:
         unsigned* enumeration;
         int* integer;
         std::pair<int, int>* integerOptionalInteger;
-        float* number;
-        SVGNumberList* numberList;
-        std::pair<float, float>* numberOptionalNumber;
         SVGPathByteStream* path;
         SVGPreserveAspectRatio* preserveAspectRatio;
         String* string;

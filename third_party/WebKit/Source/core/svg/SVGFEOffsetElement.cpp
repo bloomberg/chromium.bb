@@ -31,20 +31,21 @@ namespace WebCore {
 
 // Animated property definitions
 DEFINE_ANIMATED_STRING(SVGFEOffsetElement, SVGNames::inAttr, In1, in1)
-DEFINE_ANIMATED_NUMBER(SVGFEOffsetElement, SVGNames::dxAttr, Dx, dx)
-DEFINE_ANIMATED_NUMBER(SVGFEOffsetElement, SVGNames::dyAttr, Dy, dy)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEOffsetElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(dx)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(dy)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feOffsetTag, document)
+    , m_dx(SVGAnimatedNumber::create(this, SVGNames::dxAttr, SVGNumber::create()))
+    , m_dy(SVGAnimatedNumber::create(this, SVGNames::dyAttr, SVGNumber::create()))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_dx);
+    addToPropertyMap(m_dy);
     registerAnimatedPropertiesForSVGFEOffsetElement();
 }
 
@@ -71,22 +72,21 @@ void SVGFEOffsetElement::parseAttribute(const QualifiedName& name, const AtomicS
         return;
     }
 
-    if (name == SVGNames::dxAttr) {
-        setDxBaseValue(value.toFloat());
-        return;
-    }
-
-    if (name == SVGNames::dyAttr) {
-        setDyBaseValue(value.toFloat());
-        return;
-    }
-
     if (name == SVGNames::inAttr) {
         setIn1BaseValue(value);
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGParsingError parseError = NoError;
+
+    if (name == SVGNames::dxAttr)
+        m_dx->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::dyAttr)
+        m_dy->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
+
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGFEOffsetElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -113,7 +113,7 @@ PassRefPtr<FilterEffect> SVGFEOffsetElement::build(SVGFilterBuilder* filterBuild
     if (!input1)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEOffset::create(filter, dxCurrentValue(), dyCurrentValue());
+    RefPtr<FilterEffect> effect = FEOffset::create(filter, m_dx->currentValue()->value(), m_dy->currentValue()->value());
     effect->inputEffects().append(input1);
     return effect.release();
 }

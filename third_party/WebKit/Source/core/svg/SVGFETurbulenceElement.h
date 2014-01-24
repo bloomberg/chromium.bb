@@ -24,6 +24,7 @@
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedInteger.h"
 #include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FETurbulence.h"
 
@@ -97,6 +98,10 @@ class SVGFETurbulenceElement FINAL : public SVGFilterPrimitiveStandardAttributes
 public:
     static PassRefPtr<SVGFETurbulenceElement> create(Document&);
 
+    SVGAnimatedNumber* baseFrequencyX() { return m_baseFrequency->firstNumber(); }
+    SVGAnimatedNumber* baseFrequencyY() { return m_baseFrequency->secondNumber(); }
+    SVGAnimatedNumber* seed() { return m_seed.get(); }
+
 private:
     explicit SVGFETurbulenceElement(Document&);
 
@@ -106,14 +111,10 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
-    static const AtomicString& baseFrequencyXIdentifier();
-    static const AtomicString& baseFrequencyYIdentifier();
-
+    RefPtr<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
+    RefPtr<SVGAnimatedNumber> m_seed;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFETurbulenceElement)
-        DECLARE_ANIMATED_NUMBER(BaseFrequencyX, baseFrequencyX)
-        DECLARE_ANIMATED_NUMBER(BaseFrequencyY, baseFrequencyY)
         DECLARE_ANIMATED_INTEGER(NumOctaves, numOctaves)
-        DECLARE_ANIMATED_NUMBER(Seed, seed)
         DECLARE_ANIMATED_ENUMERATION(StitchTiles, stitchTiles, SVGStitchOptions)
         DECLARE_ANIMATED_ENUMERATION(Type, type, TurbulenceType)
     END_DECLARE_ANIMATED_PROPERTIES

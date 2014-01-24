@@ -29,18 +29,17 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_NUMBER(SVGStopElement, SVGNames::offsetAttr, Offset, offset)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGStopElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(offset)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGStopElement::SVGStopElement(Document& document)
     : SVGElement(SVGNames::stopTag, document)
-    , m_offset(0)
+    , m_offset(SVGAnimatedNumber::create(this, SVGNames::offsetAttr, SVGNumberAcceptPercentage::create()))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_offset);
     registerAnimatedPropertiesForSVGStopElement();
 }
 
@@ -64,15 +63,14 @@ void SVGStopElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         return;
     }
 
-    if (name == SVGNames::offsetAttr) {
-        if (value.endsWith('%'))
-            setOffsetBaseValue(value.string().left(value.length() - 1).toFloat() / 100.0f);
-        else
-            setOffsetBaseValue(value.toFloat());
-        return;
-    }
+    SVGParsingError parseError = NoError;
 
-    ASSERT_NOT_REACHED();
+    if (name == SVGNames::offsetAttr)
+        m_offset->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
+
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)

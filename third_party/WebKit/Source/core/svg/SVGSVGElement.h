@@ -35,6 +35,7 @@ namespace WebCore {
 
 class SVGAngle;
 class SVGMatrix;
+class SVGNumberTearOff;
 class SVGTransform;
 class SVGViewSpec;
 class SVGViewElement;
@@ -106,7 +107,7 @@ public:
     bool checkEnclosure(SVGElement*, PassRefPtr<SVGRectTearOff>) const;
     void deselectAll();
 
-    static float createSVGNumber();
+    static PassRefPtr<SVGNumberTearOff> createSVGNumber();
     static PassRefPtr<SVGLengthTearOff> createSVGLength();
     static SVGAngle createSVGAngle();
     static PassRefPtr<SVGPointTearOff> createSVGPoint();

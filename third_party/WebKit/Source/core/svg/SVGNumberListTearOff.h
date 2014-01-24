@@ -28,53 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGNumberList_h
-#define SVGNumberList_h
+#ifndef SVGNumberListTearOff_h
+#define SVGNumberListTearOff_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/svg/SVGNumber.h"
-#include "core/svg/properties/NewSVGListPropertyHelper.h"
+#include "core/svg/SVGNumberList.h"
+#include "core/svg/properties/NewSVGListPropertyTearOffHelper.h"
 
 namespace WebCore {
 
-class SVGNumberListTearOff;
-
-class SVGNumberList FINAL : public NewSVGListPropertyHelper<SVGNumberList, SVGNumber> {
+class SVGNumberListTearOff FINAL :
+    public NewSVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>,
+    public ScriptWrappable {
 public:
-    typedef SVGNumberListTearOff TearOffType;
-
-    static PassRefPtr<SVGNumberList> create()
+    static PassRefPtr<SVGNumberListTearOff> create(PassRefPtr<SVGNumberList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
     {
-        return adoptRef(new SVGNumberList());
+        return adoptRef(new SVGNumberListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
-    virtual ~SVGNumberList();
-
-    PassRefPtr<SVGNumberList> clone();
-
-    void setValueAsString(const String&, ExceptionState&);
-
-    // NewSVGPropertyBase:
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
-    virtual String valueAsString() const OVERRIDE;
-
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
-
-    static AnimatedPropertyType classType() { return AnimatedNumberList; }
-
-    Vector<float> toFloatVector() const;
-
 private:
-    SVGNumberList();
-
-    bool adjustFromToListValues(PassRefPtr<SVGNumberList> fromList, PassRefPtr<SVGNumberList> toList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded);
-
-    template <typename CharType>
-    bool parse(const CharType*& ptr, const CharType* end);
+    SVGNumberListTearOff(PassRefPtr<SVGNumberList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+        : NewSVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>(target, contextElement, propertyIsAnimVal, attributeName)
+    {
+        ScriptWrappable::init(this);
+    }
 };
 
 } // namespace WebCore
 
-#endif // SVGNumberList_h
+#endif // SVGNumberListTearOff_h_

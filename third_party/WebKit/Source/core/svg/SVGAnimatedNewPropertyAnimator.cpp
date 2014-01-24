@@ -35,6 +35,7 @@
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
+#include "core/svg/SVGNumber.h"
 #include "core/svg/SVGPointList.h"
 
 namespace WebCore {
@@ -71,6 +72,11 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     // The instance will not have full context info. (e.g. SVGLengthMode)
 
     switch (m_type) {
+    case AnimatedNumber: {
+        RefPtr<SVGNumber> property = SVGNumber::create();
+        property->setValueAsString(value, IGNORE_EXCEPTION);
+        return property.release();
+    }
     case AnimatedLength: {
         RefPtr<SVGLength> property = SVGLength::create(LengthModeOther);
         property->setValueAsString(value, IGNORE_EXCEPTION);
@@ -84,6 +90,8 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
 
     // These types don't appear in the table in SVGElement::cssPropertyToTypeMap() and thus don't need support.
     case AnimatedBoolean:
+    case AnimatedNumberList:
+    case AnimatedNumberOptionalNumber:
     case AnimatedPoint:
     case AnimatedPoints:
     case AnimatedRect:
@@ -95,9 +103,6 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     case AnimatedEnumeration:
     case AnimatedInteger:
     case AnimatedIntegerOptionalInteger:
-    case AnimatedNumber:
-    case AnimatedNumberList:
-    case AnimatedNumberOptionalNumber:
     case AnimatedPath:
     case AnimatedPreserveAspectRatio:
     case AnimatedString:

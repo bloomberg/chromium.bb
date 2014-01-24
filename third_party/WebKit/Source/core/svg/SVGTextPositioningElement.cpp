@@ -32,10 +32,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_NUMBER_LIST(SVGTextPositioningElement, SVGNames::rotateAttr, Rotate, rotate)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextPositioningElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(rotate)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTextContentElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -45,6 +43,7 @@ SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagNam
     , m_y(SVGAnimatedLengthList::create(this, SVGNames::yAttr, SVGLengthList::create(LengthModeHeight)))
     , m_dx(SVGAnimatedLengthList::create(this, SVGNames::dxAttr, SVGLengthList::create(LengthModeWidth)))
     , m_dy(SVGAnimatedLengthList::create(this, SVGNames::dyAttr, SVGLengthList::create(LengthModeHeight)))
+    , m_rotate(SVGAnimatedNumberList::create(this, SVGNames::rotateAttr, SVGNumberList::create()))
 {
     ScriptWrappable::init(this);
 
@@ -52,6 +51,7 @@ SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagNam
     addToPropertyMap(m_y);
     addToPropertyMap(m_dx);
     addToPropertyMap(m_dy);
+    addToPropertyMap(m_rotate);
     registerAnimatedPropertiesForSVGTextPositioningElement();
 }
 
@@ -77,23 +77,18 @@ void SVGTextPositioningElement::parseAttribute(const QualifiedName& name, const 
 
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::xAttr) {
+    if (name == SVGNames::xAttr)
         m_x->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::yAttr) {
+    else if (name == SVGNames::yAttr)
         m_y->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::dxAttr) {
+    else if (name == SVGNames::dxAttr)
         m_dx->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::dyAttr) {
+    else if (name == SVGNames::dyAttr)
         m_dy->setBaseValueAsString(value, parseError);
-    } else if (name == SVGNames::rotateAttr) {
-        SVGNumberList newList;
-        newList.parse(value);
-        detachAnimatedRotateListWrappers(newList.size());
-        setRotateBaseValue(newList);
-        return;
-    } else {
+    else if (name == SVGNames::rotateAttr)
+        m_rotate->setBaseValueAsString(value, parseError);
+    else
         ASSERT_NOT_REACHED();
-    }
 
     reportAttributeParsingError(parseError, name, value);
 }

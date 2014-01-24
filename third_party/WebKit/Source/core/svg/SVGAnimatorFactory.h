@@ -26,9 +26,6 @@
 #include "core/svg/SVGAnimatedInteger.h"
 #include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 #include "core/svg/SVGAnimatedNewPropertyAnimator.h"
-#include "core/svg/SVGAnimatedNumber.h"
-#include "core/svg/SVGAnimatedNumberList.h"
-#include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGAnimatedPath.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
@@ -57,12 +54,6 @@ public:
             return adoptPtr(new SVGAnimatedIntegerAnimator(animationElement, contextElement));
         case AnimatedIntegerOptionalInteger:
             return adoptPtr(new SVGAnimatedIntegerOptionalIntegerAnimator(animationElement, contextElement));
-        case AnimatedNumber:
-            return adoptPtr(new SVGAnimatedNumberAnimator(animationElement, contextElement));
-        case AnimatedNumberList:
-            return adoptPtr(new SVGAnimatedNumberListAnimator(animationElement, contextElement));
-        case AnimatedNumberOptionalNumber:
-            return adoptPtr(new SVGAnimatedNumberOptionalNumberAnimator(animationElement, contextElement));
         case AnimatedPath:
             return adoptPtr(new SVGAnimatedPathAnimator(animationElement, contextElement));
         case AnimatedPreserveAspectRatio:
@@ -73,6 +64,9 @@ public:
             return adoptPtr(new SVGAnimatedTransformListAnimator(animationElement, contextElement));
         // Below properties have migrated to new property implementation.
         case AnimatedBoolean:
+        case AnimatedNumber:
+        case AnimatedNumberList:
+        case AnimatedNumberOptionalNumber:
         case AnimatedLength:
         case AnimatedLengthList:
         case AnimatedRect:

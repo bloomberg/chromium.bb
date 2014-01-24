@@ -144,7 +144,7 @@ Vector<Gradient::ColorStop> SVGGradientElement::buildStops()
         Color color = stop->stopColorIncludingOpacity();
 
         // Figure out right monotonic offset
-        float offset = stop->offsetCurrentValue();
+        float offset = stop->offset()->currentValue()->value();
         offset = std::min(std::max(previousOffset, offset), 1.0f);
         previousOffset = offset;
 

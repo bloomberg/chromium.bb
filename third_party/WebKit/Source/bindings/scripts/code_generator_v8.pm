@@ -238,16 +238,16 @@ my %svgAttributesInHTMLHash = ("class" => 1, "id" => 1, "onabort" => 1, "onclick
 my %svgTypeNewPropertyImplementation = (
     "SVGLength" => 1,
     "SVGLengthList" => 1,
-    "SVGRect" => 1,
+    "SVGNumber" => 1,
+    "SVGNumberList" => 1,
     "SVGPoint" => 1,
     "SVGPointList" => 1,
+    "SVGRect" => 1,
 );
 
 my %svgTypeNeedingTearOff = (
     "SVGAngle" => "SVGPropertyTearOff<SVGAngle>",
     "SVGMatrix" => "SVGMatrixTearOff",
-    "SVGNumber" => "SVGPropertyTearOff<SVGNumber>",
-    "SVGNumberList" => "SVGListPropertyTearOff<SVGNumberList>",
     "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
     "SVGPreserveAspectRatio" => "SVGPropertyTearOff<SVGPreserveAspectRatio>",
     "SVGStringList" => "SVGStaticListPropertyTearOff<SVGStringList>",
@@ -256,7 +256,6 @@ my %svgTypeNeedingTearOff = (
 );
 
 my %svgTypeWithWritablePropertiesNeedingTearOff = (
-    "SVGPoint" => 1,
     "SVGMatrix" => 1
 );
 

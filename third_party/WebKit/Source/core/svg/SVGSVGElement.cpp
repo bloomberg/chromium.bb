@@ -46,6 +46,7 @@
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGNumberTearOff.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGRectTearOff.h"
 #include "core/svg/SVGTransform.h"
@@ -406,9 +407,9 @@ void SVGSVGElement::deselectAll()
         frame->selection().clear();
 }
 
-float SVGSVGElement::createSVGNumber()
+PassRefPtr<SVGNumberTearOff> SVGSVGElement::createSVGNumber()
 {
-    return 0.0f;
+    return SVGNumberTearOff::create(SVGNumber::create(0.0f), 0, PropertyIsNotAnimVal);
 }
 
 PassRefPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()

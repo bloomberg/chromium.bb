@@ -47,6 +47,9 @@ class NewSVGPropertyBase : public RefCounted<NewSVGPropertyBase> {
     WTF_MAKE_NONCOPYABLE(NewSVGPropertyBase);
 
 public:
+    // Properties do not have a primitive type by default
+    typedef void PrimitiveType;
+
     virtual ~NewSVGPropertyBase()
     {
         ASSERT(!m_ownerList);

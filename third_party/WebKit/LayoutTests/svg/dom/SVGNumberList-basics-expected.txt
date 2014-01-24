@@ -15,7 +15,7 @@ PASS text1.rotate.baseVal.initialize(text1) threw exception TypeError: Failed to
 PASS text1.rotate.baseVal.initialize(null) threw exception TypeError: Failed to execute 'initialize' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 
 Test uncommon arguments for getItem()
-PASS text1.rotate.baseVal.getItem(30) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGNumberList': The index provided (30) is greater than the maximum bound (3)..
+PASS text1.rotate.baseVal.getItem(30) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS text1.rotate.baseVal.getItem('aString') is text1.rotate.baseVal.getItem(0)
 PASS text1.rotate.baseVal.getItem(text1) is text1.rotate.baseVal.getItem(0)
 PASS text1.rotate.baseVal.getItem(null) is text1.rotate.baseVal.getItem(0)
@@ -121,7 +121,7 @@ PASS text1.rotate.baseVal.appendItem(text1) threw exception TypeError: Failed to
 PASS text1.rotate.baseVal.appendItem(null) threw exception TypeError: Failed to execute 'appendItem' on 'SVGNumberList': parameter 1 is not of type 'SVGNumber'..
 
 Testing animVal clear throws
-PASS text1.rotate.animVal.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGNumberList': This object is read-only, because the property is an animation value..
+PASS text1.rotate.animVal.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGNumberList': The object is read-only..
 PASS text1.rotate.baseVal.clear() is undefined.
 PASS successfullyParsed is true
 

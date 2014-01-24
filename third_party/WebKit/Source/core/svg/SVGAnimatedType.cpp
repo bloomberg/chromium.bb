@@ -49,15 +49,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedIntegerOptionalInteger:
         delete m_data.integerOptionalInteger;
         break;
-    case AnimatedNumber:
-        delete m_data.number;
-        break;
-    case AnimatedNumberList:
-        delete m_data.numberList;
-        break;
-    case AnimatedNumberOptionalNumber:
-        delete m_data.numberOptionalNumber;
-        break;
     case AnimatedPath:
         delete m_data.path;
         break;
@@ -72,10 +63,13 @@ SVGAnimatedType::~SVGAnimatedType()
         break;
     // Below properties are migrated to new property implementation.
     case AnimatedBoolean:
+    case AnimatedNumber:
+    case AnimatedNumberList:
+    case AnimatedNumberOptionalNumber:
     case AnimatedLength:
     case AnimatedLengthList:
-    case AnimatedRect:
     case AnimatedPoints:
+    case AnimatedRect:
         // handled by RefPtr
         break;
 
@@ -130,30 +124,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createIntegerOptionalInteger(pair<i
     return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createNumber(float* number)
-{
-    ASSERT(number);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedNumber));
-    animatedType->m_data.number = number;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createNumberList(SVGNumberList* numberList)
-{
-    ASSERT(numberList);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedNumberList));
-    animatedType->m_data.numberList = numberList;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createNumberOptionalNumber(pair<float, float>* numberOptionalNumber)
-{
-    ASSERT(numberOptionalNumber);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedNumberOptionalNumber));
-    animatedType->m_data.numberOptionalNumber = numberOptionalNumber;
-    return animatedType.release();
-}
-
 PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPath(PassOwnPtr<SVGPathByteStream> path)
 {
     ASSERT(path);
@@ -200,14 +170,14 @@ String SVGAnimatedType::valueAsString()
     case AnimatedColor:
         ASSERT(m_data.color);
         return m_data.color->isCurrentColor() ? "currentColor" : m_data.color->color().serializedAsCSSComponentValue();
-    case AnimatedNumber:
-        ASSERT(m_data.number);
-        return String::number(*m_data.number);
     case AnimatedString:
         ASSERT(m_data.string);
         return *m_data.string;
 
     // Below properties have migrated to new property implementation.
+    case AnimatedNumber:
+    case AnimatedNumberList:
+    case AnimatedNumberOptionalNumber:
     case AnimatedLength:
     case AnimatedLengthList:
     case AnimatedPoints:
@@ -220,8 +190,6 @@ String SVGAnimatedType::valueAsString()
     case AnimatedEnumeration:
     case AnimatedInteger:
     case AnimatedIntegerOptionalInteger:
-    case AnimatedNumberList:
-    case AnimatedNumberOptionalNumber:
     case AnimatedPath:
     case AnimatedPoint:
     case AnimatedPreserveAspectRatio:
@@ -242,16 +210,15 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
         ASSERT(m_data.color);
         *m_data.color = value.isEmpty() ? StyleColor::currentColor() : SVGColor::colorFromRGBColorString(value);
         break;
-    case AnimatedNumber:
-        ASSERT(m_data.number);
-        parseNumberFromString(value, *m_data.number);
-        break;
     case AnimatedString:
         ASSERT(m_data.string);
         *m_data.string = value;
         break;
 
     // Below properties have migrated to new property implementation.
+    case AnimatedNumber:
+    case AnimatedNumberList:
+    case AnimatedNumberOptionalNumber:
     case AnimatedLength:
     case AnimatedLengthList:
     case AnimatedPoints:
@@ -265,8 +232,6 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     case AnimatedEnumeration:
     case AnimatedInteger:
     case AnimatedIntegerOptionalInteger:
-    case AnimatedNumberList:
-    case AnimatedNumberOptionalNumber:
     case AnimatedPath:
     case AnimatedPoint:
     case AnimatedPreserveAspectRatio:

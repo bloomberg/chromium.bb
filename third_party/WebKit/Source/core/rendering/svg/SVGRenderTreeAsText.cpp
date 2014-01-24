@@ -616,7 +616,7 @@ void writeSVGGradientStop(TextStream& ts, const RenderSVGGradientStop& stop, int
     if (!style)
         return;
 
-    ts << " [offset=" << stopElement->offsetCurrentValue() << "] [color=" << stopElement->stopColorIncludingOpacity() << "]\n";
+    ts << " [offset=" << stopElement->offset()->currentValue()->value() << "] [color=" << stopElement->stopColorIncludingOpacity() << "]\n";
 }
 
 void writeResources(TextStream& ts, const RenderObject& object, int indent)

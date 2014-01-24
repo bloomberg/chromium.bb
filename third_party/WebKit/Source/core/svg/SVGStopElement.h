@@ -33,6 +33,8 @@ public:
 
     Color stopColorIncludingOpacity() const;
 
+    SVGAnimatedNumber* offset() { return m_offset.get(); }
+
 private:
     explicit SVGStopElement(Document&);
 
@@ -45,8 +47,8 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
+    RefPtr<SVGAnimatedNumber> m_offset;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGStopElement)
-        DECLARE_ANIMATED_NUMBER(Offset, offset)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

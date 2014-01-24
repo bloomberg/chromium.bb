@@ -49,7 +49,6 @@ class NewSVGAnimatedPropertyBase : public RefCounted<NewSVGAnimatedPropertyBase>
 public:
     virtual ~NewSVGAnimatedPropertyBase();
 
-    virtual NewSVGPropertyBase* baseValueBase() = 0;
     virtual NewSVGPropertyBase* currentValueBase() = 0;
 
     virtual void animationStarted();
@@ -119,14 +118,14 @@ public:
         return m_baseValue.get();
     }
 
-    virtual NewSVGPropertyBase* baseValueBase() OVERRIDE
-    {
-        return baseValue();
-    }
-
     Property* currentValue()
     {
         return m_currentValue ? m_currentValue.get() : m_baseValue.get();
+    }
+
+    const Property* currentValue() const
+    {
+        return const_cast<NewSVGAnimatedPropertyCommon*>(this)->currentValue();
     }
 
     virtual NewSVGPropertyBase* currentValueBase() OVERRIDE
@@ -178,11 +177,76 @@ private:
     RefPtr<Property> m_currentValue;
 };
 
-// Implementation of SVGAnimatedProperty which has tear-off value types.
+// Implementation of SVGAnimatedProperty which uses primitive types.
+// This is for classes which return primitive type for its "animVal".
+// Examples are SVGAnimatedBoolean, SVGAnimatedNumber, etc.
+template <typename Property, typename TearOffType = typename Property::TearOffType, typename PrimitiveType = typename Property::PrimitiveType>
+class NewSVGAnimatedProperty : public NewSVGAnimatedPropertyCommon<Property> {
+public:
+    static PassRefPtr<NewSVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
+    {
+        return adoptRef(new NewSVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
+    }
+
+    virtual bool needsSynchronizeAttribute() OVERRIDE
+    {
+        // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.
+        // This prevents unnecessary attribute creation on target element.
+        return m_baseValueUpdated || this->isAnimating();
+    }
+
+    virtual void synchronizeAttribute() OVERRIDE
+    {
+        NewSVGAnimatedPropertyBase::synchronizeAttribute();
+        m_baseValueUpdated = false;
+    }
+
+    // SVGAnimated* DOM Spec implementations:
+
+    // baseVal()/setBaseVal()/animVal() are only to be used from SVG DOM implementation.
+    // Use currentValue() from C++ code.
+    PrimitiveType baseVal()
+    {
+        return this->baseValue()->value();
+    }
+
+    void setBaseVal(PrimitiveType value, WebCore::ExceptionState& exceptionState)
+    {
+        if (this->isReadOnly()) {
+            exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+            return;
+        }
+
+        this->baseValue()->setValue(value);
+
+        ASSERT(this->attributeName() != nullQName());
+        this->contextElement()->invalidateSVGAttributes();
+        this->contextElement()->svgAttributeChanged(this->attributeName());
+
+        m_baseValueUpdated = true;
+    }
+
+    PrimitiveType animVal()
+    {
+        return this->currentValue()->value();
+    }
+
+protected:
+    NewSVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
+        : NewSVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
+        , m_baseValueUpdated(false)
+    {
+    }
+
+    bool m_baseValueUpdated;
+};
+
+// Implementation of SVGAnimatedProperty which uses tear-off value types.
+// These classes has "void" for its PrimitiveType.
 // This is for classes which return special type for its "animVal".
 // Examples are SVGAnimatedLength, SVGAnimatedRect, SVGAnimated*List, etc.
-template <typename Property, typename TearOffType = typename Property::TearOffType>
-class NewSVGAnimatedProperty : public NewSVGAnimatedPropertyCommon<Property> {
+template <typename Property, typename TearOffType>
+class NewSVGAnimatedProperty<Property, TearOffType, void> : public NewSVGAnimatedPropertyCommon<Property> {
 public:
     static PassRefPtr<NewSVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
     {
@@ -251,73 +315,6 @@ private:
     //     m_baseValTearOff targets m_baseValue.
     RefPtr<TearOffType> m_baseValTearOff;
     RefPtr<TearOffType> m_animValTearOff;
-};
-
-// Implementation of SVGAnimatedProperty which uses primitive types.
-// This is for classes which return primitive type for its "animVal".
-// Examples are SVGAnimatedBoolean, SVGAnimatedNumber, etc.
-// This is implemented as template specialization used when TearOffType is set to void.
-template <typename Property>
-class NewSVGAnimatedProperty<Property, void> : public NewSVGAnimatedPropertyCommon<Property> {
-public:
-    typedef typename Property::PrimitiveType PrimitiveType;
-
-    static PassRefPtr<NewSVGAnimatedProperty<Property> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
-    {
-        return adoptRef(new NewSVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
-    }
-
-    virtual bool needsSynchronizeAttribute() OVERRIDE
-    {
-        // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.
-        // This prevents unnecessary attribute creation on target element.
-        return m_baseValueUpdated || this->isAnimating();
-    }
-
-    virtual void synchronizeAttribute() OVERRIDE
-    {
-        NewSVGAnimatedPropertyBase::synchronizeAttribute();
-        m_baseValueUpdated = false;
-    }
-
-    // SVGAnimated* DOM Spec implementations:
-
-    // baseVal()/setBaseVal()/animVal() are only to be used from SVG DOM implementation.
-    // Use currentValue() from C++ code.
-    PrimitiveType baseVal()
-    {
-        return this->baseValue()->value();
-    }
-
-    void setBaseVal(PrimitiveType value, WebCore::ExceptionState& exceptionState)
-    {
-        if (this->isReadOnly()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
-            return;
-        }
-
-        this->baseValue()->setValue(value);
-
-        ASSERT(this->attributeName() != nullQName());
-        this->contextElement()->invalidateSVGAttributes();
-        this->contextElement()->svgAttributeChanged(this->attributeName());
-
-        m_baseValueUpdated = true;
-    }
-
-    PrimitiveType animVal()
-    {
-        return this->currentValue()->value();
-    }
-
-protected:
-    NewSVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
-        : NewSVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
-        , m_baseValueUpdated(false)
-    {
-    }
-
-    bool m_baseValueUpdated;
 };
 
 }

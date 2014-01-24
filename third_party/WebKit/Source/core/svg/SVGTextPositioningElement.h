@@ -32,10 +32,11 @@ class SVGTextPositioningElement : public SVGTextContentElement {
 public:
     static SVGTextPositioningElement* elementFromRenderer(RenderObject*);
 
-    SVGAnimatedLengthList* x() const { return m_x.get(); }
-    SVGAnimatedLengthList* y() const { return m_y.get(); }
-    SVGAnimatedLengthList* dx() const { return m_dx.get(); }
-    SVGAnimatedLengthList* dy() const { return m_dy.get(); }
+    SVGAnimatedLengthList* x() { return m_x.get(); }
+    SVGAnimatedLengthList* y() { return m_y.get(); }
+    SVGAnimatedLengthList* dx() { return m_dx.get(); }
+    SVGAnimatedLengthList* dy() { return m_dy.get(); }
+    SVGAnimatedNumberList* rotate() { return m_rotate.get(); }
 
 protected:
     SVGTextPositioningElement(const QualifiedName&, Document&);
@@ -49,8 +50,8 @@ protected:
     RefPtr<SVGAnimatedLengthList> m_y;
     RefPtr<SVGAnimatedLengthList> m_dx;
     RefPtr<SVGAnimatedLengthList> m_dy;
+    RefPtr<SVGAnimatedNumberList> m_rotate;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGTextPositioningElement)
-        DECLARE_ANIMATED_NUMBER_LIST(Rotate, rotate)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

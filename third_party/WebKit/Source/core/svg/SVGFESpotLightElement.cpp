@@ -38,10 +38,10 @@ PassRefPtr<SVGFESpotLightElement> SVGFESpotLightElement::create(Document& docume
 
 PassRefPtr<LightSource> SVGFESpotLightElement::lightSource() const
 {
-    FloatPoint3D pos(xCurrentValue(), yCurrentValue(), zCurrentValue());
-    FloatPoint3D direction(pointsAtXCurrentValue(), pointsAtYCurrentValue(), pointsAtZCurrentValue());
+    FloatPoint3D pos(x()->currentValue()->value(), y()->currentValue()->value(), z()->currentValue()->value());
+    FloatPoint3D direction(pointsAtX()->currentValue()->value(), pointsAtY()->currentValue()->value(), pointsAtZ()->currentValue()->value());
 
-    return SpotLightSource::create(pos, direction, specularExponentCurrentValue(), limitingConeAngleCurrentValue());
+    return SpotLightSource::create(pos, direction, specularExponent()->currentValue()->value(), limitingConeAngle()->currentValue()->value());
 }
 
 }

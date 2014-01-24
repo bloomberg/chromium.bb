@@ -32,20 +32,19 @@ namespace WebCore {
 
 // Animated property definitions
 DEFINE_ANIMATED_STRING(SVGFEGaussianBlurElement, SVGNames::inAttr, In1, in1)
-DEFINE_ANIMATED_NUMBER_MULTIPLE_WRAPPERS(SVGFEGaussianBlurElement, SVGNames::stdDeviationAttr, stdDeviationXIdentifier(), StdDeviationX, stdDeviationX)
-DEFINE_ANIMATED_NUMBER_MULTIPLE_WRAPPERS(SVGFEGaussianBlurElement, SVGNames::stdDeviationAttr, stdDeviationYIdentifier(), StdDeviationY, stdDeviationY)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEGaussianBlurElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(stdDeviationX)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(stdDeviationY)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feGaussianBlurTag, document)
+    , m_stdDeviation(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::stdDeviationAttr, 0, 0))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_stdDeviation);
     registerAnimatedPropertiesForSVGFEGaussianBlurElement();
 }
 
@@ -54,22 +53,10 @@ PassRefPtr<SVGFEGaussianBlurElement> SVGFEGaussianBlurElement::create(Document& 
     return adoptRef(new SVGFEGaussianBlurElement(document));
 }
 
-const AtomicString& SVGFEGaussianBlurElement::stdDeviationXIdentifier()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, s_identifier, ("SVGStdDeviationX", AtomicString::ConstructFromLiteral));
-    return s_identifier;
-}
-
-const AtomicString& SVGFEGaussianBlurElement::stdDeviationYIdentifier()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, s_identifier, ("SVGStdDeviationY", AtomicString::ConstructFromLiteral));
-    return s_identifier;
-}
-
 void SVGFEGaussianBlurElement::setStdDeviation(float x, float y)
 {
-    setStdDeviationXBaseValue(x);
-    setStdDeviationYBaseValue(y);
+    stdDeviationX()->baseValue()->setValue(x);
+    stdDeviationY()->baseValue()->setValue(y);
     invalidate();
 }
 
@@ -90,21 +77,19 @@ void SVGFEGaussianBlurElement::parseAttribute(const QualifiedName& name, const A
         return;
     }
 
-    if (name == SVGNames::stdDeviationAttr) {
-        float x, y;
-        if (parseNumberOptionalNumber(value, x, y)) {
-            setStdDeviationXBaseValue(x);
-            setStdDeviationYBaseValue(y);
-        }
-        return;
-    }
-
     if (name == SVGNames::inAttr) {
         setIn1BaseValue(value);
         return;
     }
 
-    ASSERT_NOT_REACHED();
+    SVGParsingError parseError = NoError;
+
+    if (name == SVGNames::stdDeviationAttr)
+        m_stdDeviation->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
+
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGFEGaussianBlurElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -131,10 +116,10 @@ PassRefPtr<FilterEffect> SVGFEGaussianBlurElement::build(SVGFilterBuilder* filte
     if (!input1)
         return 0;
 
-    if (stdDeviationXCurrentValue() < 0 || stdDeviationYCurrentValue() < 0)
+    if (stdDeviationX()->currentValue()->value() < 0 || stdDeviationY()->currentValue()->value() < 0)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEGaussianBlur::create(filter, stdDeviationXCurrentValue(), stdDeviationYCurrentValue());
+    RefPtr<FilterEffect> effect = FEGaussianBlur::create(filter, stdDeviationX()->currentValue()->value(), stdDeviationY()->currentValue()->value());
     effect->inputEffects().append(input1);
     return effect.release();
 }

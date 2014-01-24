@@ -28,59 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGBoolean_h
-#define SVGBoolean_h
+#ifndef SVGNumberOptionalNumber_h
+#define SVGNumberOptionalNumber_h
 
-#include "core/svg/properties/NewSVGProperty.h"
+#include "core/svg/SVGAnimatedNumber.h"
 
 namespace WebCore {
 
-class SVGBoolean : public NewSVGPropertyBase {
+class SVGNumberOptionalNumber : public NewSVGPropertyBase {
 public:
-    // SVGBoolean does not have a tear-off type.
+    // Tearoff of SVGNumberOptionalNumber is never created.
     typedef void TearOffType;
-    typedef bool PrimitiveType;
+    typedef void PrimitiveType;
 
-    static PassRefPtr<SVGBoolean> create(bool value = false)
+    static PassRefPtr<SVGNumberOptionalNumber> create(PassRefPtr<SVGNumber> firstNumber, PassRefPtr<SVGNumber> secondNumber)
     {
-        return adoptRef(new SVGBoolean(value));
+        return adoptRef(new SVGNumberOptionalNumber(firstNumber, secondNumber));
     }
 
-    PassRefPtr<SVGBoolean> clone() const { return create(m_value); }
+    PassRefPtr<SVGNumberOptionalNumber> clone() const;
     virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+
+    bool operator==(const SVGNumberOptionalNumber&) const;
+    bool operator!=(const SVGNumberOptionalNumber& other) const { return !operator==(other); }
 
     virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
-    bool operator==(const SVGBoolean& other) const { return m_value == other.m_value; }
-    bool operator!=(const SVGBoolean& other) const { return !operator==(other); }
+    static AnimatedPropertyType classType() { return AnimatedNumberOptionalNumber; }
 
-    bool value() const { return m_value; }
-    void setValue(bool value) { m_value = value; }
+    PassRefPtr<SVGNumber> firstNumber() { return m_firstNumber; }
+    PassRefPtr<SVGNumber> secondNumber() { return m_secondNumber; }
 
-    static AnimatedPropertyType classType() { return AnimatedBoolean; }
+protected:
+    SVGNumberOptionalNumber(PassRefPtr<SVGNumber> firstNumber, PassRefPtr<SVGNumber> secondNumber);
 
-private:
-    SVGBoolean(bool value)
-        : NewSVGPropertyBase(classType())
-        , m_value(value)
-    {
-    }
-
-    bool m_value;
+    RefPtr<SVGNumber> m_firstNumber;
+    RefPtr<SVGNumber> m_secondNumber;
 };
 
-inline PassRefPtr<SVGBoolean> toSVGBoolean(PassRefPtr<NewSVGPropertyBase> passBase)
+inline PassRefPtr<SVGNumberOptionalNumber> toSVGNumberOptionalNumber(PassRefPtr<NewSVGPropertyBase> passBase)
 {
     RefPtr<NewSVGPropertyBase> base = passBase;
-    ASSERT(base->type() == SVGBoolean::classType());
-    return static_pointer_cast<SVGBoolean>(base.release());
+    ASSERT(base->type() == SVGNumberOptionalNumber::classType());
+    return static_pointer_cast<SVGNumberOptionalNumber>(base.release());
 }
 
 } // namespace WebCore
 
-#endif // SVGBoolean_h
+#endif // SVGNumberOptionalNumber_h

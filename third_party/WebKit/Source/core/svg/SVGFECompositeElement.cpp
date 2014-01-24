@@ -33,27 +33,28 @@ namespace WebCore {
 DEFINE_ANIMATED_STRING(SVGFECompositeElement, SVGNames::inAttr, In1, in1)
 DEFINE_ANIMATED_STRING(SVGFECompositeElement, SVGNames::in2Attr, In2, in2)
 DEFINE_ANIMATED_ENUMERATION(SVGFECompositeElement, SVGNames::operatorAttr, SVGOperator, svgOperator, CompositeOperationType)
-DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k1Attr, K1, k1)
-DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k2Attr, K2, k2)
-DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k3Attr, K3, k3)
-DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k4Attr, K4, k4)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFECompositeElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in2)
     REGISTER_LOCAL_ANIMATED_PROPERTY(svgOperator)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(k1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(k2)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(k3)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(k4)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feCompositeTag, document)
+    , m_k1(SVGAnimatedNumber::create(this, SVGNames::k1Attr, SVGNumber::create()))
+    , m_k2(SVGAnimatedNumber::create(this, SVGNames::k2Attr, SVGNumber::create()))
+    , m_k3(SVGAnimatedNumber::create(this, SVGNames::k3Attr, SVGNumber::create()))
+    , m_k4(SVGAnimatedNumber::create(this, SVGNames::k4Attr, SVGNumber::create()))
     , m_svgOperator(FECOMPOSITE_OPERATOR_OVER)
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_k1);
+    addToPropertyMap(m_k2);
+    addToPropertyMap(m_k3);
+    addToPropertyMap(m_k4);
     registerAnimatedPropertiesForSVGFECompositeElement();
 }
 
@@ -101,27 +102,20 @@ void SVGFECompositeElement::parseAttribute(const QualifiedName& name, const Atom
         return;
     }
 
-    if (name == SVGNames::k1Attr) {
-        setK1BaseValue(value.toFloat());
-        return;
-    }
+    SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::k2Attr) {
-        setK2BaseValue(value.toFloat());
-        return;
-    }
+    if (name == SVGNames::k1Attr)
+        m_k1->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::k2Attr)
+        m_k2->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::k3Attr)
+        m_k3->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::k4Attr)
+        m_k4->setBaseValueAsString(value, parseError);
+    else
+        ASSERT_NOT_REACHED();
 
-    if (name == SVGNames::k3Attr) {
-        setK3BaseValue(value.toFloat());
-        return;
-    }
-
-    if (name == SVGNames::k4Attr) {
-        setK4BaseValue(value.toFloat());
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
@@ -130,13 +124,13 @@ bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const
     if (attrName == SVGNames::operatorAttr)
         return composite->setOperation(svgOperatorCurrentValue());
     if (attrName == SVGNames::k1Attr)
-        return composite->setK1(k1CurrentValue());
+        return composite->setK1(m_k1->currentValue()->value());
     if (attrName == SVGNames::k2Attr)
-        return composite->setK2(k2CurrentValue());
+        return composite->setK2(m_k2->currentValue()->value());
     if (attrName == SVGNames::k3Attr)
-        return composite->setK3(k3CurrentValue());
+        return composite->setK3(m_k3->currentValue()->value());
     if (attrName == SVGNames::k4Attr)
-        return composite->setK4(k4CurrentValue());
+        return composite->setK4(m_k4->currentValue()->value());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -177,7 +171,7 @@ PassRefPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBu
     if (!input1 || !input2)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEComposite::create(filter, svgOperatorCurrentValue(), k1CurrentValue(), k2CurrentValue(), k3CurrentValue(), k4CurrentValue());
+    RefPtr<FilterEffect> effect = FEComposite::create(filter, svgOperatorCurrentValue(), m_k1->currentValue()->value(), m_k2->currentValue()->value(), m_k3->currentValue()->value(), m_k4->currentValue()->value());
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);

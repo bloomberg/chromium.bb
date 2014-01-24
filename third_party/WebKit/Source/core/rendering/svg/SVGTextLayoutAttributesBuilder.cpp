@@ -171,7 +171,7 @@ static inline void updateCharacterData(unsigned i, float& lastRotation, SVGChara
     if (dyList)
         data.dy = dyList->at(i)->value(lengthContext);
     if (rotateList) {
-        data.rotate = rotateList->at(i).value();
+        data.rotate = rotateList->at(i)->value();
         lastRotation = data.rotate;
     }
 }
@@ -182,13 +182,13 @@ void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& po
     RefPtr<SVGLengthList> yList = position.element->y()->currentValue();
     RefPtr<SVGLengthList> dxList = position.element->dx()->currentValue();
     RefPtr<SVGLengthList> dyList = position.element->dy()->currentValue();
-    const SVGNumberList& rotateList = position.element->rotateCurrentValue();
+    RefPtr<SVGNumberList> rotateList = position.element->rotate()->currentValue();
 
     unsigned xListSize = xList->numberOfItems();
     unsigned yListSize = yList->numberOfItems();
     unsigned dxListSize = dxList->numberOfItems();
     unsigned dyListSize = dyList->numberOfItems();
-    unsigned rotateListSize = rotateList.size();
+    unsigned rotateListSize = rotateList->numberOfItems();
     if (!xListSize && !yListSize && !dxListSize && !dyListSize && !rotateListSize)
         return;
 
@@ -199,7 +199,7 @@ void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& po
         const SVGLengthList* yListPtr = i < yListSize ? yList.get() : 0;
         const SVGLengthList* dxListPtr = i < dxListSize ? dxList.get() : 0;
         const SVGLengthList* dyListPtr = i < dyListSize ? dyList.get() : 0;
-        const SVGNumberList* rotateListPtr = i < rotateListSize ? &rotateList : 0;
+        const SVGNumberList* rotateListPtr = i < rotateListSize ? rotateList.get() : 0;
         if (!xListPtr && !yListPtr && !dxListPtr && !dyListPtr && !rotateListPtr)
             break;
 
@@ -218,7 +218,7 @@ void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& po
     if (lastRotation == SVGTextLayoutAttributes::emptyValue())
         return;
 
-    for (unsigned i = rotateList.size(); i < position.length; ++i) {
+    for (unsigned i = rotateList->numberOfItems(); i < position.length; ++i) {
         SVGCharacterDataMap::iterator it = m_characterDataMap.find(position.start + i + 1);
         if (it == m_characterDataMap.end()) {
             SVGCharacterData data;

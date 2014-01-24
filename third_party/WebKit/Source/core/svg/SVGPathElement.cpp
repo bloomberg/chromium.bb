@@ -67,11 +67,8 @@ const SVGPropertyInfo* SVGPathElement::dPropertyInfo()
 }
 
 // Animated property definitions
-DEFINE_ANIMATED_NUMBER(SVGPathElement, SVGNames::pathLengthAttr, PathLength, pathLength)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPathElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(d)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(pathLength)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -80,8 +77,11 @@ inline SVGPathElement::SVGPathElement(Document& document)
     , m_pathByteStream(SVGPathByteStream::create())
     , m_pathSegList(PathSegUnalteredRole)
     , m_isAnimValObserved(false)
+    , m_pathLength(SVGAnimatedNumber::create(this, SVGNames::pathLengthAttr, SVGNumber::create()))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_pathLength);
     registerAnimatedPropertiesForSVGPathElement();
 }
 
@@ -229,14 +229,17 @@ void SVGPathElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         return;
     }
 
+    SVGParsingError parseError = NoError;
+
     if (name == SVGNames::pathLengthAttr) {
-        setPathLengthBaseValue(value.toFloat());
-        if (pathLengthBaseValue() < 0)
+        m_pathLength->setBaseValueAsString(value, parseError);
+        if (parseError == NoError && m_pathLength->baseValue()->value() < 0)
             document().accessSVGExtensions()->reportError("A negative value for path attribute <pathLength> is not allowed");
-        return;
+    } else {
+        ASSERT_NOT_REACHED();
     }
 
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)

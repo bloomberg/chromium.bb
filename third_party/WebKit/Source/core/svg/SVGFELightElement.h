@@ -35,6 +35,27 @@ public:
     static SVGFELightElement* findLightElement(const SVGElement*);
     static PassRefPtr<LightSource> findLightSource(const SVGElement*);
 
+    SVGAnimatedNumber* azimuth() { return m_azimuth.get(); }
+    const SVGAnimatedNumber* azimuth() const { return m_azimuth.get(); }
+    SVGAnimatedNumber* elevation() { return m_elevation.get(); }
+    const SVGAnimatedNumber* elevation() const { return m_elevation.get(); }
+    SVGAnimatedNumber* x() { return m_x.get(); }
+    const SVGAnimatedNumber* x() const { return m_x.get(); }
+    SVGAnimatedNumber* y() { return m_y.get(); }
+    const SVGAnimatedNumber* y() const { return m_y.get(); }
+    SVGAnimatedNumber* z() { return m_z.get(); }
+    const SVGAnimatedNumber* z() const { return m_z.get(); }
+    SVGAnimatedNumber* pointsAtX() { return m_pointsAtX.get(); }
+    const SVGAnimatedNumber* pointsAtX() const { return m_pointsAtX.get(); }
+    SVGAnimatedNumber* pointsAtY() { return m_pointsAtY.get(); }
+    const SVGAnimatedNumber* pointsAtY() const { return m_pointsAtY.get(); }
+    SVGAnimatedNumber* pointsAtZ() { return m_pointsAtZ.get(); }
+    const SVGAnimatedNumber* pointsAtZ() const { return m_pointsAtZ.get(); }
+    SVGAnimatedNumber* specularExponent() { return m_specularExponent.get(); }
+    const SVGAnimatedNumber* specularExponent() const { return m_specularExponent.get(); }
+    SVGAnimatedNumber* limitingConeAngle() { return m_limitingConeAngle.get(); }
+    const SVGAnimatedNumber* limitingConeAngle() const { return m_limitingConeAngle.get(); }
+
 protected:
     SVGFELightElement(const QualifiedName&, Document&);
 
@@ -46,17 +67,17 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
+    RefPtr<SVGAnimatedNumber> m_azimuth;
+    RefPtr<SVGAnimatedNumber> m_elevation;
+    RefPtr<SVGAnimatedNumber> m_x;
+    RefPtr<SVGAnimatedNumber> m_y;
+    RefPtr<SVGAnimatedNumber> m_z;
+    RefPtr<SVGAnimatedNumber> m_pointsAtX;
+    RefPtr<SVGAnimatedNumber> m_pointsAtY;
+    RefPtr<SVGAnimatedNumber> m_pointsAtZ;
+    RefPtr<SVGAnimatedNumber> m_specularExponent;
+    RefPtr<SVGAnimatedNumber> m_limitingConeAngle;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFELightElement)
-        DECLARE_ANIMATED_NUMBER(Azimuth, azimuth)
-        DECLARE_ANIMATED_NUMBER(Elevation, elevation)
-        DECLARE_ANIMATED_NUMBER(X, x)
-        DECLARE_ANIMATED_NUMBER(Y, y)
-        DECLARE_ANIMATED_NUMBER(Z, z)
-        DECLARE_ANIMATED_NUMBER(PointsAtX, pointsAtX)
-        DECLARE_ANIMATED_NUMBER(PointsAtY, pointsAtY)
-        DECLARE_ANIMATED_NUMBER(PointsAtZ, pointsAtZ)
-        DECLARE_ANIMATED_NUMBER(SpecularExponent, specularExponent)
-        DECLARE_ANIMATED_NUMBER(LimitingConeAngle, limitingConeAngle)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

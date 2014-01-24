@@ -21,7 +21,7 @@
 #define SVGFEMorphologyElement_h
 
 #include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEMorphology.h"
 
@@ -62,6 +62,9 @@ public:
 
     void setRadius(float radiusX, float radiusY);
 
+    SVGAnimatedNumber* radiusX() { return m_radius->firstNumber(); }
+    SVGAnimatedNumber* radiusY() { return m_radius->secondNumber(); }
+
 private:
     explicit SVGFEMorphologyElement(Document&);
 
@@ -71,14 +74,10 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
-    static const AtomicString& radiusXIdentifier();
-    static const AtomicString& radiusYIdentifier();
-
+    RefPtr<SVGAnimatedNumberOptionalNumber> m_radius;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEMorphologyElement)
         DECLARE_ANIMATED_STRING(In1, in1)
         DECLARE_ANIMATED_ENUMERATION(SVGOperator, svgOperator, MorphologyOperatorType)
-        DECLARE_ANIMATED_NUMBER(RadiusX, radiusX)
-        DECLARE_ANIMATED_NUMBER(RadiusY, radiusY)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

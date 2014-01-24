@@ -70,6 +70,8 @@ public:
 
     static ChannelSelectorType stringToChannel(const String&);
 
+    SVGAnimatedNumber* scale() { return m_scale.get(); }
+
 private:
     SVGFEDisplacementMapElement(Document&);
 
@@ -79,12 +81,12 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
+    RefPtr<SVGAnimatedNumber> m_scale;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEDisplacementMapElement)
         DECLARE_ANIMATED_STRING(In1, in1)
         DECLARE_ANIMATED_STRING(In2, in2)
         DECLARE_ANIMATED_ENUMERATION(XChannelSelector, xChannelSelector, ChannelSelectorType)
         DECLARE_ANIMATED_ENUMERATION(YChannelSelector, yChannelSelector, ChannelSelectorType)
-        DECLARE_ANIMATED_NUMBER(Scale, scale)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
