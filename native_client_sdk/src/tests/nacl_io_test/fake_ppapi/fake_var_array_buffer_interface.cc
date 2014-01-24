@@ -1,10 +1,10 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fake_var_array_buffer_interface.h"
+#include "fake_ppapi/fake_var_array_buffer_interface.h"
 
-#include "fake_var_manager.h"
+#include "fake_ppapi/fake_var_manager.h"
 #include "gtest/gtest.h"
 
 FakeVarArrayBufferInterface::FakeVarArrayBufferInterface(

@@ -17,13 +17,13 @@
 #include <windows.h>  // For Sleep()
 #endif
 
+#include "fake_ppapi/fake_pepper_interface_html5_fs.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/html5fs/html5_fs.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osunistd.h"
 #include "nacl_io/pepper_interface_delegate.h"
 #include "sdk_util/scoped_ref.h"
-#include "fake_pepper_interface_html5_fs.h"
 #include "mock_util.h"
 #include "pepper_interface_mock.h"
 

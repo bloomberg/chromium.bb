@@ -30,6 +30,10 @@
 VALID_TOOLCHAINS := {{' '.join(tools)}}
 {{pre}}
 NACL_SDK_ROOT ?= $(abspath $(CURDIR)/{{rel_sdk}})
+[[if 'INCLUDES' in targets[0]:]]
+EXTRA_INC_PATHS={{' '.join(targets[0]['INCLUDES'])}}
+[[]]
+
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 [[if desc.get('SOCKET_PERMISSIONS'):]]

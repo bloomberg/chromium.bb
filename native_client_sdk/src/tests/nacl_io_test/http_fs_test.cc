@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "fake_pepper_interface_url_loader.h"
+#include "fake_ppapi/fake_pepper_interface_url_loader.h"
 
 #include "nacl_io/dir_node.h"
 #include "nacl_io/httpfs/http_fs.h"

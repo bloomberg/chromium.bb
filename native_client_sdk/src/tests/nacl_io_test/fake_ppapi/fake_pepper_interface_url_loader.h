@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "fake_core_interface.h"
-#include "fake_var_interface.h"
-#include "fake_var_manager.h"
+#include "fake_ppapi/fake_core_interface.h"
+#include "fake_ppapi/fake_var_interface.h"
+#include "fake_ppapi/fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
 #include "sdk_util/macros.h"
 

@@ -1,16 +1,16 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef TESTS_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_H_
 #define TESTS_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_H_
 
-#include "fake_core_interface.h"
-#include "fake_messaging_interface.h"
-#include "fake_var_array_buffer_interface.h"
-#include "fake_var_array_interface.h"
-#include "fake_var_interface.h"
-#include "fake_var_manager.h"
+#include "fake_ppapi/fake_core_interface.h"
+#include "fake_ppapi/fake_messaging_interface.h"
+#include "fake_ppapi/fake_var_array_buffer_interface.h"
+#include "fake_ppapi/fake_var_array_interface.h"
+#include "fake_ppapi/fake_var_interface.h"
+#include "fake_ppapi/fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
 
 class FakePepperInterface : public nacl_io::PepperInterfaceDummy {

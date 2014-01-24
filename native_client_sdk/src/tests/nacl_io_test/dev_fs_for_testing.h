@@ -5,7 +5,7 @@
 #ifndef TESTS_NACL_IO_TEST_DEV_FS_FOR_TESTING_H_
 #define TESTS_NACL_IO_TEST_DEV_FS_FOR_TESTING_H_
 
-#include "fake_pepper_interface.h"
+#include "fake_ppapi/fake_pepper_interface.h"
 #include "gmock/gmock.h"
 #include "nacl_io/devfs/dev_fs.h"
 #include "nacl_io/filesystem.h"
