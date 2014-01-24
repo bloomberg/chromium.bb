@@ -614,33 +614,39 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
   // (least likely to be killed) of the duplicates, so that a
   // particular renderer process takes on the oom_score_adj of the
   // least likely tab to be killed.
-  const int kPriorityRange = chrome::kHighestRendererOomScore -
-                             chrome::kLowestRendererOomScore;
-  float priority_increment =
-      static_cast<float>(kPriorityRange) / stats_list.size();
-  float priority = chrome::kLowestRendererOomScore;
   std::set<base::ProcessHandle> already_seen;
-  int score = 0;
-  ProcessScoreMap::iterator it;
+  std::vector<base::ProcessHandle> process_handles;
   for (TabStatsList::iterator iterator = stats_list.begin();
        iterator != stats_list.end(); ++iterator) {
     // stats_list also contains discarded tab stat. If renderer_handler is zero,
     // we don't need to adjust oom_score.
     if (iterator->renderer_handle == 0)
       continue;
-    if (already_seen.find(iterator->renderer_handle) == already_seen.end()) {
-      already_seen.insert(iterator->renderer_handle);
-      // If a process has the same score as the newly calculated value,
-      // do not set it.
-      score = static_cast<int>(priority + 0.5f);
-      it = pid_to_oom_score_.find(iterator->renderer_handle);
-      if (it == pid_to_oom_score_.end() || it->second != score) {
-        content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
-            iterator->renderer_handle, score);
-        pid_to_oom_score_[iterator->renderer_handle] = score;
-      }
-      priority += priority_increment;
+
+    if (already_seen.insert(iterator->renderer_handle).second)
+      continue;
+
+    process_handles.push_back(iterator->renderer_handle);
+  }
+
+  float priority = chrome::kLowestRendererOomScore;
+  const int kPriorityRange = chrome::kHighestRendererOomScore -
+                             chrome::kLowestRendererOomScore;
+  float priority_increment =
+      static_cast<float>(kPriorityRange) / process_handles.size();
+  for (std::vector<base::ProcessHandle>::iterator iterator =
+           process_handles.begin();
+       iterator != process_handles.end(); ++iterator) {
+    int score = static_cast<int>(priority + 0.5f);
+    ProcessScoreMap::iterator it = pid_to_oom_score_.find(*iterator);
+    // If a process has the same score as the newly calculated value,
+    // do not set it.
+    if (it == pid_to_oom_score_.end() || it->second != score) {
+      content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(*iterator,
+                                                                 score);
+      pid_to_oom_score_[*iterator] = score;
     }
+    priority += priority_increment;
   }
 }
 
