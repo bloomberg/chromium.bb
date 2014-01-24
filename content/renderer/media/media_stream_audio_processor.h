@@ -63,6 +63,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // the post-processed data if the method is returning a true. The lifetime
   // of the data represeted by |out| is guaranteed to outlive the method call.
   // That also says *|out| won't change until this method is called again.
+  // |new_volume| receives the new microphone volume from the AGC.
+  // The new microphoen volume range is [0, 255], and the value will be 0 if
+  // the microphone volume should not be adjusted.
   // Returns true if the internal FIFO has at least 10 ms data for processing,
   // otherwise false.
   // |capture_delay|, |volume| and |key_pressed| will be passed to
@@ -71,6 +74,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   bool ProcessAndConsumeData(base::TimeDelta capture_delay,
                              int volume,
                              bool key_pressed,
+                             int* new_volume,
                              int16** out);
 
 
@@ -88,6 +92,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   virtual ~MediaStreamAudioProcessor();
 
  private:
+  friend class MediaStreamAudioProcessorTest;
+
   class MediaStreamAudioConverter;
 
   // Helper to initialize the WebRtc AudioProcessing.
@@ -103,10 +109,12 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                                          int frames_per_buffer);
 
   // Called by ProcessAndConsumeData().
-  void ProcessData(webrtc::AudioFrame* audio_frame,
-                   base::TimeDelta capture_delay,
-                   int volume,
-                   bool key_pressed);
+  // Returns the new microphone volume in the range of |0, 255].
+  // When the volume does not need to be updated, it returns 0.
+  int ProcessData(webrtc::AudioFrame* audio_frame,
+                  base::TimeDelta capture_delay,
+                  int volume,
+                  bool key_pressed);
 
   // Called when the processor is going away.
   void StopAudioProcessing();
@@ -143,6 +151,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Used to DCHECK that PushRenderData() is called on the render audio thread.
   base::ThreadChecker render_thread_checker_;
+
+  // Flag to enable the stereo channels mirroring.
+  bool audio_mirroring_;
 };
 
 }  // namespace content

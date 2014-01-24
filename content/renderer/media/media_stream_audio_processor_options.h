@@ -68,6 +68,8 @@ void StartAecDump(AudioProcessing* audio_processing);
 // Stops the echo cancellation dump in |audio_processing|.
 void StopAecDump(AudioProcessing* audio_processing);
 
+void EnableAutomaticGainControl(AudioProcessing* audio_processing);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_

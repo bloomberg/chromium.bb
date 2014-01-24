@@ -23,7 +23,7 @@ namespace {
 using webrtc::AudioProcessing;
 using webrtc::MediaConstraintsInterface;
 
-#if defined(ANDROID)
+#if defined(OS_ANDROID)
 const int kAudioProcessingSampleRate = 16000;
 #else
 const int kAudioProcessingSampleRate = 32000;
@@ -142,7 +142,8 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const media::AudioParameters& source_params,
     const blink::WebMediaConstraints& constraints,
     int effects)
-    : render_delay_ms_(0) {
+    : render_delay_ms_(0),
+      audio_mirroring_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
   InitializeAudioProcessingModule(constraints, effects);
@@ -191,7 +192,7 @@ void MediaStreamAudioProcessor::PushRenderData(
 
 bool MediaStreamAudioProcessor::ProcessAndConsumeData(
     base::TimeDelta capture_delay, int volume, bool key_pressed,
-    int16** out) {
+    int* new_volume, int16** out) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("audio",
                "MediaStreamAudioProcessor::ProcessAndConsumeData");
@@ -199,7 +200,8 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
   if (!capture_converter_->Convert(&capture_frame_))
     return false;
 
-  ProcessData(&capture_frame_, capture_delay, volume, key_pressed);
+  *new_volume = ProcessData(&capture_frame_, capture_delay, volume,
+                            key_pressed);
   *out = capture_frame_.data_;
 
   return true;
@@ -224,19 +226,24 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   RTCMediaConstraints native_constraints(constraints);
   ApplyFixedAudioConstraints(&native_constraints);
   if (effects & media::AudioParameters::ECHO_CANCELLER) {
-    // If platform echo cancellator is enabled, disable the software AEC.
+    // If platform echo canceller is enabled, disable the software AEC.
     native_constraints.AddMandatory(
         MediaConstraintsInterface::kEchoCancellation,
         MediaConstraintsInterface::kValueFalse, true);
   }
 
+#if defined(OS_IOS)
+  // On iOS, VPIO provides built-in AEC and AGC.
+  const bool enable_aec = false;
+  const bool enable_agc = false;
+#else
   const bool enable_aec = GetPropertyFromConstraints(
       &native_constraints, MediaConstraintsInterface::kEchoCancellation);
-  const bool enable_ns = GetPropertyFromConstraints(
-      &native_constraints, MediaConstraintsInterface::kNoiseSuppression);
-  const bool enable_high_pass_filter = GetPropertyFromConstraints(
-      &native_constraints, MediaConstraintsInterface::kHighpassFilter);
-#if defined(IOS) || defined(ANDROID)
+  const bool enable_agc = GetPropertyFromConstraints(
+      &native_constraints, webrtc::MediaConstraintsInterface::kAutoGainControl);
+#endif
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
   const bool enable_experimental_aec = false;
   const bool enable_typing_detection = false;
 #else
@@ -247,9 +254,17 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       &native_constraints, MediaConstraintsInterface::kTypingNoiseDetection);
 #endif
 
+  const bool enable_ns = GetPropertyFromConstraints(
+      &native_constraints, MediaConstraintsInterface::kNoiseSuppression);
+  const bool enable_high_pass_filter = GetPropertyFromConstraints(
+      &native_constraints, MediaConstraintsInterface::kHighpassFilter);
+
+  audio_mirroring_ = GetPropertyFromConstraints(
+      &native_constraints, webrtc::MediaConstraintsInterface::kAudioMirroring);
+
   // Return immediately if no audio processing component is enabled.
   if (!enable_aec && !enable_experimental_aec && !enable_ns &&
-      !enable_high_pass_filter && !enable_typing_detection) {
+      !enable_high_pass_filter && !enable_typing_detection && !enable_agc) {
     return;
   }
 
@@ -272,6 +287,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (enable_typing_detection)
     EnableTypingDetection(audio_processing_.get());
 
+  if (enable_agc)
+    EnableAutomaticGainControl(audio_processing_.get());
 
   // Configure the audio format the audio processing is running on. This
   // has to be done after all the needed components are enabled.
@@ -341,15 +358,15 @@ void MediaStreamAudioProcessor::InitializeRenderConverterIfNeeded(
                                              frames_per_buffer);
 }
 
-void MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
-                                            base::TimeDelta capture_delay,
-                                            int volume,
-                                            bool key_pressed) {
+int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
+                                           base::TimeDelta capture_delay,
+                                           int volume,
+                                           bool key_pressed) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   if (!audio_processing_)
-    return;
+    return 0;
 
-  TRACE_EVENT0("audio", "MediaStreamAudioProcessor::Process10MsData");
+  TRACE_EVENT0("audio", "MediaStreamAudioProcessor::ProcessData");
   DCHECK_EQ(audio_processing_->sample_rate_hz(),
             capture_converter_->sink_parameters().sample_rate());
   DCHECK_EQ(audio_processing_->num_input_channels(),
@@ -363,7 +380,7 @@ void MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
   DCHECK_LT(capture_delay_ms,
             std::numeric_limits<base::subtle::Atomic32>::max());
   int total_delay_ms =  capture_delay_ms + render_delay_ms;
-  if (total_delay_ms > 1000) {
+  if (total_delay_ms > 300) {
     LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
                  << "ms; render delay: " << render_delay_ms << "ms";
   }
@@ -375,8 +392,16 @@ void MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
   err = audio_processing_->ProcessStream(audio_frame);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 
-  // TODO(xians): Add support for AGC, typing detection, audio level
-  // calculation, stereo swapping.
+  // TODO(xians): Add support for typing detection, audio level calculation.
+
+  if (audio_mirroring_ && audio_frame->num_channels_ == 2) {
+    // TODO(xians): Swap the stereo channels after switching to media::AudioBus.
+  }
+
+  // Return 0 if the volume has not been changed, otherwise return the new
+  // volume.
+  return (agc->stream_analog_level() == volume) ?
+      0 : agc->stream_analog_level();
 }
 
 void MediaStreamAudioProcessor::StopAudioProcessing() {
