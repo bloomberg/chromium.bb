@@ -875,8 +875,6 @@ crbug.com/334242 [ Win ] inspector-protocol/stylesheet-tracking-restart.html [ P
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
-crbug.com/308818 svg/custom/intersection-list-null.svg [ NeedsRebaseline ]
-
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-001.html [ Failure ]
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-002.html [ Failure ]
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-003.html [ Failure ]
