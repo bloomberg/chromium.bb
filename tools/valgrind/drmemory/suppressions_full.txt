@@ -462,25 +462,6 @@ ntdll.dll!RtlRunOnceBeginInitialize
 ntdll.dll!RtlInitializeCriticalSectionAndSpinCount
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=471 a
-*!media::AudioRendererAlgorithmOLA::Crossfade<>
-*!media::AudioRendererAlgorithmOLA::FillBuffer
-*!media::AudioRendererAlgorithmOLATest_FillBuffer_*
-
-# Uninit reported in copy ctor.  Would be nice if we could specify which ctor
-# overload to suppress.
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=471 b
-*!WebCore::FormDataElement::FormDataElement
-
-# Another default copy ctor uninit.
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=471 c
-*!WebCore::CachedResourceLoader::InitiatorInfo::InitiatorInfo
-...
-*!WTF::Hash*
-
-UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=473 a
 system call NtDeviceIoControlFile InputBuffer
 ...
@@ -997,17 +978,6 @@ ntdll.dll!RtlInitializeCriticalSection
 *!std::_Mutex::_Mutex
 *!std::basic_streambuf<>
 
-# stdext::hash_map<> seems to swap uninitialized floats.
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=931
-*!std::swap<>
-*!std::_Hash<*
-
-# syscall false positive on handling NtQuerySystemInformation, fix in soon.
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=932
-KERNEL32.dll!K32GetPerformanceInfo
-
 # Seems to create a DC, sometimes.  GetTextMetrics returns no pointers, though.
 LEAK
 name=GDI SetBrushOrgEx leak
@@ -1015,10 +985,6 @@ GDI32.dll!...
 GDI32.dll!GetTextMetricsW
 *!gfx::PlatformFontWin::CreateHFontRef
 *!gfx::PlatformFontWin::GetBaseFontRef
-
-UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=471
-*!autofill::DetailInput::DetailInput
 
 ###############################################################
 # Benign issues in Chromium
