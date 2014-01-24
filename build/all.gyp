@@ -3,6 +3,11 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    # A hook that can be overridden in other repositories to add additional
+    # compilation targets to 'All'. Only used on Android.
+    'android_app_targets%': [],
+  },
   'targets': [
     {
       'target_name': 'All',
@@ -11,16 +16,13 @@
       'dependencies': [
         'some.gyp:*',
         '../base/base.gyp:*',
-        '../chrome/chrome.gyp:*',
         '../components/components.gyp:*',
         '../components/components_tests.gyp:*',
         '../content/content.gyp:*',
-        '../content/content_shell_and_tests.gyp:*',
         '../crypto/crypto.gyp:*',
         '../net/net.gyp:*',
         '../sdch/sdch.gyp:*',
         '../sql/sql.gyp:*',
-        '../sync/sync.gyp:*',
         '../testing/gmock.gyp:*',
         '../testing/gtest.gyp:*',
         '../third_party/icu/icu.gyp:*',
@@ -33,9 +35,38 @@
         '../url/url.gyp:*',
       ],
       'conditions': [
-        ['OS!="ios"', {
+        ['OS=="ios"', {
+          'dependencies': [
+            '../ios/ios.gyp:*',
+            '../ui/ui_unittests.gyp:ui_unittests',
+          ],
+        }],
+        ['OS=="android"', {
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:content_shell_apk',
+            '../mojo/mojo.gyp:mojo_shell_apk',
+            '<@(android_app_targets)',
+            'android_builder_tests',
+            '../android_webview/android_webview.gyp:android_webview_apk',
+            '../chrome/chrome.gyp:chromium_testshell',
+            '../remoting/remoting.gyp:remoting_apk',
+            '../tools/telemetry/telemetry.gyp:*#host',
+            # TODO(nyquist) This should instead by a target for sync when all of
+            # the sync-related code for Android has been upstreamed.
+            # See http://crbug.com/159203
+            '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
+          ],
+        }, {
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:*',
+            # TODO: This should build on Android and the target should move to the list above.
+            '../sync/sync.gyp:*',
+          ],
+        }],
+        ['OS!="ios" and OS!="android"', {
           'dependencies': [
             '../third_party/re2/re2.gyp:re2',
+            '../chrome/chrome.gyp:*',
             '../cc/cc_tests.gyp:*',
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',
@@ -74,11 +105,6 @@
             '../webkit/glue/webkit_glue.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:*',
             '<(libjpeg_gyp_path):*',
-          ],
-        }, { #  'OS=="ios"'
-          'dependencies': [
-            '../ios/ios.gyp:*',
-            '../ui/ui_unittests.gyp:ui_unittests',
           ],
         }],
         ['OS!="android" and OS!="ios"', {
@@ -222,6 +248,8 @@
       ],
     }, # target_name: All_syzygy
     {
+      # Note: Android uses android_builder_tests below.
+      # TODO: Consider merging that with this target.
       'target_name': 'chromium_builder_tests',
       'type': 'none',
       'dependencies': [
@@ -235,7 +263,7 @@
         '../url/url.gyp:url_unittests',
       ],
       'conditions': [
-        ['OS!="ios"', {
+        ['OS!="ios" and OS!="android"', {
           'dependencies': [
             '../cc/cc_tests.gyp:cc_unittests',
             '../chrome/chrome.gyp:browser_tests',
@@ -384,15 +412,26 @@
           'type': 'none',
           'dependencies': [
             '../third_party/WebKit/public/all.gyp:all_blink',
-            '../content/content_shell_and_tests.gyp:content_shell',
           ],
           'conditions': [
+            ['OS=="android"', {
+              'dependencies': [
+                '../content/content_shell_and_tests.gyp:content_shell_apk',
+                '../breakpad/breakpad.gyp:dump_syms#host',
+                '../breakpad/breakpad.gyp:minidump_stackwalk#host',
+              ],
+            }, {  # OS!="android"
+              'dependencies': [
+                '../content/content_shell_and_tests.gyp:content_shell',
+              ],
+            }],
             ['OS=="win"', {
               'dependencies': [
                 '../content/content_shell_and_tests.gyp:content_shell_crash_service',
                 '../content/content_shell_and_tests.gyp:layout_test_helper',
               ],
-            }, {  # OS!="win"
+            }],
+            ['OS!="win" and OS!="android"', {
               'dependencies': [
                 '../breakpad/breakpad.gyp:minidump_stackwalk',
               ],
@@ -419,6 +458,10 @@
             'blink_tests',
           ],
         }, # target_name: all_webkit
+      ],
+    }], # OS!=ios
+    ['OS!="ios" and OS!="android"', {
+      'targets': [
         {
           'target_name': 'chromium_builder_nacl_win_integration',
           'type': 'none',
@@ -650,7 +693,137 @@
           ],
         },
       ],  # targets
-    }],
+    }], #OS!=ios and OS!=android
+    ['OS=="android"', {
+      'targets': [
+        {
+          # The current list of tests for android.  This is temporary
+          # until the full set supported.  If adding a new test here,
+          # please also add it to build/android/pylib/gtest/gtest_config.py,
+          # else the test is not run.
+          #
+          # WARNING:
+          # Do not add targets here without communicating the implications
+          # on tryserver triggers and load.  Discuss with
+          # chrome-infrastructure-team please.
+          'target_name': 'android_builder_tests',
+          'type': 'none',
+          'dependencies': [
+            '../android_webview/android_webview.gyp:android_webview_unittests',
+            '../base/android/jni_generator/jni_generator.gyp:jni_generator_tests',
+            '../base/base.gyp:base_unittests',
+            '../breakpad/breakpad.gyp:breakpad_unittests',
+            # Also compile the tools needed to deal with minidumps, they are
+            # needed to run minidump tests upstream.
+            '../breakpad/breakpad.gyp:dump_syms#host',
+            '../breakpad/breakpad.gyp:symupload#host',
+            '../breakpad/breakpad.gyp:minidump_dump#host',
+            '../breakpad/breakpad.gyp:minidump_stackwalk#host',
+            '../build/android/tests/multiple_proguards/multiple_proguards.gyp:multiple_proguards_test_apk',
+            '../cc/cc_tests.gyp:cc_perftests_apk',
+            '../cc/cc_tests.gyp:cc_unittests',
+            '../chrome/chrome.gyp:unit_tests',
+            '../components/components_tests.gyp:components_unittests',
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../content/content_shell_and_tests.gyp:content_gl_tests',
+            '../content/content_shell_and_tests.gyp:content_shell_test_apk',
+            '../content/content_shell_and_tests.gyp:content_unittests',
+            '../gpu/gpu.gyp:gl_tests',
+            '../gpu/gpu.gyp:gpu_unittests',
+            '../ipc/ipc.gyp:ipc_tests',
+            '../media/media.gyp:media_perftests_apk',
+            '../media/media.gyp:media_unittests',
+            '../net/net.gyp:net_unittests',
+            '../sandbox/sandbox.gyp:sandbox_linux_unittests',
+            '../sql/sql.gyp:sql_unittests',
+            '../sync/sync.gyp:sync_unit_tests',
+            '../third_party/WebKit/public/all.gyp:*',
+            '../tools/android/android_tools.gyp:android_tools',
+            '../tools/android/android_tools.gyp:memconsumer',
+            '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
+            '../ui/ui_unittests.gyp:ui_unittests',
+            # Required by ui_unittests.
+            # TODO(wangxianzhu): It'd better let ui_unittests depend on it, but
+            # this would cause circular gyp dependency which needs refactoring the
+            # gyps to resolve.
+            '../chrome/chrome_resources.gyp:packed_resources',
+          ],
+          'conditions': [
+            ['"<(gtest_target_type)"=="shared_library"', {
+              'dependencies': [
+                # Unit test bundles packaged as an apk.
+                '../android_webview/android_webview.gyp:android_webview_unittests_apk',
+                '../base/base.gyp:base_unittests_apk',
+                '../cc/cc_tests.gyp:cc_unittests_apk',
+                '../chrome/chrome.gyp:unit_tests_apk',
+                '../components/components_tests.gyp:components_unittests_apk',
+                '../content/content_shell_and_tests.gyp:content_browsertests_apk',
+                '../content/content_shell_and_tests.gyp:content_gl_tests_apk',
+                '../content/content_shell_and_tests.gyp:content_unittests_apk',
+                '../content/content_shell_and_tests.gyp:video_decode_accelerator_unittest_apk',
+                '../gpu/gpu.gyp:gl_tests_apk',
+                '../gpu/gpu.gyp:gpu_unittests_apk',
+                '../ipc/ipc.gyp:ipc_tests_apk',
+                '../media/media.gyp:media_unittests_apk',
+                '../net/net.gyp:net_unittests_apk',
+                '../sandbox/sandbox.gyp:sandbox_linux_jni_unittests_apk',
+                '../sql/sql.gyp:sql_unittests_apk',
+                '../sync/sync.gyp:sync_unit_tests_apk',
+                '../ui/ui_unittests.gyp:ui_unittests_apk',
+                '../android_webview/android_webview.gyp:android_webview_test_apk',
+                '../chrome/chrome.gyp:chromium_testshell_test_apk',
+                '../chrome/chrome.gyp:chromium_testshell_uiautomator_tests',
+                '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests_apk'
+              ],
+            }],
+          ],
+        },
+        {
+          # WebRTC Android APK tests.
+          'target_name': 'android_builder_webrtc',
+          'type': 'none',
+          'variables': {
+            # Set default value for include_tests to '0'. It is normally only
+            # used in WebRTC GYP files. It is set to '1' only when building
+            # WebRTC for Android, inside a Chromium checkout.
+            'include_tests%': 0,
+          },
+          'conditions': [
+            ['"<(gtest_target_type)"=="shared_library" and include_tests==1', {
+              'dependencies': [
+                '../third_party/webrtc/build/apk_tests.gyp:*',
+              ],
+            }],
+          ],
+        },  # target_name: android_builder_webrtc
+        {
+          # WebRTC Chromium tests to run on Android.
+          'target_name': 'android_builder_chromium_webrtc',
+          'type': 'none',
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:content_browsertests',
+            '../tools/android/android_tools.gyp:android_tools',
+            '../tools/android/android_tools.gyp:memconsumer',
+          ],
+          'conditions': [
+            ['"<(gtest_target_type)"=="shared_library"', {
+              'dependencies': [
+                # Unit test bundles packaged as an apk.
+                '../content/content_shell_and_tests.gyp:content_browsertests_apk',
+              ],
+            }],
+          ],
+        },  # target_name: android_builder_chromium_webrtc
+        {
+          # Build the java portions of the binary size analysis tool.
+          'target_name': 'binary_size_tool',
+          'type': 'none',
+          'dependencies': [
+            '../tools/binary_size/binary_size.gyp:binary_size_java',
+          ],
+        },
+      ], # targets
+    }], # OS="android"
     ['OS=="mac"', {
       'targets': [
         {

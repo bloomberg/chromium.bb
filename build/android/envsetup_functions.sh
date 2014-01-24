@@ -143,8 +143,11 @@ common_gyp_vars() {
   # Use our All target as the default
   export GYP_GENERATOR_FLAGS="${GYP_GENERATOR_FLAGS} default_target=All"
 
-  # We want to use our version of "all" targets.
-  export CHROMIUM_GYP_FILE="${CHROME_SRC}/build/all_android.gyp"
+  # TODO(thakis): Remove this after a week or two. Sourcing envsetup.sh used to
+  # set this variable, but now that all_android.gyp is gone having it set will
+  # lead to errors, so explicitly unset it to remove it from the environment of
+  # developers who keep their shells open for weeks (most of them, probably).
+  unset CHROMIUM_GYP_FILE
 }
 
 

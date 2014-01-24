@@ -2606,7 +2606,7 @@
         },
       ],
     }],
-    ['OS != "ios"', {
+    ['OS != "ios" and OS != "android"', {
       'targets': [
         # iOS doesn't have the concept of simple executables, these targets
         # can't be compiled on the platform.
