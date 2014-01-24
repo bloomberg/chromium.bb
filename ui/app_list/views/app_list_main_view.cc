@@ -100,11 +100,8 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
 }
 
 void AppListMainView::AddContentsView() {
-  contents_view_ =
-      new ContentsView(this,
-                       pagination_model_,
-                       model_,
-                       delegate_ ? delegate_->GetStartPageContents() : NULL);
+  contents_view_ = new ContentsView(
+      this, pagination_model_, model_, delegate_);
   AddChildView(contents_view_);
 
   search_box_view_->set_contents_view(contents_view_);

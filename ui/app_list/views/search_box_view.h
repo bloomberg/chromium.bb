@@ -24,6 +24,7 @@ namespace app_list {
 class AppListMenuViews;
 class AppListModel;
 class AppListViewDelegate;
+class ContentsView;
 class SearchBoxModel;
 class SearchBoxViewDelegate;
 
@@ -48,7 +49,7 @@ class SearchBoxView : public views::View,
 
   views::Textfield* search_box() { return search_box_; }
 
-  void set_contents_view(View* contents_view) {
+  void set_contents_view(ContentsView* contents_view) {
     contents_view_ = contents_view;
   }
 
@@ -95,7 +96,7 @@ class SearchBoxView : public views::View,
   views::ImageButton* speech_button_;  // Owned by views hierarchy.
   views::MenuButton* menu_button_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
-  views::View* contents_view_;  // Owned by views hierarchy.
+  ContentsView* contents_view_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };

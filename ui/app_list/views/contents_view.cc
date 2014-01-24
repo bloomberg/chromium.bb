@@ -47,9 +47,10 @@ SearchResultListView* GetSearchResultListView(views::ViewModel* model) {
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            PaginationModel* pagination_model,
                            AppListModel* model,
-                           content::WebContents* start_page_contents)
+                           AppListViewDelegate* view_delegate)
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
+      view_delegate_(view_delegate),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
   DCHECK(model);
@@ -57,6 +58,8 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);
 
+  content::WebContents* start_page_contents =
+      view_delegate ? view_delegate->GetStartPageContents() : NULL;
   apps_container_view_ = new AppsContainerView(
       app_list_main_view, pagination_model, model, start_page_contents);
   AddChildView(apps_container_view_);
@@ -142,10 +145,21 @@ void ContentsView::AnimateToIdealBounds() {
 
 void ContentsView::ShowSearchResults(bool show) {
   SetShowState(show ? SHOW_SEARCH_RESULTS : SHOW_APPS);
+  SearchResultListView* results_view =
+      GetSearchResultListView(view_model_.get());
+  if (show)
+    results_view->SetAutoLaunchTimeout(view_delegate_->GetAutoLaunchTimeout());
+  else
+    results_view->CancelAutoLaunchTimeout();
 }
 
 void ContentsView::ShowFolderContent(AppListFolderItem* item) {
   apps_container_view_->ShowActiveFolder(item);
+}
+
+void ContentsView::CancelAutoLaunch() {
+  GetSearchResultListView(view_model_.get())->CancelAutoLaunchTimeout();
+  view_delegate_->AutoLaunchCanceled();
 }
 
 void ContentsView::Prerender() {
@@ -170,6 +184,7 @@ void ContentsView::Layout() {
 }
 
 bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
+  CancelAutoLaunch();
   switch (show_state_) {
     case SHOW_APPS:
       return GetAppsContainerView(view_model_.get())->OnKeyPressed(event);

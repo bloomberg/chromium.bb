@@ -52,6 +52,8 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual void InvokeSearchResultAction(SearchResult* result,
                                         int action_index,
                                         int event_flags) OVERRIDE {}
+  virtual base::TimeDelta GetAutoLaunchTimeout() OVERRIDE;
+  virtual void AutoLaunchCanceled() OVERRIDE {}
   virtual void ViewInitialized() OVERRIDE {}
   virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE {}

@@ -11,6 +11,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/views/app_list_menu_views.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -175,6 +176,7 @@ void SearchBoxView::NotifyQueryChanged() {
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
   UpdateModel();
+  contents_view_->CancelAutoLaunch();
   NotifyQueryChanged();
 }
 

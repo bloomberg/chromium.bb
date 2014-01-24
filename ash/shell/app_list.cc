@@ -276,6 +276,13 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
+  virtual base::TimeDelta GetAutoLaunchTimeout() OVERRIDE {
+    return base::TimeDelta();
+  }
+
+  virtual void AutoLaunchCanceled() OVERRIDE {
+  }
+
   virtual void StartSearch() OVERRIDE {
     base::string16 query;
     TrimWhitespace(model_->search_box()->text(), TRIM_ALL, &query);

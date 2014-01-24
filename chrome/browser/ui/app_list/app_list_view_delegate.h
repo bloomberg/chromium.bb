@@ -75,6 +75,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void InvokeSearchResultAction(app_list::SearchResult* result,
                                         int action_index,
                                         int event_flags) OVERRIDE;
+  virtual base::TimeDelta GetAutoLaunchTimeout() OVERRIDE;
+  virtual void AutoLaunchCanceled() OVERRIDE;
   virtual void ViewInitialized() OVERRIDE;
   virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
@@ -124,6 +126,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   app_list::AppListModel* model_;
 
   app_list::SpeechUIModel speech_ui_;
+
+  base::TimeDelta auto_launch_timeout_;
 
   Users users_;
 

@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "ui/app_list/app_list_export.h"
 
 namespace base {
@@ -97,6 +98,13 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual void InvokeSearchResultAction(SearchResult* result,
                                         int action_index,
                                         int event_flags) = 0;
+
+  // Gets the timeout for auto-launching the first search result, or 0 if the
+  //  auto-launch should not happen for the current search session.
+  virtual base::TimeDelta GetAutoLaunchTimeout() = 0;
+
+  // Invoked when the auto-launch is canceled by the user action.
+  virtual void AutoLaunchCanceled() = 0;
 
   // Invoked when the app list UI is created.
   virtual void ViewInitialized() = 0;

@@ -39,7 +39,7 @@ class ContentsView : public views::View {
   ContentsView(AppListMainView* app_list_main_view,
                PaginationModel* pagination_model,
                AppListModel* model,
-               content::WebContents* start_page_contents);
+               AppListViewDelegate* view_delegate);
   virtual ~ContentsView();
 
   // The app list gets closed and drag and drop operations need to be cancelled.
@@ -52,10 +52,17 @@ class ContentsView : public views::View {
 
   void ShowSearchResults(bool show);
   void ShowFolderContent(AppListFolderItem* folder);
+  void CancelAutoLaunch();
 
   void Prerender();
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
+
+  // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
  private:
   enum ShowState {
@@ -72,12 +79,6 @@ class ContentsView : public views::View {
   void CalculateIdealBounds();
   void AnimateToIdealBounds();
 
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
-
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
@@ -86,6 +87,8 @@ class ContentsView : public views::View {
   PaginationModel* pagination_model_;  // Owned by AppListController.
 
   AppsContainerView* apps_container_view_;  // Owned by the views hierarchy.
+
+  AppListViewDelegate* view_delegate_;  // Owned by AppListView
 
   scoped_ptr<views::ViewModel> view_model_;
   scoped_ptr<views::BoundsAnimator> bounds_animator_;

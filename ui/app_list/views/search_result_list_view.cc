@@ -8,14 +8,21 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/events/event.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
 
 const int kMaxResults = 6;
+const int kTimeoutIndicatorHeight = 2;
+const int kTimeoutFramerate = 60;
+const SkColor kTimeoutIndicatorColor = SkColorSetRGB(30, 144, 255);
 
 }  // namespace
 
@@ -25,14 +32,23 @@ SearchResultListView::SearchResultListView(
     SearchResultListViewDelegate* delegate)
     : delegate_(delegate),
       results_(NULL),
+      results_container_(new views::View),
+      auto_launch_indicator_(new views::View),
       last_visible_index_(0),
       selected_index_(-1),
       update_factory_(this) {
-  SetLayoutManager(
+  results_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   for (int i = 0; i < kMaxResults; ++i)
-    AddChildView(new SearchResultView(this, this));
+    results_container_->AddChildView(new SearchResultView(this, this));
+  AddChildView(results_container_);
+
+  auto_launch_indicator_->set_background(
+      views::Background::CreateSolidBackground(kTimeoutIndicatorColor));
+  auto_launch_indicator_->SetVisible(false);
+
+  AddChildView(auto_launch_indicator_);
 }
 
 SearchResultListView::~SearchResultListView() {
@@ -77,13 +93,32 @@ bool SearchResultListView::IsResultViewSelected(
   if (selected_index_ < 0)
     return false;
 
-  return static_cast<const SearchResultView*>(child_at(selected_index_)) ==
-      result_view;
+  return static_cast<const SearchResultView*>(
+      results_container_->child_at(selected_index_)) == result_view;
+}
+
+void SearchResultListView::SetAutoLaunchTimeout(
+    const base::TimeDelta& timeout) {
+  if (timeout > base::TimeDelta()) {
+    auto_launch_indicator_->SetVisible(true);
+    auto_launch_indicator_->SetBounds(0, 0, 0, kTimeoutIndicatorHeight);
+    auto_launch_animation_.reset(new gfx::LinearAnimation(
+        timeout.InMilliseconds(), kTimeoutFramerate, this));
+  } else {
+    auto_launch_indicator_->SetVisible(false);
+    auto_launch_animation_.reset();
+  }
+}
+
+void SearchResultListView::CancelAutoLaunchTimeout() {
+  SetAutoLaunchTimeout(base::TimeDelta());
 }
 
 bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (selected_index_ >= 0 && child_at(selected_index_)->OnKeyPressed(event))
+  if (selected_index_ >= 0 &&
+      results_container_->child_at(selected_index_)->OnKeyPressed(event)) {
     return true;
+  }
 
   switch (event.key_code()) {
     case ui::VKEY_TAB:
@@ -101,17 +136,19 @@ bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
     default:
       break;
   }
+
   return false;
 }
 
 SearchResultView* SearchResultListView::GetResultViewAt(int index) {
-  DCHECK(index >= 0 && index < child_count());
-  return static_cast<SearchResultView*>(child_at(index));
+  DCHECK(index >= 0 && index < results_container_->child_count());
+  return static_cast<SearchResultView*>(results_container_->child_at(index));
 }
 
 void SearchResultListView::Update() {
   last_visible_index_ = 0;
-  for (size_t i = 0; i < static_cast<size_t>(child_count()); ++i) {
+  for (size_t i = 0; i < static_cast<size_t>(results_container_->child_count());
+       ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
     if (i < results_->item_count()) {
       result_view->SetResult(results_->GetItemAt(i));
@@ -127,6 +164,8 @@ void SearchResultListView::Update() {
 
   Layout();
   update_factory_.InvalidateWeakPtrs();
+  if (auto_launch_animation_)
+    auto_launch_animation_->Start();
 }
 
 void SearchResultListView::ScheduleUpdate() {
@@ -140,12 +179,47 @@ void SearchResultListView::ScheduleUpdate() {
   }
 }
 
+void SearchResultListView::Layout() {
+  results_container_->SetBoundsRect(GetLocalBounds());
+}
+
+gfx::Size SearchResultListView::GetPreferredSize() {
+  return results_container_->GetPreferredSize();
+}
+
+int SearchResultListView::GetHeightForWidth(int w) {
+  return results_container_->GetHeightForWidth(w);
+}
+
+void SearchResultListView::VisibilityChanged(views::View* starting_from,
+                                             bool is_visible) {
+  if (!is_visible) {
+    auto_launch_indicator_->SetVisible(false);
+    auto_launch_animation_.reset();
+  }
+}
+
+void SearchResultListView::AnimationEnded(const gfx::Animation* animation) {
+  DCHECK_EQ(auto_launch_animation_.get(), animation);
+  delegate_->OpenResult(results_->GetItemAt(0), ui::EF_NONE);
+}
+
+void SearchResultListView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  DCHECK_EQ(auto_launch_animation_.get(), animation);
+  int indicator_width = auto_launch_animation_->CurrentValueBetween(0, width());
+  auto_launch_indicator_->SetBounds(
+      0, 0, indicator_width, kTimeoutIndicatorHeight);
+}
+
 void SearchResultListView::ListItemsAdded(size_t start, size_t count) {
   ScheduleUpdate();
 }
 
 void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
-  size_t last = std::min(start + count, static_cast<size_t>(child_count()));
+  size_t last = std::min(
+      start + count,
+      static_cast<size_t>(results_container_->child_count()));
   for (size_t i = start; i < last; ++i)
     GetResultViewAt(i)->ClearResultNoRepaint();
 

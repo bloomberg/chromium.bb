@@ -48,6 +48,8 @@
 
 namespace {
 
+const int kAutoLaunchDefaultTimeoutSec = 3;
+
 #if defined(OS_WIN)
 void CreateShortcutInWebAppDir(
     const base::FilePath& app_data_dir,
@@ -228,6 +230,14 @@ void AppListViewDelegate::InvokeSearchResultAction(
   search_controller_->InvokeResultAction(result, action_index, event_flags);
 }
 
+base::TimeDelta AppListViewDelegate::GetAutoLaunchTimeout() {
+  return auto_launch_timeout_;
+}
+
+void AppListViewDelegate::AutoLaunchCanceled() {
+  auto_launch_timeout_ = base::TimeDelta();
+}
+
 void AppListViewDelegate::ViewInitialized() {
   content::WebContents* contents = GetSpeechRecognitionContents();
   if (contents) {
@@ -301,8 +311,11 @@ void AppListViewDelegate::ShowForProfileByPath(
 void AppListViewDelegate::OnSpeechResult(const base::string16& result,
                                          bool is_final) {
   speech_ui_.SetSpeechResult(result, is_final);
-  if (is_final)
+  if (is_final) {
+    auto_launch_timeout_ = base::TimeDelta::FromSeconds(
+        kAutoLaunchDefaultTimeoutSec);
     model_->search_box()->SetText(result);
+  }
 }
 
 void AppListViewDelegate::OnSpeechSoundLevelChanged(int16 level) {
