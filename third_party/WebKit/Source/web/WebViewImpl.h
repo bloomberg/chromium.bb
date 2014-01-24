@@ -444,8 +444,7 @@ public:
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
 
     // Creates a Helper Plugin of |pluginType| for |hostDocument|.
-    WebHelperPluginImpl* createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
-    void closeHelperPluginSoon(PassRefPtr<WebHelperPluginImpl>);
+    PassOwnPtr<WebHelperPluginImpl> createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.
@@ -605,6 +604,11 @@ private:
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
+    friend class WebHelperPluginImpl;
+    // Take ownership of the Helper Plugin and destroy it asynchronously.
+    // Called by WebHelperPluginImpl::closeAndDeleteSoon() to ensure the Helper
+    // Plugin is closed at the correct time.
+    void closeAndDeleteHelperPluginSoon(WebHelperPluginImpl*);
     void closePendingHelperPlugins(WebCore::Timer<WebViewImpl>*);
 
     WebCore::InputMethodContext* inputMethodContext();
@@ -775,7 +779,7 @@ private:
     float m_zoomFactorOverride;
 
     WebCore::Timer<WebViewImpl> m_helperPluginCloseTimer;
-    Vector<RefPtr<WebHelperPluginImpl> > m_helperPluginsPendingClose;
+    Vector<WebHelperPluginImpl*> m_helperPluginsPendingClose;
 };
 
 // We have no ways to check if the specified WebView is an instance of

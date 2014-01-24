@@ -1450,20 +1450,19 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup = 0;
 }
 
-WebHelperPluginImpl* WebViewImpl::createHelperPlugin(const String& pluginType, const WebDocument& hostDocument)
+PassOwnPtr<WebHelperPluginImpl> WebViewImpl::createHelperPlugin(const String& pluginType, const WebDocument& hostDocument)
 {
     WebWidget* popupWidget = m_client->createPopupMenu(WebPopupTypeHelperPlugin);
     ASSERT(popupWidget);
-    WebHelperPluginImpl* helperPlugin = toWebHelperPluginImpl(popupWidget);
+    OwnPtr<WebHelperPluginImpl> helperPlugin = adoptPtr(toWebHelperPluginImpl(popupWidget));
 
-    if (!helperPlugin->initialize(pluginType, hostDocument, this)) {
-        helperPlugin->closeHelperPlugin();
-        helperPlugin = 0;
-    }
-    return helperPlugin;
+    if (!helperPlugin->initialize(pluginType, hostDocument, this))
+        helperPlugin.clear();
+
+    return helperPlugin.release();
 }
 
-void WebViewImpl::closeHelperPluginSoon(PassRefPtr<WebHelperPluginImpl> helperPlugin)
+void WebViewImpl::closeAndDeleteHelperPluginSoon(WebHelperPluginImpl* helperPlugin)
 {
     m_helperPluginsPendingClose.append(helperPlugin);
     if (!m_helperPluginCloseTimer.isActive())
@@ -1475,11 +1474,11 @@ void WebViewImpl::closePendingHelperPlugins(Timer<WebViewImpl>* timer)
     ASSERT_UNUSED(timer, !timer || timer == &m_helperPluginCloseTimer);
     ASSERT(!m_helperPluginsPendingClose.isEmpty());
 
-    Vector<RefPtr<WebHelperPluginImpl> > helperPlugins;
+    Vector<WebHelperPluginImpl*> helperPlugins;
     helperPlugins.swap(m_helperPluginsPendingClose);
-    for (Vector<RefPtr<WebHelperPluginImpl> >::iterator it = helperPlugins.begin();
+    for (Vector<WebHelperPluginImpl*>::iterator it = helperPlugins.begin();
         it != helperPlugins.end(); ++it) {
-        (*it)->closeHelperPlugin();
+        (*it)->closeAndDelete();
     }
     ASSERT(m_helperPluginsPendingClose.isEmpty());
 }

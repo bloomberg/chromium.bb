@@ -165,11 +165,11 @@ WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginT
     return plugin;
 }
 
-
+// FIXME: |frame| no longer needed.
 void WebMediaPlayerClientImpl::closeHelperPluginSoon(WebFrame* frame)
 {
     ASSERT(m_helperPlugin);
-    toWebViewImpl(frame->view())->closeHelperPluginSoon(m_helperPlugin.release());
+    m_helperPlugin.clear();
 }
 
 void WebMediaPlayerClientImpl::setWebLayer(blink::WebLayer* layer)
@@ -606,7 +606,6 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     : m_client(client)
     , m_delayingLoad(false)
     , m_preload(MediaPlayer::Auto)
-    , m_helperPlugin(0)
     , m_needsWebLayerForVideo(false)
     , m_volume(1.0)
     , m_muted(false)

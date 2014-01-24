@@ -81,9 +81,8 @@ private:
     virtual void closeWindowSoon() OVERRIDE
     {
         // This should never be called since the only way to close the
-        // invisible page is via closeHelperPlugin().
-        ASSERT_NOT_REACHED();
-        m_widget->closeHelperPlugin();
+        // invisible page is via closeAndDelete().
+        RELEASE_ASSERT_NOT_REACHED();
     }
 
     virtual void* webView() const OVERRIDE
@@ -132,6 +131,7 @@ WebHelperPluginImpl::WebHelperPluginImpl(WebWidgetClient* client)
 WebHelperPluginImpl::~WebHelperPluginImpl()
 {
     ASSERT(!m_page);
+    ASSERT(!m_widgetClient); // Should only be called via close().
 }
 
 bool WebHelperPluginImpl::initialize(const String& pluginType, const WebDocument& hostDocument, WebViewImpl* webView)
@@ -142,7 +142,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType, const WebDocument
     return initializePage(pluginType, hostDocument);
 }
 
-void WebHelperPluginImpl::closeHelperPlugin()
+void WebHelperPluginImpl::closeAndDelete()
 {
     if (m_page) {
         m_page->clearPageGroup();
@@ -154,12 +154,16 @@ void WebHelperPluginImpl::closeHelperPlugin()
     // destroyed by the time this->close() is called asynchronously.
     destroyPage();
 
-    // m_widgetClient might be 0 because this widget might be already closed.
-    if (m_widgetClient) {
-        // closeWidgetSoon() will call this->close() later.
-        m_widgetClient->closeWidgetSoon();
-    }
+    // closeWidgetSoon() will call this->close() later.
+    m_widgetClient->closeWidgetSoon();
+
     m_mainFrame->close();
+    m_mainFrame = 0;
+}
+
+void WebHelperPluginImpl::closeAndDeleteSoon()
+{
+    m_webView->closeAndDeleteHelperPluginSoon(this);
 }
 
 void WebHelperPluginImpl::initializeFrame(WebFrameClient* client)
@@ -244,9 +248,10 @@ void WebHelperPluginImpl::setFocus(bool)
 
 void WebHelperPluginImpl::close()
 {
-    ASSERT(!m_page); // Should only be called via closePopup().
+    RELEASE_ASSERT(!m_page); // Should only be called via closeAndDelete().
+    RELEASE_ASSERT(!m_mainFrame); // This function must be called asynchronously, after closeAndDelete() completes.
     m_widgetClient = 0;
-    deref();
+    delete this;
 }
 
 // WebHelperPlugin ----------------------------------------------------------------
@@ -254,13 +259,11 @@ void WebHelperPluginImpl::close()
 WebHelperPlugin* WebHelperPlugin::create(WebWidgetClient* client)
 {
     RELEASE_ASSERT(client);
-    // A WebHelperPluginImpl instance usually has two references.
-    //  - One owned by the instance itself. It represents the visible widget.
-    //  - One owned by the hosting element. It's released when the hosting
-    //    element asks the WebHelperPluginImpl to close.
-    // We need them because the closing operation is asynchronous and the widget
-    // can be closed while the hosting element is unaware of it.
-    return adoptRef(new WebHelperPluginImpl(client)).leakRef();
+
+    // The returned object is owned by the caller, which must destroy it by
+    // calling closeAndDelete(). The WebWidgetClient must not call close()
+    // other than as a result of closeAndDelete().
+    return new WebHelperPluginImpl(client);
 }
 
 } // namespace blink
