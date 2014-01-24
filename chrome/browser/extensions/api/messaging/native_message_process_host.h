@@ -52,26 +52,20 @@ class NativeMessageProcessHost
                               const std::string& error_message) = 0;
   };
 
-  // Result returned from IsHostAllowed().
-  enum PolicyPermission {
-    DISALLOW,           // The host is not allowed.
-    ALLOW_SYSTEM_ONLY,  // Allowed only when installed on system level.
-    ALLOW_ALL,          // Allowed when installed on system or user level.
-  };
-
   virtual ~NativeMessageProcessHost();
 
-  // Returns policy permissions for the host with the specified name.
-  static PolicyPermission IsHostAllowed(const PrefService* pref_service,
-                                        const std::string& native_host_name);
+  // Verifies that the native messaging host with the specified name is allowed
+  // by the system policies.
+  static bool IsHostAllowed(
+      const PrefService* pref_service,
+      const std::string& native_host_name);
 
   static scoped_ptr<NativeMessageProcessHost> Create(
       gfx::NativeView native_view,
       base::WeakPtr<Client> weak_client_ui,
       const std::string& source_extension_id,
       const std::string& native_host_name,
-      int destination_port,
-      bool allow_user_level);
+      int destination_port);
 
   // Create using specified |launcher|. Used in tests.
   static scoped_ptr<NativeMessageProcessHost> CreateWithLauncher(

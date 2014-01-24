@@ -41,8 +41,6 @@ const char kLastChromeVersion[] = "extensions.last_chrome_version";
 const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
 const char kNativeMessagingBlacklist[] = "native_messaging.blacklist";
 const char kNativeMessagingWhitelist[] = "native_messaging.whitelist";
-const char kNativeMessagingUserLevelHosts[] =
-    "native_messaging.user_level_hosts";
 const char kNextUpdateCheck[] = "extensions.autoupdate.next_check";
 const char kStorageGarbageCollect[] = "extensions.storage.garbagecollect";
 const char kToolbar[] = "extensions.toolbar";

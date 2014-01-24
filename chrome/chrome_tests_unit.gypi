@@ -381,7 +381,6 @@
         ['OS=="android"', {
           'sources/': [
             ['exclude', '^browser/media_galleries/'],
-            ['exclude', '^browser/extensions/api/messaging/native_messaging_'],
           ],
         }],
         ['OS=="win"', {

@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 253
+#   For your editing convenience: highest ID currently used: 252
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2634,29 +2634,6 @@
 
           By default, all native messaging hosts are whitelisted, but if all native messaging hosts have been blacklisted by policy, the whitelist can be used to override that policy.''',
           'label': '''Names of the native messaging hosts to exempt from the blacklist''',
-        },
-        {
-          'name': 'NativeMessagingUserLevelHosts',
-          'type': 'main',
-          'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:34-'],
-          'features': {
-            'dynamic_refresh': True,
-            'per_profile': True,
-          },
-          'example_value': False,
-          'id': 253,
-          'caption': '''Allow user-level Native Messaging hosts (installed without admin permissions).''',
-          'desc': '''Enables user-level installation of Native Messaging hosts.
-
-          If this setting is enabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows
-          usage of Native Messaging hosts installed on user level.
-
-          If this setting is disabled then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will
-          only use Native Messaging hosts installed on system level.
-
-          If this setting is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-          will allow usage of user-level Native Messaging hosts.''',
         },
       ],
     },

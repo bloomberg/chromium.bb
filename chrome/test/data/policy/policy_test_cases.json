@@ -1975,14 +1975,6 @@
     ]
   },
 
-  "NativeMessagingUserLevelHosts": {
-    "os": ["win", "linux", "mac"],
-    "test_policy": { "NativeMessagingUserLevelHosts": false },
-    "pref_mappings": [
-      { "pref": "native_messaging.user_level_hosts" }
-    ]
-  },
-
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

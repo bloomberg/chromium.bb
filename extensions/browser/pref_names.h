@@ -74,9 +74,6 @@ extern const char kLastUpdateCheck[];
 extern const char kNativeMessagingBlacklist[];
 extern const char kNativeMessagingWhitelist[];
 
-// Flag allowing usage of Native Messaging hosts installed on user level.
-extern const char kNativeMessagingUserLevelHosts[];
-
 // Time of the next scheduled extensions auto-update checks.
 extern const char kNextUpdateCheck[];
 

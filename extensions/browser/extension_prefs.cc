@@ -1753,10 +1753,6 @@ void ExtensionPrefs::RegisterProfilePrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(pref_names::kNativeMessagingWhitelist,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      pref_names::kNativeMessagingUserLevelHosts,
-      true,  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 template <class ExtensionIdContainer>
