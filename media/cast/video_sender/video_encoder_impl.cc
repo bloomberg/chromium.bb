@@ -5,8 +5,6 @@
 #include "media/cast/video_sender/video_encoder.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
@@ -16,66 +14,12 @@
 namespace media {
 namespace cast {
 
-namespace {
-
-typedef base::Callback<void(Vp8Encoder*)> PassEncoderCallback;
-
 void LogFrameEncodedEvent(const base::TimeTicks& now,
-                          scoped_refptr<CastEnvironment> cast_environment,
+                          CastEnvironment* const cast_environment,
                           const base::TimeTicks& capture_time) {
-  DCHECK(cast_environment->CurrentlyOn(CastEnvironment::MAIN));
   cast_environment->Logging()->InsertFrameEvent(now, kVideoFrameEncoded,
       GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
 }
-
-void InitializeVp8EncoderOnEncoderThread(
-    const scoped_refptr<CastEnvironment>& environment,
-    Vp8Encoder* vp8_encoder) {
-  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
-  vp8_encoder->Initialize();
-}
-
-void EncodeVideoFrameOnEncoderThread(
-    scoped_refptr<CastEnvironment> environment,
-    Vp8Encoder* vp8_encoder,
-    const scoped_refptr<media::VideoFrame>& video_frame,
-    const base::TimeTicks& capture_time,
-    const VideoEncoderImpl::CodecDynamicConfig& dynamic_config,
-    const VideoEncoderImpl::FrameEncodedCallback& frame_encoded_callback) {
-  DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
-  if (dynamic_config.key_frame_requested) {
-    vp8_encoder->GenerateKeyFrame();
-  }
-  vp8_encoder->LatestFrameIdToReference(
-      dynamic_config.latest_frame_id_to_reference);
-  vp8_encoder->UpdateRates(dynamic_config.bit_rate);
-
-  scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
-      new transport::EncodedVideoFrame());
-  bool retval = vp8_encoder->Encode(video_frame, encoded_frame.get());
-
-  base::TimeTicks now = environment->Clock()->NowTicks();
-  environment->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(LogFrameEncodedEvent, now, environment, capture_time));
-
-  if (!retval) {
-    VLOG(1) << "Encoding failed";
-    return;
-  }
-  if (encoded_frame->data.size() <= 0) {
-    VLOG(1) << "Encoding resulted in an empty frame";
-    return;
-  }
-  environment->PostTask(
-      CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(
-          frame_encoded_callback,
-          base::Passed(&encoded_frame),
-          capture_time));
-}
-
-}  // namespace
 
 VideoEncoderImpl::VideoEncoderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
@@ -87,12 +31,6 @@ VideoEncoderImpl::VideoEncoderImpl(
       skip_count_(0) {
   if (video_config.codec == transport::kVp8) {
     vp8_encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
-    cast_environment_->PostTask(
-        CastEnvironment::VIDEO_ENCODER, FROM_HERE,
-        base::Bind(
-            &InitializeVp8EncoderOnEncoderThread,
-            cast_environment,
-            vp8_encoder_.get()));
   } else {
     DCHECK(false) << "Invalid config";  // Codec not supported.
   }
@@ -102,14 +40,7 @@ VideoEncoderImpl::VideoEncoderImpl(
   dynamic_config_.bit_rate = video_config.start_bitrate;
 }
 
-VideoEncoderImpl::~VideoEncoderImpl() {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (vp8_encoder_) {
-    cast_environment_->PostTask(
-        CastEnvironment::VIDEO_ENCODER, FROM_HERE,
-        base::Bind(&base::DeletePointer<Vp8Encoder>, vp8_encoder_.release()));
-  }
-}
+VideoEncoderImpl::~VideoEncoderImpl() {}
 
 bool VideoEncoderImpl::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
@@ -129,16 +60,46 @@ bool VideoEncoderImpl::EncodeVideoFrame(
   cast_environment_->Logging()->InsertFrameEvent(now, kVideoFrameSentToEncoder,
       GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
   cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
-      base::Bind(&EncodeVideoFrameOnEncoderThread,
-                 cast_environment_,
-                 vp8_encoder_.get(),
-                 video_frame,
-                 capture_time,
-                 dynamic_config_,
-                 frame_encoded_callback));
+      base::Bind(&VideoEncoderImpl::EncodeVideoFrameEncoderThread,
+                 base::Unretained(this), video_frame, capture_time,
+                 dynamic_config_, frame_encoded_callback));
 
   dynamic_config_.key_frame_requested = false;
   return true;
+}
+
+void VideoEncoderImpl::EncodeVideoFrameEncoderThread(
+    const scoped_refptr<media::VideoFrame>& video_frame,
+    const base::TimeTicks& capture_time,
+    const CodecDynamicConfig& dynamic_config,
+    const FrameEncodedCallback& frame_encoded_callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
+  if (dynamic_config.key_frame_requested) {
+    vp8_encoder_->GenerateKeyFrame();
+  }
+  vp8_encoder_->LatestFrameIdToReference(
+      dynamic_config.latest_frame_id_to_reference);
+  vp8_encoder_->UpdateRates(dynamic_config.bit_rate);
+
+  scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
+      new transport::EncodedVideoFrame());
+  bool retval = vp8_encoder_->Encode(video_frame, encoded_frame.get());
+
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(LogFrameEncodedEvent, now, cast_environment_, capture_time));
+
+  if (!retval) {
+    VLOG(1) << "Encoding failed";
+    return;
+  }
+  if (encoded_frame->data.size() <= 0) {
+    VLOG(1) << "Encoding resulted in an empty frame";
+    return;
+  }
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(frame_encoded_callback,
+          base::Passed(&encoded_frame), capture_time));
 }
 
 // Inform the encoder about the new target bit rate.

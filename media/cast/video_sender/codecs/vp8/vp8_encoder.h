@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "media/cast/cast_config.h"
 #include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
 
@@ -29,10 +28,6 @@ class Vp8Encoder {
              uint8 max_unacked_frames);
 
   ~Vp8Encoder();
-
-  // Initialize the encoder before Encode() can be called. This method
-  // must be called on the thread that Encode() is called.
-  void Initialize();
 
   // Encode a raw image (as a part of a video stream).
   bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
@@ -88,9 +83,6 @@ class Vp8Encoder {
   bool acked_frame_buffers_[kNumberOfVp8VideoBuffers];
   Vp8Buffers last_used_vp8_buffer_;
   int number_of_repeated_buffers_;
-
-  // This is bound to the thread where Initialize() is called.
-  base::ThreadChecker thread_checker_;
 };
 
 }  // namespace cast

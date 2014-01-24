@@ -94,11 +94,6 @@ class VideoEncoderImplTest : public ::testing::Test {
         task_runner_, GetDefaultCastSenderLoggingConfig());
   }
 
-  virtual void TearDown() OVERRIDE {
-    video_encoder_.reset();
-    task_runner_->RunTasks();
-  }
-
   void Configure(uint8 max_unacked_frames) {
     video_encoder_.reset(new VideoEncoderImpl(cast_environment_, video_config_,
        max_unacked_frames));
