@@ -166,6 +166,8 @@
         'layers/layer_lists.h',
         'layers/layer_position_constraint.cc',
         'layers/layer_position_constraint.h',
+        'layers/layer_utils.cc',
+        'layers/layer_utils.h',
         'layers/nine_patch_layer.cc',
         'layers/nine_patch_layer.h',
         'layers/nine_patch_layer_impl.cc',

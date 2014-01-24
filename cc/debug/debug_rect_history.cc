@@ -6,6 +6,7 @@
 
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/layer_utils.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_host.h"
@@ -247,8 +248,11 @@ void DebugRectHistory::SaveLayerAnimationBoundsRects(
        it != end; ++it) {
     if (!it.represents_itself())
       continue;
+
+    // TODO(avallee): Figure out if we should show something for a layer who's
+    // animating bounds but that we can't compute them.
     gfx::BoxF inflated_bounds;
-    if (!(*it)->GetAnimationBounds(&inflated_bounds))
+    if (!LayerUtils::GetAnimationBounds(**it, &inflated_bounds))
       continue;
 
     debug_rects_.push_back(DebugRect(ANIMATION_BOUNDS_RECT_TYPE,

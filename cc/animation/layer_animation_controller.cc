@@ -384,8 +384,38 @@ void LayerAnimationController::RemoveEventObserver(
   event_observers_.RemoveObserver(observer);
 }
 
-bool LayerAnimationController::AnimatedBoundsForBox(const gfx::BoxF& box,
-                                                    gfx::BoxF* bounds) {
+bool LayerAnimationController::HasFilterAnimationThatInflatesBounds() const {
+  for (size_t i = 0; i < active_animations_.size(); ++i) {
+    if (!active_animations_[i]->is_finished() &&
+        active_animations_[i]->target_property() == Animation::Filter &&
+        active_animations_[i]
+            ->curve()
+            ->ToFilterAnimationCurve()
+            ->HasFilterThatMovesPixels())
+      return true;
+  }
+
+  return false;
+}
+
+bool LayerAnimationController::HasTransformAnimationThatInflatesBounds() const {
+  return IsAnimatingProperty(Animation::Transform);
+}
+
+bool LayerAnimationController::FilterAnimationBoundsForBox(
+    const gfx::BoxF& box, gfx::BoxF* bounds) const {
+  // TODO(avallee): Implement.
+  return false;
+}
+
+bool LayerAnimationController::TransformAnimationBoundsForBox(
+    const gfx::BoxF& box,
+    gfx::BoxF* bounds) const {
+  DCHECK(HasTransformAnimationThatInflatesBounds())
+      << "TransformAnimationBoundsForBox will give incorrect results if there "
+      << "are no transform animations affecting bounds, non-animated transform "
+      << "is not known";
+
   // Compute bounds based on animations for which is_finished() is false.
   // Do nothing if there are no such animations; in this case, it is assumed
   // that callers will take care of computing bounds based on the owning layer's

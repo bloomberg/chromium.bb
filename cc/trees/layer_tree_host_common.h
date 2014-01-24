@@ -122,6 +122,21 @@ class CC_EXPORT LayerTreeHostCommon {
   template <typename LayerType>
   static LayerType* FindLayerInSubtree(LayerType* root_layer, int layer_id);
 
+  // Applies the layer's sublayer transform about its anchor point to the
+  // given transform.
+  template <typename LayerType>
+  static void ApplySublayerTransformAboutAnchor(const LayerType& layer,
+                                                gfx::Size bounds,
+                                                gfx::Transform* transform) {
+    if (!layer.sublayer_transform().IsIdentity()) {
+      transform->Translate(layer.anchor_point().x() * bounds.width(),
+                           layer.anchor_point().y() * bounds.height());
+      transform->PreconcatTransform(layer.sublayer_transform());
+      transform->Translate(-layer.anchor_point().x() * bounds.width(),
+                           -layer.anchor_point().y() * bounds.height());
+    }
+  }
+
   static Layer* get_child_as_raw_ptr(
       const LayerList& children,
       size_t index) {

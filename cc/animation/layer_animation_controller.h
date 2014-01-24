@@ -109,7 +109,17 @@ class CC_EXPORT LayerAnimationController
     layer_animation_delegate_ = delegate;
   }
 
-  bool AnimatedBoundsForBox(const gfx::BoxF& box, gfx::BoxF* bounds);
+  bool HasFilterAnimationThatInflatesBounds() const;
+  bool HasTransformAnimationThatInflatesBounds() const;
+  bool HasAnimationThatInflatesBounds() const {
+    return HasTransformAnimationThatInflatesBounds() ||
+           HasFilterAnimationThatInflatesBounds();
+  }
+
+  bool FilterAnimationBoundsForBox(const gfx::BoxF& box,
+                                   gfx::BoxF* bounds) const;
+  bool TransformAnimationBoundsForBox(const gfx::BoxF& box,
+                                      gfx::BoxF* bounds) const;
 
  protected:
   friend class base::RefCounted<LayerAnimationController>;

@@ -153,6 +153,11 @@ int AddAnimatedTransformToLayer(LayerImpl* layer,
                                 int delta_x,
                                 int delta_y);
 
+int AddAnimatedTransformToLayer(LayerImpl* layer,
+                                double duration,
+                                TransformOperations start_operations,
+                                TransformOperations operations);
+
 int AddAnimatedFilterToLayer(Layer* layer,
                              double duration,
                              float start_brightness,

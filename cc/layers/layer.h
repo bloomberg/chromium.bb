@@ -397,10 +397,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
 
-  bool AnimatedBoundsForBox(const gfx::BoxF& box, gfx::BoxF* bounds) {
-    return layer_animation_controller_->AnimatedBoundsForBox(box, bounds);
-  }
-
   LayerAnimationController* layer_animation_controller() {
     return layer_animation_controller_.get();
   }

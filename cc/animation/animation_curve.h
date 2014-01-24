@@ -84,6 +84,7 @@ class CC_EXPORT FilterAnimationCurve : public AnimationCurve {
   virtual ~FilterAnimationCurve() {}
 
   virtual FilterOperations GetValue(double t) const = 0;
+  virtual bool HasFilterThatMovesPixels() const = 0;
 
   // Partial Animation implementation.
   virtual CurveType Type() const OVERRIDE;

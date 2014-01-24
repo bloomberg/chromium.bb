@@ -350,12 +350,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   float contents_scale_y() const { return draw_properties_.contents_scale_y; }
   void SetContentsScale(float contents_scale_x, float contents_scale_y);
 
-  // Computes a box in screen space that should entirely contain the layer's
-  // bounds through the entirety of the layer's current animation. Returns true
-  // and sets |out| to the inflation if there are animations that can inflate
-  // bounds in the path to the root layer. Returns false otherwise.
-  bool GetAnimationBounds(gfx::BoxF* out) const { return false; }
-
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,
                                       float page_scale_factor,
@@ -462,6 +456,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual bool LayerIsAlwaysDamaged() const;
 
   LayerAnimationController* layer_animation_controller() {
+    return layer_animation_controller_.get();
+  }
+
+  const LayerAnimationController* layer_animation_controller() const {
     return layer_animation_controller_.get();
   }
 

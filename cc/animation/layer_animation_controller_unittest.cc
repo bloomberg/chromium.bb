@@ -1376,7 +1376,7 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   EXPECT_NE(0.5f, dummy.opacity());
 }
 
-TEST(LayerAnimationControllerTest, AnimatedBounds) {
+TEST(LayerAnimationControllerTest, TransformAnimationBounds) {
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
 
@@ -1411,7 +1411,7 @@ TEST(LayerAnimationControllerTest, AnimatedBounds) {
   gfx::BoxF box(1.f, 2.f, -1.f, 3.f, 4.f, 5.f);
   gfx::BoxF bounds;
 
-  EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));
+  EXPECT_TRUE(controller_impl->TransformAnimationBoundsForBox(box, &bounds));
   EXPECT_EQ(gfx::BoxF(1.f, 2.f, -4.f, 13.f, 19.f, 20.f).ToString(),
             bounds.ToString());
 
@@ -1419,7 +1419,7 @@ TEST(LayerAnimationControllerTest, AnimatedBounds) {
       ->SetRunState(Animation::Finished, 0.0);
 
   // Only the unfinished animation should affect the animated bounds.
-  EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));
+  EXPECT_TRUE(controller_impl->TransformAnimationBoundsForBox(box, &bounds));
   EXPECT_EQ(gfx::BoxF(1.f, 2.f, -4.f, 7.f, 16.f, 20.f).ToString(),
             bounds.ToString());
 
@@ -1427,8 +1427,7 @@ TEST(LayerAnimationControllerTest, AnimatedBounds) {
       ->SetRunState(Animation::Finished, 0.0);
 
   // There are no longer any running animations.
-  EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));
-  EXPECT_EQ(gfx::BoxF().ToString(), bounds.ToString());
+  EXPECT_FALSE(controller_impl->HasTransformAnimationThatInflatesBounds());
 
   // Add an animation whose bounds we don't yet support computing.
   scoped_ptr<KeyframedTransformAnimationCurve> curve3(
@@ -1444,7 +1443,7 @@ TEST(LayerAnimationControllerTest, AnimatedBounds) {
   animation = Animation::Create(
       curve3.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
   controller_impl->AddAnimation(animation.Pass());
-  EXPECT_FALSE(controller_impl->AnimatedBoundsForBox(box, &bounds));
+  EXPECT_FALSE(controller_impl->TransformAnimationBoundsForBox(box, &bounds));
 }
 
 // Tests that AbortAnimations aborts all animations targeting the specified

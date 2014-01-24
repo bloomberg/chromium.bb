@@ -210,6 +210,7 @@ class CC_EXPORT KeyframedFilterAnimationCurve
 
   // FilterAnimationCurve implementation
   virtual FilterOperations GetValue(double t) const OVERRIDE;
+  virtual bool HasFilterThatMovesPixels() const OVERRIDE;
 
  private:
   KeyframedFilterAnimationCurve();

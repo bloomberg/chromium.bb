@@ -17,10 +17,12 @@
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
 #include "cc/input/layer_scroll_offset_delegate.h"
+#include "cc/layers/layer_utils.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/proxy.h"
@@ -1305,13 +1307,13 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->SetBoolean("can_use_lcd_text", can_use_lcd_text());
   state->SetBoolean("contents_opaque", contents_opaque());
 
-  if (layer_animation_controller_->IsAnimatingProperty(Animation::Transform) ||
-      layer_animation_controller_->IsAnimatingProperty(Animation::Filter)) {
-    gfx::BoxF box(bounds().width(), bounds().height(), 0.f);
-    gfx::BoxF inflated;
-    if (layer_animation_controller_->AnimatedBoundsForBox(box, &inflated))
-      state->Set("animated_bounds", MathUtil::AsValue(inflated).release());
-  }
+  state->SetBoolean(
+      "has_animation_bounds",
+      layer_animation_controller()->HasAnimationThatInflatesBounds());
+
+  gfx::BoxF box;
+  if (LayerUtils::GetAnimationBounds(*this, &box))
+    state->Set("animation_bounds", MathUtil::AsValue(box).release());
 
   if (debug_info_.get()) {
     std::string str;

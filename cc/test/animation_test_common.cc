@@ -55,20 +55,16 @@ int AddOpacityTransition(Target* target,
 template <class Target>
 int AddAnimatedTransform(Target* target,
                          double duration,
-                         int delta_x,
-                         int delta_y) {
+                         TransformOperations start_operations,
+                         TransformOperations operations) {
   scoped_ptr<KeyframedTransformAnimationCurve>
       curve(KeyframedTransformAnimationCurve::Create());
 
   if (duration > 0.0) {
-    TransformOperations start_operations;
-    start_operations.AppendTranslate(delta_x, delta_y, 0.0);
     curve->AddKeyframe(TransformKeyframe::Create(
         0.0, start_operations, scoped_ptr<TimingFunction>()));
   }
 
-  TransformOperations operations;
-  operations.AppendTranslate(delta_x, delta_y, 0.0);
   curve->AddKeyframe(TransformKeyframe::Create(
       duration, operations, scoped_ptr<TimingFunction>()));
 
@@ -83,6 +79,21 @@ int AddAnimatedTransform(Target* target,
 
   target->AddAnimation(animation.Pass());
   return id;
+}
+
+template <class Target>
+int AddAnimatedTransform(Target* target,
+                         double duration,
+                         int delta_x,
+                         int delta_y) {
+  TransformOperations start_operations;
+  if (duration > 0.0) {
+    start_operations.AppendTranslate(delta_x, delta_y, 0.0);
+  }
+
+  TransformOperations operations;
+  operations.AppendTranslate(delta_x, delta_y, 0.0);
+  return AddAnimatedTransform(target, duration, start_operations, operations);
 }
 
 template <class Target>
@@ -295,6 +306,16 @@ int AddAnimatedTransformToLayer(LayerImpl* layer,
                               duration,
                               delta_x,
                               delta_y);
+}
+
+int AddAnimatedTransformToLayer(LayerImpl* layer,
+                                double duration,
+                                TransformOperations start_operations,
+                                TransformOperations operations) {
+  return AddAnimatedTransform(layer->layer_animation_controller(),
+                              duration,
+                              start_operations,
+                              operations);
 }
 
 int AddAnimatedFilterToLayer(Layer* layer,

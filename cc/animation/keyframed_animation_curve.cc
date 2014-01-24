@@ -369,4 +369,13 @@ FilterOperations KeyframedFilterAnimationCurve::GetValue(double t) const {
   return GetCurveValue<FilterOperations, FilterKeyframe>(&keyframes_, t);
 }
 
+bool KeyframedFilterAnimationCurve::HasFilterThatMovesPixels() const {
+  for (size_t i = 0; i < keyframes_.size(); ++i) {
+    if (keyframes_[i]->Value().HasFilterThatMovesPixels()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace cc
