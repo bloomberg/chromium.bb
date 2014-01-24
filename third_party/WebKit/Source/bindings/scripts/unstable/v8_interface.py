@@ -308,7 +308,16 @@ def overload_resolution_expression(method):
     # Expression is an OR of ANDs: each term in the OR corresponds to a
     # possible argument count for a given method, with type checks.
     # FIXME: Blink's overload resolution algorithm is incorrect, per:
+    # Implement WebIDL overload resolution algorithm.
     # https://code.google.com/p/chromium/issues/detail?id=293561
+    #
+    # Currently if distinguishing non-primitive type from primitive type,
+    # (e.g., sequence<DOMString> from DOMString or Dictionary from double)
+    # the method with a non-primitive type argument must appear *first* in the
+    # IDL file, since we're not adding a check to primitive types.
+    # FIXME: Once fixed, check IDLs, as usually want methods with primitive
+    # types to appear first (style-wise).
+    #
     # Properly:
     # 1. Compute effective overload set.
     # 2. First check type list length.
@@ -353,6 +362,12 @@ def overload_check_argument(index, argument):
                             '%s->IsFunction()' % cpp_value])
     if v8_types.is_wrapper_type(idl_type):
         type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type, cpp_value=cpp_value)
+        if argument['is_nullable']:
+            type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
+        return type_check
+    if v8_types.is_interface_type(idl_type):
+        # Non-wrapper types are just objects: we don't distinguish type
+        type_check = '%s->IsObject()' % cpp_value
         if argument['is_nullable']:
             type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
         return type_check
