@@ -172,7 +172,7 @@ ResourceProvider::Resource::Resource()
       imported_count(0),
       exported_count(0),
       locked_for_write(false),
-      external(false),
+      origin(Internal),
       marked_for_deletion(false),
       pending_set_pixels(false),
       set_pixels_completion_forced(false),
@@ -214,7 +214,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       imported_count(0),
       exported_count(0),
       locked_for_write(false),
-      external(false),
+      origin(Internal),
       marked_for_deletion(false),
       pending_set_pixels(false),
       set_pixels_completion_forced(false),
@@ -253,7 +253,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       imported_count(0),
       exported_count(0),
       locked_for_write(false),
-      external(false),
+      origin(Internal),
       marked_for_deletion(false),
       pending_set_pixels(false),
       set_pixels_completion_forced(false),
@@ -446,7 +446,7 @@ ResourceProvider::CreateResourceFromExternalTexture(
                     GL_CLAMP_TO_EDGE,
                     TextureUsageAny,
                     RGBA_8888);
-  resource.external = true;
+  resource.origin = Resource::External;
   resource.allocated = true;
   resources_[id] = resource;
   return id;
@@ -485,7 +485,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
                         GL_LINEAR,
                         GL_CLAMP_TO_EDGE);
   }
-  resource.external = true;
+  resource.origin = Resource::External;
   resource.allocated = true;
   resource.mailbox = mailbox;
   resource.release_callback =
@@ -523,36 +523,36 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     lost_resource = true;
 
   if (resource->image_id) {
+    DCHECK(resource->origin == Resource::Internal);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     GLC(gl, gl->DestroyImageCHROMIUM(resource->image_id));
   }
 
-  if (resource->gl_id && !resource->external) {
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    GLC(gl, gl->DeleteTextures(1, &resource->gl_id));
-  }
   if (resource->gl_upload_query_id) {
+    DCHECK(resource->origin == Resource::Internal);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     GLC(gl, gl->DeleteQueriesEXT(1, &resource->gl_upload_query_id));
   }
   if (resource->gl_pixel_buffer_id) {
+    DCHECK(resource->origin == Resource::Internal);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     GLC(gl, gl->DeleteBuffers(1, &resource->gl_pixel_buffer_id));
   }
-  if (resource->mailbox.IsValid() && resource->external) {
+  if (resource->mailbox.IsValid() && resource->origin == Resource::External) {
     GLuint sync_point = resource->mailbox.sync_point();
     if (resource->mailbox.IsTexture()) {
       lost_resource |= lost_output_surface_;
       GLES2Interface* gl = ContextGL();
       DCHECK(gl);
-      if (resource->gl_id)
+      if (resource->gl_id) {
         GLC(gl, gl->DeleteTextures(1, &resource->gl_id));
-      if (!lost_resource && resource->gl_id)
-        sync_point = gl->InsertSyncPointCHROMIUM();
+        resource->gl_id = 0;
+        if (!lost_resource)
+          sync_point = gl->InsertSyncPointCHROMIUM();
+      }
     } else {
       DCHECK(resource->mailbox.IsSharedMemory());
       base::SharedMemory* shared_memory = resource->mailbox.shared_memory();
@@ -565,14 +565,28 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     }
     resource->release_callback.Run(sync_point, lost_resource);
   }
+  if (resource->gl_id && resource->origin != Resource::External) {
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    GLC(gl, gl->DeleteTextures(1, &resource->gl_id));
+    resource->gl_id = 0;
+  }
   if (resource->shared_bitmap) {
+    DCHECK(resource->origin != Resource::External);
     delete resource->shared_bitmap;
     resource->pixels = NULL;
   }
-  if (resource->pixels)
+  if (resource->pixels) {
+    DCHECK(resource->origin == Resource::Internal);
     delete[] resource->pixels;
-  if (resource->pixel_buffer)
+  }
+  if (resource->pixel_buffer) {
+    DCHECK(resource->origin == Resource::Internal);
     delete[] resource->pixel_buffer;
+  }
+  // We should never delete the texture for a resource created by
+  // CreateResourceFromExternalTexture().
+  DCHECK(!resource->gl_id || resource->origin == Resource::External);
 
   resources_.erase(it);
 }
@@ -590,7 +604,7 @@ void ResourceProvider::SetPixels(ResourceId id,
   Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write);
   DCHECK(!resource->lock_for_read_count);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(ReadLockFenceHasPassed(resource));
   LazyAllocate(resource);
@@ -734,6 +748,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   LazyCreate(resource);
 
   if (!resource->gl_id && resource->mailbox.IsTexture()) {
+    DCHECK(resource->origin != Resource::Internal);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     if (resource->mailbox.sync_point()) {
@@ -767,7 +782,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForWrite(
   DCHECK(!resource->locked_for_write);
   DCHECK(!resource->lock_for_read_count);
   DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK(!resource->lost);
   DCHECK(ReadLockFenceHasPassed(resource));
   LazyAllocate(resource);
@@ -779,15 +794,15 @@ const ResourceProvider::Resource* ResourceProvider::LockForWrite(
 bool ResourceProvider::CanLockForWrite(ResourceId id) {
   Resource* resource = GetResource(id);
   return !resource->locked_for_write && !resource->lock_for_read_count &&
-         !resource->exported_count && !resource->external && !resource->lost &&
-         ReadLockFenceHasPassed(resource);
+         !resource->exported_count && resource->origin == Resource::Internal &&
+         !resource->lost && ReadLockFenceHasPassed(resource);
 }
 
 void ResourceProvider::UnlockForWrite(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->locked_for_write);
   DCHECK_EQ(resource->exported_count, 0);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   resource->locked_for_write = false;
 }
 
@@ -1087,6 +1102,7 @@ void ResourceProvider::ReceiveFromChild(
           TextureMailbox(it->mailbox, it->target, it->sync_point);
     }
     resource.child_id = child;
+    resource.origin = Resource::Delegated;
     // Don't allocate a texture for a child.
     resource.allocated = true;
     resource.imported_count = 1;
@@ -1186,12 +1202,20 @@ void ResourceProvider::ReceiveReturnsFromParent(
     if (resource->enable_read_lock_fences)
       resource->read_lock_fence = current_read_lock_fence_;
 
-    if (resource->gl_id) {
-      if (returned.sync_point)
+    if (returned.sync_point) {
+      DCHECK(!resource->shared_bitmap);
+      if (resource->origin == Resource::Internal) {
+        DCHECK(resource->gl_id);
         GLC(gl, gl->WaitSyncPointCHROMIUM(returned.sync_point));
-    } else if (!resource->shared_bitmap) {
-      resource->mailbox =
-          TextureMailbox(resource->mailbox.name(), returned.sync_point);
+      } else {
+        // Because CreateResourceFromExternalTexture() never be called,
+        // when enabling delegated compositor.
+        DCHECK(!resource->gl_id);
+        resource->mailbox =
+            TextureMailbox(resource->mailbox.name(),
+                           resource->mailbox.target(),
+                           returned.sync_point);
+      }
     }
 
     if (!resource->marked_for_deletion)
@@ -1203,6 +1227,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
       continue;
     }
 
+    DCHECK(resource->origin == Resource::Delegated);
     // Delete the resource and return it to the child it came from one.
     if (resource->child_id != child_id) {
       if (child_id) {
@@ -1234,7 +1259,11 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   Resource* source = GetResource(id);
   DCHECK(!source->locked_for_write);
   DCHECK(!source->lock_for_read_count);
-  DCHECK(!source->external || (source->external && source->mailbox.IsValid()));
+  // Because CreateResourceFromExternalTexture() never be called,
+  // when enabling delegated compositor.
+  DCHECK(source->origin == Resource::Internal ||
+         source->origin == Resource::Delegated ||
+         (source->origin == Resource::External && source->mailbox.IsValid()));
   DCHECK(source->allocated);
   DCHECK_EQ(source->wrap_mode, GL_CLAMP_TO_EDGE);
   resource->id = id;
@@ -1249,6 +1278,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   } else if (!source->mailbox.IsValid()) {
     LazyCreate(source);
     DCHECK(source->gl_id);
+    DCHECK(source->origin == Resource::Internal);
     GLC(gl, gl->BindTexture(resource->target, source->gl_id));
     if (source->image_id) {
       DCHECK(source->dirty_image);
@@ -1264,6 +1294,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     DCHECK(source->mailbox.IsTexture());
     if (source->image_id && source->dirty_image) {
       DCHECK(source->gl_id);
+      DCHECK(source->origin == Resource::Internal);
       GLC(gl, gl->BindTexture(resource->target, source->gl_id));
       BindImageForSampling(source);
     }
@@ -1368,7 +1399,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
 void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
   DCHECK_NE(ETC1, resource->format);
@@ -1399,7 +1430,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
 
 void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
@@ -1437,7 +1468,7 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
 
 uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
@@ -1463,7 +1494,7 @@ uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
 
 void ResourceProvider::UnmapPixelBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
@@ -1624,7 +1655,7 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   if (resource->texture_pool == 0)
     return;
 
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK(!resource->mailbox.IsValid());
   resource->gl_id = texture_id_allocator_->NextId();
 
@@ -1715,7 +1746,7 @@ void ResourceProvider::EnableReadLockFences(ResourceProvider::ResourceId id,
 
 void ResourceProvider::AcquireImage(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
   if (resource->type != GLTexture)
@@ -1736,7 +1767,7 @@ void ResourceProvider::AcquireImage(ResourceId id) {
 
 void ResourceProvider::ReleaseImage(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
   if (!resource->image_id)
@@ -1754,7 +1785,7 @@ void ResourceProvider::ReleaseImage(ResourceId id) {
 uint8_t* ResourceProvider::MapImage(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(ReadLockFenceHasPassed(resource));
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
   if (resource->image_id) {
@@ -1772,7 +1803,7 @@ uint8_t* ResourceProvider::MapImage(ResourceId id) {
 
 void ResourceProvider::UnmapImage(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
   if (resource->image_id) {
@@ -1785,7 +1816,7 @@ void ResourceProvider::UnmapImage(ResourceId id) {
 
 int ResourceProvider::GetImageStride(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
   int stride = 0;
@@ -1802,7 +1833,7 @@ int ResourceProvider::GetImageStride(ResourceId id) {
 
 base::SharedMemory* ResourceProvider::GetSharedMemory(ResourceId id) {
   Resource* resource = GetResource(id);
-  DCHECK(!resource->external);
+  DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
 
   if (!resource->shared_bitmap)

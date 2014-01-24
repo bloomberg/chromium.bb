@@ -393,7 +393,12 @@ class CC_EXPORT ResourceProvider {
     int imported_count;
     int exported_count;
     bool locked_for_write;
-    bool external;
+    enum Origin {
+      Internal,
+      External,
+      Delegated,
+    };
+    Origin origin;
     bool marked_for_deletion;
     bool pending_set_pixels;
     bool set_pixels_completion_forced;
