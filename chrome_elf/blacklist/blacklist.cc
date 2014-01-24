@@ -19,8 +19,10 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace blacklist{
 
-const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {};
-int g_troublesome_dlls_cur_index = 0;
+const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
+  // Keep this null pointer here to mark the end of the list.
+  NULL,
+};
 
 const wchar_t kRegistryBeaconPath[] = L"SOFTWARE\\Google\\Chrome\\BLBeacon";
 const wchar_t kBeaconVersion[] = L"version";
@@ -233,11 +235,20 @@ bool ResetBeacon() {
   return (result == ERROR_SUCCESS);
 }
 
+int BlacklistSize() {
+  int size = -1;
+  while(blacklist::g_troublesome_dlls[++size] != NULL);
+
+  return size;
+}
+
 bool AddDllToBlacklist(const wchar_t* dll_name) {
-  if (g_troublesome_dlls_cur_index >= kTroublesomeDllsMaxCount)
+  int blacklist_size = BlacklistSize();
+  // We need to leave one space at the end for the null pointer.
+  if (blacklist_size + 1 >= kTroublesomeDllsMaxCount)
     return false;
-  for (int i = 0; i < g_troublesome_dlls_cur_index; ++i) {
-    if (!wcscmp(g_troublesome_dlls[i], dll_name))
+  for (int i=0; i < blacklist_size; ++i) {
+    if (!_wcsicmp(g_troublesome_dlls[i], dll_name))
       return true;
   }
 
@@ -245,20 +256,19 @@ bool AddDllToBlacklist(const wchar_t* dll_name) {
   wchar_t* str_buffer = new wchar_t[wcslen(dll_name) + 1];
   wcscpy(str_buffer, dll_name);
 
-  g_troublesome_dlls[g_troublesome_dlls_cur_index] = str_buffer;
-  g_troublesome_dlls_cur_index++;
+  g_troublesome_dlls[blacklist_size] = str_buffer;
   return true;
 }
 
 bool RemoveDllFromBlacklist(const wchar_t* dll_name) {
-  for (int i = 0; i < g_troublesome_dlls_cur_index; ++i) {
-    if (!wcscmp(g_troublesome_dlls[i], dll_name)) {
+  int blacklist_size = BlacklistSize();
+  for (int i = 0; i < blacklist_size; ++i) {
+    if (!_wcsicmp(g_troublesome_dlls[i], dll_name)) {
       // Found the thing to remove. Delete it then replace it with the last
       // element.
-      g_troublesome_dlls_cur_index--;
       delete[] g_troublesome_dlls[i];
-      g_troublesome_dlls[i] = g_troublesome_dlls[g_troublesome_dlls_cur_index];
-      g_troublesome_dlls[g_troublesome_dlls_cur_index] = NULL;
+      g_troublesome_dlls[i] = g_troublesome_dlls[blacklist_size - 1];
+      g_troublesome_dlls[blacklist_size - 1] = NULL;
       return true;
     }
   }

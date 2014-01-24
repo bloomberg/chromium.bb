@@ -35,8 +35,8 @@ FARPROC GetNtDllExportByName(const char* export_name) {
 }
 
 bool DllMatch(const base::string16& module_name) {
-  for (int i = 0; i < blacklist::g_troublesome_dlls_cur_index; ++i) {
-    if (module_name == blacklist::g_troublesome_dlls[i])
+  for (int i = 0; blacklist::g_troublesome_dlls[i] != NULL; ++i) {
+    if (_wcsicmp(module_name.c_str(), blacklist::g_troublesome_dlls[i]) == 0)
       return true;
   }
   return false;

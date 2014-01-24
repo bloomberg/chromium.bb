@@ -13,9 +13,6 @@ const int kTroublesomeDllsMaxCount = 64;
 // The DLL blacklist.
 extern const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount];
 
-// Cursor to the current last element in the blacklist.
-extern int g_troublesome_dlls_cur_index;
-
 // The registry path of the blacklist beacon.
 extern const wchar_t kRegistryBeaconPath[];
 
@@ -46,6 +43,9 @@ bool LeaveSetupBeacon();
 // to show the setup was successful.
 // Returns true if the beacon was successfully set to BLACKLIST_ENABLED.
 bool ResetBeacon();
+
+// Return the size of the current blacklist.
+int BlacklistSize();
 
 // Adds the given dll name to the blacklist. Returns true if the dll name is in
 // the blacklist when this returns, false on error. Note that this will copy

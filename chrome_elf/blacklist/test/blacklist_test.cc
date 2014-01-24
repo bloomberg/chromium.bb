@@ -5,6 +5,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/i18n/case_conversion.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string16.h"
@@ -30,8 +31,8 @@ extern "C" {
 // When modifying the blacklist in the test process, use the exported test dll
 // functions on the test blacklist dll, not the ones linked into the test
 // executable itself.
-__declspec(dllimport) void TestDll_AddDllToBlacklist(const wchar_t* dll_name);
-__declspec(dllimport) void TestDll_RemoveDllFromBlacklist(
+__declspec(dllimport) bool TestDll_AddDllToBlacklist(const wchar_t* dll_name);
+__declspec(dllimport) bool TestDll_RemoveDllFromBlacklist(
     const wchar_t* dll_name);
 }
 
@@ -44,6 +45,7 @@ class BlacklistTest : public testing::Test {
   virtual void TearDown() {
     TestDll_RemoveDllFromBlacklist(kTestDllName1);
     TestDll_RemoveDllFromBlacklist(kTestDllName2);
+    TestDll_RemoveDllFromBlacklist(kTestDllName3);
   }
 };
 
@@ -95,18 +97,23 @@ TEST_F(BlacklistTest, AddAndRemoveModules) {
   EXPECT_TRUE(blacklist::RemoveDllFromBlacklist(L"foo.dll"));
   EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(L"foo.dll"));
 
+  // Increase the blacklist size by 1 to include the NULL pointer
+  // that marks the end.
+  int empty_spaces = blacklist::kTroublesomeDllsMaxCount - (
+      blacklist::BlacklistSize() + 1);
   std::vector<base::string16> added_dlls;
-  added_dlls.reserve(blacklist::kTroublesomeDllsMaxCount);
-  for (int i = 0; i < blacklist::kTroublesomeDllsMaxCount; ++i) {
+  added_dlls.reserve(empty_spaces);
+  for (int i = 0; i < empty_spaces; ++i) {
     added_dlls.push_back(base::IntToString16(i) + L".dll");
     EXPECT_TRUE(blacklist::AddDllToBlacklist(added_dlls[i].c_str())) << i;
   }
   EXPECT_FALSE(blacklist::AddDllToBlacklist(L"overflow.dll"));
-  for (int i = 0; i < blacklist::kTroublesomeDllsMaxCount; ++i) {
+  for (int i = 0; i < empty_spaces; ++i) {
     EXPECT_TRUE(blacklist::RemoveDllFromBlacklist(added_dlls[i].c_str())) << i;
   }
-  EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(L"0.dll"));
-  EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(L"63.dll"));
+  EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(added_dlls[0].c_str()));
+  EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(
+    added_dlls[empty_spaces - 1].c_str()));
 }
 
 TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
@@ -131,7 +138,7 @@ TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
     // Add the DLL to the blacklist, ensure that it is not loaded both by
     // inspecting the handle returned by LoadLibrary and by looking for an
     // environment variable that is set when the DLL's entry point is called.
-    TestDll_AddDllToBlacklist(test_data[i].dll_name);
+    EXPECT_TRUE(TestDll_AddDllToBlacklist(test_data[i].dll_name));
     base::ScopedNativeLibrary dll_blacklisted(
         current_dir.Append(test_data[i].dll_name));
     EXPECT_FALSE(dll_blacklisted.is_valid());
@@ -140,11 +147,25 @@ TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
 
     // Remove the DLL from the blacklist. Ensure that it loads and that its
     // entry point was called.
-    TestDll_RemoveDllFromBlacklist(test_data[i].dll_name);
+    EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(test_data[i].dll_name));
     base::ScopedNativeLibrary dll(current_dir.Append(test_data[i].dll_name));
     EXPECT_TRUE(dll.is_valid());
     EXPECT_NE(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
     dll.Reset(NULL);
+
+    ::SetEnvironmentVariable(test_data[i].dll_beacon, NULL);
+
+    // Ensure that the dll won't load even if the name has different
+    // capitalization.
+    base::string16 uppercase_name = base::i18n::ToUpper(test_data[i].dll_name);
+    EXPECT_TRUE(TestDll_AddDllToBlacklist(uppercase_name.c_str()));
+    base::ScopedNativeLibrary dll_blacklisted_different_case(
+        current_dir.Append(test_data[i].dll_name));
+    EXPECT_FALSE(dll_blacklisted_different_case.is_valid());
+    EXPECT_EQ(0u, ::GetEnvironmentVariable(test_data[i].dll_beacon, NULL, 0));
+    dll_blacklisted_different_case.Reset(NULL);
+
+    EXPECT_TRUE(TestDll_RemoveDllFromBlacklist(uppercase_name.c_str()));
   }
 #endif
 }
