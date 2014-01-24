@@ -726,7 +726,7 @@ crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fie
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-state-change-on-focus-or-blur.html [ Failure Pass ]
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-wheel-event.html [ Failure Pass ]
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-tabindex.html [ Failure Pass ]
-
+crbug.com/337774 [ Debug ] svg/animations/use-while-animating-crash.html [ Crash Pass ]
 crbug.com/309369 perf/accessibility-title-ui-element.html [ Pass Timeout ]
 crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.html [ Failure Pass ]
 
