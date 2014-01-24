@@ -299,17 +299,19 @@ namespace WebCore {
 
 {{ declare_value_function(property_id) }}
 {
-    if (!value->isValueList())
-        return;
-
-    CSSValueList* list = toCSSValueList(value);
-
     CounterDirectiveMap& map = state.style()->accessCounterDirectives();
     typedef CounterDirectiveMap::iterator Iterator;
 
     Iterator end = map.end();
     for (Iterator it = map.begin(); it != end; ++it)
         it->value.clear{{action}}();
+
+    if (!value->isValueList()) {
+        ASSERT(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        return;
+    }
+
+    CSSValueList* list = toCSSValueList(value);
 
     int length = list ? list->length() : 0;
     for (int i = 0; i < length; ++i) {
