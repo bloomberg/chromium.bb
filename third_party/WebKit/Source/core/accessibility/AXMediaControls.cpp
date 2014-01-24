@@ -113,14 +113,6 @@ String AccessibilityMediaControl::accessibilityDescription() const
         return queryString(WebLocalizedString::AXMediaMuteButton);
     case MediaPlayButton:
         return queryString(WebLocalizedString::AXMediaPlayButton);
-    case MediaSeekBackButton:
-        return queryString(WebLocalizedString::AXMediaSeekBackButton);
-    case MediaSeekForwardButton:
-        return queryString(WebLocalizedString::AXMediaSeekForwardButton);
-    case MediaRewindButton:
-        return queryString(WebLocalizedString::AXMediaRewindButton);
-    case MediaReturnToRealtimeButton:
-        return queryString(WebLocalizedString::AXMediaReturnToRealTime);
     case MediaUnMuteButton:
         return queryString(WebLocalizedString::AXMediaUnMuteButton);
     case MediaPauseButton:
@@ -151,14 +143,6 @@ String AccessibilityMediaControl::helpText() const
         return queryString(WebLocalizedString::AXMediaMuteButtonHelp);
     case MediaPlayButton:
         return queryString(WebLocalizedString::AXMediaPlayButtonHelp);
-    case MediaSeekBackButton:
-        return queryString(WebLocalizedString::AXMediaSeekBackButtonHelp);
-    case MediaSeekForwardButton:
-        return queryString(WebLocalizedString::AXMediaSeekForwardButtonHelp);
-    case MediaRewindButton:
-        return queryString(WebLocalizedString::AXMediaRewindButtonHelp);
-    case MediaReturnToRealtimeButton:
-        return queryString(WebLocalizedString::AXMediaReturnToRealTimeHelp);
     case MediaUnMuteButton:
         return queryString(WebLocalizedString::AXMediaUnMuteButtonHelp);
     case MediaPauseButton:
@@ -193,10 +177,6 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const
     case MediaExitFullscreenButton:
     case MediaMuteButton:
     case MediaPlayButton:
-    case MediaSeekBackButton:
-    case MediaSeekForwardButton:
-    case MediaRewindButton:
-    case MediaReturnToRealtimeButton:
     case MediaUnMuteButton:
     case MediaPauseButton:
     case MediaShowClosedCaptionsButton:

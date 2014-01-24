@@ -446,18 +446,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
     case MediaMuteButtonPart:
         m_value.valueID = CSSValueMediaMuteButton;
         break;
-    case MediaSeekBackButtonPart:
-        m_value.valueID = CSSValueMediaSeekBackButton;
-        break;
-    case MediaSeekForwardButtonPart:
-        m_value.valueID = CSSValueMediaSeekForwardButton;
-        break;
-    case MediaRewindButtonPart:
-        m_value.valueID = CSSValueMediaRewindButton;
-        break;
-    case MediaReturnToRealtimeButtonPart:
-        m_value.valueID = CSSValueMediaReturnToRealtimeButton;
-        break;
     case MediaToggleClosedCaptionsButtonPart:
         m_value.valueID = CSSValueMediaToggleClosedCaptionsButton;
         break;

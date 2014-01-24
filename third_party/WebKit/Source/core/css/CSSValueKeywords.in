@@ -663,10 +663,6 @@ media-fullscreen-volume-slider-thumb
 media-mute-button
 media-play-button
 media-overlay-play-button
-media-seek-back-button
-media-seek-forward-button
-media-rewind-button
-media-return-to-realtime-button
 media-toggle-closed-captions-button
 media-slider
 media-sliderthumb

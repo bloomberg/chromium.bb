@@ -363,15 +363,11 @@ bool RenderMediaControls::paintMediaControlsPart(MediaControlElementType part, R
         return paintMediaFullscreenButton(object, paintInfo, rect);
     case MediaOverlayPlayButton:
         return paintMediaOverlayPlayButton(object, paintInfo, rect);
-    case MediaSeekBackButton:
-    case MediaSeekForwardButton:
     case MediaVolumeSliderContainer:
     case MediaTimelineContainer:
     case MediaCurrentTimeDisplay:
     case MediaTimeRemainingDisplay:
     case MediaControlsPanel:
-    case MediaRewindButton:
-    case MediaReturnToRealtimeButton:
     case MediaStatusDisplay:
     case MediaHideClosedCaptionsButton:
     case MediaTextTrackDisplayContainer:

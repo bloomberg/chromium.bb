@@ -231,26 +231,6 @@ input[type="range"]::-webkit-media-slider-thumb {
     margin-right: -7px;
 }
 
-audio::-webkit-media-controls-seek-back-button, video::-webkit-media-controls-seek-back-button {
-    -webkit-appearance: media-seek-back-button;
-    display: flex;
-    width: 16px;
-    height: 16px;
-    background-color: initial;
-    border: initial;
-    color: inherit;
-}
-
-audio::-webkit-media-controls-seek-forward-button, video::-webkit-media-controls-seek-forward-button {
-    -webkit-appearance: media-seek-forward-button;
-    display: flex;
-    width: 16px;
-    height: 16px;
-    background-color: initial;
-    border: initial;
-    color: inherit;
-}
-
 audio::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-fullscreen-button {
     -webkit-appearance: media-enter-fullscreen-button;
     display: flex;
@@ -264,20 +244,6 @@ audio::-webkit-media-controls-fullscreen-button, video::-webkit-media-controls-f
     margin-right: 9px;
     padding: 0;
     background-color: initial;
-    color: inherit;
-}
-
-audio::-webkit-media-controls-rewind-button, video::-webkit-media-controls-rewind-button {
-    display: none;
-    background-color: initial;
-    border: initial;
-    color: inherit;
-}
-
-audio::-webkit-media-controls-return-to-realtime-button, video::-webkit-media-controls-return-to-realtime-button {
-    display: none;
-    background-color: initial;
-    border: initial;
     color: inherit;
 }
 
