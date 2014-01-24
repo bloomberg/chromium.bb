@@ -158,7 +158,9 @@ void testDecodeAfterReallocatingData(const char* webpFile)
     }
 }
 
-void testInvalidImage(const char* webpFile)
+// If 'parseErrorExpected' is true, error is expected during parse (frameCount()
+// call); else error is expected during decode (frameBufferAtIndex() call).
+void testInvalidImage(const char* webpFile, bool parseErrorExpected)
 {
     OwnPtr<WEBPImageDecoder> decoder = createDecoder();
 
@@ -166,7 +168,10 @@ void testInvalidImage(const char* webpFile)
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
-    EXPECT_EQ(0u, decoder->frameCount());
+    if (parseErrorExpected)
+        EXPECT_EQ(0u, decoder->frameCount());
+    else
+        EXPECT_LT(0u, decoder->frameCount());
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     EXPECT_FALSE(frame);
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
@@ -368,9 +373,9 @@ TEST_F(AnimatedWebPTests, parseAndDecodeByteByByte)
 TEST_F(AnimatedWebPTests, invalidImages)
 {
     // ANMF chunk size is smaller than ANMF header size.
-    testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp.webp");
+    testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp.webp", true);
     // One of the frame rectangles extends outside the image boundary.
-    testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp3.webp");
+    testInvalidImage("/LayoutTests/fast/images/resources/invalid-animated-webp3.webp", true);
 }
 
 TEST_F(AnimatedWebPTests, truncatedLastFrame)
@@ -583,12 +588,8 @@ TEST_F(AnimatedWebPTests, decodeAfterReallocatingData)
 
 TEST(StaticWebPTests, truncatedImage)
 {
-    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
-
-    RefPtr<SharedBuffer> data = readFile("/LayoutTests/fast/images/resources/truncated.webp");
-    ASSERT_TRUE(data.get());
-    decoder->setData(data.get(), true);
-
-    ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    EXPECT_FALSE(frame);
+    // VP8 data is truncated.
+    testInvalidImage("/LayoutTests/fast/images/resources/truncated.webp", false);
+    // Chunk size in RIFF header doesn't match the file size.
+    testInvalidImage("/LayoutTests/fast/images/resources/truncated2.webp", true);
 }

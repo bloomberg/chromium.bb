@@ -210,7 +210,7 @@ bool WEBPImageDecoder::updateDemuxer()
     WebPDemuxDelete(m_demux);
     WebPData inputData = { reinterpret_cast<const uint8_t*>(m_data->data()), m_data->size() };
     m_demux = WebPDemuxPartial(&inputData, &m_demuxState);
-    if (!m_demux)
+    if (!m_demux || (isAllDataReceived() && m_demuxState != WEBP_DEMUX_DONE))
         return setFailed();
 
     if (m_demuxState <= WEBP_DEMUX_PARSING_HEADER)
