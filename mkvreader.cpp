@@ -31,7 +31,7 @@ int MkvReader::Open(const char* fileName)
     if (m_file)
         return -1;
 
-#ifdef WIN32
+#ifdef _MSC_VER
     const errno_t e = fopen_s(&m_file, fileName, "rb");
 
     if (e)
@@ -43,7 +43,7 @@ int MkvReader::Open(const char* fileName)
         return -1;
 #endif
 
-#ifdef WIN32
+#ifdef _MSC_VER
     int status = _fseeki64(m_file, 0L, SEEK_END);
 
     if (status)
@@ -56,7 +56,7 @@ int MkvReader::Open(const char* fileName)
 #endif
     assert(m_length >= 0);
 
-#ifdef WIN32
+#ifdef _MSC_VER
     status = _fseeki64(m_file, 0L, SEEK_SET);
 
     if (status)
@@ -108,7 +108,7 @@ int MkvReader::Read(long long offset, long len, unsigned char* buffer)
     if (offset >= m_length)
         return -1;
 
-#ifdef WIN32
+#ifdef _MSC_VER
     const int status = _fseeki64(m_file, offset, SEEK_SET);
 
     if (status)

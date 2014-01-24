@@ -14,7 +14,7 @@
 
 #include <cmath>
 #include <cstdio>
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define _CRT_RAND_S
 #endif
 #include <cstdlib>
@@ -669,11 +669,16 @@ void GetVersion(int32* major, int32* minor, int32* build, int32* revision) {
 
 mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
   uint64 uid = 0;
+
+#ifdef __MINGW32__
+  srand(*seed);
+#endif
+
   for (int i = 0; i < 7; ++i) {  // avoid problems with 8-byte values
     uid <<= 8;
 
     // TODO(fgalligan): Move random number generation to platform specific code.
-#ifdef _WIN32
+#ifdef _MSC_VER
     (void)seed;
     unsigned int random_value;
     const errno_t e = rand_s(&random_value);
@@ -687,6 +692,8 @@ mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
       close(fd);
     }
     const int32 nn = temp_num;
+#elif defined __MINGW32__
+    const int32 nn = rand();
 #else
     const int32 nn = rand_r(seed);
 #endif
