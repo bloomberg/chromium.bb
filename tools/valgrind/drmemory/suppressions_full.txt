@@ -8,10 +8,10 @@
 
 ###############################################################
 # Known reports on the third party we have no control over.
+
 UNINITIALIZED READ
-name=deflate UNINIT
+name=http://crbug.com/116277
 ...
-*!deflate_*
 *!MOZ_Z_deflate
 
 # TODO(timurrrr): check if these frames change when NT_SYMBOLS are present.
@@ -1077,9 +1077,654 @@ nspr4.dll!*
 # We get uninit reports inside GMock when it prints the bytes of references to
 # partially initialized objects passed to unexpected method calls.
 UNINITIALIZED READ
-name=GMock printing uninit data
+name=http://crbug.com/64887 (GMock printing uninit data)
 ...
 *!testing::internal2::PrintBytesInObjectTo
+
+###############################################################
+# Proactively borrowed from memcheck/suppressions.txt.
+# We have not yet seen these, but we are expanding the sets of tests
+# we're running, and we've hit redness in the past that could have
+# been avoided by already having the Memcheck suppressions.
+# TODO(bruening): review the entire file (not just these) once we're
+# at the peak set of tests we plan to run and remove the unused ones.
+
+UNINITIALIZED READ
+name=bug_87232
+*!WebCore::base64Encode
+*!WebCore::base64Encode
+*!WebCore::ImageToDataURL<>
+
+UNINITIALIZED READ
+name=bug_75127
+...
+*!png_process_data
+*!gfx::PNGCodec::Decode*
+
+UNINITIALIZED READ
+name=bug_99307
+*!modp_b64_encode
+*!base::Base64Encode*
+*!web_ui_util::GetImageDataUrl
+*!::NetworkInfoDictionary::set_icon
+
+UNINITIALIZED READ
+name=bug_101125a
+...
+*!SkScan::AntiFillPath
+*!SkScan::AntiFillPath
+*!SkDraw::drawPath
+*!SkDevice::drawPath
+*!SkDraw::drawTextOnPath
+*!SkDevice::drawTextOnPath
+*!SkCanvas::drawTextOnPath
+*!WebCore::Font::drawGlyphs
+*!WebCore::Font::drawGlyphBuffer
+
+UNINITIALIZED READ
+name=bug_101125b
+...
+*!SkScan::AntiFillRect
+*!SkScan::AntiFillRect
+*!SkDraw::drawRect
+*!SkDevice::drawRect
+*!SkCanvas::drawRect
+*!WebCore::GraphicsContext::fillRect
+*!WebCore::GraphicsContext::drawHighlightForText
+
+UNINITIALIZED READ
+name=bug_101125c
+...
+*!morphpoints
+*!morphpath
+*!SkDraw::drawTextOnPath
+*!SkDevice::drawTextOnPath
+*!SkCanvas::drawTextOnPath
+*!WebCore::Font::drawGlyphs
+*!WebCore::Font::drawGlyphBuffer
+*!WebCore::Font::drawSimpleText
+*!WebCore::Font::drawText
+*!WebCore::GraphicsContext::drawText
+
+UNINITIALIZED READ
+name=bug_101781
+*!encode_one_block
+*!encode_mcu_huff
+*!compress_data
+*!process_data_simple_main
+*!chromium_jpeg_write_scanlines
+*!gfx::JPEGCodec::Encode
+*!gfx::JPEGEncodedDataFromImage
+*!history::TopSites::EncodeBitmap
+*!history::TopSites::SetPageThumbnail
+*!history::ExpireHistoryTest::AddExampleData
+*!history::ExpireHistoryTest::*
+
+UNINITIALIZED READ
+name=bug_101781_d
+*!testing::AssertionResult testing::internal::CmpHelperGE<>
+*!gfx::JPEGCodec_EncodeDecodeRGBA_Test::TestBody
+
+UNINITIALIZED READ
+name=bug_105907
+...
+*!skia::BGRAConvolve2D
+*!skia::ImageOperations::ResizeBasic*
+*!skia::ImageOperations::Resize*
+
+UNINITIALIZED READ
+name=bug_106183a
+*!WebCore::RenderMarquee::updateMarqueeStyle
+*!WebCore::RenderLayer::styleChanged
+*!WebCore::RenderBoxModelObject::styleDidChange
+*!WebCore::RenderBox::styleDidChange
+*!WebCore::RenderBlock::styleDidChange
+*!WebCore::RenderObject::setStyle
+
+UNINITIALIZED READ
+name=bug_106183b
+*!WebCore::ComplexTextController*
+...
+*!WebCore::Font::selectionRectForComplexText
+*!WebCore::Font::selectionRectForText
+*!WebCore::InlineTextBox::positionForOffset
+*!WebCore::RenderText::localCaretRect
+*!WebCore::VisiblePosition::localCaretRect
+*!WebCore::CaretBase::updateCaretRect
+*!WebCore::FrameSelection::localCaretRect
+*!WebCore::FrameSelection::recomputeCaretRect
+*!WebCore::FrameSelection::updateAppearance
+
+UNINITIALIZED READ
+name=bug_106183c
+*!WebCore::ComplexTextController*
+...
+*!WebCore::Font::drawComplexText
+*!WebCore::Font::drawText
+*!WebCore::GraphicsContext::drawText
+*!WebCore::paintTextWithShadows
+...
+*!WebCore::RenderLineBoxList::paint
+*!WebCore::RenderBlock::paintContents
+*!WebCore::RenderBlock::paintObject
+*!WebCore::RenderBlock::paint
+
+UNINITIALIZED READ
+name=bug_106552
+...
+*!JSONStringValueSerializer::SerializeInternal
+*!JSONStringValueSerializer::Serialize
+*!JsonPrefStore::SerializeData
+*!ImportantFileWriter::DoScheduledWrite
+*!JsonPrefStore::CommitPendingWrite
+*!JsonPrefStore::~JsonPrefStore
+*!base::RefCounted<>::Release
+*!scoped_refptr<>::operator=
+*!PrefService::~PrefService
+*!scoped_ptr<>::~scoped_ptr
+*!TestingProfile::~TestingProfile
+*!ExtensionTestingProfile::~ExtensionTestingProfile
+
+UNINITIALIZED READ
+name=bug_108147
+...
+*!SkDraw::drawPosText
+*!SkDevice::drawPosText
+*!SkCanvas::drawPosText
+*!WebCore::Font::drawGlyphs
+*!WebCore::Font::drawGlyphBuffer
+*!WebCore::Font::drawSimpleText
+*!WebCore::Font::drawText
+
+UNINITIALIZED READ
+name=bug_108620
+*!WebCore::PlatformEvent::PlatformEvent
+*!WebCore::PlatformMouseEvent::PlatformMouseEvent
+*!WebCore::EventHandler::fakeMouseMoveEventTimerFired
+*!WebCore::Timer<>::fired
+*!WebCore::ThreadTimers::sharedTimerFiredInternal
+*!WebCore::ThreadTimers::sharedTimerFired
+*!webkit_glue::WebKitPlatformSupportImpl::DoTimeout
+*!base::BaseTimer<>::TimerTask::Run
+
+UNINITIALIZED READ
+name=bug_109496
+...
+*!WebCore::ImageBuffer::platformTransformColorSpace
+*!WebCore::ImageBuffer::transformColorSpace
+*!WebCore::RenderSVGResourceFilter::postApplyResource
+...
+*!WebCore::RenderSVGShape::paint*
+...
+*!WebCore::RenderSVGRoot*_Zpaint*_ZL9PaintInfoERKNS_*
+
+UNINITIALIZED READ
+name=bug_112278
+*!fetch_texel_2d_f_rgba8888
+*!sample_2d_linear
+*!sample_linear_2d
+*!fetch_texel_lod
+*!fetch_texel
+*!_mesa_execute_program
+*!run_program
+*!_swrast_exec_fragment_program
+*!shade_texture_span
+*!_swrast_write_rgba_span
+*!general_triangle
+*!_swrast_validate_triangle
+*!_swrast_Triangle
+*!triangle_rgba
+*!_tnl_render_triangles_elts
+*!run_render
+*!_tnl_run_pipeline
+*!_tnl_draw_prims
+*!_tnl_vbo_draw_prims
+*!vbo_validated_drawrangeelements
+*!vbo_exec_DrawElements
+*!neutral_DrawElements
+
+UNINITIALIZED READ
+name=bug_112278b
+*!fetch_texel_2d_f_rgba8888
+*!sample_2d_nearest
+*!sample_nearest_2d
+*!fetch_texel_lod
+*!fetch_texel
+*!_mesa_execute_program
+*!run_program
+*!_swrast_exec_fragment_program
+*!shade_texture_span
+*!_swrast_write_rgba_span
+*!general_triangle
+...
+*!_swrast_Triangle
+*!triangle_rgba
+...
+*!run_render
+*!_tnl_run_pipeline
+*!_tnl_draw_prims
+*!_tnl_vbo_draw_prims
+
+UNINITIALIZED READ
+name=bug_115419_1
+*!fetch_texel_2d_f_rgba8888
+*!texture_get_row
+*!fast_read_rgba_pixels
+*!read_rgba_pixels
+*!_swrast_ReadPixels
+*!_mesa_ReadPixels
+*!glReadPixels
+*!gpu::gles2::GLES2DecoderImpl::HandleReadPixels
+*!gpu::gles2::GLES2DecoderImpl::DoCommand
+*!gpu::CommandParser::ProcessCommand
+*!gpu::GpuScheduler::PutChanged
+*!webkit::gpu::GLInProcessContext::PumpCommands
+
+UNINITIALIZED READ
+name=bug_115419_2
+*!get_src_arg_mask
+*!_mesa_remove_extra_move_use
+*!_mesa_optimize_program
+*!get_mesa_program
+*!_mesa_ir_link_shader
+*!_mesa_glsl_link_shader
+*!link_program
+*!_mesa_LinkProgramARB
+*!glLinkProgram
+...
+*!gpu::gles2::GLES2DecoderImpl::DoLinkProgram*
+*!gpu::gles2::GLES2DecoderImpl::HandleLinkProgram*
+*!gpu::gles2::GLES2DecoderImpl::DoCommand
+*!gpu::CommandParser::ProcessCommand
+*!gpu::GpuScheduler::PutChanged
+*!webkit::gpu::GLInProcessContext::PumpCommands
+
+UNINITIALIZED READ
+name=bug_116475
+...
+*!base::Histogram::BucketIndex
+*!base::Histogram::Add
+*!webkit_glue::WebKitPlatformSupportImpl::histogramCustomCounts
+*!WebCore::PlatformSupport::histogramCustomCounts
+*!WebCore::CCLayerTreeHostImpl::optimizeRenderPasses*
+*!WebCore::CCLayerTreeHostImpl::drawLayers
+*!WebCore::CCSingleThreadProxy::doComposite
+
+UNINITIALIZED READ
+name=bug_122245a
+...
+*!SkScalerContext::internalGetPath
+*!SkScalerContext::getMetrics
+*!SkGlyphCache::lookupMetrics
+
+UNINITIALIZED READ
+name=bug_122245b
+...
+*!SkRect::roundOut
+*!SkScalerContext::getMetrics
+*!SkGlyphCache::lookupMetrics
+*!SkGlyphCache::getGlyphIDMetrics
+*!sk_getMetrics_glyph_00
+*!SkDraw::drawPosText
+*!SkDevice::drawPosText
+*!SkGpuDevice::drawPosText
+*!SkCanvas::drawPosText
+*!WebCore::Font::drawGlyphs
+*!WebCore::Font::drawGlyphBuffer
+*!WebCore::Font::drawSimpleText
+*!WebCore::Font::drawText
+*!WebCore::GraphicsContext::drawBidiText
+*!WebCore::CanvasRenderingContext2D::drawTextInternal
+*!WebCore::CanvasRenderingContext2D::strokeText
+*!WebCore::CanvasRenderingContext2DInternal::strokeTextCallback
+*!v8::internal::HandleApiCallHelper<>
+*!v8::internal::Builtin_HandleApiCall
+
+UNINITIALIZED READ
+name=bug_138058
+...
+*!WebCore::WebVTTParser::constructTreeFromToken
+*!WebCore::WebVTTParser::createDocumentFragmentFromCueText
+*!WebCore::TextTrackCue::getCueAsHTML
+*!WebCore::TextTrackCue::updateDisplayTree
+*!WebCore::HTMLMediaElement::updateActiveTextTrackCues
+
+UNINITIALIZED READ
+name=bug_138220_a
+*!WebCore::HTMLInputElement::dataList
+*!WebCore::HTMLInputElement::list
+*!WebCore::RenderSliderContainer::layout
+*!WebCore::RenderBlock::layoutBlockChild
+*!WebCore::RenderBlock::layoutBlockChildren
+*!WebCore::RenderBlock::layoutBlock
+*!WebCore::RenderBlock::layout
+*!WebCore::RenderSlider::layout
+
+UNINITIALIZED READ
+name=bug_138220_b
+*!WebCore::HTMLInputElement::dataList
+*!WebCore::HTMLInputElement::list
+*!WebCore::RenderTheme::paintSliderTicks
+*!WebCore::RenderThemeChromiumLinux::paintSliderTrack
+*!WebCore::RenderTheme::paint
+*!WebCore::RenderBox::paintBoxDecorations
+*!WebCore::RenderBlock::paintObject
+
+UNINITIALIZED READ
+name=bug_139467
+*!WebCore::AccessibilityTable::roleValue
+*!WebCore::AccessibilityRenderObject::ariaLiveRegionStatus
+*!WebCore::AccessibilityObject::supportsARIALiveRegion
+*!WebCore::AccessibilityObject::supportsARIAAttributes
+*!WebCore::AccessibilityRenderObject::determineAccessibilityRole
+*!WebCore::AccessibilityNodeObject::init
+*!WebCore::AccessibilityRenderObject::init
+*!WebCore::AccessibilityTable::init
+
+UNINITIALIZED READ
+name=bug_140196
+*!SkDescriptor::equals
+*!SkGlyphCache::VisitCache
+...
+*!SkPaint::descriptorProc
+
+UNINITIALIZED READ
+name=bug_143545
+*!aura::RootWindow::ShowCursor
+*!ash::Shell::ShowCursor
+*!ash::CursorManager::ShowCursor
+*!ash::test::AshTestBase::SetUp
+
+UNINITIALIZED READ
+name=bug_145244
+*!WebCore::StyleRuleImport::requestStyleSheet
+*!WebCore::StyleSheetContents::requestImportedStyleSheets
+
+UNINITIALIZED READ
+name=bug_158510
+*!WebCore::RenderTable::layout
+...
+*!WebCore::RenderBlock::layout
+
+UNINITIALIZED READ
+name=bug_159005
+*!WebCore::RenderMarquee::updateMarqueeStyle
+*!WebCore::RenderLayer::styleChanged
+*!WebCore::RenderLayerModelObject::styleDidChange
+*!WebCore::RenderBox::styleDidChange
+*!WebCore::RenderBlock::styleDidChange
+*!WebCore::RenderObject::setStyle
+
+UNINITIALIZED READ
+name=bug_162825
+*!bcmp
+*!gpu::gles2::ShaderTranslatorCache::ShaderTranslatorInitParams::operator<
+*!std::less<>::operator
+...
+*!std::map<>::find
+...
+*!gpu::gles2::GLES2DecoderImpl::InitializeShaderTranslator
+
+UNINITIALIZED READ
+name=bug_164198
+*!WebCore::RenderBox::paintFillLayers
+...
+*!WebCore::RenderBlock::paintObject
+*!WebCore::RenderBlock::paint
+*!WebCore::RenderLayer::paintLayerContents
+*!WebCore::RenderLayer::paintLayerContentsAndReflection
+*!WebCore::RenderLayer::paintLayer
+*!WebCore::RenderLayer::paintList
+*!WebCore::RenderLayer::paintLayerContents
+*!WebCore::RenderLayer::paintLayerContentsAndReflection
+*!WebCore::RenderLayer::paintLayer
+
+UNINITIALIZED READ
+name=bug_170340
+*!WTF::AtomicString::add
+*!WTF::AtomicString::AtomicString
+*!WebCore::HTMLPreloadScanner::processToken
+*!WebCore::HTMLPreloadScanner::scan
+*!WebCore::HTMLDocumentParser::pumpTokenizer
+*!WebCore::HTMLDocumentParser::pumpTokenizerIfPossible
+*!WebCore::HTMLDocumentParser::append
+*!WebCore::DecodedDataDocumentParser::flush
+*!WebCore::DocumentWriter::end
+*!WebCore::DocumentLoader::finishedLoading
+
+UNINITIALIZED READ
+name=bug_172025
+*!WebViewHost::didCreateDataSource
+*!blink::FrameLoaderClientImpl::createDocumentLoader
+*!WebCore::FrameLoader::init
+*!WebCore::Frame::init
+*!blink::WebFrameImpl::initializeAsMainFrame
+*!blink::WebViewImpl::initializeMainFrame
+*!TestShell::createNewWindow
+*!TestShell::createMainWindow
+*!TestShell::initialize
+
+UNINITIALIZED READ
+name=bug_173096
+*!bcmp
+*!cc::LayerTreeDebugState::equal
+*!cc::LayerTreeHost::setDebugState
+*!blink::WebLayerTreeViewImpl*_Zset*
+*!blink::WebViewImpl::setIsAcceleratedCompositingActive
+*!blink::WebViewImpl::setRootGraphicsLayer
+*!blink::ChromeClientImpl::attachRootGraphicsLayer
+*!WebCore::RenderLayerCompositor::attachRootLayer
+*!WebCore::RenderLayerCompositor::ensureRootLayer
+*!WebCore::RenderLayerCompositor::enableCompositingMode
+*!WebCore::RenderLayerCompositor::updateBacking
+*!WebCore::RenderLayerCompositor::updateLayerCompositingState
+*!WebCore::RenderLayer::styleChanged
+*!WebCore::RenderLayerModelObject::styleDidChange
+*!WebCore::RenderBox::styleDidChange
+
+UNINITIALIZED READ
+name=bug_175985
+*!cc::LayerTreeHost::setDebugState
+...
+*!blink::WebLayerTreeViewImpl*
+
+UNINITIALIZED READ
+name=bug_176270
+*!cc::LayerTreeDebugState::recordRenderingStats
+
+UNINITIALIZED READ
+name=bug_176616_a
+*!WebTestRunner::WebTestProxyBase::didCreateDataSource
+*!WebTestRunner::WebTestProxy<>::didCreateDataSource
+*!blink::FrameLoaderClientImpl::createDocumentLoader
+*!WebCore::FrameLoader::init
+*!WebCore::Frame::init
+*!blink::WebFrameImpl::initializeAsMainFrame
+*!blink::WebViewImpl::initializeMainFrame
+*!TestShell::createNewWindow
+*!TestShell::createMainWindow
+*!TestShell::initialize
+
+UNINITIALIZED READ
+name=bug_176616_b
+*!WebTestRunner::TestRunner::reset
+*!WebTestRunner::TestInterfaces::resetAll
+*!WebTestRunner::WebTestInterfaces::resetAll
+*!TestShell::resetTestController
+*!runTest
+
+UNINITIALIZED READ
+name=bug_222883
+*!v8::internal::ScavengeVisitor::ScavengePointer
+*!v8::internal::ScavengeVisitor::VisitPointers
+*!v8::internal::StandardFrame::IterateExpressions
+...
+*!v8::internal::Heap::Scavenge
+*!v8::internal::Heap::PerformGarbageCollection*
+
+UNINITIALIZED READ
+name=bug_227278a
+...
+*!content::CompositingIOSurfaceTransformerTest::RunResizeTest
+*!content::CompositingIOSurfaceTransformerTest_ResizesTexturesCorrectly_Test::TestBody
+
+UNINITIALIZED READ
+name=bug_227278b
+...
+*!content::CompositingIOSurfaceTransformerTest::RunTransformRGBToYV12Test
+*!content::CompositingIOSurfaceTransformerTest_TransformsRGBToYV12_Test::TestBody
+
+UNINITIALIZED READ
+name=bug_227278c
+*!BitSetNextSetBit
+*!RegistersReInterfere
+*!RegistersMerge
+*!glpPPShaderLinearizeStreamMgr
+*!glpPPShaderLinearize
+*!glePrepareShaderForEmulation
+*!gleSetVPTransformFuncAll
+*!gleVPRenderQuadsSmooth
+*!gleDrawArraysOrElements_ExecCore
+*!glDrawArrays_Exec
+*!glDrawArrays
+*!content::::DrawQuad
+*!content::CompositingIOSurfaceTransformer::ResizeBilinear
+*!content::CompositingIOSurfaceTransformerTest::RunResizeTest
+*!content::CompositingIOSurfaceTransformerTest_ResizesTexturesCorrectly_Test::TestBody
+
+UNINITIALIZED READ
+name=bug_227278d
+*!glViewport_Exec
+*!glViewport
+*!content::::SetTransformationsForOffScreenRendering
+*!content::CompositingIOSurfaceTransformer::TransformRGBToYV12
+*!content::CompositingIOSurfaceTransformerTest::RunTransformRGBToYV12Test
+*!content::CompositingIOSurfaceTransformerTest_TransformsRGBToYV12_Test::TestBody
+
+UNINITIALIZED READ
+name=bug_238170a
+*!WebCore::ElementRuleCollector::collectMatchingRules
+*!WebCore::ElementRuleCollector::hasAnyMatchingRules
+
+UNINITIALIZED READ
+name=bug_238170b
+*!WebCore::ElementRuleCollector::collectMatchingRules
+*!WebCore::StyleResolver::matchAuthorRules
+
+UNINITIALIZED READ
+name=bug_238170c
+*!WebCore::ReplaceSelectionCommand::doApply
+*!WebCore::CompositeEditCommand::apply
+*!WebCore::applyCommand
+
+UNINITIALIZED READ
+name=bug_241044
+*!WebCore::Settings::setOpenGLMultisamplingEnabled
+*!blink::WebSettingsImpl::setOpenGLMultisamplingEnabled
+*!content::ApplyWebPreferences
+*!content::RenderViewImpl::OnUpdateWebPreferences
+*!content::RenderViewImpl::SetWebkitPreferences
+
+UNINITIALIZED READ
+name=bug_246153
+*!WebCore::Settings::setOpenGLMultisamplingEnabled
+*!blink::WebSettingsImpl::setOpenGLMultisamplingEnabled
+*!content::ApplyWebPreferences
+...
+*!content::RenderViewImpl::Initialize
+*!content::RenderViewImpl::Create*
+*!content::RenderThreadImpl::OnCreateNewView
+
+UNINITIALIZED READ
+name=bug_259789
+*!WebCore::::adjustAttributes
+*!WebCore::WebGLRenderingContext::maybeRestoreContext
+*!WebCore::Timer<>::fired
+*!WebCore::ThreadTimers::sharedTimerFiredInternal
+*!WebCore::ThreadTimers::sharedTimerFired
+*!webkit_glue::WebKitPlatformSupportImpl::DoTimeout
+
+UNINITIALIZED READ
+name=bug_290405
+*!GrGradientEffect::onIsEqual
+*!GrEffect::isEqual
+*!GrEffectStage::DeferredStage::isEqual
+*!GrDrawState::DeferredState::isEqual
+*!GrInOrderDrawBuffer::needsNewState
+*!GrInOrderDrawBuffer::onDraw
+*!GrDrawTarget::drawIndexedInstances
+*!GrTextContext::flushGlyphs
+
+UNINITIALIZED READ
+name=bug_290435
+*!WebCore::AudioContext::scheduleNodeDeletion
+*!WebCore::AudioContext::handlePostRenderTasks
+*!WebCore::AudioDestinationNode::render
+*!WebCore::OfflineAudioDestinationNode::offlineRender
+
+UNINITIALIZED READ
+name=bug_290451
+*!base::MD5DigestToBase16
+*!content::WebKitTestRunner::CaptureDump
+*!content::WebKitTestRunner::testFinished
+*!WebTestRunner::TestRunner::completeNotifyDone
+*!WebTestRunner::TestRunner::notifyDone
+*!WebTestRunner::CppBoundClass::MemberCallback<>::run
+*!WebTestRunner::CppBoundClass::invoke
+*!WebTestRunner::CppNPObject::invoke
+
+UNINITIALIZED READ
+name=bug_298143
+...
+*!WebCore::TypeConversionsV8Internal*AttributeGetter*
+
+UNINITIALIZED READ
+name=bug_299804
+*!GrConfigConversionEffect::TestForPreservingPMConversions
+*!::test_pm_conversions
+*!GrContext::createPMToUPMEffect
+*!GrContext::readRenderTargetPixels
+*!SkGpuDevice::onReadPixels
+*!SkBaseDevice::readPixels
+*!SkCanvas::readPixels
+*!DeferredDevice::onReadPixels
+*!SkBaseDevice::readPixels
+*!SkCanvas::readPixels
+*!WebCore::GraphicsContext::readPixels
+*!WTF::PassRefPtr<>
+*!WebCore::ImageBuffer::getUnmultipliedImageData
+*!WebCore::CanvasRenderingContext2D::getImageData
+*!WebCore::CanvasRenderingContext2D::getImageData
+*!WebCore::CanvasRenderingContext2DV8Internal::getImageDataMethod
+*!WebCore::CanvasRenderingContext2DV8Internal::getImageDataMethodCallback
+*!v8::internal::FunctionCallbackArguments::Call
+*!v8::internal::HandleApiCallHelper<>
+
+UNINITIALIZED READ
+name=bug_309477
+*!WebTestRunner::EventSender::reset
+*!WebTestRunner::TestInterfaces::resetTestHelperControllers
+*!WebTestRunner::TestInterfaces::resetAll
+...
+*!content::ShellRenderProcessObserver::WebKitInitialized
+*!content::RenderThreadImpl::EnsureWebKitInitialized
+*!content::RenderThreadImpl::OnCreateNewView
+
+UNINITIALIZED READ
+name=bug_312332
+...
+*!WebCore::RenderTextControl::computeIntrinsicLogicalWidths
+*!WebCore::RenderTextControl::computePreferredLogicalWidths
+...
+*!WebCore::RenderBlock::layout
+
+UNINITIALIZED READ
+name=bug_327672
+*!WebCore::StyleSheetContents::isCacheable
+*!WebCore::LinkStyle::setCSSStyleSheet
+*!WebCore::CSSStyleSheetResource::checkNotify
+...
+*!webkit_glue::WebURLLoaderImpl::Context::OnCompletedRequest
 
 ###############################################################
 # Real issues in Chromium
@@ -1241,11 +1886,6 @@ LEAK
 name=http://crbug.com/115328
 ...
 *!GenericInfoViewTest_GenericInfoView_Test::TestBody
-
-UNINITIALIZED READ
-name=http://crbug.com/116277
-*!MOZ_Z_deflate
-*!zipCloseFileInZipRaw64
 
 LEAK
 name=http://crbug.com/117427 a
