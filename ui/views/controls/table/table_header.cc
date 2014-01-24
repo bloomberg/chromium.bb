@@ -6,6 +6,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/table/table_utils.h"
@@ -95,7 +96,8 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
     if (width <= 0)
       continue;
 
-    const int title_width = font_.GetStringWidth(columns[i].column.title);
+    const int title_width =
+        gfx::GetStringWidth(columns[i].column.title, font_list_);
     const bool paint_sort_indicator =
         (columns[i].column.id == sorted_column_id &&
          title_width + kSortIndicatorWidth <= width);
@@ -105,10 +107,10 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
       width -= kSortIndicatorWidth;
     }
 
-    canvas->DrawStringInt(
-        columns[i].column.title, font_, kTextColor,
-        GetMirroredXWithWidthInView(x, width), kVerticalPadding, width,
-        height() - kVerticalPadding * 2,
+    canvas->DrawStringRectWithFlags(
+        columns[i].column.title, font_list_, kTextColor,
+        gfx::Rect(GetMirroredXWithWidthInView(x, width), kVerticalPadding,
+                  width, height() - kVerticalPadding * 2),
         TableColumnAlignmentToCanvasAlignment(columns[i].column.alignment));
 
     if (paint_sort_indicator) {
@@ -169,7 +171,7 @@ void TableHeader::OnPaint(gfx::Canvas* canvas) {
 }
 
 gfx::Size TableHeader::GetPreferredSize() {
-  return gfx::Size(1, kVerticalPadding * 2 + font_.GetHeight());
+  return gfx::Size(1, kVerticalPadding * 2 + font_list_.GetHeight());
 }
 
 gfx::NativeCursor TableHeader::GetCursor(const ui::MouseEvent& event) {

@@ -6,26 +6,28 @@
 
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/table/table_view.h"
 
 namespace views {
 
 const int kUnspecifiedColumnWidth = 90;
 
-int WidthForContent(const gfx::Font& header_font,
-                    const gfx::Font& content_font,
+int WidthForContent(const gfx::FontList& header_font_list,
+                    const gfx::FontList& content_font_list,
                     int padding,
                     int header_padding,
                     const ui::TableColumn& column,
                     ui::TableModel* model) {
   int width = header_padding;
   if (!column.title.empty())
-    width = header_font.GetStringWidth(column.title) + header_padding;
+    width = gfx::GetStringWidth(column.title, header_font_list) +
+        header_padding;
 
   for (int i = 0, row_count = model->RowCount(); i < row_count; ++i) {
     const int cell_width =
-        content_font.GetStringWidth(model->GetText(i, column.id));
+        gfx::GetStringWidth(model->GetText(i, column.id), content_font_list);
     width = std::max(width, cell_width);
   }
   return width + padding;
@@ -34,8 +36,8 @@ int WidthForContent(const gfx::Font& header_font,
 std::vector<int> CalculateTableColumnSizes(
     int width,
     int first_column_padding,
-    const gfx::Font& header_font,
-    const gfx::Font& content_font,
+    const gfx::FontList& header_font_list,
+    const gfx::FontList& content_font_list,
     int padding,
     int header_padding,
     const std::vector<ui::TableColumn>& columns,
@@ -49,11 +51,12 @@ std::vector<int> CalculateTableColumnSizes(
       if (column.percent > 0) {
         total_percent += column.percent;
         // Make sure there is at least enough room for the header.
-        content_widths[i] = header_font.GetStringWidth(column.title) + padding +
-            header_padding;
+        content_widths[i] = gfx::GetStringWidth(column.title, header_font_list)
+            + padding + header_padding;
       } else {
-        content_widths[i] = WidthForContent(header_font, content_font, padding,
-                                            header_padding, column, model);
+        content_widths[i] = WidthForContent(header_font_list, content_font_list,
+                                            padding, header_padding, column,
+                                            model);
         if (i == 0)
           content_widths[i] += first_column_padding;
       }

@@ -11,7 +11,7 @@
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -316,7 +316,7 @@ class VIEWS_EXPORT TableView
   // The selection, in terms of the model.
   ui::ListSelectionModel selection_model_;
 
-  gfx::Font font_;
+  gfx::FontList font_list_;
 
   int row_height_;
 

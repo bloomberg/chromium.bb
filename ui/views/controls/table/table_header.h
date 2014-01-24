@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_HEADER_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_HEADER_H_
 
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -25,7 +25,7 @@ class VIEWS_EXPORT TableHeader : public views::View {
   explicit TableHeader(TableView* table);
   virtual ~TableHeader();
 
-  const gfx::Font& font() const { return font_; }
+  const gfx::FontList& font_list() const { return font_list_; }
 
   // views::View overrides.
   virtual void Layout() OVERRIDE;
@@ -70,7 +70,7 @@ class VIEWS_EXPORT TableHeader : public views::View {
 
   bool is_resizing() const { return resize_details_.get() != NULL; }
 
-  const gfx::Font font_;
+  const gfx::FontList font_list_;
 
   TableView* table_;
 
