@@ -4820,9 +4820,15 @@ void Document::removeFromTopLayer(Element* element)
 
 HTMLDialogElement* Document::activeModalDialog() const
 {
-    if (m_topLayerElements.isEmpty())
-        return 0;
-    return toHTMLDialogElement(m_topLayerElements.last().get());
+    Vector<RefPtr<Element> >::const_reverse_iterator end = m_topLayerElements.rend();
+    for (Vector<RefPtr<Element> >::const_reverse_iterator it = m_topLayerElements.rbegin(); it != end; ++it) {
+        if (!it->get()->hasTagName(dialogTag))
+            continue;
+        HTMLDialogElement* dialog = toHTMLDialogElement(it->get());
+        if (dialog->isModal())
+            return dialog;
+    }
+    return 0;
 }
 
 void Document::webkitExitPointerLock()

@@ -34,7 +34,6 @@
 #include "core/frame/FrameView.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderFullScreen.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebLayer.h"
 
@@ -233,47 +232,6 @@ LayoutUnit RenderVideo::minimumReplacedHeight() const
 bool RenderVideo::supportsAcceleratedRendering() const
 {
     return !!mediaElement()->platformLayer();
-}
-
-static const RenderBlock* rendererPlaceholder(const RenderObject* renderer)
-{
-    RenderObject* parent = renderer->parent();
-    if (!parent)
-        return 0;
-
-    RenderFullScreen* fullScreen = parent->isRenderFullScreen() ? toRenderFullScreen(parent) : 0;
-    if (!fullScreen)
-        return 0;
-
-    return fullScreen->placeholder();
-}
-
-LayoutUnit RenderVideo::offsetLeft() const
-{
-    if (const RenderBlock* block = rendererPlaceholder(this))
-        return block->offsetLeft();
-    return RenderMedia::offsetLeft();
-}
-
-LayoutUnit RenderVideo::offsetTop() const
-{
-    if (const RenderBlock* block = rendererPlaceholder(this))
-        return block->offsetTop();
-    return RenderMedia::offsetTop();
-}
-
-LayoutUnit RenderVideo::offsetWidth() const
-{
-    if (const RenderBlock* block = rendererPlaceholder(this))
-        return block->offsetWidth();
-    return RenderMedia::offsetWidth();
-}
-
-LayoutUnit RenderVideo::offsetHeight() const
-{
-    if (const RenderBlock* block = rendererPlaceholder(this))
-        return block->offsetHeight();
-    return RenderMedia::offsetHeight();
 }
 
 } // namespace WebCore
