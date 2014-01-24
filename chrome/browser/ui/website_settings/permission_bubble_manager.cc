@@ -28,8 +28,14 @@ void PermissionBubbleManager::AddPermissionBubbleDelegate(
   delegates_.push_back(delegate);
   // TODO(gbillock): do we need to make default state a delegate property?
   accept_state_.push_back(false);
-  if (bubble_showing_ && view_)
-    view_->AddPermissionBubbleDelegate(delegate);
+
+  // TODO(gbillock): need significantly more complex logic here to deal
+  // with various states of the manager.
+
+  if (view_ && !bubble_showing_) {
+    view_->Show(delegates_, accept_state_, customization_mode_);
+    bubble_showing_ = true;
+  }
 }
 
 void PermissionBubbleManager::RemovePermissionBubbleDelegate(
@@ -39,17 +45,22 @@ void PermissionBubbleManager::RemovePermissionBubbleDelegate(
   for (di = delegates_.begin(), ai = accept_state_.begin();
        di != delegates_.end(); di++, ai++) {
     if (*di == delegate) {
-      if (bubble_showing_ && view_)
-        view_->RemovePermissionBubbleDelegate(delegate);
-      delegates_.erase(di);
-      accept_state_.erase(ai);
+      if (bubble_showing_ && view_) {
+        // TODO(gbillock): Mark the delegate empty -- set to NULL probably.
+      } else {
+        delegates_.erase(di);
+        accept_state_.erase(ai);
+      }
       return;
     }
   }
 }
 
 void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
-  if (view == NULL && view_ != NULL) {
+  if (view == view_)
+    return;
+
+  if (view_ != NULL) {
     view_->SetDelegate(NULL);
     view_->Hide();
   }
@@ -60,11 +71,11 @@ void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
 
   if (bubble_showing_) {
     view_->SetDelegate(this);
-    view_->Show(delegates_, accept_state_);
+    view_->Show(delegates_, accept_state_, customization_mode_);
   } else if (!delegates_.empty()) {
     bubble_showing_ = true;
     view_->SetDelegate(this);
-    view_->Show(delegates_, accept_state_);
+    view_->Show(delegates_, accept_state_, customization_mode_);
   } else {
     view_->Hide();
     return;
@@ -75,7 +86,8 @@ PermissionBubbleManager::PermissionBubbleManager(
     content::WebContents* web_contents)
   : content::WebContentsObserver(web_contents),
     bubble_showing_(false),
-    view_(NULL) {
+    view_(NULL),
+    customization_mode_(false) {
 }
 
 PermissionBubbleManager::~PermissionBubbleManager() {}
@@ -96,6 +108,10 @@ void PermissionBubbleManager::WebContentsDestroyed(
 void PermissionBubbleManager::ToggleAccept(int delegate_index, bool new_value) {
   DCHECK(delegate_index < static_cast<int>(accept_state_.size()));
   accept_state_[delegate_index] = new_value;
+}
+
+void PermissionBubbleManager::SetCustomizationMode() {
+  customization_mode_ = true;
 }
 
 void PermissionBubbleManager::Accept() {

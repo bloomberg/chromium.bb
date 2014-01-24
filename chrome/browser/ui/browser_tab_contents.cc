@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
@@ -135,6 +136,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   HistoryTabHelper::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
+  PermissionBubbleManager::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   NavigationTimeHelper::CreateForWebContents(web_contents);
   PasswordGenerationManager::CreateForWebContents(web_contents);

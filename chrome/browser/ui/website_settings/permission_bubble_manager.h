@@ -59,6 +59,7 @@ class PermissionBubbleManager
 
   // PermissionBubbleView::Delegate:
   virtual void ToggleAccept(int delegate_index, bool new_value) OVERRIDE;
+  virtual void SetCustomizationMode() OVERRIDE;
   virtual void Accept() OVERRIDE;
   virtual void Deny() OVERRIDE;
   virtual void Closing() OVERRIDE;
@@ -74,6 +75,7 @@ class PermissionBubbleManager
 
   std::vector<PermissionBubbleDelegate*> delegates_;
   std::vector<bool> accept_state_;
+  bool customization_mode_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_MANAGER_H_

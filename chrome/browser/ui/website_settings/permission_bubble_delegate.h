@@ -19,23 +19,31 @@ class PermissionBubbleDelegate {
  public:
   virtual ~PermissionBubbleDelegate() {}
 
-  // Returns the resource ID of an associated icon. If kNoIconID is returned, no
-  // icon will be shown.
-  virtual int GetIconID() const = 0;
-
-  // Returns the prompt text for this permission. This is the central permission
-  // grant text, and must be phrased positively -- the permission bubble may
-  // coalesce different requests, and if it does, this text will be displayed
-  // next to a checkbox indicating the user grants the permission.
+  // Returns the full prompt text for this permission. This is the only text
+  // that will be shown in the single-permission case and should be phrased
+  // positively as a complete sentence.
   virtual base::string16 GetMessageText() const = 0;
 
-  // TODO(gbillock): Needed?
-  // Returns alternative text for the accept button in the case where this
-  // single permission request is triggered in the bubble.
+  // Returns the shortened prompt text for this permission.  Must be phrased
+  // positively -- the permission bubble may coalesce different requests, and
+  // if it does, this text will be displayed next to a bullet or checkbox
+  // indicating the user grants the permission.
+  virtual base::string16 GetMessageTextFragment() const = 0;
+
+  // May return alternative text for the accept button in the case where this
+  // single permission request is triggered in the bubble. If it returns an
+  // empty string the default is used.
   // If the permission request is coalesced, the text will revert to the default
   // "Accept"-alike, so the message text must be clear enough for users to
   // understand even if this text is not used.
   virtual base::string16 GetAlternateAcceptButtonText() const = 0;
+
+  // May return alternative text for the deny button in the case where this
+  // single permission request is triggered in the bubble. If it returns an
+  // empty string the default is used. This text may not be used at all,
+  // so the |GetMessageText()| prompt should be clear enough to convey the
+  // permission request with generic button text.
+  virtual base::string16 GetAlternateDenyButtonText() const = 0;
 
   // Called when the user has granted the requested permission.
   virtual void PermissionGranted() = 0;

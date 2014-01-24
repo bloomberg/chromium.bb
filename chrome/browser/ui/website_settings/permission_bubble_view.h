@@ -10,31 +10,33 @@
 class PermissionBubbleDelegate;
 class PermissionBubbleManager;
 
-// This class is the platform-independent base class which the
-// manager uses to communicate to the UI surface. The UI toolkit
-// must set the manager to the view for each tab change caused
-// in the window.
+// This class is the platform-independent interface through which the permission
+// bubble managers (which are one per tab) communicate to the UI surface.
+// When the visible tab changes, the UI code must provide an object of this type
+// to the manager for the visible tab.
 class PermissionBubbleView {
  public:
+  // The delegate will receive events caused by user action which need to
+  // be persisted in the per-tab UI state.
   class Delegate {
+   public:
     virtual void ToggleAccept(int index, bool new_value) = 0;
+    virtual void SetCustomizationMode() = 0;
     virtual void Accept() = 0;
     virtual void Deny() = 0;
     virtual void Closing() = 0;
   };
 
-  // Set the delegate which will receive UI events forwarded from the bubble.
+  // Sets the delegate which will receive UI events forwarded from the bubble.
   virtual void SetDelegate(Delegate* delegate) = 0;
 
-  // Used for live updates to the bubble.
-  virtual void AddPermissionBubbleDelegate(
-      PermissionBubbleDelegate* delegate) = 0;
-  virtual void RemovePermissionBubbleDelegate(
-      PermissionBubbleDelegate* delegate) = 0;
-
+  // Causes the bubble to show up with the given contents.
   virtual void Show(
       const std::vector<PermissionBubbleDelegate*>& delegates,
-      const std::vector<bool>& accept_state) = 0;
+      const std::vector<bool>& accept_state,
+      bool custommization_mode) = 0;
+
+  // Hides the permission bubble.
   virtual void Hide() = 0;
 };
 

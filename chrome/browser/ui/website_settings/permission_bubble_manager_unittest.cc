@@ -18,15 +18,19 @@ class MockDelegate : public PermissionBubbleDelegate {
   virtual ~MockDelegate() {}
 
   // PermissionBubbleDelegate:
-  virtual int GetIconID() const OVERRIDE {
-    return 11;
-  }
-
   virtual base::string16 GetMessageText() const OVERRIDE {
     return base::ASCIIToUTF16("test");
   }
 
+  virtual base::string16 GetMessageTextFragment() const OVERRIDE {
+    return base::ASCIIToUTF16("test");
+  }
+
   virtual base::string16 GetAlternateAcceptButtonText() const OVERRIDE {
+    return base::ASCIIToUTF16("button");
+  }
+
+  virtual base::string16 GetAlternateDenyButtonText() const OVERRIDE {
     return base::ASCIIToUTF16("button");
   }
 
@@ -69,15 +73,10 @@ class MockView : public PermissionBubbleView {
     delegate_ = delegate;
   }
 
-  virtual void AddPermissionBubbleDelegate(
-      PermissionBubbleDelegate* delegate) OVERRIDE {}
-
-  virtual void RemovePermissionBubbleDelegate(
-      PermissionBubbleDelegate* delegate) OVERRIDE {}
-
   virtual void Show(
       const std::vector<PermissionBubbleDelegate*>& delegates,
-      const std::vector<bool>& accept_state) OVERRIDE {
+      const std::vector<bool>& accept_state,
+      bool customization_state_) OVERRIDE {
     shown_ = true;
     permission_delegates_ = delegates;
     permission_states_ = accept_state;
