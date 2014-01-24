@@ -71,7 +71,7 @@ void HTMLImportChild::wasAlreadyLoaded()
 
 void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
 {
-    ASSERT(!hasResource());
+    ASSERT(!this->resource());
     ASSERT(!m_loader);
 
     if (isCreatedByParser()) {
@@ -79,7 +79,7 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
         m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
     }
 
-    HTMLImportResourceOwner::setResource(resource);
+    setResource(resource);
 
     // If the node is "document blocked", it cannot create HTMLImportLoader
     // even if there is no sharable one found, as there is possibility that

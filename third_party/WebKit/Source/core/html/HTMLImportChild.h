@@ -31,9 +31,10 @@
 #ifndef HTMLImportChild_h
 #define HTMLImportChild_h
 
+#include "core/fetch/RawResource.h"
+#include "core/fetch/ResourceOwner.h"
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLImportLoaderClient.h"
-#include "core/html/HTMLImportResourceOwner.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 
@@ -49,10 +50,10 @@ class HTMLImportChildClient;
 // is done by HTMLImportLoader, which can be shared among multiple
 // HTMLImportChild of same link URL.
 //
-// HTMLImportChild implements ResourceClient through HTMLImportResourceOwner
+// HTMLImportChild implements ResourceClient through ResourceOwner
 // so that it can speculatively request linked resources while it is unblocked.
 //
-class HTMLImportChild FINAL : public HTMLImport, public HTMLImportLoaderClient, public HTMLImportResourceOwner {
+class HTMLImportChild FINAL : public HTMLImport, public HTMLImportLoaderClient, public ResourceOwner<RawResource> {
 public:
     HTMLImportChild(const KURL&, bool createdByParser);
     virtual ~HTMLImportChild();

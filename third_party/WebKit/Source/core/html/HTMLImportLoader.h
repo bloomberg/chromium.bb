@@ -31,7 +31,8 @@
 #ifndef HTMLImportLoader_h
 #define HTMLImportLoader_h
 
-#include "core/html/HTMLImportResourceOwner.h"
+#include "core/fetch/RawResource.h"
+#include "core/fetch/ResourceOwner.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -42,12 +43,12 @@ class HTMLImport;
 class HTMLImportLoaderClient;
 
 //
-// Owning imported Document lifetime. It also implements ResourceClient through HTMLImportResourceOwner
+// Owning imported Document lifetime. It also implements ResourceClient through ResourceOwner
 // to feed fetched bytes to the DocumentWriter of the imported document.
 // HTMLImportLoader is owned by and shared between HTMLImportChild.
 //
 //
-class HTMLImportLoader FINAL : public RefCounted<HTMLImportLoader>, public HTMLImportResourceOwner {
+class HTMLImportLoader FINAL : public RefCounted<HTMLImportLoader>, public ResourceOwner<RawResource> {
 public:
     enum State {
         StateLoading,
