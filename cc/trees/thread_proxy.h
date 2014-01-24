@@ -229,7 +229,7 @@ class ThreadProxy : public Proxy,
 
   // Accessed on the main thread, or when main thread is blocked.
   bool commit_waits_for_activation_;
-  bool inside_commit_;
+  bool main_thread_inside_commit_;
 
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
 

@@ -92,7 +92,7 @@ ThreadProxy::ThreadProxy(
       in_composite_and_readback_(false),
       manage_tiles_pending_(false),
       commit_waits_for_activation_(false),
-      inside_commit_(false),
+      main_thread_inside_commit_(false),
       begin_main_frame_sent_completion_event_on_impl_thread_(NULL),
       readback_request_on_impl_thread_(NULL),
       commit_completion_event_on_impl_thread_(NULL),
@@ -520,7 +520,7 @@ void ThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
 
 void ThreadProxy::SetNextCommitWaitsForActivation() {
   DCHECK(IsMainThread());
-  DCHECK(!inside_commit_);
+  DCHECK(!main_thread_inside_commit_);
   commit_waits_for_activation_ = true;
 }
 
@@ -1019,18 +1019,11 @@ void ThreadProxy::ScheduledActionCommit() {
   current_resource_update_controller_on_impl_thread_->Finalize();
   current_resource_update_controller_on_impl_thread_.reset();
 
-  inside_commit_ = true;
+  main_thread_inside_commit_ = true;
   layer_tree_host_impl_->BeginCommit();
   layer_tree_host()->BeginCommitOnImplThread(layer_tree_host_impl_.get());
   layer_tree_host()->FinishCommitOnImplThread(layer_tree_host_impl_.get());
-  layer_tree_host_impl_->CommitComplete();
-  inside_commit_ = false;
-
-  SetInputThrottledUntilCommitOnImplThread(false);
-
-  UpdateBackgroundAnimateTicking();
-
-  next_frame_is_newly_committed_frame_on_impl_thread_ = true;
+  main_thread_inside_commit_ = false;
 
   bool hold_commit = layer_tree_host()->settings().impl_side_painting &&
                      commit_waits_for_activation_;
@@ -1048,6 +1041,17 @@ void ThreadProxy::ScheduledActionCommit() {
     commit_completion_event_on_impl_thread_->Signal();
     commit_completion_event_on_impl_thread_ = NULL;
   }
+
+  // Delay this step until afer the main thread has been released as it's
+  // often a good bit of work to update the tree and prepare the new frame.
+  layer_tree_host_impl_->CommitComplete();
+
+  SetInputThrottledUntilCommitOnImplThread(false);
+
+  UpdateBackgroundAnimateTicking();
+
+  next_frame_is_newly_committed_frame_on_impl_thread_ = true;
+  commit_waits_for_activation_ = false;
 
   commit_complete_time_ = base::TimeTicks::HighResNow();
   begin_main_frame_to_commit_duration_history_.InsertSample(

@@ -815,7 +815,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
 // If the layerTreeHost says it can't draw, Then we should not try to draw.
 class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestCanDrawBlocksDrawing() : num_commits_(0), done_(false) {}
+  LayerTreeHostTestCanDrawBlocksDrawing() : done_(false) {}
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
@@ -830,32 +830,35 @@ class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     if (done_)
       return;
-    if (num_commits_ >= 1) {
+    if (LastCommittedSourceFrameNumber(impl) >= 1) {
       // After the first commit, we should not be able to draw.
       EXPECT_FALSE(impl->CanDraw());
     }
   }
 
   virtual void DidCommit() OVERRIDE {
-    num_commits_++;
-    if (num_commits_ == 1) {
-      // Make the viewport empty so the host says it can't draw.
-      layer_tree_host()->SetViewportSize(gfx::Size(0, 0));
-    } else if (num_commits_ == 2) {
-      char pixels[4];
-      layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
-    } else if (num_commits_ == 3) {
-      // Let it draw so we go idle and end the test.
-      layer_tree_host()->SetViewportSize(gfx::Size(1, 1));
-      done_ = true;
-      EndTest();
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // Make the viewport empty so the host says it can't draw.
+        layer_tree_host()->SetViewportSize(gfx::Size(0, 0));
+        break;
+      case 2: {
+        char pixels[4];
+        layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
+        break;
+      }
+      case 3:
+        // Let it draw so we go idle and end the test.
+        layer_tree_host()->SetViewportSize(gfx::Size(1, 1));
+        done_ = true;
+        EndTest();
+        break;
     }
   }
 
   virtual void AfterTest() OVERRIDE {}
 
  private:
-  int num_commits_;
   bool done_;
 };
 
@@ -3087,7 +3090,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
 // Test for UI Resource management.
 class LayerTreeHostTestUIResource : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestUIResource() : num_ui_resources_(0), num_commits_(0) {}
+  LayerTreeHostTestUIResource() : num_ui_resources_(0) {}
 
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->texture_id_allocation_chunk_size = 1;
@@ -3096,7 +3099,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void DidCommit() OVERRIDE {
-    int frame = num_commits_;
+    int frame = layer_tree_host()->source_frame_number();
     switch (frame) {
       case 1:
         CreateResource();
@@ -3130,25 +3133,25 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   void PerformTest(LayerTreeHostImpl* impl) {
     TestWebGraphicsContext3D* context = TestContext();
 
-    int frame = num_commits_;
+    int frame = impl->active_tree()->source_frame_number();
     switch (frame) {
-      case 1:
+      case 0:
         ASSERT_EQ(0u, context->NumTextures());
         break;
-      case 2:
+      case 1:
         // Created two textures.
         ASSERT_EQ(2u, context->NumTextures());
         break;
-      case 3:
+      case 2:
         // One texture left after one deletion.
         ASSERT_EQ(1u, context->NumTextures());
         break;
-      case 4:
+      case 3:
         // Resource manager state should not change when delete is called on an
         // invalid id.
         ASSERT_EQ(1u, context->NumTextures());
         break;
-      case 5:
+      case 4:
         // Creation after deletion: two more creates should total up to
         // three textures.
         ASSERT_EQ(3u, context->NumTextures());
@@ -3157,7 +3160,6 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    ++num_commits_;
     if (!layer_tree_host()->settings().impl_side_painting)
       PerformTest(impl);
   }
@@ -3183,7 +3185,6 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
 
   scoped_ptr<FakeScopedUIResource> ui_resources_[5];
   int num_ui_resources_;
-  int num_commits_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestUIResource);
@@ -4498,10 +4499,14 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
+  virtual void WillCommit() OVERRIDE {
+    // Some commits are aborted, so increment number of attempted commits here.
+    num_commits_++;
+  }
+
   virtual void DidCommit() OVERRIDE {
-    int frame = num_commits_;
-    switch (frame) {
-      case 0:
+    switch (num_commits_) {
+      case 1:
         // Verify default values.
         EXPECT_EQ(PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
                   layer_tree_host()
@@ -4513,7 +4518,7 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
                       ->ExternalPriorityCutoff());
         PostSetNeedsCommitToMainThread();
         break;
-      case 1:
+      case 2:
         // The values should remain the same until the commit after the policy
         // is changed.
         EXPECT_EQ(PrioritizedResourceManager::DefaultMemoryAllocationLimit(),
@@ -4525,7 +4530,7 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
                       ->contents_texture_manager()
                       ->ExternalPriorityCutoff());
         break;
-      case 2:
+      case 3:
         // Verify values were correctly passed.
         EXPECT_EQ(16u * 1024u * 1024u,
                   layer_tree_host()
@@ -4537,28 +4542,25 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
                       ->ExternalPriorityCutoff());
         EndTest();
         break;
-      case 3:
+      case 4:
         // Make sure no extra commits happen.
         NOTREACHED();
         break;
     }
-
-    ++num_commits_;
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    int frame = num_commits_;
-    switch (frame) {
-      case 0:
-        break;
+    switch (num_commits_) {
       case 1:
+        break;
+      case 2:
         // This will trigger a commit because the priority cutoff has changed.
         impl->SetMemoryPolicy(ManagedMemoryPolicy(
             16u * 1024u * 1024u,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             1000));
         break;
-      case 2:
+      case 3:
         // This will not trigger a commit because the priority cutoff has not
         // changed, and there is already enough memory for all allocations.
         impl->SetMemoryPolicy(ManagedMemoryPolicy(
@@ -4566,7 +4568,7 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             1000));
         break;
-      case 3:
+      case 4:
         NOTREACHED();
         break;
     }

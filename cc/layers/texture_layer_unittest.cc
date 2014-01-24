@@ -886,15 +886,9 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
                                                      public TextureLayerClient {
  protected:
   TextureLayerNoMailboxIsActivatedDuringCommit()
-      : wait_thread_("WAIT"),
-        wait_event_(false, false),
-        texture_(0u) {
-    wait_thread_.Start();
-  }
+      : texture_(0u), activate_count_(0) {}
 
   virtual void BeginTest() OVERRIDE {
-    activate_count_ = 0;
-
     gfx::Size bounds(100, 100);
     root_ = Layer::Create();
     root_->SetAnchorPoint(gfx::PointF());
@@ -931,45 +925,21 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
   }
 
   virtual void WillActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    // Slow down activation so the main thread DidCommit() will run if
-    // not blocked.
-    wait_thread_.message_loop()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal,
-                   base::Unretained(&wait_event_)),
-        base::TimeDelta::FromMilliseconds(10));
-    wait_event_.Wait();
-
-    base::AutoLock lock(activate_lock_);
     ++activate_count_;
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    // The main thread is awake now, and will run DidCommit() immediately.
-    // Run DidActivate() afterwards by posting it now.
-    proxy()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&TextureLayerNoMailboxIsActivatedDuringCommit::DidActivate,
-                   base::Unretained(this)));
-  }
-
-  void DidActivate() {
-    base::AutoLock lock(activate_lock_);
-    switch (activate_count_) {
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The first texture has been activated. Invalidate the layer so it
         // grabs a new texture id from the client.
         layer_->SetNeedsDisplay();
-        // So this commit number should complete after the second activate.
-        EXPECT_EQ(1, layer_tree_host()->source_frame_number());
         break;
       case 2:
         // The second mailbox has been activated. Remove the layer from
         // the tree to cause another commit/activation. The commit should
         // finish *after* the layer is removed from the active tree.
         layer_->RemoveFromParent();
-        // So this commit number should complete after the third activate.
-        EXPECT_EQ(2, layer_tree_host()->source_frame_number());
         break;
       case 3:
         EndTest();
@@ -977,29 +947,23 @@ class TextureLayerNoMailboxIsActivatedDuringCommit : public LayerTreeTest,
     }
   }
 
-  virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->source_frame_number()) {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    switch (host_impl->active_tree()->source_frame_number()) {
       case 2: {
         // The activate for the 2nd texture should have happened before now.
-        base::AutoLock lock(activate_lock_);
         EXPECT_EQ(2, activate_count_);
         break;
       }
       case 3: {
         // The activate to remove the layer should have happened before now.
-        base::AutoLock lock(activate_lock_);
         EXPECT_EQ(3, activate_count_);
         break;
       }
     }
   }
 
-
   virtual void AfterTest() OVERRIDE {}
 
-  base::Thread wait_thread_;
-  base::WaitableEvent wait_event_;
-  base::Lock activate_lock_;
   unsigned texture_;
   int activate_count_;
   scoped_refptr<Layer> root_;
@@ -1011,11 +975,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 
 class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
  protected:
-  TextureLayerMailboxIsActivatedDuringCommit()
-      : wait_thread_("WAIT"),
-        wait_event_(false, false) {
-    wait_thread_.Start();
-  }
+  TextureLayerMailboxIsActivatedDuringCommit() : activate_count_(0) {}
 
   static void ReleaseCallback(unsigned sync_point, bool lost_resource) {}
 
@@ -1028,8 +988,6 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   }
 
   virtual void BeginTest() OVERRIDE {
-    activate_count_ = 0;
-
     gfx::Size bounds(100, 100);
     root_ = Layer::Create();
     root_->SetAnchorPoint(gfx::PointF());
@@ -1049,45 +1007,21 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   }
 
   virtual void WillActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    // Slow down activation so the main thread DidCommit() will run if
-    // not blocked.
-    wait_thread_.message_loop()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal,
-                   base::Unretained(&wait_event_)),
-        base::TimeDelta::FromMilliseconds(10));
-    wait_event_.Wait();
-
-    base::AutoLock lock(activate_lock_);
     ++activate_count_;
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    // The main thread is awake now, and will run DidCommit() immediately.
-    // Run DidActivate() afterwards by posting it now.
-    proxy()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&TextureLayerMailboxIsActivatedDuringCommit::DidActivate,
-                   base::Unretained(this)));
-  }
-
-  void DidActivate() {
-    base::AutoLock lock(activate_lock_);
-    switch (activate_count_) {
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The first mailbox has been activated. Set a new mailbox, and
         // expect the next commit to finish *after* it is activated.
         SetMailbox('2');
-        // So this commit number should complete after the second activate.
-        EXPECT_EQ(1, layer_tree_host()->source_frame_number());
         break;
       case 2:
         // The second mailbox has been activated. Remove the layer from
         // the tree to cause another commit/activation. The commit should
         // finish *after* the layer is removed from the active tree.
         layer_->RemoveFromParent();
-        // So this commit number should complete after the third activate.
-        EXPECT_EQ(2, layer_tree_host()->source_frame_number());
         break;
       case 3:
         EndTest();
@@ -1095,17 +1029,15 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
     }
   }
 
-  virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->source_frame_number()) {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    switch (host_impl->active_tree()->source_frame_number()) {
       case 2: {
         // The activate for the 2nd mailbox should have happened before now.
-        base::AutoLock lock(activate_lock_);
         EXPECT_EQ(2, activate_count_);
         break;
       }
       case 3: {
         // The activate to remove the layer should have happened before now.
-        base::AutoLock lock(activate_lock_);
         EXPECT_EQ(3, activate_count_);
         break;
       }
@@ -1115,9 +1047,6 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
 
   virtual void AfterTest() OVERRIDE {}
 
-  base::Thread wait_thread_;
-  base::WaitableEvent wait_event_;
-  base::Lock activate_lock_;
   int activate_count_;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;

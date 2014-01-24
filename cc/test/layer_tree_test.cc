@@ -23,6 +23,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/frame_time.h"
@@ -698,6 +699,16 @@ scoped_refptr<ContextProvider> LayerTreeTest::OffscreenContextProvider() {
 TestWebGraphicsContext3D* LayerTreeTest::TestContext() {
   return static_cast<TestContextProvider*>(
       output_surface_->context_provider().get())->TestContext3d();
+}
+
+int LayerTreeTest::LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl)
+    const {
+  if (impl->pending_tree())
+    return impl->pending_tree()->source_frame_number();
+  if (impl->active_tree())
+    return impl->active_tree()->source_frame_number();
+  // Source frames start at 0, so this is invalid.
+  return -1;
 }
 
 }  // namespace cc

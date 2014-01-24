@@ -1863,12 +1863,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDelegatedTestCommitWithoutTake);
 class DelegatedFrameIsActivatedDuringCommit
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
  protected:
-  DelegatedFrameIsActivatedDuringCommit()
-      : wait_thread_("WAIT"),
-        wait_event_(false, false),
-        returned_resource_count_(0) {
-    wait_thread_.Start();
-  }
+  DelegatedFrameIsActivatedDuringCommit() : returned_resource_count_(0) {}
 
   virtual void BeginTest() OVERRIDE {
     activate_count_ = 0;
@@ -1883,31 +1878,11 @@ class DelegatedFrameIsActivatedDuringCommit
   }
 
   virtual void WillActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    // Slow down activation so the main thread DidCommit() will run if
-    // not blocked.
-    wait_thread_.message_loop()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal,
-                   base::Unretained(&wait_event_)),
-        base::TimeDelta::FromMilliseconds(10));
-    wait_event_.Wait();
-
-    base::AutoLock lock(activate_lock_);
     ++activate_count_;
   }
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    // The main thread is awake now, and will run DidCommit() immediately.
-    // Run DidActivate() afterwards by posting it now.
-    proxy()->MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&DelegatedFrameIsActivatedDuringCommit::DidActivate,
-                   base::Unretained(this)));
-  }
-
-  void DidActivate() {
-    base::AutoLock lock(activate_lock_);
-    switch (activate_count_) {
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
       case 1: {
         // The first frame has been activated. Set a new frame, and
         // expect the next commit to finish *after* it is activated.
@@ -1916,8 +1891,6 @@ class DelegatedFrameIsActivatedDuringCommit
         AddTextureQuad(frame.get(), 555);
         AddTransferableResource(frame.get(), 555);
         SetFrameData(frame.Pass());
-        // So this commit number should complete after the second activate.
-        EXPECT_EQ(1, layer_tree_host()->source_frame_number());
         break;
       }
       case 2:
@@ -1925,28 +1898,26 @@ class DelegatedFrameIsActivatedDuringCommit
         // the tree to cause another commit/activation. The commit should
         // finish *after* the layer is removed from the active tree.
         delegated_->RemoveFromParent();
-        // So this commit number should complete after the third activate.
-        EXPECT_EQ(2, layer_tree_host()->source_frame_number());
+        break;
+      case 3:
+        // Finish the test by releasing resources on the next frame.
+        scoped_ptr<DelegatedFrameData> frame =
+            CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        SetFrameData(frame.Pass());
         break;
     }
   }
 
-  virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->source_frame_number()) {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    switch (host_impl->active_tree()->source_frame_number()) {
       case 2: {
         // The activate for the 2nd frame should have happened before now.
-        base::AutoLock lock(activate_lock_);
         EXPECT_EQ(2, activate_count_);
         break;
       }
       case 3: {
         // The activate to remove the layer should have happened before now.
-        base::AutoLock lock(activate_lock_);
         EXPECT_EQ(3, activate_count_);
-
-        scoped_ptr<DelegatedFrameData> frame =
-            CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
-        SetFrameData(frame.Pass());
         break;
       }
     }
@@ -1968,9 +1939,6 @@ class DelegatedFrameIsActivatedDuringCommit
       EndTest();
   }
 
-  base::Thread wait_thread_;
-  base::WaitableEvent wait_event_;
-  base::Lock activate_lock_;
   int activate_count_;
   size_t returned_resource_count_;
 };

@@ -1925,8 +1925,7 @@ class LayerTreeHostContextTestSurfaceCreateCallback
  public:
   LayerTreeHostContextTestSurfaceCreateCallback()
       : LayerTreeHostContextTest(),
-        layer_(FakeContentLayer::Create(&client_)),
-        num_commits_(0) {}
+        layer_(FakeContentLayer::Create(&client_)) {}
 
   virtual void SetupTree() OVERRIDE {
     layer_->SetBounds(gfx::Size(10, 20));
@@ -1937,29 +1936,28 @@ class LayerTreeHostContextTestSurfaceCreateCallback
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void DidCommit() OVERRIDE {
-    switch (num_commits_) {
-      case 0:
-        EXPECT_EQ(1u, layer_->output_surface_created_count());
-        layer_tree_host()->SetNeedsCommit();
-        break;
+    switch (layer_tree_host()->source_frame_number()) {
       case 1:
         EXPECT_EQ(1u, layer_->output_surface_created_count());
         layer_tree_host()->SetNeedsCommit();
         break;
       case 2:
         EXPECT_EQ(1u, layer_->output_surface_created_count());
+        layer_tree_host()->SetNeedsCommit();
         break;
       case 3:
+        EXPECT_EQ(1u, layer_->output_surface_created_count());
+        break;
+      case 4:
         EXPECT_EQ(2u, layer_->output_surface_created_count());
         layer_tree_host()->SetNeedsCommit();
         break;
     }
-    ++num_commits_;
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerTreeHostContextTest::CommitCompleteOnThread(impl);
-    switch (num_commits_) {
+    switch (LastCommittedSourceFrameNumber(impl)) {
       case 0:
         break;
       case 1:
@@ -1982,7 +1980,6 @@ class LayerTreeHostContextTestSurfaceCreateCallback
  protected:
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> layer_;
-  int num_commits_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestSurfaceCreateCallback);
