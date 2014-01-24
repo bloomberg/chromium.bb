@@ -879,5 +879,3 @@ crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shad
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-002.html [ Failure ]
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-003.html [ Failure ]
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Failure ]
-
-crbug.com/308818 fast/parser/changing-attrbutes-crash.html [ NeedsRebaseline ]
