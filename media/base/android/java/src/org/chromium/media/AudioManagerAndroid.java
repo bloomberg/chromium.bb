@@ -418,7 +418,8 @@ class AudioManagerAndroid {
         // quality platform echo cancellation.
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
                AcousticEchoCanceler.isAvailable() &&
-               (Build.MODEL.equals("GT-I9300") ||  // Galaxy S3
+               (Build.MODEL.equals("SM-T310R") ||  // Galaxy Tab 3 7.0
+                Build.MODEL.equals("GT-I9300") ||  // Galaxy S3
                 Build.MODEL.equals("GT-I9500") ||  // Galaxy S4
                 Build.MODEL.equals("GT-N7105") ||  // Galaxy Note 2
                 Build.MODEL.equals("Nexus 4") ||
