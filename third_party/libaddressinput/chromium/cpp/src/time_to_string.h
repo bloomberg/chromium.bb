@@ -15,8 +15,8 @@
 #ifndef I18N_ADDRESSINPUT_TIME_TO_STRING_H_
 #define I18N_ADDRESSINPUT_TIME_TO_STRING_H_
 
-#include <string>
 #include <ctime>
+#include <string>
 
 namespace i18n {
 namespace addressinput {

@@ -36,22 +36,22 @@ class FakeDownloaderTest : public testing::TestWithParam<std::string> {
   virtual ~FakeDownloaderTest() {}
 
   scoped_ptr<Downloader::Callback> BuildCallback() {
-    return ::i18n::addressinput::BuildCallback(
+    return ::i18n::addressinput::BuildScopedPtrCallback(
         this, &FakeDownloaderTest::OnDownloaded);
   }
 
   FakeDownloader downloader_;
   bool success_;
   std::string url_;
-  std::string data_;
+  scoped_ptr<std::string> data_;
 
  private:
   void OnDownloaded(bool success,
                     const std::string& url,
-                    const std::string& data) {
+                    scoped_ptr<std::string> data) {
     success_ = success;
     url_ = url;
-    data_ = data;
+    data_ = data.Pass();
   }
 };
 
@@ -91,7 +91,7 @@ TEST_P(FakeDownloaderTest, FakeDownloaderHasValidDataForRegion) {
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(url, url_);
-  EXPECT_TRUE(DataIsValid(data_, key));
+  EXPECT_TRUE(DataIsValid(*data_, key));
 };
 
 // Test all region codes.
@@ -107,7 +107,7 @@ TEST_F(FakeDownloaderTest, DownloadMissingKeyReturnsEmptyDictionary) {
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kJunkUrl, url_);
-  EXPECT_EQ("{}", data_);
+  EXPECT_EQ("{}", *data_);
 }
 
 // Verifies that downloading an empty key will return "{}".
@@ -117,7 +117,7 @@ TEST_F(FakeDownloaderTest, DownloadEmptyKeyReturnsEmptyDictionary) {
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kPrefixOnlyUrl, url_);
-  EXPECT_EQ("{}", data_);
+  EXPECT_EQ("{}", *data_);
 }
 
 // Verifies that downloading a real URL fails.
@@ -127,7 +127,7 @@ TEST_F(FakeDownloaderTest, DownloadRealUrlFals) {
 
   EXPECT_FALSE(success_);
   EXPECT_EQ(kRealUrl, url_);
-  EXPECT_TRUE(data_.empty());
+  EXPECT_TRUE(data_->empty());
 }
 
 }  // namespace

@@ -45,22 +45,20 @@ namespace {
 //    60 seconds per minute.
 static const double kStaleDataAgeInSeconds = 30.0 * 24.0 * 60.0 * 60.0;
 
-// The prefix for the timestamp line in the header.
+// The prefix for the timestamp line in the footer.
 const char kTimestampPrefix[] = "timestamp=";
-const size_t kTimestampPrefixLength = sizeof kTimestampPrefix - 1;
 
-// The prefix for the checksum line in the header.
+// The prefix for the checksum line in the footer.
 const char kChecksumPrefix[] = "checksum=";
-const size_t kChecksumPrefixLength = sizeof kChecksumPrefix - 1;
 
-// The separator between lines of header and data.
+// The separator between lines of footer and data.
 const char kSeparator = '\n';
 
 // Returns |data| with attached checksum and current timestamp. Format:
 //
-//    timestamp=<timestamp>
-//    checksum=<checksum>
 //    <data>
+//    checksum=<checksum>
+//    timestamp=<timestamp>
 //
 // The timestamp is the time_t that was returned from time(NULL) function. The
 // timestamp does not need to be portable because it is written and read only by
@@ -69,66 +67,65 @@ const char kSeparator = '\n';
 //
 // The checksum is the 32-character hexadecimal MD5 checksum of <data>. It is
 // meant to protect from random file changes on disk.
-std::string PrependTimestamp(const std::string& data) {
-  std::string wrapped;
-  wrapped.append(kTimestampPrefix, kTimestampPrefixLength);
-  wrapped.append(TimeToString(time(NULL)));
-  wrapped.push_back(kSeparator);
+void AppendTimestamp(std::string* data) {
+  std::string md5 = MD5String(*data);
 
-  wrapped.append(kChecksumPrefix, kChecksumPrefixLength);
-  wrapped.append(MD5String(data));
-  wrapped.push_back(kSeparator);
-  wrapped.append(data);
+  data->push_back(kSeparator);
+  data->append(kChecksumPrefix);
+  data->append(md5);
 
-  return wrapped;
+  data->push_back(kSeparator);
+  data->append(kTimestampPrefix);
+  data->append(TimeToString(time(NULL)));
 }
 
-// Places the header value into |header_value| parameter and the rest of the
-// data into |data| parameter. Returns |true| if the header format is valid.
-bool ExtractHeader(const std::string& header_and_data,
-                   const char* header_prefix,
-                   size_t header_prefix_length,
-                   std::string* header_value,
-                   std::string* data) {
-  assert(header_prefix != NULL);
-  assert(header_value != NULL);
+// Places the footer value into |footer_value| parameter and the rest of the
+// data into |data| parameter. Returns |true| if the footer format is valid.
+bool ExtractFooter(scoped_ptr<std::string> data_and_footer,
+                   const std::string& footer_prefix,
+                   std::string* footer_value,
+                   scoped_ptr<std::string>* data) {
+  assert(footer_value != NULL);
   assert(data != NULL);
 
-  if (header_and_data.compare(
-          0, header_prefix_length, header_prefix, header_prefix_length) != 0) {
-    return false;
-  }
-
   std::string::size_type separator_position =
-      header_and_data.find(kSeparator, header_prefix_length);
+      data_and_footer->rfind(kSeparator);
   if (separator_position == std::string::npos) {
     return false;
   }
 
-  data->assign(header_and_data, separator_position + 1, std::string::npos);
-  header_value->assign(header_and_data, header_prefix_length,
-                       separator_position - header_prefix_length);
+  std::string::size_type footer_start = separator_position + 1;
+  if (data_and_footer->compare(footer_start,
+                               footer_prefix.length(),
+                               footer_prefix) != 0) {
+    return false;
+  }
+
+  *footer_value =
+      data_and_footer->substr(footer_start + footer_prefix.length());
+  *data = data_and_footer.Pass();
+  (*data)->resize(separator_position);
   return true;
 }
 
-// Strips out the timestamp and checksum from |header_and_data|. Validates the
-// checksum. Saves the header-less data into |data|. Compares the parsed
+// Strips out the timestamp and checksum from |data_and_footer|. Validates the
+// checksum. Saves the footer-less data into |data|. Compares the parsed
 // timestamp with current time and saves the difference into |age_in_seconds|.
 //
-// The parameters should not be NULL. Does not take ownership of its parameters.
+// The parameters should not be NULL.
 //
-// Returns |true| if |header_and_data| is correctly formatted and has the
+// Returns |true| if |data_and_footer| is correctly formatted and has the
 // correct checksum.
-bool VerifyAndExtractTimestamp(const std::string& header_and_data,
-                               std::string* data,
+bool VerifyAndExtractTimestamp(const std::string& data_and_footer,
+                               scoped_ptr<std::string>* data,
                                double* age_in_seconds) {
   assert(data != NULL);
   assert(age_in_seconds != NULL);
 
   std::string timestamp_string;
-  std::string checksum_and_data;
-  if (!ExtractHeader(header_and_data, kTimestampPrefix, kTimestampPrefixLength,
-                     &timestamp_string, &checksum_and_data)) {
+  scoped_ptr<std::string> checksum_and_data;
+  if (!ExtractFooter(make_scoped_ptr(new std::string(data_and_footer)),
+                     kTimestampPrefix, &timestamp_string, &checksum_and_data)) {
     return false;
   }
 
@@ -143,12 +140,12 @@ bool VerifyAndExtractTimestamp(const std::string& header_and_data,
   }
 
   std::string checksum;
-  if (!ExtractHeader(checksum_and_data, kChecksumPrefix, kChecksumPrefixLength,
-                     &checksum, data)) {
+  if (!ExtractFooter(checksum_and_data.Pass(),
+                     kChecksumPrefix, &checksum, data)) {
     return false;
   }
 
-  return checksum == MD5String(*data);
+  return checksum == MD5String(**data);
 }
 
 }  // namespace
@@ -189,31 +186,33 @@ void Retriever::OnDataRetrievedFromStorage(bool success,
                                            const std::string& key,
                                            const std::string& stored_data) {
   if (success) {
-    std::string unwrapped;
+    scoped_ptr<std::string> unwrapped;
     double age_in_seconds = 0.0;
     if (VerifyAndExtractTimestamp(stored_data, &unwrapped, &age_in_seconds)) {
       if (age_in_seconds < kStaleDataAgeInSeconds) {
-        InvokeCallbackForKey(key, success, unwrapped);
+        InvokeCallbackForKey(key, success, *unwrapped);
         return;
       }
-      stale_data_[key] = unwrapped;
+      stale_data_[key].swap(*unwrapped);
     }
   }
 
   downloader_->Download(GetUrlForKey(key),
-                        BuildCallback(this, &Retriever::OnDownloaded));
+                        BuildScopedPtrCallback(this, &Retriever::OnDownloaded));
 }
 
 void Retriever::OnDownloaded(bool success,
                              const std::string& url,
-                             const std::string& downloaded_data) {
+                             scoped_ptr<std::string> downloaded_data) {
   const std::string& key = GetKeyForUrl(url);
   std::map<std::string, std::string>::iterator stale_data_it =
       stale_data_.find(key);
 
   if (success) {
-    storage_->Put(key, PrependTimestamp(downloaded_data));
-    InvokeCallbackForKey(key, success, downloaded_data);
+    InvokeCallbackForKey(key, success, *downloaded_data);
+    AppendTimestamp(downloaded_data.get());
+    // TODO(estade): storage should take a scoped_ptr.
+    storage_->Put(key, *downloaded_data);
   } else if (stale_data_it != stale_data_.end()) {
     InvokeCallbackForKey(key, true, stale_data_it->second);
   } else {

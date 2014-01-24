@@ -37,10 +37,10 @@ void ChromeDownloaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(request != requests_.end());
 
   bool ok = source->GetResponseCode() == net::HTTP_OK;
-  std::string data;
+  scoped_ptr<std::string> data(new std::string());
   if (ok)
-    source->GetResponseAsString(&data);
-  (*request->second->callback)(ok, request->second->url, data);
+    source->GetResponseAsString(&*data);
+  (*request->second->callback)(ok, request->second->url, data.Pass());
 
   delete request->first;
   delete request->second;

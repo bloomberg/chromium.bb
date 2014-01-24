@@ -109,7 +109,7 @@ void FakeDownloader::Download(const std::string& url,
     success = true;
     data = "{}";
   }
-  (*downloaded)(success, url, data);
+  (*downloaded)(success, url, make_scoped_ptr(new std::string(data)));
 }
 
 }  // namespace addressinput

@@ -62,7 +62,7 @@ class Retriever {
   // Callback for when a rule is retrieved by |downloader_|.
   void OnDownloaded(bool success,
                     const std::string& url,
-                    const std::string& downloaded_data);
+                    scoped_ptr<std::string> downloaded_data);
 
   // Returns the URL where the |key| can be retrieved. For example, returns
   // "https://i18napis.appspot.com/ssl-aggregate-address/data/US" for input

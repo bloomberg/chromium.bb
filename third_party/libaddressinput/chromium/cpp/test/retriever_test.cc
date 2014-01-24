@@ -44,6 +44,12 @@ const char kEmptyData[] = "{}";
 // integrity.
 const char kEmptyDataChecksum[] = "99914b932bd37a50b983c5e7c90ae93b";
 
+std::string Wrap(const std::string& data,
+                 const std::string& checksum,
+                 const std::string& timestamp) {
+  return data + "\n" + "checksum=" + checksum + "\n" + "timestamp=" + timestamp;
+}
+
 }  // namespace
 
 // Tests for Retriever object.
@@ -135,7 +141,7 @@ class FaultyDownloader : public Downloader {
   // Downloader implementation.
   virtual void Download(const std::string& url,
                         scoped_ptr<Callback> downloaded) {
-    (*downloaded)(false, url, "garbage");
+    (*downloaded)(false, url, make_scoped_ptr(new std::string("garbage")));
   }
 };
 
@@ -174,9 +180,7 @@ TEST_F(RetrieverTest, NoChecksumAndTimestampWillRedownload) {
 
 TEST_F(RetrieverTest, ChecksumAndTimestampWillNotRedownload) {
   storage_->Put(kKey,
-                "timestamp=" + TimeToString(time(NULL)) + "\n" +
-                    "checksum=" + kEmptyDataChecksum + "\n" +
-                    kEmptyData);
+                Wrap(kEmptyData, kEmptyDataChecksum, TimeToString(time(NULL))));
   retriever_->Retrieve(kKey, BuildCallback());
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);
@@ -184,10 +188,7 @@ TEST_F(RetrieverTest, ChecksumAndTimestampWillNotRedownload) {
 }
 
 TEST_F(RetrieverTest, OldTimestampWillRedownload) {
-  storage_->Put(kKey,
-                std::string("timestamp=0\n") +
-                    "checksum=" + kEmptyDataChecksum + "\n" +
-                    kEmptyData);
+  storage_->Put(kKey, Wrap(kEmptyData, kEmptyDataChecksum, "0"));
   retriever_->Retrieve(kKey, BuildCallback());
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);
@@ -200,10 +201,7 @@ TEST_F(RetrieverTest, OldTimestampOkIfDownloadFails) {
   Retriever bad_retriever(FakeDownloader::kFakeDataUrl,
                           scoped_ptr<Downloader>(new FaultyDownloader),
                           scoped_ptr<Storage>(storage_));
-  storage_->Put(kKey,
-                std::string("timestamp=0\n") +
-                    "checksum=" + kEmptyDataChecksum + "\n" +
-                    kEmptyData);
+  storage_->Put(kKey, Wrap(kEmptyData, kEmptyDataChecksum, "0"));
   bad_retriever.Retrieve(kKey, BuildCallback());
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);
@@ -212,10 +210,9 @@ TEST_F(RetrieverTest, OldTimestampOkIfDownloadFails) {
 
 TEST_F(RetrieverTest, WrongChecksumWillRedownload) {
   static const char kNonEmptyData[] = "{\"non-empty\": \"data\"}";
-  storage_->Put(kKey,
-                "timestamp=" + TimeToString(time(NULL)) + "\n" +
-                    "checksum=" + kEmptyDataChecksum + "\n" +
-                    kNonEmptyData);
+  storage_->Put(
+      kKey,
+      Wrap(kNonEmptyData, kEmptyDataChecksum, TimeToString(time(NULL))));
   retriever_->Retrieve(kKey, BuildCallback());
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);

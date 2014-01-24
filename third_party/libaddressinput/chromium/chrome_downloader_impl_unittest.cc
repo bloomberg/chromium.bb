@@ -36,27 +36,27 @@ class ChromeDownloaderImplTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  const std::string& data() { return data_; }
+  const std::string& data() { return *data_; }
   bool success() { return success_; }
 
  private:
   scoped_ptr<ChromeDownloaderImpl::Callback> BuildCallback() {
-    return ::i18n::addressinput::BuildCallback(
+    return ::i18n::addressinput::BuildScopedPtrCallback(
         this, &ChromeDownloaderImplTest::OnDownloaded);
   }
 
   // Callback for when download is finished.
   void OnDownloaded(bool success,
                     const std::string& url,
-                    const std::string& data) {
+                    scoped_ptr<std::string> data) {
     success_ = success;
-    data_ = data;
+    data_ = data.Pass();
   }
 
   base::MessageLoop loop_;
   net::URLFetcherImplFactory factory_;
   net::FakeURLFetcherFactory fake_factory_;
-  std::string data_;
+  scoped_ptr<std::string> data_;
   bool success_;
 };
 
