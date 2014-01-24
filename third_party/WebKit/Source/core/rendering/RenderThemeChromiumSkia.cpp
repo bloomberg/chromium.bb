@@ -91,11 +91,6 @@ bool RenderThemeChromiumSkia::supportsFocusRing(const RenderStyle* style) const
     return false;
 }
 
-bool RenderThemeChromiumSkia::supportsClosedCaptioning() const
-{
-    return true;
-}
-
 Color RenderThemeChromiumSkia::platformActiveSelectionBackgroundColor() const
 {
     return Color(0x1e, 0x90, 0xff);

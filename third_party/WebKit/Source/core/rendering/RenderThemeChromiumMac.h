@@ -123,8 +123,6 @@ protected:
     virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
-    virtual bool supportsClosedCaptioning() const OVERRIDE { return true; }
-
 private:
     virtual String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const OVERRIDE;
 

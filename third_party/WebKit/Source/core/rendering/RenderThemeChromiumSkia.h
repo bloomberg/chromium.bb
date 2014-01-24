@@ -53,7 +53,6 @@ public:
     // A method asking if the theme is able to draw the focus ring.
     virtual bool supportsFocusRing(const RenderStyle*) const OVERRIDE;
 
-    virtual bool supportsClosedCaptioning() const OVERRIDE;
     // The platform selection color.
     virtual Color platformActiveSelectionBackgroundColor() const OVERRIDE;
     virtual Color platformInactiveSelectionBackgroundColor() const OVERRIDE;

@@ -109,13 +109,11 @@ bool MediaControlsChromium::initializeControls(Document& document)
     if (exceptionState.hadException())
         return false;
 
-    if (RenderTheme::theme().supportsClosedCaptioning()) {
-        RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(document, this);
-        m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
-        panel->appendChild(toggleClosedCaptionsButton.release(), exceptionState);
-        if (exceptionState.hadException())
-            return false;
-    }
+    RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(document, this);
+    m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
+    panel->appendChild(toggleClosedCaptionsButton.release(), exceptionState);
+    if (exceptionState.hadException())
+        return false;
 
     RefPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(document);
     m_fullScreenButton = fullscreenButton.get();

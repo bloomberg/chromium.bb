@@ -173,7 +173,6 @@ public:
     virtual double animationDurationForProgressBar(RenderProgress*) const;
 
     // Media controls
-    virtual bool supportsClosedCaptioning() const { return false; }
     virtual String formatMediaControlsTime(float time) const;
     virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const;
 
