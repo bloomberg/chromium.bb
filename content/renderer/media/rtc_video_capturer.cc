@@ -17,7 +17,7 @@ RtcVideoCapturer::RtcVideoCapturer(const media::VideoCaptureSessionId id,
       state_(VIDEO_CAPTURE_STATE_STOPPED) {}
 
 RtcVideoCapturer::~RtcVideoCapturer() {
-  DCHECK(VIDEO_CAPTURE_STATE_STOPPED);
+  DCHECK_EQ(state_, VIDEO_CAPTURE_STATE_STOPPED);
   DVLOG(3) << " RtcVideoCapturer::dtor";
 }
 
