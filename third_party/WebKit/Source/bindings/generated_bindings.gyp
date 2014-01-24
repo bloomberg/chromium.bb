@@ -43,22 +43,33 @@
     'interface_idl_files': [
       '<@(core_idl_files)',
       '<@(webcore_testing_idl_files)',
-      '<@(generated_webcore_testing_idl_files)',
       '<@(modules_idl_files)',
+    ],
+    # Dependencies
+    'dependency_idl_files': [
+      '<@(core_dependency_idl_files)',
+      '<@(modules_dependency_idl_files)',
+      '<@(modules_testing_dependency_idl_files)',
     ],
     # Include in aggregate bindings (exclude testing and dependencies)
     'main_interface_idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
     ],
-    # Compute dependencies (include all static IDLs, exclude generated IDLs)
-    'idl_files': [
-      '<@(core_idl_files)',
-      '<@(core_dependency_idl_files)',
-      '<@(webcore_testing_idl_files)',
-      '<@(modules_idl_files)',
-      '<@(modules_dependency_idl_files)',
-      '<@(modules_testing_dependency_idl_files)',
+
+    # Generated IDL files
+    # Dependencies need to be computed separately, as not present at GYP time
+    # Generated interfaces need individual bindings generated
+    'generated_interface_idl_files': [
+      '<@(generated_webcore_testing_idl_files)',
+    ],
+    # Generated global constructors are partial interfaces, so no bindings
+    'generated_global_constructors_idl_files': [
+         '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
 
     'compiler_module_files': [
@@ -95,13 +106,6 @@
     ],
 
     'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
-    'generated_global_constructors_idl_files': [
-         '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
-         '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
-    ],
 
     'conditions': [
       # The bindings generator can skip writing generated files if they are
@@ -132,12 +136,13 @@
       'variables': {
         # Write list of IDL files to a file, so that the command line doesn't
         # exceed OS length limits.
-        'idl_files_list': '<|(idl_files_list.tmp <@(idl_files))',
+        'idl_files_list': '<|(idl_files_list.tmp <@(interface_idl_files) <@(dependency_idl_files))',
       },
       'inputs': [
         'scripts/compute_dependencies.py',
         '<(idl_files_list)',
-        '<@(idl_files)',
+        '<@(interface_idl_files)',
+        '<@(dependency_idl_files)',
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
@@ -185,6 +190,7 @@
       ],
       'sources': [
         '<@(interface_idl_files)',
+        '<@(generated_interface_idl_files)',
       ],
       'rules': [{
         'rule_name': 'binding',
@@ -197,18 +203,21 @@
           'scripts/idl_serializer.pm',
           '../build/scripts/preprocessor.pm',
           'IDLExtendedAttributes.txt',
-          # FIXME: If the dependency structure changes, we rebuild all files,
-          # since we're not computing dependencies file-by-file in the build.
+          # If the dependency structure or public interface info (e.g.,
+          # [ImplementedAs]) changes, we rebuild all files, since we're not
+          # computing dependencies file-by-file in the build.
+          # This data is generally stable.
           '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
-          # FIXME: Similarly, if any partial interface changes, rebuild
-          # everything, since every IDL potentially depends on them, because
-          # we're not computing dependencies file-by-file.
-          #
-          # If a new partial interface is added, need to regyp to update these
-          # dependencies, as these are computed statically at gyp runtime.
-          '<!@pymod_do_main(list_idl_files_with_partial_interface <@(idl_files))',
-          # Generated IDLs are all partial interfaces, hence everything
-          # potentially depends on them.
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+          # Further, if any dependency (partial interface or implemented
+          # interface) changes, rebuild everything, since every IDL potentially
+          # depends on them, because we're not computing dependencies
+          # file-by-file.
+          # FIXME: This is too conservative, and causes excess rebuilds:
+          # compute this file-by-file.
+          '<@(dependency_idl_files)',
+          # Generated global constructors IDLs are all partial interfaces,
+          # hence everything potentially depends on them.
           '<@(generated_global_constructors_idl_files)',
         ],
         'outputs': [
