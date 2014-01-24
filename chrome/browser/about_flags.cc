@@ -1156,11 +1156,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableQuickofficeComponentApp),
   },
   {
-    "enable-saml-signin",
-    IDS_FLAGS_ENABLE_SAML_SIGNIN_NAME,
-    IDS_FLAGS_ENABLE_SAML_SIGNIN_DESCRIPTION,
+    "disable-saml-signin",
+    IDS_FLAGS_DISABLE_SAML_SIGNIN_NAME,
+    IDS_FLAGS_DISABLE_SAML_SIGNIN_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableSamlSignin),
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableSamlSignin),
   },
   {
     "enable-multi-profiles",

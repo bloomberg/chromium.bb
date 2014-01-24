@@ -204,8 +204,8 @@ const char kStubCrosSettings[]              = "stub-cros-settings";
 // Disables user image sync.
 const char kDisableUserImageSync[]          = "disable-user-image-sync";
 
-// Enables SAML sigin support.
-const char kEnableSamlSignin[]              = "enable-saml-signin";
+// Disables SAML sigin support.
+const char kDisableSamlSignin[]             = "disable-saml-signin";
 
 // Disables new first-run overlay UI.
 const char kDisableFirstRunUI[] = "disable-first-run-ui";

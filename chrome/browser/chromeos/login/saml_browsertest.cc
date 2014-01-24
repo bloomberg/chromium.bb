@@ -202,7 +202,6 @@ class SamlTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
-    command_line->AppendSwitch(switches::kEnableSamlSignin);
 
     const GURL& server_url = embedded_test_server()->base_url();
 
