@@ -958,14 +958,10 @@ void MediaStreamDependencyFactory::OnDisableAecDump() {
 
 void MediaStreamDependencyFactory::StartAecDump(
     const base::PlatformFile& aec_dump_file) {
-  FILE* aec_dump_file_stream = base::FdopenPlatformFile(aec_dump_file, "w");
-  if (!aec_dump_file_stream) {
-    VLOG(1) << "Could not open AEC dump file.";
-    base::ClosePlatformFile(aec_dump_file);
-  } else {
-    // |pc_factory_| takes ownership of |aec_dump_file_stream|.
-    pc_factory_->StartAecDump(aec_dump_file_stream);
-  }
+ // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
+ // fails, |aec_dump_file| will be closed.
+ if (!pc_factory_->StartAecDump(aec_dump_file))
+   VLOG(1) << "Could not start AEC dump.";
 }
 
 }  // namespace content
