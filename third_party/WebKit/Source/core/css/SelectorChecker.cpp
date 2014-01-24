@@ -437,9 +437,6 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
         return false;
 
     const AtomicString& selectorValue =  selector.value();
-    // Case sensitivity for attribute matching is looser than hasAttribute or
-    // Element::shouldIgnoreAttributeCase() for now. Unclear if that's correct.
-    bool caseSensitive = !element.document().isHTMLDocument() || HTMLDocument::isCaseSensitiveAttribute(selectorAttr);
 
     for (size_t i = 0; i < element.attributeCount(); ++i) {
         const Attribute* attributeItem = element.attributeItem(i);
@@ -447,8 +444,19 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
         if (!attributeItem->matches(selectorAttr))
             continue;
 
-        if (attributeValueMatches(attributeItem, match, selectorValue, caseSensitive))
+        if (attributeValueMatches(attributeItem, match, selectorValue, true))
             return true;
+
+        // Case sensitivity for attribute matching is looser than hasAttribute or
+        // Element::shouldIgnoreAttributeCase() for now. Unclear if that's correct.
+        bool caseSensitive = !element.document().isHTMLDocument() || HTMLDocument::isCaseSensitiveAttribute(selectorAttr);
+
+        // If case-insensitive, re-check, and count if result differs.
+        // See http://code.google.com/p/chromium/issues/detail?id=327060
+        if (!caseSensitive && attributeValueMatches(attributeItem, match, selectorValue, false)) {
+            UseCounter::count(element.document(), UseCounter::CaseInsensitiveAttrSelectorMatch);
+            return true;
+        }
     }
 
     return false;
