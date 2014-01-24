@@ -15,6 +15,7 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -73,6 +74,23 @@ bool IsOnTaskRunnerThread(fileapi::FileSystemOperationContext* context) {
   return context->task_runner()->RunsTasksOnCurrentThread();
 }
 
+base::PlatformFileError IsMediaHeader(const char* buf, size_t length) {
+  if (length == 0)
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
+  std::string mime_type;
+  if (!net::SniffMimeTypeFromLocalData(buf, length, &mime_type))
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
+  if (StartsWithASCII(mime_type, "image/", true) ||
+      StartsWithASCII(mime_type, "audio/", true) ||
+      StartsWithASCII(mime_type, "video/", true) ||
+      mime_type == "application/x-shockwave-flash") {
+    return base::PLATFORM_FILE_OK;
+  }
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
 }  // namespace
 
 NativeMediaFileUtil::NativeMediaFileUtil(MediaPathFilter* media_path_filter)
@@ -101,20 +119,14 @@ base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
       base::ReadPlatformFile(file_handle, 0, buffer, net::kMaxBytesToSniff);
   if (len < 0)
     return base::PLATFORM_FILE_ERROR_FAILED;
-  if (len == 0)
-    return base::PLATFORM_FILE_ERROR_SECURITY;
 
-  std::string mime_type;
-  if (!net::SniffMimeTypeFromLocalData(buffer, len, &mime_type))
-    return base::PLATFORM_FILE_ERROR_SECURITY;
+  return IsMediaHeader(buffer, len);
+}
 
-  if (StartsWithASCII(mime_type, "image/", true) ||
-      StartsWithASCII(mime_type, "audio/", true) ||
-      StartsWithASCII(mime_type, "video/", true) ||
-      mime_type == "application/x-shockwave-flash") {
-    return base::PLATFORM_FILE_OK;
-  }
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+// static
+base::PlatformFileError NativeMediaFileUtil::BufferIsMediaHeader(
+    net::IOBuffer* buf, size_t length) {
+  return IsMediaHeader(buf->data(), length);
 }
 
 void NativeMediaFileUtil::CreateOrOpen(

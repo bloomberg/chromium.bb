@@ -9,6 +9,10 @@
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
+namespace net {
+class IOBuffer;
+}
+
 class MediaPathFilter;
 
 // This class handles native file system operations with media type filtering.
@@ -23,6 +27,8 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
   // to determine if it is really a media file (to avoid exposing
   // non-media files with a media file extension.)
   static base::PlatformFileError IsMediaFile(const base::FilePath& path);
+  static base::PlatformFileError BufferIsMediaHeader(net::IOBuffer* buf,
+                                                     size_t length);
 
   // AsyncFileUtil overrides.
   virtual void CreateOrOpen(

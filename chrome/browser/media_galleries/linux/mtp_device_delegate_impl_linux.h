@@ -70,6 +70,12 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const base::FilePath& local_path,
       const CreateSnapshotFileSuccessCallback& success_callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual bool IsStreaming() OVERRIDE;
+  virtual void ReadBytes(
+      const base::FilePath& device_file_path,
+      net::IOBuffer* buf, int64 offset, int buf_len,
+      const ReadBytesSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) OVERRIDE;
   virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
 
   // Ensures the device is initialized for communication by doing a
@@ -131,6 +137,10 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       scoped_ptr<SnapshotRequestInfo> snapshot_request_info,
       const base::PlatformFileInfo& file_info);
 
+  // Called when GetFileInfo() succeeds to read a range of bytes.
+  void OnDidGetFileInfoToReadBytes(const ReadBytesRequest& request,
+                                   const base::PlatformFileInfo& file_info);
+
   // Called when ReadDirectory() succeeds.
   //
   // |file_list| contains the directory file entries.
@@ -156,6 +166,13 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // |current_snapshot_request_info_.error_callback| is invoked to notify the
   // caller about |error|.
   void OnWriteDataIntoSnapshotFileError(base::PlatformFileError error);
+
+  // Called when ReadBytes() succeeds.
+  //
+  // |success_callback| is invoked to notify the caller about the read bytes.
+  // |bytes_read| is the number of bytes read.
+  void OnDidReadBytes(const ReadBytesSuccessCallback& success_callback,
+                      int bytes_read);
 
   // Handles the device file |error|. |error_callback| is invoked to notify the
   // caller about the file error.

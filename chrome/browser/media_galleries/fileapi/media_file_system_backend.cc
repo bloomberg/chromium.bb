@@ -184,6 +184,15 @@ MediaFileSystemBackend::CreateFileStreamReader(
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
+  if (url.type() == fileapi::kFileSystemTypeDeviceMedia) {
+    DCHECK(device_media_async_file_util_);
+    scoped_ptr<webkit_blob::FileStreamReader> reader =
+        device_media_async_file_util_->GetFileStreamReader(
+            url, offset, expected_modification_time, context);
+    DCHECK(reader);
+    return reader.Pass();
+  }
+
   return scoped_ptr<webkit_blob::FileStreamReader>(
       webkit_blob::FileStreamReader::CreateForLocalFile(
           context->default_file_task_runner(),

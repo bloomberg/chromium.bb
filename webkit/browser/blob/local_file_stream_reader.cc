@@ -22,14 +22,6 @@ const int kOpenFlagsForRead = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_READ |
                               base::PLATFORM_FILE_ASYNC;
 
-// Verify if the underlying file has not been modified.
-bool VerifySnapshotTime(const base::Time& expected_modification_time,
-                        const base::PlatformFileInfo& file_info) {
-  return expected_modification_time.is_null() ||
-         expected_modification_time.ToTimeT() ==
-             file_info.last_modified.ToTimeT();
-}
-
 }  // namespace
 
 FileStreamReader* FileStreamReader::CreateForLocalFile(

@@ -12,6 +12,7 @@
 
 namespace base {
 class FilePath;
+struct PlatformFileInfo;
 class TaskRunner;
 class Time;
 }
@@ -55,6 +56,11 @@ class FileStreamReader {
                               const fileapi::FileSystemURL& url,
                               int64 initial_offset,
                               const base::Time& expected_modification_time);
+
+  // Verify if the underlying file has not been modified.
+  WEBKIT_STORAGE_BROWSER_EXPORT static bool VerifySnapshotTime(
+      const base::Time& expected_modification_time,
+      const base::PlatformFileInfo& file_info);
 
   // It is valid to delete the reader at any time.  If the stream is deleted
   // while it has a pending read, its callback will not be called.

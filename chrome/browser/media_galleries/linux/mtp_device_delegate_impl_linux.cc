@@ -11,6 +11,7 @@
 #include "chrome/browser/media_galleries/linux/mtp_device_task_helper_map_service.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/io_buffer.h"
 
 namespace {
 
@@ -141,6 +142,24 @@ void WriteDataIntoSnapshotFileOnUIThread(
   task_helper->WriteDataIntoSnapshotFile(request_info, snapshot_file_info);
 }
 
+// Copies the contents of |device_file_path| to |snapshot_file_path|.
+//
+// Called on the UI thread to dispatch the request to the
+// MediaTransferProtocolManager.
+//
+// |storage_name| specifies the name of the storage device.
+// |request| is a struct containing details about the byte read request.
+void ReadBytesOnUIThread(
+    const std::string& storage_name,
+    const MTPDeviceAsyncDelegate::ReadBytesRequest& request) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  MTPDeviceTaskHelper* task_helper =
+      GetDeviceTaskHelperForStorage(storage_name);
+  if (!task_helper)
+    return;
+  task_helper->ReadBytes(request);
+}
+
 // Closes the device storage specified by the |storage_name| and destroys the
 // MTPDeviceTaskHelper object associated with the device storage.
 //
@@ -257,6 +276,33 @@ void MTPDeviceDelegateImplLinux::CreateSnapshotFile(
           base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
                      weak_ptr_factory_.GetWeakPtr(),
                      error_callback));
+  EnsureInitAndRunTask(PendingTaskInfo(FROM_HERE, call_closure));
+}
+
+bool MTPDeviceDelegateImplLinux::IsStreaming() {
+  return false;
+}
+
+void MTPDeviceDelegateImplLinux::ReadBytes(
+    const base::FilePath& device_file_path,
+    net::IOBuffer* buf, int64 offset, int buf_len,
+    const ReadBytesSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(!device_file_path.empty());
+  std::string device_file_relative_path =
+      GetDeviceRelativePath(device_path_, device_file_path);
+  ReadBytesRequest request(device_file_relative_path, buf, offset, buf_len,
+                           success_callback, error_callback);
+  base::Closure call_closure =
+      base::Bind(
+          &GetFileInfoOnUIThread,
+          storage_name_,
+          device_file_relative_path,
+          base::Bind(&MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadBytes,
+                     weak_ptr_factory_.GetWeakPtr(), request),
+          base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback));
   EnsureInitAndRunTask(PendingTaskInfo(FROM_HERE, call_closure));
 }
 
@@ -406,6 +452,38 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(
   WriteDataIntoSnapshotFile(snapshot_file_info);
 }
 
+void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadBytes(
+    const ReadBytesRequest& request,
+    const base::PlatformFileInfo& file_info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(request.buf);
+  DCHECK(request.buf_len >= 0);
+  DCHECK(task_in_progress_);
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  if (file_info.is_directory)
+    error = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  else if (file_info.size < 0 || file_info.size > kuint32max)
+    error = base::PLATFORM_FILE_ERROR_FAILED;
+
+  if (error != base::PLATFORM_FILE_OK)
+    return HandleDeviceFileError(request.error_callback, error);
+
+  ReadBytesRequest new_request(
+      request.device_file_relative_path,
+      request.buf,
+      request.offset,
+      request.buf_len,
+      base::Bind(&MTPDeviceDelegateImplLinux::OnDidReadBytes,
+                 weak_ptr_factory_.GetWeakPtr(), request.success_callback),
+      base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
+                 weak_ptr_factory_.GetWeakPtr(), request.error_callback));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&ReadBytesOnUIThread, storage_name_, new_request));
+}
+
 void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
     const ReadDirectorySuccessCallback& success_callback,
     const fileapi::AsyncFileUtil::EntryList& file_list) {
@@ -439,10 +517,21 @@ void MTPDeviceDelegateImplLinux::OnWriteDataIntoSnapshotFileError(
   ProcessNextPendingRequest();
 }
 
+void MTPDeviceDelegateImplLinux::OnDidReadBytes(
+    const ReadBytesSuccessCallback& success_callback,
+    int bytes_read) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(task_in_progress_);
+  success_callback.Run(bytes_read);
+  task_in_progress_ = false;
+  ProcessNextPendingRequest();
+}
+
 void MTPDeviceDelegateImplLinux::HandleDeviceFileError(
     const ErrorCallback& error_callback,
     base::PlatformFileError error) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(task_in_progress_);
   error_callback.Run(error);
   task_in_progress_ = false;
   ProcessNextPendingRequest();

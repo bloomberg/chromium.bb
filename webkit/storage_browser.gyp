@@ -77,6 +77,8 @@
         'browser/blob/blob_url_request_job.h',
         'browser/blob/blob_url_request_job_factory.cc',
         'browser/blob/blob_url_request_job_factory.h',
+        'browser/blob/file_stream_reader.cc',
+        'browser/blob/file_stream_reader.h',
         'browser/blob/local_file_stream_reader.cc',
         'browser/blob/local_file_stream_reader.h',
         'browser/blob/view_blob_internals_job.cc',

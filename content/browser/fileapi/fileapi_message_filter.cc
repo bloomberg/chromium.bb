@@ -778,6 +778,16 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     return;
   }
 
+  // TODO(tommycli): This allows streaming blobs to use a 'fake' snapshot file
+  // with an empty path. We want to eventually have explicit plumbing for
+  // the creation of Blobs without snapshot files, probably called something
+  // like GetMetadataForStreaming.
+  if (platform_path.empty()) {
+    Send(new FileSystemMsg_DidCreateSnapshotFile(request_id, info,
+                                                 base::FilePath()));
+    return;
+  }
+
   scoped_refptr<webkit_blob::ShareableFileReference> file_ref =
       webkit_blob::ShareableFileReference::Get(platform_path);
   if (!security_policy_->CanReadFile(process_id_, platform_path)) {
@@ -809,7 +819,7 @@ void FileAPIMessageFilter::DidCreateSnapshot(
 
   // Return the file info and platform_path.
   Send(new FileSystemMsg_DidCreateSnapshotFile(
-               request_id, info, platform_path));
+      request_id, info, platform_path));
 }
 
 bool FileAPIMessageFilter::ValidateFileSystemURL(
