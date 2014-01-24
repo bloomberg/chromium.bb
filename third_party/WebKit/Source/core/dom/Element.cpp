@@ -1649,7 +1649,10 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     }
 
     if (styleChangeType() >= SubtreeStyleChange)
-        return document().ensureStyleResolver().treeBoundaryCrossingRules().isEmpty() ? Inherit : Force;
+        return Force;
+
+    if (change <= Inherit)
+        return localChange;
 
     return max(localChange, change);
 }
