@@ -941,9 +941,6 @@ class AutomationProviderGetPasswordsObserver : public PasswordStoreConsumer {
   virtual ~AutomationProviderGetPasswordsObserver();
 
   // PasswordStoreConsumer implementation.
-  virtual void OnPasswordStoreRequestDone(
-      CancelableRequestProvider::Handle handle,
-      const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
   virtual void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
 

@@ -851,13 +851,10 @@ void PasswordStoreMac::ShutdownOnUIThread() {
 
 // Mac stores passwords in the system keychain, which can block for an
 // arbitrarily long time (most notably, it can block on user confirmation
-// from a dialog). Use a dedicated thread to avoid blocking DB thread.
-bool PasswordStoreMac::ScheduleTask(const base::Closure& task) {
-  if (thread_.get()) {
-    thread_->message_loop()->PostTask(FROM_HERE, task);
-    return true;
-  }
-  return false;
+// from a dialog). Run tasks on a dedicated thread to avoid blocking the DB
+// thread.
+scoped_refptr<base::SequencedTaskRunner> PasswordStoreMac::GetTaskRunner() {
+  return (thread_.get()) ? thread_->message_loop_proxy() : NULL;
 }
 
 void PasswordStoreMac::ReportMetricsImpl() {
@@ -1015,12 +1012,12 @@ void PasswordStoreMac::GetLoginsImpl(
 }
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
-  FillBlacklistLogins(&request->value);
+  FillBlacklistLogins(request->result());
   ForwardLoginsResult(request);
 }
 
 void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
-  FillAutofillableLogins(&request->value);
+  FillAutofillableLogins(request->result());
   ForwardLoginsResult(request);
 }
 

@@ -9,11 +9,12 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/common/cancelable_request.h"
-#include "chrome/common/cancelable_task_tracker.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
 class PasswordStore;
@@ -41,14 +42,8 @@ void UpdateLogin(PasswordStore* store, const autofill::PasswordForm& form);
 // Interface for storing form passwords in a platform-specific secure way.
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
-class PasswordStore
-    : public RefcountedBrowserContextKeyedService,
-      public CancelableRequestProvider {
+class PasswordStore : public RefcountedBrowserContextKeyedService {
  public:
-  typedef base::Callback<
-      void(Handle, const std::vector<autofill::PasswordForm*>&)>
-      GetLoginsCallback;
-
   // Whether or not it's acceptable for Chrome to request access to locked
   // passwords, which requires prompting the user for permission.
   enum AuthorizationPromptPolicy {
@@ -59,11 +54,10 @@ class PasswordStore
   // PasswordForm vector elements are meant to be owned by the
   // PasswordStoreConsumer. However, if the request is canceled after the
   // allocation, then the request must take care of the deletion.
-  class GetLoginsRequest
-      : public CancelableRequest1<GetLoginsCallback,
-                                  std::vector<autofill::PasswordForm*> > {
+  class GetLoginsRequest {
    public:
-    explicit GetLoginsRequest(const GetLoginsCallback& callback);
+    explicit GetLoginsRequest(PasswordStoreConsumer* consumer);
+    virtual ~GetLoginsRequest();
 
     void set_ignore_logins_cutoff(const base::Time& cutoff) {
       ignore_logins_cutoff_ = cutoff;
@@ -72,12 +66,27 @@ class PasswordStore
     // Removes any logins in the result list that were saved before the cutoff.
     void ApplyIgnoreLoginsCutoff();
 
-   protected:
-    virtual ~GetLoginsRequest();
+    // Forward the result to the consumer on the original message loop.
+    void ForwardResult();
+
+    std::vector<autofill::PasswordForm*>* result() const {
+      return result_.get();
+    }
 
    private:
     // See GetLogins(). Logins older than this will be removed from the reply.
     base::Time ignore_logins_cutoff_;
+
+    base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
+
+    // The result of the request. It is filled in on the PasswordStore's task
+    // thread and consumed on the UI thread.
+    // TODO(dubroy): Remove this, and instead pass the vector directly to the
+    // backend methods.
+    scoped_ptr< std::vector<autofill::PasswordForm*> > result_;
+
+    base::ThreadChecker thread_checker_;
+    scoped_refptr<base::MessageLoopProxy> origin_loop_;
 
     DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
   };
@@ -112,28 +121,27 @@ class PasswordStore
   void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                                   const base::Time& delete_end);
 
-  // Searches for a matching PasswordForm and returns a ID so the async request
-  // can be tracked. Implement the PasswordStoreConsumer interface to be
-  // notified on completion. |prompt_policy| indicates whether it's permissible
-  // to prompt the user to authorize access to locked passwords. This argument
-  // is only used on platforms that support prompting the user for access (such
-  // as Mac OS). NOTE: This means that this method can return different results
-  // depending on the value of |prompt_policy|.
-  virtual CancelableTaskTracker::TaskId GetLogins(
+  // Searches for a matching PasswordForm, and notifies |consumer| on
+  // completion. The request will be cancelled if the consumer is destroyed.
+  // |prompt_policy| indicates whether it's permissible to prompt the user to
+  // authorize access to locked passwords. This argument is only used on
+  // platforms that support prompting the user for access (such as Mac OS).
+  // NOTE: This means that this method can return different results depending
+  // on the value of |prompt_policy|.
+  virtual void GetLogins(
       const autofill::PasswordForm& form,
       AuthorizationPromptPolicy prompt_policy,
       PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
-  // are thus auto-fillable--and returns a handle so the async request can be
-  // tracked. Implement the PasswordStoreConsumer interface to be notified on
-  // completion.
-  Handle GetAutofillableLogins(PasswordStoreConsumer* consumer);
+  // are thus auto-fillable. |consumer| will be notified on completion.
+  // The request will be cancelled if the consumer is destroyed.
+  void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
-  // Gets the complete list of PasswordForms that are blacklist entries, and
-  // returns a handle so the async request can be tracked. Implement the
-  // PasswordStoreConsumer interface to be notified on completion.
-  Handle GetBlacklistLogins(PasswordStoreConsumer* consumer);
+  // Gets the complete list of PasswordForms that are blacklist entries,
+  // and notify |consumer| on completion. The request will be cancelled if the
+  // consumer is destroyed.
+  void GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
   // Reports usage metrics for the database.
   void ReportMetrics();
@@ -146,7 +154,7 @@ class PasswordStore
 
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
-  // Sync's interaction with password store needs to be syncrhonous.
+  // Sync's interaction with password store needs to be synchronous.
   // Since the synchronous methods are private these classes are made
   // as friends. This can be fixed by moving the private impl to a new
   // class. See http://crbug.com/307750
@@ -164,15 +172,13 @@ class PasswordStore
 
   virtual ~PasswordStore();
 
-  // Provided to allow subclasses to extend GetLoginsRequest if additional info
-  // is needed between a call and its Impl.
-  virtual GetLoginsRequest* NewGetLoginsRequest(
-      const GetLoginsCallback& callback);
+  // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
+  bool ScheduleTask(const base::Closure& task);
 
-  // Schedule the given |task| to be run in the PasswordStore's task thread. By
-  // default it uses DB thread, but sub classes can override to use other
-  // threads.
-  virtual bool ScheduleTask(const base::Closure& task);
+  // Get the TaskRunner to use for PasswordStore tasks.
+  // By default, a SingleThreadTaskRunner on the DB thread is used, but
+  // subclasses can override.
+  virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
   // These will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.
@@ -200,12 +206,14 @@ class PasswordStore
 
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
+
   // Finds all blacklist PasswordForms, and notifies the consumer.
   virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) = 0;
 
   // Finds all non-blacklist PasswordForms, and fills the vector.
   virtual bool FillAutofillableLogins(
       std::vector<autofill::PasswordForm*>* forms) = 0;
+
   // Finds all blacklist PasswordForms, and fills the vector.
   virtual bool FillBlacklistLogins(
       std::vector<autofill::PasswordForm*>* forms) = 0;
@@ -221,16 +229,7 @@ class PasswordStore
   // Schedule the given |func| to be run in the PasswordStore's own thread with
   // responses delivered to |consumer| on the current thread.
   template<typename BackendFunc>
-  Handle Schedule(BackendFunc func, PasswordStoreConsumer* consumer);
-
-  // Schedule the given |func| to be run in the PasswordStore's own thread with
-  // form |form| and responses delivered to |consumer| on the current thread.
-  // See GetLogins() for more information on |ignore_logins_cutoff|.
-  template<typename BackendFunc>
-  Handle Schedule(BackendFunc func,
-                  PasswordStoreConsumer* consumer,
-                  const autofill::PasswordForm& form,
-                  const base::Time& ignore_logins_cutoff);
+  void Schedule(BackendFunc func, PasswordStoreConsumer* consumer);
 
   // Wrapper method called on the destination thread (DB for non-mac) that
   // invokes |task| and then calls back into the source thread to notify
@@ -249,6 +248,14 @@ class PasswordStore
   // operation has been performed. Notifies observers that password store data
   // may have been changed.
   void NotifyLoginsChanged();
+
+  // Copies |matched_forms| into the request's result vector, then calls
+  // |ForwardLoginsResult|. Temporarily used as an adapter between the API of
+  // |GetLoginsImpl| and |PasswordStoreConsumer|.
+  // TODO(dubroy): Get rid of this.
+  void CopyAndForwardLoginsResult(
+      PasswordStore::GetLoginsRequest* request,
+      const std::vector<autofill::PasswordForm*>& matched_forms);
 
   // The observers.
   ObserverList<Observer> observers_;

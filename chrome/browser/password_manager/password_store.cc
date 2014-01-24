@@ -20,50 +20,28 @@ using std::vector;
 
 namespace {
 
-// PasswordStoreConsumer callback requires vector const reference.
-void RunConsumerCallbackIfNotCanceled(
-    const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
-    PasswordStoreConsumer* consumer,
-    const vector<PasswordForm*>* matched_forms) {
-  if (is_canceled_cb.Run()) {
-    STLDeleteContainerPointers(matched_forms->begin(), matched_forms->end());
-    return;
-  }
-
-  // OnGetPasswordStoreResults owns PasswordForms in the vector.
-  consumer->OnGetPasswordStoreResults(*matched_forms);
-}
-
-void PostConsumerCallback(
-    base::TaskRunner* task_runner,
-    const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
-    PasswordStoreConsumer* consumer,
-    const base::Time& ignore_logins_cutoff,
-    const vector<PasswordForm*>& matched_forms) {
-  vector<PasswordForm*>* matched_forms_copy = new vector<PasswordForm*>();
-  if (ignore_logins_cutoff.is_null()) {
-    *matched_forms_copy = matched_forms;
-  } else {
-    // Apply |ignore_logins_cutoff| and delete old ones.
-    for (size_t i = 0; i < matched_forms.size(); i++) {
-      if (matched_forms[i]->date_created < ignore_logins_cutoff)
-        delete matched_forms[i];
-      else
-        matched_forms_copy->push_back(matched_forms[i]);
-    }
-  }
-
-  task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&RunConsumerCallbackIfNotCanceled,
-                 is_canceled_cb, consumer, base::Owned(matched_forms_copy)));
+// Calls |consumer| back with the request result, if |consumer| is still alive.
+// Takes ownership of the elements in |result|, passing ownership to |consumer|
+// if it is still alive.
+void MaybeCallConsumerCallback(base::WeakPtr<PasswordStoreConsumer> consumer,
+                               scoped_ptr<vector<PasswordForm*> > result) {
+  if (consumer.get())
+    consumer->OnGetPasswordStoreResults(*result);
+  else
+    STLDeleteElements(result.get());
 }
 
 }  // namespace
 
 PasswordStore::GetLoginsRequest::GetLoginsRequest(
-    const GetLoginsCallback& callback)
-    : CancelableRequest1<GetLoginsCallback, vector<PasswordForm*> >(callback) {
+    PasswordStoreConsumer* consumer)
+    : consumer_weak_(consumer->GetWeakPtr()),
+      result_(new vector<PasswordForm*>()) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  origin_loop_ = base::MessageLoopProxy::current();
+}
+
+PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
 }
 
 void PasswordStore::GetLoginsRequest::ApplyIgnoreLoginsCutoff() {
@@ -72,19 +50,20 @@ void PasswordStore::GetLoginsRequest::ApplyIgnoreLoginsCutoff() {
     // Note that in principle it could be more efficient to copy the whole array
     // since that's worst-case linear time, but we expect that elements will be
     // deleted rarely and lists will be small, so this avoids the copies.
-    for (size_t i = value.size(); i > 0; --i) {
-      if (value[i - 1]->date_created < ignore_logins_cutoff_) {
-        delete value[i - 1];
-        value.erase(value.begin() + (i - 1));
+    for (size_t i = result_->size(); i > 0; --i) {
+      if ((*result_)[i - 1]->date_created < ignore_logins_cutoff_) {
+        delete (*result_)[i - 1];
+        result_->erase(result_->begin() + (i - 1));
       }
     }
   }
 }
 
-PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
-  if (canceled()) {
-    STLDeleteElements(&value);
-  }
+void PasswordStore::GetLoginsRequest::ForwardResult() {
+  origin_loop_->PostTask(FROM_HERE,
+                         base::Bind(&MaybeCallConsumerCallback,
+                                    consumer_weak_,
+                                    base::Passed(result_.Pass())));
 }
 
 PasswordStore::PasswordStore() {
@@ -118,7 +97,7 @@ void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
                      delete_begin, delete_end))));
 }
 
-CancelableTaskTracker::TaskId PasswordStore::GetLogins(
+void PasswordStore::GetLogins(
     const PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy,
     PasswordStoreConsumer* consumer) {
@@ -139,30 +118,22 @@ CancelableTaskTracker::TaskId PasswordStore::GetLogins(
         { 2012, 1, 0, 1, 0, 0, 0, 0 };  // 00:00 Jan 1 2012
     ignore_logins_cutoff = base::Time::FromUTCExploded(exploded_cutoff);
   }
-
-  CancelableTaskTracker::IsCanceledCallback is_canceled_cb;
-  CancelableTaskTracker::TaskId id =
-      consumer->cancelable_task_tracker()->NewTrackedTaskId(&is_canceled_cb);
+  GetLoginsRequest* request = new GetLoginsRequest(consumer);
+  request->set_ignore_logins_cutoff(ignore_logins_cutoff);
 
   ConsumerCallbackRunner callback_runner =
-      base::Bind(&PostConsumerCallback,
-                 base::MessageLoopProxy::current(),
-                 is_canceled_cb,
-                 consumer,
-                 ignore_logins_cutoff);
+      base::Bind(&PasswordStore::CopyAndForwardLoginsResult,
+                 this, base::Owned(request));
   ScheduleTask(base::Bind(&PasswordStore::GetLoginsImpl,
                           this, form, prompt_policy, callback_runner));
-  return id;
 }
 
-CancelableRequestProvider::Handle PasswordStore::GetAutofillableLogins(
-    PasswordStoreConsumer* consumer) {
-  return Schedule(&PasswordStore::GetAutofillableLoginsImpl, consumer);
+void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
+  Schedule(&PasswordStore::GetAutofillableLoginsImpl, consumer);
 }
 
-CancelableRequestProvider::Handle PasswordStore::GetBlacklistLogins(
-    PasswordStoreConsumer* consumer) {
-  return Schedule(&PasswordStore::GetBlacklistLoginsImpl, consumer);
+void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
+  Schedule(&PasswordStore::GetBlacklistLoginsImpl, consumer);
 }
 
 void PasswordStore::ReportMetrics() {
@@ -179,18 +150,30 @@ void PasswordStore::RemoveObserver(Observer* observer) {
 
 PasswordStore::~PasswordStore() {}
 
-PasswordStore::GetLoginsRequest* PasswordStore::NewGetLoginsRequest(
-    const GetLoginsCallback& callback) {
-  return new GetLoginsRequest(callback);
+bool PasswordStore::ScheduleTask(const base::Closure& task) {
+  scoped_refptr<base::SequencedTaskRunner> task_runner(
+      GetTaskRunner());
+  if (task_runner.get())
+    return task_runner->PostTask(FROM_HERE, task);
+  return false;
 }
 
-bool PasswordStore::ScheduleTask(const base::Closure& task) {
-  return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
+scoped_refptr<base::SequencedTaskRunner> PasswordStore::GetTaskRunner() {
+  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB);
 }
 
 void PasswordStore::ForwardLoginsResult(GetLoginsRequest* request) {
   request->ApplyIgnoreLoginsCutoff();
-  request->ForwardResult(request->handle(), request->value);
+  request->ForwardResult();
+}
+
+void PasswordStore::CopyAndForwardLoginsResult(
+    PasswordStore::GetLoginsRequest* request,
+    const vector<PasswordForm*>& matched_forms) {
+  // Copy the contents of |matched_forms| into the request. The request takes
+  // ownership of the PasswordForm elements.
+  *(request->result()) = matched_forms;
+  ForwardLoginsResult(request);
 }
 
 void PasswordStore::LogStatsForBulkDeletion(int num_deletions) {
@@ -199,32 +182,14 @@ void PasswordStore::LogStatsForBulkDeletion(int num_deletions) {
 }
 
 template<typename BackendFunc>
-CancelableRequestProvider::Handle PasswordStore::Schedule(
+void PasswordStore::Schedule(
     BackendFunc func,
     PasswordStoreConsumer* consumer) {
-  scoped_refptr<GetLoginsRequest> request(
-      NewGetLoginsRequest(
-          base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
-                     base::Unretained(consumer))));
-  AddRequest(request.get(), consumer->cancelable_consumer());
-  ScheduleTask(base::Bind(func, this, request));
-  return request->handle();
-}
-
-template<typename BackendFunc>
-CancelableRequestProvider::Handle PasswordStore::Schedule(
-    BackendFunc func,
-    PasswordStoreConsumer* consumer,
-    const PasswordForm& form,
-    const base::Time& ignore_logins_cutoff) {
-  scoped_refptr<GetLoginsRequest> request(
-      NewGetLoginsRequest(
-          base::Bind(&PasswordStoreConsumer::OnPasswordStoreRequestDone,
-                     base::Unretained(consumer))));
-  request->set_ignore_logins_cutoff(ignore_logins_cutoff);
-  AddRequest(request.get(), consumer->cancelable_consumer());
-  ScheduleTask(base::Bind(func, this, request, form));
-  return request->handle();
+  GetLoginsRequest* request = new GetLoginsRequest(consumer);
+  consumer->cancelable_task_tracker()->PostTask(
+      GetTaskRunner(),
+      FROM_HERE,
+      base::Bind(func, this, base::Owned(request)));
 }
 
 void PasswordStore::WrapModificationTask(base::Closure task) {

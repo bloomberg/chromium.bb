@@ -1532,9 +1532,8 @@ AutomationProviderGetPasswordsObserver::AutomationProviderGetPasswordsObserver(
 AutomationProviderGetPasswordsObserver::
     ~AutomationProviderGetPasswordsObserver() {}
 
-void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
-    CancelableRequestProvider::Handle handle,
-    const std::vector<autofill::PasswordForm*>& result) {
+void AutomationProviderGetPasswordsObserver::OnGetPasswordStoreResults(
+    const std::vector<autofill::PasswordForm*>& results) {
   if (!provider_.get()) {
     delete this;
     return;
@@ -1544,7 +1543,7 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
 
   base::ListValue* passwords = new base::ListValue;
   for (std::vector<autofill::PasswordForm*>::const_iterator it =
-           result.begin(); it != result.end(); ++it) {
+           results.begin(); it != results.end(); ++it) {
     base::DictionaryValue* password_val = new base::DictionaryValue;
     autofill::PasswordForm* password_form = *it;
     password_val->SetString("username_value", password_form->username_value);
@@ -1567,13 +1566,6 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
   AutomationJSONReply(provider_.get(), reply_message_.release())
       .SendSuccess(return_value.get());
   delete this;
-}
-
-void AutomationProviderGetPasswordsObserver::OnGetPasswordStoreResults(
-    const std::vector<autofill::PasswordForm*>& results) {
-  // TODO(kaiwang): Implement when I refactor
-  // PasswordManager::GetAutofillableLogins.
-  NOTIMPLEMENTED();
 }
 
 PasswordStoreLoginsChangedObserver::PasswordStoreLoginsChangedObserver(

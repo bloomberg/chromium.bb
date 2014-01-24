@@ -81,7 +81,6 @@ class PasswordManagerPresenter : public PasswordStore::Observer {
 
    protected:
     PasswordManagerPresenter* page_;
-    CancelableRequestProvider::Handle pending_login_query_;
   };
 
   // A short class to mediate requests to the password store for passwordlist.
@@ -93,9 +92,6 @@ class PasswordManagerPresenter : public PasswordStore::Observer {
     virtual void Populate() OVERRIDE;
 
     // Send the password store's reply back to the handler.
-    virtual void OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
     virtual void OnGetPasswordStoreResults(
         const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
   };
@@ -109,9 +105,6 @@ class PasswordManagerPresenter : public PasswordStore::Observer {
     virtual void Populate() OVERRIDE;
 
     // Send the password store's reply back to the handler.
-    virtual void OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
     virtual void OnGetPasswordStoreResults(
         const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
   };

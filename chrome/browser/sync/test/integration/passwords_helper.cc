@@ -41,13 +41,6 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
       : PasswordStoreConsumer(),
         result_(result) {}
 
-  virtual void OnPasswordStoreRequestDone(
-      CancelableRequestProvider::Handle handle,
-      const std::vector<PasswordForm*>& result) OVERRIDE {
-    // TODO(kaiwang): Remove this function.
-    NOTREACHED();
-  }
-
   virtual void OnGetPasswordStoreResults(
       const std::vector<PasswordForm*>& result) OVERRIDE {
     result_->clear();

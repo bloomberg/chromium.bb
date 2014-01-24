@@ -125,7 +125,6 @@ void PasswordStoreX::GetLoginsImpl(
   std::vector<autofill::PasswordForm*> matched_forms;
   if (use_native_backend() && backend_->GetLogins(form, &matched_forms)) {
     SortLoginsByOrigin(&matched_forms);
-    callback_runner.Run(matched_forms);
     // The native backend may succeed and return no data even while locked, if
     // the query did not match anything stored. So we continue to allow fallback
     // until we perform a write operation, or until a read returns actual data.
@@ -134,44 +133,42 @@ void PasswordStoreX::GetLoginsImpl(
   } else if (allow_default_store()) {
     DCHECK(matched_forms.empty());
     PasswordStoreDefault::GetLoginsImpl(form, prompt_policy, callback_runner);
-  } else {
-    // The consumer will be left hanging unless we reply.
-    callback_runner.Run(matched_forms);
+    return;
   }
+  // The consumer will be left hanging unless we reply.
+  callback_runner.Run(matched_forms);
 }
 
 void PasswordStoreX::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
   if (use_native_backend() &&
-      backend_->GetAutofillableLogins(&request->value)) {
-    SortLoginsByOrigin(&request->value);
-    ForwardLoginsResult(request);
+      backend_->GetAutofillableLogins(request->result())) {
+    SortLoginsByOrigin(request->result());
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (request->value.size() > 0)
+    if (request->result()->size() > 0)
       allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetAutofillableLoginsImpl(request);
-  } else {
-    // The consumer will be left hanging unless we reply.
-    ForwardLoginsResult(request);
+    return;
   }
+  // The consumer will be left hanging unless we reply.
+  ForwardLoginsResult(request);
 }
 
 void PasswordStoreX::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   CheckMigration();
   if (use_native_backend() &&
-      backend_->GetBlacklistLogins(&request->value)) {
-    SortLoginsByOrigin(&request->value);
-    ForwardLoginsResult(request);
+      backend_->GetBlacklistLogins(request->result())) {
+    SortLoginsByOrigin(request->result());
     // See GetLoginsImpl() for why we disallow fallback conditionally here.
-    if (request->value.size() > 0)
+    if (request->result()->size() > 0)
       allow_fallback_ = false;
   } else if (allow_default_store()) {
     PasswordStoreDefault::GetBlacklistLoginsImpl(request);
-  } else {
-    // The consumer will be left hanging unless we reply.
-    ForwardLoginsResult(request);
+    return;
   }
+  // The consumer will be left hanging unless we reply.
+  ForwardLoginsResult(request);
 }
 
 bool PasswordStoreX::FillAutofillableLogins(vector<PasswordForm*>* forms) {

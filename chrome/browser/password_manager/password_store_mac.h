@@ -40,7 +40,7 @@ class PasswordStoreMac : public PasswordStore {
  protected:
   virtual ~PasswordStoreMac();
 
-  virtual bool ScheduleTask(const base::Closure& task) OVERRIDE;
+  virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() OVERRIDE;
 
  private:
   virtual void ReportMetricsImpl() OVERRIDE;

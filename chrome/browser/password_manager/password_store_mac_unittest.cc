@@ -31,9 +31,6 @@ namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
-  MOCK_METHOD2(OnPasswordStoreRequestDone,
-               void(CancelableRequestProvider::Handle,
-                    const std::vector<autofill::PasswordForm*>&));
   MOCK_METHOD1(OnGetPasswordStoreResults,
                void(const std::vector<autofill::PasswordForm*>&));
 };

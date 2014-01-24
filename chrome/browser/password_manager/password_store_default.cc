@@ -105,13 +105,13 @@ void PasswordStoreDefault::GetLoginsImpl(
 
 void PasswordStoreDefault::GetAutofillableLoginsImpl(
     GetLoginsRequest* request) {
-  FillAutofillableLogins(&request->value);
+  FillAutofillableLogins(request->result());
   ForwardLoginsResult(request);
 }
 
 void PasswordStoreDefault::GetBlacklistLoginsImpl(
     GetLoginsRequest* request) {
-  FillBlacklistLogins(&request->value);
+  FillBlacklistLogins(request->result());
   ForwardLoginsResult(request);
 }
 

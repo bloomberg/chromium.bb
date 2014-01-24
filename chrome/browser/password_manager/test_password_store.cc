@@ -32,9 +32,8 @@ bool TestPasswordStore::FormsAreEquivalent(const autofill::PasswordForm& lhs,
       lhs.signon_realm == rhs.signon_realm;
 }
 
-bool TestPasswordStore::ScheduleTask(const base::Closure& task) {
-  task.Run();
-  return true;
+scoped_refptr<base::SequencedTaskRunner> TestPasswordStore::GetTaskRunner() {
+  return base::MessageLoopProxy::current();
 }
 
 void TestPasswordStore::WrapModificationTask(base::Closure task) {

@@ -387,13 +387,6 @@ void PasswordFormManager::OnRequestDone(
                               *preferred_match_, wait_for_username);
 }
 
-void PasswordFormManager::OnPasswordStoreRequestDone(
-      CancelableRequestProvider::Handle handle,
-      const std::vector<autofill::PasswordForm*>& result) {
-  // TODO(kaiwang): Remove this function.
-  NOTREACHED();
-}
-
 void PasswordFormManager::OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) {
   DCHECK_EQ(state_, MATCHING_PHASE);

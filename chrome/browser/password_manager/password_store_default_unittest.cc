@@ -40,9 +40,6 @@ namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
-  MOCK_METHOD2(OnPasswordStoreRequestDone,
-               void(CancelableRequestProvider::Handle,
-                    const std::vector<PasswordForm*>&));
   MOCK_METHOD1(OnGetPasswordStoreResults,
                void(const std::vector<PasswordForm*>&));
 };
@@ -175,14 +172,13 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   MockPasswordStoreConsumer consumer;
 
   // Make sure we quit the MessageLoop even if the test fails.
-  ON_CALL(consumer, OnPasswordStoreRequestDone(_, _))
+  ON_CALL(consumer, OnGetPasswordStoreResults(_))
       .WillByDefault(QuitUIMessageLoop());
 
   // We expect to get the same data back, even though it's not all ASCII.
   EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
-          ContainsAllPasswordForms(expected_forms)))
-      .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
+      OnGetPasswordStoreResults(ContainsAllPasswordForms(expected_forms)))
+      .WillOnce(DoAll(WithArg<0>(STLDeleteElements0()), QuitUIMessageLoop()));
 
   store->GetAutofillableLogins(&consumer);
   base::MessageLoop::current()->Run();

@@ -98,12 +98,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void SetHasGeneratedPassword();
 
   // Determines if we need to autofill given the results of the query.
+  // Takes ownership of the elements in |result|.
   void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
 
-  // PasswordStoreConsumer implementation.
-  virtual void OnPasswordStoreRequestDone(
-      CancelableRequestProvider::Handle handle,
-      const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
   virtual void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
 
@@ -197,7 +194,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   static const int kMaxNumActionsTaken = kManagerActionMax * kUserActionMax *
                                          kSubmitResultMax;
 
-  // Helper for OnPasswordStoreRequestDone to determine whether or not
+  // Helper for OnGetPasswordStoreResults to determine whether or not
   // the given result form is worth scoring.
   bool IgnoreResult(const autofill::PasswordForm& form) const;
 
@@ -207,7 +204,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // the previously preferred login from |best_matches_| will be reset.
   void SaveAsNewLogin(bool reset_preferred_login);
 
-  // Helper for OnPasswordStoreRequestDone to score an individual result
+  // Helper for OnGetPasswordStoreResults to score an individual result
   // against the observed_form_.
   int ScoreResult(const autofill::PasswordForm& form) const;
 

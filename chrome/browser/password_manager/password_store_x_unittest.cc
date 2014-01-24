@@ -47,9 +47,6 @@ namespace {
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
-  MOCK_METHOD2(OnPasswordStoreRequestDone,
-               void(CancelableRequestProvider::Handle,
-                    const std::vector<PasswordForm*>&));
   MOCK_METHOD1(OnGetPasswordStoreResults,
                void(const std::vector<PasswordForm*>&));
 };
@@ -408,18 +405,17 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // The autofillable forms should have been migrated to the native backend.
   EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
+      OnGetPasswordStoreResults(
           ContainsAllPasswordForms(expected_autofillable)))
-      .WillOnce(WithArg<1>(STLDeleteElements0()));
+      .WillOnce(WithArg<0>(STLDeleteElements0()));
 
   store->GetAutofillableLogins(&consumer);
   base::RunLoop().RunUntilIdle();
 
   // The blacklisted forms should have been migrated to the native backend.
   EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
-          ContainsAllPasswordForms(expected_blacklisted)))
-      .WillOnce(WithArg<1>(STLDeleteElements0()));
+      OnGetPasswordStoreResults(ContainsAllPasswordForms(expected_blacklisted)))
+      .WillOnce(WithArg<0>(STLDeleteElements0()));
 
   store->GetBlacklistLogins(&consumer);
   base::RunLoop().RunUntilIdle();
