@@ -42,10 +42,10 @@
         'src/retriever.cc',
         'src/rule.cc',
         'src/ruleset.cc',
+        'src/time_to_string.cc',
         'src/util/json.cc',
         'src/util/md5.cc',
         'src/util/string_split.cc',
-        'src/validating_util.cc',
       ],
       'defines': [
         # TODO(rouslan): Use https://i18napis.appspot.com.
@@ -73,12 +73,12 @@
         'test/retriever_test.cc',
         'test/rule_test.cc',
         'test/storage_test_runner.cc',
+        'test/time_to_string.cc',
         'test/util/json_test.cc',
         'test/util/md5_unittest.cc',
         'test/util/scoped_ptr_unittest.cc',
         'test/util/stl_util_unittest.cc',
         'test/util/string_split_unittest.cc',
-        'test/validating_util_test.cc',
       ],
       'defines': [
         'TEST_DATA_DIR="../testdata"',

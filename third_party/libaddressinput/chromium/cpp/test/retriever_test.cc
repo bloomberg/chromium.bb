@@ -16,8 +16,11 @@
 
 #include <libaddressinput/callback.h>
 #include <libaddressinput/downloader.h>
+#include <libaddressinput/storage.h>
 #include <libaddressinput/util/scoped_ptr.h>
 
+#include <cstddef>
+#include <ctime>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -25,20 +28,31 @@
 #include "fake_downloader.h"
 #include "fake_storage.h"
 #include "region_data_constants.h"
+#include "time_to_string.h"
 
 namespace i18n {
 namespace addressinput {
+
+namespace {
 
 const char kKey[] = "data/CA";
 
 // Empty data that the downloader can return.
 const char kEmptyData[] = "{}";
 
+// The MD5 checksum for kEmptyData. Retriever uses MD5 to validate data
+// integrity.
+const char kEmptyDataChecksum[] = "99914b932bd37a50b983c5e7c90ae93b";
+
+}  // namespace
+
 // Tests for Retriever object.
 class RetrieverTest : public testing::Test {
  protected:
   RetrieverTest()
-      : success_(false),
+      : storage_(NULL),
+        retriever_(),
+        success_(false),
         key_(),
         data_() {
     ResetRetriever(FakeDownloader::kFakeDataUrl);
@@ -52,10 +66,11 @@ class RetrieverTest : public testing::Test {
   }
 
   void ResetRetriever(const std::string& url) {
+    storage_ = new FakeStorage;
     retriever_.reset(
         new Retriever(url,
                       scoped_ptr<Downloader>(new FakeDownloader),
-                      scoped_ptr<Storage>(new FakeStorage)));
+                      scoped_ptr<Storage>(storage_)));
   }
 
   std::string GetUrlForKey(const std::string& key) {
@@ -66,6 +81,7 @@ class RetrieverTest : public testing::Test {
     return retriever_->GetKeyForUrl(url);
   }
 
+  Storage* storage_;  // Owned by |retriever_|.
   scoped_ptr<Retriever> retriever_;
   bool success_;
   std::string key_;
@@ -147,6 +163,66 @@ TEST_F(RetrieverTest, FaultyDownloaderFallback) {
   EXPECT_NE(kEmptyData, data_);
 }
 
+TEST_F(RetrieverTest, NoChecksumAndTimestampWillRedownload) {
+  storage_->Put(kKey, kEmptyData);
+  retriever_->Retrieve(kKey, BuildCallback());
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(kKey, key_);
+  EXPECT_FALSE(data_.empty());
+  EXPECT_NE(kEmptyData, data_);
+}
+
+TEST_F(RetrieverTest, ChecksumAndTimestampWillNotRedownload) {
+  storage_->Put(kKey,
+                "timestamp=" + TimeToString(time(NULL)) + "\n" +
+                    "checksum=" + kEmptyDataChecksum + "\n" +
+                    kEmptyData);
+  retriever_->Retrieve(kKey, BuildCallback());
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(kKey, key_);
+  EXPECT_EQ(kEmptyData, data_);
+}
+
+TEST_F(RetrieverTest, OldTimestampWillRedownload) {
+  storage_->Put(kKey,
+                std::string("timestamp=0\n") +
+                    "checksum=" + kEmptyDataChecksum + "\n" +
+                    kEmptyData);
+  retriever_->Retrieve(kKey, BuildCallback());
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(kKey, key_);
+  EXPECT_FALSE(data_.empty());
+  EXPECT_NE(kEmptyData, data_);
+}
+
+TEST_F(RetrieverTest, OldTimestampOkIfDownloadFails) {
+  storage_ = new FakeStorage;
+  Retriever bad_retriever(FakeDownloader::kFakeDataUrl,
+                          scoped_ptr<Downloader>(new FaultyDownloader),
+                          scoped_ptr<Storage>(storage_));
+  storage_->Put(kKey,
+                std::string("timestamp=0\n") +
+                    "checksum=" + kEmptyDataChecksum + "\n" +
+                    kEmptyData);
+  bad_retriever.Retrieve(kKey, BuildCallback());
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(kKey, key_);
+  EXPECT_EQ(kEmptyData, data_);
+}
+
+TEST_F(RetrieverTest, WrongChecksumWillRedownload) {
+  static const char kNonEmptyData[] = "{\"non-empty\": \"data\"}";
+  storage_->Put(kKey,
+                "timestamp=" + TimeToString(time(NULL)) + "\n" +
+                    "checksum=" + kEmptyDataChecksum + "\n" +
+                    kNonEmptyData);
+  retriever_->Retrieve(kKey, BuildCallback());
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(kKey, key_);
+  EXPECT_FALSE(data_.empty());
+  EXPECT_NE(kNonEmptyData, data_);
+}
+
 // The downloader that doesn't get back to you.
 class HangingDownloader : public Downloader {
  public:
@@ -187,6 +263,13 @@ TEST_F(RetrieverTest, GetKeyForUrl) {
   EXPECT_EQ("data", GetKeyForUrl("test:///data"));
   EXPECT_EQ("data/US", GetKeyForUrl("test:///data/US"));
   EXPECT_EQ("data/CA--fr", GetKeyForUrl("test:///data/CA--fr"));
+}
+
+TEST_F(RetrieverTest, NullCallbackNoCrash) {
+  ASSERT_NO_FATAL_FAILURE(
+      retriever_->Retrieve(kKey, scoped_ptr<Retriever::Callback>()));
+  ASSERT_NO_FATAL_FAILURE(
+      retriever_->Retrieve(kKey, scoped_ptr<Retriever::Callback>()));
 }
 
 }  // namespace addressinput

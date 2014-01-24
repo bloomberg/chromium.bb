@@ -80,15 +80,22 @@ class Retriever {
   // to the constructor.
   bool IsValidationDataUrl(const std::string& url) const;
 
-  // Looks up the callback for |key| in |requests_|, removes it from the map
-  // and returns it. Assumes that |key| is in fact in |requests_|.
-  scoped_ptr<Callback> GetCallbackForKey(const std::string& key);
+  // Looks up the callback for |key| in |requests_|, removes it from the map and
+  // invokes it with |key|, |success|, and |data| parameters.
+  void InvokeCallbackForKey(const std::string& key,
+                            bool success,
+                            const std::string& data);
 
   const std::string validation_data_url_;
   scoped_ptr<Downloader> downloader_;
   scoped_ptr<Storage> storage_;
+
   // Holds pending requests. The callback pointers are owned.
   std::map<std::string, Callback*> requests_;
+
+  // Holds data from storage that has expired timestamps. If a download fails,
+  // then this data is used as fallback.
+  std::map<std::string, std::string> stale_data_;
 
   DISALLOW_COPY_AND_ASSIGN(Retriever);
 };
