@@ -168,7 +168,7 @@ void Mp2tStreamParser::Init(
     const InitCB& init_cb,
     const NewConfigCB& config_cb,
     const NewBuffersCB& new_buffers_cb,
-    const NewTextBuffersCB& /* text_cb */ ,
+    bool /* ignore_text_tracks */ ,
     const NeedKeyCB& need_key_cb,
     const NewMediaSegmentCB& new_segment_cb,
     const base::Closure& end_of_segment_cb,
@@ -595,10 +595,12 @@ bool Mp2tStreamParser::EmitRemainingBuffers() {
     }
 
     // Add buffers.
+    TextBufferQueueMap empty_text_map;
     if (!queue_with_config.audio_queue.empty() ||
         !queue_with_config.video_queue.empty()) {
       if (!new_buffers_cb_.Run(queue_with_config.audio_queue,
-                               queue_with_config.video_queue)) {
+                               queue_with_config.video_queue,
+                               empty_text_map)) {
         return false;
       }
     }

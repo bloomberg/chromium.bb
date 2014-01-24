@@ -44,7 +44,7 @@ MP4StreamParser::~MP4StreamParser() {}
 void MP4StreamParser::Init(const InitCB& init_cb,
                            const NewConfigCB& config_cb,
                            const NewBuffersCB& new_buffers_cb,
-                           const NewTextBuffersCB& /* text_cb */ ,
+                           bool /* ignore_text_tracks */ ,
                            const NeedKeyCB& need_key_cb,
                            const NewMediaSegmentCB& new_segment_cb,
                            const base::Closure& end_of_segment_cb,
@@ -530,7 +530,10 @@ bool MP4StreamParser::SendAndFlushSamples(BufferQueue* audio_buffers,
   if (audio_buffers->empty() && video_buffers->empty())
     return true;
 
-  bool success = new_buffers_cb_.Run(*audio_buffers, *video_buffers);
+  TextBufferQueueMap empty_text_map;
+  bool success = new_buffers_cb_.Run(*audio_buffers,
+                                     *video_buffers,
+                                     empty_text_map);
   audio_buffers->clear();
   video_buffers->clear();
   return success;

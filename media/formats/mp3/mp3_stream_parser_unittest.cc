@@ -71,9 +71,14 @@ class MP3StreamParserTest : public testing::Test {
   }
 
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
-                    const StreamParser::BufferQueue& video_buffers) {
+                    const StreamParser::BufferQueue& video_buffers,
+                    const StreamParser::TextBufferQueueMap& text_map) {
     EXPECT_FALSE(audio_buffers.empty());
     EXPECT_TRUE(video_buffers.empty());
+
+    // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
+    // http://crbug.com/336926.
+    EXPECT_TRUE(text_map.empty());
 
     std::string buffers_str = BufferQueueToString(audio_buffers);
     DVLOG(1) << __FUNCTION__ << " : " << buffers_str;
@@ -101,7 +106,7 @@ class MP3StreamParserTest : public testing::Test {
         base::Bind(&MP3StreamParserTest::OnInitDone, base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnNewConfig, base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnNewBuffers, base::Unretained(this)),
-        StreamParser::NewTextBuffersCB(),
+        true,
         base::Bind(&MP3StreamParserTest::OnKeyNeeded, base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnNewSegment, base::Unretained(this)),
         base::Bind(&MP3StreamParserTest::OnEndOfSegment,

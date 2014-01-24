@@ -83,11 +83,17 @@ class Mp2tStreamParserTest : public testing::Test {
   }
 
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
-                    const StreamParser::BufferQueue& video_buffers) {
+                    const StreamParser::BufferQueue& video_buffers,
+                    const StreamParser::TextBufferQueueMap& text_map) {
     DumpBuffers("audio_buffers", audio_buffers);
     DumpBuffers("video_buffers", video_buffers);
     audio_frame_count_ += audio_buffers.size();
     video_frame_count_ += video_buffers.size();
+
+    // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
+    // http://crbug.com/336926.
+    if (!text_map.empty())
+      return false;
 
     if (video_min_dts_ == kNoTimestamp() && !video_buffers.empty())
       video_min_dts_ = video_buffers.front()->GetDecodeTimestamp();
@@ -126,7 +132,7 @@ class Mp2tStreamParserTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&Mp2tStreamParserTest::OnNewBuffers,
                    base::Unretained(this)),
-        StreamParser::NewTextBuffersCB(),
+        true,
         base::Bind(&Mp2tStreamParserTest::OnKeyNeeded,
                    base::Unretained(this)),
         base::Bind(&Mp2tStreamParserTest::OnNewSegment,

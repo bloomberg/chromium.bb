@@ -27,7 +27,12 @@ class VideoDecoderConfig;
 class MEDIA_EXPORT StreamParser {
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
+
+  // Map of text track number to the track configuration.
   typedef std::map<int, TextTrackConfig> TextTrackConfigMap;
+
+  // Map of text track number to decode-timestamp-ordered buffers for the track.
+  typedef std::map<int, const BufferQueue> TextBufferQueueMap;
 
   StreamParser();
   virtual ~StreamParser();
@@ -57,20 +62,16 @@ class MEDIA_EXPORT StreamParser {
   // New stream buffers have been parsed.
   // First parameter - A queue of newly parsed audio buffers.
   // Second parameter - A queue of newly parsed video buffers.
+  // Third parameter - A map of text track ids to queues of newly parsed inband
+  //                   text buffers. If the map is not empty, it must contain
+  //                   at least one track with a non-empty queue of text
+  //                   buffers.
   // Return value - True indicates that the buffers are accepted.
   //                False if something was wrong with the buffers and a parsing
   //                error should be signalled.
   typedef base::Callback<bool(const BufferQueue&,
-                              const BufferQueue&)> NewBuffersCB;
-
-  // New stream buffers of inband text have been parsed.
-  // First parameter - The id of the text track to which these cues will
-  //                   be added.
-  // Second parameter - A queue of newly parsed buffers.
-  // Return value - True indicates that the buffers are accepted.
-  //                False if something was wrong with the buffers and a parsing
-  //                error should be signalled.
-  typedef base::Callback<bool(int, const BufferQueue&)> NewTextBuffersCB;
+                              const BufferQueue&,
+                              const TextBufferQueueMap&)> NewBuffersCB;
 
   // Signals the beginning of a new media segment.
   typedef base::Callback<void()> NewMediaSegmentCB;
@@ -82,14 +83,15 @@ class MEDIA_EXPORT StreamParser {
   typedef base::Callback<void(const std::string&,
                               const std::vector<uint8>&)> NeedKeyCB;
 
-  // Initialize the parser with necessary callbacks. Must be called before any
+  // Initializes the parser with necessary callbacks. Must be called before any
   // data is passed to Parse(). |init_cb| will be called once enough data has
   // been parsed to determine the initial stream configurations, presentation
-  // start time, and duration.
+  // start time, and duration. If |ignore_text_track| is true, then no text
+  // buffers should be passed later by the parser to |new_buffers_cb|.
   virtual void Init(const InitCB& init_cb,
                     const NewConfigCB& config_cb,
                     const NewBuffersCB& new_buffers_cb,
-                    const NewTextBuffersCB& text_cb,
+                    bool ignore_text_track,
                     const NeedKeyCB& need_key_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,

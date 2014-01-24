@@ -25,7 +25,7 @@ class WebMStreamParser : public StreamParser {
   // StreamParser implementation.
   virtual void Init(const InitCB& init_cb, const NewConfigCB& config_cb,
                     const NewBuffersCB& new_buffers_cb,
-                    const NewTextBuffersCB& text_cb,
+                    bool ignore_text_tracks,
                     const NeedKeyCB& need_key_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,
@@ -69,7 +69,7 @@ class WebMStreamParser : public StreamParser {
   InitCB init_cb_;
   NewConfigCB config_cb_;
   NewBuffersCB new_buffers_cb_;
-  NewTextBuffersCB text_cb_;
+  bool ignore_text_tracks_;
   NeedKeyCB need_key_cb_;
 
   NewMediaSegmentCB new_segment_cb_;

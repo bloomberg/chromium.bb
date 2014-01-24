@@ -117,7 +117,7 @@ MP3StreamParser::~MP3StreamParser() {}
 void MP3StreamParser::Init(const InitCB& init_cb,
                            const NewConfigCB& config_cb,
                            const NewBuffersCB& new_buffers_cb,
-                           const NewTextBuffersCB& text_cb,
+                           bool ignore_text_tracks,
                            const NeedKeyCB& need_key_cb,
                            const NewMediaSegmentCB& new_segment_cb,
                            const base::Closure& end_of_segment_cb,
@@ -598,7 +598,8 @@ bool MP3StreamParser::SendBuffers(BufferQueue* buffers, bool end_of_segment) {
   }
 
   BufferQueue empty_video_buffers;
-  if (!new_buffers_cb_.Run(*buffers, empty_video_buffers))
+  TextBufferQueueMap empty_text_map;
+  if (!new_buffers_cb_.Run(*buffers, empty_video_buffers, empty_text_map))
     return false;
   buffers->clear();
 

@@ -85,9 +85,16 @@ class MP4StreamParserTest : public testing::Test {
   }
 
   bool NewBuffersF(const StreamParser::BufferQueue& audio_buffers,
-                   const StreamParser::BufferQueue& video_buffers) {
+                   const StreamParser::BufferQueue& video_buffers,
+                   const StreamParser::TextBufferQueueMap& text_map) {
     DumpBuffers("audio_buffers", audio_buffers);
     DumpBuffers("video_buffers", video_buffers);
+
+    // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
+    // http://crbug.com/336926.
+    if (!text_map.empty())
+      return false;
+
     return true;
   }
 
@@ -111,7 +118,7 @@ class MP4StreamParserTest : public testing::Test {
         base::Bind(&MP4StreamParserTest::InitF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewConfigF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewBuffersF, base::Unretained(this)),
-        StreamParser::NewTextBuffersCB(),
+        true,
         base::Bind(&MP4StreamParserTest::KeyNeededF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::NewSegmentF, base::Unretained(this)),
         base::Bind(&MP4StreamParserTest::EndOfSegmentF,

@@ -33,7 +33,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   virtual void Init(const InitCB& init_cb,
                     const NewConfigCB& config_cb,
                     const NewBuffersCB& new_buffers_cb,
-                    const NewTextBuffersCB& text_cb,
+                    bool ignore_text_tracks,
                     const NeedKeyCB& need_key_cb,
                     const NewMediaSegmentCB& new_segment_cb,
                     const base::Closure& end_of_segment_cb,

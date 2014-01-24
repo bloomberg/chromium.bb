@@ -53,24 +53,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
-
-  class MEDIA_EXPORT TextTrackIterator {
-   public:
-    explicit TextTrackIterator(const TextTrackMap& text_track_map);
-    TextTrackIterator(const TextTrackIterator& rhs);
-    ~TextTrackIterator();
-
-    // To visit each text track.  If the iterator is exhausted, it returns
-    // as parameters the values 0 and NULL, and the function returns false.
-    // Otherwise, it returns the buffers for the associated track, and the
-    // function returns true.
-    bool operator()(int* track_num, const BufferQueue** buffers);
-   private:
-    TextTrackIterator& operator=(const TextTrackIterator&);
-
-    TextTrackMap::const_iterator iterator_;
-    const TextTrackMap::const_iterator iterator_end_;
-  };
+  typedef std::map<int, const BufferQueue> TextBufferQueueMap;
 
   WebMClusterParser(int64 timecode_scale,
                     int audio_track_num,
@@ -96,8 +79,11 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   const BufferQueue& audio_buffers() const { return audio_.buffers(); }
   const BufferQueue& video_buffers() const { return video_.buffers(); }
 
-  // Returns an iterator object, allowing each text track to be visited.
-  TextTrackIterator CreateTextTrackIterator() const;
+  // Constructs and returns a subset of |text_track_map_| containing only
+  // tracks with non-empty buffer queues produced by the last Parse().
+  // The returned map is cleared by Parse() or Reset() and updated by the next
+  // call to GetTextBuffers().
+  const TextBufferQueueMap& GetTextBuffers();
 
   // Returns true if the last Parse() call stopped at the end of a cluster.
   bool cluster_ended() const { return cluster_ended_; }
@@ -149,6 +135,12 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   Track audio_;
   Track video_;
   TextTrackMap text_track_map_;
+
+  // Subset of |text_track_map_| maintained by GetTextBuffers(), and cleared by
+  // ResetTextTracks(). Callers of GetTextBuffers() get a const-ref to this
+  // member.
+  TextBufferQueueMap text_buffers_map_;
+
   LogCB log_cb_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMClusterParser);

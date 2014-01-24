@@ -163,7 +163,7 @@ class SourceState {
  private:
   // Called by the |stream_parser_| when a new initialization segment is
   // encountered.
-  // Returns true on a successful call. Returns false if an error occured while
+  // Returns true on a successful call. Returns false if an error occurred while
   // processing decoder configurations.
   bool OnNewConfigs(bool allow_audio, bool allow_video,
                     const AudioDecoderConfig& audio_config,
@@ -177,19 +177,21 @@ class SourceState {
   void OnEndOfMediaSegment();
 
   // Called by the |stream_parser_| when new buffers have been parsed. It
-  // applies |timestamp_offset_| to all buffers in |audio_buffers| and
-  // |video_buffers| and then calls Append() on |audio_| and/or
-  // |video_| with the modified buffers.
-  // Returns true on a successful call. Returns false if an error occured while
+  // applies |timestamp_offset_| to all buffers in |audio_buffers|,
+  // |video_buffers| and |text_map| and then calls Append() with the modified
+  // buffers on |audio_|, |video_| and/or the text demuxer streams associated
+  // with the track numbers in |text_map|.
+  // Returns true on a successful call. Returns false if an error occurred while
   // processing the buffers.
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
-                    const StreamParser::BufferQueue& video_buffers);
+                    const StreamParser::BufferQueue& video_buffers,
+                    const StreamParser::TextBufferQueueMap& text_map);
 
-  // Called by the |stream_parser_| when new text buffers have been parsed. It
-  // applies |timestamp_offset_| to all buffers in |buffers| and then appends
+  // Helper function for OnNewBuffers() when new text buffers have been parsed.
+  // It applies |timestamp_offset_| to all buffers in |buffers| and then appends
   // the (modified) buffers to the demuxer stream associated with
   // the track having |text_track_number|.
-  // Returns true on a successful call. Returns false if an error occured while
+  // Returns true on a successful call. Returns false if an error occurred while
   // processing the buffers.
   bool OnTextBuffers(int text_track_number,
                      const StreamParser::BufferQueue& buffers);
@@ -390,13 +392,6 @@ void SourceState::Init(const StreamParser::InitCB& init_cb,
                        const NewTextTrackCB& new_text_track_cb) {
   new_text_track_cb_ = new_text_track_cb;
 
-  StreamParser::NewTextBuffersCB new_text_buffers_cb;
-
-  if (!new_text_track_cb_.is_null()) {
-    new_text_buffers_cb = base::Bind(&SourceState::OnTextBuffers,
-                                     base::Unretained(this));
-  }
-
   stream_parser_->Init(init_cb,
                        base::Bind(&SourceState::OnNewConfigs,
                                   base::Unretained(this),
@@ -404,7 +399,7 @@ void SourceState::Init(const StreamParser::InitCB& init_cb,
                                   allow_video),
                        base::Bind(&SourceState::OnNewBuffers,
                                   base::Unretained(this)),
-                       new_text_buffers_cb,
+                       new_text_track_cb_.is_null(),
                        need_key_cb,
                        base::Bind(&SourceState::OnNewMediaSegment,
                                   base::Unretained(this)),
@@ -771,9 +766,13 @@ void SourceState::OnEndOfMediaSegment() {
   new_media_segment_ = false;
 }
 
-bool SourceState::OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
-                               const StreamParser::BufferQueue& video_buffers) {
-  DCHECK(!audio_buffers.empty() || !video_buffers.empty());
+bool SourceState::OnNewBuffers(
+    const StreamParser::BufferQueue& audio_buffers,
+    const StreamParser::BufferQueue& video_buffers,
+    const StreamParser::TextBufferQueueMap& text_map) {
+  DCHECK(!audio_buffers.empty() || !video_buffers.empty() ||
+         !text_map.empty());
+
   AdjustBufferTimestamps(audio_buffers);
   AdjustBufferTimestamps(video_buffers);
 
@@ -786,10 +785,8 @@ bool SourceState::OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
   FilterWithAppendWindow(video_buffers, &video_needs_keyframe_,
                          &filtered_video);
 
-  if (filtered_audio.empty() && filtered_video.empty())
-    return true;
-
-  if (new_media_segment_) {
+  if ((!filtered_audio.empty() || !filtered_video.empty()) &&
+      new_media_segment_) {
     // Find the earliest timestamp in the filtered buffers and use that for the
     // segment start timestamp.
     TimeDelta segment_timestamp = kNoTimestamp();
@@ -819,14 +816,31 @@ bool SourceState::OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
 
   if (!filtered_audio.empty() &&
       !AppendAndUpdateDuration(audio_, filtered_audio)) {
-      return false;
+    return false;
   }
 
   if (!filtered_video.empty() &&
       !AppendAndUpdateDuration(video_, filtered_video)) {
-      return false;
+    return false;
   }
 
+  if (text_map.empty())
+    return true;
+
+  // Process any buffers for each of the text tracks in the map.
+  bool all_text_buffers_empty = true;
+  for (StreamParser::TextBufferQueueMap::const_iterator itr = text_map.begin();
+       itr != text_map.end();
+       ++itr) {
+    const StreamParser::BufferQueue text_buffers = itr->second;
+    if (!text_buffers.empty()) {
+      all_text_buffers_empty = false;
+      if (!OnTextBuffers(itr->first, text_buffers))
+        return false;
+    }
+  }
+
+  DCHECK(!all_text_buffers_empty);
   return true;
 }
 

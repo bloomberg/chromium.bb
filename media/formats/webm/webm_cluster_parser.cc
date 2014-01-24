@@ -17,38 +17,6 @@
 
 namespace media {
 
-WebMClusterParser::TextTrackIterator::TextTrackIterator(
-    const TextTrackMap& text_track_map) :
-    iterator_(text_track_map.begin()),
-    iterator_end_(text_track_map.end()) {
-}
-
-WebMClusterParser::TextTrackIterator::TextTrackIterator(
-    const TextTrackIterator& rhs) :
-    iterator_(rhs.iterator_),
-    iterator_end_(rhs.iterator_end_) {
-}
-
-WebMClusterParser::TextTrackIterator::~TextTrackIterator() {
-}
-
-bool WebMClusterParser::TextTrackIterator::operator()(
-  int* track_num,
-  const BufferQueue** buffers) {
-  if (iterator_ == iterator_end_) {
-    *track_num = 0;
-    *buffers = NULL;
-
-    return false;
-  }
-
-  *track_num = iterator_->first;
-  *buffers = &iterator_->second.buffers();
-
-  ++iterator_;
-  return true;
-}
-
 WebMClusterParser::WebMClusterParser(
     int64 timecode_scale, int audio_track_num, int video_track_num,
     const WebMTracksParser::TextTracks& text_tracks,
@@ -131,9 +99,20 @@ int WebMClusterParser::Parse(const uint8* buf, int size) {
   return result;
 }
 
-WebMClusterParser::TextTrackIterator
-WebMClusterParser::CreateTextTrackIterator() const {
-  return TextTrackIterator(text_track_map_);
+const WebMClusterParser::TextBufferQueueMap&
+WebMClusterParser::GetTextBuffers() {
+  // Translate our |text_track_map_| into |text_buffers_map_|, inserting rows in
+  // the output only for non-empty text buffer queues in |text_track_map_|.
+  text_buffers_map_.clear();
+  for (TextTrackMap::const_iterator itr = text_track_map_.begin();
+       itr != text_track_map_.end();
+       ++itr) {
+    const BufferQueue& text_buffers = itr->second.buffers();
+    if (!text_buffers.empty())
+      text_buffers_map_.insert(std::make_pair(itr->first, text_buffers));
+  }
+
+  return text_buffers_map_;
 }
 
 WebMParserClient* WebMClusterParser::OnListStart(int id) {
@@ -451,6 +430,7 @@ bool WebMClusterParser::Track::IsKeyframe(const uint8* data, int size) const {
 }
 
 void WebMClusterParser::ResetTextTracks() {
+  text_buffers_map_.clear();
   for (TextTrackMap::iterator it = text_track_map_.begin();
        it != text_track_map_.end();
        ++it) {

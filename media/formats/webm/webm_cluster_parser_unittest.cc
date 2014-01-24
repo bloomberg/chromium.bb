@@ -132,18 +132,13 @@ static bool VerifyBuffers(const WebMClusterParser::BufferQueue& audio_buffers,
 static bool VerifyBuffers(const scoped_ptr<WebMClusterParser>& parser,
                           const BlockInfo* block_info,
                           int block_count) {
-  typedef WebMClusterParser::TextTrackIterator TextTrackIterator;
-  TextTrackIterator text_it = parser->CreateTextTrackIterator();
-
-  int text_track_num;
+  const WebMClusterParser::TextBufferQueueMap& text_map =
+      parser->GetTextBuffers();
   const WebMClusterParser::BufferQueue* text_buffers;
-
-  while (text_it(&text_track_num, &text_buffers))
-    break;
-
   const WebMClusterParser::BufferQueue no_text_buffers;
-
-  if (text_buffers == NULL)
+  if (!text_map.empty())
+    text_buffers = &(text_map.rbegin()->second);
+  else
     text_buffers = &no_text_buffers;
 
   return VerifyBuffers(parser->audio_buffers(),
@@ -476,18 +471,17 @@ TEST_F(WebMClusterParserTest, ParseMultipleTextTracks) {
   int result = parser_->Parse(cluster->data(), cluster->size());
   EXPECT_EQ(cluster->size(), result);
 
-  WebMClusterParser::TextTrackIterator text_it =
-      parser_->CreateTextTrackIterator();
-
-  int text_track_num;
-  const WebMClusterParser::BufferQueue* text_buffers;
-
-  while (text_it(&text_track_num, &text_buffers)) {
+  const WebMClusterParser::TextBufferQueueMap& text_map =
+      parser_->GetTextBuffers();
+  for (WebMClusterParser::TextBufferQueueMap::const_iterator itr =
+           text_map.begin();
+       itr != text_map.end();
+       ++itr) {
     const WebMTracksParser::TextTracks::const_iterator find_result =
-        text_tracks.find(text_track_num);
+        text_tracks.find(itr->first);
     ASSERT_TRUE(find_result != text_tracks.end());
     ASSERT_TRUE(VerifyTextBuffers(parser_, kInputBlockInfo, input_block_count,
-                                  text_track_num, *text_buffers));
+                                  itr->first, itr->second));
   }
 }
 

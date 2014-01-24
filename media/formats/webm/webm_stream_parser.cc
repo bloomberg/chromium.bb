@@ -28,7 +28,7 @@ WebMStreamParser::~WebMStreamParser() {
 void WebMStreamParser::Init(const InitCB& init_cb,
                             const NewConfigCB& config_cb,
                             const NewBuffersCB& new_buffers_cb,
-                            const NewTextBuffersCB& text_cb,
+                            bool ignore_text_tracks,
                             const NeedKeyCB& need_key_cb,
                             const NewMediaSegmentCB& new_segment_cb,
                             const base::Closure& end_of_segment_cb,
@@ -46,7 +46,7 @@ void WebMStreamParser::Init(const InitCB& init_cb,
   init_cb_ = init_cb;
   config_cb_ = config_cb;
   new_buffers_cb_ = new_buffers_cb;
-  text_cb_ = text_cb;
+  ignore_text_tracks_ = ignore_text_tracks;
   need_key_cb_ = need_key_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
@@ -171,7 +171,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
   cur_size -= result;
   bytes_parsed += result;
 
-  WebMTracksParser tracks_parser(log_cb_, text_cb_.is_null());
+  WebMTracksParser tracks_parser(log_cb_, ignore_text_tracks_);
   result = tracks_parser.Parse(cur, cur_size);
 
   if (result <= 0)
@@ -266,22 +266,12 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
 
   const BufferQueue& audio_buffers = cluster_parser_->audio_buffers();
   const BufferQueue& video_buffers = cluster_parser_->video_buffers();
+  const TextBufferQueueMap& text_map = cluster_parser_->GetTextBuffers();
   bool cluster_ended = cluster_parser_->cluster_ended();
 
-  if ((!audio_buffers.empty() || !video_buffers.empty()) &&
-      !new_buffers_cb_.Run(audio_buffers, video_buffers)) {
+  if ((!audio_buffers.empty() || !video_buffers.empty() || !text_map.empty()) &&
+      !new_buffers_cb_.Run(audio_buffers, video_buffers, text_map)) {
     return -1;
-  }
-
-  WebMClusterParser::TextTrackIterator text_track_iter =
-    cluster_parser_->CreateTextTrackIterator();
-
-  int text_track_num;
-  const BufferQueue* text_buffers;
-
-  while (text_track_iter(&text_track_num, &text_buffers)) {
-    if (!text_buffers->empty() && !text_cb_.Run(text_track_num, *text_buffers))
-      return -1;
   }
 
   if (cluster_ended) {
