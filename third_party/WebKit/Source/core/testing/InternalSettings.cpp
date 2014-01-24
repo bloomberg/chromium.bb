@@ -38,19 +38,19 @@
 
 #define InternalSettingsGuardForSettingsReturn(returnValue) \
     if (!settings()) { \
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError); \
+        exceptionState.throwDOMException(InvalidAccessError, "The settings object cannot be obtained."); \
         return returnValue; \
     }
 
 #define InternalSettingsGuardForSettings()  \
     if (!settings()) { \
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError); \
+        exceptionState.throwDOMException(InvalidAccessError, "The settings object cannot be obtained."); \
         return; \
     }
 
 #define InternalSettingsGuardForPage() \
     if (!page()) { \
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError); \
+        exceptionState.throwDOMException(InvalidAccessError, "The page object cannot be obtained."); \
         return; \
     }
 
@@ -334,7 +334,7 @@ void InternalSettings::setEditingBehavior(const String& editingBehavior, Excepti
     else if (equalIgnoringCase(editingBehavior, "android"))
         settings()->setEditingBehaviorType(EditingAndroidBehavior);
     else
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The editing behavior type provided ('" + editingBehavior + "') is invalid.");
 }
 
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled)
