@@ -5528,7 +5528,7 @@ sub JSValueToNative
 
     if ($type eq "Promise") {
         AddToImplIncludes("bindings/v8/ScriptPromise.h");
-        return "ScriptPromise($value)";
+        return "ScriptPromise($value, $getIsolate)";
     }
 
     if ($type eq "NodeFilter") {

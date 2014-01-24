@@ -849,7 +849,7 @@ static void promiseAttributeAttributeGetterCallback(v8::Local<v8::String>, const
 static void promiseAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(ScriptPromise, cppValue, ScriptPromise(jsValue));
+    V8TRYCATCH_VOID(ScriptPromise, cppValue, ScriptPromise(jsValue, info.GetIsolate()));
     imp->setPromiseAttribute(cppValue);
 }
 
@@ -4724,7 +4724,7 @@ static void voidMethodPromiseArgMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(ScriptPromise, promiseArg, ScriptPromise(info[0]));
+    V8TRYCATCH_VOID(ScriptPromise, promiseArg, ScriptPromise(info[0], info.GetIsolate()));
     if (!promiseArg.isUndefinedOrNull() && !promiseArg.isObject()) {
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObjectPython", "parameter 1 ('promiseArg') is not an object."), info.GetIsolate());
         return;

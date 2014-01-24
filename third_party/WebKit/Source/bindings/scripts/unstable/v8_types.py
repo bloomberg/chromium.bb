@@ -383,7 +383,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'Dictionary': 'Dictionary({v8_value}, info.GetIsolate())',
     'MediaQueryListListener': 'MediaQueryListListener::create(ScriptValue({v8_value}, info.GetIsolate()))',
     'NodeFilter': 'toNodeFilter({v8_value}, info.GetIsolate())',
-    'Promise': 'ScriptPromise({v8_value})',
+    'Promise': 'ScriptPromise({v8_value}, info.GetIsolate())',
     'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, info.GetIsolate())',
     'ScriptValue': 'ScriptValue({v8_value}, info.GetIsolate())',
     'Window': 'toNativeDOMWindow({v8_value}, info.GetIsolate())',
