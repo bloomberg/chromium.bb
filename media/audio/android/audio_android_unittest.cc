@@ -659,7 +659,8 @@ TEST_F(AudioAndroidOutputTest, OpenAndCloseOutputStream) {
 
 // Start input streaming using default input parameters and ensure that the
 // callback sequence is sane.
-TEST_P(AudioAndroidInputTest, StartInputStreamCallbacks) {
+// Disabled per crbug/337867
+TEST_P(AudioAndroidInputTest, DISABLED_StartInputStreamCallbacks) {
   AudioParameters params = GetInputStreamParameters();
   StartInputStreamCallbacks(params);
 }
