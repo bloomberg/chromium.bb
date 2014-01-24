@@ -880,6 +880,8 @@ crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass
 
 crbug.com/334225 virtual/legacy-animations-engine/animations/compositor-start-event-timing.html [ Pass Failure ]
 
+crbug.com/337944 inspector/layer-compositing-reasons.html [ Pass Timeout ]
+
 crbug.com/333882 [ Win ] inspector/editor/text-editor-autocomplete.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/editor/text-editor-enter-behaviour.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/editor/text-editor-formatter.html [ Pass Failure ]
