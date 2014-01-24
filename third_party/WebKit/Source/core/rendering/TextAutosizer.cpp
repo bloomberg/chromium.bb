@@ -322,7 +322,7 @@ void TextAutosizer::processCluster(TextAutosizingClusterInfo& clusterInfo, Rende
     float textWidth = clusterInfo.blockContainingAllText->contentLogicalWidth();
 
     Vector<TextAutosizingClusterInfo> clusterInfos(1, clusterInfo);
-    float multiplier = computeMultiplier(clusterInfos, windowInfo, textWidth);
+    float multiplier =  computeMultiplier(clusterInfos, windowInfo, textWidth);
 
     processClusterInternal(clusterInfo, container, subtreeRoot, windowInfo, multiplier);
 }
@@ -353,19 +353,14 @@ void TextAutosizer::secondPassProcessStaleNonAutosizedClusters()
         float multiplier = m_hashToMultiplier.get(hash);
         Vector<TextAutosizingClusterInfo>* val = m_nonAutosizedClusters.get(hash);
         for (Vector<TextAutosizingClusterInfo>::iterator it2 = val->begin(); it2 != val->end(); ++it2)
-            processStaleContainer(multiplier, (*it2).root, *it2);
+            setMultiplierForCluster(multiplier, (*it2).root, *it2);
     }
 }
 
-void TextAutosizer::processStaleContainer(float multiplier, RenderBlock* cluster, TextAutosizingClusterInfo& clusterInfo)
+void TextAutosizer::setMultiplierForCluster(float localMultiplier, RenderObject* cluster, TextAutosizingClusterInfo& clusterInfo)
 {
-    ASSERT(isAutosizingContainer(cluster));
-
     // This method is different from processContainer() mainly in that it does not recurse into sub-clusters.
-    // Multiplier updates are restricted to the specified cluster only. Also the multiplier > 1 by construction
-    // of m_hashesToAutosizeSecondPass, so we don't need to check it explicitly.
-    float localMultiplier = containerShouldBeAutosized(cluster) ? multiplier : 1;
-
+    // Multiplier updates are restricted to the specified cluster only.
     RenderObject* descendant = nextInPreOrderSkippingDescendantsOfContainers(cluster, cluster);
     while (descendant) {
         if (descendant->isText()) {
@@ -376,7 +371,7 @@ void TextAutosizer::processStaleContainer(float multiplier, RenderBlock* cluster
         } else if (isAutosizingContainer(descendant)) {
             RenderBlock* descendantBlock = toRenderBlock(descendant);
             if (!isAutosizingCluster(descendantBlock, clusterInfo))
-                processStaleContainer(multiplier, descendantBlock, clusterInfo);
+                setMultiplierForCluster(localMultiplier, descendantBlock, clusterInfo);
         }
         descendant = nextInPreOrderSkippingDescendantsOfContainers(descendant, cluster);
     }
@@ -674,6 +669,12 @@ bool TextAutosizer::contentHeightIsConstrained(const RenderBlock* container)
             return false;
     }
     return false;
+}
+
+bool TextAutosizer::clusterShouldBeAutosized(TextAutosizingClusterInfo& clusterInfo, float blockWidth)
+{
+    Vector<TextAutosizingClusterInfo> clusterInfos(1, clusterInfo);
+    return compositeClusterShouldBeAutosized(clusterInfos, blockWidth);
 }
 
 bool TextAutosizer::compositeClusterShouldBeAutosized(Vector<TextAutosizingClusterInfo>& clusterInfos, float blockWidth)
