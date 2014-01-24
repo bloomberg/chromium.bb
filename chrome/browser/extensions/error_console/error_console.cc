@@ -29,49 +29,21 @@
 namespace extensions {
 
 namespace {
+// The key into the Extension prefs for an Extension's specific reporting
+// settings.
+const char kStoreExtensionErrorsPref[] = "store_extension_errors";
 
-const size_t kMaxErrorsPerExtension = 100;
-
-// Iterate through an error list and remove and delete all errors which were
-// from an incognito context.
-void DeleteIncognitoErrorsFromList(ErrorConsole::ErrorList* list) {
-  ErrorConsole::ErrorList::iterator iter = list->begin();
-  while (iter != list->end()) {
-    if ((*iter)->from_incognito()) {
-      delete *iter;
-      iter = list->erase(iter);
-    } else {
-      ++iter;
-    }
-  }
+// The default mask (for the time being) is to report everything.
+const int32 kDefaultMask = (1 << ExtensionError::MANIFEST_ERROR) |
+                           (1 << ExtensionError::RUNTIME_ERROR);
 }
-
-// Iterate through an error list and remove and delete all errors of a given
-// |type|.
-void DeleteErrorsOfTypeFromList(ErrorConsole::ErrorList* list,
-                                ExtensionError::Type type) {
-  ErrorConsole::ErrorList::iterator iter = list->begin();
-  while (iter != list->end()) {
-    if ((*iter)->type() == type) {
-      delete *iter;
-      iter = list->erase(iter);
-    } else {
-      ++iter;
-    }
-  }
-}
-
-base::LazyInstance<ErrorConsole::ErrorList> g_empty_error_list =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 void ErrorConsole::Observer::OnErrorConsoleDestroyed() {
 }
 
 ErrorConsole::ErrorConsole(Profile* profile,
                            ExtensionService* extension_service)
-     : enabled_(false), profile_(profile) {
+     : enabled_(false), default_mask_(kDefaultMask), profile_(profile) {
 // TODO(rdevlin.cronin): Remove once crbug.com/159265 is fixed.
 #if !defined(ENABLE_EXTENSIONS)
   return;
@@ -94,7 +66,6 @@ ErrorConsole::ErrorConsole(Profile* profile,
 
 ErrorConsole::~ErrorConsole() {
   FOR_EACH_OBSERVER(Observer, observers_, OnErrorConsoleDestroyed());
-  RemoveAllErrors();
 }
 
 // static
@@ -102,48 +73,64 @@ ErrorConsole* ErrorConsole::Get(Profile* profile) {
   return ExtensionSystem::Get(profile)->error_console();
 }
 
+void ErrorConsole::SetReportingForExtension(const std::string& extension_id,
+                                            ExtensionError::Type type,
+                                            bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!enabled_ || !Extension::IdIsValid(extension_id))
+    return;
+
+  ErrorPreferenceMap::iterator pref = pref_map_.find(extension_id);
+
+  if (pref == pref_map_.end()) {
+    pref = pref_map_.insert(
+        std::pair<std::string, int32>(extension_id, default_mask_)).first;
+  }
+
+  pref->second =
+      enabled ? pref->second | (1 << type) : pref->second &~(1 << type);
+
+  ExtensionPrefs::Get(profile_)->UpdateExtensionPref(
+      extension_id,
+      kStoreExtensionErrorsPref,
+      base::Value::CreateIntegerValue(pref->second));
+}
+
+void ErrorConsole::UseDefaultReportingForExtension(
+    const std::string& extension_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!enabled_ || !Extension::IdIsValid(extension_id))
+    return;
+
+  pref_map_.erase(extension_id);
+  ExtensionPrefs::Get(profile_)->UpdateExtensionPref(
+      extension_id,
+      kStoreExtensionErrorsPref,
+      NULL);
+}
+
 void ErrorConsole::ReportError(scoped_ptr<ExtensionError> error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   if (!enabled_ || !Extension::IdIsValid(error->extension_id()))
     return;
 
-  ErrorList* extension_errors = &errors_[error->extension_id()];
-
-  // First, check if it's a duplicate.
-  for (ErrorList::iterator iter = extension_errors->begin();
-       iter != extension_errors->end(); ++iter) {
-    // If we find a duplicate error, remove the old error and add the new one,
-    // incrementing the occurrence count of the error. We use the new error
-    // for runtime errors, so we can link to the latest context, inspectable
-    // view, etc.
-    if (error->IsEqual(*iter)) {
-      error->set_occurrences((*iter)->occurrences() + 1);
-      delete *iter;
-      extension_errors->erase(iter);
-      break;
-    }
+  ErrorPreferenceMap::const_iterator pref =
+      pref_map_.find(error->extension_id());
+  // Check the mask to see if we report the error. If we don't have a specific
+  // entry, use the default mask.
+  if ((pref == pref_map_.end() &&
+          ((default_mask_ & (1 << error->type())) == 0)) ||
+      (pref != pref_map_.end() && (pref->second & (1 << error->type())) == 0)) {
+    return;
   }
 
-  // If there are too many errors for an extension already, limit ourselves to
-  // the most recent ones.
-  if (extension_errors->size() >= kMaxErrorsPerExtension) {
-    delete extension_errors->front();
-    extension_errors->pop_front();
-  }
-
-  extension_errors->push_back(error.release());
-
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OnErrorAdded(extension_errors->back()));
+  const ExtensionError* weak_error = errors_.AddError(error.Pass());
+  FOR_EACH_OBSERVER(Observer, observers_, OnErrorAdded(weak_error));
 }
 
-const ErrorConsole::ErrorList& ErrorConsole::GetErrorsForExtension(
+const ErrorList& ErrorConsole::GetErrorsForExtension(
     const std::string& extension_id) const {
-  ErrorMap::const_iterator iter = errors_.find(extension_id);
-  if (iter != errors_.end())
-    return iter->second;
-  return g_empty_error_list.Get();
+  return errors_.GetErrorsForExtension(extension_id);
 }
 
 void ErrorConsole::AddObserver(Observer* observer) {
@@ -183,10 +170,16 @@ void ErrorConsole::Enable(ExtensionService* extension_service) {
       content::Source<Profile>(profile_));
 
   if (extension_service) {
-    // Get manifest errors for extensions already installed.
     const ExtensionSet* extensions = extension_service->extensions();
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
     for (ExtensionSet::const_iterator iter = extensions->begin();
          iter != extensions->end(); ++iter) {
+      int mask = 0;
+      if (prefs->ReadPrefAsInteger(iter->get()->id(),
+                                   kStoreExtensionErrorsPref,
+                                   &mask)) {
+        pref_map_[iter->get()->id()] = mask;
+      }
       AddManifestErrorsForExtension(iter->get());
     }
   }
@@ -194,7 +187,7 @@ void ErrorConsole::Enable(ExtensionService* extension_service) {
 
 void ErrorConsole::Disable() {
   notification_registrar_.RemoveAll();
-  RemoveAllErrors();
+  errors_.RemoveAllErrors();
   enabled_ = false;
 }
 
@@ -211,27 +204,6 @@ void ErrorConsole::AddManifestErrorsForExtension(const Extension* extension) {
   }
 }
 
-void ErrorConsole::RemoveIncognitoErrors() {
-  for (ErrorMap::iterator iter = errors_.begin();
-       iter != errors_.end(); ++iter) {
-    DeleteIncognitoErrorsFromList(&(iter->second));
-  }
-}
-
-void ErrorConsole::RemoveErrorsForExtension(const std::string& extension_id) {
-  ErrorMap::iterator iter = errors_.find(extension_id);
-  if (iter != errors_.end()) {
-    STLDeleteContainerPointers(iter->second.begin(), iter->second.end());
-    errors_.erase(iter);
-  }
-}
-
-void ErrorConsole::RemoveAllErrors() {
-  for (ErrorMap::iterator iter = errors_.begin(); iter != errors_.end(); ++iter)
-    STLDeleteContainerPointers(iter->second.begin(), iter->second.end());
-  errors_.clear();
-}
-
 void ErrorConsole::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
@@ -241,14 +213,13 @@ void ErrorConsole::Observe(int type,
       // If incognito profile which we are associated with is destroyed, also
       // destroy all incognito errors.
       if (profile->IsOffTheRecord() && profile_->IsSameProfile(profile))
-        RemoveIncognitoErrors();
+        errors_.RemoveIncognitoErrors();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
       // No need to check the profile here, since we registered to only receive
       // notifications from our own.
-      RemoveErrorsForExtension(
-          content::Details<Extension>(details).ptr()->id());
+      errors_.Remove(content::Details<Extension>(details).ptr()->id());
       break;
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       const InstalledExtensionInfo* info =
@@ -258,11 +229,8 @@ void ErrorConsole::Observe(int type,
       // to keep runtime errors, though, because extensions are reloaded on a
       // refresh of chrome:extensions, and we don't want to wipe our history
       // whenever that happens.
-      ErrorMap::iterator iter = errors_.find(info->extension->id());
-      if (iter != errors_.end()) {
-        DeleteErrorsOfTypeFromList(&(iter->second),
-                                   ExtensionError::MANIFEST_ERROR);
-      }
+      errors_.RemoveErrorsForExtensionOfType(info->extension->id(),
+                                             ExtensionError::MANIFEST_ERROR);
 
       AddManifestErrorsForExtension(info->extension);
       break;

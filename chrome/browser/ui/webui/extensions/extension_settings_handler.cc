@@ -315,12 +315,12 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   ErrorConsole* error_console =
       ErrorConsole::Get(extension_service_->profile());
   if (error_console->enabled()) {
-    const ErrorConsole::ErrorList& errors =
+    const ErrorList& errors =
         error_console->GetErrorsForExtension(extension->id());
     if (!errors.empty()) {
       scoped_ptr<base::ListValue> manifest_errors(new base::ListValue);
       scoped_ptr<base::ListValue> runtime_errors(new base::ListValue);
-      for (ErrorConsole::ErrorList::const_iterator iter = errors.begin();
+      for (ErrorList::const_iterator iter = errors.begin();
            iter != errors.end(); ++iter) {
         if ((*iter)->type() == ExtensionError::MANIFEST_ERROR) {
           manifest_errors->Append((*iter)->ToValue().release());

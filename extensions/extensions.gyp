@@ -168,6 +168,8 @@
         'browser/admin_policy.cc',
         'browser/admin_policy.h',
         'browser/app_sorting.h',
+        'browser/error_map.cc',
+        'browser/error_map.h',
         'browser/event_listener_map.cc',
         'browser/event_listener_map.h',
         'browser/event_router.cc',

@@ -267,7 +267,8 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
 
     // We should only have errors for a single extension, or should have no
     // entries, if no errors were expected.
-    ASSERT_EQ(errors_expected > 0 ? 1u : 0u, error_console()->errors().size());
+    ASSERT_EQ(errors_expected > 0 ? 1u : 0u,
+              error_console()->get_num_entries_for_test());
     ASSERT_EQ(
         errors_expected,
         error_console()->GetErrorsForExtension((*extension)->id()).size());
@@ -294,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, ReportManifestErrors) {
                               ACTION_NONE,
                               &extension);
 
-  const ErrorConsole::ErrorList& errors =
+  const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
   // Unfortunately, there's not always a hard guarantee of order in parsing the
@@ -373,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
 
   std::string script_url = extension->url().Resolve("content_script.js").spec();
 
-  const ErrorConsole::ErrorList& errors =
+  const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
   // The first error should be a console log.
@@ -431,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
 
   std::string script_url = extension->url().Resolve("browser_action.js").spec();
 
-  const ErrorConsole::ErrorList& errors =
+  const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
   std::string event_bindings_str =
@@ -471,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIArgumentsRuntimeError) {
       ACTION_NONE,
       &extension);
 
-  const ErrorConsole::ErrorList& errors =
+  const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
   std::string schema_utils_str =
@@ -510,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadAPIPermissionsRuntimeError) {
 
   std::string script_url = extension->url().Resolve("background.js").spec();
 
-  const ErrorConsole::ErrorList& errors =
+  const ErrorList& errors =
       error_console()->GetErrorsForExtension(extension->id());
 
   CheckRuntimeError(

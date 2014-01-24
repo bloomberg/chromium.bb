@@ -16,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/error_map.h"
 #include "extensions/browser/extension_error.h"
 
 namespace content {
@@ -38,9 +39,6 @@ class Extension;
 // BrowserContext-keyed service.
 class ErrorConsole : public content::NotificationObserver {
  public:
-  typedef std::deque<const ExtensionError*> ErrorList;
-  typedef std::map<std::string, ErrorList> ErrorMap;
-
   class Observer {
    public:
     // Sent when a new error is reported to the error console.
@@ -57,6 +55,16 @@ class ErrorConsole : public content::NotificationObserver {
   // Convenience method to return the ErrorConsole for a given profile.
   static ErrorConsole* Get(Profile* profile);
 
+  // Set whether or not errors of the specified |type| are stored for the
+  // extension with the given |extension_id|. This will be stored in the
+  // preferences.
+  void SetReportingForExtension(const std::string& extension_id,
+                                ExtensionError::Type type,
+                                bool enabled);
+
+  // Restore default reporting to the given extension.
+  void UseDefaultReportingForExtension(const std::string& extension_id);
+
   // Report an extension error, and add it to the list.
   void ReportError(scoped_ptr<ExtensionError> error);
 
@@ -70,14 +78,25 @@ class ErrorConsole : public content::NotificationObserver {
   void RemoveObserver(Observer* observer);
 
   bool enabled() const { return enabled_; }
-  const ErrorMap& errors() const { return errors_; }
+
+  // Return the number of entries (extensions) in the error map.
+  size_t get_num_entries_for_test() const { return errors_.size(); }
+
+  // Set the default reporting for all extensions.
+  void set_default_reporting_for_test(ExtensionError::Type type, bool enabled) {
+    default_mask_ =
+        enabled ? default_mask_ | (1 << type) : default_mask_ & ~(1 << type);
+  }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ErrorConsoleUnitTest, AddAndRemoveErrors);
+  // A map which stores the reporting preferences for each Extension. If there
+  // is no entry in the map, it signals that the |default_mask_| should be used.
+  typedef std::map<std::string, int32> ErrorPreferenceMap;
 
   // Enable the error console for error collection and retention. This involves
   // subscribing to the appropriate notifications and fetching manifest errors.
   void Enable(ExtensionService* extension_service);
+
   // Disable the error console, removing the subscriptions to notifications and
   // removing all current errors.
   void Disable();
@@ -89,16 +108,6 @@ class ErrorConsole : public content::NotificationObserver {
 
   // Add manifest errors from an extension's install warnings.
   void AddManifestErrorsForExtension(const Extension* extension);
-
-  // Remove all errors which happened while incognito; we have to do this once
-  // the incognito profile is destroyed.
-  void RemoveIncognitoErrors();
-
-  // Remove all errors relating to a particular |extension_id|.
-  void RemoveErrorsForExtension(const std::string& extension_id);
-
-  // Remove all errors for all extensions.
-  void RemoveAllErrors();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -118,6 +127,12 @@ class ErrorConsole : public content::NotificationObserver {
 
   // The errors which we have received so far.
   ErrorMap errors_;
+
+  // The mapping of Extension's error-reporting preferences.
+  ErrorPreferenceMap pref_map_;
+
+  // The default mask to use if an Extension does not have specific settings.
+  int32 default_mask_;
 
   // The profile with which the ErrorConsole is associated. Only collect errors
   // from extensions and RenderViews associated with this Profile (and it's

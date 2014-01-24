@@ -4,64 +4,23 @@
 
 #include "chrome/browser/extensions/error_console/error_console.h"
 
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_error_test_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
-
-using base::string16;
 
 namespace extensions {
 
-namespace {
-
-const char kDefaultStackTrace[] = "function_name (https://url.com:1:1)";
-
-StackTrace GetDefaultStackTrace() {
-  StackTrace stack_trace;
-  scoped_ptr<StackFrame> frame =
-      StackFrame::CreateFromText(base::UTF8ToUTF16(kDefaultStackTrace));
-  CHECK(frame.get());
-  stack_trace.push_back(*frame);
-  return stack_trace;
-}
-
-base::string16 GetSourceForExtensionId(const std::string& extension_id) {
-  return base::UTF8ToUTF16(
-      std::string(kExtensionScheme) +
-      content::kStandardSchemeSeparator +
-      extension_id);
-}
-
-scoped_ptr<ExtensionError> CreateNewRuntimeError(
-    bool from_incognito,
-    const std::string& extension_id,
-    const base::string16& message) {
-  return scoped_ptr<ExtensionError>(new RuntimeError(
-      extension_id,
-      from_incognito,
-      GetSourceForExtensionId(extension_id),
-      message,
-      GetDefaultStackTrace(),
-      GURL::EmptyGURL(),  // no context url
-      logging::LOG_INFO,
-      0, 0 /* Render [View|Process] ID */ ));
-}
-
-}  // namespace
+using error_test_util::CreateNewManifestError;
+using error_test_util::CreateNewRuntimeError;
 
 class ErrorConsoleUnitTest : public testing::Test {
  public:
@@ -85,124 +44,66 @@ class ErrorConsoleUnitTest : public testing::Test {
   ErrorConsole* error_console_;
 };
 
-// Test adding errors, and removing them by reference, by incognito status,
-// and in bulk.
-TEST_F(ErrorConsoleUnitTest, AddAndRemoveErrors) {
-  ASSERT_EQ(0u, error_console_->errors().size());
-
+// Test that errors are successfully reported. This is a simple test, since it
+// is tested more thoroughly in extensions/browser/error_map_unittest.cc
+TEST_F(ErrorConsoleUnitTest, ReportErrors) {
   const size_t kNumTotalErrors = 6;
-  const size_t kNumNonIncognitoErrors = 3;
   const std::string kId = id_util::GenerateId("id");
-  // Populate with both incognito and non-incognito errors (evenly distributed).
+  ASSERT_EQ(0u, error_console_->GetErrorsForExtension(kId).size());
+
   for (size_t i = 0; i < kNumTotalErrors; ++i) {
     error_console_->ReportError(
-        CreateNewRuntimeError(i % 2 == 0, kId, base::UintToString16(i)));
+        CreateNewManifestError(kId, base::UintToString(i)));
   }
-
-  // There should only be one entry in the map, since errors are stored in lists
-  // keyed by extension id.
-  ASSERT_EQ(1u, error_console_->errors().size());
 
   ASSERT_EQ(kNumTotalErrors, error_console_->GetErrorsForExtension(kId).size());
+}
 
-  // Remove the incognito errors; three errors should remain, and all should
-  // be from non-incognito contexts.
-  error_console_->RemoveIncognitoErrors();
-  const ErrorConsole::ErrorList& errors =
-      error_console_->GetErrorsForExtension(kId);
-  ASSERT_EQ(kNumNonIncognitoErrors, errors.size());
-  for (size_t i = 0; i < errors.size(); ++i)
-    ASSERT_FALSE(errors[i]->from_incognito());
+TEST_F(ErrorConsoleUnitTest, DontStoreErrorsWithoutEnablingType) {
+  // Disable default runtime error reporting.
+  error_console_->set_default_reporting_for_test(ExtensionError::RUNTIME_ERROR,
+                                                false);
 
-  // Add another error for a different extension id.
-  const std::string kSecondId = id_util::GenerateId("id2");
-  error_console_->ReportError(
-      CreateNewRuntimeError(false, kSecondId, base::string16()));
+  const std::string kId = id_util::GenerateId("id");
 
-  // There should be two entries now, one for each id, and there should be one
-  // error for the second extension.
-  ASSERT_EQ(2u, error_console_->errors().size());
-  ASSERT_EQ(1u, error_console_->GetErrorsForExtension(kSecondId).size());
-
-  // Remove all errors for the second id.
-  error_console_->RemoveErrorsForExtension(kSecondId);
-  ASSERT_EQ(1u, error_console_->errors().size());
-  ASSERT_EQ(0u, error_console_->GetErrorsForExtension(kSecondId).size());
-  // First extension should be unaffected.
-  ASSERT_EQ(kNumNonIncognitoErrors,
-            error_console_->GetErrorsForExtension(kId).size());
-
-  // Remove remaining errors.
-  error_console_->RemoveAllErrors();
-  ASSERT_EQ(0u, error_console_->errors().size());
+  // Try to report a runtime error - it should be ignored.
+  error_console_->ReportError(CreateNewRuntimeError(kId, "a"));
   ASSERT_EQ(0u, error_console_->GetErrorsForExtension(kId).size());
-}
 
-// Test that if we add enough errors, only the most recent
-// kMaxErrorsPerExtension are kept.
-TEST_F(ErrorConsoleUnitTest, ExcessiveErrorsGetCropped) {
-  ASSERT_EQ(0u, error_console_->errors().size());
+  // Check that manifest errors are reported successfully.
+  error_console_->ReportError(CreateNewManifestError(kId, "b"));
+  ASSERT_EQ(1u, error_console_->GetErrorsForExtension(kId).size());
 
-  // This constant matches one of the same name in error_console.cc.
-  const size_t kMaxErrorsPerExtension = 100;
-  const size_t kNumExtraErrors = 5;
-  const std::string kId = id_util::GenerateId("id");
+  // We should still ignore runtime errors.
+  error_console_->ReportError(CreateNewRuntimeError(kId, "c"));
+  ASSERT_EQ(1u, error_console_->GetErrorsForExtension(kId).size());
 
-  // Add new errors, with each error's message set to its number.
-  for (size_t i = 0; i < kMaxErrorsPerExtension + kNumExtraErrors; ++i) {
-    error_console_->ReportError(
-        CreateNewRuntimeError(false, kId, base::UintToString16(i)));
-  }
+  // Enable runtime errors specifically for this extension, and disable the use
+  // of the default mask.
+  error_console_->SetReportingForExtension(
+      kId, ExtensionError::RUNTIME_ERROR, true);
 
-  ASSERT_EQ(1u, error_console_->errors().size());
+  // We should now accept runtime and manifest errors.
+  error_console_->ReportError(CreateNewManifestError(kId, "d"));
+  ASSERT_EQ(2u, error_console_->GetErrorsForExtension(kId).size());
+  error_console_->ReportError(CreateNewRuntimeError(kId, "e"));
+  ASSERT_EQ(3u, error_console_->GetErrorsForExtension(kId).size());
 
-  const ErrorConsole::ErrorList& errors =
-      error_console_->GetErrorsForExtension(kId);
-  ASSERT_EQ(kMaxErrorsPerExtension, errors.size());
+  // All other extensions should still use the default mask, and ignore runtime
+  // errors but report manifest errors.
+  const std::string kId2 = id_util::GenerateId("id2");
+  error_console_->ReportError(CreateNewRuntimeError(kId2, "f"));
+  ASSERT_EQ(0u, error_console_->GetErrorsForExtension(kId2).size());
+  error_console_->ReportError(CreateNewManifestError(kId2, "g"));
+  ASSERT_EQ(1u, error_console_->GetErrorsForExtension(kId2).size());
 
-  // We should have popped off errors in the order they arrived, so the
-  // first stored error should be the 6th reported (zero-based)...
-  ASSERT_EQ(base::UintToString16(kNumExtraErrors),
-            errors.front()->message());
-  // ..and the last stored should be the 105th reported.
-  ASSERT_EQ(base::UintToString16(kMaxErrorsPerExtension + kNumExtraErrors - 1),
-            errors.back()->message());
-}
-
-// Test to ensure that the error console will not add duplicate errors, but will
-// keep the latest version of an error.
-TEST_F(ErrorConsoleUnitTest, DuplicateErrorsAreReplaced) {
-  ASSERT_EQ(0u, error_console_->errors().size());
-
-  const std::string kId = id_util::GenerateId("id");
-  const size_t kNumErrors = 3u;
-
-  // Report three errors.
-  for (size_t i = 0; i < kNumErrors; ++i) {
-    error_console_->ReportError(
-        CreateNewRuntimeError(false, kId, base::UintToString16(i)));
-  }
-
-  // Create an error identical to the second error reported, and save its
-  // location.
-  scoped_ptr<ExtensionError> runtime_error2 =
-      CreateNewRuntimeError(false, kId, base::UintToString16(1u));
-  const ExtensionError* weak_error = runtime_error2.get();
-
-  // Add it to the error console.
-  error_console_->ReportError(runtime_error2.Pass());
-
-  // We should only have three errors stored, since two of the four reported
-  // were identical, and the older should have been replaced.
-  ASSERT_EQ(1u, error_console_->errors().size());
-  const ErrorConsole::ErrorList& errors =
-      error_console_->GetErrorsForExtension(kId);
-  ASSERT_EQ(kNumErrors, errors.size());
-
-  // The duplicate error should be the last reported (pointer comparison)...
-  ASSERT_EQ(weak_error, errors.back());
-  // ... and should have two reported occurrences.
-  ASSERT_EQ(2u, errors.back()->occurrences());
+  // By reverting to default reporting, we should again allow manifest errors,
+  // but not runtime errors.
+  error_console_->UseDefaultReportingForExtension(kId);
+  error_console_->ReportError(CreateNewManifestError(kId, "h"));
+  ASSERT_EQ(4u, error_console_->GetErrorsForExtension(kId).size());
+  error_console_->ReportError(CreateNewRuntimeError(kId, "i"));
+  ASSERT_EQ(4u, error_console_->GetErrorsForExtension(kId).size());
 }
 
 }  // namespace extensions
