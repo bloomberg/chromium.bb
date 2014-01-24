@@ -191,9 +191,15 @@ void NetworkConnectionHandler::OnCertificatesLoaded(
   if (queued_connect_) {
     NET_LOG_EVENT("Connecting to Queued Network",
                   queued_connect_->service_path);
-    ConnectToNetwork(queued_connect_->service_path,
-                     queued_connect_->success_callback,
-                     queued_connect_->error_callback,
+
+    // Make a copy of |queued_connect_| parameters, because |queued_connect_|
+    // will get reset at the beginning of |ConnectToNetwork|.
+    std::string service_path = queued_connect_->service_path;
+    base::Closure success_callback = queued_connect_->success_callback;
+    network_handler::ErrorCallback error_callback =
+        queued_connect_->error_callback;
+
+    ConnectToNetwork(service_path, success_callback, error_callback,
                      false /* check_error_state */);
   } else if (initial_load) {
     // Once certificates have loaded, connect to the "best" available network.
