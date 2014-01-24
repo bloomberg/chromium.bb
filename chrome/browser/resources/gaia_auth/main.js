@@ -182,11 +182,12 @@ Authenticator.prototype = {
     }
   },
 
-  completeLogin: function(username, password) {
+  completeLogin: function() {
     var msg = {
       'method': 'completeLogin',
-      'email': username,
-      'password': password
+      'email': this.email_,
+      'password': this.password_,
+      'usingSAML': this.isSAMLFlow_
     };
     window.parent.postMessage(msg, this.parentPage_);
     if (this.samlSupportChannel_)
@@ -277,7 +278,7 @@ Authenticator.prototype = {
 
   onConfirmLogin_: function() {
     if (!this.isSAMLFlow_) {
-      this.completeLogin(this.email_, this.password_);
+      this.completeLogin();
       return;
     }
 
@@ -307,7 +308,7 @@ Authenticator.prototype = {
     // SAML login is complete when the user's e-mail address has been retrieved
     // from GAIA and the user has successfully confirmed the password.
     if (this.email_ !== null && this.password_ !== null)
-      this.completeLogin(this.email_, this.password_);
+      this.completeLogin();
   },
 
   onVerifyConfirmedPassword_: function(password) {

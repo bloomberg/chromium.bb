@@ -247,7 +247,7 @@ cr.define('cr.ui', function() {
    */
   Oobe.loginForTesting = function(username, password) {
     chrome.send('skipToLoginForTesting', [username]);
-    chrome.send('completeLogin', [username, password]);
+    chrome.send('completeLogin', [username, password, false]);
   };
 
   /**
