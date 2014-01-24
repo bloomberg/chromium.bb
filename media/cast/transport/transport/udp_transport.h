@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/transport/cast_transport_sender.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_server_socket.h"
 
@@ -34,7 +35,8 @@ class UdpTransport : public PacketSender {
   // address of the first packet received.
   UdpTransport(const scoped_refptr<base::TaskRunner>& io_thread_proxy,
                const net::IPEndPoint& local_end_point,
-               const net::IPEndPoint& remote_end_point);
+               const net::IPEndPoint& remote_end_point,
+               const CastTransportStatusCallback& status_callback);
   virtual ~UdpTransport();
 
   // Start receiving packets. Packets are submitted to |packet_receiver|.
@@ -56,6 +58,7 @@ class UdpTransport : public PacketSender {
   scoped_refptr<net::IOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
   PacketReceiver* packet_receiver_;
+  const CastTransportStatusCallback& status_callback_;
   base::WeakPtrFactory<UdpTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UdpTransport);

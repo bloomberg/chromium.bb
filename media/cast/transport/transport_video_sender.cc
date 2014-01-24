@@ -25,7 +25,7 @@ TransportVideoSender::TransportVideoSender(
     : rtp_max_delay_(
           base::TimeDelta::FromMilliseconds(config.video_rtp_max_delay_ms)),
       rtp_sender_(clock, config, false, paced_packet_sender),
-    initialized_(false) {
+    initialized_(true) {
   if (config.aes_iv_mask.size() == kAesKeySize &&
       config.aes_key.size() == kAesKeySize) {
     iv_mask_ = config.aes_iv_mask;
@@ -33,7 +33,9 @@ TransportVideoSender::TransportVideoSender(
         crypto::SymmetricKey::AES, config.aes_key);
     encryptor_.reset(new crypto::Encryptor());
     encryptor_->Init(key, crypto::Encryptor::CTR, std::string());
-  } else {
+  } else if (config.aes_iv_mask.size() != 0 ||
+             config.aes_key.size() != 0) {
+    initialized_ = false;
     DCHECK_EQ(config.aes_iv_mask.size(), 0u)
         << "Invalid Crypto configuration: aes_iv_mask.size" ;
     DCHECK_EQ(config.aes_key.size(), 0u)

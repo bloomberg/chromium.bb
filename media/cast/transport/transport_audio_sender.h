@@ -42,6 +42,8 @@ class TransportAudioSender : public base::NonThreadSafe {
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
+  bool initialized() const { return initialized_; }
+
  private:
   friend class LocalRtcpAudioSenderFeedback;
 

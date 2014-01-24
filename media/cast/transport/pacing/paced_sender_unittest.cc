@@ -53,14 +53,19 @@ class PacedSenderTest : public ::testing::Test {
   PacedSenderTest() {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
+    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
+    paced_sender_.reset(new PacedSender(
+        &testing_clock_,
+        NULL,
+        &mock_transport_,
+        task_runner_,
+        base::Bind(&UpdateCastTransportStatus)));
   }
 
   virtual ~PacedSenderTest() {}
 
-  virtual void SetUp() {
-    task_runner_ = new test::FakeTaskRunner(&testing_clock_);
-    paced_sender_.reset(new PacedSender(&testing_clock_, NULL, &mock_transport_,
-                                        task_runner_));
+  static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+    NOTREACHED();
   }
 
   PacketList CreatePacketList(size_t packet_size, int num_of_packets_in_frame) {

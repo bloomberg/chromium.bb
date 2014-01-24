@@ -30,7 +30,8 @@ PacedSender::PacedSender(
     base::TickClock* clock,
     const CastTransportConfig* const config,
     PacketSender* external_transport,
-    const scoped_refptr<base::TaskRunner>& transport_task_runner)
+    const scoped_refptr<base::TaskRunner>& transport_task_runner,
+    const CastTransportStatusCallback& status_callback)
     : clock_(clock),
       external_transport_(external_transport),
       config_(config),
@@ -47,7 +48,9 @@ PacedSender::PacedSender(
                      &receiver_end_point);
     // Set up transport in the absence of an external transport.
     transport_.reset(new UdpTransport(transport_task_runner,
-                                      local_end_point, receiver_end_point));
+                                      local_end_point,
+                                      receiver_end_point,
+                                      status_callback));
   }
   ScheduleNextSend();
 }

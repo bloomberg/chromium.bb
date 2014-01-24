@@ -48,6 +48,8 @@ class TransportVideoSender : public base::NonThreadSafe {
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
+  bool initialized() const { return initialized_; }
+
  private:
   // Caller must allocate the destination |encrypted_video_frame| the data
   // member will be resized to hold the encrypted size.

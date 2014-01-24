@@ -45,7 +45,8 @@ class PacedSender : public PacedPacketSender,
   PacedSender(base::TickClock* clock,
               const CastTransportConfig* const config,
               PacketSender* external_transport,
-              const scoped_refptr<base::TaskRunner>& transport_task_runner);
+              const scoped_refptr<base::TaskRunner>& transport_task_runner,
+              const CastTransportStatusCallback& status_callback);
 
   virtual ~PacedSender();
 

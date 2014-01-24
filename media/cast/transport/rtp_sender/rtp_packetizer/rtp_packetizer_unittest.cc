@@ -73,7 +73,7 @@ class TestRtpPacketTransport : public PacketSender {
     return true;
   }
 
-  virtual bool SendPacket(const transport::Packet& packet) OVERRIDE {
+  virtual bool SendPacket(const Packet& packet) OVERRIDE {
     EXPECT_TRUE(false);
     return false;
   }
@@ -110,7 +110,8 @@ class RtpPacketizerTest : public ::testing::Test {
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
     pacer_.reset(new PacedSender(&testing_clock_, NULL, transport_.get(),
-                                 task_runner_));
+                                 task_runner_,
+                                 base::Bind(UpdateCastTransportStatus)));
     rtp_packetizer_.reset(new RtpPacketizer(pacer_.get(), &packet_storage_,
                                             config_));
     video_frame_.key_frame = false;
@@ -127,6 +128,9 @@ class RtpPacketizerTest : public ::testing::Test {
       testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
       task_runner_->RunTasks();
     }
+  }
+  static void UpdateCastTransportStatus(CastTransportStatus status) {
+    EXPECT_EQ(status, TRANSPORT_INITIALIZED);
   }
 
   base::SimpleTestTickClock testing_clock_;

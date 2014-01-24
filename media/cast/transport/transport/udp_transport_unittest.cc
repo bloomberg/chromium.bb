@@ -49,6 +49,9 @@ class MockPacketReceiver : public PacketReceiver {
 void SendPacket(UdpTransport* transport, Packet packet) {
   transport->SendPacket(packet);
 }
+static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+  NOTREACHED();
+}
 
 TEST(UdpTransport, SendAndReceive) {
   base::MessageLoopForIO message_loop;
@@ -60,10 +63,12 @@ TEST(UdpTransport, SendAndReceive) {
 
   UdpTransport send_transport(message_loop.message_loop_proxy(),
                               net::IPEndPoint(local_addr_number, 2344),
-                              net::IPEndPoint(local_addr_number, 2345));
+                              net::IPEndPoint(local_addr_number, 2345),
+                              base::Bind(&UpdateCastTransportStatus));
   UdpTransport recv_transport(message_loop.message_loop_proxy(),
                               net::IPEndPoint(local_addr_number, 2345),
-                              net::IPEndPoint(empty_addr_number, 0));
+                              net::IPEndPoint(empty_addr_number, 0),
+                              base::Bind(&UpdateCastTransportStatus));
 
   Packet packet;
   packet.push_back('t');

@@ -64,6 +64,7 @@ namespace {
 void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
 }
 void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+  EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
 }
 }  // namespace
 

@@ -43,13 +43,15 @@ bool IsEqual(const net::IPEndPoint& addr1, const net::IPEndPoint& addr2) {
 UdpTransport::UdpTransport(
     const scoped_refptr<base::TaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
-    const net::IPEndPoint& remote_end_point)
+    const net::IPEndPoint& remote_end_point,
+    const CastTransportStatusCallback& status_callback)
     : io_thread_proxy_(io_thread_proxy),
       local_addr_(local_end_point),
       remote_addr_(remote_end_point),
       udp_socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       recv_buf_(new net::IOBuffer(kMaxPacketSize)),
       packet_receiver_(NULL),
+      status_callback_(status_callback),
       weak_factory_(this) {
 }
 
@@ -63,7 +65,11 @@ void UdpTransport::StartReceiving(PacketReceiver* packet_receiver) {
   packet_receiver_ = packet_receiver;
   udp_socket_->AllowAddressReuse();
   udp_socket_->SetMulticastLoopbackMode(true);
-  udp_socket_->Listen(local_addr_);
+  if (udp_socket_->Listen(local_addr_) < 0) {
+    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
+    LOG(ERROR) << "Failed to bind local address";
+    return;
+  }
   ReceiveOnePacket();
 }
 
@@ -80,6 +86,7 @@ void UdpTransport::ReceiveOnePacket() {
   } else if (result != net::ERR_IO_PENDING) {
     LOG(ERROR) << "Failed to receive packet: " << result << "."
                << " Stop receiving packets.";
+    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
   }
 }
 
@@ -88,6 +95,7 @@ void UdpTransport::OnReceived(int result) {
   if (result < 0) {
     LOG(ERROR) << "Failed to receive packet: " << result << "."
                << " Stop receiving packets.";
+    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
     return;
   }
 
@@ -96,7 +104,7 @@ void UdpTransport::OnReceived(int result) {
     VLOG(1) << "First packet received from: "
             << remote_addr_.ToString() << ".";
   } else if (!IsEqual(remote_addr_, recv_addr_)) {
-    VLOG(1) << "Received from an unrecognized address: "
+    LOG(ERROR) << "Received from an unrecognized address: "
             << recv_addr_.ToString() << ".";
     return;
   }
@@ -141,7 +149,8 @@ void UdpTransport::OnSent(const scoped_refptr<net::IOBuffer>& buf,
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
   if (result < 0) {
-    VLOG(1) << "Failed to send packet: " << result << ".";
+    LOG(ERROR) << "Failed to send packet: " << result << ".";
+    status_callback_.Run(TRANSPORT_SOCKET_ERROR);
   }
 }
 

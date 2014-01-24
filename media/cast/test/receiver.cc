@@ -138,6 +138,9 @@ VideoReceiverConfig GetVideoReceiverConfig() {
   return video_config;
 }
 
+static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+  VLOG(1) << "CastTransportStatus = " << status;
+}
 
 class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
  public:
@@ -271,7 +274,8 @@ int main(int argc, char** argv) {
       new media::cast::transport::UdpTransport(
           main_message_loop.message_loop_proxy(),
           local_end_point,
-          remote_end_point));
+          remote_end_point,
+          base::Bind(&media::cast::UpdateCastTransportStatus)));
   scoped_ptr<media::cast::CastReceiver> cast_receiver(
       media::cast::CastReceiver::CreateCastReceiver(
       cast_environment,

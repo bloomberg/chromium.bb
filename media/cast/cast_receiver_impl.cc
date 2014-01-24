@@ -12,6 +12,13 @@
 namespace media {
 namespace cast {
 
+// The callback should not be used, as the receiver is using the external
+// transport. Implementation is required as the pacer is common to sender and
+// receiver.
+static void DoNothingCastTransportStatus(transport::CastTransportStatus status)
+{
+  NOTREACHED() << "Internal transport used in CastReceiver";
+}
 // The video and audio receivers should only be called from the main thread.
 // LocalFrameReciever posts tasks to the main thread, making the cast interface
 // thread safe.
@@ -151,7 +158,8 @@ CastReceiverImpl::CastReceiverImpl(
     transport::PacketSender* const packet_sender)
     : pacer_(cast_environment->Clock(), NULL, packet_sender,
              cast_environment->GetMessageTaskRunnerForThread(
-             CastEnvironment::TRANSPORT)),
+             CastEnvironment::TRANSPORT),
+             base::Bind(&DoNothingCastTransportStatus)),
       audio_receiver_(cast_environment, audio_config, &pacer_),
       video_receiver_(cast_environment, video_config, &pacer_),
       frame_receiver_(new LocalFrameReceiver(cast_environment,

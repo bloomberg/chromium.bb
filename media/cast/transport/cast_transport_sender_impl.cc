@@ -26,10 +26,15 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
     const scoped_refptr<base::TaskRunner>& transport_task_runner)
-    : pacer_(clock, &config, NULL, transport_task_runner),
+    : pacer_(clock, &config, NULL, transport_task_runner, status_callback),
       rtcp_builder_(&pacer_),
       audio_sender_(config, clock, &pacer_),
       video_sender_(config, clock, &pacer_) {
+  if (audio_sender_.initialized() && video_sender_.initialized()) {
+    status_callback.Run(TRANSPORT_INITIALIZED);
+  } else {
+    status_callback.Run(TRANSPORT_UNINITIALIZED);
+  }
 }
 
 CastTransportSenderImpl::~CastTransportSenderImpl() {

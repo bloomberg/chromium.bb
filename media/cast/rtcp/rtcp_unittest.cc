@@ -165,7 +165,9 @@ class RtcpTest : public ::testing::Test {
   }
 
   virtual ~RtcpTest() {}
+
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+    EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
   }
 
   void RunTasks(int during_ms) {

@@ -98,6 +98,7 @@ class VideoSenderTest : public ::testing::Test {
   virtual ~VideoSenderTest() {}
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+    EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
   }
 
   void InitEncoder(bool external) {

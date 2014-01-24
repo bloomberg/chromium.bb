@@ -94,6 +94,7 @@ class AudioSenderTest : public ::testing::Test {
   virtual ~AudioSenderTest() {}
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
+    EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
   }
 
   base::SimpleTestTickClock testing_clock_;
