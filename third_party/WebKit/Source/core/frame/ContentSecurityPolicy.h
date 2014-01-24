@@ -111,6 +111,7 @@ public:
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
     bool allowAncestors(Frame*, ReportingStatus = SendReport) const;
+    bool allowChildContextFromSource(const KURL&, ReportingStatus = SendReport) const;
 
     // The nonce and hash allow functions are guaranteed to not have any side
     // effects, including reporting.

@@ -303,6 +303,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         // Fire a load event, as timing attacks would otherwise reveal that the
         // frame was blocked. This way, it looks like every other cross-origin
         // page load.
+        m_frame->document()->enforceSandboxFlags(SandboxOrigin);
         m_frame->ownerElement()->dispatchEvent(Event::create(EventTypeNames::load));
         return false;
     }

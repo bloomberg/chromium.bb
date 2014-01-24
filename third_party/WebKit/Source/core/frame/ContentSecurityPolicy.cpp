@@ -148,6 +148,7 @@ static const char styleSrc[] = "style-src";
 
 // CSP 1.1 Directives
 static const char baseURI[] = "base-uri";
+static const char childSrc[] = "child-src";
 static const char formAction[] = "form-action";
 static const char frameAncestors[] = "frame-ancestors";
 static const char pluginTypes[] = "plugin-types";
@@ -168,6 +169,7 @@ bool isDirectiveName(const String& name)
         || equalIgnoringCase(name, scriptSrc)
         || equalIgnoringCase(name, styleSrc)
         || equalIgnoringCase(name, baseURI)
+        || equalIgnoringCase(name, childSrc)
         || equalIgnoringCase(name, formAction)
         || equalIgnoringCase(name, frameAncestors)
         || equalIgnoringCase(name, pluginTypes)
@@ -896,6 +898,7 @@ public:
     bool allowFormAction(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowBaseURI(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowAncestors(Frame*, ContentSecurityPolicy::ReportingStatus) const;
+    bool allowChildContextFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowScriptNonce(const String&) const;
     bool allowStyleNonce(const String&) const;
     bool allowScriptHash(const SourceHashValue&) const;
@@ -923,6 +926,7 @@ private:
     void setCSPDirective(const String& name, const String& value, OwnPtr<CSPDirectiveType>&);
 
     SourceListDirective* operativeDirective(SourceListDirective*) const;
+    SourceListDirective* operativeDirective(SourceListDirective*, SourceListDirective* override) const;
     void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const;
     void reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const;
     void reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ScriptState*) const;
@@ -961,6 +965,7 @@ private:
 
     OwnPtr<MediaListDirective> m_pluginTypes;
     OwnPtr<SourceListDirective> m_baseURI;
+    OwnPtr<SourceListDirective> m_childSrc;
     OwnPtr<SourceListDirective> m_connectSrc;
     OwnPtr<SourceListDirective> m_defaultSrc;
     OwnPtr<SourceListDirective> m_fontSrc;
@@ -1079,6 +1084,11 @@ SourceListDirective* CSPDirectiveList::operativeDirective(SourceListDirective* d
     return directive ? directive : m_defaultSrc.get();
 }
 
+SourceListDirective* CSPDirectiveList::operativeDirective(SourceListDirective* directive, SourceListDirective* override) const
+{
+    return directive ? directive : override;
+}
+
 bool CSPDirectiveList::checkEvalAndReportViolation(SourceListDirective* directive, const String& consoleMessage, ScriptState* state) const
 {
     if (checkEval(directive))
@@ -1142,6 +1152,8 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
     String prefix;
     if (baseURI == effectiveDirective)
         prefix = "Refused to set the document's base URI to '";
+    else if (childSrc == effectiveDirective)
+        prefix = "Refused to create a child context containing '";
     else if (connectSrc == effectiveDirective)
         prefix = "Refused to connect to '";
     else if (fontSrc == effectiveDirective)
@@ -1247,9 +1259,21 @@ bool CSPDirectiveList::allowChildFrameFromSource(const KURL& url, ContentSecurit
 {
     if (url.isBlankURL())
         return true;
+
+    // 'frame-src' is the only directive which overrides something other than the default sources.
+    // It overrides 'child-src', which overrides the default sources. So, we do this nested set
+    // of calls to 'operativeDirective()' to grab 'frame-src' if it exists, 'child-src' if it
+    // doesn't, and 'defaut-src' if neither are available.
+    //
+    // All of this only applies, of course, if we're in CSP 1.1. In CSP 1.0, 'frame-src'
+    // overrides 'default-src' directly.
+    SourceListDirective* whichDirective = m_policy->experimentalFeaturesEnabled() ?
+        operativeDirective(m_frameSrc.get(), operativeDirective(m_childSrc.get())) :
+        operativeDirective(m_frameSrc.get());
+
     return reportingStatus == ContentSecurityPolicy::SendReport ?
-        checkSourceAndReportViolation(operativeDirective(m_frameSrc.get()), url, frameSrc) :
-        checkSource(operativeDirective(m_frameSrc.get()), url);
+        checkSourceAndReportViolation(whichDirective, url, frameSrc) :
+        checkSource(whichDirective, url);
 }
 
 bool CSPDirectiveList::allowImageFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
@@ -1306,6 +1330,13 @@ bool CSPDirectiveList::allowAncestors(Frame* frame, ContentSecurityPolicy::Repor
     return reportingStatus == ContentSecurityPolicy::SendReport ?
         checkAncestorsAndReportViolation(m_frameAncestors.get(), frame) :
         checkAncestors(m_frameAncestors.get(), frame);
+}
+
+bool CSPDirectiveList::allowChildContextFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    return reportingStatus == ContentSecurityPolicy::SendReport ?
+        checkSourceAndReportViolation(operativeDirective(m_childSrc.get()), url, childSrc) :
+        checkSource(operativeDirective(m_childSrc.get()), url);
 }
 
 bool CSPDirectiveList::allowScriptNonce(const String& nonce) const
@@ -1595,6 +1626,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
     } else if (m_policy->experimentalFeaturesEnabled()) {
         if (equalIgnoringCase(name, baseURI))
             setCSPDirective<SourceListDirective>(name, value, m_baseURI);
+        else if (equalIgnoringCase(name, childSrc))
+            setCSPDirective<SourceListDirective>(name, value, m_childSrc);
         else if (equalIgnoringCase(name, formAction))
             setCSPDirective<SourceListDirective>(name, value, m_formAction);
         else if (equalIgnoringCase(name, frameAncestors))
@@ -1943,6 +1976,11 @@ bool ContentSecurityPolicy::allowBaseURI(const KURL& url, ContentSecurityPolicy:
 bool ContentSecurityPolicy::allowAncestors(Frame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return isAllowedByAllWithFrame<&CSPDirectiveList::allowAncestors>(m_policies, frame, reportingStatus);
+}
+
+bool ContentSecurityPolicy::allowChildContextFromSource(const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+{
+    return isAllowedByAllWithURL<&CSPDirectiveList::allowChildContextFromSource>(m_policies, url, reportingStatus);
 }
 
 bool ContentSecurityPolicy::isActive() const
