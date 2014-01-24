@@ -1420,4 +1420,61 @@ TEST_F(WebViewTest, SmartClipData)
     EXPECT_FALSE(webView->getSmartClipData(cropRect).isEmpty());
 }
 
+class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    CreateChildCounterFrameClient() : m_count(0) { }
+    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) OVERRIDE;
+
+    int count() const { return m_count; }
+
+private:
+    int m_count;
+};
+
+WebFrame* CreateChildCounterFrameClient::createChildFrame(WebFrame* parent, const WebString& frameName)
+{
+    ++m_count;
+    return TestWebFrameClient::createChildFrame(parent, frameName);
 }
+
+TEST_F(WebViewTest, AddFrameInCloseUnload)
+{
+    CreateChildCounterFrameClient frameClient;
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("add_frame_in_unload.html"));
+    m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload.html", true, &frameClient);
+    m_webViewHelper.reset();
+    EXPECT_EQ(0, frameClient.count());
+}
+
+TEST_F(WebViewTest, AddFrameInCloseURLUnload)
+{
+    CreateChildCounterFrameClient frameClient;
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("add_frame_in_unload.html"));
+    m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload.html", true, &frameClient);
+    m_webViewHelper.webViewImpl()->dispatchUnloadEvent();
+    EXPECT_EQ(0, frameClient.count());
+    m_webViewHelper.reset();
+}
+
+TEST_F(WebViewTest, AddFrameInNavigateUnload)
+{
+    CreateChildCounterFrameClient frameClient;
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("add_frame_in_unload.html"));
+    m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload.html", true, &frameClient);
+    FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), "about:blank");
+    EXPECT_EQ(0, frameClient.count());
+    m_webViewHelper.reset();
+}
+
+TEST_F(WebViewTest, AddFrameInChildInNavigateUnload)
+{
+    CreateChildCounterFrameClient frameClient;
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("add_frame_in_unload_wrapper.html"));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("add_frame_in_unload.html"));
+    m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload_wrapper.html", true, &frameClient);
+    FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), "about:blank");
+    EXPECT_EQ(1, frameClient.count());
+    m_webViewHelper.reset();
+}
+
+} // namespace
