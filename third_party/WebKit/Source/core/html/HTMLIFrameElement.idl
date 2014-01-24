@@ -27,7 +27,6 @@ interface HTMLIFrameElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString marginWidth;
     [Reflect] attribute DOMString name;
     [Reflect, TreatNullAs=NullString] attribute DOMString sandbox;
-    [Reflect, RuntimeEnabled=SeamlessIFrames] attribute boolean seamless;
     [Reflect] attribute DOMString scrolling;
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [Reflect] attribute DOMString srcdoc;

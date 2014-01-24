@@ -1,5 +1,0 @@
-PASS successfullyParsed is true
-
-TEST COMPLETE
-PASS frames[0].document.body.textContent.trim() is "DONE"
-

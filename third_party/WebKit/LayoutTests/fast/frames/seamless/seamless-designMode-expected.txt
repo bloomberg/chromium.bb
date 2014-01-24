@@ -1,6 +1,0 @@
-Test that being a seamless iframe does not break designMode.
-PASS successfullyParsed is true
-
-TEST COMPLETE
-PASS window.iframe.contentDocument.body.textContent is "PASS"
-

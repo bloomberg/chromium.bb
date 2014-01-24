@@ -1,3 +1,0 @@
-This tests that we don't get into an infinite resize event loop with seamless iframes. Passes if it doesn't hang.
-
-

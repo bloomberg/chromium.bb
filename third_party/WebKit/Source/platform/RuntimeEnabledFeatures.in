@@ -105,7 +105,6 @@ ScriptedSpeech status=stable
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
 
-SeamlessIFrames status=experimental
 ServiceWorker status=experimental
 SessionStorage status=stable
 ShadowDOM status=experimental

@@ -104,20 +104,11 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
     }
 }
 
-static void collectActiveCSSStyleSheetsFromSeamlessParents(DocumentStyleSheetCollector& collector, Document* document)
-{
-    HTMLIFrameElement* seamlessParentIFrame = document->seamlessParentIFrame();
-    if (!seamlessParentIFrame)
-        return;
-    collector.appendActiveStyleSheets(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
-}
-
 void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, DocumentStyleSheetCollector& collector)
 {
     ASSERT(document()->styleEngine() == engine);
     collector.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
     collector.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
-    collectActiveCSSStyleSheetsFromSeamlessParents(collector, document());
     collectStyleSheetsFromCandidates(engine, collector);
 }
 

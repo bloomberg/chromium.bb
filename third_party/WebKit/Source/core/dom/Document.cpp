@@ -447,7 +447,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_sawElementsInKnownNamespaces(false)
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
-    , m_mayDisplaySeamlesslyWithParent(false)
     , m_renderView(0)
     , m_weakFactory(this)
     , m_contextDocument(initializer.contextDocument())
@@ -1532,13 +1531,6 @@ void Document::scheduleStyleRecalc()
     if (!isActive())
         return;
 
-    if (shouldDisplaySeamlesslyWithParent()) {
-        // When we're seamless, our parent document manages our style recalcs.
-        ownerElement()->setNeedsStyleRecalc();
-        ownerElement()->document().scheduleStyleRecalc();
-        return;
-    }
-
     if (m_styleRecalcTimer.isActive() || !shouldScheduleLayout())
         return;
 
@@ -1597,10 +1589,6 @@ void Document::setStyleDependentState(RenderStyle* documentStyle)
         if (renderView()->hasColumns())
             renderView()->updateColumnInfoFromStyle(documentStyle);
     }
-
-    // Seamless iframes want to inherit their font from their parent iframe, so early return before setting the font.
-    if (shouldDisplaySeamlesslyWithParent())
-        return;
 
     FontBuilder fontBuilder;
     fontBuilder.initForStyleResolve(*this, documentStyle, isSVGDocument());
@@ -1678,7 +1666,7 @@ void Document::recalcStyle(StyleRecalcChange change)
         evaluateMediaQueryList();
     }
 
-    // FIXME: We should update style on our ancestor chain before proceeding (especially for seamless),
+    // FIXME: We should update style on our ancestor chain before proceeding
     // however doing so currently causes several tests to crash, as Frame::setDocument calls Document::attach
     // before setting the DOMWindow on the Frame, or the SecurityOrigin on the document. The attach, in turn
     // resolves style (here) and then when we resolve style on the parent chain, we may end up
@@ -1701,7 +1689,7 @@ void Document::recalcStyle(StyleRecalcChange change)
         // See printing/setPrinting.html, printing/width-overflow.html though they only fail on
         // mac when accessing the resolver by what appears to be a viewport size difference.
 
-        if (change == Force || (change >= Inherit && shouldDisplaySeamlesslyWithParent())) {
+        if (change == Force) {
             m_hasNodesWithPlaceholderStyle = false;
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleEngine->fontSelector());
             StyleRecalcChange localChange = RenderStyle::compare(documentStyle.get(), renderView()->style());
@@ -2236,12 +2224,6 @@ PassRefPtr<DocumentParser> Document::implicitOpen()
     ASSERT(!m_focusedElement);
 
     setCompatibilityMode(NoQuirksMode);
-
-    // Documents rendered seamlessly should start out requiring a stylesheet
-    // collection update in order to ensure they inherit all the relevant data
-    // from their parent.
-    if (shouldDisplaySeamlesslyWithParent())
-        styleResolverChanged(RecalcStyleDeferred);
 
     m_parser = createParser();
     setParsing(true);
@@ -2813,13 +2795,6 @@ Frame* Document::findUnsafeParentScrollPropagationBoundary()
     return 0;
 }
 
-
-void Document::seamlessParentUpdatedStylesheets()
-{
-    m_styleEngine->didModifySeamlessParentStyleSheet();
-    styleResolverChanged(RecalcStyleImmediately);
-}
-
 void Document::didRemoveAllPendingStylesheet()
 {
     m_needsNotifyRemoveAllPendingStylesheet = false;
@@ -3258,22 +3233,6 @@ void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpd
 
     if (updateTime == RecalcStyleImmediately)
         updateStyleIfNeeded();
-}
-
-void Document::notifySeamlessChildDocumentsOfStylesheetUpdate() const
-{
-    // If we're not in a frame yet any potential child documents won't have a StyleResolver to update.
-    if (!frame())
-        return;
-
-    // Seamless child frames are expected to notify their seamless children recursively, so we only do direct children.
-    for (Frame* child = frame()->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        Document* childDocument = child->document();
-        if (childDocument->shouldDisplaySeamlesslyWithParent()) {
-            ASSERT(childDocument->seamlessParentIFrame()->document() == this);
-            childDocument->seamlessParentUpdatedStylesheets();
-        }
-    }
 }
 
 void Document::setHoverNode(PassRefPtr<Node> newHoverNode)
@@ -4533,10 +4492,6 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         setBaseURLOverride(initializer.parentBaseURL());
     }
 
-    // FIXME: What happens if we inherit the security origin? This check may need to be later.
-    // <iframe seamless src="about:blank"> likely won't work as-is.
-    m_mayDisplaySeamlesslyWithParent = initializer.isSeamlessAllowedFor(this);
-
     if (!shouldInheritSecurityOriginFromOwner(m_url))
         return;
 
@@ -4970,24 +4925,6 @@ void Document::didRemoveEventTargetNode(Node* handler)
 void Document::resetLastHandledUserGestureTimestamp()
 {
     m_lastHandledUserGestureTimestamp = currentTime();
-}
-
-HTMLIFrameElement* Document::seamlessParentIFrame() const
-{
-    if (!shouldDisplaySeamlesslyWithParent())
-        return 0;
-
-    return toHTMLIFrameElement(this->ownerElement());
-}
-
-bool Document::shouldDisplaySeamlesslyWithParent() const
-{
-    if (!RuntimeEnabledFeatures::seamlessIFramesEnabled())
-        return false;
-    HTMLFrameOwnerElement* ownerElement = this->ownerElement();
-    if (!ownerElement)
-        return false;
-    return m_mayDisplaySeamlesslyWithParent && ownerElement->hasTagName(iframeTag) && ownerElement->fastHasAttribute(seamlessAttr);
 }
 
 DocumentLoader* Document::loader() const

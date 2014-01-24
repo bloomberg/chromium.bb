@@ -714,9 +714,6 @@ public:
     // Returns 0 if this is the top level document.
     HTMLFrameOwnerElement* ownerElement() const;
 
-    HTMLIFrameElement* seamlessParentIFrame() const;
-    bool shouldDisplaySeamlesslyWithParent() const;
-
     String title() const { return m_title; }
     void setTitle(const String&);
 
@@ -972,7 +969,6 @@ public:
     void didRemoveAllPendingStylesheet();
     void setNeedsNotifyRemoveAllPendingStylesheet() { m_needsNotifyRemoveAllPendingStylesheet = true; }
     void clearStyleResolver();
-    void notifySeamlessChildDocumentsOfStylesheetUpdate() const;
 
     bool inStyleRecalc() { return m_inStyleRecalc; }
 
@@ -1074,8 +1070,6 @@ private:
     void updateBaseURL();
 
     void executeScriptsWaitingForResourcesIfNeeded();
-
-    void seamlessParentUpdatedStylesheets();
 
     void recalcStyleForLayoutIgnoringPendingStylesheets();
 
@@ -1245,9 +1239,6 @@ private:
     bool m_sawElementsInKnownNamespaces;
     bool m_isSrcdocDocument;
     bool m_isMobileDocument;
-    // Set in Document::initSecurityContext() at Document creation, per:
-    // http://www.whatwg.org/specs/web-apps/current-work/#attr-iframe-seamless
-    bool m_mayDisplaySeamlesslyWithParent;
 
     RenderView* m_renderView;
 

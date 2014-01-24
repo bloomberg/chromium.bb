@@ -59,10 +59,6 @@ body {
     margin: 8px
 }
 
-body:-webkit-seamless-document {
-    margin: 0px
-}
-
 body:-webkit-full-page-media {
     background-color: rgb(0, 0, 0)
 }
@@ -1115,12 +1111,8 @@ frameset {
     border-color: inherit
 }
 
-iframe:not([seamless]) {
+iframe {
     border: 2px inset
-}
-
-iframe[seamless] {
-    display: block
 }
 
 details {

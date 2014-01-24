@@ -827,10 +827,6 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             if (!FullscreenElementStack::isFullScreen(&element.document()))
                 return false;
             return true;
-        case CSSSelector::PseudoSeamlessDocument:
-            // While a document is rendered in a seamless iframe, the 'seamless-document' pseudoclass applies
-            // to all elements of that Document.
-            return element.document().shouldDisplaySeamlesslyWithParent();
         case CSSSelector::PseudoInRange:
             element.document().setContainsValidityStyleRules();
             return element.isInRange();

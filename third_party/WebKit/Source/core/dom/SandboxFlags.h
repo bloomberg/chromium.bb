@@ -42,9 +42,8 @@ enum SandboxFlag {
     SandboxTopNavigation = 1 << 5,
     SandboxPopups = 1 << 6, // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=12393
     SandboxAutomaticFeatures = 1 << 7,
-    SandboxSeamlessIframes = 1 << 8,
-    SandboxPointerLock = 1 << 9,
-    SandboxDocumentDomain = 1 << 10,
+    SandboxPointerLock = 1 << 8,
+    SandboxDocumentDomain = 1 << 9,
     SandboxAll = -1 // Mask with all bits set to 1.
 };
 

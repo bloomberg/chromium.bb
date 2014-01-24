@@ -97,19 +97,6 @@ bool DocumentInit::shouldTreatURLAsSrcdocDocument() const
     return m_parent && m_frame->loader().shouldTreatURLAsSrcdocDocument(m_url);
 }
 
-bool DocumentInit::isSeamlessAllowedFor(Document* child) const
-{
-    if (!m_parent)
-        return false;
-    if (m_parent->isSandboxed(SandboxSeamlessIframes))
-        return false;
-    if (child->isSrcdocDocument())
-        return true;
-    if (m_parent->securityOrigin()->canAccess(child->securityOrigin()))
-        return true;
-    return m_parent->securityOrigin()->canRequest(child->url());
-}
-
 Frame* DocumentInit::frameForSecurityContext() const
 {
     if (m_frame)

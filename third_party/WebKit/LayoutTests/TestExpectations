@@ -789,8 +789,6 @@ crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.h
 
 crbug.com/316349 [ Mac Debug ] inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
-crbug.com/316380 fast/frames/seamless/seamless-form-post.html [ Failure Pass ]
-
 crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ Failure Pass ]
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]

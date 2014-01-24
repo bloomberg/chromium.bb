@@ -301,12 +301,8 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(canvasTag) && m_renderer->isCanvas())
         return CanvasRole;
 
-    if (cssBox && cssBox->isRenderView()) {
-        // If the iframe is seamless, it should not be announced as a web area to AT clients.
-        if (document() && document()->shouldDisplaySeamlesslyWithParent())
-            return SeamlessWebAreaRole;
+    if (cssBox && cssBox->isRenderView())
         return WebAreaRole;
-    }
 
     if (cssBox && cssBox->isTextField())
         return TextFieldRole;
@@ -740,7 +736,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         // Otherwise fall through; use presence of help text, title, or description to decide.
     }
 
-    if (isWebArea() || isSeamlessWebArea() || m_renderer->isListMarker())
+    if (isWebArea() || m_renderer->isListMarker())
         return false;
 
     // Using the help text, title or accessibility description (so we
@@ -1330,7 +1326,7 @@ AXObject* AXRenderObject::parentObject() const
         return axObjectCache()->getOrCreate(parentObj);
 
     // WebArea's parent should be the scroll view containing it.
-    if (isWebArea() || isSeamlessWebArea())
+    if (isWebArea())
         return axObjectCache()->getOrCreate(m_renderer->frame()->view());
 
     return 0;
@@ -1339,7 +1335,7 @@ AXObject* AXRenderObject::parentObject() const
 AXObject* AXRenderObject::parentObjectIfExists() const
 {
     // WebArea's parent should be the scroll view containing it.
-    if (isWebArea() || isSeamlessWebArea())
+    if (isWebArea())
         return axObjectCache()->get(m_renderer->frame()->view());
 
     return axObjectCache()->get(renderParentObject());
@@ -2306,7 +2302,7 @@ LayoutRect AXRenderObject::computeElementRect() const
 
     if (obj->isText())
         toRenderText(obj)->absoluteQuads(quads, 0, RenderText::ClipToEllipsis);
-    else if (isWebArea() || isSeamlessWebArea() || obj->isSVGRoot())
+    else if (isWebArea() || obj->isSVGRoot())
         obj->absoluteQuads(quads);
     else
         obj->absoluteFocusRingQuads(quads);
@@ -2318,7 +2314,7 @@ LayoutRect AXRenderObject::computeElementRect() const
         offsetBoundingBoxForRemoteSVGElement(result);
 
     // The size of the web area should be the content size, not the clipped size.
-    if ((isWebArea() || isSeamlessWebArea()) && obj->frame()->view())
+    if (isWebArea() && obj->frame()->view())
         result.setSize(obj->frame()->view()->contentsSize());
 
     // Checkboxes and radio buttons include their label as part of their rect.

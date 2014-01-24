@@ -161,7 +161,6 @@ namespace WebCore {
             PseudoCue,
             PseudoFutureCue,
             PseudoPastCue,
-            PseudoSeamlessDocument,
             PseudoDistributed,
             PseudoUnresolved,
             PseudoContent,

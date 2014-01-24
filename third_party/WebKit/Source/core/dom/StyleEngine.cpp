@@ -391,9 +391,6 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
     InspectorInstrumentation::activeStyleSheetsUpdated(&m_document);
     m_usesRemUnits = m_documentStyleSheetCollection.usesRemUnits();
 
-    if (m_documentScopeDirty || updateMode == FullStyleUpdate)
-        m_document.notifySeamlessChildDocumentsOfStylesheetUpdate();
-
     m_dirtyTreeScopes.clear();
     m_documentScopeDirty = false;
 

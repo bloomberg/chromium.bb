@@ -32,8 +32,6 @@ class HTMLIFrameElement FINAL : public HTMLFrameElementBase {
 public:
     static PassRefPtr<HTMLIFrameElement> create(Document&);
 
-    bool shouldDisplaySeamlessly() const;
-
 private:
     explicit HTMLIFrameElement(Document&);
 
