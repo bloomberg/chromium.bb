@@ -19,12 +19,12 @@ import time
 import urllib
 
 
-_CHROME_BASE_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
+_CHROME_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
 REPLAY_DIR = os.path.join(
-    _CHROME_BASE_DIR, 'src', 'third_party', 'webpagereplay')
+    _CHROME_SRC_DIR, 'third_party', 'webpagereplay')
 LOG_PATH = os.path.join(
-    _CHROME_BASE_DIR, 'src', 'webpagereplay_logs', 'logs.txt')
+    _CHROME_SRC_DIR, 'webpagereplay_logs', 'logs.txt')
 
 
 # Chrome options to make it work with Web Page Replay.
