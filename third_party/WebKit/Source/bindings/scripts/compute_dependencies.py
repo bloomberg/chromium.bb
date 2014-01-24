@@ -183,7 +183,7 @@ def get_parent_interface(file_contents):
 
 
 def get_interface_extended_attributes_from_idl(file_contents):
-    match = re.search(r'\[(.*)\]\s+'
+    match = re.search(r'\[(.*)\]\s*'
                       r'((callback|partial)\s+)?'
                       r'(interface|exception)\s+'
                       r'\w+\s*'

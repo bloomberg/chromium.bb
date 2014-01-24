@@ -53,7 +53,17 @@ import sys
 
 # A regexp for finding Conditional attributes in interface definitions.
 CONDITIONAL_PATTERN = re.compile(
-    '\[[^\]]*Conditional=([\_0-9a-zA-Z&|]*)[^\]]\]\s*interface', re.MULTILINE)
+    r'\['
+    r'[^\]]*'
+    r'Conditional=([\_0-9a-zA-Z&|]*)'
+    r'[^\]]*'
+    r'\]\s*'
+    r'((callback|partial)\s+)?'
+    r'interface\s+'
+    r'\w+\s*'
+    r'(:\s*\w+\s*)?'
+    r'{',
+    re.MULTILINE)
 
 COPYRIGHT_TEMPLATE = """/*
  * THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
