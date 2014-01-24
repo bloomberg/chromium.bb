@@ -380,13 +380,13 @@ PassRefPtr<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder*
 {
     RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
     RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
-    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC) {
-        SkAutoTUnref<SkXfermode> mode(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4)));
-        return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get()));
-    }
     SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
-    SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toXfermode(m_type)));
-    return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get(), &cropRect));
+    RefPtr<SkXfermode> mode;
+    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
+        mode = adoptRef(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4)));
+    else
+        mode = adoptRef(SkXfermode::Create(toXfermode(m_type)));
+    return adoptRef(new SkXfermodeImageFilter(mode.get(), background.get(), foreground.get(), &cropRect));
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)
