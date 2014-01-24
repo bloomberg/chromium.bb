@@ -185,7 +185,8 @@ def WaitForReturnValue(values, *args, **kwargs):
 
 
 def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
-                   func_args=None, func_kwargs=None):
+                   func_args=None, func_kwargs=None,
+                   fallback_timeout=10):
   """Periodically run a function, waiting in between runs.
 
   Continues to run given function until return value is accepted by retry check.
@@ -197,14 +198,17 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
       the only argument.  If |func| should be retried |retry_check| should
       return True.
     func: The function to run to test for a value.
-    timeout: The maximum amount of time to wait, in integer seconds. Minimum
-      value: 1.
+    timeout: The maximum amount of time to wait, in integer seconds.
     period: Integer number of seconds between calls to |func|.
     side_effect_func: Optional function to be called between polls of func,
                       typically to output logging messages.
     func_args: Optional list of positional arguments to be passed to |func|.
     func_kwargs: Optional dictionary of keyword arguments to be passed to
                  |func|.
+    fallback_timeout: We set a secondary timeout based on sigalarm this many
+                      seconds after the initial timeout. This should NOT be
+                      considered robust, but can allow timeouts inside blocking
+                      methods.
 
   Returns:
     The value most recently returned by |func| that was not flagged for retry.
@@ -213,22 +217,31 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
     TimeoutError when the timeout is exceeded.
   """
   assert period >= 0
-  # Timeout requires timeout >= 1.
-  assert timeout >= 1
   func_args = func_args or []
   func_kwargs = func_kwargs or {}
-  with Timeout(timeout):
+
+  timeout_end = time.time() + timeout
+
+  # Use a sigalarm after an extra delay, in case a function we call is
+  # blocking for some reason. This should NOT be considered reliable.
+  with Timeout(timeout + fallback_timeout):
     while True:
-      timestamp = time.time()
+      period_start = time.time()
+      period_end = period_start + period
+
       value = func(*func_args, **func_kwargs)
       if not retry_check(value):
         return value
 
-      time_remaining = period - int(time.time() - timestamp)
+      if side_effect_func:
+        side_effect_func()
+
+      time_remaining = min(timeout_end, period_end) - time.time()
       if time_remaining > 0:
-        if side_effect_func:
-          side_effect_func()
         time.sleep(time_remaining)
+
+      if time.time() >= timeout_end:
+        raise TimeoutError('Timed out after %d seconds' % timeout)
 
 
 def _GetStatus(status_url):
@@ -260,7 +273,9 @@ def WaitForTreeStatus(status_url, period=1, timeout=1, throttled_ok=False):
   Args:
     status_url: The status url to check i.e.
                 'https://status.appspot.com/current?format=json'
-    polling_period: Time in seconds to wait between polling
+    period: How often to poll for status updates.
+    timeout: How long to wait until a tree status is discovered.
+    throttled_ok: is TREE_THROTTLED an acceptable status?
 
   Returns:
     The most recent tree status, either constants.TREE_OPEN or
@@ -298,7 +313,9 @@ def IsTreeOpen(status_url, period=1, timeout=1, throttled_ok=False):
   Args:
     status_url: The status url to check i.e.
                 'https://status.appspot.com/current?format=json'
-    polling_period: Time in seconds to wait between polling
+    period: How often to poll for status updates.
+    timeout: How long to wait until a tree status is discovered.
+    throttled_ok: Does TREE_THROTTLED count as open?
 
   Returns:
     True if the tree is open (or throttled, if |throttled_ok|). False if
