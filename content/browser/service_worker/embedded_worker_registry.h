@@ -59,6 +59,9 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   void AddChildProcessSender(int process_id, IPC::Sender* sender);
   void RemoveChildProcessSender(int process_id);
 
+  // Returns an embedded worker instance for given |embedded_worker_id|.
+  EmbeddedWorkerInstance* GetWorker(int embedded_worker_id);
+
  private:
   friend class base::RefCounted<EmbeddedWorkerRegistry>;
   friend class EmbeddedWorkerInstance;

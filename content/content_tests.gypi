@@ -470,6 +470,8 @@
         'browser/renderer_host/websocket_dispatcher_host_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',
         'browser/service_worker/embedded_worker_instance_unittest.cc',
+        'browser/service_worker/embedded_worker_test_helper.cc',
+        'browser/service_worker/embedded_worker_test_helper.h',
         'browser/service_worker/service_worker_context_unittest.cc',
         'browser/service_worker/service_worker_dispatcher_host_unittest.cc',
         'browser/service_worker/service_worker_registration_unittest.cc',

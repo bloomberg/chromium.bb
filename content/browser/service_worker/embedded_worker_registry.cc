@@ -97,6 +97,14 @@ void EmbeddedWorkerRegistry::RemoveChildProcessSender(int process_id) {
   }
 }
 
+EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
+    int embedded_worker_id) {
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  if (found == worker_map_.end())
+    return NULL;
+  return found->second;
+}
+
 EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {}
 
 bool EmbeddedWorkerRegistry::Send(int process_id, IPC::Message* message) {
