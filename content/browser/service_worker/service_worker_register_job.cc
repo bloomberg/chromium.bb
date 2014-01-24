@@ -82,8 +82,8 @@ void ServiceWorkerRegisterJob::StartUnregister() {
 
 void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
     const RegistrationCallback& callback,
-    ServiceWorkerRegistrationStatus previous_status) {
-  if (previous_status != REGISTRATION_OK) {
+    ServiceWorkerStatusCode previous_status) {
+  if (previous_status != SERVICE_WORKER_OK) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -99,17 +99,18 @@ void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
       storage_->RegisterInternal(pattern_, script_url_);
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
-                          base::Bind(callback, REGISTRATION_OK, registration));
+                          base::Bind(callback, SERVICE_WORKER_OK,
+                                     registration));
 }
 
 void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
     const UnregistrationCallback& callback,
     bool found,
-    ServiceWorkerRegistrationStatus previous_status,
+    ServiceWorkerStatusCode previous_status,
     const scoped_refptr<ServiceWorkerRegistration>& previous_registration) {
 
   // The previous registration may not exist, which is ok.
-  if (previous_status == REGISTRATION_OK && found &&
+  if (previous_status == SERVICE_WORKER_OK && found &&
       (script_url_.is_empty() ||
        previous_registration->script_url() != script_url_)) {
     // TODO: Eventually UnregisterInternal will be replaced by an
@@ -123,7 +124,7 @@ void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
 }
 
 void ServiceWorkerRegisterJob::RunCallbacks(
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
@@ -132,14 +133,14 @@ void ServiceWorkerRegisterJob::RunCallbacks(
   }
 }
 void ServiceWorkerRegisterJob::RegisterComplete(
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   RunCallbacks(status, registration);
   coordinator_->FinishJob(pattern_, this);
 }
 
 void ServiceWorkerRegisterJob::UnregisterComplete(
-    ServiceWorkerRegistrationStatus status) {
+    ServiceWorkerStatusCode status) {
   RunCallbacks(status, NULL);
   coordinator_->FinishJob(pattern_, this);
 }

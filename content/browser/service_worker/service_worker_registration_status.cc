@@ -7,35 +7,39 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
-namespace {
-const char kInstallFailedErrorMessage[] = "ServiceWorker failed to install";
-const char kActivateFailedErrorMessage[] = "ServiceWorker failed to activate";
-}
-
 namespace content {
 
 using blink::WebServiceWorkerError;
 
 void GetServiceWorkerRegistrationStatusResponse(
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     blink::WebServiceWorkerError::ErrorType* error_type,
     base::string16* message) {
+  *error_type = WebServiceWorkerError::UnknownError;
+  *message = base::ASCIIToUTF16(ServiceWorkerStatusToString(status));
   switch (status) {
-    case REGISTRATION_OK:
-      NOTREACHED() << "Consumers should check registration status before "
-                      "calling this function.";
+    case SERVICE_WORKER_OK:
+      NOTREACHED() << "Calling this when status == OK is not allowed";
       return;
 
-    case REGISTRATION_INSTALL_FAILED:
+    case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
+    case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
       *error_type = WebServiceWorkerError::InstallError;
-      *message = base::ASCIIToUTF16(kInstallFailedErrorMessage);
       return;
 
-    case REGISTRATION_ACTIVATE_FAILED:
+    case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
       *error_type = WebServiceWorkerError::ActivateError;
-      *message = base::ASCIIToUTF16(kActivateFailedErrorMessage);
       return;
+
+    case SERVICE_WORKER_ERROR_ABORT:
+    case SERVICE_WORKER_ERROR_FAILED:
+    case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
+      // Unexpected, or should bail out before calling this, or we don't
+      // have a corresponding blink error code yet.
+      break;  // Fall through to NOTREACHED().
   }
-  NOTREACHED();
+  NOTREACHED() << "Got unexpected error code: "
+               << status << " " << ServiceWorkerStatusToString(status);
 }
+
 }  // namespace content

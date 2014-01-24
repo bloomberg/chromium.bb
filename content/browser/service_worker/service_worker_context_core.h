@@ -44,10 +44,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     : NON_EXPORTED_BASE(
           public base::SupportsWeakPtr<ServiceWorkerContextCore>) {
  public:
-  typedef base::Callback<void(ServiceWorkerRegistrationStatus status,
+  typedef base::Callback<void(ServiceWorkerStatusCode status,
                               int64 registration_id)> RegistrationCallback;
   typedef base::Callback<
-      void(ServiceWorkerRegistrationStatus status)> UnregistrationCallback;
+      void(ServiceWorkerStatusCode status)> UnregistrationCallback;
 
   // This is owned by the StoragePartition, which will supply it with
   // the local path on disk. Given an empty |user_data_directory|,
@@ -92,7 +92,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void RegistrationComplete(
       const RegistrationCallback& callback,
-      ServiceWorkerRegistrationStatus status,
+      ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   // Used only for testing.

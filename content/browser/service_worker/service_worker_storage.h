@@ -31,9 +31,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                        quota::QuotaManagerProxy* quota_manager_proxy);
   ~ServiceWorkerStorage();
 
-  // `found` is only valid if status == REGISTRATION_OK.
+  // `found` is only valid if status == SERVICE_WORKER_OK.
   typedef base::Callback<void(bool found,
-                              ServiceWorkerRegistrationStatus status,
+                              ServiceWorkerStatusCode status,
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   registration)> FindRegistrationCallback;
 

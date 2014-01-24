@@ -61,7 +61,7 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
   // Called at ServiceWorkerRegisterJob completion.
   void UnregisterComplete(
       const ServiceWorkerRegisterJob::UnregistrationCallback& callback,
-      ServiceWorkerRegistrationStatus status,
+      ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   // The ServiceWorkerStorage object should always outlive this

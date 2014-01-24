@@ -55,16 +55,16 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int32 thread_id,
                             int32 request_id,
-                            ServiceWorkerRegistrationStatus status,
+                            ServiceWorkerStatusCode status,
                             int64 registration_id);
 
   void UnregistrationComplete(int32 thread_id,
                               int32 request_id,
-                              ServiceWorkerRegistrationStatus status);
+                              ServiceWorkerStatusCode status);
 
   void SendRegistrationError(int32 thread_id,
                              int32 request_id,
-                             ServiceWorkerRegistrationStatus status);
+                             ServiceWorkerStatusCode status);
   int render_process_id_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 };

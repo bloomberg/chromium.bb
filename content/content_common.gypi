@@ -368,6 +368,8 @@
     'common/savable_url_schemes.h',
     'common/service_worker/embedded_worker_messages.h',
     'common/service_worker/service_worker_messages.h',
+    'common/service_worker/service_worker_status_code.cc',
+    'common/service_worker/service_worker_status_code.h',
     'common/service_worker/service_worker_types.cc',
     'common/service_worker/service_worker_types.h',
     'common/set_process_title.cc',

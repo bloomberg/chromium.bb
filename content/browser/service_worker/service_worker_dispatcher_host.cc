@@ -169,9 +169,9 @@ void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
 void ServiceWorkerDispatcherHost::RegistrationComplete(
     int32 thread_id,
     int32 request_id,
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     int64 registration_id) {
-  if (status != REGISTRATION_OK) {
+  if (status != SERVICE_WORKER_OK) {
     SendRegistrationError(thread_id, request_id, status);
     return;
   }
@@ -207,8 +207,8 @@ void ServiceWorkerDispatcherHost::OnSendMessageToBrowser(
 void ServiceWorkerDispatcherHost::UnregistrationComplete(
     int32 thread_id,
     int32 request_id,
-    ServiceWorkerRegistrationStatus status) {
-  if (status != REGISTRATION_OK) {
+    ServiceWorkerStatusCode status) {
+  if (status != SERVICE_WORKER_OK) {
     SendRegistrationError(thread_id, request_id, status);
     return;
   }
@@ -219,7 +219,7 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
 void ServiceWorkerDispatcherHost::SendRegistrationError(
     int32 thread_id,
     int32 request_id,
-    ServiceWorkerRegistrationStatus status) {
+    ServiceWorkerStatusCode status) {
   base::string16 error_message;
   blink::WebServiceWorkerError::ErrorType error_type;
   GetServiceWorkerRegistrationStatusResponse(

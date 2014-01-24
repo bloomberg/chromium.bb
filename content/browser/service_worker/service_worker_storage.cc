@@ -54,14 +54,14 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
         FROM_HERE,
         base::Bind(callback,
                    false /* found */,
-                   REGISTRATION_OK,
+                   SERVICE_WORKER_OK,
                    scoped_refptr<ServiceWorkerRegistration>()));
     return;
   }
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(callback, true /* found */, REGISTRATION_OK, match->second));
+      base::Bind(callback, true /* found */, SERVICE_WORKER_OK, match->second));
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
@@ -80,7 +80,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
           FROM_HERE,
           base::Bind(callback,
                      true /* found */,
-                     REGISTRATION_OK,
+                     SERVICE_WORKER_OK,
                      scoped_refptr<ServiceWorkerRegistration>(it->second)));
       return;
     }
@@ -90,7 +90,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
       FROM_HERE,
       base::Bind(callback,
                  false /* found */,
-                 REGISTRATION_OK,
+                 SERVICE_WORKER_OK,
                  scoped_refptr<ServiceWorkerRegistration>()));
 }
 

@@ -20,7 +20,7 @@ namespace {
 
 void SaveResponseCallback(bool* called,
                           int64* store_result,
-                          ServiceWorkerRegistrationStatus status,
+                          ServiceWorkerStatusCode status,
                           int64 result) {
   *called = true;
   *store_result = result;
@@ -32,7 +32,7 @@ ServiceWorkerContextCore::RegistrationCallback MakeRegisteredCallback(
   return base::Bind(&SaveResponseCallback, called, store_result);
 }
 
-void CallCompletedCallback(bool* called, ServiceWorkerRegistrationStatus) {
+void CallCompletedCallback(bool* called, ServiceWorkerStatusCode) {
   *called = true;
 }
 

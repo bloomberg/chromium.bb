@@ -84,7 +84,7 @@ void ServiceWorkerJobCoordinator::FinishJob(const GURL& pattern,
 
 void ServiceWorkerJobCoordinator::UnregisterComplete(
     const ServiceWorkerRegisterJob::UnregistrationCallback& callback,
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& previous_registration) {
   callback.Run(status);
 }

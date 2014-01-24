@@ -18,10 +18,10 @@ namespace content {
 namespace {
 
 void SaveRegistrationCallback(
-    ServiceWorkerRegistrationStatus expected_status,
+    ServiceWorkerStatusCode expected_status,
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration,
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& result) {
   EXPECT_EQ(expected_status, status);
   *called = true;
@@ -30,11 +30,11 @@ void SaveRegistrationCallback(
 
 void SaveFoundRegistrationCallback(
     bool expected_found,
-    ServiceWorkerRegistrationStatus expected_status,
+    ServiceWorkerStatusCode expected_status,
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration,
     bool found,
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& result) {
   EXPECT_EQ(expected_found, found);
   EXPECT_EQ(expected_status, status);
@@ -48,7 +48,7 @@ void SaveFoundRegistrationCallback(
 // 'called' is useful for making sure a sychronous callback is or
 // isn't called.
 ServiceWorkerRegisterJob::RegistrationCallback SaveRegistration(
-    ServiceWorkerRegistrationStatus expected_status,
+    ServiceWorkerStatusCode expected_status,
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration) {
   *called = false;
@@ -58,7 +58,7 @@ ServiceWorkerRegisterJob::RegistrationCallback SaveRegistration(
 
 ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
     bool expected_found,
-    ServiceWorkerRegistrationStatus expected_status,
+    ServiceWorkerStatusCode expected_status,
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration) {
   *called = false;
@@ -69,15 +69,15 @@ ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
                     registration);
 }
 
-void SaveUnregistrationCallback(ServiceWorkerRegistrationStatus expected_status,
+void SaveUnregistrationCallback(ServiceWorkerStatusCode expected_status,
                                 bool* called,
-                                ServiceWorkerRegistrationStatus status) {
+                                ServiceWorkerStatusCode status) {
   EXPECT_EQ(expected_status, status);
   *called = true;
 }
 
 ServiceWorkerRegisterJob::UnregistrationCallback SaveUnregistration(
-    ServiceWorkerRegistrationStatus expected_status,
+    ServiceWorkerStatusCode expected_status,
     bool* called) {
   *called = false;
   return base::Bind(&SaveUnregistrationCallback, expected_status, called);
@@ -109,7 +109,7 @@ TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
   job_coordinator_->Register(
       GURL("http://www.example.com/*"),
       GURL("http://www.example.com/service_worker.js"),
-      SaveRegistration(REGISTRATION_OK, &called, &original_registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &original_registration));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -117,11 +117,11 @@ TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
-      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration1));
+      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
-      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration2));
+      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration2));
 
   ServiceWorkerRegistration* null_registration(NULL);
   ASSERT_EQ(null_registration, registration1);
@@ -141,7 +141,7 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   job_coordinator_->Register(
       GURL("http://www.example.com/*"),
       GURL("http://www.example.com/service_worker.js"),
-      SaveRegistration(REGISTRATION_OK, &called, &original_registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &original_registration));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -151,7 +151,7 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/one"),
-      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration1));
+      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration1));
 
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -160,7 +160,7 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/two"),
-      SaveFoundRegistration(true, REGISTRATION_OK, &called, &registration2));
+      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration2));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -174,14 +174,14 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   job_coordinator_->Register(
       GURL("http://www.example.com/one/*"),
       GURL("http://www.example.com/service_worker.js"),
-      SaveRegistration(REGISTRATION_OK, &called1, &original_registration1));
+      SaveRegistration(SERVICE_WORKER_OK, &called1, &original_registration1));
 
   bool called2;
   scoped_refptr<ServiceWorkerRegistration> original_registration2;
   job_coordinator_->Register(
       GURL("http://www.example.com/two/*"),
       GURL("http://www.example.com/service_worker.js"),
-      SaveRegistration(REGISTRATION_OK, &called2, &original_registration2));
+      SaveRegistration(SERVICE_WORKER_OK, &called2, &original_registration2));
 
   EXPECT_FALSE(called1);
   EXPECT_FALSE(called2);
@@ -192,11 +192,11 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/one/"),
-      SaveFoundRegistration(true, REGISTRATION_OK, &called1, &registration1));
+      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called1, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage_->FindRegistrationForDocument(
       GURL("http://www.example.com/two/"),
-      SaveFoundRegistration(true, REGISTRATION_OK, &called2, &registration2));
+      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called2, &registration2));
 
   EXPECT_FALSE(called1);
   EXPECT_FALSE(called2);
@@ -214,7 +214,7 @@ TEST_F(ServiceWorkerJobTest, Register) {
   job_coordinator_->Register(
       GURL("http://www.example.com/*"),
       GURL("http://www.example.com/service_worker.js"),
-      SaveRegistration(REGISTRATION_OK, &called, &registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -232,14 +232,14 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   job_coordinator_->Register(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
-      SaveRegistration(REGISTRATION_OK, &called, &registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
   job_coordinator_->Unregister(pattern,
-                               SaveUnregistration(REGISTRATION_OK, &called));
+                               SaveUnregistration(SERVICE_WORKER_OK, &called));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -249,7 +249,7 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
 
   storage_->FindRegistrationForPattern(
       pattern,
-      SaveFoundRegistration(false, REGISTRATION_OK, &called, &registration));
+      SaveFoundRegistration(false, SERVICE_WORKER_OK, &called, &registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -268,7 +268,7 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   job_coordinator_->Register(
       pattern,
       GURL("http://www.example.com/service_worker.js"),
-      SaveRegistration(REGISTRATION_OK, &called, &old_registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &old_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -278,7 +278,7 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   storage_->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, REGISTRATION_OK, &called, &old_registration_by_pattern));
+          true, SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -291,7 +291,7 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   job_coordinator_->Register(
       pattern,
       GURL("http://www.example.com/service_worker_new.js"),
-      SaveRegistration(REGISTRATION_OK, &called, &new_registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &new_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -304,7 +304,8 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern;
   storage_->FindRegistrationForPattern(
       pattern,
-      SaveFoundRegistration(true, REGISTRATION_OK, &called, &new_registration));
+      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called,
+                            &new_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -324,7 +325,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   job_coordinator_->Register(
       pattern,
       script_url,
-      SaveRegistration(REGISTRATION_OK, &called, &old_registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &old_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -334,7 +335,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   storage_->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, REGISTRATION_OK, &called, &old_registration_by_pattern));
+          true, SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
@@ -345,7 +346,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   job_coordinator_->Register(
       pattern,
       script_url,
-      SaveRegistration(REGISTRATION_OK, &called, &new_registration));
+      SaveRegistration(SERVICE_WORKER_OK, &called, &new_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -359,7 +360,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   storage_->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, REGISTRATION_OK, &called, &new_registration_by_pattern));
+          true, SERVICE_WORKER_OK, &called, &new_registration_by_pattern));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -379,11 +380,11 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   job_coordinator_->Register(
       pattern,
       script_url,
-      SaveRegistration(REGISTRATION_OK, &registration_called, &registration));
+      SaveRegistration(SERVICE_WORKER_OK, &registration_called, &registration));
 
   bool unregistration_called = false;
   job_coordinator_->Unregister(
-      pattern, SaveUnregistration(REGISTRATION_OK, &unregistration_called));
+      pattern, SaveUnregistration(SERVICE_WORKER_OK, &unregistration_called));
 
   ASSERT_FALSE(registration_called);
   ASSERT_FALSE(unregistration_called);
@@ -397,7 +398,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   storage_->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          false, REGISTRATION_OK, &find_called, &registration));
+          false, SERVICE_WORKER_OK, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
 
@@ -416,7 +417,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator_->Register(
       pattern,
       script_url1,
-      SaveRegistration(REGISTRATION_OK, &registration1_called, &registration1));
+      SaveRegistration(SERVICE_WORKER_OK, &registration1_called,
+                       &registration1));
 
   GURL script_url2("http://www.example.com/service_worker2.js");
   bool registration2_called = false;
@@ -424,7 +426,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator_->Register(
       pattern,
       script_url2,
-      SaveRegistration(REGISTRATION_OK, &registration2_called, &registration2));
+      SaveRegistration(SERVICE_WORKER_OK, &registration2_called,
+                       &registration2));
 
   ASSERT_FALSE(registration1_called);
   ASSERT_FALSE(registration2_called);
@@ -437,7 +440,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   storage_->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, REGISTRATION_OK, &find_called, &registration));
+          true, SERVICE_WORKER_OK, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
 
@@ -458,14 +461,16 @@ TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
   job_coordinator_->Register(
       pattern,
       script_url,
-      SaveRegistration(REGISTRATION_OK, &registration1_called, &registration1));
+      SaveRegistration(SERVICE_WORKER_OK, &registration1_called,
+                       &registration1));
 
   bool registration2_called = false;
   scoped_refptr<ServiceWorkerRegistration> registration2;
   job_coordinator_->Register(
       pattern,
       script_url,
-      SaveRegistration(REGISTRATION_OK, &registration2_called, &registration2));
+      SaveRegistration(SERVICE_WORKER_OK, &registration2_called,
+                       &registration2));
 
   ASSERT_FALSE(registration1_called);
   ASSERT_FALSE(registration2_called);
@@ -480,7 +485,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
   storage_->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, REGISTRATION_OK, &find_called, &registration));
+          true, SERVICE_WORKER_OK, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(registration, registration1);
@@ -493,11 +498,11 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   GURL script_url("http://www.example.com/service_worker.js");
   bool unregistration1_called = false;
   job_coordinator_->Unregister(
-      pattern, SaveUnregistration(REGISTRATION_OK, &unregistration1_called));
+      pattern, SaveUnregistration(SERVICE_WORKER_OK, &unregistration1_called));
 
   bool unregistration2_called = false;
   job_coordinator_->Unregister(
-      pattern, SaveUnregistration(REGISTRATION_OK, &unregistration2_called));
+      pattern, SaveUnregistration(SERVICE_WORKER_OK, &unregistration2_called));
 
   ASSERT_FALSE(unregistration1_called);
   ASSERT_FALSE(unregistration2_called);
@@ -513,7 +518,7 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   storage_->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          false, REGISTRATION_OK, &find_called, &registration));
+          false, SERVICE_WORKER_OK, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);

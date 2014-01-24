@@ -24,10 +24,10 @@ class ServiceWorkerRegisterJob {
     UNREGISTER,
   };
 
-  typedef base::Callback<void(ServiceWorkerRegistrationStatus status,
+  typedef base::Callback<void(ServiceWorkerStatusCode status,
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   registration)> RegistrationCallback;
-  typedef base::Callback<void(ServiceWorkerRegistrationStatus status)>
+  typedef base::Callback<void(ServiceWorkerStatusCode status)>
       UnregistrationCallback;
 
   // All type of jobs (Register and Unregister) complete through a
@@ -69,23 +69,23 @@ class ServiceWorkerRegisterJob {
   // These are all steps in the registration and unregistration pipeline.
   void RegisterPatternAndContinue(
       const RegistrationCallback& callback,
-      ServiceWorkerRegistrationStatus previous_status);
+      ServiceWorkerStatusCode previous_status);
 
   void UnregisterPatternAndContinue(
       const UnregistrationCallback& callback,
       bool found,
-      ServiceWorkerRegistrationStatus previous_status,
+      ServiceWorkerStatusCode previous_status,
       const scoped_refptr<ServiceWorkerRegistration>& previous_registration);
 
   // These methods are the last internal callback in the callback
   // chain, and ultimately call callback_.
-  void UnregisterComplete(ServiceWorkerRegistrationStatus status);
+  void UnregisterComplete(ServiceWorkerStatusCode status);
   void RegisterComplete(
-      ServiceWorkerRegistrationStatus status,
+      ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   void RunCallbacks(
-      ServiceWorkerRegistrationStatus status,
+      ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   // The ServiceWorkerStorage object should always outlive

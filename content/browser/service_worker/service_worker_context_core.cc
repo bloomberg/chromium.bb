@@ -89,9 +89,9 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
 
 void ServiceWorkerContextCore::RegistrationComplete(
     const ServiceWorkerContextCore::RegistrationCallback& callback,
-    ServiceWorkerRegistrationStatus status,
+    ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  if (status != REGISTRATION_OK) {
+  if (status != SERVICE_WORKER_OK) {
     DCHECK(!registration);
     callback.Run(status, -1L);
   }
