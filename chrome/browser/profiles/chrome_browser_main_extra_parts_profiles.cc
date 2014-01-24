@@ -143,8 +143,9 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
-#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_factory.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
+#include "chrome/browser/extensions/api/log_private/log_private_api.h"
 #endif
 
 #if defined(USE_AURA)
@@ -273,6 +274,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ScreenlockPrivateEventRouter::GetFactoryInstance();
 #endif
   extensions::LocationManager::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  extensions::LogPrivateAPI::GetFactoryInstance();
+#endif
   extensions::ManagementAPI::GetFactoryInstance();
   extensions::MDnsAPI::GetFactoryInstance();
   extensions::MediaGalleriesPrivateAPI::GetFactoryInstance();

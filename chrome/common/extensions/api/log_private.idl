@@ -49,6 +49,11 @@ namespace logPrivate {
   interface Functions {
     // Get the existing logs from ChromeOS system.
     static void getHistorical(Filter filter, GetHistoricalCallback callback);
+    static void startNetInternalsWatch();
+    static void stopNetInternalsWatch();
   };
 
+  interface Events {
+    static void onAddNetInternalsEntries(object[] entries);
+  };
 };
