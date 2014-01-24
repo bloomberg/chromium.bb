@@ -52,8 +52,8 @@ struct DetailInput {
   base::string16 initial_value;
 };
 
-// Determines whether |input| and |field| match.
-typedef base::Callback<bool(const DetailInput& input,
+// Determines whether |type| and |field| match.
+typedef base::Callback<bool(ServerFieldType type,
                             const AutofillField& field)>
     InputFieldComparator;
 

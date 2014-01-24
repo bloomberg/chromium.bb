@@ -144,15 +144,14 @@ class ScopedViewUpdates {
 // Returns true if |input| should be used to fill a site-requested |field| which
 // is notated with a "shipping" tag, for use when the user has decided to use
 // the billing address as the shipping address.
-bool DetailInputMatchesShippingField(const DetailInput& input,
-                                     const AutofillField& field) {
+bool ServerTypeMatchesShippingField(ServerFieldType type,
+                                    const AutofillField& field) {
   // Equivalent billing field type is used to support UseBillingAsShipping
   // usecase.
-  ServerFieldType field_type =
-      AutofillType::GetEquivalentBillingFieldType(
-          field.Type().GetStorableType());
-
-  return common::InputTypeMatchesFieldType(input, AutofillType(field_type));
+  return common::ServerTypeMatchesFieldType(
+      type,
+      AutofillType(AutofillType::GetEquivalentBillingFieldType(
+          field.Type().GetStorableType())));
 }
 
 // Initializes |form_group| from user-entered data.
@@ -603,7 +602,7 @@ void AutofillDialogControllerImpl::Show() {
   const DetailInputs& inputs = RequestedFieldsForSection(SECTION_SHIPPING);
   cares_about_shipping_ = EmptyDataModelWrapper().FillFormStructure(
       inputs,
-      base::Bind(common::DetailInputMatchesField, SECTION_SHIPPING),
+      base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
       &form_structure_);
 
   account_chooser_model_.reset(
@@ -2980,7 +2979,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
 
 void AutofillDialogControllerImpl::FillOutputForSection(DialogSection section) {
   FillOutputForSectionWithComparator(
-      section, base::Bind(common::DetailInputMatchesField, section));
+      section, base::Bind(common::ServerTypeMatchesField, section));
 }
 
 bool AutofillDialogControllerImpl::FormStructureCaresAboutSection(
@@ -3406,13 +3405,13 @@ void AutofillDialogControllerImpl::DoFinishSubmit() {
   if (ShouldUseBillingForShipping()) {
     FillOutputForSectionWithComparator(
         SECTION_BILLING,
-        base::Bind(DetailInputMatchesShippingField));
+        base::Bind(ServerTypeMatchesShippingField));
     FillOutputForSectionWithComparator(
         SECTION_CC,
-        base::Bind(DetailInputMatchesShippingField));
+        base::Bind(ServerTypeMatchesShippingField));
     FillOutputForSectionWithComparator(
         SECTION_CC_BILLING,
-        base::Bind(DetailInputMatchesShippingField));
+        base::Bind(ServerTypeMatchesShippingField));
   } else {
     FillOutputForSection(SECTION_SHIPPING);
   }

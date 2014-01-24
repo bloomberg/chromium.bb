@@ -98,7 +98,7 @@ void FillOutputForSection(
 
   FillOutputForSectionWithComparator(
       section, inputs,
-      base::Bind(common::DetailInputMatchesField, section),
+      base::Bind(common::ServerTypeMatchesField, section),
       form_structure, full_wallet, email_address);
 
   if (section == SECTION_CC_BILLING) {
@@ -115,10 +115,9 @@ void FillOutputForSection(
 bool IsSectionInputUsedInFormStructure(DialogSection section,
                                        ServerFieldType input_type,
                                        const FormStructure& form_structure) {
-  const DetailInput input = { DetailInput::LONG, input_type };
   for (size_t i = 0; i < form_structure.field_count(); ++i) {
     const AutofillField* field = form_structure.field(i);
-    if (field && common::DetailInputMatchesField(section, input, *field))
+    if (field && common::ServerTypeMatchesField(section, input_type, *field))
       return true;
   }
   return false;
@@ -256,7 +255,7 @@ void AutofillDialogControllerAndroid::Show() {
     EmptyDataModelWrapper empty_wrapper;
     request_shipping_address = empty_wrapper.FillFormStructure(
         inputs,
-        base::Bind(common::DetailInputMatchesField, SECTION_SHIPPING),
+        base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
         &form_structure_);
   }
 

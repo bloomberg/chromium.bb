@@ -26,15 +26,15 @@ enum AddressType {
   ADDRESS_TYPE_SHIPPING,
 };
 
-// Returns true if |input| should be shown when |field_type| has been requested.
-bool InputTypeMatchesFieldType(const DetailInput& input,
-                               const AutofillType& field_type);
+// Returns true if |type| should be shown when |field_type| has been requested.
+bool ServerTypeMatchesFieldType(ServerFieldType type,
+                                const AutofillType& field_type);
 
-// Returns true if |input| in the given |section| should be used for a
+// Returns true if |type| in the given |section| should be used for a
 // site-requested |field|.
-bool DetailInputMatchesField(DialogSection section,
-                             const DetailInput& input,
-                             const AutofillField& field);
+bool ServerTypeMatchesField(DialogSection section,
+                            ServerFieldType type,
+                            const AutofillField& field);
 
 // Returns true if the |type| belongs to the CREDIT_CARD field type group.
 bool IsCreditCardType(ServerFieldType type);

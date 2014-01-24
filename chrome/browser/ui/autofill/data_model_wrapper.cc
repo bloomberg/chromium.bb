@@ -114,7 +114,7 @@ bool DataModelWrapper::FillFormStructure(
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     AutofillField* field = form_structure->field(i);
     for (size_t j = 0; j < inputs.size(); ++j) {
-      if (compare.Run(inputs[j], *field)) {
+      if (compare.Run(inputs[j].type, *field)) {
         AutofillField::FillFormField(*field, GetInfo(field->Type()),
                                      g_browser_process->GetApplicationLocale(),
                                      field);

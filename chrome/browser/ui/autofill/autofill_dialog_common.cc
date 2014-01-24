@@ -23,8 +23,8 @@ namespace autofill {
 namespace common {
 
 // Returns true if |input| should be shown when |field_type| has been requested.
-bool InputTypeMatchesFieldType(const DetailInput& input,
-                               const AutofillType& field_type) {
+bool ServerTypeMatchesFieldType(ServerFieldType type,
+                                const AutofillType& field_type) {
   // If any credit card expiration info is asked for, show both month and year
   // inputs.
   ServerFieldType server_type = field_type.GetStorableType();
@@ -33,39 +33,39 @@ bool InputTypeMatchesFieldType(const DetailInput& input,
       server_type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR ||
       server_type == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
       server_type == CREDIT_CARD_EXP_MONTH) {
-    return input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
-           input.type == CREDIT_CARD_EXP_MONTH;
+    return type == CREDIT_CARD_EXP_4_DIGIT_YEAR ||
+           type == CREDIT_CARD_EXP_MONTH;
   }
 
   if (server_type == CREDIT_CARD_TYPE)
-    return input.type == CREDIT_CARD_NUMBER;
+    return type == CREDIT_CARD_NUMBER;
 
   // Check the groups to distinguish billing types from shipping ones.
-  AutofillType input_type = AutofillType(input.type);
-  if (input_type.group() != field_type.group())
+  AutofillType autofill_type = AutofillType(type);
+  if (autofill_type.group() != field_type.group())
     return false;
 
   // Street address (all lines) is matched to the first input address line.
   if (server_type == ADDRESS_HOME_STREET_ADDRESS)
-    return input_type.GetStorableType() == ADDRESS_HOME_LINE1;
+    return autofill_type.GetStorableType() == ADDRESS_HOME_LINE1;
 
-  return input_type.GetStorableType() == server_type;
+  return autofill_type.GetStorableType() == server_type;
 }
 
 // Returns true if |input| in the given |section| should be used for a
 // site-requested |field|.
-bool DetailInputMatchesField(DialogSection section,
-                             const DetailInput& input,
-                             const AutofillField& field) {
+bool ServerTypeMatchesField(DialogSection section,
+                            ServerFieldType type,
+                            const AutofillField& field) {
   AutofillType field_type = field.Type();
 
   // The credit card name is filled from the billing section's data.
   if (field_type.GetStorableType() == CREDIT_CARD_NAME &&
       (section == SECTION_BILLING || section == SECTION_CC_BILLING)) {
-    return input.type == NAME_BILLING_FULL;
+    return type == NAME_BILLING_FULL;
   }
 
-  return InputTypeMatchesFieldType(input, field_type);
+  return ServerTypeMatchesFieldType(type, field_type);
 }
 
 bool IsCreditCardType(ServerFieldType type) {
