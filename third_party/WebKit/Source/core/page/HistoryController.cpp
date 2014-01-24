@@ -172,10 +172,14 @@ void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry, Resource
         m_currentEntry = m_provisionalEntry.release();
     }
 
-    for (HistoryFrameLoadSet::iterator it = sameDocumentLoads.begin(); it != sameDocumentLoads.end(); ++it)
-        it->key->loader().loadHistoryItem(it->value, HistorySameDocumentLoad, cachePolicy);
-    for (HistoryFrameLoadSet::iterator it = differentDocumentLoads.begin(); it != differentDocumentLoads.end(); ++it)
-        it->key->loader().loadHistoryItem(it->value, HistoryDifferentDocumentLoad, cachePolicy);
+    for (HistoryFrameLoadSet::iterator it = sameDocumentLoads.begin(); it != sameDocumentLoads.end(); ++it) {
+        if (it->key->host())
+            it->key->loader().loadHistoryItem(it->value, HistorySameDocumentLoad, cachePolicy);
+    }
+    for (HistoryFrameLoadSet::iterator it = differentDocumentLoads.begin(); it != differentDocumentLoads.end(); ++it) {
+        if (it->key->host())
+            it->key->loader().loadHistoryItem(it->value, HistoryDifferentDocumentLoad, cachePolicy);
+    }
 }
 
 void HistoryController::recursiveGoToEntry(Frame* frame, HistoryFrameLoadSet& sameDocumentLoads, HistoryFrameLoadSet& differentDocumentLoads)

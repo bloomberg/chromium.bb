@@ -1428,9 +1428,6 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
 {
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
-        // loadInSameDocument() might (indirectly) dispatch events, which could lead to the frame being
-        // detached, so protect it.
-        RefPtr<Frame> protect(m_frame);
         loadInSameDocument(item->url(), item->stateObject(), DoNotUpdateBackForwardList, NotClientRedirect);
         restoreScrollPositionAndViewState(ForcedRestoreForSameDocumentHistoryNavigation);
         return;

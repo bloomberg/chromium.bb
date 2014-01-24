@@ -155,7 +155,7 @@ public:
 
 private:
     void goToEntry(PassOwnPtr<HistoryEntry>, ResourceRequestCachePolicy);
-    typedef HashMap<Frame*, HistoryItem*> HistoryFrameLoadSet;
+    typedef HashMap<RefPtr<Frame>, HistoryItem*> HistoryFrameLoadSet;
     void recursiveGoToEntry(Frame*, HistoryFrameLoadSet& sameDocumentLoads, HistoryFrameLoadSet& differentDocumentLoads);
 
     void updateForInitialLoadInChildFrame(Frame*, HistoryItem*);
