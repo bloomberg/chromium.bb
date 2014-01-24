@@ -119,21 +119,13 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
     return InsertionDone;
 }
 
-static inline Node* findRoot(Node* n)
-{
-    Node* root = n;
-    for (; n; n = n->parentNode())
-        root = n;
-    return root;
-}
-
 void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
 {
     // FIXME: We don't need to notify formRemovedFromTree to associated elements
     // which are descendants of this form. We can skip this process if we know
     // that this form doesn't have elements associated by parser or associated
     // with 'form' content attribute.
-    Node* root = findRoot(this);
+    Node* root = highestAncestor();
     Vector<FormAssociatedElement*> associatedElements(m_associatedElements);
     for (unsigned i = 0; i < associatedElements.size(); ++i)
         associatedElements[i]->formRemovedFromTree(root);
