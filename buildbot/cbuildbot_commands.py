@@ -1585,7 +1585,7 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
   return archive_name
 
 
-def BuildFactoryZip(buildroot, board, archive_dir, image_root):
+def BuildFactoryZip(buildroot, board, archive_dir, image_root, version=None):
   """Build factory_image.zip in archive_dir.
 
   Args:
@@ -1593,6 +1593,7 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
     board: Board name of build target.
     archive_dir: Directory to store image.zip.
     image_root: Directory containing factory_shim and factory_test symlinks.
+    version: The version string to be included in the factory image.zip.
 
   Returns:
     The basename of the zipfile.
@@ -1643,6 +1644,12 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root):
       cmd.extend(['--include',
                   f if os.path.isfile(src_path) else
                   os.path.join(f, '*')])
+
+  # Add a version file in the zip file.
+  if version is not None:
+    version_file = os.path.join(temp_dir, 'BUILD_VERSION')
+    osutils.WriteFile(version_file, version)
+    cmd.extend(['--include', version_file])
 
   cros_build_lib.RunCommand(cmd, cwd=temp_dir, capture_output=True)
   osutils.RmDir(temp_dir)

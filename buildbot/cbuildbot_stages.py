@@ -3309,7 +3309,8 @@ class ArchiveStage(ArchivingStage):
       if factory_install_symlink and factory_test_symlink:
         image_root = os.path.dirname(factory_install_symlink)
         filename = commands.BuildFactoryZip(
-            buildroot, board, archive_path, image_root)
+            buildroot, board, archive_path, image_root,
+            self._run.attrs.release_tag)
         self._release_upload_queue.put([filename])
 
     def ArchiveStandaloneTarball(image_file):
