@@ -46,7 +46,6 @@
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/UseCounter.h"
-#include "core/frame/animation/CSSPropertyAnimation.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/animation/TimingFunction.h"
@@ -550,12 +549,12 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
             ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
         }
     }
-    if (CSSPropertyAnimation::propertiesEqual(id, &oldStyle, &style))
-        return;
     if (!to)
         to = CSSAnimatableValueFactory::create(id, style);
-
     RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
+    if (to->equals(from.get()))
+        return;
+
     // If we have multiple transitions on the same property, we will use the
     // last one since we iterate over them in order.
     if (AnimatableValue::usesDefaultInterpolation(to.get(), from.get()))
