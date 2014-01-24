@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "grit/ui_resources.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
@@ -118,12 +119,12 @@ NSColor* SubtextColor() {
   // TODO(isherman): We should consider using asset-based drawing for the
   // border, creating simple bitmaps for the view's border and background, and
   // drawing them using NSDrawNinePartImage().
-  CGFloat inset = autofill::AutofillPopupView::kBorderThickness / 2.0;
+  CGFloat inset = autofill::kPopupBorderThickness / 2.0;
   NSRect borderRect = NSInsetRect([self bounds], inset, inset);
   NSBezierPath* path = [NSBezierPath bezierPathWithRect:borderRect];
   [BackgroundColor() setFill];
   [path fill];
-  [path setLineWidth:autofill::AutofillPopupView::kBorderThickness];
+  [path setLineWidth:autofill::kPopupBorderThickness];
   [BorderColor() setStroke];
   [path stroke];
 
@@ -159,8 +160,7 @@ NSColor* SubtextColor() {
                                fromView:nil];
 
   if (NSPointInRect(location, [self bounds])) {
-    controller_->LineAcceptedAtPoint(static_cast<int>(location.x),
-                                     static_cast<int>(location.y));
+    controller_->AcceptSelectionAtPoint(gfx::Point(NSPointToCGPoint(location)));
   }
 }
 
@@ -172,8 +172,7 @@ NSColor* SubtextColor() {
   NSPoint location = [self convertPoint:[theEvent locationInWindow]
                                fromView:nil];
 
-  controller_->LineSelectedAtPoint(static_cast<int>(location.x),
-                                   static_cast<int>(location.y));
+  controller_->SetSelectionAtPoint(gfx::Point(NSPointToCGPoint(location)));
 }
 
 - (void)mouseDragged:(NSEvent*)theEvent {

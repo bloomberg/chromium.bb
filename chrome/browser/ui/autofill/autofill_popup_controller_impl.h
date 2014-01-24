@@ -10,24 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "content/public/browser/render_widget_host.h"
+#include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
-
-namespace content {
-struct NativeWebKeyboardEvent;
-class RenderViewHost;
-class WebContents;
-}
-
-namespace gfx {
-class Display;
-}
-
-namespace ui {
-class KeyEvent;
-}
 
 namespace autofill {
 
@@ -88,10 +74,11 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // AutofillPopupController implementation.
   virtual void UpdateBoundsAndRedrawPopup() OVERRIDE;
-  virtual void LineSelectedAtPoint(int x, int y) OVERRIDE;
-  virtual void LineAcceptedAtPoint(int x, int y) OVERRIDE;
+  virtual void SetSelectionAtPoint(const gfx::Point& point) OVERRIDE;
+  virtual void AcceptSelectionAtPoint(const gfx::Point& point) OVERRIDE;
   virtual void SelectionCleared() OVERRIDE;
   virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool ShouldHideOnOutsideClick() const OVERRIDE;
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
   virtual int GetIconResourceID(
       const base::string16& resource_name) const OVERRIDE;
@@ -100,7 +87,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual gfx::Rect GetRowBounds(size_t index) OVERRIDE;
   virtual void SetPopupBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual const gfx::Rect& popup_bounds() const OVERRIDE;
-  virtual gfx::NativeView container_view() const OVERRIDE;
+  virtual gfx::NativeView container_view() OVERRIDE;
   virtual const gfx::RectF& element_bounds() const OVERRIDE;
   virtual bool IsRTL() const OVERRIDE;
 
@@ -114,7 +101,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual const gfx::FontList& subtext_font_list() const OVERRIDE;
 #endif
   virtual int selected_line() const OVERRIDE;
-  virtual bool hide_on_outside_click() const OVERRIDE;
+
+  content::WebContents* web_contents();
 
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
@@ -172,59 +160,29 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
 
+  // Contains common popup functionality such as popup layout. Protected for
+  // testing.
+  scoped_ptr<PopupControllerCommon> controller_common_;
+
  private:
   // Clear the internal state of the controller. This is needed to ensure that
   // when the popup is reused it doesn't leak values between uses.
   void ClearState();
 
-  const gfx::Rect RoundedElementBounds() const;
 #if !defined(OS_ANDROID)
   // Calculates and sets the bounds of the popup, including placing it properly
   // to prevent it from going off the screen.
   void UpdatePopupBounds();
 #endif
 
-  // A helper function to get the display closest to the given point (virtual
-  // for testing).
-  virtual gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const;
-
-  // Calculates the width of the popup and the x position of it. These values
-  // will stay on the screen.
-  std::pair<int, int> CalculatePopupXAndWidth(
-      const gfx::Display& left_display,
-      const gfx::Display& right_display,
-      int popup_required_width) const;
-
-  // Calculates the height of the popup and the y position of it. These values
-  // will stay on the screen.
-  std::pair<int, int> CalculatePopupYAndHeight(
-      const gfx::Display& top_display,
-      const gfx::Display& bottom_display,
-      int popup_required_height) const;
-
   AutofillPopupView* view_;  // Weak reference.
   base::WeakPtr<AutofillPopupDelegate> delegate_;
-
-  // The WebContents in which this object should listen for keyboard events
-  // while showing the popup. Can be NULL, in which case this object will not
-  // listen for keyboard events.
-  content::WebContents* web_contents_;
-
-  gfx::NativeView container_view_;  // Weak reference.
-
-  // The bounds of the text element that is the focus of the Autofill.
-  // These coordinates are in screen space.
-  const gfx::RectF element_bounds_;
 
   // The bounds of the Autofill popup.
   gfx::Rect popup_bounds_;
 
   // The text direction of the popup.
   base::i18n::TextDirection text_direction_;
-
-  // The RenderViewHost that this object has registered its keyboard press
-  // callback with.
-  content::RenderViewHost* registered_key_press_event_callback_with_;
 
   // The current Autofill query values.
   std::vector<base::string16> names_;
@@ -249,8 +207,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Whether the popup view should hide on mouse presses outside of it.
   bool hide_on_outside_click_;
-
-  content::RenderWidgetHost::KeyPressEventCallback key_press_event_callback_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };

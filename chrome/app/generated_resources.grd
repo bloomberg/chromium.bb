@@ -15284,6 +15284,13 @@ Do you accept?
     </message>
 
     <!-- Password generation strings -->
+      <message name="IDS_PASSWORD_GENERATION_PROMPT" desc="Autofill dropdown text describing password generation. Will be merged with the next string. Triple quotes necessary to preserve trailing space.">
+        '''This password was generated just for you. Plus we'll remember it so you don't have to. '''
+      </message>
+      <message name="IDS_PASSWORD_GENERATION_LEARN_MORE_LINK" desc="Link text to modify generated password. This is appended to the previous string.">
+        Learn more &#0187;
+      </message>
+
     <message name="IDS_PASSWORD_GENERATION_BUBBLE_TITLE" desc="The title of the bubble asking users if they would like Chrome to generate a password for them on an account creation page.">
       Password Suggestion
     </message>

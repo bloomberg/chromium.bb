@@ -1,0 +1,149 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
+#define CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
+
+#include <string>
+
+#include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
+#include "chrome/browser/ui/autofill/popup_controller_common.h"
+#include "components/autofill/core/common/password_form.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
+
+namespace content {
+struct NativeWebKeyboardEvent;
+class WebContents;
+}
+
+class PasswordManager;
+
+namespace autofill {
+
+class PasswordGenerator;
+class PasswordGenerationPopupObserver;
+class PasswordGenerationPopupView;
+
+// This class controls a PasswordGenerationPopupView. It is responsible for
+// determining the location of the popup, handling keypress events while the
+// popup is active, and notifying both the renderer and the password manager
+// if the password is accepted.
+class PasswordGenerationPopupControllerImpl
+    : public PasswordGenerationPopupController {
+ public:
+  // Create a controller or return |previous| if it is suitable. Will hide
+  // |previous| if it is not returned. |bounds| is the bounds of the element
+  // that we are showing the dropdown for in screen space. |form| is the
+  // identifier for the form that we are filling, and is used to notify
+  // |password_manager| if the password is generated. |generator| is used to
+  // create the password shown. If not NULL, |observer| will be notified of
+  // changes of the popup state.
+  static base::WeakPtr<PasswordGenerationPopupControllerImpl> GetOrCreate(
+      base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
+      const gfx::RectF& bounds,
+      const PasswordForm& form,
+      PasswordGenerator* generator,
+      PasswordManager* password_manager,
+      PasswordGenerationPopupObserver* observer,
+      content::WebContents* web_contents,
+      gfx::NativeView container_view);
+  virtual ~PasswordGenerationPopupControllerImpl();
+
+  // Create a PasswordGenerationPopupView if one doesn't already exist.
+  // Does not update the view if one is already showing.
+  void Show();
+
+  // Accessors.
+  content::WebContents* web_contents() {
+    return controller_common_.web_contents();
+  }
+  const gfx::RectF& element_bounds() {
+    return controller_common_.element_bounds();
+  }
+
+ private:
+  PasswordGenerationPopupControllerImpl(
+      const gfx::RectF& bounds,
+      const PasswordForm& form,
+      PasswordGenerator* generator,
+      PasswordManager* password_manager,
+      PasswordGenerationPopupObserver* observer,
+      content::WebContents* web_contents,
+      gfx::NativeView container_view);
+
+  // PasswordGenerationPopupController implementation:
+  virtual void Hide() OVERRIDE;
+  virtual void ViewDestroyed() OVERRIDE;
+  virtual void SetSelectionAtPoint(const gfx::Point& point) OVERRIDE;
+  virtual void AcceptSelectionAtPoint(const gfx::Point& point) OVERRIDE;
+  virtual void SelectionCleared() OVERRIDE;
+  virtual bool ShouldRepostEvent(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool ShouldHideOnOutsideClick() const OVERRIDE;
+  virtual void OnHelpLinkClicked() OVERRIDE;
+  virtual gfx::NativeView container_view() OVERRIDE;
+  virtual const gfx::Rect& popup_bounds() const OVERRIDE;
+  virtual const gfx::Rect& password_bounds() const OVERRIDE;
+  virtual const gfx::Rect& divider_bounds() const OVERRIDE;
+  virtual const gfx::Rect& help_bounds() const OVERRIDE;
+  virtual bool password_selected() const OVERRIDE;
+  virtual base::string16 password() const OVERRIDE;
+  virtual base::string16 HelpText() OVERRIDE;
+  virtual base::string16 LearnMoreLink() OVERRIDE;
+
+  base::WeakPtr<PasswordGenerationPopupControllerImpl> GetWeakPtr();
+
+  bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
+
+  // Set if the password is currently selected.
+  void PasswordSelected(bool selected);
+
+  // Accept the password. Causes the controller to hide itself as the popup
+  // is no longer necessary.
+  void PasswordAccepted();
+
+  // Accept password if it's selected.
+  bool PossiblyAcceptPassword();
+
+  // Get desired size of popup. Height depends on width because we do text
+  // wrapping.
+  int GetDesiredWidth();
+  int GetDesiredHeight(int width);
+  void CalculateBounds();
+
+  PasswordForm form_;
+  PasswordGenerator* generator_;
+  PasswordManager* password_manager_;
+  PasswordGenerationPopupObserver* observer_;
+
+  // Contains common popup functionality.
+  PopupControllerCommon controller_common_;
+
+  // Handle to the popup. May be NULL if popup isn't showing.
+  PasswordGenerationPopupView* view_;
+
+  // Font used in the popup.
+  gfx::Font font_;
+
+  base::string16 current_password_;
+  bool password_selected_;
+
+  // Bounds for all the elements of the popup.
+  gfx::Rect popup_bounds_;
+  gfx::Rect password_bounds_;
+  gfx::Rect divider_bounds_;
+  gfx::Rect help_bounds_;
+
+  base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationPopupControllerImpl);
+};
+
+}  // namespace autofill
+
+#endif  // CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_

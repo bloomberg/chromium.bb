@@ -23,9 +23,6 @@ class AutofillPopupController;
 // AutofillPopupView.
 class AutofillPopupView {
  public:
-  // The size of the border around the entire results popup, in pixels.
-  static const int kBorderThickness = 1;
-
   // The minimum amount of padding between the Autofill name and subtext,
   // in pixels.
   static const size_t kNamePadding = 15;
