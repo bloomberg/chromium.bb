@@ -162,8 +162,12 @@ DisplayManager::DisplayManager()
 #endif
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE,
                                  screen_ash_.get());
-  if (gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE) ==
-      screen_for_shutdown) {
+  gfx::Screen* current_native =
+      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+  // If there is no native, or the native was for shutdown,
+  // use ash's screen.
+  if (!current_native ||
+      current_native == screen_for_shutdown) {
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                    screen_ash_.get());
   }
