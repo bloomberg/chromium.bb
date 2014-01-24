@@ -32,8 +32,10 @@
 #define ScriptPromise_h
 
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptFunction.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "wtf/Forward.h"
 #include <v8.h>
 
 namespace WebCore {
@@ -64,6 +66,8 @@ public:
     {
         ASSERT(!m_promise.hasNoValue());
     }
+
+    ScriptPromise then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected = PassOwnPtr<ScriptFunction>());
 
     bool isObject() const
     {

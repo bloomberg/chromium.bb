@@ -276,4 +276,6 @@
     [RaisesException] void forceCompositingUpdate(Document document);
 
     void setZoomFactor(float factor);
+
+    [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);
 };

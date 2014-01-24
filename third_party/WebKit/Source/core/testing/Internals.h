@@ -28,6 +28,7 @@
 #define Internals_h
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -307,6 +308,8 @@ public:
     void forceCompositingUpdate(Document*, ExceptionState&);
 
     void setZoomFactor(float);
+
+    ScriptPromise addOneToPromise(ExecutionContext*, ScriptPromise);
 
 private:
     explicit Internals(Document*);

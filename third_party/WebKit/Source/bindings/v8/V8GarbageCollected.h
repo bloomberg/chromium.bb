@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,78 +28,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScopedPersistent_h
-#define ScopedPersistent_h
+#ifndef V8GarbageCollected_h
+#define V8GarbageCollected_h
 
 #include <v8.h>
-#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
 template<typename T>
-class ScopedPersistent {
-    WTF_MAKE_NONCOPYABLE(ScopedPersistent);
+class V8GarbageCollected {
+    WTF_MAKE_NONCOPYABLE(V8GarbageCollected);
 public:
-    ScopedPersistent() { }
+    static T* Cast(v8::Handle<v8::Value> value)
+    {
+        ASSERT(value->IsExternal());
+        T* result = static_cast<T*>(value.As<v8::External>()->Value());
+        RELEASE_ASSERT(result->m_handle == value);
+        return result;
+    }
 
-    ScopedPersistent(v8::Isolate* isolate, v8::Handle<T> handle)
-        : m_handle(isolate, handle)
+protected:
+    V8GarbageCollected(v8::Isolate* isolate)
+        : m_isolate(isolate)
+        , m_handle(isolate, v8::External::New(isolate, static_cast<T*>(this)))
     {
     }
 
-    ~ScopedPersistent()
+    v8::Handle<v8::External> releaseToV8GarbageCollector()
     {
-        clear();
+        ASSERT(!m_handle.isWeak()); // Call this exactly once.
+        v8::Handle<v8::External> result = m_handle.newLocal(m_isolate);
+        m_handle.setWeak(static_cast<T*>(this), &weakCallback);
+        return result;
     }
 
-    ALWAYS_INLINE v8::Local<T> newLocal(v8::Isolate* isolate) const
+    ~V8GarbageCollected()
     {
-        return v8::Local<T>::New(isolate, m_handle);
+        ASSERT(m_handle.isEmpty());
     }
 
-    template<typename P>
-    void setWeak(P* parameters, void (*callback)(const v8::WeakCallbackData<T, P>&))
-    {
-        m_handle.SetWeak(parameters, callback);
-    }
-
-    bool isEmpty() const { return m_handle.IsEmpty(); }
-    bool isWeak() const { return m_handle.IsWeak(); }
-
-    void set(v8::Isolate* isolate, v8::Handle<T> handle)
-    {
-        m_handle.Reset(isolate, handle);
-    }
-
-    // Note: This is clear in the OwnPtr sense, not the v8::Handle sense.
-    void clear()
-    {
-        m_handle.Reset();
-    }
-
-    bool operator==(const ScopedPersistent<T>& other)
-    {
-        return m_handle == other.m_handle;
-    }
-
-    template <class S>
-    bool operator==(const v8::Handle<S> other) const
-    {
-        return m_handle == other;
-    }
+    v8::Isolate* isolate() { return m_isolate; }
 
 private:
-    // FIXME: This function does an unsafe handle access. Remove it.
-    friend class V8AbstractEventListener;
-    friend class V8PerIsolateData;
-    ALWAYS_INLINE v8::Persistent<T>& getUnsafe()
+    static void weakCallback(const v8::WeakCallbackData<v8::External, T>& data)
     {
-        return m_handle;
+        T* self = data.GetParameter();
+        self->m_handle.clear();
+        delete self;
     }
 
-    v8::Persistent<T> m_handle;
+    v8::Isolate* m_isolate;
+    ScopedPersistent<v8::External> m_handle;
 };
 
 } // namespace WebCore
 
-#endif // ScopedPersistent_h
+#endif // V8GarbageCollected_h

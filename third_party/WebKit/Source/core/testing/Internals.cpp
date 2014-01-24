@@ -40,6 +40,8 @@
 #include "RuntimeEnabledFeatures.h"
 #include "TypeConversions.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ScriptFunction.h"
+#include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "core/animation/DocumentTimeline.h"
@@ -125,6 +127,7 @@
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/InstanceCounter.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
 
@@ -2370,6 +2373,39 @@ void Internals::forceCompositingUpdate(Document* document, ExceptionState& excep
 void Internals::setZoomFactor(float factor)
 {
     frame()->setPageZoomFactor(factor);
+}
+
+namespace {
+
+class AddOneFunction : public ScriptFunction {
+public:
+    static PassOwnPtr<ScriptFunction> create(ExecutionContext* context)
+    {
+        return adoptPtr(new AddOneFunction(toIsolate(context)));
+    }
+
+private:
+    AddOneFunction(v8::Isolate* isolate)
+        : ScriptFunction(isolate)
+    {
+    }
+
+    virtual ScriptValue call(ScriptValue value) OVERRIDE
+    {
+        v8::Local<v8::Value> v8Value = value.v8Value();
+        v8::Isolate* isolate = value.isolate();
+        ASSERT(v8Value->IsNumber());
+        int intValue = v8Value.As<v8::Integer>()->Value();
+        ScriptValue result  = ScriptValue(v8::Integer::New(isolate, intValue + 1), isolate);
+        return result;
+    }
+};
+
+} // namespace
+
+ScriptPromise Internals::addOneToPromise(ExecutionContext* context, ScriptPromise promise)
+{
+    return promise.then(AddOneFunction::create(context));
 }
 
 }
