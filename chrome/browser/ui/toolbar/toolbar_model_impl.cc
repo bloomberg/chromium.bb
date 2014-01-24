@@ -152,6 +152,18 @@ GURL ToolbarModelImpl::GetURL() const {
 }
 
 bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
+  // When users type URLs and hit enter, continue to show those URLs until
+  // the navigation commits, because having the omnibox clear immediately
+  // feels like the input was ignored.
+  const NavigationController* navigation_controller = GetNavigationController();
+  if (navigation_controller) {
+    const NavigationEntry* entry = navigation_controller->GetPendingEntry();
+    if (entry &&
+        (entry->GetTransitionType() & content::PAGE_TRANSITION_TYPED) != 0) {
+      return false;
+    }
+  }
+
   return chrome::ShouldDisplayOriginChip() && ShouldDisplayURL() &&
       url_replacement_enabled();
 }
