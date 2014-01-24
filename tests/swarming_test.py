@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 from depot_tools import auto_stub
 import swarming
+import test_utils
 from utils import net
 
 
@@ -646,6 +647,46 @@ class MainTest(TestCase):
         'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
         '\n')
 
+  def test_trigger_no_env_vars(self):
+    with self.assertRaises(SystemExit):
+      main(['trigger'])
+    self._check_output(
+        '',
+        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'swarming.py: error: --swarming is required.'
+        '\n')
+
+  def test_trigger_no_swarming_env_var(self):
+    with self.assertRaises(SystemExit):
+      with test_utils.EnvVars({'ISOLATE_SERVER': 'https://host'}):
+        main(['trigger'])
+    self._check_output(
+        '',
+        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'swarming.py: error: --swarming is required.'
+        '\n')
+
+  def test_trigger_no_isolate_env_var(self):
+    with self.assertRaises(SystemExit):
+      with test_utils.EnvVars({'SWARMING_SERVER': 'https://host'}):
+        main(['trigger'])
+    self._check_output(
+        '',
+        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'swarming.py: error: --isolate-server is required.'
+        '\n')
+
+  def test_trigger_env_var(self):
+    with self.assertRaises(SystemExit):
+      with test_utils.EnvVars({'ISOLATE_SERVER': 'https://host',
+                               'SWARMING_SERVER': 'https://host'}):
+        main(['trigger'])
+    self._check_output(
+        '',
+        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
+        '\n')
+
   def test_trigger_env(self):
     self.mock(swarming.isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
@@ -719,9 +760,15 @@ class MainTest(TestCase):
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
 
 
+def clear_env_vars():
+  for e in ('ISOLATE_SERVER', 'SWARMING_SERVER'):
+    os.environ.pop(e, None)
+
+
 if __name__ == '__main__':
   logging.basicConfig(
       level=logging.DEBUG if '-v' in sys.argv else logging.ERROR)
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
+  clear_env_vars()
   unittest.main()

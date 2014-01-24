@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 from depot_tools import auto_stub
 import isolateserver
+import test_utils
 from utils import threading_utils
 
 
@@ -1031,14 +1032,13 @@ class TestArchive(TestCase):
     finally:
       os.chdir(old_cwd)
 
-  def test_archive_directory(self):
+  def help_test_archive(self, cmd_line_prefix):
     old_cwd = os.getcwd()
     try:
       os.chdir(ROOT_DIR)
       self.mock(isolateserver, 'get_storage', get_storage)
       p = os.path.join(TEST_DIR, 'isolateserver')
-      isolateserver.main(
-          ['archive', '--isolate-server', 'https://localhost:1', p])
+      isolateserver.main(cmd_line_prefix + [p])
       # TODO(maruel): The problem here is that the test depends on the file mode
       # of the files in this directory.
       # Fix is to copy the files in a temporary directory with known file modes.
@@ -1051,10 +1051,24 @@ class TestArchive(TestCase):
     finally:
       os.chdir(old_cwd)
 
+  def test_archive_directory(self):
+    self.help_test_archive(['archive', '--isolate-server',
+                            'https://localhost:1'])
+
+  def test_archive_directory_envvar(self):
+    with test_utils.EnvVars({'ISOLATE_SERVER': 'https://localhost:1'}):
+      self.help_test_archive(['archive'])
+
+
+def clear_env_vars():
+  for e in ('ISOLATE_DEBUG', 'ISOLATE_SERVER'):
+    os.environ.pop(e, None)
+
 
 if __name__ == '__main__':
   if '-v' in sys.argv:
     unittest.TestCase.maxDiff = None
   logging.basicConfig(
       level=(logging.DEBUG if '-v' in sys.argv else logging.ERROR))
+  clear_env_vars()
   unittest.main()

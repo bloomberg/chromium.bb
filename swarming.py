@@ -479,7 +479,7 @@ def add_trigger_options(parser):
   """Adds all options to trigger a task on Swarming."""
   parser.server_group.add_option(
       '-I', '--isolate-server',
-      metavar='URL', default='',
+      metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
       help='Isolate server to use')
 
   parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
@@ -641,7 +641,7 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
     self.server_group = tools.optparse.OptionGroup(self, 'Server')
     self.server_group.add_option(
         '-S', '--swarming',
-        metavar='URL', default='',
+        metavar='URL', default=os.environ.get('SWARMING_SERVER', ''),
         help='Swarming server to use')
     self.add_option_group(self.server_group)
 

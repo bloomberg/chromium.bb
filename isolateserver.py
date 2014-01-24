@@ -2048,7 +2048,7 @@ class OptionParserIsolateServer(tools.OptionParserWithLogging):
         **kwargs)
     self.add_option(
         '-I', '--isolate-server',
-        metavar='URL', default='',
+        metavar='URL', default=os.environ.get('ISOLATE_SERVER', ''),
         help='Isolate server to use')
     self.add_option(
         '--namespace', default='default-gzip',
