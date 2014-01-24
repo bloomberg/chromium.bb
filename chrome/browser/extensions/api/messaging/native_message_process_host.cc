@@ -52,23 +52,30 @@ const char kHostInputOuputError[] =
 namespace extensions {
 
 // static
-bool NativeMessageProcessHost::IsHostAllowed(
-    const PrefService* pref_service,
-    const std::string& native_host_name) {
+NativeMessageProcessHost::PolicyPermission
+NativeMessageProcessHost::IsHostAllowed(const PrefService* pref_service,
+                                        const std::string& native_host_name) {
+  NativeMessageProcessHost::PolicyPermission allow_result = ALLOW_ALL;
+  if (pref_service->IsManagedPreference(
+          pref_names::kNativeMessagingUserLevelHosts)) {
+    if (!pref_service->GetBoolean(pref_names::kNativeMessagingUserLevelHosts))
+      allow_result = ALLOW_SYSTEM_ONLY;
+  }
+
   // All native messaging hosts are allowed if there is no blacklist.
   if (!pref_service->IsManagedPreference(pref_names::kNativeMessagingBlacklist))
-    return true;
+    return allow_result;
   const base::ListValue* blacklist =
       pref_service->GetList(pref_names::kNativeMessagingBlacklist);
   if (!blacklist)
-    return true;
+    return allow_result;
 
   // Check if the name or the wildcard is in the blacklist.
   base::StringValue name_value(native_host_name);
   base::StringValue wildcard_value("*");
   if (blacklist->Find(name_value) == blacklist->end() &&
       blacklist->Find(wildcard_value) == blacklist->end()) {
-    return true;
+    return allow_result;
   }
 
   // The native messaging host is blacklisted. Check the whitelist.
@@ -77,10 +84,10 @@ bool NativeMessageProcessHost::IsHostAllowed(
     const base::ListValue* whitelist =
         pref_service->GetList(pref_names::kNativeMessagingWhitelist);
     if (whitelist && whitelist->Find(name_value) != whitelist->end())
-      return true;
+      return allow_result;
   }
 
-  return false;
+  return DISALLOW;
 }
 
 NativeMessageProcessHost::NativeMessageProcessHost(
@@ -119,10 +126,12 @@ scoped_ptr<NativeMessageProcessHost> NativeMessageProcessHost::Create(
     base::WeakPtr<Client> weak_client_ui,
     const std::string& source_extension_id,
     const std::string& native_host_name,
-    int destination_port) {
+    int destination_port,
+    bool allow_user_level) {
   return CreateWithLauncher(weak_client_ui, source_extension_id,
                             native_host_name, destination_port,
-                            NativeProcessLauncher::CreateDefault(native_view));
+                            NativeProcessLauncher::CreateDefault(
+                                allow_user_level, native_view));
 }
 
 // static

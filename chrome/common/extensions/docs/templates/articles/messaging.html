@@ -336,16 +336,23 @@ example of the manifest file:
     <dd>The manifest file can be located anywhere in the file system.
      The application installer must create registry key
      <code>HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts\<em>com.my_company.my_application</em></code>
+     or
+     <code>HKEY_CURRENT_USER\SOFTWARE\Google\Chrome\NativeMessagingHosts\<em>com.my_company.my_application</em></code>,
      and set default value of that key to the full path to the manifest file.
     </dd>
 
   <dt>OSX:</dt>
     <dd>The manifest file must be placed at
-    <code>/Library/Google/Chrome/NativeMessagingHosts/<em>com.my_company.my_application</em>.json</code>
+    <code>/Library/Google/Chrome/NativeMessagingHosts/<em>com.my_company.my_application</em>.json</code>,
+    or, for applications installed on user level,
+    <code>~/Library/Application Support/Google/Chrome/NativeMessagingHosts/<em>com.my_company.my_application</em>.json</code>.
     </dd>
+
   <dt>Linux:</dt>
     <dd>The manifest file must be placed at
-    <code>/etc/opt/chrome/native-messaging-hosts/<em>com.my_company.my_application</em>.json</code>
+    <code>/etc/opt/chrome/native-messaging-hosts/<em>com.my_company.my_application</em>.json</code>,
+    or, for applications installed on user level,
+    <code>~/.config/chrome/NativeMessagingHosts/<em>com.my_company.my_application</em>.json</code>.
     </dd>
 </dl>
 

@@ -60,7 +60,8 @@ base::FilePath GetHostManifestPathFromCommandLine(
 // Default implementation on NativeProcessLauncher interface.
 class NativeProcessLauncherImpl : public NativeProcessLauncher {
  public:
-  explicit NativeProcessLauncherImpl(intptr_t native_window);
+  NativeProcessLauncherImpl(bool allow_user_level_hosts,
+                            intptr_t native_window);
   virtual ~NativeProcessLauncherImpl();
 
   virtual void Launch(const GURL& origin,
@@ -70,7 +71,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
  private:
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
-    explicit Core(intptr_t native_window);
+    Core(bool allow_user_level_hosts, intptr_t native_window);
     void Launch(const GURL& origin,
                 const std::string& native_host_name,
                 LaunchedCallback callback);
@@ -96,6 +97,8 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
     bool detached_;
 
+    bool allow_user_level_hosts_;
+
     // Handle of the native window corresponding to the extension.
     intptr_t window_handle_;
 
@@ -107,8 +110,10 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
   DISALLOW_COPY_AND_ASSIGN(NativeProcessLauncherImpl);
 };
 
-NativeProcessLauncherImpl::Core::Core(intptr_t window_handle)
+NativeProcessLauncherImpl::Core::Core(bool allow_user_level_hosts,
+                                      intptr_t window_handle)
     : detached_(false),
+      allow_user_level_hosts_(allow_user_level_hosts),
       window_handle_(window_handle) {
 }
 
@@ -147,8 +152,10 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
   // First check if the manifest location is specified in the command line.
   base::FilePath manifest_path =
       GetHostManifestPathFromCommandLine(native_host_name);
-  if (manifest_path.empty())
-    manifest_path = FindManifest(native_host_name, &error_message);
+  if (manifest_path.empty()) {
+    manifest_path =
+        FindManifest(native_host_name, allow_user_level_hosts_, &error_message);
+  }
 
   if (manifest_path.empty()) {
     LOG(ERROR) << "Can't find manifest for native messaging host "
@@ -256,8 +263,10 @@ void NativeProcessLauncherImpl::Core::PostResult(
                  write_file));
 }
 
-NativeProcessLauncherImpl::NativeProcessLauncherImpl(intptr_t window_handle)
-  : core_(new Core(window_handle)) {
+NativeProcessLauncherImpl::NativeProcessLauncherImpl(
+    bool allow_user_level_hosts,
+    intptr_t window_handle)
+    : core_(new Core(allow_user_level_hosts, window_handle)) {
 }
 
 NativeProcessLauncherImpl::~NativeProcessLauncherImpl() {
@@ -274,6 +283,7 @@ void NativeProcessLauncherImpl::Launch(const GURL& origin,
 
 // static
 scoped_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
+    bool allow_user_level_hosts,
     gfx::NativeView native_view) {
   intptr_t window_handle = 0;
 #if defined(OS_WIN)
@@ -281,7 +291,7 @@ scoped_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
       views::HWNDForNativeView(native_view));
 #endif
   return scoped_ptr<NativeProcessLauncher>(
-      new NativeProcessLauncherImpl(window_handle));
+      new NativeProcessLauncherImpl(allow_user_level_hosts, window_handle));
 }
 
 }  // namespace extensions

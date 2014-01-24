@@ -451,6 +451,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSpdyProxyAuthEnabled,
     base::Value::TYPE_BOOLEAN },
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+  { key::kNativeMessagingUserLevelHosts,
+    extensions::pref_names::kNativeMessagingUserLevelHosts,
+    base::Value::TYPE_BOOLEAN },
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 };
 
 #if !defined(OS_IOS)

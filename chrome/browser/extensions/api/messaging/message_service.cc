@@ -370,9 +370,12 @@ void MessageService::OpenChannelToNativeApp(
     return;
   }
 
+  PrefService* pref_service = profile->GetPrefs();
+
   // Verify that the host is not blocked by policies.
-  if (!NativeMessageProcessHost::IsHostAllowed(profile->GetPrefs(),
-                                               native_app_name)) {
+  NativeMessageProcessHost::PolicyPermission policy_permission =
+      NativeMessageProcessHost::IsHostAllowed(pref_service, native_app_name);
+  if (policy_permission == NativeMessageProcessHost::DISALLOW) {
     DispatchOnDisconnect(source, receiver_port_id, kProhibitedByPoliciesError);
     return;
   }
@@ -391,7 +394,8 @@ void MessageService::OpenChannelToNativeApp(
           native_view,
           base::WeakPtr<NativeMessageProcessHost::Client>(
               weak_factory_.GetWeakPtr()),
-          source_extension_id, native_app_name, receiver_port_id);
+          source_extension_id, native_app_name, receiver_port_id,
+          policy_permission == NativeMessageProcessHost::ALLOW_ALL);
 
   // Abandon the channel.
   if (!native_process.get()) {
