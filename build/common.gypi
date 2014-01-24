@@ -1199,9 +1199,6 @@
     # Disable Dart by default.
     'enable_dart%': 0,
 
-    # The desired version of Windows SDK can be set in ~/.gyp/include.gypi.
-    'msbuild_toolset%': '',
-
     # Native Client is enabled by default.
     'disable_nacl%': 0,
 
@@ -2092,9 +2089,6 @@
         # See http://crbug.com/162818.
         'cflags+': ['-Wno-sentinel'],
       }],
-      ['OS=="win" and "<(msbuild_toolset)"!=""', {
-        'msbuild_toolset': '<(msbuild_toolset)',
-      }],
       ['branding=="Chrome"', {
         'defines': ['GOOGLE_CHROME_BUILD'],
       }, {  # else: branding!="Chrome"
@@ -2363,16 +2357,6 @@
                 'DebugInformationFormat': '1',
               }
             }
-          }],
-          ['"<(GENERATOR)"=="msvs"', {
-            'msvs_settings': {
-              'VCLinkerTool': {
-                # Make the pdb name sane. Otherwise foo.exe and foo.dll both
-                # have foo.pdb. The ninja generator already defaults to this and
-                # can't handle the $(TargetPath) macro.
-                'ProgramDatabaseFile': '$(TargetPath).pdb',
-              }
-            },
           }],
         ],  # win_z7!=0
       }],  # OS==win
