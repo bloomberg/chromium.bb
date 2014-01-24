@@ -79,11 +79,12 @@ class ExtensionDownloaderDelegate {
                                          const std::set<int>& request_ids);
 
   // Invoked if the extension had an update available and its crx was
-  // successfully downloaded to |path|. Ownership of that file is transferred
-  // to the delegate.
+  // successfully downloaded to |path|. |ownership_passed| is true if delegate
+  // should get ownership of the file.
   virtual void OnExtensionDownloadFinished(
       const std::string& id,
       const base::FilePath& path,
+      bool file_ownership_passed,
       const GURL& download_url,
       const std::string& version,
       const PingResult& ping_result,

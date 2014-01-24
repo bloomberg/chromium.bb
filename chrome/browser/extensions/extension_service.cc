@@ -48,6 +48,7 @@
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_cache.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -244,6 +245,11 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(Extension::IdIsValid(id));
 
+  if (Manifest::IsExternalLocation(location)) {
+    // All extensions that are not user specific can be cached.
+    extensions::ExtensionCache::GetInstance()->AllowCaching(id);
+  }
+
   const Extension* extension = GetExtensionById(id, true);
   if (extension) {
     // Already installed. Skip this install if the current location has
@@ -372,11 +378,13 @@ ExtensionService::ExtensionService(Profile* profile,
           switches::kExtensionsUpdateFrequency),
           &update_frequency);
     }
-    updater_.reset(new extensions::ExtensionUpdater(this,
-                                                    extension_prefs,
-                                                    profile->GetPrefs(),
-                                                    profile,
-                                                    update_frequency));
+    updater_.reset(new extensions::ExtensionUpdater(
+        this,
+        extension_prefs,
+        profile->GetPrefs(),
+        profile,
+        update_frequency,
+        extensions::ExtensionCache::GetInstance()));
   }
 
   component_loader_.reset(
@@ -614,6 +622,7 @@ void ExtensionService::FinishVerifyAllExtensions(bool success) {
 
 bool ExtensionService::UpdateExtension(const std::string& id,
                                        const base::FilePath& extension_path,
+                                       bool file_ownership_passed,
                                        const GURL& download_url,
                                        CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -690,7 +699,7 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 
   installer->set_creation_flags(creation_flags);
 
-  installer->set_delete_source(true);
+  installer->set_delete_source(file_ownership_passed);
   installer->set_download_url(download_url);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
   installer->InstallCrx(extension_path);

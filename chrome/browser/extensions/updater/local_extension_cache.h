@@ -22,6 +22,10 @@ namespace extensions {
 // between multiple clients. Public interface can be used only from UI thread.
 class LocalExtensionCache {
  public:
+  // Callback invoked on UI thread when PutExtension is completed.
+  typedef base::Callback<void(const base::FilePath& file_path,
+                              bool file_ownership_passed)> PutExtensionCallback;
+
   // |cache_dir| - directory that will be used for caching CRX files.
   // |max_cache_size| - maximum disk space that cache can use, 0 means no limit.
   // |max_cache_age| - maximum age that unused item can be kept in cache, 0 age
@@ -58,13 +62,12 @@ class LocalExtensionCache {
   // Put extension with |id| and |version| into local cache. Older version in
   // the cache will be on next run so it can be safely used. Extension will be
   // marked as used with current timestamp. The file will be available via
-  // GetExtension when |callback| is called. Original |file_path| won't be
-  // deleted from the disk. There is no guarantee that |callback| will be
-  // called.
+  // GetExtension when |callback| is called. PutExtension may get ownership
+  // of |file_path| or return it back via |callback|.
   void PutExtension(const std::string& id,
                     const base::FilePath& file_path,
                     const std::string& version,
-                    const base::Closure& callback);
+                    const PutExtensionCallback& callback);
 
   // Remove extension with |id| from local cache, corresponding crx file will be
   // removed from disk too.
@@ -149,12 +152,13 @@ class LocalExtensionCache {
       const std::string& id,
       const base::FilePath& file_path,
       const std::string& version,
-      const base::Closure& callback);
+      const PutExtensionCallback& callback);
 
   // Invoked on the UI thread when a new entry has been installed in the cache.
   void OnCacheEntryInstalled(const std::string& id,
                              const CacheItemInfo& info,
-                             const base::Closure& callback);
+                             bool was_error,
+                             const PutExtensionCallback& callback);
 
   // Remove crx file at |file_path| in the cache. This method is invoked via
   // the |backend_task_runner_|.

@@ -37,6 +37,7 @@ ExternalCache::ExternalCache(const base::FilePath& cache_dir,
                              bool wait_for_cache_initialization)
     : local_cache_(cache_dir, 0, base::TimeDelta(), backend_task_runner),
       request_context_(request_context),
+      backend_task_runner_(backend_task_runner),
       delegate_(delegate),
       always_check_updates_(always_check_updates),
       wait_for_cache_initialization_(wait_for_cache_initialization),
@@ -144,12 +145,14 @@ void ExternalCache::OnExtensionDownloadFailed(
 void ExternalCache::OnExtensionDownloadFinished(
     const std::string& id,
     const base::FilePath& path,
+    bool file_ownership_passed,
     const GURL& download_url,
     const std::string& version,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids) {
+  DCHECK(file_ownership_passed);
   local_cache_.PutExtension(id, path, version,
-                            base::Bind(&ExternalCache::CacheEntryInstalled,
+                            base::Bind(&ExternalCache::OnPutExtension,
                                        weak_ptr_factory_.GetWeakPtr(),
                                        id));
 }
@@ -245,7 +248,7 @@ void ExternalCache::CheckCache() {
   }
 
   if (downloader_)
-    downloader_->StartAllPending();
+    downloader_->StartAllPending(NULL);
 
   VLOG(1) << "Updated ExternalCache, there are "
           << cached_extensions_->size() << " extensions cached";
@@ -253,9 +256,14 @@ void ExternalCache::CheckCache() {
   UpdateExtensionLoader();
 }
 
-void ExternalCache::CacheEntryInstalled(const std::string& id) {
-  if (local_cache_.is_shutdown())
+void ExternalCache::OnPutExtension(const std::string& id,
+                                   const base::FilePath& file_path,
+                                   bool file_ownership_passed) {
+  if (local_cache_.is_shutdown() || file_ownership_passed) {
+    backend_task_runner_->PostTask(FROM_HERE,
+        base::Bind(base::IgnoreResult(&base::DeleteFile), file_path, true));
     return;
+  }
 
   VLOG(1) << "ExternalCache installed a new extension in the cache " << id;
 
@@ -268,9 +276,8 @@ void ExternalCache::CacheEntryInstalled(const std::string& id) {
   // Copy entry to don't modify it inside extensions_.
   entry = entry->DeepCopy();
 
-  base::FilePath file_path;
   std::string version;
-  if (!local_cache_.GetExtension(id, &file_path, &version)) {
+  if (!local_cache_.GetExtension(id, NULL, &version)) {
     // Copy entry to don't modify it inside extensions_.
     LOG(ERROR) << "Can't find installed extension in cache " << id;
     return;

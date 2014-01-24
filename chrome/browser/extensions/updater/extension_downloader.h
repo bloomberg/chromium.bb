@@ -42,6 +42,7 @@ struct UpdateDetails {
   base::Version version;
 };
 
+class ExtensionCache;
 class ExtensionUpdaterTest;
 
 // A class that checks for updates of a given list of extensions, and downloads
@@ -76,7 +77,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
 
   // Schedules a fetch of the manifest of all the extensions added with
   // AddExtension() and AddPendingExtension().
-  void StartAllPending();
+  void StartAllPending(ExtensionCache* cache);
 
   // Schedules an update check of the blacklist.
   void StartBlacklistUpdate(const std::string& version,
@@ -191,6 +192,15 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   // attempt to download.
   void NotifyUpdateFound(const std::string& id, const std::string& version);
 
+  // Do real work of StartAllPending. If .crx cache is used, this function
+  // is called when cache is ready.
+  void DoStartAllPending();
+
+  // Notify delegate and remove ping results.
+  void NotifyDelegateDownloadFinished(scoped_ptr<ExtensionFetch> fetch_data,
+                                      const base::FilePath& crx_path,
+                                      bool file_ownership_passed);
+
   // The delegate that receives the crx files downloaded by the
   // ExtensionDownloader, and that fills in optional ping and update url data.
   ExtensionDownloaderDelegate* delegate_;
@@ -223,6 +233,9 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
 
   // Maps an extension-id to its PingResult data.
   std::map<std::string, ExtensionDownloaderDelegate::PingResult> ping_results_;
+
+  // Cache for .crx files.
+  ExtensionCache* extension_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloader);
 };

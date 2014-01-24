@@ -97,13 +97,16 @@ bool LocalExtensionCache::GetExtension(const std::string& id,
 void LocalExtensionCache::PutExtension(const std::string& id,
                                        const base::FilePath& file_path,
                                        const std::string& version,
-                                       const base::Closure& callback) {
-  if (state_ != kReady)
+                                       const PutExtensionCallback& callback) {
+  if (state_ != kReady) {
+    callback.Run(file_path, true);
     return;
+  }
 
   Version version_validator(version);
   if (!version_validator.IsValid()) {
     LOG(ERROR) << "Extension " << id << " has bad version " << version;
+    callback.Run(file_path, true);
     return;
   }
 
@@ -115,6 +118,7 @@ void LocalExtensionCache::PutExtension(const std::string& id,
       LOG(WARNING) << "Cache contains newer or the same version "
                    << prev_version.GetString() << " for extension "
                    << id << " version " << version;
+      callback.Run(file_path, true);
       return;
     }
   }
@@ -339,25 +343,29 @@ void LocalExtensionCache::BackendInstallCacheEntry(
     const std::string& id,
     const base::FilePath& file_path,
     const std::string& version,
-    const base::Closure& callback) {
+    const PutExtensionCallback& callback) {
   std::string basename = id + "-" + version + kCRXFileExtension;
   base::FilePath cached_crx_path = cache_dir.AppendASCII(basename);
 
+  bool was_error = false;
   if (base::PathExists(cached_crx_path)) {
     LOG(ERROR) << "File already exists " << file_path.value();
-    return;
-  }
-
-  if (!base::CopyFile(file_path, cached_crx_path)) {
-    LOG(ERROR) << "Failed to copy from " << file_path.value()
-               << " to " << cached_crx_path.value();
-    return;
+    cached_crx_path = file_path;
+    was_error = true;
   }
 
   base::File::Info info;
-  if (!base::GetFileInfo(cached_crx_path, &info)) {
-    LOG(ERROR) << "Failed to stat file " << cached_crx_path.value();
-    return;
+  if (!was_error) {
+    if (!base::Move(file_path, cached_crx_path)) {
+      LOG(ERROR) << "Failed to copy from " << file_path.value()
+                 << " to " << cached_crx_path.value();
+      cached_crx_path = file_path;
+      was_error = true;
+    } else {
+      was_error = !base::GetFileInfo(cached_crx_path, &info);
+      VLOG(1) << "Cache entry installed for extension id " << id
+              << " version " << version;
+    }
   }
 
   content::BrowserThread::PostTask(
@@ -368,26 +376,35 @@ void LocalExtensionCache::BackendInstallCacheEntry(
                  id,
                  CacheItemInfo(version, info.last_modified,
                                info.size, cached_crx_path),
+                 was_error,
                  callback));
 }
 
-void LocalExtensionCache::OnCacheEntryInstalled(const std::string& id,
-                                                const CacheItemInfo& info,
-                                                const base::Closure& callback) {
-  if (state_ == kShutdown)
+void LocalExtensionCache::OnCacheEntryInstalled(
+    const std::string& id,
+    const CacheItemInfo& info,
+    bool was_error,
+    const PutExtensionCallback& callback) {
+  if (state_ == kShutdown || was_error) {
+    callback.Run(info.file_path, true);
     return;
+  }
 
   CacheMap::iterator it = cached_extensions_.find(id);
   if (it != cached_extensions_.end()) {
     Version new_version(info.version);
     Version prev_version(it->second.version);
     if (new_version.CompareTo(prev_version) <= 0) {
-      // Cache contains newer or the same version.
+      DCHECK(0) << "Cache contains newer or the same version";
+      callback.Run(info.file_path, true);
       return;
     }
   }
-  cached_extensions_.insert(std::make_pair(id, info));
-  callback.Run();
+  it = cached_extensions_.insert(std::make_pair(id, info)).first;
+  // Time from file system can have lower precision so use precise "now".
+  it->second.last_used = base::Time::Now();
+
+  callback.Run(info.file_path, false);
 }
 
 // static
@@ -421,6 +438,7 @@ void LocalExtensionCache::CleanUp() {
     if ((*it)->second.last_used < min_cache_age_ ||
         (max_cache_size_ && total_size > max_cache_size_)) {
       total_size -= (*it)->second.size;
+      VLOG(1) << "Clean up cached extension id " << (*it)->first;
       RemoveExtension((*it)->first);
     }
   }

@@ -26,6 +26,7 @@ class ExtensionService;
 class Profile;
 
 namespace extensions {
+class ExtensionCacheFake;
 class ExtensionSet;
 class ProcessManager;
 }
@@ -72,6 +73,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
       const extensions::ExtensionSet* extensions, const base::FilePath& path);
 
   // InProcessBrowserTest
+  virtual void SetUp() OVERRIDE;
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
@@ -340,6 +342,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   // The default profile to be used.
   Profile* profile_;
+
+  // Cache cache implementation.
+  scoped_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSERTEST_H_

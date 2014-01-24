@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -593,6 +594,11 @@ class PolicyTest : public InProcessBrowserTest {
   PolicyTest() {}
   virtual ~PolicyTest() {}
 
+  virtual void SetUp() OVERRIDE {
+    test_extension_cache_.reset(new extensions::ExtensionCacheFake());
+    InProcessBrowserTest::SetUp();
+  }
+
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
     EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -739,6 +745,7 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
   MockConfigurationPolicyProvider provider_;
+  scoped_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
 #if defined(OS_CHROMEOS)
   QuitMessageLoopAfterScreenshot observer_;
 #endif

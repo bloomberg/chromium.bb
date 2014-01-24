@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -93,6 +94,11 @@ const Extension* ExtensionBrowserTest::GetExtensionByPath(
     }
   }
   return NULL;
+}
+
+void ExtensionBrowserTest::SetUp() {
+  test_extension_cache_.reset(new extensions::ExtensionCacheFake());
+  InProcessBrowserTest::SetUp();
 }
 
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {

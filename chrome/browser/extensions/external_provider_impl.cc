@@ -35,7 +35,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
-#include "chrome/browser/chromeos/extensions/external_pref_cache_loader.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
@@ -440,8 +439,8 @@ void ExternalProviderImpl::CreateExternalProviders(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
                 service,
-                new chromeos::ExternalPrefCacheLoader(
-                    external_apps_path_id, profile),
+                new ExternalPrefLoader(external_apps_path_id,
+                                       ExternalPrefLoader::NONE),
                 profile,
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,

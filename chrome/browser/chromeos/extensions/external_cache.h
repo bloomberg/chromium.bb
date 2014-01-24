@@ -86,6 +86,7 @@ class ExternalCache : public content::NotificationObserver,
   virtual void OnExtensionDownloadFinished(
       const std::string& id,
       const base::FilePath& path,
+      bool file_ownership_passed,
       const GURL& download_url,
       const std::string& version,
       const PingResult& ping_result,
@@ -118,12 +119,17 @@ class ExternalCache : public content::NotificationObserver,
   void CheckCache();
 
   // Invoked on the UI thread when a new entry has been installed in the cache.
-  void CacheEntryInstalled(const std::string& id);
+  void OnPutExtension(const std::string& id,
+                      const base::FilePath& file_path,
+                      bool file_ownership_passed);
 
   extensions::LocalExtensionCache local_cache_;
 
   // Request context used by the |downloader_|.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // Task runner for executing file I/O tasks.
+  const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Delegate that would like to get notifications about cache updates.
   Delegate* delegate_;

@@ -209,6 +209,7 @@ TEST_F(ExternalCacheTest, Basic) {
   CreateFile(temp_file2);
   external_cache.OnExtensionDownloadFinished(kTestExtensionId2,
       temp_file2,
+      true,
       GURL(),
       "2",
       extensions::ExtensionDownloaderDelegate::PingResult(),
@@ -237,6 +238,7 @@ TEST_F(ExternalCacheTest, Basic) {
   CreateFile(temp_file4);
   external_cache.OnExtensionDownloadFinished(kTestExtensionId4,
       temp_file4,
+      true,
       GURL(),
       "4",
       extensions::ExtensionDownloaderDelegate::PingResult(),

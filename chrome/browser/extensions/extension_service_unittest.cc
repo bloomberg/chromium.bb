@@ -966,7 +966,7 @@ class ExtensionServiceTest
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_CRX_INSTALLER_DONE,
         base::Bind(&IsCrxInstallerDone, &installer));
-    service_->UpdateExtension(id, path, GURL(), &installer);
+    service_->UpdateExtension(id, path, true, GURL(), &installer);
 
     if (installer)
       observer.Wait();
@@ -2916,7 +2916,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
 
   // Update should fail and extension should not be updated.
   path = data_dir_.AppendASCII("good2.crx");
-  bool updated = service_->UpdateExtension(good_crx, path, GURL(), NULL);
+  bool updated = service_->UpdateExtension(good_crx, path, true, GURL(), NULL);
   ASSERT_FALSE(updated);
   ASSERT_EQ("1.0.0.0",
             service_->GetExtensionById(good_crx, false)->

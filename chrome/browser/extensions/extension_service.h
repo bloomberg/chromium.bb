@@ -85,6 +85,7 @@ class ExtensionServiceInterface
   virtual bool UpdateExtension(
       const std::string& id,
       const base::FilePath& path,
+      bool file_ownership_passed,
       const GURL& download_url,
       extensions::CrxInstaller** out_crx_installer) = 0;
   virtual const extensions::Extension* GetExtensionById(
@@ -234,6 +235,7 @@ class ExtensionService
   virtual bool UpdateExtension(
       const std::string& id,
       const base::FilePath& extension_path,
+      bool file_ownership_passed,
       const GURL& download_url,
       extensions::CrxInstaller** out_crx_installer) OVERRIDE;
 

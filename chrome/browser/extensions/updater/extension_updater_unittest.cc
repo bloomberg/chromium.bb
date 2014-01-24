@@ -125,8 +125,9 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
                                                Error,
                                                const PingResult&,
                                                const std::set<int>&));
-  MOCK_METHOD6(OnExtensionDownloadFinished, void(const std::string&,
+  MOCK_METHOD7(OnExtensionDownloadFinished, void(const std::string&,
                                                  const base::FilePath&,
+                                                 bool,
                                                  const GURL&,
                                                  const std::string&,
                                                  const PingResult&,
@@ -391,6 +392,7 @@ class ServiceForDownloadTests : public MockService {
   virtual bool UpdateExtension(
       const std::string& id,
       const base::FilePath& extension_path,
+      bool file_ownership_passed,
       const GURL& download_url,
       CrxInstaller** out_crx_installer) OVERRIDE {
     extension_id_ = id;
@@ -563,7 +565,7 @@ class ExtensionUpdaterTest : public testing::Test {
     net::TestURLFetcherFactory factory;
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), 60*60*24);
+        service.profile(), 60*60*24, NULL);
     updater.Start();
 
     // Tell the update that it's time to do update checks.
@@ -660,7 +662,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_CALL(delegate, GetPingDataForExtension(id, _));
 
     downloader.AddExtension(*extensions[0].get(), 0);
-    downloader.StartAllPending();
+    downloader.StartAllPending(NULL);
     net::TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
     ASSERT_TRUE(fetcher);
@@ -972,7 +974,8 @@ class ExtensionUpdaterTest : public testing::Test {
     ExtensionUpdater updater(service.get(), service->extension_prefs(),
                              service->pref_service(),
                              service->profile(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs,
+                             NULL);
     updater.Start();
     ResetDownloader(
         &updater,
@@ -1054,7 +1057,7 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForDownloadTests service(prefs_.get());
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), kUpdateFrequencySecs);
+        service.profile(), kUpdateFrequencySecs, NULL);
     updater.Start();
     ResetDownloader(
         &updater,
@@ -1268,7 +1271,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), kUpdateFrequencySecs);
+        service.profile(), kUpdateFrequencySecs, NULL);
     ExtensionUpdater::CheckParams params;
     updater.Start();
     updater.CheckNow(params);
@@ -1361,7 +1364,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ExtensionUpdater updater(
         &service, service.extension_prefs(), service.pref_service(),
-        service.profile(), kUpdateFrequencySecs);
+        service.profile(), kUpdateFrequencySecs, NULL);
     updater.Start();
     ResetDownloader(
         &updater,
@@ -1479,7 +1482,7 @@ TEST_F(ExtensionUpdaterTest, TestNonAutoUpdateableLocations) {
   ServiceForManifestTests service(prefs_.get());
   ExtensionUpdater updater(&service, service.extension_prefs(),
                            service.pref_service(), service.profile(),
-                           kUpdateFrequencySecs);
+                           kUpdateFrequencySecs, NULL);
   MockExtensionDownloaderDelegate delegate;
   // Set the downloader directly, so that all its events end up in the mock
   // |delegate|.
@@ -1511,7 +1514,7 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
   ServiceForManifestTests service(prefs_.get());
   ExtensionUpdater updater(&service, service.extension_prefs(),
                            service.pref_service(), service.profile(),
-                           kUpdateFrequencySecs);
+                           kUpdateFrequencySecs, NULL);
   MockExtensionDownloaderDelegate delegate;
   // Set the downloader directly, so that all its events end up in the mock
   // |delegate|.
@@ -1559,7 +1562,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   EXPECT_TRUE(
       downloader->AddPendingExtension(id, GURL("http://example.com/update"),
                                       0));
-  downloader->StartAllPending();
+  downloader->StartAllPending(NULL);
   Mock::VerifyAndClearExpectations(&delegate);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
@@ -1567,12 +1570,12 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   id = id_util::GenerateId("foo2");
   EXPECT_FALSE(
       downloader->AddPendingExtension(id, GURL("http:google.com:foo"), 0));
-  downloader->StartAllPending();
+  downloader->StartAllPending(NULL);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
   // Extensions with empty IDs should be rejected.
   EXPECT_FALSE(downloader->AddPendingExtension(std::string(), GURL(), 0));
-  downloader->StartAllPending();
+  downloader->StartAllPending(NULL);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
   // TODO(akalin): Test that extensions with empty update URLs
@@ -1588,7 +1591,7 @@ TEST_F(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   id = id_util::GenerateId("foo3");
   EXPECT_CALL(delegate, GetPingDataForExtension(id, _)).WillOnce(Return(false));
   EXPECT_TRUE(downloader->AddPendingExtension(id, GURL(), 0));
-  downloader->StartAllPending();
+  downloader->StartAllPending(NULL);
   EXPECT_EQ(1u, ManifestFetchersCount(downloader.get()));
 
   net::TestURLFetcher* fetcher =
@@ -1617,7 +1620,7 @@ TEST_F(ExtensionUpdaterTest, TestCheckSoon) {
   net::TestURLFetcherFactory factory;
   ExtensionUpdater updater(
       &service, service.extension_prefs(), service.pref_service(),
-      service.profile(), kUpdateFrequencySecs);
+      service.profile(), kUpdateFrequencySecs, NULL);
   EXPECT_FALSE(updater.WillCheckSoon());
   updater.Start();
   EXPECT_FALSE(updater.WillCheckSoon());
