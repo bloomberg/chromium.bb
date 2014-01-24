@@ -1338,7 +1338,7 @@ void CancelOnNewTabWhenDraggingStep2(
 // Adds another tab, detaches into separate window, adds another tab and
 // verifies the run loop ends.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       CancelOnNewTabWhenDragging) {
+                       MAYBE_CancelOnNewTabWhenDragging) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Add another tab to browser().
