@@ -69,6 +69,7 @@
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/uma_private_resource.h"
 #include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
@@ -508,6 +509,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       checked_for_plugin_messaging_interface_(false),
       checked_for_plugin_pdf_interface_(false),
       gamepad_impl_(new GamepadImpl()),
+      uma_private_impl_(NULL),
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
@@ -2412,6 +2414,17 @@ ppapi::Resource* PepperPluginInstanceImpl::GetSingletonResource(
       return NULL;
     case ppapi::GAMEPAD_SINGLETON_ID:
       return gamepad_impl_.get();
+    case ppapi::UMA_SINGLETON_ID: {
+      if (!uma_private_impl_) {
+        RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
+        if (host_impl->in_process_router()) {
+          uma_private_impl_ = new ppapi::proxy::UMAPrivateResource(
+              host_impl->in_process_router()->GetPluginConnection(instance),
+              instance);
+        }
+      }
+      return uma_private_impl_.get();
+    }
   }
 
   NOTREACHED();

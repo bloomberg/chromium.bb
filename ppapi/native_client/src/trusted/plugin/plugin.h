@@ -23,6 +23,7 @@
 
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/private/uma_private.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/view.h"
@@ -253,6 +254,7 @@ class Plugin : public pp::InstancePrivate {
   void set_exit_status(int exit_status);
 
   const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
+  pp::UMAPrivate& uma_interface() { return uma_interface_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
@@ -277,6 +279,24 @@ class Plugin : public pp::InstancePrivate {
   ServiceRuntime* main_service_runtime() const {
     return main_subprocess_.service_runtime();
   }
+
+  // Histogram helper functions, internal to Plugin so they can use
+  // uma_interface_ normally.
+  void HistogramTimeSmall(const std::string& name, int64_t ms);
+  void HistogramTimeMedium(const std::string& name, int64_t ms);
+  void HistogramTimeLarge(const std::string& name, int64_t ms);
+  void HistogramSizeKB(const std::string& name, int32_t sample);
+  void HistogramEnumerate(const std::string& name,
+                          int sample,
+                          int maximum,
+                          int out_of_range_replacement);
+  void HistogramEnumerateOsArch(const std::string& sandbox_isa);
+  void HistogramEnumerateLoadStatus(PluginErrorCode error_code,
+                                    bool is_installed);
+  void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code,
+                                          bool is_installed);
+  void HistogramEnumerateManifestIsDataURI(bool is_data_uri);
+  void HistogramHTTPStatusCode(const std::string& name, int status);
 
   // Help load a nacl module, from the file specified in wrapper.
   // This will fully initialize the |subprocess| if the load was successful.
@@ -465,6 +485,7 @@ class Plugin : public pp::InstancePrivate {
   int exit_status_;
 
   const PPB_NaCl_Private* nacl_interface_;
+  pp::UMAPrivate uma_interface_;
 };
 
 }  // namespace plugin

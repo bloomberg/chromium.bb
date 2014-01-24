@@ -32,6 +32,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/proxy/truetype_font_singleton_resource.h"
+#include "ppapi/proxy/uma_private_resource.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
@@ -374,6 +375,9 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
       break;
     case TRUETYPE_FONT_SINGLETON_ID:
       new_singleton = new TrueTypeFontSingletonResource(connection, instance);
+      break;
+    case UMA_SINGLETON_ID:
+      new_singleton = new UMAPrivateResource(connection, instance);
       break;
 // Flash/trusted resources aren't needed for NaCl.
 #if !defined(OS_NACL) && !defined(NACL_WIN64)

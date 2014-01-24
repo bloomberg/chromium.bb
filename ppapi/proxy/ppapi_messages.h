@@ -1211,6 +1211,25 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_ExtensionsCommon_Call,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_ExtensionsCommon_CallReply,
                      base::ListValue /* output */)
 
+// UMA
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UMA_Create)
+IPC_MESSAGE_CONTROL5(PpapiHostMsg_UMA_HistogramCustomTimes,
+                     std::string /* name */,
+                     int64_t /* sample */,
+                     int64_t /* min */,
+                     int64_t /* max */,
+                     uint32_t /* bucket_count */)
+IPC_MESSAGE_CONTROL5(PpapiHostMsg_UMA_HistogramCustomCounts,
+                     std::string /* name */,
+                     int32_t /* sample */,
+                     int32_t /* min */,
+                     int32_t /* max */,
+                     uint32_t /* bucket_count */)
+IPC_MESSAGE_CONTROL3(PpapiHostMsg_UMA_HistogramEnumeration,
+                     std::string /* name */,
+                     int32_t /* sample */,
+                     int32_t /* boundary_value */)
+
 // File chooser.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileChooser_Create)
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,

@@ -5,12 +5,9 @@
 #ifndef CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 #define CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_
 
+#include <set>
 #include <string>
 #include <vector>
-
-#if defined(ENABLE_PLUGINS)
-#include <set>
-#endif
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -154,6 +151,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,
       const ChromeViewHostMsg_GetPluginInfo_Output& output);
+
+  static bool IsExtensionOrSharedModuleWhitelisted(
+      const GURL& url, const std::set<std::string>& whitelist);
 
   // TODO(mpcomplete): remove after we collect histogram data.
   // http://crbug.com/100411

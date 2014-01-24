@@ -34,7 +34,6 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
-#include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/text_input_controller.h"
@@ -104,146 +103,6 @@ const PPB_NaCl_Private* GetNaClInterface() {
       module->GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
 }
 
-const PPB_UMA_Private* GetUMAInterface() {
-  pp::Module *module = pp::Module::Get();
-  CHECK(module);
-  return static_cast<const PPB_UMA_Private*>(
-      module->GetBrowserInterface(PPB_UMA_PRIVATE_INTERFACE));
-}
-
-void HistogramTimeSmall(const std::string& name, int64_t ms) {
-  if (ms < 0) return;
-
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
-
-  ptr->HistogramCustomTimes(pp::Var(name).pp_var(),
-                            ms,
-                            kTimeSmallMin, kTimeSmallMax,
-                            kTimeSmallBuckets);
-}
-
-void HistogramTimeMedium(const std::string& name, int64_t ms) {
-  if (ms < 0) return;
-
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
-
-  ptr->HistogramCustomTimes(pp::Var(name).pp_var(),
-                            ms,
-                            kTimeMediumMin, kTimeMediumMax,
-                            kTimeMediumBuckets);
-}
-
-void HistogramTimeLarge(const std::string& name, int64_t ms) {
-  if (ms < 0) return;
-
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
-
-  ptr->HistogramCustomTimes(pp::Var(name).pp_var(),
-                            ms,
-                            kTimeLargeMin, kTimeLargeMax,
-                            kTimeLargeBuckets);
-}
-
-void HistogramSizeKB(const std::string& name, int32_t sample) {
-  if (sample < 0) return;
-
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
-
-  ptr->HistogramCustomCounts(pp::Var(name).pp_var(),
-                             sample,
-                             kSizeKBMin, kSizeKBMax,
-                             kSizeKBBuckets);
-}
-
-void HistogramEnumerate(const std::string& name, int sample, int maximum,
-                        int out_of_range_replacement) {
-  if (sample < 0 || sample >= maximum) {
-    if (out_of_range_replacement < 0)
-      // No replacement for bad input, abort.
-      return;
-    else
-      // Use a specific value to signal a bad input.
-      sample = out_of_range_replacement;
-  }
-  const PPB_UMA_Private* ptr = GetUMAInterface();
-  if (ptr == NULL) return;
-  ptr->HistogramEnumeration(pp::Var(name).pp_var(), sample, maximum);
-}
-
-void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
-  enum NaClOSArch {
-    kNaClLinux32 = 0,
-    kNaClLinux64,
-    kNaClLinuxArm,
-    kNaClMac32,
-    kNaClMac64,
-    kNaClMacArm,
-    kNaClWin32,
-    kNaClWin64,
-    kNaClWinArm,
-    kNaClOSArchMax
-  };
-
-  NaClOSArch os_arch = kNaClOSArchMax;
-#if NACL_LINUX
-  os_arch = kNaClLinux32;
-#elif NACL_OSX
-  os_arch = kNaClMac32;
-#elif NACL_WINDOWS
-  os_arch = kNaClWin32;
-#endif
-
-  if (sandbox_isa == "x86-64")
-    os_arch = static_cast<NaClOSArch>(os_arch + 1);
-  if (sandbox_isa == "arm")
-    os_arch = static_cast<NaClOSArch>(os_arch + 2);
-
-  HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
-}
-
-void HistogramEnumerateLoadStatus(PluginErrorCode error_code,
-                                  bool is_installed) {
-  HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, ERROR_MAX,
-                     ERROR_UNKNOWN);
-
-  // Gather data to see if being installed changes load outcomes.
-  const char* name = is_installed ? "NaCl.LoadStatus.Plugin.InstalledApp" :
-      "NaCl.LoadStatus.Plugin.NotInstalledApp";
-  HistogramEnumerate(name, error_code, ERROR_MAX,
-                     ERROR_UNKNOWN);
-}
-
-void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code,
-                                        bool is_installed) {
-  HistogramEnumerate("NaCl.LoadStatus.SelLdr", error_code, NACL_ERROR_CODE_MAX,
-                     LOAD_STATUS_UNKNOWN);
-
-  // Gather data to see if being installed changes load outcomes.
-  const char* name = is_installed ? "NaCl.LoadStatus.SelLdr.InstalledApp" :
-      "NaCl.LoadStatus.SelLdr.NotInstalledApp";
-  HistogramEnumerate(name, error_code, NACL_ERROR_CODE_MAX,
-                     LOAD_STATUS_UNKNOWN);
-}
-
-void HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
-  HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2, -1);
-}
-
-void HistogramHTTPStatusCode(const std::string& name, int status) {
-  // Log the status codes in rough buckets - 1XX, 2XX, etc.
-  int sample = status / 100;
-  // HTTP status codes only go up to 5XX, using "6" to indicate an internal
-  // error.
-  // Note: installed files may have "0" for a status code.
-  if (status < 0 || status >= 600)
-    sample = 6;
-  HistogramEnumerate(name, sample, 7, 6);
-}
-
 }  // namespace
 
 bool Plugin::EarlyInit(int argc, const char* argn[], const char* argv[]) {
@@ -306,20 +165,125 @@ void Plugin::ShutDownSubprocesses() {
                  static_cast<void*>(this)));
 }
 
-void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
-                                     ServiceRuntime* service_runtime,
-                                     const SelLdrStartParams& params,
-                                     bool* success) {
-  if (pp_error != PP_OK) {
-    PLUGIN_PRINTF(("Plugin::StartSelLdrOnMainThread: non-PP_OK arg "
-                   "-- SHOULD NOT HAPPEN\n"));
-    *success = false;
-    return;
+void Plugin::HistogramTimeSmall(const std::string& name,
+                                int64_t ms) {
+  if (ms < 0) return;
+  uma_interface_.HistogramCustomTimes(name,
+                                      ms,
+                                      kTimeSmallMin, kTimeSmallMax,
+                                      kTimeSmallBuckets);
+}
+
+void Plugin::HistogramTimeMedium(const std::string& name,
+                                 int64_t ms) {
+  if (ms < 0) return;
+  uma_interface_.HistogramCustomTimes(name,
+                                      ms,
+                                      kTimeMediumMin, kTimeMediumMax,
+                                      kTimeMediumBuckets);
+}
+
+void Plugin::HistogramTimeLarge(const std::string& name,
+                                int64_t ms) {
+  if (ms < 0) return;
+  uma_interface_.HistogramCustomTimes(name,
+                                      ms,
+                                      kTimeLargeMin, kTimeLargeMax,
+                                      kTimeLargeBuckets);
+}
+
+void Plugin::HistogramSizeKB(const std::string& name,
+                             int32_t sample) {
+  if (sample < 0) return;
+  uma_interface_.HistogramCustomCounts(name,
+                                       sample,
+                                       kSizeKBMin, kSizeKBMax,
+                                       kSizeKBBuckets);
+}
+
+void Plugin::HistogramEnumerate(const std::string& name,
+                                int sample,
+                                int maximum,
+                                int out_of_range_replacement) {
+  if (sample < 0 || sample >= maximum) {
+    if (out_of_range_replacement < 0)
+      // No replacement for bad input, abort.
+      return;
+    else
+      // Use a specific value to signal a bad input.
+      sample = out_of_range_replacement;
   }
-  *success = service_runtime->StartSelLdr(params);
-  // Signal outside of StartSelLdr here, so that the write to *success
-  // is done before signaling.
-  service_runtime->SignalStartSelLdrDone();
+  uma_interface_.HistogramEnumeration(name, sample, maximum);
+}
+
+void Plugin::HistogramEnumerateOsArch(const std::string& sandbox_isa) {
+  enum NaClOSArch {
+    kNaClLinux32 = 0,
+    kNaClLinux64,
+    kNaClLinuxArm,
+    kNaClMac32,
+    kNaClMac64,
+    kNaClMacArm,
+    kNaClWin32,
+    kNaClWin64,
+    kNaClWinArm,
+    kNaClOSArchMax
+  };
+
+  NaClOSArch os_arch = kNaClOSArchMax;
+#if NACL_LINUX
+  os_arch = kNaClLinux32;
+#elif NACL_OSX
+  os_arch = kNaClMac32;
+#elif NACL_WINDOWS
+  os_arch = kNaClWin32;
+#endif
+
+  if (sandbox_isa == "x86-64")
+    os_arch = static_cast<NaClOSArch>(os_arch + 1);
+  if (sandbox_isa == "arm")
+    os_arch = static_cast<NaClOSArch>(os_arch + 2);
+
+  HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
+}
+
+void Plugin::HistogramEnumerateLoadStatus(PluginErrorCode error_code,
+                                          bool is_installed) {
+  HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, ERROR_MAX,
+                     ERROR_UNKNOWN);
+
+  // Gather data to see if being installed changes load outcomes.
+  const char* name = is_installed ? "NaCl.LoadStatus.Plugin.InstalledApp" :
+      "NaCl.LoadStatus.Plugin.NotInstalledApp";
+  HistogramEnumerate(name, error_code, ERROR_MAX, ERROR_UNKNOWN);
+}
+
+void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code,
+                                                bool is_installed) {
+  HistogramEnumerate("NaCl.LoadStatus.SelLdr", error_code,
+                     NACL_ERROR_CODE_MAX, LOAD_STATUS_UNKNOWN);
+
+  // Gather data to see if being installed changes load outcomes.
+  const char* name = is_installed ? "NaCl.LoadStatus.SelLdr.InstalledApp" :
+      "NaCl.LoadStatus.SelLdr.NotInstalledApp";
+  HistogramEnumerate(name, error_code, NACL_ERROR_CODE_MAX,
+                     LOAD_STATUS_UNKNOWN);
+}
+
+void Plugin::HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
+  HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2, -1);
+}
+
+void Plugin::HistogramHTTPStatusCode(const std::string& name,
+                                     int status) {
+  // Log the status codes in rough buckets - 1XX, 2XX, etc.
+  int sample = status / 100;
+  // HTTP status codes only go up to 5XX, using "6" to indicate an internal
+  // error.
+  // Note: installed files may have "0" for a status code.
+  if (status < 0 || status >= 600)
+    sample = 6;
+  HistogramEnumerate(name, sample, 7, 6);
 }
 
 bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
@@ -372,6 +336,22 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
     return false;
   }
   return true;
+}
+
+void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
+                                     ServiceRuntime* service_runtime,
+                                     const SelLdrStartParams& params,
+                                     bool* success) {
+  if (pp_error != PP_OK) {
+    PLUGIN_PRINTF(("Plugin::StartSelLdrOnMainThread: non-PP_OK arg "
+                   "-- SHOULD NOT HAPPEN\n"));
+    *success = false;
+    return;
+  }
+  *success = service_runtime->StartSelLdr(params);
+  // Signal outside of StartSelLdr here, so that the write to *success
+  // is done before signaling.
+  service_runtime->SignalStartSelLdrDone();
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
@@ -651,7 +631,8 @@ Plugin::Plugin(PP_Instance pp_instance)
       nexe_size_(0),
       time_of_last_progress_event_(0),
       exit_status_(-1),
-      nacl_interface_(NULL) {
+      nacl_interface_(NULL),
+      uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32 ")\n", static_cast<void*>(this), pp_instance));
   callback_factory_.Initialize(this);
@@ -1309,7 +1290,6 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
 }
 
 
-// TODO(ncbray): report UMA stats
 void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   PLUGIN_PRINTF(("Plugin::ReportLoadError (error='%s')\n",
                  error_info.message().c_str()));

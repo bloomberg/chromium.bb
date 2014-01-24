@@ -273,6 +273,8 @@
         'renderer/pepper/pepper_pdf_host.h',
         'renderer/pepper/pepper_shared_memory_message_filter.cc',
         'renderer/pepper/pepper_shared_memory_message_filter.h',
+        'renderer/pepper/pepper_uma_host.cc',
+        'renderer/pepper/pepper_uma_host.h',
         'renderer/pepper/ppb_pdf_impl.cc',
         'renderer/pepper/ppb_pdf_impl.h',
         'renderer/plugins/chrome_plugin_placeholder.cc',

@@ -12,6 +12,7 @@
 #include "chrome/renderer/pepper/pepper_flash_menu_host.h"
 #include "chrome/renderer/pepper/pepper_flash_renderer_host.h"
 #include "chrome/renderer/pepper/pepper_pdf_host.h"
+#include "chrome/renderer/pepper/pepper_uma_host.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
@@ -106,6 +107,17 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
         return scoped_ptr<ResourceHost>(new PepperPDFHost(
             host_, instance, params.pp_resource()));
       }
+    }
+  }
+
+  // Permissions for the following interfaces will be checked at the
+  // time of the corresponding instance's method calls.  Currently these
+  // interfaces are available only for whitelisted apps which may not have
+  // access to the other private interfaces.
+  switch (message.type()) {
+    case PpapiHostMsg_UMA_Create::ID: {
+      return scoped_ptr<ResourceHost>(new PepperUMAHost(
+          host_, instance, params.pp_resource()));
     }
   }
 

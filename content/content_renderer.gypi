@@ -412,8 +412,6 @@
     'renderer/pepper/ppb_proxy_impl.h',
     'renderer/pepper/ppb_scrollbar_impl.cc',
     'renderer/pepper/ppb_scrollbar_impl.h',
-    'renderer/pepper/ppb_uma_private_impl.cc',
-    'renderer/pepper/ppb_uma_private_impl.h',
     'renderer/pepper/ppb_var_deprecated_impl.cc',
     'renderer/pepper/ppb_var_deprecated_impl.h',
     'renderer/pepper/ppb_video_decoder_impl.cc',

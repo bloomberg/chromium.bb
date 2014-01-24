@@ -19,6 +19,7 @@
           'tcp_socket_private.cc',
           'tcp_server_socket_private.cc',
           'udp_socket_private.cc',
+          'uma_private.cc',
           'x509_certificate_private.cc',
       ],
     }
@@ -37,6 +38,7 @@
         'ppb_tcp_server_socket_private.h',
         'ppb_tcp_socket_private.h',
         'ppb_udp_socket_private.h',
+        'ppb_uma_private.h',
         'ppb_x509_certificate_private.h',
         'pp_file_handle.h',
       ],
@@ -56,6 +58,7 @@
         'tcp_server_socket_private.h',
         'tcp_socket_private.h',
         'udp_socket_private.h',
+        'uma_private.h',
         'x509_certificate_private.h',
       ],
       'DEST': 'include/ppapi/cpp/private',

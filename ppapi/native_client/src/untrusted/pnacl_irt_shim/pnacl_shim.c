@@ -233,7 +233,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1;
@@ -3762,24 +3762,24 @@ static void Pnacl_M23_PPB_UDPSocket_Private_Close(PP_Resource udp_socket) {
 
 /* End wrapper methods for PPB_UDPSocket_Private_0_4 */
 
-/* Begin wrapper methods for PPB_UMA_Private_0_1 */
+/* Begin wrapper methods for PPB_UMA_Private_0_2 */
 
-static void Pnacl_M18_PPB_UMA_Private_HistogramCustomTimes(struct PP_Var* name, int64_t sample, int64_t min, int64_t max, uint32_t bucket_count) {
-  const struct PPB_UMA_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_UMA_Private_0_1.real_iface;
-  iface->HistogramCustomTimes(*name, sample, min, max, bucket_count);
+static void Pnacl_M33_PPB_UMA_Private_HistogramCustomTimes(PP_Instance instance, struct PP_Var* name, int64_t sample, int64_t min, int64_t max, uint32_t bucket_count) {
+  const struct PPB_UMA_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_UMA_Private_0_2.real_iface;
+  iface->HistogramCustomTimes(instance, *name, sample, min, max, bucket_count);
 }
 
-static void Pnacl_M18_PPB_UMA_Private_HistogramCustomCounts(struct PP_Var* name, int32_t sample, int32_t min, int32_t max, uint32_t bucket_count) {
-  const struct PPB_UMA_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_UMA_Private_0_1.real_iface;
-  iface->HistogramCustomCounts(*name, sample, min, max, bucket_count);
+static void Pnacl_M33_PPB_UMA_Private_HistogramCustomCounts(PP_Instance instance, struct PP_Var* name, int32_t sample, int32_t min, int32_t max, uint32_t bucket_count) {
+  const struct PPB_UMA_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_UMA_Private_0_2.real_iface;
+  iface->HistogramCustomCounts(instance, *name, sample, min, max, bucket_count);
 }
 
-static void Pnacl_M18_PPB_UMA_Private_HistogramEnumeration(struct PP_Var* name, int32_t sample, int32_t boundary_value) {
-  const struct PPB_UMA_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_UMA_Private_0_1.real_iface;
-  iface->HistogramEnumeration(*name, sample, boundary_value);
+static void Pnacl_M33_PPB_UMA_Private_HistogramEnumeration(PP_Instance instance, struct PP_Var* name, int32_t sample, int32_t boundary_value) {
+  const struct PPB_UMA_Private_0_2 *iface = Pnacl_WrapperInfo_PPB_UMA_Private_0_2.real_iface;
+  iface->HistogramEnumeration(instance, *name, sample, boundary_value);
 }
 
-/* End wrapper methods for PPB_UMA_Private_0_1 */
+/* End wrapper methods for PPB_UMA_Private_0_2 */
 
 /* Begin wrapper methods for PPB_VideoDestination_Private_0_1 */
 
@@ -5138,10 +5138,10 @@ static struct PPB_UDPSocket_Private_0_4 Pnacl_Wrappers_PPB_UDPSocket_Private_0_4
     .Close = (void (*)(PP_Resource udp_socket))&Pnacl_M23_PPB_UDPSocket_Private_Close
 };
 
-static struct PPB_UMA_Private_0_1 Pnacl_Wrappers_PPB_UMA_Private_0_1 = {
-    .HistogramCustomTimes = (void (*)(struct PP_Var name, int64_t sample, int64_t min, int64_t max, uint32_t bucket_count))&Pnacl_M18_PPB_UMA_Private_HistogramCustomTimes,
-    .HistogramCustomCounts = (void (*)(struct PP_Var name, int32_t sample, int32_t min, int32_t max, uint32_t bucket_count))&Pnacl_M18_PPB_UMA_Private_HistogramCustomCounts,
-    .HistogramEnumeration = (void (*)(struct PP_Var name, int32_t sample, int32_t boundary_value))&Pnacl_M18_PPB_UMA_Private_HistogramEnumeration
+static struct PPB_UMA_Private_0_2 Pnacl_Wrappers_PPB_UMA_Private_0_2 = {
+    .HistogramCustomTimes = (void (*)(PP_Instance instance, struct PP_Var name, int64_t sample, int64_t min, int64_t max, uint32_t bucket_count))&Pnacl_M33_PPB_UMA_Private_HistogramCustomTimes,
+    .HistogramCustomCounts = (void (*)(PP_Instance instance, struct PP_Var name, int32_t sample, int32_t min, int32_t max, uint32_t bucket_count))&Pnacl_M33_PPB_UMA_Private_HistogramCustomCounts,
+    .HistogramEnumeration = (void (*)(PP_Instance instance, struct PP_Var name, int32_t sample, int32_t boundary_value))&Pnacl_M33_PPB_UMA_Private_HistogramEnumeration
 };
 
 static struct PPB_VideoDestination_Private_0_1 Pnacl_Wrappers_PPB_VideoDestination_Private_0_1 = {
@@ -5795,9 +5795,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_1 = {
-  .iface_macro = PPB_UMA_PRIVATE_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_UMA_Private_0_1,
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_2 = {
+  .iface_macro = PPB_UMA_PRIVATE_INTERFACE_0_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_UMA_Private_0_2,
   .real_iface = NULL
 };
 
@@ -5936,7 +5936,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4,
-  &Pnacl_WrapperInfo_PPB_UMA_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_UMA_Private_0_2,
   &Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1,
   &Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1,
   &Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1,

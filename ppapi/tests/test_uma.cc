@@ -25,31 +25,34 @@ void TestUMA::RunTests(const std::string& filter) {
 std::string TestUMA::TestCount() {
   pp::Var name_var = pp::Var("Test.CountHistogram");
   PP_Var name = name_var.pp_var();
-  uma_interface_->HistogramCustomCounts(name, 10, 1, 100, 50);
-  uma_interface_->HistogramCustomCounts(name, 30, 1, 100, 50);
-  uma_interface_->HistogramCustomCounts(name, 20, 1, 100, 50);
-  uma_interface_->HistogramCustomCounts(name, 40, 1, 100, 50);
+  PP_Instance instance = instance_->pp_instance();
+  uma_interface_->HistogramCustomCounts(instance, name, 10, 1, 100, 50);
+  uma_interface_->HistogramCustomCounts(instance, name, 30, 1, 100, 50);
+  uma_interface_->HistogramCustomCounts(instance, name, 20, 1, 100, 50);
+  uma_interface_->HistogramCustomCounts(instance, name, 40, 1, 100, 50);
   PASS();
 }
 
 std::string TestUMA::TestTime() {
   pp::Var name_var = pp::Var("Test.TimeHistogram");
   PP_Var name = name_var.pp_var();
-  uma_interface_->HistogramCustomTimes(name, 100, 1, 10000, 50);
-  uma_interface_->HistogramCustomTimes(name, 1000, 1, 10000, 50);
-  uma_interface_->HistogramCustomTimes(name, 5000, 1, 10000, 50);
-  uma_interface_->HistogramCustomTimes(name, 10, 1, 10000, 50);
+  PP_Instance instance = instance_->pp_instance();
+  uma_interface_->HistogramCustomTimes(instance, name, 100, 1, 10000, 50);
+  uma_interface_->HistogramCustomTimes(instance, name, 1000, 1, 10000, 50);
+  uma_interface_->HistogramCustomTimes(instance, name, 5000, 1, 10000, 50);
+  uma_interface_->HistogramCustomTimes(instance, name, 10, 1, 10000, 50);
   PASS();
 }
 
 std::string TestUMA::TestEnum() {
   pp::Var name_var = pp::Var("Test.EnumHistogram");
   PP_Var name = name_var.pp_var();
-  uma_interface_->HistogramEnumeration(name, 0, 5);
-  uma_interface_->HistogramEnumeration(name, 3, 5);
-  uma_interface_->HistogramEnumeration(name, 3, 5);
-  uma_interface_->HistogramEnumeration(name, 1, 5);
-  uma_interface_->HistogramEnumeration(name, 2, 5);
+  PP_Instance instance = instance_->pp_instance();
+  uma_interface_->HistogramEnumeration(instance, name, 0, 5);
+  uma_interface_->HistogramEnumeration(instance, name, 3, 5);
+  uma_interface_->HistogramEnumeration(instance, name, 3, 5);
+  uma_interface_->HistogramEnumeration(instance, name, 1, 5);
+  uma_interface_->HistogramEnumeration(instance, name, 2, 5);
   PASS();
 }
 

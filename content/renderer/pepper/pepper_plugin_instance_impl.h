@@ -751,6 +751,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 
   scoped_refptr<ppapi::Resource> gamepad_impl_;
+  scoped_refptr<ppapi::Resource> uma_private_impl_;
 
   // The plugin print interface.
   const PPP_Printing_Dev* plugin_print_interface_;

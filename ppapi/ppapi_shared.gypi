@@ -250,6 +250,8 @@
           'thunk/ppb_udp_socket_thunk.cc',
           'thunk/ppb_udp_socket_private_api.h',
           'thunk/ppb_udp_socket_private_thunk.cc',
+          'thunk/ppb_uma_private_thunk.cc',
+          'thunk/ppb_uma_singleton_api.h',
           'thunk/ppb_url_loader_api.h',
           'thunk/ppb_url_loader_thunk.cc',
           'thunk/ppb_url_loader_trusted_thunk.cc',

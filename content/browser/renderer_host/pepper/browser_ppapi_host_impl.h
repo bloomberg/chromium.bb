@@ -57,7 +57,6 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   virtual void SetOnKeepaliveCallback(
       const BrowserPpapiHost::OnKeepaliveCallback& callback) OVERRIDE;
 
-
   void set_plugin_process_handle(base::ProcessHandle handle) {
     plugin_process_handle_ = handle;
   }

@@ -25,6 +25,7 @@ enum SingletonResourceID {
   NETWORK_PROXY_SINGLETON_ID,
   PDF_SINGLETON_ID,
   TRUETYPE_FONT_SINGLETON_ID,
+  UMA_SINGLETON_ID,
 };
 
 }  // namespace ppapi

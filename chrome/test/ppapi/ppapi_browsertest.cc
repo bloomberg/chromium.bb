@@ -1098,9 +1098,9 @@ TEST_PPAPI_NACL(MAYBE_Fullscreen)
 
 TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
 
-// There is no proxy. This is used for PDF metrics reporting, and PDF only
-// runs in process, so there's currently no need for a proxy.
 TEST_PPAPI_IN_PROCESS(UMA)
+TEST_PPAPI_OUT_OF_PROCESS(UMA)
+TEST_PPAPI_NACL(UMA)
 
 // NetAddress tests
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddress) {

@@ -204,6 +204,8 @@
           'proxy/udp_socket_resource.h',
           'proxy/udp_socket_resource_base.cc',
           'proxy/udp_socket_resource_base.h',
+          'proxy/uma_private_resource.cc',
+          'proxy/uma_private_resource.h',
           'proxy/url_loader_resource.cc',
           'proxy/url_loader_resource.h',
           'proxy/url_request_info_resource.cc',

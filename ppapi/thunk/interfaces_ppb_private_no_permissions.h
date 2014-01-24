@@ -48,4 +48,7 @@ PROXIED_IFACE(PPB_VIDEODESTINATION_PRIVATE_INTERFACE_0_1,
 PROXIED_IFACE(PPB_VIDEOSOURCE_PRIVATE_INTERFACE_0_1,
               PPB_VideoSource_Private_0_1)
 
+PROXIED_IFACE(PPB_UMA_PRIVATE_INTERFACE_0_2,
+              PPB_UMA_Private_0_2)
+
 #include "ppapi/thunk/interfaces_postamble.h"

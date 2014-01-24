@@ -1316,6 +1316,14 @@ bool ChromeContentRendererClient::IsExternalPepperPlugin(
   return module_name == "Native Client";
 }
 
+bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
+    const GURL& url, const std::set<std::string>& whitelist) {
+  const extensions::ExtensionSet* extension_set =
+      g_current_client->extension_dispatcher_->extensions();
+  return chrome::IsExtensionOrSharedModuleWhitelisted(url, extension_set,
+      whitelist);
+}
+
 blink::WebSpeechSynthesizer*
 ChromeContentRendererClient::OverrideSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {
