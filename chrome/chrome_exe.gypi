@@ -14,13 +14,15 @@
             {
               'variables': {
                 'reorder_py_path': '<(DEPTH)/build/win/reorder-imports.py',
-                'exe_input_path':'$(OutDir)\\initial',
+                # See comment in chrome_dll.gypi in the hardlink_to_output
+                # target for why this cannot be 'initial' like the DLL.
+                'exe_input_path':'$(OutDir)\\initialexe',
                 'exe_output_path':'<(PRODUCT_DIR)',
               },
               'action_name': 'reorder_imports',
               'inputs': [
                 '<(reorder_py_path)',
-                '$(OutDir)\\initial\\chrome.exe',
+                '$(OutDir)\\initialexe\\chrome.exe',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)\\chrome.exe',
@@ -530,7 +532,7 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
-              'OutputFile': '$(OutDir)\\initial\\chrome.exe',
+              'OutputFile': '$(OutDir)\\initialexe\\chrome.exe',
               'DelayLoadDLLs': [
                 'dbghelp.dll',
                 'dwmapi.dll',
