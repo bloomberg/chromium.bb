@@ -315,7 +315,7 @@ void WebViewGuest::EmbedderDestroyed() {
 void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
-                   web_contents()->GetRenderProcessHost()->GetID());
+                   guest_web_contents()->GetRenderProcessHost()->GetID());
   args->SetString(webview::kReason, TerminationStatusToString(status));
   DispatchEvent(
       new GuestView::Event(webview::kEventExit, args.Pass()));
@@ -375,7 +375,7 @@ bool WebViewGuest::IsOverridingUserAgent() const {
 
 void WebViewGuest::LoadProgressed(double progress) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guestview::kUrl, web_contents()->GetURL().spec());
+  args->SetString(guestview::kUrl, guest_web_contents()->GetURL().spec());
   args->SetDouble(webview::kProgress, progress);
   DispatchEvent(new GuestView::Event(webview::kEventLoadProgress, args.Pass()));
 }
@@ -543,8 +543,8 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
   content::RecordAction(UserMetricsAction("WebView.Guest.ClearData"));
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartition(
-          web_contents()->GetBrowserContext(),
-          web_contents()->GetSiteInstance());
+          guest_web_contents()->GetBrowserContext(),
+          guest_web_contents()->GetSiteInstance());
 
   if (!partition)
     return false;
@@ -574,11 +574,11 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   args->SetInteger(webview::kInternalCurrentEntryIndex,
-      web_contents()->GetController().GetCurrentEntryIndex());
+      guest_web_contents()->GetController().GetCurrentEntryIndex());
   args->SetInteger(webview::kInternalEntryCount,
-      web_contents()->GetController().GetEntryCount());
+      guest_web_contents()->GetController().GetEntryCount());
   args->SetInteger(webview::kInternalProcessId,
-      web_contents()->GetRenderProcessHost()->GetID());
+      guest_web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(new GuestView::Event(webview::kEventLoadCommit, args.Pass()));
 }
 
@@ -657,7 +657,7 @@ bool WebViewGuest::AllowChromeExtensionURLs() {
 }
 
 void WebViewGuest::AddWebViewToExtensionRendererState() {
-  const GURL& site_url = web_contents()->GetSiteInstance()->GetSiteURL();
+  const GURL& site_url = guest_web_contents()->GetSiteInstance()->GetSiteURL();
   std::string partition_domain;
   std::string partition_id;
   bool in_memory;
