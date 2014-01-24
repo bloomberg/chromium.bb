@@ -311,18 +311,22 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   BOOL isAllowedOutlineView;
   if ([notif object] == allowedOutlineView_) {
     isAllowedOutlineView = YES;
-    [self setDeleteCookiesButtonEnabled:YES];
   } else if ([notif object] == blockedOutlineView_) {
     isAllowedOutlineView = NO;
-    [self setDeleteCookiesButtonEnabled:NO];
   } else {
     NOTREACHED();
     return;
   }
+
   NSTreeController* controller =
       isAllowedOutlineView ? allowedTreeController_ : blockedTreeController_;
-
   NSArray* nodes = [controller selectedNodes];
+
+  if (isAllowedOutlineView)
+    [self setDeleteCookiesButtonEnabled:([nodes count] > 0)];
+  else
+    [self setDeleteCookiesButtonEnabled:NO];
+
   for (NSTreeNode* treeNode in nodes) {
     CocoaCookieTreeNode* node = [treeNode representedObject];
     CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
