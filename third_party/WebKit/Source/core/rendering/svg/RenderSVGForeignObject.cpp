@@ -45,6 +45,12 @@ RenderSVGForeignObject::~RenderSVGForeignObject()
 {
 }
 
+bool RenderSVGForeignObject::isChildAllowed(RenderObject* child, RenderStyle* style) const
+{
+    // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS"> subdocuments.
+    return !child->isSVG() || child->isSVGRoot();
+}
+
 void RenderSVGForeignObject::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     if (paintInfo.context->paintingDisabled()

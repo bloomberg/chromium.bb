@@ -118,15 +118,6 @@ RenderObject* SVGForeignObjectElement::createRenderer(RenderStyle*)
     return new RenderSVGForeignObject(this);
 }
 
-bool SVGForeignObjectElement::childShouldCreateRenderer(const Node& child) const
-{
-    // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS"> subdocuments.
-    if (child.isSVGElement())
-        return child.hasTagName(SVGNames::svgTag);
-    // Skip over SVG rules which disallow non-SVG kids
-    return true;
-}
-
 bool SVGForeignObjectElement::rendererIsNeeded(const RenderStyle& style)
 {
     // Suppress foreignObject renderers in SVG hidden containers.
