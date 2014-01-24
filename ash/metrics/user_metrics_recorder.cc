@@ -66,6 +66,12 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_CLOSE_THROUGH_CONTEXT_MENU:
       base::RecordAction(base::UserMetricsAction("CloseFromContextMenu"));
       break;
+    case ash::UMA_DRAG_MAXIMIZE_LEFT:
+      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
+      break;
+    case ash::UMA_DRAG_MAXIMIZE_RIGHT:
+      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
+      break;
     case ash::UMA_GESTURE_OVERVIEW:
       base::RecordAction(base::UserMetricsAction("Gesture_Overview"));
       break;
@@ -301,6 +307,11 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE:
       base::RecordAction(
           base::UserMetricsAction("Caption_GestureTogglesMaximize"));
+      break;
+    case ash::UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK:
+      base::RecordAction(
+          base::UserMetricsAction(
+              "WindowBorder_ClickTogglesSingleAxisMaximize"));
       break;
     case ash::UMA_TOUCHPAD_GESTURE_OVERVIEW:
       base::RecordAction(

@@ -131,6 +131,8 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
       // Don't maximize vertically if the window has a max height defined.
       if (max_size.height() != 0)
         return;
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
       if (target_state->HasRestoreBounds() &&
           (target->bounds().height() == work_area.height() &&
            target->bounds().y() == work_area.y())) {
@@ -150,6 +152,8 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
       // Don't maximize horizontally if the window has a max width defined.
       if (max_size.width() != 0)
         return;
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
       if (target_state->HasRestoreBounds() &&
           (target->bounds().width() == work_area.width() &&
            target->bounds().x() == work_area.x())) {

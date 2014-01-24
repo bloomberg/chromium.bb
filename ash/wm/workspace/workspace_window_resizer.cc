@@ -11,6 +11,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -459,6 +460,10 @@ void WorkspaceWindowResizer::CompleteDrag() {
     DCHECK(snap_sizer_);
     if (window_state()->CanResize() &&
         !dock_layout_->is_dragged_window_docked()) {
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          snap_type_ == SNAP_LEFT ?
+              UMA_DRAG_MAXIMIZE_LEFT :
+              UMA_DRAG_MAXIMIZE_RIGHT);
       snap_sizer_->SnapWindowToTargetBounds();
       snapped = true;
     }
