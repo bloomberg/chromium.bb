@@ -278,7 +278,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
     if (characterToRender <=  0xFFFF)
         characterToRender = Font::normalizeSpaces(characterToRender);
     const SimpleFontData* fontDataToSubstitute = fontDataAt(0)->fontDataForCharacter(characterToRender);
-    RefPtr<SimpleFontData> characterFontData = FontCache::fontCache()->platformFallbackForCharacter(m_fontDescription, characterToRender, fontDataToSubstitute, isPlatformFont());
+    RefPtr<SimpleFontData> characterFontData = FontCache::fontCache()->platformFallbackForCharacter(m_fontDescription, characterToRender, fontDataToSubstitute);
     if (characterFontData) {
         if (characterFontData->platformData().orientation() == Vertical && !characterFontData->hasVerticalGlyphs() && isCJKIdeographOrSymbol(c))
             variant = BrokenIdeographVariant;

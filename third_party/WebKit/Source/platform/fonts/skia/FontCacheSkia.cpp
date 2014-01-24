@@ -49,7 +49,7 @@ void FontCache::platformInit()
 }
 
 #if !OS(WIN) && !OS(ANDROID)
-PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*, bool)
+PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*)
 {
     icu::Locale locale = icu::Locale::getDefault();
     FontCache::SimpleFontFamily family;

@@ -79,7 +79,6 @@ TypesettingFeatures Font::s_defaultTypesettingFeatures = 0;
 Font::Font()
     : m_letterSpacing(0)
     , m_wordSpacing(0)
-    , m_isPlatformFont(false)
     , m_typesettingFeatures(0)
 {
 }
@@ -88,7 +87,6 @@ Font::Font(const FontDescription& fd, float letterSpacing, float wordSpacing)
     : m_fontDescription(fd)
     , m_letterSpacing(letterSpacing)
     , m_wordSpacing(wordSpacing)
-    , m_isPlatformFont(false)
     , m_typesettingFeatures(computeTypesettingFeatures())
 {
 }
@@ -98,7 +96,6 @@ Font::Font(const Font& other)
     , m_fontFallbackList(other.m_fontFallbackList)
     , m_letterSpacing(other.m_letterSpacing)
     , m_wordSpacing(other.m_wordSpacing)
-    , m_isPlatformFont(other.m_isPlatformFont)
     , m_typesettingFeatures(computeTypesettingFeatures())
 {
 }
@@ -109,7 +106,6 @@ Font& Font::operator=(const Font& other)
     m_fontFallbackList = other.m_fontFallbackList;
     m_letterSpacing = other.m_letterSpacing;
     m_wordSpacing = other.m_wordSpacing;
-    m_isPlatformFont = other.m_isPlatformFont;
     m_typesettingFeatures = other.m_typesettingFeatures;
     return *this;
 }

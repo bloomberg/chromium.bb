@@ -123,8 +123,6 @@ public:
     FontWeight weight() const { return m_fontDescription.weight(); }
     FontWidthVariant widthVariant() const { return m_fontDescription.widthVariant(); }
 
-    bool isPlatformFont() const { return m_isPlatformFont; }
-
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& fontMetrics() const { return primaryFont()->fontMetrics(); }
     float spaceWidth() const { return primaryFont()->spaceWidth() + m_letterSpacing; }
@@ -283,7 +281,6 @@ private:
     mutable RefPtr<FontFallbackList> m_fontFallbackList;
     float m_letterSpacing;
     float m_wordSpacing;
-    bool m_isPlatformFont;
     mutable unsigned m_typesettingFeatures : 2; // (TypesettingFeatures) Caches values computed from m_fontDescription.
 };
 

@@ -90,7 +90,7 @@ static inline bool isAppKitFontWeightBold(NSInteger appKitFontWeight)
     return appKitFontWeight >= 7;
 }
 
-PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData* fontDataToSubstitute, bool disallowSynthetics)
+PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData* fontDataToSubstitute)
 {
     // FIXME: We should fix getFallbackFamily to take a UChar32
     // and remove this split-to-UChar16 code.
@@ -166,8 +166,8 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     substituteFontWeight = [fontManager weightOfFont:substituteFont];
 
     FontPlatformData alternateFont(substituteFont, platformData.size(), platformData.isPrinterFont(),
-        !disallowSynthetics && isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(substituteFontWeight),
-        !disallowSynthetics && (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
+        isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(substituteFontWeight),
+        (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
         platformData.m_orientation);
 
     return fontDataFromFontPlatformData(&alternateFont, DoNotRetain);
