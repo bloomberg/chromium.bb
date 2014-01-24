@@ -11,6 +11,7 @@
       'dependencies': [
         'all.gyp:*',
       ],
+      'type': 'none',
     },
   ],
 }
