@@ -435,9 +435,12 @@ TargetList Clipboard::AuraX11Details::WaitAndGetTargetsList(
                                                   NULL,
                                                   &out_data_items,
                                                   &out_type)) {
-      const ::Atom* atom_array = reinterpret_cast<const ::Atom*>(data->front());
-      for (size_t i = 0; i < out_data_items; ++i)
-        out.push_back(atom_array[i]);
+      if (out_type == XA_ATOM) {
+        const ::Atom* atom_array =
+            reinterpret_cast<const ::Atom*>(data->front());
+        for (size_t i = 0; i < out_data_items; ++i)
+          out.push_back(atom_array[i]);
+      }
     } else {
       // There was no target list. Most Java apps doesn't offer a TARGETS list,
       // even though they AWT to. They will offer individual text types if you
