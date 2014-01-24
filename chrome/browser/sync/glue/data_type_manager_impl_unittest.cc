@@ -310,51 +310,6 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
-// Set up a DTM with 2 controllers. configure it. One of them is still loading
-// after the  timeout. Slow loading type should be reported.
-TEST_F(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
-  AddController(BOOKMARKS);
-  AddController(APPS);
-
-  GetController(BOOKMARKS)->SetDelayModelLoad();
-
-  SetConfigureStartExpectation();
-
-  syncer::ModelTypeSet types;
-  types.Put(BOOKMARKS);
-  types.Put(APPS);
-
-  Configure(dtm_.get(), types);
-  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
-
-  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
-  FinishDownload(*dtm_, types, ModelTypeSet());
-  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-
-  // Let APPS controller finish association.
-  GetController(APPS)->FinishStart(DataTypeController::OK);
-
-  base::OneShotTimer<ModelAssociationManager>* timer =
-      dtm_->GetModelAssociationManagerForTesting()->GetTimerForTesting();
-
-  base::Closure task = timer->user_task();
-  timer->Stop();
-  task.Run();
-
-  DataTypeManager::ConfigureResult result = dtm_->configure_result();
-  EXPECT_EQ(DataTypeManager::PARTIAL_SUCCESS, result.status);
-  EXPECT_TRUE(result.requested_types.Has(BOOKMARKS));
-  EXPECT_TRUE(result.requested_types.Has(APPS));
-  EXPECT_TRUE(syncer::ModelTypeSet(BOOKMARKS).Equals(
-      result.unfinished_data_types));
-  EXPECT_TRUE(result.failed_data_types.empty());
-  EXPECT_TRUE(result.needs_crypto.Empty());
-
-  dtm_->Stop();
-  EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
-}
-
-
 // Set up a DTM with a single controller, configure it, but stop it
 // before finishing the download.  It should still be safe to run the
 // download callback even after the DTM is stopped and destroyed.

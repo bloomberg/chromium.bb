@@ -298,6 +298,10 @@ void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
   DVLOG(1) << "ModelAssociationManager: ModelLoadCallback for "
       << syncer::ModelTypeToString(type);
 
+  // TODO(haitaol): temporary fix for 335606.
+  if (slow_types_.Has(type))
+    return;
+
   // This happens when slow loading type is disabled by new configuration.
   if (!desired_types_.Has(type))
     return;
@@ -331,6 +335,10 @@ void ModelAssociationManager::TypeStartCallback(
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(haitaol): temporary fix for 335606.
+  if (slow_types_.Has(type))
+    return;
 
   // This happens when slow associating type is disabled by new configuration.
   if (!desired_types_.Has(type))
@@ -405,6 +413,16 @@ void ModelAssociationManager::ModelAssociationDone() {
 
   timer_.Stop();
 
+  slow_types_.PutAll(associating_types_);
+
+  // TODO(haitaol): temporary fix for 335606.
+  for (syncer::ModelTypeSet::Iterator it = associating_types_.First();
+      it.Good(); it.Inc()) {
+    AppendToFailedDatatypesAndLogError(
+        syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                          "Association timed out.", it.Get()));
+  }
+
   // Stop controllers of failed types.
   StopDisabledTypes();
 
@@ -417,8 +435,6 @@ void ModelAssociationManager::ModelAssociationDone() {
     DVLOG(1) << "ModelAssociationManager: setting partial success";
     configure_status_ = DataTypeManager::PARTIAL_SUCCESS;
   }
-
-  slow_types_.PutAll(associating_types_);
 
   DataTypeManager::ConfigureResult result(configure_status_,
                                           requested_types_,
