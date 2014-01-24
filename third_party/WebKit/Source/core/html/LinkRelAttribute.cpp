@@ -70,11 +70,14 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         m_isAlternate = true;
     } else if (equalIgnoringCase(rel, "import")) {
         m_isImport = true;
-    } else if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
-        if (equalIgnoringCase(rel, "apple-touch-icon"))
+    } else if (equalIgnoringCase(rel, "apple-touch-icon")) {
+        if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
             m_iconType = TouchIcon;
-        else if (equalIgnoringCase(rel, "apple-touch-icon-precomposed"))
+        }
+    } else if (equalIgnoringCase(rel, "apple-touch-icon-precomposed")) {
+        if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
             m_iconType = TouchPrecomposedIcon;
+        }
     } else {
         // Tokenize the rel attribute and set bits based on specific keywords that we find.
         String relCopy = rel;
@@ -95,11 +98,14 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
                 m_isLinkSubresource = true;
             } else if (equalIgnoringCase(*it, "prerender")) {
                 m_isLinkPrerender = true;
-            } else if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
-                if (equalIgnoringCase(*it, "apple-touch-icon"))
+            } else if (equalIgnoringCase(*it, "apple-touch-icon")) {
+                if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
                     m_iconType = TouchIcon;
-                else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed"))
+                }
+            } else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed")) {
+                if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
                     m_iconType = TouchPrecomposedIcon;
+                }
             }
         }
     }
