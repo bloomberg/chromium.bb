@@ -174,7 +174,6 @@ public:
 
     // Media controls
     virtual bool supportsClosedCaptioning() const { return false; }
-    virtual bool usesVerticalVolumeSlider() const { return true; }
     virtual String formatMediaControlsTime(float time) const;
     virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const;
 

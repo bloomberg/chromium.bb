@@ -122,9 +122,6 @@ public:
     virtual int popupInternalPaddingTop(RenderStyle*) const OVERRIDE;
     virtual int popupInternalPaddingBottom(RenderStyle*) const OVERRIDE;
 
-    // Media controls
-    virtual bool usesVerticalVolumeSlider() const OVERRIDE { return false; }
-
     // Provide a way to pass the default font size from the Settings object
     // to the render theme. FIXME: http://b/1129186 A cleaner way would be
     // to remove the default font size from this object and have callers
