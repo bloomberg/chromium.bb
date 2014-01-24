@@ -1954,6 +1954,8 @@
         'spdy/hpack_header_table_test.cc',
         'spdy/hpack_output_stream_test.cc',
         'spdy/hpack_string_util_test.cc',
+        'spdy/mock_spdy_framer_visitor.cc',
+        'spdy/mock_spdy_framer_visitor.h',
         'spdy/spdy_buffer_unittest.cc',
         'spdy/spdy_frame_builder_test.cc',
         'spdy/spdy_frame_reader_test.cc',

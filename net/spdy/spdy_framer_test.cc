@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/spdy/mock_spdy_framer_visitor.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -27,44 +28,6 @@ namespace net {
 namespace test {
 
 static const size_t kMaxDecompressedSize = 1024;
-
-// TODO(akalin): Make sure expectations on mocks are set before mock
-// functions are called, as interleaving expectations and calls is
-// undefined.
-class MockVisitor : public SpdyFramerVisitorInterface {
- public:
-  MOCK_METHOD1(OnError, void(SpdyFramer* framer));
-  MOCK_METHOD3(OnDataFrameHeader, void(SpdyStreamId stream_id,
-                                       size_t length,
-                                       bool fin));
-  MOCK_METHOD4(OnStreamFrameData, void(SpdyStreamId stream_id,
-                                       const char* data,
-                                       size_t len,
-                                       bool fin));
-  MOCK_METHOD3(OnControlFrameHeaderData, bool(SpdyStreamId stream_id,
-                                              const char* header_data,
-                                              size_t len));
-  MOCK_METHOD6(OnSynStream, void(SpdyStreamId stream_id,
-                                 SpdyStreamId associated_stream_id,
-                                 SpdyPriority priority,
-                                 uint8 slot,
-                                 bool fin,
-                                 bool unidirectional));
-  MOCK_METHOD2(OnSynReply, void(SpdyStreamId stream_id, bool fin));
-  MOCK_METHOD2(OnRstStream, void(SpdyStreamId stream_id,
-                                 SpdyRstStreamStatus status));
-  MOCK_METHOD1(OnSettings, void(bool clear_persisted));
-  MOCK_METHOD3(OnSetting, void(SpdySettingsIds id, uint8 flags, uint32 value));
-  MOCK_METHOD1(OnPing, void(uint32 unique_id));
-  MOCK_METHOD2(OnGoAway, void(SpdyStreamId last_accepted_stream_id,
-                              SpdyGoAwayStatus status));
-  MOCK_METHOD2(OnHeaders, void(SpdyStreamId stream_id, bool fin));
-  MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
-                                    uint32 delta_window_size));
-  MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));
-  MOCK_METHOD2(OnPushPromise, void(SpdyStreamId stream_id,
-                                   SpdyStreamId promised_stream_id));
-};
 
 class MockDebugVisitor : public SpdyFramerDebugVisitorInterface {
  public:
@@ -728,7 +691,7 @@ TEST_P(SpdyFramerTest, OutOfOrderHeaders) {
 // Test that if we receive a SYN_STREAM with stream ID zero, we signal an error
 // (but don't crash).
 TEST_P(SpdyFramerTest, SynStreamWithStreamIdZero) {
-  testing::StrictMock<net::test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
@@ -754,7 +717,7 @@ TEST_P(SpdyFramerTest, SynStreamWithStreamIdZero) {
 // Test that if we receive a SYN_REPLY with stream ID zero, we signal an error
 // (but don't crash).
 TEST_P(SpdyFramerTest, SynReplyWithStreamIdZero) {
-  testing::StrictMock<net::test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
@@ -777,7 +740,7 @@ TEST_P(SpdyFramerTest, SynReplyWithStreamIdZero) {
 // Test that if we receive a HEADERS with stream ID zero, we signal an error
 // (but don't crash).
 TEST_P(SpdyFramerTest, HeadersWithStreamIdZero) {
-  testing::StrictMock<net::test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
@@ -804,7 +767,7 @@ TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
     return;
   }
 
-  testing::StrictMock<net::test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
@@ -831,7 +794,7 @@ TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
     return;
   }
 
-  testing::StrictMock<net::test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
@@ -3833,7 +3796,7 @@ TEST_P(SpdyFramerTest, CatchProbableHttpResponse) {
     return;
   }
   {
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -3845,7 +3808,7 @@ TEST_P(SpdyFramerTest, CatchProbableHttpResponse) {
         << SpdyFramer::ErrorCodeToString(framer.error_code());
   }
   {
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -3862,7 +3825,7 @@ TEST_P(SpdyFramerTest, DataFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -3898,7 +3861,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     testing::StrictMock<test::MockDebugVisitor> debug_visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
@@ -3968,7 +3931,7 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -4007,7 +3970,7 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -4039,7 +4002,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -4078,7 +4041,7 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -4114,7 +4077,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     }
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -4153,7 +4116,7 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -4184,7 +4147,7 @@ TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<test::MockVisitor> visitor;
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
 
@@ -4220,7 +4183,7 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
-    testing::StrictMock<net::test::MockVisitor> visitor;
+    testing::StrictMock<net::test::MockSpdyFramerVisitor> visitor;
     testing::StrictMock<net::test::MockDebugVisitor> debug_visitor;
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
@@ -4259,7 +4222,7 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
 TEST_P(SpdyFramerTest, EmptySynStream) {
   SpdyHeaderBlock headers;
 
-  testing::StrictMock<test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   testing::StrictMock<test::MockDebugVisitor> debug_visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
@@ -4332,7 +4295,7 @@ TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
     0x00, 0x00, 0x00, RST_STREAM_NUM_STATUS_CODES
   };
 
-  testing::StrictMock<test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
@@ -4383,7 +4346,7 @@ TEST_P(SpdyFramerTest, GoAwayStreamIdBounds) {
     0x00, 0x00, 0x00, 0x00,
   };
 
-  testing::StrictMock<test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
@@ -4410,7 +4373,7 @@ TEST_P(SpdyFramerTest, OnBlocked) {
 
   const SpdyStreamId kStreamId = 0;
 
-  testing::StrictMock<test::MockVisitor> visitor;
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
