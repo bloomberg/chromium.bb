@@ -160,7 +160,7 @@ void OneClickSigninBubbleGtk::InitializeWidgets(
                                   email_);
   } else {
     label_text = !error_message_.empty() ? base::UTF16ToUTF8(error_message_):
-        l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE);
+        l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE_FULL);
   }
 
   message_label_ = gtk_label_new(label_text.c_str());
