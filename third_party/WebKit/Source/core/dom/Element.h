@@ -541,8 +541,6 @@ protected:
         , m_tagName(tagName)
     {
         ScriptWrappable::init(this);
-        // FIXME: This RELEASE_ASSERT is temporary; the hope is to track down the cause of http://crbug.com/312410
-        RELEASE_ASSERT(document);
     }
 
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, CSSValueID identifier);
