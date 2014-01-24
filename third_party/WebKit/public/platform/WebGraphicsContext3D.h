@@ -203,12 +203,6 @@ public:
     // GL_CHROMIUM_rate_limit_offscreen_context
     virtual void rateLimitOffscreenContextCHROMIUM() { }
 
-    // GL_CHROMIUM_stream_texture
-    // Returns the stream end point identifier created for the given texture.
-    virtual WebGLId createStreamTextureCHROMIUM(WebGLId texture) { return 0; }
-    // Destroys the stream for the given texture.
-    virtual void destroyStreamTextureCHROMIUM(WebGLId texture) { }
-
     // GL_CHROMIUM_lose_context
     virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other) { }
 
