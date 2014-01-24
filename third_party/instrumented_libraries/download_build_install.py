@@ -7,6 +7,7 @@
 
 import argparse
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -93,6 +94,47 @@ def shell_call(command, verbose=False, environment=None):
   if child.returncode:
     raise Exception("Failed to run: %s" % command)
 
+def configure_make_install(parsed_arguments, environment, install_prefix):
+  configure_command = './configure %s --prefix=%s' % (
+      parsed_arguments.custom_configure_flags, install_prefix)
+  shell_call(configure_command, parsed_arguments.verbose, environment)
+  shell_call('make -j%s' % parsed_arguments.jobs,
+      parsed_arguments.verbose, environment)
+  shell_call('make -j%s install' % parsed_arguments.jobs,
+      parsed_arguments.verbose, environment)
+
+def nss_make_and_copy(parsed_arguments, environment, install_prefix):
+  # NSS uses a build system that's different from configure/make/install. All
+  # flags must be passed as arguments to make.
+  make_args = []
+  # Do an optimized build.
+  make_args.append('BUILD_OPT=1')
+  # Set USE_64=1 on x86_64 systems.
+  if platform.architecture()[0] == '64bit':
+    make_args.append('USE_64=1')
+  # Passing C(XX)FLAGS overrides the defaults, and EXTRA_C(XX)FLAGS is not
+  # supported. Append our extra flags to CC/CXX.
+  make_args.append('CC="%s %s"' % (environment['CC'], environment['CFLAGS']))
+  make_args.append('CXX="%s %s"' %
+                   (environment['CXX'], environment['CXXFLAGS']))
+  # We need to override ZDEFS_FLAGS at least to prevent -Wl,-z,defs.
+  # Might as well use this to pass the linker flags, since ZDEF_FLAGS is always
+  # added during linking on Linux.
+  make_args.append('ZDEFS_FLAG="-Wl,-z,nodefs %s"' % environment['LDFLAGS'])
+  make_args.append('NSPR_INCLUDE_DIR=/usr/include/nspr')
+  make_args.append('NSPR_LIB_DIR=%s/lib' % install_prefix)
+  # -j is not supported
+  shell_call('make %s' % ' '.join(make_args), parsed_arguments.verbose,
+      environment)
+  # 'make install' is not supported. Copy the DSOs manually.
+  install_dir = '%s/lib/' % install_prefix
+  for (dirpath, dirnames, filenames) in os.walk('./lib/'):
+    for filename in filenames:
+      if filename.endswith('.so'):
+        full_path = os.path.join(dirpath, filename)
+        if parsed_arguments.verbose:
+          print "download_build_install.py: installing %s" % full_path
+        shutil.copy(full_path, install_dir)
 
 def download_build_install(parsed_arguments):
   sanitizer_params = SUPPORTED_SANITIZERS[parsed_arguments.sanitizer_type]
@@ -139,14 +181,12 @@ def download_build_install(parsed_arguments):
       if parsed_arguments.run_before_build:
         shell_call('%s/%s' % (os.path.relpath(cd_library.old_path),
             parsed_arguments.run_before_build), parsed_arguments.verbose)
-      configure_command = './configure %s --prefix=%s' % (
-          parsed_arguments.custom_configure_flags, install_prefix)
       try:
-        shell_call(configure_command, parsed_arguments.verbose, environment)
-        shell_call('make -j%s' % parsed_arguments.jobs,
-            parsed_arguments.verbose, environment)
-        shell_call('make -j%s install' % parsed_arguments.jobs,
-            parsed_arguments.verbose, environment)
+        if parsed_arguments.library == 'nss':
+          with ScopedChangeDirectory('nss') as cd_nss:
+            nss_make_and_copy(parsed_arguments, environment, install_prefix)
+        else:
+          configure_make_install(parsed_arguments, environment, install_prefix)
       except Exception as exception:
         print exception
         print "Failed to build library %s." % parsed_arguments.library
