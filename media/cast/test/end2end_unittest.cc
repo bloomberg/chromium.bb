@@ -458,6 +458,12 @@ class End2EndTest : public ::testing::Test {
 
   virtual ~End2EndTest() {}
 
+  virtual void TearDown() OVERRIDE {
+    cast_sender_.reset();
+    cast_receiver_.reset();
+    task_runner_->RunTasks();
+  }
+
   void SendVideoFrame(int start_value, const base::TimeTicks& capture_time) {
     if (start_time_.is_null())
       start_time_ = testing_clock_->NowTicks();
