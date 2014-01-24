@@ -1694,8 +1694,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Checks that the visibility API works.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderVisibility) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
   PrerenderTestURL("files/prerender/prerender_visibility.html",
                    FINAL_STATUS_USED,
                    1);
@@ -2558,7 +2557,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrTrace) {
 }
 
 // Checks that xhr POST requests allow prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderXhrPost) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrPost) {
   PrerenderTestURL("files/prerender/prerender_xhr_post.html",
                    FINAL_STATUS_USED,
                    1);
