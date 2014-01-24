@@ -72,6 +72,7 @@ private:
             , m_parent(parent)
             , m_autosize(autosize)
             , m_multiplier(0)
+            , m_textLength(-1)
         {
         }
 
@@ -83,6 +84,9 @@ private:
         // m_blocksThatHaveBegunLayout assertions cover this). Note: the multiplier is still
         // calculated when m_autosize is false because child clusters may depend on this multiplier.
         float m_multiplier;
+        // Text length is computed lazily (see: textLength). This is an approximation and characters
+        // are assumed to be 1em wide. Negative values indicate the length has not been computed.
+        int m_textLength;
     };
 
     enum TextLeafSearch {
@@ -116,7 +120,8 @@ private:
     bool enabled();
     void prepareRenderViewInfo(RenderView*);
     bool isFingerprintingCandidate(const RenderBlock*);
-    bool clusterWantsAutosizing(const RenderBlock*);
+    bool clusterHasEnoughTextToAutosize(Cluster*);
+    float textLength(Cluster*);
     AtomicString computeFingerprint(const RenderBlock*);
     Cluster* maybeGetOrCreateCluster(const RenderBlock*);
     Cluster* addSupercluster(AtomicString, const RenderBlock*);

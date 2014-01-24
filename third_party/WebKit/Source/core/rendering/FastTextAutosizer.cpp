@@ -169,10 +169,46 @@ bool FastTextAutosizer::isFingerprintingCandidate(const RenderBlock* block)
             && TextAutosizer::isIndependentDescendant(block));
 }
 
-bool FastTextAutosizer::clusterWantsAutosizing(const RenderBlock* root)
+bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster)
 {
-    // FIXME: this should call (or re-implement) TextAutosizer::clusterShouldBeAutosized.
-    return true;
+    const RenderBlock* root = cluster->m_root;
+
+    // TextAreas and user-modifiable areas get a free pass to autosize regardless of text content.
+    if (root->isTextArea() || (root->style() && root->style()->userModify() != READ_ONLY))
+        return true;
+
+    static const float minLinesOfText = 4;
+    if (textLength(cluster) >= root->contentLogicalWidth() * minLinesOfText)
+        return true;
+
+    return false;
+}
+
+float FastTextAutosizer::textLength(Cluster* cluster)
+{
+    if (cluster->m_textLength >= 0)
+        return cluster->m_textLength;
+
+    float length = 0;
+    const RenderBlock* root = cluster->m_root;
+    bool measureLocalText = TextAutosizer::containerShouldBeAutosized(root);
+    RenderObject* descendant = root->nextInPreOrder(root);
+    while (descendant) {
+        if (descendant->isRenderBlock() && m_clusters.contains(toRenderBlock(descendant))) {
+            length += textLength(m_clusters.get(toRenderBlock(descendant)));
+            descendant = descendant->nextInPreOrderAfterChildren(root);
+            continue;
+        }
+
+        if (measureLocalText && descendant->isText()) {
+            // Note: Using text().length() instead of renderedTextLength() because the lineboxes have
+            // not been built until layout. These values can be different.
+            length += toRenderText(descendant)->text().length() * descendant->style()->specifiedFontSize();
+        }
+        descendant = descendant->nextInPreOrder(root);
+    }
+
+    return cluster->m_textLength = length;
 }
 
 AtomicString FastTextAutosizer::computeFingerprint(const RenderBlock* block)
@@ -213,10 +249,6 @@ FastTextAutosizer::Cluster* FastTextAutosizer::addSupercluster(AtomicString fing
 {
     BlockSet& roots = m_fingerprintMapper.getBlocks(fingerprint);
 
-    bool shouldAutosize = false;
-    for (BlockSet::iterator it = roots.begin(); it != roots.end(); ++it)
-        shouldAutosize |= clusterWantsAutosizing(*it);
-
     Cluster* result = 0;
     for (BlockSet::iterator it = roots.begin(); it != roots.end(); ++it) {
         Cluster* cluster = new Cluster(*it, TextAutosizer::containerShouldBeAutosized(*it), currentCluster());
@@ -252,7 +284,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 #endif
     if (!cluster->m_multiplier) {
         if (TextAutosizer::isIndependentDescendant(cluster->m_root)) {
-            if (clusterWantsAutosizing(cluster->m_root)) {
+            if (clusterHasEnoughTextToAutosize(cluster)) {
                 const RenderBlock* deepestBlockContainingAllText = findDeepestBlockContainingAllText(cluster->m_root);
 #ifndef NDEBUG
                 // This ensures the deepest block containing all text has a valid contentLogicalWidth.
