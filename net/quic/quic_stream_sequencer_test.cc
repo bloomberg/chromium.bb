@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/reliable_quic_stream.h"
+#include "net/quic/test_tools/gtest_util.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -153,14 +154,12 @@ TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
 }
 
 TEST_F(QuicStreamSequencerTest, RejectOverlyLargeFrame) {
-  // TODO(rch): enable when chromium supports EXPECT_DFATAL.
-  /*
   EXPECT_DFATAL(sequencer_.reset(new QuicStreamSequencerPeer(2, &stream_)),
                 "Setting max frame memory to 2.  "
                 "Some frames will be impossible to handle.");
 
-  EXPECT_DEBUG_DEATH(sequencer_->OnFrame(0, "abc"), "");
-  */
+  // TODO(rch): covert this to a DFATAL test.
+  // EXPECT_DEBUG_DEATH(sequencer_->OnFrame(0, "abc"), "");
 }
 
 TEST_F(QuicStreamSequencerTest, DropFramePastBuffering) {
