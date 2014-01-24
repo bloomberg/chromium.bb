@@ -174,10 +174,10 @@ public:
     void appendColumn(unsigned pos);
     void splitColumn(unsigned pos, unsigned first);
 
-    int calcOuterBorderBefore() const;
-    int calcOuterBorderAfter() const;
-    int calcOuterBorderStart() const;
-    int calcOuterBorderEnd() const;
+    enum BlockBorderSide { BorderBefore, BorderAfter };
+    int calcBlockDirectionOuterBorder(BlockBorderSide) const;
+    enum InlineBorderSide { BorderStart, BorderEnd };
+    int calcInlineDirectionOuterBorder(InlineBorderSide) const;
     void recalcOuterBorder();
 
     int outerBorderBefore() const { return m_outerBorderBefore; }
