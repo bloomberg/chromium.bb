@@ -13,6 +13,7 @@
 # These entries will be modified by generate_docs.py
 OUTPUT_DIRECTORY       = %(out_dirname)s
 INPUT                  = %(doc_dirname)s/c
+STRIP_FROM_PATH        = %(doc_dirname)s/c
 EXCLUDE                = %(doc_dirname)s/c/pp_macros.h
 LAYOUT_FILE            = %(script_dirname)s/DoxygenLayout.xml
 HTML_HEADER            = %(script_dirname)s/header.html

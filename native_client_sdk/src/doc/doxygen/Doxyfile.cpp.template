@@ -14,6 +14,8 @@
 OUTPUT_DIRECTORY       = %(out_dirname)s
 INPUT                  = %(doc_dirname)s/cpp \
                          %(doc_dirname)s/utility
+STRIP_FROM_PATH        = %(doc_dirname)s/cpp \
+                         %(doc_dirname)s/utility
 EXCLUDE                = %(doc_dirname)s/cpp/array_output.h \
                          %(doc_dirname)s/cpp/output_traits.h \
                          %(doc_dirname)s/utility/completion_callback_factory_thread_traits.h
