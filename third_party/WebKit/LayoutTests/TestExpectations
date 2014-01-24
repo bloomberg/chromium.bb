@@ -875,20 +875,6 @@ crbug.com/334242 [ Win ] inspector-protocol/stylesheet-tracking-restart.html [ P
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
-crbug.com/336440 svg/filters/feDropShadow.svg [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-color-attr.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-color-prop.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-dom-in-attr.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-dom-specularConstant-attr.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-dom-specularExponent-attr.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-dom-suraceScale-attr.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-inherit-lighting-color-css-prop.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-lighting-color-css-prop.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-svgdom-in-prop.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-svgdom-specularConstant-prop.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-svgdom-specularExponent-prop.html [ NeedsRebaseline ]
-crbug.com/336440 svg/dynamic-updates/SVGFESpecularLightingElement-svgdom-suraceScale-prop.html [ NeedsRebaseline ]
-
 crbug.com/308818 svg/dom/SVGLengthList-appendItemFromClearedList.html [ NeedsRebaseline ]
 
 crbug.com/308818 svg/custom/intersection-list-null.svg [ NeedsRebaseline ]
