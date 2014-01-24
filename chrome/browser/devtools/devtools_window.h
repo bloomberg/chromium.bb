@@ -245,7 +245,6 @@ class DevToolsWindow : private content::NotificationObserver,
   static DevToolsWindow* FindDevToolsWindow(content::DevToolsAgentHost*);
   static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
-  static bool IsDockedFromString(const std::string& dock_side);
   static bool FindInspectedBrowserAndTabIndex(
       content::WebContents* inspected_web_contents, Browser**, int* tab);
   static DevToolsWindow* ToggleDevToolsWindow(
@@ -300,7 +299,6 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void SetContentsInsets(
       int left, int top, int right, int bottom) OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
-  virtual void SetDockSide(const std::string& side) OVERRIDE;
   virtual void SetIsDocked(bool is_docked) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;
   virtual void SaveToFile(const std::string& url,

@@ -164,9 +164,6 @@ DevToolsEmbedderMessageDispatcher::DevToolsEmbedderMessageDispatcher(
   RegisterHandler("moveWindowBy",
       BindToListParser(base::Bind(&Delegate::MoveWindow,
                                   base::Unretained(delegate))));
-  RegisterHandler("requestSetDockSide",
-      BindToListParser(base::Bind(&Delegate::SetDockSide,
-                                  base::Unretained(delegate))));
   RegisterHandler("setIsDocked",
       BindToListParser(base::Bind(&Delegate::SetIsDocked,
                                   base::Unretained(delegate))));

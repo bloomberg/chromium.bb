@@ -227,9 +227,6 @@ typedef std::vector<DevToolsWindow*> DevToolsWindows;
 base::LazyInstance<DevToolsWindows>::Leaky g_instances =
     LAZY_INSTANCE_INITIALIZER;
 
-// TODO(dgozman): remove after switching to SetIsDocked.
-const char kDockSideUndocked[] = "undocked";
-
 static const char kFrontendHostId[] = "id";
 static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
@@ -789,12 +786,6 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   return NULL;
 }
 
-// TODO(dgozman): remove after switch to SetIsDocked.
-// static
-bool DevToolsWindow::IsDockedFromString(const std::string& dock_side) {
-  return dock_side != kDockSideUndocked;
-}
-
 void DevToolsWindow::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
@@ -1032,11 +1023,6 @@ void DevToolsWindow::SetIsDockedAndShowImmediatelyForTest(bool is_docked) {
       LoadCompleted();
   }
   ignore_set_is_docked_for_test_ = true;
-}
-
-void DevToolsWindow::SetDockSide(const std::string& side) {
-  // TODO(dgozman): remove this method after frontend switches to SetIsDocked.
-  SetIsDocked(IsDockedFromString(side));
 }
 
 void DevToolsWindow::SetIsDocked(bool dock_requested) {

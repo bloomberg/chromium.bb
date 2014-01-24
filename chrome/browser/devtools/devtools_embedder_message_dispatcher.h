@@ -31,8 +31,6 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void SetContentsInsets(
         int top, int left, int bottom, int right) = 0;
     virtual void MoveWindow(int x, int y) = 0;
-    // TODO(dgozman): remove once clients have switched to |SetIsDocked|.
-    virtual void SetDockSide(const std::string& side) = 0;
     virtual void SetIsDocked(bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;
     virtual void SaveToFile(const std::string& url,
