@@ -51,6 +51,10 @@ const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
 
 namespace {
 
+// Global tag for test runs where the results are incomplete or unreliable
+// for any reason, e.g. early exit because of too many broken tests.
+const char kUnreliableResultsTag[] = "UNRELIABLE_RESULTS";
+
 // Maximum time of no output after which we print list of processes still
 // running. This deliberately doesn't use TestTimeouts (which is otherwise
 // a recommended solution), because they can be increased. This would defeat
@@ -445,6 +449,9 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     tests_to_retry_.insert(result.full_name);
   }
 
+  if (result.status == TestResult::TEST_UNKNOWN)
+    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
+
   results_tracker_.AddTestResult(result);
 
   // TODO(phajdan.jr): Align counter (padding).
@@ -493,6 +500,7 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
 #endif  // defined(OS_POSIX)
 
     results_tracker_.AddGlobalTag("BROKEN_TEST_EARLY_EXIT");
+    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
     MaybeSaveSummaryAsJSON();
 
     exit(1);
@@ -513,6 +521,7 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     fflush(stdout);
 
     results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
+    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
 
     OnTestIterationFinished();
     return;
