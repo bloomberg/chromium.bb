@@ -165,10 +165,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_SLIDER;
     case WebLocalizedString::AXMediaSliderThumb:
       return IDS_AX_MEDIA_SLIDER_THUMB;
-    case WebLocalizedString::AXMediaRewindButton:
-      return IDS_AX_MEDIA_REWIND_BUTTON;
-    case WebLocalizedString::AXMediaReturnToRealTime:
-      return IDS_AX_MEDIA_RETURN_TO_REALTIME_BUTTON;
     case WebLocalizedString::AXMediaCurrentTimeDisplay:
       return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY;
     case WebLocalizedString::AXMediaTimeRemainingDisplay:
@@ -179,10 +175,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON;
     case WebLocalizedString::AXMediaExitFullscreenButton:
       return IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON;
-  case WebLocalizedString::AXMediaSeekForwardButton:
-    return IDS_AX_MEDIA_SEEK_FORWARD_BUTTON;
-    case WebLocalizedString::AXMediaSeekBackButton:
-      return IDS_AX_MEDIA_SEEK_BACK_BUTTON;
     case WebLocalizedString::AXMediaShowClosedCaptionsButton:
       return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON;
     case WebLocalizedString::AXMediaHideClosedCaptionsButton:
@@ -203,10 +195,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_SLIDER_HELP;
     case WebLocalizedString::AXMediaSliderThumbHelp:
       return IDS_AX_MEDIA_SLIDER_THUMB_HELP;
-    case WebLocalizedString::AXMediaRewindButtonHelp:
-      return IDS_AX_MEDIA_REWIND_BUTTON_HELP;
-    case WebLocalizedString::AXMediaReturnToRealTimeHelp:
-      return IDS_AX_MEDIA_RETURN_TO_REALTIME_BUTTON_HELP;
     case WebLocalizedString::AXMediaCurrentTimeDisplayHelp:
       return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP;
     case WebLocalizedString::AXMediaTimeRemainingDisplayHelp:
@@ -217,10 +205,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON_HELP;
     case WebLocalizedString::AXMediaExitFullscreenButtonHelp:
       return IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON_HELP;
-  case WebLocalizedString::AXMediaSeekForwardButtonHelp:
-    return IDS_AX_MEDIA_SEEK_FORWARD_BUTTON_HELP;
-    case WebLocalizedString::AXMediaSeekBackButtonHelp:
-      return IDS_AX_MEDIA_SEEK_BACK_BUTTON_HELP;
     case WebLocalizedString::AXMediaShowClosedCaptionsButtonHelp:
       return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON_HELP;
     case WebLocalizedString::AXMediaHideClosedCaptionsButtonHelp:
