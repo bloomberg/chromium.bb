@@ -432,7 +432,7 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-container.html [ Pass Failure ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-container.html [ Pass Failure ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-multiple-01.html [ Pass Failure ]
-crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-01.html [ Pass Failure ]
+crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-multiple-01.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-02.html [ Pass Failure ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-set-none.html [ Pass Failure ]
 crbug.com/248938 [ Win ] virtual/threaded/transitions/transition-end-event-unprefixed-01.html [ Pass Failure ]
