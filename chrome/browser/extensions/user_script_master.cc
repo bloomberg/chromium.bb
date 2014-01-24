@@ -379,9 +379,8 @@ void UserScriptMaster::Observe(int type,
       extensions_info_[extension->id()] =
           ExtensionSet::ExtensionPathAndDefaultLocale(
               extension->path(), LocaleInfo::GetDefaultLocale(extension));
-      bool incognito_enabled = extension_util::IsIncognitoEnabled(
-          extension->id(),
-          extensions::ExtensionSystem::Get(profile_)->extension_service());
+      bool incognito_enabled =
+          util::IsIncognitoEnabled(extension->id(), profile_);
       const UserScriptList& scripts =
           ContentScriptsInfo::GetContentScripts(extension);
       for (UserScriptList::const_iterator iter = scripts.begin();

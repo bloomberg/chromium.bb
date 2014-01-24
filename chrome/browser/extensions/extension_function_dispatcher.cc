@@ -370,8 +370,8 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   }
   function_ui->set_dispatcher(AsWeakPtr());
   function_ui->set_context(browser_context_);
-  function->set_include_incognito(extension_util::CanCrossIncognito(extension,
-                                                                    service));
+  function->set_include_incognito(
+      extensions::util::CanCrossIncognito(extension, browser_context_));
 
   if (!CheckPermissions(function.get(), extension, params, callback))
     return;

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -190,7 +191,7 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunImpl() {
         Manifest::IsUnpackedLocation(location));
     extension_value->SetBoolean("isEnabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowedInIncognito",
-        extension_util::IsIncognitoEnabled(id, service));
+        util::IsIncognitoEnabled(id, GetProfile()));
     extension_value->SetBoolean(
         "hasPageAction",
         extension_action_manager->GetPageAction(*extension) != NULL);

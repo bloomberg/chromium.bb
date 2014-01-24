@@ -133,10 +133,7 @@ void ExtensionAppItem::UpdateIcon() {
   }
   gfx::ImageSkia icon = icon_->image_skia();
 
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const bool enabled = extension_util::IsAppLaunchable(extension_id_, service);
-  if (!enabled) {
+  if (!extensions::util::IsAppLaunchable(extension_id_, profile_)) {
     const color_utils::HSL shift = {-1, 0, 0.6};
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
   }
@@ -196,9 +193,7 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
 }
 
 bool ExtensionAppItem::RunExtensionEnableFlow() {
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (extension_util::IsAppLaunchableWithoutEnabling(extension_id_, service))
+  if (extensions::util::IsAppLaunchableWithoutEnabling(extension_id_, profile_))
     return false;
 
   if (!extension_enable_flow_) {

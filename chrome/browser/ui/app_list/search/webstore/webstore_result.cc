@@ -127,8 +127,8 @@ void WebstoreResult::UpdateActions() {
   Actions actions;
 
   const bool is_otr = profile_->IsOffTheRecord();
-  const bool is_installed = extension_util::IsExtensionInstalledPermanently(
-      app_id_, extensions::ExtensionSystem::Get(profile_)->extension_service());
+  const bool is_installed =
+      extensions::util::IsExtensionInstalledPermanently(app_id_, profile_);
 
   if (!is_otr && !is_installed && !is_installing()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(

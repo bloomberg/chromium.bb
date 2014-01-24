@@ -224,7 +224,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
     // extension uses split mode.
     bool incognito_override_allowed =
         extensions::IncognitoInfo::IsSplitMode(extension) &&
-        extension_util::IsIncognitoEnabled(extension->id(), service);
+        extensions::util::IsIncognitoEnabled(extension->id(), profile);
     if (profile->IsOffTheRecord() && !incognito_override_allowed) {
       ++i;
       continue;

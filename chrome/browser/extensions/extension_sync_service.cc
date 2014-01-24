@@ -232,7 +232,7 @@ extensions::ExtensionSyncData ExtensionSyncService::GetExtensionSyncData(
   return extensions::ExtensionSyncData(
       extension,
       extension_service_->IsExtensionEnabled(extension.id()),
-      extension_util::IsIncognitoEnabled(extension.id(), extension_service_));
+      extensions::util::IsIncognitoEnabled(extension.id(), profile_));
 }
 
 extensions::AppSyncData ExtensionSyncService::GetAppSyncData(
@@ -240,7 +240,7 @@ extensions::AppSyncData ExtensionSyncService::GetAppSyncData(
   return extensions::AppSyncData(
       extension,
       extension_service_->IsExtensionEnabled(extension.id()),
-      extension_util::IsIncognitoEnabled(extension.id(), extension_service_),
+      extensions::util::IsIncognitoEnabled(extension.id(), profile_),
       extension_prefs_->app_sorting()->GetAppLaunchOrdinal(extension.id()),
       extension_prefs_->app_sorting()->GetPageOrdinal(extension.id()),
       extensions::GetLaunchTypePrefValue(extension_prefs_, extension.id()));
@@ -412,8 +412,8 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
   bool extension_installed = (extension != NULL);
   int result = extension ?
       extension->version()->CompareTo(extension_sync_data.version()) : 0;
-  extension_util::SetIsIncognitoEnabled(
-      id, extension_service_, extension_sync_data.incognito_enabled());
+  extensions::util::SetIsIncognitoEnabled(
+      id, profile_, extension_sync_data.incognito_enabled());
   extension = NULL;  // No longer safe to use.
 
   if (extension_installed) {

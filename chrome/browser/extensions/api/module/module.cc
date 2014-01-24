@@ -52,22 +52,14 @@ bool ExtensionSetUpdateUrlDataFunction::RunImpl() {
 }
 
 bool ExtensionIsAllowedIncognitoAccessFunction::RunImpl() {
-  ExtensionService* ext_service =
-      ExtensionSystem::Get(GetProfile())->extension_service();
-  const Extension* extension = GetExtension();
-
   SetResult(new base::FundamentalValue(
-      extension_util::IsIncognitoEnabled(extension->id(), ext_service)));
+      util::IsIncognitoEnabled(extension_id(), GetProfile())));
   return true;
 }
 
 bool ExtensionIsAllowedFileSchemeAccessFunction::RunImpl() {
-  ExtensionService* ext_service =
-      ExtensionSystem::Get(GetProfile())->extension_service();
-  const Extension* extension = GetExtension();
-
   SetResult(new base::FundamentalValue(
-      extension_util::AllowFileAccess(extension, ext_service)));
+      util::AllowFileAccess(extension_id(), GetProfile())));
   return true;
 }
 

@@ -78,8 +78,7 @@ void AppSearchProvider::Start(const base::string16& query) {
 
 void AppSearchProvider::Stop() {}
 
-void AppSearchProvider::AddApps(const extensions::ExtensionSet& extensions,
-                                ExtensionService* service) {
+void AppSearchProvider::AddApps(const extensions::ExtensionSet& extensions) {
   for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
     const extensions::Extension* app = iter->get();
@@ -88,24 +87,18 @@ void AppSearchProvider::AddApps(const extensions::ExtensionSet& extensions,
       continue;
 
     if (profile_->IsOffTheRecord() &&
-        !extension_util::CanLoadInIncognito(app, service))
+        !extensions::util::CanLoadInIncognito(app, profile_))
       continue;
     apps_.push_back(new App(app));
   }
 }
 
 void AppSearchProvider::RefreshApps() {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_service)
-    return;  // During testing, there is no extension service.
-
   apps_.clear();
-
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
-  AddApps(registry->enabled_extensions(), extension_service);
-  AddApps(registry->disabled_extensions(), extension_service);
-  AddApps(registry->terminated_extensions(), extension_service);
+  AddApps(registry->enabled_extensions());
+  AddApps(registry->disabled_extensions());
+  AddApps(registry->terminated_extensions());
 }
 
 void AppSearchProvider::Observe(int type,

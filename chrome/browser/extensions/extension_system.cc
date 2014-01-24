@@ -427,8 +427,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
     install_time = ExtensionPrefs::Get(profile_)->
         GetInstallTime(extension->id());
   }
-  bool incognito_enabled =
-      extension_util::IsIncognitoEnabled(extension->id(), extension_service());
+  bool incognito_enabled = util::IsIncognitoEnabled(extension->id(), profile_);
 
   bool notifications_disabled = false;
 #if defined(ENABLE_NOTIFICATIONS)

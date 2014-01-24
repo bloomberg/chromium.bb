@@ -140,7 +140,7 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
           (*i)->HasAPIPermission(APIPermission::kDeclarativeWebRequest);
       bool respects_off_the_record =
           !(profile_->IsOffTheRecord()) ||
-          extension_util::IsIncognitoEnabled((*i)->id(), extension_service);
+          util::IsIncognitoEnabled((*i)->id(), profile_);
       if (needs_apis_storing_rules && respects_off_the_record)
         ReadFromStorage((*i)->id());
     }

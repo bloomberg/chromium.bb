@@ -317,10 +317,9 @@ scoped_ptr<developer::ItemInfo>
     }
   }
 
-  info->incognito_enabled =
-      extension_util::IsIncognitoEnabled(item.id(),service);
+  info->incognito_enabled = util::IsIncognitoEnabled(item.id(), GetProfile());
   info->wants_file_access = item.wants_file_access();
-  info->allow_file_access = extension_util::AllowFileAccess(&item, service);
+  info->allow_file_access = util::AllowFileAccess(item.id(), GetProfile());
   info->allow_reload = Manifest::IsUnpackedLocation(item.location());
   info->is_unpacked = Manifest::IsUnpackedLocation(item.location());
   info->terminated = registry->terminated_extensions().Contains(item.id());
@@ -587,7 +586,7 @@ bool DeveloperPrivateAllowFileAccessFunction::RunImpl() {
                << extension->id();
     result = false;
   } else {
-    extension_util::SetAllowFileAccess(extension, service, params->allow);
+    util::SetAllowFileAccess(extension->id(), GetProfile(), params->allow);
     result = true;
   }
 
@@ -609,8 +608,7 @@ bool DeveloperPrivateAllowIncognitoFunction::RunImpl() {
   if (!extension)
     result = false;
   else
-    extension_util::SetIsIncognitoEnabled(
-        extension->id(),service, params->allow);
+    util::SetIsIncognitoEnabled(extension->id(), GetProfile(), params->allow);
 
   return result;
 }

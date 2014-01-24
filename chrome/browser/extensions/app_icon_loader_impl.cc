@@ -105,10 +105,7 @@ void AppIconLoaderImpl::BuildImage(const std::string& id,
                                    const gfx::ImageSkia& icon) {
   gfx::ImageSkia image = icon;
 
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const bool can_launch = extension_util::IsAppLaunchable(id, service);
-  if (!can_launch) {
+  if (!util::IsAppLaunchable(id, profile_)) {
     const color_utils::HSL shift = {-1, 0, 0.6};
     image = gfx::ImageSkiaOperations::CreateHSLShiftedImage(image, shift);
   }

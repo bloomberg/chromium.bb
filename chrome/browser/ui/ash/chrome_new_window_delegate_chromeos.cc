@@ -30,9 +30,9 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   const ExtensionService* const service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (service == NULL ||
-      !extension_util::IsAppLaunchableWithoutEnabling(kFileManagerAppId,
-                                                      service)) {
+  if (!service ||
+      !extensions::util::IsAppLaunchableWithoutEnabling(kFileManagerAppId,
+                                                        profile)) {
     return;
   }
 

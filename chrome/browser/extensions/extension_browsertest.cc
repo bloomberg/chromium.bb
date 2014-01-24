@@ -178,11 +178,11 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile()));
-    CHECK(!extension_util::IsIncognitoEnabled(extension_id, service) ||
+    CHECK(!extensions::util::IsIncognitoEnabled(extension_id, profile()) ||
           extension->force_incognito_enabled());
 
     if (flags & kFlagEnableIncognito) {
-      extension_util::SetIsIncognitoEnabled(extension_id, service, true);
+      extensions::util::SetIsIncognitoEnabled(extension_id, profile(), true);
       load_signal.Wait();
       extension = service->GetExtensionById(extension_id, false);
       CHECK(extension) << extension_id << " not found after reloading.";
@@ -193,9 +193,9 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile()));
-    CHECK(extension_util::AllowFileAccess(extension, service));
+    CHECK(extensions::util::AllowFileAccess(extension_id, profile()));
     if (!(flags & kFlagEnableFileAccess)) {
-      extension_util::SetAllowFileAccess(extension, service, false);
+      extensions::util::SetAllowFileAccess(extension_id, profile(), false);
       load_signal.Wait();
       extension = service->GetExtensionById(extension_id, false);
       CHECK(extension) << extension_id << " not found after reloading.";

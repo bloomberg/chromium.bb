@@ -47,13 +47,6 @@ ExtensionViewHost* CreateViewHostForExtension(const Extension* extension,
   return host;
 }
 
-// Return true if this extension can run in an incognito window.
-bool IsIncognitoEnabled(Profile* profile, const Extension* extension) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  return extension_util::IsIncognitoEnabled(extension->id(), service);
-}
-
 // Creates a view host for an extension in an incognito window. Returns NULL
 // if the extension is not allowed to run in incognito.
 ExtensionViewHost* CreateViewHostForIncognito(const Extension* extension,
@@ -72,7 +65,7 @@ ExtensionViewHost* CreateViewHostForIncognito(const Extension* extension,
   }
 
   // Create the host if the extension can run in incognito.
-  if (IsIncognitoEnabled(profile, extension)) {
+  if (util::IsIncognitoEnabled(extension->id(), profile)) {
     return CreateViewHostForExtension(
         extension, url, profile, browser, view_type);
   }

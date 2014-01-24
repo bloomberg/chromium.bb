@@ -298,12 +298,9 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
   std::string icon_data = params_->details.icon_data ?
       *params_->details.icon_data : std::string();
 
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(GetProfile())->extension_service();
-  if (extension_util::IsExtensionInstalledPermanently(params_->details.id,
-                                                      service)
-      || !g_pending_installs.Get().InsertInstall(GetProfile(),
-                                                 params_->details.id)) {
+  Profile* profile = GetProfile();
+  if (util::IsExtensionInstalledPermanently(params_->details.id, profile) ||
+      !g_pending_installs.Get().InsertInstall(profile, params_->details.id)) {
     SetResultCode(ALREADY_INSTALLED);
     error_ = kAlreadyInstalledError;
     return false;

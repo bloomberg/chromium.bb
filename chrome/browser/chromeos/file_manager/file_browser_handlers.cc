@@ -107,7 +107,7 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
        iter != service->extensions()->end(); ++iter) {
     const Extension* extension = iter->get();
     if (profile->IsOffTheRecord() &&
-        !extension_util::IsIncognitoEnabled(extension->id(), service))
+        !extensions::util::IsIncognitoEnabled(extension->id(), profile))
       continue;
 
     FileBrowserHandler::List* handler_list =

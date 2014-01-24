@@ -650,9 +650,7 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
   if (!extension)
     return;
 
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_util::IsAppLaunchableWithoutEnabling(app_id, service)) {
+  if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
     // Do nothing if there is already a running enable flow.
     if (extension_enable_flow_)
       return;

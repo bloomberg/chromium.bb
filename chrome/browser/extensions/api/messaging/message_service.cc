@@ -217,7 +217,8 @@ void MessageService::OpenChannelToExtension(
 
   // Only running ephemeral apps can receive messages. Idle cached ephemeral
   // apps are invisible and should not be connectable.
-  if (extension_util::IsIdleEphemeralApp(target_extension, extension_system)) {
+  if (target_extension->is_ephemeral() &&
+      util::IsExtensionIdle(target_extension_id, profile)) {
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
     return;
@@ -267,14 +268,11 @@ void MessageService::OpenChannelToExtension(
     }
   }
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
   WebContents* source_contents = tab_util::GetWebContentsByID(
       source_process_id, source_routing_id);
 
   if (profile->IsOffTheRecord() &&
-      !extension_util::IsIncognitoEnabled(target_extension_id,
-                                          extension_service)) {
+      !util::IsIncognitoEnabled(target_extension_id, profile)) {
     // Give the user a chance to accept an incognito connection if they haven't
     // already - but only for spanning-mode incognito. We don't want the
     // complication of spinning up an additional process here which might need

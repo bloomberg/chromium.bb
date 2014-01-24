@@ -161,7 +161,7 @@ bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
   if (!all_items || all_items->empty())
     return false;
 
-  *can_cross_incognito = extension_util::CanCrossIncognito(*extension, service);
+  *can_cross_incognito = util::CanCrossIncognito(*extension, profile_);
   items = GetRelevantExtensionItems(*all_items,
                                     *can_cross_incognito);
 

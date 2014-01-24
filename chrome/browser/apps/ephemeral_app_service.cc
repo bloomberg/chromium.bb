@@ -170,7 +170,7 @@ void EphemeralAppService::GarbageCollectApps() {
     ++app_count;
 
     // Do not remove ephemeral apps that are running.
-    if (!extension_util::IsExtensionIdle(extension->id(), system))
+    if (!extensions::util::IsExtensionIdle(extension->id(), profile_))
       continue;
 
     base::Time last_launch_time = prefs->GetLastLaunchTime(extension->id());

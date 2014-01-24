@@ -413,12 +413,10 @@ void ExtensionToolbarModel::UpdatePrefs() {
 
 int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {
   int original_index = 0, i = 0;
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
   for (ExtensionList::iterator iter = toolbar_items_.begin();
        iter != toolbar_items_.end();
        ++iter, ++original_index) {
-    if (extension_util::IsIncognitoEnabled((*iter)->id(), extension_service)) {
+    if (extensions::util::IsIncognitoEnabled((*iter)->id(), profile_)) {
       if (incognito_index == i)
         break;
       ++i;
@@ -429,14 +427,12 @@ int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {
 
 int ExtensionToolbarModel::OriginalIndexToIncognito(int original_index) {
   int incognito_index = 0, i = 0;
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
   for (ExtensionList::iterator iter = toolbar_items_.begin();
        iter != toolbar_items_.end();
        ++iter, ++i) {
     if (original_index == i)
       break;
-    if (extension_util::IsIncognitoEnabled((*iter)->id(), extension_service))
+    if (extensions::util::IsIncognitoEnabled((*iter)->id(), profile_))
       ++incognito_index;
   }
   return incognito_index;

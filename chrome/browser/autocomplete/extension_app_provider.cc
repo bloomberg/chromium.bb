@@ -165,7 +165,7 @@ void ExtensionAppProvider::RefreshAppList() {
     // provider is currently only used in the app launcher.
 
     if (profile_->IsOffTheRecord() &&
-        !extension_util::CanLoadInIncognito(app, extension_service))
+        !extensions::util::CanLoadInIncognito(app, profile_))
       continue;
 
     GURL launch_url = app->is_platform_app() ?

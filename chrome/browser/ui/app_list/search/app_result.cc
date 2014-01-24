@@ -131,9 +131,7 @@ void AppResult::StopObservingInstall() {
 }
 
 bool AppResult::RunExtensionEnableFlow() {
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (extension_util::IsAppLaunchableWithoutEnabling(app_id_, service))
+  if (extensions::util::IsAppLaunchableWithoutEnabling(app_id_, profile_))
     return false;
 
   if (!extension_enable_flow_) {
@@ -150,10 +148,7 @@ bool AppResult::RunExtensionEnableFlow() {
 void AppResult::UpdateIcon() {
   gfx::ImageSkia icon = icon_->image_skia();
 
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const bool can_launch = extension_util::IsAppLaunchable(app_id_, service);
-  if (!can_launch) {
+  if (!extensions::util::IsAppLaunchable(app_id_, profile_)) {
     const color_utils::HSL shift = {-1, 0, 0.6};
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
   }

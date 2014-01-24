@@ -118,9 +118,7 @@ static void WillDispatchWindowFocusedEvent(BrowserContext* new_active_context,
   // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
   if (new_active_context && new_active_context != context &&
-      !extension_util::CanCrossIncognito(extension,
-                                         ExtensionSystem::GetForBrowserContext(
-                                             context)->extension_service())) {
+      !util::CanCrossIncognito(extension, context)) {
     event_args->Clear();
     event_args->Append(new base::FundamentalValue(
         extension_misc::kUnknownWindowId));

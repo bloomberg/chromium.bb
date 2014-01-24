@@ -397,7 +397,7 @@ void FindFileHandlerTasks(
       continue;
 
     if (profile->IsOffTheRecord() &&
-        !extension_util::IsIncognitoEnabled(extension->id(), service))
+        !extensions::util::IsIncognitoEnabled(extension->id(), profile))
       continue;
 
     typedef std::vector<const extensions::FileHandlerInfo*> FileHandlerList;

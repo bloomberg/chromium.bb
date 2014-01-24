@@ -103,9 +103,6 @@ class IncognitoProcessManager : public ProcessManager {
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url) OVERRIDE;
 
  private:
-  // Returns true if the extension is allowed to run in incognito mode.
-  bool IsIncognitoEnabled(const Extension* extension);
-
   ProcessManager* original_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoProcessManager);
@@ -873,7 +870,7 @@ IncognitoProcessManager::IncognitoProcessManager(
 ExtensionHost* IncognitoProcessManager::CreateBackgroundHost(
     const Extension* extension, const GURL& url) {
   if (IncognitoInfo::IsSplitMode(extension)) {
-    if (IsIncognitoEnabled(extension))
+    if (util::IsIncognitoEnabled(extension->id(), GetBrowserContext()))
       return ProcessManager::CreateBackgroundHost(extension, url);
   } else {
     // Do nothing. If an extension is spanning, then its original-profile
@@ -892,13 +889,6 @@ SiteInstance* IncognitoProcessManager::GetSiteInstanceForURL(const GURL& url) {
     }
   }
   return ProcessManager::GetSiteInstanceForURL(url);
-}
-
-bool IncognitoProcessManager::IsIncognitoEnabled(const Extension* extension) {
-  // Keep in sync with duplicate in extension_info_map.cc.
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      GetBrowserContext())->extension_service();
-  return extension_util::IsIncognitoEnabled(extension->id(), service);
 }
 
 }  // namespace extensions

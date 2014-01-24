@@ -206,8 +206,7 @@ base::string16 KeywordProvider::GetKeywordForText(
         GetExtensionById(template_url->GetExtensionId(), false);
     if (!extension ||
         (profile_->IsOffTheRecord() &&
-        !extension_util::IsIncognitoEnabled(extension->id(),
-                                            extension_service)))
+        !extensions::util::IsIncognitoEnabled(extension->id(), profile_)))
       return base::string16();
   }
 
@@ -285,8 +284,8 @@ void KeywordProvider::Start(const AutocompleteInput& input,
           service->GetExtensionById(template_url->GetExtensionId(), false);
       bool enabled =
           extension && (!profile_->IsOffTheRecord() ||
-                        extension_util::IsIncognitoEnabled(extension->id(),
-                                                           service));
+                        extensions::util::IsIncognitoEnabled(
+                            extension->id(), profile_));
       if (!enabled) {
         i = matches.erase(i);
         continue;

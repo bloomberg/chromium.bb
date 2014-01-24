@@ -2211,7 +2211,7 @@ void ExtensionService::MaybeFinishDelayedInstallation(
   // only used for idle updates.
   if ((reason == extensions::ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE ||
        reason == extensions::ExtensionPrefs::DELAY_REASON_NONE) &&
-       is_ready() && !extension_util::IsExtensionIdle(extension_id, system_))
+       is_ready() && !extensions::util::IsExtensionIdle(extension_id, profile_))
     return;
 
   const Extension* extension = delayed_installs_.GetByID(extension_id);
@@ -2670,7 +2670,7 @@ bool ExtensionService::ShouldDelayExtensionUpdate(
         extension_id, kOnUpdateAvailableEvent);
   } else {
     // Delay installation if the extension is not idle.
-    return !extension_util::IsExtensionIdle(extension_id, system_);
+    return !extensions::util::IsExtensionIdle(extension_id, profile_);
   }
 }
 

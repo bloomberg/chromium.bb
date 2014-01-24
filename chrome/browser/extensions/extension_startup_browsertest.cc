@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
@@ -99,9 +100,10 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     int found_extensions = 0;
     for (extensions::ExtensionSet::const_iterator it =
              service->extensions()->begin();
-         it != service->extensions()->end(); ++it)
+         it != service->extensions()->end(); ++it) {
       if ((*it)->location() != extensions::Manifest::COMPONENT)
         found_extensions++;
+    }
 
     ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
               static_cast<uint32>(found_extensions));
@@ -186,14 +188,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
   // doing so reloads them.
   std::vector<const extensions::Extension*> extension_list;
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
   for (extensions::ExtensionSet::const_iterator it =
-           service->extensions()->begin();
-       it != service->extensions()->end(); ++it) {
+           registry->enabled_extensions().begin();
+       it != registry->enabled_extensions().end(); ++it) {
     if ((*it)->location() == extensions::Manifest::COMPONENT)
       continue;
-    if (extension_util::AllowFileAccess(it->get(), service))
+    if (extensions::util::AllowFileAccess((*it)->id(), browser()->profile()))
       extension_list.push_back(it->get());
   }
 
@@ -201,7 +203,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
     content::WindowedNotificationObserver user_scripts_observer(
         chrome::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
-    extension_util::SetAllowFileAccess(extension_list[i], service, false);
+    extensions::util::SetAllowFileAccess(
+        extension_list[i]->id(), browser()->profile(), false);
     user_scripts_observer.Wait();
   }
 

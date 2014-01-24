@@ -2978,7 +2978,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   // Disable it and allow it to run in incognito. These settings should carry
   // over to the updated version.
   service_->DisableExtension(good->id(), Extension::DISABLE_USER_ACTION);
-  extension_util::SetIsIncognitoEnabled(good->id(), service_, true);
+  extensions::util::SetIsIncognitoEnabled(good->id(), profile_.get(), true);
   service_->extension_prefs()->SetDidExtensionEscalatePermissions(good, true);
 
   path = data_dir_.AppendASCII("good2.crx");
@@ -2986,7 +2986,8 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
   ASSERT_EQ(1u, service_->disabled_extensions()->size());\
   const Extension* good2 = service_->GetExtensionById(good_crx, true);
   ASSERT_EQ("1.0.0.1", good2->version()->GetString());
-  EXPECT_TRUE(extension_util::IsIncognitoEnabled(good2->id(), service_));
+  EXPECT_TRUE(extensions::util::IsIncognitoEnabled(
+      good2->id(), profile_.get()));
   EXPECT_TRUE(service_->extension_prefs()->DidExtensionEscalatePermissions(
       good2->id()));
 }
@@ -3240,7 +3241,8 @@ TEST_F(ExtensionServiceTest, MAYBE_UpdatePendingExternalCrx) {
   EXPECT_FALSE(
       service_->extension_prefs()->IsExtensionDisabled(extension->id()));
   EXPECT_TRUE(service_->IsExtensionEnabled(extension->id()));
-  EXPECT_FALSE(extension_util::IsIncognitoEnabled(extension->id(), service_));
+  EXPECT_FALSE(extensions::util::IsIncognitoEnabled(extension->id(),
+                                                    profile_.get()));
 }
 
 // Test updating a pending CRX as if the source is an external extension
@@ -5470,7 +5472,7 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
   EXPECT_EQ(extension->id(), data.id());
   EXPECT_FALSE(data.uninstalled());
   EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled());
-  EXPECT_EQ(extension_util::IsIncognitoEnabled(good_crx, service_),
+  EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()),
             data.incognito_enabled());
   EXPECT_TRUE(data.version().Equals(*extension->version()));
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
@@ -5499,7 +5501,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
   EXPECT_EQ(extension->id(), data.id());
   EXPECT_FALSE(data.uninstalled());
   EXPECT_EQ(service_->IsExtensionEnabled(good_crx), data.enabled());
-  EXPECT_EQ(extension_util::IsIncognitoEnabled(good_crx, service_),
+  EXPECT_EQ(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()),
             data.incognito_enabled());
   EXPECT_TRUE(data.version().Equals(*extension->version()));
   EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(extension),
@@ -5558,7 +5560,7 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
     EXPECT_FALSE(data.incognito_enabled());
   }
 
-  extension_util::SetIsIncognitoEnabled(good_crx, service_, true);
+  extensions::util::SetIsIncognitoEnabled(good_crx, profile_.get(), true);
   {
     syncer::SyncDataList list = extension_sync_service_->GetAllSyncData(
         syncer::EXTENSIONS);
@@ -5837,7 +5839,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
-  EXPECT_FALSE(extension_util::IsIncognitoEnabled(good_crx, service_));
+  EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -5856,7 +5858,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     list[0] = sync_change;
     extension_sync_service_->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
-    EXPECT_FALSE(extension_util::IsIncognitoEnabled(good_crx, service_));
+    EXPECT_FALSE(
+        extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
   }
 
   {
@@ -5871,7 +5874,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     list[0] = sync_change;
     extension_sync_service_->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
-    EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
+    EXPECT_TRUE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
   }
 
   {
@@ -5886,7 +5889,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
     list[0] = sync_change;
     extension_sync_service_->ProcessSyncChanges(FROM_HERE, list);
     EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
-    EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
+    EXPECT_TRUE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
   }
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
@@ -5904,7 +5907,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
-  EXPECT_FALSE(extension_util::IsIncognitoEnabled(good_crx, service_));
+  EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -5923,7 +5926,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
 
   extension_sync_service_->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
-  EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
+  EXPECT_TRUE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
 
   EXPECT_FALSE(service_->pending_extension_manager()->IsIdPending(good_crx));
 }
@@ -5939,7 +5942,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
-  EXPECT_FALSE(extension_util::IsIncognitoEnabled(good_crx, service_));
+  EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -6022,11 +6025,11 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
 
 
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
-  EXPECT_FALSE(extension_util::IsIncognitoEnabled(good_crx, service_));
+  EXPECT_FALSE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
   extension_sync_service_->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_TRUE(service_->updater()->WillCheckSoon());
   EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
-  EXPECT_TRUE(extension_util::IsIncognitoEnabled(good_crx, service_));
+  EXPECT_TRUE(extensions::util::IsIncognitoEnabled(good_crx, profile_.get()));
 
   const extensions::PendingExtensionInfo* info;
   EXPECT_TRUE((info = service_->pending_extension_manager()->

@@ -110,10 +110,8 @@ void AppListControllerDelegate::ShowAppInWebStore(
 bool AppListControllerDelegate::HasOptionsPage(
     Profile* profile,
     const std::string& app_id) {
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* extension = GetExtension(profile, app_id);
-  return extension_util::IsAppLaunchableWithoutEnabling(app_id, service) &&
+  return extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile) &&
          extension &&
          !extensions::ManifestURL::GetOptionsPage(extension).is_empty();
 }

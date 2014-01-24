@@ -228,13 +228,13 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       "terminated",
       registry->terminated_extensions().Contains(extension->id()));
   extension_data->SetBoolean("enabledIncognito",
-      extension_util::IsIncognitoEnabled(extension->id(), extension_service_));
+      util::IsIncognitoEnabled(extension->id(), extension_service_->profile()));
   extension_data->SetBoolean("incognitoCanBeToggled",
                              extension->can_be_incognito_enabled() &&
                              !extension->force_incognito_enabled());
   extension_data->SetBoolean("wantsFileAccess", extension->wants_file_access());
   extension_data->SetBoolean("allowFileAccess",
-      extension_util::AllowFileAccess(extension, extension_service_));
+      util::AllowFileAccess(extension->id(), extension_service_->profile()));
   extension_data->SetBoolean("allow_reload",
       Manifest::IsUnpackedLocation(extension->location()));
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
@@ -875,9 +875,9 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
   // Bug: http://crbug.com/41384
   base::AutoReset<bool> auto_reset_ignore_notifications(
       &ignore_notifications_, true);
-  extension_util::SetIsIncognitoEnabled(extension->id(),
-                                        extension_service_,
-                                        enable_str == "true");
+  util::SetIsIncognitoEnabled(extension->id(),
+                              extension_service_->profile(),
+                              enable_str == "true");
 }
 
 void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
@@ -898,8 +898,8 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
     return;
   }
 
-  extension_util::SetAllowFileAccess(
-      extension, extension_service_, allow_str == "true");
+  util::SetAllowFileAccess(
+      extension_id, extension_service_->profile(), allow_str == "true");
 }
 
 void ExtensionSettingsHandler::HandleUninstallMessage(
@@ -1114,7 +1114,8 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   // shell windows for incognito processes.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
       IncognitoInfo::IsSplitMode(extension) &&
-      extension_util::IsIncognitoEnabled(extension->id(), extension_service_)) {
+      util::IsIncognitoEnabled(extension->id(),
+                               extension_service_->profile())) {
     extensions::ProcessManager* process_manager =
         ExtensionSystem::Get(extension_service_->profile()->
             GetOffTheRecordProfile())->process_manager();

@@ -780,11 +780,8 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 
 - (BOOL)shouldDisplayBrowserAction:(const Extension*)extension {
   // Only display incognito-enabled extensions while in incognito mode.
-  return
-      (!profile_->IsOffTheRecord() ||
-       extension_util::IsIncognitoEnabled(
-          extension->id(),
-          extensions::ExtensionSystem::Get(profile_)->extension_service()));
+  return !profile_->IsOffTheRecord() ||
+      extensions::util::IsIncognitoEnabled(extension->id(), profile_);
 }
 
 - (void)showChevronIfNecessaryInFrame:(NSRect)frame animate:(BOOL)animate {

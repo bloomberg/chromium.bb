@@ -63,8 +63,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestAdblockExtensionCrash) {
   // Verify that the extension is enabled and allowed in incognito
   // is disabled.
   EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id()));
-  EXPECT_FALSE(
-      extension_util::IsIncognitoEnabled(last_loaded_extension_id(), service));
+  EXPECT_FALSE(util::IsIncognitoEnabled(last_loaded_extension_id(), profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
@@ -72,30 +71,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, TestSetExtensionsState) {
   InstallExtensionSilently(service, "google_talk.crx");
 
   // Disable the extension and verify.
-  extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id(), service, false);
+  util::SetIsIncognitoEnabled(last_loaded_extension_id(), profile(), false);
   service->DisableExtension(last_loaded_extension_id(),
                             Extension::DISABLE_USER_ACTION);
   EXPECT_FALSE(service->IsExtensionEnabled(last_loaded_extension_id()));
 
   // Enable the extension and verify.
-  extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id(), service, false);
+  util::SetIsIncognitoEnabled(last_loaded_extension_id(), profile(), false);
   service->EnableExtension(last_loaded_extension_id());
   EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id()));
 
   // Allow extension in incognito mode and verify.
   service->EnableExtension(last_loaded_extension_id());
-  extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id(), service, true);
-  EXPECT_TRUE(
-      extension_util::IsIncognitoEnabled(last_loaded_extension_id(), service));
+  util::SetIsIncognitoEnabled(last_loaded_extension_id(), profile(), true);
+  EXPECT_TRUE(util::IsIncognitoEnabled(last_loaded_extension_id(), profile()));
 
   // Disallow extension in incognito mode and verify.
   service->EnableExtension(last_loaded_extension_id());
-  extension_util::SetIsIncognitoEnabled(
-      last_loaded_extension_id(), service, false);
-  EXPECT_FALSE(
-      extension_util::IsIncognitoEnabled(last_loaded_extension_id(), service));
+  util::SetIsIncognitoEnabled(last_loaded_extension_id(), profile(), false);
+  EXPECT_FALSE(util::IsIncognitoEnabled(last_loaded_extension_id(), profile()));
 }
 }  // namespace extensions

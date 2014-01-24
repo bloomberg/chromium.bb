@@ -82,8 +82,8 @@ void EphemeralAppLauncher::Start() {
 
   const Extension* extension = extension_service->GetInstalledExtension(id());
   if (extension) {
-    if (extension_util::IsAppLaunchableWithoutEnabling(extension->id(),
-                                                       extension_service)) {
+    if (extensions::util::IsAppLaunchableWithoutEnabling(extension->id(),
+                                                         profile())) {
       LaunchApp(extension);
       InvokeCallback(std::string());
       return;

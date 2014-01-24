@@ -395,7 +395,7 @@ bool MediaGalleriesPrivateGetHandlersFunction::RunImpl() {
        ++iter) {
     const Extension* extension = iter->get();
     if (GetProfile()->IsOffTheRecord() &&
-        !extension_util::IsIncognitoEnabled(extension->id(), service))
+        !util::IsIncognitoEnabled(extension->id(), GetProfile()))
       continue;
 
     MediaGalleriesHandler::List* handler_list =
