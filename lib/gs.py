@@ -182,7 +182,7 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_TAR = 'gsutil_3.37.tar.gz'
+  GSUTIL_TAR = 'gsutil_3.38.tar.gz'
   GSUTIL_URL = PUBLIC_BASE_HTTPS_URL + 'pub/%s' % GSUTIL_TAR
 
   RESUMABLE_UPLOAD_ERROR = ('Too many resumable upload attempts failed without '
@@ -386,11 +386,10 @@ class GSContext(object):
     """Returns a list of gsutil tracker filenames.
 
     Tracker files are used by gsutil to resume downloads/uploads. This
-    function returns tracker filenames that are compatible with gsutil
-    3.25 to 3.31.
+    function does not handle parallel uploads.
 
     Args:
-      dest_path: either a GS path or an absolute local path.
+      dest_path: Either a GS path or an absolute local path.
 
     Returns:
       The list of potential tracker filenames.
@@ -398,12 +397,14 @@ class GSContext(object):
     dest = urlparse.urlsplit(dest_path)
     filenames = []
     if dest.scheme == 'gs':
+      prefix = 'upload'
       bucket_name = dest.netloc
       object_name = dest.path.lstrip('/')
       filenames.append(
           re.sub(r'[/\\]', '_', 'resumable_upload__%s__%s.url' %
                  (bucket_name, object_name)))
     else:
+      prefix = 'download'
       filenames.append(
           re.sub(r'[/\\]', '_', 'resumable_download__%s.etag' % dest.path))
 
@@ -412,8 +413,8 @@ class GSContext(object):
       if not isinstance(filename, unicode):
         filename = unicode(filename, 'utf8').encode('utf-8')
       m = hashlib.sha1(filename)
-      hashed_filenames.append('TRACKER_%s.%s' %
-                              (m.hexdigest(), filename[-16:]))
+      hashed_filenames.append('%s_TRACKER_%s.%s' %
+                              (prefix, m.hexdigest(), filename[-16:]))
 
     return hashed_filenames
 
