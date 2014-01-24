@@ -21,6 +21,5 @@ module = mojom_data.ModuleFromData(dict)
 dir = None
 if len(sys.argv) > 2:
   dir = sys.argv[2]
-cpp = mojom_cpp_generator.CPPGenerator(
-    module, "mojo/public/bindings/generators/gen", dir)
+cpp = mojom_cpp_generator.Generator(module, ".", dir)
 cpp.GenerateFiles()

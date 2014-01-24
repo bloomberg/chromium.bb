@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,8 +16,6 @@
       },
       'inputs': [
         '<(mojom_bindings_generator)',
-        '<(DEPTH)/mojo/public/bindings/parse/mojo_parser.py',
-        '<(DEPTH)/mojo/public/bindings/parse/mojo_translate.py',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_definition.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_proxy_declaration.tmpl',
@@ -42,6 +40,10 @@
         '<(DEPTH)/mojo/public/bindings/generators/mojom_js_generator.py',
         '<(DEPTH)/mojo/public/bindings/generators/mojom_pack.py',
         '<(DEPTH)/mojo/public/bindings/generators/template_expander.py',
+        '<(DEPTH)/mojo/public/bindings/pylib/parse/__init__.py',
+        '<(DEPTH)/mojo/public/bindings/pylib/parse/mojo_lexer.py',
+        '<(DEPTH)/mojo/public/bindings/pylib/parse/mojo_parser.py',
+        '<(DEPTH)/mojo/public/bindings/pylib/parse/mojo_translate.py',
       ],
       'outputs': [
         '<(output_dir)/<(RULE_INPUT_ROOT).cc',

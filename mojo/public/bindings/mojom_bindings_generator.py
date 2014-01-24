@@ -6,16 +6,24 @@
 """The frontend for the Mojo bindings system."""
 
 
+import argparse
 import imp
 import os
+import pprint
 import sys
-from argparse import ArgumentParser
+
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(script_dir, 'pylib'))
+
 from generators import mojom_data
 from parse import mojo_parser
 from parse import mojo_translate
 
 
 def LoadGenerators(generators_string):
+  if not generators_string:
+    return []  # No generators.
+
   generators = []
   for generator_name in [s.strip() for s in generators_string.split(",")]:
     # "Built-in" generators:
@@ -37,7 +45,8 @@ def LoadGenerators(generators_string):
 
 
 def Main():
-  parser = ArgumentParser(description="Generate bindings from mojom files.")
+  parser = argparse.ArgumentParser(
+      description="Generate bindings from mojom files.")
   parser.add_argument("filename", nargs="+",
                       help="mojom input file")
   parser.add_argument("-i", "--include_dir", dest="include_dir", default=".",
@@ -47,6 +56,8 @@ def Main():
   parser.add_argument("-g", "--generators", dest="generators_string",
                       metavar="GENERATORS", default="c++,javascript",
                       help="comma-separated list of generators")
+  parser.add_argument("--debug_print_intermediate", action="store_true",
+                      help="print the intermediate representation")
   args = parser.parse_args()
 
   # TODO(vtl): Load these dynamically. (Also add a command-line option to
@@ -62,6 +73,8 @@ def Main():
     # at least avoid generating the serialized Mojom IR.
     tree = mojo_parser.Parse(filename)
     mojom = mojo_translate.Translate(tree, name)
+    if args.debug_print_intermediate:
+      pprint.PrettyPrinter().pprint(mojom)
     module = mojom_data.OrderedModuleFromData(mojom)
     for generator_module in generator_modules:
       generator = generator_module.Generator(module, args.include_dir,
