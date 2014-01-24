@@ -67,6 +67,23 @@ mouseover: {
         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
     }
 }
+- window -
+load: {
+    0: {
+        listener: function onload(event) { runTest() }
+        useCapture: false
+        type: "load"
+        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+    }
+}
+popstate: {
+    0: {
+        listener: function listener1() { }
+        useCapture: false
+        type: "popstate"
+        remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+    }
+}
 - empty -
 - invalid -
 - object -
@@ -74,7 +91,5 @@ undefined
 - null -
 undefined
 - undefined -
-undefined
-- window -
 undefined
 

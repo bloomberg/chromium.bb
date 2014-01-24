@@ -37,9 +37,14 @@ document.getElementById("inner").addEventListener("keydown", listener2, true);
 document.getElementById("outer").addEventListener("mousemove", listener1, false);
 document.getElementById("outer").addEventListener("mousedown", listener2, true);
 document.getElementById("outer").addEventListener("keydown", listener2, true);
+window.addEventListener("popstate", listener1, false);
 
 function dumpObject(object, prefix)
 {
+    if (!object) {
+        output("FAIL: object is " + object);
+        return;
+    }
     prefix = prefix || "";
     var keys = Object.keys(object);
     for (var i = 0; i < keys.length; ++i) {
@@ -82,6 +87,8 @@ function runTestsInPage(getEventListeners)
     dumpObject(getEventListeners(document.getElementById("outer")));
     output("- attribute event listeners -");
     dumpObject(getEventListeners(document.getElementById("button")));
+    output("- window -");
+    dumpObject(getEventListeners(window));
     output("- empty -");
     dumpObject(getEventListeners(document.getElementById("empty")));
     output("- invalid -");
@@ -92,8 +99,6 @@ function runTestsInPage(getEventListeners)
     output(typeof getEventListeners(null));
     output("- undefined -");
     output(typeof getEventListeners(undefined));
-    output("- window -");
-    output(typeof getEventListeners(window));
 }
 
 </script>

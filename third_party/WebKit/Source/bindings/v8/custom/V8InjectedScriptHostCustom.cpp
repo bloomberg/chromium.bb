@@ -32,6 +32,7 @@
 #include "V8InjectedScriptHost.h"
 
 #include "V8Database.h"
+#include "V8EventTarget.h"
 #include "V8HTMLAllCollection.h"
 #include "V8HTMLCollection.h"
 #include "V8Node.h"
@@ -54,6 +55,8 @@
 #include "bindings/v8/custom/V8Uint32ArrayCustom.h"
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "bindings/v8/custom/V8Uint8ClampedArrayCustom.h"
+#include "core/events/EventTarget.h"
+#include "core/frame/DOMWindow.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -240,7 +243,7 @@ void V8InjectedScriptHost::getInternalPropertiesMethodCustom(const v8::FunctionC
     v8SetReturnValue(info, debugServer.getInternalProperties(object));
 }
 
-static v8::Handle<v8::Array> getJSListenerFunctions(Document* document, const EventListenerInfo& listenerInfo, v8::Isolate* isolate)
+static v8::Handle<v8::Array> getJSListenerFunctions(ExecutionContext* executionContext, const EventListenerInfo& listenerInfo, v8::Isolate* isolate)
 {
     v8::Local<v8::Array> result = v8::Array::New(isolate);
     size_t handlersCount = listenerInfo.eventListenerVector.size();
@@ -251,7 +254,7 @@ static v8::Handle<v8::Array> getJSListenerFunctions(Document* document, const Ev
             continue;
         }
         V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(listener.get());
-        v8::Local<v8::Context> context = toV8Context(document, v8Listener->world());
+        v8::Local<v8::Context> context = toV8Context(executionContext, v8Listener->world());
         // Hide listeners from other contexts.
         if (context != isolate->GetCurrentContext())
             continue;
@@ -259,7 +262,7 @@ static v8::Handle<v8::Array> getJSListenerFunctions(Document* document, const Ev
         {
             // getListenerObject() may cause JS in the event attribute to get compiled, potentially unsuccessfully.
             v8::TryCatch block;
-            function = v8Listener->getListenerObject(document);
+            function = v8Listener->getListenerObject(executionContext);
             if (block.HasCaught())
                 continue;
         }
@@ -277,20 +280,26 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
     if (info.Length() < 1)
         return;
 
+    EventTarget* target = 0;
     v8::Local<v8::Value> value = info[0];
-    if (!V8Node::hasInstance(value, info.GetIsolate()))
-        return;
-    Node* node = V8Node::toNative(value->ToObject());
-    if (!node)
+
+    if (V8EventTarget::hasInstance(value, info.GetIsolate()))
+        target = V8EventTarget::toNative(value->ToObject());
+
+    // We need to handle a DOMWindow specially, because a DOMWindow wrapper exists on a prototype chain.
+    if (!target)
+        target = toNativeDOMWindow(value, info.GetIsolate());
+
+    if (!target || !target->executionContext())
         return;
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
     Vector<EventListenerInfo> listenersArray;
-    host->getEventListenersImpl(node, listenersArray);
+    host->getEventListenersImpl(target, listenersArray);
 
     v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
     for (size_t i = 0; i < listenersArray.size(); ++i) {
-        v8::Handle<v8::Array> listeners = getJSListenerFunctions(&node->document(), listenersArray[i], info.GetIsolate());
+        v8::Handle<v8::Array> listeners = getJSListenerFunctions(target->executionContext(), listenersArray[i], info.GetIsolate());
         if (!listeners->Length())
             continue;
         AtomicString eventType = listenersArray[i].eventType;

@@ -78,9 +78,9 @@ void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JS
     }
 }
 
-void InjectedScriptHost::getEventListenersImpl(Node* node, Vector<EventListenerInfo>& listenersArray)
+void InjectedScriptHost::getEventListenersImpl(EventTarget* target, Vector<EventListenerInfo>& listenersArray)
 {
-    InspectorDOMAgent::getEventListeners(node, listenersArray, false);
+    InspectorDOMAgent::getEventListeners(target, listenersArray, false);
 }
 
 void InjectedScriptHost::clearConsoleMessages()

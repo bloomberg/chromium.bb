@@ -363,6 +363,12 @@ const EventListenerVector& EventTarget::getEventListeners(const AtomicString& ev
     return *listenerVector;
 }
 
+Vector<AtomicString> EventTarget::eventTypes()
+{
+    EventTargetData* d = eventTargetData();
+    return d ? d->eventListenerMap.eventTypes() : Vector<AtomicString>();
+}
+
 void EventTarget::removeAllEventListeners()
 {
     EventTargetData* d = eventTargetData();

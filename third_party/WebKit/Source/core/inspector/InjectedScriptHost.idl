@@ -42,7 +42,7 @@
     [Custom] DOMString type(any obj);
     [Custom] any functionDetails(any obj);
     [Custom] Array getInternalProperties(any obj);
-    [Custom] Array getEventListeners(Node node);
+    [Custom] Array getEventListeners(EventTarget target);
     [Custom] any evaluate(DOMString text);
     [Custom] DOMString databaseId(any database);
     [Custom] DOMString storageId(any storage);

@@ -123,6 +123,7 @@ public:
     bool hasEventListeners(const AtomicString& eventType) const;
     bool hasCapturingEventListeners(const AtomicString& eventType);
     const EventListenerVector& getEventListeners(const AtomicString& eventType);
+    Vector<AtomicString> eventTypes();
 
     bool fireEventListeners(Event*);
     bool isFiringEventListeners();

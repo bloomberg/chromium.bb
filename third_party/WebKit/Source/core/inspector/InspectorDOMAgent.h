@@ -51,6 +51,7 @@ class CharacterData;
 class DOMEditor;
 class Document;
 class Element;
+class EventTarget;
 class ExceptionState;
 class InspectorFrontend;
 class InspectorHistory;
@@ -71,14 +72,14 @@ typedef int BackendNodeId;
 
 
 struct EventListenerInfo {
-    EventListenerInfo(Node* node, const AtomicString& eventType, const EventListenerVector& eventListenerVector)
-        : node(node)
+    EventListenerInfo(EventTarget* eventTarget, const AtomicString& eventType, const EventListenerVector& eventListenerVector)
+        : eventTarget(eventTarget)
         , eventType(eventType)
         , eventListenerVector(eventListenerVector)
     {
     }
 
-    Node* node;
+    EventTarget* eventTarget;
     const AtomicString eventType;
     const EventListenerVector eventListenerVector;
 };
@@ -151,7 +152,7 @@ public:
     virtual void getNodeForLocation(ErrorString*, int x, int y, int* nodeId) OVERRIDE;
     virtual void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId) OVERRIDE;
 
-    static void getEventListeners(Node*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
+    static void getEventListeners(EventTarget*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 
     // Methods called from the InspectorInstrumentation.
     void setDocument(Document*);
