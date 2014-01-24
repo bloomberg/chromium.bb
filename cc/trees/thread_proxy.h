@@ -18,7 +18,9 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
 
-namespace base { class SingleThreadTaskRunner; }
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace cc {
 
@@ -78,8 +80,8 @@ class ThreadProxy : public Proxy,
   // Please call these 2 functions through
   // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsRedrawRect().
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
-  virtual void SetNeedsRedrawRectOnImplThread(
-      const gfx::Rect& dirty_rect) OVERRIDE;
+  virtual void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect)
+      OVERRIDE;
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
@@ -165,7 +167,8 @@ class ThreadProxy : public Proxy,
   void BeginMainFrameAbortedOnImplThread(bool did_handle);
   void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
-  void InitializeImplOnImplThread(CompletionEvent* completion);
+  void InitializeImplOnImplThread(CompletionEvent* completion,
+                                  int layer_tree_host_id);
   void SetLayerTreeHostClientReadyOnImplThread();
   void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
   void UpdateBackgroundAnimateTicking();
@@ -199,96 +202,115 @@ class ThreadProxy : public Proxy,
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
   LayerTreeHost* layer_tree_host();
   const LayerTreeHost* layer_tree_host() const;
-  PrioritizedResourceManager* contents_texture_manager_on_main_thread();
-  PrioritizedResourceManager* contents_texture_manager_on_impl_thread();
 
-  // Accessed on main thread only.
+  struct MainThreadOnly {
+    MainThreadOnly(ThreadProxy* proxy, int layer_tree_host_id);
+    ~MainThreadOnly();
 
-  // Set only when SetNeedsAnimate is called.
-  bool animate_requested_;
-  // Set only when SetNeedsCommit is called.
-  bool commit_requested_;
-  // Set by SetNeedsAnimate, SetNeedsUpdateLayers, and SetNeedsCommit.
-  bool commit_request_sent_to_impl_thread_;
-  // Set by BeginMainFrame
-  bool created_offscreen_context_provider_;
-  base::CancelableClosure output_surface_creation_callback_;
-  // Don't use this variable directly, go through layer_tree_host() to ensure it
-  // is only used on the main thread or if the main thread is blocked.
-  LayerTreeHost* layer_tree_host_unsafe_;
-  // Use one of the contents_texture_manager_on functions above instead of using
-  // this variable directly.
-  PrioritizedResourceManager* contents_texture_manager_unsafe_;
-  RendererCapabilities renderer_capabilities_main_thread_copy_;
-  bool started_;
-  bool textures_acquired_;
-  bool in_composite_and_readback_;
-  bool manage_tiles_pending_;
-  // Weak pointer to use when posting tasks to the impl thread.
-  base::WeakPtr<ThreadProxy> impl_thread_weak_ptr_;
+    const int layer_tree_host_id;
+
+    // Set only when SetNeedsAnimate is called.
+    bool animate_requested;
+    // Set only when SetNeedsCommit is called.
+    bool commit_requested;
+    // Set by SetNeedsAnimate, SetNeedsUpdateLayers, and SetNeedsCommit.
+    bool commit_request_sent_to_impl_thread;
+    // Set by BeginMainFrame
+    bool created_offscreen_context_provider;
+
+    bool started;
+    bool textures_acquired;
+    bool in_composite_and_readback;
+    bool manage_tiles_pending;
+    bool can_cancel_commit;
+    bool defer_commits;
+
+    base::CancelableClosure output_surface_creation_callback;
+    RendererCapabilities renderer_capabilities_main_thread_copy;
+
+    scoped_ptr<BeginMainFrameAndCommitState> pending_deferred_commit;
+    base::WeakPtrFactory<ThreadProxy> weak_factory;
+  };
+  // Use accessors instead of this variable directly.
+  MainThreadOnly main_thread_only_vars_unsafe_;
+  MainThreadOnly& main();
+  const MainThreadOnly& main() const;
 
   // Accessed on the main thread, or when main thread is blocked.
-  bool commit_waits_for_activation_;
-  bool main_thread_inside_commit_;
+  struct MainThreadOrBlockedMainThread {
+    explicit MainThreadOrBlockedMainThread(LayerTreeHost* host);
+    ~MainThreadOrBlockedMainThread();
 
-  scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
+    PrioritizedResourceManager* contents_texture_manager();
 
-  scoped_ptr<Scheduler> scheduler_on_impl_thread_;
+    LayerTreeHost* layer_tree_host;
+    bool commit_waits_for_activation;
+    bool main_thread_inside_commit;
+  };
+  // Use accessors instead of this variable directly.
+  MainThreadOrBlockedMainThread main_thread_or_blocked_vars_unsafe_;
+  MainThreadOrBlockedMainThread& blocked_main();
+  const MainThreadOrBlockedMainThread& blocked_main() const;
 
-  // Set when the main thread is waiting on a
-  // ScheduledActionSendBeginMainFrame to be issued.
-  CompletionEvent*
-      begin_main_frame_sent_completion_event_on_impl_thread_;
+  struct CompositorThreadOnly {
+    explicit CompositorThreadOnly(ThreadProxy* proxy);
+    ~CompositorThreadOnly();
 
-  // Set when the main thread is waiting on a readback.
-  ReadbackRequest* readback_request_on_impl_thread_;
+    // Copy of the main thread side contents texture manager for work
+    // that needs to be done on the compositor thread.
+    PrioritizedResourceManager* contents_texture_manager;
 
-  // Set when the main thread is waiting on a commit to complete.
-  CompletionEvent* commit_completion_event_on_impl_thread_;
+    scoped_ptr<Scheduler> scheduler;
 
-  // Set when the main thread is waiting on a pending tree activation.
-  CompletionEvent* completion_event_for_commit_held_on_tree_activation_;
+    // Set when the main thread is waiting on a
+    // ScheduledActionSendBeginMainFrame to be issued.
+    CompletionEvent* begin_main_frame_sent_completion_event;
 
-  // Set when the main thread is waiting on layers to be drawn.
-  CompletionEvent* texture_acquisition_completion_event_on_impl_thread_;
+    // Set when the main thread is waiting on a readback.
+    ReadbackRequest* readback_request;
 
-  scoped_ptr<ResourceUpdateController>
-      current_resource_update_controller_on_impl_thread_;
+    // Set when the main thread is waiting on a commit to complete.
+    CompletionEvent* commit_completion_event;
 
-  // Set when the next draw should post DidCommitAndDrawFrame to the main
-  // thread.
-  bool next_frame_is_newly_committed_frame_on_impl_thread_;
+    // Set when the main thread is waiting on a pending tree activation.
+    CompletionEvent* completion_event_for_commit_held_on_tree_activation;
 
-  bool throttle_frame_production_;
-  bool begin_impl_frame_scheduling_enabled_;
-  bool using_synchronous_renderer_compositor_;
+    // Set when the main thread is waiting on layers to be drawn.
+    CompletionEvent* texture_acquisition_completion_event;
 
-  bool inside_draw_;
+    scoped_ptr<ResourceUpdateController> current_resource_update_controller;
 
-  bool can_cancel_commit_;
+    // Set when the next draw should post DidCommitAndDrawFrame to the main
+    // thread.
+    bool next_frame_is_newly_committed_frame;
 
-  bool defer_commits_;
-  bool input_throttled_until_commit_;
-  scoped_ptr<BeginMainFrameAndCommitState> pending_deferred_commit_;
+    bool inside_draw;
 
-  base::TimeTicks smoothness_takes_priority_expiration_time_;
-  bool renew_tree_priority_on_impl_thread_pending_;
+    bool input_throttled_until_commit;
 
-  RollingTimeDeltaHistory draw_duration_history_;
-  RollingTimeDeltaHistory begin_main_frame_to_commit_duration_history_;
-  RollingTimeDeltaHistory commit_to_activate_duration_history_;
+    base::TimeTicks smoothness_takes_priority_expiration_time;
+    bool renew_tree_priority_pending;
 
-  // Used for computing samples added to
-  // begin_main_frame_to_commit_duration_history_ and
-  // activation_duration_history_.
-  base::TimeTicks begin_main_frame_sent_time_;
-  base::TimeTicks commit_complete_time_;
+    RollingTimeDeltaHistory draw_duration_history;
+    RollingTimeDeltaHistory begin_main_frame_to_commit_duration_history;
+    RollingTimeDeltaHistory commit_to_activate_duration_history;
+
+    // Used for computing samples added to
+    // begin_main_frame_to_commit_duration_history_ and
+    // activation_duration_history_.
+    base::TimeTicks begin_main_frame_sent_time;
+    base::TimeTicks commit_complete_time;
+
+    scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl;
+    base::WeakPtrFactory<ThreadProxy> weak_factory;
+  };
+  // Use accessors instead of this variable directly.
+  CompositorThreadOnly compositor_thread_vars_unsafe_;
+  CompositorThreadOnly& impl();
+  const CompositorThreadOnly& impl() const;
 
   base::WeakPtr<ThreadProxy> main_thread_weak_ptr_;
-  base::WeakPtrFactory<ThreadProxy> weak_factory_on_impl_thread_;
-  base::WeakPtrFactory<ThreadProxy> weak_factory_;
-
-  const int layer_tree_host_id_;
+  base::WeakPtr<ThreadProxy> impl_thread_weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadProxy);
 };
