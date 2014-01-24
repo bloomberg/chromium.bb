@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
@@ -267,7 +268,7 @@ TEST_F(ChannelMultiplexerTest, WriteFailSync) {
                                  base::Bind(&MockSocketCallback::OnDone,
                                             base::Unretained(&cb2))));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
@@ -302,7 +303,7 @@ TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
                                  base::Bind(&MockSocketCallback::OnDone,
                                             base::Unretained(&cb2))));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
@@ -341,7 +342,7 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
                                  base::Bind(&MockSocketCallback::OnDone,
                                             base::Unretained(&cb2))));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Check that the sockets were destroyed.
   EXPECT_FALSE(host_mux_.get());
@@ -366,7 +367,7 @@ TEST_F(ChannelMultiplexerTest, SessionFail) {
   EXPECT_CALL(cb2, OnConnectedPtr(_))
       .Times(0);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace protocol

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -108,14 +109,14 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != NULL);
   ValidateHeartbeatStanza(stanza.get(), "0");
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Call Start() followed by Stop(), twice, and make sure two valid heartbeats
@@ -130,14 +131,14 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != NULL);
   ValidateHeartbeatStanza(stanza.get(), "0");
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(signal_strategy_, GetLocalJid())
       .WillRepeatedly(Return(kTestJid));
@@ -147,13 +148,13 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaTwice) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza2(sent_iq);
   ValidateHeartbeatStanza(stanza2.get(), "1");
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Call Start() followed by Stop(), make sure a valid Iq stanza is sent,
@@ -169,7 +170,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != NULL);
@@ -195,7 +196,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
   const int kExpectedSequenceId = 456;
   expected_sequence_id->AddText(base::IntToString(kExpectedSequenceId));
   heartbeat_sender_->ProcessResponse(NULL, response.get());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<XmlElement> stanza2(sent_iq2);
   ASSERT_TRUE(stanza2 != NULL);
@@ -203,7 +204,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
                           base::IntToString(kExpectedSequenceId).c_str());
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Verify that ProcessResponse parses set-interval result.

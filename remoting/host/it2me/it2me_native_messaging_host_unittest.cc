@@ -452,7 +452,7 @@ void It2MeNativeMessagingHostTest::StopHost() {
   host_.reset();
 
   // Wait till all shutdown tasks have completed.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Trigger a test shutdown via ExitTest().
   host_task_runner_ = NULL;

@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/policy_hack/fake_policy_watcher.h"
@@ -83,13 +84,13 @@ class PolicyWatcherTest : public testing::Test {
  protected:
   void StartWatching() {
     policy_watcher_->StartWatching(policy_callback_);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void StopWatching() {
     base::WaitableEvent stop_event(false, false);
     policy_watcher_->StopWatching(&stop_event);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(true, stop_event.IsSignaled());
   }
 

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
@@ -117,7 +118,7 @@ TEST_F(MessageReaderTest, OneMessage_Delay) {
       .WillOnce(SaveArg<0>(&done_task));
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(&callback_);
   Mock::VerifyAndClearExpectations(&socket_);
@@ -142,7 +143,7 @@ TEST_F(MessageReaderTest, OneMessage_Instant) {
       .WillOnce(CallDoneTask());
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(socket_.read_pending());
   EXPECT_EQ(1U, messages_.size());
@@ -162,7 +163,7 @@ TEST_F(MessageReaderTest, TwoMessages_Together) {
       .WillOnce(SaveArg<0>(&done_task2));
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(&callback_);
   Mock::VerifyAndClearExpectations(&socket_);
@@ -175,12 +176,12 @@ TEST_F(MessageReaderTest, TwoMessages_Together) {
   EXPECT_FALSE(socket_.read_pending());
 
   done_task1.Run();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(socket_.read_pending());
 
   done_task2.Run();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(socket_.read_pending());
 }
@@ -199,7 +200,7 @@ TEST_F(MessageReaderTest, TwoMessages_Instant) {
       .WillOnce(SaveArg<0>(&done_task2));
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(&callback_);
   Mock::VerifyAndClearExpectations(&socket_);
@@ -227,7 +228,7 @@ TEST_F(MessageReaderTest, TwoMessages_Instant2) {
       .WillOnce(CallDoneTask());
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(socket_.read_pending());
 }
@@ -243,7 +244,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
       .WillOnce(SaveArg<0>(&done_task));
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(&callback_);
   Mock::VerifyAndClearExpectations(&socket_);
@@ -255,7 +256,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
   EXPECT_FALSE(socket_.read_pending());
 
   done_task.Run();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(socket_.read_pending());
 
@@ -264,7 +265,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
       .Times(1)
       .WillOnce(SaveArg<0>(&done_task));
   AddMessage(kTestMessage2);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(CompareResult(messages_[1], kTestMessage2));
 
@@ -300,7 +301,7 @@ TEST_F(MessageReaderTest, ReadFromCallback) {
       .WillOnce(Invoke(this, &MessageReaderTest::OnSecondMessage));
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(socket_.read_pending());
 }
@@ -319,7 +320,7 @@ TEST_F(MessageReaderTest, DeleteFromCallback) {
       .WillOnce(Invoke(this, &MessageReaderTest::DeleteReader));
 
   InitReader();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace protocol

@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -92,7 +93,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
       .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
 
   request->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify format of the query.
   scoped_ptr<XmlElement> stanza(sent_iq);
@@ -158,7 +159,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   }
   EXPECT_EQ(1, consumed);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace remoting
