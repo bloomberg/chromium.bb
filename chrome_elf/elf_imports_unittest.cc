@@ -55,7 +55,8 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   GetImports(dll, &elf_imports);
 
   // Check that ELF has imports.
-  ASSERT_LT(0u, elf_imports.size());
+  ASSERT_LT(0u, elf_imports.size()) << "Ensure the chrome_elf_unittests "
+    "target was built, instead of chrome_elf_unittests.exe";
 
   std::vector<std::string>::iterator it(elf_imports.begin());
 
@@ -93,11 +94,13 @@ TEST_F(ELFImportsTest, MAYBE_ChromeExeSanityCheck) {
   GetImports(exe, &exe_imports);
 
   // Check that chrome.exe has imports.
-  ASSERT_LT(0u, exe_imports.size());
+  ASSERT_LT(0u, exe_imports.size()) << "Ensure the chrome_elf_unittests "
+    "target was built, instead of chrome_elf_unittests.exe";
 
   // Chrome.exe's first import must be ELF.
   EXPECT_EQ("chrome_elf.dll", exe_imports[0]) <<
-      "Illegal import order in chrome.exe";
+      "Illegal import order in chrome.exe (ensure the chrome_elf_unittest "
+      "target was built, instead of just chrome_elf_unittests.exe)";
 }
 
 }  // namespace
