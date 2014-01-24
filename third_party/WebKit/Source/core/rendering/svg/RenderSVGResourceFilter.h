@@ -60,6 +60,8 @@ public:
     explicit RenderSVGResourceFilter(SVGFilterElement*);
     virtual ~RenderSVGResourceFilter();
 
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+
     virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceFilter"; }
     virtual bool isSVGResourceFilter() const OVERRIDE { return true; }
 

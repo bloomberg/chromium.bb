@@ -193,45 +193,6 @@ RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
     return renderer;
 }
 
-bool SVGFilterElement::childShouldCreateRenderer(const Node& child) const
-{
-    if (!child.isSVGElement())
-        return false;
-
-    const SVGElement* svgElement = toSVGElement(&child);
-
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, allowedChildElementTags, ());
-    if (allowedChildElementTags.isEmpty()) {
-        allowedChildElementTags.add(SVGNames::feBlendTag);
-        allowedChildElementTags.add(SVGNames::feColorMatrixTag);
-        allowedChildElementTags.add(SVGNames::feComponentTransferTag);
-        allowedChildElementTags.add(SVGNames::feCompositeTag);
-        allowedChildElementTags.add(SVGNames::feConvolveMatrixTag);
-        allowedChildElementTags.add(SVGNames::feDiffuseLightingTag);
-        allowedChildElementTags.add(SVGNames::feDisplacementMapTag);
-        allowedChildElementTags.add(SVGNames::feDistantLightTag);
-        allowedChildElementTags.add(SVGNames::feDropShadowTag);
-        allowedChildElementTags.add(SVGNames::feFloodTag);
-        allowedChildElementTags.add(SVGNames::feFuncATag);
-        allowedChildElementTags.add(SVGNames::feFuncBTag);
-        allowedChildElementTags.add(SVGNames::feFuncGTag);
-        allowedChildElementTags.add(SVGNames::feFuncRTag);
-        allowedChildElementTags.add(SVGNames::feGaussianBlurTag);
-        allowedChildElementTags.add(SVGNames::feImageTag);
-        allowedChildElementTags.add(SVGNames::feMergeTag);
-        allowedChildElementTags.add(SVGNames::feMergeNodeTag);
-        allowedChildElementTags.add(SVGNames::feMorphologyTag);
-        allowedChildElementTags.add(SVGNames::feOffsetTag);
-        allowedChildElementTags.add(SVGNames::fePointLightTag);
-        allowedChildElementTags.add(SVGNames::feSpecularLightingTag);
-        allowedChildElementTags.add(SVGNames::feSpotLightTag);
-        allowedChildElementTags.add(SVGNames::feTileTag);
-        allowedChildElementTags.add(SVGNames::feTurbulenceTag);
-    }
-
-    return allowedChildElementTags.contains<SVGAttributeHashTranslator>(svgElement->tagQName());
-}
-
 bool SVGFilterElement::selfHasRelativeLengths() const
 {
     return m_x->currentValue()->isRelative()

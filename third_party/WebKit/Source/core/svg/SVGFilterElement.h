@@ -59,7 +59,7 @@ private:
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
 
     virtual bool selfHasRelativeLengths() const OVERRIDE;
 

@@ -51,6 +51,11 @@ RenderSVGResourceFilter::~RenderSVGResourceFilter()
     m_filter.clear();
 }
 
+bool RenderSVGResourceFilter::isChildAllowed(RenderObject* child, RenderStyle*) const
+{
+    return child->isSVGResourceFilterPrimitive();
+}
+
 void RenderSVGResourceFilter::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_filter.clear();

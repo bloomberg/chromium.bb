@@ -38,6 +38,8 @@ public:
     {
     }
 
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE { return false; }
+
     virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
 
     virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceFilterPrimitive"; }
