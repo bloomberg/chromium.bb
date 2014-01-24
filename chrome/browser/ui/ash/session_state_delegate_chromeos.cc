@@ -51,8 +51,7 @@ bool SessionStateDelegateChromeos::IsActiveUserSessionStarted() const {
 bool SessionStateDelegateChromeos::CanLockScreen() const {
   const chromeos::UserList unlock_users =
       chromeos::UserManager::Get()->GetUnlockUsers();
-  DCHECK_LE(unlock_users.size(), 1u);
-  return !unlock_users.empty() && unlock_users[0]->can_lock();
+  return !unlock_users.empty();
 }
 
 bool SessionStateDelegateChromeos::IsScreenLocked() const {
@@ -61,15 +60,16 @@ bool SessionStateDelegateChromeos::IsScreenLocked() const {
 }
 
 bool SessionStateDelegateChromeos::ShouldLockScreenBeforeSuspending() const {
-  const chromeos::UserList unlock_users =
-      chromeos::UserManager::Get()->GetUnlockUsers();
-  DCHECK_LE(unlock_users.size(), 1u);
-  Profile* profile =
-      !unlock_users.empty()
-          ? chromeos::UserManager::Get()->GetProfileByUser(unlock_users[0])
-          : NULL;
-  return profile &&
-      profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock);
+  const chromeos::UserList logged_in_users =
+      chromeos::UserManager::Get()->GetLoggedInUsers();
+  for (chromeos::UserList::const_iterator it = logged_in_users.begin();
+       it != logged_in_users.end(); ++it) {
+    chromeos::User* user = (*it);
+    Profile* profile = chromeos::UserManager::Get()->GetProfileByUser(user);
+    if (profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock))
+      return true;
+  }
+  return false;
 }
 
 void SessionStateDelegateChromeos::LockScreen() {

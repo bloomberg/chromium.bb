@@ -319,9 +319,39 @@ const UserList& UserManagerImpl::GetLRULoggedInUsers() {
 }
 
 UserList UserManagerImpl::GetUnlockUsers() const {
+  const UserList& logged_in_users = GetLoggedInUsers();
+  if (logged_in_users.empty())
+    return UserList();
+
   UserList unlock_users;
-  if (primary_user_)
-    unlock_users.push_back(primary_user_);
+  Profile* profile = GetProfileByUser(primary_user_);
+  std::string primary_behavior =
+      profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
+
+  // Specific case: only one logged in user or
+  // primary user has primary-only multi-profile policy.
+  if (logged_in_users.size() == 1 ||
+      primary_behavior == MultiProfileUserController::kBehaviorPrimaryOnly) {
+    if (primary_user_->can_lock())
+      unlock_users.push_back(primary_user_);
+  } else {
+    // Fill list of potential unlock users based on multi-profile policy state.
+    for (UserList::const_iterator it = logged_in_users.begin();
+         it != logged_in_users.end(); ++it) {
+      User* user = (*it);
+      Profile* profile = GetProfileByUser(user);
+      const std::string behavior =
+          profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
+      if (behavior == MultiProfileUserController::kBehaviorUnrestricted &&
+          user->can_lock()) {
+        unlock_users.push_back(user);
+      } else if (behavior == MultiProfileUserController::kBehaviorPrimaryOnly) {
+        NOTREACHED()
+            << "Spotted primary-only multi-profile policy for non-primary user";
+      }
+    }
+  }
+
   return unlock_users;
 }
 

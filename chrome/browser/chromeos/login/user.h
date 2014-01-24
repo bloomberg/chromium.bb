@@ -183,6 +183,7 @@ class User {
   // For testing:
   friend class MockUserManager;
   friend class FakeUserManager;
+  friend class UserAddingScreenTest;
 
   // Do not allow anyone else to create new User instances.
   static User* CreateRegularUser(const std::string& email);
@@ -235,6 +236,10 @@ class User {
     is_logged_in_ = is_logged_in;
   }
 
+  void set_can_lock(bool can_lock) {
+    can_lock_ = can_lock;
+  }
+
   void set_is_active(bool is_active) {
     is_active_ = is_active;
   }
@@ -273,6 +278,9 @@ class User {
 
   // True if current user image is being loaded from file.
   bool image_is_loading_;
+
+  // True if user is able to lock screen.
+  bool can_lock_;
 
   // True if user is currently logged in in current session.
   bool is_logged_in_;

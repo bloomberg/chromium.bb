@@ -141,6 +141,11 @@ class UserManager {
   virtual const UserList& GetLRULoggedInUsers() = 0;
 
   // Returns a list of users who can unlock the device.
+  // This list is based on policy and whether user is able to do unlock.
+  // Policy:
+  // * If user has primary-only policy then it is the only user in unlock users.
+  // * Otherwise all users with unrestricted policy are added to this list.
+  // All users that are unable to perform unlock are excluded from this list.
   virtual UserList GetUnlockUsers() const = 0;
 
   // Returns the email of the owner user. Returns an empty string if there is

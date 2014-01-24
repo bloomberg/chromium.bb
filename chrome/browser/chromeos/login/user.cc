@@ -40,7 +40,6 @@ class RegularUser : public User {
   // Overridden from User:
   virtual UserType GetType() const OVERRIDE;
   virtual bool CanSyncImage() const OVERRIDE;
-  virtual bool can_lock() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RegularUser);
@@ -77,7 +76,6 @@ class LocallyManagedUser : public User {
 
   // Overridden from User:
   virtual UserType GetType() const OVERRIDE;
-  virtual bool can_lock() const OVERRIDE;
   virtual std::string display_email() const OVERRIDE;
 
  private:
@@ -181,7 +179,7 @@ std::string User::display_email() const {
 }
 
 bool User::can_lock() const {
-  return false;
+  return can_lock_;
 }
 
 std::string User::username_hash() const {
@@ -226,6 +224,7 @@ User::User(const std::string& email)
       image_index_(kInvalidImageIndex),
       image_is_stub_(false),
       image_is_loading_(false),
+      can_lock_(false),
       is_logged_in_(false),
       is_active_(false),
       profile_is_created_(false) {
@@ -259,6 +258,7 @@ void User::SetStubImage(int image_index, bool is_loading) {
 }
 
 RegularUser::RegularUser(const std::string& email) : User(email) {
+  set_can_lock(true);
   set_display_email(email);
 }
 
@@ -269,10 +269,6 @@ User::UserType RegularUser::GetType() const {
 }
 
 bool RegularUser::CanSyncImage() const {
-  return true;
-}
-
-bool RegularUser::can_lock() const {
   return true;
 }
 
@@ -299,16 +295,13 @@ User::UserType KioskAppUser::GetType() const {
 
 LocallyManagedUser::LocallyManagedUser(const std::string& username)
     : User(username) {
+  set_can_lock(true);
 }
 
 LocallyManagedUser::~LocallyManagedUser() {}
 
 User::UserType LocallyManagedUser::GetType() const {
   return USER_TYPE_LOCALLY_MANAGED;
-}
-
-bool LocallyManagedUser::can_lock() const {
-  return true;
 }
 
 std::string LocallyManagedUser::display_email() const {
