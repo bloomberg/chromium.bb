@@ -34,7 +34,6 @@
     "chrome://extension-icon/",
     "chrome://resources/",
     "chrome://theme/",
-    "tabs",
     "clipboardWrite",
     "clipboardRead",
     "power",

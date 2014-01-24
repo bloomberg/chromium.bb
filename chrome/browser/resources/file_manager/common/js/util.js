@@ -1153,11 +1153,7 @@ util.isDescendantEntry = function(ancestorEntry, childEntry) {
  * @param {string} url URL to visit.
  */
 util.visitURL = function(url) {
-  var params = {url: url};
-  chrome.tabs.create(params, function() {
-    if (chrome.runtime.lastError)
-      chrome.windows.create(params);
-  });
+  window.open(url);
 };
 
 /**
