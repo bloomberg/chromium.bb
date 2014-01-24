@@ -10,9 +10,9 @@
 #include "base/atomic_ref_count.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/merge_session_load_page.h"
 #include "content/public/browser/resource_throttle.h"
 #include "net/base/completion_callback.h"
-#include "webkit/common/resource_type.h"
 
 class Profile;
 
@@ -31,12 +31,7 @@ class MergeSessionThrottle
     : public content::ResourceThrottle,
       public base::SupportsWeakPtr<MergeSessionThrottle> {
  public:
-  // Passed a boolean indicating whether or not it is OK to proceed with the
-  // page load.
-  typedef base::Closure CompletionCallback;
-
-  explicit MergeSessionThrottle(net::URLRequest* request,
-                                ResourceType::Type resource_type);
+  explicit MergeSessionThrottle(net::URLRequest* request);
   virtual ~MergeSessionThrottle();
 
   // content::ResourceThrottle implementation:
@@ -55,33 +50,29 @@ class MergeSessionThrottle
   void ClearRequestInfo();
   bool IsRemote(const GURL& url) const;
 
-  // True if we |url| loading should be delayed. The function
+  // True if we should show the merge session in progress page. The function
   // is safe to be called on any thread.
-  bool ShouldDelayUrl(const GURL& url) const;
+  bool ShouldShowMergeSessionPage(const GURL& url) const;
 
   // Adds/removes |profile| to/from the blocking profiles set.
   static void BlockProfile(Profile* profile);
   static void UnblockProfile(Profile* profile);
 
-  // Helper method that checks if we should delay reasource loading based on
+  // Helper method that checks if we should show interstitial page based on
   // the state of the Profile that's derived from |render_process_id| and
   // |render_view_id|.
-  static bool ShouldDelayRequest(int render_process_id,
-                                 int render_view_id);
+  static bool ShouldShowInterstitialPage(int render_process_id,
+                                         int render_view_id);
 
-  // Tests merge session status and if needed generates request
-  // waiter (for ResourceType::XHR content) or shows interstitial page
-  // (for ResourceType::MAIN_FRAME).
+  // Tests merge session status and if needed shows interstitial page.
   // The function must be called from UI thread.
-  static void DeleayResourceLoadingOnUIThread(
-      ResourceType::Type resource_type,
+  static void ShowDeleayedLoadingPageOnUIThread(
       int render_process_id,
       int render_view_id,
       const GURL& url,
-      const MergeSessionThrottle::CompletionCallback& callback);
+      const chromeos::MergeSessionLoadPage::CompletionCallback& callback);
 
   net::URLRequest* request_;
-  ResourceType::Type resource_type_;
 
   // Global counter that keeps the track of session merge status for all
   // encountered profiles. This is used to determine if a throttle should
