@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/disk_cache/entry_impl.h"
+#include "net/disk_cache/v3/entry_impl_v3.h"
 
 #include "base/hash.h"
 #include "base/message_loop/message_loop.h"
@@ -10,12 +10,13 @@
 #include "base/strings/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/bitmap.h"
 #include "net/disk_cache/cache_util.h"
-#include "net/disk_cache/histogram_macros.h"
 #include "net/disk_cache/net_log_parameters.h"
-#include "net/disk_cache/sparse_control.h"
+#include "net/disk_cache/v3/backend_impl_v3.h"
+#include "net/disk_cache/v3/disk_format_v3.h"
+#include "net/disk_cache/v3/histogram_macros.h"
+// #include "net/disk_cache/v3/sparse_control_v3.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -29,14 +30,17 @@ const int kMaxBufferSize = 1024 * 1024;  // 1 MB.
 
 namespace disk_cache {
 
+typedef StorageBlock<EntryRecord> CacheEntryBlockV3;
+typedef StorageBlock<ShortEntryRecord> CacheShortEntryBlock;
+
 // This class handles individual memory buffers that store data before it is
 // sent to disk. The buffer can start at any offset, but if we try to write to
 // anywhere in the first 16KB of the file (kMaxBlockSize), we set the offset to
 // zero. The buffer grows up to a size determined by the backend, to keep the
 // total memory used under control.
-class EntryImpl::UserBuffer {
+class EntryImplV3::UserBuffer {
  public:
-  explicit UserBuffer(BackendImpl* backend)
+  explicit UserBuffer(BackendImplV3* backend)
       : backend_(backend->GetWeakPtr()), offset_(0), grow_allowed_(true) {
     buffer_.reserve(kMaxBlockSize);
   }
@@ -75,14 +79,14 @@ class EntryImpl::UserBuffer {
   int capacity() { return static_cast<int>(buffer_.capacity()); }
   bool GrowBuffer(int required, int limit);
 
-  base::WeakPtr<BackendImpl> backend_;
+  base::WeakPtr<BackendImplV3> backend_;
   int offset_;
   std::vector<char> buffer_;
   bool grow_allowed_;
   DISALLOW_COPY_AND_ASSIGN(UserBuffer);
 };
 
-bool EntryImpl::UserBuffer::PreWrite(int offset, int len) {
+bool EntryImplV3::UserBuffer::PreWrite(int offset, int len) {
   DCHECK_GE(offset, 0);
   DCHECK_GE(len, 0);
   DCHECK_GE(offset + len, 0);
@@ -104,7 +108,7 @@ bool EntryImpl::UserBuffer::PreWrite(int offset, int len) {
   return GrowBuffer(required, kMaxBufferSize * 6 / 5);
 }
 
-void EntryImpl::UserBuffer::Truncate(int offset) {
+void EntryImplV3::UserBuffer::Truncate(int offset) {
   DCHECK_GE(offset, 0);
   DCHECK_GE(offset, offset_);
   DVLOG(3) << "Buffer truncate at " << offset << " current " << offset_;
@@ -114,7 +118,7 @@ void EntryImpl::UserBuffer::Truncate(int offset) {
     buffer_.resize(offset);
 }
 
-void EntryImpl::UserBuffer::Write(int offset, IOBuffer* buf, int len) {
+void EntryImplV3::UserBuffer::Write(int offset, IOBuffer* buf, int len) {
   DCHECK_GE(offset, 0);
   DCHECK_GE(len, 0);
   DCHECK_GE(offset + len, 0);
@@ -146,7 +150,7 @@ void EntryImpl::UserBuffer::Write(int offset, IOBuffer* buf, int len) {
   buffer_.insert(buffer_.end(), buffer, buffer + len);
 }
 
-bool EntryImpl::UserBuffer::PreRead(int eof, int offset, int* len) {
+bool EntryImplV3::UserBuffer::PreRead(int eof, int offset, int* len) {
   DCHECK_GE(offset, 0);
   DCHECK_GT(*len, 0);
 
@@ -171,7 +175,7 @@ bool EntryImpl::UserBuffer::PreRead(int eof, int offset, int* len) {
   return (offset - offset_ < Size());
 }
 
-int EntryImpl::UserBuffer::Read(int offset, IOBuffer* buf, int len) {
+int EntryImplV3::UserBuffer::Read(int offset, IOBuffer* buf, int len) {
   DCHECK_GE(offset, 0);
   DCHECK_GT(len, 0);
   DCHECK(Size() || offset < offset_);
@@ -196,7 +200,7 @@ int EntryImpl::UserBuffer::Read(int offset, IOBuffer* buf, int len) {
   return len + clean_bytes;
 }
 
-void EntryImpl::UserBuffer::Reset() {
+void EntryImplV3::UserBuffer::Reset() {
   if (!grow_allowed_) {
     if (backend_)
       backend_->BufferDeleted(capacity() - kMaxBlockSize);
@@ -209,7 +213,7 @@ void EntryImpl::UserBuffer::Reset() {
   buffer_.clear();
 }
 
-bool EntryImpl::UserBuffer::GrowBuffer(int required, int limit) {
+bool EntryImplV3::UserBuffer::GrowBuffer(int required, int limit) {
   DCHECK_GE(required, 0);
   int current_size = capacity();
   if (required <= current_size)
@@ -237,18 +241,22 @@ bool EntryImpl::UserBuffer::GrowBuffer(int required, int limit) {
 
 // ------------------------------------------------------------------------
 
-EntryImpl::EntryImpl(BackendImpl* backend, Addr address, bool read_only)
-    : entry_(NULL, Addr(0)), node_(NULL, Addr(0)),
-      backend_(backend->GetWeakPtr()), doomed_(false), read_only_(read_only),
-      dirty_(false) {
-  entry_.LazyInit(backend->File(address), address);
+EntryImplV3::EntryImplV3(BackendImplV3* backend, Addr address, bool read_only)
+    : backend_(backend->GetWeakPtr()),
+      address_(address),
+      doomed_(false),
+      read_only_(read_only),
+      dirty_(true),
+      modified_(false) {
   for (int i = 0; i < kNumStreams; i++) {
     unreported_size_[i] = 0;
   }
 }
 
-bool EntryImpl::CreateEntry(Addr node_address, const std::string& key,
-                            uint32 hash) {
+#if defined(V3_NOT_JUST_YET_READY)
+
+bool EntryImplV3::CreateEntry(Addr node_address, const std::string& key,
+                              uint32 hash) {
   Trace("Create entry In");
   EntryStore* entry_store = entry_.Data();
   RankingsNode* node = node_.Data();
@@ -294,11 +302,11 @@ bool EntryImpl::CreateEntry(Addr node_address, const std::string& key,
   return true;
 }
 
-uint32 EntryImpl::GetHash() {
+uint32 EntryImplV3::GetHash() {
   return entry_.Data()->hash;
 }
 
-bool EntryImpl::IsSameEntry(const std::string& key, uint32 hash) {
+bool EntryImplV3::IsSameEntry(const std::string& key, uint32 hash) {
   if (entry_.Data()->hash != hash ||
       static_cast<size_t>(entry_.Data()->key_len) != key.size())
     return false;
@@ -306,7 +314,7 @@ bool EntryImpl::IsSameEntry(const std::string& key, uint32 hash) {
   return (key.compare(GetKey()) == 0);
 }
 
-void EntryImpl::InternalDoom() {
+void EntryImplV3::InternalDoom() {
   net_log_.AddEvent(net::NetLog::TYPE_ENTRY_DOOM);
   DCHECK(node_.HasData());
   if (!node_.Data()->dirty) {
@@ -320,7 +328,7 @@ void EntryImpl::InternalDoom() {
 // first 256 bytes), and values that should be set from the entry creation.
 // Basically, even if there is something wrong with this entry, we want to see
 // if it is possible to load the rankings node and delete them together.
-bool EntryImpl::SanityCheck() {
+bool EntryImplV3::SanityCheck() {
   if (!entry_.VerifyHash())
     return false;
 
@@ -365,7 +373,7 @@ bool EntryImpl::SanityCheck() {
   return true;
 }
 
-bool EntryImpl::DataSanityCheck() {
+bool EntryImplV3::DataSanityCheck() {
   EntryStore* stored = entry_.Data();
   Addr key_addr(stored->long_key);
 
@@ -395,7 +403,7 @@ bool EntryImpl::DataSanityCheck() {
   return true;
 }
 
-void EntryImpl::FixForDelete() {
+void EntryImplV3::FixForDelete() {
   EntryStore* stored = entry_.Data();
   Addr key_addr(stored->long_key);
 
@@ -422,13 +430,13 @@ void EntryImpl::FixForDelete() {
   entry_.Store();
 }
 
-void EntryImpl::SetTimes(base::Time last_used, base::Time last_modified) {
+void EntryImplV3::SetTimes(base::Time last_used, base::Time last_modified) {
   node_.Data()->last_used = last_used.ToInternalValue();
   node_.Data()->last_modified = last_modified.ToInternalValue();
   node_.set_modified();
 }
 
-void EntryImpl::BeginLogging(net::NetLog* net_log, bool created) {
+void EntryImplV3::BeginLogging(net::NetLog* net_log, bool created) {
   DCHECK(!net_log_.net_log());
   net_log_ = net::BoundNetLog::Make(
       net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY);
@@ -437,18 +445,18 @@ void EntryImpl::BeginLogging(net::NetLog* net_log, bool created) {
       CreateNetLogEntryCreationCallback(this, created));
 }
 
-const net::BoundNetLog& EntryImpl::net_log() const {
+const net::BoundNetLog& EntryImplV3::net_log() const {
   return net_log_;
 }
 
 // ------------------------------------------------------------------------
 
-void EntryImpl::Doom() {
+void EntryImplV3::Doom() {
   if (background_queue_)
     background_queue_->DoomEntryImpl(this);
 }
 
-void EntryImpl::DoomImpl() {
+void EntryImplV3::DoomImpl() {
   if (doomed_ || !backend_)
     return;
 
@@ -456,12 +464,12 @@ void EntryImpl::DoomImpl() {
   backend_->InternalDoomEntry(this);
 }
 
-void EntryImpl::Close() {
+void EntryImplV3::Close() {
   if (background_queue_)
     background_queue_->CloseEntryImpl(this);
 }
 
-std::string EntryImpl::GetKey() const {
+std::string EntryImplV3::GetKey() const {
   CacheEntryBlock* entry = const_cast<CacheEntryBlock*>(&entry_);
   int key_len = entry->Data()->key_len;
   if (key_len <= kMaxInternalKeyLength)
@@ -493,17 +501,17 @@ std::string EntryImpl::GetKey() const {
   return key_;
 }
 
-Time EntryImpl::GetLastUsed() const {
+Time EntryImplV3::GetLastUsed() const {
   CacheRankingsBlock* node = const_cast<CacheRankingsBlock*>(&node_);
   return Time::FromInternalValue(node->Data()->last_used);
 }
 
-Time EntryImpl::GetLastModified() const {
+Time EntryImplV3::GetLastModified() const {
   CacheRankingsBlock* node = const_cast<CacheRankingsBlock*>(&node_);
   return Time::FromInternalValue(node->Data()->last_modified);
 }
 
-int32 EntryImpl::GetDataSize(int index) const {
+int32 EntryImplV3::GetDataSize(int index) const {
   if (index < 0 || index >= kNumStreams)
     return 0;
 
@@ -511,8 +519,8 @@ int32 EntryImpl::GetDataSize(int index) const {
   return entry->Data()->data_size[index];
 }
 
-int EntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
-                        const CompletionCallback& callback) {
+int EntryImplV3::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
+                          const CompletionCallback& callback) {
   if (callback.is_null())
     return ReadDataImpl(index, offset, buf, buf_len, callback);
 
@@ -552,8 +560,8 @@ int EntryImpl::ReadDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int EntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
-                         const CompletionCallback& callback, bool truncate) {
+int EntryImplV3::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
+                           const CompletionCallback& callback, bool truncate) {
   if (callback.is_null())
     return WriteDataImpl(index, offset, buf, buf_len, callback, truncate);
 
@@ -592,8 +600,8 @@ int EntryImpl::WriteDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int EntryImpl::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
-                              const CompletionCallback& callback) {
+int EntryImplV3::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
+                                const CompletionCallback& callback) {
   if (callback.is_null())
     return ReadSparseDataImpl(offset, buf, buf_len, callback);
 
@@ -618,8 +626,8 @@ int EntryImpl::ReadSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int EntryImpl::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
-                               const CompletionCallback& callback) {
+int EntryImplV3::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
+                                 const CompletionCallback& callback) {
   if (callback.is_null())
     return WriteSparseDataImpl(offset, buf, buf_len, callback);
 
@@ -644,8 +652,8 @@ int EntryImpl::WriteSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int EntryImpl::GetAvailableRange(int64 offset, int len, int64* start,
-                                 const CompletionCallback& callback) {
+int EntryImplV3::GetAvailableRange(int64 offset, int len, int64* start,
+                                   const CompletionCallback& callback) {
   if (!background_queue_)
     return net::ERR_UNEXPECTED;
 
@@ -661,7 +669,7 @@ int EntryImpl::GetAvailableRangeImpl(int64 offset, int len, int64* start) {
   return sparse_->GetAvailableRange(offset, len, start);
 }
 
-bool EntryImpl::CouldBeSparse() const {
+bool EntryImplV3::CouldBeSparse() const {
   if (sparse_.get())
     return true;
 
@@ -670,19 +678,19 @@ bool EntryImpl::CouldBeSparse() const {
   return sparse->CouldBeSparse();
 }
 
-void EntryImpl::CancelSparseIO() {
+void EntryImplV3::CancelSparseIO() {
   if (background_queue_)
     background_queue_->CancelSparseIO(this);
 }
 
-void EntryImpl::CancelSparseIOImpl() {
+void EntryImplV3::CancelSparseIOImpl() {
   if (!sparse_.get())
     return;
 
   sparse_->CancelIO();
 }
 
-int EntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
+int EntryImplV3::ReadyForSparseIO(const CompletionCallback& callback) {
   if (!sparse_.get())
     return net::OK;
 
@@ -693,7 +701,7 @@ int EntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::ERR_IO_PENDING;
 }
 
-int EntryImpl::ReadyForSparseIOImpl(const CompletionCallback& callback) {
+int EntryImplV3::ReadyForSparseIOImpl(const CompletionCallback& callback) {
   DCHECK(sparse_.get());
   return sparse_->ReadyToUse(callback);
 }
@@ -706,7 +714,7 @@ int EntryImpl::ReadyForSparseIOImpl(const CompletionCallback& callback) {
 // read partial information from an entry (don't have to worry about returning
 // data related to a previous cache entry because the range was not fully
 // written before).
-EntryImpl::~EntryImpl() {
+EntryImplV3::~EntryImplV3() {
   if (!backend_) {
     entry_.clear_modified();
     node_.clear_modified();
@@ -1346,50 +1354,108 @@ void EntryImpl::GetData(int index, char** buffer, Addr* address) {
   }
 }
 
-void EntryImpl::ReportIOTime(Operation op, const base::TimeTicks& start) {
+#endif  // defined(V3_NOT_JUST_YET_READY).
+
+void EntryImplV3::ReportIOTime(Operation op, const base::TimeTicks& start) {
   if (!backend_)
     return;
 
   switch (op) {
     case kRead:
-      CACHE_UMA(AGE_MS, "ReadTime", 0, start);
+      CACHE_UMA(AGE_MS, "ReadTime", start);
       break;
     case kWrite:
-      CACHE_UMA(AGE_MS, "WriteTime", 0, start);
+      CACHE_UMA(AGE_MS, "WriteTime", start);
       break;
     case kSparseRead:
-      CACHE_UMA(AGE_MS, "SparseReadTime", 0, start);
+      CACHE_UMA(AGE_MS, "SparseReadTime", start);
       break;
     case kSparseWrite:
-      CACHE_UMA(AGE_MS, "SparseWriteTime", 0, start);
+      CACHE_UMA(AGE_MS, "SparseWriteTime", start);
       break;
     case kAsyncIO:
-      CACHE_UMA(AGE_MS, "AsyncIOTime", 0, start);
+      CACHE_UMA(AGE_MS, "AsyncIOTime", start);
       break;
     case kReadAsync1:
-      CACHE_UMA(AGE_MS, "AsyncReadDispatchTime", 0, start);
+      CACHE_UMA(AGE_MS, "AsyncReadDispatchTime", start);
       break;
     case kWriteAsync1:
-      CACHE_UMA(AGE_MS, "AsyncWriteDispatchTime", 0, start);
+      CACHE_UMA(AGE_MS, "AsyncWriteDispatchTime", start);
       break;
     default:
       NOTREACHED();
   }
 }
 
-void EntryImpl::Log(const char* msg) {
-  int dirty = 0;
-  if (node_.HasData()) {
-    dirty = node_.Data()->dirty;
-  }
+void EntryImplV3::Log(const char* msg) {
+  Trace("%s 0x%p 0x%x", msg, reinterpret_cast<void*>(this), address_);
+  Trace("  data: 0x%x 0x%x", entry_->data_addr[0], entry_->data_addr[1]);
+  Trace("  doomed: %d", doomed_);
+}
 
-  Trace("%s 0x%p 0x%x 0x%x", msg, reinterpret_cast<void*>(this),
-        entry_.address().value(), node_.address().value());
+void EntryImplV3::Doom() {
+  NOTIMPLEMENTED();
+}
 
-  Trace("  data: 0x%x 0x%x 0x%x", entry_.Data()->data_addr[0],
-        entry_.Data()->data_addr[1], entry_.Data()->long_key);
+void EntryImplV3::Close() {
+  NOTIMPLEMENTED();
+}
 
-  Trace("  doomed: %d 0x%x", doomed_, dirty);
+std::string EntryImplV3::GetKey() const {
+  return std::string();
+}
+
+Time EntryImplV3::GetLastUsed() const {
+  return Time();
+}
+
+Time EntryImplV3::GetLastModified() const {
+  return Time();
+}
+
+int32 EntryImplV3::GetDataSize(int index) const {
+  return 0;
+}
+
+int EntryImplV3::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
+                          const CompletionCallback& callback) {
+  return net::ERR_FAILED;
+}
+
+int EntryImplV3::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
+                           const CompletionCallback& callback, bool truncate) {
+  return net::ERR_FAILED;
+}
+
+int EntryImplV3::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
+                                const CompletionCallback& callback) {
+  return net::ERR_FAILED;
+}
+
+int EntryImplV3::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
+                                 const CompletionCallback& callback) {
+  return net::ERR_FAILED;
+}
+
+int EntryImplV3::GetAvailableRange(int64 offset, int len, int64* start,
+                                   const CompletionCallback& callback) {
+  return net::ERR_FAILED;
+}
+
+bool EntryImplV3::CouldBeSparse() const {
+  return false;
+}
+
+void EntryImplV3::CancelSparseIO() {
+  NOTIMPLEMENTED();
+}
+
+int EntryImplV3::ReadyForSparseIO(const CompletionCallback& callback) {
+  return net::ERR_FAILED;
+}
+
+EntryImplV3::~EntryImplV3() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace disk_cache

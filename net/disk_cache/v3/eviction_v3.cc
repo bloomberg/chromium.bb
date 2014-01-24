@@ -26,7 +26,7 @@
 // size so that we have a chance to see an element again and move it to another
 // list.
 
-#include "net/disk_cache/eviction.h"
+#include "net/disk_cache/v3/eviction_v3.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -34,11 +34,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "net/disk_cache/backend_impl.h"
-#include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/experiments.h"
-#include "net/disk_cache/histogram_macros.h"
 #include "net/disk_cache/trace.h"
+#include "net/disk_cache/v3/backend_impl_v3.h"
+#include "net/disk_cache/v3/entry_impl_v3.h"
+#include "net/disk_cache/v3/histogram_macros.h"
+
 
 using base::Time;
 using base::TimeTicks;
@@ -46,9 +47,12 @@ using base::TimeTicks;
 namespace {
 
 const int kCleanUpMargin = 1024 * 1024;
+
+#if defined(V3_NOT_JUST_YET_READY)
 const int kHighUse = 10;  // Reuse count to be on the HIGH_USE list.
 const int kTargetTime = 24 * 7;  // Time to be evicted (hours since last use).
 const int kMaxDelayedTrims = 60;
+#endif  // defined(V3_NOT_JUST_YET_READY).
 
 int LowWaterAdjust(int high_water) {
   if (high_water < kCleanUpMargin)
@@ -57,9 +61,11 @@ int LowWaterAdjust(int high_water) {
   return high_water - kCleanUpMargin;
 }
 
+#if defined(V3_NOT_JUST_YET_READY)
 bool FallingBehind(int current_size, int max_size) {
   return current_size > max_size - kCleanUpMargin * 20;
 }
+#endif  // defined(V3_NOT_JUST_YET_READY).
 
 }  // namespace
 
@@ -67,24 +73,25 @@ namespace disk_cache {
 
 // The real initialization happens during Init(), init_ is the only member that
 // has to be initialized here.
-Eviction::Eviction()
+EvictionV3::EvictionV3()
     : backend_(NULL),
+      index_(NULL),
+      header_(NULL),
       init_(false),
       ptr_factory_(this) {
 }
 
-Eviction::~Eviction() {
+EvictionV3::~EvictionV3() {
 }
 
-void Eviction::Init(BackendImpl* backend) {
+void EvictionV3::Init(BackendImplV3* backend) {
   // We grab a bunch of info from the backend to make the code a little cleaner
   // when we're actually doing work.
   backend_ = backend;
-  rankings_ = &backend->rankings_;
-  header_ = &backend_->data_->header;
+  index_ = &backend_->index_;
+  header_ = index_->header();
   max_size_ = LowWaterAdjust(backend_->max_size_);
-  index_size_ = backend->mask_ + 1;
-  new_eviction_ = backend->new_eviction_;
+  lru_ = backend->lru_eviction_;
   first_trim_ = true;
   trimming_ = false;
   delay_trim_ = false;
@@ -93,7 +100,7 @@ void Eviction::Init(BackendImpl* backend) {
   test_mode_ = false;
 }
 
-void Eviction::Stop() {
+void EvictionV3::Stop() {
   // It is possible for the backend initialization to fail, in which case this
   // object was never initialized... and there is nothing to do.
   if (!init_)
@@ -106,7 +113,8 @@ void Eviction::Stop() {
   ptr_factory_.InvalidateWeakPtrs();
 }
 
-void Eviction::TrimCache(bool empty) {
+#if defined(V3_NOT_JUST_YET_READY)
+void EvictionV3::TrimCache() {
   if (backend_->disabled_ || trimming_)
     return;
 
@@ -144,7 +152,7 @@ void Eviction::TrimCache(bool empty) {
                    (TimeTicks::Now() - start).InMilliseconds() > 20)) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&Eviction::TrimCache, ptr_factory_.GetWeakPtr(), false));
+          base::Bind(&EvictionV3::TrimCache, ptr_factory_.GetWeakPtr(), false));
       break;
     }
   }
@@ -161,7 +169,7 @@ void Eviction::TrimCache(bool empty) {
   return;
 }
 
-void Eviction::OnOpenEntryV2(EntryImpl* entry) {
+void EvictionV3::OnOpenEntry(EntryImplV3* entry) {
   EntryStore* info = entry->entry()->Data();
   DCHECK_EQ(ENTRY_NORMAL, info->state);
 
@@ -182,7 +190,7 @@ void Eviction::OnOpenEntryV2(EntryImpl* entry) {
   }
 }
 
-void Eviction::OnCreateEntryV2(EntryImpl* entry) {
+void EvictionV3::OnCreateEntry(EntryImplV3* entry) {
   EntryStore* info = entry->entry()->Data();
   switch (info->state) {
     case ENTRY_NORMAL: {
@@ -211,18 +219,18 @@ void Eviction::OnCreateEntryV2(EntryImpl* entry) {
   rankings_->Insert(entry->rankings(), true, GetListForEntryV2(entry));
 }
 
-void Eviction::SetTestMode() {
+void EvictionV3::SetTestMode() {
   test_mode_ = true;
 }
 
-void Eviction::TrimDeletedList(bool empty) {
+void EvictionV3::TrimDeletedList(bool empty) {
   DCHECK(test_mode_ && new_eviction_);
   TrimDeleted(empty);
 }
 
 // -----------------------------------------------------------------------
 
-void Eviction::PostDelayedTrim() {
+void EvictionV3::PostDelayedTrim() {
   // Prevent posting multiple tasks.
   if (delay_trim_)
     return;
@@ -230,11 +238,11 @@ void Eviction::PostDelayedTrim() {
   trim_delays_++;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&Eviction::DelayedTrim, ptr_factory_.GetWeakPtr()),
+      base::Bind(&EvictionV3::DelayedTrim, ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(1000));
 }
 
-void Eviction::DelayedTrim() {
+void EvictionV3::DelayedTrim() {
   delay_trim_ = false;
   if (trim_delays_ < kMaxDelayedTrims && backend_->IsLoaded())
     return PostDelayedTrim();
@@ -242,7 +250,7 @@ void Eviction::DelayedTrim() {
   TrimCache(false);
 }
 
-bool Eviction::ShouldTrim() {
+bool EvictionV3::ShouldTrim() {
   if (!FallingBehind(header_->num_bytes, max_size_) &&
       trim_delays_ < kMaxDelayedTrims && backend_->IsLoaded()) {
     return false;
@@ -253,7 +261,7 @@ bool Eviction::ShouldTrim() {
   return true;
 }
 
-bool Eviction::ShouldTrimDeleted() {
+bool EvictionV3::ShouldTrimDeleted() {
   int index_load = header_->num_entries * 100 / index_size_;
 
   // If the index is not loaded, the deleted list will tend to double the size
@@ -266,7 +274,7 @@ bool Eviction::ShouldTrimDeleted() {
 
 bool Eviction::EvictEntry(CacheRankingsBlock* node, bool empty,
                           Rankings::List list) {
-  EntryImpl* entry = backend_->GetEnumeratedEntry(node, list);
+  EntryImplV3* entry = backend_->GetEnumeratedEntry(node, list);
   if (!entry) {
     Trace("NewEntry failed on Trim 0x%x", node->address().value());
     return false;
@@ -293,7 +301,7 @@ bool Eviction::EvictEntry(CacheRankingsBlock* node, bool empty,
   return true;
 }
 
-void Eviction::TrimCacheV2(bool empty) {
+void EvictionV3::TrimCacheV2(bool empty) {
   Trace("*** Trim Cache ***");
   trimming_ = true;
   TimeTicks start = TimeTicks::Now();
@@ -362,7 +370,7 @@ void Eviction::TrimCacheV2(bool empty) {
   } else if (ShouldTrimDeleted()) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&Eviction::TrimDeleted, ptr_factory_.GetWeakPtr(), empty));
+        base::Bind(&EvictionV3::TrimDeleted, ptr_factory_.GetWeakPtr(), empty));
   }
 
   if (empty) {
@@ -379,7 +387,7 @@ void Eviction::TrimCacheV2(bool empty) {
 
 // This is a minimal implementation that just discards the oldest nodes.
 // TODO(rvargas): Do something better here.
-void Eviction::TrimDeleted(bool empty) {
+void EvictionV3::TrimDeleted(bool empty) {
   Trace("*** Trim Deleted ***");
   if (backend_->disabled_)
     return;
@@ -403,7 +411,7 @@ void Eviction::TrimDeleted(bool empty) {
   if (deleted_entries && !empty && ShouldTrimDeleted()) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&Eviction::TrimDeleted, ptr_factory_.GetWeakPtr(), false));
+        base::Bind(&EvictionV3::TrimDeleted, ptr_factory_.GetWeakPtr(), false));
   }
 
   CACHE_UMA(AGE_MS, "TotalTrimDeletedTime", 0, start);
@@ -412,7 +420,7 @@ void Eviction::TrimDeleted(bool empty) {
   return;
 }
 
-void Eviction::ReportTrimTimes(EntryImpl* entry) {
+void EvictionV3::ReportTrimTimes(EntryImplV3* entry) {
   if (first_trim_) {
     first_trim_ = false;
     if (backend_->ShouldReportAgain()) {
@@ -440,7 +448,7 @@ void Eviction::ReportTrimTimes(EntryImpl* entry) {
   }
 }
 
-bool Eviction::NodeIsOldEnough(CacheRankingsBlock* node, int list) {
+bool EvictionV3::NodeIsOldEnough(CacheRankingsBlock* node, int list) {
   if (!node)
     return false;
 
@@ -452,7 +460,7 @@ bool Eviction::NodeIsOldEnough(CacheRankingsBlock* node, int list) {
   return (Time::Now() - used).InHours() > kTargetTime * multiplier;
 }
 
-int Eviction::SelectListByLength(Rankings::ScopedRankingsBlock* next) {
+int EvictionV3::SelectListByLength(Rankings::ScopedRankingsBlock* next) {
   int data_entries = header_->num_entries -
                      header_->lru.sizes[Rankings::DELETED];
   // Start by having each list to be roughly the same size.
@@ -472,7 +480,7 @@ int Eviction::SelectListByLength(Rankings::ScopedRankingsBlock* next) {
   return list;
 }
 
-void Eviction::ReportListStats() {
+void EvictionV3::ReportListStats() {
   if (!new_eviction_)
     return;
 
@@ -498,5 +506,6 @@ void Eviction::ReportListStats() {
     CACHE_UMA(AGE, "DeletedAge", 0,
               Time::FromInternalValue(last4.get()->Data()->last_used));
 }
+#endif  // defined(V3_NOT_JUST_YET_READY).
 
 }  // namespace disk_cache

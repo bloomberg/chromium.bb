@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DISK_CACHE_ENTRY_IMPL_H_
-#define NET_DISK_CACHE_ENTRY_IMPL_H_
+#ifndef NET_DISK_CACHE_V3_ENTRY_IMPL_V3_H_
+#define NET_DISK_CACHE_V3_ENTRY_IMPL_V3_H_
+
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_log.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/storage_block.h"
-#include "net/disk_cache/storage_block-inl.h"
+#include "net/disk_cache/v3/disk_format_v3.h"
 
 namespace disk_cache {
 
-class BackendImpl;
-class InFlightBackendIO;
-class SparseControl;
+class BackendImplV3;
+class SparseControlV3;
 
 // This class implements the Entry interface. An object of this
 // class represents a single entry on the cache.
-class NET_EXPORT_PRIVATE EntryImpl
+class NET_EXPORT_PRIVATE EntryImplV3
     : public Entry,
-      public base::RefCounted<EntryImpl> {
-  friend class base::RefCounted<EntryImpl>;
-  friend class SparseControl;
+      public base::RefCounted<EntryImplV3> {
+  friend class base::RefCounted<EntryImplV3>;
+  // friend class SparseControlV3;
  public:
   enum Operation {
     kRead,
@@ -35,41 +36,26 @@ class NET_EXPORT_PRIVATE EntryImpl
     kWriteAsync1
   };
 
-  EntryImpl(BackendImpl* backend, Addr address, bool read_only);
+  EntryImplV3(BackendImplV3* backend, Addr address, bool read_only);
 
-  // Background implementation of the Entry interface.
-  void DoomImpl();
-  int ReadDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback);
-  int WriteDataImpl(int index, int offset, IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback, bool truncate);
-  int ReadSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
-                         const CompletionCallback& callback);
-  int WriteSparseDataImpl(int64 offset, IOBuffer* buf, int buf_len,
-                          const CompletionCallback& callback);
-  int GetAvailableRangeImpl(int64 offset, int len, int64* start);
-  void CancelSparseIOImpl();
-  int ReadyForSparseIOImpl(const CompletionCallback& callback);
-
-  // Performs the initialization of a EntryImpl that will be added to the
+  // Performs the initialization of a EntryImplV3 that will be added to the
   // cache.
   bool CreateEntry(Addr node_address, const std::string& key, uint32 hash);
 
   uint32 GetHash();
+
+  uint32 GetHash() const;
+  Addr GetAddress() const;
+  int GetReuseCounter() const;
+  void SetReuseCounter(int count);
+  int GetRefetchCounter() const;
+  void SetRefetchCounter(int count);
 
   // Returns true if this entry matches the lookup arguments.
   bool IsSameEntry(const std::string& key, uint32 hash);
 
   // Permamently destroys this entry.
   void InternalDoom();
-
-  bool dirty() {
-    return dirty_;
-  }
-
-  bool doomed() {
-    return doomed_;
-  }
 
   // Returns false if the entry is clearly invalid.
   bool SanityCheck();
@@ -82,9 +68,9 @@ class NET_EXPORT_PRIVATE EntryImpl
   // the upgrade tool.
   void SetTimes(base::Time last_used, base::Time last_modified);
 
-  // Logs a begin event and enables logging for the EntryImpl.  Will also cause
-  // an end event to be logged on destruction.  The EntryImpl must have its key
-  // initialized before this is called.  |created| is true if the Entry was
+  // Logs a begin event and enables logging for the EntryImplV3. Will also cause
+  // an end event to be logged on destruction. The EntryImplV3 must have its key
+  // initialized before this is called. |created| is true if the Entry was
   // created rather than opened.
   void BeginLogging(net::NetLog* net_log, bool created);
 
@@ -118,7 +104,7 @@ class NET_EXPORT_PRIVATE EntryImpl
   };
   class UserBuffer;
 
-  virtual ~EntryImpl();
+  virtual ~EntryImplV3();
 
   // Do all the work for ReadDataImpl and WriteDataImpl.  Implemented as
   // separate functions to make logging of results simpler.
@@ -199,25 +185,24 @@ class NET_EXPORT_PRIVATE EntryImpl
   // Logs this entry to the internal trace buffer.
   void Log(const char* msg);
 
-  CacheEntryBlock entry_;     // Key related information for this entry.
-  CacheRankingsBlock node_;   // Rankings related information for this entry.
-  base::WeakPtr<BackendImpl> backend_;  // Back pointer to the cache.
-  base::WeakPtr<InFlightBackendIO> background_queue_;  // In-progress queue.
+  scoped_ptr<EntryRecord> entry_;  // Basic record for this entry.
+  scoped_ptr<ShortEntryRecord> short_entry_;  // Valid for evicted entries.
+  base::WeakPtr<BackendImplV3> backend_;  // Back pointer to the cache.
   scoped_ptr<UserBuffer> user_buffers_[kNumStreams];  // Stores user data.
-  // Files to store external user data and key.
-  scoped_refptr<File> files_[kNumStreams + 1];
   mutable std::string key_;           // Copy of the key.
+  Addr address_;
   int unreported_size_[kNumStreams];  // Bytes not reported yet to the backend.
   bool doomed_;               // True if this entry was removed from the cache.
-  bool read_only_;            // True if not yet writing.
-  bool dirty_;                // True if we detected that this is a dirty entry.
-  scoped_ptr<SparseControl> sparse_;  // Support for sparse entries.
+  bool read_only_;
+  bool dirty_;                // True if there is something to write.
+  bool modified_;
+  // scoped_ptr<SparseControlV3> sparse_;  // Support for sparse entries.
 
   net::BoundNetLog net_log_;
 
-  DISALLOW_COPY_AND_ASSIGN(EntryImpl);
+  DISALLOW_COPY_AND_ASSIGN(EntryImplV3);
 };
 
 }  // namespace disk_cache
 
-#endif  // NET_DISK_CACHE_ENTRY_IMPL_H_
+#endif  // NET_DISK_CACHE_V3_ENTRY_IMPL_V3_H_

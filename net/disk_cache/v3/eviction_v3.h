@@ -2,27 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DISK_CACHE_EVICTION_H_
-#define NET_DISK_CACHE_EVICTION_H_
+#ifndef NET_DISK_CACHE_V3_EVICTION_V3_H_
+#define NET_DISK_CACHE_V3_EVICTION_V3_H_
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "net/disk_cache/disk_format.h"
-#include "net/disk_cache/rankings.h"
+#include "net/disk_cache/v3/disk_format_v3.h"
+#include "net/disk_cache/v3/index_table.h"
 
 namespace disk_cache {
 
-class BackendImpl;
-class EntryImpl;
+class BackendImplV3;
+class CacheRankingsBlock;
+class EntryImplV3;
+
+namespace Rankings {
+typedef int List;
+}
 
 // This class implements the eviction algorithm for the cache and it is tightly
 // integrated with BackendImpl.
-class Eviction {
+class EvictionV3 {
  public:
-  Eviction();
-  ~Eviction();
+  EvictionV3();
+  ~EvictionV3();
 
-  void Init(BackendImpl* backend);
+  void Init(BackendImplV3* backend);
   void Stop();
 
   // Deletes entries from the cache until the current size is below the limit.
@@ -31,8 +36,8 @@ class Eviction {
   void TrimCache(bool empty);
 
   // Notifications of interesting events for a given entry.
-  void OnOpenEntry(EntryImpl* entry);
-  void OnCreateEntry(EntryImpl* entry);
+  void OnOpenEntry(EntryImplV3* entry);
+  void OnCreateEntry(EntryImplV3* entry);
 
   // Testing interface.
   void SetTestMode();
@@ -49,26 +54,25 @@ class Eviction {
   void TrimDeleted(bool empty);
 
   bool NodeIsOldEnough(CacheRankingsBlock* node, int list);
-  int SelectListByLength(Rankings::ScopedRankingsBlock* next);
+  int SelectListByLength();
   void ReportListStats();
 
-  BackendImpl* backend_;
-  Rankings* rankings_;
-  IndexHeader* header_;
+  BackendImplV3* backend_;
+  IndexTable* index_;
+  IndexHeaderV3* header_;
   int max_size_;
   int trim_delays_;
-  int index_size_;
-  bool new_eviction_;
+  bool lru_;
   bool first_trim_;
   bool trimming_;
   bool delay_trim_;
   bool init_;
   bool test_mode_;
-  base::WeakPtrFactory<Eviction> ptr_factory_;
+  base::WeakPtrFactory<EvictionV3> ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(Eviction);
+  DISALLOW_COPY_AND_ASSIGN(EvictionV3);
 };
 
 }  // namespace disk_cache
 
-#endif  // NET_DISK_CACHE_EVICTION_H_
+#endif  // NET_DISK_CACHE_V3_EVICTION_V3_H_
