@@ -163,7 +163,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        exceptionState.throwUninformativeAndGenericDOMException(ReadOnlyError);
+        exceptionState.throwDOMException(ReadOnlyError, IDBDatabase::transactionReadOnlyErrorMessage);
         return 0;
     }
 
@@ -173,7 +173,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
 
     if (serializedValue->containsBlobs()) {
         // FIXME: Add Blob/File/FileList support
-        exceptionState.throwUninformativeAndGenericDOMException(DataCloneError);
+        exceptionState.throwDOMException(DataCloneError, "The object store currently does not support blob values.");
         return 0;
     }
 
@@ -249,7 +249,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ExecutionContext* context,
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        exceptionState.throwUninformativeAndGenericDOMException(ReadOnlyError);
+        exceptionState.throwDOMException(ReadOnlyError, IDBDatabase::transactionReadOnlyErrorMessage);
         return 0;
     }
 
@@ -282,7 +282,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::clear(ExecutionContext* context, Exceptio
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        exceptionState.throwUninformativeAndGenericDOMException(ReadOnlyError);
+        exceptionState.throwDOMException(ReadOnlyError, IDBDatabase::transactionReadOnlyErrorMessage);
         return 0;
     }
 

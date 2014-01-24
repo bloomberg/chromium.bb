@@ -62,6 +62,7 @@ const char IDBDatabase::requestNotFinishedErrorMessage[] = "The request has not 
 const char IDBDatabase::sourceDeletedErrorMessage[] = "The cursor's source or effective object store has been deleted.";
 const char IDBDatabase::transactionInactiveErrorMessage[] = "The transaction is not active.";
 const char IDBDatabase::transactionFinishedErrorMessage[] = "The transaction has finished.";
+const char IDBDatabase::transactionReadOnlyErrorMessage[] = "The transaction is read-only.";
 
 PassRefPtr<IDBDatabase> IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, PassRefPtr<IDBDatabaseCallbacks> callbacks)
 {

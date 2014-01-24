@@ -149,7 +149,7 @@ Expecting exception from storeFromReadOnlyTransaction.add(0, 0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'ReadOnlyError'
-Exception message: A write operation was attempted in a read-only transaction.
+Exception message: Failed to execute 'add' on 'IDBObjectStore': The transaction is read-only.
 The transaction this IDBObjectStore belongs to is not active.
 Expecting exception from storeFromInactiveTransaction.add(0, 0)
 PASS Exception was thrown.
@@ -168,7 +168,7 @@ Expecting exception from storeFromReadOnlyTransaction.clear()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'ReadOnlyError'
-Exception message: A write operation was attempted in a read-only transaction.
+Exception message: Failed to execute 'clear' on 'IDBObjectStore': The transaction is read-only.
 The transaction this IDBObjectStore belongs to is not active.
 Expecting exception from storeFromInactiveTransaction.clear()
 PASS Exception was thrown.
@@ -196,7 +196,7 @@ Expecting exception from storeFromReadOnlyTransaction.delete(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'ReadOnlyError'
-Exception message: A write operation was attempted in a read-only transaction.
+Exception message: Failed to execute 'delete' on 'IDBObjectStore': The transaction is read-only.
 If the key parameter is not a valid key or a key range this method throws a DOMException of type DataError.
 Expecting exception from store.delete({})
 PASS Exception was thrown.
@@ -280,7 +280,7 @@ Expecting exception from storeFromReadOnlyTransaction.put(0, 0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'ReadOnlyError'
-Exception message: A write operation was attempted in a read-only transaction.
+Exception message: Failed to execute 'put' on 'IDBObjectStore': The transaction is read-only.
 The transaction this IDBObjectStore belongs to is not active.
 Expecting exception from storeFromInactiveTransaction.put(0, 0)
 PASS Exception was thrown.

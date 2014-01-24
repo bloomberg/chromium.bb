@@ -125,6 +125,7 @@ public:
     static const char sourceDeletedErrorMessage[];
     static const char transactionFinishedErrorMessage[];
     static const char transactionInactiveErrorMessage[];
+    static const char transactionReadOnlyErrorMessage[];
 
 private:
     IDBDatabase(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
