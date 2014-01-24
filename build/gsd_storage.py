@@ -150,6 +150,28 @@ class GSDStorage(object):
         logging.debug('Failed downloading: %s to %s' % (uri, path))
     return None
 
+  def GetSecureFile(self, key, path):
+    """ Read a non-publicly-accessible file from global storage.
+
+    Args:
+      key: Key file is stored under.
+      path: Destination filename
+    Returns:
+      command used on success or None on failure.
+    """
+    for bucket in self._read_buckets:
+      try:
+        obj = bucket + '/' + key
+        cmd = self._gsutil + [
+            'cp', GS_PATTERN % obj,
+            'file://' + os.path.abspath(path).replace(os.sep, '/')]
+        logging.info('Running: %s' % str(cmd))
+        if self._call(cmd) == 0:
+          return cmd
+      except:
+        logging.debug('Failed to fetch %s from %s (%s)' % (key, path, cmd))
+    return None
+
   def GetData(self, key):
     """Read data from global storage.
 

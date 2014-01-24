@@ -24,6 +24,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import zipfile
 
 import command
 import file_tools
@@ -66,9 +67,9 @@ BUILD_CROSS_MINGW = False
 CYGWIN_PATH = os.path.join(NACL_DIR, 'cygwin')
 # Path to the mingw cross-compiler libs on Ubuntu
 CROSS_MINGW_LIBPATH = '/usr/lib/gcc/i686-w64-mingw32/4.6'
-# Path to the native mingw compiler is up here to make it easy to change for
-# local testing.
-MINGW_PATH = os.environ.get('MINGW', r'd:\src\mingw-exp\mingw32')
+# Path and version of the native mingw compiler to be installed on Windows hosts
+MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
+MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 
 ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32')
 
@@ -137,6 +138,10 @@ def ConfigureHostArchFlags(host):
     # that we don't want to have to distribute alongside our binaries.
     # So just disable it, and compiler messages will always be in US English.
     configure_args.append('--disable-nls')
+    if not command.Runnable.use_cygwin:
+      configure_args.extend(['LDFLAGS=-L%(abs_libdl)s',
+                             'CFLAGS=-isystem %(abs_libdl)s',
+                             'CXXFLAGS=-isystem %(abs_libdl)s'])
   return configure_args
 
 def MakeCommand(host):
@@ -222,6 +227,32 @@ def HostToolsSources(GetGitSyncCmd):
   return sources
 
 
+def HostLibs(host):
+  libs = {}
+  if TripleIsWindows(host) and not command.Runnable.use_cygwin:
+    ar = 'ar' if platform_tools.IsWindows() else 'i686-w64-mingw32-ar'
+    libs.update({
+      'libdl': {
+          'type': 'build',
+          'inputs' : { 'src' : os.path.join(NACL_DIR, '..', 'third_party',
+                                            'dlfcn-win32') },
+          'commands': [
+              command.CopyTree('%(src)s', '.'),
+              command.Command(['i686-w64-mingw32-gcc',
+                               '-o', 'dlfcn.o', '-c', 'dlfcn.c',
+                               '-Wall', '-O3', '-fomit-frame-pointer']),
+              command.Command([ar, 'cru',
+                               'libdl.a', 'dlfcn.o']),
+              command.Copy('libdl.a',
+                           os.path.join('%(output)s', 'libdl.a')),
+              command.Copy('dlfcn.h',
+                           os.path.join('%(output)s', 'dlfcn.h')),
+          ],
+      },
+    })
+  return libs
+
+
 def HostTools(host):
   def H(component_name):
     # Return a package name for a component name with a host triple.
@@ -289,6 +320,9 @@ def HostTools(host):
         ],
       },
   }
+  if TripleIsWindows(host) and not command.Runnable.use_cygwin:
+    tools[H('binutils_pnacl')]['dependencies'].append('libdl')
+    tools[H('llvm')]['dependencies'].append('libdl')
   return tools
 
 
@@ -351,6 +385,37 @@ def SyncPNaClRepos(revisions):
       commit_id = open(commit_id_file, 'r').readline().strip()
       subprocess.check_call(['git', 'checkout', commit_id], cwd=destination)
 
+
+def InstallMinGWHostCompiler():
+  """Install the MinGW host compiler used to build the host tools on Windows.
+
+  We could use an ordinary source rule for this, but that would require hashing
+  hundreds of MB of toolchain files on every build. Instead, check for the
+  presence of the specially-named file <version>.installed in the install
+  directory. If it is absent, check for the presence of the zip file
+  <version>.zip. If it is absent, attempt to download it from Google Storage.
+  Then extract the zip file and create the install file.
+  """
+  if not os.path.isfile(os.path.join(MINGW_PATH, MINGW_VERSION + '.installed')):
+    downloader = gsd_storage.GSDStorage([], ['nativeclient-mingw'])
+    zipfilename = MINGW_VERSION + '.zip'
+    zipfilepath = os.path.join(NACL_DIR, zipfilename)
+    # If the zip file is not present, try to download it from Google Storage.
+    # If that fails, bail out.
+    if (not os.path.isfile(zipfilepath) and
+        not downloader.GetSecureFile(zipfilename, zipfilepath)):
+        print >>sys.stderr, 'Failed to install MinGW tools:'
+        print >>sys.stderr, 'could not find or download', zipfilename
+        sys.exit(1)
+    logging.info('Extracting %s' % zipfilename)
+    zf = zipfile.ZipFile(zipfilepath)
+    if os.path.exists(MINGW_PATH):
+      shutil.rmtree(MINGW_PATH)
+    zf.extractall(NACL_DIR)
+    with open(os.path.join(MINGW_PATH, MINGW_VERSION + '.installed'), 'w') as _:
+      pass
+  os.environ['MINGW'] = MINGW_PATH
+
 if __name__ == '__main__':
   # This sets the logging for gclient-alike repo sync. It will be overridden
   # by the package builder based on the command-line flags.
@@ -365,11 +430,13 @@ if __name__ == '__main__':
     SyncPNaClRepos(revisions)
     sys.exit(0)
 
+  if platform_tools.IsWindows() and not command.Runnable.use_cygwin:
+    InstallMinGWHostCompiler()
+
   packages = {}
   packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
   packages.update(pnacl_targetlibs.TargetLibsSrc(
       GetGitSyncCmdCallback(revisions)))
-
 
   if platform_tools.Is64BitLinux():
     hosts = ['i686-linux', NativeTriple()]
@@ -378,10 +445,13 @@ if __name__ == '__main__':
   if platform_tools.IsLinux() and BUILD_CROSS_MINGW:
     hosts.append('i686-w64-mingw32')
   for host in hosts:
+    packages.update(HostLibs(host))
     packages.update(HostTools(host))
+  # Don't build the target libs on Windows because of pathname issues.
   # On linux use the 32-bit compiler to build the target libs since that's what
   # most developers will be using.
-  packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0]))
+  if not platform_tools.IsWindows():
+    packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0]))
 
   tb = toolchain_main.PackageBuilder(packages,
                                      leftover_args)
