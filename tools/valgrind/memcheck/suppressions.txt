@@ -6276,14 +6276,6 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
 }
 {
-   bug_329339
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN3net18ProxyScriptDecider*
-   fun:_ZN3net18ProxyScriptDecider6DoLoopEi
-   fun:_ZN3net18ProxyScriptDecider*
-}
-{
    bug_329960
    Memcheck:Leak
    fun:_Znw*

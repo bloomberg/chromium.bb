@@ -343,7 +343,8 @@ class ProxyService::InitProxyResolver {
  public:
   InitProxyResolver()
       : proxy_resolver_(NULL),
-        next_state_(STATE_NONE) {
+        next_state_(STATE_NONE),
+        quick_check_enabled_(true) {
   }
 
   ~InitProxyResolver() {
@@ -884,7 +885,8 @@ ProxyService::ProxyService(ProxyConfigService* config_service,
       current_state_(STATE_NONE) ,
       net_log_(net_log),
       stall_proxy_auto_config_delay_(TimeDelta::FromMilliseconds(
-          kDelayAfterNetworkChangesMs)) {
+          kDelayAfterNetworkChangesMs)),
+      quick_check_enabled_(true) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
   ResetConfigService(config_service);

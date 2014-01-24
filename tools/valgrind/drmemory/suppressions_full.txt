@@ -1311,17 +1311,3 @@ name=bug_113076
 *!media::ConvertYUVToRGB32_C
 *!media::LinearScaleYUVToRGB32RowWithRange_C
 *!media::ScaleYUVToRGB32WithRect
-
-UNINITIALIZED READ
-name=bug_329339
-...
-net.dll!net::ProxyService::InitProxyResolver::*
-net.dll!net::ProxyService::InitProxyResolver::DoLoop
-net.dll!net::ProxyService::InitProxyResolver::*
-
-UNINITIALIZED READ
-name=bug_329339_b
-...
-net.dll!net::ProxyScriptDecider::*
-net.dll!net::ProxyScriptDecider::DoLoop
-net.dll!net::ProxyScriptDecider::*
