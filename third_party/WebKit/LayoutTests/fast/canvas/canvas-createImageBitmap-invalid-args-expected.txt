@@ -3,23 +3,23 @@ Ensure correct behavior of createImageBitmap for invalid inputs.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS createImageBitmap(image) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS createImageBitmap(video) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS createImageBitmap(image) threw exception InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': No image can be retrieved from the provided element..
+PASS createImageBitmap(video) threw exception InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': No player can be retrieved from the provided video element..
 PASS createImageBitmap(undefined) threw exception TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided..
-PASS createImageBitmap(image, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(image, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(video, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(video, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCanvas, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCanvas, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(d, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(d, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCtx, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(aCtx, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(testBitmap, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(testBitmap, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(blob, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS createImageBitmap(blob, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(image, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
+PASS createImageBitmap(image, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
+PASS createImageBitmap(video, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
+PASS createImageBitmap(video, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
+PASS createImageBitmap(aCanvas, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
+PASS createImageBitmap(aCanvas, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
+PASS createImageBitmap(d, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
+PASS createImageBitmap(d, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
+PASS createImageBitmap(aCtx, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
+PASS createImageBitmap(aCtx, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
+PASS createImageBitmap(testBitmap, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
+PASS createImageBitmap(testBitmap, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
+PASS createImageBitmap(blob, 0, 0, 10, 0) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0..
+PASS createImageBitmap(blob, 0, 0, 0, 10) threw exception IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0..
 PASS createImageBitmap(invalidBlob) was rejected.
 PASS successfullyParsed is true
 

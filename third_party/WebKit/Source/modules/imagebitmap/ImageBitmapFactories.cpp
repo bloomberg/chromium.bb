@@ -87,24 +87,23 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
         return ScriptPromise();
     }
     if (!image->cachedImage()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "No image can be retrieved from the provided element.");
         return ScriptPromise();
     }
     if (image->cachedImage()->image()->isSVGImage()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image, which is unsupported.");
         return ScriptPromise();
     }
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
     if (!image->cachedImage()->image()->currentFrameHasSingleSecurityOrigin()) {
-        exceptionState.throwSecurityError("the source image contains cross-origin image data.");
+        exceptionState.throwSecurityError("The source image contains image data from multiple origins.");
         return ScriptPromise();
     }
-    if (!image->cachedImage()->passesAccessControlCheck(eventTarget->toDOMWindow()->document()->securityOrigin())
-    && eventTarget->toDOMWindow()->document()->securityOrigin()->taintsCanvas(image->src())) {
-        exceptionState.throwSecurityError("cross-origin access to the source image is denied.");
+    if (!image->cachedImage()->passesAccessControlCheck(eventTarget->toDOMWindow()->document()->securityOrigin()) && eventTarget->toDOMWindow()->document()->securityOrigin()->taintsCanvas(image->src())) {
+        exceptionState.throwSecurityError("Cross-origin access to the source image is denied.");
         return ScriptPromise();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
@@ -127,27 +126,27 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
         return ScriptPromise();
     }
     if (!video->player()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "No player can be retrieved from the provided video element.");
         return ScriptPromise();
     }
     if (video->networkState() == HTMLMediaElement::NETWORK_EMPTY) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
         return ScriptPromise();
     }
     if (video->player()->readyState() <= MediaPlayer::HaveMetadata) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, "The provided element's player has no current data.");
         return ScriptPromise();
     }
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
     if (!video->hasSingleSecurityOrigin()) {
-        exceptionState.throwSecurityError("the source video contains cross-origin image data.");
+        exceptionState.throwSecurityError("The source video contains image data from multiple origins.");
         return ScriptPromise();
     }
     if (!video->player()->didPassCORSAccessCheck() && eventTarget->toDOMWindow()->document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
-        exceptionState.throwSecurityError("cross-origin access to the source video is denied.");
+        exceptionState.throwSecurityError("Cross-origin access to the source video is denied.");
         return ScriptPromise();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
@@ -179,11 +178,11 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
         return ScriptPromise();
     }
     if (!canvas->originClean()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwSecurityError("The canvas element provided is tainted with cross-origin data.");
         return ScriptPromise();
     }
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
@@ -193,7 +192,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, Blob* blob, ExceptionState& exceptionState)
 {
     if (!blob) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeError);
+        exceptionState.throwDOMException(TypeError, "The blob provided is invalid.");
         return ScriptPromise();
     }
     ScriptPromise promise = ScriptPromise::createPending(eventTarget->executionContext());
@@ -207,11 +206,11 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, Blob* blob, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
     if (!blob) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeError);
+        exceptionState.throwDOMException(TypeError, "The blob provided is invalid.");
         return ScriptPromise();
     }
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
     ScriptPromise promise = ScriptPromise::createPending(eventTarget->executionContext());
@@ -234,7 +233,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
         return ScriptPromise();
     }
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
@@ -253,7 +252,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
         return ScriptPromise();
     }
     if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
