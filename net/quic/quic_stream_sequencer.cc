@@ -42,7 +42,11 @@ QuicStreamSequencer::~QuicStreamSequencer() {
 bool QuicStreamSequencer::WillAcceptStreamFrame(
     const QuicStreamFrame& frame) const {
   size_t data_len = frame.data.TotalBufferSize();
-  DCHECK_LE(data_len, max_frame_memory_);
+  if (data_len > max_frame_memory_) {
+    LOG(DFATAL) << "data_len: " << data_len << " > max_frame_memory_: "
+                << max_frame_memory_;
+    return false;
+  }
 
   if (IsDuplicate(frame)) {
     return true;

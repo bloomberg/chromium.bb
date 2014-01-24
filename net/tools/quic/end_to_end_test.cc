@@ -19,6 +19,7 @@
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
+#include "net/quic/test_tools/gtest_util.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -609,23 +610,7 @@ TEST_P(EndToEndTest, DISABLED_MultipleTermination) {
   ReliableQuicStreamPeer::SetWriteSideClosed(
       false, client_->GetOrCreateStream());
 
-#if !defined(WIN32) && defined(GTEST_HAS_DEATH_TEST)
-#if !defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEBUG_DEATH({
-      client_->SendData("eep", true);
-      client_->WaitForResponse();
-      EXPECT_EQ(QUIC_MULTIPLE_TERMINATION_OFFSETS, client_->stream_error());
-    },
-    "Check failed: !fin_buffered_");
-#else
-  EXPECT_DEATH({
-      client_->SendData("eep", true);
-      client_->WaitForResponse();
-      EXPECT_EQ(QUIC_MULTIPLE_TERMINATION_OFFSETS, client_->stream_error());
-    },
-    "Check failed: !fin_buffered_");
-#endif
-#endif
+  EXPECT_DFATAL(client_->SendData("eep", true), "Fin already buffered");
 }
 
 TEST_P(EndToEndTest, Timeout) {

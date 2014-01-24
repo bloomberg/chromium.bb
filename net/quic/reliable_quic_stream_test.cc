@@ -11,6 +11,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
+#include "net/quic/test_tools/gtest_util.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -134,21 +135,14 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
   EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
 }
 
-// TODO(rtenneti): Death tests crash on OS_ANDROID.
-#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG) && !defined(OS_ANDROID)
 TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
   Initialize(kShouldProcessData);
 
   // Write no data and no fin.  If we consume nothing we should not be write
   // blocked.
-  EXPECT_DEBUG_DEATH({
-    EXPECT_CALL(*session_, WritevData(kStreamId, _, 1, _, _, _)).WillOnce(
-        Return(QuicConsumedData(0, false)));
-    stream_->WriteOrBufferData(StringPiece(), false);
-    EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
-  }, "");
+  EXPECT_DFATAL(stream_->WriteOrBufferData(StringPiece(), false), "");
+  EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
 }
-#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG) && !defined(OS_ANDROID)
 
 TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
   Initialize(kShouldProcessData);

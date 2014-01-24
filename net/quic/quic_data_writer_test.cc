@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_data_reader.h"
+#include "net/quic/test_tools/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -32,13 +33,8 @@ TEST(QuicDataWriterTest, WriteUInt8ToOffset) {
 TEST(QuicDataWriterDeathTest, WriteUInt8ToOffset) {
   QuicDataWriter writer(4);
 
-#if !defined(WIN32) && defined(GTEST_HAS_DEATH_TEST)
-#if !defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEBUG_DEATH(writer.WriteUInt8ToOffset(5, 4), "Check failed");
-#else
-  EXPECT_DEATH(writer.WriteUInt8ToOffset(5, 4), "Check failed");
-#endif
-#endif
+  EXPECT_DFATAL(EXPECT_FALSE(writer.WriteUInt8ToOffset(5, 4)),
+                "offset: 4 >= capacity: 4");
 }
 
 TEST(QuicDataWriterTest, SanityCheckUFloat16Consts) {

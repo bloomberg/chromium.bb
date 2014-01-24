@@ -20,8 +20,8 @@ namespace test {
 #define GTEST_DFATAL_(statement, matcher, fail)                         \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_                                         \
   if (true) {                                                           \
-    ScopedMockLog gtest_log;                                            \
-    ScopedDisableExitOnDFatal gtest_disable_exit;                       \
+    ::net::test::ScopedMockLog gtest_log;                               \
+    ::net::test::ScopedDisableExitOnDFatal gtest_disable_exit;          \
     using ::testing::_;                                                 \
     EXPECT_CALL(gtest_log, Log(_, _, _, _, _))                          \
         .WillRepeatedly(::testing::Return(false));                      \

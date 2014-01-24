@@ -167,7 +167,10 @@ void QuicDataWriter::WritePadding() {
 }
 
 bool QuicDataWriter::WriteUInt8ToOffset(uint8 value, size_t offset) {
-  DCHECK_LT(offset, capacity_);
+  if (offset >= capacity_) {
+    LOG(DFATAL) << "offset: " << offset << " >= capacity: " << capacity_;
+    return false;
+  }
   size_t latched_length = length_;
   length_ = offset;
   bool success = WriteUInt8(value);

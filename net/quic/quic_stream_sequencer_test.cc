@@ -158,8 +158,8 @@ TEST_F(QuicStreamSequencerTest, RejectOverlyLargeFrame) {
                 "Setting max frame memory to 2.  "
                 "Some frames will be impossible to handle.");
 
-  // TODO(rch): covert this to a DFATAL test.
-  // EXPECT_DEBUG_DEATH(sequencer_->OnFrame(0, "abc"), "");
+  EXPECT_DFATAL(sequencer_->OnFrame(0, "abc"),
+                "data_len: 3 > max_frame_memory_: 2");
 }
 
 TEST_F(QuicStreamSequencerTest, DropFramePastBuffering) {

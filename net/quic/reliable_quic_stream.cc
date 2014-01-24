@@ -118,8 +118,15 @@ QuicVersion ReliableQuicStream::version() {
 }
 
 void ReliableQuicStream::WriteOrBufferData(StringPiece data, bool fin) {
-  DCHECK(data.size() > 0 || fin);
-  DCHECK(!fin_buffered_);
+  if (data.empty() && !fin) {
+    LOG(DFATAL) << "data.empty() && !fin";
+    return;
+  }
+
+  if (fin_buffered_) {
+    LOG(DFATAL) << "Fin already buffered";
+    return;
+  }
 
   QuicConsumedData consumed_data(0, false);
   fin_buffered_ = fin;
