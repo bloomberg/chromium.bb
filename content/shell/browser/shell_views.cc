@@ -6,8 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/shell/browser/shell_platform_data_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -313,11 +315,12 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 
 void Shell::PlatformExit() {
 #if defined(OS_CHROMEOS)
-  if (wm_test_helper_)
-    delete wm_test_helper_;
+  delete wm_test_helper_;
 #endif
-  if (views_delegate_)
-    delete views_delegate_;
+  delete views_delegate_;
+  views_delegate_ = NULL;
+  delete platform_;
+  platform_ = NULL;
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Shutdown();
 #endif
@@ -328,6 +331,8 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   if (control == BACK_BUTTON) {
@@ -343,6 +348,8 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetAddressBarURL(url);
@@ -352,6 +359,14 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
+  if (headless_) {
+    content_size_ = gfx::Size(width, height);
+    if (!platform_)
+      platform_ = new ShellPlatformDataAura(content_size_);
+    else
+      platform_->ResizeWindow(content_size_);
+    return;
+  }
 #if defined(OS_CHROMEOS)
   window_widget_ = views::Widget::CreateWindowWithContextAndBounds(
       new ShellWindowDelegateView(this),
@@ -372,19 +387,39 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
-  ShellWindowDelegateView* delegate_view =
-      static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
-  delegate_view->SetWebContents(web_contents_.get(), content_size_);
+  if (headless_) {
+    CHECK(platform_);
+    aura::Window* content = web_contents_->GetView()->GetNativeView();
+    aura::Window* parent = platform_->window()->window();
+    if (!parent->Contains(content)) {
+      parent->AddChild(content);
+      content->Show();
+    }
+    content->SetBounds(gfx::Rect(content_size_));
+    RenderWidgetHostView* host_view = web_contents_->GetRenderWidgetHostView();
+    if (host_view)
+      host_view->SetSize(content_size_);
+  } else {
+    views::WidgetDelegate* widget_delegate = window_widget_->widget_delegate();
+    ShellWindowDelegateView* delegate_view =
+        static_cast<ShellWindowDelegateView*>(widget_delegate);
+    delegate_view->SetWebContents(web_contents_.get(), content_size_);
+  }
 }
 
 void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
-  window_widget_->CloseNow();
+  if (headless_)
+    delete this;
+  else
+    window_widget_->CloseNow();
 }
 
 void Shell::PlatformSetTitle(const base::string16& title) {
+  if (headless_)
+    return;
   ShellWindowDelegateView* delegate_view =
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->SetWindowTitle(title);

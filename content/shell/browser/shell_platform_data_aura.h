@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_BROWSER_SHELL_AURA_H_
-#define CONTENT_SHELL_BROWSER_SHELL_AURA_H_
+#ifndef CONTENT_SHELL_BROWSER_SHELL_PLATFORM_DATA_AURA_H_
+#define CONTENT_SHELL_BROWSER_SHELL_PLATFORM_DATA_AURA_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -17,18 +17,23 @@ class WindowTreeClient;
 class RootWindow;
 }
 
+namespace gfx {
+class Size;
+}
+
 namespace ui {
 class EventHandler;
 }
 
 namespace content {
 
-class ShellAuraPlatformData {
+class ShellPlatformDataAura {
  public:
-  ShellAuraPlatformData();
-  ~ShellAuraPlatformData();
+  explicit ShellPlatformDataAura(const gfx::Size& initial_size);
+  ~ShellPlatformDataAura();
 
-  void ResizeWindow(int width, int height);
+  void ShowWindow();
+  void ResizeWindow(const gfx::Size& size);
 
   aura::RootWindow* window() { return root_window_.get(); }
 
@@ -40,9 +45,9 @@ class ShellAuraPlatformData {
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
   scoped_ptr<ui::EventHandler> ime_filter_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellAuraPlatformData);
+  DISALLOW_COPY_AND_ASSIGN(ShellPlatformDataAura);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_BROWSER_SHELL_AURA_H_
+#endif  // CONTENT_SHELL_BROWSER_SHELL_PLATFORM_DATA_AURA_H_
