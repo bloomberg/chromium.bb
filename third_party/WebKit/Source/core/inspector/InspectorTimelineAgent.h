@@ -133,9 +133,9 @@ public:
         size_t usedGPUMemoryBytes;
     };
 
-    static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
+    static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
     {
-        return adoptPtr(new InspectorTimelineAgent(instrumentingAgents, pageAgent, domAgent, overlay, state, type, client));
+        return adoptPtr(new InspectorTimelineAgent(pageAgent, domAgent, overlay, type, client));
     }
 
     virtual ~InspectorTimelineAgent();
@@ -251,7 +251,7 @@ private:
 
     friend class TimelineRecordStack;
 
-    InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorCompositeState*, InspectorType, InspectorClient*);
+    InspectorTimelineAgent(InspectorPageAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorType, InspectorClient*);
 
     // Trace event handlers
     void onBeginImplSideFrame(const TraceEventDispatcher::TraceEvent&);

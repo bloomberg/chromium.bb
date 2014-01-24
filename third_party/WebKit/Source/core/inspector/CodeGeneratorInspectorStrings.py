@@ -136,7 +136,6 @@ backend_h = (
 
 namespace WebCore {
 
-class InspectorAgent;
 class JSONObject;
 class JSONArray;
 class InspectorFrontendChannel;
@@ -215,7 +214,6 @@ backend_cpp = (
 #include "config.h"
 #include "InspectorBackendDispatcher.h"
 
-#include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/JSONParser.h"
 #include "platform/JSONValues.h"

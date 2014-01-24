@@ -31,12 +31,12 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptHost.h"
 
-#include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMStorageAgent.h"
 #include "core/inspector/InspectorDatabaseAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorInspectorAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "platform/JSONValues.h"
 
@@ -72,7 +72,7 @@ void InjectedScriptHost::disconnect()
 
 void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JSONValue> hints)
 {
-    if (InspectorAgent* inspectorAgent = m_instrumentingAgents ? m_instrumentingAgents->inspectorAgent() : 0) {
+    if (InspectorInspectorAgent* inspectorAgent = m_instrumentingAgents ? m_instrumentingAgents->inspectorInspectorAgent() : 0) {
         RefPtr<TypeBuilder::Runtime::RemoteObject> remoteObject = TypeBuilder::Runtime::RemoteObject::runtimeCast(object);
         inspectorAgent->inspect(remoteObject, hints->asObject());
     }

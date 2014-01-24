@@ -62,9 +62,10 @@ typedef String ErrorString;
 class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    InspectorConsoleAgent(InstrumentingAgents*, InspectorTimelineAgent*, InspectorCompositeState*, InjectedScriptManager*);
+    InspectorConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
 
+    virtual void init() OVERRIDE;
     virtual void enable(ErrorString*) OVERRIDE FINAL;
     virtual void disable(ErrorString*) OVERRIDE FINAL;
     virtual void clearMessages(ErrorString*) OVERRIDE;

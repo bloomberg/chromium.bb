@@ -582,8 +582,8 @@ static size_t vendorPrefixLowerCase(const CharType* string, size_t stringLength,
     return 0;
 }
 
-InspectorCSSAgent::InspectorCSSAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
-    : InspectorBaseAgent<InspectorCSSAgent>("CSS", instrumentingAgents, state)
+InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
+    : InspectorBaseAgent<InspectorCSSAgent>("CSS")
     , m_frontend(0)
     , m_domAgent(domAgent)
     , m_pageAgent(pageAgent)

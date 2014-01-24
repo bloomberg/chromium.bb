@@ -39,8 +39,8 @@
 
 namespace WebCore {
 
-PageConsoleAgent::PageConsoleAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent)
-    : InspectorConsoleAgent(instrumentingAgents, timelineAgent, state, injectedScriptManager)
+PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent)
+    : InspectorConsoleAgent(timelineAgent, injectedScriptManager)
     , m_inspectorDOMAgent(domAgent)
 {
 }

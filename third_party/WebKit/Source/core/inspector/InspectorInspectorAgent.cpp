@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorAgent.h"
+#include "core/inspector/InspectorInspectorAgent.h"
 
 #include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
+#include "core/frame/Frame.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
@@ -52,22 +52,21 @@ namespace InspectorAgentState {
 static const char inspectorAgentEnabled[] = "inspectorAgentEnabled";
 }
 
-InspectorAgent::InspectorAgent(Page* page, InjectedScriptManager* injectedScriptManager, InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
-    : InspectorBaseAgent<InspectorAgent>("Inspector", instrumentingAgents, state)
+InspectorInspectorAgent::InspectorInspectorAgent(Page* page, InjectedScriptManager* injectedScriptManager)
+    : InspectorBaseAgent<InspectorInspectorAgent>("Inspector")
     , m_inspectedPage(page)
     , m_frontend(0)
     , m_injectedScriptManager(injectedScriptManager)
 {
     ASSERT_ARG(page, page);
-    m_instrumentingAgents->setInspectorAgent(this);
 }
 
-InspectorAgent::~InspectorAgent()
+InspectorInspectorAgent::~InspectorInspectorAgent()
 {
-    m_instrumentingAgents->setInspectorAgent(0);
+    m_instrumentingAgents->setInspectorInspectorAgent(0);
 }
 
-void InspectorAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
+void InspectorInspectorAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* world)
 {
     if (world != mainThreadNormalWorld())
         return;
@@ -88,12 +87,17 @@ void InspectorAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorld* 
     frame->script().executeScriptInMainWorld(scriptSource.toString());
 }
 
-void InspectorAgent::setFrontend(InspectorFrontend* inspectorFrontend)
+void InspectorInspectorAgent::init()
+{
+    m_instrumentingAgents->setInspectorInspectorAgent(this);
+}
+
+void InspectorInspectorAgent::setFrontend(InspectorFrontend* inspectorFrontend)
 {
     m_frontend = inspectorFrontend;
 }
 
-void InspectorAgent::clearFrontend()
+void InspectorInspectorAgent::clearFrontend()
 {
     m_pendingEvaluateTestCommands.clear();
     m_frontend = 0;
@@ -102,7 +106,7 @@ void InspectorAgent::clearFrontend()
     disable(&error);
 }
 
-void InspectorAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+void InspectorInspectorAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
 {
     if (loader->frame() != frame->page()->mainFrame())
         return;
@@ -110,7 +114,7 @@ void InspectorAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
     m_injectedScriptManager->discardInjectedScripts();
 }
 
-void InspectorAgent::enable(ErrorString*)
+void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);
 
@@ -122,17 +126,17 @@ void InspectorAgent::enable(ErrorString*)
     m_pendingEvaluateTestCommands.clear();
 }
 
-void InspectorAgent::disable(ErrorString*)
+void InspectorInspectorAgent::disable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, false);
 }
 
-void InspectorAgent::reset(ErrorString*)
+void InspectorInspectorAgent::reset(ErrorString*)
 {
     m_inspectedPage->inspectorController().reconnectFrontend();
 }
 
-void InspectorAgent::domContentLoadedEventFired(Frame* frame)
+void InspectorInspectorAgent::domContentLoadedEventFired(Frame* frame)
 {
     if (frame->page()->mainFrame() != frame)
         return;
@@ -140,7 +144,7 @@ void InspectorAgent::domContentLoadedEventFired(Frame* frame)
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
-void InspectorAgent::evaluateForTestInFrontend(long callId, const String& script)
+void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const String& script)
 {
     if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled))
         m_frontend->inspector()->evaluateForTestInFrontend(static_cast<int>(callId), script);
@@ -148,12 +152,12 @@ void InspectorAgent::evaluateForTestInFrontend(long callId, const String& script
         m_pendingEvaluateTestCommands.append(pair<long, String>(callId, script));
 }
 
-void InspectorAgent::setInjectedScriptForOrigin(const String& origin, const String& source)
+void InspectorInspectorAgent::setInjectedScriptForOrigin(const String& origin, const String& source)
 {
     m_injectedScriptForOrigin.set(origin, source);
 }
 
-void InspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
+void InspectorInspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
 {
     if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled) && m_frontend) {
         m_frontend->inspector()->inspect(objectToInspect, hints);
@@ -166,4 +170,3 @@ void InspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> obje
 }
 
 } // namespace WebCore
-

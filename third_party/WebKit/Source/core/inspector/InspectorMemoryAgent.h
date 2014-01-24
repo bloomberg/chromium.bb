@@ -44,9 +44,9 @@ typedef String ErrorString;
 class InspectorMemoryAgent FINAL : public InspectorBaseAgent<InspectorMemoryAgent>, public InspectorBackendDispatcher::MemoryCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:
-    static PassOwnPtr<InspectorMemoryAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
+    static PassOwnPtr<InspectorMemoryAgent> create()
     {
-        return adoptPtr(new InspectorMemoryAgent(instrumentingAgents, state));
+        return adoptPtr(new InspectorMemoryAgent());
     }
     virtual ~InspectorMemoryAgent();
 
@@ -56,7 +56,7 @@ public:
     virtual void clearFrontend() OVERRIDE;
 
 private:
-    InspectorMemoryAgent(InstrumentingAgents*, InspectorCompositeState*);
+    InspectorMemoryAgent();
 
     InspectorFrontend::Memory* m_frontend;
 };

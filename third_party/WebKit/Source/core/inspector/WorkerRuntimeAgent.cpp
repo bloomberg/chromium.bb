@@ -42,17 +42,21 @@
 
 namespace WebCore {
 
-WorkerRuntimeAgent::WorkerRuntimeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* workerGlobalScope)
-    : InspectorRuntimeAgent(instrumentingAgents, state, injectedScriptManager, scriptDebugServer)
+WorkerRuntimeAgent::WorkerRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* workerGlobalScope)
+    : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer)
     , m_workerGlobalScope(workerGlobalScope)
     , m_paused(false)
 {
-    m_instrumentingAgents->setWorkerRuntimeAgent(this);
 }
 
 WorkerRuntimeAgent::~WorkerRuntimeAgent()
 {
     m_instrumentingAgents->setWorkerRuntimeAgent(0);
+}
+
+void WorkerRuntimeAgent::init()
+{
+    m_instrumentingAgents->setWorkerRuntimeAgent(this);
 }
 
 InjectedScript WorkerRuntimeAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)

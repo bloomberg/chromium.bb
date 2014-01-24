@@ -40,11 +40,13 @@ class WorkerGlobalScope;
 
 class WorkerRuntimeAgent FINAL : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtr<WorkerRuntimeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* context)
+    static PassOwnPtr<WorkerRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* context)
     {
-        return adoptPtr(new WorkerRuntimeAgent(instrumentingAgents, state, injectedScriptManager, scriptDebugServer, context));
+        return adoptPtr(new WorkerRuntimeAgent(injectedScriptManager, scriptDebugServer, context));
     }
     virtual ~WorkerRuntimeAgent();
+
+    virtual void init() OVERRIDE;
 
     // Protocol commands.
     virtual void run(ErrorString*) OVERRIDE;
@@ -52,7 +54,7 @@ public:
     void willEvaluateWorkerScript(WorkerGlobalScope*, int workerThreadStartMode);
 
 private:
-    WorkerRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, ScriptDebugServer*, WorkerGlobalScope*);
+    WorkerRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*, WorkerGlobalScope*);
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
     virtual void muteConsole() OVERRIDE;
     virtual void unmuteConsole() OVERRIDE;

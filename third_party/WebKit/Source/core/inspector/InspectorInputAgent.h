@@ -45,9 +45,9 @@ typedef String ErrorString;
 class InspectorInputAgent FINAL : public InspectorBaseAgent<InspectorInputAgent>, public InspectorBackendDispatcher::InputCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 public:
-    static PassOwnPtr<InspectorInputAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, Page* page, InspectorClient* client)
+    static PassOwnPtr<InspectorInputAgent> create(Page* page, InspectorClient* client)
     {
-        return adoptPtr(new InspectorInputAgent(instrumentingAgents, inspectorState, page, client));
+        return adoptPtr(new InspectorInputAgent(page, client));
     }
 
     virtual ~InspectorInputAgent();
@@ -58,7 +58,7 @@ public:
     virtual void dispatchTouchEvent(ErrorString*, const String& type, const RefPtr<JSONArray>& touchPoints, const int* modifiers, const double* timestamp) OVERRIDE;
     virtual void dispatchGestureEvent(ErrorString*, const String& type, int x, int y, const double* timestamp, const int* deltaX, const int* deltaY, const double* scale) OVERRIDE;
 private:
-    InspectorInputAgent(InstrumentingAgents*, InspectorCompositeState*, Page*, InspectorClient*);
+    InspectorInputAgent(Page*, InspectorClient*);
 
     Page* m_page;
     InspectorClient* m_client;

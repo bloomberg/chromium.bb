@@ -85,6 +85,7 @@ public:
 
     virtual void canSetScriptSource(ErrorString*, bool* result) OVERRIDE FINAL { *result = true; }
 
+    virtual void init() OVERRIDE FINAL;
     virtual void setFrontend(InspectorFrontend*) OVERRIDE FINAL;
     virtual void clearFrontend() OVERRIDE FINAL;
     virtual void restore() OVERRIDE FINAL;
@@ -184,7 +185,7 @@ public:
     virtual SkipPauseRequest shouldSkipStepPause(RefPtr<JavaScriptCallFrame>& topFrame) OVERRIDE FINAL;
 
 protected:
-    InspectorDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
+    explicit InspectorDebuggerAgent(InjectedScriptManager*);
 
     virtual void startListeningScriptDebugServer() = 0;
     virtual void stopListeningScriptDebugServer() = 0;

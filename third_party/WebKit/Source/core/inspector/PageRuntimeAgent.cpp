@@ -51,19 +51,23 @@ namespace PageRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-PageRuntimeAgent::PageRuntimeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
-    : InspectorRuntimeAgent(instrumentingAgents, state, injectedScriptManager, scriptDebugServer)
+PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
+    : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer)
     , m_inspectedPage(page)
     , m_pageAgent(pageAgent)
     , m_frontend(0)
     , m_mainWorldContextCreated(false)
 {
-    m_instrumentingAgents->setPageRuntimeAgent(this);
 }
 
 PageRuntimeAgent::~PageRuntimeAgent()
 {
     m_instrumentingAgents->setPageRuntimeAgent(0);
+}
+
+void PageRuntimeAgent::init()
+{
+    m_instrumentingAgents->setPageRuntimeAgent(this);
 }
 
 void PageRuntimeAgent::setFrontend(InspectorFrontend* frontend)

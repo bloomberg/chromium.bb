@@ -53,7 +53,7 @@ typedef String ErrorString;
 class InspectorProfilerAgent FINAL : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtr<InspectorProfilerAgent> create(InjectedScriptManager*, InspectorOverlay*);
     virtual ~InspectorProfilerAgent();
 
     void consoleProfile(const String& title, ScriptState*);
@@ -75,7 +75,7 @@ public:
     void didLeaveNestedRunLoop();
 
 private:
-    InspectorProfilerAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
+    InspectorProfilerAgent(InjectedScriptManager*, InspectorOverlay*);
     bool enabled();
     void doEnable();
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);

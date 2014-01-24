@@ -68,8 +68,8 @@ static bool hadException(ExceptionState& exceptionState, ErrorString* errorStrin
     }
 }
 
-InspectorDOMStorageAgent::InspectorDOMStorageAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorCompositeState* state)
-    : InspectorBaseAgent<InspectorDOMStorageAgent>("DOMStorage", instrumentingAgents, state)
+InspectorDOMStorageAgent::InspectorDOMStorageAgent(InspectorPageAgent* pageAgent)
+    : InspectorBaseAgent<InspectorDOMStorageAgent>("DOMStorage")
     , m_pageAgent(pageAgent)
     , m_frontend(0)
 {

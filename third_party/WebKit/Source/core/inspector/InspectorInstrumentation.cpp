@@ -33,11 +33,11 @@
 
 #include "core/events/EventTarget.h"
 #include "core/fetch/FetchInitiatorInfo.h"
-#include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorInspectorAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorTimelineAgent.h"
@@ -134,7 +134,7 @@ void willDestroyResourceImpl(Resource* cachedResource)
 
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
 {
-    if (InspectorAgent* inspectorAgent = instrumentingAgents->inspectorAgent())
+    if (InspectorInspectorAgent* inspectorAgent = instrumentingAgents->inspectorInspectorAgent())
         return inspectorAgent->hasFrontend();
     return false;
 }

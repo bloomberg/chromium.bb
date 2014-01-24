@@ -596,9 +596,9 @@ bool DeleteEntryRequest::didDeleteEntry()
 } // anonymous namespace
 
 // static
-PassOwnPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorCompositeState* state)
+PassOwnPtr<InspectorFileSystemAgent> InspectorFileSystemAgent::create(InspectorPageAgent* pageAgent)
 {
-    return adoptPtr(new InspectorFileSystemAgent(instrumentingAgents, pageAgent, state));
+    return adoptPtr(new InspectorFileSystemAgent(pageAgent));
 }
 
 InspectorFileSystemAgent::~InspectorFileSystemAgent()
@@ -696,13 +696,11 @@ void InspectorFileSystemAgent::restore()
     m_enabled = m_state->getBoolean(FileSystemAgentState::fileSystemAgentEnabled);
 }
 
-InspectorFileSystemAgent::InspectorFileSystemAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorCompositeState* state)
-    : InspectorBaseAgent<InspectorFileSystemAgent>("FileSystem", instrumentingAgents, state)
+InspectorFileSystemAgent::InspectorFileSystemAgent(InspectorPageAgent* pageAgent)
+    : InspectorBaseAgent<InspectorFileSystemAgent>("FileSystem")
     , m_pageAgent(pageAgent)
     , m_enabled(false)
 {
-    ASSERT(instrumentingAgents);
-    ASSERT(state);
     ASSERT(m_pageAgent);
 }
 

@@ -53,9 +53,9 @@ typedef String ErrorString;
 
 class InspectorLayerTreeAgent FINAL : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
-    static PassOwnPtr<InspectorLayerTreeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, Page* page)
+    static PassOwnPtr<InspectorLayerTreeAgent> create(InspectorDOMAgent* domAgent, Page* page)
     {
-        return adoptPtr(new InspectorLayerTreeAgent(instrumentingAgents, state, domAgent, page));
+        return adoptPtr(new InspectorLayerTreeAgent(domAgent, page));
     }
     virtual ~InspectorLayerTreeAgent();
 
@@ -79,7 +79,7 @@ public:
 private:
     static unsigned s_lastSnapshotId;
 
-    InspectorLayerTreeAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorDOMAgent*, Page*);
+    InspectorLayerTreeAgent(InspectorDOMAgent*, Page*);
 
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);

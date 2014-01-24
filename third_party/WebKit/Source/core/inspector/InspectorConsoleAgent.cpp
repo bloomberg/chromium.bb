@@ -62,8 +62,8 @@ static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 
 int InspectorConsoleAgent::s_enabledAgentCount = 0;
 
-InspectorConsoleAgent::InspectorConsoleAgent(InstrumentingAgents* instrumentingAgents, InspectorTimelineAgent* timelineAgent, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager)
-    : InspectorBaseAgent<InspectorConsoleAgent>("Console", instrumentingAgents, state)
+InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
+    : InspectorBaseAgent<InspectorConsoleAgent>("Console")
     , m_timelineAgent(timelineAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_frontend(0)
@@ -71,7 +71,6 @@ InspectorConsoleAgent::InspectorConsoleAgent(InstrumentingAgents* instrumentingA
     , m_expiredConsoleMessageCount(0)
     , m_enabled(false)
 {
-    m_instrumentingAgents->setInspectorConsoleAgent(this);
 }
 
 InspectorConsoleAgent::~InspectorConsoleAgent()
@@ -80,6 +79,11 @@ InspectorConsoleAgent::~InspectorConsoleAgent()
     m_instrumentingAgents = 0;
     m_state = 0;
     m_injectedScriptManager = 0;
+}
+
+void InspectorConsoleAgent::init()
+{
+    m_instrumentingAgents->setInspectorConsoleAgent(this);
 }
 
 void InspectorConsoleAgent::enable(ErrorString*)

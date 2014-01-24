@@ -94,15 +94,16 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
     , m_debugServer(adoptPtr(new WorkerScriptDebugServer(workerGlobalScope, WorkerDebuggerAgent::debuggerTaskMode)))
+    , m_agents(m_instrumentingAgents.get(), m_state.get())
 {
-    m_agents.append(WorkerRuntimeAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope));
+    m_agents.append(WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope));
 
-    OwnPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(m_instrumentingAgents.get(), 0, 0, 0, m_state.get(), InspectorTimelineAgent::WorkerInspector, 0);
-    m_agents.append(WorkerDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get()));
+    OwnPtr<InspectorTimelineAgent> timelineAgent = InspectorTimelineAgent::create(0, 0, 0, InspectorTimelineAgent::WorkerInspector, 0);
+    m_agents.append(WorkerDebuggerAgent::create(m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get()));
 
-    m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), 0));
-    m_agents.append(InspectorHeapProfilerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get()));
-    m_agents.append(WorkerConsoleAgent::create(m_instrumentingAgents.get(), timelineAgent.get(), m_state.get(), m_injectedScriptManager.get()));
+    m_agents.append(InspectorProfilerAgent::create(m_injectedScriptManager.get(), 0));
+    m_agents.append(InspectorHeapProfilerAgent::create(m_injectedScriptManager.get()));
+    m_agents.append(WorkerConsoleAgent::create(timelineAgent.get(), m_injectedScriptManager.get()));
     m_agents.append(timelineAgent.release());
 
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), m_debugServer.get());

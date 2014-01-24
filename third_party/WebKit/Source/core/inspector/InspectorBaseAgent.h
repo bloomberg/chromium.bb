@@ -43,11 +43,12 @@ class InspectorCompositeState;
 class InspectorState;
 class InstrumentingAgents;
 
-class InspectorBaseAgentInterface {
+class InspectorAgent {
 public:
-    InspectorBaseAgentInterface(const String&, InstrumentingAgents*, InspectorCompositeState*);
-    virtual ~InspectorBaseAgentInterface();
+    explicit InspectorAgent(const String&);
+    virtual ~InspectorAgent();
 
+    virtual void init() { }
     virtual void setFrontend(InspectorFrontend*) { }
     virtual void clearFrontend() { }
     virtual void restore() { }
@@ -55,6 +56,7 @@ public:
     virtual void discardAgent() { }
 
     String name() { return m_name; }
+    void appended(InstrumentingAgents*, InspectorState*);
 
 protected:
     InstrumentingAgents* m_instrumentingAgents;
@@ -66,7 +68,8 @@ private:
 
 class InspectorAgentRegistry {
 public:
-    void append(PassOwnPtr<InspectorBaseAgentInterface>);
+    InspectorAgentRegistry(InstrumentingAgents*, InspectorCompositeState*);
+    void append(PassOwnPtr<InspectorAgent>);
 
     void setFrontend(InspectorFrontend*);
     void clearFrontend();
@@ -75,11 +78,13 @@ public:
     void discardAgents();
 
 private:
-    Vector<OwnPtr<InspectorBaseAgentInterface> > m_agents;
+    InstrumentingAgents* m_instrumentingAgents;
+    InspectorCompositeState* m_inspectorState;
+    Vector<OwnPtr<InspectorAgent> > m_agents;
 };
 
 template<typename T>
-class InspectorBaseAgent : public InspectorBaseAgentInterface {
+class InspectorBaseAgent : public InspectorAgent {
 public:
     virtual ~InspectorBaseAgent() { }
 
@@ -89,8 +94,7 @@ public:
     }
 
 protected:
-    InspectorBaseAgent(const String& name, InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState)
-        : InspectorBaseAgentInterface(name, instrumentingAgents, inspectorState)
+    InspectorBaseAgent(const String& name) : InspectorAgent(name)
     {
     }
 };

@@ -43,7 +43,7 @@ class SecurityOrigin;
 
 class InspectorFileSystemAgent FINAL : public InspectorBaseAgent<InspectorFileSystemAgent>, public InspectorBackendDispatcher::FileSystemCommandHandler {
 public:
-    static PassOwnPtr<InspectorFileSystemAgent> create(InstrumentingAgents*, InspectorPageAgent*, InspectorCompositeState*);
+    static PassOwnPtr<InspectorFileSystemAgent> create(InspectorPageAgent*);
     virtual ~InspectorFileSystemAgent();
 
     virtual void enable(ErrorString*) OVERRIDE;
@@ -59,7 +59,7 @@ public:
     virtual void restore() OVERRIDE;
 
 private:
-    InspectorFileSystemAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorCompositeState*);
+    InspectorFileSystemAgent(InspectorPageAgent*);
     bool assertEnabled(ErrorString*);
     ExecutionContext* assertExecutionContextForOrigin(ErrorString*, SecurityOrigin*);
 

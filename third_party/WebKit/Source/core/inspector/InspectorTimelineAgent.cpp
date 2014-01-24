@@ -1116,8 +1116,8 @@ void InspectorTimelineAgent::unwindRecordStack()
     }
 }
 
-InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
-    : InspectorBaseAgent<InspectorTimelineAgent>("Timeline", instrumentingAgents, state)
+InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
+    : InspectorBaseAgent<InspectorTimelineAgent>("Timeline")
     , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
     , m_frontend(0)

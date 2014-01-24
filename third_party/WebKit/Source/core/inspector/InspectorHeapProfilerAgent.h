@@ -51,7 +51,7 @@ typedef String ErrorString;
 class InspectorHeapProfilerAgent FINAL : public InspectorBaseAgent<InspectorHeapProfilerAgent>, public InspectorBackendDispatcher::HeapProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<InspectorHeapProfilerAgent> create(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
+    static PassOwnPtr<InspectorHeapProfilerAgent> create(InjectedScriptManager*);
     virtual ~InspectorHeapProfilerAgent();
 
     virtual void collectGarbage(ErrorString*) OVERRIDE;
@@ -77,7 +77,7 @@ private:
     class HeapStatsStream;
     class HeapStatsUpdateTask;
 
-    InspectorHeapProfilerAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
+    explicit InspectorHeapProfilerAgent(InjectedScriptManager*);
 
     typedef HashMap<unsigned, RefPtr<ScriptHeapSnapshot> > IdToHeapSnapshotMap;
 

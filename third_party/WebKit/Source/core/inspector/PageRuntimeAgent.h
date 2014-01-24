@@ -44,11 +44,12 @@ class SecurityOrigin;
 
 class PageRuntimeAgent FINAL : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtr<PageRuntimeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
+    static PassOwnPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
     {
-        return adoptPtr(new PageRuntimeAgent(instrumentingAgents, state, injectedScriptManager, scriptDebugServer, page, pageAgent));
+        return adoptPtr(new PageRuntimeAgent(injectedScriptManager, scriptDebugServer, page, pageAgent));
     }
     virtual ~PageRuntimeAgent();
+    virtual void init() OVERRIDE;
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
@@ -59,7 +60,7 @@ public:
     void didCreateIsolatedContext(Frame*, ScriptState*, SecurityOrigin*);
 
 private:
-    PageRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, ScriptDebugServer*, Page*, InspectorPageAgent*);
+    PageRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*, Page*, InspectorPageAgent*);
 
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
     virtual void muteConsole() OVERRIDE;

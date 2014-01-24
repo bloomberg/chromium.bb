@@ -73,6 +73,8 @@ public:
     static PassOwnPtr<InspectorController> create(Page*, InspectorClient*);
     void inspectedPageDestroyed();
 
+    void registerModuleAgent(PassOwnPtr<InspectorAgent>);
+
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);

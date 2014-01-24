@@ -48,9 +48,9 @@ typedef String ErrorString;
 
 class InspectorDOMStorageAgent FINAL : public InspectorBaseAgent<InspectorDOMStorageAgent>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
 public:
-    static PassOwnPtr<InspectorDOMStorageAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorCompositeState* state)
+    static PassOwnPtr<InspectorDOMStorageAgent> create(InspectorPageAgent* pageAgent)
     {
-        return adoptPtr(new InspectorDOMStorageAgent(instrumentingAgents, pageAgent, state));
+        return adoptPtr(new InspectorDOMStorageAgent(pageAgent));
     }
     virtual ~InspectorDOMStorageAgent();
 
@@ -73,7 +73,7 @@ public:
 
 private:
 
-    InspectorDOMStorageAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorCompositeState*);
+    InspectorDOMStorageAgent(InspectorPageAgent*);
 
     bool isEnabled() const;
     PassOwnPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, Frame*&);

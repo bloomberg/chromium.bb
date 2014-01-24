@@ -27,8 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorAgent_h
-#define InspectorAgent_h
+#ifndef InspectorInspectorAgent_h
+#define InspectorInspectorAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/HashMap.h"
@@ -48,21 +48,22 @@ class Page;
 
 typedef String ErrorString;
 
-class InspectorAgent FINAL : public InspectorBaseAgent<InspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
-    WTF_MAKE_NONCOPYABLE(InspectorAgent);
+class InspectorInspectorAgent FINAL : public InspectorBaseAgent<InspectorInspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
+    WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:
-    static PassOwnPtr<InspectorAgent> create(Page* page, InjectedScriptManager* injectedScriptManager, InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
+    static PassOwnPtr<InspectorInspectorAgent> create(Page* page, InjectedScriptManager* injectedScriptManager)
     {
-        return adoptPtr(new InspectorAgent(page, injectedScriptManager, instrumentingAgents, state));
+        return adoptPtr(new InspectorInspectorAgent(page, injectedScriptManager));
     }
 
-    virtual ~InspectorAgent();
+    virtual ~InspectorInspectorAgent();
 
     // Inspector front-end API.
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     virtual void reset(ErrorString*) OVERRIDE;
 
+    virtual void init() OVERRIDE;
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
 
@@ -81,7 +82,7 @@ public:
     void inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints);
 
 private:
-    InspectorAgent(Page*, InjectedScriptManager*, InstrumentingAgents*, InspectorCompositeState*);
+    InspectorInspectorAgent(Page*, InjectedScriptManager*);
 
     Page* m_inspectedPage;
     InspectorFrontend* m_frontend;
@@ -95,4 +96,4 @@ private:
 
 } // namespace WebCore
 
-#endif // !defined(InspectorAgent_h)
+#endif // !defined(InspectorInspectorAgent_h)

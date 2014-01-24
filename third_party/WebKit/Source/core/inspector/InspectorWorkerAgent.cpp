@@ -105,21 +105,25 @@ private:
 
 int InspectorWorkerAgent::WorkerFrontendChannel::s_nextId = 1;
 
-PassOwnPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState)
+PassOwnPtr<InspectorWorkerAgent> InspectorWorkerAgent::create()
 {
-    return adoptPtr(new InspectorWorkerAgent(instrumentingAgents, inspectorState));
+    return adoptPtr(new InspectorWorkerAgent());
 }
 
-InspectorWorkerAgent::InspectorWorkerAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState)
-    : InspectorBaseAgent<InspectorWorkerAgent>("Worker", instrumentingAgents, inspectorState)
+InspectorWorkerAgent::InspectorWorkerAgent()
+    : InspectorBaseAgent<InspectorWorkerAgent>("Worker")
     , m_inspectorFrontend(0)
 {
-    m_instrumentingAgents->setInspectorWorkerAgent(this);
 }
 
 InspectorWorkerAgent::~InspectorWorkerAgent()
 {
     m_instrumentingAgents->setInspectorWorkerAgent(0);
+}
+
+void InspectorWorkerAgent::init()
+{
+    m_instrumentingAgents->setInspectorWorkerAgent(this);
 }
 
 void InspectorWorkerAgent::setFrontend(InspectorFrontend* frontend)

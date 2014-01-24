@@ -217,10 +217,14 @@ void InspectorDatabaseAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
     m_resources.clear();
 }
 
-InspectorDatabaseAgent::InspectorDatabaseAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
-    : InspectorBaseAgent<InspectorDatabaseAgent>("Database", instrumentingAgents, state)
+InspectorDatabaseAgent::InspectorDatabaseAgent()
+    : InspectorBaseAgent<InspectorDatabaseAgent>("Database")
     , m_frontend(0)
     , m_enabled(false)
+{
+}
+
+void InspectorDatabaseAgent::init()
 {
     m_instrumentingAgents->setInspectorDatabaseAgent(this);
 }

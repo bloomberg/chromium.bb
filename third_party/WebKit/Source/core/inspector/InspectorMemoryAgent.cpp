@@ -47,8 +47,8 @@ void InspectorMemoryAgent::getDOMCounters(ErrorString*, int* documents, int* nod
     *jsEventListeners = InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter);
 }
 
-InspectorMemoryAgent::InspectorMemoryAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
-    : InspectorBaseAgent<InspectorMemoryAgent>("Memory", instrumentingAgents, state)
+InspectorMemoryAgent::InspectorMemoryAgent()
+    : InspectorBaseAgent<InspectorMemoryAgent>("Memory")
     , m_frontend(0)
 {
 }

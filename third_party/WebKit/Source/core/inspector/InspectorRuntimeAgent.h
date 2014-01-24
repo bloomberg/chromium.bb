@@ -79,7 +79,7 @@ public:
     virtual void run(ErrorString*) OVERRIDE;
 
 protected:
-    InspectorRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, ScriptDebugServer*);
+    InspectorRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*);
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
 
     virtual void muteConsole() = 0;
