@@ -82,12 +82,15 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
 
   InstantSearchPrerenderer* prerenderer =
       GetInstantSearchPrerenderer(profile());
-  if (prerenderer &&
-      prerenderer->CanCommitQuery(GetActiveWebContents(), search_terms)) {
-    // Submit query to render the prefetched results. Browser will swap the
-    // prerendered contents with the active tab contents.
-    prerenderer->Commit(search_terms);
-    return false;
+  if (prerenderer) {
+    if (prerenderer->CanCommitQuery(GetActiveWebContents(), search_terms)) {
+      // Submit query to render the prefetched results. Browser will swap the
+      // prerendered contents with the active tab contents.
+      prerenderer->Commit(search_terms);
+      return false;
+    } else {
+      prerenderer->Cancel();
+    }
   }
 
   return instant_.SubmitQuery(search_terms);

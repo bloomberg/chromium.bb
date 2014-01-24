@@ -145,6 +145,10 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile);
 // prefetch high-confidence search suggestions.
 bool ShouldPrefetchSearchResults();
 
+// Returns true if 'reuse_instant_search_base_page' flag is set to true in field
+// trials to reuse the prerendered page to commit any search query.
+bool ShouldReuseInstantSearchBasePage();
+
 // Returns the Local Instant URL of the New Tab Page.
 // TODO(kmadhusu): Remove this function and update the call sites.
 GURL GetLocalInstantURL(Profile* profile);

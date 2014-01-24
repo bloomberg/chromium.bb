@@ -161,8 +161,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch",
-        "Group1 strk:20 use_cacheable_ntp:1 prefetch_results:1"));
+        "EmbeddedSearch", "Group1 strk:20 prefetch_results:1"));
     InstantUnitTestBase::SetUp();
   }
 
@@ -400,4 +399,48 @@ TEST_F(InstantSearchPrerendererTest,
   EXPECT_NE(GetPrerenderURL(), GetActiveWebContents()->GetURL());
   EXPECT_EQ(url, GetActiveWebContents()->GetURL());
   EXPECT_EQ(static_cast<PrerenderHandle*>(NULL), prerender_handle());
+}
+
+class ReuseInstantSearchBasePageTest : public InstantSearchPrerendererTest {
+  public:
+   ReuseInstantSearchBasePageTest() {}
+
+  protected:
+   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "EmbeddedSearch",
+        "Group1 strk:20 prefetch_results:1 reuse_instant_search_base_page:1"));
+    InstantUnitTestBase::SetUp();
+   }
+};
+
+TEST_F(ReuseInstantSearchBasePageTest, CanCommitQuery) {
+  Init(true, true);
+  InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
+  base::string16 query = ASCIIToUTF16("flowers");
+  prerenderer->Prerender(InstantSuggestion(query, std::string()));
+  EXPECT_TRUE(prerenderer->CanCommitQuery(GetActiveWebContents(), query));
+
+  // When the Instant search base page has finished loading,
+  // InstantSearchPrerenderer can commit any search query to the prerendered
+  // page (even if it doesn't match the last known suggestion query).
+  EXPECT_TRUE(prerenderer->CanCommitQuery(GetActiveWebContents(),
+                                           ASCIIToUTF16("joy")));
+  // Invalid search query committed.
+  EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(),
+                                           base::string16()));
+}
+
+TEST_F(ReuseInstantSearchBasePageTest,
+       CanCommitQuery_InstantSearchBasePageLoadInProgress) {
+  Init(true, false);
+  InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
+  base::string16 query = ASCIIToUTF16("flowers");
+  prerenderer->Prerender(InstantSuggestion(query, std::string()));
+
+  // When the Instant search base page hasn't finished loading,
+  // InstantSearchPrerenderer cannot commit any search query to the base page.
+  EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(), query));
+  EXPECT_FALSE(prerenderer->CanCommitQuery(GetActiveWebContents(),
+                                           ASCIIToUTF16("joy")));
 }

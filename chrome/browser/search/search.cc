@@ -61,6 +61,11 @@ const uint64 kEmbeddedPageVersionDefault = 2;
 const char kHideVerbatimFlagName[] = "hide_verbatim";
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
+
+// Controls whether to reuse prerendered Instant Search base page to commit any
+// search query.
+const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
+
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
 const char kOriginChipFlagName[] = "origin_chip";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
@@ -476,6 +481,15 @@ bool ShouldPrefetchSearchResults() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrefetchSearchResultsFlagName, false, flags);
+}
+
+bool ShouldReuseInstantSearchBasePage() {
+  if (!ShouldPrefetchSearchResults())
+    return false;
+
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
+      kReuseInstantSearchBasePage, false, flags);
 }
 
 GURL GetLocalInstantURL(Profile* profile) {

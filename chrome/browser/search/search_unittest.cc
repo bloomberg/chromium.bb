@@ -675,6 +675,32 @@ TEST_F(SearchTest, ShouldPrefetchSearchResults_EnabledViaFinch) {
   EXPECT_EQ(80ul, EmbeddedSearchPageVersion());
 }
 
+TEST_F(SearchTest,
+       ShouldReuseInstantSearchBasePage_PrefetchResultsFlagDisabled) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 espv:89 prefetch_results:0 reuse_instant_search_base_page:1"));
+  EXPECT_FALSE(ShouldPrefetchSearchResults());
+  EXPECT_FALSE(ShouldReuseInstantSearchBasePage());
+  EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_EnabledViaFinch) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 espv:89 prefetch_results:1 reuse_instant_search_base_page:1"));
+  EXPECT_TRUE(ShouldReuseInstantSearchBasePage());
+  EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
+}
+
+TEST_F(SearchTest, ShouldReuseInstantSearchBasePage_DisabledViaFinch) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 espv:89 prefetch_results:1 reuse_instant_search_base_page:0"));
+  EXPECT_FALSE(ShouldReuseInstantSearchBasePage());
+  EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
+}
+
 TEST_F(SearchTest, IsNTPURL) {
   GURL invalid_url;
   GURL ntp_url(chrome::kChromeUINewTabURL);

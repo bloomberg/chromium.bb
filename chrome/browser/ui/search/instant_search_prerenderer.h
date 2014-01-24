@@ -59,7 +59,8 @@ class InstantSearchPrerenderer {
   // Tells the Instant search base page to prerender |suggestion|.
   void Prerender(const InstantSuggestion& suggestion);
 
-  // Tells the Instant search base page to render the prefetched search results.
+  // Tells the Instant search base page to render the search results for the
+  // given |query|.
   void Commit(const base::string16& query);
 
   // Returns true if the prerendered page can be used to process the search for
@@ -85,6 +86,10 @@ class InstantSearchPrerenderer {
   friend class InstantSearchPrerendererTest;
 
   content::WebContents* prerender_contents() const;
+
+  // Returns true if the |query| matches the last prefetched search query or if
+  // the 'reuse_instant_search_base_page' flag is enabled in the field trials.
+  bool QueryMatchesPrefetch(const base::string16& query) const;
 
   Profile* const profile_;
 
