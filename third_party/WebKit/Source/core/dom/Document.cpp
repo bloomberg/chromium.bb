@@ -1529,6 +1529,9 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 
 void Document::scheduleStyleRecalc()
 {
+    if (!isActive())
+        return;
+
     if (shouldDisplaySeamlesslyWithParent()) {
         // When we're seamless, our parent document manages our style recalcs.
         ownerElement()->setNeedsStyleRecalc();
@@ -1536,7 +1539,7 @@ void Document::scheduleStyleRecalc()
         return;
     }
 
-    if (m_styleRecalcTimer.isActive())
+    if (m_styleRecalcTimer.isActive() || !shouldScheduleLayout())
         return;
 
     ASSERT(needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty());

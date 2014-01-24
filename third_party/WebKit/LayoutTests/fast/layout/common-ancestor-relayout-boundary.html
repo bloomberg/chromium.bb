@@ -22,9 +22,6 @@ function dirtyLayout()
     }
 }
 
-if (window.internals)
-    shouldBe("window.internals.needsLayoutCount()", "2");
-
 document.documentElement.offsetTop;
 
 // Pass quiet=true here so that the added nodes from the shouldBe don't
