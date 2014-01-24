@@ -13,18 +13,18 @@ namespace cc {
 scoped_refptr<FakePaintedScrollbarLayer> FakePaintedScrollbarLayer::Create(
     bool paint_during_update,
     bool has_thumb,
-    Layer* scrolling_layer) {
+    int scrolling_layer_id) {
   FakeScrollbar* fake_scrollbar = new FakeScrollbar(
       paint_during_update, has_thumb, false);
   return make_scoped_refptr(new FakePaintedScrollbarLayer(
-      fake_scrollbar, scrolling_layer));
+      fake_scrollbar, scrolling_layer_id));
 }
 
 FakePaintedScrollbarLayer::FakePaintedScrollbarLayer(
     FakeScrollbar* fake_scrollbar,
-    Layer* scrolling_layer)
+    int scrolling_layer_id)
     : PaintedScrollbarLayer(scoped_ptr<Scrollbar>(fake_scrollbar).Pass(),
-                            scrolling_layer),
+                            scrolling_layer_id),
       update_count_(0),
       push_properties_count_(0),
       fake_scrollbar_(fake_scrollbar) {

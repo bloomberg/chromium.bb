@@ -1090,7 +1090,7 @@ class LayerTreeHostContextTestDontUseLostResources
 
     scoped_refptr<PaintedScrollbarLayer> scrollbar =
         PaintedScrollbarLayer::Create(
-            scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(), content.get());
+            scoped_ptr<Scrollbar>(new FakeScrollbar).Pass(), content->id());
     scrollbar->SetBounds(gfx::Size(10, 10));
     scrollbar->SetAnchorPoint(gfx::PointF());
     scrollbar->SetIsDrawable(true);
@@ -1455,8 +1455,8 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
 
   virtual void BeginTest() OVERRIDE {
     scoped_refptr<Layer> scroll_layer = Layer::Create();
-    scrollbar_layer_ = FakePaintedScrollbarLayer::Create(
-        false, true, scroll_layer.get());
+    scrollbar_layer_ =
+        FakePaintedScrollbarLayer::Create(false, true, scroll_layer->id());
     scrollbar_layer_->SetBounds(gfx::Size(10, 100));
     layer_tree_host()->root_layer()->AddChild(scrollbar_layer_);
     layer_tree_host()->root_layer()->AddChild(scroll_layer);

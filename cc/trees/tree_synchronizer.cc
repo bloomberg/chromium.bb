@@ -25,13 +25,6 @@ void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,
   if (!layer_impl)
     return;
 
-  layer_impl->ClearScrollbars();
-  if (ScrollbarLayerImplBase* scrollbar_layer =
-          layer_impl->ToScrollbarLayer()) {
-    scrollbar_layer->ClearClipLayer();
-    scrollbar_layer->ClearScrollLayer();
-  }
-
   OwnedLayerImplList& children = layer_impl->children();
   for (OwnedLayerImplList::iterator it = children.begin();
        it != children.end();
@@ -119,6 +112,11 @@ scoped_ptr<LayerImpl> SynchronizeTreesRecursiveInternal(
   layer_impl->SetReplicaLayer(SynchronizeTreesRecursiveInternal(
       new_layers, old_layers, layer->replica_layer(), tree_impl));
 
+  // Remove all dangling pointers. The pointers will be setup later in
+  // UpdateScrollbarLayerPointersRecursive phase
+  layer_impl->SetHorizontalScrollbarLayer(NULL);
+  layer_impl->SetVerticalScrollbarLayer(NULL);
+
   return layer_impl.Pass();
 }
 
@@ -162,9 +160,17 @@ void UpdateScrollbarLayerPointersRecursiveInternal(
       iter != new_layers->end()
           ? static_cast<ScrollbarLayerImplBase*>(iter->second)
           : NULL;
-  DCHECK(scrollbar_layer_impl);
+  iter = new_layers->find(scrollbar_layer->ScrollLayerId());
+  LayerImpl* scroll_layer_impl =
+      iter != new_layers->end() ? iter->second : NULL;
 
-  scrollbar_layer->PushScrollClipPropertiesTo(scrollbar_layer_impl);
+  DCHECK(scrollbar_layer_impl);
+  DCHECK(scroll_layer_impl);
+
+  if (scrollbar_layer->orientation() == HORIZONTAL)
+    scroll_layer_impl->SetHorizontalScrollbarLayer(scrollbar_layer_impl);
+  else
+    scroll_layer_impl->SetVerticalScrollbarLayer(scrollbar_layer_impl);
 }
 
 void UpdateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap* new_layers,
@@ -199,8 +205,6 @@ void TreeSynchronizer::PushPropertiesInternal(
 
   if (push_layer)
     layer->PushPropertiesTo(layer_impl);
-  else if (layer->ToScrollbarLayer())
-    layer->ToScrollbarLayer()->PushScrollClipPropertiesTo(layer_impl);
 
   size_t num_dependents_need_push_properties = 0;
   if (recurse_on_children_and_dependents) {

@@ -28,17 +28,16 @@ scoped_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
 
 scoped_refptr<PaintedScrollbarLayer> PaintedScrollbarLayer::Create(
     scoped_ptr<Scrollbar> scrollbar,
-    Layer* scroll_layer) {
+    int scroll_layer_id) {
   return make_scoped_refptr(
-      new PaintedScrollbarLayer(scrollbar.Pass(), scroll_layer));
+      new PaintedScrollbarLayer(scrollbar.Pass(), scroll_layer_id));
 }
 
 PaintedScrollbarLayer::PaintedScrollbarLayer(
     scoped_ptr<Scrollbar> scrollbar,
-    Layer* scroll_layer)
+    int scroll_layer_id)
     : scrollbar_(scrollbar.Pass()),
-      scroll_layer_(scroll_layer),
-      clip_layer_(NULL),
+      scroll_layer_id_(scroll_layer_id),
       thumb_thickness_(scrollbar_->ThumbThickness()),
       thumb_length_(scrollbar_->ThumbLength()),
       is_overlay_(scrollbar_->IsOverlay()),
@@ -50,22 +49,14 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
 PaintedScrollbarLayer::~PaintedScrollbarLayer() {}
 
 int PaintedScrollbarLayer::ScrollLayerId() const {
-  return scroll_layer_->id();
+  return scroll_layer_id_;
 }
 
-void PaintedScrollbarLayer::SetScrollLayer(scoped_refptr<Layer> layer) {
-  if (layer == scroll_layer_)
+void PaintedScrollbarLayer::SetScrollLayerId(int id) {
+  if (id == scroll_layer_id_)
     return;
 
-  scroll_layer_ = layer;
-  SetNeedsFullTreeSync();
-}
-
-void PaintedScrollbarLayer::SetClipLayer(scoped_refptr<Layer> layer) {
-  if (layer == clip_layer_)
-    return;
-
-  clip_layer_ = layer;
+  scroll_layer_id_ = id;
   SetNeedsFullTreeSync();
 }
 
@@ -118,8 +109,6 @@ void PaintedScrollbarLayer::CalculateContentsScale(
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   ContentsScalingLayer::PushPropertiesTo(layer);
 
-  PushScrollClipPropertiesTo(layer);
-
   PaintedScrollbarLayerImpl* scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(layer);
 
@@ -145,16 +134,6 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
 ScrollbarLayerInterface* PaintedScrollbarLayer::ToScrollbarLayer() {
   return this;
-}
-
-void PaintedScrollbarLayer::PushScrollClipPropertiesTo(LayerImpl* layer) {
-  PaintedScrollbarLayerImpl* scrollbar_layer =
-      static_cast<PaintedScrollbarLayerImpl*>(layer);
-
-  scrollbar_layer->SetScrollLayerById(scroll_layer_ ? scroll_layer_->id()
-                                                    : Layer::INVALID_ID);
-  scrollbar_layer->SetClipLayerById(clip_layer_ ? clip_layer_->id()
-                                                : Layer::INVALID_ID);
 }
 
 void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {

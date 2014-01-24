@@ -432,10 +432,11 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
                                                 bool anchor_point,
                                                 float page_scale,
                                                 base::TimeDelta duration) {
-  if (!InnerViewportScrollLayer())
+  if (!RootScrollLayer())
     return;
 
-  gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
+  gfx::Vector2dF scroll_total =
+      RootScrollLayer()->scroll_offset() + RootScrollLayer()->ScrollDelta();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size = UnscaledScrollableViewportSize();
 
@@ -1303,10 +1304,10 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
     metadata.overdraw_bottom_height = overdraw_bottom_height_;
   }
 
-  if (!InnerViewportScrollLayer())
+  if (!RootScrollLayer())
     return metadata;
 
-  metadata.root_scroll_offset = active_tree_->TotalScrollOffset();
+  metadata.root_scroll_offset = RootScrollLayer()->TotalScrollOffset();
 
   return metadata;
 }
@@ -1509,19 +1510,15 @@ void LayerTreeHostImpl::Readback(void* pixels,
 }
 
 bool LayerTreeHostImpl::HaveRootScrollLayer() const {
-  return !!InnerViewportScrollLayer();
+  return !!RootScrollLayer();
 }
 
 LayerImpl* LayerTreeHostImpl::RootLayer() const {
   return active_tree_->root_layer();
 }
 
-LayerImpl* LayerTreeHostImpl::InnerViewportScrollLayer() const {
-  return active_tree_->InnerViewportScrollLayer();
-}
-
-LayerImpl* LayerTreeHostImpl::OuterViewportScrollLayer() const {
-  return active_tree_->OuterViewportScrollLayer();
+LayerImpl* LayerTreeHostImpl::RootScrollLayer() const {
+  return active_tree_->RootScrollLayer();
 }
 
 LayerImpl* LayerTreeHostImpl::CurrentlyScrollingLayer() const {
@@ -1530,10 +1527,7 @@ LayerImpl* LayerTreeHostImpl::CurrentlyScrollingLayer() const {
 
 bool LayerTreeHostImpl::IsCurrentlyScrolling() const {
   return CurrentlyScrollingLayer() ||
-         (InnerViewportScrollLayer() &&
-          InnerViewportScrollLayer()->IsExternalFlingActive()) ||
-         (OuterViewportScrollLayer() &&
-          OuterViewportScrollLayer()->IsExternalFlingActive());
+         (RootScrollLayer() && RootScrollLayer()->IsExternalFlingActive());
 }
 
 // Content layers can be either directly scrollable or contained in an outer
@@ -1914,6 +1908,8 @@ void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {
 
   device_viewport_size_ = device_viewport_size;
 
+  UpdateMaxScrollOffset();
+
   client_->OnCanDrawStateChanged(CanDraw());
   SetFullRootLayerDamage();
 }
@@ -1923,6 +1919,7 @@ void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
     return;
   overdraw_bottom_height_ = overdraw_bottom_height;
 
+  UpdateMaxScrollOffset();
   SetFullRootLayerDamage();
 }
 
@@ -1938,6 +1935,7 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
     return;
   device_scale_factor_ = device_scale_factor;
 
+  UpdateMaxScrollOffset();
   SetFullRootLayerDamage();
 }
 
@@ -1961,6 +1959,10 @@ gfx::Rect LayerTreeHostImpl::DeviceClip() const {
 
 const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
   return external_transform_;
+}
+
+void LayerTreeHostImpl::UpdateMaxScrollOffset() {
+  active_tree_->UpdateMaxScrollOffset();
 }
 
 void LayerTreeHostImpl::DidChangeTopControlsPosition() {
@@ -2048,11 +2050,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     return ScrollOnMainThread;
   }
 
-  // If we want to send a DidOverscroll for this scroll it can't be ignored.
   if (!potentially_scrolling_layer_impl)
-    potentially_scrolling_layer_impl =
-        OuterViewportScrollLayer() ? OuterViewportScrollLayer()
-                                   : InnerViewportScrollLayer();
+    potentially_scrolling_layer_impl = RootScrollLayer();
 
   if (potentially_scrolling_layer_impl) {
     active_tree_->SetCurrentlyScrollingLayer(
@@ -2159,14 +2158,10 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   gfx::Vector2dF unused_root_delta;
   bool did_scroll_x = false;
   bool did_scroll_y = false;
-  // TODO(wjmaclean) Should we guard against CurrentlyScrollingLayer() == 0
-  // here?
-  bool consume_by_top_controls =
-      top_controls_manager_ &&
-      (((CurrentlyScrollingLayer() == InnerViewportScrollLayer() ||
-         CurrentlyScrollingLayer() == OuterViewportScrollLayer()) &&
-        InnerViewportScrollLayer()->MaxScrollOffset().y() > 0) ||
-       scroll_delta.y() < 0);
+  bool consume_by_top_controls = top_controls_manager_ &&
+      (scroll_delta.y() < 0 ||
+       (RootScrollLayer() && CurrentlyScrollingLayer() == RootScrollLayer() &&
+        RootScrollLayer()->max_scroll_offset().y() > 0));
 
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
@@ -2174,18 +2169,12 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     if (!layer_impl->scrollable())
       continue;
 
-    if (layer_impl == InnerViewportScrollLayer()) {
+    if (layer_impl == RootScrollLayer()) {
       // Only allow bubble scrolling when the scroll is in the direction to make
       // the top controls visible.
-      gfx::Vector2dF applied_delta;
-      gfx::Vector2dF excess_delta;
       if (consume_by_top_controls) {
-        excess_delta = top_controls_manager_->ScrollBy(pending_delta);
-        applied_delta = pending_delta - excess_delta;
-        pending_delta = excess_delta;
-        // Force updating of vertical adjust values if needed.
-        if (applied_delta.y() != 0)
-            layer_impl->ScrollbarParametersDidChange();
+        pending_delta = top_controls_manager_->ScrollBy(pending_delta);
+        UpdateMaxScrollOffset();
       }
       // Track root layer deltas for reporting overscroll.
       unused_root_delta = pending_delta;
@@ -2219,7 +2208,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
         break;
     }
 
-    if (layer_impl == InnerViewportScrollLayer())
+    if (layer_impl == RootScrollLayer())
       unused_root_delta.Subtract(applied_delta);
 
     did_lock_scrolling_layer_ = true;
@@ -2286,10 +2275,10 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(gfx::Point viewport_point,
     if (!layer_impl->scrollable())
       continue;
 
-    if (!layer_impl->HasScrollbar(VERTICAL))
+    if (!layer_impl->vertical_scrollbar_layer())
       continue;
 
-    float height = layer_impl->clip_height();
+    float height = layer_impl->vertical_scrollbar_layer()->bounds().height();
 
     // These magical values match WebKit and are designed to scroll nearly the
     // entire visible content height but leave a bit of overlap.
@@ -2345,8 +2334,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
     return ScrollIgnored;
 
   if (settings_.ignore_root_layer_flings &&
-      (active_tree_->CurrentlyScrollingLayer() == InnerViewportScrollLayer() ||
-       active_tree_->CurrentlyScrollingLayer() == OuterViewportScrollLayer())) {
+      active_tree_->CurrentlyScrollingLayer() ==
+          active_tree_->RootScrollLayer()) {
     ClearCurrentlyScrollingLayer();
     return ScrollIgnored;
   }
@@ -2422,14 +2411,11 @@ void LayerTreeHostImpl::MouseMoveAt(gfx::Point viewport_point) {
   if (!animation_controller)
     return;
 
-  // TODO(wjmaclean) Is it ok to choose distance from more than two scrollbars?
-  float distance_to_scrollbar = std::numeric_limits<float>::max();
-  for (LayerImpl::ScrollbarSet::iterator it =
-           scroll_layer_impl->scrollbars()->begin();
-       it != scroll_layer_impl->scrollbars()->end();
-       ++it)
-    distance_to_scrollbar = std::min(distance_to_scrollbar,
-        DeviceSpaceDistanceToLayer(device_viewport_point, *it));
+  float distance_to_scrollbar = std::min(
+      DeviceSpaceDistanceToLayer(device_viewport_point,
+          scroll_layer_impl->horizontal_scrollbar_layer()),
+      DeviceSpaceDistanceToLayer(device_viewport_point,
+          scroll_layer_impl->vertical_scrollbar_layer()));
 
   bool should_animate = animation_controller->DidMouseMoveNear(
       CurrentPhysicalTimeTicks(), distance_to_scrollbar / device_scale_factor_);
@@ -2464,13 +2450,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   previous_pinch_anchor_ = gfx::Point();
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
-  if (active_tree_->OuterViewportScrollLayer()) {
-    active_tree_->SetCurrentlyScrollingLayer(
-        active_tree_->OuterViewportScrollLayer());
-  } else {
-    active_tree_->SetCurrentlyScrollingLayer(
-        active_tree_->InnerViewportScrollLayer());
-  }
+  active_tree_->SetCurrentlyScrollingLayer(RootScrollLayer());
   if (top_controls_manager_)
     top_controls_manager_->PinchBegin();
 }
@@ -2479,7 +2459,8 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
                                            gfx::Point anchor) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
 
-  DCHECK(InnerViewportScrollLayer());
+  if (!RootScrollLayer())
+    return;
 
   // Keep the center-of-pinch anchor specified by (x, y) in a stable
   // position over the course of the magnify.
@@ -2495,24 +2476,8 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   previous_pinch_anchor_ = anchor;
 
   move.Scale(1 / active_tree_->page_scale_factor());
-  // If clamping the inner viewport scroll offset causes a change, it should
-  // be accounted for from the intended move.
-  move -= InnerViewportScrollLayer()->ClampScrollToMaxScrollOffset();
 
-  // We manually manage the bubbling behaviour here as it is different to that
-  // implemented in LayerTreeHostImpl::ScrollBy(). Specifically:
-  // 1) we want to explicit limit the bubbling to the outer/inner viewports,
-  // 2) we don't want the directional limitations on the unused parts that
-  //    ScrollBy() implements, and
-  // 3) pinching should not engage the top controls manager.
-  gfx::Vector2dF unused =
-      OuterViewportScrollLayer() ? OuterViewportScrollLayer()->ScrollBy(move)
-                                 : move;
-
-  if (!unused.IsZero()) {
-    InnerViewportScrollLayer()->ScrollBy(unused);
-    InnerViewportScrollLayer()->ClampScrollToMaxScrollOffset();
-  }
+  RootScrollLayer()->ScrollBy(move);
 
   client_->SetNeedsCommitOnImplThread();
   SetNeedsRedraw();
@@ -2563,24 +2528,13 @@ void LayerTreeHostImpl::SetFullRootLayerDamage() {
   SetViewportDamage(gfx::Rect(DrawViewportSize()));
 }
 
-void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {
-  DCHECK(InnerViewportScrollLayer());
-  LayerImpl* scroll_layer =
-      OuterViewportScrollLayer() ? OuterViewportScrollLayer()
-                                 : InnerViewportScrollLayer();
-
-  gfx::Vector2dF unused_delta = scroll_layer->ScrollBy(scroll_delta);
-
-  if (!unused_delta.IsZero() && (scroll_layer == OuterViewportScrollLayer()))
-    InnerViewportScrollLayer()->ScrollBy(unused_delta);
-}
-
 void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
-  if (!page_scale_animation_)
+  if (!page_scale_animation_ || !RootScrollLayer())
     return;
 
   double monotonic_time = (time - base::TimeTicks()).InSecondsF();
-  gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
+  gfx::Vector2dF scroll_total = RootScrollLayer()->scroll_offset() +
+                                RootScrollLayer()->ScrollDelta();
 
   if (!page_scale_animation_->IsAnimationStarted())
     page_scale_animation_->StartAnimation(monotonic_time);
@@ -2591,7 +2545,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
   gfx::Vector2dF next_scroll =
       page_scale_animation_->ScrollOffsetAtTime(monotonic_time);
 
-  ScrollViewportBy(next_scroll - scroll_total);
+  RootScrollLayer()->ScrollBy(next_scroll - scroll_total);
   SetNeedsRedraw();
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
@@ -2602,17 +2556,18 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
 }
 
 void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
-  if (!top_controls_manager_)
+  if (!top_controls_manager_ || !RootScrollLayer())
     return;
   gfx::Vector2dF scroll = top_controls_manager_->Animate(time);
-  if (active_tree_->TotalScrollOffset().y() == 0.f)
+  UpdateMaxScrollOffset();
+  if (RootScrollLayer()->TotalScrollOffset().y() == 0.f)
     return;
   if (scroll.IsZero()) {
     // This may happen on the first animation step. Force redraw otherwise
     // the animation would stop because of no new frames.
     SetNeedsRedraw();
   } else {
-    ScrollViewportBy(gfx::ScaleVector2d(
+    RootScrollLayer()->ScrollBy(gfx::ScaleVector2d(
         scroll, 1.f / active_tree_->total_page_scale_factor()));
   }
 }

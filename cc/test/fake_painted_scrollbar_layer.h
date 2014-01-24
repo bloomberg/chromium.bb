@@ -16,7 +16,7 @@ namespace cc {
 class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
  public:
   static scoped_refptr<FakePaintedScrollbarLayer>
-      Create(bool paint_during_update, bool has_thumb, Layer* scrolling_layer);
+      Create(bool paint_during_update, bool has_thumb, int scrolling_layer_id);
   int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
@@ -44,7 +44,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
 
  private:
   FakePaintedScrollbarLayer(FakeScrollbar* fake_scrollbar,
-                            Layer* scrolling_layer);
+                            int scrolling_layer_id);
   virtual ~FakePaintedScrollbarLayer();
 
   int update_count_;

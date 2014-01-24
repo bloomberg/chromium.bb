@@ -24,15 +24,14 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
 
   static scoped_refptr<PaintedScrollbarLayer> Create(
       scoped_ptr<Scrollbar> scrollbar,
-      Layer* scroll_layer);
+      int scroll_layer_id);
 
   virtual bool OpacityCanAnimateOnImplThread() const OVERRIDE;
   virtual ScrollbarLayerInterface* ToScrollbarLayer() OVERRIDE;
 
   // ScrollbarLayerInterface
   virtual int ScrollLayerId() const OVERRIDE;
-  virtual void SetScrollLayer(scoped_refptr<Layer> layer) OVERRIDE;
-  virtual void SetClipLayer(scoped_refptr<Layer> layer) OVERRIDE;
+  virtual void SetScrollLayerId(int id) OVERRIDE;
 
   virtual ScrollbarOrientation orientation() const OVERRIDE;
 
@@ -41,7 +40,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,
                                       float page_scale_factor,
@@ -51,7 +49,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                                       gfx::Size* content_bounds) OVERRIDE;
 
  protected:
-  PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, Layer* scroll_layer);
+  PaintedScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);
   virtual ~PaintedScrollbarLayer();
 
   // For unit tests
@@ -81,8 +79,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
                                           ScrollbarPart part);
 
   scoped_ptr<Scrollbar> scrollbar_;
-  scoped_refptr<Layer> scroll_layer_;
-  scoped_refptr<Layer> clip_layer_;
+  int scroll_layer_id_;
 
   // Snapshot of properties taken in UpdateThumbAndTrackGeometry and used in
   // PushPropertiesTo.

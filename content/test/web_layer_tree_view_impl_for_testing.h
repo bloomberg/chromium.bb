@@ -57,11 +57,6 @@ class WebLayerTreeViewImplForTesting
   virtual void setDeferCommits(bool defer_commits);
   virtual void renderingStats(
       blink::WebRenderingStats& stats) const;  // NOLINT(runtime/references)
-  virtual void registerViewportLayers(
-      const blink::WebLayer* pageScaleLayerLayer,
-      const blink::WebLayer* innerViewportScrollLayer,
-      const blink::WebLayer* outerViewportScrollLayer) OVERRIDE;
-  virtual void clearViewportLayers() OVERRIDE;
 
   // cc::LayerTreeHostClient implementation.
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}

@@ -392,7 +392,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, root_layer_.get());
+        paint_scrollbar, has_thumb, root_layer_->id());
     scrollbar_->SetPosition(gfx::Point(0, 10));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
@@ -1137,17 +1137,9 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
       scroll_layer_ = FakeContentLayer::Create(&client_);
     }
 
-    Layer* root_layer = layer_tree_host()->root_layer();
-    scroll_layer_->SetScrollClipLayer(root_layer);
-    scroll_layer_->SetIsContainerForFixedPositionLayers(true);
-    scroll_layer_->SetBounds(gfx::Size(2 * root_layer->bounds().width(),
-                                       2 * root_layer->bounds().height()));
+    scroll_layer_->SetScrollable(true);
     scroll_layer_->SetScrollOffset(gfx::Vector2d());
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
-    // This test requires the page_scale and inner viewport layers to be
-    // identified.
-    layer_tree_host()->RegisterViewportLayers(
-        root_layer, scroll_layer_.get(), NULL);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
   }
 
@@ -1456,7 +1448,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, layer_);
+        paint_scrollbar, has_thumb, layer_->id());
     scrollbar_->SetPosition(gfx::Point(0, 10));
     scrollbar_->SetBounds(gfx::Size(10, 10));
 
@@ -3669,7 +3661,7 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
     bool paint_scrollbar = true;
     bool has_thumb = false;
     scrollbar_layer_ = FakePaintedScrollbarLayer::Create(
-        paint_scrollbar, has_thumb, root_.get());
+        paint_scrollbar, has_thumb, root_->id());
 
     root_->AddChild(scrollbar_layer_);
 

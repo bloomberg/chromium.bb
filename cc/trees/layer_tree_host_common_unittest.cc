@@ -422,9 +422,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                gfx::Size(500, 500),
                                false);
 
-  scoped_ptr<LayerImpl> scroll_layer_scoped_ptr(
+  scoped_ptr<LayerImpl> scroll_layerScopedPtr(
       LayerImpl::Create(host_impl.active_tree(), 2));
-  LayerImpl* scroll_layer = scroll_layer_scoped_ptr.get();
+  LayerImpl* scroll_layer = scroll_layerScopedPtr.get();
   SetLayerPropertiesForTesting(scroll_layer,
                                identity_matrix,
                                identity_matrix,
@@ -432,22 +432,12 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                gfx::PointF(),
                                gfx::Size(10, 20),
                                false);
-
-  scoped_ptr<LayerImpl> clip_layer_scoped_ptr(
-      LayerImpl::Create(host_impl.active_tree(), 4));
-  LayerImpl* clip_layer = clip_layer_scoped_ptr.get();
-
-  scroll_layer->SetScrollClipLayer(clip_layer->id());
-  clip_layer->SetBounds(
-      gfx::Size(scroll_layer->bounds().width() + kMaxScrollOffset.x(),
-                scroll_layer->bounds().height() + kMaxScrollOffset.y()));
-  scroll_layer->SetScrollClipLayer(clip_layer->id());
+  scroll_layer->SetScrollable(true);
+  scroll_layer->SetMaxScrollOffset(kMaxScrollOffset);
+  scroll_layer->SetScrollOffset(kScrollOffset);
   scroll_layer->SetScrollDelta(kScrollDelta);
   gfx::Transform impl_transform;
   scroll_layer->AddChild(sublayer_scoped_ptr.Pass());
-  LayerImpl* scroll_layer_raw_ptr = scroll_layer_scoped_ptr.get();
-  clip_layer->AddChild(scroll_layer_scoped_ptr.Pass());
-  scroll_layer_raw_ptr->SetScrollOffset(kScrollOffset);
 
   scoped_ptr<LayerImpl> root(LayerImpl::Create(host_impl.active_tree(), 3));
   SetLayerPropertiesForTesting(root.get(),
@@ -457,7 +447,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                gfx::PointF(),
                                gfx::Size(3, 4),
                                false);
-  root->AddChild(clip_layer_scoped_ptr.Pass());
+  root->AddChild(scroll_layerScopedPtr.Pass());
 
   ExecuteCalculateDrawProperties(
       root.get(), kDeviceScale, kPageScale, scroll_layer->parent());
@@ -1390,7 +1380,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   const gfx::Transform identity_matrix;
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
-  child->SetScrollClipLayer(root.get());
+  child->SetScrollable(true);
   root->AddChild(child);
 
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
@@ -8642,7 +8632,8 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
 
   intervening->SetMasksToBounds(true);
   clip_parent->SetMasksToBounds(true);
-  intervening->SetScrollClipLayer(clip_parent.get());
+  intervening->SetScrollable(true);
+  intervening->SetMaxScrollOffset(gfx::Vector2d(50, 50));
   intervening->SetScrollOffset(gfx::Vector2d(3, 3));
 
   render_surface1->SetForceRenderSurface(true);
@@ -9669,7 +9660,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   constraint.set_is_fixed_position(true);
   fixed->SetPositionConstraint(constraint);
 
-  scroller->SetScrollClipLayer(container->id());
+  scroller->SetScrollable(true);
 
   gfx::Transform identity_transform;
   gfx::Transform container_transform;

@@ -21,19 +21,15 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
       ScrollbarOrientation orientation,
       int thumb_thickness,
       bool is_left_side_vertical_scrollbar,
-      Layer* scroll_layer);
+      int scroll_layer_id);
 
   // Layer overrides.
   virtual bool OpacityCanAnimateOnImplThread() const OVERRIDE;
   virtual ScrollbarLayerInterface* ToScrollbarLayer() OVERRIDE;
 
-  virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual void PushScrollClipPropertiesTo(LayerImpl* layer) OVERRIDE;
-
   // ScrollbarLayerInterface
   virtual int ScrollLayerId() const OVERRIDE;
-  virtual void SetScrollLayer(scoped_refptr<Layer> layer) OVERRIDE;
-  virtual void SetClipLayer(scoped_refptr<Layer> layer) OVERRIDE;
+  virtual void SetScrollLayerId(int id) OVERRIDE;
 
   virtual ScrollbarOrientation orientation() const OVERRIDE;
 
@@ -41,12 +37,11 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   SolidColorScrollbarLayer(ScrollbarOrientation orientation,
                            int thumb_thickness,
                            bool is_left_side_vertical_scrollbar,
-                           Layer* scroll_layer);
+                           int scroll_layer_id);
   virtual ~SolidColorScrollbarLayer();
 
  private:
-  scoped_refptr<Layer> scroll_layer_;
-  scoped_refptr<Layer> clip_layer_;
+  int scroll_layer_id_;
   ScrollbarOrientation orientation_;
   int thumb_thickness_;
   bool is_left_side_vertical_scrollbar_;
