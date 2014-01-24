@@ -19,11 +19,15 @@ shouldNotThrow("new webkitRTCPeerConnection({iceServers:[]}, null);");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'stun:foo.com'}]}, null);");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'}]}, null);");
 shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}, null);");
+
 shouldThrow("new webkitRTCPeerConnection({fooServers:[]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:true}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[1, 2, 3]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[{}]}, null);");
 shouldThrow("new webkitRTCPeerConnection({iceServers:[{url:'foo'}]}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}, null);");
 
 shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}});");
 shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}});");

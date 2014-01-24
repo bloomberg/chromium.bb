@@ -77,14 +77,14 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
     ArrayValue iceServers;
     bool ok = configuration.get("iceServers", iceServers);
     if (!ok || iceServers.isUndefinedOrNull()) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwTypeError("Malformed RTCConfiguration");
         return 0;
     }
 
     size_t numberOfServers;
     ok = iceServers.length(numberOfServers);
     if (!ok) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwTypeError("Malformed RTCConfiguration");
         return 0;
     }
 
@@ -94,26 +94,50 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
         Dictionary iceServer;
         ok = iceServers.get(i, iceServer);
         if (!ok) {
-            exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+            exceptionState.throwTypeError("Malformed RTCIceServer");
             return 0;
         }
 
-        String urlString, username, credential;
-        ok = iceServer.get("url", urlString);
-        if (!ok) {
-            exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
-            return 0;
-        }
-        KURL url(KURL(), urlString);
-        if (!url.isValid() || !(url.protocolIs("turn") || url.protocolIs("turns") || url.protocolIs("stun"))) {
-            exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        Vector<String> names;
+        iceServer.getOwnPropertyNames(names);
+
+        Vector<String> urlStrings;
+        if (names.contains("urls")) {
+            if (!iceServer.get("urls", urlStrings) || !urlStrings.size()) {
+                String urlString;
+                if (iceServer.get("urls", urlString)) {
+                    urlStrings.append(urlString);
+                } else {
+                    exceptionState.throwTypeError("Malformed RTCIceServer");
+                    return 0;
+                }
+            }
+        } else if (names.contains("url")) {
+            String urlString;
+            if (iceServer.get("url", urlString)) {
+                urlStrings.append(urlString);
+            } else {
+                exceptionState.throwTypeError("Malformed RTCIceServer");
+                return 0;
+            }
+        } else {
+            exceptionState.throwTypeError("Malformed RTCIceServer");
             return 0;
         }
 
+        String username, credential;
         iceServer.get("username", username);
         iceServer.get("credential", credential);
 
-        rtcConfiguration->appendServer(RTCIceServer::create(url, username, credential));
+        for (Vector<String>::iterator iter = urlStrings.begin(); iter != urlStrings.end(); ++iter) {
+            KURL url(KURL(), *iter);
+            if (!url.isValid() || !(url.protocolIs("turn") || url.protocolIs("turns") || url.protocolIs("stun"))) {
+                exceptionState.throwTypeError("Malformed URL");
+                return 0;
+            }
+
+            rtcConfiguration->appendServer(RTCIceServer::create(url, username, credential));
+        }
     }
 
     return rtcConfiguration.release();
