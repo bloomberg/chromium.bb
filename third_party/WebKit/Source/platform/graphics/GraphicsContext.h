@@ -135,7 +135,7 @@ public:
 
     int getNormalizedAlpha() const;
 
-    bool getClipBounds(SkRect* bounds) const;
+    FloatRect getClipBounds() const;
     bool getTransformedClipBounds(FloatRect* bounds) const;
     SkMatrix getTotalMatrix() const;
     bool isPrintingDevice() const;
@@ -283,6 +283,7 @@ public:
 
     void clip(const IntRect& rect) { clip(FloatRect(rect)); }
     void clip(const FloatRect& rect) { clipRect(rect); }
+    bool clipRectReplace(const FloatRect& rect) { return clipRect(rect, NotAntiAliased, SkRegion::kReplace_Op); }
     void clipRoundedRect(const RoundedRect&);
     void clipOut(const IntRect& rect) { clipRect(rect, NotAntiAliased, SkRegion::kDifference_Op); }
     void clipOutRoundedRect(const RoundedRect&);

@@ -200,10 +200,9 @@ void TransparencyWin::computeLayerSize()
     } else if (m_transformMode == KeepTransform && m_layerMode != TextComposite) {
         // FIXME: support clipping for other modes
         IntRect clippedSourceRect = m_sourceRect;
-        SkRect clipBounds;
-        if (m_destContext->getClipBounds(&clipBounds)) {
-            FloatRect clipRect(clipBounds.left(), clipBounds.top(), clipBounds.width(), clipBounds.height());
-            clippedSourceRect.intersect(enclosingIntRect(clipRect));
+        FloatRect clipBounds = m_destContext->getClipBounds();
+        if (!clipBounds.isEmpty()) {
+            clippedSourceRect.intersect(enclosingIntRect(clipBounds));
         }
         m_transformedSourceRect = m_orgTransform.mapRect(clippedSourceRect);
     } else {

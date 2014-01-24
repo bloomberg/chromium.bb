@@ -151,17 +151,14 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     clearInvalidationMask();
 
     bool deferredFiltersEnabled = object->document().settings()->deferredFiltersEnabled();
-    if (!deferredFiltersEnabled && m_filter.contains(object)) {
+    if (deferredFiltersEnabled) {
+        if (m_objects.contains(object))
+            return false; // We're in a cycle.
+    } else if (m_filter.contains(object)) {
         FilterData* filterData = m_filter.get(object);
         if (filterData->state == FilterData::PaintingSource || filterData->state == FilterData::Applying)
             filterData->state = FilterData::CycleDetected;
         return false; // Already built, or we're in a cycle, or we're marked for removal. Regardless, just do nothing more now.
-    }
-
-    if (deferredFiltersEnabled) {
-        if (m_objects.contains(object))
-            return false; // We're in a cycle.
-        m_objects.set(object, true);
     }
 
     OwnPtr<FilterData> filterData(adoptPtr(new FilterData));
@@ -199,14 +196,16 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     filterData->drawingRegion = object->strokeBoundingBox();
     filterData->drawingRegion.intersect(filterData->boundaries);
     FloatRect absoluteDrawingRegion = filterData->drawingRegion;
-    absoluteDrawingRegion.scale(filterScale.width(), filterScale.height());
+    if (!deferredFiltersEnabled)
+        absoluteDrawingRegion.scale(filterScale.width(), filterScale.height());
 
     IntRect intDrawingRegion = enclosingIntRect(absoluteDrawingRegion);
 
     // Create the SVGFilter object.
     bool primitiveBoundingBoxMode = filterElement->primitiveUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
     filterData->shearFreeAbsoluteTransform = AffineTransform();
-    filterData->shearFreeAbsoluteTransform.scale(filterScale.width(), filterScale.height());
+    if (!deferredFiltersEnabled)
+        filterData->shearFreeAbsoluteTransform.scale(filterScale.width(), filterScale.height());
     filterData->filter = SVGFilter::create(filterData->shearFreeAbsoluteTransform, intDrawingRegion, targetBoundingBox, filterData->boundaries, primitiveBoundingBoxMode);
 
     // Create all relevant filter primitives.
@@ -222,8 +221,29 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     if (deferredFiltersEnabled) {
         SkiaImageFilterBuilder builder(context);
+        FloatRect oldBounds = context->getClipBounds();
+        m_objects.set(object, oldBounds);
         RefPtr<ImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
         FloatRect boundaries = enclosingIntRect(filterData->boundaries);
+        if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
+            context->save();
+            // Get boundaries in device coords.
+            FloatSize size = context->getCTM().mapSize(boundaries.size());
+            // Compute the scale amount required so that the resulting offscreen is exactly filterResX by filterResY pixels.
+            FloatSize filterResScale(
+                filterElement->filterResXCurrentValue() / size.width(),
+                filterElement->filterResYCurrentValue() / size.height());
+            // Scale the CTM so the primitive is drawn to filterRes.
+            context->translate(boundaries.x(), boundaries.y());
+            context->scale(filterResScale);
+            context->translate(-boundaries.x(), -boundaries.y());
+            // Create a resize filter with the inverse scale.
+            imageFilter = builder.buildResize(1 / filterResScale.width(), 1 / filterResScale.height(), imageFilter.get());
+            // Clip the context so that the offscreen created in beginLayer()
+            // is clipped to filterResX by filerResY. Use Replace mode since
+            // this clip may be larger than the parent device.
+            context->clipRectReplace(boundaries);
+        }
         context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
         return true;
     }
@@ -270,7 +290,18 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
 
     if (object->document().settings()->deferredFiltersEnabled()) {
-        context->endLayer();
+        SVGFilterElement* filterElement = toSVGFilterElement(element());
+        if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
+            // Restore the clip bounds before endLayer(), so the filtered
+            // image draw is clipped to the original device bounds, not the
+            // clip we set before the beginLayer() above.
+            FloatRect oldBounds = m_objects.get(object);
+            context->clipRectReplace(oldBounds);
+            context->endLayer();
+            context->restore();
+        } else {
+            context->endLayer();
+        }
         m_objects.remove(object);
         return;
     }

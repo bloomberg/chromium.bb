@@ -358,11 +358,14 @@ int GraphicsContext::getNormalizedAlpha() const
     return alpha;
 }
 
-bool GraphicsContext::getClipBounds(SkRect* bounds) const
+FloatRect GraphicsContext::getClipBounds() const
 {
     if (paintingDisabled())
-        return false;
-    return m_canvas->getClipBounds(bounds);
+        return FloatRect();
+    SkRect rect;
+    if (!m_canvas->getClipBounds(&rect))
+        return FloatRect();
+    return FloatRect(rect);
 }
 
 bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const

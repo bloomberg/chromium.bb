@@ -88,7 +88,7 @@ private:
     typedef HashMap<RenderObject*, OwnPtr<FilterData> > FilterMap;
     FilterMap m_filter;
 
-    HashMap<RenderObject*, bool> m_objects;
+    HashMap<RenderObject*, FloatRect> m_objects;
 
     static bool s_deferredFilterRendering;
 };

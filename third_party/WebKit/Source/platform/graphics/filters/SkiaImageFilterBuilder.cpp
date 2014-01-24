@@ -30,6 +30,7 @@
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
 #include "SkDropShadowImageFilter.h"
+#include "SkResizeImageFilter.h"
 #include "SkTableColorFilter.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/filters/FilterEffect.h"
@@ -202,6 +203,11 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
             filters->appendReferenceFilter(filter.get());
     }
     return true;
+}
+
+PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::buildResize(float scaleX, float scaleY, SkImageFilter* input)
+{
+    return adoptRef(new SkResizeImageFilter(scaleX, scaleY, SkPaint::kHigh_FilterLevel, input));
 }
 
 };

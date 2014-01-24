@@ -233,7 +233,8 @@ void NativeImageSkia::drawResampledBitmap(GraphicsContext* context, SkPaint& pai
 
     // This part of code limits scaling only to visible portion in the
     SkRect destRectVisibleSubset;
-    ClipRectToCanvas(context, destRect, &destRectVisibleSubset);
+    if (!context->canvas()->getClipBounds(&destRectVisibleSubset))
+        return;
 
     // ClipRectToCanvas often overshoots, resulting in a larger region than our
     // original destRect. Intersecting gets us back inside.

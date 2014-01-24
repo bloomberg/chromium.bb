@@ -128,12 +128,6 @@ SkColor SkPMColorToColor(SkPMColor pm)
                           InvScaleByte(SkGetPackedB32(pm), scale));
 }
 
-void ClipRectToCanvas(const GraphicsContext* context, const SkRect& srcRect, SkRect* destRect)
-{
-    if (!context->getClipBounds(destRect) || !destRect->intersect(srcRect))
-        destRect->setEmpty();
-}
-
 bool SkPathContainsPoint(const SkPath& originalPath, const FloatPoint& point, SkPath::FillType ft)
 {
     SkRect bounds = originalPath.getBounds();
