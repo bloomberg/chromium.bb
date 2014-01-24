@@ -53,6 +53,8 @@ class ChromesiteHTMLTranslator(HTMLTranslator):
     # direct parent invocation.
     HTMLTranslator.__init__(self, builder, *args, **kwds)
 
+    self.within_toc = False
+
   def visit_bullet_list(self, node):
     # Use our own class attribute for <ul>. Don't care about compacted lists.
     self.body.append(self.starttag(node, 'ul', **{'class': 'small-gap'}))
@@ -127,6 +129,25 @@ class ChromesiteHTMLTranslator(HTMLTranslator):
       pass
     else:
       HTMLTranslator.depart_reference(self, node)
+
+  def visit_topic(self, node):
+    if 'contents' in node['classes']:
+      # TODO(binji):
+      # Detect a TOC: we want to hide these from chromesite, but still keep
+      # them in devsite. An easy hack is to add display: none to the element
+      # here.
+      # When we remove devsite support, we can remove this hack.
+      self.within_toc = True
+      attrs = {'style': 'display: none'}
+      self.body.append(self.starttag(node, 'div', **attrs))
+    else:
+      HTMLTranslator.visit_topic(self, node)
+
+  def depart_topic(self, node):
+    if self.within_toc:
+      self.body.append('\n</div>')
+    else:
+      HTMLTranslator.visit_topic(self, node)
 
   def write_colspecs(self):
     # Override this method from docutils to do nothing. We don't need those

@@ -6,14 +6,14 @@
 a Native Client module in order for Chrome to load, initialize, and run it.  The
 requirements are the same regardless of whether or not the module uses PNaCl,
 but depend on whether the module is written in C or C++.</p>
-<div class="contents local topic" id="contents">
+<div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
 <li><a class="reference internal" href="#introduction" id="id2">Introduction</a></li>
 <li><a class="reference internal" href="#writing-modules-in-c" id="id3">Writing modules in C</a></li>
 <li><a class="reference internal" href="#id1" id="id4">Writing modules in C++</a></li>
 </ul>
-</div>
-<section id="introduction">
+
+</div><section id="introduction">
 <h2 id="introduction">Introduction</h2>
 <p>Native Client modules do not have a <code>main()</code> function. When a module loads,
 the Native Client runtime calls the code in the module to create an instance and
