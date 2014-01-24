@@ -85,6 +85,7 @@ google_apis::CancelCallback RunUploadNewFile(
                                  params.local_file_path,
                                  params.title,
                                  params.content_type,
+                                 DriveUploader::UploadNewFileOptions(),
                                  params.callback,
                                  params.progress_callback);
 }

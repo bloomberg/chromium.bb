@@ -1762,6 +1762,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
       13,
       "folder:1_folder_resource_id",
       "new file.foo",
+      FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1780,6 +1781,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
       13,
       "non_existent",
       "new file.foo",
+      FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1798,6 +1800,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
       13,
       "folder:1_folder_resource_id",
       "new file.foo",
+      FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1897,6 +1900,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
       15,
       "folder:1_folder_resource_id",
       "new file.foo",
+      FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1932,6 +1936,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
       15,
       "folder:1_folder_resource_id",
       "new file.foo",
+      FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -2038,6 +2043,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       contents.size(),
       "folder:1_folder_resource_id",
       "new file.foo",
+      FakeDriveService::InitiateUploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 

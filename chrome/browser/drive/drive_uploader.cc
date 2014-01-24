@@ -138,6 +138,7 @@ CancelCallback DriveUploader::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
+    const UploadNewFileOptions& options,
     const UploadCompletionCallback& callback,
     const ProgressCallback& progress_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -155,7 +156,8 @@ CancelCallback DriveUploader::UploadNewFile(
       base::Bind(&DriveUploader::StartInitiateUploadNewFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  parent_resource_id,
-                 title));
+                 title,
+                 options));
 }
 
 CancelCallback DriveUploader::UploadExistingFile(
@@ -246,6 +248,7 @@ void DriveUploader::StartUploadFileAfterGetFileSize(
 void DriveUploader::StartInitiateUploadNewFile(
     const std::string& parent_resource_id,
     const std::string& title,
+    const UploadNewFileOptions& options,
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -255,6 +258,7 @@ void DriveUploader::StartInitiateUploadNewFile(
       info_ptr->content_length,
       parent_resource_id,
       title,
+      options,
       base::Bind(&DriveUploader::OnUploadLocationReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&upload_file_info)));

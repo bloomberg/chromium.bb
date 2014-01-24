@@ -564,6 +564,7 @@ void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
       local_path_,
       title.AsUTF8Unsafe(),
       GetMimeTypeFromTitle(title),
+      drive::DriveUploader::UploadNewFileOptions(),
       base::Bind(&LocalToRemoteSyncer::DidUploadNewFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback),

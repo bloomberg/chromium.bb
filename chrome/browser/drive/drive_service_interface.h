@@ -42,6 +42,20 @@ class DriveServiceObserver {
 // URLFetcher that runs on UI thread.
 class DriveServiceInterface {
  public:
+  // Optional parameters for InitiateUploadNewFile().
+  struct InitiateUploadNewFileOptions {
+    InitiateUploadNewFileOptions();
+    ~InitiateUploadNewFileOptions();
+
+    // modified_date of the file.
+    // Pass the null Time if you are not interested in setting this property.
+    base::Time modified_date;
+
+    // last_viewed_by_me_date of the file.
+    // Pass the null Time if you are not interested in setting this property.
+    base::Time last_viewed_by_me_date;
+  };
+
   // Optional parameters for InitiateUploadExistingFile().
   struct InitiateUploadExistingFileOptions {
     InitiateUploadExistingFileOptions();
@@ -61,11 +75,11 @@ class DriveServiceInterface {
     std::string title;
 
     // New modified_date of the file.
-    // Pass the null Time to keep the property unchanged.
+    // Pass the null Time if you are not interested in setting this property.
     base::Time modified_date;
 
     // New last_viewed_by_me_date of the file.
-    // Pass the null Time to keep the property unchanged.
+    // Pass the null Time if you are not interested in setting this property.
     base::Time last_viewed_by_me_date;
   };
 
@@ -336,6 +350,7 @@ class DriveServiceInterface {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
+      const InitiateUploadNewFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) = 0;
 
   // Initiates uploading of an existing document/file.

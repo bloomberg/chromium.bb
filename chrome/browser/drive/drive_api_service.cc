@@ -702,19 +702,22 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title,
+    const InitiateUploadNewFileOptions& options,
     const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(
-      new InitiateUploadNewFileRequest(
-          sender_.get(),
-          url_generator_,
-          content_type,
-          content_length,
-          parent_resource_id,
-          title,
-          callback));
+  InitiateUploadNewFileRequest* request =
+      new InitiateUploadNewFileRequest(sender_.get(),
+                                       url_generator_,
+                                       content_type,
+                                       content_length,
+                                       parent_resource_id,
+                                       title,
+                                       callback);
+  request->set_modified_date(options.modified_date);
+  request->set_last_viewed_by_me_date(options.last_viewed_by_me_date);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::InitiateUploadExistingFile(

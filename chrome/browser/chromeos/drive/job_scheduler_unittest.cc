@@ -105,6 +105,7 @@ class CancelTestableFakeDriveService : public FakeDriveService {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
+      const InitiateUploadNewFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) OVERRIDE {
     if (upload_new_file_cancelable_)
       return base::Bind(callback, google_apis::GDATA_CANCELLED, GURL());
@@ -113,6 +114,7 @@ class CancelTestableFakeDriveService : public FakeDriveService {
                                                    content_length,
                                                    parent_resource_id,
                                                    title,
+                                                   options,
                                                    callback);
   }
 

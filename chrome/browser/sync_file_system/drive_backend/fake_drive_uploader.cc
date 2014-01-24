@@ -90,6 +90,7 @@ CancelCallback FakeDriveUploader::UploadNewFile(
     const base::FilePath& local_file_path,
     const std::string& title,
     const std::string& content_type,
+    const UploadNewFileOptions& options,
     const UploadCompletionCallback& callback,
     const ProgressCallback& progress_callback) {
   DCHECK(!callback.is_null());

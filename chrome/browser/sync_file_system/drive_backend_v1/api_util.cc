@@ -537,6 +537,7 @@ void APIUtil::UploadNewFile(const std::string& directory_resource_id,
       local_file_path,
       title,
       mime_type,
+      drive::DriveUploader::UploadNewFileOptions(),
       base::Bind(&UploadResultAdapter, did_upload_callback),
       google_apis::ProgressCallback());
 }

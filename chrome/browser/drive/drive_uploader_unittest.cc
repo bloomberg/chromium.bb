@@ -79,6 +79,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
+      const InitiateUploadNewFileOptions& options,
       const InitiateUploadCallback& callback) OVERRIDE {
     EXPECT_EQ(kTestDocumentTitle, title);
     EXPECT_EQ(kTestMimeType, content_type);
@@ -211,6 +212,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
+      const InitiateUploadNewFileOptions& options,
       const InitiateUploadCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
@@ -251,6 +253,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
+      const InitiateUploadNewFileOptions& options,
       const InitiateUploadCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));

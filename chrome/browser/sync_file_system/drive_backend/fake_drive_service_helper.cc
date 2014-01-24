@@ -114,6 +114,7 @@ GDataErrorCode FakeDriveServiceHelper::AddFile(
   drive_uploader_->UploadNewFile(
       parent_folder_id, temp_file, title,
       "application/octet-stream",
+      drive::DriveUploader::UploadNewFileOptions(),
       base::Bind(&UploadResultCallback, &error, &file),
       google_apis::ProgressCallback());
   base::RunLoop().RunUntilIdle();

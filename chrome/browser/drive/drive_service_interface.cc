@@ -6,6 +6,14 @@
 
 namespace drive {
 
+DriveServiceInterface::InitiateUploadNewFileOptions::
+    InitiateUploadNewFileOptions() {
+}
+
+DriveServiceInterface::InitiateUploadNewFileOptions::
+    ~InitiateUploadNewFileOptions() {
+}
+
 DriveServiceInterface::InitiateUploadExistingFileOptions::
     InitiateUploadExistingFileOptions() {
 }

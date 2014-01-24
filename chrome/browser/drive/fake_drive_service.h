@@ -203,6 +203,7 @@ class FakeDriveService : public DriveServiceInterface {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
+      const InitiateUploadNewFileOptions& options,
       const google_apis::InitiateUploadCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback InitiateUploadExistingFile(
       const std::string& content_type,

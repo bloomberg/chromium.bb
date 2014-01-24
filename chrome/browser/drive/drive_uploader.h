@@ -41,6 +41,8 @@ typedef base::Callback<void(
 
 class DriveUploaderInterface {
  public:
+  typedef DriveServiceInterface::InitiateUploadNewFileOptions
+      UploadNewFileOptions;
   typedef DriveServiceInterface::InitiateUploadExistingFileOptions
       UploadExistingFileOptions;
 
@@ -73,6 +75,7 @@ class DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
+      const UploadNewFileOptions& options,
       const UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 
@@ -121,6 +124,7 @@ class DriveUploader : public DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
+      const UploadNewFileOptions& options,
       const UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE;
   virtual google_apis::CancelCallback UploadExistingFile(
@@ -156,6 +160,7 @@ class DriveUploader : public DriveUploaderInterface {
   void StartInitiateUploadNewFile(
       const std::string& parent_resource_id,
       const std::string& title,
+      const UploadNewFileOptions& options,
       scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Starts to initiate the existing file uploading.
