@@ -97,7 +97,6 @@ private:
     float m_firstGlyphOverflow;
     float m_lastGlyphOverflow;
     bool m_forTextEmphasis;
-    bool m_distributeJustification;
 };
 
 }

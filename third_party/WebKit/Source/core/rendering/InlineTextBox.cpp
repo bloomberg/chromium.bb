@@ -1522,7 +1522,6 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
     TextRun run(string, textPos(), expansion(), expansionBehavior(), direction(), dirOverride() || style->rtlOrdering() == VisualOrder, !textRenderer->canUseSimpleFontCodePath());
     run.setTabSize(!style->collapseWhiteSpace(), style->tabSize());
     run.setCharacterScanForCodePath(!textRenderer->canUseSimpleFontCodePath());
-    run.setDistributeJustification(style->textJustify() == TextJustifyDistribute);
     if (textRunNeedsRenderingContext(font))
         run.setRenderingContext(SVGTextRunRenderingContext::create(textRenderer));
 

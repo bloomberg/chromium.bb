@@ -13,19 +13,6 @@
     text-align: justify;
 }
 
-.alignLastStart {
-    text-align-last: start;
-}
-
-.justifyAuto {
-    text-justify: auto;
-}
 .justifyNone {
     text-justify: none;
-}
-.justifyInterWord {
-    text-justify: inter-word;
-}
-.justifyDistribute {
-    text-justify: distribute;
 }

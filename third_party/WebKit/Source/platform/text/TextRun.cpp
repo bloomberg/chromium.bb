@@ -34,7 +34,7 @@ struct ExpectedTextRunSize {
     float float1;
     float float2;
     float float3;
-    uint32_t bitfields : 11;
+    uint32_t bitfields : 10;
     unsigned anUnsigned;
     RefPtr<TextRun::RenderingContext> renderingContext;
 };

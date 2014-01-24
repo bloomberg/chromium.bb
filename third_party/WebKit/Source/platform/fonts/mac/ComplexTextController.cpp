@@ -75,18 +75,16 @@ ComplexTextController::ComplexTextController(const Font* font, const TextRun& ru
     , m_minGlyphBoundingBoxY(numeric_limits<float>::max())
     , m_maxGlyphBoundingBoxY(numeric_limits<float>::min())
     , m_lastRoundingGlyph(0)
-    , m_distributeJustification(false)
 {
     if (!m_expansion)
         m_expansionPerOpportunity = 0;
     else {
         bool isAfterExpansion = m_afterExpansion;
         unsigned expansionOpportunityCount;
-        m_distributeJustification = m_run.isDistributeJustification();
         if (m_run.is8Bit())
-            expansionOpportunityCount = Font::expansionOpportunityCount(m_run.characters8(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion, m_distributeJustification);
+            expansionOpportunityCount = Font::expansionOpportunityCount(m_run.characters8(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion);
          else
-            expansionOpportunityCount = Font::expansionOpportunityCount(m_run.characters16(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion, m_distributeJustification);
+             expansionOpportunityCount = Font::expansionOpportunityCount(m_run.characters16(), m_end, m_run.ltr() ? LTR : RTL, isAfterExpansion);
         if (isAfterExpansion && !m_run.allowsTrailingExpansion())
             expansionOpportunityCount--;
 

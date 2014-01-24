@@ -49,18 +49,15 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
     , m_firstGlyphOverflow(0)
     , m_lastGlyphOverflow(0)
     , m_forTextEmphasis(forTextEmphasis)
-    , m_distributeJustification(false)
 {
     // If the padding is non-zero, count the number of spaces in the run
     // and divide that by the padding for per space addition.
     m_expansion = m_run.expansion();
-    m_distributeJustification = m_run.isDistributeJustification();
     if (!m_expansion)
         m_expansionPerOpportunity = 0;
     else {
         bool isAfterExpansion = m_isAfterExpansion;
-        unsigned expansionOpportunityCount = m_run.is8Bit() ? Font::expansionOpportunityCount(m_run.characters8(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion, m_distributeJustification) : Font::expansionOpportunityCount(m_run.characters16(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion, m_distributeJustification);
-
+        unsigned expansionOpportunityCount = m_run.is8Bit() ? Font::expansionOpportunityCount(m_run.characters8(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion) : Font::expansionOpportunityCount(m_run.characters16(), m_run.length(), m_run.ltr() ? LTR : RTL, isAfterExpansion);
         if (isAfterExpansion && !m_run.allowsTrailingExpansion())
             expansionOpportunityCount--;
 
@@ -209,12 +206,12 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
                 width += m_font->letterSpacing();
 
             static bool expandAroundIdeographs = Font::canExpandAroundIdeographsInComplexText();
-            bool isExpansionOpportunity = Font::treatAsSpace(character) || m_distributeJustification;
-            if (isExpansionOpportunity || (expandAroundIdeographs && Font::isCJKIdeographOrSymbol(character))) {
+            bool treatAsSpace = Font::treatAsSpace(character);
+            if (treatAsSpace || (expandAroundIdeographs && Font::isCJKIdeographOrSymbol(character))) {
                 // Distribute the run's total expansion evenly over all expansion opportunities in the run.
                 if (m_expansion) {
                     float previousExpansion = m_expansion;
-                    if (!isExpansionOpportunity && !m_isAfterExpansion) {
+                    if (!treatAsSpace && !m_isAfterExpansion) {
                         // Take the expansion opportunity before this ideograph.
                         m_expansion -= m_expansionPerOpportunity;
                         float expansionAtThisOpportunity = !m_run.applyWordRounding() ? m_expansionPerOpportunity : roundf(previousExpansion) - roundf(m_expansion);
@@ -241,7 +238,7 @@ inline unsigned WidthIterator::advanceInternal(TextIterator& textIterator, Glyph
 
                 // Account for word spacing.
                 // We apply additional space between "words" by adding width to the space character.
-                if (isExpansionOpportunity && (character != '\t' || !m_run.allowTabs()) && (textIterator.currentCharacter() || character == noBreakSpace) && m_font->wordSpacing())
+                if (treatAsSpace && (character != '\t' || !m_run.allowTabs()) && (textIterator.currentCharacter() || character == noBreakSpace) && m_font->wordSpacing())
                     width += m_font->wordSpacing();
             } else
                 m_isAfterExpansion = false;

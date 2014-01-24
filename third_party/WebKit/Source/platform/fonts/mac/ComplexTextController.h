@@ -177,7 +177,6 @@ private:
     float m_maxGlyphBoundingBoxY;
 
     unsigned m_lastRoundingGlyph;
-    bool m_distributeJustification;
 };
 
 } // namespace WebCore
