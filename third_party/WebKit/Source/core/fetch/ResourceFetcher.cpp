@@ -164,16 +164,21 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
     return resource;
 }
 
-static void reportResourceTiming(ResourceTimingInfo* info, Resource* resource, double finishTime, Document* initiatorDocument, bool clearLoadTimings)
+static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource, bool clearLoadTimings)
 {
-    if (resource->type() == Resource::MainResource)
-        initiatorDocument = initiatorDocument->parentDocument();
-    ASSERT(initiatorDocument);
     info->setInitialRequest(resource->resourceRequest());
     info->setFinalResponse(resource->response());
     if (clearLoadTimings)
         info->clearLoadTimings();
-    info->setLoadFinishTime(finishTime);
+    info->setLoadFinishTime(resource->loadFinishTime());
+}
+
+static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDocument, bool isMainResource)
+{
+    if (initiatorDocument && isMainResource)
+        initiatorDocument = initiatorDocument->parentDocument();
+    if (!initiatorDocument)
+        return;
     if (DOMWindow* initiatorWindow = initiatorDocument->domWindow()) {
         if (Performance* performance = initiatorWindow->performance())
             performance->addResourceTiming(*info, initiatorDocument);
@@ -219,6 +224,7 @@ ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
     , m_documentLoader(documentLoader)
     , m_requestCount(0)
     , m_garbageCollectDocumentResourcesTimer(this, &ResourceFetcher::garbageCollectDocumentResourcesTimerFired)
+    , m_resourceTimingReportTimer(this, &ResourceFetcher::resourceTimingReportTimerFired)
     , m_autoLoadImages(true)
     , m_imagesEnabled(true)
     , m_allowStaleResources(false)
@@ -689,7 +695,10 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         if (policy == Use && !m_validatedURLs.contains(request.resourceRequest().url())) {
             // Resources loaded from memory cache should be reported the first time they're used.
             RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
-            reportResourceTiming(info.get(), resource.get(), monotonicallyIncreasingTime(), document(), true);
+            populateResourceTiming(info.get(), resource.get(), true);
+            m_scheduledResourceTimingReports.add(info, resource->type() == Resource::MainResource);
+            if (!m_resourceTimingReportTimer.isActive())
+                m_resourceTimingReportTimer.startOneShot(0);
         }
 
         m_validatedURLs.add(request.resourceRequest().url());
@@ -698,6 +707,19 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     ASSERT(resource->url() == url.string());
     m_documentResources.set(resource->url(), resource);
     return resource;
+}
+
+void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_resourceTimingReportTimer);
+    HashMap<RefPtr<ResourceTimingInfo>, bool> timingReports;
+    timingReports.swap(m_scheduledResourceTimingReports);
+    HashMap<RefPtr<ResourceTimingInfo>, bool>::iterator end = timingReports.end();
+    for (HashMap<RefPtr<ResourceTimingInfo>, bool>::iterator it = timingReports.begin(); it != end; ++it) {
+        RefPtr<ResourceTimingInfo> info = it->key;
+        bool isMainResource = it->value;
+        reportResourceTiming(info.get(), document(), isMainResource);
+    }
 }
 
 void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Type type)
@@ -1003,7 +1025,8 @@ void ResourceFetcher::didLoadResource(Resource* resource)
         if (it != m_resourceTimingInfoMap.end()) {
             RefPtr<ResourceTimingInfo> info = it->value;
             m_resourceTimingInfoMap.remove(it);
-            reportResourceTiming(info.get(), resource, resource->loadFinishTime(), document(), false);
+            populateResourceTiming(info.get(), resource, false);
+            reportResourceTiming(info.get(), document(), resource->type() == Resource::MainResource);
         }
     }
 
