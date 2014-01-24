@@ -840,8 +840,6 @@ crbug.com/328749 virtual/threaded/transitions/position-background-transition.htm
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
-crbug.com/337576 css3/filters/effect-reference-composite-hw.html [ NeedsRebaseline ]
-
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
 Bug(esprehn) svg/custom/system-language-crash.html [ NeedsRebaseline ]
