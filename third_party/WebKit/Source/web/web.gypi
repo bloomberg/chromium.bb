@@ -259,7 +259,7 @@
       'WorkerPermissionClient.h',
       'default/WebRenderTheme.cpp',
       'linux/WebFontRendering.cpp',
-      'mac/WebScrollbarTheme.cpp',
+      'mac/WebScrollbarTheme.mm',
       'mac/WebSubstringUtil.mm',
       'painting/ContinuousPainter.cpp',
       'painting/ContinuousPainter.h',
