@@ -16,8 +16,6 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 
 crbug.com/323365 [ Win ] virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ Pass Timeout ]
 
-crbug.com/331586 http/tests/security/cross-origin-worker-indexeddb-allowed.html [ Pass Crash ]
-
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
