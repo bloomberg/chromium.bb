@@ -66,9 +66,8 @@ TooltipAura::TooltipAura(gfx::ScreenType screen_type)
   label_.set_background(
       views::Background::CreateSolidBackground(kTooltipBackground));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoDropShadows)) {
-    label_.set_border(
-        views::Border::CreateSolidBorder(kTooltipBorderWidth,
-                                         kTooltipBorder));
+    label_.SetBorder(
+        views::Border::CreateSolidBorder(kTooltipBorderWidth, kTooltipBorder));
   }
   label_.set_owned_by_client();
   label_.SetMultiLine(true);

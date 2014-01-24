@@ -593,12 +593,12 @@ void Combobox::UpdateFromModel() {
 }
 
 void Combobox::UpdateBorder() {
-  FocusableBorder* border = new FocusableBorder();
+  scoped_ptr<FocusableBorder> border(new FocusableBorder());
   if (style_ == STYLE_NOTIFY_ON_CLICK)
     border->SetInsets(8, 13, 8, 13);
   if (invalid_)
     border->SetColor(kWarningColor);
-  set_border(border);
+  SetBorder(border.PassAs<Border>());
 }
 
 void Combobox::AdjustBoundsForRTLUI(gfx::Rect* rect) const {

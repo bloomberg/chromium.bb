@@ -86,7 +86,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   // The find bar textfield has a background image instead of a border.
-  find_text_->set_border(NULL);
+  find_text_->SetBorder(views::Border::NullBorder());
   AddChildView(find_text_);
 
   match_count_text_ = new views::Label();
@@ -149,8 +149,8 @@ FindBarView::FindBarView(FindBarHost* host)
   SetBackground(rb.GetImageSkiaNamed(IDR_FIND_DLG_LEFT_BACKGROUND),
                 rb.GetImageSkiaNamed(IDR_FIND_DLG_RIGHT_BACKGROUND));
 
-  SetBorder(IDR_FIND_DIALOG_LEFT, IDR_FIND_DIALOG_MIDDLE,
-            IDR_FIND_DIALOG_RIGHT);
+  SetBorderFromIds(
+      IDR_FIND_DIALOG_LEFT, IDR_FIND_DIALOG_MIDDLE, IDR_FIND_DIALOG_RIGHT);
 
   preferred_height_ = rb.GetImageSkiaNamed(IDR_FIND_DIALOG_MIDDLE)->height();
 

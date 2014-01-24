@@ -24,7 +24,7 @@ class Gtk2Border : public views::Border {
  public:
   Gtk2Border(Gtk2UI* gtk2_ui,
              views::CustomButton* owning_button,
-             views::Border* border);
+             scoped_ptr<views::Border> border);
   virtual ~Gtk2Border();
 
   // Called on theme changes. We invalidate the layout, drop our cached images,

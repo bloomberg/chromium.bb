@@ -32,7 +32,7 @@ class PreferredSizeLabel : public Label {
 };
 
 PreferredSizeLabel::PreferredSizeLabel() : Label() {
-  set_border(Border::CreateSolidBorder(2, SK_ColorCYAN));
+  SetBorder(Border::CreateSolidBorder(2, SK_ColorCYAN));
 }
 
 PreferredSizeLabel::~PreferredSizeLabel() {}

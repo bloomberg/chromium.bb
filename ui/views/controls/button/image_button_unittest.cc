@@ -116,11 +116,11 @@ TEST_F(ImageButtonTest, ImagePositionWithBorder) {
   EXPECT_EQ(gfx::Point().ToString(),
             button.ComputeImagePaintPosition(image).ToString());
 
-  button.set_border(views::Border::CreateEmptyBorder(10, 5, 0, 0));
+  button.SetBorder(views::Border::CreateEmptyBorder(10, 5, 0, 0));
   EXPECT_EQ(gfx::Point(5, 10).ToString(),
             button.ComputeImagePaintPosition(image).ToString());
 
-  button.set_border(NULL);
+  button.SetBorder(Border::NullBorder());
   button.SetBounds(0, 0, 50, 50);
   EXPECT_EQ(gfx::Point().ToString(),
             button.ComputeImagePaintPosition(image).ToString());
@@ -129,7 +129,7 @@ TEST_F(ImageButtonTest, ImagePositionWithBorder) {
                            ImageButton::ALIGN_MIDDLE);
   EXPECT_EQ(gfx::Point(15, 10).ToString(),
             button.ComputeImagePaintPosition(image).ToString());
-  button.set_border(views::Border::CreateEmptyBorder(10, 10, 0, 0));
+  button.SetBorder(views::Border::CreateEmptyBorder(10, 10, 0, 0));
   EXPECT_EQ(gfx::Point(20, 15).ToString(),
             button.ComputeImagePaintPosition(image).ToString());
 }

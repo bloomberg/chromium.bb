@@ -42,8 +42,9 @@ class DropdownBarView : public views::AccessiblePaneView,
 
   void SetBackground(const gfx::ImageSkia* left_alpha_mask,
                      const gfx::ImageSkia* right_alpha_mask);
-  void SetBorder(int left_border_image_id, int middle_border_image_id,
-                 int right_border_image_id);
+  void SetBorderFromIds(int left_border_image_id,
+                        int middle_border_image_id,
+                        int right_border_image_id);
 
  private:
   // The dropdown bar host that controls this view.

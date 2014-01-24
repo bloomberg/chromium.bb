@@ -235,7 +235,7 @@ LocationBarView::~LocationBarView() {
 void LocationBarView::InitTouchableLocationBarChildView(views::View* view) {
   int horizontal_padding = GetBuiltInHorizontalPaddingForChildViews();
   if (horizontal_padding != 0) {
-    view->set_border(views::Border::CreateEmptyBorder(
+    view->SetBorder(views::Border::CreateEmptyBorder(
         3, horizontal_padding, 3, horizontal_padding));
   }
 }
@@ -382,8 +382,8 @@ void LocationBarView::Init() {
   search_button_->SetStyle(views::Button::STYLE_BUTTON);
   search_button_->SetFocusable(false);
   search_button_->set_min_size(gfx::Size());
-  views::LabelButtonBorder* search_button_border =
-      new views::LabelButtonBorder(search_button_->style());
+  scoped_ptr<views::LabelButtonBorder> search_button_border(
+      new views::LabelButtonBorder(search_button_->style()));
   search_button_border->set_insets(gfx::Insets());
   const int kSearchButtonNormalImages[] = IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON);
   search_button_border->SetPainter(
@@ -404,7 +404,7 @@ void LocationBarView::Init() {
   search_button_border->SetPainter(true, views::Button::STATE_HOVERED, NULL);
   search_button_border->SetPainter(true, views::Button::STATE_PRESSED, NULL);
   search_button_border->SetPainter(true, views::Button::STATE_DISABLED, NULL);
-  search_button_->set_border(search_button_border);
+  search_button_->SetBorder(search_button_border.PassAs<views::Border>());
   const int kSearchButtonWidth = 56;
   search_button_->set_min_size(gfx::Size(kSearchButtonWidth, 0));
   search_button_->SetVisible(false);
@@ -892,7 +892,7 @@ void LocationBarView::Layout() {
   }
 
   const gfx::Insets insets = omnibox_view_->GetInsets();
-  omnibox_view_->set_border(views::Border::CreateEmptyBorder(
+  omnibox_view_->SetBorder(views::Border::CreateEmptyBorder(
       insets.top(), insets.left(), insets.bottom(), omnibox_view_margin));
 
   // Layout |ime_inline_autocomplete_view_| next to the user input.

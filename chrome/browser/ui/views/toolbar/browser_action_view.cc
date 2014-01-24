@@ -123,7 +123,7 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       delegate_(delegate),
       context_menu_(NULL),
       called_registered_extension_command_(false) {
-  set_border(NULL);
+  SetBorder(views::Border::NullBorder());
   set_alignment(TextButton::ALIGN_CENTER);
   set_context_menu_controller(this);
 

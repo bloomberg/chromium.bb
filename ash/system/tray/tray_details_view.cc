@@ -96,7 +96,7 @@ void TrayDetailsView::CreateScrollableList() {
 
   // Note: |scroller_| takes ownership of |scroll_border_|.
   scroll_border_ = new ScrollBorder;
-  scroller_->set_border(scroll_border_);
+  scroller_->SetBorder(scoped_ptr<views::Border>(scroll_border_));
 
   AddChildView(scroller_);
 }

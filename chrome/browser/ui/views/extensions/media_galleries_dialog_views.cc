@@ -128,11 +128,11 @@ void MediaGalleriesDialogViews::InitChildViews() {
   scroll_container->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0,
       views::kRelatedControlSmallVerticalSpacing));
-  scroll_container->set_border(views::Border::CreateEmptyBorder(
-      views::kRelatedControlVerticalSpacing,
-      0,
-      views::kRelatedControlVerticalSpacing,
-      0));
+  scroll_container->SetBorder(
+      views::Border::CreateEmptyBorder(views::kRelatedControlVerticalSpacing,
+                                       0,
+                                       views::kRelatedControlVerticalSpacing,
+                                       0));
 
   // Add attached galleries checkboxes.
   checkbox_map_.clear();
@@ -161,11 +161,11 @@ void MediaGalleriesDialogViews::InitChildViews() {
         controller_->GetUnattachedLocationsHeader());
     unattached_text->SetMultiLine(true);
     unattached_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    unattached_text->set_border(views::Border::CreateEmptyBorder(
-        views::kRelatedControlVerticalSpacing,
-        views::kPanelHorizMargin,
-        views::kRelatedControlVerticalSpacing,
-        0));
+    unattached_text->SetBorder(
+        views::Border::CreateEmptyBorder(views::kRelatedControlVerticalSpacing,
+                                         views::kPanelHorizMargin,
+                                         views::kRelatedControlVerticalSpacing,
+                                         0));
     scroll_container->AddChildView(unattached_text);
 
     // Add unattached galleries checkboxes.
@@ -232,7 +232,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   secondary_text->SetTooltipText(tooltip_text);
   secondary_text->SetEnabledColor(kDeemphasizedTextColor);
   secondary_text->SetTooltipText(tooltip_text);
-  secondary_text->set_border(views::Border::CreateEmptyBorder(
+  secondary_text->SetBorder(views::Border::CreateEmptyBorder(
       0,
       views::kRelatedControlSmallHorizontalSpacing,
       0,
@@ -241,11 +241,8 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   views::View* checkbox_view = new views::View();
   if (gallery.pref_id != kInvalidMediaGalleryPrefId)
     checkbox_view->set_context_menu_controller(this);
-  checkbox_view->set_border(views::Border::CreateEmptyBorder(
-      0,
-      views::kPanelHorizMargin,
-      trailing_vertical_space,
-      0));
+  checkbox_view->SetBorder(views::Border::CreateEmptyBorder(
+      0, views::kPanelHorizMargin, trailing_vertical_space, 0));
   checkbox_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   checkbox_view->AddChildView(checkbox);

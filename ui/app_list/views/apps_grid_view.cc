@@ -385,10 +385,8 @@ void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
   cols_ = cols;
   rows_per_page_ = rows_per_page;
 
-  set_border(views::Border::CreateEmptyBorder(kTopPadding,
-                                              kLeftRightPadding,
-                                              0,
-                                              kLeftRightPadding));
+  SetBorder(views::Border::CreateEmptyBorder(
+      kTopPadding, kLeftRightPadding, 0, kLeftRightPadding));
 }
 
 void AppsGridView::SetModel(AppListModel* model) {

@@ -139,12 +139,12 @@ void DecoratedTextfield::UpdateBackground() {
 }
 
 void DecoratedTextfield::UpdateBorder() {
-  views::FocusableBorder* border = new views::FocusableBorder();
+  scoped_ptr<views::FocusableBorder> border(new views::FocusableBorder());
   if (invalid_)
     border->SetColor(kWarningColor);
   else if (!editable_)
     border->SetColor(SK_ColorTRANSPARENT);
-  set_border(border);
+  SetBorder(border.PassAs<views::Border>());
 }
 
 void DecoratedTextfield::IconChanged() {

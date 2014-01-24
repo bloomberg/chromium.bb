@@ -260,10 +260,12 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
       views::Background::CreateSolidBackground(kLightGrayBackgroundColor));
   // Have a smaller margin on the right, to have the |controls_.help_button|
   // closer to the edge.
-  controls_.report_settings_checkbox->set_border(
-      views::Border::CreateSolidSidedBorder(
-        kMarginWidth, kMarginWidth, kMarginWidth, kMarginWidth / 2,
-        kLightGrayBackgroundColor));
+  controls_.report_settings_checkbox->SetBorder(
+      views::Border::CreateSolidSidedBorder(kMarginWidth,
+                                            kMarginWidth,
+                                            kMarginWidth,
+                                            kMarginWidth / 2,
+                                            kLightGrayBackgroundColor));
 
   // Help button to toggle the bottom panel on or off.
   controls_.help_button = new views::ImageButton(this);

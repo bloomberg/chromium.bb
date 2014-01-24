@@ -159,7 +159,7 @@ void LabelButton::SetStyle(ButtonStyle style) {
 
   ResetColorsFromNativeTheme();
 
-  UpdateThemedBorder(new LabelButtonBorder(style_));
+  UpdateThemedBorder(scoped_ptr<Border>(new LabelButtonBorder(style_)));
 
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
@@ -339,15 +339,15 @@ void LabelButton::UpdateImage() {
   image_->SetImage(GetImage(state()));
 }
 
-void LabelButton::UpdateThemedBorder(LabelButtonBorder* label_button_border) {
+void LabelButton::UpdateThemedBorder(scoped_ptr<Border> label_button_border) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    set_border(linux_ui->CreateNativeBorder(this, label_button_border));
+    SetBorder(linux_ui->CreateNativeBorder(this, label_button_border.Pass()));
   } else
 #endif
   {
-    set_border(label_button_border);
+    SetBorder(label_button_border.Pass());
   }
 }
 

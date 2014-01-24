@@ -68,8 +68,7 @@ TextfieldWrapper::TextfieldWrapper(views::Textfield* textfield,
                                    views::ImageButton* image_button)
     : textfield_(textfield),
       image_button_(image_button) {
-  set_border(views::Border::CreateSolidBorder(kWrapperBorderSize,
-                                              SK_ColorGRAY));
+  SetBorder(views::Border::CreateSolidBorder(kWrapperBorderSize, SK_ColorGRAY));
 
   AddChildView(textfield_);
   AddChildView(image_button);

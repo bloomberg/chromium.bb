@@ -14,14 +14,15 @@ namespace message_center {
 MessageCenterFrameView::MessageCenterFrameView() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   const int kBorderWidth = 1;
-  set_border(views::Border::CreateSolidBorder(
+  SetBorder(views::Border::CreateSolidBorder(
       kBorderWidth, message_center::kMessageCenterBorderColor));
 #else
   const int kShadowBlur = 8;
-  set_border(new views::ShadowBorder(kShadowBlur,
-                                     message_center::kMessageCenterShadowColor,
-                                     0,    // Vertical offset
-                                     0));  // Horizontal offset
+  SetBorder(scoped_ptr<views::Border>(new views::ShadowBorder(
+      kShadowBlur,
+      message_center::kMessageCenterShadowColor,
+      0,    // Vertical offset
+      0)));  // Horizontal offset
 #endif
 }
 

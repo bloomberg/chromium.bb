@@ -94,8 +94,10 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
   // We're owned by Balloon and don't want to be deleted by our parent View.
   set_owned_by_client();
 
-  set_border(new views::BubbleBorder(views::BubbleBorder::FLOAT,
-      views::BubbleBorder::NO_SHADOW, SK_ColorWHITE));
+  SetBorder(scoped_ptr<views::Border>(
+      new views::BubbleBorder(views::BubbleBorder::FLOAT,
+                              views::BubbleBorder::NO_SHADOW,
+                              SK_ColorWHITE)));
 }
 
 BalloonViewImpl::~BalloonViewImpl() {
@@ -366,7 +368,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   options_menu_button_->SetPushedIcon(*rb.GetImageSkiaNamed(
       IDR_BALLOON_WRENCH_P));
   options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-  options_menu_button_->set_border(NULL);
+  options_menu_button_->SetBorder(views::Border::NullBorder());
   options_menu_button_->SetBoundsRect(GetOptionsButtonBounds());
 
   source_label_->SetFontList(rb.GetFontList(ui::ResourceBundle::SmallFont));

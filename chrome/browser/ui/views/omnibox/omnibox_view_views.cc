@@ -142,7 +142,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       ime_candidate_window_open_(false),
       select_all_on_mouse_release_(false),
       select_all_on_gesture_tap_(false) {
-  set_border(NULL);
+  SetBorder(views::Border::NullBorder());
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 }

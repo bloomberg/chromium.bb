@@ -24,10 +24,11 @@ namespace {
 // Text padding within the button border.
 const int kInset = 10;
 
-views::TextButtonDefaultBorder* CreateBorder(const int normal_image_set[],
-                                             const int hot_image_set[],
-                                             const int pushed_image_set[]) {
-  views::TextButtonDefaultBorder* border = new views::TextButtonDefaultBorder();
+scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
+                                       const int hot_image_set[],
+                                       const int pushed_image_set[]) {
+  scoped_ptr<views::TextButtonDefaultBorder> border(
+      new views::TextButtonDefaultBorder());
 
   border->SetInsets(gfx::Insets(kInset, kInset, kInset, kInset));
   border->set_normal_painter(
@@ -37,7 +38,7 @@ views::TextButtonDefaultBorder* CreateBorder(const int normal_image_set[],
   border->set_pushed_painter(
       views::Painter::CreateImageGridPainter(pushed_image_set));
 
-  return border;
+  return border.PassAs<views::Border>();
 }
 
 base::string16 GetElidedText(const base::string16& original_text) {
@@ -75,7 +76,7 @@ NewAvatarButton::NewAvatarButton(
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_HOVER);
     const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_PRESSED);
 
-    set_border(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
+    SetBorder(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
     set_menu_marker(
         rb->GetImageNamed(IDR_AVATAR_THEMED_BUTTON_DROPARROW).ToImageSkia());
   } else if (is_win8) {
@@ -83,7 +84,7 @@ NewAvatarButton::NewAvatarButton(
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_HOVER);
     const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_METRO_BUTTON_PRESSED);
 
-    set_border(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
+    SetBorder(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
     set_menu_marker(
         rb->GetImageNamed(IDR_AVATAR_METRO_BUTTON_DROPARROW).ToImageSkia());
   } else {
@@ -91,7 +92,7 @@ NewAvatarButton::NewAvatarButton(
     const int kHotImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
     const int kPushedImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_PRESSED);
 
-    set_border(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
+    SetBorder(CreateBorder(kNormalImageSet, kHotImageSet, kPushedImageSet));
     set_menu_marker(
         rb->GetImageNamed(IDR_AVATAR_GLASS_BUTTON_DROPARROW).ToImageSkia());
   }

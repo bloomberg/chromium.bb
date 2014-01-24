@@ -412,7 +412,7 @@ bool TrayBubbleView::CanActivate() const {
 
 NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(margins());
-  frame->SetBubbleBorder(bubble_border_);
+  frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(bubble_border_));
   return frame;
 }
 

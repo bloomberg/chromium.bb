@@ -137,7 +137,7 @@ void SpeechRecognitionBubbleView::Init() {
 
   heading_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING), font_list);
-  heading_->set_border(views::Border::CreateEmptyBorder(
+  heading_->SetBorder(views::Border::CreateEmptyBorder(
       kBubbleHeadingVertMargin, 0, kBubbleHeadingVertMargin, 0));
   heading_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   AddChildView(heading_);

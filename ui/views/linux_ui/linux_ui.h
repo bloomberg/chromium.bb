@@ -102,9 +102,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
       const std::string& content_type, int size) const = 0;
 
   // Builds a Border which paints the native button style.
-  virtual Border* CreateNativeBorder(
+  virtual scoped_ptr<Border> CreateNativeBorder(
       views::CustomButton* owning_button,
-      views::Border* border) = 0;
+      scoped_ptr<views::Border> border) = 0;
 
   // Notifies the observer about changes about how window buttons should be
   // laid out. If the order is anything other than the default min,max,close on

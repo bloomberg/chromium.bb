@@ -110,7 +110,7 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
   // Overridden from views::View.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
-  void SetBorder(TrayDate::ClockLayout clock_layout);
+  void SetBorderFromLayout(TrayDate::ClockLayout clock_layout);
   void SetupLabels();
   void SetupLabel(views::Label* label);
 

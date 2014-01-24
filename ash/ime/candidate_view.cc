@@ -73,7 +73,7 @@ views::Label* CreateShortcutLabel(
       (orientation == ui::CandidateWindow::VERTICAL ?
        kVerticalShortcutLabelInsets :
        kHorizontalShortcutLabelInsets);
-  shortcut_label->set_border(views::Border::CreateEmptyBorder(
+  shortcut_label->SetBorder(views::Border::CreateEmptyBorder(
       insets.top(), insets.left(), insets.bottom(), insets.right()));
 
   // Add decoration based on the orientation.
@@ -144,7 +144,7 @@ CandidateView::CandidateView(
       candidate_label_(NULL),
       annotation_label_(NULL),
       infolist_icon_(NULL) {
-  set_border(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+  SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
 
   const ui::NativeTheme& theme = *GetNativeTheme();
   shortcut_label_ = CreateShortcutLabel(orientation, theme);
@@ -198,9 +198,9 @@ void CandidateView::StateChanged() {
     set_background(
         views::Background::CreateSolidBackground(theme->GetSystemColor(
             ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
-    set_border(views::Border::CreateSolidBorder(
-        1, theme->GetSystemColor(
-            ui::NativeTheme::kColorId_FocusedBorderColor)));
+    SetBorder(views::Border::CreateSolidBorder(
+        1,
+        theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
 
     // Cancel currently focused one.
     for (int i = 0; i < parent()->child_count(); ++i) {
@@ -211,7 +211,7 @@ void CandidateView::StateChanged() {
     }
   } else {
     set_background(NULL);
-    set_border(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+    SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
   }
 }
 

@@ -131,7 +131,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
 
   views::MenuButton* menu_button = new views::MenuButton(
       NULL, text, menu_button_listener, true);
-  menu_button->set_border(menu_button_border.release());
+  menu_button->SetBorder(menu_button_border.PassAs<views::Border>());
   menu_button->set_animate_on_state_change(false);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   menu_button->set_menu_marker(
@@ -165,7 +165,7 @@ views::LabelButton* InfoBarView::CreateLabelButton(
       views::Painter::CreateImageGridPainter(kPressedImageSet));
 
   views::LabelButton* label_button = new views::LabelButton(listener, text);
-  label_button->set_border(label_button_border.release());
+  label_button->SetBorder(label_button_border.PassAs<views::Border>());
   label_button->set_animate_on_state_change(false);
   label_button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
   label_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);

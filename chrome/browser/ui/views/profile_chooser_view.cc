@@ -119,7 +119,7 @@ BackgroundColorHoverButton::BackgroundColorHoverButton(
       new views::TextButtonBorder());
   text_button_border->SetInsets(gfx::Insets(0, views::kButtonHEdgeMarginNew,
                                             0, views::kButtonHEdgeMarginNew));
-  set_border(text_button_border.release());
+  SetBorder(text_button_border.PassAs<views::Border>());
   set_min_height(kButtonHeight);
   set_icon_text_spacing(views::kItemLabelSpacing);
   SetIcon(normal_icon);
@@ -185,7 +185,7 @@ class EditableProfilePhoto : public views::ImageView {
     change_photo_button_ = new views::TextButton(listener,
         l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_CHANGE_PHOTO_BUTTON));
     change_photo_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-    change_photo_button_->set_border(NULL);
+    change_photo_button_->SetBorder(views::Border::NullBorder());
     change_photo_button_->SetEnabledColor(SK_ColorWHITE);
     change_photo_button_->SetHoverColor(SK_ColorWHITE);
 
@@ -240,7 +240,7 @@ class EditableProfileName : public views::TextButton,
     const gfx::FontList& medium_font_list =
         rb->GetFontList(ui::ResourceBundle::MediumFont);
     SetFontList(medium_font_list);
-    set_border(NULL);
+    SetBorder(views::Border::NullBorder());
 
     if (!is_editing_allowed)
       return;
@@ -722,7 +722,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
     button->set_icon_text_spacing(views::kItemLabelSpacing);
     button->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
         ui::ResourceBundle::MediumFont));
-    button->set_border(NULL);
+    button->SetBorder(views::Border::NullBorder());
 
     layout->StartRow(1, 0);
     layout->AddView(button);
@@ -831,7 +831,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
                       width()),
       is_primary_account ? NULL : this,  // Cannot delete the primary account.
       !is_primary_account);
-  email_button->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 0));
+  email_button->SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 0));
   if (!is_primary_account) {
     email_button->set_menu_marker(
         rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia());

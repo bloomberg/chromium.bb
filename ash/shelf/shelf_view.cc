@@ -905,7 +905,7 @@ void ShelfView::AnimateToIdealBounds() {
     // Now that the item animation starts, we have to make sure that the
     // padding of the first gets properly transferred to the new first item.
     if (i && view->border())
-      view->set_border(NULL);
+      view->SetBorder(views::Border::NullBorder());
     else if (!i && !view->border())
       UpdateFirstButtonPadding();
   }
@@ -1314,7 +1314,7 @@ void ShelfView::UpdateFirstButtonPadding() {
   // inset act as the button's padding. This is only needed on button creation
   // and when shelf alignment changes.
   if (view_model_->view_size() > 0) {
-    view_model_->view_at(0)->set_border(views::Border::CreateEmptyBorder(
+    view_model_->view_at(0)->SetBorder(views::Border::CreateEmptyBorder(
         layout_manager_->PrimaryAxisValue(0, leading_inset_),
         layout_manager_->PrimaryAxisValue(leading_inset_, 0),
         0,

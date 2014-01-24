@@ -57,9 +57,11 @@ IdleActionWarningDialogView::IdleActionWarningDialogView() : closing_(false) {
   FixedWidthLabel* content = new FixedWidthLabel(
         l10n_util::GetStringUTF16(IDS_IDLE_WARNING_LOGOUT_WARNING),
         kIdleActionWarningContentWidth);
-  content->set_border(views::Border::CreateEmptyBorder(
-      views::kPanelVertMargin, views::kButtonHEdgeMarginNew,
-      views::kPanelVertMargin, views::kButtonHEdgeMarginNew));
+  content->SetBorder(
+      views::Border::CreateEmptyBorder(views::kPanelVertMargin,
+                                       views::kButtonHEdgeMarginNew,
+                                       views::kPanelVertMargin,
+                                       views::kButtonHEdgeMarginNew));
   AddChildView(content);
   SetLayoutManager(new views::FillLayout());
 

@@ -603,7 +603,7 @@ TextButton::TextButton(ButtonListener* listener, const base::string16& text)
       icon_text_spacing_(kDefaultIconTextSpacing),
       ignore_minimum_size_(true),
       full_justification_(false) {
-  set_border(new TextButtonDefaultBorder);
+  SetBorder(scoped_ptr<Border>(new TextButtonDefaultBorder));
   SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(
                       gfx::Insets(kFocusRectInset, kFocusRectInset,
                                   kFocusRectInset, kFocusRectInset)));

@@ -48,7 +48,7 @@ void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
     icon_->SetImage(image);
     icon_->SetHorizontalAlignment(views::ImageView::LEADING);
     icon_->SetVerticalAlignment(views::ImageView::LEADING);
-    icon_->set_border(views::Border::CreateEmptyBorder(
+    icon_->SetBorder(views::Border::CreateEmptyBorder(
         message_center::kButtonIconTopPadding, 0, 0, 0));
     AddChildViewAt(icon_, 0);
   }
@@ -64,8 +64,8 @@ void NotificationButton::SetTitle(const base::string16& title) {
     title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title_->SetEnabledColor(message_center::kRegularTextColor);
     title_->SetBackgroundColor(kRegularTextBackgroundColor);
-    title_->set_border(views::Border::CreateEmptyBorder(
-        kButtonTitleTopPadding, 0, 0, 0));
+    title_->SetBorder(
+        views::Border::CreateEmptyBorder(kButtonTitleTopPadding, 0, 0, 0));
     AddChildView(title_);
   }
   SetAccessibleName(title);

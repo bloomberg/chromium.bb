@@ -56,7 +56,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
 
 #if !defined(OS_CHROMEOS)
   menu_button_ = new views::MenuButton(NULL, base::string16(), this, false);
-  menu_button_->set_border(NULL);
+  menu_button_->SetBorder(views::Border::NullBorder());
   menu_button_->SetIcon(*rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_NORMAL));
   menu_button_->SetHoverIcon(*rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_HOVER));
   menu_button_->SetPushedIcon(*rb.GetImageSkiaNamed(
@@ -64,7 +64,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   AddChildView(menu_button_);
 #endif
 
-  search_box_->set_border(NULL);
+  search_box_->SetBorder(views::Border::NullBorder());
   search_box_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->set_controller(this);

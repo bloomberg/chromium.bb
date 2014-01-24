@@ -133,11 +133,12 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
       message_label_(NULL),
       button_view_(NULL),
       browser_fullscreen_exit_accelerator_(accelerator) {
-  views::BubbleBorder* bubble_border = new views::BubbleBorder(
-      views::BubbleBorder::NONE, views::BubbleBorder::BIG_SHADOW,
-      SK_ColorWHITE);
-  set_background(new views::BubbleBackground(bubble_border));
-  set_border(bubble_border);
+  scoped_ptr<views::BubbleBorder> bubble_border(
+      new views::BubbleBorder(views::BubbleBorder::NONE,
+                              views::BubbleBorder::BIG_SHADOW,
+                              SK_ColorWHITE));
+  set_background(new views::BubbleBackground(bubble_border.get()));
+  SetBorder(bubble_border.PassAs<views::Border>());
   SetFocusable(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

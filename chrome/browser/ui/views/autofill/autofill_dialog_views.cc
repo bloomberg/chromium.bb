@@ -165,9 +165,7 @@ void SelectComboboxValueOrSetToDefault(views::Combobox* combobox,
 // expand a single child).
 class SectionRowView : public views::View {
  public:
-  SectionRowView() {
-    set_border(views::Border::CreateEmptyBorder(10, 0, 0, 0));
-  }
+  SectionRowView() { SetBorder(views::Border::CreateEmptyBorder(10, 0, 0, 0)); }
 
   virtual ~SectionRowView() {}
 
@@ -305,8 +303,8 @@ class NotificationView : public views::View,
 
     set_background(
        views::Background::CreateSolidBackground(data.GetBackgroundColor()));
-    set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
-                                                     data.GetBorderColor()));
+    SetBorder(views::Border::CreateSolidSidedBorder(
+        1, 0, 1, 0, data.GetBorderColor()));
   }
 
   virtual ~NotificationView() {}
@@ -466,14 +464,14 @@ AutofillDialogViews::AccountChooser::AccountChooser(
       menu_button_(new views::MenuButton(NULL, base::string16(), this, true)),
       link_(new views::Link()),
       delegate_(delegate) {
-  set_border(views::Border::CreateEmptyBorder(0, 0, 0, 10));
+  SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 10));
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
                            kAroundTextPadding));
   AddChildView(image_);
 
   menu_button_->set_background(NULL);
-  menu_button_->set_border(NULL);
+  menu_button_->SetBorder(views::Border::NullBorder());
   gfx::Insets insets = GetInsets();
   menu_button_->SetFocusPainter(
       views::Painter::CreateDashedFocusPainterWithInsets(insets));
@@ -591,7 +589,7 @@ void AutofillDialogViews::OverlayView::UpdateState() {
   message_view_->SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldReadOnlyColor));
 
-  message_view_->set_border(
+  message_view_->SetBorder(
       views::Border::CreateEmptyBorder(kOverlayMessageVerticalPadding,
                                        kDialogEdgePadding,
                                        kOverlayMessageVerticalPadding,
@@ -710,7 +708,7 @@ AutofillDialogViews::NotificationArea::NotificationArea(
     : delegate_(delegate) {
   // Reserve vertical space for the arrow (regardless of whether one exists).
   // The -1 accounts for the border.
-  set_border(views::Border::CreateEmptyBorder(kArrowHeight - 1, 0, 0, 0));
+  SetBorder(views::Border::CreateEmptyBorder(kArrowHeight - 1, 0, 0, 0));
 
   views::BoxLayout* box_layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
@@ -797,10 +795,10 @@ AutofillDialogViews::SectionContainer::SectionContainer(
       forward_mouse_events_(false) {
   set_notify_enter_exit_on_child(true);
 
-  set_border(views::Border::CreateEmptyBorder(kDetailSectionVerticalPadding,
-                                              kDialogEdgePadding,
-                                              kDetailSectionVerticalPadding,
-                                              kDialogEdgePadding));
+  SetBorder(views::Border::CreateEmptyBorder(kDetailSectionVerticalPadding,
+                                             kDialogEdgePadding,
+                                             kDetailSectionVerticalPadding,
+                                             kDialogEdgePadding));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::Label* label_view = new views::Label(
@@ -953,10 +951,10 @@ AutofillDialogViews::SuggestedButton::SuggestedButton(
     views::MenuButtonListener* listener)
     : views::MenuButton(NULL, base::string16(), listener, false) {
   const int kFocusBorderWidth = 1;
-  set_border(views::Border::CreateEmptyBorder(kMenuButtonTopInset,
-                                              kDialogEdgePadding,
-                                              kMenuButtonBottomInset,
-                                              kFocusBorderWidth));
+  SetBorder(views::Border::CreateEmptyBorder(kMenuButtonTopInset,
+                                             kDialogEdgePadding,
+                                             kMenuButtonBottomInset,
+                                             kFocusBorderWidth));
   gfx::Insets insets = GetInsets();
   insets += gfx::Insets(-kFocusBorderWidth, -kFocusBorderWidth,
                         -kFocusBorderWidth, -kFocusBorderWidth);
@@ -1032,8 +1030,7 @@ AutofillDialogViews::SuggestionView::SuggestionView(
                                  base::string16(),
                                  autofill_dialog)) {
   // TODO(estade): Make this the correct color.
-  set_border(
-      views::Border::CreateSolidSidedBorder(1, 0, 0, 0, SK_ColorLTGRAY));
+  SetBorder(views::Border::CreateSolidSidedBorder(1, 0, 0, 0, SK_ColorLTGRAY));
 
   SectionRowView* label_container = new SectionRowView();
   AddChildView(label_container);
@@ -1668,7 +1665,7 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
                            kDialogEdgePadding,
                            kDialogEdgePadding,
                            0));
-  footnote_view_->set_border(
+  footnote_view_->SetBorder(
       views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
   footnote_view_->set_background(
       views::Background::CreateSolidBackground(kShadingColor));

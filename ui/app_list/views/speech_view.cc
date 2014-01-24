@@ -94,11 +94,11 @@ bool MicButton::HitTestRect(const gfx::Rect& rect) const {
 
 SpeechView::SpeechView(AppListViewDelegate* delegate)
     : delegate_(delegate) {
-  set_border(new views::ShadowBorder(
-      kShadowBlur,
-      kShadowColor,
-      kShadowOffset,  // Vertical offset.
-      0));
+  SetBorder(scoped_ptr<views::Border>(
+      new views::ShadowBorder(kShadowBlur,
+                              kShadowColor,
+                              kShadowOffset,  // Vertical offset.
+                              0)));
 
   // To keep the painting order of the border and the background, this class
   // actually has a single child of 'container' which has white background and

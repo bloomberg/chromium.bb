@@ -34,11 +34,8 @@ const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 BookmarkSyncPromoView::BookmarkSyncPromoView(BookmarkBubbleDelegate* delegate)
     : delegate_(delegate) {
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-  set_border(views::Border::CreateSolidSidedBorder(kBorderWidth,
-                                                   0,
-                                                   0,
-                                                   0,
-                                                   kBorderColor));
+  SetBorder(views::Border::CreateSolidSidedBorder(
+      kBorderWidth, 0, 0, 0, kBorderColor));
   size_t offset;
   base::string16 link_text =
       l10n_util::GetStringUTF16(IDS_BOOKMARK_SYNC_PROMO_LINK);

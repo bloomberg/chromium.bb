@@ -32,7 +32,7 @@ views::View* CreatePopupHeaderButtonsContainer() {
   views::View* view = new views::View;
   view->SetLayoutManager(new
       views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, -1));
-  view->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 5));
+  view->SetBorder(views::Border::CreateEmptyBorder(0, 0, 0, 5));
   return view;
 }
 
@@ -43,7 +43,7 @@ SpecialPopupRow::SpecialPopupRow()
       button_container_(NULL) {
   set_background(views::Background::CreateSolidBackground(
       kHeaderBackgroundColor));
-  set_border(views::Border::CreateSolidSidedBorder(
+  SetBorder(views::Border::CreateSolidSidedBorder(
       kBorderHeight, 0, 0, 0, kBorderColor));
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
@@ -68,8 +68,8 @@ void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
       rb.GetLocalizedString(string_id),
       gfx::Font::BOLD);
 
-  container->set_border(views::Border::CreateEmptyBorder(0,
-      kTrayPopupPaddingHorizontal, 0, 0));
+  container->SetBorder(
+      views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
 
   container->SetAccessibleName(
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));

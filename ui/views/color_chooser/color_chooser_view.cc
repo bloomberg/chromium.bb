@@ -253,7 +253,7 @@ ColorChooserView::SaturationValueView::SaturationValueView(
     : chooser_view_(chooser_view),
       hue_(0) {
   SetFocusable(false);
-  set_border(Border::CreateSolidBorder(kBorderWidth, SK_ColorGRAY));
+  SetBorder(Border::CreateSolidBorder(kBorderWidth, SK_ColorGRAY));
 }
 
 void ColorChooserView::SaturationValueView::OnHueChanged(SkScalar hue) {
@@ -349,7 +349,7 @@ class ColorChooserView::SelectedColorPatchView : public views::View {
 ColorChooserView::SelectedColorPatchView::SelectedColorPatchView() {
   SetFocusable(false);
   SetVisible(true);
-  set_border(Border::CreateSolidBorder(kBorderWidth, SK_ColorGRAY));
+  SetBorder(Border::CreateSolidBorder(kBorderWidth, SK_ColorGRAY));
 }
 
 void ColorChooserView::SelectedColorPatchView::SetColor(SkColor color) {

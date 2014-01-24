@@ -292,8 +292,8 @@ void ContentSettingBubbleContents::Init() {
           NULL, base::UTF8ToUTF16((i->second.selected_device.name)),
           this, true);
       menu_button->set_alignment(views::TextButton::ALIGN_LEFT);
-      menu_button->set_border(
-          new views::TextButtonNativeThemeBorder(menu_button));
+      menu_button->SetBorder(scoped_ptr<views::Border>(
+          new views::TextButtonNativeThemeBorder(menu_button)));
       menu_button->set_animate_on_state_change(false);
 
       MediaMenuParts* menu_view = new MediaMenuParts(i->first);

@@ -136,7 +136,8 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
   BubbleBorder::Arrow adjusted_arrow = arrow();
   if (base::i18n::IsRTL())
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
-  frame->SetBubbleBorder(new BubbleBorder(adjusted_arrow, shadow(), color()));
+  frame->SetBubbleBorder(scoped_ptr<BubbleBorder>(
+      new BubbleBorder(adjusted_arrow, shadow(), color())));
   return frame;
 }
 

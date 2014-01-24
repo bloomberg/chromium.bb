@@ -31,11 +31,13 @@ void SetTrayImageItemBorder(views::View* tray_view,
                             ShelfAlignment alignment) {
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
       alignment == SHELF_ALIGNMENT_TOP) {
-    tray_view->set_border(views::Border::CreateEmptyBorder(
-        0, kTrayImageItemHorizontalPaddingBottomAlignment,
-        0, kTrayImageItemHorizontalPaddingBottomAlignment));
+    tray_view->SetBorder(views::Border::CreateEmptyBorder(
+        0,
+        kTrayImageItemHorizontalPaddingBottomAlignment,
+        0,
+        kTrayImageItemHorizontalPaddingBottomAlignment));
   } else {
-    tray_view->set_border(views::Border::CreateEmptyBorder(
+    tray_view->SetBorder(views::Border::CreateEmptyBorder(
         kTrayImageItemVerticalPaddingVerticalAlignment,
         kTrayImageItemHorizontalPaddingVerticalAlignment,
         kTrayImageItemVerticalPaddingVerticalAlignment,
@@ -47,15 +49,17 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view,
                             ShelfAlignment alignment) {
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
       alignment == SHELF_ALIGNMENT_TOP) {
-    tray_view->set_border(views::Border::CreateEmptyBorder(
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment,
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment));
+    tray_view->SetBorder(views::Border::CreateEmptyBorder(
+        0,
+        kTrayLabelItemHorizontalPaddingBottomAlignment,
+        0,
+        kTrayLabelItemHorizontalPaddingBottomAlignment));
   } else {
     // Center the label for vertical launcher alignment.
     int horizontal_padding = std::max(0,
         (tray_view->GetPreferredSize().width() -
         tray_view->label()->GetPreferredSize().width()) / 2);
-    tray_view->set_border(views::Border::CreateEmptyBorder(
+    tray_view->SetBorder(views::Border::CreateEmptyBorder(
         kTrayLabelItemVerticalPaddingVerticalAlignment,
         horizontal_padding,
         kTrayLabelItemVerticalPaddingVerticalAlignment,

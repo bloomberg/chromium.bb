@@ -96,10 +96,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();
 
-  // Updates our border with a specific LabelButtonBorder instance which has
-  // different insets, etc. This may wrap the border in an object which will
-  // draw a native style border.
-  void UpdateThemedBorder(LabelButtonBorder* label_button_border);
+  // Updates our border with a specific Border instance which has different
+  // insets, etc. This may wrap the border in an object which will draw a
+  // native style border.
+  void UpdateThemedBorder(scoped_ptr<Border> border);
 
   // NativeThemeDelegate:
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;

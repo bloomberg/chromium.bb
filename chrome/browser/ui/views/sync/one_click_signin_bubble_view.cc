@@ -140,7 +140,7 @@ void OneClickSigninBubbleView::Init() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
-  set_border(views::Border::CreateEmptyBorder(8, 8, 8, 8));
+  SetBorder(views::Border::CreateEmptyBorder(8, 8, 8, 8));
 
   // Column set for descriptive text and link.
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_FILL_ALIGN);

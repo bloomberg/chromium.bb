@@ -76,8 +76,8 @@ BubbleContentsView::BubbleContentsView(
   const SkColor kBubbleTextColor = SK_ColorWHITE;
   label_view_->SetEnabledColor(kBubbleTextColor);
   const int kLabelSpacing = 4;
-  label_view_->set_border(views::Border::CreateEmptyBorder(
-      kLabelSpacing, 0, kLabelSpacing, 0));
+  label_view_->SetBorder(
+      views::Border::CreateEmptyBorder(kLabelSpacing, 0, kLabelSpacing, 0));
   AddChildView(label_view_);
 }
 
@@ -378,7 +378,8 @@ MaximizeBubbleControllerBubble::MaximizeBubbleControllerBubble(
   bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
 
   bubble_border_ = new MaximizeBubbleBorder(this, GetAnchorView());
-  GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
+  GetBubbleFrameView()->SetBubbleBorder(
+      scoped_ptr<views::BubbleBorder>(bubble_border_));
   GetBubbleFrameView()->set_background(NULL);
 
   // Recalculate size with new border.

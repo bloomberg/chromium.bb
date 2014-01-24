@@ -77,7 +77,7 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
     right_margin = margin;
   else
     left_margin = margin;
-  text_label_->set_border(
+  text_label_->SetBorder(
       views::Border::CreateEmptyBorder(5, left_margin, 5, right_margin));
   text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label_->SetFontList(

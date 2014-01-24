@@ -80,7 +80,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
   close_->SetImage(CustomButton::STATE_PRESSED,
                    *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
   close_->SetSize(close_->GetPreferredSize());
-  close_->set_border(NULL);
+  close_->SetBorder(scoped_ptr<Border>());
   close_->SetVisible(false);
   AddChildView(close_);
 }
@@ -228,12 +228,12 @@ void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
     GetWidget()->Close();
 }
 
-void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
-  bubble_border_ = border;
-  set_border(bubble_border_);
+void BubbleFrameView::SetBubbleBorder(scoped_ptr<BubbleBorder> border) {
+  bubble_border_ = border.get();
+  SetBorder(border.PassAs<Border>());
 
   // Update the background, which relies on the border.
-  set_background(new views::BubbleBackground(border));
+  set_background(new views::BubbleBackground(bubble_border_));
 }
 
 void BubbleFrameView::SetTitlebarExtraView(View* view) {

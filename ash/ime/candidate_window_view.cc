@@ -97,7 +97,7 @@ class InformationTextArea : public views::View {
       : min_width_(min_width) {
     label_ = new views::Label;
     label_->SetHorizontalAlignment(align);
-    label_->set_border(views::Border::CreateEmptyBorder(2, 2, 2, 4));
+    label_->SetBorder(views::Border::CreateEmptyBorder(2, 2, 2, 4));
 
     SetLayoutManager(new views::FillLayout());
     AddChildView(label_);
@@ -119,9 +119,12 @@ class InformationTextArea : public views::View {
   }
 
   // Sets the border thickness for top/bottom.
-  void SetBorder(BorderPosition position) {
-    set_border(views::Border::CreateSolidSidedBorder(
-        (position == TOP) ? 1 : 0, 0, (position == BOTTOM) ? 1 : 0, 0,
+  void SetBorderFromPosition(BorderPosition position) {
+    SetBorder(views::Border::CreateSolidSidedBorder(
+        (position == TOP) ? 1 : 0,
+        0,
+        (position == BOTTOM) ? 1 : 0,
+        0,
         GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_MenuBorderColor)));
   }
@@ -153,7 +156,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
   set_background(
       views::Background::CreateSolidBackground(theme->GetSystemColor(
           ui::NativeTheme::kColorId_WindowBackground)));
-  set_border(views::Border::CreateSolidBorder(
+  SetBorder(views::Border::CreateSolidBorder(
       1, theme->GetSystemColor(ui::NativeTheme::kColorId_MenuBorderColor)));
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
@@ -163,12 +166,12 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
   auxiliary_text_->SetVisible(false);
   preedit_->SetVisible(false);
   candidate_area_->SetVisible(false);
-  preedit_->SetBorder(InformationTextArea::BOTTOM);
+  preedit_->SetBorderFromPosition(InformationTextArea::BOTTOM);
   if (candidate_window_.orientation() == ui::CandidateWindow::VERTICAL) {
     AddChildView(preedit_);
     AddChildView(candidate_area_);
     AddChildView(auxiliary_text_);
-    auxiliary_text_->SetBorder(InformationTextArea::TOP);
+    auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
     candidate_area_->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 0));
   } else {
@@ -176,7 +179,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
     AddChildView(auxiliary_text_);
     AddChildView(candidate_area_);
     auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
-    auxiliary_text_->SetBorder(InformationTextArea::BOTTOM);
+    auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
     candidate_area_->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, 0, 0, 0));
   }
@@ -192,8 +195,8 @@ views::Widget* CandidateWindowView::InitWidget() {
       widget->GetNativeView(),
       views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
-  GetBubbleFrameView()->SetBubbleBorder(
-      new CandidateWindowBorder(parent_window()));
+  GetBubbleFrameView()->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+      new CandidateWindowBorder(parent_window())));
   return widget;
 }
 
@@ -242,13 +245,13 @@ void CandidateWindowView::UpdateCandidates(
       if (new_candidate_window.orientation() == ui::CandidateWindow::VERTICAL) {
         ReorderChildView(auxiliary_text_, -1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_RIGHT);
-        auxiliary_text_->SetBorder(InformationTextArea::TOP);
+        auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
         candidate_area_->SetLayoutManager(new views::BoxLayout(
             views::BoxLayout::kVertical, 0, 0, 0));
       } else {
         ReorderChildView(auxiliary_text_, 1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
-        auxiliary_text_->SetBorder(InformationTextArea::BOTTOM);
+        auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
         candidate_area_->SetLayoutManager(new views::BoxLayout(
             views::BoxLayout::kHorizontal, 0, 0, 0));
       }

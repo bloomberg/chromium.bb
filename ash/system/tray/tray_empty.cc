@@ -44,7 +44,7 @@ views::View* TrayEmpty::CreateDefaultView(user::LoginStatus status) {
 
   views::View* view = new views::View;
   view->set_background(new EmptyBackground());
-  view->set_border(views::Border::CreateEmptyBorder(10, 0, 0, 0));
+  view->SetBorder(views::Border::CreateEmptyBorder(10, 0, 0, 0));
   view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
         0, 0, 0));
   view->SetPaintToLayer(true);

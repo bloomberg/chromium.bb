@@ -804,9 +804,7 @@ void View::set_background(Background* b) {
   background_.reset(b);
 }
 
-void View::set_border(Border* b) {
-  border_.reset(b);
-}
+void View::SetBorder(scoped_ptr<Border> b) { border_ = b.Pass(); }
 
 ui::ThemeProvider* View::GetThemeProvider() const {
   const Widget* widget = GetWidget();

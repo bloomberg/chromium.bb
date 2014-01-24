@@ -37,7 +37,7 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 class FolderHeaderView::FolderNameView : public views::Textfield {
  public:
   FolderNameView() {
-    set_border(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+    SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
     const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
           kFocusBorderColor,
@@ -73,7 +73,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
   folder_name_view_->set_placeholder_text_color(kHintTextColor);
   folder_name_view_->set_placeholder_text(
       rb.GetLocalizedString(IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER));
-  folder_name_view_->set_border(NULL);
+  folder_name_view_->SetBorder(views::Border::NullBorder());
   folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);
   folder_name_view_->set_controller(this);
   AddChildView(folder_name_view_);

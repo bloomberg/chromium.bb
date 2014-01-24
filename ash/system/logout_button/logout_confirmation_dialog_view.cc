@@ -37,9 +37,8 @@ LogoutConfirmationDialogView::LogoutConfirmationDialogView(
     LogoutButtonTray* owner, Delegate* delegate) : owner_(owner),
                                                    delegate_(delegate) {
   text_label_ = new views::Label;
-  text_label_->set_border(
-      views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal,
-                                       0, kTrayPopupPaddingHorizontal));
+  text_label_->SetBorder(views::Border::CreateEmptyBorder(
+      0, kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingHorizontal));
   text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label_->SetMultiLine(true);
 

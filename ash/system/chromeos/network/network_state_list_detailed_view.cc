@@ -73,10 +73,11 @@ views::Label* CreateInfoBubbleLabel(const base::string16& text) {
 // Create a label formatted for info items in the menu
 views::Label* CreateMenuInfoLabel(const base::string16& text) {
   views::Label* label = new views::Label(text);
-  label->set_border(views::Border::CreateEmptyBorder(
-      ash::kTrayPopupPaddingBetweenItems,
-      ash::kTrayPopupPaddingHorizontal,
-      ash::kTrayPopupPaddingBetweenItems, 0));
+  label->SetBorder(
+      views::Border::CreateEmptyBorder(ash::kTrayPopupPaddingBetweenItems,
+                                       ash::kTrayPopupPaddingHorizontal,
+                                       ash::kTrayPopupPaddingBetweenItems,
+                                       0));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
   return label;
@@ -618,8 +619,8 @@ bool NetworkStateListDetailedView::UpdateNetworkChild(int index,
     container = new HoverHighlightView(this);
     container->AddIconAndLabel(info->image, info->label, font);
     scroll_content()->AddChildViewAt(container, index);
-    container->set_border(views::Border::CreateEmptyBorder(
-        0, kTrayPopupPaddingHorizontal, 0, 0));
+    container->SetBorder(
+        views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
     needs_relayout = true;
   } else {
     container = found->second;
@@ -833,7 +834,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   views::View* container = new views::View;
   container->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-  container->set_border(views::Border::CreateEmptyBorder(0, 5, 0, 5));
+  container->SetBorder(views::Border::CreateEmptyBorder(0, 5, 0, 5));
 
   std::string ethernet_address, wifi_address, vpn_address;
   if (list_type_ != LIST_TYPE_VPN) {

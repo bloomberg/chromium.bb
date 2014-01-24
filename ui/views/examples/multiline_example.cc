@@ -27,7 +27,7 @@ class MultilineExample::RenderTextView : public View {
     render_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     render_text_->SetColor(SK_ColorBLACK);
     render_text_->SetMultiline(true);
-    set_border(Border::CreateSolidBorder(2, SK_ColorGRAY));
+    SetBorder(Border::CreateSolidBorder(2, SK_ColorGRAY));
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -108,7 +108,7 @@ void MultilineExample::CreateExampleView(View* container) {
   label_ = new Label();
   label_->SetText(ASCIIToUTF16(kTestString));
   label_->SetMultiLine(true);
-  label_->set_border(Border::CreateSolidBorder(2, SK_ColorCYAN));
+  label_->SetBorder(Border::CreateSolidBorder(2, SK_ColorCYAN));
 
   label_checkbox_ = new Checkbox(ASCIIToUTF16("views::Label:"));
   label_checkbox_->SetChecked(true);

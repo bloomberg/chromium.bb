@@ -48,7 +48,7 @@ class TrayPopupItemContainer : public views::View {
         change_background_(change_background) {
     set_notify_enter_exit_on_child(true);
     if (draw_border) {
-      set_border(
+      SetBorder(
           views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kBorderLightColor));
     }
     views::BoxLayout* layout = new views::BoxLayout(

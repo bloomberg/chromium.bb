@@ -55,9 +55,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Overridden from ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
-  // Use bubble_border() and SetBubbleBorder(), not border() and set_border().
+  // Use bubble_border() and SetBubbleBorder(), not border() and SetBorder().
   BubbleBorder* bubble_border() const { return bubble_border_; }
-  void SetBubbleBorder(BubbleBorder* border);
+  void SetBubbleBorder(scoped_ptr<BubbleBorder> border);
 
   gfx::Insets content_margins() const { return content_margins_; }
 

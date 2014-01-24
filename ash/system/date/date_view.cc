@@ -248,7 +248,7 @@ bool TimeView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout){
-  SetBorder(clock_layout);
+  SetBorderFromLayout(clock_layout);
   if (clock_layout == TrayDate::HORIZONTAL_CLOCK) {
     RemoveChildView(vertical_label_hours_.get());
     RemoveChildView(vertical_label_minutes_.get());
@@ -274,13 +274,15 @@ void TimeView::UpdateClockLayout(TrayDate::ClockLayout clock_layout){
   Layout();
 }
 
-void TimeView::SetBorder(TrayDate::ClockLayout clock_layout) {
+void TimeView::SetBorderFromLayout(TrayDate::ClockLayout clock_layout) {
   if (clock_layout == TrayDate::HORIZONTAL_CLOCK)
-    set_border(views::Border::CreateEmptyBorder(
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment,
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment));
+    SetBorder(views::Border::CreateEmptyBorder(
+        0,
+        kTrayLabelItemHorizontalPaddingBottomAlignment,
+        0,
+        kTrayLabelItemHorizontalPaddingBottomAlignment));
   else
-    set_border(NULL);
+    SetBorder(views::Border::NullBorder());
 }
 
 void TimeView::SetupLabels() {
@@ -292,9 +294,8 @@ void TimeView::SetupLabels() {
   SetupLabel(vertical_label_minutes_.get());
   vertical_label_minutes_->SetEnabledColor(kVerticalClockMinuteColor);
   // Pull the minutes up closer to the hours by using a negative top border.
-  vertical_label_minutes_->set_border(
-      views::Border::CreateEmptyBorder(
-          kVerticalClockMinutesTopOffset, 0, 0, 0));
+  vertical_label_minutes_->SetBorder(views::Border::CreateEmptyBorder(
+      kVerticalClockMinutesTopOffset, 0, 0, 0));
 }
 
 void TimeView::SetupLabel(views::Label* label) {

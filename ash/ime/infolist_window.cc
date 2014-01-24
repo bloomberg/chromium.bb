@@ -120,8 +120,7 @@ InfolistEntryView::InfolistEntryView(const ui::InfolistEntry& entry,
   title_label_->SetPosition(gfx::Point(0, 0));
   title_label_->SetFontList(title_font);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->set_border(
-      views::Border::CreateEmptyBorder(4, 7, 2, 4));
+  title_label_->SetBorder(views::Border::CreateEmptyBorder(4, 7, 2, 4));
 
   description_label_ = new views::Label(entry.body);
   description_label_->SetPosition(gfx::Point(0, 0));
@@ -129,8 +128,7 @@ InfolistEntryView::InfolistEntryView(const ui::InfolistEntry& entry,
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   description_label_->SetMultiLine(true);
   description_label_->SizeToFit(kInfolistEntryWidth);
-  description_label_->set_border(
-      views::Border::CreateEmptyBorder(2, 17, 4, 4));
+  description_label_->SetBorder(views::Border::CreateEmptyBorder(2, 17, 4, 4));
   AddChildView(title_label_);
   AddChildView(description_label_);
   UpdateBackground();
@@ -157,12 +155,13 @@ void InfolistEntryView::UpdateBackground() {
     set_background(
       views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
-    set_border(
-        views::Border::CreateSolidBorder(1, GetNativeTheme()->GetSystemColor(
+    SetBorder(views::Border::CreateSolidBorder(
+        1,
+        GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_FocusedBorderColor)));
   } else {
     set_background(NULL);
-    set_border(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+    SetBorder(views::Border::CreateEmptyBorder(1, 1, 1, 1));
   }
   SchedulePaint();
 }
@@ -181,8 +180,9 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
   set_background(
       views::Background::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_WindowBackground)));
-  set_border(
-      views::Border::CreateSolidBorder(1, GetNativeTheme()->GetSystemColor(
+  SetBorder(views::Border::CreateSolidBorder(
+      1,
+      GetNativeTheme()->GetSystemColor(
           ui::NativeTheme::kColorId_MenuBorderColor)));
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
@@ -194,7 +194,7 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
   caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   caption_label->SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
-  caption_label->set_border(views::Border::CreateEmptyBorder(2, 2, 2, 2));
+  caption_label->SetBorder(views::Border::CreateEmptyBorder(2, 2, 2, 2));
   caption_label->set_background(views::Background::CreateSolidBackground(
       color_utils::AlphaBlend(SK_ColorBLACK,
                               GetNativeTheme()->GetSystemColor(
@@ -220,7 +220,8 @@ void InfolistWindow::InitWidget() {
       views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
   // BubbleFrameView will be initialized through CreateBubble.
-  GetBubbleFrameView()->SetBubbleBorder(new InfolistBorder());
+  GetBubbleFrameView()->SetBubbleBorder(
+      scoped_ptr<views::BubbleBorder>(new InfolistBorder()));
   SizeToContents();
 }
 

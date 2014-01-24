@@ -64,10 +64,8 @@ class DateDefaultView : public views::View,
     SetLayoutManager(new views::FillLayout);
 
     date_view_ = new tray::DateView();
-    date_view_->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
-        ash::kTrayPopupPaddingHorizontal,
-        0,
-        0));
+    date_view_->SetBorder(views::Border::CreateEmptyBorder(
+        kPaddingVertical, ash::kTrayPopupPaddingHorizontal, 0, 0));
     SpecialPopupRow* view = new SpecialPopupRow();
     view->SetContent(date_view_);
     AddChildView(view);

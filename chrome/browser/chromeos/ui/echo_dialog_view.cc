@@ -168,11 +168,10 @@ gfx::Size EchoDialogView::GetPreferredSize() {
 }
 
 void EchoDialogView::SetLabelBorderAndBounds() {
-  label_->set_border(views::Border::CreateEmptyBorder(
-      kDialogLabelTopInset,
-      kDialogLabelLeftInset,
-      kDialogLabelBottomInset,
-      kDialogLabelRightInset));
+  label_->SetBorder(views::Border::CreateEmptyBorder(kDialogLabelTopInset,
+                                                     kDialogLabelLeftInset,
+                                                     kDialogLabelBottomInset,
+                                                     kDialogLabelRightInset));
 
   label_->SetBounds(label_->x(),
                     label_->y(),

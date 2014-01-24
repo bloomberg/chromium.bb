@@ -333,7 +333,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
         (settings::kLearnMoreTargetHeight - settings::kLearnMoreSize) / 2;
     // The image itself is quite small, this large invisible border creates a
     // much bigger click target.
-    learn_more_->set_border(
+    learn_more_->SetBorder(
         views::Border::CreateEmptyBorder(learn_more_border_height,
                                          learn_more_border_width,
                                          learn_more_border_height,
@@ -496,7 +496,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
           ui::ResourceBundle::MediumFont));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
-  title_label_->set_border(
+  title_label_->SetBorder(
       views::Border::CreateEmptyBorder(kComputedTitleTopMargin,
                                        settings::kTitleMargin,
                                        kComputedTitleBottomMargin,
@@ -571,7 +571,7 @@ void NotifierSettingsView::UpdateContentsView(
 
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
-  top_label->set_border(views::Border::CreateEmptyBorder(
+  top_label->SetBorder(views::Border::CreateEmptyBorder(
       0,
       settings::kTitleMargin + kMenuButtonInnateMargin,
       0,
@@ -598,7 +598,8 @@ void NotifierSettingsView::UpdateContentsView(
     selector_border->SetInsets(gfx::Insets(
         kMenuButtonVerticalPadding, kMenuButtonLeftPadding,
         kMenuButtonVerticalPadding, kMenuButtonRightPadding));
-    notifier_group_selector_->set_border(selector_border.release());
+    notifier_group_selector_->SetBorder(
+        selector_border.PassAs<views::Border>());
     notifier_group_selector_->SetFocusPainter(scoped_ptr<views::Painter>());
     notifier_group_selector_->set_animate_on_state_change(false);
     notifier_group_selector_->SetFocusable(true);
@@ -616,17 +617,17 @@ void NotifierSettingsView::UpdateContentsView(
     // border on the last notifier, as the spec leaves a space for it.
     scoped_ptr<views::Border> entry_border;
     if (i == notifier_count - 1) {
-      entry_border.reset(views::Border::CreateEmptyBorder(
-          0, 0, settings::kEntrySeparatorHeight, 0));
+      entry_border = views::Border::CreateEmptyBorder(
+          0, 0, settings::kEntrySeparatorHeight, 0);
     } else {
-      entry_border.reset(views::Border::CreateSolidSidedBorder(
-          0,
-          0,
-          settings::kEntrySeparatorHeight,
-          0,
-          settings::kEntrySeparatorColor));
+      entry_border =
+          views::Border::CreateSolidSidedBorder(0,
+                                                0,
+                                                settings::kEntrySeparatorHeight,
+                                                0,
+                                                settings::kEntrySeparatorColor);
     }
-    entry->set_border(entry_border.release());
+    entry->SetBorder(entry_border.Pass());
     entry->SetFocusable(true);
     contents_view->AddChildView(entry);
     buttons_.insert(button);

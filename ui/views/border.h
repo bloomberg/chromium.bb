@@ -6,6 +6,7 @@
 #define UI_VIEWS_BORDER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/views_export.h"
@@ -26,7 +27,7 @@ class View;
 //
 // The border class is used to display a border around a view.
 // To set a border on a view, just call SetBorder on the view, for example:
-// view->set_border(Border::CreateSolidBorder(1, SkColorSetRGB(25, 25, 112));
+// view->SetBorder(Border::CreateSolidBorder(1, SkColorSetRGB(25, 25, 112));
 // Once set on a view, the border is owned by the view.
 //
 // IMPORTANT NOTE: not all views support borders at this point. In order to
@@ -43,27 +44,33 @@ class VIEWS_EXPORT Border {
   Border();
   virtual ~Border();
 
+  // Convenience for creating a scoped_ptr with no Border.
+  static scoped_ptr<Border> NullBorder();
+
   // Creates a border that is a simple line of the specified thickness and
   // color.
-  static Border* CreateSolidBorder(int thickness, SkColor color);
+  static scoped_ptr<Border> CreateSolidBorder(int thickness, SkColor color);
 
   // Creates a border for reserving space. The returned border does not
   // paint anything.
-  static Border* CreateEmptyBorder(int top, int left, int bottom, int right);
+  static scoped_ptr<Border> CreateEmptyBorder(int top,
+                                              int left,
+                                              int bottom,
+                                              int right);
 
   // Creates a border of the specified color, and specified thickness on each
   // side.
-  static Border* CreateSolidSidedBorder(int top,
-                                        int left,
-                                        int bottom,
-                                        int right,
-                                        SkColor color);
+  static scoped_ptr<Border> CreateSolidSidedBorder(int top,
+                                                   int left,
+                                                   int bottom,
+                                                   int right,
+                                                   SkColor color);
 
   // Creates a Border from the specified Painter. The border owns the painter,
   // thus the painter is deleted when the Border is deleted.
   // |insets| define size of an area allocated for a Border.
-  static Border* CreateBorderPainter(Painter* painter,
-                                     const gfx::Insets& insets);
+  static scoped_ptr<Border> CreateBorderPainter(Painter* painter,
+                                                const gfx::Insets& insets);
 
   // Renders the border for the specified view.
   virtual void Paint(const View& view, gfx::Canvas* canvas) = 0;

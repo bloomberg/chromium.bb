@@ -62,7 +62,7 @@ class ASH_EXPORT TrayDetailsView : public views::View {
   SpecialPopupRow* footer_;
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
-  ScrollBorder* scroll_border_;
+  ScrollBorder* scroll_border_;  // Weak reference
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsView);
 };

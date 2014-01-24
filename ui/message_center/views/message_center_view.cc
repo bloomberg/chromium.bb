@@ -256,7 +256,7 @@ MessageListView::MessageListView(MessageCenterView* message_center_view,
   gfx::Insets shadow_insets = MessageView::GetShadowInsets();
   set_background(views::Background::CreateSolidBackground(
       kMessageCenterBackgroundColor));
-  set_border(views::Border::CreateEmptyBorder(
+  SetBorder(views::Border::CreateEmptyBorder(
       top_down ? 0 : kMarginBetweenItems - shadow_insets.top(),    /* top */
       kMarginBetweenItems - shadow_insets.left(),                  /* left */
       top_down ? kMarginBetweenItems - shadow_insets.bottom() : 0, /* bottom */
@@ -801,10 +801,10 @@ void MessageCenterView::Layout() {
     if (is_scrollable) {
       // Draw separator line on the top of the button bar if it is on the bottom
       // or draw it at the bottom if the bar is on the top.
-      button_bar_->set_border(views::Border::CreateSolidSidedBorder(
+      button_bar_->SetBorder(views::Border::CreateSolidSidedBorder(
           top_down_ ? 0 : 1, 0, top_down_ ? 1 : 0, 0, kFooterDelimiterColor));
     } else {
-      button_bar_->set_border(views::Border::CreateEmptyBorder(
+      button_bar_->SetBorder(views::Border::CreateEmptyBorder(
           top_down_ ? 0 : 1, 0, top_down_ ? 1 : 0, 0));
     }
     button_bar_->SchedulePaint();

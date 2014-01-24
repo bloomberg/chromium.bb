@@ -88,8 +88,8 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   for (size_t state = 0; state < views::Button::STATE_COUNT; ++state)
     SetTextColor(static_cast<views::Button::ButtonState>(state), SK_ColorWHITE);
 
-  views::LabelButtonBorder* border =
-      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON);
+  scoped_ptr<views::LabelButtonBorder> border(
+      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON));
   border->SetPainter(false, views::Button::STATE_NORMAL,
       views::Painter::CreateImageGridPainter(kLogoutButtonNormalImages));
   border->SetPainter(false, views::Button::STATE_HOVERED,
@@ -100,7 +100,7 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
   insets += gfx::Insets(0, kLogoutButtonHorizontalExtraPadding,
                         0, kLogoutButtonHorizontalExtraPadding);
   border->set_insets(insets);
-  set_border(border);
+  SetBorder(border.PassAs<views::Border>());
   set_animate_on_state_change(false);
 
   set_min_size(gfx::Size(0, GetShelfItemHeight()));
@@ -133,7 +133,7 @@ LogoutButtonTray::LogoutButtonTray(StatusAreaWidget* status_area_widget)
       confirmation_delegate_(new LogoutConfirmationDialogDelegate) {
   button_ = new LogoutButton(this);
   tray_container()->AddChildView(button_);
-  tray_container()->set_border(NULL);
+  tray_container()->SetBorder(views::Border::NullBorder());
   // The Shell may not exist in some unit tests.
   if (Shell::HasInstance()) {
     Shell::GetInstance()->system_tray_notifier()->
@@ -169,7 +169,7 @@ void LogoutButtonTray::EnsureConfirmationDialogIsClosed() {
 
 void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
-  tray_container()->set_border(NULL);
+  tray_container()->SetBorder(views::Border::NullBorder());
 }
 
 base::string16 LogoutButtonTray::GetAccessibleNameForTray() {

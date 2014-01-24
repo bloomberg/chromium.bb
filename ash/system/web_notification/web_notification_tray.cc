@@ -311,7 +311,7 @@ WebNotificationTray::WebNotificationTray(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
   tray_container()->AddChildView(button_);
   SetContentsBackground();
-  tray_container()->set_border(NULL);
+  tray_container()->SetBorder(views::Border::NullBorder());
   SetVisible(false);
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
@@ -458,7 +458,7 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
-  tray_container()->set_border(NULL);
+  tray_container()->SetBorder(views::Border::NullBorder());
   // Destroy any existing bubble so that it will be rebuilt correctly.
   message_center_tray_->HideMessageCenterBubble();
   message_center_tray_->HidePopupBubble();

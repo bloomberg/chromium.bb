@@ -122,7 +122,7 @@ class RemainingSessionTimeTrayView : public views::View {
   void Update();
 
  private:
-  void SetBorder(ShelfAlignment shelf_alignment);
+  void SetBorderFromAlignment(ShelfAlignment shelf_alignment);
 
   const TraySessionLengthLimit* owner_;
 
@@ -156,7 +156,7 @@ RemainingSessionTimeTrayView::~RemainingSessionTimeTrayView() {
 
 void RemainingSessionTimeTrayView::UpdateClockLayout(
     ShelfAlignment shelf_alignment) {
-  SetBorder(shelf_alignment);
+  SetBorderFromAlignment(shelf_alignment);
   const bool horizontal_layout = (shelf_alignment == SHELF_ALIGNMENT_BOTTOM ||
       shelf_alignment == SHELF_ALIGNMENT_TOP);
   if (horizontal_layout && !horizontal_layout_label_) {
@@ -262,14 +262,17 @@ void RemainingSessionTimeTrayView::Update() {
   SetVisible(true);
 }
 
-void RemainingSessionTimeTrayView::SetBorder(ShelfAlignment shelf_alignment) {
+void RemainingSessionTimeTrayView::SetBorderFromAlignment(
+    ShelfAlignment shelf_alignment) {
   if (shelf_alignment == SHELF_ALIGNMENT_BOTTOM ||
       shelf_alignment == SHELF_ALIGNMENT_TOP) {
-    set_border(views::Border::CreateEmptyBorder(
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment,
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment));
+    SetBorder(views::Border::CreateEmptyBorder(
+        0,
+        kTrayLabelItemHorizontalPaddingBottomAlignment,
+        0,
+        kTrayLabelItemHorizontalPaddingBottomAlignment));
   } else {
-    set_border(NULL);
+    SetBorder(views::Border::NullBorder());
   }
 }
 

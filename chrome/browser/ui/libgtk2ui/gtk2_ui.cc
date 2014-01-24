@@ -527,10 +527,11 @@ gfx::Image Gtk2UI::GetIconForContentType(
   return gfx::Image(image_skia);
 }
 
-views::Border* Gtk2UI::CreateNativeBorder(
+scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     views::CustomButton* owning_button,
-    views::Border* border) {
-  return new Gtk2Border(this, owning_button, border);
+    scoped_ptr<views::Border> border) {
+  return scoped_ptr<views::Border>(
+      new Gtk2Border(this, owning_button, border.Pass()));
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(

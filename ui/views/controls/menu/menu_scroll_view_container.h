@@ -65,7 +65,7 @@ class MenuScrollViewContainer : public View {
   // If set the currently set border is a bubble border.
   BubbleBorder::Arrow arrow_;
 
-  // The currently set border.
+  // Weak reference to the currently set border.
   BubbleBorder* bubble_border_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuScrollViewContainer);

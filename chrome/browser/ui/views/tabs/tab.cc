@@ -780,7 +780,7 @@ void Tab::Layout() {
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
   int content_height = std::max(tab_icon_size(), font_height_);
-  close_button_->set_border(NULL);
+  close_button_->SetBorder(views::Border::NullBorder());
   gfx::Size close_button_size(close_button_->GetPreferredSize());
   content_height = std::max(content_height, close_button_size.height());
 
@@ -819,8 +819,8 @@ void Tab::Layout() {
     int left_border = kCloseButtonHorzFuzz;
     int right_border = width() - (lb.width() + close_button_size.width() +
         left_border);
-    close_button_->set_border(views::Border::CreateEmptyBorder(top_border,
-        left_border, bottom_border, right_border));
+    close_button_->SetBorder(views::Border::CreateEmptyBorder(
+        top_border, left_border, bottom_border, right_border));
     close_button_->SetPosition(gfx::Point(lb.width(), 0));
     close_button_->SizeToPreferredSize();
     close_button_->SetVisible(true);

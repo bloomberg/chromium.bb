@@ -54,12 +54,15 @@ const int kExpandIconBottomPadding = 8;
 const int kExpandIconRightPadding = 11;
 
 // static
-views::Border* MakeEmptyBorder(int top, int left, int bottom, int right) {
+scoped_ptr<views::Border> MakeEmptyBorder(int top,
+                                          int left,
+                                          int bottom,
+                                          int right) {
   return views::Border::CreateEmptyBorder(top, left, bottom, right);
 }
 
 // static
-views::Border* MakeTextBorder(int padding, int top, int bottom) {
+scoped_ptr<views::Border> MakeTextBorder(int padding, int top, int bottom) {
   // Split the padding between the top and the bottom, then add the extra space.
   return MakeEmptyBorder(padding / 2 + top,
                          message_center::kTextLeftPadding,
@@ -68,7 +71,7 @@ views::Border* MakeTextBorder(int padding, int top, int bottom) {
 }
 
 // static
-views::Border* MakeProgressBarBorder(int top, int bottom) {
+scoped_ptr<views::Border> MakeProgressBarBorder(int top, int bottom) {
   return MakeEmptyBorder(top,
                          message_center::kTextLeftPadding,
                          bottom,
@@ -76,7 +79,9 @@ views::Border* MakeProgressBarBorder(int top, int bottom) {
 }
 
 // static
-views::Border* MakeSeparatorBorder(int top, int left, SkColor color) {
+scoped_ptr<views::Border> MakeSeparatorBorder(int top,
+                                              int left,
+                                              SkColor color) {
   return views::Border::CreateSolidSidedBorder(top, left, 0, 0, color);
 }
 
@@ -182,7 +187,7 @@ views::View* MakeNotificationImage(const gfx::Image& image, gfx::Size size) {
   // This calculation determines that the new image would have the correct
   // height for width.
   if (ideal_size != scaled_size) {
-    proportional_image_view->set_border(views::Border::CreateSolidBorder(
+    proportional_image_view->SetBorder(views::Border::CreateSolidBorder(
         message_center::kNotificationImageBorderSize, SK_ColorTRANSPARENT));
   }
 
@@ -311,8 +316,8 @@ NotificationView::NotificationView(MessageCenterController* controller,
   top_view_ = new views::View();
   top_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  top_view_->set_border(MakeEmptyBorder(
-      kTextTopPadding - 8, 0, kTextBottomPadding - 5, 0));
+  top_view_->SetBorder(
+      MakeEmptyBorder(kTextTopPadding - 8, 0, kTextBottomPadding - 5, 0));
 
   const gfx::FontList default_label_font_list = views::Label().font_list();
 
@@ -331,7 +336,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
                               message_center::kTitleLineLimit);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
-    title_view_->set_border(MakeTextBorder(padding, 3, 0));
+    title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
     top_view_->AddChildView(title_view_);
     accessible_lines.push_back(notification.title());
   }
@@ -346,7 +351,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
     message_view_->SetVisible(!is_expanded_ || !notification.items().size());
     message_view_->SetColors(message_center::kRegularTextColor,
                              kDimTextBackgroundColor);
-    message_view_->set_border(MakeTextBorder(padding, 4, 0));
+    message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
     accessible_lines.push_back(notification.message());
   }
@@ -364,7 +369,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
     context_message_view_->SetLineHeight(kMessageLineHeight);
     context_message_view_->SetColors(message_center::kDimTextColor,
                                      kContextTextBackgroundColor);
-    context_message_view_->set_border(MakeTextBorder(padding, 4, 0));
+    context_message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(context_message_view_);
     accessible_lines.push_back(notification.context_message());
   }
@@ -373,7 +378,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   progress_bar_view_ = NULL;
   if (notification.type() == NOTIFICATION_TYPE_PROGRESS) {
     progress_bar_view_ = new NotificationProgressBar();
-    progress_bar_view_->set_border(MakeProgressBarBorder(
+    progress_bar_view_->SetBorder(MakeProgressBarBorder(
         message_center::kProgressBarTopPadding, kProgressBarBottomPadding));
     progress_bar_view_->SetValue(notification.progress() / 100.0);
     top_view_->AddChildView(progress_bar_view_);
@@ -385,7 +390,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
     ItemView* item_view = new ItemView(items[i]);
     item_view->SetVisible(is_expanded_);
-    item_view->set_border(MakeTextBorder(padding, i ? 0 : 4, 0));
+    item_view->SetBorder(MakeTextBorder(padding, i ? 0 : 4, 0));
     item_views_.push_back(item_view);
     top_view_->AddChildView(item_view);
     accessible_lines.push_back(
@@ -432,7 +437,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   std::vector<ButtonInfo> buttons = notification.buttons();
   for (size_t i = 0; i < buttons.size(); ++i) {
     views::View* separator = new views::ImageView();
-    separator->set_border(MakeSeparatorBorder(1, 0, kButtonSeparatorColor));
+    separator->SetBorder(MakeSeparatorBorder(1, 0, kButtonSeparatorColor));
     bottom_view_->AddChildView(separator);
     NotificationButton* button = new NotificationButton(this);
     ButtonInfo button_info = buttons[i];

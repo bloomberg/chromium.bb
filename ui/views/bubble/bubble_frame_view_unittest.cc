@@ -23,7 +23,8 @@ class TestBubbleFrameView : public BubbleFrameView {
   TestBubbleFrameView()
       : BubbleFrameView(gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
         available_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
-    SetBubbleBorder(new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor));
+    SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+        new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor)));
   }
   virtual ~TestBubbleFrameView() {}
 

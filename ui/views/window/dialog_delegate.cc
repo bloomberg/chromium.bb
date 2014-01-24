@@ -169,14 +169,11 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(
   const SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   if (force_opaque_border) {
-    frame->SetBubbleBorder(new BubbleBorder(
-        BubbleBorder::NONE,
-        BubbleBorder::NO_SHADOW_OPAQUE_BORDER,
-        color));
+    frame->SetBubbleBorder(scoped_ptr<BubbleBorder>(new BubbleBorder(
+        BubbleBorder::NONE, BubbleBorder::NO_SHADOW_OPAQUE_BORDER, color)));
   } else {
-    frame->SetBubbleBorder(new BubbleBorder(BubbleBorder::FLOAT,
-                                            BubbleBorder::SMALL_SHADOW,
-                                            color));
+    frame->SetBubbleBorder(scoped_ptr<BubbleBorder>(new BubbleBorder(
+        BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW, color)));
   }
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {

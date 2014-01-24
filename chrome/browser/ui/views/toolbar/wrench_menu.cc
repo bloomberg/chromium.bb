@@ -404,8 +404,8 @@ class WrenchMenuView : public views::View,
     button->SetTextColor(views::Button::STATE_NORMAL, menu_config.text_color);
     if (background)
       *background = bg;
-    button->set_border(
-        new MenuButtonBorder(menu_config, menu_->use_new_menu()));
+    button->SetBorder(scoped_ptr<views::Border>(
+        new MenuButtonBorder(menu_config, menu_->use_new_menu())));
     button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button->SetFontList(menu_config.font_list);
     ui::NativeTheme* native_theme = button->GetNativeTheme();
@@ -626,8 +626,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         menu->use_new_menu());
     zoom_label_->set_background(center_bg);
     const MenuConfig& menu_config(menu->GetMenuConfig());
-    zoom_label_->set_border(
-        new MenuButtonBorder(menu_config, menu->use_new_menu()));
+    zoom_label_->SetBorder(scoped_ptr<views::Border>(
+        new MenuButtonBorder(menu_config, menu->use_new_menu())));
     zoom_label_->SetFontList(menu_config.font_list);
 
     AddChildView(zoom_label_);
@@ -677,7 +677,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
     int horizontal_padding =
         menu->use_new_menu() ? kHorizontalTouchPadding : kHorizontalPadding;
-    fullscreen_button_->set_border(views::Border::CreateEmptyBorder(
+    fullscreen_button_->SetBorder(views::Border::CreateEmptyBorder(
         0, horizontal_padding, 0, horizontal_padding));
     fullscreen_button_->set_background(
         new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON,

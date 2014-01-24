@@ -128,8 +128,8 @@ class IMEDetailedView : public TrayDetailsView,
           property_list[i].name,
           property_list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
       if (i == 0)
-        container->set_border(views::Border::CreateSolidSidedBorder(1, 0, 0, 0,
-        kBorderLightColor));
+        container->SetBorder(views::Border::CreateSolidSidedBorder(
+            1, 0, 0, 0, kBorderLightColor));
       scroll_content()->AddChildView(container);
       property_map_[container] = property_list[i].key;
     }

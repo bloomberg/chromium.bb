@@ -90,7 +90,7 @@ Textfield::Textfield()
       weak_ptr_factory_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
-  set_border(new FocusableBorder());
+  SetBorder(scoped_ptr<Border>(new FocusableBorder()));
   SetFocusable(true);
 
   if (ViewsDelegate::views_delegate) {

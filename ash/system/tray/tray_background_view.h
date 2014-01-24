@@ -152,7 +152,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Called from Initialize after all status area trays have been created.
   // Sets the border based on the position of the view.
-  void SetBorder();
+  void SetTrayBorder();
 
   // Unowned pointer to parent widget.
   StatusAreaWidget* status_area_widget_;

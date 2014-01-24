@@ -50,8 +50,8 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
 
  private:
   const Gtk2UI* gtk2_ui_;
-  GtkStateType state_;
-  gfx::Size size_;
+  const GtkStateType state_;
+  const gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonImageSkiaSource);
 };
@@ -60,11 +60,11 @@ class ButtonImageSkiaSource : public gfx::ImageSkiaSource {
 
 Gtk2Border::Gtk2Border(Gtk2UI* gtk2_ui,
                        views::CustomButton* owning_button,
-                       views::Border* border)
+                       scoped_ptr<views::Border> border)
     : gtk2_ui_(gtk2_ui),
       use_gtk_(gtk2_ui_->GetUseSystemTheme()),
       owning_button_(owning_button),
-      border_(border) {
+      border_(border.Pass()) {
   gtk2_ui_->AddGtkBorder(this);
 }
 

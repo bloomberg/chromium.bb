@@ -89,7 +89,7 @@ class MaximizeBubbleControllerBubble : public views::BubbleDelegateView,
   // The content accessor of the menu.
   BubbleContentsView* contents_view_;
 
-  // The bubble border.
+  // The bubble border (weak reference).
   MaximizeBubbleBorder* bubble_border_;
 
   // The rectangle before the animation starts.

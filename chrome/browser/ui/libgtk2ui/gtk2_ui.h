@@ -97,9 +97,9 @@ class Gtk2UI : public views::LinuxUI {
       const base::string16& tool_tip) const OVERRIDE;
   virtual gfx::Image GetIconForContentType(
       const std::string& content_type, int size) const OVERRIDE;
-  virtual views::Border* CreateNativeBorder(
+  virtual scoped_ptr<views::Border> CreateNativeBorder(
       views::CustomButton* owning_button,
-      views::Border* border) OVERRIDE;
+      scoped_ptr<views::Border> border) OVERRIDE;
   virtual void AddWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) OVERRIDE;
   virtual void RemoveWindowButtonOrderObserver(

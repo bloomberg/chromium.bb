@@ -210,7 +210,7 @@ void ToolbarView::Init() {
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
   app_menu_ = new WrenchToolbarButton(this);
-  app_menu_->set_border(NULL);
+  app_menu_->SetBorder(views::Border::NullBorder());
   app_menu_->EnableCanvasFlippingForRTLUI(true);
   app_menu_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
   app_menu_->SetTooltipText(l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));

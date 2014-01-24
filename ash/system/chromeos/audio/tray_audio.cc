@@ -500,11 +500,11 @@ class AudioDetailedView : public TrayDetailsView,
     else
       left_margin = margin;
 
-    label->set_border(views::Border::CreateEmptyBorder(
-        ash::kTrayPopupPaddingBetweenItems,
-        left_margin,
-        ash::kTrayPopupPaddingBetweenItems,
-        right_margin));
+    label->SetBorder(
+        views::Border::CreateEmptyBorder(ash::kTrayPopupPaddingBetweenItems,
+                                         left_margin,
+                                         ash::kTrayPopupPaddingBetweenItems,
+                                         right_margin));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetEnabledColor(SkColorSetARGB(192, 0, 0, 0));
     label->SetFontList(label->font_list().DeriveFontListWithSizeDeltaAndStyle(

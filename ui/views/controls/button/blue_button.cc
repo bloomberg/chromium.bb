@@ -30,7 +30,7 @@ BlueButton::BlueButton(ButtonListener* listener, const base::string16& text)
 
   // Insets for splitting the images.
   const gfx::Insets insets(5, 5, 5, 5);
-  LabelButtonBorder* button_border = new LabelButtonBorder(style());
+  scoped_ptr<LabelButtonBorder> button_border(new LabelButtonBorder(style()));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   button_border->SetPainter(false, STATE_NORMAL, Painter::CreateImagePainter(
           *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_NORMAL), insets));
@@ -48,7 +48,7 @@ BlueButton::BlueButton(ButtonListener* listener, const base::string16& text)
           *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_PRESSED), insets));
   button_border->SetPainter(true, STATE_DISABLED, Painter::CreateImagePainter(
           *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
-  set_border(button_border);
+  SetBorder(button_border.PassAs<Border>());
 }
 
 BlueButton::~BlueButton() {}

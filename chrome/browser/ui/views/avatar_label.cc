@@ -125,5 +125,5 @@ void AvatarLabel::UpdateLabelStyle() {
 }
 
 void AvatarLabel::SetLabelOnRight(bool label_on_right) {
-  set_border(new AvatarLabelBorder(label_on_right));
+  SetBorder(scoped_ptr<views::Border>(new AvatarLabelBorder(label_on_right)));
 }

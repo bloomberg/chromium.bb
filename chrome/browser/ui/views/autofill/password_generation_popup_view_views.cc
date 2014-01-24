@@ -41,7 +41,7 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
   password_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   password_label_->set_clip_insets(gfx::Insets(
       kPasswordVerticalInset, 0, kPasswordVerticalInset, 0));
-  password_label_->set_border(views::Border::CreateEmptyBorder(
+  password_label_->SetBorder(views::Border::CreateEmptyBorder(
       0, controller_->kHorizontalPadding, 0, controller_->kHorizontalPadding));
   AddChildView(password_label_);
 
@@ -59,7 +59,7 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
   help_label->SetBoundsRect(controller->help_bounds());
   help_label->set_background(
       views::Background::CreateSolidBackground(kExplanatoryTextBackground));
-  help_label->set_border(views::Border::CreateEmptyBorder(
+  help_label->SetBorder(views::Border::CreateEmptyBorder(
       controller_->kHelpVerticalPadding - kHelpVerticalOffset,
       controller_->kHorizontalPadding,
       0,

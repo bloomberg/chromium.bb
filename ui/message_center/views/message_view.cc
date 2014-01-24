@@ -83,10 +83,11 @@ gfx::Insets MessageView::GetShadowInsets() {
 }
 
 void MessageView::CreateShadowBorder() {
-  set_border(new views::ShadowBorder(kShadowBlur,
-                                     message_center::kShadowColor,
-                                     kShadowOffset,  // Vertical offset.
-                                     0));            // Horizontal offset.
+  SetBorder(scoped_ptr<views::Border>(
+      new views::ShadowBorder(kShadowBlur,
+                              message_center::kShadowColor,
+                              kShadowOffset,  // Vertical offset.
+                              0)));           // Horizontal offset.
 }
 
 bool MessageView::IsCloseButtonFocused() {

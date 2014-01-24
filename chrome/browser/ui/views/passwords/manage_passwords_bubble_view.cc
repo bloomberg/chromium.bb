@@ -210,8 +210,12 @@ void ManagePasswordsBubbleView::Init() {
         manage_passwords_bubble_model_,
         manage_passwords_bubble_model_->pending_credentials(),
         first_field_width, second_field_width);
-    item->set_border(views::Border::CreateSolidSidedBorder(
-        1, 0, 1, 0, GetNativeTheme()->GetSystemColor(
+    item->SetBorder(views::Border::CreateSolidSidedBorder(
+        1,
+        0,
+        1,
+        0,
+        GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
     layout->AddView(item);
 
@@ -267,12 +271,20 @@ void ManagePasswordsBubbleView::Init() {
             manage_passwords_bubble_model_, *i->second, first_field_width,
             second_field_width);
         if (i == manage_passwords_bubble_model_->best_matches().begin()) {
-          item->set_border(views::Border::CreateSolidSidedBorder(
-              1, 0, 1, 0, GetNativeTheme()->GetSystemColor(
+          item->SetBorder(views::Border::CreateSolidSidedBorder(
+              1,
+              0,
+              1,
+              0,
+              GetNativeTheme()->GetSystemColor(
                   ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
         } else {
-          item->set_border(views::Border::CreateSolidSidedBorder(
-              0, 0, 1, 0, GetNativeTheme()->GetSystemColor(
+          item->SetBorder(views::Border::CreateSolidSidedBorder(
+              0,
+              0,
+              1,
+              0,
+              GetNativeTheme()->GetSystemColor(
                   ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
         }
         layout->AddView(item);
@@ -292,11 +304,19 @@ void ManagePasswordsBubbleView::Init() {
           manage_passwords_bubble_model_->pending_credentials(),
           first_field_width, second_field_width);
       if (manage_passwords_bubble_model_->best_matches().empty()) {
-        item->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
+        item->SetBorder(views::Border::CreateSolidSidedBorder(
+            1,
+            0,
+            1,
+            0,
             GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
       } else {
-        item->set_border(views::Border::CreateSolidSidedBorder(0, 0, 1, 0,
+        item->SetBorder(views::Border::CreateSolidSidedBorder(
+            0,
+            0,
+            1,
+            0,
             GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
       }

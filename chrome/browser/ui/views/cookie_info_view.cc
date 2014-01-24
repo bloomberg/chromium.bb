@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
@@ -128,7 +129,7 @@ void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,
 
   // Now that the Textfield is in the view hierarchy, it can be initialized.
   text_field->SetReadOnly(true);
-  text_field->set_border(NULL);
+  text_field->SetBorder(views::Border::NullBorder());
   // Color these borderless text areas the same as the containing dialog.
   text_field->SetBackgroundColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground));

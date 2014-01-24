@@ -133,28 +133,37 @@ Border::~Border() {
 }
 
 // static
-Border* Border::CreateSolidBorder(int thickness, SkColor color) {
-  return new SolidBorder(thickness, color);
+scoped_ptr<Border> Border::NullBorder() {
+  return scoped_ptr<Border>();
 }
 
 // static
-Border* Border::CreateEmptyBorder(int top, int left, int bottom, int right) {
-  return new EmptyBorder(top, left, bottom, right);
+scoped_ptr<Border> Border::CreateSolidBorder(int thickness, SkColor color) {
+  return scoped_ptr<Border>(new SolidBorder(thickness, color));
 }
 
 // static
-Border* Border::CreateSolidSidedBorder(int top,
-                                       int left,
-                                       int bottom,
-                                       int right,
-                                       SkColor color) {
-  return new SidedSolidBorder(top, left, bottom, right, color);
+scoped_ptr<Border> Border::CreateEmptyBorder(int top,
+                                             int left,
+                                             int bottom,
+                                             int right) {
+  return scoped_ptr<Border>(new EmptyBorder(top, left, bottom, right));
 }
 
 // static
-Border* Border::CreateBorderPainter(Painter* painter,
-                                    const gfx::Insets& insets) {
-  return new BorderPainter(painter, insets);
+scoped_ptr<Border> Border::CreateSolidSidedBorder(int top,
+                                                  int left,
+                                                  int bottom,
+                                                  int right,
+                                                  SkColor color) {
+  return scoped_ptr<Border>(
+      new SidedSolidBorder(top, left, bottom, right, color));
+}
+
+// static
+scoped_ptr<Border> Border::CreateBorderPainter(Painter* painter,
+                                               const gfx::Insets& insets) {
+  return scoped_ptr<Border>(new BorderPainter(painter, insets));
 }
 
 TextButtonBorder* Border::AsTextButtonBorder() {

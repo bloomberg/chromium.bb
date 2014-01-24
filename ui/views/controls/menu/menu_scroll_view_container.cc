@@ -299,13 +299,14 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
   int right = menu_config.menu_horizontal_border_size + padding;
 
   if (use_border) {
-    set_border(views::Border::CreateBorderPainter(
-        new views::RoundRectPainter(menu_config.native_theme->GetSystemColor(
+    SetBorder(views::Border::CreateBorderPainter(
+        new views::RoundRectPainter(
+            menu_config.native_theme->GetSystemColor(
                 ui::NativeTheme::kColorId_MenuBorderColor),
             menu_config.corner_radius),
-            gfx::Insets(top, left, bottom, right)));
+        gfx::Insets(top, left, bottom, right)));
   } else {
-    set_border(Border::CreateEmptyBorder(top, left, bottom, right));
+    SetBorder(Border::CreateEmptyBorder(top, left, bottom, right));
   }
 }
 
@@ -313,7 +314,7 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
   bubble_border_ = new BubbleBorder(arrow_,
                                     BubbleBorder::SMALL_SHADOW,
                                     SK_ColorWHITE);
-  set_border(bubble_border_);
+  SetBorder(scoped_ptr<Border>(bubble_border_));
   set_background(new BubbleBackground(bubble_border_));
 }
 

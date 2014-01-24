@@ -126,10 +126,13 @@ void ButtonExample::TextButtonPressed(const ui::Event& event) {
           text_button_->text().length() < 50 ? kLongText : kTextButton));
     } else {
       use_native_theme_border_ = !use_native_theme_border_;
-      if (use_native_theme_border_)
-        text_button_->set_border(new TextButtonNativeThemeBorder(text_button_));
-      else
-        text_button_->set_border(new TextButtonDefaultBorder());
+      if (use_native_theme_border_) {
+        text_button_->SetBorder(scoped_ptr<views::Border>(
+            new TextButtonNativeThemeBorder(text_button_)));
+      } else {
+        text_button_->SetBorder(
+            scoped_ptr<views::Border>(new TextButtonDefaultBorder()));
+      }
     }
   } else if (event.IsAltDown()) {
     text_button_->SetIsDefault(!text_button_->is_default());

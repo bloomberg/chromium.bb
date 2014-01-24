@@ -48,9 +48,8 @@ views::View* LabelTrayView::CreateChildView(
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* icon = rb.GetImageSkiaNamed(icon_resource_id_);
     child->AddIconAndLabel(*icon, message, gfx::Font::NORMAL);
-    child->set_border(
-        views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal,
-                                         0, kTrayPopupPaddingHorizontal));
+    child->SetBorder(views::Border::CreateEmptyBorder(
+        0, kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingHorizontal));
     child->text_label()->SetMultiLine(true);
     child->text_label()->SizeToFit(kTrayNotificationContentsWidth);
   } else {

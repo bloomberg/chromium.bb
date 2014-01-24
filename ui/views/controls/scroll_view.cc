@@ -31,8 +31,9 @@ class ScrollViewWithBorder : public views::ScrollView {
 
  private:
   void SetThemeSpecificState() {
-    set_border(Border::CreateSolidBorder(
-        1, GetNativeTheme()->GetSystemColor(
+    SetBorder(Border::CreateSolidBorder(
+        1,
+        GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_UnfocusedBorderColor)));
   }
 
