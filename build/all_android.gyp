@@ -8,7 +8,6 @@
   'targets': [
     {
       'target_name': 'temporary_android_dummy_target',
-      'type': 'none',
       'dependencies': [
         'all.gyp:*',
       ],
