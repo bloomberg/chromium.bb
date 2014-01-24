@@ -252,8 +252,15 @@ bool IsContinueUrlForWebBasedSigninFlow(const GURL& url) {
   GURL::Replacements replacements;
   replacements.ClearQuery();
   const std::string& locale = g_browser_process->GetApplicationLocale();
-  return url.ReplaceComponents(replacements) ==
+  GURL continue_url =
       GURL(base::StringPrintf(kSignInLandingUrlPrefix, locale.c_str()));
+  return (
+      google_util::IsGoogleDomainUrl(
+          url,
+          google_util::ALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS) &&
+      url.ReplaceComponents(replacements).path() ==
+        continue_url.ReplaceComponents(replacements).path());
 }
 
 void ForceWebBasedSigninFlowForTesting(bool force) {

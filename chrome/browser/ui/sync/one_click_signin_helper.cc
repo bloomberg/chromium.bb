@@ -1247,20 +1247,18 @@ void OneClickSigninHelper::DidStopLoading(
   // for an exact match.
   GURL::Replacements replacements;
   replacements.ClearQuery();
-  const bool continue_url_match = (
-      google_util::IsGoogleDomainUrl(
-          continue_url_,
-          google_util::ALLOW_SUBDOMAIN,
-          google_util::DISALLOW_NON_STANDARD_PORTS) &&
+  bool google_domain_url = google_util::IsGoogleDomainUrl(
+      url,
+      google_util::ALLOW_SUBDOMAIN,
+      google_util::DISALLOW_NON_STANDARD_PORTS);
+  const bool continue_url_match =
+      google_domain_url &&
       url.ReplaceComponents(replacements).path() ==
-        continue_url_.ReplaceComponents(replacements).path());
-  const bool original_continue_url_match = (
-      google_util::IsGoogleDomainUrl(
-          original_continue_url_,
-          google_util::ALLOW_SUBDOMAIN,
-          google_util::DISALLOW_NON_STANDARD_PORTS) &&
+        continue_url_.ReplaceComponents(replacements).path();
+  const bool original_continue_url_match =
+      google_domain_url &&
       url.ReplaceComponents(replacements).path() ==
-        original_continue_url_.ReplaceComponents(replacements).path());
+        original_continue_url_.ReplaceComponents(replacements).path();
 
   if (continue_url_match)
     RemoveSigninRedirectURLHistoryItem(contents);
