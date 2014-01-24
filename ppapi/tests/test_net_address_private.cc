@@ -306,12 +306,12 @@ std::string TestNetAddressPrivate::TestGetAddress() {
 std::string TestNetAddressPrivate::TestGetScopeID() {
   uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
   PP_NetAddress_Private ipv4 = MakeIPv4NetAddress(localhost_ip, 80);
-  ASSERT_EQ(NetAddressPrivate::GetScopeID(ipv4), 0);
+  ASSERT_EQ(0, NetAddressPrivate::GetScopeID(ipv4));
 
   uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
 
   PP_NetAddress_Private ipv6_123 = MakeIPv6NetAddress(ipv6_address, 0, 123);
-  ASSERT_EQ(NetAddressPrivate::GetScopeID(ipv6_123), 123);
+  ASSERT_EQ(123, NetAddressPrivate::GetScopeID(ipv6_123));
 
   PP_NetAddress_Private ipv6_max =
       MakeIPv6NetAddress(ipv6_address, 0, 0xFFFFFFFF);

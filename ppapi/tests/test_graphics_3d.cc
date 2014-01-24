@@ -59,7 +59,7 @@ std::string TestGraphics3D::TestFramePPAPI() {
     return error;
 
   int32_t rv = SwapBuffersSync(&context);
-  ASSERT_EQ(rv, PP_OK);
+  ASSERT_EQ(PP_OK, rv);
 
   PASS();
 }
@@ -87,7 +87,7 @@ std::string TestGraphics3D::TestFrameGL() {
     return error;
 
   int32_t rv = SwapBuffersSync(&context);
-  ASSERT_EQ(rv, PP_OK);
+  ASSERT_EQ(PP_OK, rv);
 
   PASS();
 }
@@ -111,13 +111,13 @@ std::string TestGraphics3D::TestExtensionsGL() {
   // available, try a couple of trivial calls.  This test is not intended
   // to be exhaustive; check the source can compile, link, and run without
   // crashing.
-  ASSERT_NE(glGetString(GL_VERSION), NULL);
+  ASSERT_NE(NULL, glGetString(GL_VERSION));
   const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
   if (strstr(ext, "GL_EXT_occlusion_query_boolean")) {
     GLuint a_query;
     GLboolean is_a_query;
     glGenQueriesEXT(1, &a_query);
-    ASSERT_NE(a_query, 0);
+    ASSERT_NE(0, a_query);
     glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, a_query);
     is_a_query = glIsQueryEXT(a_query);
     ASSERT_EQ(is_a_query, GL_TRUE);
@@ -130,7 +130,7 @@ std::string TestGraphics3D::TestExtensionsGL() {
   glSetCurrentContextPPAPI(kInvalidContext);
 
   int32_t rv = SwapBuffersSync(&context);
-  ASSERT_EQ(rv, PP_OK);
+  ASSERT_EQ(PP_OK, rv);
 
   PASS();
 }

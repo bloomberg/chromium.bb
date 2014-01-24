@@ -137,7 +137,7 @@ std::string TestNetworkMonitor::TestBasic() {
   test_callback.WaitForResult(
       network_monitor.UpdateNetworkList(test_callback.GetCallback()));
 
-  ASSERT_EQ(test_callback.result(), PP_OK);
+  ASSERT_EQ(PP_OK, test_callback.result());
   ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback.output()));
 
   PASS();
@@ -150,7 +150,7 @@ std::string TestNetworkMonitor::Test2Monitors() {
   test_callback.WaitForResult(
       network_monitor.UpdateNetworkList(test_callback.GetCallback()));
 
-  ASSERT_EQ(test_callback.result(), PP_OK);
+  ASSERT_EQ(PP_OK, test_callback.result());
   ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback.output()));
 
   TestCompletionCallbackWithOutput<pp::NetworkList> test_callback_2(
@@ -159,7 +159,7 @@ std::string TestNetworkMonitor::Test2Monitors() {
   test_callback_2.WaitForResult(
       network_monitor_2.UpdateNetworkList(test_callback_2.GetCallback()));
 
-  ASSERT_EQ(test_callback_2.result(), PP_OK);
+  ASSERT_EQ(PP_OK, test_callback_2.result());
   ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback_2.output()));
 
   PASS();
@@ -175,7 +175,7 @@ std::string TestNetworkMonitor::TestDeleteInCallback() {
   test_callback.WaitForResult(
       network_monitor->UpdateNetworkList(test_callback.GetCallback()));
 
-  ASSERT_EQ(test_callback.result(), PP_OK);
+  ASSERT_EQ(PP_OK, test_callback.result());
   ASSERT_SUBTEST_SUCCESS(VerifyNetworkList(test_callback.output()));
 
   PASS();
