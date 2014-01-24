@@ -299,8 +299,13 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
 
     // If we're loading content into a subframe, check against the parent's Content Security Policy
     // and kill the load if that check fails.
-    if (m_frame->ownerElement() && !m_frame->ownerElement()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url()))
+    if (m_frame->ownerElement() && !m_frame->ownerElement()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url())) {
+        // Fire a load event, as timing attacks would otherwise reveal that the
+        // frame was blocked. This way, it looks like every other cross-origin
+        // page load.
+        m_frame->ownerElement()->dispatchEvent(Event::create(EventTypeNames::load));
         return false;
+    }
 
     NavigationPolicy policy = m_triggeringAction.policy();
     policy = frameLoader()->client()->decidePolicyForNavigation(request, this, policy);
