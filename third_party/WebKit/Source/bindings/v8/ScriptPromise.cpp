@@ -47,6 +47,19 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
     return ScriptPromise(V8PromiseCustom::then(promise, adoptByGarbageCollector(onFulfilled), adoptByGarbageCollector(onRejected), isolate()), isolate());
 }
 
+ScriptPromise::ScriptPromise(const ScriptValue& value)
+{
+    if (value.hasNoValue())
+        return;
+    v8::Local<v8::Value> v8Value(value.v8Value());
+    v8::Isolate* isolate = value.isolate();
+    if (V8PromiseCustom::isPromise(v8Value, isolate)) {
+        m_promise = value;
+        return;
+    }
+    m_promise = ScriptValue(V8PromiseCustom::toPromise(v8Value, isolate), isolate);
+}
+
 ScriptPromise ScriptPromise::createPending(ExecutionContext* context)
 {
     ASSERT(context);

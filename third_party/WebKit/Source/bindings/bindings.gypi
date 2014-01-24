@@ -241,6 +241,7 @@
         'bindings_unittest_files': [
             'v8/IDBBindingUtilitiesTest.cpp',
             'v8/ScriptPromiseResolverTest.cpp',
+            'v8/ScriptPromiseTest.cpp',
         ],
         'conditions': [
             ['OS=="win" and buildtype=="Official"', {

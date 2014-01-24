@@ -50,16 +50,13 @@ class ExecutionContext;
 class ScriptPromise {
 public:
     // Constructs an empty promise.
-    ScriptPromise()
-        : m_promise()
-    {
-    }
+    ScriptPromise() { }
 
-    explicit ScriptPromise(const ScriptValue& promise)
-        : m_promise(promise)
-    {
-        ASSERT(!m_promise.hasNoValue());
-    }
+    // Constructs a ScriptPromise from |value|.
+    // i.e. the constructed ScriptPromise holds |Promise.cast(value)|.
+    // Note: if |value| is a non-Promise value, two ScriptPromises constructed
+    // with it hold different Promises each other.
+    explicit ScriptPromise(const ScriptValue& /* value */);
 
     ScriptPromise(v8::Handle<v8::Value> promise, v8::Isolate* isolate)
         : m_promise(promise, isolate)
