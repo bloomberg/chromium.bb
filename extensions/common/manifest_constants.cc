@@ -221,6 +221,11 @@ const char kLaunchContainerWindow[] = "window";
 // cross-platform.
 namespace manifest_errors {
 
+const char kActiveTabPermissionNotGranted[] =
+    "The 'activeTab' permission is not in effect because this extension has "
+    "not been in invoked.";
+const char kAllURLOrActiveTabNeeded[] =
+    "Either the '<all_urls>' or 'activeTab' permission is required.";
 const char kAppsNotEnabled[] =
     "Apps are not enabled.";
 const char kBackgroundPermissionNeeded[] =

@@ -174,7 +174,6 @@ class PermissionsData {
   // is restricted to the extension's host permissions as well as the
   // extension page itself.
   static bool CanCaptureVisiblePage(const Extension* extension,
-                                    const GURL& page_url,
                                     int tab_id,
                                     std::string* error);
 

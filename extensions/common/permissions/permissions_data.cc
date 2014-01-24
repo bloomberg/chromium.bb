@@ -537,27 +537,29 @@ bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
 
 // static
 bool PermissionsData::CanCaptureVisiblePage(const Extension* extension,
-                                            const GURL& page_url,
                                             int tab_id,
                                             std::string* error) {
+  scoped_refptr<const PermissionSet> active_permissions =
+      GetActivePermissions(extension);
+  const URLPattern all_urls(URLPattern::SCHEME_ALL,
+                            URLPattern::kAllUrlsPattern);
+  if (active_permissions->explicit_hosts().ContainsPattern(all_urls))
+    return true;
+
   if (tab_id >= 0) {
     scoped_refptr<const PermissionSet> tab_permissions =
         GetTabSpecificPermissions(extension, tab_id);
-    if (tab_permissions.get() &&
-        tab_permissions->explicit_hosts().MatchesSecurityOrigin(page_url)) {
+    if (tab_permissions &&
+        tab_permissions->HasAPIPermission(APIPermission::kTab)) {
       return true;
     }
+    if (error)
+      *error = errors::kActiveTabPermissionNotGranted;
+    return false;
   }
 
-  if (HasHostPermission(extension, page_url) ||
-      page_url.GetOrigin() == extension->url()) {
-    return true;
-  }
-
-  if (error) {
-    *error = ErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                            page_url.spec());
-  }
+  if (error)
+    *error = errors::kAllURLOrActiveTabNeeded;
   return false;
 }
 

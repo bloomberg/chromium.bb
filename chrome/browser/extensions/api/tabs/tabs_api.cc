@@ -1676,20 +1676,7 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
     return NULL;
   }
 
-  // Use the last committed URL rather than the active URL for permissions
-  // checking, since the visible page won't be updated until it has been
-  // committed. A canonical example of this is interstitials, which show the
-  // URL of the new/loading page (active) but would capture the content of the
-  // old page (last committed).
-  //
-  // TODO(creis): Use WebContents::GetLastCommittedURL instead.
-  // http://crbug.com/237908.
-  NavigationEntry* last_committed_entry =
-      contents->GetController().GetLastCommittedEntry();
-  GURL last_committed_url = last_committed_entry ?
-      last_committed_entry->GetURL() : GURL();
   if (!PermissionsData::CanCaptureVisiblePage(GetExtension(),
-                                              last_committed_url,
                                               SessionID::IdForTab(contents),
                                               &error_)) {
     return NULL;

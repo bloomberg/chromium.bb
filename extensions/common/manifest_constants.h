@@ -227,6 +227,8 @@ extern const char kRunAtDocumentStart[];
 // Error messages returned from extension installation.
 namespace manifest_errors {
 
+extern const char kActiveTabPermissionNotGranted[];
+extern const char kAllURLOrActiveTabNeeded[];
 extern const char kAppsNotEnabled[];
 extern const char kBackgroundPermissionNeeded[];
 extern const char kBackgroundRequiredForPlatformApps[];

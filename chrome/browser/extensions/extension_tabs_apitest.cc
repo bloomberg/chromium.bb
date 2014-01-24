@@ -204,18 +204,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleFile) {
                                   "test_file.html")) << message_;
 }
 
-// Flaky on windows: http://crbug.com/238667
-#if defined(OS_WIN)
-#define MAYBE_CaptureVisibleNoFile DISABLED_CaptureVisibleNoFile
-#else
-#define MAYBE_CaptureVisibleNoFile CaptureVisibleNoFile
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, MAYBE_CaptureVisibleNoFile) {
-  ASSERT_TRUE(RunExtensionSubtest(
-      "tabs/capture_visible_tab", "test_nofile.html",
-      ExtensionApiTest::kFlagNone)) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleDisabled) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableScreenshots,
                                                true);
