@@ -1164,8 +1164,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_WALLPAPER_STRETCH_LAYOUT" desc="Label for option to stretch a customized wallpaper.">
     Stretch
   </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
-    Change picture...
+  <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user." meaning="Hint text">
+    Change...
   </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE_CAPTION" desc="Caption on the user picture that user must click to change it, must be short.">
     Change
