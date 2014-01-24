@@ -85,8 +85,8 @@ def generate_interface(interface):
     if is_check_security:
         includes.add('bindings/v8/BindingSecurity.h')
 
-    # [GenerateVisitDOMWrapper]
-    reachable_node_function = extended_attributes.get('GenerateVisitDOMWrapper')
+    # [SetWrapperReferenceFrom]
+    reachable_node_function = extended_attributes.get('SetWrapperReferenceFrom')
     if reachable_node_function:
         includes.update(['bindings/v8/V8GCController.h',
                          'core/dom/Element.h'])
@@ -96,14 +96,14 @@ def generate_interface(interface):
     if is_measure_as:
         includes.add('core/frame/UseCounter.h')
 
-    # [SetReference]
-    set_reference_list = [{
+    # [SetWrapperReferenceTo]
+    set_wrapper_reference_to_list = [{
         'name': argument.name,
         'idl_type': argument.idl_type,
         'v8_type': v8_types.v8_type(argument.idl_type),
-    } for argument in extended_attributes.get('SetReference', [])]
-    for set_reference in set_reference_list:
-        v8_types.add_includes_for_type(set_reference['idl_type'])
+    } for argument in extended_attributes.get('SetWrapperReferenceTo', [])]
+    for set_wrapper_reference_to in set_wrapper_reference_to_list:
+        v8_types.add_includes_for_type(set_wrapper_reference_to['idl_type'])
 
     # [SpecialWrapFor]
     if 'SpecialWrapFor' in extended_attributes:
@@ -155,9 +155,9 @@ def generate_interface(interface):
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]
         'has_event_constructor': has_event_constructor,
         'has_visit_dom_wrapper': (
-            # [Custom=Wrap], [GenerateVisitDOMWrapper]
+            # [Custom=Wrap], [SetWrapperReferenceFrom]
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
-            reachable_node_function or set_reference_list),
+            reachable_node_function or set_wrapper_reference_to_list),
         'header_includes': header_includes,
         'interface_length':
             interface_length(interface, constructors + custom_constructors),
@@ -180,7 +180,7 @@ def generate_interface(interface):
         'parent_interface': parent_interface,
         'reachable_node_function': reachable_node_function,
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
-        'set_reference_list': set_reference_list,
+        'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
         'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),
     }

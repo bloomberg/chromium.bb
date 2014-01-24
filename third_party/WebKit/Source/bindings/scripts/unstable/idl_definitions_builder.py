@@ -358,18 +358,19 @@ def ext_attributes_node_to_extended_attributes(node):
     custom_constructors = []
     extended_attributes = {}
 
-    attribute_list = node.GetChildren()
-    for attribute in attribute_list:
-        name = attribute.GetName()
-        children = attribute.GetChildren()
-        if children:
-            if len(children) > 1:
-                raise ValueError('ExtAttributes node with %s children, expected at most 1' % len(children))
-            child = children[0]
-            child_class = child.GetClass()
-        else:
-            child = None
-            child_class = None
+    def child_node(extended_attribute_node):
+        children = extended_attribute_node.GetChildren()
+        if not children:
+            return None
+        if len(children) > 1:
+            raise ValueError('ExtAttributes node with %s children, expected at most 1' % len(children))
+        return children[0]
+
+    extended_attribute_node_list = node.GetChildren()
+    for extended_attribute_node in extended_attribute_node_list:
+        name = extended_attribute_node.GetName()
+        child = child_node(extended_attribute_node)
+        child_class = child and child.GetClass()
         if name == 'Constructor':
             if child_class and child_class != 'Arguments':
                 raise ValueError('Constructor only supports Arguments as child, but has child of class: %s' % child_class)
@@ -382,16 +383,16 @@ def ext_attributes_node_to_extended_attributes(node):
             if child_class and child_class != 'Call':
                 raise ValueError('[NamedConstructor] only supports Call as child, but has child of class: %s' % child_class)
             extended_attributes[name] = child
-        elif name == 'SetReference':
+        elif name == 'SetWrapperReferenceTo':
             if not child:
-                raise ValueError('[SetReference] requires a child, but has none.')
+                raise ValueError('[SetWrapperReferenceTo] requires a child, but has none.')
             if child_class != 'Arguments':
-                raise ValueError('[SetReference] only supports Arguments as child, but has child of class: %s' % child_class)
+                raise ValueError('[SetWrapperReferenceTo] only supports Arguments as child, but has child of class: %s' % child_class)
             extended_attributes[name] = arguments_node_to_arguments(child)
-        elif children:
+        elif child:
             raise ValueError('ExtAttributes node with unexpected children: %s' % name)
         else:
-            value = attribute.GetProperty('VALUE')
+            value = extended_attribute_node.GetProperty('VALUE')
             extended_attributes[name] = value
 
     # Store constructors and custom constructors in special list attributes,

@@ -260,19 +260,19 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
-{% if reachable_node_function or set_reference_list %}
+{% if reachable_node_function or set_wrapper_reference_to_list %}
 void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     {{cpp_class}}* impl = fromInternalPointer(object);
-    {% if set_reference_list %}
+    {% if set_wrapper_reference_to_list %}
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
-    {% for set_reference in set_reference_list %}
-    {{set_reference.idl_type}}* {{set_reference.name}} = impl->{{set_reference.name}}();
-    if ({{set_reference.name}}) {
-        if (!DOMDataStore::containsWrapper<{{set_reference.v8_type}}>({{set_reference.name}}, isolate))
-            wrap({{set_reference.name}}, creationContext, isolate);
-        DOMDataStore::setWrapperReference<{{set_reference.v8_type}}>(wrapper, {{set_reference.name}}, isolate);
+    {% for set_wrapper_reference_to in set_wrapper_reference_to_list %}
+    {{set_wrapper_reference_to.idl_type}}* {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
+    if ({{set_wrapper_reference_to.name}}) {
+        if (!DOMDataStore::containsWrapper<{{set_wrapper_reference_to.v8_type}}>({{set_wrapper_reference_to.name}}, isolate))
+            wrap({{set_wrapper_reference_to.name}}, creationContext, isolate);
+        DOMDataStore::setWrapperReference<{{set_wrapper_reference_to.v8_type}}>(wrapper, {{set_wrapper_reference_to.name}}, isolate);
     }
     {% endfor %}
     {% endif %}
