@@ -97,8 +97,7 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   internal::ShelfLayoutManager* shelf_;
   aura::Window* window_;
 
-  // The work area. Cached to avoid unnecessarily moving windows during a
-  // workspace switch.
+  // The work area in the coordinates of |window_|.
   gfx::Rect work_area_in_parent_;
 
   // True if this workspace is currently in fullscreen mode.

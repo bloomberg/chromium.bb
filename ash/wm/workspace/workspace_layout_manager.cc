@@ -71,8 +71,9 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
     : BaseLayoutManager(window->GetRootWindow()),
       shelf_(NULL),
       window_(window),
-      work_area_in_parent_(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-          window->parent())),
+      work_area_in_parent_(ScreenUtil::ConvertRectFromScreen(
+          window_,
+          Shell::GetScreen()->GetDisplayNearestWindow(window_).work_area())),
       is_fullscreen_(GetRootWindowController(
           window->GetRootWindow())->GetWindowForFullscreenMode() != NULL) {
 }
@@ -139,8 +140,9 @@ void WorkspaceLayoutManager::SetChildBounds(
 }
 
 void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
-  const gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-      window_->parent()));
+  const gfx::Rect work_area(ScreenUtil::ConvertRectFromScreen(
+      window_,
+      Shell::GetScreen()->GetDisplayNearestWindow(window_).work_area()));
   if (work_area != work_area_in_parent_) {
     AdjustAllWindowsBoundsForWorkAreaChange(
         ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED);
@@ -204,8 +206,9 @@ void WorkspaceLayoutManager::OnWindowShowTypeChanged(
 
 void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
     AdjustWindowReason reason) {
-  work_area_in_parent_ =
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_->parent());
+  work_area_in_parent_ = ScreenUtil::ConvertRectFromScreen(
+      window_,
+      Shell::GetScreen()->GetDisplayNearestWindow(window_).work_area());
   BaseLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(reason);
 }
 
@@ -223,7 +226,7 @@ void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
       reason == ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED) {
     SetChildBoundsDirect(window_state->window(),
                          ScreenUtil::GetMaximizedWindowBoundsInParent(
-                             window_state->window()->parent()->parent()));
+                             window_state->window()));
     return;
   }
 
@@ -297,8 +300,6 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowType(
     wm::WindowState* window_state,
     wm::WindowShowType old_show_type) {
   aura::Window* window = window_state->window();
-  // See comment in SetMaximizedOrFullscreenBounds() as to why we use parent in
-  // these calculation.
   if (window_state->IsMaximizedOrFullscreen())
     MoveToDisplayForRestore(window_state);
 
@@ -322,19 +323,17 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowType(
         AdjustSnappedBounds(window_state, &bounds_in_parent);
       } else {
         bounds_in_parent = BaseLayoutManager::BoundsWithScreenEdgeVisible(
-            window->parent()->parent(),
+            window,
             bounds_in_parent);
       }
       break;
 
     case wm::SHOW_TYPE_MAXIMIZED:
-      bounds_in_parent = ScreenUtil::GetMaximizedWindowBoundsInParent(
-          window->parent()->parent());
+      bounds_in_parent = ScreenUtil::GetMaximizedWindowBoundsInParent(window);
       break;
 
     case wm::SHOW_TYPE_FULLSCREEN:
-      bounds_in_parent = ScreenUtil::GetDisplayBoundsInParent(
-          window->parent()->parent());
+      bounds_in_parent = ScreenUtil::GetDisplayBoundsInParent(window);
       break;
 
     case wm::SHOW_TYPE_MINIMIZED:
@@ -361,20 +360,16 @@ bool WorkspaceLayoutManager::SetMaximizedOrFullscreenBounds(
     wm::WindowState* window_state) {
   DCHECK(!window_state->is_dragged());
 
-  // During animations there is a transform installed on the workspace
-  // windows. For this reason this code uses the parent so that the transform is
-  // ignored.
   if (window_state->IsMaximized()) {
     SetChildBoundsDirect(
         window_state->window(), ScreenUtil::GetMaximizedWindowBoundsInParent(
-            window_state->window()->parent()->parent()));
+            window_state->window()));
     return true;
   }
   if (window_state->IsFullscreen()) {
     SetChildBoundsDirect(
         window_state->window(),
-        ScreenUtil::GetDisplayBoundsInParent(
-            window_state->window()->parent()->parent()));
+        ScreenUtil::GetDisplayBoundsInParent(window_state->window()));
     return true;
   }
   return false;
@@ -385,7 +380,7 @@ void WorkspaceLayoutManager::AdjustSnappedBounds(wm::WindowState* window_state,
   if (window_state->is_dragged() || !window_state->IsSnapped())
     return;
   gfx::Rect maximized_bounds = ScreenUtil::GetMaximizedWindowBoundsInParent(
-      window_state->window()->parent()->parent());
+      window_state->window());
   if (window_state->window_show_type() == wm::SHOW_TYPE_LEFT_SNAPPED)
     bounds->set_x(maximized_bounds.x());
   else if (window_state->window_show_type() == wm::SHOW_TYPE_RIGHT_SNAPPED)
