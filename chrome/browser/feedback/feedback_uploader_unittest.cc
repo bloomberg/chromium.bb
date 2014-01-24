@@ -54,15 +54,15 @@ class FeedbackUploaderTest : public testing::Test {
   }
 
   void QueueReport(const std::string& data) {
-    uploader_->QueueReport(make_scoped_ptr(new std::string(data)));
+    uploader_->QueueReport(data);
   }
 
   void ReportFailure(const std::string& data) {
-    uploader_->RetryReport(make_scoped_ptr(new std::string(data)));
+    uploader_->RetryReport(data);
   }
 
-  void MockDispatchReport(scoped_ptr<std::string> report_data) {
-    dispatched_reports_.push_back(*report_data.get());
+  void MockDispatchReport(const std::string& report_data) {
+    dispatched_reports_.push_back(report_data);
 
     // Dispatch will always update the timer, whether successful or not,
     // simulate the same behavior.
