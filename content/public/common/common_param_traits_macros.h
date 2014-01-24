@@ -10,6 +10,7 @@
 
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/webplugininfo.h"
@@ -44,6 +45,11 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebRect)
   IPC_STRUCT_TRAITS_MEMBER(y)
   IPC_STRUCT_TRAITS_MEMBER(width)
   IPC_STRUCT_TRAITS_MEMBER(height)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::Referrer)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(policy)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SSLStatus)

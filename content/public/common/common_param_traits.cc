@@ -129,26 +129,6 @@ void ParamTraits<content::PageState>::Log(
   l->append(")");
 }
 
-void ParamTraits<content::Referrer>::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p.url);
-  WriteParam(m, p.policy);
-}
-
-bool ParamTraits<content::Referrer>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
-  return ReadParam(m, iter, &r->url) && ReadParam(m, iter, &r->policy);
-}
-
-void ParamTraits<content::Referrer>::Log(
-    const param_type& p, std::string* l) {
-  l->append("(");
-  LogParam(p.url, l);
-  l->append(",");
-  LogParam(p.policy, l);
-  l->append(")");
-}
-
 void ParamTraits<gfx::Point>::Write(Message* m, const gfx::Point& p) {
   m->WriteInt(p.x());
   m->WriteInt(p.y());
