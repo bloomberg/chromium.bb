@@ -444,21 +444,31 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     initialized_workaround = true;
   }
 
-  const bool workaround_needed =
-      drawing_context->IsVendorIntel() &&
-      (!base::mac::IsOSMountainLionOrLater() || base::mac::IsOSMavericks());
+  bool workaround_needed = false;
+  // http://crbug.com/123409 : work around bugs in graphics driver on
+  // MacBook Air with Intel HD graphics, and possibly on other models,
+  // by forcing the graphics pipeline to be completely drained at this
+  // point. This workaround is not necessary on Mountain Lion.
+  // TODO(ccameron): determine if this is still needed with CoreAnimation.
+  workaround_needed |= base::mac::IsOSLionOrEarlier() &&
+                       drawing_context->IsVendorIntel();
+
+  // http://crbug.com/318877 : work around a bug where the window does
+  // not finish rendering its contents before displaying them on Mavericks
+  // on Retina MacBook Pro when using the Intel HD graphics GPU. Note that
+  // this is not necessary when flushing the drawable because we are in
+  // one of the two following situations:
+  // - we are drawing and underlay, and we will call glFinish() when drawing
+  //   the overlay.
+  // - we are using CoreAnimation, where this bug does not manifest.
+  workaround_needed |= base::mac::IsOSMavericksOrLater() &&
+                       flush_drawable &&
+                       drawing_context->IsVendorIntel();
+
   const bool use_glfinish_workaround =
       (workaround_needed || force_on_workaround) && !force_off_workaround;
-
   if (use_glfinish_workaround) {
     TRACE_EVENT0("gpu", "glFinish");
-    // http://crbug.com/123409 : work around bugs in graphics driver on
-    // MacBook Air with Intel HD graphics, and possibly on other models,
-    // by forcing the graphics pipeline to be completely drained at this
-    // point. This workaround is not necessary on Mountain Lion.
-    // http://crbug.com/318877 : work around a bug where the window does
-    // not finish rendering its contents before displaying them on Mavericks
-    // on Retina MacBook Pro when using the Intel HD graphics GPU.
     glFinish();
   }
 
