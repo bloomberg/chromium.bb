@@ -436,6 +436,12 @@ TabDragController::~TabDragController() {
   // if the drag was completed.
   if (!detach_into_browser_)
     ResetDelegates();
+
+  if (event_source_ == EVENT_SOURCE_TOUCH) {
+    TabStrip* capture_tabstrip = (attached_tabstrip_ && detach_into_browser_) ?
+        attached_tabstrip_ : source_tabstrip_;
+    capture_tabstrip->GetWidget()->ReleaseCapture();
+  }
 }
 
 void TabDragController::Init(
@@ -488,6 +494,11 @@ void TabDragController::Init(
   }
   InitWindowCreatePoint();
   initial_selection_model_.Copy(initial_selection_model);
+
+  // Gestures don't automatically do a capture. We don't allow multiple drags at
+  // the same time, so we explicitly capture.
+  if (event_source == EVENT_SOURCE_TOUCH)
+    source_tabstrip_->GetWidget()->SetCapture(source_tabstrip_);
 }
 
 // static

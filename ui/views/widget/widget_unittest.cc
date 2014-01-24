@@ -30,6 +30,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -1714,28 +1715,29 @@ TEST_F(WidgetTest, SetTopLevelCorrectly) {
 }
 
 // A scumbag View that deletes its owning widget OnMousePressed.
-class WidgetDeleterView : public View {
+class DeleteWidgetOnMousePressedView : public View {
  public:
-  WidgetDeleterView() : View() {}
+  DeleteWidgetOnMousePressedView() : View() {}
+  virtual ~DeleteWidgetOnMousePressedView() {}
 
-  // Overridden from View.
+  // Overridden from View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     delete GetWidget();
     return true;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WidgetDeleterView);
+  DISALLOW_COPY_AND_ASSIGN(DeleteWidgetOnMousePressedView);
 };
 
-TEST_F(WidgetTest, TestWidgetDeletedInOnMousePressed) {
+TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
 
-  widget->SetContentsView(new WidgetDeleterView);
+  widget->SetContentsView(new DeleteWidgetOnMousePressedView);
 
   widget->SetSize(gfx::Size(100, 100));
   widget->Show();
@@ -1744,6 +1746,47 @@ TEST_F(WidgetTest, TestWidgetDeletedInOnMousePressed) {
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   widget->OnMouseEvent(&press);
+
+  // Yay we did not crash!
+}
+
+// A view that deletes its owning widget OnMouseCaptureLost().
+class DeleteWidgetOnMouseCaptureLostView : public View {
+ public:
+  DeleteWidgetOnMouseCaptureLostView() {}
+  virtual ~DeleteWidgetOnMouseCaptureLostView() {}
+
+  // Overridden from View:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    return true;
+  }
+  virtual void OnMouseCaptureLost() OVERRIDE {
+    delete GetWidget();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeleteWidgetOnMouseCaptureLostView);
+};
+
+// Test that there is no crash when a user touches the screen during a mouse
+// drag if the widget deletes itself when it loses capture.
+TEST_F(WidgetTest, WidgetDeleted_InOnMouseCaptureLost) {
+  Widget* widget = new Widget;
+  Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(100, 100);
+  widget->Init(params);
+
+  widget->SetContentsView(new DeleteWidgetOnMouseCaptureLostView);
+  widget->Show();
+
+  aura::test::EventGenerator generator(GetContext());
+  generator.MoveMouseTo(45, 45);
+  generator.PressLeftButton();
+  EXPECT_TRUE(widget->HasCapture());
+  generator.GestureTapAt(gfx::Point(50, 50));
+  generator.ReleaseLeftButton();
 
   // Yay we did not crash!
 }

@@ -1226,11 +1226,8 @@ void Widget::OnGestureEvent(ui::GestureEvent* event) {
       break;
 
     case ui::ET_GESTURE_END:
-      if (event->details().touch_points() == 1) {
+      if (event->details().touch_points() == 1)
         is_touch_down_ = false;
-        if (auto_release_capture_)
-          ReleaseCapture();
-      }
       break;
 
     default:
