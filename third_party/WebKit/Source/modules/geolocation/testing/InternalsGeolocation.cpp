@@ -53,33 +53,44 @@ void InternalsGeolocation::setGeolocationClientMock(Internals* internals, Docume
 void InternalsGeolocation::setGeolocationPosition(Internals* internals, Document* document, double latitude, double longitude, double accuracy)
 {
     ASSERT(internals && document && document->page());
-    geolocationClient(document)->setPosition(GeolocationPosition::create(currentTime(), latitude, longitude, accuracy));
+    GeolocationClientMock* client = geolocationClient(document);
+    if (!client)
+        return;
+    client->setPosition(GeolocationPosition::create(currentTime(), latitude, longitude, accuracy));
 }
 
 void InternalsGeolocation::setGeolocationPositionUnavailableError(Internals* internals, Document* document, const String& message)
 {
     ASSERT(internals && document && document->page());
-    geolocationClient(document)->setPositionUnavailableError(message);
+    GeolocationClientMock* client = geolocationClient(document);
+    if (!client)
+        return;
+    client->setPositionUnavailableError(message);
 }
 
 void InternalsGeolocation::setGeolocationPermission(Internals* internals, Document* document, bool allowed)
 {
     ASSERT(internals && document && document->page());
-    geolocationClient(document)->setPermission(allowed);
+    GeolocationClientMock* client = geolocationClient(document);
+    if (!client)
+        return;
+    client->setPermission(allowed);
 }
 
 int InternalsGeolocation::numberOfPendingGeolocationPermissionRequests(Internals* internals, Document* document)
 {
     ASSERT(internals && document && document->page());
-    return geolocationClient(document)->numberOfPendingPermissionRequests();
+    GeolocationClientMock* client = geolocationClient(document);
+    if (!client)
+        return -1;
+    return client->numberOfPendingPermissionRequests();
 }
 
 GeolocationClientMock* InternalsGeolocation::geolocationClient(Document* document)
 {
     GeolocationController* controller = GeolocationController::from(document->page());
-#ifndef NDEBUG
-    ASSERT(controller->hasClientForTest());
-#endif
+    if (!controller->hasClientForTest())
+        return 0;
     return static_cast<GeolocationClientMock*>(controller->client());
 }
 
