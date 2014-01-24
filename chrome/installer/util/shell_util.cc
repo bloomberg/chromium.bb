@@ -30,7 +30,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -1293,37 +1292,6 @@ bool ShortcutOpRetarget(const base::FilePath& old_target,
   return result;
 }
 
-bool ShortcutOpListOrRemoveUnknownArgs(
-    bool do_removal,
-    std::vector<std::pair<base::FilePath, base::string16> >* shortcuts,
-    const base::FilePath& shortcut_path) {
-  base::string16 args;
-  if (!base::win::ResolveShortcut(shortcut_path, NULL, &args))
-    return false;
-
-  CommandLine current_args(CommandLine::FromString(base::StringPrintf(
-      L"unused_program %ls", args.c_str())));
-  const char* const kept_switches[] = {
-      switches::kApp,
-      switches::kAppId,
-      switches::kShowAppList,
-      switches::kProfileDirectory,
-  };
-  CommandLine desired_args(CommandLine::NO_PROGRAM);
-  desired_args.CopySwitchesFrom(current_args, kept_switches,
-                                arraysize(kept_switches));
-  if (desired_args.argv().size() == current_args.argv().size())
-    return true;
-  if (shortcuts)
-    shortcuts->push_back(std::make_pair(shortcut_path, args));
-  if (!do_removal)
-    return true;
-  base::win::ShortcutProperties updated_properties;
-  updated_properties.set_arguments(desired_args.GetArgumentsString());
-  return base::win::CreateOrUpdateShortcutLink(
-      shortcut_path, updated_properties, base::win::SHORTCUT_UPDATE_EXISTING);
-}
-
 // {|location|, |dist|, |level|} determine |shortcut_folder|.
 // For each shortcut in |shortcut_folder| that match |shortcut_filter|, apply
 // |shortcut_operation|. Returns true if all operations are successful.
@@ -2165,24 +2133,6 @@ bool ShellUtil::RetargetShortcutsWithArgs(
   FilterTargetEq shortcut_filter(old_target_exe, true);
   ShortcutOperationCallback shortcut_operation(
       base::Bind(&ShortcutOpRetarget, old_target_exe, new_target_exe));
-  return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
-                             shortcut_operation, location, dist, level);
-}
-
-// static
-bool ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
-    ShellUtil::ShortcutLocation location,
-    BrowserDistribution* dist,
-    ShellChange level,
-    const base::FilePath& chrome_exe,
-    bool do_removal,
-    std::vector<std::pair<base::FilePath, base::string16> >* shortcuts) {
-  if (!ShellUtil::ShortcutLocationIsSupported(location))
-    return false;
-  DCHECK(dist);
-  FilterTargetEq shortcut_filter(chrome_exe, true);
-  ShortcutOperationCallback shortcut_operation(
-      base::Bind(&ShortcutOpListOrRemoveUnknownArgs, do_removal, shortcuts));
   return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
                              shortcut_operation, location, dist, level);
 }

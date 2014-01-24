@@ -5,26 +5,14 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_
 
-#include <utility>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 
 class Profile;
-
-namespace base {
-class CancellationFlag;
-}
 
 // This class allows resetting certain aspects of a profile to default values.
 // It is used in case the profile has been damaged due to malware or bad user
@@ -41,12 +29,10 @@ class ProfileResetter : public base::NonThreadSafe,
     EXTENSIONS = 1 << 4,
     STARTUP_PAGES = 1 << 5,
     PINNED_TABS = 1 << 6,
-    SHORTCUTS = 1 << 7,
     // Update ALL if you add new values and check whether the type of
     // ResettableFlags needs to be enlarged.
     ALL = DEFAULT_SEARCH_ENGINE | HOMEPAGE | CONTENT_SETTINGS |
-          COOKIES_AND_SITE_DATA | EXTENSIONS | STARTUP_PAGES | PINNED_TABS |
-          SHORTCUTS
+          COOKIES_AND_SITE_DATA | EXTENSIONS | STARTUP_PAGES | PINNED_TABS
   };
 
   // Bit vector for Resettable enum.
@@ -79,7 +65,6 @@ class ProfileResetter : public base::NonThreadSafe,
   void ResetExtensions();
   void ResetStartupPages();
   void ResetPinnedTabs();
-  void ResetShortcuts();
 
   // BrowsingDataRemover::Observer:
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
@@ -104,20 +89,7 @@ class ProfileResetter : public base::NonThreadSafe,
 
   scoped_ptr<TemplateURLService::Subscription> template_url_service_sub_;
 
-  base::WeakPtrFactory<ProfileResetter> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ProfileResetter);
 };
-
-// Path to shortcut and command line arguments.
-typedef std::pair<base::FilePath, base::string16> ShortcutCommand;
-
-typedef base::RefCountedData<base::CancellationFlag> SharedCancellationFlag;
-
-// On Windows returns all the shortcuts which launch Chrome and corresponding
-// arguments. |cancel| can be passed to abort the operation earlier.
-// Call on FILE thread.
-std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
-    const scoped_refptr<SharedCancellationFlag>& cancel);
 
 #endif  // CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_

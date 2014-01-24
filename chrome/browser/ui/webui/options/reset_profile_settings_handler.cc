@@ -86,9 +86,6 @@ void ResetProfileSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("onShowResetProfileDialog",
       base::Bind(&ResetProfileSettingsHandler::OnShowResetProfileDialog,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onHideResetProfileDialog",
-      base::Bind(&ResetProfileSettingsHandler::OnHideResetProfileDialog,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onDismissedResetProfileSettingsBanner",
       base::Bind(&ResetProfileSettingsHandler::
                  OnDismissedResetProfileSettingsBanner,
@@ -113,10 +110,9 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
   }
 }
 
-void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
-    bool send_feedback) {
+void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
   web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
-  if (send_feedback && setting_snapshot_) {
+  if (setting_snapshot_) {
     Profile* profile = Profile::FromWebUI(web_ui());
     ResettableSettingsSnapshot current_snapshot(profile);
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
@@ -129,8 +125,8 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
       SendSettingsFeedback(report, profile, is_reset_prompt_active ?
           PROFILE_RESET_PROMPT : PROFILE_RESET_WEBUI);
     }
+    setting_snapshot_.reset();
   }
-  setting_snapshot_.reset();
   if (automatic_profile_resetter_) {
     automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
         true /*performed_reset*/);
@@ -138,14 +134,13 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
 }
 
 void ResetProfileSettingsHandler::OnShowResetProfileDialog(
-    const base::ListValue* value) {
-  if (!resetter_->IsActive()) {
-    setting_snapshot_.reset(
-        new ResettableSettingsSnapshot(Profile::FromWebUI(web_ui())));
-    setting_snapshot_->RequestShortcuts(base::Bind(
-        &ResetProfileSettingsHandler::UpdateFeedbackUI, AsWeakPtr()));
-    UpdateFeedbackUI();
-  }
+    const base::ListValue*) {
+  base::DictionaryValue flashInfo;
+  flashInfo.Set("feedbackInfo", GetReadableFeedback(
+      Profile::FromWebUI(web_ui())));
+  web_ui()->CallJavascriptFunction(
+      "ResetProfileSettingsOverlay.setFeedbackInfo",
+      flashInfo);
 
   if (automatic_profile_resetter_)
     automatic_profile_resetter_->NotifyDidOpenWebUIResetDialog();
@@ -158,12 +153,6 @@ void ResetProfileSettingsHandler::OnShowResetProfileDialog(
                  Unretained(this)),
       GURL("https://tools.google.com/service/update2"),
       brandcode_));
-}
-
-void ResetProfileSettingsHandler::OnHideResetProfileDialog(
-    const base::ListValue* value) {
-  if (!resetter_->IsActive())
-    setting_snapshot_.reset();
 }
 
 void ResetProfileSettingsHandler::OnDismissedResetProfileSettingsBanner(
@@ -195,27 +184,16 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
   // installation, use default settings.
   if (!default_settings)
     default_settings.reset(new BrandcodedDefaultSettings);
+  // Save current settings if required.
+  setting_snapshot_.reset(send_settings ?
+      new ResettableSettingsSnapshot(Profile::FromWebUI(web_ui())) : NULL);
   resetter_->Reset(
       ProfileResetter::ALL,
       default_settings.Pass(),
       base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
-                 AsWeakPtr(),
-                 send_settings));
+                 AsWeakPtr()));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
-}
-
-void ResetProfileSettingsHandler::UpdateFeedbackUI() {
-  if (!setting_snapshot_)
-    return;
-  scoped_ptr<base::ListValue> list = GetReadableFeedbackForSnapshot(
-      Profile::FromWebUI(web_ui()),
-      *setting_snapshot_);
-  base::DictionaryValue feedback_info;
-  feedback_info.Set("feedbackInfo", list.release());
-  web_ui()->CallJavascriptFunction(
-      "ResetProfileSettingsOverlay.setFeedbackInfo",
-      feedback_info);
 }
 
 }  // namespace options

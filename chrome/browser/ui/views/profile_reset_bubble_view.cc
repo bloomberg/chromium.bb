@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/profile_reset_bubble_view.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profile_resetter/profile_reset_global_error.h"
@@ -194,11 +196,6 @@ void ProfileResetBubbleView::ResetAllChildren() {
 
 void ProfileResetBubbleView::Init() {
   set_margins(gfx::Insets(kMarginHeight, 0, 0, 0));
-  // Start requesting the feedback data.
-  snapshot_.reset(new ResettableSettingsSnapshot(profile_));
-  snapshot_->RequestShortcuts(
-      base::Bind(&ProfileResetBubbleView::UpdateFeedbackDetails,
-                 weak_factory_.GetWeakPtr()));
   SetupLayoutManager(true);
 }
 
@@ -351,28 +348,29 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
   layout->AddView(controls_.report_settings_checkbox);
   layout->AddView(controls_.help_button);
 
-  if (show_help_pane_ && snapshot_) {
-    // We need a single row to add the scroll view containing the feedback.
-    const int kReportDetailsColumnSetId = 5;
-    cs = layout->AddColumnSet(kReportDetailsColumnSetId);
-    cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                  GridLayout::USE_PREF, 0, 0);
+  if (show_help_pane_) {
+    scoped_ptr<base::ListValue> feedback(GetReadableFeedback(profile_));
+    if (feedback.get()) {
+      // We need a single row to add the scroll view containing the feedback.
+      const int kReportDetailsColumnSetId = 5;
+      cs = layout->AddColumnSet(kReportDetailsColumnSetId);
+      cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                    GridLayout::USE_PREF, 0, 0);
 
-    FeedbackView* feedback_view = new FeedbackView();
-    scoped_ptr<base::ListValue> feedback_data =
-        GetReadableFeedbackForSnapshot(profile_, *snapshot_);
-    feedback_view->SetupLayoutManager(*feedback_data);
+      FeedbackView* feedback_view = new FeedbackView();
+      feedback_view->SetupLayoutManager(*feedback.get());
 
-    views::ScrollView* scroll_view = new views::ScrollView();
-    scroll_view->set_background(views::Background::CreateSolidBackground(
-        kLightGrayBackgroundColor));
-    scroll_view->SetContents(feedback_view);
+      views::ScrollView* scroll_view = new views::ScrollView();
+      scroll_view->set_background(views::Background::CreateSolidBackground(
+          kLightGrayBackgroundColor));
+      scroll_view->SetContents(feedback_view);
 
-    layout->StartRow(1, kReportDetailsColumnSetId);
-    layout->AddView(scroll_view, 1, 1, GridLayout::FILL,
-                    GridLayout::FILL, kAllColumnsWidth,
-                    std::min(feedback_view->height() + kMarginHeight,
-                             kMaxFeedbackViewHeight));
+      layout->StartRow(1, kReportDetailsColumnSetId);
+      layout->AddView(scroll_view, 1, 1, GridLayout::FILL,
+                      GridLayout::FILL, kAllColumnsWidth,
+                      std::min(feedback_view->height() + kMarginHeight,
+                               kMaxFeedbackViewHeight));
+    }
   }
 
   Layout();
@@ -427,11 +425,6 @@ void ProfileResetBubbleView::LinkClicked(views::Link* source, int flags) {
 void ProfileResetBubbleView::CloseBubbleView() {
   resetting_ = false;
   StartFade(false);
-}
-
-void ProfileResetBubbleView::UpdateFeedbackDetails() {
-  if (show_help_pane_)
-    SetupLayoutManager(controls_.report_settings_checkbox->checked());
 }
 
 bool IsProfileResetBubbleSupported() {
