@@ -73,7 +73,7 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
   export PATH=$PATH:${CHROME_SRC}/build/android
 
   # TODO(beverloo): Remove these once all consumers updated to --strip-binary.
-  export OBJCOPY=$(echo ${ANDROID_TOOLCHAIN}/*-objcopy)
+  # http://crbug.com/142642
   export STRIP=$(echo ${ANDROID_TOOLCHAIN}/*-strip)
 
   # The set of GYP_DEFINES to pass to gyp. Use 'readlink -e' on directories
