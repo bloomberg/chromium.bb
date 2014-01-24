@@ -597,8 +597,9 @@ class MemcheckAnalyzer:
     if check_sanity:
       remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS
       for (name, count) in suppcounts.iteritems():
+        # Workaround for http://crbug.com/334074
         if (name in remaining_sanity_supp and
-            remaining_sanity_supp[name] == count):
+            remaining_sanity_supp[name] <= count):
           del remaining_sanity_supp[name]
       if remaining_sanity_supp:
         logging.error("FAIL! Sanity check failed!")
