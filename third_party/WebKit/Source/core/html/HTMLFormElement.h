@@ -64,12 +64,10 @@ public:
 
     bool shouldAutocomplete() const;
 
-    // FIXME: Should rename these two functions to say "form control" or "form-associated element" instead of "form element".
-    void registerFormElement(FormAssociatedElement&);
-    void removeFormElement(FormAssociatedElement*);
-
-    void registerImgElement(HTMLImageElement*);
-    void removeImgElement(HTMLImageElement*);
+    void associate(FormAssociatedElement&);
+    void disassociate(FormAssociatedElement&);
+    void associate(HTMLImageElement&);
+    void disassociate(HTMLImageElement&);
     WeakPtr<HTMLFormElement> createWeakPtr();
 
     bool prepareForSubmission(Event*);

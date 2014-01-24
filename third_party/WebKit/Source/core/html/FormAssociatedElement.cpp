@@ -142,10 +142,10 @@ void FormAssociatedElement::setForm(HTMLFormElement* newForm)
         return;
     willChangeForm();
     if (m_form)
-        m_form->removeFormElement(this);
+        m_form->disassociate(*this);
     if (newForm) {
         m_form = newForm->createWeakPtr();
-        m_form->registerFormElement(*this);
+        m_form->associate(*this);
     } else {
         m_form = WeakPtr<HTMLFormElement>();
     }
@@ -176,7 +176,7 @@ void FormAssociatedElement::resetFormOwner()
     HTMLFormElement* originalForm = m_form.get();
     setForm(findAssociatedForm(element));
     // FIXME: Move didAssociateFormControl call to didChangeForm or
-    // HTMLFormElement::registerFormElement.
+    // HTMLFormElement::associate.
     if (m_form && m_form.get() != originalForm && m_form->inDocument())
         element->document().didAssociateFormControl(element);
 }

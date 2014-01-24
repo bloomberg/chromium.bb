@@ -53,7 +53,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
     if (form && form->inDocument()) {
         m_form = form->createWeakPtr();
         m_formWasSetByParser = true;
-        m_form->registerImgElement(this);
+        m_form->associate(*this);
     }
 }
 
@@ -70,7 +70,7 @@ PassRefPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFo
 HTMLImageElement::~HTMLImageElement()
 {
     if (m_form)
-        m_form->removeImgElement(this);
+        m_form->disassociate(*this);
 }
 
 PassRefPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
@@ -136,11 +136,11 @@ void HTMLImageElement::resetFormOwner()
     if (m_form) {
         if (nearestForm == m_form.get())
             return;
-        m_form->removeImgElement(this);
+        m_form->disassociate(*this);
     }
     if (nearestForm) {
         m_form = nearestForm->createWeakPtr();
-        m_form->registerImgElement(this);
+        m_form->associate(*this);
     } else {
         m_form = WeakPtr<HTMLFormElement>();
     }

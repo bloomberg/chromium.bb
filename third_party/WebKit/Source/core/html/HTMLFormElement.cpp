@@ -581,16 +581,16 @@ unsigned HTMLFormElement::formElementIndex(FormAssociatedElement& associatedElem
     return m_associatedElementsAfterIndex++;
 }
 
-void HTMLFormElement::registerFormElement(FormAssociatedElement& e)
+void HTMLFormElement::associate(FormAssociatedElement& e)
 {
     m_associatedElements.insert(formElementIndex(e), &e);
 }
 
-void HTMLFormElement::removeFormElement(FormAssociatedElement* e)
+void HTMLFormElement::disassociate(FormAssociatedElement& e)
 {
     unsigned index;
     for (index = 0; index < m_associatedElements.size(); ++index) {
-        if (m_associatedElements[index] == e)
+        if (m_associatedElements[index] == &e)
             break;
     }
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_associatedElements.size());
@@ -598,8 +598,8 @@ void HTMLFormElement::removeFormElement(FormAssociatedElement* e)
         --m_associatedElementsBeforeIndex;
     if (index < m_associatedElementsAfterIndex)
         --m_associatedElementsAfterIndex;
-    removeFromPastNamesMap(*toHTMLElement(e));
-    removeFromVector(m_associatedElements, e);
+    removeFromPastNamesMap(toHTMLElement(e));
+    removeFromVector(m_associatedElements, &e);
 }
 
 bool HTMLFormElement::isURLAttribute(const Attribute& attribute) const
@@ -607,17 +607,17 @@ bool HTMLFormElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == actionAttr || HTMLElement::isURLAttribute(attribute);
 }
 
-void HTMLFormElement::registerImgElement(HTMLImageElement* e)
+void HTMLFormElement::associate(HTMLImageElement& e)
 {
-    ASSERT(m_imageElements.find(e) == kNotFound);
-    m_imageElements.append(e);
+    ASSERT(m_imageElements.find(&e) == kNotFound);
+    m_imageElements.append(&e);
 }
 
-void HTMLFormElement::removeImgElement(HTMLImageElement* e)
+void HTMLFormElement::disassociate(HTMLImageElement& e)
 {
-    ASSERT(m_imageElements.find(e) != kNotFound);
-    removeFromPastNamesMap(*e);
-    removeFromVector(m_imageElements, e);
+    ASSERT(m_imageElements.find(&e) != kNotFound);
+    removeFromPastNamesMap(e);
+    removeFromVector(m_imageElements, &e);
 }
 
 WeakPtr<HTMLFormElement> HTMLFormElement::createWeakPtr()
