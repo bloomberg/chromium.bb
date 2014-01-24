@@ -108,7 +108,7 @@ bool WebSocketDeflater::finish()
         // Since consecutive calls of deflate with Z_SYNC_FLUSH and no input lead to an error,
         // we create and return the output for the empty input manually.
         ASSERT(!m_buffer.size());
-        m_buffer.append("\x02\x00", 2);
+        m_buffer.append("\x00", 1);
         return true;
     }
     while (true) {

@@ -188,8 +188,8 @@ TEST(WebSocketPerMessageDeflateTest, TestDeflateEmptyMessages)
 
     c.resetDeflateBuffer();
     ASSERT_TRUE(c.deflate(f2));
-    EXPECT_EQ(2u, f2.payloadLength);
-    EXPECT_EQ(0, memcmp("\x02\x00", f2.payload, f2.payloadLength));
+    EXPECT_EQ(1u, f2.payloadLength);
+    EXPECT_EQ(0, memcmp("\x00", f2.payload, f2.payloadLength));
     EXPECT_TRUE(f2.final);
     EXPECT_FALSE(f2.compress);
 
