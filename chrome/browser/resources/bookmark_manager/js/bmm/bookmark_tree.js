@@ -243,8 +243,8 @@ cr.define('bmm', function() {
      },
 
      /**
-     * Fetches the bookmark items and builds the tree control.
-     */
+      * Fetches the bookmark items and builds the tree control.
+      */
     reload: function() {
       /**
        * Recursive helper function that adds all the directories to the
