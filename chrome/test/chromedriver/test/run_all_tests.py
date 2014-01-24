@@ -113,6 +113,7 @@ def DownloadChrome(version_name, revision, download_site):
     traceback.print_exc()
     util.AddBuildStepText('Skip Java and Python tests')
     util.MarkBuildStepError()
+    return (None, None)
 
 
 def _KillChromes():
@@ -203,7 +204,6 @@ def main():
       if version_name == 'HEAD':
         version_name = version[1]
         download_site = archive.Site.SNAPSHOT
-      chrome_path = DownloadChrome(version_name, version[1], download_site)
       temp_dir, chrome_path = DownloadChrome(version_name, version[1],
                                              download_site)
       if not chrome_path:
