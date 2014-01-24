@@ -32,8 +32,6 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
  public:
   class Observer {
    public:
-    virtual ~Observer() {}
-
     // Called when the TPM token initialization is done or the case where TPM
     // should stay disabled is detected (e.g. on guest login). If TPM is
     // disabled, |tpm_user_pin|, |tpm_token_name| and |tpm_token_slot_id| will
@@ -41,6 +39,9 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
     virtual void OnTPMTokenReady(const std::string& tpm_user_pin,
                                  const std::string& tpm_token_name,
                                  int tpm_token_slot_id) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Sets the global instance. Must be called before any calls to Get().

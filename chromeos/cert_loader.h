@@ -43,13 +43,14 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
  public:
   class Observer {
    public:
-    virtual ~Observer() {}
-
     // Called when the certificates, passed for convenience as |cert_list|,
     // have completed loading. |initial_load| is true the first time this
     // is called.
     virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
                                       bool initial_load) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Sets the global instance. Must be called before any calls to Get().
