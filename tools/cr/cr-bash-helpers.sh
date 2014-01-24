@@ -17,12 +17,12 @@ fi
 
 cr_base_dir=$(dirname $(realpath "${BASH_SOURCE:-$0}"))
 cr_main="${cr_base_dir}/main.py"
-cr_exec="PYTHONDONTWRITEBYTECODE=1 python ${cr_main}"
+cr_exec=("PYTHONDONTWRITEBYTECODE=1" "python" "${cr_main}")
 
 # The main entry point to the cr tool.
 # Invokes the python script with pyc files turned off.
 function cr() {
-  env $cr_exec "$@"
+  env ${cr_exec[@]} "$@"
 }
 
 # Attempts to cd to the root/src of the current client.
@@ -40,7 +40,9 @@ function _cr_complete() {
   COMPREPLY=()
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local main="python -B "${cr_main}")"
-  local completions="$(env COMP_CWORD=${COMP_CWORD} COMP_WORD=${cur} $cr_exec)"
+  local completions="$(env COMP_CWORD=${COMP_CWORD} \
+      COMP_WORD=${cur} \
+      ${cr_exec[@]})"
   COMPREPLY=( $(compgen -W "${completions}" -- ${cur}) )
 }
 
