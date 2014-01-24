@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2011, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,16 +59,25 @@ private:
 
     bool canUseFastQuery(const Node& rootNode) const;
     bool selectorMatches(const SelectorData&, Element&, const Node&) const;
-    void collectElementsByClassName(Node& rootNode, const AtomicString& className, Vector<RefPtr<Node> >&) const;
-    Element* findElementByClassName(Node& rootNode, const AtomicString& className) const;
-    void collectElementsByTagName(Node& rootNode, const QualifiedName& tagName, Vector<RefPtr<Node> >&) const;
-    Element* findElementByTagName(Node& rootNode, const QualifiedName& tagName) const;
-    PassOwnPtr<SimpleNodeList> findTraverseRoots(Node& rootNode, bool& matchTraverseRoots) const;
-    void executeSlowQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const;
-    void executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const;
-    Node* findTraverseRoot(Node& rootNode, bool& matchTraverseRoot) const;
-    Element* executeSlowQueryFirst(Node& rootNode) const;
-    Element* executeQueryFirst(Node& rootNode) const;
+
+    template <typename SelectorQueryTrait>
+    void collectElementsByClassName(Node& rootNode, const AtomicString& className, typename SelectorQueryTrait::OutputType&) const;
+    template <typename SelectorQueryTrait>
+    void collectElementsByTagName(Node& rootNode, const QualifiedName& tagName, typename SelectorQueryTrait::OutputType&) const;
+
+    template <typename SelectorQueryTrait>
+    void findTraverseRootsAndExecute(Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+
+    enum MatchTraverseRootState { DoesNotMatchTraverseRoots, MatchesTraverseRoots };
+    template <typename SelectorQueryTrait>
+    void executeForTraverseRoot(const SelectorData&, Node* traverseRoot, MatchTraverseRootState, Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    template <typename SelectorQueryTrait, typename SimpleNodeListType>
+    void executeForTraverseRoots(const SelectorData&, SimpleNodeListType& traverseRoots, MatchTraverseRootState, Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+
+    template <typename SelectorQueryTrait>
+    void executeSlow(Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    template <typename SelectorQueryTrait>
+    void execute(Node& rootNode, typename SelectorQueryTrait::OutputType&) const;
     const CSSSelector* selectorForIdLookup(const CSSSelector*) const;
 
     Vector<SelectorData> m_selectors;
