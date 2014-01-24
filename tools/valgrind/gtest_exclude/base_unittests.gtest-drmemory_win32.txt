@@ -24,3 +24,14 @@ SharedMemoryProcessTest.Tasks
 
 # crbug/144018
 StartupInformationTest.InheritStdOut
+
+# http://crbug.com/308273
+# This only fails occasionally under full mode -- we perturb it enough that
+# it hits deadlocks that it also hits under tsan?
+TraceEventTestFixture.TraceContinuousSampling
+
+# http://crbug.com/93843
+# This fails only under full mode.
+# TODO(bruening): add a gtest_exclude distinction for light vs full mode
+# so we can avoid excluding this for light mode.
+MessageLoopTestTypeUI.RecursiveDenial3
