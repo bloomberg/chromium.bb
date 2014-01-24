@@ -82,7 +82,7 @@ class CONTENT_EXPORT TouchEventQueue {
   }
 
   bool has_handlers() const {
-    return has_handlers_;
+    return touch_filtering_state_ != DROP_ALL_TOUCHES;
   }
 
  private:
@@ -133,15 +133,15 @@ class CONTENT_EXPORT TouchEventQueue {
   // ack after forwarding a touch event to the client.
   bool dispatching_touch_;
 
-  // Whether there are any registered touch handlers. Defaults to false.
-  bool has_handlers_;
-
-  // Don't send touch events to the renderer while scrolling.
-  bool scroll_in_progress_;
-
-  // Whether an event in the current (multi)touch sequence was consumed by the
-  // renderer.  The touch timeout will never be activated when this is true.
-  bool renderer_is_consuming_touch_gesture_;
+  enum TouchFilteringState {
+    FORWARD_ALL_TOUCHES,           // Don't filter at all - the default.
+    FORWARD_TOUCHES_UNTIL_TIMEOUT, // Don't filter unless we get an ACK timeout.
+    DROP_TOUCHES_IN_SEQUENCE,      // Filter all events until a new touch
+                                   // sequence is received.
+    DROP_ALL_TOUCHES,              // Filter all events, e.g., no touch handler.
+    TOUCH_FILTERING_STATE_DEFAULT = FORWARD_ALL_TOUCHES,
+  };
+  TouchFilteringState touch_filtering_state_;
 
   // Optional handler for timed-out touch event acks, disabled by default.
   bool ack_timeout_enabled_;
