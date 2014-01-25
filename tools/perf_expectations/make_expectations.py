@@ -241,6 +241,11 @@ def Main(args):
     scanning = False
     for line in summarylist:
       jsondata = ConvertJsonIntoDict(line)
+
+      # TODO(iannucci): Remove this once http://crbug.com/336471 is resolved.
+      if 'Force the Chro' in jsondata['rev']:
+        continue
+
       if int(jsondata['rev']) <= revb:
         scanning = True
       if int(jsondata['rev']) < reva:
