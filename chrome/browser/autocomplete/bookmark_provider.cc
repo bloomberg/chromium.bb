@@ -172,7 +172,7 @@ AutocompleteMatch BookmarkProvider::TitleMatchToACMatch(
       net::kFormatUrlOmitAll & net::kFormatUrlOmitHTTP,
       net::UnescapeRule::SPACES, NULL, NULL, NULL);
   match.contents_class.push_back(
-      ACMatchClassification(0, ACMatchClassification::NONE));
+      ACMatchClassification(0, ACMatchClassification::URL));
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
                                                               match.contents);
