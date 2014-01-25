@@ -193,6 +193,33 @@ HRESULT GetJobFileProperties(IBackgroundCopyFile* file,
   return hr;
 }
 
+// Returns the number of bytes downloaded and bytes to download for all files
+// in the job. If the values are not known or if an error has occurred,
+// a value of -1 is reported.
+HRESULT GetJobByteCount(IBackgroundCopyJob* job,
+                        int64* bytes_downloaded,
+                        int64* bytes_total) {
+  *bytes_downloaded = -1;
+  *bytes_total = -1;
+
+  if (!job)
+    return E_FAIL;
+
+  BG_JOB_PROGRESS job_progress = {0};
+  HRESULT hr = job->GetProgress(&job_progress);
+  if (FAILED(hr))
+    return hr;
+
+  if (job_progress.BytesTransferred <= kint64max)
+    *bytes_downloaded = job_progress.BytesTotal;
+
+  if (job_progress.BytesTotal <= kint64max &&
+      job_progress.BytesTotal != BG_SIZE_UNKNOWN)
+    *bytes_total = job_progress.BytesTotal;
+
+  return S_OK;
+}
+
 HRESULT GetJobDescription(IBackgroundCopyJob* job, const base::string16* name) {
   ScopedCoMem<base::char16> description;
   return job->GetDescription(&description);
@@ -478,10 +505,11 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     download_end_time >= download_start_time_ ?
     download_end_time - download_start_time_ : base::TimeDelta();
 
-  base::FilePath response;
   int64 bytes_downloaded = -1;
   int64 bytes_total = -1;
+  GetJobByteCount(job_, &bytes_downloaded, &bytes_total);
 
+  base::FilePath response;
   if (SUCCEEDED(error)) {
     DCHECK(job_);
     std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
@@ -491,12 +519,13 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     BG_FILE_PROGRESS progress = {0};
     HRESULT hr = GetJobFileProperties(files[0], &local_name, NULL, &progress);
     if (SUCCEEDED(hr)) {
+      // Sanity check the post-conditions of a successful download, including
+      // the file and job invariants. The byte counts for a job and its file
+      // must match as a job only contains one file.
       DCHECK(progress.Completed);
+      DCHECK(bytes_downloaded == static_cast<int64>(progress.BytesTransferred));
+      DCHECK(bytes_total == static_cast<int64>(progress.BytesTotal));
       response = base::FilePath(local_name);
-      if (progress.BytesTransferred <= kint64max)
-        bytes_downloaded = progress.BytesTransferred;
-      if (progress.BytesTotal <= kint64max)
-        bytes_total = progress.BytesTotal;
     } else {
       error = hr;
     }
@@ -514,10 +543,12 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   const bool is_handled = SUCCEEDED(error) ||
                           IsHttpServerError(GetHttpStatusFromBitsError(error));
 
+  const int error_to_report = SUCCEEDED(error) ? 0 : error;
+
   DownloadMetrics download_metrics;
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kBits;
-  download_metrics.error = SUCCEEDED(error) ? 0 : error;
+  download_metrics.error = error_to_report;
   download_metrics.bytes_downloaded = bytes_downloaded;
   download_metrics.bytes_total = bytes_total;
   download_metrics.download_time_ms = download_time.InMilliseconds();
@@ -528,7 +559,7 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   bits_manager_ = NULL;
 
   Result result;
-  result.error = error;
+  result.error = error_to_report;
   result.response = response;
   BrowserThread::PostTask(
         BrowserThread::UI,
