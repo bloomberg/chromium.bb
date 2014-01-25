@@ -41,7 +41,7 @@ class GURL;
 namespace content {
 
 #if defined(USE_AURA)
-class ShellPlatformDataAura;
+class ShellAuraPlatformData;
 #endif
 
 class BrowserContext;
@@ -259,9 +259,10 @@ class Shell : public WebContentsDelegate,
   static views::ViewsDelegate* views_delegate_;
 
   views::Widget* window_widget_;
+#else // defined(TOOLKIT_VIEWS)
+  static ShellAuraPlatformData* platform_;
 #endif // defined(TOOLKIT_VIEWS)
-  static ShellPlatformDataAura* platform_;
-#endif  // defined(USE_AURA)
+#endif
 
   bool headless_;
 

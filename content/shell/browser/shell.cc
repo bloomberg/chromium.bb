@@ -29,6 +29,10 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 
+#if defined(USE_AURA) && !defined(TOOLKIT_VIEWS)
+#include "content/shell/browser/shell_aura.h"
+#endif
+
 namespace content {
 
 const int Shell::kDefaultTestWindowWidthDip = 800;
