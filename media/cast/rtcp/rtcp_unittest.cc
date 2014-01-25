@@ -37,10 +37,6 @@ class RtcpTestPacketSender : public transport::PacketSender {
         testing_clock_(testing_clock) {}
   virtual ~RtcpTestPacketSender() {}
   // Packet lists imply a RTP packet.
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    return false;
-  }
-
   void set_rtcp_receiver(Rtcp* rtcp) { rtcp_receiver_ = rtcp; }
 
   void set_short_delay() { short_delay_ = true; }

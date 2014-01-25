@@ -111,8 +111,6 @@ class PacketSender {
  public:
   // All packets to be sent to the network will be delivered via these
   // functions.
-  virtual bool SendPackets(const transport::PacketList& packets) = 0;
-
   virtual bool SendPacket(const transport::Packet& packet) = 0;
 
   virtual ~PacketSender() {}

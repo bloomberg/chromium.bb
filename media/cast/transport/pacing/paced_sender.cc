@@ -163,10 +163,15 @@ void PacedSender::SendStoredPackets() {
 }
 
 bool PacedSender::TransmitPackets(const PacketList& packets) {
-  if (external_transport_) {
-    return external_transport_->SendPackets(packets);
+  bool ret = true;
+  for (size_t i = 0; i < packets.size(); i++) {
+    if (external_transport_) {
+      ret &= external_transport_->SendPacket(packets[i]);
+    } else {
+      ret &= transport_->SendPacket(packets[i]);
+    }
   }
-  return transport_->SendPackets(packets);
+  return ret;
 }
 
 void PacedSender::UpdateBurstSize(size_t packets_to_send) {

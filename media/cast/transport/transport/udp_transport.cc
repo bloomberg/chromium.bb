@@ -118,16 +118,6 @@ void UdpTransport::OnReceived(int result) {
   ReceiveOnePacket();
 }
 
-bool UdpTransport::SendPackets(const PacketList& packets) {
-  DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
-
-  bool result = true;
-  for (size_t i = 0; i < packets.size(); ++i) {
-    result |= SendPacket(packets[i]);
-  }
-  return result;
-}
-
 bool UdpTransport::SendPacket(const Packet& packet) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 

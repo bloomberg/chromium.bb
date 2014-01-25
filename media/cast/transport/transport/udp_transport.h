@@ -43,7 +43,6 @@ class UdpTransport : public PacketSender {
   void StartReceiving(PacketReceiver* packet_receiver);
 
   // PacketSender implementations.
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE;
   virtual bool SendPacket(const Packet& packet) OVERRIDE;
 
  private:

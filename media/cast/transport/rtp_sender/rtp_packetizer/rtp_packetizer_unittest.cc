@@ -59,23 +59,15 @@ class TestRtpPacketTransport : public PacketSender {
     EXPECT_EQ(expected_frame_id_ - 1u, rtp_header.reference_frame_id);
   }
 
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    PacketList::const_iterator it = packets.begin();
-    for (; it != packets.end(); ++it) {
-      ++packets_sent_;
-      RtpHeaderParser parser(it->data(), it->size());
-      RtpCastTestHeader rtp_header;
-      parser.Parse(&rtp_header);
-      VerifyRtpHeader(rtp_header);
-      ++sequence_number_;
-      ++expected_packet_id_;
-    }
+  virtual bool SendPacket(const transport::Packet& packet) OVERRIDE {
+    ++packets_sent_;
+    RtpHeaderParser parser(packet.data(), packet.size());
+    RtpCastTestHeader rtp_header;
+    parser.Parse(&rtp_header);
+    VerifyRtpHeader(rtp_header);
+    ++sequence_number_;
+    ++expected_packet_id_;
     return true;
-  }
-
-  virtual bool SendPacket(const Packet& packet) OVERRIDE {
-    EXPECT_TRUE(false);
-    return false;
   }
 
   int number_of_packets_received() const {

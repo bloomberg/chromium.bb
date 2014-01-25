@@ -38,14 +38,13 @@ class TestPacketSender : public transport::PacketSender {
       : number_of_rtp_packets_(0),
         number_of_rtcp_packets_(0) {}
 
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    number_of_rtp_packets_ += static_cast<int>(packets.size());
-    return true;
-  }
-
   // A singular packet implies a RTCP packet.
   virtual bool SendPacket(const Packet& packet) OVERRIDE {
-    ++number_of_rtcp_packets_;
+    if (Rtcp::IsRtcpPacket(&packet[0], packet.size())) {
+      ++number_of_rtcp_packets_;
+    } else {
+      ++number_of_rtp_packets_;
+    }
     return true;
   }
 

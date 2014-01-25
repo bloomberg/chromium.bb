@@ -111,15 +111,6 @@ bool CastSessionDelegate::SendPacket(
   return true;
 }
 
-bool CastSessionDelegate::SendPackets(
-    const media::cast::PacketList& packets) {
-  // TODO(hubbe): Add ability to send multiple packets in one IPC message.
-  for (size_t i = 0; i < packets.size(); i++) {
-    SendPacket(packets[i]);
-  }
-  return true;
-}
-
 void CastSessionDelegate::ReceivePacket(const std::vector<char>& packet) {
   uint8 *packet_copy = new uint8[packet.size()];
   memcpy(packet_copy, &packet[0], packet.size());

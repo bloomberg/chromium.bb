@@ -90,33 +90,20 @@ class LoopBackTransport : public transport::PacketSender {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
     if (!send_packets_) return false;
 
+    if (drop_packets_belonging_to_odd_frames_) {
+      uint32 frame_id = packet[13];
+      if (frame_id % 2 == 1) return true;
+    }
+
     uint8* packet_copy = new uint8[packet.size()];
     memcpy(packet_copy, packet.data(), packet.size());
+
+    if (reset_reference_frame_id_) {
+      // Reset the is_reference bit in the cast header.
+      packet_copy[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;
+    }
     packet_receiver_->ReceivedPacket(packet_copy, packet.size(),
         base::Bind(transport::PacketReceiver::DeletePacket, packet_copy));
-    return true;
-  }
-
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    DCHECK(packet_receiver_);
-    DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-    if (!send_packets_) return false;
-
-    for (size_t i = 0; i < packets.size(); ++i) {
-      const Packet& packet = packets[i];
-      if (drop_packets_belonging_to_odd_frames_) {
-        uint32 frame_id = packet[13];
-        if (frame_id % 2 == 1) continue;
-      }
-      uint8* packet_copy = new uint8[packet.size()];
-      memcpy(packet_copy, packet.data(), packet.size());
-      if (reset_reference_frame_id_) {
-        // Reset the is_reference bit in the cast header.
-        packet_copy[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;
-      }
-      packet_receiver_->ReceivedPacket(packet_copy, packet.size(),
-          base::Bind(transport::PacketReceiver::DeletePacket, packet_copy));
-    }
     return true;
   }
 

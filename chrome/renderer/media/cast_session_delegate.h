@@ -58,7 +58,6 @@ class CastSessionDelegate : public media::cast::transport::PacketSender {
 
   // media::cast::PacketSender Implementation
   virtual bool SendPacket(const media::cast::Packet& packet) OVERRIDE;
-  virtual bool SendPackets(const media::cast::PacketList& packets) OVERRIDE;
 
  private:
   base::ThreadChecker thread_checker_;

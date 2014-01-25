@@ -23,18 +23,11 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
 class TestPacketSender : public PacketSender {
  public:
-  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
-    PacketList::const_iterator it = packets.begin();
-    for (; it != packets.end(); ++it) {
-      EXPECT_FALSE(expected_packet_size_.empty());
-      size_t expected_packet_size = expected_packet_size_.front();
-      expected_packet_size_.pop_front();
-      EXPECT_EQ(expected_packet_size, it->size());
-    }
-    return true;
-  }
-
   virtual bool SendPacket(const Packet& packet) OVERRIDE {
+    EXPECT_FALSE(expected_packet_size_.empty());
+    size_t expected_packet_size = expected_packet_size_.front();
+    expected_packet_size_.pop_front();
+    EXPECT_EQ(expected_packet_size, packet.size());
     return true;
   }
 
