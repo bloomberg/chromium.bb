@@ -10,7 +10,6 @@ import android.util.Pair;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -449,12 +448,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         assertEquals(onReceivedErrorHelperCallCount, onReceivedErrorHelper.getCallCount());
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    crbug.com/337557
-    */
-    @DisabledTest
     public void testCalledForIframe() throws Throwable {
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
         final String pageWithIframe = addPageToTestServer(mWebServer, "/page_with_iframe.html",
