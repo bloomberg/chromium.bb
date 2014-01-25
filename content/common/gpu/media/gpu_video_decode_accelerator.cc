@@ -27,6 +27,7 @@
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
+#include "content/common/gpu/media/v4l2_video_device.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "ui/gl/gl_context_glx.h"
@@ -272,12 +273,18 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(
       this, make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  video_decode_accelerator_.reset(new V4L2VideoDecodeAccelerator(
-      gfx::GLSurfaceEGL::GetHardwareDisplay(),
-      this,
-      weak_factory_for_io_.GetWeakPtr(),
-      make_context_current_,
-      io_message_loop_));
+  scoped_ptr<V4L2Device> device = V4L2Device::Create();
+  if (!device.get()) {
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
+  video_decode_accelerator_.reset(
+      new V4L2VideoDecodeAccelerator(gfx::GLSurfaceEGL::GetHardwareDisplay(),
+                                     this,
+                                     weak_factory_for_io_.GetWeakPtr(),
+                                     make_context_current_,
+                                     device.Pass(),
+                                     io_message_loop_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL) {
     VLOG(1) << "HW video decode acceleration not available without "

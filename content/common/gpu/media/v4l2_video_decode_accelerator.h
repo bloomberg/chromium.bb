@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/v4l2_video_device.h"
 #include "content/common/gpu/media/video_decode_accelerator_impl.h"
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
@@ -67,6 +68,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
       Client* client,
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
+      scoped_ptr<V4L2Device> device,
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
   virtual ~V4L2VideoDecodeAccelerator();
 
@@ -112,11 +114,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   enum BufferId {
     kFlushBufferId = -2  // Buffer id for flush buffer, queued by FlushTask().
-  };
-
-  // File descriptors we need to poll.
-  enum PollFds {
-    kPollDecoder = (1 << 0),
   };
 
   // Auto-destruction reference for BitstreamBuffer, for message-passing from
@@ -236,9 +233,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // If |keep_input_state| is true, don't reset input state; used during
   // resolution change.
   bool StopDevicePoll(bool keep_input_state);
-  // Set/clear the device poll interrupt (using device_poll_interrupt_fd_).
-  bool SetDevicePollInterrupt();
-  bool ClearDevicePollInterrupt();
 
   void StartResolutionChangeIfNeeded();
   void FinishResolutionChange();
@@ -255,7 +249,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   //
 
   // The device task.
-  void DevicePollTask(unsigned int poll_fds);
+  void DevicePollTask(bool poll_device);
 
   //
   // Safe from any thread.
@@ -329,6 +323,8 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   State decoder_state_;
   // BitstreamBuffer we're presently reading.
   scoped_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
+  // The V4L2Device this class is operating upon.
+  scoped_ptr<V4L2Device> device_;
   // FlushTask() and ResetTask() should not affect buffers that have been
   // queued afterwards.  For flushing or resetting the pipeline then, we will
   // delay these buffers until after the flush or reset completes.
@@ -363,9 +359,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // Completed decode buffers.
   std::queue<int> input_ready_queue_;
-
-  // Decode device.
-  int fd_;
 
   // Input buffer state.
   bool input_streamon_;
@@ -405,9 +398,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // The thread.
   base::Thread device_poll_thread_;
-  // eventfd fd to signal device poll thread when its poll() should be
-  // interrupted.
-  int device_poll_interrupt_fd_;
 
   //
   // Other state, held by the child (main) thread.

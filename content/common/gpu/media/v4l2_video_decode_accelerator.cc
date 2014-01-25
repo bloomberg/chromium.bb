@@ -31,22 +31,22 @@ namespace content {
     NotifyError(x);                                                   \
   } while (0)
 
-#define IOCTL_OR_ERROR_RETURN(fd, type, arg)                          \
-  do {                                                                \
-    if (HANDLE_EINTR(ioctl(fd, type, arg) != 0)) {                    \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;    \
-      NOTIFY_ERROR(PLATFORM_FAILURE);                                 \
-      return;                                                         \
-    }                                                                 \
+#define IOCTL_OR_ERROR_RETURN(type, arg)                           \
+  do {                                                             \
+    if (HANDLE_EINTR(device_->Ioctl(type, arg) != 0)) {            \
+      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+      NOTIFY_ERROR(PLATFORM_FAILURE);                              \
+      return;                                                      \
+    }                                                              \
   } while (0)
 
-#define IOCTL_OR_ERROR_RETURN_FALSE(fd, type, arg)                    \
-  do {                                                                \
-    if (HANDLE_EINTR(ioctl(fd, type, arg) != 0)) {                    \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;    \
-      NOTIFY_ERROR(PLATFORM_FAILURE);                                 \
-      return false;                                                   \
-    }                                                                 \
+#define IOCTL_OR_ERROR_RETURN_FALSE(type, arg)                     \
+  do {                                                             \
+    if (HANDLE_EINTR(device_->Ioctl(type, arg) != 0)) {            \
+      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
+      NOTIFY_ERROR(PLATFORM_FAILURE);                              \
+      return false;                                                \
+    }                                                              \
   } while (0)
 
 namespace {
@@ -55,8 +55,6 @@ namespace {
 #ifndef V4L2_EVENT_RESOLUTION_CHANGE
 #define V4L2_EVENT_RESOLUTION_CHANGE 5
 #endif
-
-const char kDevice[] = "/dev/mfc-dec";
 
 }  // anonymous namespace
 
@@ -183,6 +181,7 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     Client* client,
     const base::WeakPtr<Client>& io_client,
     const base::Callback<bool(void)>& make_context_current,
+    scoped_ptr<V4L2Device> device,
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(io_message_loop_proxy),
@@ -192,6 +191,7 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       io_client_(io_client),
       decoder_thread_("V4L2DecoderThread"),
       decoder_state_(kUninitialized),
+      device_(device.Pass()),
       decoder_delay_bitstream_buffer_id_(-1),
       decoder_current_input_buffer_(-1),
       decoder_decode_buffer_tasks_scheduled_(0),
@@ -200,7 +200,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       resolution_change_pending_(false),
       resolution_change_reset_pending_(false),
       decoder_partial_frame_pending_(false),
-      fd_(-1),
       input_streamon_(false),
       input_buffer_queued_count_(0),
       output_streamon_(false),
@@ -209,7 +208,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       output_dpb_size_(0),
       picture_clearing_count_(0),
       device_poll_thread_("V4L2DevicePollThread"),
-      device_poll_interrupt_fd_(-1),
       make_context_current_(make_context_current),
       egl_display_(egl_display),
       video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN) {}
@@ -218,16 +216,8 @@ V4L2VideoDecodeAccelerator::~V4L2VideoDecodeAccelerator() {
   DCHECK(!decoder_thread_.IsRunning());
   DCHECK(!device_poll_thread_.IsRunning());
 
-  if (device_poll_interrupt_fd_ != -1) {
-    close(device_poll_interrupt_fd_);
-    device_poll_interrupt_fd_ = -1;
-  }
-  if (fd_ != -1) {
-    DestroyInputBuffers();
-    DestroyOutputBuffers();
-    close(fd_);
-    fd_ = -1;
-  }
+  DestroyInputBuffers();
+  DestroyOutputBuffers();
 
   // These maps have members that should be manually destroyed, e.g. file
   // descriptors, mmap() segments, etc.
@@ -279,31 +269,13 @@ bool V4L2VideoDecodeAccelerator::Initialize(
     return false;
   }
 
-  // Open the video devices.
-  DVLOG(2) << "Initialize(): opening device: " << kDevice;
-  fd_ = HANDLE_EINTR(open(kDevice, O_RDWR | O_NONBLOCK | O_CLOEXEC));
-  if (fd_ == -1) {
-    DPLOG(ERROR) << "Initialize(): could not open device: " << kDevice;
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
-
-  // Create the interrupt fd.
-  DCHECK_EQ(device_poll_interrupt_fd_, -1);
-  device_poll_interrupt_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-  if (device_poll_interrupt_fd_ == -1) {
-    DPLOG(ERROR) << "Initialize(): eventfd() failed";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
-
   // Capabilities check.
   struct v4l2_capability caps;
   const __u32 kCapsRequired =
       V4L2_CAP_VIDEO_CAPTURE_MPLANE |
       V4L2_CAP_VIDEO_OUTPUT_MPLANE |
       V4L2_CAP_STREAMING;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_QUERYCAP, &caps);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     DLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
         ", caps check failed: 0x" << std::hex << caps.capabilities;
@@ -319,13 +291,13 @@ bool V4L2VideoDecodeAccelerator::Initialize(
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   format.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_NV12M;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_S_FMT, &format);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   // Subscribe to the resolution change event.
   struct v4l2_event_subscription sub;
   memset(&sub, 0, sizeof(sub));
   sub.type = V4L2_EVENT_RESOLUTION_CHANGE;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_SUBSCRIBE_EVENT, &sub);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_SUBSCRIBE_EVENT, &sub);
 
   // Initialize format-specific bits.
   if (video_profile_ >= media::H264PROFILE_MIN &&
@@ -981,14 +953,16 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   Enqueue();
 
   // Clear the interrupt fd.
-  if (!ClearDevicePollInterrupt())
+  if (!device_->ClearDevicePollInterrupt()) {
+    NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
+  }
 
-  unsigned int poll_fds = 0;
+  bool poll_device = false;
   // Add fd, if we should poll on it.
   // Can be polled as soon as either input or output buffers are queued.
   if (input_buffer_queued_count_ + output_buffer_queued_count_ > 0)
-    poll_fds |= kPollDecoder;
+    poll_device = true;
 
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
   // so either:
@@ -998,10 +972,11 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   //   respectively, and we should have early-outed already.
   DCHECK(device_poll_thread_.message_loop());
   // Queue the DevicePollTask() now.
-  device_poll_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      &V4L2VideoDecodeAccelerator::DevicePollTask,
-      base::Unretained(this),
-      poll_fds));
+  device_poll_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&V4L2VideoDecodeAccelerator::DevicePollTask,
+                 base::Unretained(this),
+                 poll_device));
 
   DVLOG(1) << "ServiceDeviceTask(): buffer counts: DEC["
            << decoder_input_queue_.size() << "->"
@@ -1033,12 +1008,15 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
   if (old_inputs_queued == 0 && input_buffer_queued_count_ != 0) {
     // We just started up a previously empty queue.
     // Queue state changed; signal interrupt.
-    if (!SetDevicePollInterrupt())
+    if (!device_->SetDevicePollInterrupt()) {
+      DPLOG(ERROR) << "SetDevicePollInterrupt(): failed";
+      NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
+    }
     // Start VIDIOC_STREAMON if we haven't yet.
     if (!input_streamon_) {
       __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-      IOCTL_OR_ERROR_RETURN(fd_, VIDIOC_STREAMON, &type);
+      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
       input_streamon_ = true;
     }
   }
@@ -1052,12 +1030,15 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
   if (old_outputs_queued == 0 && output_buffer_queued_count_ != 0) {
     // We just started up a previously empty queue.
     // Queue state changed; signal interrupt.
-    if (!SetDevicePollInterrupt())
+    if (!device_->SetDevicePollInterrupt()) {
+      DPLOG(ERROR) << "SetDevicePollInterrupt(): failed";
+      NOTIFY_ERROR(PLATFORM_FAILURE);
       return;
+    }
     // Start VIDIOC_STREAMON if we haven't yet.
     if (!output_streamon_) {
       __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-      IOCTL_OR_ERROR_RETURN(fd_, VIDIOC_STREAMON, &type);
+      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
       output_streamon_ = true;
     }
   }
@@ -1071,7 +1052,7 @@ void V4L2VideoDecodeAccelerator::DequeueEvents() {
   struct v4l2_event ev;
   memset(&ev, 0, sizeof(ev));
 
-  while (ioctl(fd_, VIDIOC_DQEVENT, &ev) == 0) {
+  while (device_->Ioctl(VIDIOC_DQEVENT, &ev) == 0) {
     if (ev.type == V4L2_EVENT_RESOLUTION_CHANGE) {
       DVLOG(3) << "DequeueEvents(): got resolution change event.";
       DCHECK(!resolution_change_pending_);
@@ -1101,7 +1082,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
     dqbuf.memory = V4L2_MEMORY_MMAP;
     dqbuf.m.planes = planes;
     dqbuf.length = 1;
-    if (ioctl(fd_, VIDIOC_DQBUF, &dqbuf) != 0) {
+    if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
@@ -1129,7 +1110,7 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
     dqbuf.memory = V4L2_MEMORY_MMAP;
     dqbuf.m.planes = planes;
     dqbuf.length = 2;
-    if (ioctl(fd_, VIDIOC_DQBUF, &dqbuf) != 0) {
+    if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
         break;
@@ -1185,7 +1166,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueInputRecord() {
   qbuf.m.planes              = &qbuf_plane;
   qbuf.m.planes[0].bytesused = input_record.bytes_used;
   qbuf.length                = 1;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_QBUF, &qbuf);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_ready_queue_.pop();
   input_record.at_device = true;
   input_buffer_queued_count_++;
@@ -1225,7 +1206,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
   qbuf.memory   = V4L2_MEMORY_MMAP;
   qbuf.m.planes = qbuf_planes;
   qbuf.length   = arraysize(output_record.fds);
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_QBUF, &qbuf);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   free_output_buffers_.pop();
   output_record.at_device = true;
   output_buffer_queued_count_++;
@@ -1476,24 +1457,29 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
     DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
-  if (!SetDevicePollInterrupt())
+  if (!device_->SetDevicePollInterrupt()) {
+    DPLOG(ERROR) << "SetDevicePollInterrupt(): failed";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
+  }
   device_poll_thread_.Stop();
   // Clear the interrupt now, to be sure.
-  if (!ClearDevicePollInterrupt())
+  if (!device_->ClearDevicePollInterrupt()) {
+    NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
+  }
 
   // Stop streaming.
   if (!keep_input_state) {
     if (input_streamon_) {
       __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-      IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_STREAMOFF, &type);
+      IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
     }
     input_streamon_ = false;
   }
   if (output_streamon_) {
     __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_STREAMOFF, &type);
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
   }
   output_streamon_ = false;
 
@@ -1524,37 +1510,6 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
   output_buffer_queued_count_ = 0;
 
   DVLOG(3) << "StopDevicePoll(): device poll stopped";
-  return true;
-}
-
-bool V4L2VideoDecodeAccelerator::SetDevicePollInterrupt() {
-  DVLOG(3) << "SetDevicePollInterrupt()";
-  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
-
-  const uint64 buf = 1;
-  if (HANDLE_EINTR(write(device_poll_interrupt_fd_, &buf, sizeof(buf))) == -1) {
-    DPLOG(ERROR) << "SetDevicePollInterrupt(): write() failed";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
-  return true;
-}
-
-bool V4L2VideoDecodeAccelerator::ClearDevicePollInterrupt() {
-  DVLOG(3) << "ClearDevicePollInterrupt()";
-  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
-
-  uint64 buf;
-  if (HANDLE_EINTR(read(device_poll_interrupt_fd_, &buf, sizeof(buf))) == -1) {
-    if (errno == EAGAIN) {
-      // No interrupt flag set, and we're reading nonblocking.  Not an error.
-      return true;
-    } else {
-      DPLOG(ERROR) << "ClearDevicePollInterrupt(): read() failed";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-      return false;
-    }
-  }
   return true;
 }
 
@@ -1629,40 +1584,17 @@ void V4L2VideoDecodeAccelerator::ResumeAfterResolutionChange() {
   ScheduleDecodeBufferTaskIfNeeded();
 }
 
-void V4L2VideoDecodeAccelerator::DevicePollTask(unsigned int poll_fds) {
+void V4L2VideoDecodeAccelerator::DevicePollTask(bool poll_device) {
   DVLOG(3) << "DevicePollTask()";
   DCHECK_EQ(device_poll_thread_.message_loop(), base::MessageLoop::current());
   TRACE_EVENT0("Video Decoder", "V4L2VDA::DevicePollTask");
 
-  // This routine just polls the set of device fds, and schedules a
-  // ServiceDeviceTask() on decoder_thread_ when processing needs to occur.
-  // Other threads may notify this task to return early by writing to
-  // device_poll_interrupt_fd_.
-  struct pollfd pollfds[3];
-  nfds_t nfds;
-  int pollfd = -1;
+  bool event_pending = false;
 
-  // Add device_poll_interrupt_fd_;
-  pollfds[0].fd = device_poll_interrupt_fd_;
-  pollfds[0].events = POLLIN | POLLERR;
-  nfds = 1;
-
-  if (poll_fds & kPollDecoder) {
-    DVLOG(3) << "DevicePollTask(): adding device fd to poll() set";
-    pollfds[nfds].fd = fd_;
-    pollfds[nfds].events = POLLIN | POLLOUT | POLLERR | POLLPRI;
-    pollfd = nfds;
-    nfds++;
-  }
-
-  // Poll it!
-  if (HANDLE_EINTR(poll(pollfds, nfds, -1)) == -1) {
-    DPLOG(ERROR) << "DevicePollTask(): poll() failed";
+  if (!device_->Poll(poll_device, &event_pending)) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
-
-  bool event_pending = (pollfd != -1 && pollfds[pollfd].revents & POLLPRI);
 
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch decoder state from this thread.
@@ -1708,7 +1640,7 @@ bool V4L2VideoDecodeAccelerator::GetFormatInfo(struct v4l2_format* format,
   *again = false;
   memset(format, 0, sizeof(*format));
   format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  if (HANDLE_EINTR(ioctl(fd_, VIDIOC_G_FMT, format)) != 0) {
+  if (HANDLE_EINTR(device_->Ioctl(VIDIOC_G_FMT, format)) != 0) {
     if (errno == EINVAL) {
       // EINVAL means we haven't seen sufficient stream to decode the format.
       *again = true;
@@ -1764,14 +1696,14 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
   format.fmt.pix_mp.pixelformat            = pixelformat;
   format.fmt.pix_mp.plane_fmt[0].sizeimage = kInputBufferMaxSize;
   format.fmt.pix_mp.num_planes             = 1;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_S_FMT, &format);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count  = kInputBufferCount;
   reqbufs.type   = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_REQBUFS, &reqbufs);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
   input_buffer_map_.resize(reqbufs.count);
   for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
     free_input_buffers_.push_back(i);
@@ -1786,10 +1718,12 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
     buffer.memory   = V4L2_MEMORY_MMAP;
     buffer.m.planes = planes;
     buffer.length   = 1;
-    IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_QUERYBUF, &buffer);
-    void* address = mmap(NULL, buffer.m.planes[0].length,
-        PROT_READ | PROT_WRITE, MAP_SHARED, fd_,
-        buffer.m.planes[0].m.mem_offset);
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
+    void* address = device_->Mmap(NULL,
+                                  buffer.m.planes[0].length,
+                                  PROT_READ | PROT_WRITE,
+                                  MAP_SHARED,
+                                  buffer.m.planes[0].m.mem_offset);
     if (address == MAP_FAILED) {
       DPLOG(ERROR) << "CreateInputBuffers(): mmap() failed";
       return false;
@@ -1812,7 +1746,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
   struct v4l2_control ctrl;
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MIN_BUFFERS_FOR_CAPTURE;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_G_CTRL, &ctrl);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_G_CTRL, &ctrl);
   output_dpb_size_ = ctrl.value;
 
   // Output format setup in Initialize().
@@ -1823,7 +1757,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
   reqbufs.count  = output_dpb_size_ + kDpbOutputBufferExtraCount;
   reqbufs.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
-  IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_REQBUFS, &reqbufs);
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
 
   // Create DMABUFs from output buffers.
   output_buffer_map_.resize(reqbufs.count);
@@ -1837,7 +1771,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
       expbuf.index = i;
       expbuf.plane = j;
       expbuf.flags = O_CLOEXEC;
-      IOCTL_OR_ERROR_RETURN_FALSE(fd_, VIDIOC_EXPBUF, &expbuf);
+      IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_EXPBUF, &expbuf);
       output_record.fds[j] = expbuf.fd;
     }
   }
@@ -1863,8 +1797,8 @@ void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
 
   for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
     if (input_buffer_map_[i].address != NULL) {
-      munmap(input_buffer_map_[i].address,
-          input_buffer_map_[i].length);
+      device_->Munmap(input_buffer_map_[i].address,
+                      input_buffer_map_[i].length);
     }
   }
 
@@ -1873,7 +1807,7 @@ void V4L2VideoDecodeAccelerator::DestroyInputBuffers() {
   reqbufs.count = 0;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
-  if (ioctl(fd_, VIDIOC_REQBUFS, &reqbufs) != 0)
+  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0)
     DPLOG(ERROR) << "DestroyInputBuffers(): ioctl() failed: VIDIOC_REQBUFS";
 
   input_buffer_map_.clear();
@@ -1920,7 +1854,7 @@ void V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   reqbufs.count = 0;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = V4L2_MEMORY_MMAP;
-  if (ioctl(fd_, VIDIOC_REQBUFS, &reqbufs) != 0)
+  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0)
     DPLOG(ERROR) << "DestroyOutputBuffers() ioctl() failed: VIDIOC_REQBUFS";
 
   output_buffer_map_.clear();
