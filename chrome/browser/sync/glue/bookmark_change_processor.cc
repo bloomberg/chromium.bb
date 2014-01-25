@@ -24,7 +24,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
-#include "chrome/browser/undo/undo_manager_utils.h"
+#include "chrome/browser/undo/bookmark_undo_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
@@ -515,8 +515,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
   // Changes made to the bookmark model due to sync should not be undoable.
 #if !defined(OS_ANDROID)
-  ScopedSuspendUndoTracking suspend_undo(
-      BookmarkUndoServiceFactory::GetForProfile(profile_)->undo_manager());
+  ScopedSuspendBookmarkUndo suspend_undo(profile_);
 #endif
 
   // Notify UI intensive observers of BookmarkModel that we are about to make

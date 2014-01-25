@@ -18,7 +18,7 @@
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
-#include "chrome/browser/undo/undo_manager_utils.h"
+#include "chrome/browser/undo/bookmark_undo_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
@@ -149,8 +149,7 @@ void CopyToClipboard(BookmarkModel* model,
 
   if (remove_nodes) {
 #if !defined(OS_ANDROID)
-    ScopedGroupingAction group_cut(BookmarkUndoServiceFactory::GetForProfile(
-        model->profile())->undo_manager());
+    ScopedGroupBookmarkActions group_cut(model->profile());
 #endif
     for (size_t i = 0; i < filteredNodes.size(); ++i) {
       int index = filteredNodes[i]->parent()->GetIndexOf(filteredNodes[i]);
@@ -173,8 +172,7 @@ void PasteFromClipboard(BookmarkModel* model,
   if (index == -1)
     index = parent->child_count();
 #if !defined(OS_ANDROID)
-  ScopedGroupingAction group_paste(BookmarkUndoServiceFactory::GetForProfile(
-      model->profile())->undo_manager());
+  ScopedGroupBookmarkActions group_paste(model->profile());
 #endif
   CloneBookmarkNode(model, bookmark_data.elements, parent, index, true);
 }

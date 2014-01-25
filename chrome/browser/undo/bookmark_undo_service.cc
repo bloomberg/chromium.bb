@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/undo/bookmark_renumber_observer.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
-#include "chrome/browser/undo/undo_manager_utils.h"
+#include "chrome/browser/undo/bookmark_undo_utils.h"
 #include "chrome/browser/undo/undo_operation.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -444,7 +444,7 @@ void BookmarkUndoService::OnWillRemoveBookmarks(BookmarkModel* model,
 }
 
 void BookmarkUndoService::OnWillRemoveAllBookmarks(BookmarkModel* model) {
-  ScopedGroupingAction merge_removes(undo_manager());
+  ScopedGroupBookmarkActions merge_removes(profile_);
   for (int i = 0; i < model->root_node()->child_count(); ++i) {
     const BookmarkNode* permanent_node = model->root_node()->GetChild(i);
     for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
