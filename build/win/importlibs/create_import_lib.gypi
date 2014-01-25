@@ -46,7 +46,6 @@
         '--output-file', '<@(_outputs)',
         '<(RULE_INPUT_PATH)',
       ],
-      'msvs_cygwin_shell': 0,
       'message': 'Generating import library from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 0,
     },

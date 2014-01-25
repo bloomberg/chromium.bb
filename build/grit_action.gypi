@@ -36,6 +36,5 @@
              '-o', '<(grit_out_dir)',
              '<@(grit_defines)',
              '<@(grit_additional_defines)' ],
-  'msvs_cygwin_shell': 0,
   'message': 'Generating resources from <(grit_grd_file)',
 }

@@ -25,7 +25,6 @@
       'actions': [
         {
           'action_name': 'Reorder Chrome with Syzygy',
-          'msvs_cygwin_shell': 0,
           'inputs': [
             '<(PRODUCT_DIR)/<(dll_name).dll',
             '<(PRODUCT_DIR)/<(dll_name).dll.pdb',
@@ -48,7 +47,6 @@
       'actions': [
         {
           'action_name': 'Instrument Chrome with SyzyAsan',
-          'msvs_cygwin_shell': 0,
           'inputs': [
             '<(DEPTH)/chrome/tools/build/win/win-syzyasan-filter.txt',
             '<(PRODUCT_DIR)/<(dll_name).dll',
