@@ -21,10 +21,10 @@ const int kHttpPostFailServerError = 500;
 }  // namespace
 
 FeedbackUploaderDelegate::FeedbackUploaderDelegate(
-    const std::string& post_body,
+    scoped_ptr<std::string> post_body,
     const base::Closure& success_callback,
     const ReportDataCallback& error_callback)
-        : post_body_(post_body),
+        : post_body_(post_body.Pass()),
           success_callback_(success_callback),
           error_callback_(error_callback) {
 }
@@ -52,7 +52,7 @@ void FeedbackUploaderDelegate::OnURLFetchComplete(
     } else {
       error_stream << "Unknown error: HTTP response code " << response_code;
     }
-    error_callback_.Run(post_body_);
+    error_callback_.Run(post_body_.Pass());
   }
 
   LOG(WARNING) << "FEEDBACK: Submission to feedback server ("
