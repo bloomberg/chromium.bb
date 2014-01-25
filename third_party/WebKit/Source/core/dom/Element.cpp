@@ -2790,17 +2790,6 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         createPseudoElementIfNeeded(pseudoId);
 }
 
-bool Element::needsPseudoElement(PseudoId pseudoId, const RenderStyle& style) const
-{
-    if (pseudoId == BACKDROP && !isInTopLayer())
-        return false;
-    if (!renderer() || !pseudoElementRendererIsNeeded(&style))
-        return false;
-    if (!renderer()->canHaveGeneratedChildren())
-        return false;
-    return true;
-}
-
 void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 {
     if (isPseudoElement())

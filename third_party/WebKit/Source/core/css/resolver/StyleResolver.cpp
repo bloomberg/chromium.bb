@@ -868,27 +868,33 @@ PassRefPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element
     return KeyframeEffectModel::create(keyframes);
 }
 
-PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& element, PseudoId pseudoId)
+PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
-    RenderObject* renderer = element.renderer();
-    if (!renderer)
+    RenderObject* parentRenderer = parent.renderer();
+    if (!parentRenderer)
         return 0;
 
-    if (pseudoId < FIRST_INTERNAL_PSEUDOID && !renderer->style()->hasPseudoStyle(pseudoId))
+    if (pseudoId < FIRST_INTERNAL_PSEUDOID && !parentRenderer->style()->hasPseudoStyle(pseudoId))
         return 0;
 
-    RenderStyle* parentStyle = renderer->style();
-    StyleResolverState state(document(), &element, parentStyle);
-    if (!pseudoStyleForElementInternal(element, pseudoId, parentStyle, state))
+    if (pseudoId == BACKDROP && !parent.isInTopLayer())
+        return 0;
+
+    if (!parentRenderer->canHaveGeneratedChildren())
+        return 0;
+
+    RenderStyle* parentStyle = parentRenderer->style();
+    StyleResolverState state(document(), &parent, parentStyle);
+    if (!pseudoStyleForElementInternal(parent, pseudoId, parentStyle, state))
         return 0;
     RefPtr<RenderStyle> style = state.takeStyle();
     ASSERT(style);
 
-    if (!element.needsPseudoElement(pseudoId, *style))
+    if (!pseudoElementRendererIsNeeded(style.get()))
         return 0;
 
-    renderer->style()->addCachedPseudoStyle(style.release());
-    RefPtr<PseudoElement> pseudo = PseudoElement::create(&element, pseudoId);
+    parentStyle->addCachedPseudoStyle(style.release());
+    RefPtr<PseudoElement> pseudo = PseudoElement::create(&parent, pseudoId);
 
     setAnimationUpdateIfNeeded(state, *pseudo);
     if (ActiveAnimations* activeAnimations = pseudo->activeAnimations())

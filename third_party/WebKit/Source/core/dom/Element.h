@@ -533,8 +533,6 @@ public:
     MutableStylePropertySet* ensureMutableInlineStyle();
     void clearMutableInlineStyleIfEmpty();
 
-    bool needsPseudoElement(PseudoId, const RenderStyle&) const;
-
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)
         : ContainerNode(document, type)

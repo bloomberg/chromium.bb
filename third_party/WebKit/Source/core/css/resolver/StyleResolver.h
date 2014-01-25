@@ -227,7 +227,7 @@ public:
     unsigned accessCount() const { return m_accessCount; }
     void didAccess() { ++m_accessCount; }
 
-    PassRefPtr<PseudoElement> createPseudoElementIfNeeded(Element&, PseudoId);
+    PassRefPtr<PseudoElement> createPseudoElementIfNeeded(Element& parent, PseudoId);
 
 private:
     // CSSFontSelectorClient implementation.
