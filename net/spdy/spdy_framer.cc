@@ -89,7 +89,7 @@ SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(int version,
 
 SettingsFlagsAndId::SettingsFlagsAndId(uint8 flags, uint32 id)
     : flags_(flags), id_(id & 0x00ffffff) {
-  DCHECK_GT(1u << 24, id) << "SPDY setting ID too large.";
+  LOG_IF(DFATAL, id > (1u << 24)) << "SPDY setting ID too large.";
 }
 
 uint32 SettingsFlagsAndId::GetWireFormat(int version) const {

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/spdy/spdy_bitmasks.h"
 #include "net/spdy/spdy_framer.h"
+#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -64,21 +65,16 @@ INSTANTIATE_TEST_CASE_P(SpdyProtocolDeathTests,
                         SpdyProtocolDeathTest,
                         ::testing::Values(SPDY2, SPDY3));
 
-#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 TEST_P(SpdyProtocolDeathTest, TestSpdySettingsAndIdOutOfBounds) {
   scoped_ptr<SettingsFlagsAndId> flags_and_id;
 
-  EXPECT_DEBUG_DEATH(
-      {
-        flags_and_id.reset(new SettingsFlagsAndId(1, ~0));
-      },
-      "SPDY setting ID too large.");
+  EXPECT_DFATAL(flags_and_id.reset(new SettingsFlagsAndId(1, ~0)),
+                "SPDY setting ID too large.");
   // Make sure that we get expected values in opt mode.
   if (flags_and_id.get() != NULL) {
     EXPECT_EQ(1, flags_and_id->flags());
     EXPECT_EQ(static_cast<SpdyPingId>(0xffffff), flags_and_id->id());
   }
 }
-#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
 
 }  // namespace net

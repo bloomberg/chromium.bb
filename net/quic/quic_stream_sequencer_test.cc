@@ -11,8 +11,8 @@
 #include "base/rand_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/reliable_quic_stream.h"
-#include "net/quic/test_tools/gtest_util.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

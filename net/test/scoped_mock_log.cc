@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/test_tools/scoped_mock_log.h"
+#include "net/test/scoped_mock_log.h"
 
 #include "base/logging.h"
 

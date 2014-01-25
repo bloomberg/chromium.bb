@@ -7,8 +7,8 @@
 #ifndef NET_QUIC_TEST_TOOLS_GTEST_UTIL_H_
 #define NET_QUIC_TEST_TOOLS_GTEST_UTIL_H_
 
-#include "net/quic/test_tools/scoped_disable_exit_on_dfatal.h"
-#include "net/quic/test_tools/scoped_mock_log.h"
+#include "net/test/scoped_disable_exit_on_dfatal.h"
+#include "net/test/scoped_mock_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

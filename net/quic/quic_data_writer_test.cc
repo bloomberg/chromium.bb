@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_data_reader.h"
-#include "net/quic/test_tools/gtest_util.h"
+#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
