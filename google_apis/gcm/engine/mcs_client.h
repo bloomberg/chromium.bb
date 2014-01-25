@@ -98,7 +98,7 @@ class GCM_EXPORT MCSClient {
   void Initialize(const ErrorCallback& initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
                   const OnMessageSentCallback& message_sent_callback,
-                  const GCMStore::LoadResult& load_result);
+                  scoped_ptr<GCMStore::LoadResult> load_result);
 
   // Logs the client into the server. Client must be initialized.
   // |android_id| and |security_token| are optional if this is not a new

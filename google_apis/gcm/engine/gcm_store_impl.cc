@@ -124,8 +124,7 @@ class GCMStoreImpl::Backend
 
   bool LoadDeviceCredentials(uint64* android_id, uint64* security_token);
   bool LoadIncomingMessages(std::vector<std::string>* incoming_messages);
-  bool LoadOutgoingMessages(
-      std::map<std::string, google::protobuf::MessageLite*>* outgoing_messages);
+  bool LoadOutgoingMessages(OutgoingMessageMap* outgoing_messages);
   bool LoadNextSerialNumber(int64* next_serial_number);
   bool LoadUserSerialNumberMap(
       std::map<std::string, int64>* user_serial_number_map);
@@ -144,10 +143,12 @@ GCMStoreImpl::Backend::Backend(
 GCMStoreImpl::Backend::~Backend() {}
 
 void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
-  LoadResult result;
+  scoped_ptr<LoadResult> result(new LoadResult());
   if (db_.get()) {
     LOG(ERROR) << "Attempting to reload open database.";
-    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+    foreground_task_runner_->PostTask(FROM_HERE,
+                                      base::Bind(callback,
+                                                 base::Passed(&result)));
     return;
   }
 
@@ -160,51 +161,55 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
   if (!status.ok()) {
     LOG(ERROR) << "Failed to open database " << path_.value() << ": "
                << status.ToString();
-    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+    foreground_task_runner_->PostTask(FROM_HERE,
+                                      base::Bind(callback,
+                                                 base::Passed(&result)));
     return;
   }
   db_.reset(db);
 
-  if (!LoadDeviceCredentials(&result.device_android_id,
-                             &result.device_security_token) ||
-      !LoadIncomingMessages(&result.incoming_messages) ||
-      !LoadOutgoingMessages(&result.outgoing_messages) ||
+  if (!LoadDeviceCredentials(&result->device_android_id,
+                             &result->device_security_token) ||
+      !LoadIncomingMessages(&result->incoming_messages) ||
+      !LoadOutgoingMessages(&result->outgoing_messages) ||
       !LoadNextSerialNumber(
-           &result.serial_number_mappings.next_serial_number) ||
+           &result->serial_number_mappings.next_serial_number) ||
       !LoadUserSerialNumberMap(
-           &result.serial_number_mappings.user_serial_numbers)) {
-    result.device_android_id = 0;
-    result.device_security_token = 0;
-    result.incoming_messages.clear();
-    STLDeleteContainerPairSecondPointers(result.outgoing_messages.begin(),
-                                         result.outgoing_messages.end());
-    result.outgoing_messages.clear();
-    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+           &result->serial_number_mappings.user_serial_numbers)) {
+    result->device_android_id = 0;
+    result->device_security_token = 0;
+    result->incoming_messages.clear();
+    result->outgoing_messages.clear();
+    foreground_task_runner_->PostTask(FROM_HERE,
+                                      base::Bind(callback,
+                                                 base::Passed(&result)));
     return;
   }
 
   // Only record histograms if GCM had already been set up for this device.
-  if (result.device_android_id != 0 && result.device_security_token != 0) {
+  if (result->device_android_id != 0 && result->device_security_token != 0) {
     int64 file_size = 0;
     if (base::GetFileSize(path_, &file_size)) {
       UMA_HISTOGRAM_COUNTS("GCM.StoreSizeKB",
                            static_cast<int>(file_size / 1024));
     }
     UMA_HISTOGRAM_COUNTS("GCM.RestoredOutgoingMessages",
-                         result.outgoing_messages.size());
+                         result->outgoing_messages.size());
     UMA_HISTOGRAM_COUNTS("GCM.RestoredIncomingMessages",
-                         result.incoming_messages.size());
+                         result->incoming_messages.size());
     UMA_HISTOGRAM_COUNTS(
         "GCM.NumUsers",
-        result.serial_number_mappings.user_serial_numbers.size());
+        result->serial_number_mappings.user_serial_numbers.size());
   }
 
-  DVLOG(1) << "Succeeded in loading " << result.incoming_messages.size()
+  DVLOG(1) << "Succeeded in loading " << result->incoming_messages.size()
            << " unacknowledged incoming messages and "
-           << result.outgoing_messages.size()
+           << result->outgoing_messages.size()
            << " unacknowledged outgoing messages.";
-  result.success = true;
-  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+  result->success = true;
+  foreground_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(callback,
+                                               base::Passed(&result)));
   return;
 }
 
@@ -522,7 +527,7 @@ bool GCMStoreImpl::Backend::LoadIncomingMessages(
 }
 
 bool GCMStoreImpl::Backend::LoadOutgoingMessages(
-    std::map<std::string, google::protobuf::MessageLite*>* outgoing_messages) {
+    OutgoingMessageMap* outgoing_messages) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
@@ -547,7 +552,7 @@ bool GCMStoreImpl::Backend::LoadOutgoingMessages(
     }
     DVLOG(1) << "Found outgoing message with id " << id << " of type "
              << base::IntToString(tag);
-    (*outgoing_messages)[id] = message.release();
+    (*outgoing_messages)[id] = make_linked_ptr(message.release());
   }
 
   return true;
@@ -763,17 +768,17 @@ void GCMStoreImpl::RemoveUserSerialNumber(const std::string& username,
 }
 
 void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
-                                    const LoadResult& result) {
-  if (!result.success) {
-    callback.Run(result);
+                                    scoped_ptr<LoadResult> result) {
+  if (!result->success) {
+    callback.Run(result.Pass());
     return;
   }
   int num_throttled_apps = 0;
-  for (std::map<std::string, google::protobuf::MessageLite*>::const_iterator
-           iter = result.outgoing_messages.begin();
-       iter != result.outgoing_messages.end(); ++iter) {
+  for (OutgoingMessageMap::const_iterator
+           iter = result->outgoing_messages.begin();
+       iter != result->outgoing_messages.end(); ++iter) {
     const mcs_proto::DataMessageStanza* data_message =
-        reinterpret_cast<mcs_proto::DataMessageStanza*>(iter->second);
+        reinterpret_cast<mcs_proto::DataMessageStanza*>(iter->second.get());
     DCHECK(!data_message->from().empty());
     if (app_message_counts_.count(data_message->from()) == 0)
       app_message_counts_[data_message->from()] = 1;
@@ -783,7 +788,7 @@ void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
       num_throttled_apps++;
   }
   UMA_HISTOGRAM_COUNTS("GCM.NumThrottledApps", num_throttled_apps);
-  callback.Run(result);
+  callback.Run(result.Pass());
 }
 
 void GCMStoreImpl::AddOutgoingMessageContinuation(

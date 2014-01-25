@@ -72,7 +72,7 @@ class UserListTest : public testing::Test {
 
   void UpdateCallback(bool success);
 
-  void Initialize(UserList* user_list, const GCMStore::LoadResult& result);
+  void Initialize(UserList* user_list, scoped_ptr<GCMStore::LoadResult> result);
 
   void ResetLoop();
 
@@ -116,9 +116,9 @@ scoped_ptr<UserList> UserListTest::BuildUserList() {
 }
 
 void UserListTest::Initialize(UserList* user_list,
-                              const GCMStore::LoadResult& result) {
-  ASSERT_TRUE(result.success);
-  user_list->Initialize(result.serial_number_mappings);
+                              scoped_ptr<GCMStore::LoadResult> result) {
+  ASSERT_TRUE(result->success);
+  user_list->Initialize(result->serial_number_mappings);
   ResetLoop();
 }
 

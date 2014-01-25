@@ -181,7 +181,7 @@ class MCSProbe {
   void InitializeNetworkState();
   void BuildNetworkSession();
 
-  void LoadCallback(const GCMStore::LoadResult& load_result);
+  void LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result);
   void ErrorCallback();
   void OnCheckInCompleted(uint64 android_id, uint64 secret);
 
@@ -280,15 +280,15 @@ void MCSProbe::Start() {
   run_loop_->Run();
 }
 
-void MCSProbe::LoadCallback(const GCMStore::LoadResult& load_result) {
-  DCHECK(load_result.success);
-  android_id_ = load_result.device_android_id;
-  secret_ = load_result.device_security_token;
+void MCSProbe::LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result) {
+  DCHECK(load_result->success);
+  android_id_ = load_result->device_android_id;
+  secret_ = load_result->device_security_token;
   mcs_client_->Initialize(
       base::Bind(&MCSProbe::ErrorCallback, base::Unretained(this)),
       base::Bind(&MessageReceivedCallback),
       base::Bind(&MessageSentCallback),
-      load_result);
+      load_result.Pass());
 
   if (!android_id_ || !secret_) {
     CheckIn();

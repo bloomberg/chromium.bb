@@ -109,7 +109,7 @@ void MCSClient::Initialize(
     const ErrorCallback& error_callback,
     const OnMessageReceivedCallback& message_received_callback,
     const OnMessageSentCallback& message_sent_callback,
-    const GCMStore::LoadResult& load_result) {
+    scoped_ptr<GCMStore::LoadResult> load_result) {
   DCHECK_EQ(state_, UNINITIALIZED);
 
   state_ = LOADED;
@@ -128,8 +128,8 @@ void MCSClient::Initialize(
 
   stream_id_out_ = 1;  // Login request is hardcoded to id 1.
 
-  android_id_ = load_result.device_android_id;
-  security_token_ = load_result.device_security_token;
+  android_id_ = load_result->device_android_id;
+  security_token_ = load_result->device_security_token;
 
   if (android_id_ == 0) {
     DVLOG(1) << "No device credentials found, assuming new client.";
@@ -141,19 +141,19 @@ void MCSClient::Initialize(
   DCHECK_NE(0u, security_token_) << "Security token invalid, while android id"
                                  << " is non-zero.";
 
-  DVLOG(1) << "RMQ Load finished with " << load_result.incoming_messages.size()
+  DVLOG(1) << "RMQ Load finished with " << load_result->incoming_messages.size()
            << " incoming acks pending and "
-           << load_result.outgoing_messages.size()
+           << load_result->outgoing_messages.size()
            << " outgoing messages pending.";
 
-  restored_unackeds_server_ids_ = load_result.incoming_messages;
+  restored_unackeds_server_ids_ = load_result->incoming_messages;
 
   // First go through and order the outgoing messages by recency.
   std::map<uint64, google::protobuf::MessageLite*> ordered_messages;
   std::vector<PersistentId> expired_ttl_ids;
-  for (std::map<PersistentId, google::protobuf::MessageLite*>::const_iterator
-           iter = load_result.outgoing_messages.begin();
-       iter != load_result.outgoing_messages.end(); ++iter) {
+  for (GCMStore::OutgoingMessageMap::iterator iter =
+           load_result->outgoing_messages.begin();
+       iter != load_result->outgoing_messages.end(); ++iter) {
     uint64 timestamp = 0;
     if (!base::StringToUint64(iter->first, &timestamp)) {
       LOG(ERROR) << "Invalid restored message.";
@@ -166,11 +166,10 @@ void MCSClient::Initialize(
     if (HasTTLExpired(*iter->second, clock_)) {
       expired_ttl_ids.push_back(iter->first);
       NotifyMessageSendStatus(*iter->second, TTL_EXCEEDED);
-      delete iter->second;
       continue;
     }
 
-    ordered_messages[timestamp] = iter->second;
+    ordered_messages[timestamp] = iter->second.release();
   }
 
   if (!expired_ttl_ids.empty()) {
@@ -182,7 +181,7 @@ void MCSClient::Initialize(
 
   // Now go through and add the outgoing messages to the send queue in their
   // appropriate order (oldest at front, most recent at back).
-  for (std::map<uint64, google::protobuf::MessageLite*>::const_iterator
+  for (std::map<uint64, google::protobuf::MessageLite*>::iterator
            iter = ordered_messages.begin();
        iter != ordered_messages.end(); ++iter) {
     ReliablePacketInfo* packet_info = new ReliablePacketInfo();
@@ -222,7 +221,7 @@ void MCSClient::SendMessage(const MCSMessage& message) {
     return;
   }
 
-  ReliablePacketInfo* packet_info = new ReliablePacketInfo();
+  scoped_ptr<ReliablePacketInfo> packet_info(new ReliablePacketInfo());
   packet_info->tag = message.tag();
   packet_info->protobuf = message.CloneProtobuf();
 
@@ -247,7 +246,7 @@ void MCSClient::SendMessage(const MCSMessage& message) {
     NotifyMessageSendStatus(message.GetProtobuf(), NO_CONNECTION_ON_ZERO_TTL);
     return;
   }
-  to_send_.push_back(make_linked_ptr(packet_info));
+  to_send_.push_back(make_linked_ptr(packet_info.release()));
   MaybeSendMessage();
 }
 

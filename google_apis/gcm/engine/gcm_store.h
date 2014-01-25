@@ -11,8 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
+#include "google_apis/gcm/protocol/mcs.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -28,6 +31,10 @@ class MCSMessage;
 // as well as store device and user checkin information.
 class GCM_EXPORT GCMStore {
  public:
+  // Map of message id to message data for outgoing messages.
+  typedef std::map<std::string, linked_ptr<google::protobuf::MessageLite> >
+      OutgoingMessageMap;
+
   // Part of load results storing user serial number mapping related values.
   struct GCM_EXPORT SerialNumberMappings {
     SerialNumberMappings();
@@ -46,13 +53,12 @@ class GCM_EXPORT GCMStore {
     uint64 device_android_id;
     uint64 device_security_token;
     std::vector<std::string> incoming_messages;
-    std::map<std::string, google::protobuf::MessageLite*> outgoing_messages;
+    OutgoingMessageMap outgoing_messages;
     SerialNumberMappings serial_number_mappings;
   };
 
   typedef std::vector<std::string> PersistentIdList;
-  // Note: callee receives ownership of |outgoing_messages|' values.
-  typedef base::Callback<void(const LoadResult& result)> LoadCallback;
+  typedef base::Callback<void(scoped_ptr<LoadResult> result)> LoadCallback;
   typedef base::Callback<void(bool success)> UpdateCallback;
 
   GCMStore();

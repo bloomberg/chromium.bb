@@ -61,19 +61,19 @@ void GCMClientImpl::Initialize(
   state_ = LOADING;
 }
 
-void GCMClientImpl::OnLoadCompleted(const GCMStore::LoadResult& result) {
+void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   DCHECK_EQ(LOADING, state_);
 
-  if (!result.success) {
+  if (!result->success) {
     ResetState();
     return;
   }
 
-  user_list_->Initialize(result.serial_number_mappings);
+  user_list_->Initialize(result->serial_number_mappings);
 
-  device_checkin_info_.android_id = result.device_android_id;
-  device_checkin_info_.secret = result.device_security_token;
-  InitializeMCSClient(result);
+  device_checkin_info_.android_id = result->device_android_id;
+  device_checkin_info_.secret = result->device_security_token;
+  InitializeMCSClient(result.Pass());
   if (!device_checkin_info_.IsValid()) {
     device_checkin_info_.Reset();
     state_ = INITIAL_DEVICE_CHECKIN;
@@ -84,13 +84,14 @@ void GCMClientImpl::OnLoadCompleted(const GCMStore::LoadResult& result) {
   }
 }
 
-void GCMClientImpl::InitializeMCSClient(const GCMStore::LoadResult& result) {
+void GCMClientImpl::InitializeMCSClient(
+    scoped_ptr<GCMStore::LoadResult> result) {
   mcs_client_->Initialize(
       base::Bind(&GCMClientImpl::OnMCSError, base::Unretained(this)),
       base::Bind(&GCMClientImpl::OnMessageReceivedFromMCS,
                  base::Unretained(this)),
       base::Bind(&GCMClientImpl::OnMessageSentToMCS, base::Unretained(this)),
-      result);
+      result.Pass());
 }
 
 void GCMClientImpl::OnFirstTimeDeviceCheckinCompleted(

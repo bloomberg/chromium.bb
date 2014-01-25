@@ -102,9 +102,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
 
   // Runs after GCM Store load is done to trigger continuation of the
   // initialization.
-  void OnLoadCompleted(const GCMStore::LoadResult& result);
+  void OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result);
   // Initializes mcs_client_, which handles the connection to MCS.
-  void InitializeMCSClient(const GCMStore::LoadResult& result);
+  void InitializeMCSClient(scoped_ptr<GCMStore::LoadResult> result);
   // Complets the first time device checkin.
   void OnFirstTimeDeviceCheckinCompleted(const CheckinInfo& checkin_info);
   // Starts a login on mcs_client_.

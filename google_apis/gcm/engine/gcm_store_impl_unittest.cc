@@ -49,8 +49,8 @@ class GCMStoreImplTest : public testing::Test {
 
   void PumpLoop();
 
-  void LoadCallback(GCMStore::LoadResult* result_dst,
-                    const GCMStore::LoadResult& result);
+  void LoadCallback(scoped_ptr<GCMStore::LoadResult>* result_dst,
+                    scoped_ptr<GCMStore::LoadResult> result);
   void UpdateCallback(bool success);
 
  protected:
@@ -81,10 +81,11 @@ std::string GCMStoreImplTest::GetNextPersistentId() {
 
 void GCMStoreImplTest::PumpLoop() { message_loop_.RunUntilIdle(); }
 
-void GCMStoreImplTest::LoadCallback(GCMStore::LoadResult* result_dst,
-                                    const GCMStore::LoadResult& result) {
-  ASSERT_TRUE(result.success);
-  *result_dst = result;
+void GCMStoreImplTest::LoadCallback(
+    scoped_ptr<GCMStore::LoadResult>* result_dst,
+    scoped_ptr<GCMStore::LoadResult> result) {
+  ASSERT_TRUE(result->success);
+  *result_dst = result.Pass();
   run_loop_->Quit();
   run_loop_.reset(new base::RunLoop());
 }
@@ -96,22 +97,22 @@ void GCMStoreImplTest::UpdateCallback(bool success) {
 // Verify creating a new database and loading it.
 TEST_F(GCMStoreImplTest, LoadNew) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  EXPECT_EQ(0U, load_result.device_android_id);
-  EXPECT_EQ(0U, load_result.device_security_token);
-  EXPECT_TRUE(load_result.incoming_messages.empty());
-  EXPECT_TRUE(load_result.outgoing_messages.empty());
-  EXPECT_EQ(1LL, load_result.serial_number_mappings.next_serial_number);
-  EXPECT_TRUE(load_result.serial_number_mappings.user_serial_numbers.empty());
+  EXPECT_EQ(0U, load_result->device_android_id);
+  EXPECT_EQ(0U, load_result->device_security_token);
+  EXPECT_TRUE(load_result->incoming_messages.empty());
+  EXPECT_TRUE(load_result->outgoing_messages.empty());
+  EXPECT_EQ(1LL, load_result->serial_number_mappings.next_serial_number);
+  EXPECT_TRUE(load_result->serial_number_mappings.user_serial_numbers.empty());
 }
 
 TEST_F(GCMStoreImplTest, DeviceCredentials) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
@@ -127,15 +128,15 @@ TEST_F(GCMStoreImplTest, DeviceCredentials) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_EQ(kDeviceId, load_result.device_android_id);
-  ASSERT_EQ(kDeviceToken, load_result.device_security_token);
+  ASSERT_EQ(kDeviceId, load_result->device_android_id);
+  ASSERT_EQ(kDeviceToken, load_result->device_security_token);
 }
 
 // Verify saving some incoming messages, reopening the directory, and then
 // removing those incoming messages.
 TEST_F(GCMStoreImplTest, IncomingMessages) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
@@ -154,8 +155,8 @@ TEST_F(GCMStoreImplTest, IncomingMessages) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_EQ(persistent_ids, load_result.incoming_messages);
-  ASSERT_TRUE(load_result.outgoing_messages.empty());
+  ASSERT_EQ(persistent_ids, load_result->incoming_messages);
+  ASSERT_TRUE(load_result->outgoing_messages.empty());
 
   gcm_store->RemoveIncomingMessages(
       persistent_ids,
@@ -163,26 +164,20 @@ TEST_F(GCMStoreImplTest, IncomingMessages) {
   PumpLoop();
 
   gcm_store = BuildGCMStore().Pass();
-  load_result.incoming_messages.clear();
+  load_result->incoming_messages.clear();
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_TRUE(load_result.incoming_messages.empty());
-  ASSERT_TRUE(load_result.outgoing_messages.empty());
+  ASSERT_TRUE(load_result->incoming_messages.empty());
+  ASSERT_TRUE(load_result->outgoing_messages.empty());
 }
 
 // Verify saving some outgoing messages, reopening the directory, and then
 // removing those outgoing messages.
-// Fails on linux_asan crbug.com/337560
-#if !defined(OS_POSIX)
-#define MAYBE_OutgoingMessages OutgoingMessages
-#else
-#define MAYBE_OutgoingMessages DISABLED_OutgoingMessages
-#endif
-TEST_F(GCMStoreImplTest, MAYBE_OutgoingMessages) {
+TEST_F(GCMStoreImplTest, OutgoingMessages) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
@@ -206,14 +201,14 @@ TEST_F(GCMStoreImplTest, MAYBE_OutgoingMessages) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_TRUE(load_result.incoming_messages.empty());
-  ASSERT_EQ(load_result.outgoing_messages.size(), persistent_ids.size());
+  ASSERT_TRUE(load_result->incoming_messages.empty());
+  ASSERT_EQ(load_result->outgoing_messages.size(), persistent_ids.size());
   for (int i = 0; i < kNumPersistentIds; ++i) {
     std::string id = persistent_ids[i];
-    ASSERT_TRUE(load_result.outgoing_messages[id]);
+    ASSERT_TRUE(load_result->outgoing_messages[id].get());
     const mcs_proto::DataMessageStanza* message =
         reinterpret_cast<mcs_proto::DataMessageStanza*>(
-            load_result.outgoing_messages[id]);
+            load_result->outgoing_messages[id].get());
     ASSERT_EQ(message->from(), kAppName + id);
     ASSERT_EQ(message->category(), kCategoryName + id);
   }
@@ -224,25 +219,19 @@ TEST_F(GCMStoreImplTest, MAYBE_OutgoingMessages) {
   PumpLoop();
 
   gcm_store = BuildGCMStore().Pass();
-  load_result.outgoing_messages.clear();
+  load_result->outgoing_messages.clear();
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_TRUE(load_result.incoming_messages.empty());
-  ASSERT_TRUE(load_result.outgoing_messages.empty());
+  ASSERT_TRUE(load_result->incoming_messages.empty());
+  ASSERT_TRUE(load_result->outgoing_messages.empty());
 }
 
 // Verify incoming and outgoing messages don't conflict.
-// Fails on linux_asan crbug.com/337560
-#if !defined(OS_POSIX)
-#define MAYBE_IncomingAndOutgoingMessages IncomingAndOutgoingMessages
-#else
-#define MAYBE_IncomingAndOutgoingMessages DISABLED_IncomingAndOutgoingMessages
-#endif
-TEST_F(GCMStoreImplTest, MAYBE_IncomingAndOutgoingMessages) {
+TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
@@ -271,14 +260,14 @@ TEST_F(GCMStoreImplTest, MAYBE_IncomingAndOutgoingMessages) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_EQ(persistent_ids, load_result.incoming_messages);
-  ASSERT_EQ(load_result.outgoing_messages.size(), persistent_ids.size());
+  ASSERT_EQ(persistent_ids, load_result->incoming_messages);
+  ASSERT_EQ(load_result->outgoing_messages.size(), persistent_ids.size());
   for (int i = 0; i < kNumPersistentIds; ++i) {
     std::string id = persistent_ids[i];
-    ASSERT_TRUE(load_result.outgoing_messages[id]);
+    ASSERT_TRUE(load_result->outgoing_messages[id].get());
     const mcs_proto::DataMessageStanza* message =
         reinterpret_cast<mcs_proto::DataMessageStanza*>(
-            load_result.outgoing_messages[id]);
+            load_result->outgoing_messages[id].get());
     ASSERT_EQ(message->from(), kAppName + id);
     ASSERT_EQ(message->category(), kCategoryName + id);
   }
@@ -293,21 +282,21 @@ TEST_F(GCMStoreImplTest, MAYBE_IncomingAndOutgoingMessages) {
   PumpLoop();
 
   gcm_store = BuildGCMStore().Pass();
-  load_result.incoming_messages.clear();
-  load_result.outgoing_messages.clear();
+  load_result->incoming_messages.clear();
+  load_result->outgoing_messages.clear();
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_TRUE(load_result.incoming_messages.empty());
-  ASSERT_TRUE(load_result.outgoing_messages.empty());
+  ASSERT_TRUE(load_result->incoming_messages.empty());
+  ASSERT_TRUE(load_result->outgoing_messages.empty());
 }
 
 // Verify that the next serial number of persisted properly.
 TEST_F(GCMStoreImplTest, NextSerialNumber) {
   const int64 kNextSerialNumber = 77LL;
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
@@ -323,13 +312,13 @@ TEST_F(GCMStoreImplTest, NextSerialNumber) {
   PumpLoop();
 
   EXPECT_EQ(kNextSerialNumber,
-            load_result.serial_number_mappings.next_serial_number);
+            load_result->serial_number_mappings.next_serial_number);
 }
 
 // Verify that user serial number mappings are persisted properly.
 TEST_F(GCMStoreImplTest, UserSerialNumberMappings) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
@@ -354,30 +343,24 @@ TEST_F(GCMStoreImplTest, UserSerialNumberMappings) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_EQ(2u, load_result.serial_number_mappings.user_serial_numbers.size());
+  ASSERT_EQ(2u, load_result->serial_number_mappings.user_serial_numbers.size());
   ASSERT_NE(
-      load_result.serial_number_mappings.user_serial_numbers.end(),
-      load_result.serial_number_mappings.user_serial_numbers.find(username1));
+      load_result->serial_number_mappings.user_serial_numbers.end(),
+      load_result->serial_number_mappings.user_serial_numbers.find(username1));
   EXPECT_EQ(serial_number1,
-            load_result.serial_number_mappings.user_serial_numbers[username1]);
+            load_result->serial_number_mappings.user_serial_numbers[username1]);
   ASSERT_NE(
-      load_result.serial_number_mappings.user_serial_numbers.end(),
-      load_result.serial_number_mappings.user_serial_numbers.find(username2));
+      load_result->serial_number_mappings.user_serial_numbers.end(),
+      load_result->serial_number_mappings.user_serial_numbers.find(username2));
   EXPECT_EQ(serial_number2,
-            load_result.serial_number_mappings.user_serial_numbers[username2]);
+            load_result->serial_number_mappings.user_serial_numbers[username2]);
 }
 
 // Test that per-app message limits are enforced, persisted across restarts,
 // and updated as messages are removed.
-// Fails on linux_asan crbug.com/337560
-#if !defined(OS_POSIX)
-#define MAYBE_PerAppMessageLimits PerAppMessageLimits
-#else
-#define MAYBE_PerAppMessageLimits DISABLED_PerAppMessageLimits
-#endif
-TEST_F(GCMStoreImplTest, MAYBE_PerAppMessageLimits) {
+TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,
                              base::Unretained(this),
                              &load_result));
@@ -456,7 +439,7 @@ TEST_F(GCMStoreImplTest, MAYBE_PerAppMessageLimits) {
 // result in decrementing the counts.
 TEST_F(GCMStoreImplTest, AddMessageAfterDestroy) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
-  GCMStore::LoadResult load_result;
+  scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,
                              base::Unretained(this),
                              &load_result));

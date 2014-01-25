@@ -74,7 +74,7 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
 
   // Continuation to update the per-app message counts after a load.
   void LoadContinuation(const LoadCallback& callback,
-                        const LoadResult& result);
+                        scoped_ptr<LoadResult> result);
 
   // Continuation to update the per-app message counts when adding messages.
   // In particular, if a message fails to add, the message count is decremented.
