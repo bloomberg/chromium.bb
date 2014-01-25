@@ -64,7 +64,8 @@ class CommandRunner(object):
     return command_map
 
   def RunNamedCommand(self, command_name, args=None, headers=None, debug=0,
-                      parallel_operations=False, test_method=None):
+                      parallel_operations=False, test_method=None,
+                      bypass_prodaccess=True):
     """Runs the named command. Used by gsutil main, commands built atop
       other commands, and tests .
 
@@ -97,5 +98,5 @@ class CommandRunner(object):
                                  parallel_operations, self.gsutil_bin_dir,
                                  self.boto_lib_dir, self.config_file_list,
                                  self.gsutil_ver, self.bucket_storage_uri_class,
-                                 test_method)
+                                 test_method, bypass_prodaccess)
     return command_inst.RunCommand()

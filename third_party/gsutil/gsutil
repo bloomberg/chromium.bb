@@ -262,7 +262,8 @@ def _RunNamedCommandAndHandleExceptions(command_runner, command_name, args=None,
     if not util.IS_WINDOWS:
       signal.signal(signal.SIGQUIT, _HandleSigQuit)
     return command_runner.RunNamedCommand(command_name, args, headers, debug,
-                                          parallel_operations)
+                                          parallel_operations,
+                                          bypass_prodaccess=bypass_prodaccess)
   except AttributeError, e:
     if str(e).find('secret_access_key') != -1:
       _OutputAndExit('Missing credentials for the given URI(s). Does your '
