@@ -14,7 +14,8 @@ namespace extensions {
 
 // Media Galleries permissions are as follows:
 //   <media-galleries-permission-pattern>
-//             := <access> | <access> 'allAutoDetected' | 'allAutoDetected'
+//             := <access> | <access> 'allAutoDetected' | 'allAutoDetected' |
+//                <access> 'scan' | 'scan'
 //   <access>  := 'read' | 'read' <access> | 'read' <secondary-access>
 //   <secondary-access>
 //             := 'delete' | 'delete' <secondary-access> |

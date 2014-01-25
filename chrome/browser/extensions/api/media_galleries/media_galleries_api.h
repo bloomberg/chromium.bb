@@ -12,14 +12,65 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/media_galleries/media_scan_manager_observer.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
 namespace extensions {
+
+// The profile-keyed service that manages the media galleries extension API.
+// Created at the same time as the Profile. This is also the event router.
+class MediaGalleriesEventRouter : public ProfileKeyedAPI,
+                                  public MediaScanManagerObserver {
+ public:
+  // BrowserContextKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<MediaGalleriesEventRouter>*
+  GetFactoryInstance();
+
+  // Convenience method to get the MediaGalleriesAPI for a profile.
+  static MediaGalleriesEventRouter* Get(Profile* profile);
+
+  bool ExtensionHasScanProgressListener(const std::string& extension_id) const;
+
+  // MediaScanManagerObserver implementation.
+  virtual void OnScanStarted(const std::string& extension_id) OVERRIDE;
+  virtual void OnScanCancelled(const std::string& extension_id) OVERRIDE;
+  virtual void OnScanFinished(
+      const std::string& extension_id, int gallery_count, int image_count,
+      int audio_count, int video_count) OVERRIDE;
+
+ private:
+  friend class ProfileKeyedAPIFactory<MediaGalleriesEventRouter>;
+
+  void DispatchEventToExtension(const std::string& extension_id,
+                                const std::string& event_name,
+                                scoped_ptr<base::ListValue> event_args);
+
+  explicit MediaGalleriesEventRouter(Profile* profile);
+  virtual ~MediaGalleriesEventRouter();
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "MediaGalleriesAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
+
+  // Current profile.
+  Profile* profile_;
+
+  base::WeakPtrFactory<MediaGalleriesEventRouter> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaGalleriesEventRouter);
+};
 
 class MediaGalleriesGetMediaFileSystemsFunction
     : public ChromeAsyncExtensionFunction {

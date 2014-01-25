@@ -12,6 +12,7 @@
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
+#include "base/lazy_instance.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
@@ -38,6 +40,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -58,6 +61,8 @@ namespace {
 
 const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
+const char kMissingEventListener[] =
+    "Missing event listener registration.";
 
 const char kDeviceIdKey[] = "deviceId";
 const char kGalleryIdKey[] = "galleryId";
@@ -68,6 +73,10 @@ const char kNameKey[] = "name";
 
 MediaFileSystemRegistry* media_file_system_registry() {
   return g_browser_process->media_file_system_registry();
+}
+
+MediaScanManager* media_scan_manager() {
+  return media_file_system_registry()->media_scan_manager();
 }
 
 // Checks whether the MediaGalleries API is currently accessible (it may be
@@ -227,6 +236,98 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
 };
 
 }  // namespace
+
+MediaGalleriesEventRouter::MediaGalleriesEventRouter(Profile* profile)
+    : profile_(profile),
+      weak_ptr_factory_(this) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(profile_);
+  media_scan_manager()->AddObserver(profile_, this);
+}
+
+MediaGalleriesEventRouter::~MediaGalleriesEventRouter() {
+}
+
+void MediaGalleriesEventRouter::Shutdown() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  media_scan_manager()->RemoveObserver(profile_);
+  media_scan_manager()->CancelScansForProfile(profile_);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<MediaGalleriesEventRouter> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<MediaGalleriesEventRouter>*
+MediaGalleriesEventRouter::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+// static
+MediaGalleriesEventRouter* MediaGalleriesEventRouter::Get(Profile* profile) {
+  DCHECK(media_file_system_registry()->GetPreferences(profile)->
+             IsInitialized());
+  return ProfileKeyedAPIFactory<MediaGalleriesEventRouter>::GetForProfile(
+      profile);
+}
+
+bool MediaGalleriesEventRouter::ExtensionHasScanProgressListener(
+    const std::string& extension_id) const {
+  EventRouter* router = ExtensionSystem::Get(profile_)->event_router();
+  return router->ExtensionHasEventListener(
+      extension_id,
+      MediaGalleries::OnScanProgress::kEventName);
+}
+
+void MediaGalleriesEventRouter::OnScanStarted(const std::string& extension_id) {
+  MediaGalleries::ScanProgressDetails details;
+  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_START;
+  DispatchEventToExtension(
+      extension_id,
+      MediaGalleries::OnScanProgress::kEventName,
+      MediaGalleries::OnScanProgress::Create(details).Pass());
+}
+
+void MediaGalleriesEventRouter::OnScanCancelled(
+    const std::string& extension_id) {
+  MediaGalleries::ScanProgressDetails details;
+  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_CANCEL;
+  DispatchEventToExtension(
+      extension_id,
+      MediaGalleries::OnScanProgress::kEventName,
+      MediaGalleries::OnScanProgress::Create(details).Pass());
+}
+
+void MediaGalleriesEventRouter::OnScanFinished(
+    const std::string& extension_id, int gallery_count, int image_count,
+    int audio_count, int video_count) {
+  MediaGalleries::ScanProgressDetails details;
+  details.type = MediaGalleries::SCAN_PROGRESS_TYPE_FINISH;
+  details.gallery_count.reset(new int(gallery_count));
+  details.image_count.reset(new int(image_count));
+  details.audio_count.reset(new int(audio_count));
+  details.video_count.reset(new int(video_count));
+  DispatchEventToExtension(
+      extension_id,
+      MediaGalleries::OnScanProgress::kEventName,
+      MediaGalleries::OnScanProgress::Create(details).Pass());
+}
+
+void MediaGalleriesEventRouter::DispatchEventToExtension(
+    const std::string& extension_id,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> event_args) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  EventRouter* router =
+      extensions::ExtensionSystem::Get(profile_)->event_router();
+  if (!router->ExtensionHasEventListener(extension_id, event_name))
+    return;
+
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(event_name, event_args.Pass()));
+  router->DispatchEventToExtension(extension_id, event.Pass());
+}
 
 MediaGalleriesGetMediaFileSystemsFunction::
     ~MediaGalleriesGetMediaFileSystemsFunction() {}
@@ -509,6 +610,14 @@ bool MediaGalleriesStartMediaScanFunction::RunImpl() {
 
 void MediaGalleriesStartMediaScanFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  MediaGalleriesEventRouter* api = MediaGalleriesEventRouter::Get(GetProfile());
+  if (!api->ExtensionHasScanProgressListener(GetExtension()->id())) {
+    error_ = kMissingEventListener;
+    SendResponse(false);
+    return;
+  }
+
+  media_scan_manager()->StartScan(GetProfile(), GetExtension()->id());
   SendResponse(true);
 }
 
@@ -524,6 +633,7 @@ bool MediaGalleriesCancelMediaScanFunction::RunImpl() {
 
 void MediaGalleriesCancelMediaScanFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  media_scan_manager()->CancelScan(GetProfile(), GetExtension()->id());
   SendResponse(true);
 }
 
@@ -537,6 +647,7 @@ bool MediaGalleriesAddScanResultsFunction::RunImpl() {
 
 void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   SendResponse(true);
 }
 

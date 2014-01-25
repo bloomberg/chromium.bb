@@ -20,6 +20,7 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
+#include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -492,6 +493,12 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   media_galleries::UsageCount(media_galleries::PROFILES_WITH_USAGE);
 
   return MediaGalleriesPreferencesFactory::GetForProfile(profile);
+}
+
+MediaScanManager* MediaFileSystemRegistry::media_scan_manager() {
+  if (!media_scan_manager_)
+    media_scan_manager_.reset(new MediaScanManager);
+  return media_scan_manager_.get();
 }
 
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
