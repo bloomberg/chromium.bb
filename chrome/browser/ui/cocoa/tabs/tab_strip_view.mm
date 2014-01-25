@@ -39,6 +39,10 @@
 
     // Register to be an URL drop target.
     dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
+
+    // Give this view its own layer, and squash child layers into this layer
+    // so that the text in the infobar have sub-pixel anti-aliasing.
+    [self cr_setWantsLayer:YES withSquashing:YES];
   }
   return self;
 }

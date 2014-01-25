@@ -1608,6 +1608,11 @@ const char kDisableAppShims[]               = "disable-app-shims";
 const char kDisableSystemFullscreenForTesting[] =
     "disable-system-fullscreen-for-testing";
 
+// Disable CoreAnimation layer squashing to debug issues that appear only
+// pre-10.9, since the API for it is only available in 10.9 and later.
+const char kDisableCoreAnimationLayerSquashing[] =
+    "disable-core-animation-layer-squashing";
+
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 

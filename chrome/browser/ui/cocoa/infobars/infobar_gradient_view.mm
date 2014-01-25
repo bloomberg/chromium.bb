@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
@@ -24,6 +25,10 @@
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
     hasTip_ = YES;
+
+    // Give this view its own layer and squash child layers into this layer
+    // so that the text in the tabs have sub-pixel anti-aliasing.
+    [self cr_setWantsLayer:YES withSquashing:YES];
   }
   return self;
 }

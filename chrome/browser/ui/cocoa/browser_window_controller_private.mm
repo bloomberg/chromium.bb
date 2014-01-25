@@ -1017,12 +1017,4 @@ willPositionSheet:(NSWindow*)sheet
       setShouldSuppressTopInfoBarTip:![self hasToolbar]];
 }
 
-- (browser_window_controller::CoreAnimationStatus)coreAnimationStatus {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseCoreAnimation)) {
-    return browser_window_controller::kCoreAnimationEnabled;
-  }
-  return browser_window_controller::kCoreAnimationDisabled;
-}
-
 @end  // @implementation BrowserWindowController(Private)

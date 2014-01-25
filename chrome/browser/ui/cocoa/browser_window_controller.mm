@@ -78,7 +78,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/content_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -263,11 +262,7 @@ enum {
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
     // Enable core animation if requested.
-    if ([self coreAnimationStatus] ==
-            browser_window_controller::kCoreAnimationEnabled) {
-      [[[self window] contentView] setWantsLayer:YES];
-      [[self tabStripView] setWantsLayer:YES];
-    }
+    [[[self window] contentView] cr_setWantsLayer:YES withSquashing:NO];
 
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
     // This has to happen before -enforceMinWindowSize: is called further down.

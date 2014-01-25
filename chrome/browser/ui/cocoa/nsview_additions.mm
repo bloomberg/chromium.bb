@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/public/common/content_switches.h"
 
 #include "base/logging.h"
 
@@ -14,6 +17,18 @@
 @end
 
 #endif  // 10.7
+
+// Replicate specific 10.9 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_9) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_9
+
+@interface NSView (MavericksAPI)
+// Flatten all child views that did not call setWantsLayer:YES into this
+// view's CALayer.
+- (void)setCanDrawSubviewsIntoLayer:(BOOL)flag;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_9
 
 @implementation NSView (ChromeAdditions)
 
@@ -71,6 +86,20 @@
   [self setNeedsDisplay:YES];
   for (NSView* child in [self subviews])
     [child cr_recursivelySetNeedsDisplay:flag];
+}
+
+- (void)cr_setWantsLayer:(BOOL)wantsLayer
+           withSquashing:(BOOL)squashing {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseCoreAnimation))
+    return;
+  [self setWantsLayer:wantsLayer];
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCoreAnimationLayerSquashing))
+    return;
+  if ([self respondsToSelector:@selector(setCanDrawSubviewsIntoLayer:)])
+    [self setCanDrawSubviewsIntoLayer:squashing];
 }
 
 @end

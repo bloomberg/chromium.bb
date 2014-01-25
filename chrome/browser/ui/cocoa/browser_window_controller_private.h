@@ -7,15 +7,6 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 
-namespace browser_window_controller {
-
-enum CoreAnimationStatus {
-  kCoreAnimationDisabled,
-  kCoreAnimationEnabled,
-};
-
-}  // namespace browser_window_controller
-
 // Private methods for the |BrowserWindowController|. This category should
 // contain the private methods used by different parts of the BWC; private
 // methods used only by single parts should be declared in their own file.
@@ -159,9 +150,6 @@ enum CoreAnimationStatus {
 
 // Update visibility of the infobar tip, depending on the state of the window.
 - (void)updateInfoBarTipVisibility;
-
-// Checks if core animation should be enabled or not.
-- (browser_window_controller::CoreAnimationStatus)coreAnimationStatus;
 
 @end  // @interface BrowserWindowController(Private)
 
