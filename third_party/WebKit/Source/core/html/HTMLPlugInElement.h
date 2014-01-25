@@ -23,7 +23,7 @@
 #ifndef HTMLPlugInElement_h
 #define HTMLPlugInElement_h
 
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/SharedPersistent.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
 struct NPObject;
@@ -45,7 +45,7 @@ public:
     virtual ~HTMLPlugInElement();
 
     void resetInstance();
-    ScriptValue pluginWrapper();
+    SharedPersistent<v8::Object>* pluginWrapper();
     Widget* pluginWidget() const;
     NPObject* getNPObject();
     bool canProcessDrag() const;
@@ -126,7 +126,7 @@ private:
     bool pluginIsLoadable(const KURL&, const String& mimeType);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
-    mutable ScriptValue m_pluginWrapper;
+    mutable RefPtr<SharedPersistent<v8::Object> > m_pluginWrapper;
     NPObject* m_NPObject;
     bool m_isCapturingMouseEvents;
     bool m_inBeforeLoadEventHandler;

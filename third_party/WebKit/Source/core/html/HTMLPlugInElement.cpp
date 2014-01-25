@@ -74,7 +74,7 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
 
 HTMLPlugInElement::~HTMLPlugInElement()
 {
-    ASSERT(m_pluginWrapper.hasNoValue()); // cleared in detach()
+    ASSERT(!m_pluginWrapper); // cleared in detach()
     ASSERT(!m_isDelayingLoadEvent);
 
     if (m_NPObject) {
@@ -209,20 +209,20 @@ void HTMLPlugInElement::resetInstance()
     m_pluginWrapper.clear();
 }
 
-ScriptValue HTMLPlugInElement::pluginWrapper()
+SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
 {
     Frame* frame = document().frame();
     if (!frame)
-        return ScriptValue();
+        return 0;
 
     // If the host dynamically turns off JavaScript (or Java) we will still
     // return the cached allocated Bindings::Instance. Not supporting this
     // edge-case is OK.
-    if (m_pluginWrapper.hasNoValue()) {
+    if (!m_pluginWrapper) {
         if (Widget* widget = pluginWidget())
             m_pluginWrapper = frame->script().createPluginWrapper(widget);
     }
-    return m_pluginWrapper;
+    return m_pluginWrapper.get();
 }
 
 bool HTMLPlugInElement::dispatchBeforeLoadEvent(const String& sourceURL)

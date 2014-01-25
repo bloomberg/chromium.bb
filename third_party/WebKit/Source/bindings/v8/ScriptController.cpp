@@ -344,16 +344,16 @@ void ScriptController::disableEval(const String& errorMessage)
     v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, errorMessage));
 }
 
-ScriptValue ScriptController::createPluginWrapper(Widget* widget)
+PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(Widget* widget)
 {
     ASSERT(widget);
 
     if (!widget->isPluginView())
-        return ScriptValue();
+        return 0;
 
     NPObject* npObject = toPluginView(widget)->scriptableObject();
     if (!npObject)
-        return ScriptValue();
+        return 0;
 
     // Frame Memory Management for NPObjects
     // -------------------------------------
@@ -379,12 +379,12 @@ ScriptValue ScriptController::createPluginWrapper(Widget* widget)
     // NPObject as part of its wrapper. However, before accessing the object
     // it must consult the _NPN_Registry.
 
-    v8::Handle<v8::Object> wrapper = createV8ObjectForNPObject(npObject, 0, m_isolate);
+    v8::Local<v8::Object> wrapper = createV8ObjectForNPObject(npObject, 0, m_isolate);
 
     // Track the plugin object. We've been given a reference to the object.
     m_pluginObjects.set(widget, npObject);
 
-    return ScriptValue(wrapper, m_isolate);
+    return SharedPersistent<v8::Object>::create(wrapper, m_isolate);
 }
 
 void ScriptController::cleanupScriptObjectsForPlugin(Widget* nativeHandle)

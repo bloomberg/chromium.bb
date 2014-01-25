@@ -28,78 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScopedPersistent_h
-#define ScopedPersistent_h
+#ifndef SharedPersistent_h
+#define SharedPersistent_h
 
+#include "bindings/v8/ScopedPersistent.h"
 #include <v8.h>
-#include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-template<typename T>
-class ScopedPersistent {
-    WTF_MAKE_NONCOPYABLE(ScopedPersistent);
-public:
-    ScopedPersistent() { }
+    template <typename T>
+    class SharedPersistent : public RefCounted<SharedPersistent<T> > {
+    WTF_MAKE_NONCOPYABLE(SharedPersistent);
+    public:
+        static PassRefPtr<SharedPersistent<T> > create(v8::Handle<T> value, v8::Isolate* isolate)
+        {
+            return adoptRef(new SharedPersistent<T>(value, isolate));
+        }
 
-    ScopedPersistent(v8::Isolate* isolate, v8::Handle<T> handle)
-        : m_handle(isolate, handle)
-    {
-    }
+        v8::Local<T> newLocal(v8::Isolate* isolate) const
+        {
+            return m_value.newLocal(isolate);
+        }
 
-    ~ScopedPersistent()
-    {
-        clear();
-    }
+        bool isEmpty() { return m_value.isEmpty(); }
 
-    ALWAYS_INLINE v8::Local<T> newLocal(v8::Isolate* isolate) const
-    {
-        return v8::Local<T>::New(isolate, m_handle);
-    }
+        bool operator==(const SharedPersistent<T>& other)
+        {
+            return m_value == other.m_value;
+        }
 
-    template<typename P>
-    void setWeak(P* parameters, void (*callback)(const v8::WeakCallbackData<T, P>&))
-    {
-        m_handle.SetWeak(parameters, callback);
-    }
-
-    bool isEmpty() const { return m_handle.IsEmpty(); }
-    bool isWeak() const { return m_handle.IsWeak(); }
-
-    void set(v8::Isolate* isolate, v8::Handle<T> handle)
-    {
-        m_handle.Reset(isolate, handle);
-    }
-
-    // Note: This is clear in the OwnPtr sense, not the v8::Handle sense.
-    void clear()
-    {
-        m_handle.Reset();
-    }
-
-    bool operator==(const ScopedPersistent<T>& other)
-    {
-        return m_handle == other.m_handle;
-    }
-
-    template <class S>
-    bool operator==(const v8::Handle<S> other) const
-    {
-        return m_handle == other;
-    }
-
-private:
-    // FIXME: This function does an unsafe handle access. Remove it.
-    friend class V8AbstractEventListener;
-    friend class V8PerIsolateData;
-    ALWAYS_INLINE v8::Persistent<T>& getUnsafe()
-    {
-        return m_handle;
-    }
-
-    v8::Persistent<T> m_handle;
-};
+    private:
+        explicit SharedPersistent(v8::Handle<T> value, v8::Isolate* isolate) : m_value(isolate, value) { }
+        ScopedPersistent<T> m_value;
+    };
 
 } // namespace WebCore
 
-#endif // ScopedPersistent_h
+#endif // SharedPersistent_h
