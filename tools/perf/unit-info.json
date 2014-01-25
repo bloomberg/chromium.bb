@@ -68,6 +68,10 @@
   "milliseconds-per-frame": {
     "improvement_direction": "down"
   },
+  "mWh": {
+    "improvement_direction": "down",
+    "why": "Fewer milliwatt-hours means less energy consumed."
+  },
   "objects (bigger is better)": {
     "improvement_direction": "up",
     "why": "Used in spaceport benchmark."
