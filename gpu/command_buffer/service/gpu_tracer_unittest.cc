@@ -118,12 +118,12 @@ class GpuTracerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     gl_fake_queries_.Reset();
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
     gl_fake_queries_.Reset();
   }

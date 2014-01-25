@@ -116,10 +116,11 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   Framebuffer::ClearFramebufferCompleteComboMap();
 
   gfx::ClearGLBindings();
+  gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
   gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
 
   gl_.reset(new StrictMock<MockGLInterface>());
-  ::gfx::GLInterface::SetGLInterface(gl_.get());
+  ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
   // Only create stream texture manager if extension is requested.
   std::vector<std::string> list;
@@ -353,7 +354,7 @@ void GLES2DecoderTestBase::TearDown() {
   decoder_.reset();
   group_->Destroy(mock_decoder_.get(), false);
   engine_.reset();
-  ::gfx::GLInterface::SetGLInterface(NULL);
+  ::gfx::MockGLInterface::SetGLInterface(NULL);
   gl_.reset();
 }
 

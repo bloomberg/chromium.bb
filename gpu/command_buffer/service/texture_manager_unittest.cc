@@ -58,7 +58,7 @@ class TextureManagerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     manager_.reset(new TextureManager(
         NULL, feature_info_.get(),
@@ -71,7 +71,7 @@ class TextureManagerTest : public testing::Test {
   virtual void TearDown() {
     manager_->Destroy(false);
     manager_.reset();
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
@@ -351,7 +351,7 @@ class TextureTestBase : public testing::Test {
  protected:
   void SetUpBase(MemoryTracker* memory_tracker, std::string extensions) {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     if (!extensions.empty()) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(),
@@ -384,7 +384,7 @@ class TextureTestBase : public testing::Test {
     }
     manager_->Destroy(false);
     manager_.reset();
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
@@ -2119,7 +2119,7 @@ class SharedTextureTest : public testing::Test {
 
   virtual void SetUp() {
     gl_.reset(new ::gfx::MockGLInterface());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     memory_tracker1_ = new CountingMemoryTracker;
     texture_manager1_.reset(
@@ -2144,7 +2144,7 @@ class SharedTextureTest : public testing::Test {
     texture_manager2_.reset();
     texture_manager1_->Destroy(false);
     texture_manager1_.reset();
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 

@@ -31,7 +31,7 @@ class VertexAttribManagerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     for (uint32 ii = 0; ii < kNumVertexAttribs; ++ii) {
       EXPECT_CALL(*gl_, VertexAttrib4f(ii, 0.0f, 0.0f, 0.0f, 1.0f))
@@ -45,7 +45,7 @@ class VertexAttribManagerTest : public testing::Test {
 
   virtual void TearDown() {
     manager_ = NULL;
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 

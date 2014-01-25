@@ -24,7 +24,7 @@ class RenderbufferManagerTestBase : public testing::Test {
  protected:
   void SetUpBase(MemoryTracker* memory_tracker, bool depth24_supported) {
     gl_.reset(new ::testing::StrictMock<gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     manager_.reset(new RenderbufferManager(
         memory_tracker, kMaxSize, kMaxSamples, depth24_supported));
   }
@@ -32,7 +32,7 @@ class RenderbufferManagerTestBase : public testing::Test {
   virtual void TearDown() {
     manager_->Destroy(true);
     manager_.reset();
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 

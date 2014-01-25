@@ -18,7 +18,6 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_interface.h"
 
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>

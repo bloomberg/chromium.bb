@@ -324,9 +324,6 @@ GL_EXPORT extern DriverEGL g_driver_egl;
 
 #endif
 
-// Find an entry point to the mock GL implementation.
-void* GL_BINDING_CALL GetMockGLProcAddress(const char* name);
-
 }  // namespace gfx
 
 #endif  // UI_GL_GL_BINDINGS_H_

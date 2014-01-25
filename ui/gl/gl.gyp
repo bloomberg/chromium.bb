@@ -40,7 +40,7 @@
       'export_dependent_settings': [
         '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
       ],
-     'sources': [
+      'sources': [
         'android/gl_jni_registrar.cc',
         'android/gl_jni_registrar.h',
         'android/scoped_java_surface.cc',
@@ -90,8 +90,6 @@
         'gl_implementation_mac.cc',
         'gl_implementation_win.cc',
         'gl_implementation_x11.cc',
-        'gl_interface.cc',
-        'gl_interface.h',
         'gl_osmesa_api_implementation.cc',
         'gl_osmesa_api_implementation.h',
         'gl_share_group.cc',
@@ -123,10 +121,8 @@
         'sync_control_vsync_provider.h',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.cc',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.h',
-        '<(gl_binding_output_dir)/gl_bindings_autogen_mock.cc',
         '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.cc',
         '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.h',
-        '<(gl_binding_output_dir)/gl_interface_autogen_gl.h',
       ],
       # hard_dependency is necessary for this target because it has actions
       # that generate header files included by dependent targets. The header
@@ -156,22 +152,14 @@
             '<(gl_binding_output_dir)/gl_bindings_autogen_glx.h',
             '<(gl_binding_output_dir)/gl_bindings_api_autogen_glx.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_mock.cc',
+            '<(gl_binding_output_dir)/gl_bindings_autogen_mock.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.h',
             '<(gl_binding_output_dir)/gl_bindings_api_autogen_osmesa.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_wgl.h',
             '<(gl_binding_output_dir)/gl_bindings_api_autogen_wgl.h',
-            '<(gl_binding_output_dir)/gl_interface_autogen_egl.h',
-            '<(gl_binding_output_dir)/gl_interface_autogen_gl.h',
-            '<(gl_binding_output_dir)/gl_interface_autogen_glx.h',
-            '<(gl_binding_output_dir)/gl_interface_autogen_osmesa.h',
-            '<(gl_binding_output_dir)/gl_interface_autogen_wgl.h',
-            '<(gl_binding_output_dir)/gl_mock_autogen_egl.h',
             '<(gl_binding_output_dir)/gl_mock_autogen_gl.h',
-            '<(gl_binding_output_dir)/gl_mock_autogen_glx.h',
-            '<(gl_binding_output_dir)/gl_mock_autogen_osmesa.h',
-            '<(gl_binding_output_dir)/gl_mock_autogen_wgl.h',
           ],
           'action': [
             'python',
@@ -329,6 +317,8 @@
       'sources': [
         'gl_mock.h',
         'gl_mock.cc',
+        '<(gl_binding_output_dir)/gl_bindings_autogen_mock.cc',
+        '<(gl_binding_output_dir)/gl_bindings_autogen_mock.h',
         '<(gl_binding_output_dir)/gl_mock_autogen_gl.h',
       ],
     },

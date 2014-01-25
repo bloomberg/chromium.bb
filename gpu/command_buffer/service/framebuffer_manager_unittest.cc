@@ -44,11 +44,11 @@ class FramebufferManagerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
@@ -124,7 +124,7 @@ class FramebufferInfoTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
     error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
     framebuffer_ = manager_.GetFramebuffer(kClient1Id);
@@ -132,7 +132,7 @@ class FramebufferInfoTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 

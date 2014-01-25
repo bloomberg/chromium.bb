@@ -98,7 +98,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationMockGL: {
-      SetGLGetProcAddressProc(GetMockGLProcAddress);
       SetGLImplementation(kGLImplementationMockGL);
       InitializeStaticGLBindingsGL();
       break;

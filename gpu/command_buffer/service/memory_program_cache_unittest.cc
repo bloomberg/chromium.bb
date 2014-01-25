@@ -93,7 +93,7 @@ class MemoryProgramCacheTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock<gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     vertex_shader_ = shader_manager_.CreateShader(kVertexShaderClientId,
                                                   kVertexShaderServiceId,
@@ -138,7 +138,7 @@ class MemoryProgramCacheTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 

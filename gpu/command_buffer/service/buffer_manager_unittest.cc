@@ -24,7 +24,7 @@ class BufferManagerTestBase : public testing::Test {
       FeatureInfo* feature_info,
       const char* extensions) {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     if (feature_info) {
       TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), extensions);
       feature_info->Initialize();
@@ -36,7 +36,7 @@ class BufferManagerTestBase : public testing::Test {
   virtual void TearDown() {
     manager_->Destroy(false);
     manager_.reset();
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     error_state_.reset();
     gl_.reset();
   }

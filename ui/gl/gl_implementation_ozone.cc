@@ -59,7 +59,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       ::gfx::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
       break;
     case kGLImplementationMockGL: {
-      SetGLGetProcAddressProc(GetMockGLProcAddress);
       SetGLImplementation(kGLImplementationMockGL);
       InitializeStaticGLBindingsGL();
       break;

@@ -10,6 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_mock.h"
 
 namespace {
 
@@ -34,6 +35,7 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 #endif
   CommandLine::Init(argc, argv);
+  gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
   gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
   gfx::InitializeDynamicGLBindings(gfx::kGLImplementationMockGL, NULL);
   testing::InitGoogleMock(&argc, argv);

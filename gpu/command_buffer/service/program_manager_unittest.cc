@@ -51,11 +51,11 @@ class ProgramManagerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
@@ -229,7 +229,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   virtual void SetUp() {
     gl_.reset(new StrictMock<gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     SetupDefaultShaderExpectations();
 
@@ -272,7 +272,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
   }
 
   // Return true if link status matches expected_link_status
@@ -1567,7 +1567,7 @@ class ProgramManagerWithCacheTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new StrictMock<gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 
     vertex_shader_ = shader_manager_.CreateShader(
        kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
@@ -1587,7 +1587,7 @@ class ProgramManagerWithCacheTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
   }
 
   void SetShadersCompiled() {

@@ -12,4 +12,10 @@ MockGLInterface::MockGLInterface() {
 MockGLInterface::~MockGLInterface() {
 }
 
+MockGLInterface* MockGLInterface::interface_;
+
+void MockGLInterface::SetGLInterface(MockGLInterface* gl_interface) {
+  interface_ = gl_interface;
+}
+
 }  // namespace gfx

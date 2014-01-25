@@ -24,9 +24,10 @@ class GPUInfoCollectorTest : public testing::Test {
     // TODO(kbr): make this setup robust in the case where
     // GLSurface::InitializeOneOff() has already been called by
     // another unit test. http://crbug.com/100285
+    gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
     gfx::InitializeStaticGLBindings(gfx::kGLImplementationMockGL);
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 #if defined(OS_WIN)
     const uint32 vendor_id = 0x10de;
     const uint32 device_id = 0x0658;
@@ -101,7 +102,7 @@ class GPUInfoCollectorTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 

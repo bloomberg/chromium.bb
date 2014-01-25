@@ -80,7 +80,8 @@ void AddGLNativeLibrary(base::NativeLibrary library);
 void UnloadGLNativeLibraries();
 
 // Set an additional function that will be called to find GL entry points.
-void SetGLGetProcAddressProc(GLGetProcAddressProc proc);
+// Exported so that tests may set the function used in the mock implementation.
+GL_EXPORT void SetGLGetProcAddressProc(GLGetProcAddressProc proc);
 
 // Find an entry point in the current GL implementation. Note that the function
 // may return a non-null pointer to something else than the GL function if an

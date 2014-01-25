@@ -39,7 +39,7 @@ class QueryManagerTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     engine_.reset(new MockCommandBufferEngine());
     decoder_.reset(new MockGLES2Decoder());
     decoder_->set_engine(engine_.get());
@@ -56,7 +56,7 @@ class QueryManagerTest : public testing::Test {
     manager_->Destroy(false);
     manager_.reset();
     engine_.reset();
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 

@@ -36,14 +36,14 @@ class ContextGroupTest : public testing::Test {
  protected:
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::GLInterface::SetGLInterface(gl_.get());
+    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     decoder_.reset(new MockGLES2Decoder());
     group_ = scoped_refptr<ContextGroup>(
         new ContextGroup(NULL, NULL, NULL, NULL, NULL, true));
   }
 
   virtual void TearDown() {
-    ::gfx::GLInterface::SetGLInterface(NULL);
+    ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
