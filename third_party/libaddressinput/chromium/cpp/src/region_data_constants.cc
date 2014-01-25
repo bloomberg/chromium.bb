@@ -140,23 +140,25 @@ const std::string& GetCompactLineSeparator(Script script) {
 
 std::map<std::string, std::string> InitRegionData() {
   std::map<std::string, std::string> region_data;
-  // TODO(estade): these all need "require" fields.
   region_data.insert(std::make_pair("AD", "{"
       "\"name\":\"ANDORRA\","
       "\"lang\":\"ca\","
       "\"languages\":\"ca\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %S\","
+      "\"require\":\"AS\","
       "\"state_name_type\":\"parish\""
       "}"));
   region_data.insert(std::make_pair("AE", "{"
       "\"name\":\"UNITED ARAB EMIRATES\","
-      "\"fmt\":\"%N%n%O%n%A%n%C\""
+      "\"fmt\":\"%N%n%O%n%A%n%C\","
+      "\"require\":\"AC\""
       "}"));
   region_data.insert(std::make_pair("AF", "{"
       "\"name\":\"AFGHANISTAN\""
       "}"));
   region_data.insert(std::make_pair("AG", "{"
-      "\"name\":\"ANTIGUA AND BARBUDA\""
+      "\"name\":\"ANTIGUA AND BARBUDA\","
+      "\"require\":\"A\""
       "}"));
   region_data.insert(std::make_pair("AI", "{"
       "\"name\":\"ANGUILLA\""
@@ -189,18 +191,21 @@ std::map<std::string, std::string> InitRegionData() {
   region_data.insert(std::make_pair("AS", "{"
       "\"name\":\"AMERICAN SAMOA\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("AT", "{"
       "\"name\":\"AUSTRIA\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("AU", "{"
       "\"name\":\"AUSTRALIA\","
       "\"lang\":\"en\","
       "\"languages\":\"en\","
       "\"fmt\":\"%O%n%N%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("AW", "{"
@@ -208,7 +213,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("AX", "{"
       "\"name\":\"FINLAND\","
-      "\"fmt\":\"%O%n%N%n%A%nAX-%Z %C%n\xC3\x85LAND\""  // \xC3\x85 is Å.
+      "\"fmt\":\"%O%n%N%n%A%nAX-%Z %C%n\xC3\x85LAND\","  // \xC3\x85 is Å.
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("AZ", "{"
       "\"name\":\"AZERBAIJAN\","
@@ -228,7 +234,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("BE", "{"
       "\"name\":\"BELGIUM\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("BF", "{"
       "\"name\":\"BURKINA FASO\","
@@ -250,7 +257,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("BL", "{"
       "\"name\":\"SAINT BARTHELEMY\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("BM", "{"
       "\"name\":\"BERMUDA\","
@@ -268,6 +276,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"pt\","
       "\"languages\":\"pt\","
       "\"fmt\":\"%O%n%N%n%A%n%C-%S%n%Z\","
+      "\"require\":\"ASCZ\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("BS", "{"
@@ -297,7 +306,8 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"CANADA\","
       "\"lang\":\"en\","
       "\"languages\":\"en~fr\","
-      "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\""
       "}"));
   region_data.insert(std::make_pair("CC", "{"
       "\"name\":\"COCOS (KEELING) ISLANDS\","
@@ -317,7 +327,8 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"SWITZERLAND\","
       "\"lang\":\"de\","
       "\"languages\":\"de~fr~it\","
-      "\"fmt\":\"%O%n%N%n%A%nCH-%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%nCH-%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("CI", "{"
       "\"name\":\"COTE D'IVOIRE\","
@@ -341,7 +352,8 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"P.R. CHINA\","
       "\"lang\":\"zh-hans\","
       "\"languages\":\"zh-hans\","
-      "\"fmt\":\"%Z%n%S%C%D%n%A%n%O%n%N\""
+      "\"fmt\":\"%Z%n%S%C%D%n%A%n%O%n%N\","
+      "\"require\":\"ACSZ\""
       "}"));
   region_data.insert(std::make_pair("CO", "{"
       "\"name\":\"COLOMBIA\","
@@ -376,14 +388,16 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("DE", "{"
       "\"name\":\"GERMANY\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("DJ", "{"
       "\"name\":\"DJIBOUTI\""
       "}"));
   region_data.insert(std::make_pair("DK", "{"
       "\"name\":\"DENMARK\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("DM", "{"
       "\"name\":\"DOMINICA\""
@@ -418,7 +432,8 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"SPAIN\","
       "\"lang\":\"es\","
       "\"languages\":\"es\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\","
+      "\"require\":\"ACSZ\""
       "}"));
   region_data.insert(std::make_pair("ET", "{"
       "\"name\":\"ETHIOPIA\","
@@ -426,18 +441,21 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("FI", "{"
       "\"name\":\"FINLAND\","
-      "\"fmt\":\"%O%n%N%n%A%nFI-%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%nFI-%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("FJ", "{"
       "\"name\":\"FIJI\""
       "}"));
   region_data.insert(std::make_pair("FK", "{"
       "\"name\":\"FALKLAND ISLANDS (MALVINAS)\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("FM", "{"
       "\"name\":\"MICRONESIA (Federated State of)\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -447,7 +465,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("FR", "{"
       "\"name\":\"FRANCE\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("GA", "{"
       "\"name\":\"GABON\""
@@ -455,6 +474,7 @@ std::map<std::string, std::string> InitRegionData() {
   region_data.insert(std::make_pair("GB", "{"
       "\"name\":\"UNITED KINGDOM\","
       "\"fmt\":\"%N%n%O%n%A%n%C%n%S%n%Z\","
+      "\"require\":\"ACZ\","
       "\"state_name_type\":\"county\""
       "}"));
   region_data.insert(std::make_pair("GD", "{"
@@ -466,22 +486,26 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("GF", "{"
       "\"name\":\"FRENCH GUIANA\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("GG", "{"
       "\"name\":\"CHANNEL ISLANDS\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%nGUERNSEY%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%nGUERNSEY%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("GH", "{"
       "\"name\":\"GHANA\""
       "}"));
   region_data.insert(std::make_pair("GI", "{"
       "\"name\":\"GIBRALTAR\","
-      "\"fmt\":\"%N%n%O%n%A\""
+      "\"fmt\":\"%N%n%O%n%A\","
+      "\"require\":\"A\""
       "}"));
   region_data.insert(std::make_pair("GL", "{"
       "\"name\":\"GREENLAND\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("GM", "{"
       "\"name\":\"GAMBIA\""
@@ -492,18 +516,21 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("GP", "{"
       "\"name\":\"GUADELOUPE\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("GQ", "{"
       "\"name\":\"EQUATORIAL GUINEA\""
       "}"));
   region_data.insert(std::make_pair("GR", "{"
       "\"name\":\"GREECE\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("GS", "{"
       "\"name\":\"SOUTH GEORGIA\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("GT", "{"
       "\"name\":\"GUATEMALA\","
@@ -512,6 +539,7 @@ std::map<std::string, std::string> InitRegionData() {
   region_data.insert(std::make_pair("GU", "{"
       "\"name\":\"GUAM\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -527,6 +555,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"zh\","
       "\"languages\":\"zh\","
       "\"fmt\":\"%S%n%A%n%O%n%N\","
+      "\"require\":\"AS\","
       "\"state_name_type\":\"area\""
       "}"));
   region_data.insert(std::make_pair("HM", "{"
@@ -535,7 +564,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("HN", "{"
       "\"name\":\"HONDURAS\","
-      "\"fmt\":\"%N%n%O%n%A%n%C, %S%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%C, %S%n%Z\","
+      "\"require\":\"ACS\""
       "}"));
   region_data.insert(std::make_pair("HR", "{"
       "\"name\":\"CROATIA\","
@@ -566,22 +596,26 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("IM", "{"
       "\"name\":\"ISLE OF MAN\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("IN", "{"
       "\"name\":\"INDIA\","
       "\"lang\":\"en\","
       "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C %Z%n%S\","
+      "\"require\":\"ACSZ\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("IO", "{"
       "\"name\":\"BRITISH INDIAN OCEAN TERRITORY\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("IQ", "{"
       "\"name\":\"IRAQ\","
-      "\"fmt\":\"%O%n%N%n%A%n%C, %S%n%Z\""
+      "\"fmt\":\"%O%n%N%n%A%n%C, %S%n%Z\","
+      "\"require\":\"ACS\""
       "}"));
   region_data.insert(std::make_pair("IS", "{"
       "\"name\":\"ICELAND\","
@@ -591,17 +625,20 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"ITALY\","
       "\"lang\":\"it\","
       "\"languages\":\"it\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\","
+      "\"require\":\"ACSZ\""
       "}"));
   region_data.insert(std::make_pair("JE", "{"
       "\"name\":\"CHANNEL ISLANDS\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%nJERSEY%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%nJERSEY%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("JM", "{"
       "\"name\":\"JAMAICA\","
       "\"lang\":\"en\","
       "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C%n%S %X\","
+      "\"require\":\"ACS\","
       "\"state_name_type\":\"parish\""
       "}"));
   region_data.insert(std::make_pair("JO", "{"
@@ -613,6 +650,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"ja\","
       "\"languages\":\"ja\","
       "\"fmt\":\"\xE3\x80\x92%Z%n%S%C%n%A%n%O%n%N\","  // \xE3\x80\x92 is 〒.
+      "\"require\":\"ACSZ\","
       "\"state_name_type\":\"prefecture\""
       "}"));
   region_data.insert(std::make_pair("KE", "{"
@@ -640,6 +678,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"en\","
       "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%C, %S\","
+      "\"require\":\"ACS\","
       "\"state_name_type\":\"island\""
       "}"));
   region_data.insert(std::make_pair("KR", "{"
@@ -647,6 +686,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"ko\","
       "\"languages\":\"ko\","
       "\"fmt\":\"%S %C%D%n%A%n%O%n%N%nSEOUL %Z\","
+      "\"require\":\"ACSZ\","
       "\"state_name_type\":\"do_si\""
       "}"));
   region_data.insert(std::make_pair("KW", "{"
@@ -658,6 +698,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"en\","
       "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%S\","
+      "\"require\":\"AS\","
       "\"state_name_type\":\"island\""
       "}"));
   region_data.insert(std::make_pair("KZ", "{"
@@ -677,7 +718,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("LI", "{"
       "\"name\":\"LIECHTENSTEIN\","
-      "\"fmt\":\"%O%n%N%n%A%nFL-%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%nFL-%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("LK", "{"
       "\"name\":\"SRI LANKA\","
@@ -697,7 +739,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("LU", "{"
       "\"name\":\"LUXEMBOURG\","
-      "\"fmt\":\"%O%n%N%n%A%nL-%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%nL-%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("LV", "{"
       "\"name\":\"LATVIA\","
@@ -724,7 +767,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("MF", "{"
       "\"name\":\"SAINT MARTIN\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("MG", "{"
       "\"name\":\"MADAGASCAR\","
@@ -733,6 +777,7 @@ std::map<std::string, std::string> InitRegionData() {
   region_data.insert(std::make_pair("MH", "{"
       "\"name\":\"MARSHALL ISLANDS\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -751,17 +796,20 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"MACAO\","
       "\"lang\":\"zh-hant\","
       "\"languages\":\"zh-hant\","
-      "\"fmt\":\"%A%n%O%n%N\""
+      "\"fmt\":\"%A%n%O%n%N\","
+      "\"require\":\"A\""
       "}"));
   region_data.insert(std::make_pair("MP", "{"
       "\"name\":\"NORTHERN MARIANA ISLANDS\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("MQ", "{"
       "\"name\":\"MARTINIQUE\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("MR", "{"
       "\"name\":\"MAURITANIA\""
@@ -790,6 +838,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"es\","
       "\"languages\":\"es\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C, %S\","
+      "\"require\":\"ACZ\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("MY", "{"
@@ -797,6 +846,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"ms\","
       "\"languages\":\"ms\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C, %S\","
+      "\"require\":\"ACZ\","
       "\"state_name_type\":\"state\""
       "}"));
   region_data.insert(std::make_pair("MZ", "{"
@@ -808,7 +858,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("NC", "{"
       "\"name\":\"NEW CALEDONIA\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("NE", "{"
       "\"name\":\"NIGER\","
@@ -834,11 +885,13 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("NL", "{"
       "\"name\":\"NETHERLANDS\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("NO", "{"
       "\"name\":\"NORWAY\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("NP", "{"
       "\"name\":\"NEPAL\","
@@ -849,6 +902,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"en\","
       "\"languages\":\"en\","
       "\"fmt\":\"%N%n%O%n%A%n%S\","
+      "\"require\":\"AS\","
       "\"state_name_type\":\"district\""
       "}"));
   region_data.insert(std::make_pair("NU", "{"
@@ -856,7 +910,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("NZ", "{"
       "\"name\":\"NEW ZEALAND\","
-      "\"fmt\":\"%N%n%O%n%A%n%C %Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%C %Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("OM", "{"
       "\"name\":\"OMAN\","
@@ -872,15 +927,18 @@ std::map<std::string, std::string> InitRegionData() {
   region_data.insert(std::make_pair("PF", "{"
       "\"name\":\"FRENCH POLYNESIA\","
       "\"fmt\":\"%N%n%O%n%A%n%Z %C %S\","
+      "\"require\":\"ACSZ\","
       "\"state_name_type\":\"island\""
       "}"));
   region_data.insert(std::make_pair("PG", "{"
       "\"name\":\"PAPUA NEW GUINEA\","
-      "\"fmt\":\"%N%n%O%n%A%n%C %Z %S\""
+      "\"fmt\":\"%N%n%O%n%A%n%C %Z %S\","
+      "\"require\":\"ACS\""
       "}"));
   region_data.insert(std::make_pair("PH", "{"
       "\"name\":\"PHILIPPINES\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C%n%S\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C%n%S\","
+      "\"require\":\"AC\""
       "}"));
   region_data.insert(std::make_pair("PK", "{"
       "\"name\":\"PAKISTAN\","
@@ -888,19 +946,23 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("PL", "{"
       "\"name\":\"POLAND\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("PM", "{"
       "\"name\":\"ST. PIERRE AND MIQUELON\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("PN", "{"
       "\"name\":\"PITCAIRN\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("PR", "{"
       "\"name\":\"PUERTO RICO\","
       "\"fmt\":\"%N%n%O%n%A%n%C PR %Z\","
+      "\"require\":\"ACZ\","
       "\"zip_name_type\":\"zip\""
       "}"));
   region_data.insert(std::make_pair("PS", "{"
@@ -908,11 +970,13 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("PT", "{"
       "\"name\":\"PORTUGAL\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("PW", "{"
       "\"name\":\"PALAU\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -925,7 +989,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("RE", "{"
       "\"name\":\"REUNION\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("RO", "{"
       "\"name\":\"ROMANIA\","
@@ -937,7 +1002,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("RU", "{"
       "\"name\":\"RUSSIAN FEDERATION\","
-      "\"fmt\":\"%Z %C  %n%A%n%O%n%N\""
+      "\"fmt\":\"%Z %C  %n%A%n%O%n%N\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("RW", "{"
       "\"name\":\"RWANDA\""
@@ -956,15 +1022,18 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("SE", "{"
       "\"name\":\"SWEDEN\","
-      "\"fmt\":\"%O%n%N%n%A%nSE-%Z %C\""
+      "\"fmt\":\"%O%n%N%n%A%nSE-%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("SG", "{"
       "\"name\":\"REP. OF SINGAPORE\","
-      "\"fmt\":\"%N%n%O%n%A%nSINGAPORE %Z\""
+      "\"fmt\":\"%N%n%O%n%A%nSINGAPORE %Z\","
+      "\"require\":\"AZ\""
       "}"));
   region_data.insert(std::make_pair("SH", "{"
       "\"name\":\"SAINT HELENA\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("SI", "{"
       "\"name\":\"SLOVENIA\","
@@ -972,7 +1041,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("SJ", "{"
       "\"name\":\"SVALBARD AND JAN MAYEN ISLANDS\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("SK", "{"
       "\"name\":\"SLOVAKIA\","
@@ -983,7 +1053,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("SM", "{"
       "\"name\":\"SAN MARINO\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"AZ\""
       "}"));
   region_data.insert(std::make_pair("SN", "{"
       "\"name\":\"SENEGAL\","
@@ -993,7 +1064,8 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"SOMALIA\","
       "\"lang\":\"so\","
       "\"languages\":\"so\","
-      "\"fmt\":\"%N%n%O%n%A%n%C, %S %Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%C, %S %Z\","
+      "\"require\":\"ACS\""
       "}"));
   region_data.insert(std::make_pair("SR", "{"
       "\"name\":\"SURINAME\","
@@ -1009,7 +1081,8 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"EL SALVADOR\","
       "\"lang\":\"es\","
       "\"languages\":\"es\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z-%C%n%S\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z-%C%n%S\","
+      "\"require\":\"ACS\""
       "}"));
   region_data.insert(std::make_pair("SZ", "{"
       "\"name\":\"SWAZILAND\","
@@ -1017,7 +1090,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("TC", "{"
       "\"name\":\"TURKS AND CAICOS ISLANDS\","
-      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%X%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("TD", "{"
       "\"name\":\"CHAD\""
@@ -1057,7 +1131,8 @@ std::map<std::string, std::string> InitRegionData() {
       "}"));
   region_data.insert(std::make_pair("TR", "{"
       "\"name\":\"TURKEY\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C/%S\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C/%S\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("TT", "{"
       "\"name\":\"TRINIDAD AND TOBAGO\""
@@ -1074,6 +1149,7 @@ std::map<std::string, std::string> InitRegionData() {
       "\"lang\":\"zh-hant\","
       "\"languages\":\"zh-hant\","
       "\"fmt\":\"%Z%n%S%C%n%A%n%O%n%N\","
+      "\"require\":\"ACSZ\","
       "\"state_name_type\":\"county\""
       "}"));
   region_data.insert(std::make_pair("TZ", "{"
@@ -1091,6 +1167,7 @@ std::map<std::string, std::string> InitRegionData() {
   region_data.insert(std::make_pair("UM", "{"
       "\"name\":\"UNITED STATES MINOR OUTLYING ISLANDS\","
       "\"fmt\":\"%N%n%O%n%A%n%C, %S %Z\","
+      "\"require\":\"ACS\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -1124,14 +1201,17 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"VENEZUELA\","
       "\"lang\":\"es\","
       "\"languages\":\"es\","
-      "\"fmt\":\"%N%n%O%n%A%n%C %Z, %S\""
+      "\"fmt\":\"%N%n%O%n%A%n%C %Z, %S\","
+      "\"require\":\"ACS\""
       "}"));
   region_data.insert(std::make_pair("VG", "{"
-      "\"name\":\"VIRGIN ISLANDS (BRITISH)\""
+      "\"name\":\"VIRGIN ISLANDS (BRITISH)\","
+      "\"require\":\"A\""
       "}"));
   region_data.insert(std::make_pair("VI", "{"
       "\"name\":\"VIRGIN ISLANDS (U.S.)\","
       "\"fmt\":\"%N%n%O%n%A%n%C %S %Z\","
+      "\"require\":\"ACSZ\","
       "\"zip_name_type\":\"zip\","
       "\"state_name_type\":\"state\""
       "}"));
@@ -1139,32 +1219,38 @@ std::map<std::string, std::string> InitRegionData() {
       "\"name\":\"VIET NAM\","
       "\"lang\":\"vi\","
       "\"languages\":\"vi\","
-      "\"fmt\":\"%N%n%O%n%A%n%C%n%S\""
+      "\"fmt\":\"%N%n%O%n%A%n%C%n%S\","
+      "\"require\":\"AC\""
       "}"));
   region_data.insert(std::make_pair("VU", "{"
       "\"name\":\"VANUATU\""
       "}"));
   region_data.insert(std::make_pair("WF", "{"
       "\"name\":\"WALLIS AND FUTUNA ISLANDS\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("WS", "{"
       "\"name\":\"SAMOA\""
       "}"));
   region_data.insert(std::make_pair("YE", "{"
-      "\"name\":\"YEMEN\""
+      "\"name\":\"YEMEN\","
+      "\"require\":\"AC\""
       "}"));
   region_data.insert(std::make_pair("YT", "{"
       "\"name\":\"MAYOTTE\","
-      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\""
+      "\"fmt\":\"%O%n%N%n%A%n%Z %C %X\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("ZA", "{"
       "\"name\":\"SOUTH AFRICA\","
-      "\"fmt\":\"%N%n%O%n%A%n%C%n%Z\""
+      "\"fmt\":\"%N%n%O%n%A%n%C%n%Z\","
+      "\"require\":\"ACZ\""
       "}"));
   region_data.insert(std::make_pair("ZM", "{"
       "\"name\":\"ZAMBIA\","
-      "\"fmt\":\"%N%n%O%n%A%n%Z %C\""
+      "\"fmt\":\"%N%n%O%n%A%n%Z %C\","
+      "\"require\":\"AC\""
       "}"));
   region_data.insert(std::make_pair("ZW", "{"
       "\"name\":\"ZIMBABWE\""
