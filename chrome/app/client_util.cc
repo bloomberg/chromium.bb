@@ -6,7 +6,6 @@
 #include <shlwapi.h>
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
@@ -26,6 +25,8 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -147,21 +148,29 @@ size_t InitPreReadPercentage() {
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to determine if this path contains a valid dll.
-HMODULE LoadModuleWithDirectory(base::string16* dir,
-                                const wchar_t* dll_name,
-                                bool pre_read) {
+HMODULE LoadChromeWithDirectory(base::string16* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+#if !defined(CHROME_MULTIPLE_DLL)
+  const wchar_t* dll_name = installer::kChromeDll;
+#else
+  const wchar_t* dll_name =
+      cmd_line.HasSwitch(switches::kProcessType) &&
+              cmd_line.GetSwitchValueASCII(switches::kProcessType) != "service"
+          ? installer::kChromeChildDll
+          : installer::kChromeDll;
+#endif
   dir->append(dll_name);
 
-  if (pre_read) {
 #if !defined(WIN_DISABLE_PREREAD)
-    // We pre-read the binary to warm the memory caches (fewer hard faults to
-    // page parts of the binary in).
+  // We pre-read the binary to warm the memory caches (fewer hard faults to
+  // page parts of the binary in).
+  if (!cmd_line.HasSwitch(switches::kProcessType)) {
     const size_t kStepSize = 1024 * 1024;
     size_t percentage = InitPreReadPercentage();
     ImagePreReader::PartialPreReadImage(dir->c_str(), percentage, kStepSize);
-#endif
   }
+#endif
 
   return ::LoadLibraryExW(dir->c_str(), NULL,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -176,13 +185,6 @@ void ClearDidRun(const base::string16& dll_path) {
   bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
   GoogleUpdateSettings::UpdateDidRunState(false, system_level);
 }
-
-bool InMetroMode() {
-  return (wcsstr(
-      ::GetCommandLineW(), L" -ServerName:DefaultBrowserServer") != NULL);
-}
-
-typedef int (*InitMetro)();
 
 }  // namespace
 
@@ -208,8 +210,7 @@ base::string16 GetCurrentModuleVersion() {
 
 //=============================================================================
 
-MainDllLoader::MainDllLoader()
-  : dll_(NULL), metro_mode_(InMetroMode()) {
+MainDllLoader::MainDllLoader() : dll_(NULL) {
 }
 
 MainDllLoader::~MainDllLoader() {
@@ -221,16 +222,12 @@ MainDllLoader::~MainDllLoader() {
 // If that fails then we look at the version resource in the current
 // module. This is the expected path for chrome.exe browser instances in an
 // installed build.
-HMODULE MainDllLoader::Load(const wchar_t* dll_name,
-                            base::string16* out_version,
+HMODULE MainDllLoader::Load(base::string16* out_version,
                             base::string16* out_file) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  const base::string16 executable_dir(GetExecutablePath());
-  *out_file = executable_dir;
-
-  const bool pre_read = !metro_mode_;
-
-  HMODULE dll = LoadModuleWithDirectory(out_file, dll_name, pre_read);
+  const base::string16 dir(GetExecutablePath());
+  *out_file = dir;
+  HMODULE dll = LoadChromeWithDirectory(out_file);
   if (!dll) {
     // Loading from same directory (for developers) failed. Look at the version
     // resource in the current module and try loading that.
@@ -240,10 +237,10 @@ HMODULE MainDllLoader::Load(const wchar_t* dll_name,
       return NULL;
     }
 
-    *out_file = executable_dir;
+    *out_file = dir;
     *out_version = version_string;
     out_file->append(*out_version).append(1, L'\\');
-    dll = LoadModuleWithDirectory(out_file, dll_name, pre_read);
+    dll = LoadChromeWithDirectory(out_file);
     if (!dll) {
       PLOG(ERROR) << "Failed to load Chrome DLL from " << *out_file;
       return NULL;
@@ -251,6 +248,7 @@ HMODULE MainDllLoader::Load(const wchar_t* dll_name,
   }
 
   DCHECK(dll);
+
   return dll;
 }
 
@@ -259,53 +257,34 @@ HMODULE MainDllLoader::Load(const wchar_t* dll_name,
 // add custom code in the OnBeforeLaunch callback.
 int MainDllLoader::Launch(HINSTANCE instance,
                           sandbox::SandboxInterfaceInfo* sbox_info) {
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  const std::string process_type =
-      cmd_line.GetSwitchValueASCII(switches::kProcessType);
-
-  const wchar_t* dll_name;
-  if (metro_mode_) {
-    dll_name = installer::kChromeMetroDll;
-  } else {
-#if !defined(CHROME_MULTIPLE_DLL)
-    dll_name = installer::kChromeDll;
-#else
-    dll_name = process_type != "service" ?
-        installer::kChromeChildDll : installer::kChromeDll;
-#endif
-  }
-
   base::string16 version;
   base::string16 file;
-  dll_ = Load(dll_name, &version, &file);
+  dll_ = Load(&version, &file);
   if (!dll_)
     return chrome::RESULT_CODE_MISSING_DATA;
 
-  if (metro_mode_) {
-    InitMetro init_metro_fn =
-        reinterpret_cast<InitMetro>(::GetProcAddress(dll_, "InitMetro"));
-    return init_metro_fn();
-  } else {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    env->SetVar(chrome::kChromeVersionEnvVar, base::WideToUTF8(version));
-    // TODO(erikwright): Remove this when http://crbug.com/174953 is fixed and
-    // widely deployed.
-    env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(chrome::kChromeVersionEnvVar, base::WideToUTF8(version));
+  // TODO(erikwright): Remove this when http://crbug.com/174953 is fixed and
+  // widely deployed.
+  env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);
 
-    breakpad::InitCrashReporter(process_type);
-    OnBeforeLaunch(file);
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  std::string process_type =
+      cmd_line.GetSwitchValueASCII(switches::kProcessType);
+  breakpad::InitCrashReporter(process_type);
+  OnBeforeLaunch(file);
 
-    DLL_MAIN chrome_main =
-        reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
-    int rc = chrome_main(instance, sbox_info);
-    return OnBeforeExit(rc, file);
-  }
+  DLL_MAIN entry_point =
+      reinterpret_cast<DLL_MAIN>(::GetProcAddress(dll_, "ChromeMain"));
+  if (!entry_point)
+    return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
+
+  int rc = entry_point(instance, sbox_info);
+  return OnBeforeExit(rc, file);
 }
 
 void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
-  if (metro_mode_)
-    return;
-
   RelaunchChromeBrowserWithNewCommandLineIfNeededFunc relaunch_function =
       reinterpret_cast<RelaunchChromeBrowserWithNewCommandLineIfNeededFunc>(
           ::GetProcAddress(dll_,
@@ -321,7 +300,14 @@ void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 //=============================================================================
 
 class ChromeDllLoader : public MainDllLoader {
- protected:
+ public:
+  virtual base::string16 GetRegistryPath() {
+    base::string16 key(google_update::kRegPathClients);
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    key.append(L"\\").append(dist->GetAppGuid());
+    return key;
+  }
+
   virtual void OnBeforeLaunch(const base::string16& dll_path) {
     RecordDidRun(dll_path);
   }
@@ -340,12 +326,10 @@ class ChromeDllLoader : public MainDllLoader {
 //=============================================================================
 
 class ChromiumDllLoader : public MainDllLoader {
- protected:
-  virtual void OnBeforeLaunch(const base::string16& dll_path) OVERRIDE {
-  }
-  virtual int OnBeforeExit(int return_code,
-                           const base::string16& dll_path) OVERRIDE {
-    return return_code;
+ public:
+  virtual base::string16 GetRegistryPath() {
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    return dist->GetVersionKey();
   }
 };
 

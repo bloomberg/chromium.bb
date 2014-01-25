@@ -1328,7 +1328,9 @@ HRESULT ChromeAppViewAsh::OnSizeChanged(winui::Core::ICoreWindow* sender,
 ///////////////////////////////////////////////////////////////////////////////
 
 ChromeAppViewFactory::ChromeAppViewFactory(
-    winapp::Core::ICoreApplication* icore_app) {
+    winapp::Core::ICoreApplication* icore_app,
+    LPTHREAD_START_ROUTINE host_main,
+    void* host_context) {
   mswr::ComPtr<winapp::Core::ICoreApplication> core_app(icore_app);
   mswr::ComPtr<winapp::Core::ICoreApplicationExit> app_exit;
   CheckHR(core_app.As(&app_exit));
