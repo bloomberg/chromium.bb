@@ -104,6 +104,9 @@
       'trees/quad_culler_unittest.cc',
       'trees/tree_synchronizer_unittest.cc',
     ],
+    'cc_surfaces_unit_tests_source_files': [
+      'surfaces/surface_unittest.cc',
+    ],
     'cc_tests_support_files': [
       'test/animation_test_common.cc',
       'test/animation_test_common.h',
@@ -229,12 +232,14 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'cc.gyp:cc',
+        'cc.gyp:cc_surfaces',
         'cc_test_support',
       ],
       'sources': [
         'test/run_all_unittests.cc',
         'test/cc_test_suite.cc',
         '<@(cc_unit_tests_source_files)',
+        '<@(cc_surfaces_unit_tests_source_files)',
       ],
       'include_dirs': [
         'test',
@@ -348,55 +353,6 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
-    {
-      'target_name': 'cc_surfaces_unittests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        '../base/base.gyp:test_support_base',
-        '../media/media.gyp:media',
-        '../skia/skia.gyp:skia',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        '../ui/gfx/gfx.gyp:gfx',
-        '../ui/gfx/gfx.gyp:gfx_geometry',
-        'cc.gyp:cc',
-        'cc.gyp:cc_surfaces',
-        'cc_test_support',
-      ],
-      'sources': [
-        'test/run_all_unittests.cc',
-        'test/cc_test_suite.cc',
-        'surfaces/surface_unittest.cc',
-      ],
-      'include_dirs': [
-        'test',
-        '.',
-      ],
-      'conditions': [
-        ['OS == "android" and gtest_target_type == "shared_library"',
-          {
-            'dependencies': [
-              '../testing/android/native_test.gyp:native_test_native_code',
-            ],
-          }
-        ],
-        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"',
-          {
-            'conditions': [
-              [ 'linux_use_tcmalloc==1',
-                {
-                  'dependencies': [
-                    '../base/allocator/allocator.gyp:allocator',
-                  ],
-                }
-              ],
-            ],
-          }
-        ],
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    }
   ],
   'conditions': [
     # Special target to wrap a gtest_target_type==shared_library
