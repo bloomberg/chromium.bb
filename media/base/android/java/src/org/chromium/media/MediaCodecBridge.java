@@ -503,6 +503,10 @@ class MediaCodecBridge {
                         AudioFormat.ENCODING_PCM_16BIT);
                 mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,
                         AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
+                if (mAudioTrack.getState() == AudioTrack.STATE_UNINITIALIZED) {
+                    mAudioTrack = null;
+                    return false;
+                }
             }
             return true;
         } catch (IllegalStateException e) {
