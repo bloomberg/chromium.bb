@@ -17,6 +17,9 @@
 
 namespace net {
 
+class QuicServerInfo;
+class QuicServerInfoFactory;
+
 // QuicCryptoClientConfig contains crypto-related configuration settings for a
 // client. Note that this object isn't thread-safe. It's designed to be used on
 // a single thread at a time.
@@ -86,6 +89,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // unchanged.
     void InitializeFrom(const CachedState& other);
 
+    // TODO(rtenneti): Need to flesh out the details of this method. A temporary
+    // place holder to load CachedState from disk cache.
+    void LoadFromDiskCache(QuicServerInfoFactory* quic_server_info_factory,
+                           const std::string& server_hostname);
+
    private:
     std::string server_config_id_;      // An opaque id from the server.
     std::string server_config_;         // A serialized handshake message.
@@ -106,10 +114,14 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;
 
+    scoped_ptr<QuicServerInfo> quic_server_info_;
+
     DISALLOW_COPY_AND_ASSIGN(CachedState);
   };
 
   QuicCryptoClientConfig();
+  explicit QuicCryptoClientConfig(
+      QuicServerInfoFactory* quic_server_info_factory);
   ~QuicCryptoClientConfig();
 
   // Sets the members to reasonable, default values.
@@ -207,6 +219,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // about that server.
   std::map<std::string, CachedState*> cached_states_;
 
+  QuicServerInfoFactory* quic_server_info_factory_;
   scoped_ptr<ProofVerifier> proof_verifier_;
   scoped_ptr<ChannelIDSigner> channel_id_signer_;
 

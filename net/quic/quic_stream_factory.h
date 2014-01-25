@@ -33,6 +33,7 @@ class QuicClientSession;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
+class QuicServerInfoFactory;
 class QuicStreamFactory;
 
 namespace test {
@@ -86,6 +87,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
       base::WeakPtr<HttpServerProperties> http_server_properties,
+      QuicServerInfoFactory* quic_server_info_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicRandom* random_generator,
       QuicClock* clock,
@@ -198,6 +200,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   HostResolver* host_resolver_;
   ClientSocketFactory* client_socket_factory_;
   base::WeakPtr<HttpServerProperties> http_server_properties_;
+  QuicServerInfoFactory* quic_server_info_factory_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   QuicRandom* random_generator_;
   scoped_ptr<QuicClock> clock_;

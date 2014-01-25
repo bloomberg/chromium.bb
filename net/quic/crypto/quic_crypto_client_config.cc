@@ -15,6 +15,7 @@
 #include "net/quic/crypto/p256_key_exchange.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_utils.h"
 
 #if defined(OS_WIN)
@@ -28,7 +29,14 @@ using std::vector;
 
 namespace net {
 
-QuicCryptoClientConfig::QuicCryptoClientConfig() {}
+QuicCryptoClientConfig::QuicCryptoClientConfig()
+    : quic_server_info_factory_(NULL) {
+}
+
+QuicCryptoClientConfig::QuicCryptoClientConfig(
+    QuicServerInfoFactory* quic_server_info_factory)
+    : quic_server_info_factory_(quic_server_info_factory) {
+}
 
 QuicCryptoClientConfig::~QuicCryptoClientConfig() {
   STLDeleteValues(&cached_states_);
@@ -39,6 +47,16 @@ QuicCryptoClientConfig::CachedState::CachedState()
       generation_counter_(0) {}
 
 QuicCryptoClientConfig::CachedState::~CachedState() {}
+
+void QuicCryptoClientConfig::CachedState::LoadFromDiskCache(
+    QuicServerInfoFactory* quic_server_info_factory,
+    const string& server_hostname) {
+  DCHECK(quic_server_info_factory);
+  quic_server_info_.reset(
+      quic_server_info_factory->GetForHost(server_hostname));
+
+  // TODO(rtenneti): Need to flesh out reading data from disk cache.
+}
 
 bool QuicCryptoClientConfig::CachedState::IsComplete(QuicWallTime now) const {
   if (server_config_.empty() || !server_config_valid_) {
@@ -230,6 +248,9 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   }
 
   CachedState* cached = new CachedState;
+  if (quic_server_info_factory_) {
+    cached->LoadFromDiskCache(quic_server_info_factory_, server_hostname);
+  }
   cached_states_.insert(make_pair(server_hostname, cached));
   return cached;
 }
