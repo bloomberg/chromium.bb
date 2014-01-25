@@ -6,7 +6,6 @@
 #define MEDIA_CAST_VIDEO_SENDER_VIDEO_ENCODER_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/video_sender/codecs/vp8/vp8_encoder.h"
@@ -21,6 +20,12 @@ namespace cast {
 // the video encoder thread.
 class VideoEncoderImpl : public VideoEncoder {
  public:
+  struct CodecDynamicConfig {
+    bool key_frame_requested;
+    uint32 latest_frame_id_to_reference;
+    int bit_rate;
+  };
+
   typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
                               const base::TimeTicks&)> FrameEncodedCallback;
 
@@ -49,27 +54,19 @@ class VideoEncoderImpl : public VideoEncoder {
   virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
   virtual int NumberOfSkippedFrames() const OVERRIDE;
 
- protected:
-  struct CodecDynamicConfig {
-    bool key_frame_requested;
-    uint32 latest_frame_id_to_reference;
-    int bit_rate;
-  };
-
-  // The actual encode, called from the video encoder thread.
-  void EncodeVideoFrameEncoderThread(
-      const scoped_refptr<media::VideoFrame>& video_frame,
-      const base::TimeTicks& capture_time,
-      const CodecDynamicConfig& dynamic_config,
-      const FrameEncodedCallback& frame_encoded_callback);
-
  private:
+
   const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
-  scoped_ptr<Vp8Encoder> vp8_encoder_;
   CodecDynamicConfig dynamic_config_;
   bool skip_next_frame_;
   int skip_count_;
+
+  // This member belongs to the video encoder thread. It must not be
+  // dereferenced on the main thread. We manage the lifetime of this member
+  // manually because it needs to be initialize, used and destroyed on the
+  // video encoder thread and video encoder thread can out-live the main thread.
+  scoped_ptr<Vp8Encoder> vp8_encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderImpl);
 };

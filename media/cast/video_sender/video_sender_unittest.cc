@@ -98,6 +98,11 @@ class VideoSenderTest : public ::testing::Test {
 
   virtual ~VideoSenderTest() {}
 
+  virtual void TearDown() OVERRIDE {
+    video_sender_.reset();
+    task_runner_->RunTasks();
+  }
+
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
     EXPECT_EQ(status, transport::TRANSPORT_INITIALIZED);
   }

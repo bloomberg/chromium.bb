@@ -122,6 +122,7 @@ class EncodeDecodeTest : public ::testing::Test {
 
 TEST_F(EncodeDecodeTest, BasicEncodeDecode) {
   transport::EncodedVideoFrame encoded_frame;
+  encoder_->Initialize();
   // Encode frame.
   encoder_->Encode(video_frame_, &encoded_frame);
   EXPECT_GT(encoded_frame.data.size(), GG_UINT64_C(0));
