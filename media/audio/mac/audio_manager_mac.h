@@ -61,6 +61,17 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   static int HardwareSampleRateForDevice(AudioDeviceID device_id);
   static int HardwareSampleRate();
 
+  // OSX has issues with starting streams as the sytem goes into suspend and
+  // immediately after it wakes up from resume.  See http://crbug.com/160920.
+  // As a workaround we delay Start() when it occurs after suspend and for a
+  // small amount of time after resume.
+  //
+  // Output streams should consult ShouldDeferOutputStreamStart() and if true
+  // check the value again after |kStartDelayInSecsForPowerEvents| has elapsed.
+  // If false, the stream may be started immediately.
+  enum { kStartDelayInSecsForPowerEvents = 1 };
+  bool ShouldDeferOutputStreamStart();
+
  protected:
   virtual ~AudioManagerMac();
 
@@ -89,6 +100,12 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   AudioDeviceID current_output_device_;
 
   AggregateDeviceManager aggregate_device_manager_;
+
+  // Helper class which monitors power events to determine if output streams
+  // should defer Start() calls.  Required to workaround an OSX bug.  See
+  // http://crbug.com/160920 for more details.
+  class AudioPowerObserver;
+  scoped_ptr<AudioPowerObserver> power_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };

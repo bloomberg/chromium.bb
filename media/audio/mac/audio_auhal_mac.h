@@ -20,6 +20,7 @@
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/CoreAudio.h>
 
+#include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
 #include "media/audio/audio_io.h"
@@ -165,6 +166,9 @@ class AUHALStream : public AudioOutputStream {
 
   // Current buffer delay.  Set by Render().
   uint32 current_hardware_pending_bytes_;
+
+  // Used to defer Start() to workaround http://crbug.com/160920.
+  base::CancelableClosure deferred_start_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(AUHALStream);
 };

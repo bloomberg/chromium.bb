@@ -7,9 +7,12 @@
 #include <CoreServices/CoreServices.h>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/time/time.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_pull_fifo.h"
 
@@ -148,6 +151,19 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     return;
   }
 
+  // Check if we should defer Start() for http://crbug.com/160920.
+  if (manager_->ShouldDeferOutputStreamStart()) {
+    // Use a cancellable closure so that if Stop() is called before Start()
+    // actually runs, we can cancel the pending start.
+    DCHECK(deferred_start_cb_.IsCancelled());
+    deferred_start_cb_.Reset(
+        base::Bind(&AUHALStream::Start, base::Unretained(this), callback));
+    manager_->GetTaskRunner()->PostDelayedTask(
+        FROM_HERE, deferred_start_cb_.callback(), base::TimeDelta::FromSeconds(
+            AudioManagerMac::kStartDelayInSecsForPowerEvents));
+    return;
+  }
+
   stopped_ = false;
   audio_fifo_.reset();
   {
@@ -165,6 +181,7 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
 }
 
 void AUHALStream::Stop() {
+  deferred_start_cb_.Cancel();
   if (stopped_)
     return;
 

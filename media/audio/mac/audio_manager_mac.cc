@@ -11,7 +11,10 @@
 #include "base/command_line.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_checker.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/mac/audio_auhal_mac.h"
 #include "media/audio/mac/audio_input_mac.h"
@@ -219,6 +222,54 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
 
   return audio_device_id;
 }
+
+class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
+ public:
+  AudioPowerObserver()
+      : is_suspending_(false),
+        is_monitoring_(base::PowerMonitor::Get()) {
+    // The PowerMonitor requires signifcant setup (a CFRunLoop and preallocated
+    // IO ports) so it's not available under unit tests.  See the OSX impl of
+    // base::PowerMonitorDeviceSource for more details.
+    if (!is_monitoring_)
+      return;
+    base::PowerMonitor::Get()->AddObserver(this);
+  }
+
+  virtual ~AudioPowerObserver() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (!is_monitoring_)
+      return;
+    base::PowerMonitor::Get()->RemoveObserver(this);
+  }
+
+  bool ShouldDeferOutputStreamStart() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    // Start() should be deferred if the system is in the middle of a suspend or
+    // has recently started the process of resuming.
+    return is_suspending_ || base::TimeTicks::Now() < earliest_start_time_;
+  }
+
+ private:
+  virtual void OnSuspend() OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    is_suspending_ = true;
+  }
+
+  virtual void OnResume() OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    is_suspending_ = false;
+    earliest_start_time_ = base::TimeTicks::Now() +
+        base::TimeDelta::FromSeconds(kStartDelayInSecsForPowerEvents);
+  }
+
+  bool is_suspending_;
+  const bool is_monitoring_;
+  base::TimeTicks earliest_start_time_;
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioPowerObserver);
+};
 
 AudioManagerMac::AudioManagerMac(AudioLogFactory* audio_log_factory)
     : AudioManagerBase(audio_log_factory),
@@ -701,11 +752,13 @@ void AudioManagerMac::CreateDeviceListener() {
 
   output_device_listener_.reset(new AudioDeviceListenerMac(base::Bind(
       &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))));
+  power_observer_.reset(new AudioPowerObserver());
 }
 
 void AudioManagerMac::DestroyDeviceListener() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   output_device_listener_.reset();
+  power_observer_.reset();
 }
 
 void AudioManagerMac::HandleDeviceChanges() {
@@ -743,6 +796,11 @@ int AudioManagerMac::ChooseBufferSize(int output_sample_rate) {
   }
 
   return buffer_size;
+}
+
+bool AudioManagerMac::ShouldDeferOutputStreamStart() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return power_observer_->ShouldDeferOutputStreamStart();
 }
 
 AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {

@@ -43,7 +43,10 @@ class AUHALStreamTest : public testing::Test {
  public:
   AUHALStreamTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
-        manager_(AudioManager::CreateForTesting()) {}
+        manager_(AudioManager::CreateForTesting()) {
+    // Wait for the AudioManager to finish any initialization on the audio loop.
+    base::RunLoop().RunUntilIdle();
+  }
 
   virtual ~AUHALStreamTest() {
     base::RunLoop().RunUntilIdle();
