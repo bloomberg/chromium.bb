@@ -23,7 +23,7 @@ class CastStreamingApiTest : public ExtensionApiTest {
 // Test running the test extension for Cast Mirroring API.
 // Should be re-enabled once Cast send-side refactoring is complete.
 // crbug.com/335591
-IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, DISABLE_Basics) {
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, DISABLED_Basics) {
   ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "basics.html"));
 }
 
