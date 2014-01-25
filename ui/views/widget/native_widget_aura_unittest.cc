@@ -272,6 +272,39 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   widget->Close();
 }
 
+TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
+  GestureTrackingView* view = new GestureTrackingView();
+  scoped_ptr<TestWidget> widget(new TestWidget());
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.context = root_window();
+  params.bounds = gfx::Rect(0, 0, 100, 200);
+  widget->Init(params);
+  widget->SetContentsView(view);
+  widget->Show();
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), 1,
+                           base::TimeDelta());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_TRUE(view->got_gesture_event());
+  view->clear_got_gesture_event();
+  // Set the capture.
+  widget->SetCapture(view);
+  EXPECT_TRUE(widget->HasCapture());
+
+  // Generate a release, this should trigger releasing capture.
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(41, 51), 1,
+                             base::TimeDelta());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
+  EXPECT_TRUE(view->got_gesture_event());
+  view->clear_got_gesture_event();
+  EXPECT_FALSE(widget->HasCapture());
+
+  // Work around for bug in NativeWidgetAura.
+  // TODO: fix bug and remove this.
+  widget->Close();
+}
+
 // Verifies views with layers are targeted for events properly.
 TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   // Create two widgets: |parent| and |child|. |child| is a child of |parent|.

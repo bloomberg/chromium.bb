@@ -565,10 +565,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   EXPECT_EQ("1 0", IDString(model));
   EXPECT_FALSE(TabDragController::IsActive());
   EXPECT_FALSE(tab_strip->IsDragSessionActive());
-
-  // The tab strip should no longer have capture because the drag was ended and
-  // mouse/touch was released.
-  EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
 }
 
 namespace {
@@ -626,7 +622,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_TRUE(TabDragController::IsActive());
   EXPECT_FALSE(GetIsDragged(browser()));
 
-  // Release mouse or touch, stopping the drag session.
+  // Release the mouse, stopping the drag session.
   ASSERT_TRUE(ReleaseInput());
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
@@ -638,11 +634,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Both windows should not be maximized
   EXPECT_FALSE(browser()->window()->IsMaximized());
   EXPECT_FALSE(browser2->window()->IsMaximized());
-
-  // The tab strip should no longer have capture because the drag was ended and
-  // mouse/touch was released.
-  EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
-  EXPECT_FALSE(tab_strip2->GetWidget()->HasCapture());
 }
 
 namespace {
@@ -725,11 +716,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Both windows should not be maximized
   EXPECT_FALSE(browser()->window()->IsMaximized());
   EXPECT_FALSE(new_browser->window()->IsMaximized());
-
-  // The tab strip should no longer have capture because the drag was ended and
-  // mouse/touch was released.
-  EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
-  EXPECT_FALSE(tab_strip2->GetWidget()->HasCapture());
 }
 
 #if defined(OS_CHROMEOS)
@@ -989,10 +975,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   // Remaining browser window should not be maximized
   EXPECT_FALSE(browser()->window()->IsMaximized());
-
-  // The tab strip should no longer have capture because the drag was ended and
-  // mouse/touch was released.
-  EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
 }
 
 namespace {

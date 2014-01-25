@@ -1148,11 +1148,16 @@ void TabStrip::MaybeStartDrag(
     move_behavior = TabDragController::MOVE_VISIBILE_TABS;
   }
 
+  views::Widget* widget = GetWidget();
 #if defined(OS_WIN)
   // It doesn't make sense to drag tabs out on Win8's single window Metro mode.
   if (win8::IsSingleWindowMetroMode())
     detach_behavior = TabDragController::NOT_DETACHABLE;
 #endif
+  // Gestures don't automatically do a capture. We don't allow multiple drags at
+  // the same time, so we explicitly capture.
+  if (event.type() == ui::ET_GESTURE_BEGIN)
+    widget->SetCapture(this);
   drag_controller_.reset(new TabDragController);
   drag_controller_->Init(
       this, tab, tabs, gfx::Point(x, y), event.x(), selection_model,
