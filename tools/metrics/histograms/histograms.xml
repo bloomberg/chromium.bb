@@ -9413,9 +9413,6 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.QuicSession.Connect" units="RTTs">
-  <obsolete>
-    see Net.QuicSession.Connect*PortForHTTP*
-  </obsolete>
   <summary>
     Samples of the number of round-trips needed by a QUIC connection before a
     request could be sent by the client.
