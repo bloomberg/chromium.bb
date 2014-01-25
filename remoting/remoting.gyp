@@ -194,7 +194,6 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             'remoting_base',
-            'remoting_jingle_glue',
             'remoting_protocol',
             'remoting_resources',
             '../crypto/crypto.gyp:crypto',
@@ -220,6 +219,8 @@
             'host/audio_silence_detector.h',
             'host/basic_desktop_environment.cc',
             'host/basic_desktop_environment.h',
+            'host/branding.cc',
+            'host/branding.h',
             'host/capture_scheduler.cc',
             'host/capture_scheduler.h',
             'host/chromoting_host.cc',
@@ -248,9 +249,20 @@
             'host/continue_window_gtk.cc',
             'host/continue_window_mac.mm',
             'host/continue_window_win.cc',
+            'host/daemon_process.cc',
+            'host/daemon_process.h',
+            'host/daemon_process_win.cc',
             'host/desktop_environment.h',
+            'host/desktop_process.cc',
+            'host/desktop_process.h',
             'host/desktop_resizer.h',
             'host/desktop_resizer_linux.cc',
+            'host/desktop_session.cc',
+            'host/desktop_session.h',
+            'host/desktop_session_agent.cc',
+            'host/desktop_session_agent.h',
+            'host/desktop_session_win.cc',
+            'host/desktop_session_win.h',
             'host/desktop_resizer_mac.cc',
             'host/desktop_resizer_win.cc',
             'host/desktop_session_connector.h',
@@ -273,8 +285,12 @@
             'host/host_change_notification_listener.h',
             'host/host_config.cc',
             'host/host_config.h',
+            'host/host_event_logger.h',
+            'host/host_event_logger_posix.cc',
+            'host/host_event_logger_win.cc',
             'host/host_exit_codes.cc',
             'host/host_exit_codes.h',
+            'host/host_export.h',
             'host/host_secret.cc',
             'host/host_secret.h',
             'host/host_status_monitor.h',
@@ -323,6 +339,9 @@
             'host/local_input_monitor_win.cc',
             'host/log_to_server.cc',
             'host/log_to_server.h',
+            'host/logging.h',
+            'host/logging_posix.cc',
+            'host/logging_win.cc',
             'host/me2me_desktop_environment.cc',
             'host/me2me_desktop_environment.h',
             'host/mouse_clamping_filter.cc',
@@ -440,6 +459,7 @@
               ],
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox',
+                'remoting_host_messages',
               ],
               'msvs_settings': {
                 'VCCLCompilerTool': {
@@ -448,6 +468,39 @@
                   'AdditionalOptions': ['/MP1'],
                 },
               },
+              'variables': {
+                'output_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/host',
+              },
+              'sources': [
+                '<(output_dir)/remoting_host_messages.mc',
+              ],
+              'include_dirs': [
+                '<(output_dir)',
+              ],
+              'direct_dependent_settings': {
+                'include_dirs': [
+                  '<(output_dir)',
+                ],
+              },
+              'rules': [{
+                # Rule to run the message compiler.
+                'rule_name': 'message_compiler',
+                'extension': 'mc',
+                'inputs': [ '<(RULE_INPUT_PATH)' ],
+                'outputs': [
+                  '<(output_dir)/<(RULE_INPUT_ROOT).h',
+                  '<(output_dir)/<(RULE_INPUT_ROOT).rc',
+                ],
+                'action': [
+                  'mc.exe',
+                  '-h', '<(output_dir)',
+                  '-r', '<(output_dir)/.',
+                  '-u',
+                  '<(RULE_INPUT_PATH)',
+                ],
+                'process_outputs_as_sources': 1,
+                'message': 'Running message compiler on <(RULE_INPUT_PATH)',
+              }],
             }],
           ],
         },  # end of target 'remoting_host'
@@ -481,9 +534,7 @@
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
-            'remoting_host_event_logger',
-            'remoting_host_logging',
-            'remoting_jingle_glue',
+            'remoting_protocol',
           ],
           'defines': [
             'VERSION=<(version_full)',
@@ -570,12 +621,10 @@
             '../third_party/npapi/npapi.gyp:npapi',
             'remoting_base',
             'remoting_host',
-            'remoting_host_event_logger',
-            'remoting_host_logging',
             'remoting_host_setup_base',
             'remoting_infoplist_strings',
             'remoting_it2me_host_static',
-            'remoting_jingle_glue',
+            'remoting_protocol',
             'remoting_resources',
           ],
           'sources': [
@@ -666,10 +715,8 @@
             '../net/net.gyp:net',
             'remoting_base',
             'remoting_host',
-            'remoting_host_event_logger',
-            'remoting_host_logging',
             'remoting_infoplist_strings',
-            'remoting_jingle_glue',
+            'remoting_protocol',
             'remoting_resources',
           ],
           'defines': [
@@ -690,9 +737,9 @@
             '../base/base.gyp:base',
             'remoting_base',
             'remoting_host',
-            'remoting_jingle_glue',
             'remoting_it2me_host_static',
             'remoting_native_messaging_base',
+            'remoting_protocol',
           ],
           'sources': [
             'host/it2me/it2me_native_messaging_host_main.cc',
@@ -798,7 +845,7 @@
       ],  # end of 'targets'
     }],  # 'enable_remoting_host==1'
 
-    ['OS=="linux" and branding=="Chrome" and chromeos==0', {
+    ['OS=="linux" and branding=="Chrome" and enable_remoting_host==1', {
       'variables': {
         'build_deb_script': 'host/installer/linux/build-deb.sh',
         'deb_filename': 'host/installer/<!(["<(build_deb_script)", "-p", "-s", "<(DEPTH)"])',
@@ -868,7 +915,7 @@
           ],
         },
       ],
-    }],  # OS=="linux" and branding=="Chrome" and chromeos==0
+    }],  # OS=="linux" and branding=="Chrome"
 
     ['OS!="win" and enable_remoting_host==1', {
       'targets': [
@@ -884,12 +931,9 @@
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
-            'remoting_host_event_logger',
-            'remoting_host_logging',
-            'remoting_host_setup_base',
             'remoting_infoplist_strings',
-            'remoting_jingle_glue',
             'remoting_me2me_host_static',
+            'remoting_protocol',
           ],
           'defines': [
             'VERSION=<(version_full)',
@@ -973,7 +1017,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             'remoting_host',
-            'remoting_host_logging',
             'remoting_host_setup_base',
             'remoting_native_messaging_base',
           ],
@@ -989,10 +1032,9 @@
           ],
         },  # end of target 'remoting_me2me_native_messaging_host'
       ],  # end of 'targets'
-    }],  # 'OS!="win" and enable_remoting_host==1'
+    }],  # OS!="win"
 
-
-    ['OS=="linux" and chromeos==0 and enable_remoting_host==1', {
+    ['OS=="linux" and enable_remoting_host==1', {
       'targets': [
         # Linux breakpad processing
         {
@@ -1268,7 +1310,7 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
-            'remoting_host_logging',
+            'remoting_host',
           ],
           'sources': [
             'tools/breakpad_tester_win.cc',
@@ -1304,8 +1346,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.idl',
               ],
               'action': [
-                'python',
-                '<(version_py_path)',
+                'python', '<(version_py_path)',
                 '-e', "DAEMON_CONTROLLER_CLSID='<(daemon_controller_clsid)'",
                 '-e', "RDP_DESKTOP_SESSION_CLSID='<(rdp_desktop_session_clsid)'",
                 '<(RULE_INPUT_PATH)',
@@ -1428,8 +1469,6 @@
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
-            'remoting_host_event_logger',
-            'remoting_host_logging',
             'remoting_host_setup_base',
             'remoting_lib_idl',
             'remoting_lib_ps',
@@ -1444,26 +1483,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
-            'host/chromoting_messages.cc',
-            'host/chromoting_messages.h',
-            'host/config_file_watcher.cc',
-            'host/config_file_watcher.h',
-            'host/config_watcher.h',
-            'host/daemon_process.cc',
-            'host/daemon_process.h',
-            'host/daemon_process_win.cc',
-            'host/desktop_process.cc',
-            'host/desktop_process.h',
             'host/desktop_process_main.cc',
-            'host/desktop_session.cc',
-            'host/desktop_session.h',
-            'host/desktop_session_agent.cc',
-            'host/desktop_session_agent.h',
-            'host/desktop_session_win.cc',
-            'host/desktop_session_win.h',
-            'host/host_exit_codes.h',
-            'host/host_exit_codes.cc',
-            'host/host_export.h',
             'host/host_main.cc',
             'host/host_main.h',
             'host/ipc_constants.cc',
@@ -1847,20 +1867,20 @@
         'HAVE_STDINT_H',  # Required by on2_integer.h
       ],
       'dependencies': [
-        'remoting_base',
-        'remoting_client',
-        'remoting_jingle_glue',
         '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/events/events.gyp:dom4_keycode_converter',
+        'remoting_base',
+        'remoting_client',
+        'remoting_protocol',
       ],
       'sources': [
         'client/plugin/chromoting_instance.cc',
         'client/plugin/chromoting_instance.h',
-        'client/plugin/normalizing_input_filter.cc',
         'client/plugin/delegating_signal_strategy.cc',
         'client/plugin/delegating_signal_strategy.h',
+        'client/plugin/normalizing_input_filter.cc',
         'client/plugin/normalizing_input_filter.h',
         'client/plugin/normalizing_input_filter_cros.cc',
         'client/plugin/normalizing_input_filter_mac.cc',
@@ -1886,66 +1906,13 @@
         'client/plugin/pepper_view.h',
       ],
       'conditions' : [
-        [ '(OS!="linux" or chromeos==0)', {
+        [ 'chromeos==0', {
           'sources!': [
             'client/plugin/normalizing_input_filter_cros.cc',
           ],
         }],
       ],
     },  # end of target 'remoting_client_plugin'
-    {
-      'target_name': 'remoting_host_event_logger',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        'remoting_base',
-      ],
-      'sources': [
-        'host/host_event_logger.h',
-        'host/host_event_logger_posix.cc',
-        'host/host_event_logger_win.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            'remoting_host_messages',
-          ],
-          'output_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/host',
-          'sources': [
-            '<(_output_dir)/remoting_host_messages.mc',
-          ],
-          'include_dirs': [
-            '<(_output_dir)',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(_output_dir)',
-            ],
-          },
-          'rules': [
-            # Rule to run the message compiler.
-            {
-              'rule_name': 'message_compiler',
-              'extension': 'mc',
-              'inputs': [ ],
-              'outputs': [
-                '<(_output_dir)/remoting_host_messages.h',
-                '<(_output_dir)/remoting_host_messages.rc',
-              ],
-              'action': [
-                'mc.exe',
-                '-h', '<(_output_dir)',
-                '-r', '<(_output_dir)/.',
-                '-u',
-                '<(RULE_INPUT_PATH)',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Running message compiler on <(RULE_INPUT_PATH)',
-            },
-          ],
-        }],
-      ],  # end of 'conditions'
-    },  # end of target 'remoting_host_event_logger'
 
     {
       'target_name': 'remoting_webapp',
@@ -2142,8 +2109,7 @@
             '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(copy_output_dir) <(remoting_locales))'
           ],
           'action': [
-            'python',
-            'tools/build/remoting_copy_locales.py',
+            'python', 'tools/build/remoting_copy_locales.py',
             '-p', '<(OS)',
             '-g', '<(grit_out_dir)',
             '-x', '<(copy_output_dir)/.',
@@ -2171,7 +2137,6 @@
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
-        'remoting_jingle_glue',
         'remoting_resources',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
@@ -2247,28 +2212,11 @@
     },  # end of target 'remoting_base'
 
     {
-      'target_name': 'remoting_host_logging',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'host/branding.cc',
-        'host/branding.h',
-        'host/logging.h',
-        'host/logging_posix.cc',
-        'host/logging_win.cc',
-      ],
-    },  # end of target 'remoting_host_logging'
-
-    {
       'target_name': 'remoting_client',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'remoting_base',
-        'remoting_jingle_glue',
         'remoting_protocol',
         '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
@@ -2300,14 +2248,17 @@
     },  # end of target 'remoting_client'
 
     {
-      'target_name': 'remoting_jingle_glue',
+      'target_name': 'remoting_protocol',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '../base/base.gyp:base',
+        '../crypto/crypto.gyp:crypto',
         '../jingle/jingle.gyp:jingle_glue',
         '../jingle/jingle.gyp:notifier',
+        '../net/net.gyp:net',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        'remoting_base',
       ],
       'export_dependent_settings': [
         '../third_party/libjingle/libjingle.gyp:libjingle',
@@ -2325,24 +2276,6 @@
         'jingle_glue/signal_strategy.h',
         'jingle_glue/xmpp_signal_strategy.cc',
         'jingle_glue/xmpp_signal_strategy.h',
-      ],
-    },  # end of target 'remoting_jingle_glue'
-
-    {
-      'target_name': 'remoting_protocol',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        'remoting_base',
-        'remoting_jingle_glue',
-        '../crypto/crypto.gyp:crypto',
-        '../jingle/jingle.gyp:jingle_glue',
-        '../net/net.gyp:net',
-      ],
-      'export_dependent_settings': [
-        'remoting_jingle_glue',
-      ],
-      'sources': [
         'protocol/audio_reader.cc',
         'protocol/audio_reader.h',
         'protocol/audio_stub.h',
@@ -2466,6 +2399,7 @@
         '../ppapi/ppapi.gyp:ppapi_cpp',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
@@ -2474,14 +2408,11 @@
         'remoting_client',
         'remoting_client_plugin',
         'remoting_host',
-        'remoting_host_event_logger',
         'remoting_host_setup_base',
         'remoting_it2me_host_static',
-        'remoting_jingle_glue',
         'remoting_native_messaging_base',
         'remoting_protocol',
         'remoting_resources',
-        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
       ],
       'defines': [
         'VERSION=<(version_full)',
@@ -2522,23 +2453,14 @@
         'host/chromoting_host_unittest.cc',
         'host/client_session_unittest.cc',
         'host/config_file_watcher_unittest.cc',
-        'host/daemon_process.cc',
-        'host/daemon_process.h',
         'host/daemon_process_unittest.cc',
-        'host/desktop_process.cc',
-        'host/desktop_process.h',
         'host/desktop_process_unittest.cc',
-        'host/desktop_session.cc',
-        'host/desktop_session.h',
         'host/desktop_shape_tracker_unittest.cc',
-        'host/desktop_session_agent.cc',
-        'host/desktop_session_agent.h',
         'host/heartbeat_sender_unittest.cc',
-        'host/host_status_sender_unittest.cc',
         'host/host_change_notification_listener_unittest.cc',
         'host/host_mock_objects.cc',
-        'host/host_mock_objects.h',
         'host/host_status_monitor_fake.h',
+        'host/host_status_sender_unittest.cc',
         'host/ipc_desktop_environment_unittest.cc',
         'host/it2me/it2me_native_messaging_host_unittest.cc',
         'host/json_host_config_unittest.cc',
@@ -2662,12 +2584,12 @@
             'remoting_client_plugin',
           ],
         }],
-        ['OS=="android" and gtest_target_type=="shared_library"', {
+        [ 'OS=="android" and gtest_target_type=="shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
-        [ '(OS!="linux" or chromeos==0)', {
+        [ 'chromeos==0', {
           'sources!': [
             'client/plugin/normalizing_input_filter_cros_unittest.cc',
           ],

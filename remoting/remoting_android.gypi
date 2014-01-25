@@ -24,7 +24,6 @@
           'dependencies': [
             'remoting_base',
             'remoting_client',
-            'remoting_jingle_glue',
             'remoting_jni_headers',
             'remoting_protocol',
             '../google_apis/google_apis.gyp:google_apis',
