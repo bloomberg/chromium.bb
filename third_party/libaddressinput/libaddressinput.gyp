@@ -122,6 +122,7 @@
         'chromium/chrome_storage_impl_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/address_data_test.cc',
         '<(libaddressinput_dir)/cpp/test/address_ui_test.cc',
+        '<(libaddressinput_dir)/cpp/test/address_validator_test.cc',
         '<(libaddressinput_dir)/cpp/test/country_rules_aggregator_test.cc',
         '<(libaddressinput_dir)/cpp/test/fake_downloader.cc',
         '<(libaddressinput_dir)/cpp/test/fake_downloader.h',

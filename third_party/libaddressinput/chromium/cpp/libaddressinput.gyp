@@ -62,6 +62,7 @@
       'sources': [
         'test/address_data_test.cc',
         'test/address_ui_test.cc',
+        'test/address_validator_test.cc',
         'test/country_rules_aggregator_test.cc',
         'test/fake_downloader.cc',
         'test/fake_downloader_test.cc',

@@ -37,8 +37,11 @@ typedef std::multimap<AddressField, AddressProblem::Type> AddressProblemFilter;
 // Validates an AddressData structure. Sample usage:
 //    class MyClass : public LoadRulesDelegate {
 //     public:
-//      MyClass() : validator_(new MyDownloader, new MyStorage, this) {
-//        validator_.LoadRules("US");
+//      MyClass() : validator_(AddressValidator::Build(
+//                      scoped_ptr<Downloader>(new MyDownloader),
+//                      scoped_ptr<Storage>(new MyStorage),
+//                      this)) {
+//        validator_->LoadRules("US");
 //      }
 //
 //      virtual ~MyClass() {}
@@ -56,14 +59,14 @@ typedef std::multimap<AddressField, AddressProblem::Type> AddressProblemFilter;
 //        AddressProblems problems;
 //        AddressProblemFilter filter;
 //        AddressValidator::Status status =
-//            validator_.ValidateAddress(address, filter, &problems);
+//            validator_->ValidateAddress(address, filter, &problems);
 //        if (status == AddressValidator::SUCCESS) {
 //          Process(problems);
 //        }
 //      }
 //
 //     private:
-//      AddressValidator validator_;
+//      scoped_ptr<AddressValidator> validator_;
 //    };
 class AddressValidator {
  public:

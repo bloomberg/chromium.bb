@@ -61,6 +61,18 @@ bool FilterAllows(const AddressProblemFilter& filter,
   return false;
 }
 
+// Returns |true| if the |street_address| is empty or contains only empty
+// strings.
+bool IsEmptyStreetAddress(const std::vector<std::string>& street_address) {
+  for (std::vector<std::string>::const_iterator it = street_address.begin();
+       it != street_address.end(); ++it) {
+    if (!it->empty()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Validates AddressData structure.
 class AddressValidatorImpl : public AddressValidator {
  public:
@@ -115,7 +127,10 @@ class AddressValidatorImpl : public AddressValidator {
              field_it = country_rule.GetRequired().begin();
          field_it != country_rule.GetRequired().end();
          ++field_it) {
-      if (address.GetFieldValue(*field_it).empty() &&
+      bool field_empty = *field_it != STREET_ADDRESS
+          ? address.GetFieldValue(*field_it).empty()
+          : IsEmptyStreetAddress(address.address_lines);
+      if (field_empty &&
           FilterAllows(
               filter, *field_it, AddressProblem::MISSING_REQUIRED_FIELD)) {
         problems->push_back(AddressProblem(
