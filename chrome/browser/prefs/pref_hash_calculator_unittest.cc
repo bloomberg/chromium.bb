@@ -86,12 +86,27 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   scoped_ptr<base::Value> string_value(base::Value::CreateStringValue(
       "testing with special chars:\n<>{}:^^@#$\\/"));
 
-  // A dictionary with an empty dictionary and an empty list in it.
+  // For legacy reasons, we have to support pruning of empty lists/dictionaries
+  // and nested empty ists/dicts in the hash generation algorithm.
+  scoped_ptr<base::DictionaryValue> nested_empty_dict(
+      new base::DictionaryValue);
+  nested_empty_dict->Set("a", new base::DictionaryValue);
+  nested_empty_dict->Set("b", new base::ListValue);
+  scoped_ptr<base::ListValue> nested_empty_list(
+      new base::ListValue);
+  nested_empty_list->Append(new base::DictionaryValue);
+  nested_empty_list->Append(new base::ListValue);
+  nested_empty_list->Append(nested_empty_dict->DeepCopy());
+
+  // A dictionary with an empty dictionary, an empty list, and nested empty
+  // dictionaries/lists in it.
   scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue);
   dict_value->Set("a", new base::StringValue("foo"));
   dict_value->Set("d", new base::ListValue);
   dict_value->Set("b", new base::DictionaryValue);
   dict_value->Set("c", new base::StringValue("baz"));
+  dict_value->Set("e", nested_empty_dict.release());
+  dict_value->Set("f", nested_empty_list.release());
 
   scoped_ptr<base::ListValue> list_value(new base::ListValue);
   list_value->AppendBoolean(true);
