@@ -6,11 +6,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 
 // Declare notification names from the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -49,7 +51,10 @@ suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
            object:nil
 suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
 
-  if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)]) {
+  // In single-process mode, renderers will catch these notifications
+  // themselves and listening for them here may trigger the DCHECK in Observe().
+  if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)] &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(behaviorPrefsChanged:)
