@@ -311,6 +311,11 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
 }
 
 void ShelfLayoutManager::UpdateVisibilityState() {
+  // Bail out early when there is no |workspace_controller_|, which happens
+  // during shutdown after PrepareForShutdown.
+  if (!workspace_controller_)
+    return;
+
   if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
     SetState(SHELF_VISIBLE);
   } else {
