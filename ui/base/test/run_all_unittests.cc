@@ -1,11 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/test/test_suite.h"
-
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -21,12 +22,25 @@
 #include "base/mac/bundle_locations.h"
 #endif
 
-namespace ui {
-namespace test {
+namespace {
 
-UITestSuite::UITestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+class UIBaseTestSuite : public base::TestSuite {
+ public:
+  UIBaseTestSuite(int argc, char** argv);
 
-void UITestSuite::Initialize() {
+ protected:
+  // base::TestSuite:
+  virtual void Initialize() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UIBaseTestSuite);
+};
+
+UIBaseTestSuite::UIBaseTestSuite(int argc, char** argv)
+    : base::TestSuite(argc, argv) {}
+
+void UIBaseTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
 #if defined(OS_ANDROID)
@@ -61,7 +75,7 @@ void UITestSuite::Initialize() {
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 }
 
-void UITestSuite::Shutdown() {
+void UIBaseTestSuite::Shutdown() {
   ui::ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -70,5 +84,13 @@ void UITestSuite::Shutdown() {
   base::TestSuite::Shutdown();
 }
 
-}  // namespace test
-}  // namespace ui
+}  // namespace
+
+int main(int argc, char** argv) {
+  UIBaseTestSuite test_suite(argc, argv);
+
+  return base::LaunchUnitTests(argc,
+                               argv,
+                               base::Bind(&UIBaseTestSuite::Run,
+                                          base::Unretained(&test_suite)));
+}

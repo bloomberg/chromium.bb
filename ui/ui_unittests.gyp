@@ -61,26 +61,12 @@
       ],
     },
     {
-      'target_name': 'run_ui_unittests',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../chrome/chrome_resources.gyp:packed_resources',
-        'ui.gyp:ui',
-      ],
-      'sources': [
-        'test/test_suite.cc',
-        'test/test_suite.h',
-        'test/run_all_unittests.cc',
-      ],
-    },
-    {
       'target_name': 'ui_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../chrome/chrome_resources.gyp:packed_resources',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -93,7 +79,6 @@
         'gfx/gfx.gyp:gfx_geometry_unittests',
         'gfx/gfx.gyp:gfx_test_support',
         'resources/ui_resources.gyp:ui_resources',
-        'run_ui_unittests',
         'shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         'ui.gyp:ui',
         'ui_test_support',
@@ -110,6 +95,7 @@
         'base/resource/data_pack_literal.cc',
         'base/resource/data_pack_unittest.cc',
         'base/resource/resource_bundle_unittest.cc',
+        'base/test/run_all_unittests.cc',
         'gfx/animation/animation_container_unittest.cc',
         'gfx/animation/animation_unittest.cc',
         'gfx/animation/multi_animation_unittest.cc',
