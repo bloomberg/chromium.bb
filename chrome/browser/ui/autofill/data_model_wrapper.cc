@@ -94,8 +94,7 @@ bool DataModelWrapper::GetDisplayText(
   // The separator is locale-specific.
   std::string compact_separator =
       ::i18n::addressinput::GetCompactAddressLinesSeparator(
-          g_browser_process->GetApplicationLocale(),
-          address_data.country_code);
+          g_browser_process->GetApplicationLocale());
   *vertically_compact =
       base::UTF8ToUTF16(JoinString(lines, compact_separator)) +
           non_address_info;

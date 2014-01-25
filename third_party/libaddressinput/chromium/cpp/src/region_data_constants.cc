@@ -17,7 +17,8 @@
 //
 // https://code.google.com/p/libaddressinput/source/browse/trunk/java/src/com/android/i18n/addressinput/RegionDataConstants.java?r=137
 //
-// The language-to-script and country-to-script mapping is loosely based on:
+// The language-to-separator and country-to-language mapping is loosely based
+// on:
 //
 // http://unicode.org/cldr/trac/browser/tags/release-24/common/supplemental/supplementalData.xml
 
@@ -33,110 +34,6 @@ namespace i18n {
 namespace addressinput {
 
 namespace {
-
-enum Script {
-  ARAB,
-  HANG,
-  HANS,
-  HANT,
-  JPAN,
-  THAI,
-  OTHER
-};
-
-Script GetCountryScript(const std::string& country_code) {
-  if (country_code == "JP") {
-    return JPAN;
-  } else if (country_code == "HK" ||
-             country_code == "MO" ||
-             country_code == "TW") {
-    return HANT;
-  } else if (country_code == "CN") {
-    return HANS;
-  } else if (country_code == "AE" ||
-             country_code == "AF" ||
-             country_code == "BH" ||
-             country_code == "DZ" ||
-             country_code == "EG" ||
-             country_code == "EH" ||
-             country_code == "IQ" ||
-             country_code == "IR" ||
-             country_code == "JO" ||
-             country_code == "KM" ||
-             country_code == "KW" ||
-             country_code == "LB" ||
-             country_code == "LY" ||
-             country_code == "MA" ||
-             country_code == "MR" ||
-             country_code == "OM" ||
-             country_code == "PK" ||
-             country_code == "PS" ||
-             country_code == "QA" ||
-             country_code == "SA" ||
-             country_code == "SD" ||
-             country_code == "SY" ||
-             country_code == "TN" ||
-             country_code == "YE") {
-    return ARAB;
-  } else if (country_code == "KP" ||
-             country_code == "KR") {
-    return HANG;
-  } else if (country_code == "TH") {
-    return THAI;
-  }
-  return OTHER;
-}
-
-Script GetLanguageScript(const std::string& language_code) {
-  if (language_code == "ja") {
-    return JPAN;
-  } else if (language_code == "zh" ||
-             language_code == "zh-hant") {
-    return HANT;
-  } else if (language_code == "zh-hans") {
-    return HANS;
-  } else if (language_code == "ar" ||
-             language_code == "cjm" ||
-             language_code == "doi" ||
-             language_code == "fa" ||
-             language_code == "lah" ||
-             language_code == "prd" ||
-             language_code == "ps" ||
-             language_code == "swb" ||
-             language_code == "ug" ||
-             language_code == "ur") {
-    return ARAB;
-  } else if (language_code == "ko") {
-    return HANG;
-  } else if (language_code == "kdt" ||
-             language_code == "lcp" ||
-             language_code == "lwl" ||
-             language_code == "th" ||
-             language_code == "tts") {
-    return THAI;
-  }
-  return OTHER;
-}
-
-const std::string& GetCompactLineSeparator(Script script) {
-  static const std::string kEmptyString;
-  static const std::string kArabicSeparator =  "، ";
-  static const std::string kSpace = " ";
-  static const std::string kCommaAndSpace = ", ";
-  switch (script) {
-    case JPAN:
-    case HANT:
-    case HANS:
-      return kEmptyString;
-    case ARAB:
-      return kArabicSeparator;
-    case HANG:
-    case THAI:
-      return kSpace;
-    default:
-      return kCommaAndSpace;
-  }
-}
 
 std::map<std::string, std::string> InitRegionData() {
   std::map<std::string, std::string> region_data;
@@ -1309,13 +1206,35 @@ const std::string& RegionDataConstants::GetDefaultRegionData() {
 // static
 const std::string& RegionDataConstants::GetLanguageCompactLineSeparator(
     const std::string& language_code) {
-  return GetCompactLineSeparator(GetLanguageScript(language_code));
-}
-
-// static
-const std::string& RegionDataConstants::GetCountryCompactLineSeparator(
-    const std::string& country_code) {
-  return GetCompactLineSeparator(GetCountryScript(country_code));
+  static const std::string kEmptyString;
+  static const std::string kArabicSeparator =  "، ";
+  static const std::string kSpace = " ";
+  static const std::string kCommaAndSpace = ", ";
+  if (language_code == "ja" ||
+      language_code == "zh" ||
+      language_code == "zh-hant" ||
+      language_code == "zh-hans") {
+      return kEmptyString;
+  } else if (language_code == "ar" ||
+             language_code == "cjm" ||
+             language_code == "doi" ||
+             language_code == "fa" ||
+             language_code == "lah" ||
+             language_code == "prd" ||
+             language_code == "ps" ||
+             language_code == "swb" ||
+             language_code == "ug" ||
+             language_code == "ur") {
+    return kArabicSeparator;
+  } else if (language_code == "ko" ||
+             language_code == "kdt" ||
+             language_code == "lcp" ||
+             language_code == "lwl" ||
+             language_code == "th" ||
+             language_code == "tts") {
+    return kSpace;
+  }
+  return kCommaAndSpace;
 }
 
 }  // namespace addressinput

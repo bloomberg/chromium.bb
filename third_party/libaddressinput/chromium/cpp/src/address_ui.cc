@@ -17,7 +17,6 @@
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_ui_component.h>
 
-#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -132,29 +131,8 @@ std::vector<AddressField> GetRequiredFields(const std::string& region_code) {
 }
 
 const std::string& GetCompactAddressLinesSeparator(
-    const std::string& language_code,
-    const std::string& country_code) {
-  Rule rule;
-  rule.CopyFrom(Rule::GetDefault());
-  if (!rule.ParseSerializedRule(
-          RegionDataConstants::GetRegionData(country_code))) {
-    return RegionDataConstants::GetLanguageCompactLineSeparator(language_code);
-  }
-
-  std::vector<std::string>::const_iterator lang_it =
-      std::find(rule.GetLanguages().begin(),
-                rule.GetLanguages().end(),
-                language_code);
-  if (lang_it != rule.GetLanguages().end()) {
-    return RegionDataConstants::GetLanguageCompactLineSeparator(*lang_it);
-  }
-
-  if (!rule.GetLanguage().empty()) {
-    return RegionDataConstants::GetLanguageCompactLineSeparator(
-        rule.GetLanguage());
-  }
-
-  return RegionDataConstants::GetCountryCompactLineSeparator(country_code);
+    const std::string& language_code) {
+  return RegionDataConstants::GetLanguageCompactLineSeparator(language_code);
 }
 
 }  // namespace addressinput

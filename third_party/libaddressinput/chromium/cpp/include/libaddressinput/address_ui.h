@@ -37,10 +37,10 @@ std::vector<AddressUiComponent> BuildComponents(const std::string& region_code);
 std::vector<AddressField> GetRequiredFields(const std::string& region_code);
 
 // Returns the string to use as a separator between lines when displaying the
-// address in a compact form. For example, returns ", " for en-US.
+// address in a compact form for BCP 47 |language_code|. For example, returns
+// ", " for "en".
 const std::string& GetCompactAddressLinesSeparator(
-    const std::string& language_code,
-    const std::string& country_code);
+        const std::string& language_code);
 
 }  // namespace addressinput
 }  // namespace i18n

@@ -98,16 +98,13 @@ TEST_F(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
 
 struct SeparatorData {
   SeparatorData(const std::string& language_code,
-                const std::string& country_code,
                 const std::string& compact_line_separator)
       : language_code(language_code),
-        country_code(country_code),
         compact_line_separator(compact_line_separator) {}
 
   ~SeparatorData() {}
 
   std::string language_code;
-  std::string country_code;
   std::string compact_line_separator;
 };
 
@@ -117,22 +114,19 @@ class CompactLineSeparatorTest
 
 TEST_P(CompactLineSeparatorTest, BasicTest) {
   EXPECT_EQ(GetParam().compact_line_separator,
-            GetCompactAddressLinesSeparator(GetParam().language_code,
-                                            GetParam().country_code));
+            GetCompactAddressLinesSeparator(GetParam().language_code));
 }
 
 INSTANTIATE_TEST_CASE_P(
     CompactLineSeparators, CompactLineSeparatorTest,
     testing::Values(
-        SeparatorData("", "AD", ", "),
-        SeparatorData("", "XX", ", "),
-        SeparatorData("ja", "JP", ""),
-        SeparatorData("zh", "HK", ""),
-        SeparatorData("zh-hans", "CN", ""),
-        SeparatorData("ar", "YE", "، "),
-        SeparatorData("ko", "KR", " "),
-        SeparatorData("th", "TH", " "),
-        SeparatorData("en", "US", ", ")));
+        SeparatorData("ja", ""),
+        SeparatorData("zh", ""),
+        SeparatorData("zh-hans", ""),
+        SeparatorData("ar", "، "),
+        SeparatorData("ko", " "),
+        SeparatorData("th", " "),
+        SeparatorData("en", ", ")));
 
 
 }  // namespace

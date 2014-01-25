@@ -16,6 +16,7 @@
 
 #include <libaddressinput/address_field.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <string>
@@ -86,6 +87,29 @@ const std::string& AddressData::GetFieldValue(AddressField field) const {
       assert(false);
       return recipient;
   }
+}
+
+const std::string& AddressData::GuessLanguageCode() const {
+  Rule rule;
+  rule.CopyFrom(Rule::GetDefault());
+  if (!rule.ParseSerializedRule(
+          RegionDataConstants::GetRegionData(country_code))) {
+    return language_code;
+  }
+
+  std::vector<std::string>::const_iterator lang_it =
+      std::find(rule.GetLanguages().begin(),
+                rule.GetLanguages().end(),
+                language_code);
+  if (lang_it != rule.GetLanguages().end()) {
+    return *lang_it;
+  }
+
+  if (!rule.GetLanguage().empty()) {
+    return rule.GetLanguage();
+  }
+
+  return language_code;
 }
 
 }  // namespace addressinput

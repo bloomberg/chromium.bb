@@ -29,9 +29,6 @@ class RegionDataConstants {
 
   static const std::string& GetLanguageCompactLineSeparator(
       const std::string& language_code);
-
-  static const std::string& GetCountryCompactLineSeparator(
-      const std::string& country_code);
 };
 
 }  // namespace addressinput
