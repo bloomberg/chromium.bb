@@ -583,8 +583,9 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerProxyAuthOnSigninTest);
 };
 
+// Broken after turning on SAML. http://crbug.com/338087
 IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
-                       ProxyAuthDialogOnSigninScreen) {
+                       DISABLED_ProxyAuthDialogOnSigninScreen) {
   content::WindowedNotificationObserver auth_needed_waiter(
       chrome::NOTIFICATION_AUTH_NEEDED,
       content::NotificationService::AllSources());
