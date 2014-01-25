@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H_
-#define NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H_
+#ifndef NET_HTTP_DISK_CACHE_BASED_QUIC_SERVER_INFO_H_
+#define NET_HTTP_DISK_CACHE_BASED_QUIC_SERVER_INFO_H_
 
 #include <string>
 
@@ -12,27 +12,24 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/socket/ssl_host_info.h"
+#include "net/quic/crypto/quic_server_info.h"
 
 namespace net {
 
 class HttpCache;
 class IOBuffer;
-struct SSLConfig;
 
-// DiskCacheBasedSSLHostInfo fetches information about an SSL host from our
-// standard disk cache. Since the information is defined to be non-sensitive,
-// it's ok for us to keep it on disk.
-class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
-    : public SSLHostInfo,
+// DiskCacheBasedQuicServerInfo fetches information about a QUIC server from
+// our standard disk cache. Since the information is defined to be
+// non-sensitive, it's ok for us to keep it on disk.
+class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
+    : public QuicServerInfo,
       public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
-  DiskCacheBasedSSLHostInfo(const std::string& hostname,
-                            const SSLConfig& ssl_config,
-                            CertVerifier* cert_verifier,
-                            HttpCache* http_cache);
+  DiskCacheBasedQuicServerInfo(const std::string& hostname,
+                               HttpCache* http_cache);
 
-  // SSLHostInfo implementation.
+  // QuicServerInfo implementation.
   virtual void Start() OVERRIDE;
   virtual int WaitForDataReady(const CompletionCallback& callback) OVERRIDE;
   virtual void Persist() OVERRIDE;
@@ -55,7 +52,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
     NONE,
   };
 
-  virtual ~DiskCacheBasedSSLHostInfo();
+  virtual ~DiskCacheBasedQuicServerInfo();
 
   std::string key() const;
 
@@ -84,7 +81,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   // DoSetDone is the terminal state of the write operation.
   int DoSetDone();
 
-  base::WeakPtrFactory<DiskCacheBasedSSLHostInfo> weak_factory_;
+  base::WeakPtrFactory<DiskCacheBasedQuicServerInfo> weak_factory_;
   CacheOperationDataShim* data_shim_;  // Owned by |io_callback_|.
   CompletionCallback io_callback_;
   State state_;
@@ -103,4 +100,4 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
 
 }  // namespace net
 
-#endif  // NET_HTTP_DISK_CACHE_BASED_SSL_HOST_INFO_H_
+#endif  // NET_HTTP_DISK_CACHE_BASED_QUIC_SERVER_INFO_H_

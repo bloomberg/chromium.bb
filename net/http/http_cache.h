@@ -211,7 +211,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Types --------------------------------------------------------------------
 
   class MetadataWriter;
-  class SSLHostInfoFactoryAdaptor;
+  class QuicServerInfoFactoryAdaptor;
   class Transaction;
   class WorkItem;
   friend class Transaction;
@@ -382,7 +382,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
   Mode mode_;
 
-  const scoped_ptr<SSLHostInfoFactoryAdaptor> ssl_host_info_factory_;
+  const scoped_ptr<QuicServerInfoFactoryAdaptor> quic_server_info_factory_;
 
   const scoped_ptr<HttpTransactionFactory> network_layer_;
   scoped_ptr<disk_cache::Backend> disk_cache_;

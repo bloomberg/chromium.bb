@@ -61,7 +61,7 @@ HttpNetworkSession::Params::Params()
       transport_security_state(NULL),
       cert_transparency_verifier(NULL),
       proxy_service(NULL),
-      ssl_host_info_factory(NULL),
+      quic_server_info_factory(NULL),
       ssl_config_service(NULL),
       http_auth_handler_factory(NULL),
       network_delegate(NULL),

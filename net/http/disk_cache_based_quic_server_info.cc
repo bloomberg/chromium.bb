@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/disk_cache_based_ssl_host_info.h"
+#include "net/http/disk_cache_based_quic_server_info.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -18,11 +18,11 @@ namespace net {
 // Some APIs inside disk_cache take a handle that the caller must keep alive
 // until the API has finished its asynchronous execution.
 //
-// Unfortunately, DiskCacheBasedSSLHostInfo may be deleted before the
+// Unfortunately, DiskCacheBasedQuicServerInfo may be deleted before the
 // operation completes causing a use-after-free.
 //
 // This data shim struct is meant to provide a location for the disk_cache
-// APIs to write into even if the originating DiskCacheBasedSSLHostInfo
+// APIs to write into even if the originating DiskCacheBasedQuicServerInfo
 // object has been deleted.  The lifetime for instances of this struct
 // should be bound to the CompletionCallback that is passed to the disk_cache
 // API.  We do this by binding an instance of this struct to an unused
@@ -32,26 +32,24 @@ namespace net {
 // take a Callback to a mutator for setting the output value rather than
 // writing into a raw handle. Then the caller can just pass in a Callback
 // bound to WeakPtr for itself. This callback would correctly "no-op" itself
-// when the DiskCacheBasedSSLHostInfo object is deleted.
+// when the DiskCacheBasedQuicServerInfo object is deleted.
 //
 // TODO(ajwong): Change disk_cache's API to return results via Callback.
-struct DiskCacheBasedSSLHostInfo::CacheOperationDataShim {
+struct DiskCacheBasedQuicServerInfo::CacheOperationDataShim {
   CacheOperationDataShim() : backend(NULL), entry(NULL) {}
 
   disk_cache::Backend* backend;
   disk_cache::Entry* entry;
 };
 
-DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
+DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
     const std::string& hostname,
-    const SSLConfig& ssl_config,
-    CertVerifier* cert_verifier,
     HttpCache* http_cache)
-    : SSLHostInfo(hostname, ssl_config, cert_verifier),
+    : QuicServerInfo(hostname),
       weak_factory_(this),
       data_shim_(new CacheOperationDataShim()),
       io_callback_(
-          base::Bind(&DiskCacheBasedSSLHostInfo::OnIOComplete,
+          base::Bind(&DiskCacheBasedQuicServerInfo::OnIOComplete,
                      weak_factory_.GetWeakPtr(),
                      base::Owned(data_shim_))),  // Ownership assigned.
       state_(GET_BACKEND),
@@ -63,13 +61,13 @@ DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
       entry_(NULL) {
 }
 
-void DiskCacheBasedSSLHostInfo::Start() {
+void DiskCacheBasedQuicServerInfo::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(GET_BACKEND, state_);
   DoLoop(OK);
 }
 
-int DiskCacheBasedSSLHostInfo::WaitForDataReady(
+int DiskCacheBasedQuicServerInfo::WaitForDataReady(
     const CompletionCallback& callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(state_ != GET_BACKEND);
@@ -85,7 +83,7 @@ int DiskCacheBasedSSLHostInfo::WaitForDataReady(
   return ERR_IO_PENDING;
 }
 
-void DiskCacheBasedSSLHostInfo::Persist() {
+void DiskCacheBasedQuicServerInfo::Persist() {
   DCHECK(CalledOnValidThread());
   DCHECK(state_ != GET_BACKEND);
 
@@ -101,18 +99,18 @@ void DiskCacheBasedSSLHostInfo::Persist() {
   DoLoop(OK);
 }
 
-DiskCacheBasedSSLHostInfo::~DiskCacheBasedSSLHostInfo() {
+DiskCacheBasedQuicServerInfo::~DiskCacheBasedQuicServerInfo() {
   DCHECK(user_callback_.is_null());
   if (entry_)
     entry_->Close();
 }
 
-std::string DiskCacheBasedSSLHostInfo::key() const {
-  return "sslhostinfo:" + hostname_;
+std::string DiskCacheBasedQuicServerInfo::key() const {
+  return "quicserverinfo:" + hostname_;
 }
 
-void DiskCacheBasedSSLHostInfo::OnIOComplete(CacheOperationDataShim* unused,
-                                             int rv) {
+void DiskCacheBasedQuicServerInfo::OnIOComplete(CacheOperationDataShim* unused,
+                                                int rv) {
   rv = DoLoop(rv);
   if (rv != ERR_IO_PENDING && !user_callback_.is_null()) {
     CompletionCallback callback = user_callback_;
@@ -121,7 +119,7 @@ void DiskCacheBasedSSLHostInfo::OnIOComplete(CacheOperationDataShim* unused,
   }
 }
 
-int DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
+int DiskCacheBasedQuicServerInfo::DoLoop(int rv) {
   do {
     switch (state_) {
       case GET_BACKEND:
@@ -169,7 +167,7 @@ int DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
   return rv;
 }
 
-int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
+int DiskCacheBasedQuicServerInfo::DoGetBackendComplete(int rv) {
   if (rv == OK) {
     backend_ = data_shim_->backend;
     state_ = OPEN;
@@ -179,7 +177,7 @@ int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::DoOpenComplete(int rv) {
+int DiskCacheBasedQuicServerInfo::DoOpenComplete(int rv) {
   if (rv == OK) {
     entry_ = data_shim_->entry;
     state_ = READ;
@@ -191,7 +189,7 @@ int DiskCacheBasedSSLHostInfo::DoOpenComplete(int rv) {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::DoReadComplete(int rv) {
+int DiskCacheBasedQuicServerInfo::DoReadComplete(int rv) {
   if (rv > 0)
     data_.assign(read_buffer_->data(), rv);
 
@@ -199,12 +197,12 @@ int DiskCacheBasedSSLHostInfo::DoReadComplete(int rv) {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::DoWriteComplete(int rv) {
+int DiskCacheBasedQuicServerInfo::DoWriteComplete(int rv) {
   state_ = SET_DONE;
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::DoCreateOrOpenComplete(int rv) {
+int DiskCacheBasedQuicServerInfo::DoCreateOrOpenComplete(int rv) {
   if (rv != OK) {
     state_ = SET_DONE;
   } else {
@@ -214,17 +212,17 @@ int DiskCacheBasedSSLHostInfo::DoCreateOrOpenComplete(int rv) {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::DoGetBackend() {
+int DiskCacheBasedQuicServerInfo::DoGetBackend() {
   state_ = GET_BACKEND_COMPLETE;
   return http_cache_->GetBackend(&data_shim_->backend, io_callback_);
 }
 
-int DiskCacheBasedSSLHostInfo::DoOpen() {
+int DiskCacheBasedQuicServerInfo::DoOpen() {
   state_ = OPEN_COMPLETE;
   return backend_->OpenEntry(key(), &data_shim_->entry, io_callback_);
 }
 
-int DiskCacheBasedSSLHostInfo::DoRead() {
+int DiskCacheBasedQuicServerInfo::DoRead() {
   const int32 size = entry_->GetDataSize(0 /* index */);
   if (!size) {
     state_ = WAIT_FOR_DATA_READY_DONE;
@@ -237,7 +235,7 @@ int DiskCacheBasedSSLHostInfo::DoRead() {
       0 /* index */, 0 /* offset */, read_buffer_, size, io_callback_);
 }
 
-int DiskCacheBasedSSLHostInfo::DoWrite() {
+int DiskCacheBasedQuicServerInfo::DoWrite() {
   write_buffer_ = new IOBuffer(new_data_.size());
   memcpy(write_buffer_->data(), new_data_.data(), new_data_.size());
   state_ = WRITE_COMPLETE;
@@ -247,7 +245,7 @@ int DiskCacheBasedSSLHostInfo::DoWrite() {
       io_callback_, true /* truncate */);
 }
 
-int DiskCacheBasedSSLHostInfo::DoCreateOrOpen() {
+int DiskCacheBasedQuicServerInfo::DoCreateOrOpen() {
   DCHECK(entry_ == NULL);
   state_ = CREATE_OR_OPEN_COMPLETE;
   if (found_entry_) {
@@ -257,7 +255,7 @@ int DiskCacheBasedSSLHostInfo::DoCreateOrOpen() {
   return backend_->CreateEntry(key(), &data_shim_->entry, io_callback_);
 }
 
-int DiskCacheBasedSSLHostInfo::DoWaitForDataReadyDone() {
+int DiskCacheBasedQuicServerInfo::DoWaitForDataReadyDone() {
   DCHECK(!ready_);
   state_ = NONE;
   ready_ = true;
@@ -270,7 +268,7 @@ int DiskCacheBasedSSLHostInfo::DoWaitForDataReadyDone() {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::DoSetDone() {
+int DiskCacheBasedQuicServerInfo::DoSetDone() {
   if (entry_)
     entry_->Close();
   entry_ = NULL;
