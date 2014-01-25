@@ -2796,8 +2796,7 @@ bool Element::needsPseudoElement(PseudoId pseudoId, const RenderStyle& style) co
         return false;
     if (!renderer() || !pseudoElementRendererIsNeeded(&style))
         return false;
-    /* It's safe to have a backdrop since its renderer is always a child of RenderView. */
-    if (pseudoId != BACKDROP && !renderer()->canHaveGeneratedChildren())
+    if (!renderer()->canHaveGeneratedChildren())
         return false;
     return true;
 }

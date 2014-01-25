@@ -68,7 +68,6 @@ HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc
     , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
     , m_displayState(Playing)
-    , m_protectWidgetDuringReattach(0)
 {
     setHasCustomStyleCallbacks();
 }
@@ -117,19 +116,8 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 {
     HTMLFrameOwnerElement::attach(context);
 
-    if (m_protectWidgetDuringReattach) {
-        RenderEmbeddedObject* object = renderEmbeddedObject();
-        if (object && !needsWidgetUpdate()) {
-            object->setWidget(m_protectWidgetDuringReattach.get());
-            m_protectWidgetDuringReattach.clear();
-            return;
-        }
-        m_protectWidgetDuringReattach.clear();
-    }
-
     if (!renderer() || useFallbackContent())
         return;
-
     if (isImageType()) {
         if (!m_imageLoader)
             m_imageLoader = adoptPtr(new HTMLImageLoader(this));
@@ -158,11 +146,8 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 {
     // Update the widget the next time we attach (detaching destroys the plugin).
     // FIXME: None of this "needsWidgetUpdate" related code looks right.
-    if (context.performingReattach && renderEmbeddedObject() && !needsWidgetUpdate())
-        m_protectWidgetDuringReattach = pluginWidget();
-    else if (renderer() && !useFallbackContent())
+    if (renderer() && !useFallbackContent())
         setNeedsWidgetUpdate(true);
-
     if (m_isDelayingLoadEvent) {
         m_isDelayingLoadEvent = false;
         document().decrementLoadEventDelayCount();

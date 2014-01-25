@@ -467,6 +467,7 @@ crbug.com/243353 virtual/legacy-animations-engine/animations/animation-direction
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
+crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
@@ -679,11 +680,6 @@ crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.htm
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
-# This crashes on Mac and I have a patch with progressions for the expected
-# image on all platforms, but it's not expected to fix the crash
-# (crbug.com/331576). I'll have to manually rebaseline the expectations for
-# all platforms then restore the expected Crash line for Mac.
-Bug(falken) fullscreen/parent-flow-inline-with-block-child.html [ Pass ImageOnlyFailure Crash NeedsManualRebaseline ]
 
 crbug.com/308952 [ XP ] inspector/editor/text-editor-reveal-line.html [ Failure ]
 crbug.com/310992 virtual/legacy-animations-engine/animations/play-state.html [ Pass Failure ]
@@ -833,6 +829,8 @@ crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failure ]
 
 crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
+
+crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ Pass ImageOnlyFailure Crash ]
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure ]
 

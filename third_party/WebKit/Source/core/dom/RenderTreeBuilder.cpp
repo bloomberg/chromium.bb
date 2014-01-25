@@ -34,6 +34,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/rendering/FlowThreadController.h"
+#include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
@@ -230,6 +231,14 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
     RenderObject* nextRenderer = this->nextRenderer();
     element->setRenderer(newRenderer);
     newRenderer->setAnimatableStyle(&style); // setAnimatableStyle() can depend on renderer() already being set.
+
+    if (FullscreenElementStack::isActiveFullScreenElement(element)) {
+        newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, &element->document());
+        if (!newRenderer)
+            return;
+    }
+
+    // Note: Adding newRenderer instead of renderer(). renderer() may be a child of newRenderer.
     parentRenderer->addChild(newRenderer, nextRenderer);
 }
 
