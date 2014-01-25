@@ -119,12 +119,6 @@
       }, {
         'write_file_only_if_changed': '--write-file-only-if-changed 0',
       }],
-      ['OS=="mac"', {
-        # third_party/JSON is only necessary on Mac.
-        'json_perl_module_include_path': '-I<(DEPTH)/third_party/JSON/out/lib/perl5',
-      }, {
-        'json_perl_module_include_path': '',
-      }],
     ],
   },
 
@@ -156,6 +150,7 @@
          '<@(generated_global_constructors_idl_files)',
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
        ],
+       'msvs_cygwin_shell': 0,
        'action': [
          'python',
          'scripts/compute_dependencies.py',
@@ -240,6 +235,7 @@
           # Hook for embedders to specify extra directories to find IDL files.
           'extra_blink_generator_include_dirs%': [],
         },
+        'msvs_cygwin_shell': 0,
         # sanitize-win-build-log.sed uses a regex which matches this command
         # line (Perl script + .idl file being processed).
         # Update that regex if command line changes (other than changing flags)
@@ -248,7 +244,7 @@
           '-w',
           '-Iscripts',
           '-I../build/scripts',
-          '<@(json_perl_module_include_path)',
+          '-I<(DEPTH)/third_party/JSON/out/lib/perl5',
           'scripts/generate_bindings.pl',
           '--outputDir',
           '<(bindings_output_dir)',

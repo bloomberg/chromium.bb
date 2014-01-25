@@ -103,15 +103,8 @@ def main(args):
             if splitOptions:
                 options[definesIndex + 1] = ' '.join(splitOptions)
 
-    perl = 'perl'
-    if '--perl' in options:
-        perlIndex = options.index('--perl')
-        if perlIndex + 1 < len(options):
-            perl = options[perlIndex + 1].replace('/', '\\')
-            del options[perlIndex:perlIndex + 2]
-
     # Build up the command.
-    command = [perl]
+    command = ['perl']
     for includeDir in includeDirs:
         command.extend(['-I', includeDir])
     command.append(makeCssFileArrays)

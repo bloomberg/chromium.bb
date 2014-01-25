@@ -55,6 +55,7 @@
         '<@(_outputs)'
       ],
       'message': 'Generating <(output_file_path) from <(input_file_path)',
+      'msvs_cygwin_shell': 0,
     },
   ],
 
