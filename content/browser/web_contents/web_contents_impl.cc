@@ -2163,6 +2163,11 @@ void WebContentsImpl::OnDidFailLoadWithError(
     bool is_main_frame,
     int error_code,
     const base::string16& error_description) {
+  if (!render_view_message_source_) {
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD3"));
+    GetRenderProcessHost()->ReceivedBadMessage();
+    return;
+  }
   GURL validated_url(url);
   RenderProcessHost* render_process_host =
       render_view_message_source_->GetProcess();
