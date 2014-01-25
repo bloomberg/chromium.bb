@@ -66,19 +66,17 @@ const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif
 
-const gfx::Font& GetTitleFont() {
-  static gfx::Font* title_font = NULL;
-  if (!title_font) {
+const gfx::FontList& GetTitleFontList() {
+  static const gfx::FontList title_font_list =
 #if defined(USE_AURA)
-    title_font = new gfx::Font(NativeWidgetAura::GetWindowTitleFont());
+      NativeWidgetAura::GetWindowTitleFontList();
 #elif defined(OS_WIN)
-    title_font = new gfx::Font(NativeWidgetWin::GetWindowTitleFont());
+      NativeWidgetWin::GetWindowTitleFontList();
 #elif defined(OS_LINUX)
     // TODO(ben): need to resolve what font this is.
-    title_font = new gfx::Font();
+      gfx::FontList();
 #endif
-  }
-  return *title_font;
+  return title_font_list;
 }
 
 }  // namespace
@@ -303,7 +301,7 @@ int CustomFrameView::IconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  return std::max(GetTitleFont().GetHeight(), kIconMinimumSize);
+  return std::max(GetTitleFontList().GetHeight(), kIconMinimumSize);
 #endif
 }
 
@@ -393,10 +391,10 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   if (!delegate)
     return;
 
-  canvas->DrawStringInt(delegate->GetWindowTitle(), GetTitleFont(),
-                        SK_ColorWHITE, GetMirroredXForRect(title_bounds_),
-                        title_bounds_.y(), title_bounds_.width(),
-                        title_bounds_.height());
+  gfx::Rect rect = title_bounds_;
+  rect.set_x(GetMirroredXForRect(title_bounds_));
+  canvas->DrawStringRect(delegate->GetWindowTitle(), GetTitleFontList(),
+                         SK_ColorWHITE, rect);
 }
 
 void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -552,7 +550,7 @@ void CustomFrameView::LayoutTitleBar() {
   // The offset between the window left edge and the title text.
   int title_x = show_window_icon ? icon_bounds.right() + kTitleIconOffsetX
                                  : icon_bounds.x();
-  int title_height = GetTitleFont().GetHeight();
+  int title_height = GetTitleFontList().GetHeight();
   // We bias the title position so that when the difference between the icon and
   // title heights is odd, the extra pixel of the title is above the vertical
   // midline rather than below.  This compensates for how the icon is already

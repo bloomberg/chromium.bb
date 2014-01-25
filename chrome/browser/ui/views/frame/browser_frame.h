@@ -21,7 +21,7 @@ class NonClientFrameView;
 class SystemMenuModelBuilder;
 
 namespace gfx {
-class Font;
+class FontList;
 class Rect;
 }
 
@@ -43,7 +43,7 @@ class BrowserFrame
   explicit BrowserFrame(BrowserView* browser_view);
   virtual ~BrowserFrame();
 
-  static const gfx::Font& GetTitleFont();
+  static const gfx::FontList& GetTitleFontList();
 
   // Initialize the frame (creates the underlying native window).
   void InitBrowserFrame();

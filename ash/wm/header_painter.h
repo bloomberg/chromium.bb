@@ -11,11 +11,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 class Canvas;
-class Font;
+class FontList;
 class ImageSkia;
 class Point;
 class Size;
@@ -85,7 +85,7 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
   int HeaderContentSeparatorSize() const;
 
   // Paint the title bar, primarily the title string.
-  void PaintTitleBar(gfx::Canvas* canvas, const gfx::Font& title_font);
+  void PaintTitleBar(gfx::Canvas* canvas, const gfx::FontList& title_font_list);
 
   // Performs layout for the header based on whether we want the shorter
   // appearance. |shorter_layout| is typically used for maximized windows, but
@@ -104,7 +104,7 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
   }
 
   // Schedule a re-paint of the entire title.
-  void SchedulePaintForTitle(const gfx::Font& title_font);
+  void SchedulePaintForTitle(const gfx::FontList& title_font_list);
 
   // Called when the browser theme changes.
   void OnThemeChanged();
@@ -130,9 +130,9 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
   // Returns the radius of the header's top corners.
   int GetHeaderCornerRadius() const;
 
-  // Get the bounds for the title. The provided |title_font| is used to
+  // Get the bounds for the title. The provided |title_font_list| is used to
   // determine the correct dimensions.
-  gfx::Rect GetTitleBounds(const gfx::Font& title_font);
+  gfx::Rect GetTitleBounds(const gfx::FontList& title_font_list);
 
   // Not owned
   views::Widget* frame_;

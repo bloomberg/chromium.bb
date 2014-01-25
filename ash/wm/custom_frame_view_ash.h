@@ -14,9 +14,6 @@ class FrameBorderHitTestController;
 class HeaderPainter;
 class ImmersiveFullscreenController;
 }
-namespace gfx {
-class Font;
-}
 namespace views {
 class Widget;
 }

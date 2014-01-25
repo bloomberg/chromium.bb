@@ -10,7 +10,7 @@
 #include "ash/wm/window_state.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -50,14 +50,14 @@ TEST_F(HeaderPainterTest, TitleIconAlignment) {
 
   // Title and icon are aligned when shorter_header is false.
   p.LayoutHeader(false);
-  gfx::Font default_font;
-  gfx::Rect large_header_title_bounds = p.GetTitleBounds(default_font);
+  gfx::FontList default_font_list;
+  gfx::Rect large_header_title_bounds = p.GetTitleBounds(default_font_list);
   EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
             large_header_title_bounds.CenterPoint().y());
 
   // Title and icon are aligned when shorter_header is true.
   p.LayoutHeader(true);
-  gfx::Rect short_header_title_bounds = p.GetTitleBounds(default_font);
+  gfx::Rect short_header_title_bounds = p.GetTitleBounds(default_font_list);
   EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
             short_header_title_bounds.CenterPoint().y());
 }

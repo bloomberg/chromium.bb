@@ -18,7 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
@@ -281,7 +281,7 @@ int AppPanelBrowserFrameView::IconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  return std::max(BrowserFrame::GetTitleFont().height(), kIconMinimumSize);
+  return std::max(BrowserFrame::GetTitleFontList().height(), kIconMinimumSize);
 #endif
 }
 
@@ -409,9 +409,10 @@ void AppPanelBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 void AppPanelBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
   views::WidgetDelegate* d = frame()->widget_delegate();
-  canvas->DrawStringInt(d->GetWindowTitle(), BrowserFrame::GetTitleFont(),
-      SK_ColorBLACK, GetMirroredXForRect(title_bounds_), title_bounds_.y(),
-      title_bounds_.width(), title_bounds_.height());
+  gfx::Rect rect = title_bounds_;
+  rect.set_x(GetMirroredXForRect(title_bounds_));
+  canvas->DrawStringRect(d->GetWindowTitle(), BrowserFrame::GetTitleFontList(),
+                         SK_ColorBLACK, rect);
 }
 
 void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
@@ -492,7 +493,7 @@ void AppPanelBrowserFrameView::LayoutTitleBar() {
 
   // Size the title.
   int title_x = icon_bounds.right() + kIconTitleSpacing;
-  int title_height = BrowserFrame::GetTitleFont().GetHeight();
+  int title_height = BrowserFrame::GetTitleFontList().GetHeight();
   // We bias the title position so that when the difference between the icon
   // and title heights is odd, the extra pixel of the title is above the
   // vertical midline rather than below.  This compensates for how the icon is

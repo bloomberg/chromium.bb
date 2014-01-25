@@ -24,7 +24,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/corewm/window_util.h"
@@ -83,15 +83,15 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
 }
 
 // static
-gfx::Font NativeWidgetAura::GetWindowTitleFont() {
+gfx::FontList NativeWidgetAura::GetWindowTitleFontList() {
 #if defined(OS_WIN)
   NONCLIENTMETRICS ncm;
   base::win::GetNonClientMetrics(&ncm);
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
-  return gfx::Font(caption_font);
+  return gfx::FontList(gfx::Font(caption_font));
 #else
-  return gfx::Font();
+  return gfx::FontList();
 #endif
 }
 

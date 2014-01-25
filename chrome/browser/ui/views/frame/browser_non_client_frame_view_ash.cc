@@ -221,7 +221,7 @@ void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
 
 void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
   if (!frame()->IsFullscreen())
-    header_painter_->SchedulePaintForTitle(BrowserFrame::GetTitleFont());
+    header_painter_->SchedulePaintForTitle(BrowserFrame::GetTitleFontList());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       theme_frame_image_id,
       theme_frame_overlay_image_id);
   if (browser_view()->ShouldShowWindowTitle())
-    header_painter_->PaintTitleBar(canvas, BrowserFrame::GetTitleFont());
+    header_painter_->PaintTitleBar(canvas, BrowserFrame::GetTitleFontList());
   if (browser_view()->IsToolbarVisible())
     PaintToolbarBackground(canvas);
   else

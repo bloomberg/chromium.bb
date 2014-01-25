@@ -101,12 +101,12 @@ NativeWidgetWin::~NativeWidgetWin() {
 }
 
 // static
-gfx::Font NativeWidgetWin::GetWindowTitleFont() {
+gfx::FontList NativeWidgetWin::GetWindowTitleFontList() {
   NONCLIENTMETRICS ncm;
   base::win::GetNonClientMetrics(&ncm);
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
-  return gfx::Font(caption_font);
+  return gfx::FontList(gfx::Font(caption_font));
 }
 
 void NativeWidgetWin::Show(int show_state) {

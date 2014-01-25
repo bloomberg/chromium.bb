@@ -22,7 +22,7 @@ class ViewProp;
 
 namespace gfx {
 class Canvas;
-class Font;
+class FontList;
 class Rect;
 }
 
@@ -53,8 +53,8 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   explicit NativeWidgetWin(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetWin();
 
-  // Returns the system set window title font.
-  static gfx::Font GetWindowTitleFont();
+  // Returns the system set window title font list.
+  static gfx::FontList GetWindowTitleFontList();
 
   // Show the window with the specified show command.
   void Show(int show_state);

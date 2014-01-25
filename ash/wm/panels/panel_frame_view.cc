@@ -11,7 +11,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -26,7 +25,7 @@ PanelFrameView::PanelFrameView(views::Widget* frame, FrameType frame_type)
     : frame_(frame),
       caption_button_container_(NULL),
       window_icon_(NULL),
-      title_font_(gfx::Font(views::NativeWidgetAura::GetWindowTitleFont())),
+      title_font_list_(views::NativeWidgetAura::GetWindowTitleFontList()),
       frame_border_hit_test_controller_(
           new FrameBorderHitTestController(frame_)) {
   DCHECK(!frame_->widget_delegate()->CanMaximize());
@@ -101,7 +100,7 @@ void PanelFrameView::UpdateWindowIcon() {
 void PanelFrameView::UpdateWindowTitle() {
   if (!header_painter_)
     return;
-  header_painter_->SchedulePaintForTitle(title_font_);
+  header_painter_->SchedulePaintForTitle(title_font_list_);
 }
 
 int PanelFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -125,7 +124,7 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
       canvas,
       theme_frame_id,
       0);
-  header_painter_->PaintTitleBar(canvas, title_font_);
+  header_painter_->PaintTitleBar(canvas, title_font_list_);
   header_painter_->PaintHeaderContentSeparator(canvas);
 }
 

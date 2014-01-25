@@ -136,8 +136,9 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     window_icon_->Update();
   }
 
-  window_title_ = new views::Label(browser_view->GetWindowTitle(),
-                                   gfx::FontList(BrowserFrame::GetTitleFont()));
+  window_title_ = new views::Label(
+      browser_view->GetWindowTitle(),
+      gfx::FontList(BrowserFrame::GetTitleFontList()));
   window_title_->SetVisible(browser_view->ShouldShowWindowTitle());
   window_title_->SetEnabledColor(SK_ColorWHITE);
   // TODO(msw): Use a transparent background color as a workaround to use the
@@ -468,7 +469,8 @@ int OpaqueBrowserFrameView::GetIconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  return std::max(BrowserFrame::GetTitleFont().GetHeight(), kIconMinimumSize);
+  return std::max(BrowserFrame::GetTitleFontList().GetHeight(),
+                  kIconMinimumSize);
 #endif
 }
 

@@ -15,12 +15,13 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
@@ -32,11 +33,11 @@
 
 namespace {
 
-const gfx::Font& GetTitleFont() {
-  static gfx::Font* title_font = NULL;
-  if (!title_font)
-    title_font = new gfx::Font(views::NativeWidgetAura::GetWindowTitleFont());
-  return *title_font;
+const gfx::FontList& GetTitleFontList() {
+  static const gfx::FontList* title_font_list =
+      new gfx::FontList(views::NativeWidgetAura::GetWindowTitleFontList());
+  ANNOTATE_LEAKING_OBJECT_PTR(title_font_list);
+  return *title_font_list;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -230,7 +231,7 @@ CustomFrameViewAsh::HeaderView::~HeaderView() {
 }
 
 void CustomFrameViewAsh::HeaderView::SchedulePaintForTitle() {
-  header_painter_->SchedulePaintForTitle(GetTitleFont());
+  header_painter_->SchedulePaintForTitle(GetTitleFontList());
 }
 
 void CustomFrameViewAsh::HeaderView::ResetWindowControls() {
@@ -273,7 +274,7 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
       canvas,
       theme_image_id,
       0);
-  header_painter_->PaintTitleBar(canvas, GetTitleFont());
+  header_painter_->PaintTitleBar(canvas, GetTitleFontList());
   header_painter_->PaintHeaderContentSeparator(canvas);
 }
 

@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -64,7 +64,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
   FrameCaptionButtonContainerView* caption_button_container_;
   views::ImageView* window_icon_;
   gfx::Rect client_view_bounds_;
-  const gfx::Font title_font_;
+  const gfx::FontList title_font_list_;
 
   // Helper class for painting the header.
   scoped_ptr<HeaderPainter> header_painter_;

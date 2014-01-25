@@ -20,7 +20,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
@@ -377,21 +377,19 @@ int HeaderPainter::HeaderContentSeparatorSize() const {
 }
 
 void HeaderPainter::PaintTitleBar(gfx::Canvas* canvas,
-                                  const gfx::Font& title_font) {
+                                  const gfx::FontList& title_font_list) {
   // The window icon is painted by its own views::View.
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
-    gfx::Rect title_bounds = GetTitleBounds(title_font);
+    gfx::Rect title_bounds = GetTitleBounds(title_font_list);
+    title_bounds.set_x(header_view_->GetMirroredXForRect(title_bounds));
     SkColor title_color = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
         kMaximizedWindowTitleTextColor : kNonMaximizedWindowTitleTextColor;
-    canvas->DrawStringInt(delegate->GetWindowTitle(),
-                          title_font,
-                          title_color,
-                          header_view_->GetMirroredXForRect(title_bounds),
-                          title_bounds.y(),
-                          title_bounds.width(),
-                          title_bounds.height(),
-                          gfx::Canvas::NO_SUBPIXEL_RENDERING);
+    canvas->DrawStringRectWithFlags(delegate->GetWindowTitle(),
+                                    title_font_list,
+                                    title_color,
+                                    title_bounds,
+                                    gfx::Canvas::NO_SUBPIXEL_RENDERING);
   }
 }
 
@@ -418,8 +416,9 @@ void HeaderPainter::LayoutHeader(bool shorter_layout) {
   }
 }
 
-void HeaderPainter::SchedulePaintForTitle(const gfx::Font& title_font) {
-  header_view_->SchedulePaintInRect(GetTitleBounds(title_font));
+void HeaderPainter::SchedulePaintForTitle(
+    const gfx::FontList& title_font_list) {
+  header_view_->SchedulePaintInRect(GetTitleBounds(title_font_list));
 }
 
 void HeaderPainter::OnThemeChanged() {
@@ -468,17 +467,18 @@ int HeaderPainter::GetHeaderCornerRadius() const {
   return square_corners ? 0 : kCornerRadius;
 }
 
-gfx::Rect HeaderPainter::GetTitleBounds(const gfx::Font& title_font) {
+gfx::Rect HeaderPainter::GetTitleBounds(const gfx::FontList& title_font_list) {
   int title_x = GetTitleOffsetX();
   // Center the text with respect to the caption button container. This way it
   // adapts to the caption button height and aligns exactly with the window
   // icon. Don't use |window_icon_| for this computation as it may be NULL.
-  int title_y = GetCaptionButtonContainerCenterY() - title_font.GetHeight() / 2;
+  int title_y =
+      GetCaptionButtonContainerCenterY() - title_font_list.GetHeight() / 2;
   return gfx::Rect(
       title_x,
       std::max(0, title_y),
       std::max(0, caption_button_container_->x() - kTitleLogoSpacing - title_x),
-      title_font.GetHeight());
+      title_font_list.GetHeight());
 }
 
 }  // namespace ash
