@@ -371,14 +371,7 @@ void TabRendererGtk::UpdateData(WebContents* contents,
       data_.media_state = next_media_state;
     }
 
-    SkBitmap* app_icon =
-        extensions::TabHelper::FromWebContents(contents)->GetExtensionAppIcon();
-    if (app_icon) {
-      data_.favicon = *app_icon;
-    } else {
-      data_.favicon = favicon_tab_helper->GetFavicon().AsBitmap();
-    }
-
+    data_.favicon = favicon_tab_helper->GetFavicon().AsBitmap();
     data_.app = app;
 
     // Make a cairo cached version of the favicon.
