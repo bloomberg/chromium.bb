@@ -1694,7 +1694,7 @@
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_socket'
               ],
               'conditions': [
-                ['OS=="linux"', {
+                ['chromeos==1', {
                   'sources': [
                     '../third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc',
                   ],
