@@ -279,7 +279,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                               coded_size, visible_rect, natural_size,
                               // No decoder-specific buffer needed for AVC;
                               // SPS/PPS are embedded in the video stream
-                              NULL, 0, is_video_track_encrypted_, true);
+                              NULL, 0, is_video_track_encrypted_, false);
       has_video_ = true;
       video_track_id_ = track->header.track_id;
     }
