@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "net/quic/congestion_control/pacing_sender.h"
 #include "net/quic/quic_ack_notifier_manager.h"
+#include "net/quic/quic_utils_chromium.h"
 
 using std::make_pair;
 using std::max;

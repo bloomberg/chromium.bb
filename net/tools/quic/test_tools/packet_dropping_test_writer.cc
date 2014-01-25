@@ -23,7 +23,7 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
 
   virtual QuicTime OnAlarm() OVERRIDE {
     DCHECK(writer_->blocked_writer());
-    DLOG(INFO) << "Unblocking socket.";
+    DVLOG(1) << "Unblocking socket.";
     writer_->blocked_writer()->OnCanWrite();
     return QuicTime::Zero();
   }
