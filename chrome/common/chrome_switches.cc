@@ -792,8 +792,8 @@ const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 const char kEnableSyncSyncedNotifications[] =
     "enable-sync-synced-notifications";
 
-// Enables sync/API based session sync implementation (in favor of legacy).
-const char kEnableSyncSessionsV2[] = "enable-sync-sessions-v2";
+// Disables sync/API based session sync implementation (back to legacy).
+const char kDisableSyncSessionsV2[] = "disable-sync-sessions-v2";
 
 // Enables syncing of the app list.
 const char kEnableSyncAppList[]             = "enable-sync-app-list";

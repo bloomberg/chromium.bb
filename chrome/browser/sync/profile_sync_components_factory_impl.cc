@@ -184,7 +184,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!command_line_->HasSwitch(switches::kDisableSyncTabs)) {
       pss->RegisterDataTypeController(
           new ProxyDataTypeController(syncer::PROXY_TABS));
-    if (!command_line_->HasSwitch(switches::kEnableSyncSessionsV2)) {
+    if (command_line_->HasSwitch(switches::kDisableSyncSessionsV2)) {
       pss->RegisterDataTypeController(
           new SessionDataTypeController(this, profile_, pss));
     } else {
@@ -459,7 +459,7 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::SESSIONS: {
-      DCHECK(command_line_->HasSwitch(switches::kEnableSyncSessionsV2));
+      DCHECK(!command_line_->HasSwitch(switches::kDisableSyncSessionsV2));
       return ProfileSyncServiceFactory::GetForProfile(profile_)->
           GetSessionsSyncableService()->AsWeakPtr();
     }

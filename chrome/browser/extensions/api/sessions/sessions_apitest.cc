@@ -117,8 +117,8 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile, &ProfileSyncServiceMock::BuildMockProfileSyncService));
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSyncSessionsV2)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSyncSessionsV2)) {
     associator_ = new browser_sync::SessionModelAssociator(
         static_cast<ProfileSyncService*>(service), true);
     associator_->SetCurrentMachineTagForTesting(kSessionTags[0]);
@@ -176,8 +176,8 @@ void ExtensionSessionsTest::CreateSessionModels() {
       BuildTabSpecifics(kSessionTags[index], 0, tab_list1[i], &tabs1[i]);
     }
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSyncSessionsV2)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSyncSessionsV2)) {
       sync_pb::EntitySpecifics entity;
       entity.mutable_session()->CopyFrom(meta);
       initial_data.push_back(
@@ -199,8 +199,8 @@ void ExtensionSessionsTest::CreateSessionModels() {
     }
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSyncSessionsV2)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSyncSessionsV2)) {
     ProfileSyncServiceFactory::GetForProfile(browser_->profile())->
         GetSessionsSyncableService()->
             MergeDataAndStartSyncing(syncer::SESSIONS, initial_data,

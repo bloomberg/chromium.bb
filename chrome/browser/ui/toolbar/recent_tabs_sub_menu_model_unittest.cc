@@ -114,8 +114,8 @@ class RecentTabsSubMenuModelTest
  public:
    RecentTabsSubMenuModelTest()
        : sync_service_(&testing_profile_) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSyncSessionsV2)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSyncSessionsV2)) {
       manager_.reset(new browser_sync::SessionsSyncManager(
           &testing_profile_,
           this,
@@ -151,8 +151,8 @@ class RecentTabsSubMenuModelTest
 
 
   browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSyncSessionsV2)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSyncSessionsV2)) {
       return manager_.get();
     } else {
       return associator_.get();
@@ -160,8 +160,8 @@ class RecentTabsSubMenuModelTest
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSyncSessionsV2)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSyncSessionsV2)) {
       helper->ExportToSessionsSyncManager(manager_.get());
     } else {
       helper->ExportToSessionModelAssociator(associator_.get());

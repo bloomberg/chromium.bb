@@ -201,8 +201,8 @@ ProfileSyncService::ProfileSyncService(
     sync_service_url_ = GURL(kSyncServerUrl);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncSessionsV2)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSyncSessionsV2)) {
     syncer::SyncableService::StartSyncFlare flare(
         sync_start_util::GetFlareForSyncableService(profile->GetPath()));
     scoped_ptr<browser_sync::LocalSessionEventRouter> router(
@@ -392,8 +392,8 @@ browser_sync::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
   if (!IsSessionsDataTypeControllerRunning())
     return NULL;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncSessionsV2)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSyncSessionsV2)) {
     return sessions_sync_manager_.get();
   } else {
     return GetSessionModelAssociatorDeprecated();
@@ -403,8 +403,8 @@ browser_sync::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
 browser_sync::FaviconCache* ProfileSyncService::GetFaviconCache() {
   // TODO(tim): Clean this up (or remove) once there's only one implementation.
   // Bug 98892.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncSessionsV2)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSyncSessionsV2)) {
     return sessions_sync_manager_->GetFaviconCache();
   } else if (GetSessionModelAssociatorDeprecated()) {
     return GetSessionModelAssociatorDeprecated()->GetFaviconCache();
