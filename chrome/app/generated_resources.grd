@@ -15476,6 +15476,94 @@ Do you accept?
       </message>
     </if>
 
+    <!-- About NFC Debug UI display strings -->
+    <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_NFC_DEBUG_TITLE" desc="Title of the debug page meant for developers to test NFC functionality">
+        NFC API Test Page
+      </message>
+      <message name="IDS_NFC_DEBUG_NOT_SUPPORTED" desc="Message shown if the NFC API is not supported on platform">
+        NFC is not supported on the current platform.
+      </message>
+      <message name="IDS_NFC_DEBUG_ADAPTER_HEADER" desc="Header of the 'NFC Adapter' box, that shows the state of the NFC adapter">
+        NFC Adapter
+      </message>
+      <message name="IDS_NFC_DEBUG_ADAPTER_POWER_ON" desc="Adapter power button text to turn the adapter on">
+        Power ON
+      </message>
+      <message name="IDS_NFC_DEBUG_ADAPTER_POWER_OFF" desc="Adapter power button text to turn the adapter off">
+        Power OFF
+      </message>
+      <message name="IDS_NFC_DEBUG_ADAPTER_START_POLL" desc="Adapter poll button text to start polling">
+        Start Poll
+      </message>
+      <message name="IDS_NFC_DEBUG_ADAPTER_STOP_POLL" desc="Adapter poll button text to stop polling">
+        Stop Poll
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_HEADER" desc="Header of the 'NFC NDEF message form' box used send a message to tag/peer">
+        Push/Write NDEF Message
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_TYPE_TEXT" desc="NDEF message form dropdown menu item for message type 'Text'">
+        Text
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_TYPE_URI" desc="NDEF message form dropdown menu item for message type 'URI'">
+        URI
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_TYPE_SMART_POSTER" desc="NDEF message form dropdown menu text for message type 'SmartPoster'">
+        SmartPoster
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_TEXT" desc="Label for required input field 'Text'">
+        Text (required):
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_ENCODING" desc="Label for required input field 'Encoding'">
+        Encoding (required):
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_LANGUAGE_CODE" desc="Label for required input field 'Language Code'">
+        Language Code (required):
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_URI" desc="Label for required input field 'URI'">
+        URI (required):
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_MIME_TYPE" desc="Label for input field 'MIME Type'">
+        MIME Type:
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_TARGET_SIZE" desc="Label for input field 'Target Size'">
+        Target Size:
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_TITLE_TEXT" desc="Label for required input field 'Title Text'">
+        Title Text (required):
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_TITLE_ENCODING" desc="Label for required input field 'Title Encoding'">
+        Title Encoding (required):
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_FIELD_TITLE_LANGUAGE_CODE" desc="Label for required input field 'Title Language Code'">
+        Title Language Code (required):
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_WRITE_BUTTON" desc="NDEF message form button text for writing message to an NFC tag">
+        Write to Tag
+      </message>
+      <message name="IDS_NFC_DEBUG_NDEF_FORM_PUSH_BUTTON" desc="NDEF message form button text for pushing a message to an NFC peer device">
+        Push to Peer
+      </message>
+      <message name="IDS_NFC_DEBUG_NFC_PEER_HEADER" desc="Header of the 'NFC Peer' box">
+        NDEF Peer
+      </message>
+      <message name="IDS_NFC_DEBUG_NFC_TAG_HEADER" desc="Header of the 'NFC Tag' box">
+        NDEF Tag
+      </message>
+      <message name="IDS_NFC_DEBUG_RECORDS_HEADER" desc="Header of the 'Records' section in the tag and peer boxes">
+        Records
+      </message>
+      <message name="IDS_NFC_DEBUG_ERROR_FAILED_TO_SET_POWER" desc="Error message shown when adapter power could not be set.">
+        Failed to set adapter power.
+      </message>
+      <message name="IDS_NFC_DEBUG_ERROR_FAILED_TO_SET_POLLING" desc="Error message shown when polling state could not be set.">
+        Failed to start/stop polling.
+      </message>
+      <message name="IDS_NFC_DEBUG_ERROR_FAILED_TO_SUBMIT_PREFIX" desc="Error message shown when an NDEF form could not be submitted.">
+        Failed to submit NDEF:
+      </message>
+    </if>
+
     <!-- About power UI display strings -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_ABOUT_POWER_TITLE" desc="Title of the page">

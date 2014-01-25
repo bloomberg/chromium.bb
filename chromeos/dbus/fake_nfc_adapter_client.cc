@@ -297,7 +297,7 @@ void FakeNfcAdapterClient::UnsetDevice(const dbus::ObjectPath& device_path) {
 }
 
 void FakeNfcAdapterClient::UnsetTag(const dbus::ObjectPath& tag_path) {
-  LOG(INFO) << "Add tag path to the fake adapter: " << tag_path.value();
+  LOG(INFO) << "Remove tag path from the fake adapter: " << tag_path.value();
   ObjectPathVector new_tags = properties_->tags.value();
   for (ObjectPathVector::iterator iter = new_tags.begin();
        iter != new_tags.end(); ++iter) {
