@@ -1344,6 +1344,8 @@ void SSLClientSocketOpenSSL::ChannelIDRequestCallback(SSL* ssl,
           ServerBoundCertService::kEPKIPassword,
           encrypted_private_key_info,
           subject_public_key_info));
+  if (!ec_private_key)
+    return;
   set_channel_id_sent(true);
   *pkey = EVP_PKEY_dup(ec_private_key->key());
 }
