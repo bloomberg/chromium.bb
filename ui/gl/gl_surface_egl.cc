@@ -230,7 +230,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
     bool match_found = false;
     for (int i = 0; i < num_configs; i++) {
       EGLBoolean success;
-      EGLint red, green, blue, alpha;
+      EGLint red, green, blue;
       // Read the relevent attributes of the EGLConfig.
       success = eglGetConfigAttrib(g_display, matching_configs[i],
                                    EGL_RED_SIZE, &red);
@@ -238,8 +238,6 @@ bool GLSurfaceEGL::InitializeOneOff() {
                                     EGL_BLUE_SIZE, &blue);
       success &= eglGetConfigAttrib(g_display, matching_configs[i],
                                     EGL_GREEN_SIZE, &green);
-      success &= eglGetConfigAttrib(g_display, matching_configs[i],
-                                    EGL_ALPHA_SIZE, &alpha);
       if ((success == EGL_TRUE) && (red == 5) &&
           (green == 6) && (blue == 5)) {
         g_config = matching_configs[i];
