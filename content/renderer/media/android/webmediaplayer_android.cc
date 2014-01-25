@@ -193,11 +193,11 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
               base::Bind(&WebMediaPlayerAndroid::SetDecryptorReadyCB,
                          weak_factory_.GetWeakPtr()));
 
-      // |media_source_delegate_| is owned, so Unretained() is safe here.
       media_source_delegate_->InitializeMediaSource(
           base::Bind(&WebMediaPlayerAndroid::OnMediaSourceOpened,
                      weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this)),
+          base::Bind(&WebMediaPlayerAndroid::OnNeedKey,
+                     weak_factory_.GetWeakPtr()),
           set_decryptor_ready_cb,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
                      weak_factory_.GetWeakPtr()),
@@ -210,7 +210,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
             url,
             cors_mode,
             base::Bind(&WebMediaPlayerAndroid::DidLoadMediaInfo,
-                       base::Unretained(this))));
+                       weak_factory_.GetWeakPtr())));
     info_loader_->Start(frame_);
   }
 
@@ -1203,13 +1203,12 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
           player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
                        // separated from WebMediaPlayer.
 #endif  // defined(ENABLE_PEPPER_CDMS)
-          // |decryptor_| is owned, so Unretained() is safe here.
           base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
-                     base::Unretained(this)),
+                     weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnKeyError,
-                     base::Unretained(this)),
+                     weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
-                     base::Unretained(this))));
+                     weak_factory_.GetWeakPtr())));
     }
 
     if (!decryptor_->InitializeCDM(key_system.utf8(), frame_->document().url()))
