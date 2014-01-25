@@ -129,10 +129,10 @@ void KeyboardControllerProxy::SetOverrideContentUrl(const GURL& url) {
   override_url_ = url;
   // Restores the keyboard window size to default.
   aura::Window* container = GetKeyboardWindow()->parent();
-  CHECK(container);
-  container->layout_manager()->OnWindowResized();
-
-  ReloadContents();
+  if (container) {
+    container->layout_manager()->OnWindowResized();
+    ReloadContents();
+  }
 }
 
 void KeyboardControllerProxy::ReloadContents() {
