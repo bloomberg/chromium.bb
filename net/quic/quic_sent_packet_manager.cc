@@ -143,9 +143,8 @@ void QuicSentPacketManager::OnRetransmittedPacket(
 
   pending_retransmissions_.erase(old_sequence_number);
   // TODO(ianswett): Discard and lose the packet lazily instead of immediately.
-  UnackedPacketMap::iterator unacked_it =
-      unacked_packets_.find(old_sequence_number);
-  TransmissionInfo* transmission_info = &unacked_it->second;
+  TransmissionInfo* transmission_info =
+      FindOrNull(unacked_packets_, old_sequence_number);
   RetransmittableFrames* frames = transmission_info->retransmittable_frames;
   DCHECK(frames);
 
@@ -280,12 +279,11 @@ void QuicSentPacketManager::ClearPreviousRetransmissions(size_t num_to_clear) {
 
 bool QuicSentPacketManager::HasRetransmittableFrames(
     QuicPacketSequenceNumber sequence_number) const {
-  UnackedPacketMap::const_iterator it = unacked_packets_.find(sequence_number);
-  if (it == unacked_packets_.end()) {
+  const TransmissionInfo* transmission_info =
+      FindOrNull(unacked_packets_, sequence_number);
+  if (transmission_info == NULL) {
     return false;
   }
-  const TransmissionInfo* transmission_info = &it->second;
-  DCHECK(transmission_info);
 
   return transmission_info->retransmittable_frames != NULL;
 }
@@ -336,10 +334,8 @@ QuicSentPacketManager::PendingRetransmission
   QuicPacketSequenceNumber sequence_number =
       pending_retransmissions_.begin()->first;
   DCHECK(ContainsKey(unacked_packets_, sequence_number));
-  UnackedPacketMap::iterator unacked_it =
-      unacked_packets_.find(sequence_number);
-  CHECK(unacked_it != unacked_packets_.end());
-  const TransmissionInfo& transmission_info = unacked_it->second;
+  const TransmissionInfo& transmission_info =
+      FindOrDie(unacked_packets_, sequence_number);
   DCHECK(transmission_info.retransmittable_frames);
 
   return PendingRetransmission(sequence_number,
@@ -408,15 +404,20 @@ QuicSentPacketManager::MarkPacketHandled(
   SequenceNumberSet::reverse_iterator previous_transmissions_it =
       previous_transmissions->rbegin();
   QuicPacketSequenceNumber newest_transmission = *previous_transmissions_it;
+  TransmissionInfo* transmission_info =
+      FindOrNull(unacked_packets_, newest_transmission);
   if (newest_transmission == sequence_number) {
     DiscardPacket(newest_transmission);
-  } else {
-    UnackedPacketMap::iterator unacked_it =
-        unacked_packets_.find(newest_transmission);
-    TransmissionInfo* transmission_info = &unacked_it->second;
-    if (HasCryptoHandshake(*transmission_info)) {
-      --pending_crypto_packet_count_;
+  } else if (HasCryptoHandshake(*transmission_info)) {
+    // If it's a crypto handshake packet, discard it and all retransmissions,
+    // since they won't be acked now that one has been processed.
+    if (transmission_info->pending) {
+      OnPacketAbandoned(unacked_packets_.find(newest_transmission));
     }
+    DiscardPacket(newest_transmission);
+  } else {
+    TransmissionInfo* transmission_info =
+        FindOrNull(unacked_packets_, newest_transmission);
     // If we have received an ack for a previous transmission of a packet,
     // we want to keep the "new" transmission of the packet unacked,
     // but prevent the data from being retransmitted.
@@ -425,18 +426,19 @@ QuicSentPacketManager::MarkPacketHandled(
     transmission_info->previous_transmissions = NULL;
   }
 
-  // Clear out information all previous transmissions.
+  // Clear out information all previous transmissions unless they're pending.
   ++previous_transmissions_it;
   while (previous_transmissions_it != previous_transmissions->rend()) {
     QuicPacketSequenceNumber previous_transmission = *previous_transmissions_it;
     ++previous_transmissions_it;
-    // If the packet was TLP retransmitted, the old copy was not yet considered
-    // lost or abandoned, so do that now.
+    // If the packet was TLP retransmitted, the old copy is still pending.
+    // Keep it until it is lost or acked.
     if (unacked_packets_[previous_transmission].pending) {
-      send_algorithm_->OnPacketLost(previous_transmission, clock_->Now());
-      OnPacketAbandoned(unacked_packets_.find(previous_transmission));
+      // Previous transmissions will be deleted, so set it to NULL.
+      unacked_packets_[previous_transmission].previous_transmissions = NULL;
+    } else {
+      DiscardPacket(previous_transmission);
     }
-    DiscardPacket(previous_transmission);
   }
 
   delete previous_transmissions;
@@ -774,12 +776,8 @@ void QuicSentPacketManager::MaybeUpdateRTT(
     const QuicTime& ack_receive_time) {
   // We calculate the RTT based on the highest ACKed sequence number, the lower
   // sequence numbers will include the ACK aggregation delay.
-  UnackedPacketMap::iterator unacked_it =
-      unacked_packets_.find(received_info.largest_observed);
-  if (unacked_it == unacked_packets_.end()) {
-    return;
-  }
-  const TransmissionInfo* transmission_info = &unacked_it->second;
+  const TransmissionInfo* transmission_info =
+      FindOrNull(unacked_packets_, received_info.largest_observed);
   if (transmission_info == NULL) {
     return;
   }

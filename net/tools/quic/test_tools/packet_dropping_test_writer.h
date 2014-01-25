@@ -41,6 +41,10 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
 
+  virtual bool IsWriteBlocked() const OVERRIDE;
+
+  virtual void SetWritable() OVERRIDE;
+
   // Writes out any packet which should have been sent by now
   // to the contained writer and returns the time
   // for the next delayed packet to be written.

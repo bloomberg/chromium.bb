@@ -4,7 +4,6 @@
 
 #include "net/tools/quic/test_tools/quic_dispatcher_peer.h"
 
-#include "net/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 

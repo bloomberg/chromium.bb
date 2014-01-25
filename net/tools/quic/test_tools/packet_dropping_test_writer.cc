@@ -23,6 +23,7 @@ class WriteUnblockedAlarm : public QuicAlarm::Delegate {
 
   virtual QuicTime OnAlarm() OVERRIDE {
     DCHECK(writer_->blocked_writer());
+    DLOG(INFO) << "Unblocking socket.";
     writer_->blocked_writer()->OnCanWrite();
     return QuicTime::Zero();
   }
@@ -94,10 +95,8 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     DVLOG(1) << "Blocking socket.";
     if (!write_unblocked_alarm_->IsSet()) {
       blocked_writer_ = blocked_writer;
-      // Set the alarm for 1ms in the future.
-      write_unblocked_alarm_->Set(
-          clock_->ApproximateNow().Add(
-              QuicTime::Delta::FromMilliseconds(1)));
+      // Set the alarm to fire immediately.
+      write_unblocked_alarm_->Set(clock_->ApproximateNow());
     }
     return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
   }
@@ -134,6 +133,20 @@ WriteResult PacketDroppingTestWriter::WritePacket(
 
   return QuicPacketWriterWrapper::WritePacket(
       buffer, buf_len, self_address, peer_address, blocked_writer);
+}
+
+bool PacketDroppingTestWriter::IsWriteBlocked() const {
+  if (write_unblocked_alarm_.get() != NULL && write_unblocked_alarm_->IsSet()) {
+    return true;
+  }
+  return QuicPacketWriterWrapper::IsWriteBlocked();
+}
+
+void PacketDroppingTestWriter::SetWritable() {
+  if (write_unblocked_alarm_.get() != NULL && write_unblocked_alarm_->IsSet()) {
+    write_unblocked_alarm_->Cancel();
+  }
+  QuicPacketWriterWrapper::SetWritable();
 }
 
 QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {

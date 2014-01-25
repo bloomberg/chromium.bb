@@ -53,16 +53,6 @@ class GuidCleanUpAlarm : public EpollAlarm {
   QuicTimeWaitListManager* time_wait_list_manager_;
 };
 
-struct QuicTimeWaitListManager::GuidAddTime {
-  GuidAddTime(QuicGuid guid, const QuicTime& time)
-      : guid(guid),
-        time_added(time) {
-  }
-
-  QuicGuid guid;
-  QuicTime time_added;
-};
-
 // This class stores pending public reset packets to be sent to clients.
 // server_address - server address on which a packet what was received for
 //                  a guid in time wait state.
@@ -108,9 +98,8 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
 
 QuicTimeWaitListManager::~QuicTimeWaitListManager() {
   guid_clean_up_alarm_->UnregisterIfRegistered();
-  STLDeleteElements(&time_ordered_guid_list_);
   STLDeleteElements(&pending_packets_queue_);
-  for (GuidMapIterator it = guid_map_.begin(); it != guid_map_.end(); ++it) {
+  for (GuidMap::iterator it = guid_map_.begin(); it != guid_map_.end(); ++it) {
     delete it->second.close_packet;
   }
 }
@@ -119,13 +108,15 @@ void QuicTimeWaitListManager::AddGuidToTimeWait(
     QuicGuid guid,
     QuicVersion version,
     QuicEncryptedPacket* close_packet) {
-  DCHECK(!IsGuidInTimeWait(guid));
-  // Initialize the guid with 0 packets received.
-  GuidData data(0, version, close_packet);
+  int num_packets = 0;
+  GuidMap::iterator it = guid_map_.find(guid);
+  if (it != guid_map_.end()) {  // Replace record if it is reinserted.
+    num_packets = it->second.num_packets;
+    delete it->second.close_packet;
+    guid_map_.erase(it);
+  }
+  GuidData data(num_packets, version, clock_.ApproximateNow(), close_packet);
   guid_map_.insert(make_pair(guid, data));
-  time_ordered_guid_list_.push_back(new GuidAddTime(guid,
-                                                    clock_.ApproximateNow()));
-  DCHECK(IsGuidInTimeWait(guid));
 }
 
 bool QuicTimeWaitListManager::IsGuidInTimeWait(QuicGuid guid) const {
@@ -133,7 +124,7 @@ bool QuicTimeWaitListManager::IsGuidInTimeWait(QuicGuid guid) const {
 }
 
 QuicVersion QuicTimeWaitListManager::GetQuicVersionFromGuid(QuicGuid guid) {
-  GuidMapIterator it = guid_map_.find(guid);
+  GuidMap::iterator it = guid_map_.find(guid);
   DCHECK(it != guid_map_.end());
   return (it->second).version;
 }
@@ -160,7 +151,7 @@ void QuicTimeWaitListManager::ProcessPacket(
   DCHECK(IsGuidInTimeWait(guid));
   // TODO(satyamshekhar): Think about handling packets from different client
   // addresses.
-  GuidMapIterator it = guid_map_.find(guid);
+  GuidMap::iterator it = guid_map_.find(guid);
   DCHECK(it != guid_map_.end());
   // Increment the received packet count.
   ++((it->second).num_packets);
@@ -243,14 +234,17 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
 void QuicTimeWaitListManager::SetGuidCleanUpAlarm() {
   guid_clean_up_alarm_->UnregisterIfRegistered();
   int64 next_alarm_interval;
-  if (!time_ordered_guid_list_.empty()) {
-    GuidAddTime* oldest_guid = time_ordered_guid_list_.front();
+  if (!guid_map_.empty()) {
+    QuicTime oldest_guid = guid_map_.begin()->second.time_added;
     QuicTime now = clock_.ApproximateNow();
-    DCHECK(now.Subtract(oldest_guid->time_added) < kTimeWaitPeriod_);
-    next_alarm_interval = oldest_guid->time_added
-        .Add(kTimeWaitPeriod_)
-        .Subtract(now)
-        .ToMicroseconds();
+    if (now.Subtract(oldest_guid) < kTimeWaitPeriod_) {
+      next_alarm_interval = oldest_guid.Add(kTimeWaitPeriod_)
+                                       .Subtract(now)
+                                       .ToMicroseconds();
+    } else {
+      LOG(ERROR) << "GUID lingered for longer than kTimeWaitPeriod";
+      next_alarm_interval = 0;
+    }
   } else {
     // No guids added so none will expire before kTimeWaitPeriod_.
     next_alarm_interval = kTimeWaitPeriod_.ToMicroseconds();
@@ -262,19 +256,15 @@ void QuicTimeWaitListManager::SetGuidCleanUpAlarm() {
 
 void QuicTimeWaitListManager::CleanUpOldGuids() {
   QuicTime now = clock_.ApproximateNow();
-  while (time_ordered_guid_list_.size() > 0) {
-    DCHECK_EQ(time_ordered_guid_list_.size(), guid_map_.size());
-    GuidAddTime* oldest_guid = time_ordered_guid_list_.front();
-    if (now.Subtract(oldest_guid->time_added) < kTimeWaitPeriod_) {
+  while (!guid_map_.empty()) {
+    GuidMap::iterator it = guid_map_.begin();
+    QuicTime oldest_guid = it->second.time_added;
+    if (now.Subtract(oldest_guid) < kTimeWaitPeriod_) {
       break;
     }
     // This guid has lived its age, retire it now.
-    GuidMapIterator it = guid_map_.find(oldest_guid->guid);
-    DCHECK(it != guid_map_.end());
     delete it->second.close_packet;
-    guid_map_.erase(oldest_guid->guid);
-    time_ordered_guid_list_.pop_front();
-    delete oldest_guid;
+    guid_map_.erase(it);
   }
   SetGuidCleanUpAlarm();
 }

@@ -974,7 +974,7 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   QuicPacketSequenceNumber num_packets = 256 * 2 + 1;
   for (QuicPacketSequenceNumber i = 0; i < num_packets; ++i) {
-    SendStreamDataToPeer(1, "foo", i * 3, !kFin, NULL);
+    SendStreamDataToPeer(3, "foo", i * 3, !kFin, NULL);
   }
 
   QuicAckFrame frame = InitAckFrame(num_packets, 1);
@@ -1829,14 +1829,14 @@ TEST_F(QuicConnectionTest, WriteBlockedAckedThenSent) {
 
 TEST_F(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
   EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
 
   writer_->BlockNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
 
   // Simulate the retransmission alarm firing.
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(_));
   clock_.AdvanceTime(DefaultRetransmissionTime());
   connection_.GetRetransmissionAlarm()->Fire();
 
@@ -3179,7 +3179,38 @@ TEST_F(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
       ENCRYPTION_NONE, 1, *packet));
 
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, true));
-  EXPECT_CALL(visitor_, OnStreamFrames(_)).Times(1);
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).WillOnce(Return(true));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+
+  connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
+}
+
+TEST_F(QuicConnectionTest, DontProcessStreamFrameAndIgnoreCloseFrame) {
+  // Construct a packet with stream frame, ack frame,
+  // and connection close frame.
+  header_.public_header.guid = guid_;
+  header_.packet_sequence_number = 1;
+  header_.public_header.reset_flag = false;
+  header_.public_header.version_flag = false;
+  header_.entropy_flag = false;
+  header_.fec_flag = false;
+  header_.fec_group = 0;
+
+  QuicConnectionCloseFrame qccf;
+  qccf.error_code = QUIC_PEER_GOING_AWAY;
+  QuicFrame close_frame(&qccf);
+  QuicFrame stream_frame(&frame1_);
+
+  QuicFrames frames;
+  frames.push_back(stream_frame);
+  frames.push_back(close_frame);
+  scoped_ptr<QuicPacket> packet(
+      framer_.BuildUnsizedDataPacket(header_, frames).packet);
+  EXPECT_TRUE(NULL != packet.get());
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+      ENCRYPTION_NONE, 1, *packet));
+
+  EXPECT_CALL(visitor_, OnStreamFrames(_)).WillOnce(Return(false));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
@@ -3299,10 +3330,10 @@ TEST_F(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(4);
 
   // Send four packets, and register to be notified on ACK of packet 2.
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
-  connection_.SendStreamDataWithString(1, "bar", 0, !kFin, delegate.get());
-  connection_.SendStreamDataWithString(1, "baz", 0, !kFin, NULL);
-  connection_.SendStreamDataWithString(1, "qux", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "bar", 0, !kFin, delegate.get());
+  connection_.SendStreamDataWithString(3, "baz", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "qux", 0, !kFin, NULL);
 
   // Now we receive ACK for packets 1, 3, and 4, which invokes fast retransmit.
   QuicAckFrame frame = InitAckFrame(4, 0);

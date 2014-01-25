@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/strings/string_piece.h"
+#include "net/base/linked_hash_map.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_writer.h"
@@ -88,8 +89,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
  private:
   friend class test::QuicTimeWaitListManagerPeer;
 
-  // Stores the guid and the time it was added to time wait state.
-  struct GuidAddTime;
   // Internal structure to store pending public reset packets.
   class QueuedPacket;
 
@@ -121,20 +120,21 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   struct GuidData {
     GuidData(int num_packets_,
              QuicVersion version_,
+             QuicTime time_added_,
              QuicEncryptedPacket* close_packet)
         : num_packets(num_packets_),
           version(version_),
+          time_added(time_added_),
           close_packet(close_packet) {}
     int num_packets;
     QuicVersion version;
+    QuicTime time_added;
     QuicEncryptedPacket* close_packet;
   };
-  base::hash_map<QuicGuid, GuidData> guid_map_;
-  typedef base::hash_map<QuicGuid, GuidData>::iterator GuidMapIterator;
 
-  // Maintains a list of GuidAddTime elements which it owns, in the
-  // order they should be deleted.
-  std::deque<GuidAddTime*> time_ordered_guid_list_;
+  // linked_hash_map allows lookup by Guid and traversal in add order.
+  typedef linked_hash_map<QuicGuid, GuidData> GuidMap;
+  GuidMap guid_map_;
 
   // Pending public reset packets that need to be sent out to the client
   // when we are given a chance to write by the dispatcher.

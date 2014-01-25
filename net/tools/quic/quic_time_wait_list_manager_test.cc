@@ -358,6 +358,69 @@ TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
                 &time_wait_list_manager_, kGuid3));
 }
 
+TEST_F(QuicTimeWaitListManagerTest, AddGuidTwice) {
+  // Add guids such that their expiry time is kTimeWaitPeriod_.
+  epoll_server_.set_now_in_usec(0);
+  AddGuid(guid_);
+  EXPECT_TRUE(IsGuidInTimeWait(guid_));
+  size_t kConnectionCloseLength = 100;
+  AddGuid(guid_,
+          net::test::QuicVersionMax(),
+          new QuicEncryptedPacket(
+              new char[kConnectionCloseLength], kConnectionCloseLength, true));
+  EXPECT_TRUE(IsGuidInTimeWait(guid_));
+
+  EXPECT_CALL(writer_, WritePacket(_,
+                                   kConnectionCloseLength,
+                                   server_address_.address(),
+                                   client_address_,
+                                   &time_wait_list_manager_))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+
+  const int kRandomSequenceNumber = 1;
+  ProcessPacket(guid_, kRandomSequenceNumber);
+
+  const QuicTime::Delta time_wait_period =
+      QuicTimeWaitListManagerPeer::time_wait_period(&time_wait_list_manager_);
+
+  QuicTime::Delta offset = QuicTime::Delta::FromMicroseconds(39);
+  // Now set the current time as time_wait_period + offset usecs.
+  epoll_server_.set_now_in_usec(time_wait_period.Add(offset).ToMicroseconds());
+  // After the guids are cleaned up, check the next alarm interval.
+  int64 next_alarm_time = epoll_server_.ApproximateNowInUsec() +
+      time_wait_period.ToMicroseconds();
+
+  EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
+  time_wait_list_manager_.CleanUpOldGuids();
+  EXPECT_FALSE(IsGuidInTimeWait(guid_));
+}
+
+TEST_F(QuicTimeWaitListManagerTest, GuidsOrderedByTime) {
+  // Simple randomization: the values of guids are swapped based on the current
+  // seconds on the clock. If the container is broken, the test will be 50%
+  // flaky.
+  int odd_second = static_cast<int>(epoll_server_.ApproximateNowInUsec()) % 2;
+  EXPECT_TRUE(odd_second == 0 || odd_second == 1);
+  const QuicGuid kGuid1 = odd_second;
+  const QuicGuid kGuid2 = 1 - odd_second;
+
+  // 1 will hash lower than 2, but we add it later. They should come out in the
+  // add order, not hash order.
+  epoll_server_.set_now_in_usec(0);
+  AddGuid(kGuid1);
+  epoll_server_.set_now_in_usec(10);
+  AddGuid(kGuid2);
+
+  const QuicTime::Delta time_wait_period =
+      QuicTimeWaitListManagerPeer::time_wait_period(&time_wait_list_manager_);
+  epoll_server_.set_now_in_usec(time_wait_period.ToMicroseconds() + 1);
+
+  EXPECT_CALL(epoll_server_, RegisterAlarm(_, _));
+
+  time_wait_list_manager_.CleanUpOldGuids();
+  EXPECT_FALSE(IsGuidInTimeWait(kGuid1));
+  EXPECT_TRUE(IsGuidInTimeWait(kGuid2));
+}
 }  // namespace
 }  // namespace test
 }  // namespace tools

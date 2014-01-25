@@ -264,10 +264,12 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {
   EXPECT_TRUE(sequencer_->OnFrame(6, "ghi"));
   EXPECT_EQ(1u, sequencer_->frames()->size());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
+  EXPECT_EQ(3u, sequencer_->num_bytes_buffered());
   // Buffer the second
   EXPECT_TRUE(sequencer_->OnFrame(3, "def"));
   EXPECT_EQ(2u, sequencer_->frames()->size());
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
+  EXPECT_EQ(6u, sequencer_->num_bytes_buffered());
 
   InSequence s;
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
@@ -277,6 +279,7 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFrameProcessed) {
   // Ack right away
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc"));
   EXPECT_EQ(9u, sequencer_->num_bytes_consumed());
+  EXPECT_EQ(0u, sequencer_->num_bytes_buffered());
 
   EXPECT_EQ(0u, sequencer_->frames()->size());
 }
@@ -290,6 +293,7 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFramesProcessedWithBuffering) {
   // We can afford to buffer this.
   EXPECT_TRUE(sequencer_->OnFrame(6, "ghi"));
   EXPECT_EQ(0u, sequencer_->num_bytes_consumed());
+  EXPECT_EQ(3u, sequencer_->num_bytes_buffered());
 
   InSequence s;
   EXPECT_CALL(stream_, ProcessRawData(StrEq("abc"), 3)).WillOnce(Return(3));
@@ -297,10 +301,12 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFramesProcessedWithBuffering) {
   // Ack right away
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc"));
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
+  EXPECT_EQ(3u, sequencer_->num_bytes_buffered());
 
   // We should be willing to buffer this now.
   EXPECT_TRUE(sequencer_->OnFrame(9, "jkl"));
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
+  EXPECT_EQ(6u, sequencer_->num_bytes_buffered());
 
   EXPECT_CALL(stream_, ProcessRawData(StrEq("def"), 3)).WillOnce(Return(3));
   EXPECT_CALL(stream_, ProcessRawData(StrEq("ghi"), 3)).WillOnce(Return(3));
@@ -309,9 +315,10 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFramesProcessedWithBuffering) {
   EXPECT_TRUE(sequencer_->OnFrame(3, "def"));
   EXPECT_EQ(12u, sequencer_->num_bytes_consumed());
   EXPECT_EQ(0u, sequencer_->frames()->size());
+  EXPECT_EQ(0u, sequencer_->num_bytes_buffered());
 }
 
-TEST_F(QuicStreamSequencerTest, OutOfOrderFramesBlockignWithReadv) {
+TEST_F(QuicStreamSequencerTest, OutOfOrderFramesBlockingWithReadv) {
   sequencer_->SetMemoryLimit(9);
   char buffer[20];
   iovec iov[2];
@@ -341,17 +348,23 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFramesBlockignWithReadv) {
   EXPECT_FALSE(sequencer_->OnFrame(12, "mno"));
   EXPECT_TRUE(sequencer_->OnFrame(6, "ghi"));
 
+  // defghijkl buffered
+  EXPECT_EQ(9u, sequencer_->num_bytes_buffered());
+
   // Read 3 bytes.
   EXPECT_EQ(3, sequencer_->Readv(iov, 2));
   EXPECT_EQ(0, strncmp(buffer, "def", 3));
+  EXPECT_EQ(6u, sequencer_->num_bytes_buffered());
 
-  // Now we have space to bufer this.
+  // Now we have space to buffer this.
   EXPECT_TRUE(sequencer_->OnFrame(12, "mno"));
+  EXPECT_EQ(9u, sequencer_->num_bytes_buffered());
 
   // Read the remaining 9 bytes.
   iov[1].iov_len = 19;
   EXPECT_EQ(9, sequencer_->Readv(iov, 2));
   EXPECT_EQ(0, strncmp(buffer, "ghijklmno", 9));
+  EXPECT_EQ(0u, sequencer_->num_bytes_buffered());
 
   EXPECT_TRUE(sequencer_->OnFrame(15, "pqr"));
 }
@@ -371,21 +384,27 @@ TEST_F(QuicStreamSequencerTest, OutOfOrderFramesBlockignWithGetReadableRegion) {
   EXPECT_FALSE(sequencer_->OnFrame(12, "mno"));
   EXPECT_TRUE(sequencer_->OnFrame(6, "ghi"));
 
+  // defghijkl buffered
+  EXPECT_EQ(9u, sequencer_->num_bytes_buffered());
+
   // Read 3 bytes.
   const char* expected[] = {"def", "ghi", "jkl"};
   ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
   char buffer[9];
   iovec read_iov = { &buffer[0], 3 };
   ASSERT_EQ(3, sequencer_->Readv(&read_iov, 1));
+  EXPECT_EQ(6u, sequencer_->num_bytes_buffered());
 
-  // Now we have space to bufer this.
+  // Now we have space to buffer this.
   EXPECT_TRUE(sequencer_->OnFrame(12, "mno"));
+  EXPECT_EQ(9u, sequencer_->num_bytes_buffered());
 
   // Read the remaining 9 bytes.
   const char* expected2[] = {"ghi", "jkl", "mno"};
   ASSERT_TRUE(VerifyReadableRegions(expected2, arraysize(expected2)));
   read_iov.iov_len = 9;
   ASSERT_EQ(9, sequencer_->Readv(&read_iov, 1));
+  EXPECT_EQ(0u, sequencer_->num_bytes_buffered());
 
   EXPECT_TRUE(sequencer_->OnFrame(15, "pqr"));
 }
@@ -401,6 +420,9 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   EXPECT_TRUE(sequencer_->OnFrame(3, "def"));
   EXPECT_TRUE(sequencer_->OnFrame(6, "ghi"));
 
+  // abcdefghi buffered
+  EXPECT_EQ(9u, sequencer_->num_bytes_buffered());
+
   // Peek into the data.
   const char* expected[] = {"abc", "def", "ghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected, arraysize(expected)));
@@ -410,18 +432,21 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   // Verify data.
   const char* expected2[] = {"bc", "def", "ghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected2, arraysize(expected2)));
+  EXPECT_EQ(8u, sequencer_->num_bytes_buffered());
 
   // Consume 2 bytes.
   sequencer_->MarkConsumed(2);
   // Verify data.
   const char* expected3[] = {"def", "ghi"};
   ASSERT_TRUE(VerifyReadableRegions(expected3, arraysize(expected3)));
+  EXPECT_EQ(6u, sequencer_->num_bytes_buffered());
 
   // Consume 5 bytes.
   sequencer_->MarkConsumed(5);
   // Verify data.
   const char* expected4[] = {"i"};
   ASSERT_TRUE(VerifyReadableRegions(expected4, arraysize(expected4)));
+  EXPECT_EQ(1u, sequencer_->num_bytes_buffered());
 }
 
 TEST_F(QuicStreamSequencerTest, MarkConsumedError) {

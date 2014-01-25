@@ -466,7 +466,8 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-TEST_P(EndToEndTest, LargePostWithPacketLossAndBlocketSocket) {
+// TODO(ianswett): Re-enable once b/12646613 and b/11206052 are fixed.
+TEST_P(EndToEndTest, DISABLED_LargePostWithPacketLossAndBlockedSocket) {
   // Connect with lower fake packet loss than we'd like to test.  Until
   // b/10126687 is fixed, losing handshake packets is pretty brutal.
   SetPacketLossPercentage(5);

@@ -644,18 +644,19 @@ void QuicConnection::OnPacketComplete() {
   bool send_ack_immediately = received_packet_manager_.IsMissing(
       last_header_.packet_sequence_number);
 
-  // Ensure the visitor can process the stream frames before recording and
-  // processing the rest of the packet.
-  if (last_stream_frames_.empty() ||
-      visitor_->OnStreamFrames(last_stream_frames_)) {
-    received_packet_manager_.RecordPacketReceived(last_size_,
-                                                  last_header_,
-                                                  time_of_last_received_packet_,
-                                                  last_packet_revived_);
-    for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
-      stats_.stream_bytes_received +=
-          last_stream_frames_[i].data.TotalBufferSize();
-    }
+  // Discard the packet if the visitor fails to process the stream frames.
+  if (!last_stream_frames_.empty() &&
+      !visitor_->OnStreamFrames(last_stream_frames_)) {
+    return;
+  }
+
+  received_packet_manager_.RecordPacketReceived(last_size_,
+                                                last_header_,
+                                                time_of_last_received_packet_,
+                                                last_packet_revived_);
+  for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
+    stats_.stream_bytes_received +=
+        last_stream_frames_[i].data.TotalBufferSize();
   }
 
   // Process stream resets, then acks, then congestion feedback.
@@ -1297,6 +1298,11 @@ QuicPacketSequenceNumber QuicConnection::GetNextPacketSequenceNumber() {
 bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        const SerializedPacket& packet,
                                        TransmissionType transmission_type) {
+  if (packet.packet == NULL) {
+    LOG(DFATAL) << "NULL packet passed in to SendOrQueuePacket";
+    return true;
+  }
+
   IsHandshake handshake = packet.retransmittable_frames == NULL ?
       NOT_HANDSHAKE : packet.retransmittable_frames->HasCryptoHandshake();
   Force forced = HasForcedFrames(packet.retransmittable_frames);

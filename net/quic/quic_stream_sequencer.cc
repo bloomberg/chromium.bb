@@ -20,7 +20,8 @@ QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
       num_bytes_consumed_(0),
       max_frame_memory_(numeric_limits<size_t>::max()),
       close_offset_(numeric_limits<QuicStreamOffset>::max()),
-      blocked_(false) {
+      blocked_(false),
+      num_bytes_buffered_(0) {
 }
 
 QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
@@ -29,7 +30,8 @@ QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
       num_bytes_consumed_(0),
       max_frame_memory_(max_frame_memory),
       close_offset_(numeric_limits<QuicStreamOffset>::max()),
-      blocked_(false) {
+      blocked_(false),
+      num_bytes_buffered_(0) {
   if (max_frame_memory < kMaxPacketSize) {
     LOG(DFATAL) << "Setting max frame memory to " << max_frame_memory
                 << ".  Some frames will be impossible to handle.";
@@ -98,6 +100,9 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
 
   IOVector data;
   data.AppendIovec(frame.data.iovec(), frame.data.Size());
+
+  // If the frame has arrived in-order then we can process it immediately, only
+  // buffering if the stream is unable to process it.
   if (!blocked_ && byte_offset == num_bytes_consumed_) {
     DVLOG(1) << "Processing byte offset " << byte_offset;
     size_t bytes_consumed = 0;
@@ -117,18 +122,21 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
       FlushBufferedFrames();
       return true;  // it's safe to ack this frame.
     } else {
-      // Set ourselves up to buffer what's left
+      // Set ourselves up to buffer what's left.
       data_len -= bytes_consumed;
       data.Consume(bytes_consumed);
       byte_offset += bytes_consumed;
     }
   }
+
+  // Buffer any remaining data to be consumed by the stream when ready.
   for (size_t i = 0; i < data.Size(); ++i) {
     DVLOG(1) << "Buffering stream data at offset " << byte_offset;
-    frames_.insert(make_pair(byte_offset, string(
-        static_cast<char*>(data.iovec()[i].iov_base),
-        data.iovec()[i].iov_len)));
-    byte_offset += data.iovec()[i].iov_len;
+    const iovec& iov = data.iovec()[i];
+    frames_.insert(make_pair(
+        byte_offset, string(static_cast<char*>(iov.iov_base), iov.iov_len)));
+    byte_offset += iov.iov_len;
+    num_bytes_buffered_ += iov.iov_len;
   }
   return true;
 }
@@ -157,6 +165,7 @@ bool QuicStreamSequencer::MaybeCloseStream() {
     // equal, but error handling seems silly at this point.
     stream_->OnFinRead();
     frames_.clear();
+    num_bytes_buffered_ = 0;
     return true;
   }
   return false;
@@ -208,7 +217,7 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
     }
     if (it->second.size() == frame_offset) {
       // We've copied this whole frame
-      num_bytes_consumed_ += it->second.size();
+      RecordBytesConsumed(it->second.size());
       frames_.erase(it);
       it = frames_.begin();
       frame_offset = 0;
@@ -219,7 +228,7 @@ int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
     frames_.insert(make_pair(it->first + frame_offset,
                              it->second.substr(frame_offset)));
     frames_.erase(frames_.begin());
-    num_bytes_consumed_ += frame_offset;
+    RecordBytesConsumed(frame_offset);
   }
   return num_bytes_consumed_ - initial_bytes_consumed;
 }
@@ -241,6 +250,7 @@ void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
 
     if (it->first + it->second.length() <= end_offset) {
       num_bytes_consumed_ += it->second.length();
+      num_bytes_buffered_ -= it->second.length();
       // This chunk is entirely consumed.
       frames_.erase(it);
       continue;
@@ -248,7 +258,7 @@ void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
 
     // Partially consume this frame.
     size_t delta = end_offset - it->first;
-    num_bytes_consumed_ += delta;
+    RecordBytesConsumed(delta);
     frames_.insert(make_pair(end_offset, it->second.substr(delta)));
     frames_.erase(it);
     break;
@@ -286,7 +296,7 @@ void QuicStreamSequencer::FlushBufferedFrames() {
     string* data = &it->second;
     size_t bytes_consumed = stream_->ProcessRawData(data->c_str(),
                                                     data->size());
-    num_bytes_consumed_ += bytes_consumed;
+    RecordBytesConsumed(bytes_consumed);
     if (MaybeCloseStream()) {
       return;
     }
@@ -304,6 +314,11 @@ void QuicStreamSequencer::FlushBufferedFrames() {
     }
   }
   MaybeCloseStream();
+}
+
+void QuicStreamSequencer::RecordBytesConsumed(size_t bytes_consumed) {
+  num_bytes_consumed_ += bytes_consumed;
+  num_bytes_buffered_ -= bytes_consumed;
 }
 
 }  // namespace net

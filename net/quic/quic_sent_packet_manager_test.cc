@@ -345,8 +345,8 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
 
 TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   SendDataPacket(1);
-  RetransmitPacket(1, 2);
-  RetransmitPacket(2, 3);
+  RetransmitAndSendPacket(1, 2);
+  RetransmitAndSendPacket(2, 3);
   QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(15);
   clock_.AdvanceTime(rtt);
 
@@ -357,14 +357,35 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   received_info.largest_observed = 1;
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
-  // 3 remains unacked, but no packets have retransmittable data.
-  QuicPacketSequenceNumber unacked[] = { 3 };
+  // 2 and 3 remain unacked, but no packets have retransmittable data.
+  QuicPacketSequenceNumber unacked[] = { 2, 3 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
-  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
-  // Verify that the retransmission alarm would not fire to abandon packet 3.
-  EXPECT_EQ(QuicTime::Zero(), manager_.GetRetransmissionTime());
+  // Ensure packet 2 is lost when 4 and 5 are sent and acked.
+  SendDataPacket(4);
+  received_info.largest_observed = 4;
+  received_info.missing_packets.insert(2);
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+
+  QuicPacketSequenceNumber unacked2[] = { 2 };
+  VerifyUnackedPackets(unacked2, arraysize(unacked2));
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
+
+  SendDataPacket(5);
+  received_info.largest_observed = 5;
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(2, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+
+  VerifyUnackedPackets(NULL, 0);
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 }
 
 TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
@@ -964,19 +985,25 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   RetransmitNextPacket(3);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
-  // Ack the third and ensure the first two are considered lost, but they were
-  // already abandoned, so that won't occur again.
+  // Ack the third and ensure the first two are still pending.
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _));
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 3;
   received_info.missing_packets.insert(1);
   received_info.missing_packets.insert(2);
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
+
+  // Acking two more packets will lose both of them due to nacks.
+  received_info.largest_observed = 5;
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(2);
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 }
 
 TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
@@ -1048,6 +1075,34 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
+  // Send 1 crypto packet.
+  SendCryptoPacket(1);
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+
+  // Retransmit the crypto packet as 2.
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
+  manager_.OnRetransmissionTimeout();
+  RetransmitNextPacket(2);
+
+  // Retransmit the crypto packet as 3.
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
+  manager_.OnRetransmissionTimeout();
+  RetransmitNextPacket(3);
+
+  // Now ack the first crypto packet, and ensure the second gets abandoned and
+  // removed from unacked_packets.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
+  ReceivedPacketInfo received_info;
+  received_info.largest_observed = 2;
+  received_info.missing_packets.insert(1);
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
+
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+  VerifyUnackedPackets(NULL, 0);
 }
 
 TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutUnsentDataPacket) {
