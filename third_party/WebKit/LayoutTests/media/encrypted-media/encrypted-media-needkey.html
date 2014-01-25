@@ -34,8 +34,7 @@
                 testExpected("event instanceof window.MediaKeyNeededEvent", true);
                 testExpected("event.type", "needkey");
 
-                // FIXME: Enable the following line when contentType set.
-                // testExpected("event.contentType", "video/webm");
+                testExpected("event.contentType", "video/webm");
                 testArraysEqual("event.initData", expectedInitData);
 
                 if (--expectedEvents == 0)

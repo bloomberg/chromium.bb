@@ -67,11 +67,6 @@ public:
     virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) = 0;
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) = 0;
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) = 0;
-    // FIXME: Remove this method after callers change to pass contentType.
-    virtual void keyNeeded(const WebString& keySystem, const WebString& sessionId, const unsigned char* initData, unsigned initDataLength)
-    {
-        keyNeeded(WebString(), initData, initDataLength);
-    }
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) = 0;
     // The returned pointer is valid until closeHelperPlugin() is called.
     // Returns 0 if the plugin could not be instantiated.
