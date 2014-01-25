@@ -69,6 +69,7 @@ class PolicyWatcher {
   // The names of the policies for token authentication URLs.
   static const char kHostTokenUrlPolicyName[];
   static const char kHostTokenValidationUrlPolicyName[];
+  static const char kHostTokenValidationCertIssuerPolicyName[];
 
   // The name of the policy for disabling PIN-less authentication.
   static const char kHostAllowClientPairing[];

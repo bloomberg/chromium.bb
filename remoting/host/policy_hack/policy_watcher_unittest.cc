@@ -133,6 +133,8 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetString(PolicyWatcher::kHostTokenUrlPolicyName, std::string());
     dict.SetString(PolicyWatcher::kHostTokenValidationUrlPolicyName,
                    std::string());
+    dict.SetString(PolicyWatcher::kHostTokenValidationCertIssuerPolicyName,
+                   std::string());
     dict.SetBoolean(PolicyWatcher::kHostAllowClientPairing, true);
 #if !defined(NDEBUG)
     dict.SetString(PolicyWatcher::kHostDebugOverridePoliciesName, "");
