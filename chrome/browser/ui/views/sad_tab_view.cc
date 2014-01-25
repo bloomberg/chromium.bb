@@ -23,6 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -124,6 +125,10 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
         this,
         l10n_util::GetStringUTF16(IDS_SAD_TAB_RELOAD_LABEL));
     reload_button_->SetStyle(views::Button::STYLE_BUTTON);
+    // Always render the reload button with chrome style borders; never rely on
+    // native styles.
+    reload_button_->SetBorder(scoped_ptr<views::Border>(
+        new views::LabelButtonBorder(reload_button_->style())));
     layout->AddView(reload_button_);
 
     help_link_ = CreateLink(l10n_util::GetStringUTF16(
