@@ -50,6 +50,12 @@ bisonExe = 'bison'
 if len(sys.argv) > 3:
     bisonExe = sys.argv[3]
 
+pathToBison = os.path.split(bisonExe)[0]
+if pathToBison:
+    # Make sure this path is in the path so that it can find its auxiliary
+    # binaries (in particular, m4).
+    os.environ['PATH'] += os.pathsep + pathToBison
+
 inputName = os.path.basename(inputFile)
 assert inputName == 'CSSGrammar.y' or inputName == 'XPathGrammar.y'
 prefix = {'CSSGrammar.y': 'cssyy', 'XPathGrammar.y': 'xpathyy'}[inputName]
