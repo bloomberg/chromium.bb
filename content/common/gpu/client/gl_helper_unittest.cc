@@ -908,7 +908,8 @@ class GLHelperTest : public testing::Test {
 
   // Test basic format readback.
   bool TestTextureFormatReadback(const gfx::Size& src_size,
-                         SkBitmap::Config bitmap_config) {
+                         SkBitmap::Config bitmap_config,
+                         bool readback_async) {
     DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
            (bitmap_config == SkBitmap::kARGB_8888_Config));
     bool rgb565_format = (bitmap_config == SkBitmap::kRGB_565_Config);
@@ -948,10 +949,21 @@ class GLHelperTest : public testing::Test {
     // When the readback is over output bitmap should have the red color.
     output_pixels.eraseColor(SK_ColorGREEN);
     uint8* pixels = static_cast<uint8*>(output_pixels.getPixels());
-    helper_->ReadbackTextureSync(src_texture,
-                                 gfx::Rect(src_size),
-                                 pixels,
-                                 bitmap_config);
+    if (readback_async) {
+      base::RunLoop run_loop;
+      helper_->ReadbackTextureAsync(src_texture,
+                                    src_size,
+                                    pixels,
+                                    bitmap_config,
+                                    base::Bind(&callcallback,
+                                               run_loop.QuitClosure()));
+      run_loop.Run();
+    } else {
+      helper_->ReadbackTextureSync(src_texture,
+                                   gfx::Rect(src_size),
+                                   pixels,
+                                   bitmap_config);
+    }
     bool result = IsEqual(input_pixels, output_pixels);
     if (!result) {
       LOG(ERROR) << "Bitmap comparision failure";
@@ -1339,17 +1351,35 @@ class GLHelperTest : public testing::Test {
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
-TEST_F(GLHelperTest, RGBAReadBackTest) {
+TEST_F(GLHelperTest, ARGBSyncReadbackTest) {
   const int kTestSize = 64;
   bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
-                                          SkBitmap::kARGB_8888_Config);
+                                          SkBitmap::kARGB_8888_Config,
+                                          false);
   EXPECT_EQ(result, true);
 }
 
-TEST_F(GLHelperTest, RGB565ReadBackTest) {
+TEST_F(GLHelperTest, RGB565SyncReadbackTest) {
   const int kTestSize = 64;
   bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
-                                          SkBitmap::kRGB_565_Config);
+                                          SkBitmap::kRGB_565_Config,
+                                          false);
+  EXPECT_EQ(result, true);
+}
+
+TEST_F(GLHelperTest, ARGBASyncReadbackTest) {
+  const int kTestSize = 64;
+  bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
+                                          SkBitmap::kARGB_8888_Config,
+                                          true);
+  EXPECT_EQ(result, true);
+}
+
+TEST_F(GLHelperTest, RGB565ASyncReadbackTest) {
+  const int kTestSize = 64;
+  bool result = TestTextureFormatReadback(gfx::Size(kTestSize,kTestSize),
+                                          SkBitmap::kRGB_565_Config,
+                                          true);
   EXPECT_EQ(result, true);
 }
 

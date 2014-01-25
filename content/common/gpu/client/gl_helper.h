@@ -214,6 +214,12 @@ class CONTENT_EXPORT GLHelper {
                            unsigned char* out,
                            SkBitmap::Config format);
 
+  void ReadbackTextureAsync(GLuint texture,
+                            const gfx::Size& dst_size,
+                            unsigned char* out,
+                            SkBitmap::Config config,
+                            const base::Callback<void(bool)>& callback);
+
   // Creates a copy of the specified texture. |size| is the size of the texture.
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.

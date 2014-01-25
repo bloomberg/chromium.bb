@@ -136,6 +136,12 @@ class GLHelper::CopyTextureToImpl
                            unsigned char* out,
                            SkBitmap::Config format);
 
+  void ReadbackTextureAsync(GLuint texture,
+                            const gfx::Size& dst_size,
+                            unsigned char* out,
+                            SkBitmap::Config config,
+                            const base::Callback<void(bool)>& callback);
+
   // Reads back bytes from the currently bound frame buffer.
   // Note that dst_size is specified in bytes, not pixels.
   void ReadbackAsync(const gfx::Size& dst_size,
@@ -529,6 +535,37 @@ void GLHelper::CopyTextureToImpl::ReadbackTextureSync(GLuint texture,
                   out);
 }
 
+void GLHelper::CopyTextureToImpl::ReadbackTextureAsync(
+    GLuint texture,
+    const gfx::Size& dst_size,
+    unsigned char* out,
+    SkBitmap::Config config,
+    const base::Callback<void(bool)>& callback) {
+  // Only ARGB888 and RGB565 supported as of now.
+  bool format_support = ((config == SkBitmap::kRGB_565_Config) ||
+                         (config == SkBitmap::kARGB_8888_Config));
+  if (!format_support) {
+    DCHECK(format_support);
+    return;
+  }
+  ScopedFramebuffer dst_framebuffer(gl_);
+  ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
+                                                             dst_framebuffer);
+  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER,
+                            GL_COLOR_ATTACHMENT0,
+                            GL_TEXTURE_2D,
+                            texture,
+                            0);
+  int bytes_per_pixel = (config == SkBitmap::kRGB_565_Config) ? 2 : 4;
+  ReadbackAsync(dst_size,
+                dst_size.width() * bytes_per_pixel,
+                dst_size.width() * bytes_per_pixel,
+                out,
+                config,
+                callback);
+}
+
 GLuint GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
     GLuint src_texture,
     const gfx::Size& src_size,
@@ -661,6 +698,20 @@ void GLHelper::ReadbackTextureSync(GLuint texture,
                                    SkBitmap::Config format) {
   InitCopyTextToImpl();
   copy_texture_to_impl_->ReadbackTextureSync(texture, src_rect, out, format);
+}
+
+void GLHelper::ReadbackTextureAsync(
+    GLuint texture,
+    const gfx::Size& dst_size,
+    unsigned char* out,
+    SkBitmap::Config config,
+    const base::Callback<void(bool)>& callback) {
+  InitCopyTextToImpl();
+  copy_texture_to_impl_->ReadbackTextureAsync(texture,
+                                              dst_size,
+                                              out,
+                                              config,
+                                              callback);
 }
 
 GLuint GLHelper::CopyTexture(GLuint texture, const gfx::Size& size) {
