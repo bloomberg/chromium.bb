@@ -209,6 +209,10 @@ void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
     if (base::FieldTrialList::TrialExists(trial_name))
       field_trial_hashes->push_back(metrics::HashName(trial_name));
   }
+  if (base::FieldTrialList::TrialExists(kBundledExperimentFieldTrialName)) {
+    field_trial_hashes->push_back(
+        metrics::HashName(kBundledExperimentFieldTrialName));
+  }
 }
 
 bool OmniboxFieldTrial::InHUPCullRedirectsFieldTrial() {
