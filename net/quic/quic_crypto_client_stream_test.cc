@@ -9,6 +9,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_socket_address_coder.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
@@ -98,6 +99,9 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
       stream_->crypto_negotiated_params());
   EXPECT_EQ(kAESG, crypto_params.aead);
   EXPECT_EQ(kC255, crypto_params.key_exchange);
+  QuicSocketAddressCoder address_coder(IPEndPoint(TestPeerIPAddress(),
+                                                  kTestPort));
+  EXPECT_EQ(address_coder.Encode(), crypto_params.client_address);
 }
 
 TEST_F(QuicCryptoClientStreamTest, InvalidHostname) {

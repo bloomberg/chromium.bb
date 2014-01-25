@@ -589,6 +589,11 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   // TODO(agl):
   //   learn about updated SCFGs.
 
+  StringPiece address;
+  if (server_hello.GetStringPiece(kCADR, &address)) {
+    out_params->client_address.assign(address.data(), address.size());
+  }
+
   StringPiece public_value;
   if (!server_hello.GetStringPiece(kPUBS, &public_value)) {
     *error_details = "server hello missing forward secure public value";

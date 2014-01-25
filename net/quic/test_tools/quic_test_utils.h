@@ -29,6 +29,9 @@ namespace test {
 static const QuicGuid kTestGuid = 42;
 static const int kTestPort = 123;
 
+// Returns the test peer IP address.
+IPAddressNumber TestPeerIPAddress();
+
 // Upper limit on versions we support.
 QuicVersion QuicVersionMax();
 

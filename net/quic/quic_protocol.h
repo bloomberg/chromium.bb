@@ -505,8 +505,8 @@ struct NET_EXPORT_PRIVATE QuicPublicResetPacket {
   explicit QuicPublicResetPacket(const QuicPacketPublicHeader& header)
       : public_header(header) {}
   QuicPacketPublicHeader public_header;
-  QuicPacketSequenceNumber rejected_sequence_number;
   QuicPublicResetNonceProof nonce_proof;
+  QuicPacketSequenceNumber rejected_sequence_number;
 };
 
 enum QuicVersionNegotiationState {

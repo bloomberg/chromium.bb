@@ -33,6 +33,7 @@
 #include "net/quic/crypto/strike_register_client.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_socket_address_coder.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -455,7 +456,7 @@ void QuicCryptoServerConfig::ValidateClientHello(
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
     QuicGuid guid,
-    IPEndPoint client_ip,
+    IPEndPoint client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
     const QuicClock* clock,
@@ -700,7 +701,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   }
   out->SetVector(kVER, supported_version_tags);
   out->SetStringPiece(kSourceAddressTokenTag,
-                      NewSourceAddressToken(client_ip, rand, info.now));
+                      NewSourceAddressToken(client_address, rand, info.now));
+  QuicSocketAddressCoder address_coder(client_address);
+  out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
   return QUIC_NO_ERROR;
 }

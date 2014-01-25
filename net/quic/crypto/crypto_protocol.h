@@ -89,6 +89,9 @@ const QuicTag kEXPY = TAG('E', 'X', 'P', 'Y');  // Expiry
 const QuicTag kCIDK = TAG('C', 'I', 'D', 'K');  // ChannelID key
 const QuicTag kCIDS = TAG('C', 'I', 'D', 'S');  // ChannelID signature
 
+// Server hello tags
+const QuicTag kCADR = TAG('C', 'A', 'D', 'R');  // Client IP address and port
+
 // Universal tags
 const QuicTag kPAD  = TAG('P', 'A', 'D', '\0'); // Padding
 

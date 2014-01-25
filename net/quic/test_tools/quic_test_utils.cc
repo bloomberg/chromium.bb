@@ -241,7 +241,7 @@ void MockHelper::AdvanceTime(QuicTime::Delta delta) {
 
 MockConnection::MockConnection(bool is_server)
     : QuicConnection(kTestGuid,
-                     IPEndPoint(Loopback4(), kTestPort),
+                     IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicSupportedVersions()),
@@ -261,7 +261,7 @@ MockConnection::MockConnection(IPEndPoint address,
 
 MockConnection::MockConnection(QuicGuid guid,
                                bool is_server)
-    : QuicConnection(guid, IPEndPoint(Loopback4(), kTestPort),
+    : QuicConnection(guid, IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicSupportedVersions()),
@@ -272,7 +272,7 @@ MockConnection::MockConnection(QuicGuid guid,
 MockConnection::MockConnection(bool is_server,
                                const QuicVersionVector& supported_versions)
     : QuicConnection(kTestGuid,
-                     IPEndPoint(Loopback4(), kTestPort),
+                     IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, supported_versions),
@@ -397,13 +397,15 @@ string HexDumpWithMarks(const char* data, int length,
 
 }  // namespace
 
+IPAddressNumber TestPeerIPAddress() { return Loopback4(); }
+
 QuicVersion QuicVersionMax() { return QuicSupportedVersions().front(); }
 
 QuicVersion QuicVersionMin() { return QuicSupportedVersions().back(); }
 
 IPAddressNumber Loopback4() {
-  net::IPAddressNumber addr;
-  CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &addr));
+  IPAddressNumber addr;
+  CHECK(ParseIPLiteralToNumber("127.0.0.1", &addr));
   return addr;
 }
 

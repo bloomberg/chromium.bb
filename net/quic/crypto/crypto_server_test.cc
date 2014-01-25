@@ -13,6 +13,7 @@
 #include "net/quic/test_tools/delayed_verify_strike_register_client.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -38,9 +39,8 @@ class CryptoServerTest : public ::testing::Test {
  public:
   CryptoServerTest()
       : rand_(QuicRandom::GetInstance()),
-        config_(QuicCryptoServerConfig::TESTING, rand_),
-        addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
-              ip_ : IPAddressNumber(), 1) {
+        client_address_(Loopback4(), 1234),
+        config_(QuicCryptoServerConfig::TESTING, rand_) {
     config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
     supported_versions_ = QuicSupportedVersions();
   }
@@ -136,7 +136,7 @@ class CryptoServerTest : public ::testing::Test {
   void RunValidate(
       const CryptoHandshakeMessage& message,
       ValidateClientHelloResultCallback* cb) {
-    config_.ValidateClientHello(message, addr_, &clock_, cb);
+    config_.ValidateClientHello(message, client_address_, &clock_, cb);
   }
 
   void ShouldFailMentioning(const char* error_substr,
@@ -150,7 +150,7 @@ class CryptoServerTest : public ::testing::Test {
                             const CryptoHandshakeMessage& message,
                             bool* called) {
     config_.ValidateClientHello(
-        message, addr_, &clock_,
+        message, client_address_, &clock_,
         new ValidateCallback(this, false, error_substr, called));
   }
 
@@ -160,7 +160,7 @@ class CryptoServerTest : public ::testing::Test {
                                const char* error_substr) {
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
-        result, 1 /* GUID */, addr_,
+        result, 1 /* GUID */, client_address_,
         supported_versions_.front(), supported_versions_, &clock_, rand_,
         &params_, &out_, &error_details);
 
@@ -201,13 +201,12 @@ class CryptoServerTest : public ::testing::Test {
  protected:
   QuicRandom* const rand_;
   MockClock clock_;
+  const IPEndPoint client_address_;
   QuicVersionVector supported_versions_;
   QuicCryptoServerConfig config_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
   QuicCryptoNegotiatedParameters params_;
   CryptoHandshakeMessage out_;
-  IPAddressNumber ip_;
-  IPEndPoint addr_;
   uint8 orbit_[kOrbitSize];
 
   // These strings contain hex escaped values from the server suitable for
