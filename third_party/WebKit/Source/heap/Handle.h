@@ -35,6 +35,9 @@
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
 
+#include "wtf/Ptr.h"
+#include "wtf/RefCounted.h"
+
 namespace WebCore {
 
 template<typename T> class Member;
@@ -174,6 +177,9 @@ public:
     Persistent(const Member<U>& other) : m_raw(other) { }
 
     template<typename U>
+    Persistent(const Ptr<U>& other) : m_raw(other.get()) { }
+
+    template<typename U>
     Persistent& operator=(U* other)
     {
         m_raw = other;
@@ -205,6 +211,7 @@ public:
     bool operator!() const { return !m_raw; }
 
     operator T*() const { return m_raw; }
+    operator Ptr<T>() const { return m_raw; }
 
     T* operator->() const { return *this; }
 
@@ -403,6 +410,88 @@ template<typename T, typename U> inline bool operator==(const Persistent<T>& a, 
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Member<U>& b) { return a.get() != b.get(); }
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
+
+// Template aliases for the transition period where we want to support
+// both reference counting and garbage collection based on a
+// compile-time flag.
+//
+// With clang we can use c++11 template aliases which is really what
+// we want. For GCC and MSVC we simulate the template aliases with
+// stylized macros until we can use template aliases.
+#if ENABLE(OILPAN)
+
+#if COMPILER(CLANG)
+template<typename T> using PassRefPtrWillBePtr = Ptr<T>;
+template<typename T> using RefCountedWillBeGarbageCollected = GarbageCollected<T>;
+template<typename T> using RefCountedWillBeGarbageCollectedFinalized = GarbageCollectedFinalized<T>;
+template<typename T> using RefPtrWillBePersistent = Persistent<T>;
+template<typename T> using RefPtrWillBePtr = Ptr<T>;
+template<typename T> using RefPtrWillBeMember = Member<T>;
+template<typename T> using PtrWillBeMember = Member<T>;
+template<typename T> using PtrWillBeWeakMember = WeakMember<T>;
+template<typename T> using OwnPtrWillBeMember = Member<T>;
+template<typename T> using PassOwnPtrWillBePtr = Ptr<T>;
+template<typename T> using NoBaseWillBeGarbageCollected = GarbageCollected<T>;
+template<typename T> using NoBaseWillBeGarbageCollectedFinalized = GarbageCollectedFinalized<T>;
+#else // !COMPILER(CLANG)
+#define PassRefPtrWillBePtr Ptr
+#define RefCountedWillBeGarbageCollected GarbageCollected
+#define RefCountedWillBeGarbageCollectedFinalized GarbageCollectedFinalized
+#define RefPtrWillBePersistent Persistent
+#define RefPtrWillBePtr Ptr
+#define RefPtrWillBeMember Member
+#define PtrWillBeMember Member
+#define PtrWillBeWeakMember WeakMember
+#define OwnPtrWillBeMember Member
+#define PassOwnPtrWillBePtr Ptr
+#define NoBaseWillBeGarbageCollected GarbageCollected
+#define NoBaseWillBeGarbageCollectedFinalized GarbageCollectedFinalized
+#endif // COMPILER(CLANG)
+
+template<typename T> PassRefPtrWillBePtr<T> adoptRefWillBeNoop(T* ptr) { return PassRefPtrWillBePtr<T>(ptr); }
+template<typename T> PassOwnPtrWillBePtr<T> adoptPtrWillBeNoop(T* ptr) { return PassOwnPtrWillBePtr<T>(ptr); }
+
+#else // !ENABLE(OILPAN)
+
+template<typename T>
+class DummyBase {
+public:
+    DummyBase() { }
+    ~DummyBase() { }
+};
+
+#if COMPILER(CLANG)
+template<typename T> using PassRefPtrWillBePtr = PassRefPtr<T>;
+template<typename T> using RefCountedWillBeGarbageCollected = RefCounted<T>;
+template<typename T> using RefCountedWillBeGarbageCollectedFinalized = RefCounted<T>;
+template<typename T> using RefPtrWillBePersistent = RefPtr<T>;
+template<typename T> using RefPtrWillBePtr = RefPtr<T>;
+template<typename T> using RefPtrWillBeMember = RefPtr<T>;
+template<typename T> using PtrWillBeMember = Ptr<T>;
+template<typename T> using PtrWillBeWeakMember = Ptr<T>;
+template<typename T> using OwnPtrWillBeMember = OwnPtr<T>;
+template<typename T> using PassOwnPtrWillBePtr = PassOwnPtr<T>;
+template<typename T> using NoBaseWillBeGarbageCollected = DummyBase<T>;
+template<typename T> using NoBaseWillBeGarbageCollectedFinalized = DummyBase<T>;
+#else // !COMPILER(CLANG)
+#define PassRefPtrWillBePtr PassRefPtr
+#define RefCountedWillBeGarbageCollected RefCounted
+#define RefCountedWillBeGarbageCollectedFinalized RefCounted
+#define RefPtrWillBePersistent RefPtr
+#define RefPtrWillBePtr RefPtr
+#define RefPtrWillBeMember RefPtr
+#define PtrWillBeMember Ptr
+#define PtrWillBeWeakMember Ptr
+#define OwnPtrWillBeMember OwnPtr
+#define PassOwnPtrWillBePtr PassOwnPtr
+#define NoBaseWillBeGarbageCollected DummyBase
+#define NoBaseWillBeGarbageCollectedFinalized DummyBase
+#endif // COMPILER(CLANG)
+
+template<typename T> PassRefPtrWillBePtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
+template<typename T> PassOwnPtrWillBePtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
+
+#endif // ENABLE(OILPAN)
 
 } // namespace WebCore
 

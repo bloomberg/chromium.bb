@@ -759,6 +759,193 @@ private:
     WeakMember<Bar> m_weakBar;
 };
 
+
+class SuperClass;
+
+class PointsBack : public RefCountedWillBeGarbageCollectedFinalized<PointsBack> {
+    DECLARE_GC_INFO;
+public:
+    static PassRefPtrWillBePtr<PointsBack> create()
+    {
+        return adoptRefWillBeNoop(new PointsBack());
+    }
+
+    ~PointsBack()
+    {
+        --s_aliveCount;
+    }
+
+    void setBackPointer(SuperClass* backPointer)
+    {
+        m_backPointer = backPointer;
+    }
+
+    SuperClass* backPointer() const { return m_backPointer; }
+
+    void trace(Visitor* visitor)
+    {
+#if ENABLE_OILPAN
+        visitor->trace(m_backPointer);
+#endif
+    }
+
+    static int s_aliveCount;
+private:
+    PointsBack() : m_backPointer(nullptr)
+    {
+        ++s_aliveCount;
+    }
+
+    PtrWillBeWeakMember<SuperClass> m_backPointer;
+};
+
+int PointsBack::s_aliveCount = 0;
+
+class SuperClass : public RefCountedWillBeGarbageCollectedFinalized<SuperClass> {
+    DECLARE_GC_INFO;
+public:
+    static PassRefPtrWillBePtr<SuperClass> create(PassRefPtrWillBePtr<PointsBack> pointsBack)
+    {
+        return adoptRefWillBeNoop(new SuperClass(pointsBack));
+    }
+
+    virtual ~SuperClass()
+    {
+#if !ENABLE_OILPAN
+        m_pointsBack->setBackPointer(0);
+#endif
+        --s_aliveCount;
+    }
+
+    void doStuff(PassRefPtrWillBePtr<SuperClass> targetPass, PointsBack* pointsBack, int superClassCount)
+    {
+        RefPtrWillBePtr<SuperClass> target = targetPass;
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_EQ(pointsBack, target->pointsBack());
+        EXPECT_EQ(superClassCount, SuperClass::s_aliveCount);
+    }
+
+    virtual void trace(Visitor* visitor)
+    {
+#if ENABLE_OILPAN
+        visitor->trace(m_pointsBack);
+#endif
+    }
+
+    PointsBack* pointsBack() const { return m_pointsBack.get(); }
+
+    static int s_aliveCount;
+protected:
+    explicit SuperClass(PassRefPtrWillBePtr<PointsBack> pointsBack)
+        : m_pointsBack(pointsBack)
+    {
+        m_pointsBack->setBackPointer(this);
+        ++s_aliveCount;
+    }
+
+private:
+    RefPtrWillBeMember<PointsBack> m_pointsBack;
+};
+
+int SuperClass::s_aliveCount = 0;
+class SubData : public NoBaseWillBeGarbageCollectedFinalized<SubData> {
+    DECLARE_GC_INFO
+public:
+    SubData() { ++s_aliveCount; }
+    ~SubData() { --s_aliveCount; }
+
+    void trace(Visitor*) { }
+
+    static int s_aliveCount;
+};
+
+int SubData::s_aliveCount = 0;
+
+class SubClass : public SuperClass {
+public:
+    static PassRefPtrWillBePtr<SubClass> create(PassRefPtrWillBePtr<PointsBack> pointsBack)
+    {
+        return adoptRefWillBeNoop(new SubClass(pointsBack));
+    }
+
+    virtual ~SubClass()
+    {
+        --s_aliveCount;
+    }
+
+    virtual void trace(Visitor* visitor)
+    {
+#if ENABLE_OILPAN
+        SuperClass::trace(visitor);
+        visitor->trace(m_data);
+#endif
+    }
+
+    static int s_aliveCount;
+private:
+    explicit SubClass(PassRefPtrWillBePtr<PointsBack> pointsBack)
+        : SuperClass(pointsBack)
+        , m_data(adoptPtrWillBeNoop(new SubData()))
+    {
+        ++s_aliveCount;
+    }
+
+private:
+    OwnPtrWillBeMember<SubData> m_data;
+};
+
+int SubClass::s_aliveCount = 0;
+
+TEST(HeapTest, Transition)
+{
+    RefPtrWillBePersistent<PointsBack> pointsBack1 = PointsBack::create();
+    RefPtrWillBePersistent<PointsBack> pointsBack2 = PointsBack::create();
+    RefPtrWillBePersistent<SuperClass> superClass = SuperClass::create(pointsBack1);
+    RefPtrWillBePersistent<SubClass> subClass = SubClass::create(pointsBack2);
+    EXPECT_EQ(2, PointsBack::s_aliveCount);
+    EXPECT_EQ(2, SuperClass::s_aliveCount);
+    EXPECT_EQ(1, SubClass::s_aliveCount);
+    EXPECT_EQ(1, SubData::s_aliveCount);
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, PointsBack::s_aliveCount);
+    EXPECT_EQ(2, SuperClass::s_aliveCount);
+    EXPECT_EQ(1, SubClass::s_aliveCount);
+    EXPECT_EQ(1, SubData::s_aliveCount);
+
+    superClass->doStuff(superClass.release(), pointsBack1.get(), 2);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, PointsBack::s_aliveCount);
+    EXPECT_EQ(1, SuperClass::s_aliveCount);
+    EXPECT_EQ(1, SubClass::s_aliveCount);
+    EXPECT_EQ(1, SubData::s_aliveCount);
+    EXPECT_EQ(0, pointsBack1->backPointer());
+
+    pointsBack1.release();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1, PointsBack::s_aliveCount);
+    EXPECT_EQ(1, SuperClass::s_aliveCount);
+    EXPECT_EQ(1, SubClass::s_aliveCount);
+    EXPECT_EQ(1, SubData::s_aliveCount);
+
+    subClass->doStuff(subClass.release(), pointsBack2.get(), 1);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1, PointsBack::s_aliveCount);
+    EXPECT_EQ(0, SuperClass::s_aliveCount);
+    EXPECT_EQ(0, SubClass::s_aliveCount);
+    EXPECT_EQ(0, SubData::s_aliveCount);
+    EXPECT_EQ(0, pointsBack2->backPointer());
+
+    pointsBack2.release();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0, PointsBack::s_aliveCount);
+    EXPECT_EQ(0, SuperClass::s_aliveCount);
+    EXPECT_EQ(0, SubClass::s_aliveCount);
+    EXPECT_EQ(0, SubData::s_aliveCount);
+
+    EXPECT_TRUE(superClass == subClass);
+}
+
 TEST(HeapTest, Threading)
 {
     ThreadedHeapTester::test();
@@ -1427,10 +1614,13 @@ DEFINE_GC_INFO(HeapAllocatedArray);
 DEFINE_GC_INFO(HeapTestSuperClass);
 DEFINE_GC_INFO(IntWrapper);
 DEFINE_GC_INFO(LargeObject);
+DEFINE_GC_INFO(PointsBack);
 DEFINE_GC_INFO(RefCountedAndGarbageCollected);
 DEFINE_GC_INFO(RefCountedAndGarbageCollected2);
 DEFINE_GC_INFO(SimpleFinalizedObject);
 DEFINE_GC_INFO(SimpleObject);
+DEFINE_GC_INFO(SuperClass);
+DEFINE_GC_INFO(SubData);
 DEFINE_GC_INFO(TestTypedHeapClass);
 DEFINE_GC_INFO(TraceCounter);
 
