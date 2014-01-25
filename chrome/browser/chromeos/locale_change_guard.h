@@ -47,8 +47,6 @@ class LocaleChangeGuard : public content::NotificationObserver,
   void OnLogin();
 
  private:
-  class Delegate;
-
   void RevertLocaleChangeCallback(const base::ListValue* list);
   void Check();
 

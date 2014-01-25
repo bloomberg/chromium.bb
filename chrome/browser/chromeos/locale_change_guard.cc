@@ -15,7 +15,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -33,27 +32,6 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace chromeos {
-
-class LocaleChangeGuard::Delegate : public NotificationDelegate {
- public:
-  explicit Delegate(chromeos::LocaleChangeGuard* master) : master_(master) {}
-  virtual void Close(bool by_user) OVERRIDE;
-  virtual void Display() OVERRIDE {}
-  virtual void Error() OVERRIDE {}
-  virtual void Click() OVERRIDE {}
-  virtual std::string id() const OVERRIDE;
-  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
-    return NULL;
-  }
-
- protected:
-  virtual ~Delegate() {}
-
- private:
-  chromeos::LocaleChangeGuard* master_;
-
-  DISALLOW_COPY_AND_ASSIGN(Delegate);
-};
 
 LocaleChangeGuard::LocaleChangeGuard(Profile* profile)
     : profile_(profile),
@@ -232,16 +210,6 @@ void LocaleChangeGuard::PrepareChangingLocale(
     revert_link_text_ = l10n_util::GetStringFUTF16(
         IDS_LOCALE_CHANGE_REVERT_MESSAGE, from);
   }
-}
-
-void LocaleChangeGuard::Delegate::Close(bool by_user) {
-  if (by_user)
-    master_->AcceptLocaleChange();
-}
-
-std::string LocaleChangeGuard::Delegate::id() const {
-  // Arbitrary unique Id.
-  return "8c386938-1e3f-11e0-ac7b-18a90520e2e5";
 }
 
 }  // namespace chromeos
