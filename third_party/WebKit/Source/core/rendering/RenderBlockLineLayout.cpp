@@ -943,7 +943,7 @@ static void deleteLineRange(LineLayoutState& layoutState, RootInlineBox* startLi
     }
 }
 
-void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState, bool hasInlineChild)
+void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
 {
     // We want to skip ahead to the first dirty line
     InlineBidiResolver resolver;
@@ -953,28 +953,6 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState, bool has
     if (startLine) {
         for (RootInlineBox* line = startLine->prevRootBox(); line && line->isHyphenated(); line = line->prevRootBox())
             consecutiveHyphenatedLines++;
-    }
-
-    // FIXME: This would make more sense outside of this function, but since
-    // determineStartPosition can change the fullLayout flag we have to do this here. Failure to call
-    // determineStartPosition first will break fast/repaint/line-flow-with-floats-9.html.
-    if (layoutState.isFullLayout() && hasInlineChild && !selfNeedsLayout()) {
-        // Mark as needing a full layout to force us to repaint. Allow regions
-        // to reflow as needed.
-        setNeedsLayout(MarkOnlyThis);
-
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-            setShouldDoFullRepaintAfterLayout(true);
-        } else {
-            RenderView* v = view();
-            if (v && !v->doingFullRepaint() && hasLayer()) {
-                // Because we waited until we were already inside layout to discover
-                // that the block really needed a full layout, we missed our chance to repaint the layer
-                // before layout started. Luckily the layer has cached the repaint rect for its original
-                // position and size, and so we can use that to make a repaint happen now.
-                repaintUsingContainer(containerForRepaint(), pixelSnappedIntRect(layer()->repainter().repaintRect()));
-            }
-        }
     }
 
     if (containsFloats())
@@ -1554,15 +1532,14 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
         // the replaced elements later. In partial layout mode, line boxes are not
         // deleted and only dirtied. In that case, we can layout the replaced
         // elements at the same time.
-        bool hasInlineChild = false;
         Vector<RenderBox*> replacedChildren;
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
             RenderObject* o = walker.current();
 
             LayoutRectRecorder recorder(*o, !o->isText());
 
-            if (!hasInlineChild && o->isInline())
-                hasInlineChild = true;
+            if (!layoutState.hasInlineChild() && o->isInline())
+                layoutState.setHasInlineChild(true);
 
             if (o->isReplaced() || o->isFloating() || o->isOutOfFlowPositioned()) {
                 RenderBox* box = toRenderBox(o);
@@ -1593,7 +1570,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
         for (size_t i = 0; i < replacedChildren.size(); i++)
             replacedChildren[i]->layoutIfNeeded();
 
-        layoutRunsAndFloats(layoutState, hasInlineChild);
+        layoutRunsAndFloats(layoutState);
     }
 
     // Expand the last line to accommodate Ruby and emphasis marks.
@@ -1697,6 +1674,10 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     }
 
     if (layoutState.isFullLayout()) {
+        // If we encountered a new float and have inline children, mark ourself to force us to repaint.
+        if (layoutState.hasInlineChild() && !selfNeedsLayout())
+            setNeedsLayout(MarkOnlyThis);
+
         // FIXME: This should just call deleteLineBoxTree, but that causes
         // crashes for fast/repaint tests.
         curr = firstRootBox();
