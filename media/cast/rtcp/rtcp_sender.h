@@ -55,35 +55,35 @@ class RtcpSender {
   };
  private:
   void BuildRR(const transport::RtcpReportBlock* report_block,
-               std::vector<uint8>* packet) const;
+               Packet* packet) const;
 
   void AddReportBlocks(const transport::RtcpReportBlock& report_block,
-                       std::vector<uint8>* packet) const;
+                       Packet* packet) const;
 
-  void BuildSdec(std::vector<uint8>* packet) const;
+  void BuildSdec(Packet* packet) const;
 
   void BuildPli(uint32 remote_ssrc,
-                std::vector<uint8>* packet) const;
+                Packet* packet) const;
 
   void BuildRemb(const RtcpRembMessage* remb,
-                 std::vector<uint8>* packet) const;
+                 Packet* packet) const;
 
   void BuildRpsi(const RtcpRpsiMessage* rpsi,
-                 std::vector<uint8>* packet) const;
+                 Packet* packet) const;
 
   void BuildNack(const RtcpNackMessage* nack,
-                 std::vector<uint8>* packet) const;
+                 Packet* packet) const;
 
-  void BuildBye(std::vector<uint8>* packet) const;
+  void BuildBye(Packet* packet) const;
 
   void BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
-                 std::vector<uint8>* packet) const;
+                 Packet* packet) const;
 
   void BuildCast(const RtcpCastMessage* cast_message,
-                 std::vector<uint8>* packet) const;
+                 Packet* packet) const;
 
   void BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
-                        std::vector<uint8>* packet) const;
+                        Packet* packet) const;
 
   inline void BitrateToRembExponentBitrate(uint32 bitrate,
                                            uint8* exponent,

@@ -85,7 +85,7 @@ class LocalRtcpTransport : public transport::PacedPacketSender {
 
   void set_drop_packets(bool drop_packets) { drop_packets_ = drop_packets; }
 
-  virtual bool SendRtcpPacket(const std::vector<uint8>& packet) OVERRIDE {
+  virtual bool SendRtcpPacket(const Packet& packet) OVERRIDE {
     if (short_delay_) {
       testing_clock_->Advance(
           base::TimeDelta::FromMilliseconds(kAddedShortDelay));

@@ -134,8 +134,9 @@ struct PcmAudioFrame {
   std::vector<int16> samples;
 };
 
-typedef std::vector<uint8> Packet;
-typedef std::vector<Packet> PacketList;
+// import from media::cast::transport
+typedef transport::Packet Packet;
+typedef transport::PacketList PacketList;
 
 }  // namespace cast
 }  // namespace media

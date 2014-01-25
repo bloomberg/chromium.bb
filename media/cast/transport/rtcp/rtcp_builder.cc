@@ -52,7 +52,7 @@ void RtcpBuilder::SendRtcpFromRtpSender(
   }
   ssrc_ = sending_ssrc;
   c_name_ = c_name;
-  std::vector<uint8> packet;
+  Packet packet;
   packet.reserve(kMaxIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
     BuildSR(sender_info, &packet);
@@ -74,7 +74,7 @@ void RtcpBuilder::SendRtcpFromRtpSender(
 }
 
 void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
-                          std::vector<uint8>* packet) const {
+                          Packet* packet) const {
   // Sender report.
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 52, kMaxIpPacketSize) << "Not enough buffer space";
@@ -95,7 +95,7 @@ void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
   big_endian_writer.WriteU32(static_cast<uint32>(sender_info.send_octet_count));
 }
 
-void RtcpBuilder::BuildSdec(std::vector<uint8>* packet) const {
+void RtcpBuilder::BuildSdec(Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size +  12 + c_name_.length(), kMaxIpPacketSize)
       << "Not enough buffer space";
@@ -138,7 +138,7 @@ void RtcpBuilder::BuildSdec(std::vector<uint8>* packet) const {
   (*packet)[sdes_length_position] = buffer_length;
 }
 
-void RtcpBuilder::BuildBye(std::vector<uint8>* packet) const {
+void RtcpBuilder::BuildBye(Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 8, kMaxIpPacketSize) << "Not enough buffer space";
   if (start_size + 8 > kMaxIpPacketSize) return;
@@ -170,7 +170,7 @@ void RtcpBuilder::BuildBye(std::vector<uint8>* packet) const {
   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 */
 void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
-                              std::vector<uint8>* packet) const {
+                              Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
   if (start_size + 24 > kMaxIpPacketSize) return;
@@ -191,7 +191,7 @@ void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
 }
 
 void RtcpBuilder::BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
-                                 std::vector<uint8>* packet) const {
+                                 Packet* packet) const {
   DCHECK(packet);
   size_t start_size = packet->size();
   size_t remaining_space = kMaxIpPacketSize - start_size;

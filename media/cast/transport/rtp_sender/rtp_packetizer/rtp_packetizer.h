@@ -74,7 +74,7 @@ class RtpPacketizer {
   void Cast(bool is_key, uint32 frame_id, uint32 reference_frame_id,
             uint32 timestamp, const std::string& data);
 
-  void BuildCommonRTPheader(std::vector<uint8>* packet, bool marker_bit,
+  void BuildCommonRTPheader(Packet* packet, bool marker_bit,
       uint32 time_stamp);
 
   RtpPacketizerConfig config_;

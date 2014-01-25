@@ -48,16 +48,16 @@ class RtcpBuilder {
 
  private:
   void BuildSR(const RtcpSenderInfo& sender_info,
-               std::vector<uint8>* packet) const;
+               Packet* packet) const;
 
-  void BuildSdec(std::vector<uint8>* packet) const;
+  void BuildSdec(Packet* packet) const;
 
-  void BuildBye(std::vector<uint8>* packet) const;
+  void BuildBye(Packet* packet) const;
 
   void BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
-                   std::vector<uint8>* packet) const;
+                   Packet* packet) const;
   void BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
-                      std::vector<uint8>* packet) const;
+                      Packet* packet) const;
 
   PacedSender* const transport_;  // Not owned by this class.
   uint32 ssrc_;

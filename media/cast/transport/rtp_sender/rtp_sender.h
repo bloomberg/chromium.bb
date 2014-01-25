@@ -50,7 +50,7 @@ class RtpSender {
   void RtpStatistics(const base::TimeTicks& now, RtcpSenderInfo* sender_info);
 
  private:
-  void UpdateSequenceNumber(std::vector<uint8>* packet);
+  void UpdateSequenceNumber(Packet* packet);
 
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
