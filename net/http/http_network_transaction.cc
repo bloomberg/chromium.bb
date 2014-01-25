@@ -379,6 +379,8 @@ int HttpNetworkTransaction::Read(IOBuffer* buf, int buf_len,
   return rv;
 }
 
+void HttpNetworkTransaction::StopCaching() {}
+
 bool HttpNetworkTransaction::GetFullRequestHeaders(
     HttpRequestHeaders* headers) const {
   // TODO(ttuttle): Make sure we've populated request_headers_.
@@ -392,6 +394,8 @@ int64 HttpNetworkTransaction::GetTotalReceivedBytes() const {
     total_received_bytes += stream_->GetTotalReceivedBytes();
   return total_received_bytes;
 }
+
+void HttpNetworkTransaction::DoneReading() {}
 
 const HttpResponseInfo* HttpNetworkTransaction::GetResponseInfo() const {
   return ((headers_valid_ && response_.headers.get()) ||
@@ -428,6 +432,9 @@ UploadProgress HttpNetworkTransaction::GetUploadProgress() const {
   // TODO(bashi): This cast is temporary. Remove later.
   return static_cast<HttpStream*>(stream_.get())->GetUploadProgress();
 }
+
+void HttpNetworkTransaction::SetQuicServerInfo(
+    QuicServerInfo* quic_server_info) {}
 
 bool HttpNetworkTransaction::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {

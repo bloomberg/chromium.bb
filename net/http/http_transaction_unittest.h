@@ -203,6 +203,9 @@ class MockNetworkTransaction
 
   virtual net::UploadProgress GetUploadProgress() const OVERRIDE;
 
+  virtual void SetQuicServerInfo(
+      net::QuicServerInfo* quic_server_info) OVERRIDE;
+
   virtual bool GetLoadTimingInfo(
       net::LoadTimingInfo* load_timing_info) const OVERRIDE;
 

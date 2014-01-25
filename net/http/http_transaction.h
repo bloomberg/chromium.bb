@@ -136,7 +136,7 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // SetQuicServerInfo sets a object which reads and writes public information
   // about a QUIC server.
-  virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) {};
+  virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) = 0;
 
   // Populates all of load timing, except for request start times and receive
   // headers time.

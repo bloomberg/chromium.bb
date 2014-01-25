@@ -59,14 +59,15 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   virtual int Read(IOBuffer* buf,
                    int buf_len,
                    const CompletionCallback& callback) OVERRIDE;
-  virtual void StopCaching() OVERRIDE {}
+  virtual void StopCaching() OVERRIDE;
   virtual bool GetFullRequestHeaders(
       HttpRequestHeaders* headers) const OVERRIDE;
   virtual int64 GetTotalReceivedBytes() const OVERRIDE;
-  virtual void DoneReading() OVERRIDE {}
+  virtual void DoneReading() OVERRIDE;
   virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
   virtual UploadProgress GetUploadProgress() const OVERRIDE;
+  virtual void SetQuicServerInfo(QuicServerInfo* quic_server_info) OVERRIDE;
   virtual bool GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE;
   virtual void SetPriority(RequestPriority priority) OVERRIDE;

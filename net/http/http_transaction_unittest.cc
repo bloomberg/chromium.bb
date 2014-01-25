@@ -326,6 +326,9 @@ net::UploadProgress MockNetworkTransaction::GetUploadProgress() const {
   return net::UploadProgress();
 }
 
+void MockNetworkTransaction::SetQuicServerInfo(
+    net::QuicServerInfo* quic_server_info) {}
+
 bool MockNetworkTransaction::GetLoadTimingInfo(
     net::LoadTimingInfo* load_timing_info) const {
   if (socket_log_id_ != net::NetLog::Source::kInvalidId) {

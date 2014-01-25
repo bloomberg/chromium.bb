@@ -32,7 +32,6 @@
 #include "net/base/upload_data_stream.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/http/disk_cache_based_quic_server_info.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -510,6 +509,9 @@ UploadProgress HttpCache::Transaction::GetUploadProgress() const {
     return network_trans_->GetUploadProgress();
   return final_upload_progress_;
 }
+
+void HttpCache::Transaction::SetQuicServerInfo(
+    QuicServerInfo* quic_server_info) {}
 
 bool HttpCache::Transaction::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
