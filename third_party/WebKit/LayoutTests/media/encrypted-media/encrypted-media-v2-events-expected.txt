@@ -7,5 +7,7 @@ RUN(mediaKeySession.update(invalidKey))
 EVENT(error)
 RUN(mediaKeySession.update(validKey))
 EVENT(ready)
+RUN(mediaKeySession.release())
+EVENT(close)
 END OF TEST
 

@@ -52,11 +52,6 @@ public:
         virtual void close() = 0;
         virtual void error(MediaKeyErrorCode, unsigned long systemCode) = 0;
 
-        // FIXME: Remove when all callers change to using the methods above.
-        virtual void keyMessage(const unsigned char* actualMessage, size_t messageLength, const blink::WebURL& destinationURL) { message(actualMessage, messageLength, destinationURL); }
-        virtual void keyAdded() { ready(); }
-        virtual void keyError(MediaKeyErrorCode errorCode, unsigned long systemCode) { error(errorCode, systemCode); }
-
     protected:
         virtual ~Client();
     };

@@ -25,7 +25,8 @@
                 run('mediaKeySession = mediaKeys.createSession("video/webm", initData)');
                 waitForEvent('message', processMessage, false, false, mediaKeySession);
                 waitForEvent('error', processError, false, false, mediaKeySession);
-                waitForEvent('ready', null, true, false, mediaKeySession);
+                waitForEvent('ready', processReady, false, false, mediaKeySession);
+                waitForEvent('close', null, true, false, mediaKeySession);
             }
 
             function processMessage(event)
@@ -36,6 +37,11 @@
             function processError(event)
             {
                 run('mediaKeySession.update(validKey)');
+            }
+
+            function processReady(event)
+            {
+                run('mediaKeySession.release()');
             }
         </script>
     </head>
