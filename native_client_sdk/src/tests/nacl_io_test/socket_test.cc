@@ -395,7 +395,7 @@ TEST(SocketUtilityFunctions, Inet_ntop_failure) {
   EXPECT_EQ(errno, ENOSPC);
 }
 
-TEST(SocketUtilityFunctions, Inet_ptoa) {
+TEST(SocketUtilityFunctions, Inet_pton) {
   struct {
     int family;
     const char* input;
@@ -433,7 +433,7 @@ TEST(SocketUtilityFunctions, Inet_ptoa) {
   }
 }
 
-TEST(SocketUtilityFunctions, Inet_ptoa_failure) {
+TEST(SocketUtilityFunctions, Inet_pton_failure) {
   uint8_t addr[16];
   EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.24312", &addr));
   EXPECT_EQ(0, inet_pton(AF_INET, "127.127.12.24 ", &addr));
