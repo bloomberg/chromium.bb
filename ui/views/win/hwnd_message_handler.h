@@ -284,6 +284,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // layered windows only.
   void RedrawLayeredWindowContents();
 
+  // Attempts to force the window to be redrawn, ensuring that it gets
+  // onscreen.
+  void ForceRedrawWindow(int attempts);
+
   // Message Handlers ----------------------------------------------------------
 
   BEGIN_SAFE_MSG_MAP_EX(HWNDMessageHandler)
@@ -372,6 +376,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
     MSG_WM_THEMECHANGED(OnThemeChanged)
     MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
     MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
+    MSG_WM_WTSSESSION_CHANGE(OnSessionChange)
   END_MSG_MAP()
 
   // Message Handlers.
@@ -416,6 +421,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void OnPaint(HDC dc);
   LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnScrollMessage(UINT message, WPARAM w_param, LPARAM l_param);
+  void OnSessionChange(WPARAM status_code, PWTSSESSION_NOTIFICATION session_id);
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   void OnSetFocus(HWND last_focused_window);
   LRESULT OnSetIcon(UINT size_type, HICON new_icon);

@@ -6,12 +6,15 @@
 
 #include <dwmapi.h>
 #include <shellapi.h>
+#include <wtsapi32.h>
+#pragma comment(lib, "wtsapi32.lib")
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/touch/touch_enabled.h"
+#include "ui/base/win/lock_state.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/base/win/touch_input.h"
@@ -1282,6 +1285,23 @@ void HWNDMessageHandler::RedrawLayeredWindowContents() {
   skia::EndPlatformPaint(layered_window_contents_->sk_canvas());
 }
 
+void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
+  if (ui::IsWorkstationLocked()) {
+    // Presents will continue to fail as long as the input desktop is
+    // unavailable.
+    if (--attempts <= 0)
+      return;
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&HWNDMessageHandler::ForceRedrawWindow,
+                   weak_factory_.GetWeakPtr(),
+                   attempts),
+        base::TimeDelta::FromMilliseconds(500));
+    return;
+  }
+  InvalidateRect(hwnd(), NULL, FALSE);
+}
+
 // Message handlers ------------------------------------------------------------
 
 void HWNDMessageHandler::OnActivateApp(BOOL active, DWORD thread_id) {
@@ -1380,11 +1400,14 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 
   delegate_->HandleCreate();
 
+  WTSRegisterSessionNotification(hwnd(), NOTIFY_FOR_THIS_SESSION);
+
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
 }
 
 void HWNDMessageHandler::OnDestroy() {
+  WTSUnRegisterSessionNotification(hwnd());
   delegate_->HandleDestroying();
 }
 
@@ -2041,6 +2064,16 @@ LRESULT HWNDMessageHandler::OnScrollMessage(UINT message,
   ui::ScrollEvent event(msg);
   delegate_->HandleScrollEvent(event);
   return 0;
+}
+
+void HWNDMessageHandler::OnSessionChange(WPARAM status_code,
+                                         PWTSSESSION_NOTIFICATION session_id) {
+  // Direct3D presents are ignored while the screen is locked, so force the
+  // window to be redrawn on unlock.
+  if (status_code == WTS_SESSION_UNLOCK)
+    ForceRedrawWindow(10);
+
+  SetMsgHandled(FALSE);
 }
 
 LRESULT HWNDMessageHandler::OnSetCursor(UINT message,

@@ -294,6 +294,8 @@
         'base/win/hidden_window.h',
         'base/win/hwnd_subclass.cc',
         'base/win/hwnd_subclass.h',
+        'base/win/lock_state.cc',
+        'base/win/lock_state.h',
         'base/win/message_box_win.cc',
         'base/win/message_box_win.h',
         'base/win/mouse_wheel_util.cc',
