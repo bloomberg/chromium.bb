@@ -4,11 +4,11 @@
 
 """Generates JavaScript source files from a mojom.Module."""
 
-import mojom
-import mojom_pack
-import mojom_generator
+from generate import mojom
+from generate import mojom_pack
+from generate import mojom_generator
 
-from template_expander import UseJinja
+from generate.template_expander import UseJinja
 
 
 _kind_to_javascript_default_value = {

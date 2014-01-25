@@ -13,9 +13,9 @@ import pprint
 import sys
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, os.path.join(script_dir, 'pylib'))
+sys.path.insert(0, os.path.join(script_dir, "pylib"))
 
-from generators import mojom_data
+from generate import mojom_data
 from parse import mojo_parser
 from parse import mojo_translate
 
@@ -28,18 +28,19 @@ def LoadGenerators(generators_string):
   for generator_name in [s.strip() for s in generators_string.split(",")]:
     # "Built-in" generators:
     if generator_name.lower() == "c++":
-      generator_module = __import__("generators.mojom_cpp_generator",
-                                    fromlist=["mojom_cpp_generator"])
+      generator_name = os.path.join(script_dir, "generators",
+                                    "mojom_cpp_generator.py")
     elif generator_name.lower() == "javascript":
-      generator_module = __import__("generators.mojom_js_generator",
-                                    fromlist=["mojom_js_generator"])
+      generator_name = os.path.join(script_dir, "generators",
+                                    "mojom_js_generator.py")
     # Specified generator python module:
     elif generator_name.endswith(".py"):
-      generator_module = imp.load_source(os.path.basename(generator_name)[:-3],
-                                         generator_name)
+      pass
     else:
       print "Unknown generator name %s" % generator_name
       sys.exit(1)
+    generator_module = imp.load_source(os.path.basename(generator_name)[:-3],
+                                       generator_name)
     generators.append(generator_module)
   return generators
 
@@ -60,8 +61,6 @@ def Main():
                       help="print the intermediate representation")
   args = parser.parse_args()
 
-  # TODO(vtl): Load these dynamically. (Also add a command-line option to
-  # specify which generators.)
   generator_modules = LoadGenerators(args.generators_string)
 
   if not os.path.exists(args.output_dir):
