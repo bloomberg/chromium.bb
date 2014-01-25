@@ -81,8 +81,11 @@ class DumpReaderMultipart(DumpReader):
         with self._host.filesystem.open_binary_file_for_reading(dump_file) as f:
             boundary = f.readline().strip()[2:]
             f.seek(0)
-            data = cgi.parse_multipart(f, {'boundary': boundary})
-            return data
+            try:
+                data = cgi.parse_multipart(f, {'boundary': boundary})
+                return data
+            except:
+                pass
         return None
 
     def _check_breakpad_tools_available(self):
