@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.base.WindowAndroid;
@@ -82,7 +83,10 @@ public class ShellManager extends FrameLayout {
      * @param url The URL the shell should load upon creation.
      */
     public void launchShell(String url) {
+        ThreadUtils.assertOnUiThread();
+        Shell previousShell = mActiveShell;
         nativeLaunchShell(url);
+        if (previousShell != null) previousShell.close();
     }
 
     /**
@@ -96,15 +100,21 @@ public class ShellManager extends FrameLayout {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private Object createShell() {
+    private Object createShell(long nativeShellPtr) {
         assert mContentViewRenderView != null;
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
-        shellView.setWindow(mWindow);
+        shellView.initialize(nativeShellPtr, mWindow);
 
-        if (mActiveShell != null) closeShell(mActiveShell);
+        // TODO(tedchoc): Allow switching back to these inactive shells.
+        if (mActiveShell != null) removeShell(mActiveShell);
 
+        showShell(shellView);
+        return shellView;
+    }
+
+    private void showShell(Shell shellView) {
         shellView.setContentViewRenderView(mContentViewRenderView);
         addView(shellView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
@@ -114,18 +124,15 @@ public class ShellManager extends FrameLayout {
             mContentViewRenderView.setCurrentContentView(contentView);
             contentView.onShow();
         }
-
-        return shellView;
     }
 
-    @SuppressWarnings("unused")
     @CalledByNative
-    private void closeShell(Shell shellView) {
+    private void removeShell(Shell shellView) {
         if (shellView == mActiveShell) mActiveShell = null;
+        if (shellView.getParent() == null) return;
         ContentView contentView = shellView.getContentView();
         if (contentView != null) contentView.onHide();
         shellView.setContentViewRenderView(null);
-        shellView.setWindow(null);
         removeView(shellView);
     }
 

@@ -24,8 +24,8 @@ namespace content {
 // object.
 jobject CreateShellView(Shell* shell);
 
-// Closes a previously created shell view.
-void CloseShellView(jobject shell_view);
+// Removes a previously created shell view.
+void RemoveShellView(jobject shell_view);
 
 // Registers the ShellManager native methods.
 bool RegisterShellManager(JNIEnv* env);
