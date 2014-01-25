@@ -5,7 +5,6 @@ EVENT(needkey)
 EXPECTED (event.target == '[object HTMLVideoElement]') OK
 EXPECTED (event instanceof window.MediaKeyNeededEvent == 'true') OK
 EXPECTED (event.type == 'needkey') OK
-EXPECTED (event.contentType == 'video/webm') OK
 EXPECTED (event.initData.length == '16') OK
 EXPECTED (event.initData[0] == '48') OK
 EXPECTED (event.initData[1] == '49') OK
@@ -27,7 +26,6 @@ EVENT(needkey)
 EXPECTED (event.target == '[object HTMLVideoElement]') OK
 EXPECTED (event instanceof window.MediaKeyNeededEvent == 'true') OK
 EXPECTED (event.type == 'needkey') OK
-EXPECTED (event.contentType == 'video/webm') OK
 EXPECTED (event.initData.length == '16') OK
 EXPECTED (event.initData[0] == '48') OK
 EXPECTED (event.initData[1] == '49') OK
