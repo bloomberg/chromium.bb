@@ -249,9 +249,20 @@ void AlarmManager::OnAlarm(AlarmIterator it) {
   // Update our scheduled time for the next alarm.
   if (double* period_in_minutes =
       alarm.js_alarm->period_in_minutes.get()) {
-    alarm.js_alarm->scheduled_time =
-        (last_poll_time_ +
-         TimeDeltaFromDelay(*period_in_minutes)).ToJsTime();
+    // Get the timer's delay in JS time (i.e., convert it from minutes to
+    // milliseconds).
+    double period_in_js_time =
+        *period_in_minutes * base::Time::kMicrosecondsPerMinute /
+        base::Time::kMicrosecondsPerMillisecond;
+    // Find out how many periods have transpired since the alarm last went off
+    // (it's possible that we missed some).
+    int transpired_periods =
+        (last_poll_time_.ToJsTime() - alarm.js_alarm->scheduled_time) /
+        period_in_js_time;
+    // Schedule the alarm for the next period that is in-line with the original
+    // scheduling.
+    alarm.js_alarm->scheduled_time +=
+        period_in_js_time * (transpired_periods + 1);
   } else {
     RemoveAlarmIterator(it);
   }

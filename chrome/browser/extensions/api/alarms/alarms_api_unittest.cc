@@ -36,7 +36,8 @@ class AlarmDelegate : public AlarmManager::Delegate {
   virtual void OnAlarm(const std::string& extension_id,
                        const Alarm& alarm) OVERRIDE {
     alarms_seen.push_back(alarm.js_alarm->name);
-    base::MessageLoop::current()->Quit();
+    if (base::MessageLoop::current()->is_running())
+      base::MessageLoop::current()->Quit();
   }
 
   std::vector<std::string> alarms_seen;
@@ -538,7 +539,8 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     alarm.js_alarm->period_in_minutes.reset(new double(3));
     alarm_manager_->AddAlarmImpl(extension_->id(), alarm);
     base::MessageLoop::current()->Run();
-    EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(3),
+    EXPECT_EQ(base::Time::FromJsTime(3 * 60000) +
+                  base::TimeDelta::FromMinutes(3),
               alarm_manager_->test_next_poll_time_);
     RemoveAllAlarms();
   }
@@ -557,7 +559,8 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     alarm3.js_alarm->period_in_minutes.reset(new double(25));
     alarm_manager_->AddAlarmImpl(extension_->id(), alarm3);
     base::MessageLoop::current()->Run();
-    EXPECT_EQ(alarm_manager_->last_poll_time_ + base::TimeDelta::FromMinutes(4),
+    EXPECT_EQ(base::Time::FromJsTime(4 * 60000) +
+                  base::TimeDelta::FromMinutes(4),
               alarm_manager_->test_next_poll_time_);
     RemoveAllAlarms();
   }
@@ -639,6 +642,49 @@ TEST_F(ExtensionAlarmsSchedulingTest, DifferentMinimumGranularities) {
   EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
                     base::TimeDelta::FromSeconds(12)).ToJsTime(),
                     alarm_manager_->test_next_poll_time_.ToJsTime());
+}
+
+// Test that scheduled alarms go off at set intervals, even if their actual
+// trigger is off.
+TEST_F(ExtensionAlarmsSchedulingTest, RepeatingAlarmsScheduledPredictably) {
+  test_clock_->SetNow(base::Time::FromJsTime(0));
+  CreateAlarm("[\"a\", {\"periodInMinutes\": 2}]");
+
+  alarm_manager_->last_poll_time_ = base::Time::FromJsTime(0);
+  alarm_manager_->ScheduleNextPoll();
+
+  // We expect the first poll to happen two minutes from the start.
+  EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
+                       base::TimeDelta::FromSeconds(120)).ToJsTime(),
+                   alarm_manager_->test_next_poll_time_.ToJsTime());
+
+  // Poll more than two minutes later.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(125));
+  alarm_manager_->PollAlarms();
+
+  // The alarm should have triggered once.
+  EXPECT_EQ(1u, alarm_delegate_->alarms_seen.size());
+
+  // The next poll should still be scheduled for four minutes from the start,
+  // even though this is less than two minutes since the last alarm.
+  // Last poll was at 125 seconds; next poll should be at 240 seconds.
+  EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
+                       base::TimeDelta::FromSeconds(115)).ToJsTime(),
+                   alarm_manager_->test_next_poll_time_.ToJsTime());
+
+  // Completely miss a scheduled trigger.
+  test_clock_->Advance(base::TimeDelta::FromSeconds(255));  // Total Time: 380s
+  alarm_manager_->PollAlarms();
+
+  // The alarm should have triggered again at this last poll.
+  EXPECT_EQ(2u, alarm_delegate_->alarms_seen.size());
+
+  // The next poll should be the first poll that hasn't happened and is in-line
+  // with the original scheduling.
+  // Last poll was at 380 seconds; next poll should be at 480 seconds.
+  EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
+                       base::TimeDelta::FromSeconds(100)).ToJsTime(),
+                   alarm_manager_->test_next_poll_time_.ToJsTime());
 }
 
 }  // namespace extensions

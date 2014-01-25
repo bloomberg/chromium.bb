@@ -124,6 +124,8 @@ class AlarmManager
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, MinimumGranularity);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest,
                            DifferentMinimumGranularities);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest,
+                           RepeatingAlarmsScheduledPredictably);
   friend class ProfileKeyedAPIFactory<AlarmManager>;
 
   typedef std::string ExtensionId;
