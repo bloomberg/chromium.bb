@@ -80,66 +80,35 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_inspectorClient(inspectorClient)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_isUnderTest(false)
+    , m_deferredAgentsInitialized(false)
 {
-    m_agents.append(InspectorInspectorAgent::create(page, m_injectedScriptManager.get()));
+    InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
+    InspectorOverlay* overlay = m_overlay.get();
 
-    OwnPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, m_injectedScriptManager.get(), inspectorClient, m_overlay.get()));
-    InspectorPageAgent* pageAgent = pageAgentPtr.get();
+    m_agents.append(InspectorInspectorAgent::create(m_page, injectedScriptManager));
+
+    OwnPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_page, injectedScriptManager, inspectorClient, overlay));
+    m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
-    OwnPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(pageAgent, m_injectedScriptManager.get(), m_overlay.get()));
-    InspectorDOMAgent* domAgent = domAgentPtr.get();
+    OwnPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, overlay));
+    m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
-
-    OwnPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(pageAgent, inspectorClient));
-    InspectorResourceAgent* resourceAgent = resourceAgentPtr.get();
-    m_agents.append(resourceAgentPtr.release());
-
-    m_agents.append(InspectorCSSAgent::create(domAgent, pageAgent, resourceAgent));
 
     m_agents.append(InspectorDatabaseAgent::create());
 
-    m_agents.append(InspectorIndexedDBAgent::create(m_injectedScriptManager.get(), pageAgent));
-
-    m_agents.append(InspectorFileSystemAgent::create(pageAgent));
-
-    m_agents.append(InspectorDOMStorageAgent::create(pageAgent));
-
-    OwnPtr<InspectorMemoryAgent> memoryAgentPtr(InspectorMemoryAgent::create());
-    m_memoryAgent = memoryAgentPtr.get();
-    m_agents.append(memoryAgentPtr.release());
-
-    OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(pageAgent, domAgent, m_overlay.get(),
+    OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_domAgent, overlay,
         InspectorTimelineAgent::PageInspector, inspectorClient));
     m_timelineAgent = timelineAgentPtr.get();
     m_agents.append(timelineAgentPtr.release());
 
-    m_agents.append(InspectorApplicationCacheAgent::create(pageAgent));
-
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 
-    m_agents.append(PageRuntimeAgent::create(m_injectedScriptManager.get(), pageScriptDebugServer, page, pageAgent));
+    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, pageScriptDebugServer, m_page, m_pageAgent));
 
-    m_agents.append(PageConsoleAgent::create(m_injectedScriptManager.get(), domAgent, m_timelineAgent));
-
-    OwnPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(pageScriptDebugServer, pageAgent, m_injectedScriptManager.get(), m_overlay.get()));
-    InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
-    m_agents.append(debuggerAgentPtr.release());
-
-    m_agents.append(InspectorDOMDebuggerAgent::create(domAgent, debuggerAgent));
-
-    m_agents.append(InspectorProfilerAgent::create(m_injectedScriptManager.get(), m_overlay.get()));
-
-    m_agents.append(InspectorHeapProfilerAgent::create(m_injectedScriptManager.get()));
-
+    m_agents.append(PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_timelineAgent));
 
     m_agents.append(InspectorWorkerAgent::create());
-
-    m_agents.append(InspectorCanvasAgent::create(pageAgent, m_injectedScriptManager.get()));
-
-    m_agents.append(InspectorInputAgent::create(page, inspectorClient));
-
-    m_agents.append(InspectorLayerTreeAgent::create(domAgent, page));
 
     ASSERT_ARG(inspectorClient, inspectorClient);
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), pageScriptDebugServer);
@@ -155,6 +124,50 @@ InspectorController::~InspectorController()
 PassOwnPtr<InspectorController> InspectorController::create(Page* page, InspectorClient* client)
 {
     return adoptPtr(new InspectorController(page, client));
+}
+
+void InspectorController::initializeDeferredAgents()
+{
+    if (m_deferredAgentsInitialized)
+        return;
+    m_deferredAgentsInitialized = true;
+
+    InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
+    InspectorOverlay* overlay = m_overlay.get();
+
+    OwnPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent, m_inspectorClient));
+    InspectorResourceAgent* resourceAgent = resourceAgentPtr.get();
+    m_agents.append(resourceAgentPtr.release());
+
+    m_agents.append(InspectorCSSAgent::create(m_domAgent, m_pageAgent, resourceAgent));
+
+    m_agents.append(InspectorIndexedDBAgent::create(injectedScriptManager, m_pageAgent));
+
+    m_agents.append(InspectorFileSystemAgent::create(m_pageAgent));
+
+    m_agents.append(InspectorDOMStorageAgent::create(m_pageAgent));
+
+    m_agents.append(InspectorMemoryAgent::create());
+
+    m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
+
+    PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
+
+    OwnPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(pageScriptDebugServer, m_pageAgent, injectedScriptManager, overlay));
+    InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
+    m_agents.append(debuggerAgentPtr.release());
+
+    m_agents.append(InspectorDOMDebuggerAgent::create(m_domAgent, debuggerAgent));
+
+    m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, overlay));
+
+    m_agents.append(InspectorHeapProfilerAgent::create(injectedScriptManager));
+
+    m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
+
+    m_agents.append(InspectorInputAgent::create(m_page, m_inspectorClient));
+
+    m_agents.append(InspectorLayerTreeAgent::create(m_domAgent, m_page));
 }
 
 void InspectorController::inspectedPageDestroyed()
@@ -189,6 +202,8 @@ void InspectorController::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWo
 void InspectorController::connectFrontend(InspectorFrontendChannel* frontendChannel)
 {
     ASSERT(frontendChannel);
+
+    initializeDeferredAgents();
 
     m_inspectorFrontend = adoptPtr(new InspectorFrontend(frontendChannel));
     // We can reconnect to existing front-end -> unmute state.

@@ -45,10 +45,11 @@ class GraphicsContext;
 class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorClient;
+class InspectorDOMAgent;
 class InspectorFrontend;
 class InspectorFrontendChannel;
 class InspectorFrontendClient;
-class InspectorMemoryAgent;
+class InspectorPageAgent;
 class InspectorTimelineAgent;
 class InspectorOverlay;
 class InspectorState;
@@ -71,6 +72,8 @@ public:
     ~InspectorController();
 
     static PassOwnPtr<InspectorController> create(Page*, InspectorClient*);
+
+    void initializeDeferredAgents();
     void inspectedPageDestroyed();
 
     void registerModuleAgent(PassOwnPtr<InspectorAgent>);
@@ -130,7 +133,8 @@ private:
     OwnPtr<InspectorCompositeState> m_state;
     OwnPtr<InspectorOverlay> m_overlay;
 
-    InspectorMemoryAgent* m_memoryAgent;
+    InspectorDOMAgent* m_domAgent;
+    InspectorPageAgent* m_pageAgent;
     InspectorTimelineAgent* m_timelineAgent;
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
@@ -140,6 +144,7 @@ private:
     InspectorClient* m_inspectorClient;
     InspectorAgentRegistry m_agents;
     bool m_isUnderTest;
+    bool m_deferredAgentsInitialized;
 };
 
 }
