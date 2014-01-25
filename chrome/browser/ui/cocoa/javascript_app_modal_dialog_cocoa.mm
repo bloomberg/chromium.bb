@@ -16,6 +16,10 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/text_elider.h"
+
+const int kSlotsPerLine = 50;
+const int kMessageTextMaxSlots = 2000;
 
 // Helper object that receives the notification that the dialog/sheet is
 // going away. Is responsible for cleaning itself up.
@@ -146,6 +150,24 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
   [alert_ setDelegate:helper_];
   NSString* informative_text =
       base::SysUTF16ToNSString(dialog_->message_text());
+
+  // Truncate long JS alerts - crbug.com/331219
+  NSCharacterSet* newline_char_set = [NSCharacterSet newlineCharacterSet];
+  for (size_t index = 0, slots_count = 0; index < informative_text.length;
+      ++index) {
+    unichar current_char = [informative_text characterAtIndex:index];
+    if ([newline_char_set characterIsMember:current_char])
+      slots_count += kSlotsPerLine;
+    else
+      slots_count++;
+    if (slots_count > kMessageTextMaxSlots) {
+      base::string16 info_text = base::SysNSStringToUTF16(informative_text);
+      informative_text = base::SysUTF16ToNSString(
+          gfx::TruncateString(info_text, index));
+      break;
+    }
+  }
+
   [alert_ setInformativeText:informative_text];
   NSString* message_text =
       base::SysUTF16ToNSString(dialog_->title());
