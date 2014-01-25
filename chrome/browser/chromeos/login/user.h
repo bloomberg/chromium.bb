@@ -171,6 +171,10 @@ class User {
   // OAuth token status for this user.
   OAuthTokenStatus oauth_token_status() const { return oauth_token_status_; }
 
+  // Whether online authentication against GAIA should be enforced during the
+  // user's next sign-in.
+  bool force_online_signin() const { return force_online_signin_; }
+
   // True if the user's session can be locked (i.e. the user has a password with
   // which to unlock the session).
   virtual bool can_lock() const;
@@ -240,6 +244,10 @@ class User {
     oauth_token_status_ = status;
   }
 
+  void set_force_online_signin(bool force_online_signin) {
+    force_online_signin_ = force_online_signin;
+  }
+
   void set_username_hash(const std::string& username_hash) {
     username_hash_ = username_hash;
   }
@@ -271,6 +279,7 @@ class User {
   std::string display_email_;
   UserImage user_image_;
   OAuthTokenStatus oauth_token_status_;
+  bool force_online_signin_;
 
   // This is set to chromeos locale if account data has been downloaded.
   // (Or failed to download, but at least one download attempt finished).

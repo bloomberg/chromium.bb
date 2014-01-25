@@ -83,17 +83,21 @@ const char kPublicAccounts[] = "PublicAccounts";
 const char kPublicAccountPendingDataRemoval[] =
     "PublicAccountPendingDataRemoval";
 
-// A dictionary that maps usernames to the displayed name.
+// A dictionary that maps user IDs to the displayed name.
 const char kUserDisplayName[] = "UserDisplayName";
 
-// A dictionary that maps usernames to the user's given name.
+// A dictionary that maps user IDs to the user's given name.
 const char kUserGivenName[] = "UserGivenName";
 
-// A dictionary that maps usernames to the displayed (non-canonical) emails.
+// A dictionary that maps user IDs to the displayed (non-canonical) emails.
 const char kUserDisplayEmail[] = "UserDisplayEmail";
 
-// A dictionary that maps usernames to OAuth token presence flag.
+// A dictionary that maps user IDs to OAuth token presence flag.
 const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
+
+// A dictionary that maps user IDs to a flag indicating whether online
+// authentication against GAIA should be enforced during the next sign-in.
+const char kUserForceOnlineSignin[] = "UserForceOnlineSignin";
 
 // A string pref containing the ID of the last user who logged in if it was
 // a regular user or an empty string if it was another type of user (guest,
@@ -171,10 +175,11 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kPublicAccounts);
   registry->RegisterStringPref(kPublicAccountPendingDataRemoval, "");
   registry->RegisterStringPref(kLastLoggedInRegularUser, "");
-  registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserGivenName);
   registry->RegisterDictionaryPref(kUserDisplayEmail);
+  registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
+  registry->RegisterDictionaryPref(kUserForceOnlineSignin);
   SupervisedUserManager::RegisterPrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
 }
@@ -674,7 +679,7 @@ void UserManagerImpl::SaveUserOAuthStatus(
 
   GetUserFlow(user_id)->HandleOAuthTokenStatusChange(oauth_token_status);
 
-  // Do not update local store if data stored or cached outside the user's
+  // Do not update local state if data stored or cached outside the user's
   // cryptohome is to be treated as ephemeral.
   if (IsUserNonCryptohomeDataEphemeral(user_id))
     return;
@@ -686,24 +691,19 @@ void UserManagerImpl::SaveUserOAuthStatus(
       new base::FundamentalValue(static_cast<int>(oauth_token_status)));
 }
 
-User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
-    const std::string& user_id) const {
+void UserManagerImpl::SaveForceOnlineSignin(const std::string& user_id,
+                                            bool force_online_signin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  PrefService* local_state = g_browser_process->local_state();
-  const base::DictionaryValue* prefs_oauth_status =
-      local_state->GetDictionary(kUserOAuthTokenStatus);
-  int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
-  if (prefs_oauth_status &&
-      prefs_oauth_status->GetIntegerWithoutPathExpansion(
-          user_id, &oauth_token_status)) {
-    User::OAuthTokenStatus result =
-        static_cast<User::OAuthTokenStatus>(oauth_token_status);
-    if (result == User::OAUTH2_TOKEN_STATUS_INVALID)
-      GetUserFlow(user_id)->HandleOAuthTokenStatusChange(result);
-    return result;
-  }
-  return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+  // Do not update local state if data stored or cached outside the user's
+  // cryptohome is to be treated as ephemeral.
+  if (IsUserNonCryptohomeDataEphemeral(user_id))
+    return;
+
+  DictionaryPrefUpdate force_online_update(g_browser_process->local_state(),
+                                           kUserForceOnlineSignin);
+  force_online_update->SetBooleanWithoutPathExpansion(user_id,
+                                                      force_online_signin);
 }
 
 void UserManagerImpl::SaveUserDisplayName(const std::string& user_id,
@@ -713,7 +713,7 @@ void UserManagerImpl::SaveUserDisplayName(const std::string& user_id,
   if (User* user = FindUserAndModify(user_id)) {
     user->set_display_name(display_name);
 
-    // Do not update local store if data stored or cached outside the user's
+    // Do not update local state if data stored or cached outside the user's
     // cryptohome is to be treated as ephemeral.
     if (!IsUserNonCryptohomeDataEphemeral(user_id)) {
       PrefService* local_state = g_browser_process->local_state();
@@ -744,7 +744,7 @@ void UserManagerImpl::SaveUserDisplayEmail(const std::string& user_id,
 
   user->set_display_email(display_email);
 
-  // Do not update local store if data stored or cached outside the user's
+  // Do not update local state if data stored or cached outside the user's
   // cryptohome is to be treated as ephemeral.
   if (IsUserNonCryptohomeDataEphemeral(user_id))
     return;
@@ -1139,6 +1139,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
     else
       user = User::CreateRegularUser(*it);
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
+    user->set_force_online_signin(LoadForceOnlineSignin(*it));
     users_.push_back(user);
 
     base::string16 display_name;
@@ -1446,6 +1447,40 @@ void UserManagerImpl::NotifyOnLogin() {
   }
 }
 
+User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
+    const std::string& user_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  PrefService* local_state = g_browser_process->local_state();
+  const base::DictionaryValue* prefs_oauth_status =
+      local_state->GetDictionary(kUserOAuthTokenStatus);
+  int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
+  if (prefs_oauth_status &&
+      prefs_oauth_status->GetIntegerWithoutPathExpansion(
+          user_id, &oauth_token_status)) {
+    User::OAuthTokenStatus result =
+        static_cast<User::OAuthTokenStatus>(oauth_token_status);
+    if (result == User::OAUTH2_TOKEN_STATUS_INVALID)
+      GetUserFlow(user_id)->HandleOAuthTokenStatusChange(result);
+    return result;
+  }
+  return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+}
+
+bool UserManagerImpl::LoadForceOnlineSignin(const std::string& user_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  PrefService* local_state = g_browser_process->local_state();
+  const base::DictionaryValue* prefs_force_online =
+      local_state->GetDictionary(kUserForceOnlineSignin);
+  bool force_online_signin = false;
+  if (prefs_force_online) {
+    prefs_force_online->GetBooleanWithoutPathExpansion(user_id,
+                                                       &force_online_signin);
+  }
+  return force_online_signin;
+}
+
 void UserManagerImpl::UpdateOwnership() {
   bool is_owner = DeviceSettingsService::Get()->HasPrivateOwnerKey();
   VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
@@ -1458,11 +1493,6 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& user_id) {
   GetUserImageManager(user_id)->DeleteUserImage();
 
   PrefService* prefs = g_browser_process->local_state();
-  DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
-  int oauth_status;
-  prefs_oauth_update->GetIntegerWithoutPathExpansion(user_id, &oauth_status);
-  prefs_oauth_update->RemoveWithoutPathExpansion(user_id, NULL);
-
   DictionaryPrefUpdate prefs_display_name_update(prefs, kUserDisplayName);
   prefs_display_name_update->RemoveWithoutPathExpansion(user_id, NULL);
 
@@ -1471,6 +1501,12 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& user_id) {
 
   DictionaryPrefUpdate prefs_display_email_update(prefs, kUserDisplayEmail);
   prefs_display_email_update->RemoveWithoutPathExpansion(user_id, NULL);
+
+  DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
+  prefs_oauth_update->RemoveWithoutPathExpansion(user_id, NULL);
+
+  DictionaryPrefUpdate prefs_force_online_update(prefs, kUserForceOnlineSignin);
+  prefs_force_online_update->RemoveWithoutPathExpansion(user_id, NULL);
 
   supervised_user_manager_->RemoveNonCryptohomeData(user_id);
 

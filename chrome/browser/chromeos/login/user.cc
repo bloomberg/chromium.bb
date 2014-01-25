@@ -226,6 +226,7 @@ User* User::CreatePublicAccountUser(const std::string& email) {
 User::User(const std::string& email)
     : email_(email),
       oauth_token_status_(OAUTH_TOKEN_STATUS_UNKNOWN),
+      force_online_signin_(false),
       image_index_(kInvalidImageIndex),
       image_is_stub_(false),
       image_is_loading_(false),

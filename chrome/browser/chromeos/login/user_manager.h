@@ -230,6 +230,11 @@ class UserManager {
       const std::string& user_id,
       User::OAuthTokenStatus oauth_token_status) = 0;
 
+  // Saves a flag indicating whether online authentication against GAIA should
+  // be enforced during the user's next sign-in.
+  virtual void SaveForceOnlineSignin(const std::string& user_id,
+                                     bool force_online_signin) = 0;
+
   // Saves user's displayed name in local state preferences.
   // Ignored If there is no such user.
   virtual void SaveUserDisplayName(const std::string& user_id,

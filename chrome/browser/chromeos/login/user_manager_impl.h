@@ -93,6 +93,8 @@ class UserManagerImpl
   virtual void SaveUserOAuthStatus(
       const std::string& user_id,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
+  virtual void SaveForceOnlineSignin(const std::string& user_id,
+                                     bool force_online_signin) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& user_id,
                                    const base::string16& display_name) OVERRIDE;
   virtual base::string16 GetUserDisplayName(
@@ -248,6 +250,10 @@ class UserManagerImpl
 
   // Reads user's oauth token status from local state preferences.
   User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& user_id) const;
+
+  // Read a flag indicating whether online authentication against GAIA should
+  // be enforced during the user's next sign-in from local state preferences.
+  bool LoadForceOnlineSignin(const std::string& user_id) const;
 
   void SetCurrentUserIsOwner(bool is_current_user_owner);
 
