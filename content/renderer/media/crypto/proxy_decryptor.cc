@@ -62,50 +62,21 @@ ProxyDecryptor::ProxyDecryptor(
 
 ProxyDecryptor::~ProxyDecryptor() {
   // Destroy the decryptor explicitly before destroying the plugin.
-  {
-    base::AutoLock auto_lock(lock_);
-    media_keys_.reset();
-  }
+  media_keys_.reset();
 }
 
-// TODO(xhwang): Support multiple decryptor notification request (e.g. from
-// video and audio decoders). The current implementation is okay for the current
-// media pipeline since we initialize audio and video decoders in sequence.
-// But ProxyDecryptor should not depend on media pipeline's implementation
-// detail.
-void ProxyDecryptor::SetDecryptorReadyCB(
-     const media::DecryptorReadyCB& decryptor_ready_cb) {
-  base::AutoLock auto_lock(lock_);
-
-  // Cancels the previous decryptor request.
-  if (decryptor_ready_cb.is_null()) {
-    if (!decryptor_ready_cb_.is_null())
-      base::ResetAndReturn(&decryptor_ready_cb_).Run(NULL);
-    return;
-  }
-
-  // Normal decryptor request.
-  DCHECK(decryptor_ready_cb_.is_null());
-  if (media_keys_) {
-    decryptor_ready_cb.Run(media_keys_->GetDecryptor());
-    return;
-  }
-  decryptor_ready_cb_ = decryptor_ready_cb;
+media::Decryptor* ProxyDecryptor::GetDecryptor() {
+  return media_keys_ ? media_keys_->GetDecryptor() : NULL;
 }
 
 bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
                                    const GURL& frame_url) {
   DVLOG(1) << "InitializeCDM: key_system = " << key_system;
 
-  base::AutoLock auto_lock(lock_);
-
   DCHECK(!media_keys_);
   media_keys_ = CreateMediaKeys(key_system, frame_url);
   if (!media_keys_)
     return false;
-
-  if (!decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&decryptor_ready_cb_).Run(media_keys_->GetDecryptor());
 
   is_clear_key_ =
       media::IsClearKey(key_system) || media::IsExternalClearKey(key_system);

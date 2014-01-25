@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
@@ -183,17 +184,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       FROM_HERE,
       base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
                  AsWeakPtr()));
-
-  if (blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
-    decryptor_.reset(new ProxyDecryptor(
-#if defined(ENABLE_PEPPER_CDMS)
-        client,
-        frame,
-#endif
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage)));
-  }
 
   // Use the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
@@ -744,6 +734,8 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(
     const WebString& key_system,
     const unsigned char* init_data,
     unsigned init_data_length) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
   DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
@@ -753,11 +745,27 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(
 
   // We do not support run-time switching between key systems for now.
   if (current_key_system_.isEmpty()) {
+    if (!decryptor_) {
+      decryptor_.reset(new ProxyDecryptor(
+#if defined(ENABLE_PEPPER_CDMS)
+          client_,
+          frame_,
+#endif
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage)));
+    }
+
     if (!decryptor_->InitializeCDM(key_system.utf8(), frame_->document().url()))
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+    if (decryptor_ && !decryptor_ready_cb_.is_null()) {
+      base::ResetAndReturn(&decryptor_ready_cb_)
+          .Run(decryptor_->GetDecryptor());
+    }
+
     current_key_system_ = key_system;
-  }
-  else if (key_system != current_key_system_) {
+  } else if (key_system != current_key_system_) {
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
 
@@ -839,9 +847,16 @@ WebMediaPlayerImpl::CancelKeyRequestInternal(
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
+  if (!cdm)
+    return;
+
   web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
-  // TODO(jrummell): use web_cdm_->getDecryptor() instead of creating
-  // ProxyDecryptor().
+
+  if (web_cdm_ && !decryptor_ready_cb_.is_null())
+    base::ResetAndReturn(&decryptor_ready_cb_).Run(web_cdm_->GetDecryptor());
 }
 
 void WebMediaPlayerImpl::OnDestruct() {
@@ -959,8 +974,10 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& type,
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   // Do not fire NeedKey event if encrypted media is not enabled.
-  if (!decryptor_)
+  if (!blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled() &&
+      !blink::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     return;
+  }
 
   UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
 
@@ -1092,12 +1109,8 @@ void WebMediaPlayerImpl::StartPipeline() {
       new media::FilterCollection());
   filter_collection->SetDemuxer(demuxer_.get());
 
-  // Figure out if EME is enabled.
-  media::SetDecryptorReadyCB set_decryptor_ready_cb;
-  if (decryptor_) {
-    set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
-                                        base::Unretained(decryptor_.get()));
-  }
+  media::SetDecryptorReadyCB set_decryptor_ready_cb =
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetDecryptorReadyCB);
 
   // Create our audio decoders and renderer.
   ScopedVector<media::AudioDecoder> audio_decoders;
@@ -1262,6 +1275,40 @@ void WebMediaPlayerImpl::FrameReady(
   // compositing is available, which is less efficient and involves more
   // thread hops. Refer to http://crbug.com/335345 for details.
   painter_.UpdateCurrentFrame(frame);
+}
+
+void WebMediaPlayerImpl::SetDecryptorReadyCB(
+     const media::DecryptorReadyCB& decryptor_ready_cb) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // Cancels the previous decryptor request.
+  if (decryptor_ready_cb.is_null()) {
+    if (!decryptor_ready_cb_.is_null())
+      base::ResetAndReturn(&decryptor_ready_cb_).Run(NULL);
+    return;
+  }
+
+  // TODO(xhwang): Support multiple decryptor notification request (e.g. from
+  // video and audio). The current implementation is okay for the current
+  // media pipeline since we initialize audio and video decoders in sequence.
+  // But WebMediaPlayerImpl should not depend on media pipeline's implementation
+  // detail.
+  DCHECK(decryptor_ready_cb_.is_null());
+
+  // Mixed use of prefixed and unprefixed EME APIs is disallowed by Blink.
+  DCHECK(!(decryptor_ && web_cdm_));
+
+  if (decryptor_) {
+    decryptor_ready_cb.Run(decryptor_->GetDecryptor());
+    return;
+  }
+
+  if (web_cdm_) {
+    decryptor_ready_cb.Run(web_cdm_->GetDecryptor());
+    return;
+  }
+
+  decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
 }  // namespace content

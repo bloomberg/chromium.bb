@@ -218,6 +218,9 @@ class WebMediaPlayerAndroid
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);
 
+  // TODO(xhwang): Implement WebMediaPlayer::setContentDecryptionModule().
+  // See: http://crbug.com/224786
+
   // Can be called on any thread.
   static void OnReleaseRemotePlaybackTexture(
       const scoped_refptr<base::MessageLoopProxy>& main_loop,
@@ -267,6 +270,12 @@ class WebMediaPlayerAndroid
   MediaKeyException CancelKeyRequestInternal(
       const blink::WebString& key_system,
       const blink::WebString& session_id);
+
+  // Requests that this object notifies when a decryptor is ready through the
+  // |decryptor_ready_cb| provided.
+  // If |decryptor_ready_cb| is null, the existing callback will be fired with
+  // NULL immediately and reset.
+  void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
   blink::WebFrame* const frame_;
 
@@ -418,7 +427,9 @@ class WebMediaPlayerAndroid
   // through GenerateKeyRequest() directly from WebKit.
   std::string init_data_type_;
 
-  // The decryptor that manages decryption keys and decrypts encrypted frames.
+  media::DecryptorReadyCB decryptor_ready_cb_;
+
+  // Manages decryption keys and decrypts encrypted frames.
   scoped_ptr<ProxyDecryptor> decryptor_;
 
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;

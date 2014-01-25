@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -128,25 +129,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
 #endif  // defined(VIDEO_HOLE)
   TryCreateStreamTextureProxyIfNeeded();
-
-  if (blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
-    // TODO(xhwang): Report an error when there is encrypted stream but EME is
-    // not enabled. Currently the player just doesn't start and waits for ever.
-    decryptor_.reset(new ProxyDecryptor(
-#if defined(ENABLE_PEPPER_CDMS)
-        client,
-        frame,
-#else
-        manager_,
-        player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
-                     // separated from WebMediaPlayer.
-#endif  // defined(ENABLE_PEPPER_CDMS)
-        // |decryptor_| is owned, so Unretained() is safe here.
-        base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
-        base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
-        base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
-                   base::Unretained(this))));
-  }
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
@@ -194,12 +176,6 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
   has_media_metadata_ = false;
   has_media_info_ = false;
 
-  media::SetDecryptorReadyCB set_decryptor_ready_cb;
-  if (decryptor_) {  // |decryptor_| can be NULL is EME if not enabled.
-    set_decryptor_ready_cb = base::Bind(&ProxyDecryptor::SetDecryptorReadyCB,
-                                        base::Unretained(decryptor_.get()));
-  }
-
   int demuxer_client_id = 0;
   if (player_type_ != MEDIA_PLAYER_TYPE_URL) {
     has_media_info_ = true;
@@ -211,8 +187,13 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
     media_source_delegate_.reset(new MediaSourceDelegate(
         demuxer, demuxer_client_id, media_loop_, media_log_));
 
-    // |media_source_delegate_| is owned, so Unretained() is safe here.
     if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
+      media::SetDecryptorReadyCB set_decryptor_ready_cb =
+          media::BindToCurrentLoop(
+              base::Bind(&WebMediaPlayerAndroid::SetDecryptorReadyCB,
+                         weak_factory_.GetWeakPtr()));
+
+      // |media_source_delegate_| is owned, so Unretained() is safe here.
       media_source_delegate_->InitializeMediaSource(
           base::Bind(&WebMediaPlayerAndroid::OnMediaSourceOpened,
                      weak_factory_.GetWeakPtr()),
@@ -245,8 +226,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
 }
 
-void WebMediaPlayerAndroid::DidLoadMediaInfo(
-    MediaInfoLoader::Status status) {
+void WebMediaPlayerAndroid::DidLoadMediaInfo(MediaInfoLoader::Status status) {
   DCHECK(!media_source_delegate_);
   if (status == MediaInfoLoader::kFailed) {
     info_loader_.reset();
@@ -1197,6 +1177,9 @@ bool WebMediaPlayerAndroid::IsKeySystemSupported(const WebString& key_system) {
          IsConcreteSupportedKeySystem(key_system);
 }
 
+// TODO(xhwang): Report an error when there is encrypted stream but EME is
+// not enabled. Currently the player just doesn't start and waits for
+// ever.
 WebMediaPlayer::MediaKeyException
 WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     const WebString& key_system,
@@ -1211,8 +1194,32 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
 
   // We do not support run-time switching between key systems for now.
   if (current_key_system_.isEmpty()) {
+    if (!decryptor_) {
+      decryptor_.reset(new ProxyDecryptor(
+#if defined(ENABLE_PEPPER_CDMS)
+          client_, frame_,
+#else
+          manager_,
+          player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
+                       // separated from WebMediaPlayer.
+#endif  // defined(ENABLE_PEPPER_CDMS)
+          // |decryptor_| is owned, so Unretained() is safe here.
+          base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
+                     base::Unretained(this)),
+          base::Bind(&WebMediaPlayerAndroid::OnKeyError,
+                     base::Unretained(this)),
+          base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
+                     base::Unretained(this))));
+    }
+
     if (!decryptor_->InitializeCDM(key_system.utf8(), frame_->document().url()))
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+    if (decryptor_ && !decryptor_ready_cb_.is_null()) {
+      base::ResetAndReturn(&decryptor_ready_cb_)
+          .Run(decryptor_->GetDecryptor());
+    }
+
     current_key_system_ = key_system;
   } else if (key_system != current_key_system_) {
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
@@ -1334,9 +1341,10 @@ void WebMediaPlayerAndroid::OnMediaSourceOpened(
 void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
                                       const std::vector<uint8>& init_data) {
   DCHECK(main_loop_->BelongsToCurrentThread());
+
   // Do not fire NeedKey event if encrypted media is not enabled.
-  if (!blink::WebRuntimeFeatures::isEncryptedMediaEnabled() &&
-      !blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()) {
+  if (!blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled() &&
+      !blink::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     return;
   }
 
@@ -1348,10 +1356,36 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
 
   const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
   // TODO(xhwang): Drop |keySystem| and |sessionId| in keyNeeded() call.
-  client_->keyNeeded(WebString(),
-                     WebString(),
-                     init_data_ptr,
-                     init_data.size());
+  client_->keyNeeded(WebString(), WebString(), init_data_ptr, init_data.size());
+}
+
+void WebMediaPlayerAndroid::SetDecryptorReadyCB(
+    const media::DecryptorReadyCB& decryptor_ready_cb) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // Cancels the previous decryptor request.
+  if (decryptor_ready_cb.is_null()) {
+    if (!decryptor_ready_cb_.is_null())
+      base::ResetAndReturn(&decryptor_ready_cb_).Run(NULL);
+    return;
+  }
+
+  // TODO(xhwang): Support multiple decryptor notification request (e.g. from
+  // video and audio). The current implementation is okay for the current
+  // media pipeline since we initialize audio and video decoders in sequence.
+  // But WebMediaPlayerImpl should not depend on media pipeline's implementation
+  // detail.
+  DCHECK(decryptor_ready_cb_.is_null());
+
+  if (decryptor_) {
+    decryptor_ready_cb.Run(decryptor_->GetDecryptor());
+    return;
+  }
+
+  // TODO(xhwang): Also notify |web_cdm_| when we implement
+  // setContentDecryptionModule(). See: http://crbug.com/224786
+
+  decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
 void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(uint32 sync_point) {

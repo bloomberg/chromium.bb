@@ -264,6 +264,12 @@ class WebMediaPlayerImpl
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
+  // Requests that this object notifies when a decryptor is ready through the
+  // |decryptor_ready_cb| provided.
+  // If |decryptor_ready_cb| is null, the existing callback will be fired with
+  // NULL immediately and reset.
+  void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
+
   blink::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.
@@ -332,9 +338,6 @@ class WebMediaPlayerImpl
   bool is_local_source_;
   bool supports_save_;
 
-  // The decryptor that manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<ProxyDecryptor> decryptor_;
-
   bool starting_;
 
   // These two are mutually exclusive:
@@ -367,9 +370,14 @@ class WebMediaPlayerImpl
   // Text track objects get a unique index value when they're created.
   int text_track_index_;
 
+  // Manages decryption keys and decrypts encrypted frames.
+  scoped_ptr<ProxyDecryptor> decryptor_;
+
   // Non-owned pointer to the CDM. Updated via calls to
   // setContentDecryptionModule().
   WebContentDecryptionModuleImpl* web_cdm_;
+
+  media::DecryptorReadyCB decryptor_ready_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
