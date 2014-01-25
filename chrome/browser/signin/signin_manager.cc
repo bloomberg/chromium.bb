@@ -313,10 +313,14 @@ void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
   if (clear_transient_data)
     ClearTransientSigninData();
 
+  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
+  // fixed.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceAuthError>(&error));
+
+  FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSigninFailed(error));
 }
 
 void SigninManager::SignOut() {
@@ -345,17 +349,23 @@ void SigninManager::SignOut() {
 
   ClearTransientSigninData();
 
-  GoogleServiceSignoutDetails details(GetAuthenticatedUsername());
+  const std::string& username = GetAuthenticatedUsername();
   clear_authenticated_username();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 
   // Erase (now) stale information from AboutSigninInternals.
   NotifyDiagnosticsObservers(USERNAME, "");
 
+  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
+  // fixed.
+  GoogleServiceSignoutDetails details(username);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSignoutDetails>(&details));
+
+  FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
+
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   token_service->RevokeAllCredentials();
@@ -614,12 +624,18 @@ void SigninManager::OnSignedIn(const std::string& username) {
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   GetAuthenticatedUsername());
 
+  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
+  // fixed.
   GoogleServiceSigninSuccessDetails details(GetAuthenticatedUsername(),
                                             password_);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    GoogleSigninSucceeded(GetAuthenticatedUsername(),
+                                          password_));
 
 #if !defined(OS_ANDROID)
   // Don't store password hash except for users of new profile features.

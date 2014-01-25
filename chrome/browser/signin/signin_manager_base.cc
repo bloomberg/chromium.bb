@@ -114,6 +114,14 @@ bool SigninManagerBase::AuthInProgress() const {
 void SigninManagerBase::Shutdown() {
 }
 
+void SigninManagerBase::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void SigninManagerBase::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void SigninManagerBase::AddSigninDiagnosticsObserver(
     SigninDiagnosticsObserver* observer) {
   signin_diagnostics_observers_.AddObserver(observer);

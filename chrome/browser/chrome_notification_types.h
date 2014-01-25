@@ -696,6 +696,8 @@ enum NotificationType {
   NOTIFICATION_COOKIE_CHANGED,
 
   // Signin Manager ----------------------------------------------------------
+  // TODO(blundell): Eliminate SigninManager notifications once
+  // crbug.com/333997 is fixed.
 
   // Sent when a user signs into Google services such as sync.
   // The source is the Profile. The details are a

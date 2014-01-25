@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -27,7 +28,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
                           public content::NotificationObserver,
                           public GaiaAuthConsumer,
                           public OAuth2TokenService::Consumer,
-                          public OAuth2TokenService::Observer {
+                          public OAuth2TokenService::Observer,
+                          public SigninManagerBase::Observer {
  public:
   explicit AccountReconcilor(Profile* profile);
   virtual ~AccountReconcilor();
@@ -138,6 +140,11 @@ class AccountReconcilor : public BrowserContextKeyedService,
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokensLoaded() OVERRIDE;
+
+  // Overriden from SigninManagerBase::Observer.
+  virtual void GoogleSigninSucceeded(const std::string& username,
+                                     const std::string& password) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
   // Overriden from GaiaAuthConsumer.
   virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;

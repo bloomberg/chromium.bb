@@ -60,11 +60,19 @@ void FakeSigninManager::SignOut() {
   if (IsSignoutProhibited())
     return;
   set_auth_in_progress(std::string());
+  const std::string& username = authenticated_username_;
   authenticated_username_.clear();
+
+  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
+  // fixed.
+  GoogleServiceSignoutDetails details(username);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(profile_),
-      content::NotificationService::NoDetails());
+      content::Details<const GoogleServiceSignoutDetails>(&details));
+
+  FOR_EACH_OBSERVER(SigninManagerBase::Observer, observer_list_,
+                    GoogleSignedOut(username));
 }
 
 #endif  // !defined (OS_CHROMEOS)

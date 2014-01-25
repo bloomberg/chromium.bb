@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -149,16 +148,15 @@ void AccountReconcilor::UnregisterWithCookieMonster() {
 }
 
 void AccountReconcilor::RegisterWithSigninManager() {
-  content::Source<Profile> source(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL, source);
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT, source);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  signin_manager->AddObserver(this);
 }
 
 void AccountReconcilor::UnregisterWithSigninManager() {
-  content::Source<Profile> source(profile_);
-  registrar_.Remove(
-      this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL, source);
-  registrar_.Remove(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT, source);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile_);
+  signin_manager->RemoveObserver(this);
 }
 
 void AccountReconcilor::RegisterWithTokenService() {
@@ -214,16 +212,6 @@ void AccountReconcilor::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:
-      DVLOG(1) << "AccountReconcilor::Observe: signed in";
-      RegisterWithTokenService();
-      StartPeriodicReconciliation();
-      break;
-    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
-      DVLOG(1) << "AccountReconcilor::Observe: signed out";
-      UnregisterWithTokenService();
-      StopPeriodicReconciliation();
-      break;
     case chrome::NOTIFICATION_COOKIE_CHANGED:
       OnCookieChanged(content::Details<ChromeCookieDetails>(details).ptr());
       break;
@@ -249,6 +237,19 @@ void AccountReconcilor::OnRefreshTokenRevoked(const std::string& account_id) {
 }
 
 void AccountReconcilor::OnRefreshTokensLoaded() {}
+
+void AccountReconcilor::GoogleSigninSucceeded(
+    const std::string& username, const std::string& password) {
+  DVLOG(1) << "AccountReconcilor::GoogleSigninSucceeded: signed in";
+  RegisterWithTokenService();
+  StartPeriodicReconciliation();
+}
+
+void AccountReconcilor::GoogleSignedOut(const std::string& username) {
+  DVLOG(1) << "AccountReconcilor::GoogleSignedOut: signed out";
+  UnregisterWithTokenService();
+  StopPeriodicReconciliation();
+}
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
   merge_session_helper_.LogIn(account_id);
