@@ -59,7 +59,7 @@ const char kNoteProtectedNonVirtualDtor[] =
 
 bool TypeHasNonTrivialDtor(const Type* type) {
   if (const CXXRecordDecl* cxx_r = type->getPointeeCXXRecordDecl())
-    return cxx_r->hasTrivialDestructor();
+    return !cxx_r->hasTrivialDestructor();
 
   return false;
 }
