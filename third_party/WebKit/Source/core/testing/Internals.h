@@ -90,6 +90,8 @@ public:
     String styleResolverStatsReport(ExceptionState&) const;
     String styleResolverStatsTotalsReport(ExceptionState&) const;
 
+    bool isSharingStyle(Element*, Element*, ExceptionState&) const;
+
     size_t numberOfScopedHTMLStyleChildren(const Node*, ExceptionState&) const;
     PassRefPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionState&) const;
 

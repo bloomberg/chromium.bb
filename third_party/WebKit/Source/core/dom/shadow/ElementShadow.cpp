@@ -27,6 +27,8 @@
 #include "config.h"
 #include "core/dom/shadow/ElementShadow.h"
 
+
+#include "core/css/StyleSheetList.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
@@ -237,6 +239,31 @@ bool ElementShadow::containsActiveStyles() const
             return false;
     }
     return false;
+}
+
+bool ElementShadow::hasSameStyles(ElementShadow *other) const
+{
+    ShadowRoot* root = youngestShadowRoot();
+    ShadowRoot* otherRoot = other->youngestShadowRoot();
+    while (root || otherRoot) {
+        if (!root || !otherRoot)
+            return false;
+
+        StyleSheetList* list = root->styleSheets();
+        StyleSheetList* otherList = otherRoot->styleSheets();
+
+        if (list->length() != otherList->length())
+            return false;
+
+        for (size_t i = 0; i < list->length(); i++) {
+            if (toCSSStyleSheet(list->item(i))->contents() != toCSSStyleSheet(otherList->item(i))->contents())
+                return false;
+        }
+        root = root->olderShadowRoot();
+        otherRoot = otherRoot->olderShadowRoot();
+    }
+
+    return true;
 }
 
 bool ElementShadow::resolveApplyAuthorStyles() const

@@ -3586,7 +3586,7 @@ void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* s
 
 bool Element::supportsStyleSharing() const
 {
-    if (!isStyledElement() || !parentElement())
+    if (!isStyledElement() || !parentOrShadowHostElement())
         return false;
     // If the element has inline style it is probably unique.
     if (inlineStyle())
@@ -3604,7 +3604,7 @@ bool Element::supportsStyleSharing() const
         return false;
     if (focused())
         return false;
-    if (!parentElement()->childrenSupportStyleSharing())
+    if (!parentOrShadowHostElement()->childrenSupportStyleSharing())
         return false;
     if (hasScopedHTMLStyleChild())
         return false;
@@ -3613,8 +3613,6 @@ bool Element::supportsStyleSharing() const
     if (isHTMLElement() && toHTMLElement(this)->hasDirectionAuto())
         return false;
     if (hasActiveAnimations())
-        return false;
-    if (shadow() && shadow()->containsActiveStyles())
         return false;
     // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
     // See comments in RenderObject::setStyle().

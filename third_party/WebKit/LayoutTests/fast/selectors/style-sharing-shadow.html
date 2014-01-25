@@ -1,0 +1,52 @@
+<!doctype html>
+<style>
+  div {
+    border: 1px solid black;
+  }
+  div.foo {
+    background: red;
+  }
+</style>
+<script src="../../resources/js-test.js"></script>
+<script>
+  if (window.testRunner)
+    testRunner.dumpAsText();
+
+  function createElementWithShadow(style) {
+    var host = document.createElement('div');
+    var root = host.createShadowRoot();
+    root.innerHTML = '<style>' + (style ? style : 'span {color:blue;}') + '</style><span>item</span>';
+    return host;
+  }
+
+  function querySelectorInShadow(host, selector) {
+    return host.shadowRoot.querySelector(selector);
+  }
+
+  window.onload = function() {
+    var container = document.querySelector('#container');
+    var host1 = createElementWithShadow();
+    var host2 = createElementWithShadow();
+    container.appendChild(host1);
+    container.appendChild(host2);
+    document.body.offsetHeight;
+    shouldBeTrue(String(internals.isSharingStyle(host1, host2)));
+    shouldBeTrue(String(internals.isSharingStyle(querySelectorInShadow(host1, 'span'), querySelectorInShadow(host2, 'span'))));
+
+    var host3 = createElementWithShadow();
+    host3.createShadowRoot();
+    container.appendChild(host3);
+    document.body.offsetHeight;
+    shouldBeFalse(String(internals.isSharingStyle(host1, host3)));
+
+    var host4 = createElementWithShadow('span {font-size: 20px;}');
+    container.appendChild(host4);
+    document.body.offsetHeight;
+    shouldBeFalse(String(internals.isSharingStyle(host1, host4)));
+
+    host2.classList.add('foo');
+    document.body.offsetHeight;
+    shouldBeFalse(String(internals.isSharingStyle(host1, host2)));
+  }
+</script>
+<div id="container"></div>

@@ -157,11 +157,19 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(Ele
     return true;
 }
 
+bool SharedStyleFinder::sharingCandidateShadowHasSharedStyleSheetContents(Element& candidate) const
+{
+    if (!element().shadow() || !element().shadow()->containsActiveStyles())
+        return false;
+
+    return element().shadow()->hasSameStyles(candidate.shadow());
+}
+
 bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 {
     if (element() == candidate)
         return false;
-    Element* parent = candidate.parentElement();
+    Element* parent = candidate.parentOrShadowHostElement();
     RenderStyle* style = candidate.renderStyle();
     if (!style)
         return false;
@@ -169,7 +177,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
     if (!parent)
         return false;
-    if (element().parentElement()->renderStyle() != parent->renderStyle())
+    if (element().parentOrShadowHostElement()->renderStyle() != parent->renderStyle())
         return false;
     if (candidate.tagQName() != element().tagQName())
         return false;
@@ -199,8 +207,8 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
     if (candidate.hasScopedHTMLStyleChild())
         return false;
-    if (candidate.shadow() && candidate.shadow()->containsActiveStyles())
-        return 0;
+    if (candidate.shadow() && candidate.shadow()->containsActiveStyles() && !sharingCandidateShadowHasSharedStyleSheetContents(candidate))
+        return false;
 
     bool isControl = candidate.isFormControlElement();
 
@@ -220,7 +228,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (candidate.isUnresolvedCustomElement() != element().isUnresolvedCustomElement())
         return false;
 
-    if (element().parentElement() != parent) {
+    if (element().parentOrShadowHostElement() != parent) {
         if (!parent->isStyledElement())
             return false;
         if (parent->hasScopedHTMLStyleChild())
@@ -304,7 +312,7 @@ RenderStyle* SharedStyleFinder::findSharedStyle()
     }
 
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
-    if (!element().parentElement()->childrenSupportStyleSharing()) {
+    if (!element().parentOrShadowHostElement()->childrenSupportStyleSharing()) {
         INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedByParent);
         return 0;
     }

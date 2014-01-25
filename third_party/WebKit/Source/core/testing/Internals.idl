@@ -42,6 +42,8 @@
     [RaisesException] DOMString styleResolverStatsReport();
     [RaisesException] DOMString styleResolverStatsTotalsReport();
 
+    [RaisesException] boolean isSharingStyle(Element element1, Element element2);
+
     [RaisesException] unsigned long numberOfScopedHTMLStyleChildren(Node scope);
     [RaisesException] CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 

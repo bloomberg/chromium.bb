@@ -55,6 +55,7 @@ public:
     bool applyAuthorStyles() const { return m_applyAuthorStyles; }
     bool didAffectApplyAuthorStyles();
     bool containsActiveStyles() const;
+    bool hasSameStyles(ElementShadow *) const;
 
     void attach(const Node::AttachContext&);
     void detach(const Node::AttachContext&);

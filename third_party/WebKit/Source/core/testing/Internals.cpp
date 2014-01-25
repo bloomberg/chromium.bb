@@ -58,6 +58,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Range.h"
 #include "core/dom/StaticNodeList.h"
@@ -356,6 +357,14 @@ String Internals::styleResolverStatsTotalsReport(ExceptionState& exceptionState)
         return String();
     }
     return document->ensureStyleResolver().statsTotals()->report();
+}
+
+bool Internals::isSharingStyle(Element* element1, Element* element2, ExceptionState& exceptionState) const
+{
+    if (!element1 || !element2) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+    }
+    return element1->renderStyle() == element2->renderStyle();
 }
 
 PassRefPtr<Element> Internals::createContentElement(ExceptionState& exceptionState)
