@@ -6,14 +6,17 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_BORDER_H_
 
 #include "ui/gfx/image/image_skia.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/button.h"
 
 namespace gfx {
 class Canvas;
 }
 
 namespace views {
-class CustomButton;
+class LabelButton;
+class Border;
 }
 
 namespace libgtk2ui {
@@ -23,7 +26,7 @@ class Gtk2UI;
 class Gtk2Border : public views::Border {
  public:
   Gtk2Border(Gtk2UI* gtk2_ui,
-             views::CustomButton* owning_button,
+             views::LabelButton* owning_button,
              scoped_ptr<views::Border> border);
   virtual ~Gtk2Border();
 
@@ -37,15 +40,21 @@ class Gtk2Border : public views::Border {
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
+  void PaintState(const ui::NativeTheme::State state,
+                  const ui::NativeTheme::ExtraParams& extra,
+                  const gfx::Rect& rect,
+                  gfx::Canvas* canvas);
+
+  bool ShouldDrawBorder(bool focused, views::Button::ButtonState state);
+
   Gtk2UI* gtk2_ui_;
   bool use_gtk_;
 
-  gfx::ImageSkia hovered_;
-  gfx::ImageSkia pressed_;
+  gfx::ImageSkia button_images_[2][views::Button::STATE_COUNT];
 
   // The view to which we are a border. We keep track of this so that we can
   // force invalidate the layout on theme changes.
-  views::CustomButton* owning_button_;
+  views::LabelButton* owning_button_;
 
   // Since we don't want to expose the concept of whether we're using a GTK
   // theme down to the cross platform views layer, we keep a normal Border and

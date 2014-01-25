@@ -10,6 +10,21 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
+// Button, static public:
+
+// static
+Button::ButtonState Button::GetButtonStateFrom(ui::NativeTheme::State state) {
+  switch (state) {
+    case ui::NativeTheme::kDisabled: return Button::STATE_DISABLED;
+    case ui::NativeTheme::kHovered:  return Button::STATE_HOVERED;
+    case ui::NativeTheme::kNormal:   return Button::STATE_NORMAL;
+    case ui::NativeTheme::kPressed:  return Button::STATE_PRESSED;
+    case ui::NativeTheme::kMaxState: NOTREACHED() << "Unknown state: " << state;
+  }
+  return Button::STATE_NORMAL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Button, public:
 
 Button::~Button() {

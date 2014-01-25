@@ -528,7 +528,7 @@ gfx::Image Gtk2UI::GetIconForContentType(
 }
 
 scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
-    views::CustomButton* owning_button,
+    views::LabelButton* owning_button,
     scoped_ptr<views::Border> border) {
   return scoped_ptr<views::Border>(
       new Gtk2Border(this, owning_button, border.Pass()));
@@ -1183,6 +1183,7 @@ SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
 
   if (gtk_state == GTK_STATE_ACTIVE || gtk_state == GTK_STATE_PRELIGHT) {
     SkBitmap border = DrawGtkButtonBorder(gtk_state,
+                                          false,
                                           default_bitmap.width(),
                                           default_bitmap.height());
     canvas.drawBitmap(border, 0, 0);
@@ -1210,6 +1211,7 @@ SkBitmap Gtk2UI::GenerateToolbarBezel(int gtk_state, int sizing_idr) const {
   SkCanvas canvas(retval);
   SkBitmap border = DrawGtkButtonBorder(
       gtk_state,
+      false,
       default_bitmap.width(),
       default_bitmap.height());
   canvas.drawBitmap(border, 0, 0);
@@ -1249,7 +1251,9 @@ void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
 }
 
 SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
-                                     int width, int height) const {
+                                     bool focused,
+                                     int width,
+                                     int height) const {
   // Create a temporary GTK button to snapshot
   GtkWidget* window = gtk_offscreen_window_new();
   GtkWidget* button = gtk_button_new();
@@ -1259,6 +1263,13 @@ SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
   gtk_widget_realize(button);
   gtk_widget_show(button);
   gtk_widget_show(window);
+
+  if (focused) {
+    // We can't just use gtk_widget_grab_focus() here because that sets
+    // gtk_widget_is_focus(), but not gtk_widget_has_focus(), which is what the
+    // GtkButton's paint checks.
+    GTK_WIDGET_SET_FLAGS(button, GTK_HAS_FOCUS);
+  }
 
   gtk_widget_set_state(button, static_cast<GtkStateType>(gtk_state));
 

@@ -26,7 +26,7 @@ class NativeTheme;
 
 namespace views {
 class Border;
-class CustomButton;
+class LabelButton;
 class View;
 class WindowButtonOrderObserver;
 
@@ -103,7 +103,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   // Builds a Border which paints the native button style.
   virtual scoped_ptr<Border> CreateNativeBorder(
-      views::CustomButton* owning_button,
+      views::LabelButton* owning_button,
       scoped_ptr<views::Border> border) = 0;
 
   // Notifies the observer about changes about how window buttons should be

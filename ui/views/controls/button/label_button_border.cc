@@ -31,17 +31,6 @@ const int kButtonInsets = 5;
 const int kTextHoveredImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
 const int kTextPressedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
 
-Button::ButtonState GetButtonState(ui::NativeTheme::State state) {
-  switch (state) {
-    case ui::NativeTheme::kDisabled: return Button::STATE_DISABLED;
-    case ui::NativeTheme::kHovered:  return Button::STATE_HOVERED;
-    case ui::NativeTheme::kNormal:   return Button::STATE_NORMAL;
-    case ui::NativeTheme::kPressed:  return Button::STATE_PRESSED;
-    case ui::NativeTheme::kMaxState: NOTREACHED() << "Unknown state: " << state;
-  }
-  return Button::STATE_NORMAL;
-}
-
 // A helper function to paint the appropriate broder images.
 void PaintHelper(LabelButtonBorder* border,
                  gfx::Canvas* canvas,
@@ -49,10 +38,11 @@ void PaintHelper(LabelButtonBorder* border,
                  const gfx::Rect& rect,
                  const ui::NativeTheme::ExtraParams& extra) {
   Painter* painter =
-      border->GetPainter(extra.button.is_focused, GetButtonState(state));
+      border->GetPainter(extra.button.is_focused,
+                         Button::GetButtonStateFrom(state));
   // Paint any corresponding unfocused painter if there is no focused painter.
   if (!painter && extra.button.is_focused)
-    painter = border->GetPainter(false, GetButtonState(state));
+    painter = border->GetPainter(false, Button::GetButtonStateFrom(state));
   if (painter)
     Painter::PaintPainterAt(canvas, painter, rect);
 }

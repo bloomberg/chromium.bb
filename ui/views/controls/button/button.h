@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
 
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -44,6 +45,8 @@ class VIEWS_EXPORT Button : public View {
     STYLE_TEXTBUTTON,
     STYLE_COUNT,
   };
+
+  static ButtonState GetButtonStateFrom(ui::NativeTheme::State state);
 
   void SetTooltipText(const base::string16& tooltip_text);
 

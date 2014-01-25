@@ -45,7 +45,10 @@ class Gtk2UI : public views::LinuxUI {
     const std::vector<views::FrameButton>& trailing_buttons);
 
   // Draws the GTK button border for state |gtk_state| onto a bitmap.
-  SkBitmap DrawGtkButtonBorder(int gtk_state, int width, int height) const;
+  SkBitmap DrawGtkButtonBorder(int gtk_state,
+                               bool focused,
+                               int width,
+                               int height) const;
 
   // Returns the current insets for a button.
   gfx::Insets GetButtonInsets() const;
@@ -98,7 +101,7 @@ class Gtk2UI : public views::LinuxUI {
   virtual gfx::Image GetIconForContentType(
       const std::string& content_type, int size) const OVERRIDE;
   virtual scoped_ptr<views::Border> CreateNativeBorder(
-      views::CustomButton* owning_button,
+      views::LabelButton* owning_button,
       scoped_ptr<views::Border> border) OVERRIDE;
   virtual void AddWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) OVERRIDE;
