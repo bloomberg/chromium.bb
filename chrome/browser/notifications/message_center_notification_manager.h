@@ -32,6 +32,7 @@ class Profile;
 
 namespace message_center {
 class NotificationBlocker;
+FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManuallyCloseMessageCenter);
 }
 
 // This class extends NotificationUIManagerImpl and delegates actual display
@@ -69,6 +70,8 @@ class MessageCenterNotificationManager
   virtual void OnNotificationUpdated(const std::string& notification_id)
       OVERRIDE;
 
+  void EnsureMessageCenterClosed();
+
 #if defined(OS_WIN)
   // Called when the pref changes for the first run balloon. The first run
   // balloon is only displayed on Windows, since the visibility of the tray
@@ -90,6 +93,8 @@ class MessageCenterNotificationManager
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(message_center::WebNotificationTrayTest,
+                           ManuallyCloseMessageCenter);
   class ImageDownloadsObserver {
    public:
     virtual void OnDownloadsCompleted() = 0;

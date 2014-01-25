@@ -85,6 +85,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest,
                            ManyMessageCenterNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManuallyCloseMessageCenter);
 
   PositionInfo GetPositionInfo();
 

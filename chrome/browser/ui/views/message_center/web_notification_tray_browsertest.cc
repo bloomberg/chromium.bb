@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -215,6 +216,37 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, MAYBE_ManyPopupNotifications) {
   NotificationList::PopupNotifications popups =
       message_center->GetPopupNotifications();
   EXPECT_EQ(kMaxVisiblePopupNotifications, popups.size());
+}
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_ManuallyCloseMessageCenter DISABLED_ManuallyCloseMessageCenter
+#else
+#define MAYBE_ManuallyCloseMessageCenter ManuallyCloseMessageCenter
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
+                       MAYBE_ManuallyCloseMessageCenter) {
+  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
+  ASSERT_TRUE(manager->DelegatesToMessageCenter());
+  MessageCenterNotificationManager* mc_manager =
+      static_cast<MessageCenterNotificationManager*>(manager);
+
+  WebNotificationTray* tray =
+      static_cast<WebNotificationTray*>(mc_manager->tray_.get());
+  ASSERT_TRUE(NULL != tray);
+
+  message_center::MessageCenter* message_center = tray->message_center();
+
+  bool shown = tray->message_center_tray_->ShowMessageCenterBubble();
+  EXPECT_TRUE(shown);
+  EXPECT_TRUE(message_center->IsMessageCenterVisible());
+
+  mc_manager->EnsureMessageCenterClosed();
+
+  EXPECT_FALSE(message_center->IsMessageCenterVisible());
+  if (NULL != tray->message_center_delegate_)
+    EXPECT_TRUE(tray->message_center_delegate_->GetWidget()->IsClosed());
 }
 
 }  // namespace message_center

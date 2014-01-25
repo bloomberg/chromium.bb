@@ -36,6 +36,11 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #endif
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/system/web_notification/web_notification_tray.h"
+#endif
+
 #if defined(OS_WIN)
 // The first-run balloon will be shown |kFirstRunIdleDelaySeconds| after all
 // popups go away and the user has notifications in the message center.
@@ -248,6 +253,20 @@ void MessageCenterNotificationManager::OnNotificationUpdated(
     const std::string& notification_id) {
 #if defined(OS_WIN)
   CheckFirstRunTimer();
+#endif
+}
+
+void MessageCenterNotificationManager::EnsureMessageCenterClosed() {
+  if (tray_.get())
+    tray_->GetMessageCenterTray()->HideMessageCenterBubble();
+
+#if defined(USE_ASH)
+  if (ash::Shell::HasInstance()) {
+    ash::WebNotificationTray* tray =
+        ash::Shell::GetInstance()->GetWebNotificationTray();
+    if (tray)
+      tray->GetMessageCenterTray()->HideMessageCenterBubble();
+  }
 #endif
 }
 

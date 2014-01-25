@@ -2,10 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/message_center_notification_manager.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/notifications/sync_notifier/welcome_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_util.h"
 
 namespace notifier {
+namespace {
+void UpdateMessageCenter() {
+  NotificationUIManager* notification_ui_manager =
+      g_browser_process->notification_ui_manager();
+  if (notification_ui_manager->DelegatesToMessageCenter()) {
+    MessageCenterNotificationManager* message_center_notification_manager =
+        static_cast<MessageCenterNotificationManager*>(notification_ui_manager);
+
+    message_center_notification_manager->EnsureMessageCenterClosed();
+  }
+}
+}  // namespace
 
 WelcomeDelegate::WelcomeDelegate(const std::string& notification_id,
                                  Profile* profile,
@@ -25,11 +47,42 @@ void WelcomeDelegate::Error() {}
 
 void WelcomeDelegate::Close(bool by_user) {}
 
-void WelcomeDelegate::Click() {}
+void WelcomeDelegate::Click() {
+  g_browser_process->notification_ui_manager()->CancelById(notification_id_);
+
+  // TODO(dewittj): Notifications that remove themselves are currently poorly
+  // supported.  We need to make it possible to completely remove a notification
+  // while the center is open, and then this section can be removed.
+  UpdateMessageCenter();
+}
 
 void WelcomeDelegate::ButtonClick(int button_index) {
-  // TODO(dewittj): Implement disable-on-click.
-  NOTIMPLEMENTED();
+  DCHECK_EQ(0, button_index);
+
+  // We take a reference to ourselves to prevent destruction until the end of
+  // this method.
+  scoped_refptr<WelcomeDelegate> this_ptr(this);
+
+  // WARNING: This line causes the |this| to be released.
+  g_browser_process->notification_ui_manager()->CancelById(notification_id_);
+
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile_);
+  if (notification_service)
+    notification_service->SetNotifierEnabled(notifier_id_, false);
+
+  ChromeNotifierService* notifier_service =
+      ChromeNotifierServiceFactory::GetForProfile(profile_,
+                                                  Profile::EXPLICIT_ACCESS);
+  if (notifier_service) {
+    notifier_service->OnSyncedNotificationServiceEnabled(notifier_id_.id,
+                                                         false);
+  }
+
+  // TODO(dewittj): Notifications that remove themselves are currently poorly
+  // supported.  We need to make it possible to completely remove a notification
+  // while the center is open, and then this section can be removed.
+  UpdateMessageCenter();
 }
 
 std::string WelcomeDelegate::id() const { return notification_id_; }
