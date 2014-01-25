@@ -68,6 +68,7 @@ class StatusBubbleViews : public StatusBubble {
 
  private:
   class StatusView;
+  class StatusViewAnimation;
   class StatusViewExpander;
 
   // Initializes the popup and view.
