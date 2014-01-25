@@ -5,7 +5,6 @@
      tests -->
 <script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
 <script src="cr.js"></script>
-<script src="cr/promise.js"></script>
 <script src="bmm/treeiterator.js"></script>
 <script src="bmm.js"></script>
 <script>
@@ -65,7 +64,7 @@ function testLoadSingle() {
     assertEquals(tree, node);
   }
   var p = bmm.loadTree();
-  p.addListener(f);
+  p.then(f);
 
   chrome.bookmarkManagerPrivate.getSubtree.load(tree);
 
@@ -87,8 +86,8 @@ function testLoadMultiple() {
 
   var p = bmm.loadTree();
   var p2 = bmm.loadTree();
-  p.addListener(f1);
-  p2.addListener(f2);
+  p.then(f1);
+  p2.then(f2);
 
   chrome.bookmarkManagerPrivate.getSubtree.load(tree);
 
@@ -104,7 +103,7 @@ function testLoadSubtree() {
     assertEquals(tree.children[0], node);
   }
   var p = bmm.loadSubtree(1);
-  p.addListener(f);
+  p.then(f);
 
   chrome.bookmarkManagerPrivate.getSubtree.load(tree.children[0]);
 

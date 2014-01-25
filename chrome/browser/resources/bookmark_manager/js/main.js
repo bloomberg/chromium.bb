@@ -11,7 +11,6 @@
 /** @const */ var ListItem = cr.ui.ListItem;
 /** @const */ var Menu = cr.ui.Menu;
 /** @const */ var MenuButton = cr.ui.MenuButton;
-/** @const */ var Promise = cr.Promise;
 /** @const */ var Splitter = cr.ui.Splitter;
 /** @const */ var TreeItem = cr.ui.TreeItem;
 
@@ -314,6 +313,12 @@ function handleLoadForTree(e) {
   processHash();
 }
 
+/**
+ * Returns a promise for all the URLs in the {@code nodes} and the direct
+ * children of {@code nodes}.
+ * @param {!Array.<BookmarkTreeNode>} nodes .
+ * @return {!Promise.<Array.<string>>} .
+ */
 function getAllUrls(nodes) {
   var urls = [];
 
@@ -337,20 +342,13 @@ function getAllUrls(nodes) {
     if (bmm.isFolder(node))
       return bmm.loadSubtree(node.id);
     // Not a folder so we already have all the data we need.
-    return new Promise(node);
+    return Promise.resolve(node);
   });
 
-  var urlsPromise = new Promise();
-
-  var p = Promise.all.apply(null, promises);
-  p.addListener(function(nodes) {
-    nodes.forEach(function(node) {
-      addNodes(node);
-    });
-    urlsPromise.value = urls;
+  return Promise.all(promises).then(function(nodes) {
+    nodes.forEach(addNodes);
+    return urls;
   });
-
-  return urlsPromise;
 }
 
 /**
@@ -381,7 +379,7 @@ function getNodesForOpen(target) {
  * Returns a promise that will contain all URLs of all the selected bookmarks
  * and the nested bookmarks for use with the open commands.
  * @param {HTMLElement} target The target list or tree.
- * @return {Promise} .
+ * @return {Promise.<Array.<string>>} .
  */
 function getUrlsForOpenCommands(target) {
   return getAllUrls(getNodesForOpen(target));
@@ -418,7 +416,7 @@ function updateOpenCommand(e, command, singularId, pluralId, commandDisabled) {
     return;
   }
 
-  getUrlsForOpenCommands(e.target).addListener(function(urls) {
+  getUrlsForOpenCommands(e.target).then(function(urls) {
     var disabled = !urls.length;
     command.disabled = disabled;
     e.canExecute = !disabled;
@@ -817,7 +815,7 @@ function openBookmarks(kind, opt_eventTarget) {
   // the whole tree since we would like to minimize the amount of data sent.
 
   var urlsP = getUrlsForOpenCommands(opt_eventTarget);
-  urlsP.addListener(function(urls) {
+  urlsP.then(function(urls) {
     getLinkController().openUrls(urls, kind);
     chrome.bookmarkManagerPrivate.recordLaunch();
   });

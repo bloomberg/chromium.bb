@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('bmm', function() {
-  var Promise = cr.Promise;
-
   /**
    * Whether a node contains another node.
    * TODO(yosin): Once JavaScript style guide is updated and linter follows
@@ -35,35 +33,38 @@ cr.define('bmm', function() {
   var loadingPromises = {};
 
   /**
-   * Loads a subtree of the bookmark tree and returns a {@code cr.Promise} that
-   * will be fulfilled when done. This reuses multiple loads so that we do not
-   * load the same subtree more than once at the same time.
-   * @return {!cr.Promise} The future promise for the load.
+   * Promise version of chrome.bookmarkManagerPrivate.getSubtree.
+   * @param {string} id .
+   * @param {boolean} foldersOnly .
+   * @return {!Promise.<!Array.<!BookmarkTreeNode>>} .
    */
-  function loadSubtree(id) {
-    var p = new Promise;
-    if (!(id in loadingPromises)) {
-      loadingPromises[id] = new Promise;
-      loadingPromises[id].addListener(function(n) {
-        p.value = n;
-      });
-      chrome.bookmarkManagerPrivate.getSubtree(id, false, function(nodes) {
-        loadingPromises[id].value = nodes && nodes[0];
-        delete loadingPromises[id];
-      });
-    } else {
-      loadingPromises[id].addListener(function(n) {
-        p.value = n;
-      });
-    }
-    return p;
+  function getSubtreePromise(id, foldersOnly) {
+    return new Promise(function(resolve) {
+      chrome.bookmarkManagerPrivate.getSubtree(id, foldersOnly, resolve);
+    });
   }
 
   /**
-   * Loads the entire bookmark tree and returns a {@code cr.Promise} that will
+   * Loads a subtree of the bookmark tree and returns a {@code Promise} that
+   * will be fulfilled when done. This reuses multiple loads so that we do not
+   * load the same subtree more than once at the same time.
+   * @return {!Promise.<!BookmarkTreeNode>} The future promise for the load.
+   */
+  function loadSubtree(id) {
+    if (!loadingPromises[id]) {
+      loadingPromises[id] = getSubtreePromise(id, false).then(function(nodes) {
+        delete loadingPromises[id];
+        return nodes && nodes[0];
+      });
+    }
+    return loadingPromises[id];
+  }
+
+  /**
+   * Loads the entire bookmark tree and returns a {@code Promise} that will
    * be fulfilled when done. This reuses multiple loads so that we do not load
    * the same tree more than once at the same time.
-   * @return {!cr.Promise} The future promise for the load.
+   * @return {!Promise.<Node>} The future promise for the load.
    */
   function loadTree() {
     return loadSubtree('');
