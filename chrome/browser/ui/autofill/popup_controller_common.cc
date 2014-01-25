@@ -26,9 +26,13 @@ PopupControllerCommon::PopupControllerCommon(
       key_press_event_target_(NULL) {}
 PopupControllerCommon::~PopupControllerCommon() {}
 
-void PopupControllerCommon::RegisterKeyPressCallback(
+void PopupControllerCommon::SetKeyPressCallback(
     content::RenderWidgetHost::KeyPressEventCallback callback) {
+  DCHECK(key_press_event_callback_.is_null());
   key_press_event_callback_ = callback;
+}
+
+void PopupControllerCommon::RegisterKeyPressCallback() {
   if (web_contents_ && !key_press_event_target_) {
     key_press_event_target_ = web_contents_->GetRenderViewHost();
     key_press_event_target_->AddKeyPressEventCallback(

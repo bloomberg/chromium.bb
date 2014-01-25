@@ -106,6 +106,9 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       hide_on_outside_click_(false),
       weak_ptr_factory_(this) {
   ClearState();
+  controller_common_->SetKeyPressCallback(
+      base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
+                 base::Unretained(this)));
 #if !defined(OS_ANDROID)
   subtext_font_list_ = name_font_list_.DeriveFontListWithSizeDelta(
       kLabelFontSizeDelta);
@@ -179,9 +182,7 @@ void AutofillPopupControllerImpl::Show(
   }
 
   delegate_->OnPopupShown();
-  controller_common_->RegisterKeyPressCallback(
-      base::Bind(&AutofillPopupControllerImpl::HandleKeyPressEvent,
-                 base::Unretained(this)));
+  controller_common_->RegisterKeyPressCallback();
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(

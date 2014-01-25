@@ -44,16 +44,19 @@ class PopupControllerCommon {
   // but it will be placed above if there isn't enough space.
   gfx::Rect GetPopupBounds(int desired_height, int desired_width) const;
 
+  // Callback used to register with RenderViewHost. This can only be set once,
+  // or else a callback may be registered that will not be removed
+  // (crbug.com/338070). Call will crash if callback is already set.
+  void SetKeyPressCallback(content::RenderWidgetHost::KeyPressEventCallback);
+
   // Register listener for key press events with the current RenderViewHost
-  // associtated with |web_contents_|. If another callback has already been
-  // registered, this function will have no effect until the callback has been
-  // removed via RemoveKeyPressCallback().
-  void RegisterKeyPressCallback(
-      content::RenderWidgetHost::KeyPressEventCallback callback);
+  // associated with |web_contents_|. If callback has already been registered,
+  // this has no effect.
+  void RegisterKeyPressCallback();
 
   // Remove previously registered callback, assuming that the current
   // RenderViewHost is the same as when it was originally registered. Safe to
-  // call even if no callback is currently registered.
+  // call even if the callback is not currently registered.
   void RemoveKeyPressCallback();
 
  protected:

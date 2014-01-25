@@ -79,7 +79,11 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       view_(NULL),
       current_password_(base::ASCIIToUTF16(generator->Generate())),
       password_selected_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  controller_common_.SetKeyPressCallback(
+      base::Bind(&PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
+                 base::Unretained(this)));
+}
 
 PasswordGenerationPopupControllerImpl::~PasswordGenerationPopupControllerImpl()
   {}
@@ -197,9 +201,7 @@ void PasswordGenerationPopupControllerImpl::Show() {
     view_->Show();
   }
 
-  controller_common_.RegisterKeyPressCallback(
-      base::Bind(&PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
-                 base::Unretained(this)));
+  controller_common_.RegisterKeyPressCallback();
 
   if (observer_)
     observer_->OnPopupShown();
