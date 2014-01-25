@@ -19,10 +19,13 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
     : waiter_(waiter),
       message_pipe_(message_pipe.Pass()),
       incoming_receiver_(NULL),
+      async_wait_id_(0),
       error_(false) {
 }
 
 Connector::~Connector() {
+  if (async_wait_id_)
+    waiter_->CancelWait(waiter_, async_wait_id_);
 }
 
 void Connector::SetIncomingReceiver(MessageReceiver* receiver) {
@@ -36,46 +39,24 @@ bool Connector::Accept(Message* message) {
   if (error_)
     return false;
 
-  bool wait_to_write;
-  WriteOne(message, &wait_to_write);
-
-  if (wait_to_write) {
-    WaitToWriteMore();
-    if (!error_)
-      write_queue_.Push(message);
-  }
-
+  WriteOne(message);
   return !error_;
 }
 
-void Connector::OnHandleReady(Callback* callback, MojoResult result) {
-  if (callback == &read_callback_)
-    ReadMore();
-  if (callback == &write_callback_)
-    WriteMore();
+// static
+void Connector::OnHandleReady(void* closure, MojoResult result) {
+  Connector* self = static_cast<Connector*>(closure);
+  self->async_wait_id_ = 0;
+  self->ReadMore();
 }
 
 void Connector::WaitToReadMore() {
-  CallAsyncWait(MOJO_WAIT_FLAG_READABLE, &read_callback_);
-}
-
-void Connector::WaitToWriteMore() {
-  CallAsyncWait(MOJO_WAIT_FLAG_WRITABLE, &write_callback_);
-}
-
-void Connector::CallAsyncWait(MojoWaitFlags flags, Callback* callback) {
-  callback->SetOwnerToNotify(this);
-  callback->SetAsyncWaitID(
-      waiter_->AsyncWait(waiter_,
-                         message_pipe_.get().value(),
-                         MOJO_WAIT_FLAG_READABLE,
-                         MOJO_DEADLINE_INDEFINITE,
-                         &Callback::OnHandleReady,
-                         callback));
-}
-
-void Connector::CallCancelWait(MojoAsyncWaitID async_wait_id) {
-  waiter_->CancelWait(waiter_, async_wait_id);
+  async_wait_id_ = waiter_->AsyncWait(waiter_,
+                                      message_pipe_.get().value(),
+                                      MOJO_WAIT_FLAG_READABLE,
+                                      MOJO_DEADLINE_INDEFINITE,
+                                      &Connector::OnHandleReady,
+                                      this);
 }
 
 void Connector::ReadMore() {
@@ -118,26 +99,7 @@ void Connector::ReadMore() {
   }
 }
 
-void Connector::WriteMore() {
-  while (!error_ && !write_queue_.IsEmpty()) {
-    Message* message = write_queue_.Peek();
-
-    bool wait_to_write;
-    WriteOne(message, &wait_to_write);
-    if (wait_to_write)
-      break;
-
-    write_queue_.Pop();
-  }
-}
-
-void Connector::WriteOne(Message* message, bool* wait_to_write) {
-  // TODO(darin): WriteMessageRaw will eventually start generating an error that
-  // it cannot accept more data. In that case, we'll need to wait on the pipe
-  // to determine when we can try writing again. This flag will be set to true
-  // in that case.
-  *wait_to_write = false;
-
+void Connector::WriteOne(Message* message) {
   MojoResult rv = WriteMessageRaw(
       message_pipe_.get(),
       message->data,
@@ -153,39 +115,6 @@ void Connector::WriteOne(Message* message, bool* wait_to_write) {
   } else {
     error_ = true;
   }
-}
-
-// ----------------------------------------------------------------------------
-
-Connector::Callback::Callback()
-    : owner_(NULL),
-      async_wait_id_(0) {
-}
-
-Connector::Callback::~Callback() {
-  if (owner_)
-    owner_->CallCancelWait(async_wait_id_);
-}
-
-void Connector::Callback::SetOwnerToNotify(Connector* owner) {
-  assert(!owner_);
-  owner_ = owner;
-}
-
-void Connector::Callback::SetAsyncWaitID(MojoAsyncWaitID id) {
-  async_wait_id_ = id;
-}
-
-// static
-void Connector::Callback::OnHandleReady(void* closure, MojoResult result) {
-  Callback* self = static_cast<Callback*>(closure);
-
-  // Reset |owner_| to indicate that we are no longer in the waiting state.
-
-  assert(self->owner_);
-  Connector* owner = NULL;
-  std::swap(owner, self->owner_);
-  owner->OnHandleReady(self, result);
 }
 
 }  // namespace internal

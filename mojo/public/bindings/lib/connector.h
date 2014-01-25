@@ -40,40 +40,18 @@ class Connector : public MessageReceiver {
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
 
  private:
-  class Callback {
-   public:
-    Callback();
-    ~Callback();
+  static void OnHandleReady(void* closure, MojoResult result);
 
-    void SetOwnerToNotify(Connector* owner);
-    void SetAsyncWaitID(MojoAsyncWaitID async_wait_id);
-
-    static void OnHandleReady(void* closure, MojoResult result);
-
-   private:
-    Connector* owner_;
-    MojoAsyncWaitID async_wait_id_;
-  };
-  friend class Callback;
-
-  void OnHandleReady(Callback* callback, MojoResult result);
   void WaitToReadMore();
-  void WaitToWriteMore();
-  void CallAsyncWait(MojoWaitFlags flags, Callback* callback);
-  void CallCancelWait(MojoAsyncWaitID async_wait_id);
   void ReadMore();
-  void WriteMore();
-  void WriteOne(Message* message, bool* wait_to_write);
+  void WriteOne(Message* message);
 
   MojoAsyncWaiter* waiter_;
 
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;
-  MessageQueue write_queue_;
 
-  Callback read_callback_;
-  Callback write_callback_;
-
+  MojoAsyncWaitID async_wait_id_;
   bool error_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
