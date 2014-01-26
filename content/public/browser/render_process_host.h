@@ -215,6 +215,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 #if defined(ENABLE_WEBRTC)
   virtual void EnableAecDump(const base::FilePath& file) = 0;
   virtual void DisableAecDump() = 0;
+
+  // When set, |callback| receives log messages regarding, for example. media
+  // devices (webcams, mics, etc) that were initially requested in the render
+  // process associated with this RenderProcessHost.
+  virtual void SetWebRtcLogMessageCallback(
+      base::Callback<void(const std::string&)> callback) = 0;
 #endif
 
   // Static management functions -----------------------------------------------

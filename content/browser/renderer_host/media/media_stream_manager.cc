@@ -13,18 +13,22 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/device_request_message_filter.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/media_request_state.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
@@ -101,6 +105,39 @@ void ParseStreamType(const StreamOptions& options,
        *video_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
      }
   }
+}
+
+// Private helper method for SendMessageToNativeLog() that obtains the global
+// MediaStreamManager instance on the UI thread before sending |message| to the
+// webrtcLoggingPrivate API.
+void DoAddLogMessage(const std::string& message) {
+  // Must be on the UI thread to access BrowserMainLoop.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // May be null in tests.
+  // TODO(vrk): Handle this more elegantly by having native log messages become
+  // no-ops until MediaStreamManager is aware that a renderer process has
+  // started logging. crbug.com/333894
+  if (content::BrowserMainLoop::GetInstance()) {
+    content::BrowserMainLoop::GetInstance()->
+        media_stream_manager()->AddLogMessageOnUIThread(message);
+  }
+}
+
+// Private helper method to generate a string for the log message that lists the
+// human readable names of |devices|.
+std::string GetLogMessageString(MediaStreamType stream_type,
+                                const StreamDeviceInfoArray& devices) {
+  std::string output_string =
+      base::StringPrintf("Getting devices for stream type %d:\n", stream_type);
+  if (devices.empty()) {
+    output_string += "No devices found.";
+  } else {
+    for (StreamDeviceInfoArray::const_iterator it = devices.begin();
+         it != devices.end(); ++it) {
+      output_string += "  " + it->device.name + "\n";
+    }
+  }
+  return output_string;
 }
 
 }  // namespace
@@ -1014,6 +1051,20 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
       // Enumerate the devices if there is no valid device lists to be used.
       StartEnumeration(request);
       return;
+    } else {
+        // Cache is valid, so log the cached devices for MediaStream requests.
+      if (request->request_type == MEDIA_GENERATE_STREAM) {
+        std::string log_message("Using cached devices for request.\n");
+        if (audio_type != MEDIA_NO_SERVICE) {
+          log_message +=
+              GetLogMessageString(audio_type, audio_enumeration_cache_.devices);
+        }
+        if (video_type != MEDIA_NO_SERVICE) {
+          log_message +=
+              GetLogMessageString(video_type, video_enumeration_cache_.devices);
+        }
+        SendMessageToNativeLog(log_message);
+      }
     }
 
     if (!SetupDeviceCaptureRequest(request)) {
@@ -1403,7 +1454,11 @@ void MediaStreamManager::DevicesEnumerated(
     MediaStreamType stream_type, const StreamDeviceInfoArray& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "DevicesEnumerated("
-           << ", {stream_type = " << stream_type <<  "})";
+           << "{stream_type = " << stream_type << "})" << std::endl;
+
+  std::string log_message = "New device enumeration result:\n" +
+                            GetLogMessageString(stream_type, devices);
+  SendMessageToNativeLog(log_message);
 
   // Only cache the device list when the device list has been changed.
   bool need_update_clients = false;
@@ -1474,6 +1529,47 @@ void MediaStreamManager::DevicesEnumerated(
   label_list.clear();
   --active_enumeration_ref_count_[stream_type];
   DCHECK_GE(active_enumeration_ref_count_[stream_type], 0);
+}
+
+// static
+void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(DoAddLogMessage, message));
+}
+
+void MediaStreamManager::AddLogMessageOnUIThread(const std::string& message) {
+#if defined(OS_ANDROID)
+  // It appears android_aosp is being built with ENABLE_WEBRTC=0, since it does
+  // not find RenderProcessHostImpl::WebRtcLogMessage. Logging is not enabled on
+  // Android anyway, so make this function a no-op.
+  // TODO(vrk): Figure out what's going on here and fix.
+  return;
+#else
+  // Must be on the UI thread to access RenderProcessHost from process ID.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Grab all unique process ids that request a MediaStream or have a
+  // MediaStream running.
+  std::set<int> requesting_process_ids;
+  for (DeviceRequests::const_iterator it = requests_.begin();
+       it != requests_.end(); ++it) {
+    DeviceRequest* request = it->second;
+    if (request->request_type == MEDIA_GENERATE_STREAM)
+      requesting_process_ids.insert(request->requesting_process_id);
+  }
+
+  for (std::set<int>::const_iterator it = requesting_process_ids.begin();
+       it != requesting_process_ids.end(); ++it) {
+    // Log the message to all renderers that are requesting a MediaStream or
+    // have a MediaStream running.
+    content::RenderProcessHostImpl* render_process_host_impl =
+        static_cast<content::RenderProcessHostImpl*>(
+            content::RenderProcessHost::FromID(*it));
+    if (render_process_host_impl)
+      render_process_host_impl->WebRtcLogMessage(message);
+  }
+#endif
 }
 
 void MediaStreamManager::HandleAccessRequestResponse(

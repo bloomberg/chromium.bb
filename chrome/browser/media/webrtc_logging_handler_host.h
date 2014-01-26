@@ -61,6 +61,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // called on the IO thread.
   void DiscardLog(const GenericDoneCallback& callback);
 
+  // Adds a message to the log.
+  void LogMessage(const std::string& message);
+
   // May be called on any thread. |upload_log_on_render_close_| is used
   // for decision making and it's OK if it changes before the execution based
   // on that decision has finished.
@@ -99,8 +102,12 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
+  // Handles log message requests from both renderer process.
   void OnAddLogMessage(const std::string& message);
   void OnLoggingStoppedInRenderer();
+
+  // Handles log message requests from browser process.
+  void AddLogMessageFromBrowser(const std::string& message);
 
   void StartLoggingIfAllowed();
   void DoStartLogging();

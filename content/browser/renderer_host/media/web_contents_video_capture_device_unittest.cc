@@ -361,7 +361,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
     color_callback_.Run((SkColorSetRGB(yuv[0], yuv[1], yuv[2])));
   }
 
-  virtual void OnError() OVERRIDE {
+  virtual void OnError(const std::string& reason) OVERRIDE {
     error_callback_.Run();
   }
 

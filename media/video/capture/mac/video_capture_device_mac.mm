@@ -322,7 +322,7 @@ void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DLOG(ERROR) << reason;
   state_ = kError;
-  client_->OnError();
+  client_->OnError(reason);
 }
 
 bool VideoCaptureDeviceMac::UpdateCaptureResolution() {

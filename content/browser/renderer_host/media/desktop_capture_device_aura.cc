@@ -405,7 +405,7 @@ void DesktopVideoCaptureMachine::OnWindowDestroyed(aura::Window* window) {
 
   Stop(base::Bind(&base::DoNothing));
 
-  oracle_proxy_->ReportError();
+  oracle_proxy_->ReportError("OnWindowDestroyed()");
 }
 
 void DesktopVideoCaptureMachine::OnCompositingEnded(
