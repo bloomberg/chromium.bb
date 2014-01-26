@@ -349,11 +349,6 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
     textRenderer->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
 }
 
-bool Text::childTypeAllowed(NodeType) const
-{
-    return false;
-}
-
 PassRefPtr<Text> Text::cloneWithData(const String& data)
 {
     return create(document(), data);

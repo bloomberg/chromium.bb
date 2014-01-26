@@ -36,7 +36,6 @@ private:
 
     virtual String nodeName() const OVERRIDE;
     virtual NodeType nodeType() const OVERRIDE;
-    virtual bool childTypeAllowed(NodeType) const OVERRIDE;
     virtual PassRefPtr<Text> cloneWithData(const String&) OVERRIDE;
 };
 

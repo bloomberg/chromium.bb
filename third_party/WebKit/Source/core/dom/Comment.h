@@ -39,7 +39,6 @@ private:
     virtual String nodeName() const OVERRIDE;
     virtual NodeType nodeType() const OVERRIDE;
     virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE;
-    virtual bool childTypeAllowed(NodeType) const OVERRIDE;
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, nodeType() == Node::COMMENT_NODE);

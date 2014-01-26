@@ -52,9 +52,4 @@ PassRefPtr<Node> Comment::cloneNode(bool /*deep*/)
     return create(document(), data());
 }
 
-bool Comment::childTypeAllowed(NodeType) const
-{
-    return false;
-}
-
 } // namespace WebCore
