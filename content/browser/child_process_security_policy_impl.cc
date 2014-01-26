@@ -311,7 +311,7 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   RegisterWebSafeScheme(kHttpScheme);
   RegisterWebSafeScheme(kHttpsScheme);
   RegisterWebSafeScheme(kFtpScheme);
-  RegisterWebSafeScheme(chrome::kDataScheme);
+  RegisterWebSafeScheme(kDataScheme);
   RegisterWebSafeScheme("feed");
   RegisterWebSafeScheme(chrome::kBlobScheme);
   RegisterWebSafeScheme(kFileSystemScheme);

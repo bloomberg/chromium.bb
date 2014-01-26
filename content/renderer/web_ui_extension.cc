@@ -93,7 +93,7 @@ bool WebUIExtensionWrapper::ShouldRespondToRequest(
   bool webui_enabled =
       (render_view->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
-       frame_url.SchemeIs(chrome::kDataScheme));
+       frame_url.SchemeIs(kDataScheme));
 
   if (!webui_enabled)
     return false;

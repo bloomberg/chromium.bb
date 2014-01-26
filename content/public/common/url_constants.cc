@@ -13,11 +13,11 @@ const char kBlobScheme[] = "blob";
 // There are security implications associated with introducing new schemes.
 const char kChromeDevToolsScheme[] = "chrome-devtools";
 const char kChromeUIScheme[] = "chrome";
-const char kDataScheme[] = "data";
 }  // namespace chrome
 
 namespace content {
 
+const char kDataScheme[] = "data";
 const char kFileScheme[] = "file";
 const char kFileSystemScheme[] = "filesystem";
 const char kFtpScheme[] = "ftp";

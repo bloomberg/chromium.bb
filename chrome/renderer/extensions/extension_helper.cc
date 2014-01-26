@@ -334,7 +334,7 @@ void ExtensionHelper::OnGetApplicationInfo(int page_id) {
   // to decode arbitrary data URLs in the browser process.  See
   // http://b/issue?id=1162972
   for (size_t i = 0; i < app_info.icons.size(); ++i) {
-    if (app_info.icons[i].url.SchemeIs(chrome::kDataScheme)) {
+    if (app_info.icons[i].url.SchemeIs(content::kDataScheme)) {
       app_info.icons.erase(app_info.icons.begin() + i);
       --i;
     }

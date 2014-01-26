@@ -99,7 +99,7 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
-      chrome::kDataScheme, new net::DataProtocolHandler());
+      content::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
       chrome::kBlobScheme, (*protocol_handlers)[chrome::kBlobScheme].release());

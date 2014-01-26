@@ -424,7 +424,7 @@ static bool MergeOnBeforeRequestResponsesHelper(
     if ((*delta)->new_url.is_empty())
       continue;
     if (consider_only_cancel_scheme_urls &&
-        !(*delta)->new_url.SchemeIs(chrome::kDataScheme) &&
+        !(*delta)->new_url.SchemeIs(content::kDataScheme) &&
         (*delta)->new_url.spec() != "about:blank") {
       continue;
     }

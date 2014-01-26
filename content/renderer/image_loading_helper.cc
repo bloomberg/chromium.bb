@@ -110,7 +110,7 @@ void ImageLoadingHelper::OnDownloadImage(int id,
                                          uint32_t max_image_size) {
   std::vector<SkBitmap> result_images;
   std::vector<gfx::Size> result_original_image_sizes;
-  if (image_url.SchemeIs(chrome::kDataScheme)) {
+  if (image_url.SchemeIs(kDataScheme)) {
     SkBitmap data_image = ImageFromDataUrl(image_url);
     if (!data_image.empty()) {
       result_images.push_back(ResizeImage(data_image, max_image_size));

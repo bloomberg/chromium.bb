@@ -1222,7 +1222,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
   // similarly).
   if (title_ == net::FormatUrl(page_url_, accept_langs)) {
     std::string url_path;
-    if (!page_url_.SchemeIs(chrome::kDataScheme)) {
+    if (!page_url_.SchemeIs(kDataScheme)) {
       std::vector<std::string> url_parts;
       base::SplitString(page_url_.path(), '/', &url_parts);
       if (!url_parts.empty()) {

@@ -606,7 +606,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     extensions::kExtensionScheme,
     extensions::kExtensionResourceScheme,
     chrome::kChromeUIScheme,
-    chrome::kDataScheme,
+    content::kDataScheme,
 #if defined(OS_CHROMEOS)
     chrome::kDriveScheme,
 #endif  // defined(OS_CHROMEOS)
@@ -1015,7 +1015,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
       CreateExtensionResourceProtocolHandler());
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
-      chrome::kDataScheme, new net::DataProtocolHandler());
+      content::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
   if (!is_incognito() && profile_params_) {

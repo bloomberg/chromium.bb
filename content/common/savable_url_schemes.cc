@@ -20,7 +20,7 @@ const char* const kDefaultSavableSchemes[] = {
   kFtpScheme,
   chrome::kChromeDevToolsScheme,
   chrome::kChromeUIScheme,
-  chrome::kDataScheme,
+  kDataScheme,
   NULL
 };
 

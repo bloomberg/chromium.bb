@@ -246,7 +246,7 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
       break;
     case TemplateURLParsingContext::IMAGE: {
       GURL image_url(base::UTF16ToUTF8(context->string_));
-      if (image_url.SchemeIs(chrome::kDataScheme)) {
+      if (image_url.SchemeIs(content::kDataScheme)) {
         // TODO (jcampan): bug 1169256: when dealing with data URL, we need to
         // decode the data URL in the renderer. For now, we'll just point to the
         // favicon from the URL.

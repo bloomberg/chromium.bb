@@ -230,7 +230,7 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(bool is_new_navigation) {
   // If we start failing this DCHECK, please makes sure we don't regress
   // this bug: http://code.google.com/p/chromium/issues/detail?id=79304
   DCHECK(frame->document().securityOrigin().toString() == "null" ||
-         !url.SchemeIs(chrome::kDataScheme));
+         !url.SchemeIs(content::kDataScheme));
 }
 
 bool ContentSettingsObserver::allowDatabase(WebFrame* frame,

@@ -654,7 +654,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
       }
       break;
     case LOAD_TYPE_DATA:
-      if (!params.url.SchemeIs(chrome::kDataScheme)) {
+      if (!params.url.SchemeIs(kDataScheme)) {
         NOTREACHED() << "Data load must use data scheme.";
         return;
       }

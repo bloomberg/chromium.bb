@@ -237,7 +237,7 @@ base::string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
   if (url.SchemeIs(chrome::kBlobScheme) ||
       url.SchemeIs(chrome::kChromeDevToolsScheme) ||
       url.SchemeIs(chrome::kChromeNativeScheme) ||
-      url.SchemeIs(chrome::kDataScheme) ||
+      url.SchemeIs(content::kDataScheme) ||
       url.SchemeIs(content::kFileScheme) ||
       url.SchemeIs(content::kFileSystemScheme) ||
       url.SchemeIs(content::kGuestScheme) ||

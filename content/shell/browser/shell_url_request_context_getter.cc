@@ -205,8 +205,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     // ShellContentBrowserClient::IsHandledURL().
     InstallProtocolHandlers(job_factory.get(), &protocol_handlers_);
     bool set_protocol = job_factory->SetProtocolHandler(
-        chrome::kDataScheme,
-        new net::DataProtocolHandler);
+        kDataScheme, new net::DataProtocolHandler);
     DCHECK(set_protocol);
     set_protocol = job_factory->SetProtocolHandler(
         kFileScheme,

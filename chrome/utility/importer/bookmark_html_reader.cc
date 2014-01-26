@@ -57,7 +57,7 @@ void DataURLToFaviconUsage(
     const GURL& favicon_data,
     std::vector<ImportedFaviconUsage>* favicons) {
   if (!link_url.is_valid() || !favicon_data.is_valid() ||
-      !favicon_data.SchemeIs(chrome::kDataScheme))
+      !favicon_data.SchemeIs(content::kDataScheme))
     return;
 
   // Parse the data URL.

@@ -94,7 +94,7 @@ GURL GetImageURLFromData(std::string contents) {
   std::string contents_base64;
   base::Base64Encode(contents, &contents_base64);
 
-  // TODO(dvh): make use of chrome::kDataScheme. Filed as crbug/297301.
+  // TODO(dvh): make use of content::kDataScheme. Filed as crbug/297301.
   const char kDataURLPrefix[] = "data:image;base64,";
   return GURL(kDataURLPrefix + contents_base64);
 }

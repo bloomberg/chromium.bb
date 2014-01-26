@@ -644,7 +644,7 @@ void IOThread::InitAsync() {
   TRACE_EVENT_END0("startup", "IOThread::InitAsync:HttpNetworkSession");
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
-  job_factory->SetProtocolHandler(chrome::kDataScheme,
+  job_factory->SetProtocolHandler(content::kDataScheme,
                                   new net::DataProtocolHandler());
   job_factory->SetProtocolHandler(
       content::kFileScheme,

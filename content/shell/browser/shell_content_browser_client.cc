@@ -183,7 +183,7 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       kFileSystemScheme,
       chrome::kChromeUIScheme,
       chrome::kChromeDevToolsScheme,
-      chrome::kDataScheme,
+      kDataScheme,
       kFileScheme,
   };
   for (size_t i = 0; i < arraysize(kProtocolList); ++i) {

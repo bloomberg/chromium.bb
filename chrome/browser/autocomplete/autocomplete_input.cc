@@ -187,7 +187,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // we should still claim to handle them.
     if (LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kJavaScriptScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, chrome::kDataScheme))
+        LowerCaseEqualsASCII(parsed_scheme, content::kDataScheme))
       return URL;
 
     // Finally, check and see if the user has explicitly opened this scheme as
