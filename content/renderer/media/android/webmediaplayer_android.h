@@ -430,7 +430,7 @@ class WebMediaPlayerAndroid
   media::DecryptorReadyCB decryptor_ready_cb_;
 
   // Manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<ProxyDecryptor> decryptor_;
+  scoped_ptr<ProxyDecryptor> proxy_decryptor_;
 
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;
 

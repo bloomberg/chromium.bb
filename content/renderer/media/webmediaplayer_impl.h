@@ -371,7 +371,7 @@ class WebMediaPlayerImpl
   int text_track_index_;
 
   // Manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<ProxyDecryptor> decryptor_;
+  scoped_ptr<ProxyDecryptor> proxy_decryptor_;
 
   // Non-owned pointer to the CDM. Updated via calls to
   // setContentDecryptionModule().

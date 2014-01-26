@@ -1194,10 +1194,11 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
 
   // We do not support run-time switching between key systems for now.
   if (current_key_system_.isEmpty()) {
-    if (!decryptor_) {
-      decryptor_.reset(new ProxyDecryptor(
+    if (!proxy_decryptor_) {
+      proxy_decryptor_.reset(new ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
-          client_, frame_,
+          client_,
+          frame_,
 #else
           manager_,
           player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
@@ -1211,12 +1212,14 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
                      weak_factory_.GetWeakPtr())));
     }
 
-    if (!decryptor_->InitializeCDM(key_system.utf8(), frame_->document().url()))
+    if (!proxy_decryptor_->InitializeCDM(key_system.utf8(),
+                                         frame_->document().url())) {
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    }
 
-    if (decryptor_ && !decryptor_ready_cb_.is_null()) {
+    if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {
       base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(decryptor_->GetDecryptor());
+          .Run(proxy_decryptor_->GetDecryptor());
     }
 
     current_key_system_ = key_system;
@@ -1227,8 +1230,8 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   // TODO(xhwang): We assume all streams are from the same container (thus have
   // the same "type") for now. In the future, the "type" should be passed down
   // from the application.
-  if (!decryptor_->GenerateKeyRequest(init_data_type_,
-                                      init_data, init_data_length)) {
+  if (!proxy_decryptor_->GenerateKeyRequest(
+           init_data_type_, init_data, init_data_length)) {
     current_key_system_.reset();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }
@@ -1271,8 +1274,8 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
-  decryptor_->AddKey(key, key_length, init_data, init_data_length,
-                     session_id.utf8());
+  proxy_decryptor_->AddKey(
+      key, key_length, init_data, init_data_length, session_id.utf8());
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -1295,7 +1298,7 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
-  decryptor_->CancelKeyRequest(session_id.utf8());
+  proxy_decryptor_->CancelKeyRequest(session_id.utf8());
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -1376,8 +1379,8 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
   // detail.
   DCHECK(decryptor_ready_cb_.is_null());
 
-  if (decryptor_) {
-    decryptor_ready_cb.Run(decryptor_->GetDecryptor());
+  if (proxy_decryptor_) {
+    decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor());
     return;
   }
 
