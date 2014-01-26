@@ -28,9 +28,6 @@ class Media(page_measurement.PageMeasurement):
     return False
 
   def CustomizeBrowserOptions(self, options):
-    # Needed to run media actions in JS on touch-based devices as on Android.
-    options.AppendExtraBrowserArgs(
-        '--disable-gesture-requirement-for-media-playback')
     memory.MemoryMetric.CustomizeBrowserOptions(options)
 
   def DidNavigateToPage(self, page, tab):

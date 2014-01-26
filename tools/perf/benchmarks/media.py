@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 from telemetry import test
 from telemetry.page import page_measurement
 
@@ -35,11 +37,20 @@ class MediaAndroid(test.Test):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
   tag = 'android'
+  # Disable media-tests on Android: crbug/329691
+  # Before re-enabling on Android, make sure the new 4K content,
+  # garden2_10s*, passes.
+  enabled = not sys.platform.startswith('linux')
   page_set = 'page_sets/tough_video_cases.json'
   # Exclude crowd* media files (50fps 2160p).
   options = {
       'page_filter_exclude': '.*crowd.*'
   }
+
+  def CustomizeBrowserOptions(self, options):
+    # Needed to run media actions in JS in Android.
+    options.AppendExtraBrowserArgs(
+        '--disable-gesture-requirement-for-media-playback')
 
 class MediaChromeOS(test.Test):
   """Obtains media metrics for key user scenarios on ChromeOS."""
@@ -51,8 +62,16 @@ class MediaChromeOS(test.Test):
       'page_filter_exclude': '.*crowd.*'
   }
 
+  def CustomizeBrowserOptions(self, options):
+    # Needed to run media actions in JS in Android.
+    options.AppendExtraBrowserArgs(
+        '--disable-gesture-requirement-for-media-playback')
+
 class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
+  test = media.Media
+  # Disable MSE media-tests on Android and linux: crbug/329691
+  # Disable MSE tests on windows 8 crbug.com/330910
   test = MSEMeasurement
   page_set = 'page_sets/mse_cases.json'
 
