@@ -41,12 +41,6 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace webkit {
-namespace npapi {
-class PluginList;
-}
-}
-
 namespace content {
 class BrowserContext;
 class PluginDirWatcherDelegate;
