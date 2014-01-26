@@ -16,14 +16,11 @@ class CastStreamingApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
-    command_line->AppendSwitch(switches::kDisableP2PSocketSTUNFilter);
   }
 };
 
 // Test running the test extension for Cast Mirroring API.
-// Should be re-enabled once Cast send-side refactoring is complete.
-// crbug.com/335591
-IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, DISABLED_Basics) {
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, Basics) {
   ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "basics.html"));
 }
 

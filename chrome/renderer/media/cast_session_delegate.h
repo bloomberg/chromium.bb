@@ -25,6 +25,10 @@ class VideoFrame;
 namespace cast {
 class CastEnvironment;
 class FrameInput;
+
+namespace transport {
+class CastTransportSender;
+}  // namespace transport
 }  // namespace cast
 }  // namespace media
 
@@ -32,12 +36,11 @@ class FrameInput;
 // and network socket.
 // This class is created on the render thread and destroyed on the IO
 // thread. All methods are accessible only on the IO thread.
-class CastSessionDelegate : public media::cast::transport::PacketSender {
+class CastSessionDelegate {
  public:
   typedef
   base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
   FrameInputAvailableCallback;
-  typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
 
   CastSessionDelegate();
   virtual ~CastSessionDelegate();
@@ -48,21 +51,16 @@ class CastSessionDelegate : public media::cast::transport::PacketSender {
                   const FrameInputAvailableCallback& callback);
   void StartVideo(const media::cast::VideoSenderConfig& config,
                   const FrameInputAvailableCallback& callback);
-  void StartSending(const SendPacketCallback& callback);
-  void ReceivePacket(const std::vector<char>& packet);
 
  private:
   // Start encoding threads and configure CastSender. It is ready to accept
   // audio/video frames after this call.
   void StartSendingInternal();
 
-  // media::cast::PacketSender Implementation
-  virtual bool SendPacket(const media::cast::Packet& packet) OVERRIDE;
-
- private:
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   scoped_ptr<media::cast::CastSender> cast_sender_;
+  scoped_ptr<media::cast::transport::CastTransportSender> cast_transport_;
 
   // Utilities threads owned by this class. They are used by CastSender for
   // encoding.
@@ -77,7 +75,6 @@ class CastSessionDelegate : public media::cast::transport::PacketSender {
   bool audio_configured_;
   bool video_configured_;
   std::vector<FrameInputAvailableCallback> frame_input_available_callbacks_;
-  SendPacketCallback send_packet_callback_;
 
   // Proxy to the IO message loop.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;

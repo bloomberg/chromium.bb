@@ -42,19 +42,3 @@ void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
           config,
           media::BindToCurrentLoop(callback)));
 }
-
-void CastSession::StartSending(const SendPacketCallback& callback) {
-  io_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(
-          &CastSessionDelegate::StartSending,
-          base::Unretained(delegate_.get()),
-          media::BindToCurrentLoop(callback)));
-}
-
-void CastSession::ReceivePacket(const std::vector<char>& packet) {
-  io_message_loop_proxy_->PostTask(FROM_HERE,
-      base::Bind(
-          &CastSessionDelegate::ReceivePacket,
-          base::Unretained(delegate_.get()),
-          packet));
-}

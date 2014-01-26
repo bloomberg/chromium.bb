@@ -12,11 +12,59 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/transport/cast_transport_sender.h"
 
 using media::cast::AudioSenderConfig;
 using media::cast::CastEnvironment;
 using media::cast::CastSender;
 using media::cast::VideoSenderConfig;
+
+namespace {
+
+// This is a dummy class that does nothing. This is needed temporarily
+// to enable tests for cast.streaming extension APIs.
+// The real implementation of CastTransportSender is to use IPC to send
+// data to the browser process.
+// See crbug.com/327482 for more details.
+class DummyTransport : public media::cast::transport::CastTransportSender {
+ public:
+  DummyTransport() {}
+  virtual ~DummyTransport() {}
+
+  // CastTransportSender implementations.
+  virtual void SetPacketReceiver(
+      scoped_refptr<
+        media::cast::transport::PacketReceiver> packet_receiver) OVERRIDE {}
+  virtual void InsertCodedAudioFrame(
+      const media::cast::transport::EncodedAudioFrame* audio_frame,
+      const base::TimeTicks& recorded_time) OVERRIDE {}
+  virtual void InsertCodedVideoFrame(
+      const media::cast::transport::EncodedVideoFrame* video_frame,
+      const base::TimeTicks& capture_time) OVERRIDE {}
+  virtual void SendRtcpFromRtpSender(
+      uint32 packet_type_flags,
+      const media::cast::transport::RtcpSenderInfo& sender_info,
+      const media::cast::transport::RtcpDlrrReportBlock& dlrr,
+      const media::cast::transport::RtcpSenderLogMessage& sender_log,
+      uint32 sending_ssrc,
+      const std::string& c_name) OVERRIDE {}
+  virtual void ResendPackets(
+      bool is_audio,
+      const media::cast::transport::MissingFramesAndPacketsMap& missing_packets)
+      OVERRIDE {}
+  virtual void RtpAudioStatistics(
+      const base::TimeTicks& now,
+      media::cast::transport::RtcpSenderInfo* sender_info) OVERRIDE {}
+  virtual void RtpVideoStatistics(
+      const base::TimeTicks& now,
+      media::cast::transport::RtcpSenderInfo* sender_info) OVERRIDE {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyTransport);
+};
+
+}  // namespace
 
 CastSessionDelegate::CastSessionDelegate()
     : audio_encode_thread_("CastAudioEncodeThread"),
@@ -42,13 +90,6 @@ void CastSessionDelegate::StartAudio(
   StartSendingInternal();
 }
 
-void CastSessionDelegate::StartSending(const SendPacketCallback& callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-
-  send_packet_callback_ = callback;
-  StartSendingInternal();
-}
-
 void CastSessionDelegate::StartVideo(
     const VideoSenderConfig& config,
     const FrameInputAvailableCallback& callback) {
@@ -68,6 +109,7 @@ void CastSessionDelegate::StartSendingInternal() {
   if (!audio_configured_ || !video_configured_)
     return;
 
+  cast_transport_.reset(new DummyTransport());
   audio_encode_thread_.Start();
   video_encode_thread_.Start();
 
@@ -85,38 +127,16 @@ void CastSessionDelegate::StartSendingInternal() {
       base::MessageLoopProxy::current(),
       media::cast::GetDefaultCastSenderLoggingConfig());
 
-  // TODO(hclam): Implement VideoEncoderController to configure hardware
-  // encoder.
   cast_sender_.reset(CastSender::CreateCastSender(
       cast_environment_,
       audio_config_,
       video_config_,
       NULL,
-      NULL));
+      cast_transport_.get()));
 
   for (size_t i = 0; i < frame_input_available_callbacks_.size(); ++i) {
     frame_input_available_callbacks_[i].Run(
         cast_sender_->frame_input());
   }
   frame_input_available_callbacks_.clear();
-}
-
-// media::cast::PacketSender Implementation
-bool CastSessionDelegate::SendPacket(
-    const media::cast::Packet& packet) {
-  if (send_packet_callback_.is_null())
-    return false;
-  send_packet_callback_.Run(
-      *reinterpret_cast<const std::vector<char> *>(&packet));
-  return true;
-}
-
-void CastSessionDelegate::ReceivePacket(const std::vector<char>& packet) {
-  uint8 *packet_copy = new uint8[packet.size()];
-  memcpy(packet_copy, &packet[0], packet.size());
-  cast_sender_->packet_receiver()->ReceivedPacket(
-      packet_copy,
-      packet.size(),
-      base::Bind(&media::cast::transport::PacketReceiver::DeletePacket,
-                 packet_copy));
 }

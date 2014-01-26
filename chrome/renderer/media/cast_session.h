@@ -54,12 +54,6 @@ class CastSession : public base::RefCounted<CastSession> {
   void StartVideo(const media::cast::VideoSenderConfig& config,
                   const FrameInputAvailableCallback& callback);
 
-  // Start sending packets using SendPacketCallback. Invoke the callback
-  // with a packet on the render thread. The packet will then be sent out
-  // via network.
-  void StartSending(const SendPacketCallback& callback);
-  void ReceivePacket(const std::vector<char>& packet);
-
  private:
   friend class base::RefCounted<CastSession>;
   virtual ~CastSession();

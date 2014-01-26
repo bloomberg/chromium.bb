@@ -32,37 +32,10 @@ chrome.test.runTests([
           rtpStream.destroy(audioId);
           rtpStream.destroy(videoId);
           udpTransport.destroy(udpId);
-          stream.stop();
           chrome.test.assertEq(audioParams.payload.codecName, "OPUS");
           chrome.test.assertEq(videoParams.payload.codecName, "VP8");
           chrome.test.succeed();
         }), 0);
-      }.bind(null, stream)));
-    }));
-  },
-  function invalidKey() {
-    console.log("[TEST] invalidKey");
-    tabCapture.capture({audio: true, video: true},
-                       pass(function(stream) {
-      chrome.test.assertTrue(!!stream);
-      createSession(stream.getAudioTracks()[0],
-                    stream.getVideoTracks()[0],
-                    pass(function(stream, audioId, videoId, udpId) {
-        // AES key is invalid and exception is expected.
-        try {
-          var audioParams = rtpStream.getSupportedParams(audioId)[0];
-          var videoParams = rtpStream.getSupportedParams(videoId)[0];
-          audioParams.payload.aesKey = "google";
-          videoParams.payload.aesIvMask = "chrome";
-          rtpStream.start(audioId, audioParams);
-          rtpStream.start(videoId, videoParams);
-        } catch (e) {
-          rtpStream.destroy(audioId);
-          rtpStream.destroy(videoId);
-          udpTransport.destroy(udpId);
-          stream.stop();
-          chrome.test.succeed();
-        }
       }.bind(null, stream)));
     }));
   },
