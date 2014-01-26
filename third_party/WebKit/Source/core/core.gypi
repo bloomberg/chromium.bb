@@ -2725,13 +2725,6 @@
             'html/track/vtt/VTTTokenizer.cpp',
             'html/track/vtt/VTTTokenizer.h',
         ],
-        'webcore_platform_files': [
-            'platform/mediastream/MediaStreamCenter.cpp',
-            'platform/mediastream/MediaStreamCenter.h',
-            'platform/mediastream/MediaStreamDescriptor.cpp',
-            'platform/mediastream/MediaStreamDescriptor.h',
-            'platform/mediastream/RTCStatsRequest.h',
-        ],
         'webcore_svg_files': [
             'rendering/style/SVGRenderStyle.cpp',
             'rendering/style/SVGRenderStyleDefs.cpp',
@@ -3230,11 +3223,6 @@
         'webcore_platform_support_files': [
             'platform/chromium/support/WebArrayBuffer.cpp',
             'platform/chromium/support/WebCrypto.cpp',
-            'platform/chromium/support/WebMediaStream.cpp',
-            'platform/chromium/support/WebMediaStreamTrack.cpp',
-            'platform/chromium/support/WebRTCSessionDescription.cpp',
-            'platform/chromium/support/WebRTCSessionDescriptionRequest.cpp',
-            'platform/chromium/support/WebRTCStatsRequest.cpp',
         ],
         'core_unittest_files': [
             'animation/AnimatableColorTest.cpp',

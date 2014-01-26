@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-class PLATFORM_EXPORT MediaStreamSource : public RefCounted<MediaStreamSource> {
+class PLATFORM_EXPORT MediaStreamSource FINAL : public RefCounted<MediaStreamSource> {
 public:
     class Observer {
     public:

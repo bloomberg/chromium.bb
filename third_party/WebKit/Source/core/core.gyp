@@ -578,9 +578,6 @@
       # Disable c4724 warnings which is generated in VS2012 due to improper
       # compiler optimizations, see crbug.com/237063
       'msvs_disabled_warnings': [ 4267, 4334, 4724 ],
-      'sources': [
-        '<@(webcore_platform_files)',
-      ],
       'sources/': [
         # FIXME: Figure out how to store these patterns in a variable.
         ['exclude', '(cf|cg|harfbuzz|mac|opentype|svg|win)/'],

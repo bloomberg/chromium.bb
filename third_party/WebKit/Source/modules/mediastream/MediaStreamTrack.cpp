@@ -30,9 +30,9 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
-#include "core/platform/mediastream/MediaStreamCenter.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
-#include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
+#include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
+#include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "public/platform/WebSourceInfo.h"
 
@@ -123,7 +123,7 @@ String MediaStreamTrack::readyState() const
 
 void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
 {
-    RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context->securityOrigin()->toString(), callback);
+    RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequestImpl::create(context->securityOrigin()->toString(), callback);
     if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request.release()))
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("getSources", "MediaStreamTrack", "Functionality not implemented yet"));
 }

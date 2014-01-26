@@ -46,10 +46,10 @@ public:
         ExtraData() : m_owner(0) { }
         virtual ~ExtraData() { }
 
-        BLINK_EXPORT WebMediaStreamTrack owner();
+        BLINK_PLATFORM_EXPORT WebMediaStreamTrack owner();
 
 #if INSIDE_BLINK
-        BLINK_EXPORT void setOwner(WebCore::MediaStreamComponent*);
+        BLINK_PLATFORM_EXPORT void setOwner(WebCore::MediaStreamComponent*);
 #endif
 
     private:
@@ -65,38 +65,38 @@ public:
         assign(other);
         return *this;
     }
-    BLINK_EXPORT void assign(const WebMediaStreamTrack&);
+    BLINK_PLATFORM_EXPORT void assign(const WebMediaStreamTrack&);
 
-    BLINK_EXPORT void initialize(const WebMediaStreamSource&);
-    BLINK_EXPORT void initialize(const WebString& id, const WebMediaStreamSource&);
+    BLINK_PLATFORM_EXPORT void initialize(const WebMediaStreamSource&);
+    BLINK_PLATFORM_EXPORT void initialize(const WebString& id, const WebMediaStreamSource&);
 
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT WebString id() const;
+    BLINK_PLATFORM_EXPORT WebString id() const;
 
-    BLINK_EXPORT WebMediaStream stream() const;
-    BLINK_EXPORT WebMediaStreamSource source() const;
-    BLINK_EXPORT bool isEnabled() const;
+    BLINK_PLATFORM_EXPORT WebMediaStream stream() const;
+    BLINK_PLATFORM_EXPORT WebMediaStreamSource source() const;
+    BLINK_PLATFORM_EXPORT bool isEnabled() const;
 
     // Extra data associated with this WebMediaStream.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    BLINK_EXPORT ExtraData* extraData() const;
-    BLINK_EXPORT void setExtraData(ExtraData*);
+    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
     // The lifetime of the WebAudioSourceProvider should outlive the
     // WebMediaStreamTrack, and clients are responsible for calling
     // setSourceProvider(0) before the WebMediaStreamTrack is going away.
-    BLINK_EXPORT void setSourceProvider(WebAudioSourceProvider*);
+    BLINK_PLATFORM_EXPORT void setSourceProvider(WebAudioSourceProvider*);
 
-#if BLINK_IMPLEMENTATION
-    WebMediaStreamTrack(PassRefPtr<WebCore::MediaStreamComponent>);
-    WebMediaStreamTrack(WebCore::MediaStreamComponent*);
-    WebMediaStreamTrack& operator=(WebCore::MediaStreamComponent*);
-    operator WTF::PassRefPtr<WebCore::MediaStreamComponent>() const;
-    operator WebCore::MediaStreamComponent*() const;
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrack(PassRefPtr<WebCore::MediaStreamComponent>);
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrack(WebCore::MediaStreamComponent*);
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrack& operator=(WebCore::MediaStreamComponent*);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::MediaStreamComponent>() const;
+    BLINK_PLATFORM_EXPORT operator WebCore::MediaStreamComponent*() const;
 #endif
 
 private:

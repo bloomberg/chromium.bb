@@ -31,10 +31,10 @@
 
 #include "config.h"
 
-#include "core/platform/mediastream/MediaStreamCenter.h"
+#include "platform/mediastream/MediaStreamCenter.h"
 
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
-#include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
+#include "platform/mediastream/MediaStreamDescriptor.h"
+#include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamCenter.h"
@@ -66,7 +66,7 @@ bool MediaStreamCenter::getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSo
     return m_private && m_private->getMediaStreamTrackSources(request);
 }
 
-void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamDescriptor* stream,  MediaStreamComponent* component)
+void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamDescriptor* stream, MediaStreamComponent* component)
 {
     if (m_private) {
         if (component->enabled()) {

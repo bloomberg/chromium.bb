@@ -60,23 +60,23 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebRTCSessionDescriptionRequest&);
+    BLINK_PLATFORM_EXPORT void assign(const WebRTCSessionDescriptionRequest&);
 
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT void requestSucceeded(const WebRTCSessionDescription&) const;
-    BLINK_EXPORT void requestFailed(const WebString& error) const;
+    BLINK_PLATFORM_EXPORT void requestSucceeded(const WebRTCSessionDescription&) const;
+    BLINK_PLATFORM_EXPORT void requestFailed(const WebString& error) const;
 
     // Extra data associated with this object.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    BLINK_EXPORT ExtraData* extraData() const;
-    BLINK_EXPORT void setExtraData(ExtraData*);
+    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
-#if BLINK_IMPLEMENTATION
-    WebRTCSessionDescriptionRequest(const WTF::PassRefPtr<WebCore::RTCSessionDescriptionRequest>&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebRTCSessionDescriptionRequest(const WTF::PassRefPtr<WebCore::RTCSessionDescriptionRequest>&);
 #endif
 
 private:

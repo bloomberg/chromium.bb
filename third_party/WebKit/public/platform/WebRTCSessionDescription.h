@@ -64,16 +64,16 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebRTCSessionDescription&);
+    BLINK_PLATFORM_EXPORT void assign(const WebRTCSessionDescription&);
 
-    BLINK_EXPORT void initialize(const WebString& type, const WebString& sdp);
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void initialize(const WebString& type, const WebString& sdp);
+    BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT WebString type() const;
-    BLINK_EXPORT void setType(const WebString&);
-    BLINK_EXPORT WebString sdp() const;
-    BLINK_EXPORT void setSDP(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString type() const;
+    BLINK_PLATFORM_EXPORT void setType(const WebString&);
+    BLINK_PLATFORM_EXPORT WebString sdp() const;
+    BLINK_PLATFORM_EXPORT void setSDP(const WebString&);
 
 #if BLINK_IMPLEMENTATION
     WebRTCSessionDescription(WebString type, WebString sdp)

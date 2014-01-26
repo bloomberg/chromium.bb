@@ -56,23 +56,23 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebMediaStreamTrackSourcesRequest&);
+    BLINK_PLATFORM_EXPORT void assign(const WebMediaStreamTrackSourcesRequest&);
 
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT WebString origin() const;
-    BLINK_EXPORT void requestSucceeded(const WebVector<WebSourceInfo>&) const;
+    BLINK_PLATFORM_EXPORT WebString origin() const;
+    BLINK_PLATFORM_EXPORT void requestSucceeded(const WebVector<WebSourceInfo>&) const;
 
     // Extra data associated with this object.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    BLINK_EXPORT ExtraData* extraData() const;
-    BLINK_EXPORT void setExtraData(ExtraData*);
+    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
-#if BLINK_IMPLEMENTATION
-    WebMediaStreamTrackSourcesRequest(const WTF::PassRefPtr<WebCore::MediaStreamTrackSourcesRequest>&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(const WTF::PassRefPtr<WebCore::MediaStreamTrackSourcesRequest>&);
 #endif
 
 private:

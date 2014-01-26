@@ -26,9 +26,9 @@
 
 #include "public/platform/WebMediaStream.h"
 
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/UUID.h"
 #include "platform/mediastream/MediaStreamComponent.h"
+#include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebMediaStreamTrack.h"

@@ -26,8 +26,8 @@
 #define RTCStatsRequestImpl_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/mediastream/RTCStatsRequest.h"
 #include "modules/mediastream/RTCStatsResponse.h"
+#include "platform/mediastream/RTCStatsRequest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

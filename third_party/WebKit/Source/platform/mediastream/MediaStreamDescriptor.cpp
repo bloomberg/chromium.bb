@@ -31,7 +31,7 @@
 
 #include "config.h"
 
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "platform/mediastream/MediaStreamDescriptor.h"
 
 #include "platform/UUID.h"
 

@@ -78,26 +78,26 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebRTCStatsRequest&);
+    BLINK_PLATFORM_EXPORT void assign(const WebRTCStatsRequest&);
 
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void reset();
 
     // This function returns true if a selector argument was given to getStats.
-    BLINK_EXPORT bool hasSelector() const;
+    BLINK_PLATFORM_EXPORT bool hasSelector() const;
 
     // The stream() and component() accessors give the two pieces of information
     // required to look up a MediaStreamTrack implementation.
     // It is only useful to call them when hasSelector() returns true.
-    BLINK_EXPORT const WebMediaStream stream() const;
+    BLINK_PLATFORM_EXPORT const WebMediaStream stream() const;
 
-    BLINK_EXPORT const WebMediaStreamTrack component() const;
+    BLINK_PLATFORM_EXPORT const WebMediaStreamTrack component() const;
 
-    BLINK_EXPORT void requestSucceeded(const WebRTCStatsResponse&) const;
+    BLINK_PLATFORM_EXPORT void requestSucceeded(const WebRTCStatsResponse&) const;
 
-    BLINK_EXPORT WebRTCStatsResponse createResponse() const;
+    BLINK_PLATFORM_EXPORT WebRTCStatsResponse createResponse() const;
 
-#if BLINK_IMPLEMENTATION
-    WebRTCStatsRequest(const WTF::PassRefPtr<WebCore::RTCStatsRequest>&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebRTCStatsRequest(const WTF::PassRefPtr<WebCore::RTCStatsRequest>&);
 #endif
 
 private:

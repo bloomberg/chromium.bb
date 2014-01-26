@@ -57,35 +57,35 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebMediaStream&);
+    BLINK_PLATFORM_EXPORT void assign(const WebMediaStream&);
 
-    BLINK_EXPORT void initialize(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
-    BLINK_EXPORT void initialize(const WebString& label, const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
+    BLINK_PLATFORM_EXPORT void initialize(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
+    BLINK_PLATFORM_EXPORT void initialize(const WebString& label, const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks);
 
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT WebString id() const;
+    BLINK_PLATFORM_EXPORT WebString id() const;
 
-    BLINK_EXPORT void audioTracks(WebVector<WebMediaStreamTrack>&) const;
-    BLINK_EXPORT void videoTracks(WebVector<WebMediaStreamTrack>&) const;
+    BLINK_PLATFORM_EXPORT void audioTracks(WebVector<WebMediaStreamTrack>&) const;
+    BLINK_PLATFORM_EXPORT void videoTracks(WebVector<WebMediaStreamTrack>&) const;
 
-    BLINK_EXPORT void addTrack(const WebMediaStreamTrack&);
-    BLINK_EXPORT void removeTrack(const WebMediaStreamTrack&);
+    BLINK_PLATFORM_EXPORT void addTrack(const WebMediaStreamTrack&);
+    BLINK_PLATFORM_EXPORT void removeTrack(const WebMediaStreamTrack&);
 
     // Extra data associated with this WebMediaStream.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    BLINK_EXPORT ExtraData* extraData() const;
-    BLINK_EXPORT void setExtraData(ExtraData*);
+    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
-#if BLINK_IMPLEMENTATION
-    WebMediaStream(WebCore::MediaStreamDescriptor*);
-    WebMediaStream(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
-    operator WTF::PassRefPtr<WebCore::MediaStreamDescriptor>() const;
-    operator WebCore::MediaStreamDescriptor*() const;
-    WebMediaStream& operator=(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebMediaStream(WebCore::MediaStreamDescriptor*);
+    BLINK_PLATFORM_EXPORT WebMediaStream(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::MediaStreamDescriptor>() const;
+    BLINK_PLATFORM_EXPORT operator WebCore::MediaStreamDescriptor*() const;
+    BLINK_PLATFORM_EXPORT WebMediaStream& operator=(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
 #endif
 
 private:

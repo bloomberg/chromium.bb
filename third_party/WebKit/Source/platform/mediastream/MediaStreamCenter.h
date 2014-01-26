@@ -32,6 +32,7 @@
 #ifndef MediaStreamCenter_h
 #define MediaStreamCenter_h
 
+#include "platform/PlatformExport.h"
 #include "public/platform/WebMediaStreamCenterClient.h"
 #include "public/platform/WebVector.h"
 #include "wtf/OwnPtr.h"
@@ -50,7 +51,8 @@ class MediaStreamComponent;
 class MediaStreamDescriptor;
 class MediaStreamTrackSourcesRequest;
 
-class MediaStreamCenter FINAL : public blink::WebMediaStreamCenterClient {
+class PLATFORM_EXPORT MediaStreamCenter FINAL : public blink::WebMediaStreamCenterClient {
+    WTF_MAKE_NONCOPYABLE(MediaStreamCenter);
 public:
     virtual ~MediaStreamCenter();
 

@@ -32,9 +32,9 @@
 
 #include "public/platform/WebRTCSessionDescription.h"
 
+#include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "public/platform/WebString.h"
 
 namespace blink {
 

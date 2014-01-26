@@ -27,7 +27,7 @@
 
 #include "public/platform/WebMediaStreamTrackSourcesRequest.h"
 
-#include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
+#include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "public/platform/WebSourceInfo.h"
 #include "wtf/PassOwnPtr.h"
 

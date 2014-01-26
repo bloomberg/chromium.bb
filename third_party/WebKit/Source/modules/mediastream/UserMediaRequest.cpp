@@ -37,11 +37,11 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/SpaceSplitString.h"
-#include "core/platform/mediastream/MediaStreamCenter.h"
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/UserMediaController.h"
+#include "platform/mediastream/MediaStreamCenter.h"
+#include "platform/mediastream/MediaStreamDescriptor.h"
 
 namespace WebCore {
 

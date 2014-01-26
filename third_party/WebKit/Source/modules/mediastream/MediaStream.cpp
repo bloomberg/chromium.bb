@@ -27,11 +27,11 @@
 #include "modules/mediastream/MediaStream.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/mediastream/MediaStreamCenter.h"
+#include "core/events/Event.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
+#include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamSource.h"
 
 namespace WebCore {

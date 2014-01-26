@@ -31,11 +31,13 @@
 #ifndef WebMediaStreamCenterClient_h
 #define WebMediaStreamCenterClient_h
 
+#include "WebCommon.h"
+
 namespace blink {
 class WebMediaStream;
 class WebMediaStreamTrack;
 
-class WebMediaStreamCenterClient {
+class BLINK_PLATFORM_EXPORT WebMediaStreamCenterClient {
 public:
     virtual ~WebMediaStreamCenterClient() { }
 

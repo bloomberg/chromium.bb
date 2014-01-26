@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
+#include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
 
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -34,23 +34,23 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrackSourcesRequest> MediaStreamTrackSourcesRequest::create(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+PassRefPtr<MediaStreamTrackSourcesRequestImpl> MediaStreamTrackSourcesRequestImpl::create(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
 {
-    return adoptRef(new MediaStreamTrackSourcesRequest(origin, callback));
+    return adoptRef(new MediaStreamTrackSourcesRequestImpl(origin, callback));
 }
 
-MediaStreamTrackSourcesRequest::MediaStreamTrackSourcesRequest(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(const String& origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
     : m_callback(callback)
-    , m_scheduledEventTimer(this, &MediaStreamTrackSourcesRequest::scheduledEventTimerFired)
+    , m_scheduledEventTimer(this, &MediaStreamTrackSourcesRequestImpl::scheduledEventTimerFired)
 {
     m_origin = origin;
 }
 
-MediaStreamTrackSourcesRequest::~MediaStreamTrackSourcesRequest()
+MediaStreamTrackSourcesRequestImpl::~MediaStreamTrackSourcesRequestImpl()
 {
 }
 
-void MediaStreamTrackSourcesRequest::requestSucceeded(const blink::WebVector<blink::WebSourceInfo>& webSourceInfos)
+void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const blink::WebVector<blink::WebSourceInfo>& webSourceInfos)
 {
     ASSERT(m_callback && !m_scheduledEventTimer.isActive());
 
@@ -61,7 +61,7 @@ void MediaStreamTrackSourcesRequest::requestSucceeded(const blink::WebVector<bli
     m_scheduledEventTimer.startOneShot(0);
 }
 
-void MediaStreamTrackSourcesRequest::scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequest>*)
+void MediaStreamTrackSourcesRequestImpl::scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequestImpl>*)
 {
     m_callback->handleEvent(m_sourceInfos);
     m_callback.clear();

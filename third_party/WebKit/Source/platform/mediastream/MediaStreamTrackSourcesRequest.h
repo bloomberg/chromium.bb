@@ -26,8 +26,6 @@
 #ifndef MediaStreamTrackSourcesRequest_h
 #define MediaStreamTrackSourcesRequest_h
 
-#include "modules/mediastream/SourceInfo.h"
-#include "platform/Timer.h"
 #include "public/platform/WebVector.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -40,36 +38,26 @@ class WebSourceInfo;
 
 namespace WebCore {
 
-class MediaStreamTrackSourcesCallback;
-
-class MediaStreamTrackSourcesRequest FINAL : public RefCounted<MediaStreamTrackSourcesRequest> {
+class MediaStreamTrackSourcesRequest : public RefCounted<MediaStreamTrackSourcesRequest> {
 public:
     class ExtraData {
     public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<MediaStreamTrackSourcesRequest> create(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
-    ~MediaStreamTrackSourcesRequest();
+    virtual ~MediaStreamTrackSourcesRequest() { }
 
-    String origin() { return m_origin; }
-
-    void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&);
+    virtual String origin() = 0;
+    virtual void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&) = 0;
 
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
+protected:
+    MediaStreamTrackSourcesRequest() { }
+
 private:
-    MediaStreamTrackSourcesRequest(const String&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
-
-    void scheduledEventTimerFired(Timer<MediaStreamTrackSourcesRequest>*);
-
-    OwnPtr<MediaStreamTrackSourcesCallback> m_callback;
     OwnPtr<ExtraData> m_extraData;
-    String m_origin;
-    Timer<MediaStreamTrackSourcesRequest> m_scheduledEventTimer;
-    SourceInfoVector m_sourceInfos;
-    RefPtr<MediaStreamTrackSourcesRequest> m_protect;
 };
 
 } // namespace WebCore
