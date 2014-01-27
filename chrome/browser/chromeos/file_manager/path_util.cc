@@ -8,22 +8,32 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "net/base/escape.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace util {
 
+namespace {
+
 const char kDownloadsFolderName[] = "Downloads";
 const base::FilePath::CharType kOldDownloadsFolderPath[] =
     FILE_PATH_LITERAL("/home/chronos/user/Downloads");
 
+}  // namespace
+
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
-    // On the developer run on Linux desktop build, user $HOME/Downloads
-    // for ease for accessing local files for debugging.
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      !chromeos::UserManager::IsMultipleProfilesAllowed()) {
+    // On the developer run on Linux desktop build, if multiple profiles are
+    // not enabled, use $HOME/Downloads for ease for accessing local files for
+    // debugging.
     base::FilePath path;
     CHECK(PathService::Get(base::DIR_HOME, &path));
     return path.AppendASCII(kDownloadsFolderName);
@@ -63,28 +73,41 @@ bool MigratePathFromOldFormat(Profile* profile,
 }
 
 std::string GetDownloadsMountPointName(Profile* profile) {
-  // TODO(kinaba): crbug.com/336090.
-  // Make it unique for each profile once Files.app is ready.
-  return kDownloadsFolderName;
+  // To distinguish profiles in multi-profile session, we append user name hash
+  // to "Downloads". Note that some profiles (like login or test profiles)
+  // are not associated with an user account. In that case, no suffix is added
+  // because such a profile never belongs to a multi-profile session.
+  chromeos::User* const user =
+      chromeos::UserManager::IsInitialized() ?
+          chromeos::UserManager::Get()->GetUserByProfile(
+              profile->GetOriginalProfile()) : NULL;
+  const std::string id = user ? "-" + user->username_hash() : "";
+  return net::EscapePath(kDownloadsFolderName + id);
 }
 
 bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
-  // TODO(kinaba): crbug.com/336090.
-  // Register to fileapi::ExternalMountPoint::GetSystemInstance rather than the
-  // per-profile instance, because it needs to be reachable from every profile
-  // for enabling cross-profile copies, etc.
-
-  const std::string mount_point_name =
-      file_manager::util::GetDownloadsMountPointName(profile);
+  // Although we show only profile's own "Downloads" folder in Files.app,
+  // in the backend we need to mount all profile's download directory globally.
+  // Otherwise, Files.app cannot support cross-profile file copies, etc.
+  // For this reason, we need to register to the global GetSystemInstance().
+  const std::string mount_point_name = GetDownloadsMountPointName(profile);
   fileapi::ExternalMountPoints* const mount_points =
-      content::BrowserContext::GetMountPoints(profile);
+      fileapi::ExternalMountPoints::GetSystemInstance();
 
-  // The Downloads mount point already exists so it must be removed before
-  // adding the test mount point (which will also be mapped as Downloads).
+  // In some tests we want to override existing Downloads mount point, so we
+  // first revoke the existing mount point (if any).
   mount_points->RevokeFileSystem(mount_point_name);
   return mount_points->RegisterFileSystem(
       mount_point_name, fileapi::kFileSystemTypeNativeLocal,
       fileapi::FileSystemMountOption(), path);
+}
+
+bool FindDownloadsMountPointPath(Profile* profile, base::FilePath* path) {
+  const std::string mount_point_name = GetDownloadsMountPointName(profile);
+  fileapi::ExternalMountPoints* const mount_points =
+      fileapi::ExternalMountPoints::GetSystemInstance();
+
+  return mount_points->GetRegisteredPath(mount_point_name, path);
 }
 
 }  // namespace util

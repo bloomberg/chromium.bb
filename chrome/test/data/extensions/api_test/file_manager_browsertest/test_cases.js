@@ -23,6 +23,14 @@ var SharedOption = Object.freeze({
 });
 
 /**
+ * @enum {string}
+ */
+var RootPath = Object.seal({
+  DOWNLOADS: '/must-be-filled-in-test-setup',
+  DRIVE: '/must-be-filled-in-test-setup',
+});
+
+/**
  * File system entry information for tests.
  *
  * @param {EntryType} type Entry type.
@@ -312,7 +320,7 @@ testcase.intermediate.fileDisplay = function(path) {
   var appId;
 
   var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == '/drive/root' ?
+      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
           BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
 
   var expectedFilesAfter =
@@ -530,7 +538,7 @@ testcase.intermediate.videoOpen = function(path) {
 testcase.intermediate.keyboardCopy = function(path, callback) {
   var filename = 'world.ogv';
   var expectedFilesBefore =
-      TestEntryInfo.getExpectedRows(path == '/drive/root' ?
+      TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
           BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
   var expectedFilesAfter =
       expectedFilesBefore.concat([['world (1).ogv', '59 KB', 'OGG video']]);
@@ -635,51 +643,51 @@ testcase.intermediate.keyboardDelete = function(path) {
 };
 
 testcase.fileDisplayDownloads = function() {
-  testcase.intermediate.fileDisplay('/Downloads');
+  testcase.intermediate.fileDisplay(RootPath.DOWNLOADS);
 };
 
 testcase.galleryOpenDownloads = function() {
-  testcase.intermediate.galleryOpen('/Downloads');
+  testcase.intermediate.galleryOpen(RootPath.DOWNLOADS);
 };
 
 testcase.audioOpenDownloads = function() {
-  testcase.intermediate.audioOpen('/Downloads');
+  testcase.intermediate.audioOpen(RootPath.DOWNLOADS);
 };
 
 testcase.videoOpenDownloads = function() {
-  testcase.intermediate.videoOpen('/Downloads');
+  testcase.intermediate.videoOpen(RootPath.DOWNLOADS);
 };
 
 testcase.keyboardCopyDownloads = function() {
-  testcase.intermediate.keyboardCopy('/Downloads');
+  testcase.intermediate.keyboardCopy(RootPath.DOWNLOADS);
 };
 
 testcase.keyboardDeleteDownloads = function() {
-  testcase.intermediate.keyboardDelete('/Downloads');
+  testcase.intermediate.keyboardDelete(RootPath.DOWNLOADS);
 };
 
 testcase.fileDisplayDrive = function() {
-  testcase.intermediate.fileDisplay('/drive/root');
+  testcase.intermediate.fileDisplay(RootPath.DRIVE);
 };
 
 testcase.galleryOpenDrive = function() {
-  testcase.intermediate.galleryOpen('/drive/root');
+  testcase.intermediate.galleryOpen(RootPath.DRIVE);
 };
 
 testcase.audioOpenDrive = function() {
-  testcase.intermediate.audioOpen('/drive/root');
+  testcase.intermediate.audioOpen(RootPath.DRIVE);
 };
 
 testcase.videoOpenDrive = function() {
-  testcase.intermediate.videoOpen('/drive/root');
+  testcase.intermediate.videoOpen(RootPath.DRIVE);
 };
 
 testcase.keyboardCopyDrive = function() {
-  testcase.intermediate.keyboardCopy('/drive/root');
+  testcase.intermediate.keyboardCopy(RootPath.DRIVE);
 };
 
 testcase.keyboardDeleteDrive = function() {
-  testcase.intermediate.keyboardDelete('/drive/root');
+  testcase.intermediate.keyboardDelete(RootPath.DRIVE);
 };
 
 /**
@@ -692,7 +700,7 @@ testcase.openSidebarRecent = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {defaultPath: '/drive/root'};
+      var appState = {defaultPath: RootPath.DRIVE};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Click the icon of the Recent volume.
@@ -730,7 +738,7 @@ testcase.openSidebarOffline = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {defaultPath: '/drive/root/'};
+      var appState = {defaultPath: RootPath.DRIVE};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Click the icon of the Offline volume.
@@ -767,7 +775,7 @@ testcase.openSidebarSharedWithMe = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {defaultPath: '/drive/root/'};
+      var appState = {defaultPath: RootPath.DRIVE};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Click the icon of the Shared With Me volume.
@@ -809,7 +817,7 @@ testcase.autocomplete = function() {
 
   StepsRunner.run([
     function() {
-      var appState = {defaultPath: '/drive/root'};
+      var appState = {defaultPath: RootPath.DRIVE};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Perform an auto complete test and wait until the list changes.
@@ -851,7 +859,7 @@ testcase.intermediate.copyBetweenVolumes = function(targetFile,
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Select the source volume.
@@ -949,7 +957,7 @@ testcase.intermediate.share = function(path) {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/drive/root/'};
+      var appState = {defaultPath: RootPath.DRIVE};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Select the source file.
@@ -1187,7 +1195,7 @@ testcase.executeDefaultTaskOnDownloads = function(root) {
  * Tests executing the default task when there is only one task.
  */
 testcase.intermediate.executeDefaultTask = function(drive) {
-  var root = drive ? '/drive/root' : '/Downloads';
+  var root = drive ? RootPath.DRIVE : RootPath.DOWNLOADS;
   var taskId = drive ? 'dummytaskid|drive|open-with' : 'dummytaskid|open-with'
   var appId;
   StepsRunner.run([
@@ -1264,7 +1272,7 @@ testcase.suggestAppDialog = function() {
       var data = JSON.parse(json);
 
       var appState = {
-        defaultPath: '/drive/root',
+        defaultPath: RootPath.DRIVE,
         suggestAppsDialogState: {
           overrideCwsContainerUrlForTest: data.url,
           overrideCwsContainerOriginForTest: data.origin
@@ -1378,7 +1386,7 @@ testcase.hideSearchBox = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Resize the window.
@@ -1419,7 +1427,7 @@ testcase.restoreSortColumn = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Sort by name.
@@ -1460,7 +1468,7 @@ testcase.restoreSortColumn = function() {
     },
     // Open another window, where the sorted column should be restored.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Check the sorted style of the header.
@@ -1493,7 +1501,7 @@ testcase.restoreCurrentView = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Check the initial view.
@@ -1528,7 +1536,7 @@ testcase.restoreCurrentView = function() {
     },
     // Open another window, where the current view is restored.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       callRemoteTestUtil('openMainWindow', null, [appState], this.next);
     },
     // Check the current view.
@@ -1554,7 +1562,7 @@ testcase.traverseNavigationList = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/drive/root'};
+      var appState = {defaultPath: RootPath.DRIVE};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Wait until Google Drive is selected.
@@ -1650,7 +1658,7 @@ testcase.restoreGeometry = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Resize the window to minimal dimensions.
@@ -1680,7 +1688,7 @@ testcase.restoreGeometry = function() {
     },
     // Open another window, where the current view is restored.
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Check the next window's size.
@@ -1702,13 +1710,13 @@ testcase.restoreGeometry = function() {
  * Tests to traverse local directories.
  */
 testcase.traverseDownloads =
-    testcase.intermediate.traverseDirectories.bind(null, '/Downloads');
+    testcase.intermediate.traverseDirectories.bind(null, RootPath.DOWNLOADS);
 
 /**
  * Tests to traverse drive directories.
  */
 testcase.traverseDrive =
-    testcase.intermediate.traverseDirectories.bind(null, '/drive/root');
+    testcase.intermediate.traverseDirectories.bind(null, RootPath.DRIVE);
 
 /**
  * Tests the focus behavior of the search box.
@@ -1718,7 +1726,7 @@ testcase.searchBoxFocus = function() {
   StepsRunner.run([
     // Set up File Manager.
     function() {
-      var appState = {defaultPath: '/drive/root'};
+      var appState = {defaultPath: RootPath.DRIVE};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Check that the file list has the focus on launch.
@@ -1768,7 +1776,7 @@ testcase.thumbnailsDownloads = function() {
   var appId;
   StepsRunner.run([
     function() {
-      var appState = {defaultPath: '/Downloads'};
+      var appState = {defaultPath: RootPath.DOWNLOADS};
       setupAndWaitUntilReady(appState, this.next);
     },
     // Select the image.

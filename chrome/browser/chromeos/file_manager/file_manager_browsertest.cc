@@ -565,6 +565,15 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
     if (name == "getTestName") {
       // Pass the test case name.
       entry.function->Reply(std::tr1::get<1>(GetParam()));
+    } else if (name == "getRootPaths") {
+      // Pass the root paths.
+      const scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
+      res->SetString("downloads",
+          "/" + util::GetDownloadsMountPointName(browser()->profile()));
+      res->SetString("drive", "/drive/root");
+      std::string jsonString;
+      base::JSONWriter::Write(res.get(), &jsonString);
+      entry.function->Reply(jsonString);
     } else if (name == "isInGuestMode") {
       // Obtain whether the test is in guest mode or not.
       entry.function->Reply(std::tr1::get<0>(GetParam()) ? "true" : "false");

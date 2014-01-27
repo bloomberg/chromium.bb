@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/local_discovery/storage/privet_filesystem_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,7 +28,6 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
 namespace {
@@ -193,10 +193,12 @@ void VolumeManager::Initialize() {
   }
 
   // Register 'Downloads' folder for the profile to the file system.
-  bool success = util::RegisterDownloadsMountPoint(
-      profile_,
-      file_manager::util::GetDownloadsFolderForProfile(profile_));
-  DCHECK(success);
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile_)) {
+    bool success = util::RegisterDownloadsMountPoint(
+        profile_,
+        file_manager::util::GetDownloadsFolderForProfile(profile_));
+    DCHECK(success);
+  }
 
   // Subscribe to DriveIntegrationService.
   if (drive_integration_service_)
@@ -247,14 +249,9 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
   // Usually, the path of the directory is where we registered in Initialize(),
   // but in tests, the mount point may be overridden. To take it into account,
   // here we explicitly retrieves the path from the file API mount points.
-  fileapi::ExternalMountPoints* fileapi_mount_points =
-      content::BrowserContext::GetMountPoints(profile_);
-  DCHECK(fileapi_mount_points);
   base::FilePath downloads;
-  if (fileapi_mount_points->GetRegisteredPath(
-      util::GetDownloadsMountPointName(profile_), &downloads)) {
+  if (util::FindDownloadsMountPointPath(profile_, &downloads))
     result.push_back(CreateDownloadsVolumeInfo(downloads));
-  }
 
   // Adds disks (both removable disks and zip archives).
   const chromeos::disks::DiskMountManager::MountPointMap& mount_points =

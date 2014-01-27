@@ -114,6 +114,14 @@ var steps = [
     if (JSON.parse(result) != chrome.extension.inIncognitoContext)
       return;
     chrome.test.sendMessage(
+        JSON.stringify({name: 'getRootPaths'}), steps.shift());
+  },
+  // Obtain the root entry paths.
+  function(result) {
+    var roots = JSON.parse(result);
+    RootPath.DOWNLOADS = roots.downloads;
+    RootPath.DRIVE = roots.drive;
+    chrome.test.sendMessage(
         JSON.stringify({name: 'getTestName'}), steps.shift());
   },
   // Run the test case.

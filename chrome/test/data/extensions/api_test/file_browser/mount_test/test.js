@@ -43,8 +43,8 @@ var expectedVolume3 = {
 };
 
 var expectedDownloadsVolume = {
-  volumeId: 'downloads:Downloads',
-  mountPath: '/Downloads',
+  volumeId: /^downloads:Downloads[^\/]*$/,
+  mountPath: /^\/Downloads[^\/]*$/,
   volumeType: 'downloads',
   isReadOnly: false,
   profile: {displayName: "", isCurrentProfile: true}
@@ -82,7 +82,13 @@ var expectedVolumeList = [
 
 function validateObject(received, expected, name) {
   for (var key in expected) {
-    if (expected[key] instanceof Object) {
+    if (expected[key] instanceof RegExp) {
+      if (!expected[key].test(received[key])) {
+        console.warn('Expected "' + key + '" ' + name + ' property to match: ' +
+                     expected[key] + ', but got: "' + received[key] + '".');
+        return false;
+      }
+    } else if (expected[key] instanceof Object) {
       if (!validateObject(received[key], expected[key], name + "." + key))
         return false;
     } else if (received[key] != expected[key]) {

@@ -48,9 +48,13 @@ bool MigratePathFromOldFormat(Profile* profile,
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
 
-// Register |path| as the "Downloads" folder to the FileSystem API backend.
+// Registers |path| as the "Downloads" folder to the FileSystem API backend.
 // If another folder is already mounted. It revokes and overrides the old one.
 bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path);
+
+// Finds the path register as the "Downloads" folder to FileSystem API backend.
+// Returns false if it is not registered.
+bool FindDownloadsMountPointPath(Profile* profile, base::FilePath* path);
 
 }  // namespace util
 }  // namespace file_manager
