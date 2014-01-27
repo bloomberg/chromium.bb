@@ -93,7 +93,7 @@ public:
     bool isInPerformLayout() const { return m_inPerformLayout; }
 
     RenderObject* layoutRoot(bool onlyDuringLayout = false) const;
-    void clearLayoutRoot() { m_layoutRoot = 0; }
+    void clearLayoutSubtreeRoot() { m_layoutSubtreeRoot = 0; }
     int layoutCount() const { return m_layoutCount; }
 
     bool needsLayout() const;
@@ -410,6 +410,8 @@ private:
 
     void setLayoutSizeInternal(const IntSize&);
 
+    bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
+
     static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
     static bool s_inPaintContents;
 
@@ -433,7 +435,7 @@ private:
 
     Timer<FrameView> m_layoutTimer;
     bool m_delayedLayout;
-    RenderObject* m_layoutRoot;
+    RenderObject* m_layoutSubtreeRoot;
 
     bool m_layoutSchedulingEnabled;
     bool m_inPerformLayout;
