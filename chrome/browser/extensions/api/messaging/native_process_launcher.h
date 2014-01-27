@@ -39,6 +39,7 @@ class NativeProcessLauncher {
                                base::PlatformFile write_file)> LaunchedCallback;
 
   static scoped_ptr<NativeProcessLauncher> CreateDefault(
+      bool allow_user_level_hosts,
       gfx::NativeView native_view);
 
   NativeProcessLauncher() {}
@@ -59,7 +60,10 @@ class NativeProcessLauncher {
   // platform-specific .cc files.
 
   // Finds manifest file for the native messaging host |native_host_name|.
+  // |user_level| is set to true if the manifest is installed on user level.
+  // Returns an empty path if the host with the specified name cannot be found.
   static base::FilePath FindManifest(const std::string& native_host_name,
+                                     bool allow_user_level_hosts,
                                      std::string* error_message);
 
   // Launches native messaging process.

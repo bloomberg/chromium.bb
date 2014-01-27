@@ -14,17 +14,35 @@
 
 namespace extensions {
 
+namespace {
+
+base::FilePath FindManifestInDir(int dir_key, const std::string& host_name) {
+  base::FilePath base_path;
+  if (PathService::Get(dir_key, &base_path)) {
+    base::FilePath path = base_path.Append(host_name + ".json");
+    if (base::PathExists(path))
+      return path;
+  }
+  return base::FilePath();
+}
+
+}  // namespace
+
 // static
 base::FilePath NativeProcessLauncher::FindManifest(
-    const std::string& native_host_name,
+    const std::string& host_name,
+    bool allow_user_level_hosts,
     std::string* error_message) {
   base::FilePath result;
-  if (!PathService::Get(chrome::DIR_NATIVE_MESSAGING, &result)) {
-    NOTREACHED();
-    *error_message = "Can't find native messaging host " + native_host_name;
-    return base::FilePath();
-  }
-  return result.Append(native_host_name + ".json");
+  if (allow_user_level_hosts)
+    result = FindManifestInDir(chrome::DIR_USER_NATIVE_MESSAGING, host_name);
+  if (result.empty())
+    result = FindManifestInDir(chrome::DIR_NATIVE_MESSAGING, host_name);
+
+  if (result.empty())
+    *error_message = "Can't find native messaging host " + host_name;
+
+  return result;
 }
 
 // static

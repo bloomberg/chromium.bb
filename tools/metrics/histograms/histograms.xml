@@ -23895,6 +23895,7 @@ other types of suffix sets.
   <int value="250" label="Enable network configuration prompt when offline"/>
   <int value="251" label="Native Messaging blacklist"/>
   <int value="252" label="Native Messaging whitelist"/>
+  <int value="253" label="Allow user-level Native Messaging hosts"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

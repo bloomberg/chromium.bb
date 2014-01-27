@@ -26,44 +26,58 @@ const wchar_t kNativeMessagingRegistryKey[] =
 namespace {
 
 // Reads path to the native messaging host manifest from the registry. Returns
-// empty string if the path isn't found.
-base::string16 GetManifestPath(const base::string16& native_host_name,
-                               DWORD flags) {
+// false if the path isn't found.
+bool GetManifestPathWithFlags(HKEY root_key,
+                              DWORD flags,
+                              const base::string16& host_name,
+                              base::string16* result) {
   base::win::RegKey key;
-  base::string16 result;
 
-  if (key.Open(HKEY_LOCAL_MACHINE, kNativeMessagingRegistryKey,
+  if (key.Open(root_key, kNativeMessagingRegistryKey,
                KEY_QUERY_VALUE | flags) != ERROR_SUCCESS ||
-      key.OpenKey(native_host_name.c_str(),
+      key.OpenKey(host_name.c_str(),
                   KEY_QUERY_VALUE | flags) != ERROR_SUCCESS ||
-      key.ReadValue(NULL, &result) != ERROR_SUCCESS) {
-    return base::string16();
+      key.ReadValue(NULL, result) != ERROR_SUCCESS) {
+    return false;
   }
 
-  return result;
+  return true;
+}
+
+bool GetManifestPath(HKEY root_key,
+                     const base::string16& host_name,
+                     base::string16* result) {
+  // First check 32-bit registry and then try 64-bit.
+  return GetManifestPathWithFlags(
+             root_key, KEY_WOW64_32KEY, host_name, result) ||
+         GetManifestPathWithFlags(
+             root_key, KEY_WOW64_64KEY, host_name, result);
 }
 
 }  // namespace
 
 // static
 base::FilePath NativeProcessLauncher::FindManifest(
-    const std::string& native_host_name,
+    const std::string& host_name,
+    bool allow_user_level_hosts,
     std::string* error_message) {
-  base::string16 native_host_name_wide = base::UTF8ToUTF16(native_host_name);
+  base::string16 host_name_wide = base::UTF8ToUTF16(host_name);
 
-  // First check 32-bit registry and then try 64-bit.
-  base::string16 manifest_path_str =
-      GetManifestPath(native_host_name_wide, KEY_WOW64_32KEY);
-  if (manifest_path_str.empty())
-    manifest_path_str = GetManifestPath(native_host_name_wide, KEY_WOW64_64KEY);
+  // Try to find the key in HKEY_LOCAL_MACHINE and then in HKEY_CURRENT_USER.
+  base::string16 path_str;
+  bool found = false;
+  if (allow_user_level_hosts)
+    found = GetManifestPath(HKEY_CURRENT_USER, host_name_wide, &path_str);
+  if (!found)
+    found = GetManifestPath(HKEY_LOCAL_MACHINE, host_name_wide, &path_str);
 
-  if (manifest_path_str.empty()) {
-    *error_message = "Native messaging host " + native_host_name +
-        " is not registered";
+  if (!found) {
+    *error_message =
+        "Native messaging host " + host_name + " is not registered.";
     return base::FilePath();
   }
 
-  base::FilePath manifest_path(manifest_path_str);
+  base::FilePath manifest_path(path_str);
   if (!manifest_path.IsAbsolute()) {
     *error_message = "Path to native messaging host manifest must be absolute.";
     return base::FilePath();

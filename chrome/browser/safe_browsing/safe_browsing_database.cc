@@ -510,7 +510,8 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(
 }
 
 SafeBrowsingDatabaseNew::~SafeBrowsingDatabaseNew() {
-  DCHECK_EQ(creation_loop_, base::MessageLoop::current());
+  // The DCHECK is disabled due to crbug.com/338486 .
+  // DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 }
 
 void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
