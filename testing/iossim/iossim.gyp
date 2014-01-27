@@ -30,26 +30,29 @@
           ],
           'actions': [
             {
-              'action_name': 'generate_iphone_sim_header',
+              'action_name': 'generate_dvt_iphone_sim_header',
               'inputs': [
-                '<(iphone_sim_path)/iPhoneSimulatorRemoteClient.framework/Versions/Current/iPhoneSimulatorRemoteClient',
+                '<(iphone_sim_path)/DVTiPhoneSimulatorRemoteClient.framework/Versions/Current/DVTiPhoneSimulatorRemoteClient',
                 '<(PRODUCT_DIR)/class-dump',
               ],
               'outputs': [
-                '<(INTERMEDIATE_DIR)/iossim/iPhoneSimulatorRemoteClient.h'
+                '<(INTERMEDIATE_DIR)/iossim/DVTiPhoneSimulatorRemoteClient.h'
               ],
               'action': [
                 # Actions don't provide a way to redirect stdout, so a custom
-                # script is invoked that will execute the first argument and write
-                # the output to the file specified as the second argument.
+                # script is invoked that will execute the first argument and
+                # write the output to the file specified as the second argument.
+                # -I sorts classes, categories, and protocols by inheritance.
+                # -C <regex> only displays classes matching regular expression.
                 './redirect-stdout.sh',
-                '<(PRODUCT_DIR)/class-dump -CiPhoneSimulator <(iphone_sim_path)/iPhoneSimulatorRemoteClient.framework',
-                '<(INTERMEDIATE_DIR)/iossim/iPhoneSimulatorRemoteClient.h',
+                '<(PRODUCT_DIR)/class-dump -I -CiPhoneSimulator <(iphone_sim_path)/DVTiPhoneSimulatorRemoteClient.framework',
+                '<(INTERMEDIATE_DIR)/iossim/DVTiPhoneSimulatorRemoteClient.h',
               ],
               'message': 'Generating header',
             },
           ],
           'xcode_settings': {
+            'ARCHS': ['x86_64'],
             'WARNING_CFLAGS': [
               '-Wno-objc-property-no-attribute',
             ],

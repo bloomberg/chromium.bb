@@ -28,6 +28,19 @@
 @class DTiPhoneSimulatorSession;
 @class DTiPhoneSimulatorSessionConfig;
 @class DTiPhoneSimulatorSystemRoot;
+@class DVTiPhoneSimulatorMessenger;
+
+@interface DVTPlatform : NSObject
++ (BOOL)loadAllPlatformsReturningError:(id*)arg1;
+@end
+
+@protocol OS_dispatch_source
+@end
+@protocol OS_dispatch_queue
+@end
+@class DVTDispatchLock;
+@class DVTConfinementServiceConnection;
+@class DVTTask;
 
 @protocol DTiPhoneSimulatorSessionDelegate
 - (void)session:(DTiPhoneSimulatorSession*)session
@@ -37,7 +50,7 @@
       withError:(NSError*)error;
 @end
 
-#import "iPhoneSimulatorRemoteClient.h"
+#import "DVTiPhoneSimulatorRemoteClient.h"
 
 // An undocumented system log key included in messages from launchd. The value
 // is the PID of the process the message is about (as opposed to launchd's PID).
@@ -73,7 +86,9 @@ const NSTimeInterval kOutputPollIntervalSeconds = 0.1;
 // The path within the developer dir of the private Simulator frameworks.
 NSString* const kSimulatorFrameworkRelativePath =
     @"Platforms/iPhoneSimulator.platform/Developer/Library/PrivateFrameworks/"
-    @"iPhoneSimulatorRemoteClient.framework";
+    @"DVTiPhoneSimulatorRemoteClient.framework";
+NSString* const kDVTFoundationRelativePath =
+    @"../SharedFrameworks/DVTFoundation.framework";
 NSString* const kDevToolsFoundationRelativePath =
     @"../OtherFrameworks/DevToolsFoundation.framework";
 NSString* const kSimulatorRelativePath =
@@ -300,9 +315,12 @@ void LogWarning(NSString* format, ...) {
     aslmsg query = asl_new(ASL_TYPE_QUERY);
     asl_set_query(query, ASL_KEY_SENDER, "launchd",
                   ASL_QUERY_OP_EQUAL | ASL_QUERY_OP_SUBSTRING);
-    asl_set_query(query, ASL_KEY_REF_PID,
-                  [[[session simulatedApplicationPID] stringValue] UTF8String],
-                  ASL_QUERY_OP_EQUAL);
+    char session_id[20];
+    if (snprintf(session_id, 20, "%d", [session simulatedApplicationPID]) < 0) {
+      LogError(@"Failed to get [session simulatedApplicationPID]");
+      exit(kExitFailure);
+    }
+    asl_set_query(query, ASL_KEY_REF_PID, session_id, ASL_QUERY_OP_EQUAL);
     asl_set_query(query, ASL_KEY_TIME, "-1m", ASL_QUERY_OP_GREATER_EQUAL);
 
     // Log any messages found, and take note of any messages that may indicate
@@ -393,24 +411,6 @@ NSString* FindDeveloperDir() {
   return output;
 }
 
-// Loads the Simulator framework from the given developer dir.
-NSBundle* LoadSimulatorFramework(NSString* developerDir) {
-  // The Simulator framework depends on some of the other Xcode private
-  // frameworks; manually load them first so everything can be linked up.
-  NSString* devToolsFoundationPath = [developerDir
-      stringByAppendingPathComponent:kDevToolsFoundationRelativePath];
-  NSBundle* devToolsFoundationBundle =
-      [NSBundle bundleWithPath:devToolsFoundationPath];
-  if (![devToolsFoundationBundle load])
-    return nil;
-  NSString* simBundlePath = [developerDir
-      stringByAppendingPathComponent:kSimulatorFrameworkRelativePath];
-  NSBundle* simBundle = [NSBundle bundleWithPath:simBundlePath];
-  if (![simBundle load])
-    return nil;
-  return simBundle;
-}
-
 // Helper to find a class by name and die if it isn't found.
 Class FindClassByName(NSString* nameOfClass) {
   Class theClass = NSClassFromString(nameOfClass);
@@ -419,6 +419,41 @@ Class FindClassByName(NSString* nameOfClass) {
     exit(kExitInitializationFailure);
   }
   return theClass;
+}
+
+// Loads the Simulator framework from the given developer dir.
+NSBundle* LoadSimulatorFramework(NSString* developerDir) {
+  // The Simulator framework depends on some of the other Xcode private
+  // frameworks; manually load them first so everything can be linked up.
+  NSString* dvtFoundationPath = [developerDir
+      stringByAppendingPathComponent:kDVTFoundationRelativePath];
+  NSBundle* dvtFoundationBundle =
+      [NSBundle bundleWithPath:dvtFoundationPath];
+  if (![dvtFoundationBundle load])
+    return nil;
+
+  NSString* devToolsFoundationPath = [developerDir
+      stringByAppendingPathComponent:kDevToolsFoundationRelativePath];
+  NSBundle* devToolsFoundationBundle =
+      [NSBundle bundleWithPath:devToolsFoundationPath];
+  if (![devToolsFoundationBundle load])
+    return nil;
+
+  // Prime DVTPlatform.
+  NSError* error;
+  Class DVTPlatformClass = FindClassByName(@"DVTPlatform");
+  if (![DVTPlatformClass loadAllPlatformsReturningError:&error]) {
+    LogError(@"Unable to loadAllPlatformsReturningError. Error: %@",
+         [error localizedDescription]);
+    return nil;
+  }
+
+  NSString* simBundlePath = [developerDir
+      stringByAppendingPathComponent:kSimulatorFrameworkRelativePath];
+  NSBundle* simBundle = [NSBundle bundleWithPath:simBundlePath];
+  if (![simBundle load])
+    return nil;
+  return simBundle;
 }
 
 // Converts the given app path to an application spec, which requires an
@@ -454,7 +489,8 @@ DTiPhoneSimulatorSessionConfig* BuildSessionConfig(
     NSString* stderrPath,
     NSArray* appArgs,
     NSDictionary* appEnv,
-    NSNumber* deviceFamily) {
+    NSNumber* deviceFamily,
+    NSString* deviceName) {
   Class sessionConfigClass = FindClassByName(@"DTiPhoneSimulatorSessionConfig");
   DTiPhoneSimulatorSessionConfig* sessionConfig =
       [[[sessionConfigClass alloc] init] autorelease];
@@ -465,6 +501,7 @@ DTiPhoneSimulatorSessionConfig* BuildSessionConfig(
   sessionConfig.simulatedApplicationStdOutPath = stdoutPath;
   sessionConfig.simulatedApplicationLaunchArgs = appArgs;
   sessionConfig.simulatedApplicationLaunchEnvironment = appEnv;
+  sessionConfig.simulatedDeviceInfoName = deviceName;
   sessionConfig.simulatedDeviceFamily = deviceFamily;
   return sessionConfig;
 }
@@ -529,17 +566,9 @@ BOOL CreateHomeDirSubDirs(NSString* userHomePath) {
 // path, then sets the path in the appropriate environment variable.
 // Returns YES if successful, NO if unable to create or initialize the given
 // directory.
-BOOL InitializeSimulatorUserHome(NSString* userHomePath, NSString* deviceName) {
+BOOL InitializeSimulatorUserHome(NSString* userHomePath) {
   if (!CreateHomeDirSubDirs(userHomePath))
     return NO;
-
-  // Set the device to simulate. Note that the iOS Simulator must not be running
-  // for this setting to take effect.
-  CFStringRef iPhoneSimulatorAppID = CFSTR("com.apple.iphonesimulator");
-  CFPreferencesSetAppValue(CFSTR("SimulateDevice"),
-                           deviceName,
-                           iPhoneSimulatorAppID);
-  CFPreferencesAppSynchronize(iPhoneSimulatorAppID);
 
   // Update the environment to use the specified directory as the user home
   // directory.
@@ -728,7 +757,7 @@ int main(int argc, char* const argv[]) {
       exit(kExitInitializationFailure);
     }
   }
-  if (!InitializeSimulatorUserHome(simHomePath, deviceName)) {
+  if (!InitializeSimulatorUserHome(simHomePath)) {
     LogError(@"Unable to initialize home directory for simulator: %@",
              simHomePath);
     exit(kExitInitializationFailure);
@@ -741,7 +770,8 @@ int main(int argc, char* const argv[]) {
                                                               stdioPath,
                                                               appArgs,
                                                               appEnv,
-                                                              deviceFamily);
+                                                              deviceFamily,
+                                                              deviceName);
   SimulatorDelegate* delegate =
       [[[SimulatorDelegate alloc] initWithStdioPath:stdioPath
                                        developerDir:developerDir
