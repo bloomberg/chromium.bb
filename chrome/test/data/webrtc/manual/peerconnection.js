@@ -714,10 +714,10 @@ function sendToPeer(peer, message) {
 
 /**
  * @param {!string} videoTagId The ID of the video tag to update.
- * @param {!string} width The width of the video to update the video tag, if
- *     width or height is 0, size will be taken from videoTag.videoWidth.
- * @param {!string} height The height of the video to update the video tag, if
- *     width or height is 0 size will be taken from the videoTag.videoHeight.
+ * @param {!number} width of the video to update the video tag, if width or
+ *     height is 0, size will be taken from videoTag.videoWidth.
+ * @param {!number} height of the video to update the video tag, if width or
+ *     height is 0 size will be taken from the videoTag.videoHeight.
  */
 function updateVideoTagSize(videoTagId, width, height) {
   var videoTag = $(videoTagId);
@@ -729,13 +729,13 @@ function updateVideoTagSize(videoTagId, width, height) {
     if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
       videoTag.width = videoTag.videoWidth;
       videoTag.height = videoTag.videoHeight;
+      print_('Set video tag "' + videoTagId + '" size to ' + videoTag.width +
+             'x' + videoTag.height);
     }
     else {
       print_('"' + videoTagId + '" video stream size is 0, skipping resize');
     }
   }
-  print_('Set video tag "' + videoTagId + '" size to ' + videoTag.width + 'x' +
-         videoTag.height);
   displayVideoSize_(videoTag);
 }
 
