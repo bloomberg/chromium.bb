@@ -96,6 +96,12 @@ StyleEngine::~StyleEngine()
         m_injectedAuthorStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_authorStyleSheets.size(); ++i)
         m_authorStyleSheets[i]->clearOwnerNode();
+
+    if (m_fontSelector) {
+        m_fontSelector->clearDocument();
+        if (m_resolver)
+            m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
+    }
 }
 
 inline Document* StyleEngine::master()
