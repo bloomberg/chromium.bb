@@ -361,9 +361,12 @@ bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
 bool URLBlacklistManager::IsRequestBlocked(
     const net::URLRequest& request) const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+#if !defined(OS_IOS)
+  // TODO(joaodasilva): iOS doesn't set these flags. http://crbug.com/338283
   int filter_flags = net::LOAD_MAIN_FRAME | net::LOAD_SUB_FRAME;
   if ((request.load_flags() & filter_flags) == 0)
     return false;
+#endif
 
   if (skip_blacklist_(request.url()))
     return false;
