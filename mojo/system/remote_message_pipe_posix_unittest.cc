@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/threading/thread.h"
+#include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "mojo/system/channel.h"
 #include "mojo/system/embedder/platform_channel_pair.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
@@ -72,6 +72,14 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
                    base::Unretained(this), channel_index, mp));
   }
 
+  void RestoreInitialState() {
+    test::PostTaskAndWait(
+        io_thread_task_runner(),
+        FROM_HERE,
+        base::Bind(&RemoteMessagePipeTest::RestoreInitialStateOnIOThread,
+                   base::Unretained(this)));
+  }
+
  private:
   void SetUpOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
@@ -79,6 +87,19 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
     embedder::PlatformChannelPair channel_pair;
     platform_handles_[0] = channel_pair.PassServerHandle();
     platform_handles_[1] = channel_pair.PassClientHandle();
+  }
+
+  void TearDownOnIOThread() {
+    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+
+    if (channels_[0].get()) {
+      channels_[0]->Shutdown();
+      channels_[0] = NULL;
+    }
+    if (channels_[1].get()) {
+      channels_[1]->Shutdown();
+      channels_[1] = NULL;
+    }
   }
 
   void CreateAndInitChannel(unsigned channel_index) {
@@ -124,15 +145,11 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
         Channel::kBootstrapEndpointId, Channel::kBootstrapEndpointId);
   }
 
-  void TearDownOnIOThread() {
-    if (channels_[0].get()) {
-      channels_[0]->Shutdown();
-      channels_[0] = NULL;
-    }
-    if (channels_[1].get()) {
-      channels_[1]->Shutdown();
-      channels_[1] = NULL;
-    }
+  void RestoreInitialStateOnIOThread() {
+    CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
+
+    TearDownOnIOThread();
+    SetUpOnIOThread();
   }
 
   embedder::ScopedPlatformHandle platform_handles_[2];
@@ -403,6 +420,46 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
 
   // And MP 1, port 1.
   mp1->Close(1);
+}
+
+// Test racing closes (on each end).
+// Note: A flaky failure would almost certainly indicate a problem in the code
+// itself (not in the test). Also, any logged warnings/errors would also
+// probably be indicative of bugs.
+TEST_F(RemoteMessagePipeTest, RacingClosesStress) {
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(5);
+
+  for (unsigned i = 0u; i < 256u; i++) {
+    scoped_refptr<MessagePipe> mp0(new MessagePipe(
+        scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
+        scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+    BootstrapMessagePipeNoWait(0, mp0);
+
+    scoped_refptr<MessagePipe> mp1(new MessagePipe(
+        scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
+        scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+    BootstrapMessagePipeNoWait(1, mp1);
+
+    if (i & 1u) {
+      io_thread_task_runner()->PostTask(
+          FROM_HERE, base::Bind(&base::PlatformThread::Sleep, delay));
+    }
+    if (i & 2u)
+      base::PlatformThread::Sleep(delay);
+
+    mp0->Close(0);
+
+    if (i & 4u) {
+      io_thread_task_runner()->PostTask(
+          FROM_HERE, base::Bind(&base::PlatformThread::Sleep, delay));
+    }
+    if (i & 8u)
+      base::PlatformThread::Sleep(delay);
+
+    mp1->Close(1);
+
+    RestoreInitialState();
+  }
 }
 
 }  // namespace

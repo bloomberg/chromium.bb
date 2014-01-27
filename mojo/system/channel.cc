@@ -127,6 +127,10 @@ void Channel::DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id) {
 Channel::~Channel() {
   // The channel should have been shut down first.
   DCHECK(!raw_channel_.get());
+
+  DLOG_IF(WARNING, !local_id_to_endpoint_info_map_.empty())
+      << "Destroying Channel with " << local_id_to_endpoint_info_map_.size()
+      << " endpoints still present";
 }
 
 void Channel::OnReadMessage(const MessageInTransit& message) {
@@ -176,6 +180,11 @@ void Channel::OnReadMessageForDownstream(const MessageInTransit& message) {
       HandleRemoteError(base::StringPrintf(
           "Received a message for nonexistent local destination ID %u",
           static_cast<unsigned>(local_id)));
+      // This is strongly indicative of some problem. However, it's not a fatal
+      // error, since it may indicate a bug (or hostile) remote process. Don't
+      // die even for Debug builds, since handling this properly needs to be
+      // tested (TODO(vtl)).
+      DLOG(ERROR) << "This should not happen under normal operation.";
       return;
     }
     endpoint_info = it->second;

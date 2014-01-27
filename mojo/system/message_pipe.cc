@@ -49,14 +49,9 @@ void MessagePipe::Close(unsigned port) {
   DCHECK(endpoints_[port].get());
 
   endpoints_[port]->Close();
-  bool should_destroy_destination = endpoints_[destination_port].get() ?
-      !endpoints_[destination_port]->OnPeerClose() : false;
-
+  if (endpoints_[destination_port].get())
+    endpoints_[destination_port]->OnPeerClose();
   endpoints_[port].reset();
-  if (should_destroy_destination) {
-    endpoints_[destination_port]->Close();
-    endpoints_[destination_port].reset();
-  }
 }
 
 // TODO(vtl): Support sending handles.
@@ -178,11 +173,7 @@ void MessagePipe::Run(unsigned port, MessageInTransit::EndpointId remote_id) {
 
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port].get());
-
-  if (!endpoints_[port]->Run(remote_id)) {
-    endpoints_[port]->Close();
-    endpoints_[port].reset();
-  }
+  endpoints_[port]->Run(remote_id);
 }
 
 MessagePipe::~MessagePipe() {

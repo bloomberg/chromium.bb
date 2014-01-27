@@ -39,9 +39,8 @@ void MessagePipeEndpoint::Attach(scoped_refptr<Channel> /*channel*/,
   NOTREACHED();
 }
 
-bool MessagePipeEndpoint::Run(MessageInTransit::EndpointId /*remote_id*/) {
+void MessagePipeEndpoint::Run(MessageInTransit::EndpointId /*remote_id*/) {
   NOTREACHED();
-  return true;
 }
 
 }  // namespace system

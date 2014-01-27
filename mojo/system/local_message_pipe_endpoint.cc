@@ -52,7 +52,7 @@ void LocalMessagePipeEndpoint::Close() {
   message_queue_.clear();
 }
 
-bool LocalMessagePipeEndpoint::OnPeerClose() {
+void LocalMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
 
@@ -67,8 +67,6 @@ bool LocalMessagePipeEndpoint::OnPeerClose() {
     waiter_list_.AwakeWaitersForStateChange(new_satisfied_flags,
                                             new_satisfiable_flags);
   }
-
-  return true;
 }
 
 MojoResult LocalMessagePipeEndpoint::CanEnqueueMessage(

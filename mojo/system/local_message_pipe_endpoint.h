@@ -26,7 +26,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
 
   // |MessagePipeEndpoint| implementation:
   virtual void Close() OVERRIDE;
-  virtual bool OnPeerClose() OVERRIDE;
+  virtual void OnPeerClose() OVERRIDE;
   virtual MojoResult CanEnqueueMessage(
       const MessageInTransit* message,
       const std::vector<Dispatcher*>* dispatchers) OVERRIDE;

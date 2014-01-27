@@ -46,7 +46,7 @@ void ProxyMessagePipeEndpoint::Close() {
   paused_message_queue_.clear();
 }
 
-bool ProxyMessagePipeEndpoint::OnPeerClose() {
+void ProxyMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
 
@@ -62,11 +62,6 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
     // TODO(vtl): Do something more sensible on error here?
     LOG(WARNING) << "Failed to send peer closed control message";
   }
-
-  // Return false -- to indicate that we should be destroyed -- if no messages
-  // are still enqueued. (Messages may still be enqueued if we're not running
-  // yet, but our peer was closed.)
-  return !paused_message_queue_.empty();
 }
 
 MojoResult ProxyMessagePipeEndpoint::CanEnqueueMessage(
@@ -116,7 +111,7 @@ void ProxyMessagePipeEndpoint::Attach(scoped_refptr<Channel> channel,
   AssertConsistentState();
 }
 
-bool ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
+void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   // Assertions about arguments:
   DCHECK_NE(remote_id, MessageInTransit::kInvalidEndpointId);
 
@@ -142,10 +137,6 @@ bool ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
     }
   }
   paused_message_queue_.clear();
-
-  // If the peer is not open, we should return false since we should be
-  // destroyed.
-  return is_peer_open_;
 }
 
 #ifndef NDEBUG

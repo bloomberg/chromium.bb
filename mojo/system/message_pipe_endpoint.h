@@ -36,8 +36,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
 
   // All implementations must implement these.
   virtual void Close() = 0;
-  // Returns false if the endpoint should be closed and destroyed, else true.
-  virtual bool OnPeerClose() = 0;
+  virtual void OnPeerClose() = 0;
   // Checks if |EnqueueMessage()| will be able to enqueue the given message
   // (with the given set of dispatchers). |dispatchers| should be non-null only
   // if it's nonempty. Returns |MOJO_RESULT_OK| if it will and an appropriate
@@ -77,8 +76,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // they should never be called.
   virtual void Attach(scoped_refptr<Channel> channel,
                       MessageInTransit::EndpointId local_id);
-  // Returns false if the endpoint should be closed and destroyed, else true.
-  virtual bool Run(MessageInTransit::EndpointId remote_id);
+  virtual void Run(MessageInTransit::EndpointId remote_id);
 
  protected:
   MessagePipeEndpoint() {}
