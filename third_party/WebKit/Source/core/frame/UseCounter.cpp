@@ -475,7 +475,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyMixBlendMode: return 420;
     case CSSPropertyTouchAction: return 421;
     case CSSPropertyGridArea: return 422;
-    case CSSPropertyGridTemplate: return 423;
+    case CSSPropertyGridTemplateAreas: return 423;
     case CSSPropertyAnimation: return 424;
     case CSSPropertyAnimationDelay: return 425;
     case CSSPropertyAnimationDirection: return 426;

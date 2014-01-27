@@ -122,7 +122,7 @@ gridDefinitionRows
 gridRow
 gridRowEnd
 gridRowStart
-gridTemplate
+gridTemplateAreas
 height
 imageRendering
 isolation

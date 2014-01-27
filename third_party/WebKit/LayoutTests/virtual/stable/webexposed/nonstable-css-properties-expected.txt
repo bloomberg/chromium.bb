@@ -71,9 +71,9 @@ el.style.setProperty('grid-auto-flow', 'column')
 el.style.getPropertyValue('grid-auto-flow') is null
 getComputedStyle(el).getPropertyValue('grid-auto-flow') is null
 
-el.style.setProperty('grid-template', '"test"')
-el.style.getPropertyValue('grid-template') is null
-getComputedStyle(el).getPropertyValue('grid-template') is null
+el.style.setProperty('grid-template-areas', '"test"')
+el.style.getPropertyValue('grid-template-areas') is null
+getComputedStyle(el).getPropertyValue('grid-template-areas') is null
 
 el.style.setProperty('text-align-last', 'start')
 el.style.getPropertyValue('text-align-last') is null

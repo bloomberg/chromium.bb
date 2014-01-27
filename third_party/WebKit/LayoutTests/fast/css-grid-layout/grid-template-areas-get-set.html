@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script>
+if (window.testRunner)
+    testRunner.overridePreference("WebKitCSSGridLayoutEnabled", 1);
+</script>
+<link href="resources/grid.css" rel="stylesheet">
+<style>
+#gridWithSingleStringTemplate {
+    grid-template-areas: "area";
+}
+
+#gridWithTwoColumnsTemplate {
+    grid-template-areas: "first second";
+}
+
+#gridWithTwoRowsTemplate {
+    grid-template-areas: "first"
+                         "second";
+}
+
+#gridWithSpanningColumnsTemplate {
+    grid-template-areas: "span span";
+}
+
+#gridWithSpanningRowsDotTemplate {
+    grid-template-areas: "span"
+                         ".";
+}
+
+#gridWithDotColumn {
+    grid-template-areas: "header ."
+                         "footer .";
+}
+</style>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<div class="grid" id="gridWithDefaultTemplate"></div>
+<div class="grid" id="gridWithSingleStringTemplate"></div>
+<div class="grid" id="gridWithTwoColumnsTemplate"></div>
+<div class="grid" id="gridWithTwoRowsTemplate"></div>
+<div class="grid" id="gridWithSpanningColumnsTemplate"></div>
+<div class="grid" id="gridWithSpanningRowsDotTemplate"></div>
+<div class="grid" id="gridWithDotColumn"></div>
+<script>
+    description("This test checks that grid-template-areas is properly parsed.");
+
+    debug("Test getting grid-template-areas set through CSS.");
+    var gridWithDefaultTemplate = document.getElementById("gridWithDefaultTemplate");
+    shouldBeEqualToString("window.getComputedStyle(gridWithDefaultTemplate).getPropertyValue('grid-template-areas')", "none")
+
+    var gridWithSingleStringTemplate = document.getElementById("gridWithSingleStringTemplate");
+    shouldBeEqualToString("window.getComputedStyle(gridWithSingleStringTemplate).getPropertyValue('grid-template-areas')", '"area"')
+
+    var gridWithTwoColumnsTemplate = document.getElementById("gridWithTwoColumnsTemplate");
+    shouldBeEqualToString("window.getComputedStyle(gridWithTwoColumnsTemplate).getPropertyValue('grid-template-areas')", '"first second"')
+
+    var gridWithTwoRowsTemplate = document.getElementById("gridWithTwoRowsTemplate");
+    shouldBeEqualToString("window.getComputedStyle(gridWithTwoRowsTemplate).getPropertyValue('grid-template-areas')", '"first" "second"')
+
+    var gridWithSpanningColumnsTemplate = document.getElementById("gridWithSpanningColumnsTemplate");
+    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningColumnsTemplate).getPropertyValue('grid-template-areas')", '"span span"')
+
+    var gridWithSpanningRowsDotTemplate = document.getElementById("gridWithSpanningRowsDotTemplate");
+    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningRowsDotTemplate).getPropertyValue('grid-template-areas')", '"span" "."')
+
+    var gridWithDotColumn = document.getElementById("gridWithDotColumn");
+    shouldBeEqualToString("window.getComputedStyle(gridWithDotColumn).getPropertyValue('grid-template-areas')", '"header ." "footer ."')
+
+    debug("Test grid-template-areas: initial");
+    var element = document.createElement("div");
+    document.body.appendChild(element);
+    element.style.gridTemplateAreas = "'foobar'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", '"foobar"')
+    element.style.gridTemplateAreas = "initial";
+    document.body.removeChild(element);
+
+    debug("Test grid-template-areas: inherit");
+    var parentElement = document.createElement("div");
+    document.body.appendChild(parentElement);
+    parentElement.style.gridTemplateAreas = "'foo bar'";
+    shouldBeEqualToString("window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas')", '"foo bar"')
+
+    var element = document.createElement("div");
+    parentElement.appendChild(element);
+    element.style.gridTemplateAreas = "inherit";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", '"foo bar"')
+    document.body.removeChild(parentElement);
+
+    debug("Test invalid grid-template-areas values.");
+    var element = document.createElement("div");
+    document.body.appendChild(element);
+
+    // 'nav' is not a rectangular definition.
+    element.style.gridTemplateAreas = "'nav head' 'nav nav'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+
+    // 'nav' is not contiguous in the column direction.
+    element.style.gridTemplateAreas = "'nav head nav'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+
+    // 'nav' is not contiguous in the row direction.
+    element.style.gridTemplateAreas = "'nav head' 'middle middle' 'nav footer'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+
+    // The rows don't have the same number of columns.
+    element.style.gridTemplateAreas = "'nav head' 'foot'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+
+    // Empty rows.
+    element.style.gridTemplateAreas = "'' ''";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+
+    debug("");
+    debug("FIXME: We currently don't validate that the named grid areas are &lt;indent&gt;.");
+    // <ident> only allows a leading '-'.
+    element.style.gridTemplateAreas = '"nav-up"';
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", "none")
+</script>
+</body>
+</html>

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSGridTemplateValue_h
-#define CSSGridTemplateValue_h
+#ifndef CSSGridTemplateAreasValue_h
+#define CSSGridTemplateAreasValue_h
 
 #include "core/css/CSSValue.h"
 #include "core/rendering/style/GridCoordinate.h"
@@ -37,10 +37,10 @@
 
 namespace WebCore {
 
-class CSSGridTemplateValue : public CSSValue {
+class CSSGridTemplateAreasValue : public CSSValue {
 public:
-    static PassRefPtr<CSSGridTemplateValue> create(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount) { return adoptRef(new CSSGridTemplateValue(gridAreaMap, rowCount, columnCount)); }
-    ~CSSGridTemplateValue() { }
+    static PassRefPtr<CSSGridTemplateAreasValue> create(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount) { return adoptRef(new CSSGridTemplateAreasValue(gridAreaMap, rowCount, columnCount)); }
+    ~CSSGridTemplateAreasValue() { }
 
     String customCSSText() const;
 
@@ -49,15 +49,15 @@ public:
     size_t columnCount() const { return m_columnCount; }
 
 private:
-    CSSGridTemplateValue(const NamedGridAreaMap&, size_t rowCount, size_t columnCount);
+    CSSGridTemplateAreasValue(const NamedGridAreaMap&, size_t rowCount, size_t columnCount);
 
     NamedGridAreaMap m_gridAreaMap;
     size_t m_rowCount;
     size_t m_columnCount;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridTemplateValue, isGridTemplateValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridTemplateAreasValue, isGridTemplateAreasValue());
 
 } // namespace WebCore
 
-#endif // CSSGridTemplateValue_h
+#endif // CSSGridTemplateAreasValue_h

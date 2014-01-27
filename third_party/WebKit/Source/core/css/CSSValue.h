@@ -99,7 +99,7 @@ public:
     bool isFilterValue() const { return m_classType == CSSFilterClass; }
     bool isArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
-    bool isGridTemplateValue() const { return m_classType == GridTemplateClass; }
+    bool isGridTemplateAreasValue() const { return m_classType == GridTemplateAreasClass; }
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
     bool isSVGPaint() const { return m_classType == SVGPaintClass; }
     bool isSVGDocumentValue() const { return m_classType == CSSSVGDocumentClass; }
@@ -155,7 +155,7 @@ protected:
         LineBoxContainClass,
         CalculationClass,
         VariableClass,
-        GridTemplateClass,
+        GridTemplateAreasClass,
 
         // SVG classes.
         SVGColorClass,

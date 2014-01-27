@@ -42,7 +42,7 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
-#include "core/css/CSSGridTemplateValue.h"
+#include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
@@ -2480,10 +2480,10 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         return parseGridAreaShorthand(important);
 
-    case CSSPropertyGridTemplate:
+    case CSSPropertyGridTemplateAreas:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
-        parsedValue = parseGridTemplate();
+        parsedValue = parseGridTemplateAreas();
         break;
 
     case CSSPropertyWebkitMarginCollapse: {
@@ -4933,7 +4933,7 @@ PassRefPtr<CSSPrimitiveValue> BisonCSSParser::parseGridBreadth(CSSParserValue* c
     return createPrimitiveNumericValue(currentValue);
 }
 
-PassRefPtr<CSSValue> BisonCSSParser::parseGridTemplate()
+PassRefPtr<CSSValue> BisonCSSParser::parseGridTemplateAreas()
 {
     NamedGridAreaMap gridAreaMap;
     size_t rowCount = 0;
@@ -5003,7 +5003,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseGridTemplate()
     if (!rowCount || !columnCount)
         return 0;
 
-    return CSSGridTemplateValue::create(gridAreaMap, rowCount, columnCount);
+    return CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
 }
 
 PassRefPtr<CSSValue> BisonCSSParser::parseCounterContent(CSSParserValueList* args, bool counters)

@@ -39,7 +39,7 @@
 #include "core/css/CSSFontValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
-#include "core/css/CSSGridTemplateValue.h"
+#include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -1968,13 +1968,13 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyGridArea:
             return valuesForGridShorthand(gridAreaShorthand());
 
-        case CSSPropertyGridTemplate:
+        case CSSPropertyGridTemplateAreas:
             if (!style->namedGridAreaRowCount()) {
                 ASSERT(!style->namedGridAreaColumnCount());
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             }
 
-            return CSSGridTemplateValue::create(style->namedGridArea(), style->namedGridAreaRowCount(), style->namedGridAreaColumnCount());
+            return CSSGridTemplateAreasValue::create(style->namedGridArea(), style->namedGridAreaRowCount(), style->namedGridAreaColumnCount());
 
         case CSSPropertyHeight:
             if (renderer) {

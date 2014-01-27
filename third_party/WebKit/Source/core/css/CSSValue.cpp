@@ -41,7 +41,7 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
-#include "core/css/CSSGridTemplateValue.h"
+#include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
@@ -168,8 +168,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSInitialValue>(*this, other);
         case GridLineNamesClass:
             return compareCSSValues<CSSGridLineNamesValue>(*this, other);
-        case GridTemplateClass:
-            return compareCSSValues<CSSGridTemplateValue>(*this, other);
+        case GridTemplateAreasClass:
+            return compareCSSValues<CSSGridTemplateAreasValue>(*this, other);
         case PrimitiveClass:
             return compareCSSValues<CSSPrimitiveValue>(*this, other);
         case ReflectClass:
@@ -254,8 +254,8 @@ String CSSValue::cssText() const
         return toCSSInitialValue(this)->customCSSText();
     case GridLineNamesClass:
         return toCSSGridLineNamesValue(this)->customCSSText();
-    case GridTemplateClass:
-        return toCSSGridTemplateValue(this)->customCSSText();
+    case GridTemplateAreasClass:
+        return toCSSGridTemplateAreasValue(this)->customCSSText();
     case PrimitiveClass:
         return toCSSPrimitiveValue(this)->customCSSText();
     case ReflectClass:
@@ -366,8 +366,8 @@ void CSSValue::destroy()
     case GridLineNamesClass:
         delete toCSSGridLineNamesValue(this);
         return;
-    case GridTemplateClass:
-        delete toCSSGridTemplateValue(this);
+    case GridTemplateAreasClass:
+        delete toCSSGridTemplateAreasValue(this);
         return;
     case PrimitiveClass:
         delete toCSSPrimitiveValue(this);

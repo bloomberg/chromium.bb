@@ -49,7 +49,7 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
-#include "core/css/CSSGridTemplateValue.h"
+#include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
@@ -1708,7 +1708,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         return;
     }
 
-    case CSSPropertyGridTemplate: {
+    case CSSPropertyGridTemplateAreas: {
         if (isInherit) {
             state.style()->setNamedGridArea(state.parentStyle()->namedGridArea());
             state.style()->setNamedGridAreaRowCount(state.parentStyle()->namedGridAreaRowCount());
@@ -1727,10 +1727,10 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             return;
         }
 
-        CSSGridTemplateValue* gridTemplateValue = toCSSGridTemplateValue(value);
-        state.style()->setNamedGridArea(gridTemplateValue->gridAreaMap());
-        state.style()->setNamedGridAreaRowCount(gridTemplateValue->rowCount());
-        state.style()->setNamedGridAreaColumnCount(gridTemplateValue->columnCount());
+        CSSGridTemplateAreasValue* gridTemplateAreasValue = toCSSGridTemplateAreasValue(value);
+        state.style()->setNamedGridArea(gridTemplateAreasValue->gridAreaMap());
+        state.style()->setNamedGridAreaRowCount(gridTemplateAreasValue->rowCount());
+        state.style()->setNamedGridAreaColumnCount(gridTemplateAreasValue->columnCount());
         return;
     }
 

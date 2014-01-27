@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "core/css/CSSGridTemplateValue.h"
+#include "core/css/CSSGridTemplateAreasValue.h"
 
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-CSSGridTemplateValue::CSSGridTemplateValue(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount)
-    : CSSValue(GridTemplateClass)
+CSSGridTemplateAreasValue::CSSGridTemplateAreasValue(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount)
+    : CSSValue(GridTemplateAreasClass)
     , m_gridAreaMap(gridAreaMap)
     , m_rowCount(rowCount)
     , m_columnCount(columnCount)
@@ -66,7 +66,7 @@ static String stringForPosition(const NamedGridAreaMap& gridAreaMap, size_t row,
     return ".";
 }
 
-String CSSGridTemplateValue::customCSSText() const
+String CSSGridTemplateAreasValue::customCSSText() const
 {
     StringBuilder builder;
     for (size_t row = 0; row < m_rowCount; ++row) {
