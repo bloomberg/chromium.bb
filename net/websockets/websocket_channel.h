@@ -138,14 +138,6 @@ class NET_EXPORT WebSocketChannel {
                   // has been closed; or the connection is failed.
   };
 
-  // When failing a channel, sometimes it is inappropriate to expose the real
-  // reason for failing to the remote server. This enum is used by FailChannel()
-  // to select between sending the real status or a "Going Away" status.
-  enum ExposeError {
-    SEND_REAL_ERROR,
-    SEND_GOING_AWAY,
-  };
-
   // Implementation of WebSocketStream::ConnectDelegate for
   // WebSocketChannel. WebSocketChannel does not inherit from
   // WebSocketStream::ConnectDelegate directly to avoid cluttering the public
@@ -218,14 +210,15 @@ class NET_EXPORT WebSocketChannel {
                             size_t size) WARN_UNUSED_RESULT;
 
   // Performs the "Fail the WebSocket Connection" operation as defined in
-  // RFC6455. The supplied code and reason are sent back to the renderer in an
-  // OnDropChannel message. If state_ is CONNECTED then a Close message is sent
-  // to the remote host. If |expose| is SEND_REAL_ERROR then the remote host is
-  // given the same status code passed to the renderer; otherwise it is sent a
-  // fixed "Going Away" code.  Closes the stream_ and sets state_ to CLOSED.
-  // FailChannel() always returns CHANNEL_DELETED. It is not valid to access any
-  // member variables or methods after calling FailChannel().
-  ChannelState FailChannel(ExposeError expose,
+  // RFC6455. A NotifyFailure message is sent to the renderer with |message|.
+  // The renderer will log the message to the console but not expose it to
+  // Javascript. Javascript will see a Close code of AbnormalClosure (1006) with
+  // an empty reason string. If state_ is CONNECTED then a Close message is sent
+  // to the remote host containing the supplied |code| and |reason|. If the
+  // stream is open, closes it and sets state_ to CLOSED.  FailChannel() always
+  // returns CHANNEL_DELETED. It is not valid to access any member variables or
+  // methods after calling FailChannel().
+  ChannelState FailChannel(const std::string& message,
                            uint16 code,
                            const std::string& reason) WARN_UNUSED_RESULT;
 
@@ -236,15 +229,17 @@ class NET_EXPORT WebSocketChannel {
   ChannelState SendClose(uint16 code,
                          const std::string& reason) WARN_UNUSED_RESULT;
 
-  // Parses a Close frame. If no status code is supplied, then |code| is set to
-  // 1005 (No status code) with empty |reason|. If the supplied code is
-  // outside the valid range, then 1002 (Protocol error) is set instead. If the
-  // reason text is not valid UTF-8, then |reason| is set to an empty string
-  // instead.
-  void ParseClose(const scoped_refptr<IOBuffer>& buffer,
+  // Parses a Close frame payload. If no status code is supplied, then |code| is
+  // set to 1005 (No status code) with empty |reason|. If the reason text is not
+  // valid UTF-8, then |reason| is set to an empty string. If the payload size
+  // is 1, or the supplied code is not permitted to be sent over the network,
+  // then false is returned and |message| is set to an appropriate console
+  // message.
+  bool ParseClose(const scoped_refptr<IOBuffer>& buffer,
                   size_t size,
                   uint16* code,
-                  std::string* reason);
+                  std::string* reason,
+                  std::string* message);
 
   // Drop this channel.
   // If there are pending opening handshake notifications, notify them

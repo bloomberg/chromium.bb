@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/big_endian.h"
 #include "net/base/io_buffer.h"
@@ -278,9 +279,9 @@ void WebSocketChannel::SendFrame(bool fin,
     return;
   }
   if (data.size() > base::checked_cast<size_t>(current_send_quota_)) {
-    AllowUnused(FailChannel(SEND_GOING_AWAY,
-                            kWebSocketMuxErrorSendQuotaViolation,
-                            "Send quota exceeded"));
+    // TODO(ricea): Kill renderer.
+    AllowUnused(
+        FailChannel("Send quota exceeded", kWebSocketErrorGoingAway, ""));
     // |this| has been deleted.
     return;
   }
@@ -329,8 +330,7 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     // errata 3227 to RFC6455. If the renderer is sending us an invalid code or
     // reason it must be malfunctioning in some way, and based on that we
     // interpret this as an internal error.
-    AllowUnused(
-        SendClose(kWebSocketErrorInternalServerError, "Internal Error"));
+    AllowUnused(SendClose(kWebSocketErrorInternalServerError, ""));
     // |this| may have been deleted.
     return;
   }
@@ -545,7 +545,10 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
       return CHANNEL_ALIVE;
 
     case ERR_WS_PROTOCOL_ERROR:
-      return FailChannel(SEND_REAL_ERROR,
+      // This could be kWebSocketErrorProtocolError (specifically, non-minimal
+      // encoding of payload length) or kWebSocketErrorMessageTooBig, or an
+      // extension-specific error.
+      return FailChannel("Invalid frame header",
                          kWebSocketErrorProtocolError,
                          "WebSocket Protocol Error");
 
@@ -569,16 +572,20 @@ ChannelState WebSocketChannel::ProcessFrame(scoped_ptr<WebSocketFrame> frame) {
   if (frame->header.masked) {
     // RFC6455 Section 5.1 "A client MUST close a connection if it detects a
     // masked frame."
-    return FailChannel(SEND_REAL_ERROR,
-                       kWebSocketErrorProtocolError,
-                       "Masked frame from server");
+    return FailChannel(
+        "A server must not mask any frames that it sends to the "
+        "client.",
+        kWebSocketErrorProtocolError,
+        "Masked frame from server");
   }
   const WebSocketFrameHeader::OpCode opcode = frame->header.opcode;
   if (WebSocketFrameHeader::IsKnownControlOpCode(opcode) &&
       !frame->header.final) {
-    return FailChannel(SEND_REAL_ERROR,
-                       kWebSocketErrorProtocolError,
-                       "Control message with FIN bit unset received");
+    return FailChannel(
+        base::StringPrintf("Received fragmented control frame: opcode = %d",
+                           opcode),
+        kWebSocketErrorProtocolError,
+        "Control message with FIN bit unset received");
   }
 
   // Respond to the frame appropriately to its type.
@@ -620,11 +627,9 @@ ChannelState WebSocketChannel::HandleFrame(
         frame_name = "Unknown frame type";
         break;
     }
-    // SEND_REAL_ERROR makes no difference here, as FailChannel() won't send
-    // another Close frame.
-    return FailChannel(SEND_REAL_ERROR,
-                       kWebSocketErrorProtocolError,
-                       frame_name + " received after close");
+    // FailChannel() won't send another Close frame.
+    return FailChannel(
+        frame_name + " received after close", kWebSocketErrorProtocolError, "");
   }
   switch (opcode) {
     case WebSocketFrameHeader::kOpCodeText:    // fall-thru
@@ -664,7 +669,10 @@ ChannelState WebSocketChannel::HandleFrame(
     case WebSocketFrameHeader::kOpCodeClose: {
       uint16 code = kWebSocketNormalClosure;
       std::string reason;
-      ParseClose(data_buffer, size, &code, &reason);
+      std::string message;
+      if (!ParseClose(data_buffer, size, &code, &reason, &message)) {
+        return FailChannel(message, code, reason);
+      }
       // TODO(ricea): Find a way to safely log the message from the close
       // message (escape control codes and so on).
       VLOG(1) << "Got Close with code " << code;
@@ -698,7 +706,9 @@ ChannelState WebSocketChannel::HandleFrame(
 
     default:
       return FailChannel(
-          SEND_REAL_ERROR, kWebSocketErrorProtocolError, "Unknown opcode");
+          base::StringPrintf("Unrecognized frame opcode: %d", opcode),
+          kWebSocketErrorProtocolError,
+          "Unknown opcode");
   }
 }
 
@@ -730,7 +740,7 @@ ChannelState WebSocketChannel::SendIOBuffer(
   return WriteFrames();
 }
 
-ChannelState WebSocketChannel::FailChannel(ExposeError expose,
+ChannelState WebSocketChannel::FailChannel(const std::string& message,
                                            uint16 code,
                                            const std::string& reason) {
   DCHECK_NE(FRESHLY_CONSTRUCTED, state_);
@@ -738,13 +748,7 @@ ChannelState WebSocketChannel::FailChannel(ExposeError expose,
   DCHECK_NE(CLOSED, state_);
   // TODO(ricea): Logging.
   if (state_ == CONNECTED) {
-    uint16 send_code = kWebSocketErrorGoingAway;
-    std::string send_reason = "Internal Error";
-    if (expose == SEND_REAL_ERROR) {
-      send_code = code;
-      send_reason = reason;
-    }
-    if (SendClose(send_code, send_reason) ==  // Sets state_ to SEND_CLOSED
+    if (SendClose(code, reason) ==  // Sets state_ to SEND_CLOSED
         CHANNEL_DELETED)
       return CHANNEL_DELETED;
   }
@@ -754,7 +758,7 @@ ChannelState WebSocketChannel::FailChannel(ExposeError expose,
   stream_->Close();
   state_ = CLOSED;
 
-  return DoDropChannel(code, reason);
+  return event_interface_->OnFailChannel(message);
 }
 
 ChannelState WebSocketChannel::SendClose(uint16 code,
@@ -792,40 +796,59 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
   return CHANNEL_ALIVE;
 }
 
-void WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
+bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
                                   size_t size,
                                   uint16* code,
-                                  std::string* reason) {
+                                  std::string* reason,
+                                  std::string* message) {
+  bool parsed_ok = true;
   reason->clear();
   if (size < kWebSocketCloseCodeLength) {
     *code = kWebSocketErrorNoStatusReceived;
     if (size != 0) {
-      VLOG(1) << "Close frame with payload size " << size << " received "
-              << "(the first byte is " << std::hex
-              << static_cast<int>(buffer->data()[0]) << ")";
+      DVLOG(1) << "Close frame with payload size " << size << " received "
+               << "(the first byte is " << std::hex
+               << static_cast<int>(buffer->data()[0]) << ")";
+      parsed_ok = false;
+      *code = kWebSocketErrorProtocolError;
+      *message =
+          "Received a broken close frame containing an invalid size body.";
     }
-    return;
+    return parsed_ok;
   }
   const char* data = buffer->data();
   uint16 unchecked_code = 0;
   ReadBigEndian(data, &unchecked_code);
   COMPILE_ASSERT(sizeof(unchecked_code) == kWebSocketCloseCodeLength,
                  they_should_both_be_two_bytes);
-  if (unchecked_code >= static_cast<uint16>(kWebSocketNormalClosure) &&
-      unchecked_code <=
-          static_cast<uint16>(kWebSocketErrorPrivateReservedMax)) {
-    *code = unchecked_code;
-  } else {
-    VLOG(1) << "Close frame contained code outside of the valid range: "
-            << unchecked_code;
-    *code = kWebSocketErrorAbnormalClosure;
+  switch (unchecked_code) {
+    case kWebSocketErrorNoStatusReceived:
+    case kWebSocketErrorAbnormalClosure:
+    case kWebSocketErrorTlsHandshake:
+      *code = kWebSocketErrorProtocolError;
+      *message =
+          "Received a broken close frame containing a reserved status code.";
+      parsed_ok = false;
+      break;
+
+    default:
+      *code = unchecked_code;
+      break;
   }
-  std::string text(data + kWebSocketCloseCodeLength, data + size);
-  // IsStringUTF8() blocks surrogate pairs and non-characters, so it is strictly
-  // stronger than required by RFC3629.
-  if (IsStringUTF8(text)) {
-    reason->swap(text);
+  if (parsed_ok) {
+    std::string text(data + kWebSocketCloseCodeLength, data + size);
+    // IsStringUTF8() blocks surrogate pairs and non-characters, so it is
+    // strictly stronger than required by RFC3629.
+    if (IsStringUTF8(text)) {
+      reason->swap(text);
+    } else {
+      *code = kWebSocketErrorProtocolError;
+      *reason = "Invalid UTF-8 in Close frame";
+      *message = "Received a broken close frame containing invalid UTF-8.";
+      parsed_ok = false;
+    }
   }
+  return parsed_ok;
 }
 
 ChannelState WebSocketChannel::DoDropChannel(uint16 code,
