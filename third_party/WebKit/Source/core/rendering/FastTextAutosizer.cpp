@@ -201,9 +201,9 @@ float FastTextAutosizer::textLength(Cluster* cluster)
         }
 
         if (measureLocalText && descendant->isText()) {
-            // Note: Using text().length() instead of renderedTextLength() because the lineboxes have
-            // not been built until layout. These values can be different.
-            length += toRenderText(descendant)->text().length() * descendant->style()->specifiedFontSize();
+            // Note: Using text().stripWhiteSpace().length() instead of renderedTextLength() because
+            // the lineboxes will not be built until layout. These values can be different.
+            length += toRenderText(descendant)->text().stripWhiteSpace().length() * descendant->style()->specifiedFontSize();
         }
         descendant = descendant->nextInPreOrder(root);
     }

@@ -795,7 +795,6 @@ crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Time
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-narrow-in-wide.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insufficient-text.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-sufficient-text-except-in-root.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-wide-in-narrow.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
