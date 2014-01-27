@@ -1589,6 +1589,15 @@ internal_arm_paladin.add_config('nyan-paladin',
   important=False,
 )
 
+internal_brillo_paladin = internal_paladin.derive(brillo)
+
+internal_brillo_paladin.add_config('duck-paladin',
+  boards=['duck'],
+  paladin_builder_name='duck paladin',
+  trybot_list=True,
+  important=False
+)
+
 internal_beaglebone_paladin = internal_paladin.derive(beaglebone)
 
 internal_beaglebone_paladin.add_config('beaglebone-paladin',
@@ -1940,9 +1949,12 @@ _config.add_group('beaglebone-release-group',
 # different scheduling. However, it still pushes releases.
 _arm_brillo_release.add_config('daisy_winter-full',
   boards=['daisy_winter'],
-
   manifest='lasercats.xml',
   manifest_version=False,
+)
+
+_arm_brillo_release.add_config('duck-release',
+  boards=['duck'],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
