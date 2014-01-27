@@ -204,9 +204,10 @@ void MCSClient::Login(uint64 android_id, uint64 security_token) {
     security_token_ = security_token;
   }
 
+  DCHECK(android_id_ != 0 || restored_unackeds_server_ids_.empty());
+
   state_ = CONNECTING;
   connection_factory_->Connect();
-  DCHECK(restored_unackeds_server_ids_.empty());
 }
 
 void MCSClient::SendMessage(const MCSMessage& message) {

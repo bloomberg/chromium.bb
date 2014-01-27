@@ -182,6 +182,7 @@ class MCSProbe {
   void BuildNetworkSession();
 
   void LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result);
+  void UpdateCallback(bool success);
   void ErrorCallback();
   void OnCheckInCompleted(uint64 android_id, uint64 secret);
 
@@ -282,8 +283,19 @@ void MCSProbe::Start() {
 
 void MCSProbe::LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result) {
   DCHECK(load_result->success);
-  android_id_ = load_result->device_android_id;
-  secret_ = load_result->device_security_token;
+  if (android_id_ != 0 && secret_ != 0) {
+    DVLOG(1) << "Presetting MCS id " << android_id_;
+    load_result->device_android_id = android_id_;
+    load_result->device_security_token = secret_;
+    gcm_store_->SetDeviceCredentials(android_id_,
+                                     secret_,
+                                     base::Bind(&MCSProbe::UpdateCallback,
+                                                base::Unretained(this)));
+  } else {
+    android_id_ = load_result->device_android_id;
+    secret_ = load_result->device_security_token;
+    DVLOG(1) << "Loaded MCS id " << android_id_;
+  }
   mcs_client_->Initialize(
       base::Bind(&MCSProbe::ErrorCallback, base::Unretained(this)),
       base::Bind(&MessageReceivedCallback),
@@ -291,11 +303,15 @@ void MCSProbe::LoadCallback(scoped_ptr<GCMStore::LoadResult> load_result) {
       load_result.Pass());
 
   if (!android_id_ || !secret_) {
+    DVLOG(1) << "Checkin to generate new MCS credentials.";
     CheckIn();
     return;
   }
 
   mcs_client_->Login(android_id_, secret_);
+}
+
+void MCSProbe::UpdateCallback(bool success) {
 }
 
 void MCSProbe::InitializeNetworkState() {
@@ -393,6 +409,11 @@ void MCSProbe::OnCheckInCompleted(uint64 android_id, uint64 secret) {
     return;
   android_id_ = android_id;
   secret_ = secret;
+
+  gcm_store_->SetDeviceCredentials(android_id_,
+                                   secret_,
+                                   base::Bind(&MCSProbe::UpdateCallback,
+                                              base::Unretained(this)));
 
   LOG(INFO) << "MCS login initiated.";
   mcs_client_->Login(android_id_, secret_);
