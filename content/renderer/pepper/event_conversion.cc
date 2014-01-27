@@ -127,7 +127,6 @@ InputEventData GetEventWithCommonFieldsAndType(const WebInputEvent& web_event) {
   InputEventData result;
   result.event_type = ConvertEventTypes(web_event.type);
   result.event_time_stamp = EventTimeToPPTimeTicks(web_event.timeStampSeconds);
-  result.usb_key_code = 0;
   return result;
 }
 
@@ -138,7 +137,6 @@ void AppendKeyEvent(const WebInputEvent& event,
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = key_event.modifiers;
   result.key_code = key_event.windowsKeyCode;
-  result.usb_key_code = UsbKeyCodeForKeyboardEvent(key_event);
   result.code = CodeForKeyboardEvent(key_event);
   result_events->push_back(result);
 }

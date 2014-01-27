@@ -18,7 +18,6 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_graphics_2d_dev.h"
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
-#include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -156,6 +155,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseInputEvent_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1;
@@ -190,7 +190,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
@@ -928,6 +927,35 @@ static void Pnacl_M13_PPB_KeyboardInputEvent_GetCharacterText(struct PP_Var* _st
 }
 
 /* End wrapper methods for PPB_KeyboardInputEvent_1_0 */
+
+/* Begin wrapper methods for PPB_KeyboardInputEvent_1_2 */
+
+static PP_Resource Pnacl_M34_PPB_KeyboardInputEvent_Create(PP_Instance instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, uint32_t modifiers, uint32_t key_code, struct PP_Var* character_text, struct PP_Var* code) {
+  const struct PPB_KeyboardInputEvent_1_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2.real_iface;
+  return iface->Create(instance, type, time_stamp, modifiers, key_code, *character_text, *code);
+}
+
+static PP_Bool Pnacl_M34_PPB_KeyboardInputEvent_IsKeyboardInputEvent(PP_Resource resource) {
+  const struct PPB_KeyboardInputEvent_1_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2.real_iface;
+  return iface->IsKeyboardInputEvent(resource);
+}
+
+static uint32_t Pnacl_M34_PPB_KeyboardInputEvent_GetKeyCode(PP_Resource key_event) {
+  const struct PPB_KeyboardInputEvent_1_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2.real_iface;
+  return iface->GetKeyCode(key_event);
+}
+
+static void Pnacl_M34_PPB_KeyboardInputEvent_GetCharacterText(struct PP_Var* _struct_result, PP_Resource character_event) {
+  const struct PPB_KeyboardInputEvent_1_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2.real_iface;
+  *_struct_result = iface->GetCharacterText(character_event);
+}
+
+static void Pnacl_M34_PPB_KeyboardInputEvent_GetCode(struct PP_Var* _struct_result, PP_Resource key_event) {
+  const struct PPB_KeyboardInputEvent_1_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2.real_iface;
+  *_struct_result = iface->GetCode(key_event);
+}
+
+/* End wrapper methods for PPB_KeyboardInputEvent_1_2 */
 
 /* Begin wrapper methods for PPB_TouchInputEvent_1_0 */
 
@@ -2122,25 +2150,6 @@ static void Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection(PP_Resource ime_event, 
 }
 
 /* End wrapper methods for PPB_IMEInputEvent_Dev_0_2 */
-
-/* Begin wrapper methods for PPB_KeyboardInputEvent_Dev_0_2 */
-
-static PP_Bool Pnacl_M31_PPB_KeyboardInputEvent_Dev_SetUsbKeyCode(PP_Resource key_event, uint32_t usb_key_code) {
-  const struct PPB_KeyboardInputEvent_Dev_0_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2.real_iface;
-  return iface->SetUsbKeyCode(key_event, usb_key_code);
-}
-
-static uint32_t Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetUsbKeyCode(PP_Resource key_event) {
-  const struct PPB_KeyboardInputEvent_Dev_0_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2.real_iface;
-  return iface->GetUsbKeyCode(key_event);
-}
-
-static void Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetCode(struct PP_Var* _struct_result, PP_Resource key_event) {
-  const struct PPB_KeyboardInputEvent_Dev_0_2 *iface = Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2.real_iface;
-  *_struct_result = iface->GetCode(key_event);
-}
-
-/* End wrapper methods for PPB_KeyboardInputEvent_Dev_0_2 */
 
 /* Not generating wrapper methods for PPB_Memory_Dev_0_1 */
 
@@ -4328,6 +4337,14 @@ static struct PPB_KeyboardInputEvent_1_0 Pnacl_Wrappers_PPB_KeyboardInputEvent_1
     .GetCharacterText = (struct PP_Var (*)(PP_Resource character_event))&Pnacl_M13_PPB_KeyboardInputEvent_GetCharacterText
 };
 
+static struct PPB_KeyboardInputEvent_1_2 Pnacl_Wrappers_PPB_KeyboardInputEvent_1_2 = {
+    .Create = (PP_Resource (*)(PP_Instance instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, uint32_t modifiers, uint32_t key_code, struct PP_Var character_text, struct PP_Var code))&Pnacl_M34_PPB_KeyboardInputEvent_Create,
+    .IsKeyboardInputEvent = (PP_Bool (*)(PP_Resource resource))&Pnacl_M34_PPB_KeyboardInputEvent_IsKeyboardInputEvent,
+    .GetKeyCode = (uint32_t (*)(PP_Resource key_event))&Pnacl_M34_PPB_KeyboardInputEvent_GetKeyCode,
+    .GetCharacterText = (struct PP_Var (*)(PP_Resource character_event))&Pnacl_M34_PPB_KeyboardInputEvent_GetCharacterText,
+    .GetCode = (struct PP_Var (*)(PP_Resource key_event))&Pnacl_M34_PPB_KeyboardInputEvent_GetCode
+};
+
 static struct PPB_TouchInputEvent_1_0 Pnacl_Wrappers_PPB_TouchInputEvent_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance, PP_InputEvent_Type type, PP_TimeTicks time_stamp, uint32_t modifiers))&Pnacl_M13_PPB_TouchInputEvent_Create,
     .AddTouchPoint = (void (*)(PP_Resource touch_event, PP_TouchListType list, const struct PP_TouchPoint* point))&Pnacl_M13_PPB_TouchInputEvent_AddTouchPoint,
@@ -4676,12 +4693,6 @@ static struct PPB_IMEInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2
     .GetSegmentOffset = (uint32_t (*)(PP_Resource ime_event, uint32_t index))&Pnacl_M21_PPB_IMEInputEvent_Dev_GetSegmentOffset,
     .GetTargetSegment = (int32_t (*)(PP_Resource ime_event))&Pnacl_M21_PPB_IMEInputEvent_Dev_GetTargetSegment,
     .GetSelection = (void (*)(PP_Resource ime_event, uint32_t* start, uint32_t* end))&Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection
-};
-
-static struct PPB_KeyboardInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_KeyboardInputEvent_Dev_0_2 = {
-    .SetUsbKeyCode = (PP_Bool (*)(PP_Resource key_event, uint32_t usb_key_code))&Pnacl_M31_PPB_KeyboardInputEvent_Dev_SetUsbKeyCode,
-    .GetUsbKeyCode = (uint32_t (*)(PP_Resource key_event))&Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetUsbKeyCode,
-    .GetCode = (struct PP_Var (*)(PP_Resource key_event))&Pnacl_M31_PPB_KeyboardInputEvent_Dev_GetCode
 };
 
 /* Not generating wrapper interface for PPB_Memory_Dev_0_1 */
@@ -5333,6 +5344,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0 = 
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2 = {
+  .iface_macro = PPB_KEYBOARD_INPUT_EVENT_INTERFACE_1_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_KeyboardInputEvent_1_2,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0 = {
   .iface_macro = PPB_TOUCH_INPUT_EVENT_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TouchInputEvent_1_0,
@@ -5534,12 +5551,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2 = {
   .iface_macro = PPB_IME_INPUT_EVENT_DEV_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2 = {
-  .iface_macro = PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE_0_2,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_KeyboardInputEvent_Dev_0_2,
   .real_iface = NULL
 };
 
@@ -5861,6 +5872,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_MouseInputEvent_1_1,
   &Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0,
+  &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_2,
   &Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1,
@@ -5894,7 +5906,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Font_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
-  &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,

@@ -9,7 +9,8 @@
 
 label Chrome {
   M13 = 1.0,
-  M14 = 1.1
+  M14 = 1.1,
+  M34 = 1.2
 };
 
 /**
@@ -312,7 +313,7 @@ interface PPB_InputEvent {
    * the page.
    *
    * Note that synthetic mouse events will be generated from touch events if
-   * (and only if) the you do not request touch events.
+   * (and only if) you do not request touch events.
    *
    * When requesting input events through this function, the events will be
    * delivered and <i>not</i> bubbled to the page. This means that even if you
@@ -733,8 +734,8 @@ interface PPB_KeyboardInputEvent {
    * <code>PP_InputEvent_Modifier</code> flags.
    *
    * @param[in] key_code This value reflects the DOM KeyboardEvent
-   * <code>keyCode</code> field. Chrome populates this with the Windows-style
-   * Virtual Key code of the key.
+   * <code>keyCode</code> field, which is the Windows-style Virtual Key
+   * code of the key.
    *
    * @param[in] character_text This value represents the typed character as a
    * UTF-8 string.
@@ -742,12 +743,52 @@ interface PPB_KeyboardInputEvent {
    * @return A <code>PP_Resource</code> containing the new keyboard input
    * event.
    */
+  [deprecate=1.2]
   PP_Resource Create([in] PP_Instance instance,
                      [in] PP_InputEvent_Type type,
                      [in] PP_TimeTicks time_stamp,
                      [in] uint32_t modifiers,
                      [in] uint32_t key_code,
                      [in] PP_Var character_text);
+
+  /**
+   * Creates a keyboard input event with the given parameters. Normally you
+   * will get a keyboard event passed through the HandleInputEvent and will not
+   * need to create them, but some applications may want to create their own
+   * for internal use. The type must be one of the keyboard event types.
+   *
+   * @param[in] instance The instance for which this event occurred.
+   *
+   * @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+   * input event.
+   *
+   * @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+   * when the event occurred.
+   *
+   * @param[in] modifiers A bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   *
+   * @param[in] key_code This value reflects the DOM KeyboardEvent
+   * <code>keyCode</code> field, which is the Windows-style Virtual Key
+   * code of the key.
+   *
+   * @param[in] character_text This value represents the typed character as a
+   * UTF-8 string.
+   *
+   * @param[in] code This value represents the DOM3 |code| string that
+   * corresponds to the physical key being pressed.
+   *
+   * @return A <code>PP_Resource</code> containing the new keyboard input
+   * event.
+   */
+  [version=1.2]
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PP_InputEvent_Type type,
+                     [in] PP_TimeTicks time_stamp,
+                     [in] uint32_t modifiers,
+                     [in] uint32_t key_code,
+                     [in] PP_Var character_text,
+                     [in] PP_Var code);
 
   /**
    * IsKeyboardInputEvent() determines if a resource is a keyboard event.
@@ -781,6 +822,18 @@ interface PPB_KeyboardInputEvent {
    * undefined var.
    */
   PP_Var GetCharacterText([in] PP_Resource character_event);
+
+  /**
+   * GetCode() returns the DOM |code| field for this keyboard event, as
+   * defined in the DOM3 Events spec:
+   * http://www.w3.org/TR/DOM-Level-3-Events/
+   *
+   * @param[in] key_event The key event for which to return the key code.
+   *
+   * @return The string that contains the DOM |code| for the keyboard event.
+   */
+  [version=1.2]
+  PP_Var GetCode([in] PP_Resource key_event);
 };
 
 [assert_size(4)]

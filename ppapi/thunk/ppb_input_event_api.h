@@ -6,7 +6,6 @@
 #define PPAPI_THUNK_PPB_INPUT_EVENT_API_H_
 
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
-#include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
@@ -36,8 +35,6 @@ class PPAPI_THUNK_EXPORT PPB_InputEvent_API {
   virtual PP_Bool GetWheelScrollByPage() = 0;
   virtual uint32_t GetKeyCode() = 0;
   virtual PP_Var GetCharacterText() = 0;
-  virtual PP_Bool SetUsbKeyCode(uint32_t) = 0;
-  virtual uint32_t GetUsbKeyCode() = 0;
   virtual PP_Var GetCode() = 0;
   virtual uint32_t GetIMESegmentNumber() = 0;
   virtual uint32_t GetIMESegmentOffset(uint32_t index) = 0;

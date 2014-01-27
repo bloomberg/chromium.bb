@@ -244,19 +244,37 @@ const PPB_WheelInputEvent g_ppb_wheel_input_event_thunk = {
 
 // Keyboard --------------------------------------------------------------------
 
-PP_Resource CreateKeyboardInputEvent(PP_Instance instance,
-                                     PP_InputEvent_Type type,
-                                     PP_TimeTicks time_stamp,
-                                     uint32_t modifiers,
-                                     uint32_t key_code,
-                                     struct PP_Var character_text) {
+PP_Resource CreateKeyboardInputEvent_1_0(PP_Instance instance,
+                                         PP_InputEvent_Type type,
+                                         PP_TimeTicks time_stamp,
+                                         uint32_t modifiers,
+                                         uint32_t key_code,
+                                         struct PP_Var character_text) {
   VLOG(4) << "PPB_KeyboardInputEvent::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateKeyboardInputEvent(instance, type, time_stamp,
-                                                     modifiers, key_code,
-                                                     character_text);
+  return enter.functions()->CreateKeyboardInputEvent_1_0(instance, type,
+                                                         time_stamp,
+                                                         modifiers, key_code,
+                                                         character_text);
+}
+
+PP_Resource CreateKeyboardInputEvent_1_2(PP_Instance instance,
+                                         PP_InputEvent_Type type,
+                                         PP_TimeTicks time_stamp,
+                                         uint32_t modifiers,
+                                         uint32_t key_code,
+                                         struct PP_Var character_text,
+                                         struct PP_Var code) {
+  VLOG(4) << "PPB_KeyboardInputEvent::Create()";
+  EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateKeyboardInputEvent_1_2(instance, type,
+                                                         time_stamp,
+                                                         modifiers, key_code,
+                                                         character_text, code);
 }
 
 PP_Bool IsKeyboardInputEvent(PP_Resource resource) {
@@ -286,44 +304,27 @@ PP_Var GetCharacterText(PP_Resource character_event) {
   return enter.object()->GetCharacterText();
 }
 
-const PPB_KeyboardInputEvent g_ppb_keyboard_input_event_thunk = {
-  &CreateKeyboardInputEvent,
-  &IsKeyboardInputEvent,
-  &GetKeyCode,
-  &GetCharacterText
-};
-
-// _Dev interface.
-
-PP_Bool SetUsbKeyCode(PP_Resource key_event, uint32_t usb_key_code) {
-  VLOG(4) << "PPB_KeyboardInputEvent_Dev::SetUsbKeyCode()";
-  EnterInputEvent enter(key_event, true);
-  if (enter.failed())
-    return PP_FALSE;
-  return enter.object()->SetUsbKeyCode(usb_key_code);
-}
-
-uint32_t GetUsbKeyCode(PP_Resource key_event) {
-  VLOG(4) << "PPB_KeyboardInputEvent_Dev::GetUsbKeyCode()";
-  EnterInputEvent enter(key_event, true);
-  if (enter.failed())
-    return 0;
-  return enter.object()->GetUsbKeyCode();
-}
-
 PP_Var GetCode(PP_Resource key_event) {
-  VLOG(4) << "PPB_KeyboardInputEvent_Dev::GetCode()";
+  VLOG(4) << "PPB_KeyboardInputEvent::GetCode()";
   EnterInputEvent enter(key_event, true);
   if (enter.failed())
     return PP_MakeUndefined();
   return enter.object()->GetCode();
 }
 
-const PPB_KeyboardInputEvent_Dev_0_2
-    g_ppb_keyboard_input_event_dev_0_2_thunk = {
-  &SetUsbKeyCode,
-  &GetUsbKeyCode,
-  &GetCode,
+const PPB_KeyboardInputEvent_1_0 g_ppb_keyboard_input_event_1_0_thunk = {
+  &CreateKeyboardInputEvent_1_0,
+  &IsKeyboardInputEvent,
+  &GetKeyCode,
+  &GetCharacterText
+};
+
+const PPB_KeyboardInputEvent g_ppb_keyboard_input_event_thunk = {
+  &CreateKeyboardInputEvent_1_2,
+  &IsKeyboardInputEvent,
+  &GetKeyCode,
+  &GetCharacterText,
+  &GetCode
 };
 
 // Composition -----------------------------------------------------------------
@@ -518,12 +519,11 @@ const PPB_MouseInputEvent_1_1* GetPPB_MouseInputEvent_1_1_Thunk() {
 }
 
 const PPB_KeyboardInputEvent_1_0* GetPPB_KeyboardInputEvent_1_0_Thunk() {
-  return &g_ppb_keyboard_input_event_thunk;
+  return &g_ppb_keyboard_input_event_1_0_thunk;
 }
 
-const PPB_KeyboardInputEvent_Dev_0_2*
-    GetPPB_KeyboardInputEvent_Dev_0_2_Thunk() {
-  return &g_ppb_keyboard_input_event_dev_0_2_thunk;
+const PPB_KeyboardInputEvent_1_2* GetPPB_KeyboardInputEvent_1_2_Thunk() {
+  return &g_ppb_keyboard_input_event_thunk;
 }
 
 const PPB_WheelInputEvent_1_0* GetPPB_WheelInputEvent_1_0_Thunk() {

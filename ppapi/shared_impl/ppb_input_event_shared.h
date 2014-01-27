@@ -41,7 +41,6 @@ struct PPAPI_SHARED_EXPORT InputEventData {
   bool wheel_scroll_by_page;
 
   uint32_t key_code;
-  uint32_t usb_key_code;
 
   // The key event's |code| attribute as defined in:
   // http://www.w3.org/TR/uievents/
@@ -86,8 +85,6 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
   virtual PP_Bool GetWheelScrollByPage() OVERRIDE;
   virtual uint32_t GetKeyCode() OVERRIDE;
   virtual PP_Var GetCharacterText() OVERRIDE;
-  virtual PP_Bool SetUsbKeyCode(uint32_t usb_key_code) OVERRIDE;
-  virtual uint32_t GetUsbKeyCode() OVERRIDE;
   virtual PP_Var GetCode() OVERRIDE;
   virtual uint32_t GetIMESegmentNumber() OVERRIDE;
   virtual uint32_t GetIMESegmentOffset(uint32_t index) OVERRIDE;
@@ -118,7 +115,8 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
                                               PP_TimeTicks time_stamp,
                                               uint32_t modifiers,
                                               uint32_t key_code,
-                                              struct PP_Var character_text);
+                                              struct PP_Var character_text,
+                                              struct PP_Var code);
   static PP_Resource CreateMouseInputEvent(
       ResourceObjectType type,
       PP_Instance instance,

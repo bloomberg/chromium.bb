@@ -43,7 +43,8 @@ std::string TestScrollbar::TestHandleEvent() {
       core->GetTimeTicks(),
       0,  // Modifier.
       0x28,  // Key code = VKEY_DOWN.
-      pp::Var());
+      pp::Var(),
+      pp::Var("ArrowDown"));
   scrollbar_.HandleEvent(input_event);
 
   return scrollbar_value_changed_ ?

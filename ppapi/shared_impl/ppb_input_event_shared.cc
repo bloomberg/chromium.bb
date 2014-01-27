@@ -23,7 +23,6 @@ InputEventData::InputEventData()
       wheel_ticks(PP_MakeFloatPoint(0.0f, 0.0f)),
       wheel_scroll_by_page(false),
       key_code(0),
-      usb_key_code(0),
       code(),
       character_text(),
       composition_target_segment(-1),
@@ -98,15 +97,6 @@ uint32_t PPB_InputEvent_Shared::GetKeyCode() {
 
 PP_Var PPB_InputEvent_Shared::GetCharacterText() {
   return StringVar::StringToPPVar(data_.character_text);
-}
-
-PP_Bool PPB_InputEvent_Shared::SetUsbKeyCode(uint32_t usb_key_code) {
-  data_.usb_key_code = usb_key_code;
-  return PP_TRUE;
-}
-
-uint32_t PPB_InputEvent_Shared::GetUsbKeyCode() {
-  return data_.usb_key_code;
 }
 
 PP_Var PPB_InputEvent_Shared::GetCode() {
@@ -257,7 +247,8 @@ PP_Resource PPB_InputEvent_Shared::CreateKeyboardInputEvent(
     PP_TimeTicks time_stamp,
     uint32_t modifiers,
     uint32_t key_code,
-    struct PP_Var character_text) {
+    struct PP_Var character_text,
+    struct PP_Var code) {
   if (event_type != PP_INPUTEVENT_TYPE_RAWKEYDOWN &&
       event_type != PP_INPUTEVENT_TYPE_KEYDOWN &&
       event_type != PP_INPUTEVENT_TYPE_KEYUP &&
@@ -274,6 +265,12 @@ PP_Resource PPB_InputEvent_Shared::CreateKeyboardInputEvent(
     if (!text_str)
       return 0;
     data.character_text = text_str->value();
+  }
+  if (code.type == PP_VARTYPE_STRING) {
+    StringVar* code_str = StringVar::FromPPVar(code);
+    if (!code_str)
+      return 0;
+    data.code = code_str->value();
   }
 
   return (new PPB_InputEvent_Shared(type, instance, data))->GetReference();

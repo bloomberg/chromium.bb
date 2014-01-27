@@ -288,6 +288,37 @@ class KeyboardInputEvent : public InputEvent {
                      uint32_t key_code,
                      const Var& character_text);
 
+  /// Constructs a keyboard input even from the given parameters.
+  ///
+  /// @param[in] instance The instance for which this event occurred.
+  ///
+  /// @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+  /// input event.
+  ///
+  /// @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+  /// when the event occurred.
+  ///
+  /// @param[in]  modifiers A bit field combination of the
+  /// <code>PP_InputEvent_Modifier</code> flags.
+  ///
+  /// @param[in] key_code This value reflects the DOM KeyboardEvent
+  /// <code>keyCode</code> field. Chrome populates this with the Windows-style
+  /// Virtual Key code of the key.
+  ///
+  /// @param[in] character_text This value represents the typed character as a
+  /// UTF-8 string.
+  ///
+  /// @param[in] code This value reflects the DOM KeyboardEvent
+  /// <code>code</code> field, which identifies the physical key associated
+  /// with the event.
+  KeyboardInputEvent(const InstanceHandle& instance,
+                     PP_InputEvent_Type type,
+                     PP_TimeTicks time_stamp,
+                     uint32_t modifiers,
+                     uint32_t key_code,
+                     const Var& character_text,
+                     const Var& code);
+
   /// Returns the DOM keyCode field for the keyboard event.
   /// Chrome populates this with the Windows-style Virtual Key code of the key.
   uint32_t GetKeyCode() const;
@@ -298,6 +329,12 @@ class KeyboardInputEvent : public InputEvent {
   /// input events. For non-character input events the return value will be an
   /// undefined var.
   Var GetCharacterText() const;
+
+  /// Returns the DOM |code| for the keyboard event.
+  //
+  /// @return A string var representing a physical key that was pressed to
+  /// generate this event.
+  Var GetCode() const;
 };
 
 class TouchInputEvent : public InputEvent {

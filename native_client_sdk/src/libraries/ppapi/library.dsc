@@ -104,7 +104,6 @@
         'ppb_gles_chromium_texture_mapping_dev.h',
         'ppb_graphics_2d_dev.h',
         'ppb_ime_input_event_dev.h',
-        'ppb_keyboard_input_event_dev.h',
         'ppb_memory_dev.h',
         'ppb_opengles2ext_dev.h',
         'ppb_printing_dev.h',

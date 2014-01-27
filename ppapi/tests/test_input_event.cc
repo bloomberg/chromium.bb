@@ -17,6 +17,7 @@ namespace {
 
 const uint32_t kSpaceChar = 0x20;
 const char* kSpaceString = " ";
+const char* kSpaceCode = "Space";
 
 #define FINISHED_WAITING_MESSAGE "TEST_INPUT_EVENT_FINISHED_WAITING"
 
@@ -140,14 +141,16 @@ pp::InputEvent TestInputEvent::CreateWheelEvent() {
 }
 
 pp::InputEvent TestInputEvent::CreateKeyEvent(PP_InputEvent_Type type,
-                                              uint32_t key_code) {
+                                              uint32_t key_code,
+                                              const std::string& code) {
   return pp::KeyboardInputEvent(
       instance_,
       type,
       100,  // time_stamp
       0,  // modifiers
       key_code,
-      pp::Var());
+      pp::Var(),
+      pp::Var(code));
 }
 
 pp::InputEvent TestInputEvent::CreateCharEvent(const std::string& text) {
@@ -157,7 +160,8 @@ pp::InputEvent TestInputEvent::CreateCharEvent(const std::string& text) {
       100,  // time_stamp
       0,  // modifiers
       0,  // keycode
-      pp::Var(text));
+      pp::Var(text),
+      pp::Var());
 }
 
 pp::InputEvent TestInputEvent::CreateTouchEvent(PP_InputEvent_Type type,
@@ -334,7 +338,7 @@ std::string TestInputEvent::TestEvents() {
       SimulateInputEvent(CreateWheelEvent()));
   ASSERT_TRUE(
       SimulateInputEvent(CreateKeyEvent(PP_INPUTEVENT_TYPE_KEYDOWN,
-                                        kSpaceChar)));
+                                        kSpaceChar, kSpaceCode)));
   ASSERT_TRUE(
       SimulateInputEvent(CreateCharEvent(kSpaceString)));
   ASSERT_TRUE(SimulateInputEvent(CreateTouchEvent(PP_INPUTEVENT_TYPE_TOUCHSTART,
@@ -353,7 +357,7 @@ std::string TestInputEvent::TestEvents() {
       SimulateInputEvent(CreateWheelEvent()));
   ASSERT_FALSE(
       SimulateInputEvent(CreateKeyEvent(PP_INPUTEVENT_TYPE_KEYDOWN,
-                                        kSpaceChar)));
+                                        kSpaceChar, kSpaceCode)));
   ASSERT_FALSE(
       SimulateInputEvent(CreateCharEvent(kSpaceString)));
 
@@ -417,4 +421,3 @@ std::string TestInputEvent::TestAcceptTouchEvent_4() {
                                              PP_INPUTEVENT_CLASS_TOUCH);
   PASS();
 }
-

@@ -63,13 +63,21 @@ class ResourceCreationAPI {
                                           int32_t target_segment,
                                           uint32_t selection_start,
                                           uint32_t selection_end) = 0;
-  virtual PP_Resource CreateKeyboardInputEvent(
+  virtual PP_Resource CreateKeyboardInputEvent_1_0(
       PP_Instance instance,
       PP_InputEvent_Type type,
       PP_TimeTicks time_stamp,
       uint32_t modifiers,
       uint32_t key_code,
       struct PP_Var character_text) = 0;
+  virtual PP_Resource CreateKeyboardInputEvent_1_2(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      uint32_t key_code,
+      struct PP_Var character_text,
+      struct PP_Var code) = 0;
   virtual PP_Resource CreateMouseInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,

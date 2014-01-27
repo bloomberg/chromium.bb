@@ -52,13 +52,21 @@ class ResourceCreationProxy : public InterfaceProxy,
                                           int32_t target_segment,
                                           uint32_t selection_start,
                                           uint32_t selection_end) OVERRIDE;
-  virtual PP_Resource CreateKeyboardInputEvent(
+  virtual PP_Resource CreateKeyboardInputEvent_1_0(
       PP_Instance instance,
       PP_InputEvent_Type type,
       PP_TimeTicks time_stamp,
       uint32_t modifiers,
       uint32_t key_code,
       PP_Var character_text) OVERRIDE;
+  virtual PP_Resource CreateKeyboardInputEvent_1_2(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      uint32_t key_code,
+      PP_Var character_text,
+      PP_Var code) OVERRIDE;
   virtual PP_Resource CreateMouseInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,

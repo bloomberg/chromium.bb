@@ -194,7 +194,8 @@ pp::InputEvent TestImeInputEvent::CreateCharEvent(const std::string& text) {
       100,  // time_stamp
       0,  // modifiers
       0,  // keycode
-      pp::Var(text));
+      pp::Var(text),
+      pp::Var());
 }
 
 void TestImeInputEvent::GetFocusBySimulatingMouseClick() {
@@ -421,4 +422,3 @@ std::string TestImeInputEvent::TestImeUnawareCancel() {
   ASSERT_TRUE(expected_events_.empty());
   PASS();
 }
-

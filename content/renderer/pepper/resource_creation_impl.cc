@@ -157,16 +157,30 @@ PP_Resource ResourceCreationImpl::CreateIMEInputEvent(
       segment_offsets, target_segment, selection_start, selection_end);
 }
 
-PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
+PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent_1_0(
     PP_Instance instance,
     PP_InputEvent_Type type,
     PP_TimeTicks time_stamp,
     uint32_t modifiers,
     uint32_t key_code,
     struct PP_Var character_text) {
+  PP_Var code = StringVar::StringToPPVar("");
   return PPB_InputEvent_Shared::CreateKeyboardInputEvent(
       ppapi::OBJECT_IS_IMPL, instance, type, time_stamp, modifiers, key_code,
-      character_text);
+      character_text, code);
+}
+
+PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent_1_2(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    uint32_t modifiers,
+    uint32_t key_code,
+    struct PP_Var character_text,
+    struct PP_Var code) {
+  return PPB_InputEvent_Shared::CreateKeyboardInputEvent(
+      ppapi::OBJECT_IS_IMPL, instance, type, time_stamp, modifiers, key_code,
+      character_text, code);
 }
 
 PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
