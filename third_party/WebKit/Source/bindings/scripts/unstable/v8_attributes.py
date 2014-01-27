@@ -61,7 +61,7 @@ def generate_attribute(interface, attribute):
     has_strict_type_checking = (
         ('StrictTypeChecking' in extended_attributes or
          'StrictTypeChecking' in interface.extended_attributes) and
-        v8_types.is_interface_type(idl_type))
+        v8_types.is_wrapper_type(idl_type))
 
     is_setter_raises_exception = (
         'RaisesException' in extended_attributes and

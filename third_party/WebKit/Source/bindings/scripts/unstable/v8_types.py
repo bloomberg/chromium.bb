@@ -173,6 +173,8 @@ def is_union_type(idl_type):
 NON_WRAPPER_TYPES = set([
     'CompareHow',
     'Dictionary',
+    'EventHandler',
+    'EventListener',
     'MediaQueryListListener',
     'NodeFilter',
     'SerializedScriptValue',
