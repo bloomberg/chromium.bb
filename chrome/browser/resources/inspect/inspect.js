@@ -681,8 +681,8 @@ function createConfigLine(port, location) {
         line.classList.contains('fresh') &&
         !line.classList.contains('empty')) {
       // Tabbing forward on the fresh line, try create a new empty one.
-      commitFreshLineIfValid(true);
-      e.preventDefault();
+      if (commitFreshLineIfValid(true))
+        e.preventDefault();
     }
   });
 
@@ -797,12 +797,13 @@ function unselectLine() {
 function commitFreshLineIfValid(opt_selectNew) {
   var line = document.querySelector('.port-forwarding-pair.fresh');
   if (line.querySelector('.invalid'))
-    return;
+    return false;
   line.classList.remove('fresh');
   var freshLine = createEmptyConfigLine();
   line.parentNode.appendChild(freshLine);
   if (opt_selectNew)
     freshLine.querySelector('.port').focus();
+  return true;
 }
 
 document.addEventListener('DOMContentLoaded', onload);
