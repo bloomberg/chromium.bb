@@ -234,7 +234,7 @@ void SMILTimeContainer::updateDocumentOrderIndexes()
 
 struct PriorityCompare {
     PriorityCompare(SMILTime elapsed) : m_elapsed(elapsed) {}
-    bool operator()(SVGSMILElement* a, SVGSMILElement* b)
+    bool operator()(const RefPtr<SVGSMILElement>& a, const RefPtr<SVGSMILElement>& b)
     {
         // FIXME: This should also consider possible timing relations between the elements.
         SMILTime aBegin = a->intervalBegin();
@@ -249,13 +249,6 @@ struct PriorityCompare {
     SMILTime m_elapsed;
 };
 
-void SMILTimeContainer::sortByPriority(Vector<SVGSMILElement*>& smilElements, SMILTime elapsed)
-{
-    if (m_documentOrderIndexesDirty)
-        updateDocumentOrderIndexes();
-    std::sort(smilElements.begin(), smilElements.end(), PriorityCompare(elapsed));
-}
-
 void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 {
     SMILTime earliestFireTime = SMILTime::unresolved();
@@ -266,6 +259,9 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     m_preventScheduledAnimationsChanges = true;
 #endif
 
+    if (m_documentOrderIndexesDirty)
+        updateDocumentOrderIndexes();
+
     Vector<RefPtr<SVGSMILElement> >  animationsToApply;
     GroupedAnimationsMap::iterator end = m_scheduledAnimations.end();
     for (GroupedAnimationsMap::iterator it = m_scheduledAnimations.begin(); it != end; ++it) {
@@ -275,7 +271,7 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
         // In case of a tie, document order decides.
         // FIXME: This should also consider timing relationships between the elements. Dependents
         // have higher priority.
-        sortByPriority(*scheduled, elapsed);
+        std::sort(scheduled->begin(), scheduled->end(), PriorityCompare(elapsed));
 
         SVGSMILElement* resultElement = 0;
         unsigned size = scheduled->size();
@@ -305,6 +301,8 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
         if (resultElement)
             animationsToApply.append(resultElement);
     }
+
+    std::sort(animationsToApply.begin(), animationsToApply.end(), PriorityCompare(elapsed));
 
     unsigned animationsToApplySize = animationsToApply.size();
     if (!animationsToApplySize) {

@@ -839,8 +839,6 @@ crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass ImageOnlyFailure ]
 
-crbug.com/333772 svg/animations/discard-check-removal-order.html [ Pass Failure ]
-
 crbug.com/337732 fast/css/fontfaceset-download-error.html [ Pass Timeout ]
 crbug.com/337735 [ Linux ] compositing/overflow/iframe-scroll-children.html [ Pass Crash ]
 crbug.com/337735 [ Linux ] virtual/gpu/compositedscrolling/overflow/iframe-scroll-children.html [ Pass Crash ]
