@@ -40,8 +40,6 @@ class HeapSnapshot;
 
 namespace WebCore {
 
-typedef uint32_t SnapshotObjectId;
-
 class ScriptHeapSnapshot FINAL : public RefCounted<ScriptHeapSnapshot> {
 public:
     class OutputStream {
@@ -60,7 +58,6 @@ public:
     String title() const;
     unsigned int uid() const;
     void writeJSON(OutputStream* stream);
-    SnapshotObjectId maxSnapshotJSObjectId() const;
 
 private:
     ScriptHeapSnapshot(const v8::HeapSnapshot* snapshot)

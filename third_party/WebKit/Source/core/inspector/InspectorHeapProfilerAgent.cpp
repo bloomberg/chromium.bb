@@ -41,6 +41,8 @@
 
 namespace WebCore {
 
+typedef uint32_t SnapshotObjectId;
+
 namespace HeapProfilerAgentState {
 static const char heapProfilerEnabled[] = "heapProfilerEnabled";
 }
@@ -121,7 +123,6 @@ PassRefPtr<TypeBuilder::HeapProfiler::ProfileHeader> InspectorHeapProfilerAgent:
     RefPtr<TypeBuilder::HeapProfiler::ProfileHeader> header = TypeBuilder::HeapProfiler::ProfileHeader::create()
         .setUid(snapshot.uid())
         .setTitle(snapshot.title());
-    header->setMaxJSObjectId(snapshot.maxSnapshotJSObjectId());
     return header.release();
 }
 
