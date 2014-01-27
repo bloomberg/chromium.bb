@@ -139,6 +139,32 @@ class FileBrowserPrivateRequestWebStoreAccessTokenFunction
 
 };
 
+class FileBrowserPrivateGetProfilesFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getProfiles",
+                             FILEBROWSERPRIVATE_GETPROFILES);
+
+ protected:
+  virtual ~FileBrowserPrivateGetProfilesFunction() {}
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class FileBrowserPrivateVisitDesktopFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.visitDesktop",
+                             FILEBROWSERPRIVATE_VISITDESKTOP);
+
+ protected:
+  virtual ~FileBrowserPrivateVisitDesktopFunction() {}
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

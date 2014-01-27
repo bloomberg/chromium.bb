@@ -24281,10 +24281,10 @@ other types of suffix sets.
   <int value="154" label="METRICSPRIVATE_RECORDUSERACTION"/>
   <int value="155" label="USB_RELEASEINTERFACE"/>
   <int value="156" label="PAGEACTION_GETPOPUP"/>
-  <int value="157" label="SCRIPTBADGE_GETATTENTION"/>
+  <int value="157" label="DELETED_SCRIPTBADGE_GETATTENTION"/>
   <int value="158" label="FONTSETTINGS_GETFONTLIST"/>
   <int value="159" label="PERMISSIONS_CONTAINS"/>
-  <int value="160" label="SCRIPTBADGE_GETPOPUP"/>
+  <int value="160" label="DELETED_SCRIPTBADGE_GETPOPUP"/>
   <int value="161" label="EXPERIMENTAL_ACCESSIBILITY_GETFOCUSEDCONTROL"/>
   <int value="162" label="DEVELOPERPRIVATE_GETSTRINGS"/>
   <int value="163" label="METRICSPRIVATE_RECORDMEDIUMCOUNT"/>
@@ -24454,7 +24454,7 @@ other types of suffix sets.
   <int value="327" label="FONTSETTINGS_GETDEFAULTFIXEDFONTSIZE"/>
   <int value="328" label="FILEBROWSERPRIVATE_ZIPSELECTION"/>
   <int value="329" label="SYSTEMINDICATOR_DISABLE"/>
-  <int value="330" label="SCRIPTBADGE_SETPOPUP"/>
+  <int value="330" label="DELETED_SCRIPTBADGE_SETPOPUP"/>
   <int value="331" label="EXTENSION_ISALLOWEDFILESCHEMEACCESS"/>
   <int value="332" label="EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW"/>
   <int value="333" label="FILEBROWSERPRIVATE_GETDRIVECONNECTIONSTATE"/>
@@ -24779,11 +24779,26 @@ other types of suffix sets.
   <int value="648" label="WEBVIEW_CAPTUREVISIBLEREGION"/>
   <int value="649" label="MEDIAGALLERIES_GETMETADATA"/>
   <int value="650" label="INPUT_IME_SENDKEYEVENTS"/>
-  <int value="651" label="INPUT_IME_HIDEINPUTVIEW"/>
-  <int value="652" label="MEDIAGALLERIES_ADDUSERSELECTEDFOLDER"/>
-  <int value="653" label="MEDIAGALLERIES_STARTMEDIASCAN"/>
-  <int value="654" label="MEDIAGALLERIES_CANCELMEDIASCAN"/>
-  <int value="655" label="MEDIAGALLERIES_ADDSCANRESULTS"/>
+  <int value="651" label="VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD"/>
+  <int value="652" label="SCREENLOCKPRIVATE_SHOWBUTTON"/>
+  <int value="653" label="INPUT_IME_HIDEINPUTVIEW"/>
+  <int value="654" label="BOOKMARKMANAGERPRIVATE_UNDO"/>
+  <int value="655" label="BOOKMARKMANAGERPRIVATE_REDO"/>
+  <int value="656" label="BOOKMARKMANAGERPRIVATE_UNDOINFO"/>
+  <int value="657" label="BOOKMARKMANAGERPRIVATE_REDOINFO"/>
+  <int value="658" label="MEDIAGALLERIES_ADDUSERSELECTEDFOLDER"/>
+  <int value="659"
+      label="PREFERENCESPRIVATE_GETSYNCCATEGORIESWITHOUTPASSPHRASE"/>
+  <int value="660" label="READINGLISTPRIVATE_ADDENTRY"/>
+  <int value="661" label="READINGLISTPRIVATE_REMOVEENTRY"/>
+  <int value="662" label="READINGLISTPRIVATE_GETENTRIES"/>
+  <int value="663" label="MEDIAGALLERIES_STARTMEDIASCAN"/>
+  <int value="664" label="MEDIAGALLERIES_CANCELMEDIASCAN"/>
+  <int value="665" label="MEDIAGALLERIES_ADDSCANRESULTS"/>
+  <int value="666" label="LOGPRIVATE_STARTNETINTERNALSWATCH"/>
+  <int value="667" label="LOGPRIVATE_STOPNETINTERNALSWATCH"/>
+  <int value="668" label="FILEBROWSERPRIVATE_GETPROFILES"/>
+  <int value="669" label="FILEBROWSERPRIVATE_VISITDESKTOP"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

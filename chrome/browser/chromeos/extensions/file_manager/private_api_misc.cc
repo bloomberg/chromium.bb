@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 
+#include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
@@ -15,11 +18,15 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "google_apis/drive/auth_service.h"
 #include "url/gurl.h"
@@ -28,7 +35,39 @@ namespace extensions {
 
 namespace {
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
+
+std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >
+GetLoggedInProfileInfoList(Profile* current_profile) {
+  DCHECK(chromeos::UserManager::IsInitialized());
+  const std::vector<Profile*>& profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  std::set<Profile*> original_profiles;
+  std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >
+      result_profiles;
+
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    // Filter the profile.
+    Profile* const profile = profiles[i]->GetOriginalProfile();
+    if (original_profiles.count(profile))
+      continue;
+    original_profiles.insert(profile);
+    const chromeos::User* const user =
+        chromeos::UserManager::Get()->GetUserByProfile(profile);
+    if (!user || !user->is_logged_in())
+      continue;
+
+    // Make a ProfileInfo.
+    linked_ptr<api::file_browser_private::ProfileInfo> profile_info(
+        new api::file_browser_private::ProfileInfo());
+    profile_info->profile_id = multi_user_util::GetUserIDFromProfile(profile);
+    profile_info->display_name = UTF16ToUTF8(user->GetDisplayName());
+    profile_info->is_current_profile = true;
+    result_profiles.push_back(profile_info);
+  }
+
+  return result_profiles;
 }
+} // namespace
 
 bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunImpl() {
   chromeos::User* user =
@@ -278,6 +317,71 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     SetResult(base::Value::CreateNullValue());
     SendResponse(false);
   }
+}
+
+bool FileBrowserPrivateGetProfilesFunction::RunImpl() {
+  results_ = api::file_browser_private::GetProfiles::Results::Create(
+      GetLoggedInProfileInfoList(GetProfile()),
+      "",  // TODO(hirono): Set the correct value.
+      "");  // TODO(hriono): Set the correct value.
+  return true;
+}
+
+bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
+  using api::file_browser_private::VisitDesktop::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
+      profiles = GetLoggedInProfileInfoList(GetProfile());
+
+  // Check the multi-profile support.
+  chrome::MultiUserWindowManager* const window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  if (!window_manager) {
+    SetError("Multi-profile support is not enabled.");
+    return false;
+  }
+
+  // Check if the target user is logged-in or not.
+  bool logged_in = false;
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    if (profiles[i]->profile_id == params->profile_id) {
+      logged_in = true;
+      break;
+    }
+  }
+  if (!logged_in) {
+    SetError("The user is not logged-in now.");
+    return false;
+  }
+
+  // Look for the current shell window.
+  apps::ShellWindowRegistry* const shell_window_registry =
+      apps::ShellWindowRegistry::Get(GetProfile());
+  content::WebContents* const contents = GetAssociatedWebContents();
+  content::RenderViewHost* const render_view_host =
+      contents ? contents->GetRenderViewHost() : NULL;
+  apps::ShellWindow* const shell_window = render_view_host ?
+      shell_window_registry->GetShellWindowForRenderViewHost(render_view_host) :
+      NULL;
+  if (!shell_window) {
+    SetError("Target window is not found.");
+    return false;
+  }
+
+  // Move the window to the user's desktop.
+  window_manager->ShowWindowForUser(
+      shell_window->GetNativeWindow(),
+      params->profile_id);
+
+  // Check the result.
+  if (!window_manager->IsWindowOnDesktopOfUser(
+          shell_window->GetNativeWindow(),
+          params->profile_id)) {
+    SetError("The window cannot visit the desktop.");
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace extensions

@@ -177,11 +177,19 @@ dictionary MountPointSizeStats {
 
 // Information about a profile.
 dictionary ProfileInfo {
+  // Profile ID. This is currently e-mail address of the profile.
+  DOMString profileId;
+
   // The name of the profile for display purpose.
   DOMString displayName;
 
   // True if the profile is the one running the current file manager instance.
+  // TODO(hirono): Remove the property because of the design change of
+  // multi-profile suuport.
   boolean isCurrentProfile;
+
+  // Data URI of profile image;
+  DOMString? imageUri;
 };
 
 // Mounted disk volume metadata.
@@ -190,6 +198,8 @@ dictionary VolumeMetadata {
   DOMString volumeId;
 
   // Description of the profile where the volume belongs.
+  // TODO(hirono): Remove the property because of the design change of
+  // multi-profile suuport.
   ProfileInfo profile;
 
   // Disk volume mount point path.
@@ -379,10 +389,11 @@ dictionary DeviceEvent {
   DOMString devicePath;
 };
 
+// Callback that does not take arguments.
+callback SimpleCallback = void();
+
 // |success| True of task execution was successfully initiated.
 callback ExecuteTaskCallback = void(optional boolean success);
-
-callback SetDefaultTaskCallback = void();
 
 // |tasks| The list of matched file URL patterns for this task.
 callback GetFileTasksCallback = void(FileTask[] tasks);
@@ -400,15 +411,9 @@ callback RemoveFileWatchCallback = void(optional boolean success);
 // |the caller has no appropriate permissions.
 callback RequestFileSystemCallback = void(optional object fileSystem);
 
-callback SelectFilesCallback = void();
-
-callback SelectFileCallback = void();
-
 // |fileProperties| A dictionary containing properties of the requested entry.
 callback GetDriveEntryPropertiesCallback =
     void(DriveEntryProperties fileProperties);
-
-callback PinDriveFileCallback = void();
 
 // |localFilePaths| An array of the local file paths for the requested files,
 // one entry for each file in fileUrls.
@@ -428,8 +433,6 @@ callback CancelFileTransfersCallback =
 // |copyId| ID of the copy task. Can be used to identify the progress, and to
 // cancel the task.
 callback StartCopyCallback = void(long copyId);
-
-callback CancelCopyCallback = void();
 
 // |sizeStats| Name/value pairs of size stats. Will be undefined if stats could
 // not be determined.
@@ -462,7 +465,12 @@ callback RequestWebStoreAccessTokenCallback = void(DOMString accessToken);
 // |shareUrl| Share Url for the sharing dialog.
 callback GetShareUrlCallback = void(DOMString shareUrl);
 
-callback InstallWebstoreItemCallback = void();
+// |profiles| List of profile information.
+// |runningProfile| ID of the profile that runs the application instance.
+// |showingProfile| ID of the profile that shows the application window.
+callback GetProfilesCallback = void(ProfileInfo[] profiles,
+                                    DOMString runningProfile,
+                                    DOMString displayProfile);
 
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
@@ -489,7 +497,7 @@ interface Functions {
   static void setDefaultTask(DOMString taskId,
                              DOMString[] fileUrls,
                              optional DOMString[] mimeTypes,
-                             optional SetDefaultTaskCallback callback);
+                             optional SimpleCallback callback);
 
   // Gets the list of tasks that can be performed over selected files.
   // |fileUrls| Array of selected file URLs
@@ -535,7 +543,7 @@ interface Functions {
   // |callback|
   static void selectFiles(DOMString[] selectedPaths,
                           boolean shouldReturnLocalPath,
-                          SelectFilesCallback callback);
+                          SimpleCallback callback);
 
   // Selects a file.
   // |selectedPath| A selected path
@@ -547,7 +555,7 @@ interface Functions {
                          long index,
                          boolean forOpening,
                          boolean shouldReturnLocalPath,
-                         SelectFileCallback callback);
+                         SimpleCallback callback);
 
   // Requests Drive file properties for a file.
   // |fileUrl| URL of a file
@@ -562,7 +570,7 @@ interface Functions {
   //     was an error.
   static void pinDriveFile(DOMString fileUrl,
                            boolean pin,
-                           optional PinDriveFileCallback callback);
+                           optional SimpleCallback callback);
 
   // Get Drive files.
   // |fileUrls| Array of Drive file URLs to get.
@@ -604,7 +612,7 @@ interface Functions {
   // Cancels the running copy task.
   // |copyId| ID of the copy task to be cancelled.
   // |callback| Completion callback of the cancel.
-  static void cancelCopy(long copyId, optional CancelCopyCallback callback);
+  static void cancelCopy(long copyId, optional SimpleCallback callback);
 
   // Retrieves total and remaining size of a mount point.
   // |mountPath| Mount point path.
@@ -684,7 +692,14 @@ interface Functions {
   // |item_id| The id of the item to install.
   // |callback|
   static void installWebstoreItem(DOMString item_id,
-                                  InstallWebstoreItemCallback callback);
+                                  SimpleCallback callback);
+
+  // Obtains a list of profiles that are logged-in.
+  static void getProfiles(GetProfilesCallback callback);
+
+  // Moves the window to other user's desktop.
+  static void visitDesktop(DOMString profileId,
+                           SimpleCallback callback);
 };
 
 interface Events {
