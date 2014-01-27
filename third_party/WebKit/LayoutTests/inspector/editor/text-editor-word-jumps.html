@@ -45,57 +45,50 @@ function testFunction(foo, bar)
         textEditor.setSelection(WebInspector.TextRange.createFromLocation(lastLine, lastColumn));
     }
 
+    function fireEventWhileSelectionChanges(eventType, modifiers, callback)
+    {
+        var oldSelection = textEditor.selection();
+
+        function eventCallback()
+        {
+            var selection = dumpEditorSelection();
+            if (selection.collapseToEnd().compareTo(oldSelection.collapseToEnd()) !== 0) {
+                oldSelection = selection;
+                InspectorTest.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
+            } else {
+                callback();
+            }
+        }
+        InspectorTest.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
+    }
+
     InspectorTest.runTestSuite([
         function testCtrlRightArrow(next)
         {
             setCursorAtBeginning();
-            var selection = dumpEditorSelection();
-            var oldSelection;
-            do {
-                oldSelection = selection;
-                eventSender.keyDown("rightArrow", [wordJumpModifier]);
-                selection = dumpEditorSelection();
-            } while (selection.compareTo(oldSelection) !== 0);
-            next();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [wordJumpModifier], next);
         },
 
         function testCtrlLeftArrow(next)
         {
             setCursorAtEnd();
-            var selection = dumpEditorSelection();
-            var oldSelection;
-            do {
-                oldSelection = selection;
-                eventSender.keyDown("leftArrow", [wordJumpModifier]);
-                selection = dumpEditorSelection();
-            } while (selection.compareTo(oldSelection) !== 0);
-            next();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("leftArrow", [wordJumpModifier], next);
         },
 
         function testCtrlShiftRightArrow(next)
         {
             setCursorAtBeginning();
-            var selection = dumpEditorSelection();
-            var oldSelection;
-            do {
-                oldSelection = selection;
-                eventSender.keyDown("rightArrow", [wordJumpModifier, "shiftKey"]);
-                selection = dumpEditorSelection();
-            } while (selection.collapseToEnd().compareTo(oldSelection.collapseToEnd()) !== 0);
-            next();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [wordJumpModifier, "shiftKey"], next);
         },
 
         function testCtrlShiftLeftArrow(next)
         {
             setCursorAtEnd();
             var selection = dumpEditorSelection();
-            var oldSelection;
-            do {
-                oldSelection = selection;
-                eventSender.keyDown("leftArrow", [wordJumpModifier, "shiftKey"]);
-                selection = dumpEditorSelection();
-            } while (selection.collapseToEnd().compareTo(oldSelection.collapseToEnd()) !== 0);
-            next();
+            fireEventWhileSelectionChanges("leftArrow", [wordJumpModifier, "shiftKey"], next);
         },
 
         function testCtrlBackspace(next)
@@ -103,13 +96,16 @@ function testFunction(foo, bar)
             setCursorAtEnd();
             InspectorTest.addResult("===============");
             InspectorTest.addResult(textEditor.text());
-            do {
-                eventSender.keyDown("\b", [wordJumpModifier]);
+            function eventCallback()
+            {
                 InspectorTest.addResult("===============");
                 InspectorTest.addResult(textEditor.text() + "<<");
-            } while (textEditor.text() !== "");
-            textEditor.setText(testFunction.toString());
-            next();
+                if (textEditor.text() !== "")
+                    InspectorTest.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
+                else
+                    next();
+            }
+            InspectorTest.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
         }
     ]);
 

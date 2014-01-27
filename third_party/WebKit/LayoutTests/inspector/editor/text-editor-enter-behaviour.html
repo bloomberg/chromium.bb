@@ -30,9 +30,7 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(2, line.length));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
 
         function testEnterAfterOpenCurlyBrace(next)
@@ -40,9 +38,7 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(1);
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(1, line.length));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
 
         function testEnterInTheMiddleOfLine(next)
@@ -50,9 +46,7 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(2, line.length / 2));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
 
         function testEnterInTheBeginningOfTheLine(next)
@@ -60,9 +54,7 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(2, 0));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithTheSelection(next)
@@ -70,9 +62,7 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 2, 2, 4));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithReversedSelection(next)
@@ -80,9 +70,7 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 4, 2, 2));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithTheMultiLineSelection(next)
@@ -90,9 +78,7 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 0, 8, 4));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithFullLineSelection(next)
@@ -100,11 +86,19 @@ function testFunction()
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
             textEditor.setSelection(new WebInspector.TextRange(2, 0, 3, 0));
-            InspectorTest.typeIn("\n");
-            InspectorTest.dumpTextWithSelection(textEditor, true);
-            next();
+            hitEnterDumpTextAndNext(next);
         },
     ]);
+
+    function hitEnterDumpTextAndNext(next)
+    {
+        InspectorTest.fakeKeyEvent(textEditor, "enter", null, step2);
+        function step2()
+        {
+            InspectorTest.dumpTextWithSelection(textEditor, true);
+            next();
+        }
+    }
 }
 
 </script>

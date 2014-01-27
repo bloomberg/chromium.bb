@@ -24,13 +24,28 @@ function foo()
         InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
     }
 
-    function homeButton(shift)
+    function homeButton(shift, callback)
     {
         var key = WebInspector.isMac() ? "leftArrow" : "home";
         var modifiers = WebInspector.isMac() ? ["metaKey"] : [];
         if (shift)
             modifiers.push("shiftKey");
-        eventSender.keyDown(key, modifiers);
+        InspectorTest.fakeKeyEvent(textEditor, key, modifiers, callback);
+    }
+
+    function hitHomeButton(shift, times, callback)
+    {
+        function hitButtonCallback()
+        {
+            --times;
+            dumpTextEditorWithSelection();
+            if (times > 0) {
+                homeButton(shift, hitButtonCallback);
+                return;
+            }
+            callback();
+        }
+        homeButton(shift, hitButtonCallback);
     }
 
     InspectorTest.runTestSuite([
@@ -39,9 +54,7 @@ function foo()
             var selection = WebInspector.TextRange.createFromLocation(2, 8);
             textEditor.setSelection(selection);
             dumpTextEditorWithSelection();
-            homeButton(false);
-            dumpTextEditorWithSelection();
-            next();
+            hitHomeButton(false, 1, next);
         },
 
         function testFirstNonBlankCharacterFromWhitespace(next)
@@ -49,9 +62,7 @@ function foo()
             var selection = WebInspector.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
             dumpTextEditorWithSelection();
-            homeButton(false);
-            dumpTextEditorWithSelection();
-            next();
+            hitHomeButton(false, 1, next);
         },
 
         function testHomeButtonToggling(next)
@@ -59,13 +70,7 @@ function foo()
             var selection = WebInspector.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
             dumpTextEditorWithSelection();
-            homeButton(false);
-            dumpTextEditorWithSelection();
-            homeButton(false);
-            dumpTextEditorWithSelection();
-            homeButton(false);
-            dumpTextEditorWithSelection();
-            next();
+            hitHomeButton(false, 3, next);
         },
 
         function testHomeButtonDoesNotChangeCursor(next)
@@ -73,11 +78,7 @@ function foo()
             var selection = WebInspector.TextRange.createFromLocation(0, 2);
             textEditor.setSelection(selection);
             dumpTextEditorWithSelection();
-            homeButton(false);
-            dumpTextEditorWithSelection();
-            homeButton(false);
-            dumpTextEditorWithSelection();
-            next();
+            hitHomeButton(false, 2, next);
         },
 
         function testHomeButtonWithShift(next)
@@ -85,13 +86,7 @@ function foo()
             var selection = new WebInspector.TextRange(0, 0, 2, 8);
             textEditor.setSelection(selection);
             dumpTextEditorWithSelection();
-            homeButton(true);
-            dumpTextEditorWithSelection();
-            homeButton(true);
-            dumpTextEditorWithSelection();
-            homeButton(true);
-            dumpTextEditorWithSelection();
-            next();
+            hitHomeButton(true, 3, next);
         },
 
         function testHomeButtonWithShiftInversed(next)
@@ -99,13 +94,7 @@ function foo()
             var selection = new WebInspector.TextRange(3, 1, 2, 8);
             textEditor.setSelection(selection);
             dumpTextEditorWithSelection();
-            homeButton(true);
-            dumpTextEditorWithSelection();
-            homeButton(true);
-            dumpTextEditorWithSelection();
-            homeButton(true);
-            dumpTextEditorWithSelection();
-            next();
+            hitHomeButton(true, 3, next);
         }
     ]);
 }

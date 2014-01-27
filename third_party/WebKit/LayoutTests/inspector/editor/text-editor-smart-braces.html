@@ -21,17 +21,23 @@ function test()
         function testTypeBraceSequence(next)
         {
             clearEditor();
-            InspectorTest.typeIn("({[");
-            InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
-            next();
+            InspectorTest.typeIn(textEditor, "({[", step2);
+            function step2()
+            {
+                InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
+                next();
+            }
         },
 
         function testBraceOverride(next)
         {
             clearEditor();
-            InspectorTest.typeIn("({[]})");
-            InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
-            next();
+            InspectorTest.typeIn(textEditor, "({[]})", step3);
+            function step3()
+            {
+                InspectorTest.addResult(InspectorTest.textWithSelection(textEditor.text(), textEditor.selection()));
+                next();
+            }
         }
     ]);
 }

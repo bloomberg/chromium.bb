@@ -39,39 +39,119 @@ InspectorTest.dumpTextWithSelection = function(textEditor, dumpWhiteSpaces)
     InspectorTest.addResult(text);
 }
 
-InspectorTest.typeIn = function(typeText)
+InspectorTest.typeIn = function(editor, typeText, callback)
 {
+    var noop = new Function();
     for(var charIndex = 0; charIndex < typeText.length; ++charIndex) {
+        // As soon as the last key event was processed, the whole text was processed.
+        var iterationCallback = charIndex + 1 === typeText.length ? callback : noop;
         switch (typeText[charIndex]) {
+        case "\n":
+            InspectorTest.fakeKeyEvent(editor, "enter", null, iterationCallback);
+            break;
         case "L":
-            eventSender.keyDown("leftArrow");
+            InspectorTest.fakeKeyEvent(editor, "leftArrow", null, iterationCallback);
             break;
         case "R":
-            eventSender.keyDown("rightArrow");
+            InspectorTest.fakeKeyEvent(editor, "rightArrow", null, iterationCallback);
             break;
         case "U":
-            eventSender.keyDown("upArrow");
+            InspectorTest.fakeKeyEvent(editor, "upArrow", null, iterationCallback);
             break;
         case "D":
-            eventSender.keyDown("downArrow");
+            InspectorTest.fakeKeyEvent(editor, "downArrow", null, iterationCallback);
             break;
         default:
-            eventSender.keyDown(typeText[charIndex]);
+            InspectorTest.fakeKeyEvent(editor, typeText[charIndex], null, iterationCallback);
         }
     }
 }
 
-InspectorTest.typeInEditor = function(editor, text)
+var eventCodes = {
+    enter: 13,
+    home: 36,
+    leftArrow: 37,
+    upArrow: 38,
+    rightArrow: 39,
+    downArrow: 40
+};
+
+function createCodeMirrorFakeEvent(eventType, code, charCode, modifiers)
 {
-    var selection = editor.selection();
-    editor.editRange(editor.selection(), text);
-    var lines = text.split("\n");
-    var newSelection;
-    if (lines.length > 1)
-        newSelection = new WebInspector.TextRange.createFromLocation(selection.startLine + lines.length - 1, lines.pop().length);
-    else
-        newSelection = new WebInspector.TextRange.createFromLocation(selection.startLine, selection.endLine + lines[0].length);
-    editor.setSelection(newSelection);
+    function eventPreventDefault()
+    {
+        this._handled = true;
+    }
+    var event = {
+        _handled: false,
+        type: eventType,
+        keyCode: code,
+        charCode: charCode,
+        preventDefault: eventPreventDefault,
+        stopPropagation: function(){},
+    };
+    if (modifiers) {
+        for (var i = 0; i < modifiers.length; ++i)
+            event[modifiers[i]] = true;
+    }
+    return event;
+}
+
+function fakeCodeMirrorKeyEvent(editor, eventType, code, charCode, modifiers)
+{
+    var event = createCodeMirrorFakeEvent(eventType, code, charCode, modifiers);
+    switch(eventType) {
+    case "keydown":
+        editor._codeMirror.triggerOnKeyDown(event);
+        break;
+    case "keypress":
+        editor._codeMirror.triggerOnKeyPress(event);
+        break;
+    case "keyup":
+        editor._codeMirror.triggerOnKeyUp(event);
+        break;
+    default:
+        throw new Error("Unknown KeyEvent type");
+    }
+    return event._handled;
+}
+
+function fakeCodeMirrorInputEvent(editor, character)
+{
+    if (typeof character === "string")
+        editor._codeMirror.display.input.value += character;
+}
+
+InspectorTest.fakeKeyEvent = function(editor, originalCode, modifiers, callback)
+{
+    modifiers = modifiers || [];
+    var code;
+    var charCode;
+    if (originalCode === "(") {
+        code = "9".charCodeAt(0);
+        modifiers.push("shiftKey");
+        charCode = originalCode.charCodeAt(0);
+    }
+    var code = code || eventCodes[originalCode] || originalCode;
+    if (typeof code === "string")
+        code = code.charCodeAt(0);
+    if (fakeCodeMirrorKeyEvent(editor, "keydown", code, charCode, modifiers)) {
+        callback();
+        return;
+    }
+    if (fakeCodeMirrorKeyEvent(editor, "keypress", code, charCode, modifiers)) {
+        callback();
+        return;
+    }
+    fakeCodeMirrorInputEvent(editor, originalCode);
+    fakeCodeMirrorKeyEvent(editor, "keyup", code, charCode, modifiers);
+
+    function callbackWrapper()
+    {
+        editor._codeMirror.off("inputRead", callbackWrapper);
+        callback();
+    }
+    editor._codeMirror.on("inputRead", callbackWrapper);
 }
 
 }

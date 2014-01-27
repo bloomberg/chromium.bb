@@ -17,8 +17,7 @@ function test()
     function step2(result)
     {
         var codeLines = result.value;
-        InspectorTest.typeIn(codeLines);
-        setTimeout(step3);
+        InspectorTest.typeIn(textEditor, codeLines, step3);
     }
 
     function step3()

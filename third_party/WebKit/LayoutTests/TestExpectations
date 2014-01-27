@@ -691,15 +691,9 @@ crbug.com/327447 [ Linux Win Debug ] animations/combo-transform-translate+scale.
 # Temporary catchall for linux aura inspector failures.
 crbug.com/336713 [ Linux ] inspector/elements/edit-dom-actions.html [ Failure Pass ]
 crbug.com/336713 [ Linux ] inspector/styles/styles-change-node-while-editing.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/editor/text-editor-smart-braces.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/editor/text-editor-formatter.html [ Failure Pass ]
 crbug.com/336713 [ Linux ] inspector/styles/styles-add-new-rule.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/editor/text-editor-home-button.html [ Failure Pass ]
 crbug.com/336713 [ Linux ] inspector/elements/edit-trimmed-attribute-value.html [ Failure Pass ]
 crbug.com/336713 [ Linux ] inspector/editor/text-editor-selection-to-search.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/editor/text-editor-enter-behaviour.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/editor/text-editor-autocomplete.html [ Failure Pass ]
-crbug.com/336713 [ Linux ] inspector/editor/text-editor-word-jumps.html [ Failure Pass Timeout ]
 crbug.com/336713 [ Linux ] inspector/styles/undo-add-rule-crash.html [ Failure Pass Timeout ]
 
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Failure Pass ]
@@ -856,13 +850,7 @@ crbug.com/334225 virtual/legacy-animations-engine/animations/compositor-start-ev
 
 crbug.com/337944 inspector/layer-compositing-reasons.html [ Pass Timeout ]
 
-crbug.com/333882 [ Win ] inspector/editor/text-editor-autocomplete.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/editor/text-editor-enter-behaviour.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/editor/text-editor-formatter.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/editor/text-editor-home-button.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/editor/text-editor-smart-braces.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/editor/text-editor-word-jumps.html [ Pass Timeout ]
 crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]
 crbug.com/333882 [ Win7 ] inspector/styles/styles-change-node-while-editing.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/styles/undo-add-rule-crash.html [ Pass Timeout ]

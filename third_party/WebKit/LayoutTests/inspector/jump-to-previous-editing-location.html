@@ -67,12 +67,20 @@ function test()
                 dumpSelection(editor, "Initial position");
                 eventSenderClickAtEditor(editor, 4, 7, true);
 
-                InspectorTest.typeInEditor(editor, "\nSome more text here");
+                InspectorTest.typeIn(editor, "\nSome more text here", step2);
+            }
+
+            function step2() {
+                var editor = panel.visibleView.textEditor;
                 dumpSelection(editor, "Typed in some text");
 
                 rollback();
                 dumpSelection(editor, "Rolled back");
-                InspectorTest.typeInEditor(editor, "\nSome more text here as well\n");
+                InspectorTest.typeIn(editor, "\nSome more text here as well\n", step3);
+            }
+
+            function step3() {
+                var editor = panel.visibleView.textEditor;
                 dumpSelection(editor, "Typed in some text");
 
                 rollover();

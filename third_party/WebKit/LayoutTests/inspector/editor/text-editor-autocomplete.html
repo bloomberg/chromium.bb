@@ -21,51 +21,44 @@ function test()
         function testSetInitialText(next)
         {
             textEditor.setText("one two three3_\nfour five\na_b\nsix\n123foo\n132\nseven");
-            dumpDictionary();
-            next();
+            dumpDictionary(next);
         },
 
         function testAlphaNumericWords(next)
         {
             textEditor.setText("2 2foo foo2 2foo4 foo3bar");
-            dumpDictionary();
-            next();
+            dumpDictionary(next);
         },
 
 
         function testSetText(next)
         {
             textEditor.setText("dog cat 'mouse';dog bird");
-            dumpDictionary();
-            next();
+            dumpDictionary(next);
         },
 
         function testSimpleEdit(next)
         {
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 3));
-            eventSender.keyDown("\b");
-            dumpDictionary();
-            next();
+            InspectorTest.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
         },
 
         function testDeleteOneDogAndOneCat(next)
         {
             textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 6));
-            for(var i = 0; i < 6; ++i)
-                eventSender.keyDown("\b");
-            dumpDictionary();
-            next();
+            InspectorTest.typeIn(textEditor, "\b\b\b\b\b\b", dumpDictionary.bind(null, next));
         },
 
     ]);
 
-    function dumpDictionary() {
+    function dumpDictionary(next) {
         var wordsInDictionary = completionDictionary.wordsWithPrefix("");
         InspectorTest.addResult("========= Text in editor =========");
         InspectorTest.dumpTextWithSelection(textEditor);
         InspectorTest.addResult("======= Words in dictionary =======");
         InspectorTest.addResult("[" + wordsInDictionary.sort().join(", ") + "]");
         InspectorTest.addResult("=============");
+        next();
     }
 }
 
