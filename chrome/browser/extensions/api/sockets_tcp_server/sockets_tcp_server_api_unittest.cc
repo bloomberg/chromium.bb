@@ -9,15 +9,12 @@
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/sockets_tcp_server/sockets_tcp_server_api.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace utils = extension_function_test_utils;
 
 namespace extensions {
 namespace api {
@@ -40,10 +37,10 @@ BrowserContextKeyedService* ApiResourceManagerTestServerFactory(
       CreateApiResourceManagerForTest(static_cast<Profile*>(profile), id);
 }
 
-class SocketsTcpServerUnitTest : public BrowserWithTestWindowTest {
+class SocketsTcpServerUnitTest : public ExtensionApiUnittest {
  public:
   virtual void SetUp() {
-    BrowserWithTestWindowTest::SetUp();
+    ExtensionApiUnittest::SetUp();
 
     ApiResourceManager<ResumableTCPSocket>::GetFactoryInstance()->
         SetTestingFactoryAndUse(browser()->profile(),
@@ -52,26 +49,7 @@ class SocketsTcpServerUnitTest : public BrowserWithTestWindowTest {
     ApiResourceManager<ResumableTCPServerSocket>::GetFactoryInstance()->
         SetTestingFactoryAndUse(browser()->profile(),
                                 ApiResourceManagerTestServerFactory);
-
-    extension_ = utils::CreateEmptyExtensionWithLocation(
-        extensions::Manifest::UNPACKED);
   }
-
-  base::Value* RunFunctionWithExtension(
-      UIThreadExtensionFunction* function, const std::string& args) {
-    scoped_refptr<UIThreadExtensionFunction> delete_function(function);
-    function->set_extension(extension_.get());
-    return utils::RunFunctionAndReturnSingleResult(function, args, browser());
-  }
-
-  base::DictionaryValue* RunFunctionAndReturnDict(
-      UIThreadExtensionFunction* function, const std::string& args) {
-    base::Value* result = RunFunctionWithExtension(function, args);
-    return result ? utils::ToDictionary(result) : NULL;
-  }
-
- protected:
-  scoped_refptr<extensions::Extension> extension_;
 };
 
 TEST_F(SocketsTcpServerUnitTest, Create) {
@@ -85,7 +63,7 @@ TEST_F(SocketsTcpServerUnitTest, Create) {
   function->set_work_thread_id(id);
 
   // Run tests
-  scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDict(
+  scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
       function, "[{\"persistent\": true, \"name\": \"foo\"}]"));
   ASSERT_TRUE(result.get());
 }
