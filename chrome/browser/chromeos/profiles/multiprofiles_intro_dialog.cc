@@ -25,6 +25,7 @@ const int kDefaultHeight = 250;
 const int kPaddingToMessage = 20;
 const int kPaddingToCheckBox = 50;
 const int kInset = 40;
+const int kTopInset = 10;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dialog for multi-profiles introduction.
@@ -91,7 +92,7 @@ gfx::Size MultiprofilesIntroView::GetPreferredSize() {
 }
 
 void MultiprofilesIntroView::InitDialog() {
-  const gfx::Insets kDialogInsets(kInset, kInset, kInset, kInset);
+  const gfx::Insets kDialogInsets(kTopInset, kInset, kInset, kInset);
 
   // Create the views and layout manager and set them up.
   views::GridLayout* grid_layout = views::GridLayout::CreatePanel(this);
