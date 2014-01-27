@@ -306,6 +306,17 @@ def Main():
 
   env['GSUTIL'] = '/b/build/third_party/gsutil/gsutil'
 
+  if sys.platform == 'win32':
+    # If the temp directory is not on the same drive as the working directory,
+    # there can be random failures when cleaning up temp directories, so use
+    # a directory on the current drive. Use __file__ here instead of os.getcwd()
+    # because toolchain_main picks its working directories relative to __file__
+    filedrive, _ = os.path.splitdrive(__file__)
+    tempdrive, _ = os.path.splitdrive(env['TEMP'])
+    if tempdrive != filedrive:
+      env['TEMP'] = filedrive + '\\temp'
+      env['TMP'] = env['TEMP']
+
   # Run through runtest.py to get upload of perf data.
   build_properties = {
       'buildername': builder,
