@@ -28,8 +28,10 @@
 
 #import <AvailabilityMacros.h>
 
-// Public APIs not available on versions of Mac on which we build
-#if __MAC_OS_X_VERSION_MAX_ALLOWED == 1060
+// This file forward-declares APIs for NSScroller that are only present on
+// build SDKs newer than are currently supported.
+
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 enum {
     NSScrollerStyleLegacy       = 0,
     NSScrollerStyleOverlay      = 1
@@ -42,13 +44,10 @@ enum {
     NSScrollerKnobStyleLight = 2
 };
 typedef NSInteger NSScrollerKnobStyle;
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED == 1060
 @interface NSScroller(NSObject)
 + (NSScrollerStyle)preferredScrollerStyle;
 @end
-#endif
+#endif // !10.7
 
 @interface NSObject (ScrollbarPainter)
 + (id)scrollerImpWithStyle:(NSScrollerStyle)newScrollerStyle controlSize:(NSControlSize)newControlSize horizontal:(BOOL)horizontal replacingScrollerImp:(id)previous;
@@ -108,12 +107,4 @@ typedef NSInteger NSScrollerKnobStyle;
 - (void)endScrollGesture;
 @end
 
-namespace WebCore {
-
-bool isScrollbarOverlayAPIAvailable();
-
-NSScrollerStyle recommendedScrollerStyle();
-
-}
-
-#endif
+#endif // WebCore_NSScrollerImpDetails_h

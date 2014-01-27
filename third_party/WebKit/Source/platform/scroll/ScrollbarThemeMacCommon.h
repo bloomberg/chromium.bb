@@ -26,6 +26,7 @@
 #ifndef ScrollbarThemeMacCommon_h
 #define ScrollbarThemeMacCommon_h
 
+#include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace WebCore {
@@ -36,7 +37,7 @@ public:
 
     virtual void registerScrollbar(ScrollbarThemeClient*) OVERRIDE;
     virtual void unregisterScrollbar(ScrollbarThemeClient*) OVERRIDE;
-    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, bool jumpOnTrackClick, bool redraw);
+    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, bool jumpOnTrackClick, NSScrollerStyle preferredScrollerStyle, bool redraw);
 
     virtual bool supportsControlTints() const OVERRIDE { return true; }
 
@@ -46,6 +47,10 @@ public:
     virtual void paintOverhangBackground(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
     virtual void paintOverhangShadows(GraphicsContext*, const IntSize& scrollOffset, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
     virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+
+    static NSScrollerStyle recommendedScrollerStyle();
+
+    static bool isOverlayAPIAvailable();
 
 protected:
     virtual int maxOverlapBetweenPages() OVERRIDE { return 40; }
