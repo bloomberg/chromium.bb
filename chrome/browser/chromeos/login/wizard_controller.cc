@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -60,6 +62,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/breakpad/app/breakpad_linux.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_types.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -89,6 +92,9 @@ const char WizardController::kLocallyManagedUserCreationScreenName[] =
   "locally-managed-user-creation-flow";
 const char WizardController::kAppLaunchSplashScreenName[] =
   "app-launch-splash";
+
+// static
+const int WizardController::kMinAudibleOutputVolumePercent = 10;
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -130,6 +136,11 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       weak_factory_(this) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
+
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+      content::NotificationService::AllSources());
 }
 
 WizardController::~WizardController() {
@@ -813,6 +824,26 @@ void WizardController::HideErrorScreen(WizardScreen* parent_screen) {
   DCHECK(parent_screen);
   VLOG(1) << "Hiding error screen.";
   SetCurrentScreen(parent_screen);
+}
+
+void WizardController::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+  if (type != chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
+    NOTREACHED();
+    return;
+  }
+  const AccessibilityStatusEventDetails* a11y_details =
+      content::Details<const AccessibilityStatusEventDetails>(details).ptr();
+  CrasAudioHandler* cras = CrasAudioHandler::Get();
+  if (!a11y_details->enabled)
+    return;
+  if (cras->IsOutputMuted()) {
+    cras->SetOutputMute(false);
+    cras->SetOutputVolumePercent(kMinAudibleOutputVolumePercent);
+  } else if (cras->GetOutputVolumePercent() < kMinAudibleOutputVolumePercent) {
+    cras->SetOutputVolumePercent(kMinAudibleOutputVolumePercent);
+  }
 }
 
 void WizardController::AutoLaunchKioskApp() {

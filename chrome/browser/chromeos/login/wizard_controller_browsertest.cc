@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
@@ -35,11 +36,13 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -119,6 +122,21 @@ void RunSwitchLanguageTest(const std::string& locale,
   EXPECT_EQ(data.success, expect_success);
 }
 
+void SetUpCrasAndEnableChromeVox(int volume_percent, bool mute_on) {
+  AccessibilityManager* a11y = AccessibilityManager::Get();
+  CrasAudioHandler* cras = CrasAudioHandler::Get();
+
+  // Audio output is at |volume_percent| and |mute_on|. Spoken feedback
+  // is disabled.
+  cras->SetOutputVolumePercent(volume_percent);
+  cras->SetOutputMute(mute_on);
+  a11y->EnableSpokenFeedback(false, ash::A11Y_NOTIFICATION_NONE);
+
+  // Spoken feedback is enabled.
+  a11y->EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace
 
 using ::testing::_;
@@ -151,6 +169,12 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
   WizardControllerTest() : WizardInProcessBrowserTest(
       WizardController::kTestNoScreenName) {}
   virtual ~WizardControllerTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    AccessibilityManager::Get()->
+        SetProfileForTest(ProfileHelper::GetSigninProfile());
+    WizardInProcessBrowserTest::SetUpOnMainThread();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerTest);
@@ -185,6 +209,35 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
       base::UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
 
   EXPECT_NE(fr_str, ar_str);
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsChangedForChromeVox) {
+  SetUpCrasAndEnableChromeVox(75 /* volume_percent */, true /* mute_on */);
+
+  // Check that output is unmuted now and at some level.
+  CrasAudioHandler* cras = CrasAudioHandler::Get();
+  ASSERT_FALSE(cras->IsOutputMuted());
+  ASSERT_EQ(WizardController::kMinAudibleOutputVolumePercent,
+            cras->GetOutputVolumePercent());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsUnchangedForChromeVox) {
+  SetUpCrasAndEnableChromeVox(75 /* volume_percent */, false /* mute_on */);
+
+  // Check that output is unmuted now and at some level.
+  CrasAudioHandler* cras = CrasAudioHandler::Get();
+  ASSERT_FALSE(cras->IsOutputMuted());
+  ASSERT_EQ(75, cras->GetOutputVolumePercent());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
+  SetUpCrasAndEnableChromeVox(5 /* volume_percent */, false /* mute_on */);
+
+  // Check that output is unmuted now and at some level.
+  CrasAudioHandler* cras = CrasAudioHandler::Get();
+  ASSERT_FALSE(cras->IsOutputMuted());
+  ASSERT_EQ(WizardController::kMinAudibleOutputVolumePercent,
+            cras->GetOutputVolumePercent());
 }
 
 class WizardControllerFlowTest : public WizardControllerTest {

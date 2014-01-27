@@ -16,6 +16,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
@@ -47,7 +49,8 @@ class WrongHWIDScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public ScreenObserver {
+class WizardController : public ScreenObserver,
+                         public content::NotificationObserver {
  public:
   // Observes screen changes.
   class Observer {
@@ -153,6 +156,9 @@ class WizardController : public ScreenObserver {
   static const char kLocallyManagedUserCreationScreenName[];
   static const char kAppLaunchSplashScreenName[];
 
+  // Volume percent at which spoken feedback is still audible.
+  static const int kMinAudibleOutputVolumePercent;
+
  private:
   // Show specific screen.
   void ShowNetworkScreen();
@@ -220,6 +226,11 @@ class WizardController : public ScreenObserver {
   virtual ErrorScreen* GetErrorScreen() OVERRIDE;
   virtual void ShowErrorScreen() OVERRIDE;
   virtual void HideErrorScreen(WizardScreen* parent_screen) OVERRIDE;
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -332,6 +343,8 @@ class WizardController : public ScreenObserver {
   friend class WizardControllerBrokenLocalStateTest;
 
   base::WeakPtrFactory<WizardController> weak_factory_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardController);
 };
