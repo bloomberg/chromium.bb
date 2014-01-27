@@ -389,9 +389,8 @@ void MediaGalleriesDialogController::InitializePermissions() {
        iter != galleries.end();
        ++iter) {
     const MediaGalleryPrefInfo& gallery = iter->second;
-    if (gallery.type == MediaGalleryPrefInfo::kBlackListed) {
+    if (gallery.IsBlackListedType())
       continue;
-    }
 
     known_galleries_[iter->first] = GalleryPermission(gallery, false);
   }

@@ -31,8 +31,9 @@ function createFileSystemObjectsAndUpdateMetadata(response) {
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  // getMediaFileSystems uses a custom callback so that it can instantiate and
-  // return an array of file system objects.
+  // getMediaFileSystems, addUserSelectedFolder, and addScanResults use a
+  // custom callback so that they can instantiate and return an array of file
+  // system objects.
   apiFunctions.setCustomCallback('getMediaFileSystems',
                                  function(name, request, response) {
     var result = createFileSystemObjectsAndUpdateMetadata(response);
@@ -41,8 +42,14 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     request.callback = null;
   });
 
-  // addUserSelectedFolder uses a custom callback so that it can instantiate
-  // and return an array of file system objects.
+  apiFunctions.setCustomCallback('addScanResults',
+                                 function(name, request, response) {
+    var result = createFileSystemObjectsAndUpdateMetadata(response);
+    if (request.callback)
+      request.callback(result);
+    request.callback = null;
+  });
+
   apiFunctions.setCustomCallback('addUserSelectedFolder',
                                  function(name, request, response) {
     var fileSystems = [];

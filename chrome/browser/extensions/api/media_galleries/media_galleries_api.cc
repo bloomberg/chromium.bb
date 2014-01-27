@@ -25,6 +25,7 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
+#include "chrome/browser/media_galleries/media_galleries_scan_result_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_scan_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -647,7 +648,44 @@ bool MediaGalleriesAddScanResultsFunction::RunImpl() {
 
 void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  const Extension* extension = GetExtension();
+  WebContents* contents =
+      GetWebContents(render_view_host(), GetProfile(), extension->id());
+  if (!contents) {
+    SendResponse(false);
+    return;
+  }
 
+  // Controller will delete itself.
+  base::Closure cb = base::Bind(
+      &MediaGalleriesAddScanResultsFunction::GetAndReturnGalleries, this);
+  new MediaGalleriesScanResultDialogController(contents, *extension, cb);
+}
+
+void MediaGalleriesAddScanResultsFunction::GetAndReturnGalleries() {
+  if (!render_view_host()) {
+    ReturnGalleries(std::vector<MediaFileSystemInfo>());
+    return;
+  }
+  MediaFileSystemRegistry* registry = media_file_system_registry();
+  DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
+  registry->GetMediaFileSystemsForExtension(
+      render_view_host(), GetExtension(),
+      base::Bind(&MediaGalleriesAddScanResultsFunction::ReturnGalleries,
+                 this));
+}
+
+void MediaGalleriesAddScanResultsFunction::ReturnGalleries(
+    const std::vector<MediaFileSystemInfo>& filesystems) {
+  scoped_ptr<base::ListValue> list(
+      ConstructFileSystemList(render_view_host(), GetExtension(), filesystems));
+  if (!list.get()) {
+    SendResponse(false);
+    return;
+  }
+
+  // The custom JS binding will use this list to create DOMFileSystem objects.
+  SetResult(list.release());
   SendResponse(true);
 }
 

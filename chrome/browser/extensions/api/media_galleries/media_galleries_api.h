@@ -206,6 +206,13 @@ class MediaGalleriesAddScanResultsFunction
  private:
   // Bottom half for RunImpl, invoked after the preferences is initialized.
   void OnPreferencesInit();
+
+  // Grabs galleries from the media file system registry and passes them to
+  // ReturnGalleries().
+  void GetAndReturnGalleries();
+
+  // Returns galleries to the caller.
+  void ReturnGalleries(const std::vector<MediaFileSystemInfo>& filesystems);
 };
 
 class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {

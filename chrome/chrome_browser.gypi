@@ -1165,6 +1165,8 @@
         'browser/media_galleries/media_galleries_preferences.h',
         'browser/media_galleries/media_galleries_preferences_factory.cc',
         'browser/media_galleries/media_galleries_preferences_factory.h',
+        'browser/media_galleries/media_galleries_scan_result_dialog_controller.cc',
+        'browser/media_galleries/media_galleries_scan_result_dialog_controller.h',
         'browser/media_galleries/media_scan_manager.cc',
         'browser/media_galleries/media_scan_manager.h',
         'browser/media_galleries/media_scan_manager_observer.h',
