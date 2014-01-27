@@ -1687,11 +1687,11 @@ bool HTMLInputElement::capture() const
     // As per crbug.com/240252, emit a deprecation warning when the "capture"
     // attribute is used as an enum. The spec has been updated and "capture" is
     // supposed to be used as a boolean.
-    bool hasDeprecatedUsage = !fastGetAttribute(captureAttr).isNull();
+    bool hasDeprecatedUsage = !fastGetAttribute(captureAttr).isEmpty();
     if (hasDeprecatedUsage)
         UseCounter::countDeprecation(document(), UseCounter::CaptureAttributeAsEnum);
     else
-        UseCounter::count(document(), UseCounter::CaptureAttributeAsEnum);
+        UseCounter::count(document(), UseCounter::CaptureAttributeAsBoolean);
 
     return true;
 }
