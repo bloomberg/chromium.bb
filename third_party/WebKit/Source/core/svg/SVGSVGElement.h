@@ -135,6 +135,7 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
     SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
+    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGSVGElement(Document&);
@@ -170,8 +171,8 @@ private:
     RefPtr<SVGAnimatedLength> m_width;
     RefPtr<SVGAnimatedLength> m_height;
     RefPtr<SVGAnimatedRect> m_viewBox;
+    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSVGElement)
-        DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE;

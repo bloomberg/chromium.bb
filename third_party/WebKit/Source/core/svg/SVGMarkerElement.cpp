@@ -47,13 +47,11 @@ const SVGPropertyInfo* SVGMarkerElement::orientTypePropertyInfo()
 // Animated property definitions
 DEFINE_ANIMATED_ENUMERATION(SVGMarkerElement, SVGNames::markerUnitsAttr, MarkerUnits, markerUnits, SVGMarkerUnitsType)
 DEFINE_ANIMATED_ANGLE_AND_ENUMERATION(SVGMarkerElement, SVGNames::orientAttr, orientAngleIdentifier(), OrientAngle, orientAngle)
-DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGMarkerElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMarkerElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(markerUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orientAngle)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orientType)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -64,6 +62,7 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
     , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(LengthModeWidth)))
     , m_markerHeight(SVGAnimatedLength::create(this, SVGNames::markerHeightAttr, SVGLength::create(LengthModeHeight)))
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_orientType(SVGMarkerOrientAngle)
     , m_markerUnits(SVGMarkerUnitsStrokeWidth)
 {
@@ -79,6 +78,7 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
     addToPropertyMap(m_markerHeight);
     addToPropertyMap(m_viewBox);
 
+    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGMarkerElement();
 }
 
@@ -101,7 +101,7 @@ const AtomicString& SVGMarkerElement::orientAngleIdentifier()
 
 AffineTransform SVGMarkerElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
-    return SVGFitToViewBox::viewBoxToViewTransform(m_viewBox->currentValue()->value(), preserveAspectRatioCurrentValue(), viewWidth, viewHeight);
+    return SVGFitToViewBox::viewBoxToViewTransform(m_viewBox->currentValue()->value(), m_preserveAspectRatio->currentValue(), viewWidth, viewHeight);
 }
 
 bool SVGMarkerElement::isSupportedAttribute(const QualifiedName& attrName)

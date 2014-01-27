@@ -52,9 +52,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedPath:
         delete m_data.path;
         break;
-    case AnimatedPreserveAspectRatio:
-        delete m_data.preserveAspectRatio;
-        break;
     case AnimatedString:
         delete m_data.string;
         break;
@@ -69,6 +66,7 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedLength:
     case AnimatedLengthList:
     case AnimatedPoints:
+    case AnimatedPreserveAspectRatio:
     case AnimatedRect:
         // handled by RefPtr
         break;
@@ -132,14 +130,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPath(PassOwnPtr<SVGPathByteSt
     return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPreserveAspectRatio(SVGPreserveAspectRatio* preserveAspectRatio)
-{
-    ASSERT(preserveAspectRatio);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedPreserveAspectRatio));
-    animatedType->m_data.preserveAspectRatio = preserveAspectRatio;
-    return animatedType.release();
-}
-
 PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createString(String* string)
 {
     ASSERT(string);
@@ -181,6 +171,7 @@ String SVGAnimatedType::valueAsString()
     case AnimatedLength:
     case AnimatedLengthList:
     case AnimatedPoints:
+    case AnimatedPreserveAspectRatio:
     case AnimatedRect:
         return m_newProperty->valueAsString();
 
@@ -192,7 +183,6 @@ String SVGAnimatedType::valueAsString()
     case AnimatedIntegerOptionalInteger:
     case AnimatedPath:
     case AnimatedPoint:
-    case AnimatedPreserveAspectRatio:
     case AnimatedTransformList:
     case AnimatedUnknown:
         // Only SVG DOM animations use these property types - that means valueAsString() is never used for those.
@@ -222,6 +212,7 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     case AnimatedLength:
     case AnimatedLengthList:
     case AnimatedPoints:
+    case AnimatedPreserveAspectRatio:
     case AnimatedRect:
         // Always use createForAnimation call path for these implementations.
         return false;
@@ -234,7 +225,6 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     case AnimatedIntegerOptionalInteger:
     case AnimatedPath:
     case AnimatedPoint:
-    case AnimatedPreserveAspectRatio:
     case AnimatedTransformList:
     case AnimatedUnknown:
         // Only SVG DOM animations use these property types - that means setValueAsString() is never used for those.

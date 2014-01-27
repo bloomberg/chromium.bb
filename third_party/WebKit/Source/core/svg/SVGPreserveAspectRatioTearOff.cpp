@@ -28,28 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedPreserveAspectRatio_h
-#define SVGAnimatedPreserveAspectRatio_h
+#include "config.h"
 
 #include "core/svg/SVGPreserveAspectRatioTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 
-class SVGAnimatedPreserveAspectRatio : public NewSVGAnimatedProperty<SVGPreserveAspectRatio> {
-public:
-    static PassRefPtr<SVGAnimatedPreserveAspectRatio> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGPreserveAspectRatio> initialValue)
-    {
-        return adoptRef(new SVGAnimatedPreserveAspectRatio(contextElement, attributeName, initialValue));
+void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align, ExceptionState& exceptionState)
+{
+    if (align == SVG_PRESERVEASPECTRATIO_UNKNOWN || align > SVG_PRESERVEASPECTRATIO_XMAXYMAX) {
+        exceptionState.throwDOMException(NotSupportedError, "The alignment provided is invalid.");
+        return;
+    }
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
     }
 
-protected:
-    SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGPreserveAspectRatio> initialValue)
-        : NewSVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement, attributeName, initialValue)
-    {
+    target()->setAlign(static_cast<SVGPreserveAspectRatio::SVGPreserveAspectRatioType>(align));
+}
+
+void SVGPreserveAspectRatioTearOff::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& exceptionState)
+{
+    if (meetOrSlice == SVG_MEETORSLICE_UNKNOWN || meetOrSlice > SVG_MEETORSLICE_SLICE) {
+        exceptionState.throwDOMException(NotSupportedError, "The meetOrSlice provided is invalid.");
+        return;
     }
-};
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return;
+    }
 
-} // namespace WebCore
+    target()->setMeetOrSlice(static_cast<SVGPreserveAspectRatio::SVGMeetOrSliceType>(meetOrSlice));
+}
 
-#endif // SVGAnimatedPreserveAspectRatio_h
+SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(PassRefPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+    : NewSVGPropertyTearOff<SVGPreserveAspectRatio>(target, contextElement, propertyIsAnimVal, attributeName)
+{
+    ScriptWrappable::init(this);
+}
+
+}

@@ -23,7 +23,9 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
@@ -32,29 +34,34 @@
 namespace WebCore {
 
 SVGPreserveAspectRatio::SVGPreserveAspectRatio()
-    : m_align(SVG_PRESERVEASPECTRATIO_XMIDYMID)
-    , m_meetOrSlice(SVG_MEETORSLICE_MEET)
+    : NewSVGPropertyBase(classType())
 {
+    setDefault();
 }
 
-void SVGPreserveAspectRatio::setAlign(unsigned short align, ExceptionState& exceptionState)
+void SVGPreserveAspectRatio::setDefault()
 {
-    if (align == SVG_PRESERVEASPECTRATIO_UNKNOWN || align > SVG_PRESERVEASPECTRATIO_XMAXYMAX) {
-        exceptionState.throwDOMException(NotSupportedError, "The alignment provided is invalid.");
-        return;
-    }
-
-    m_align = static_cast<SVGPreserveAspectRatioType>(align);
+    m_align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
+    m_meetOrSlice = SVG_MEETORSLICE_MEET;
 }
 
-void SVGPreserveAspectRatio::setMeetOrSlice(unsigned short meetOrSlice, ExceptionState& exceptionState)
+PassRefPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() const
 {
-    if (meetOrSlice == SVG_MEETORSLICE_UNKNOWN || meetOrSlice > SVG_MEETORSLICE_SLICE) {
-        exceptionState.throwDOMException(NotSupportedError, "The meetOrSlice provided is invalid.");
-        return;
-    }
+    RefPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
 
-    m_meetOrSlice = static_cast<SVGMeetOrSliceType>(meetOrSlice);
+    preserveAspectRatio->m_align = m_align;
+    preserveAspectRatio->m_meetOrSlice = m_meetOrSlice;
+
+    return preserveAspectRatio.release();
+}
+
+PassRefPtr<NewSVGPropertyBase> SVGPreserveAspectRatio::cloneForAnimation(const String& value) const
+{
+    RefPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
+
+    preserveAspectRatio->setValueAsString(value, IGNORE_EXCEPTION);
+
+    return preserveAspectRatio.release();
 }
 
 template<typename CharType>
@@ -155,19 +162,26 @@ bailOut:
     return true;
 }
 
-void SVGPreserveAspectRatio::parse(const String& string)
+void SVGPreserveAspectRatio::setValueAsString(const String& string, ExceptionState& exceptionState)
 {
-    if (string.isEmpty()) {
-        const LChar* ptr = 0;
-        parseInternal(ptr, ptr, true);
-    } else if (string.is8Bit()) {
+    setDefault();
+
+    if (string.isEmpty())
+        return;
+
+    bool valid = false;
+    if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
-        parseInternal(ptr, end, true);
+        valid = parseInternal(ptr, end, true);
     } else {
         const UChar* ptr = string.characters16();
         const UChar* end = ptr + string.length();
-        parseInternal(ptr, end, true);
+        valid = parseInternal(ptr, end, true);
+    }
+
+    if (!valid) {
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
     }
 }
 
@@ -370,6 +384,30 @@ String SVGPreserveAspectRatio::valueAsString() const
     case SVG_MEETORSLICE_SLICE:
         return alignType + " slice";
     }
+}
+
+void SVGPreserveAspectRatio::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+{
+    ASSERT_NOT_REACHED();
+}
+
+void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    ASSERT(animationElement);
+
+    bool useToValue;
+    animationElement->animateDiscreteType(percentage, false, true, useToValue);
+
+    RefPtr<SVGPreserveAspectRatio> preserveAspectRatioToUse = useToValue ? toSVGPreserveAspectRatio(toValue) : toSVGPreserveAspectRatio(fromValue);
+
+    m_align = preserveAspectRatioToUse->m_align;
+    m_meetOrSlice = preserveAspectRatioToUse->m_meetOrSlice;
+}
+
+float SVGPreserveAspectRatio::calculateDistance(PassRefPtr<NewSVGPropertyBase> toValue, SVGElement* contextElement)
+{
+    // No paced animations for SVGPreserveAspectRatio.
+    return -1;
 }
 
 }

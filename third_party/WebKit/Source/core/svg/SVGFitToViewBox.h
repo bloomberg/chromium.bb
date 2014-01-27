@@ -36,7 +36,7 @@ class Document;
 
 class SVGFitToViewBox {
 public:
-    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, const SVGPreserveAspectRatio&, float viewWidth, float viewHeight);
+    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtr<SVGPreserveAspectRatio>, float viewWidth, float viewHeight);
 
     static bool isKnownAttribute(const QualifiedName&);
     static void addSupportedAttributes(HashSet<QualifiedName>&);
@@ -45,31 +45,27 @@ public:
     static bool parseAttribute(SVGElementTarget* target, const QualifiedName& name, const AtomicString& value)
     {
         ASSERT(target);
+
+        SVGParsingError parseError = NoError;
+
         if (name == SVGNames::viewBoxAttr) {
-            SVGParsingError parseError = NoError;
             target->viewBox()->setBaseValueAsString(value, parseError);
-            target->reportAttributeParsingError(parseError, name, value);
             if (target->viewBox()->baseValue()->width() < 0.0f) {
                 target->document().accessSVGExtensions()->reportError("A negative value for ViewBox width is not allowed");
                 target->viewBox()->baseValue()->setInvalid();
-                return true;
             }
             if (target->viewBox()->baseValue()->height() < 0.0f) {
                 target->document().accessSVGExtensions()->reportError("A negative value for ViewBox height is not allowed");
                 target->viewBox()->baseValue()->setInvalid();
-                return true;
             }
-            return true;
+        } else if (name == SVGNames::preserveAspectRatioAttr) {
+            target->preserveAspectRatio()->setBaseValueAsString(value, parseError);
+        } else {
+            return false;
         }
 
-        if (name == SVGNames::preserveAspectRatioAttr) {
-            SVGPreserveAspectRatio preserveAspectRatio;
-            preserveAspectRatio.parse(value);
-            target->setPreserveAspectRatioBaseValue(preserveAspectRatio);
-            return true;
-        }
-
-        return false;
+        target->reportAttributeParsingError(parseError, name, value);
+        return true;
     }
 };
 

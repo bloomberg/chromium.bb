@@ -63,10 +63,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGSVGElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGSVGElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -77,6 +75,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_useCurrentView(false)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
@@ -92,6 +91,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
     addToPropertyMap(m_viewBox);
+    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGSVGElement();
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
@@ -698,9 +698,9 @@ Length SVGSVGElement::intrinsicHeight(ConsiderCSSMode mode) const
 AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
 {
     if (!m_useCurrentView || !m_viewSpec)
-        return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatioCurrentValue(), viewWidth, viewHeight);
+        return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_preserveAspectRatio->currentValue(), viewWidth, viewHeight);
 
-    AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatioCurrentValue(), viewWidth, viewHeight);
+    AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
     const SVGTransformList& transformList = m_viewSpec->transformBaseValue();
     if (transformList.isEmpty())
         return ctm;
@@ -774,10 +774,13 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
     else
         view->viewBox()->baseValue()->setValue(m_viewBox->currentValue()->value());
 
-    if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr))
-        view->setPreserveAspectRatioBaseValue(viewElement->preserveAspectRatioBaseValue());
-    else
-        view->setPreserveAspectRatioBaseValue(preserveAspectRatioBaseValue());
+    if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr)) {
+        view->preserveAspectRatio()->baseValue()->setAlign(viewElement->preserveAspectRatio()->currentValue()->align());
+        view->preserveAspectRatio()->baseValue()->setMeetOrSlice(viewElement->preserveAspectRatio()->currentValue()->meetOrSlice());
+    } else {
+        view->preserveAspectRatio()->baseValue()->setAlign(m_preserveAspectRatio->currentValue()->align());
+        view->preserveAspectRatio()->baseValue()->setMeetOrSlice(m_preserveAspectRatio->currentValue()->meetOrSlice());
+    }
 
     if (viewElement->hasAttribute(SVGNames::zoomAndPanAttr))
         view->setZoomAndPanBaseValue(viewElement->zoomAndPan());

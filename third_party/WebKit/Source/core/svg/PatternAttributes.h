@@ -35,7 +35,7 @@ struct PatternAttributes {
         , m_width(SVGLength::create(LengthModeWidth))
         , m_height(SVGLength::create(LengthModeHeight))
         , m_viewBox()
-        , m_preserveAspectRatio()
+        , m_preserveAspectRatio(SVGPreserveAspectRatio::create())
         , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
         , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
         , m_patternContentElement(0)
@@ -57,7 +57,7 @@ struct PatternAttributes {
     SVGLength* width() const { return m_width.get(); }
     SVGLength* height() const { return m_height.get(); }
     FloatRect viewBox() const { return m_viewBox; }
-    SVGPreserveAspectRatio preserveAspectRatio() const { return m_preserveAspectRatio; }
+    SVGPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
     SVGUnitTypes::SVGUnitType patternUnits() const { return m_patternUnits; }
     SVGUnitTypes::SVGUnitType patternContentUnits() const { return m_patternContentUnits; }
     AffineTransform patternTransform() const { return m_patternTransform; }
@@ -93,7 +93,7 @@ struct PatternAttributes {
         m_viewBoxSet = true;
     }
 
-    void setPreserveAspectRatio(const SVGPreserveAspectRatio& value)
+    void setPreserveAspectRatio(PassRefPtr<SVGPreserveAspectRatio> value)
     {
         m_preserveAspectRatio = value;
         m_preserveAspectRatioSet = true;
@@ -141,7 +141,7 @@ private:
     RefPtr<SVGLength> m_width;
     RefPtr<SVGLength> m_height;
     FloatRect m_viewBox;
-    SVGPreserveAspectRatio m_preserveAspectRatio;
+    RefPtr<SVGPreserveAspectRatio> m_preserveAspectRatio;
     SVGUnitTypes::SVGUnitType m_patternUnits;
     SVGUnitTypes::SVGUnitType m_patternContentUnits;
     AffineTransform m_patternTransform;

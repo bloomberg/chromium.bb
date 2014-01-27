@@ -21,16 +21,15 @@
 #ifndef SVGPreserveAspectRatio_h
 #define SVGPreserveAspectRatio_h
 
-#include "core/svg/properties/SVGPropertyTraits.h"
+#include "core/svg/properties/NewSVGProperty.h"
 
 namespace WebCore {
 
 class AffineTransform;
-class ExceptionState;
 class FloatRect;
+class SVGPreserveAspectRatioTearOff;
 
-class SVGPreserveAspectRatio {
-    WTF_MAKE_FAST_ALLOCATED;
+class SVGPreserveAspectRatio : public NewSVGPropertyBase {
 public:
     enum SVGPreserveAspectRatioType {
         SVG_PRESERVEASPECTRATIO_UNKNOWN = 0,
@@ -52,13 +51,24 @@ public:
         SVG_MEETORSLICE_SLICE = 2
     };
 
-    SVGPreserveAspectRatio();
+    typedef SVGPreserveAspectRatioTearOff TearOffType;
 
-    void setAlign(unsigned short align, ExceptionState&);
-    unsigned short align() const { return m_align; }
+    static PassRefPtr<SVGPreserveAspectRatio> create()
+    {
+        return adoptRef(new SVGPreserveAspectRatio());
+    }
 
-    void setMeetOrSlice(unsigned short, ExceptionState&);
-    unsigned short meetOrSlice() const { return m_meetOrSlice; }
+    virtual PassRefPtr<SVGPreserveAspectRatio> clone() const;
+    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+
+    bool operator==(const SVGPreserveAspectRatio&) const;
+    bool operator!=(const SVGPreserveAspectRatio& other) const { return !operator==(other); }
+
+    void setAlign(SVGPreserveAspectRatioType align) { m_align = align; }
+    SVGPreserveAspectRatioType align() const { return m_align; }
+
+    void setMeetOrSlice(SVGMeetOrSliceType meetOrSlice) { m_meetOrSlice = meetOrSlice; }
+    SVGMeetOrSliceType meetOrSlice() const { return m_meetOrSlice; }
 
     void transformRect(FloatRect& destRect, FloatRect& srcRect);
 
@@ -66,13 +76,21 @@ public:
                            float logicWidth, float logicHeight,
                            float physWidth, float physHeight) const;
 
-    void parse(const String&);
-    bool parse(const LChar*& ptr, const LChar* end, bool validate);
+    virtual String valueAsString() const OVERRIDE;
+    virtual void setValueAsString(const String&, ExceptionState&);
     bool parse(const UChar*& ptr, const UChar* end, bool validate);
+    bool parse(const LChar*& ptr, const LChar* end, bool validate);
 
-    String valueAsString() const;
+    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+
+    static AnimatedPropertyType classType() { return AnimatedPreserveAspectRatio; }
 
 private:
+    SVGPreserveAspectRatio();
+
+    void setDefault();
     template<typename CharType>
     bool parseInternal(const CharType*& ptr, const CharType* end, bool validate);
 
@@ -80,11 +98,12 @@ private:
     SVGMeetOrSliceType m_meetOrSlice;
 };
 
-template<>
-struct SVGPropertyTraits<SVGPreserveAspectRatio> {
-    static SVGPreserveAspectRatio initialValue() { return SVGPreserveAspectRatio(); }
-    static String toString(const SVGPreserveAspectRatio& type) { return type.valueAsString(); }
-};
+inline PassRefPtr<SVGPreserveAspectRatio> toSVGPreserveAspectRatio(PassRefPtr<NewSVGPropertyBase> passBase)
+{
+    RefPtr<NewSVGPropertyBase> base = passBase;
+    ASSERT(base->type() == SVGPreserveAspectRatio::classType());
+    return static_pointer_cast<SVGPreserveAspectRatio>(base.release());
+}
 
 } // namespace WebCore
 

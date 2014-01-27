@@ -26,22 +26,22 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGViewElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGViewElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(SVGNames::viewTag, document)
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_viewTarget(SVGNames::viewTargetAttr)
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_viewBox);
+    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGViewElement();
 }
 

@@ -69,7 +69,7 @@ bool RenderSVGImage::updateImageViewport()
     // Images with preserveAspectRatio=none should force non-uniform scaling. This can be achieved
     // by setting the image's container size to its intrinsic size.
     // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The ‘preserveAspectRatio’ attribute.
-    if (image->preserveAspectRatioCurrentValue().align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE) {
+    if (image->preserveAspectRatio()->currentValue()->align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE) {
         if (ImageResource* cachedImage = m_imageResource->cachedImage()) {
             LayoutSize intrinsicSize = cachedImage->imageSizeForRenderer(0, style()->effectiveZoom());
             if (intrinsicSize != m_imageResource->imageSize(style()->effectiveZoom())) {
@@ -162,7 +162,7 @@ void RenderSVGImage::paintForeground(PaintInfo& paintInfo)
     FloatRect srcRect(0, 0, image->width(), image->height());
 
     SVGImageElement* imageElement = toSVGImageElement(element());
-    imageElement->preserveAspectRatioCurrentValue().transformRect(destRect, srcRect);
+    imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
 
     bool useLowQualityScaling = false;
     if (style()->svgStyle()->bufferedRendering() != BR_STATIC)

@@ -33,11 +33,9 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGImageElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 DEFINE_ANIMATED_STRING(SVGImageElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGImageElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
@@ -48,6 +46,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_imageLoader(this)
 {
     ScriptWrappable::init(this);
@@ -57,6 +56,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
 
+    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGImageElement();
 }
 
@@ -123,9 +123,7 @@ void SVGImageElement::parseAttribute(const QualifiedName& name, const AtomicStri
     else if (name == SVGNames::heightAttr)
         m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::preserveAspectRatioAttr) {
-        SVGPreserveAspectRatio preserveAspectRatio;
-        preserveAspectRatio.parse(value);
-        setPreserveAspectRatioBaseValue(preserveAspectRatio);
+        m_preserveAspectRatio->setBaseValueAsString(value, parseError);
     } else if (SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();

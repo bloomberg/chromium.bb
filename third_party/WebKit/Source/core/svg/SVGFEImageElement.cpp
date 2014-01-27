@@ -35,19 +35,19 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGFEImageElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 DEFINE_ANIMATED_STRING(SVGFEImageElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEImageElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feImageTag, document)
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGFEImageElement();
 }
 
@@ -129,17 +129,16 @@ void SVGFEImageElement::parseAttribute(const QualifiedName& name, const AtomicSt
         return;
     }
 
+    SVGParsingError parseError = NoError;
+
     if (name == SVGNames::preserveAspectRatioAttr) {
-        SVGPreserveAspectRatio preserveAspectRatio;
-        preserveAspectRatio.parse(value);
-        setPreserveAspectRatioBaseValue(preserveAspectRatio);
-        return;
+        m_preserveAspectRatio->setBaseValueAsString(value, parseError);
+    } else if (SVGURIReference::parseAttribute(name, value)) {
+    } else {
+        ASSERT_NOT_REACHED();
     }
 
-    if (SVGURIReference::parseAttribute(name, value))
-        return;
-
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGFEImageElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -196,8 +195,8 @@ void SVGFEImageElement::notifyFinished(Resource*)
 PassRefPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
 {
     if (m_cachedImage)
-        return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), preserveAspectRatioCurrentValue());
-    return FEImage::createWithIRIReference(filter, document(), hrefCurrentValue(), preserveAspectRatioCurrentValue());
+        return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), m_preserveAspectRatio->currentValue());
+    return FEImage::createWithIRIReference(filter, document(), hrefCurrentValue(), m_preserveAspectRatio->currentValue());
 }
 
 }

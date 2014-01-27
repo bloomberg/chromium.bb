@@ -131,6 +131,7 @@ public:
     SVGMarkerOrientType& orientTypeBaseValue() const { return m_orientType.value; }
     void setOrientTypeBaseValue(const SVGMarkerOrientType& type) { m_orientType.value = type; }
     PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > orientType();
+    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGMarkerElement(Document&);
@@ -157,11 +158,11 @@ private:
     RefPtr<SVGAnimatedLength> m_markerWidth;
     RefPtr<SVGAnimatedLength> m_markerHeight;
     RefPtr<SVGAnimatedRect> m_viewBox;
+    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMarkerElement)
         DECLARE_ANIMATED_ENUMERATION(MarkerUnits, markerUnits, SVGMarkerUnitsType)
         DECLARE_ANIMATED_ANGLE(OrientAngle, orientAngle)
-        DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

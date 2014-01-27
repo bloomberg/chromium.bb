@@ -70,26 +70,17 @@ public:
     SVGTransformListPropertyTearOff* transform();
     SVGTransformList transformBaseValue() const { return m_transform; }
 
-    // Custom animated 'viewBox' property.
     SVGAnimatedRect* viewBox() { return m_viewBox.get(); }
-
-    // Custom animated 'preserveAspectRatio' property.
-    PassRefPtr<SVGAnimatedPreserveAspectRatio> preserveAspectRatio();
-    SVGPreserveAspectRatio& preserveAspectRatioCurrentValue() { return m_preserveAspectRatio; }
-    SVGPreserveAspectRatio preserveAspectRatioBaseValue() const { return m_preserveAspectRatio; }
-    void setPreserveAspectRatioBaseValue(const SVGPreserveAspectRatio& preserveAspectRatio) { m_preserveAspectRatio = preserveAspectRatio; }
+    SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
 private:
     explicit SVGViewSpec(SVGSVGElement*);
 
     static const SVGPropertyInfo* transformPropertyInfo();
-    static const SVGPropertyInfo* preserveAspectRatioPropertyInfo();
 
     static const AtomicString& transformIdentifier();
-    static const AtomicString& preserveAspectRatioIdentifier();
 
     static PassRefPtr<SVGAnimatedProperty> lookupOrCreateTransformWrapper(SVGViewSpec* contextElement);
-    static PassRefPtr<SVGAnimatedProperty> lookupOrCreatePreserveAspectRatioWrapper(SVGViewSpec* contextElement);
 
     template<typename CharType>
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
@@ -100,7 +91,7 @@ private:
     SVGZoomAndPanType m_zoomAndPan;
     SVGTransformList m_transform;
     RefPtr<SVGAnimatedRect> m_viewBox;
-    SVGPreserveAspectRatio m_preserveAspectRatio;
+    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
     String m_viewTargetString;
 };
 

@@ -36,14 +36,12 @@ DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternUnitsAttr, Patte
 DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternContentUnitsAttr, PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_TRANSFORM_LIST(SVGPatternElement, SVGNames::patternTransformAttr, PatternTransform, patternTransform)
 DEFINE_ANIMATED_STRING(SVGPatternElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGPatternElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPatternElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternContentUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternTransform)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
@@ -55,6 +53,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
@@ -65,6 +64,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
     addToPropertyMap(m_viewBox);
+    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGPatternElement();
 }
 
@@ -183,8 +183,8 @@ static void setPatternAttributes(const SVGPatternElement* element, PatternAttrib
     if (!attributes.hasViewBox() && element->viewBox()->isSpecified() && element->viewBox()->currentValue()->isValid())
         attributes.setViewBox(element->viewBox()->currentValue()->value());
 
-    if (!attributes.hasPreserveAspectRatio() && element->preserveAspectRatioSpecified())
-        attributes.setPreserveAspectRatio(element->preserveAspectRatioCurrentValue());
+    if (!attributes.hasPreserveAspectRatio() && element->preserveAspectRatio()->isSpecified())
+        attributes.setPreserveAspectRatio(element->preserveAspectRatio()->currentValue());
 
     if (!attributes.hasPatternUnits() && element->patternUnitsSpecified())
         attributes.setPatternUnits(element->patternUnitsCurrentValue());

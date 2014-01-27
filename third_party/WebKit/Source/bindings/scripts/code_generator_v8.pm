@@ -242,6 +242,7 @@ my %svgTypeNewPropertyImplementation = (
     "SVGNumberList" => 1,
     "SVGPoint" => 1,
     "SVGPointList" => 1,
+    "SVGPreserveAspectRatio" => 1,
     "SVGRect" => 1,
 );
 
@@ -249,7 +250,6 @@ my %svgTypeNeedingTearOff = (
     "SVGAngle" => "SVGPropertyTearOff<SVGAngle>",
     "SVGMatrix" => "SVGMatrixTearOff",
     "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
-    "SVGPreserveAspectRatio" => "SVGPropertyTearOff<SVGPreserveAspectRatio>",
     "SVGStringList" => "SVGStaticListPropertyTearOff<SVGStringList>",
     "SVGTransform" => "SVGPropertyTearOff<SVGTransform>",
     "SVGTransformList" => "SVGTransformListPropertyTearOff"

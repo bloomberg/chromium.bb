@@ -32,12 +32,12 @@
 
 namespace WebCore {
 
-AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, const SVGPreserveAspectRatio& preserveAspectRatio, float viewWidth, float viewHeight)
+AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio, float viewWidth, float viewHeight)
 {
     if (!viewBoxRect.width() || !viewBoxRect.height())
         return AffineTransform();
 
-    return preserveAspectRatio.getCTM(viewBoxRect.x(), viewBoxRect.y(), viewBoxRect.width(), viewBoxRect.height(), viewWidth, viewHeight);
+    return preserveAspectRatio->getCTM(viewBoxRect.x(), viewBoxRect.y(), viewBoxRect.width(), viewBoxRect.height(), viewWidth, viewHeight);
 }
 
 bool SVGFitToViewBox::isKnownAttribute(const QualifiedName& attrName)

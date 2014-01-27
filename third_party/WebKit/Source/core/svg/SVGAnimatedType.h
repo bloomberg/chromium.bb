@@ -23,7 +23,6 @@
 #include "core/css/StyleColor.h"
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGColor.h"
-#include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/NewSVGAnimatedProperty.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
@@ -43,7 +42,6 @@ public:
     static PassOwnPtr<SVGAnimatedType> createInteger(int*);
     static PassOwnPtr<SVGAnimatedType> createIntegerOptionalInteger(std::pair<int, int>*);
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
-    static PassOwnPtr<SVGAnimatedType> createPreserveAspectRatio(SVGPreserveAspectRatio*);
     static PassOwnPtr<SVGAnimatedType> createString(String*);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
     // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
@@ -88,12 +86,6 @@ public:
         return m_data.path;
     }
 
-    SVGPreserveAspectRatio& preserveAspectRatio()
-    {
-        ASSERT(m_type == AnimatedPreserveAspectRatio);
-        return *m_data.preserveAspectRatio;
-    }
-
     String& string()
     {
         ASSERT(m_type == AnimatedString);
@@ -131,7 +123,6 @@ private:
         int* integer;
         std::pair<int, int>* integerOptionalInteger;
         SVGPathByteStream* path;
-        SVGPreserveAspectRatio* preserveAspectRatio;
         String* string;
         SVGTransformList* transformList;
     } m_data;

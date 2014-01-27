@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, const SVGPreserveAspectRatio& preserveAspectRatio)
+FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio)
     : FilterEffect(filter)
     , m_image(image)
     , m_document(0)
@@ -48,7 +48,7 @@ FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, const SVGPreserveAspec
 {
 }
 
-FEImage::FEImage(Filter* filter, Document& document, const String& href, const SVGPreserveAspectRatio& preserveAspectRatio)
+FEImage::FEImage(Filter* filter, Document& document, const String& href, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio)
     : FilterEffect(filter)
     , m_document(&document)
     , m_href(href)
@@ -56,12 +56,12 @@ FEImage::FEImage(Filter* filter, Document& document, const String& href, const S
 {
 }
 
-PassRefPtr<FEImage> FEImage::createWithImage(Filter* filter, PassRefPtr<Image> image, const SVGPreserveAspectRatio& preserveAspectRatio)
+PassRefPtr<FEImage> FEImage::createWithImage(Filter* filter, PassRefPtr<Image> image, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio)
 {
     return adoptRef(new FEImage(filter, image, preserveAspectRatio));
 }
 
-PassRefPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, Document& document, const String& href, const SVGPreserveAspectRatio& preserveAspectRatio)
+PassRefPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, Document& document, const String& href, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio)
 {
     return adoptRef(new FEImage(filter, document, href, preserveAspectRatio));
 }
@@ -102,7 +102,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
         destRect.intersect(srcRect);
     } else {
         srcRect = FloatRect(FloatPoint(), m_image->size());
-        m_preserveAspectRatio.transformRect(destRect, srcRect);
+        m_preserveAspectRatio->transformRect(destRect, srcRect);
     }
 
     destRect.intersect(requestedRect);
@@ -140,7 +140,7 @@ void FEImage::applySoftware()
 
     if (!renderer) {
         srcRect = FloatRect(FloatPoint(), m_image->size());
-        m_preserveAspectRatio.transformRect(destRect, srcRect);
+        m_preserveAspectRatio->transformRect(destRect, srcRect);
 
         resultImage->context()->drawImage(m_image.get(), destRect, srcRect);
         return;
@@ -232,7 +232,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
     if (dstRect.isEmpty())
         dstRect = srcRect;
 
-    m_preserveAspectRatio.transformRect(dstRect, srcRect);
+    m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
     if (!m_image->nativeImageForCurrentFrame())
         return adoptRef(new SkBitmapSource(SkBitmap()));

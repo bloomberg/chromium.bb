@@ -35,8 +35,8 @@ class RenderObject;
 
 class FEImage FINAL : public FilterEffect {
 public:
-    static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, const SVGPreserveAspectRatio&);
-    static PassRefPtr<FEImage> createWithIRIReference(Filter*, Document&, const String&, const SVGPreserveAspectRatio&);
+    static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, PassRefPtr<SVGPreserveAspectRatio>);
+    static PassRefPtr<FEImage> createWithIRIReference(Filter*, Document&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
 
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
 
@@ -47,8 +47,8 @@ public:
 
 private:
     virtual ~FEImage() { }
-    FEImage(Filter*, PassRefPtr<Image>, const SVGPreserveAspectRatio&);
-    FEImage(Filter*, Document&, const String&, const SVGPreserveAspectRatio&);
+    FEImage(Filter*, PassRefPtr<Image>, PassRefPtr<SVGPreserveAspectRatio>);
+    FEImage(Filter*, Document&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
     RenderObject* referencedRenderer() const;
 
     virtual void applySoftware() OVERRIDE;
@@ -59,7 +59,7 @@ private:
     // m_document will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
     Document* m_document;
     String m_href;
-    SVGPreserveAspectRatio m_preserveAspectRatio;
+    PassRefPtr<SVGPreserveAspectRatio> m_preserveAspectRatio;
 };
 
 } // namespace WebCore

@@ -29,20 +29,20 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGSymbolElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGSymbolElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGSymbolElement::SVGSymbolElement(Document& document)
     : SVGElement(SVGNames::symbolTag, document)
     , m_viewBox(SVGAnimatedRect::create(this, SVGNames::viewBoxAttr))
+    , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
 {
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_viewBox);
+    addToPropertyMap(m_preserveAspectRatio);
     registerAnimatedPropertiesForSVGSymbolElement();
 }
 
