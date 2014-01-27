@@ -19,11 +19,11 @@
 */
 
 [
-    ImplementedAs=DOMMimeTypeArray
+    ImplementedAs=DOMMimeTypeArray,
 ] interface MimeTypeArray {
     readonly attribute unsigned long length;
     getter MimeType item([Default=Undefined] optional unsigned long index);
     MimeType namedItem([Default=Undefined] optional DOMString name);
-    [NotEnumerable, ImplementedAs=namedItem] getter MimeType([Default=Undefined] optional DOMString name);
+    [NotEnumerable, ImplementedAs=namedItem] getter MimeType ([Default=Undefined] optional DOMString name);
 };
 

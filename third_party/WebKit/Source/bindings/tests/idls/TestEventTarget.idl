@@ -30,8 +30,8 @@ interface TestEventTarget : EventTarget {
     getter Node item(unsigned long index);
     [ImplementedAs=anonymousIndexedSetter] setter Node (unsigned long index, Node node);
     getter Node namedItem(DOMString name);
-    [ImplementedAs=anonymousNamedSetter] setter Node(DOMString name, [TreatUndefinedAs=anonymousNamedSetterUndefined] DOMString value);
-    [ImplementedAs=anonymousIndexedDeleter, RaisesException] deleter boolean(unsigned long index);
-    [ImplementedAs=anonymousNamedDeleter] deleter boolean(DOMString name);
+    [ImplementedAs=anonymousNamedSetter] setter Node (DOMString name, [TreatUndefinedAs=anonymousNamedSetterUndefined] DOMString value);
+    [ImplementedAs=anonymousIndexedDeleter, RaisesException] deleter boolean (unsigned long index);
+    [ImplementedAs=anonymousNamedDeleter] deleter boolean (DOMString name);
 };
 

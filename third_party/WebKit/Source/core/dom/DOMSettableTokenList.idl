@@ -23,7 +23,7 @@
  */
 
 interface DOMSettableTokenList : DOMTokenList {
-    [TreatReturnedNullStringAs=Null, ImplementedAs=item] getter DOMString(unsigned long index);
+    [TreatReturnedNullStringAs=Null, ImplementedAs=item] getter DOMString (unsigned long index);
     attribute DOMString value;
 };
 

@@ -24,8 +24,8 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
 ] interface RadioNodeList : NodeList {
     attribute DOMString value;
-    [ImplementedAs=item] getter Node(unsigned long index);
+    [ImplementedAs=item] getter Node (unsigned long index);
 };

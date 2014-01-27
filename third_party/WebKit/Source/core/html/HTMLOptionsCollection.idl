@@ -25,9 +25,9 @@
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;
     [Custom=Setter, RaisesException=Setter] attribute unsigned long length;
-    [ImplementedAs=item] getter Node(unsigned long index);
+    [ImplementedAs=item] getter Node (unsigned long index);
     [ImplementedAs=anonymousIndexedSetter, RaisesException] setter HTMLOptionElement (unsigned long index, [TreatNullAs=anonymousIndexedSetterRemove, TreatUndefinedAs=anonymousIndexedSetterRemove] HTMLOptionElement value);
-    [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter (NodeList or Node)(DOMString name);
+    [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter (NodeList or Node) (DOMString name);
 
     [Custom] Node namedItem([Default=Undefined] optional DOMString name);
 

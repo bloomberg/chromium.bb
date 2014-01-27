@@ -31,7 +31,7 @@ interface CSSKeyframesRule : CSSRule {
     attribute DOMString name;
     readonly attribute CSSRuleList cssRules;
 
-    [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule(unsigned long index);
+    [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule (unsigned long index);
     void insertRule([Default=Undefined] optional DOMString rule);
     void deleteRule([Default=Undefined] optional DOMString key);
     CSSKeyframeRule findRule([Default=Undefined] optional DOMString key);

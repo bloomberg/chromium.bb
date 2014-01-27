@@ -24,11 +24,11 @@
  */
 
 interface Storage {
-    [RaisesException, ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter DOMString(unsigned long index);
+    [RaisesException, ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter DOMString (unsigned long index);
     [RaisesException, ImplementedAs=anonymousIndexedSetter] setter DOMString (unsigned long index, DOMString value);
     [ImplementedAs=anonymousIndexedDeleter, RaisesException] deleter boolean (unsigned long index);
-    [RaisesException, ImplementedAs=anonymousNamedGetter] getter DOMString(DOMString name);
-    [RaisesException, ImplementedAs=anonymousNamedSetter] setter DOMString(DOMString name, DOMString value);
+    [RaisesException, ImplementedAs=anonymousNamedGetter] getter DOMString (DOMString name);
+    [RaisesException, ImplementedAs=anonymousNamedSetter] setter DOMString (DOMString name, DOMString value);
     [ImplementedAs=anonymousNamedDeleter, RaisesException] deleter boolean (DOMString name);
     [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;
     [NotEnumerable, TreatReturnedNullStringAs=Null, RaisesException] DOMString key(unsigned long index);

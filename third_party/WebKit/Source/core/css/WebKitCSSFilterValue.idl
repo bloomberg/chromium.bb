@@ -25,7 +25,7 @@
 
 [
     DoNotCheckConstants,
-    ImplementedAs=CSSFilterValue
+    ImplementedAs=CSSFilterValue,
 ] interface WebKitCSSFilterValue : CSSValueList {
 
     // OperationTypes
@@ -44,5 +44,5 @@
     const unsigned short CSS_FILTER_CUSTOM = 12;
 
     readonly attribute unsigned short operationType;
-    [ImplementedAs=item] getter CSSValue(unsigned long index);
+    [ImplementedAs=item] getter CSSValue (unsigned long index);
 };

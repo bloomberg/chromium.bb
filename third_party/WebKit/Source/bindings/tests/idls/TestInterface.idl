@@ -36,7 +36,7 @@
     RaisesException=Constructor,
     SetWrapperReferenceTo(ReferencedType referencedName),
 ] interface TestInterface {
-    [ImplementedAs=getItem] getter (Node or NodeList)(DOMString name);
+    [ImplementedAs=getItem] getter (Node or NodeList) (DOMString name);
     [Custom] setter Node (DOMString name, Node value);
 };
 
