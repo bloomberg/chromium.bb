@@ -1357,8 +1357,8 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
     init_data_type_ = type;
 
   const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-  // TODO(xhwang): Drop |keySystem| and |sessionId| in keyNeeded() call.
-  client_->keyNeeded(WebString(), WebString(), init_data_ptr, init_data.size());
+  client_->keyNeeded(
+      WebString::fromUTF8(type), init_data_ptr, init_data.size());
 }
 
 void WebMediaPlayerAndroid::SetDecryptorReadyCB(
