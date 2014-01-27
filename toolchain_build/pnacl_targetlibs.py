@@ -76,18 +76,83 @@ def CopyDriverForTargetLib(host):
       command.Runnable(pnacl_commands.InstallDriverScripts,
                        '%(driver)s', '%(cwd)s/driver',
                        host_windows=TripleIsWindows(host),
-                       host_64bit=False,
+                       host_64bit=fnmatch.fnmatch(host, '*x86_64*'),
                        extra_config=['BPREFIXES=%(abs_' + Mangle('llvm', host) +
                         ')s %(abs_' + Mangle('binutils_pnacl', host) + ')s'])
       ]
 
 
+# Build a single object file as bitcode.
 def BuildTargetBitcodeCmd(source, output):
   return command.Command(
     [PnaclTool('clang', msys=False),
      '-Wall', '-Werror', '-O2', '-c', '-isystem', '%(newlib)s/include',
      command.path.join('%(src)s', source),
      '-o', command.path.join('%(output)s', output)])
+
+
+# Build a single object file as native code.
+def BuildTargetNativeCmd(sourcefile, output, arch, extra_flags=[],
+                         source_dir='%(src)s', output_dir='%(cwd)s'):
+  return command.Command(
+    [PnaclTool('clang', msys=False),
+     '--pnacl-allow-native', '--pnacl-allow-translate', '-Wall', '-Werror',
+     '-arch', arch, '--pnacl-bias=' + arch, '-O3',
+     # TODO(dschuff): this include breaks the input encapsulation for build
+     # rules.
+     '-I%(top_srcdir)s/..', '-isystem', '%(newlib)s/include', '-c'] +
+    extra_flags +
+    [command.path.join(source_dir, sourcefile),
+     '-o', command.path.join(output_dir, output)])
+
+
+def BuildLibgccEhCmd(sourcefile, output, arch):
+  # Return a command to compile a file from libgcc_eh (see comments in at the
+  # rule definition below).
+  flags_common = ['-DENABLE_RUNTIME_CHECKING', '-g', '-O2', '-W', '-Wall',
+                  '-Wwrite-strings', '-Wcast-qual', '-Wstrict-prototypes',
+                  '-Wmissing-prototypes', '-Wold-style-definition',
+                  '-DIN_GCC', '-DCROSS_DIRECTORY_STRUCTURE', '-DIN_LIBGCC2',
+                  '-D__GCC_FLOAT_NOT_NEEDED', '-Dinhibit_libc',
+                  '-DHAVE_CC_TLS', '-DHIDE_EXPORTS',
+                  '-fno-stack-protector', '-fexceptions',
+                  '-fvisibility=hidden',
+                  '-I.', '-I../.././gcc', '-I%(abs_gcc_src)s/gcc/libgcc',
+                  '-I%(abs_gcc_src)s/gcc', '-I%(abs_gcc_src)s/include',
+                  '-isystem', './include']
+  # For x86 we use nacl-gcc to build libgcc_eh because of some issues with
+  # LLVM's handling of the gcc intrinsics used in the library. See
+  # https://code.google.com/p/nativeclient/issues/detail?id=1933
+  # and http://llvm.org/bugs/show_bug.cgi?id=8541
+  # For ARM, LLVM does work and we use it to avoid dealing with the fact that
+  # arm-nacl-gcc uses different libgcc support functions than PNaCl.
+  if arch in ('arm', 'mips32'):
+    cc = PnaclTool('clang', msys=False)
+    flags_naclcc = ['-arch', arch, '--pnacl-bias=' + arch,
+                    '--pnacl-allow-translate', '--pnacl-allow-native']
+  else:
+    if platform_tools.IsWindows():
+      platformdir = 'win_x86_newlib'
+    elif platform_tools.IsMacOS():
+      platformdir = 'mac_x86_newlib'
+    elif platform_tools.IsLinux():
+      platformdir = 'linux_x86_newlib'
+    else:
+      raise Exception('Unknown OS')
+    nnacl_dir = os.path.join(NACL_DIR, 'toolchain', platformdir, 'bin')
+    gcc_binaries = {
+        'x86-32': 'i686-nacl-gcc',
+        'x86-64': 'x86_64-nacl-gcc',
+    }
+
+    cc = os.path.join(nnacl_dir, gcc_binaries[arch])
+    flags_naclcc = []
+  return command.Command([cc] + flags_naclcc + flags_common +
+                         ['-c',
+                          command.path.join('%(gcc_src)s', 'gcc', sourcefile),
+                          '-o', output])
+
+
 
 def TargetLibsSrc(GitSyncCmd):
   newlib_sys_nacl = command.path.join('%(output)s',
@@ -327,6 +392,114 @@ def BitcodeLibs(host):
                   PnaclTool('ar'), 'rc',
                   command.path.join('%(output)s', 'libpnaclmm.a'),
                   command.path.join('%(output)s', 'pnaclmm.bc')]),
+          ],
+      },
+  }
+  return libs
+
+
+def AeabiReadTpCmd(arch):
+  if arch == 'arm':
+    return [BuildTargetNativeCmd('aeabi_read_tp.S', 'aeabi_read_tp.o', arch)]
+  else:
+    return []
+
+
+def NativeLibs(host, arch):
+  def H(component_name):
+    return Mangle(component_name, host)
+  libs = {
+      Mangle('libs_support_native', arch): {
+          'type': 'build',
+          'dependencies': [ 'newlib', H('llvm'), H('binutils_pnacl')],
+          # These libs include
+          # arbitrary stuff from native_client/src/{include,untrusted,trusted}
+          'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
+                      'include': os.path.join(NACL_DIR, 'src'),
+                      'newlib_subset': os.path.join(
+                          NACL_DIR, 'src', 'third_party_mod',
+                          'pnacl_native_newlib_subset'),
+                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+          'commands':
+              CopyDriverForTargetLib(host) + [
+              BuildTargetNativeCmd('crtbegin.c', 'crtbegin.o', arch,
+                                   output_dir='%(output)s'),
+              BuildTargetNativeCmd('crtbegin.c', 'crtbegin_for_eh.o', arch,
+                                   ['-DLINKING_WITH_LIBGCC_EH'],
+                                   output_dir='%(output)s'),
+              BuildTargetNativeCmd('crtend.c', 'crtend.o', arch,
+                                   output_dir='%(output)s'),
+              # libcrt_platform.a
+              BuildTargetNativeCmd('pnacl_irt.c', 'pnacl_irt.o', arch),
+              BuildTargetNativeCmd('setjmp_' + arch.replace('-', '_') + '.S',
+                                   'setjmp.o', arch),
+              BuildTargetNativeCmd('string.c', 'string.o', arch,
+                                   ['-std=c99'],
+                                   source_dir='%(newlib_subset)s')] +
+              AeabiReadTpCmd(arch) + [
+              command.Command(' '.join([
+                  PnaclTool('ar'), 'rc',
+                  command.path.join('%(output)s', 'libcrt_platform.a'),
+                  '*.o']), shell=True),
+          ],
+      },
+      Mangle('dummy_irt_shim', arch): {
+          'type': 'build',
+          'dependencies': [ 'newlib', H('llvm'), H('binutils_pnacl')],
+          'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support'),
+                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver') },
+          'commands':
+              CopyDriverForTargetLib(host) + [
+              BuildTargetNativeCmd('dummy_shim_entry.c', 'dummy_shim_entry.o',
+                                   arch),
+              command.Command([PnaclTool('ar'), 'rc',
+                               command.path.join('%(output)s',
+                                                 'libpnacl_irt_shim_dummy.a'),
+                               'dummy_shim_entry.o']),
+          ],
+      },
+      Mangle('compiler_rt', arch): {
+          'type': 'build',
+          'dependencies': [ 'compiler_rt_src', H('llvm'), H('binutils_pnacl')],
+          'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
+          'commands':
+              CopyDriverForTargetLib(host) + [
+              command.Command(MakeCommand() + [
+                  '-f',
+                  command.path.join('%(compiler_rt_src)s', 'lib',
+                                    'Makefile-pnacl'),
+                  'libgcc.a', 'CC=' + PnaclTool('clang'),
+                  'AR=' + PnaclTool('ar')] +
+                  ['SRC_DIR=' + command.path.join('%(abs_compiler_rt_src)s',
+                                                  'lib'),
+                   'CFLAGS=-arch ' + arch + ' -DPNACL_' +
+                    arch.replace('-', '_') + ' --pnacl-allow-translate -O3']),
+              command.Copy('libgcc.a', os.path.join('%(output)s', 'libgcc.a')),
+          ],
+      },
+      Mangle('libgcc_eh', arch): {
+          'type': 'build',
+          'dependencies': [ 'gcc_src', H('llvm'), H('binutils_pnacl')],
+          'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts'),
+                      'driver': os.path.join(NACL_DIR, 'pnacl', 'driver') },
+          'commands':
+              # Instead of trying to use gcc's build system to build only
+              # libgcc_eh, we just build the C files and archive them manually.
+              CopyDriverForTargetLib(host) + [
+              command.RemoveDirectory('include'),
+              command.Mkdir('include'),
+              command.Copy(os.path.join('%(gcc_src)s', 'gcc',
+                           'unwind-generic.h'),
+                           os.path.join('include', 'unwind.h')),
+              command.Copy(os.path.join('%(scripts)s', 'libgcc-tconfig.h'),
+                           'tconfig.h'),
+              command.WriteData('', 'tm.h'),
+              BuildLibgccEhCmd('unwind-dw2.c', 'unwind-dw2.o', arch),
+              BuildLibgccEhCmd('unwind-dw2-fde-glibc.c',
+                               'unwind-dw2-fde-glibc.o', arch),
+              command.Command([PnaclTool('ar'), 'rc',
+                               command.path.join('%(output)s', 'libgcc_eh.a'),
+                               'unwind-dw2.o', 'unwind-dw2-fde-glibc.o']),
           ],
       },
   }

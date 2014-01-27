@@ -435,8 +435,6 @@ if __name__ == '__main__':
 
   packages = {}
   packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
-  packages.update(pnacl_targetlibs.TargetLibsSrc(
-      GetGitSyncCmdCallback(revisions)))
 
   if platform_tools.Is64BitLinux():
     hosts = ['i686-linux', NativeTriple()]
@@ -451,7 +449,11 @@ if __name__ == '__main__':
   # On linux use the 32-bit compiler to build the target libs since that's what
   # most developers will be using.
   if not platform_tools.IsWindows():
+    packages.update(pnacl_targetlibs.TargetLibsSrc(
+      GetGitSyncCmdCallback(revisions)))
     packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0]))
+    for arch in ALL_ARCHES:
+      packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
 
   tb = toolchain_main.PackageBuilder(packages,
                                      leftover_args)
