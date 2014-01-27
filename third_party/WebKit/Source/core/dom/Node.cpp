@@ -1305,7 +1305,7 @@ bool Node::isEqualNode(Node* other) const
     if (otherChild)
         return false;
 
-    if (nodeType == DOCUMENT_TYPE_NODE) {
+    if (isDocumentTypeNode()) {
         const DocumentType* documentTypeThis = toDocumentType(this);
         const DocumentType* documentTypeOther = toDocumentType(other);
 

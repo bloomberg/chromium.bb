@@ -64,7 +64,7 @@ private:
     String m_subset;
 };
 
-DEFINE_NODE_TYPE_CASTS(DocumentType, nodeType() == Node::DOCUMENT_TYPE_NODE);
+DEFINE_NODE_TYPE_CASTS(DocumentType, isDocumentTypeNode());
 
 } // namespace WebCore
 

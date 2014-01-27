@@ -1522,7 +1522,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         value->setDocumentURL(documentURLString(document));
         value->setBaseURL(documentBaseURLString(document));
         value->setXmlVersion(document->xmlVersion());
-    } else if (node->nodeType() == Node::DOCUMENT_TYPE_NODE) {
+    } else if (node->isDocumentTypeNode()) {
         DocumentType* docType = toDocumentType(node);
         value->setPublicId(docType->publicId());
         value->setSystemId(docType->systemId());

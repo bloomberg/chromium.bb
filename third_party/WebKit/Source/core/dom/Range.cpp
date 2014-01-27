@@ -1458,7 +1458,7 @@ void Range::checkDeleteExtract(ExceptionState& exceptionState)
 
     Node* pastLast = pastLastNode();
     for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(*n)) {
-        if (n->nodeType() == Node::DOCUMENT_TYPE_NODE) {
+        if (n->isDocumentTypeNode()) {
             exceptionState.throwDOMException(HierarchyRequestError, "The Range contains a doctype node.");
             return;
         }

@@ -886,7 +886,7 @@ String createFullMarkup(const Node* node)
     // FIXME: This is never "for interchange". Is that right?
     String markupString = createMarkup(node, IncludeNode, 0);
     Node::NodeType nodeType = node->nodeType();
-    if (nodeType != Node::DOCUMENT_NODE && nodeType != Node::DOCUMENT_TYPE_NODE)
+    if (nodeType != Node::DOCUMENT_NODE && !node->isDocumentTypeNode())
         markupString = frame->documentTypeString() + markupString;
 
     return markupString;
