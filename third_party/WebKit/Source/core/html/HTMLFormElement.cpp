@@ -137,8 +137,8 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
     // that this form doesn't have elements associated by parser or associated
     // with 'form' content attribute.
     Node* root = highestAncestor();
-    Vector<FormAssociatedElement*> associatedElements(m_associatedElements);
-    notifyFormRemovedFromTree(associatedElements, root);
+    Vector<FormAssociatedElement*> elements(associatedElements());
+    notifyFormRemovedFromTree(elements, root);
 
     if (m_hasElementsAssociatedByParser) {
         if (!m_imageElementsAreDirty) {
@@ -167,10 +167,12 @@ void HTMLFormElement::handleLocalEvents(Event* event)
 
 unsigned HTMLFormElement::length() const
 {
+    const Vector<FormAssociatedElement*>& elements = associatedElements();
     unsigned len = 0;
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i)
-        if (m_associatedElements[i]->isEnumeratable())
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        if (elements[i]->isEnumeratable())
             ++len;
+    }
     return len;
 }
 
@@ -183,8 +185,9 @@ void HTMLFormElement::submitImplicitly(Event* event, bool fromImplicitSubmission
 {
     int submissionTriggerCount = 0;
     bool seenDefaultButton = false;
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
-        FormAssociatedElement* formAssociatedElement = m_associatedElements[i];
+    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        FormAssociatedElement* formAssociatedElement = elements[i];
         if (!formAssociatedElement->isFormControlElement())
             continue;
         HTMLFormControlElement* control = toHTMLFormControlElement(formAssociatedElement);
@@ -228,9 +231,10 @@ bool HTMLFormElement::validateInteractively(Event* event)
     if (submitElement && submitElement->formNoValidate())
         return true;
 
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
-        if (m_associatedElements[i]->isFormControlElement())
-            toHTMLFormControlElement(m_associatedElements[i])->hideVisibleValidationMessage();
+    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        if (elements[i]->isFormControlElement())
+            toHTMLFormControlElement(elements[i])->hideVisibleValidationMessage();
     }
 
     Vector<RefPtr<FormAssociatedElement> > unhandledInvalidControls;
@@ -317,9 +321,10 @@ void HTMLFormElement::getTextFieldValues(StringPairVector& fieldNamesAndValues) 
 {
     ASSERT_ARG(fieldNamesAndValues, fieldNamesAndValues.isEmpty());
 
-    fieldNamesAndValues.reserveCapacity(m_associatedElements.size());
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
-        FormAssociatedElement* control = m_associatedElements[i];
+    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    fieldNamesAndValues.reserveCapacity(elements.size());
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        FormAssociatedElement* control = elements[i];
         HTMLElement* element = toHTMLElement(control);
         if (!element->hasTagName(inputTag))
             continue;
@@ -360,8 +365,9 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     RefPtr<HTMLFormControlElement> firstSuccessfulSubmitButton;
     bool needButtonActivation = activateSubmitButton; // do we need to activate a submit button?
 
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
-        FormAssociatedElement* associatedElement = m_associatedElements[i];
+    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        FormAssociatedElement* associatedElement = elements[i];
         if (!associatedElement->isFormControlElement())
             continue;
         if (needButtonActivation) {
@@ -440,9 +446,10 @@ void HTMLFormElement::reset()
         return;
     }
 
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
-        if (m_associatedElements[i]->isFormControlElement())
-            toHTMLFormControlElement(m_associatedElements[i])->reset();
+    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        if (elements[i]->isFormControlElement())
+            toHTMLFormControlElement(elements[i])->reset();
     }
 
     m_isInResetFunction = false;
@@ -706,10 +713,11 @@ bool HTMLFormElement::wasUserSubmitted() const
 
 HTMLFormControlElement* HTMLFormElement::defaultButton() const
 {
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
-        if (!m_associatedElements[i]->isFormControlElement())
+    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    for (unsigned i = 0; i < elements.size(); ++i) {
+        if (!elements[i]->isFormControlElement())
             continue;
-        HTMLFormControlElement* control = toHTMLFormControlElement(m_associatedElements[i]);
+        HTMLFormControlElement* control = toHTMLFormControlElement(elements[i]);
         if (control->isSuccessfulSubmitButton())
             return control;
     }
@@ -731,12 +739,13 @@ bool HTMLFormElement::checkValidityWithoutDispatchingEvents()
 bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls, HTMLFormControlElement::CheckValidityDispatchEvents dispatchEvents)
 {
     RefPtr<HTMLFormElement> protector(this);
-    // Copy m_associatedElements because event handlers called from
-    // HTMLFormControlElement::checkValidity() might change m_associatedElements.
+    // Copy associatedElements because event handlers called from
+    // HTMLFormControlElement::checkValidity() might change associatedElements.
+    const Vector<FormAssociatedElement*>& associatedElements = this->associatedElements();
     Vector<RefPtr<FormAssociatedElement> > elements;
-    elements.reserveCapacity(m_associatedElements.size());
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i)
-        elements.append(m_associatedElements[i]);
+    elements.reserveCapacity(associatedElements.size());
+    for (unsigned i = 0; i < associatedElements.size(); ++i)
+        elements.append(associatedElements[i]);
     bool hasInvalidControls = false;
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
@@ -760,9 +769,9 @@ Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName)
     if (node->hasTagName(imgTag)) {
         ASSERT_WITH_SECURITY_IMPLICATION(imageElements().find(node) != kNotFound);
     } else if (node->hasTagName(objectTag)) {
-        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLObjectElement(node)) != kNotFound);
+        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLObjectElement(node)) != kNotFound);
     } else {
-        ASSERT_WITH_SECURITY_IMPLICATION(m_associatedElements.find(toHTMLFormControlElement(node)) != kNotFound);
+        ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLFormControlElement(node)) != kNotFound);
     }
 #endif
     return node;
