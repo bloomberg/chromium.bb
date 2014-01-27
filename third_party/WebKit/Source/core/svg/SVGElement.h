@@ -150,7 +150,7 @@ public:
     bool isContextElement() const { return m_isContextElement; }
     void setContextElement() { m_isContextElement = true; }
 
-    virtual bool childShouldCreateRenderer(const Node& child) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const { return true; }
 
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);

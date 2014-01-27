@@ -54,7 +54,7 @@ private:
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAElement)
         // This declaration used to define a non-virtual "String& target() const" method, that clashes with "virtual String Element::target() const".

@@ -35,7 +35,7 @@ private:
 
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return true; }
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 

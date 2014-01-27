@@ -44,6 +44,11 @@ RenderSVGModelObject::RenderSVGModelObject(SVGElement* node)
 {
 }
 
+bool RenderSVGModelObject::isChildAllowed(RenderObject* child, RenderStyle*) const
+{
+    return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
+}
+
 LayoutRect RenderSVGModelObject::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
 {
     return SVGRenderSupport::clippedOverflowRectForRepaint(this, repaintContainer);

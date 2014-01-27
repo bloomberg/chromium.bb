@@ -974,17 +974,6 @@ void SVGElement::finishParsingChildren()
         sendSVGLoadEventIfPossible();
 }
 
-bool SVGElement::childShouldCreateRenderer(const Node& child) const
-{
-    if (child.hasTagName(SVGNames::textPathTag)
-#if ENABLE(SVG_FONTS)
-        || child.hasTagName(SVGNames::altGlyphTag)
-#endif
-        || child.hasTagName(SVGNames::tspanTag))
-        return false;
-    return child.isSVGElement();
-}
-
 void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
 {
     Element::attributeChanged(name, newValue);
