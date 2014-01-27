@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/notifications/message_center_tray_bridge.h"
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -11,7 +12,9 @@
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #import "ui/message_center/cocoa/status_item_view.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/notifier_settings.h"
 
 class MessageCenterTrayBridgeTest : public ui::CocoaTest {
  public:
@@ -33,28 +36,60 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
   MCStatusItemView* status_item() { return bridge_->status_item_view_.get(); }
 
  protected:
+  scoped_ptr<message_center::Notification> GetNotification() {
+    message_center::RichNotificationData data;
+    data.priority = -1;
+    return make_scoped_ptr(new message_center::Notification(
+        message_center::NOTIFICATION_TYPE_SIMPLE,
+        "1",
+        base::ASCIIToUTF16("First notification"),
+        base::ASCIIToUTF16("This is a simple test."),
+        gfx::Image(),
+        base::string16(),
+        message_center::NotifierId(),
+        data,
+        NULL));
+  }
+
   base::MessageLoop message_loop_;
   message_center::MessageCenter* center_;  // Weak, global.
   scoped_ptr<MessageCenterTrayBridge> bridge_;
 };
 
+class MessageCenterTrayBridgeTestPrefNever
+    : public MessageCenterTrayBridgeTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        message_center::switches::kNotificationCenterTrayBehavior, "never");
+    MessageCenterTrayBridgeTest::SetUp();
+  }
+};
+
+class MessageCenterTrayBridgeTestPrefAlways
+    : public MessageCenterTrayBridgeTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        message_center::switches::kNotificationCenterTrayBehavior, "always");
+    MessageCenterTrayBridgeTest::SetUp();
+  }
+};
+
+class MessageCenterTrayBridgeTestPrefUnread
+    : public MessageCenterTrayBridgeTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        message_center::switches::kNotificationCenterTrayBehavior, "unread");
+    MessageCenterTrayBridgeTest::SetUp();
+  }
+};
+
 TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyAfterFirstNotification) {
   EXPECT_FALSE(status_item());
 
-  message_center::RichNotificationData data;
-  data.priority = -1;
-  scoped_ptr<message_center::Notification> notification(
-      new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          "1",
-          base::ASCIIToUTF16("First notification"),
-          base::ASCIIToUTF16("This is a simple test."),
-          gfx::Image(),
-          base::string16(),
-          message_center::NotifierId(),
-          data,
-          NULL));
-  center_->AddNotification(notification.Pass());
+  center_->AddNotification(GetNotification());
 
   base::RunLoop().RunUntilIdle();
 
@@ -66,4 +101,54 @@ TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyAfterFirstNotification) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(status_item());
+}
+
+TEST_F(MessageCenterTrayBridgeTestPrefNever, StatusItemNeverWithPref) {
+  EXPECT_FALSE(status_item());
+
+  center_->AddNotification(GetNotification());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(status_item());
+
+  center_->RemoveNotification("1", /*by_user=*/true);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(status_item());
+}
+
+TEST_F(MessageCenterTrayBridgeTestPrefAlways, StatusItemAlwaysWithPref) {
+  EXPECT_TRUE(status_item());
+
+  center_->AddNotification(GetNotification());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(status_item());
+  EXPECT_EQ(1u, [status_item() unreadCount]);
+
+  center_->RemoveNotification("1", /*by_user=*/true);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(status_item());
+}
+
+TEST_F(MessageCenterTrayBridgeTestPrefUnread, StatusItemUnreadWithPref) {
+  EXPECT_FALSE(status_item());
+
+  center_->AddNotification(GetNotification());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(status_item());
+  EXPECT_EQ(1u, [status_item() unreadCount]);
+
+  center_->RemoveNotification("1", /*by_user=*/true);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(status_item());
 }

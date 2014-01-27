@@ -19,6 +19,15 @@ MESSAGE_CENTER_EXPORT bool IsRichNotificationEnabled();
 
 MESSAGE_CENTER_EXPORT bool IsExperimentalNotificationUIEnabled();
 
+enum MessageCenterShowState {
+  MESSAGE_CENTER_SHOW_NEVER = 0,
+  MESSAGE_CENTER_SHOW_UNREAD,
+  MESSAGE_CENTER_SHOW_AFTER_FIRST,
+  MESSAGE_CENTER_SHOW_ALWAYS
+};
+
+MESSAGE_CENTER_EXPORT MessageCenterShowState GetMessageCenterShowState();
+
 }  // namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_UTIL_H_

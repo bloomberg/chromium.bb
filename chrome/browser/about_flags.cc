@@ -373,6 +373,16 @@ const Experiment::Choice kOriginChipChoices[] = {
     switches::kEnableOriginChipLeadingMenuButton, ""}
 };
 
+const Experiment::Choice kNotificationCenterTrayBehaviorChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_NEVER,
+    message_center::switches::kNotificationCenterTrayBehavior, "never" },
+  { IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_ALWAYS,
+    message_center::switches::kNotificationCenterTrayBehavior, "always" },
+  { IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_UNREAD,
+    message_center::switches::kNotificationCenterTrayBehavior, "unread" }
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1991,6 +2001,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePermissionsBubbles)
   },
 #endif
+  {
+    "notification-center-tray-behavior",
+    IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_NAME,
+    IDS_FLAGS_NOTIFICATION_TRAY_BEHAVIOR_DESCRIPTION,
+    kOsMac,
+    MULTI_VALUE_TYPE(kNotificationCenterTrayBehaviorChoices)
+  },
 };
 
 const Experiment* experiments = kExperiments;

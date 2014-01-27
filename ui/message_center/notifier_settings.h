@@ -13,8 +13,7 @@
 #include "ui/message_center/message_center_export.h"
 #include "url/gurl.h"
 
-FORWARD_DECLARE_TEST(MessageCenterTrayBridgeTest,
-                     StatusItemOnlyAfterFirstNotification);
+class MessageCenterTrayBridgeTest;
 
 namespace ash {
 class WebNotificationTrayTest;
@@ -67,14 +66,13 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
   std::string profile_id;
 
  private:
+  friend class ::MessageCenterTrayBridgeTest;
   friend class MessageCenterTrayTest;
   friend class test::MessagePopupCollectionTest;
   friend class NotificationControllerTest;
   friend class PopupCollectionTest;
   friend class TrayViewControllerTest;
   friend class ash::WebNotificationTrayTest;
-  FRIEND_TEST_ALL_PREFIXES(::MessageCenterTrayBridgeTest,
-                           StatusItemOnlyAfterFirstNotification);
   FRIEND_TEST_ALL_PREFIXES(PopupControllerTest, Creation);
   FRIEND_TEST_ALL_PREFIXES(NotificationListTest, UnreadCountNoNegative);
   FRIEND_TEST_ALL_PREFIXES(NotificationListTest, TestHasNotificationOfType);

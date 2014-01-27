@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_list.h"
@@ -178,6 +179,7 @@ void ChangeQueue::ApplyChanges(MessageCenter* message_center) {
 
 void ChangeQueue::AddNotification(scoped_ptr<Notification> notification) {
   std::string id = notification->id();
+
   scoped_ptr<Change> change(
       new Change(CHANGE_TYPE_ADD, id, notification.Pass()));
   Replace(id, change.Pass());
@@ -548,6 +550,11 @@ NotificationList::PopupNotifications
 // Client code interface.
 void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
   DCHECK(notification.get());
+  if (GetMessageCenterShowState() == MESSAGE_CENTER_SHOW_NEVER) {
+    notification->set_shown_as_popup(false);
+    notification->set_never_timeout(true);
+    notification->set_priority(message_center::DEFAULT_PRIORITY);
+  }
 
   for (size_t i = 0; i < blockers_.size(); ++i)
     blockers_[i]->CheckState();

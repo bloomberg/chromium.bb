@@ -36,4 +36,23 @@ bool IsExperimentalNotificationUIEnabled() {
           switches::kEnableExperimentalNotificationUI);
 }
 
+MessageCenterShowState GetMessageCenterShowState() {
+#if defined(OS_MACOSX)
+  std::string tray_behavior =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kNotificationCenterTrayBehavior);
+  if (tray_behavior == "never")
+    return MESSAGE_CENTER_SHOW_NEVER;
+  if (tray_behavior == "always")
+    return MESSAGE_CENTER_SHOW_ALWAYS;
+  if (tray_behavior == "unread")
+    return MESSAGE_CENTER_SHOW_UNREAD;
+  return MESSAGE_CENTER_SHOW_AFTER_FIRST;
+#elif defined(OS_CHROMEOS)
+  return MESSAGE_CENTER_SHOW_UNREAD;
+#else  // defined(OS_WIN) || defined(OS_LINUX)
+  return MESSAGE_CENTER_SHOW_AFTER_FIRST;
+#endif
+}
+
 }  // namespace message_center

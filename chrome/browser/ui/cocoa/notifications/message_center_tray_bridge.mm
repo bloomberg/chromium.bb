@@ -19,6 +19,7 @@
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
+#include "ui/message_center/message_center_util.h"
 
 namespace message_center {
 
@@ -33,6 +34,10 @@ MessageCenterTrayBridge::MessageCenterTrayBridge(
     : message_center_(message_center),
       tray_(new message_center::MessageCenterTray(this, message_center)),
       weak_ptr_factory_(this) {
+  if (message_center::GetMessageCenterShowState() ==
+          message_center::MESSAGE_CENTER_SHOW_ALWAYS) {
+    UpdateStatusItem();
+  }
 }
 
 MessageCenterTrayBridge::~MessageCenterTrayBridge() {
@@ -91,6 +96,18 @@ MessageCenterTrayBridge::GetMessageCenterTray() {
 }
 
 void MessageCenterTrayBridge::UpdateStatusItem() {
+  // Only show the status item if there are notifications.
+  message_center::MessageCenterShowState show_state =
+      message_center::GetMessageCenterShowState();
+  if (show_state == message_center::MESSAGE_CENTER_SHOW_UNREAD &&
+      message_center_->NotificationCount() == 0) {
+    [status_item_view_ removeItem];
+    status_item_view_.reset();
+    return;
+  } else if (show_state == message_center::MESSAGE_CENTER_SHOW_NEVER) {
+    return;
+  }
+
   if (!status_item_view_) {
     status_item_view_.reset([[MCStatusItemView alloc] init]);
     [status_item_view_ setCallback:^{ tray_->ToggleMessageCenterBubble(); }];
@@ -125,6 +142,7 @@ void MessageCenterTrayBridge::OpenTrayWindow() {
 
   UpdateStatusItem();
 
+  DCHECK(status_item_view_);
   [status_item_view_ setHighlight:YES];
   NSRect frame = [[status_item_view_ window] frame];
   [tray_controller_ showTrayAtRightOf:NSMakePoint(NSMinX(frame),
