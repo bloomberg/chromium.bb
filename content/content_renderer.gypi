@@ -138,8 +138,6 @@
     'renderer/drop_data_builder.h',
     'renderer/external_popup_menu.cc',
     'renderer/external_popup_menu.h',
-    'renderer/fetchers/alt_error_page_resource_fetcher.cc',
-    'renderer/fetchers/alt_error_page_resource_fetcher.h',
     'renderer/fetchers/image_resource_fetcher.cc',
     'renderer/fetchers/image_resource_fetcher.h',
     'renderer/fetchers/multi_resolution_image_resource_fetcher.cc',
