@@ -147,9 +147,27 @@ def GenerateSymbols(options, binaries):
     while True:
       binary = queue.get()
 
+      should_dump_syms = True
+      reason = "no reason"
+
+      output_path = os.path.join(
+          options.symbols_dir, os.path.basename(binary))
+      if os.path.isdir(output_path):
+        dir_stat = os.stat(output_path)
+        bin_stat = os.stat(binary)
+        if os.path.getmtime(binary) < os.path.getmtime(output_path):
+          should_dump_syms = False
+          reason = "symbols are more current than binary"
+
+      if not should_dump_syms:
+        with print_lock:
+          print "Skipping %s (%s)" % (binary, reason)
+        queue.task_done()
+        continue
+
       if options.verbose:
-          with print_lock:
-              print "Generating symbols for %s" % binary
+        with print_lock:
+          print "Generating symbols for %s" % binary
 
       syms = GetCommandOutput([GetDumpSymsBinary(options.build_dir), '-r',
                                binary])
