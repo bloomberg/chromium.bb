@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
 
@@ -53,8 +54,11 @@ void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {
 void DomDistillerHandler::HandleSelectArticle(const base::ListValue* args) {
   std::string entry_id;
   args->GetString(0, &entry_id);
-
-  // TODO(nyquist): Do something here.
+  GURL url(article_scheme_ + std::string("://") + entry_id);
+  DCHECK(url.is_valid());
+  web_ui()->GetWebContents()->GetController().LoadURL(url,
+      content::Referrer(), content::PAGE_TRANSITION_GENERATED,
+      std::string());
 }
 
 void DomDistillerHandler::HandleRequestEntries(const base::ListValue* args) {

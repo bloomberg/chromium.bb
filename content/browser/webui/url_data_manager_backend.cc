@@ -60,10 +60,8 @@ bool SchemeIsInSchemes(const std::string& scheme,
   return std::find(schemes.begin(), schemes.end(), scheme) != schemes.end();
 }
 
-// Parse a URL into the components used to resolve its request. |source_name|
-// is the hostname and |path| is the remaining portion of the URL.
-void URLToRequest(const GURL& url, std::string* source_name,
-                  std::string* path) {
+// Returns whether |url| passes some sanity checks and is a valid GURL.
+bool CheckURLIsValid(const GURL& url) {
   std::vector<std::string> additional_schemes;
   DCHECK(url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
@@ -73,14 +71,15 @@ void URLToRequest(const GURL& url, std::string* source_name,
 
   if (!url.is_valid()) {
     NOTREACHED();
-    return;
+    return false;
   }
 
-  // Our input looks like: chrome://source_name/extra_bits?foo .
-  // So the url's "host" is our source, and everything after the host is
-  // the path.
-  source_name->assign(url.host());
+  return true;
+}
 
+// Parse |url| to get the path which will be used to resolve the request. The
+// path is the remaining portion after the scheme and hostname.
+void URLToRequestPath(const GURL& url, std::string* path) {
   const std::string& spec = url.possibly_invalid_spec();
   const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
   // + 1 to skip the slash at the beginning of the path.
@@ -498,20 +497,18 @@ bool URLDataManagerBackend::HasPendingJob(
 
 bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
                                          URLRequestChromeJob* job) {
-  // Parse the URL into a request for a source and path.
-  std::string source_name;
-  std::string path;
-  URLToRequest(request->url(), &source_name, &path);
-
-  // Look up the data source for the request.
-  DataSourceMap::iterator i = data_sources_.find(source_name);
-  if (i == data_sources_.end())
+  if (!CheckURLIsValid(request->url()))
     return false;
 
-  URLDataSourceImpl* source = i->second.get();
+  URLDataSourceImpl* source = GetDataSourceFromURL(request->url());
+  if (!source)
+    return false;
 
   if (!source->source()->ShouldServiceRequest(request))
     return false;
+
+  std::string path;
+  URLToRequestPath(request->url(), &path);
   source->source()->WillServiceRequest(request, &path);
 
   // Save this request so we know where to send the data.
@@ -571,6 +568,24 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
                    render_frame_id, request_id));
   }
   return true;
+}
+
+URLDataSourceImpl* URLDataManagerBackend::GetDataSourceFromURL(
+    const GURL& url) {
+  // The input usually looks like: chrome://source_name/extra_bits?foo
+  // so do a lookup using the host of the URL.
+  DataSourceMap::iterator i = data_sources_.find(url.host());
+  if (i != data_sources_.end())
+    return i->second.get();
+
+  // No match using the host of the URL, so do a lookup using the scheme for
+  // URLs on the form source_name://extra_bits/foo .
+  i = data_sources_.find(url.scheme());
+  if (i != data_sources_.end())
+    return i->second.get();
+
+  // No matches found, so give up.
+  return NULL;
 }
 
 void URLDataManagerBackend::CallStartRequest(

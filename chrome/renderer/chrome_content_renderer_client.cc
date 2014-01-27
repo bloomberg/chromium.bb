@@ -294,9 +294,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (switches::IsNewProfileManagement())
     thread->RegisterExtension(extensions_v8::PrincipalsExtension::Get());
 
-  // chrome:, chrome-search:, and chrome-devtools: pages should not be
-  // accessible by normal content, and should also be unable to script anything
-  // but themselves (to help limit the damage that a corrupt page could cause).
+  // chrome:, chrome-search:, chrome-devtools:, and chrome-distiller: pages
+  // should not be accessible by normal content, and should also be unable to
+  // script anything but themselves (to help limit the damage that a corrupt
+  // page could cause).
   WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
 
@@ -308,6 +309,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   WebString dev_tools_scheme(ASCIIToUTF16(chrome::kChromeDevToolsScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dev_tools_scheme);
+
+  WebString dom_distiller_scheme(ASCIIToUTF16(chrome::kDomDistillerScheme));
+  // TODO(nyquist): Add test to ensure this happens when the flag is set.
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(dom_distiller_scheme);
 
 #if defined(OS_CHROMEOS)
   WebString drive_scheme(ASCIIToUTF16(chrome::kDriveScheme));

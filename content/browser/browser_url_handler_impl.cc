@@ -23,15 +23,23 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
 
     // Bug 26129: limit view-source to view the content and not any
     // other kind of 'active' url scheme like 'javascript' or 'data'.
-    static const char* const allowed_sub_schemes[] = {
+    static const char* const default_allowed_sub_schemes[] = {
       kHttpScheme, kHttpsScheme, kFtpScheme,
       chrome::kChromeDevToolsScheme, chrome::kChromeUIScheme,
       kFileScheme, kFileSystemScheme
     };
 
+    // Merge all the schemes for which view-source is allowed by default, with
+    // the WebUI schemes defined by the ContentBrowserClient.
+    std::vector<std::string> all_allowed_sub_schemes;
+    for (size_t i = 0; i < arraysize(default_allowed_sub_schemes); ++i)
+      all_allowed_sub_schemes.push_back(default_allowed_sub_schemes[i]);
+    GetContentClient()->browser()->GetAdditionalWebUISchemes(
+        &all_allowed_sub_schemes);
+
     bool is_sub_scheme_allowed = false;
-    for (size_t i = 0; i < arraysize(allowed_sub_schemes); i++) {
-      if (url->SchemeIs(allowed_sub_schemes[i])) {
+    for (size_t i = 0; i < all_allowed_sub_schemes.size(); ++i) {
+      if (url->SchemeIs(all_allowed_sub_schemes[i].c_str())) {
         is_sub_scheme_allowed = true;
         break;
       }

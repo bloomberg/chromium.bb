@@ -658,6 +658,8 @@ const char kChromeSearchOnlineNtpHost[] = "online-ntp";
 const char kChromeSearchMostVisitedHost[] = "most-visited";
 const char kChromeSearchMostVisitedUrl[] = "chrome-search://most-visited/";
 
+const char kDomDistillerScheme[] = "chrome-distiller";
+
 // Google SafeSearch query parameters.
 const char kSafeSearchSafeParameter[] = "safe=active";
 const char kSafeSearchSsuiParameter[] = "ssui=on";

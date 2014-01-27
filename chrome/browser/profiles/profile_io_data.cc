@@ -603,6 +603,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   static const char* const kProtocolList[] = {
     content::kFileScheme,
     chrome::kChromeDevToolsScheme,
+    chrome::kDomDistillerScheme,
     extensions::kExtensionScheme,
     extensions::kExtensionResourceScheme,
     chrome::kChromeUIScheme,

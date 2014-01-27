@@ -1046,10 +1046,12 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   return true;
 }
 
-// These are treated as WebUI schemes but do not get WebUI bindings.
+// These are treated as WebUI schemes but do not get WebUI bindings. Also,
+// view-source is allowed for these schemes.
 void ChromeContentBrowserClient::GetAdditionalWebUISchemes(
     std::vector<std::string>* additional_schemes) {
   additional_schemes->push_back(chrome::kChromeSearchScheme);
+  additional_schemes->push_back(chrome::kDomDistillerScheme);
 }
 
 net::URLRequestContextGetter*

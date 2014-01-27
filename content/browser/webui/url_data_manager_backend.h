@@ -88,6 +88,10 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   // up to date.
   bool HasPendingJob(URLRequestChromeJob* job) const;
 
+  // Look up the data source for the request. Returns the source if it is found,
+  // else NULL.
+  URLDataSourceImpl* GetDataSourceFromURL(const GURL& url);
+
   // Custom sources of data, keyed by source path (e.g. "favicon").
   DataSourceMap data_sources_;
 

@@ -467,6 +467,8 @@ void ChromeContentClient::AddAdditionalSchemes(
   savable_schemes->push_back(extensions::kExtensionResourceScheme);
   standard_schemes->push_back(chrome::kChromeSearchScheme);
   savable_schemes->push_back(chrome::kChromeSearchScheme);
+  standard_schemes->push_back(chrome::kDomDistillerScheme);
+  savable_schemes->push_back(chrome::kDomDistillerScheme);
 #if defined(OS_CHROMEOS)
   standard_schemes->push_back(chrome::kCrosScheme);
 #endif

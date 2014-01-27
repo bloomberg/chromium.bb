@@ -198,8 +198,9 @@ WebUIController* NewWebUI<dom_distiller::DomDistillerUi>(WebUI* web_ui,
   dom_distiller::DomDistillerService* service =
       dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
           browser_context);
-  // TODO(nyquist): Add real scheme.
-  return new dom_distiller::DomDistillerUi(web_ui, service, "dummy");
+  return new dom_distiller::DomDistillerUi(web_ui,
+                                           service,
+                                           chrome::kDomDistillerScheme);
 }
 
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
