@@ -68,7 +68,13 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
 // creating a new set of manifests because shared NaCl/PNaCl manifests are not
 // allowed.  Also not run on GLibc because it's a large test that is at risk of
 // causing timeouts.
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, Bad) {
+// crbug/338444
+#if defined(OS_WIN)
+#define MAYBE_Bad DISABLED_Bad
+#else
+#define MAYBE_Bad Bad
+#endif
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, MAYBE_Bad) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_bad.html"));
 }
 
