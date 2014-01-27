@@ -98,18 +98,10 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
     DEFINES+=" use_goma=1 gomadir=$GOMA_DIR"
   fi
 
-  # The order file specifies the order of symbols in the .text section of the
-  # shared library, libchromeview.so.  The file is an order list of section
-  # names and the library is linked with option
-  # --section-ordering-file=<orderfile>. The order file is updated by profiling
-  # startup after compiling with the order_profiling=1 GYP_DEFINES flag.
-  ORDER_DEFINES="order_text_section=${CHROME_SRC}/orderfiles/orderfile.out"
-
   # The following defines will affect ARM code generation of both C/C++ compiler
   # and V8 mksnapshot.
   case "${TARGET_ARCH}" in
     "arm")
-      DEFINES+=" ${ORDER_DEFINES}"
       DEFINES+=" target_arch=arm"
       ;;
     "x86")
