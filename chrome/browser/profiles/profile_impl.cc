@@ -267,11 +267,10 @@ void SchedulePrefsFileVerification(const base::FilePath& prefs_file) {
 #endif
 }
 
-scoped_ptr<PrefHashStoreImpl> GetPrefHashStore(
-    const base::FilePath& profile_path) {
+scoped_ptr<PrefHashStore> GetPrefHashStore(Profile* profile) {
   // TODO(erikwright): Enable this on Android when race condition is sorted out.
 #if defined(OS_ANDROID)
-  return scoped_ptr<PrefHashStoreImpl>();
+  return scoped_ptr<PrefHashStore>();
 #else
   std::string seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_PREF_HASH_SEED_BIN).as_string();
@@ -287,17 +286,12 @@ scoped_ptr<PrefHashStoreImpl> GetPrefHashStore(
   rlz_lib::GetMachineId(&device_id);
 #endif
 
-  return make_scoped_ptr(new PrefHashStoreImpl(
-      profile_path.AsUTF8Unsafe(),
+  return scoped_ptr<PrefHashStore>(new PrefHashStoreImpl(
+      profile->GetPath().AsUTF8Unsafe(),
       seed,
       device_id,
       g_browser_process->local_state()));
 #endif
-}
-
-base::FilePath GetPrefFilePathFromProfilePath(
-    const base::FilePath& profile_path) {
-  return profile_path.Append(chrome::kPreferencesFilename);
 }
 
 }  // namespace
@@ -414,24 +408,6 @@ void ProfileImpl::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-// static
-void ProfileImpl::InitializePrefHashStoreIfRequired(
-    const base::FilePath& profile_path) {
-  scoped_ptr<PrefHashStoreImpl> pref_hash_store(GetPrefHashStore(profile_path));
-  if (!pref_hash_store->IsInitialized()) {
-    chrome_prefs::InitializeHashStoreForPrefFile(
-        GetPrefFilePathFromProfilePath(profile_path),
-        JsonPrefStore::GetTaskRunnerForFile(
-            profile_path, BrowserThread::GetBlockingPool()),
-        pref_hash_store.PassAs<PrefHashStore>());
-  }
-}
-
-// static
-void ProfileImpl::ResetPrefHashStore(const base::FilePath& profile_path) {
-  GetPrefHashStore(profile_path)->Reset();
-}
-
 ProfileImpl::ProfileImpl(
     const base::FilePath& path,
     Delegate* delegate,
@@ -521,7 +497,7 @@ ProfileImpl::ProfileImpl(
         sequenced_task_runner,
         profile_policy_connector_->policy_service(),
         managed_user_settings,
-        GetPrefHashStore(path_).PassAs<PrefHashStore>(),
+        GetPrefHashStore(this),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForBrowserContext(this), false),
         pref_registry_,
@@ -937,7 +913,9 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
 }
 
 base::FilePath ProfileImpl::GetPrefFilePath() {
-  return GetPrefFilePathFromProfilePath(path_);
+  base::FilePath pref_file_path = path_;
+  pref_file_path = pref_file_path.Append(chrome::kPreferencesFilename);
+  return pref_file_path;
 }
 
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(

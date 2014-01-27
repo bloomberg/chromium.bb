@@ -31,21 +31,6 @@ void PrefHashStoreImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kProfilePreferenceHashes);
 }
 
-void PrefHashStoreImpl::Reset() {
-  DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
-
-  // Remove the dictionary corresponding to the profile name, which may have a
-  // '.'
-  update->RemoveWithoutPathExpansion(hash_store_id_, NULL);
-}
-
-bool PrefHashStoreImpl::IsInitialized() const {
-  const base::DictionaryValue* pref_hash_dicts =
-      local_state_->GetDictionary(prefs::kProfilePreferenceHashes);
-  return pref_hash_dicts &&
-      pref_hash_dicts->GetDictionaryWithoutPathExpansion(hash_store_id_, NULL);
-}
-
 PrefHashStore::ValueState PrefHashStoreImpl::CheckValue(
     const std::string& path, const base::Value* initial_value) const {
   const base::DictionaryValue* pref_hash_dicts =

@@ -17314,14 +17314,6 @@ other types of suffix sets.
   <summary>The id of a tracked preference which was reset by Chrome.</summary>
 </histogram>
 
-<histogram name="Settings.TrackedPreferencesInitializedForUnloadedProfile"
-    enum="BooleanHit">
-  <summary>
-    Preference tracking was initialized for an unloaded profile. This should
-    happen at most once per profile.
-  </summary>
-</histogram>
-
 <histogram name="Settings.TrackedPreferenceTrustedInitialized"
     enum="TrackedPreference">
   <summary>

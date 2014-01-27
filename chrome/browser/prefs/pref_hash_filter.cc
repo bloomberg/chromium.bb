@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_store.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 
@@ -70,18 +69,6 @@ PrefHashFilter::~PrefHashFilter() {
   // Ensure new values for all |changed_paths_| have been flushed to
   // |pref_hash_store_| already.
   DCHECK(changed_paths_.empty());
-}
-
-void PrefHashFilter::Initialize(PrefStore* pref_store) {
-  UMA_HISTOGRAM_BOOLEAN(
-      "Settings.TrackedPreferencesInitializedForUnloadedProfile", true);
-
-  for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
-       it != tracked_paths_.end(); ++it) {
-    const base::Value* value = NULL;
-    pref_store->GetValue(it->first, &value);
-    pref_hash_store_->StoreHash(it->first, value);
-  }
 }
 
 // Validates loaded preference values according to stored hashes, reports

@@ -51,9 +51,6 @@ class PrefHashStore {
     TRUSTED_UNKNOWN_VALUE,
   };
 
-  // Determines if the hash store has been initialized (contains any values).
-  virtual bool IsInitialized() const = 0;
-
   // Checks |initial_value| against the existing stored value hash.
   virtual ValueState CheckValue(
       const std::string& path, const base::Value* initial_value) const = 0;

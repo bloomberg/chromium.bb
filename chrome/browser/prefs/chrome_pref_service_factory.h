@@ -62,13 +62,6 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async);
 
-// Initializes a preference hash store for the profile preferences file at
-// |pref_filename| without actually loading the profile.
-void InitializeHashStoreForPrefFile(
-    const base::FilePath& pref_filename,
-    base::SequencedTaskRunner* pref_io_task_runner,
-    scoped_ptr<PrefHashStore> pref_hash_store);
-
 }  // namespace chrome_prefs
 
 #endif  // CHROME_BROWSER_PREFS_CHROME_PREF_SERVICE_FACTORY_H_

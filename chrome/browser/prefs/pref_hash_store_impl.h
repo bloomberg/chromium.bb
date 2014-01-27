@@ -39,12 +39,7 @@ class PrefHashStoreImpl : public PrefHashStore {
   // Registers required local state preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Clears the contents of this PrefHashStore. |IsInitialized()| will return
-  // false after this call.
-  void Reset();
-
   // PrefHashStore implementation.
-  virtual bool IsInitialized() const OVERRIDE;
   virtual ValueState CheckValue(const std::string& path,
                                 const base::Value* value) const OVERRIDE;
   virtual void StoreHash(const std::string& path,

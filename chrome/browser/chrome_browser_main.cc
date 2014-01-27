@@ -86,7 +86,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/shell_integration.h"
@@ -511,16 +510,6 @@ class LoadCompleteListener : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(LoadCompleteListener);
 };
 
-void InitializeAllPrefHashStores() {
-  ProfileInfoCache& profile_info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t n_profiles = profile_info_cache.GetNumberOfProfiles();
-  for (size_t i = 0; i < n_profiles; ++i) {
-    base::FilePath profile_path =
-        profile_info_cache.GetPathOfProfileAtIndex(i);
-    ProfileImpl::InitializePrefHashStoreIfRequired(profile_path);
-  }
-}
 }  // namespace
 
 namespace chrome_browser {
@@ -1576,10 +1565,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   performance_monitor::PerformanceMonitor::GetInstance()->Initialize();
 
   PostBrowserStart();
-
-  // Initialize preference hash stores for profiles that haven't been loaded
-  // recently.
-  InitializeAllPrefHashStores();
 
   if (parameters().ui_task) {
     // We end the startup timer here if we have parameters to run, because we
