@@ -272,6 +272,11 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   virtual View* GetContentsView() OVERRIDE { return this; }
 
   // Overridden from View
+  virtual gfx::Size GetMinimumSize() OVERRIDE {
+    // We want to be able to make the window smaller than its initial
+    // (preferred) size.
+    return gfx::Size();
+  }
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE {
     if (details.is_add && details.child == this) {
