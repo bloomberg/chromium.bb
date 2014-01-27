@@ -445,6 +445,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.gearButton_.addEventListener('menushow',
         this.refreshRemainingSpace_.bind(this,
                                          false /* Without loading caption. */));
+    this.gearButton_.addEventListener(
+        'menushow',
+        this.updateVisitDesktopMenus_.bind(this));
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
         'menuitem, hr';
     cr.ui.decorate(this.gearButton_, cr.ui.MenuButton);
@@ -2214,6 +2217,64 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
+   * Update menus that move the window to the other profile's desktop.
+   * TODO(hirono): Add the GearMenu class and make it a member of the class.
+   * TODO(hirono): Handle the case where a profile is added while the menu is
+   *     opened.
+   * @private
+   */
+  FileManager.prototype.updateVisitDesktopMenus_ = function() {
+    var gearMenu = this.document_.querySelector('#gear-menu');
+    var separator =
+        this.document_.querySelector('#multi-profile-separator');
+
+    // Remove existing menu items.
+    var oldItems =
+        this.document_.querySelectorAll('#gear-menu .visit-desktop');
+    for (var i = 0; i < oldItems.length; i++) {
+      gearMenu.removeChild(oldItems[i]);
+    }
+    separator.hidden = true;
+
+    if (this.dialogType !== DialogType.FULL_PAGE)
+      return;
+
+    // Obtain the profile information.
+    chrome.fileBrowserPrivate.getProfiles(function(profiles,
+                                                   currentId,
+                                                   displayedId) {
+      // Check if the menus are needed or not.
+      var insertingPosition = separator.nextSibling;
+      if (profiles.length === 1 && profiles[0].profileId === displayedId)
+        return;
+
+      separator.hidden = false;
+      for (var i = 0; i < profiles.length; i++) {
+        var profile = profiles[i];
+        if (profile.profileId === displayedId)
+          continue;
+        var item = this.document_.createElement('menuitem');
+        cr.ui.MenuItem.decorate(item);
+        gearMenu.insertBefore(item, insertingPosition);
+        item.className = 'visit-desktop';
+        item.label =
+            strf('VISIT_DESKTOP_OF_USER', profile.displayName);
+        item.addEventListener('activate', function(inProfile, event) {
+          // Stop propagate and hide the menu manually, in order to prevent the
+          // focus from being back to the button. (cf. http://crbug.com/248479)
+          event.stopPropagation();
+          this.gearButton_.hideMenu();
+          this.gearButton_.blur();
+          chrome.fileBrowserPrivate.visitDesktop(inProfile.profileId,
+                                                 function() {
+            // TODO(hirono): Update the profile batch.
+          });
+        }.bind(this, profile));
+      }
+    }.bind(this));
+  };
+
+  /**
    * Refreshes space info of the current volume.
    * @param {boolean} showLoadingCaption Whether show loading caption or not.
    * @private
@@ -2781,9 +2842,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // from being back to the button. (cf. http://crbug.com/248479)
     event.stopPropagation();
     this.gearButton_.hideMenu();
-
+    this.gearButton_.blur();
     this.setListType(FileManager.ListType.DETAIL);
-    this.currentList_.focus();
   };
 
   /**
@@ -2795,9 +2855,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // from being back to the button. (cf. http://crbug.com/248479)
     event.stopPropagation();
     this.gearButton_.hideMenu();
-
+    this.gearButton_.blur();
     this.setListType(FileManager.ListType.THUMBNAIL);
-    this.currentList_.focus();
   };
 
   /**

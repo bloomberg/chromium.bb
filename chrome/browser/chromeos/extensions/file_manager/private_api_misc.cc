@@ -36,8 +36,21 @@ namespace extensions {
 namespace {
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 
+// Obtains the current shell window.
+apps::ShellWindow*
+GetCurrentShellWindow(ChromeSyncExtensionFunction* function) {
+  apps::ShellWindowRegistry* const shell_window_registry =
+      apps::ShellWindowRegistry::Get(function->GetProfile());
+  content::WebContents* const contents = function->GetAssociatedWebContents();
+  content::RenderViewHost* const render_view_host =
+      contents ? contents->GetRenderViewHost() : NULL;
+  return render_view_host ?
+      shell_window_registry->GetShellWindowForRenderViewHost(render_view_host) :
+      NULL;
+}
+
 std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >
-GetLoggedInProfileInfoList(Profile* current_profile) {
+GetLoggedInProfileInfoList() {
   DCHECK(chromeos::UserManager::IsInitialized());
   const std::vector<Profile*>& profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
@@ -61,6 +74,7 @@ GetLoggedInProfileInfoList(Profile* current_profile) {
         new api::file_browser_private::ProfileInfo());
     profile_info->profile_id = multi_user_util::GetUserIDFromProfile(profile);
     profile_info->display_name = UTF16ToUTF8(user->GetDisplayName());
+    // TODO(hirono): Remove the property from the profile_info.
     profile_info->is_current_profile = true;
     result_profiles.push_back(profile_info);
   }
@@ -320,10 +334,22 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
 }
 
 bool FileBrowserPrivateGetProfilesFunction::RunImpl() {
+  const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
+      profiles = GetLoggedInProfileInfoList();
+
+  // Obtains the display profile ID.
+  apps::ShellWindow* const shell_window = GetCurrentShellWindow(this);
+  chrome::MultiUserWindowManager* const window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  const std::string display_profile_id =
+      window_manager && shell_window ?
+      window_manager->GetUserPresentingWindow(shell_window->GetNativeWindow()) :
+      "";
+
   results_ = api::file_browser_private::GetProfiles::Results::Create(
-      GetLoggedInProfileInfoList(GetProfile()),
-      "",  // TODO(hirono): Set the correct value.
-      "");  // TODO(hriono): Set the correct value.
+      profiles,
+      multi_user_util::GetUserIDFromProfile(GetProfile()),
+      display_profile_id);
   return true;
 }
 
@@ -331,7 +357,7 @@ bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
   using api::file_browser_private::VisitDesktop::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
-      profiles = GetLoggedInProfileInfoList(GetProfile());
+      profiles = GetLoggedInProfileInfoList();
 
   // Check the multi-profile support.
   chrome::MultiUserWindowManager* const window_manager =
@@ -355,14 +381,7 @@ bool FileBrowserPrivateVisitDesktopFunction::RunImpl() {
   }
 
   // Look for the current shell window.
-  apps::ShellWindowRegistry* const shell_window_registry =
-      apps::ShellWindowRegistry::Get(GetProfile());
-  content::WebContents* const contents = GetAssociatedWebContents();
-  content::RenderViewHost* const render_view_host =
-      contents ? contents->GetRenderViewHost() : NULL;
-  apps::ShellWindow* const shell_window = render_view_host ?
-      shell_window_registry->GetShellWindowForRenderViewHost(render_view_host) :
-      NULL;
+  apps::ShellWindow* const shell_window = GetCurrentShellWindow(this);
   if (!shell_window) {
     SetError("Target window is not found.");
     return false;
