@@ -1413,7 +1413,7 @@ bool PrintWebViewHelper::CalculateNumberOfPages(blink::WebFrame* frame,
     // TODO(sgurun) android_webview hack
     render_view()->RunModalAlertDialog(
         frame,
-        l10n_util::GetStringUTF16(IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
+        l10n_util::GetStringUTF16(IDS_PRINT_INVALID_PRINTER_SETTINGS));
 #endif  //  !defined(OS_ANDROID)
     return false;
   }
@@ -1481,7 +1481,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
         render_view()->RunModalAlertDialog(
             print_frame,
             l10n_util::GetStringUTF16(
-                IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
+                IDS_PRINT_INVALID_PRINTER_SETTINGS));
       }
 #endif  // !defined(OS_ANDROID)
     }

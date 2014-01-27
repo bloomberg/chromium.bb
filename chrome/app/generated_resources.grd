@@ -8380,266 +8380,270 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Print Preview -->
-      <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
-        Print
-      </message>
-      <message name="IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE" desc="Fallback title for print preview page on Chrome OS.">
-        Google Cloud Print
-      </message>
-      <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview is still loading.">
-        Loading preview
-      </message>
-      <message name="IDS_PRINT_PREVIEW_FAILED" desc="Message to display when print preview fails.">
-        Print preview failed.
-      </message>
-      <message name="IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS" desc="Message to display when selected printer is not reachable or its settings are invalid.">
-        The selected printer is not available or not installed correctly.  Check your printer or try selecting another printer.
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PRINT_BUTTON" desc="Print button.">
-        Print
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SAVE_BUTTON" desc="Save button.">
-        Save
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PRINTING" desc="Text shown after the user clicks on the print button and before the print preview tab is closed to let him know that printing is in progress.">
-        Printing...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS" desc="Text shown after the user clicks on the print/save button while Save To PDF is selected, but the PDF file is not ready yet.">
-        Saving to PDF in progress
-      </message>
-      <if expr="is_macosx">
-        <message name="IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW" desc="Text shown after the user clicks on the open pdf in preview button while the pdf file is not ready yet.">
-        Opening PDF in Preview
+      <if expr="pp_ifdef('enable_printing')">
+        <message name="IDS_PRINT_INVALID_PRINTER_SETTINGS" desc="Message to display when selected printer is not reachable or its settings are invalid.">
+          The selected printer is not available or not installed correctly.  Check your printer or try selecting another printer.
         </message>
       </if>
-      <message name="IDS_PRINT_PREVIEW_CANCEL_BUTTON" desc="Cancel button.">
-        Cancel
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_ALL_PAGES" desc="Option to print all pages.">
-        All
-      </message>
-      <message name="IDS_PRINT_PREVIEW_DESTINATION_LABEL" desc="Destination option label. It is displayed right on top of the available printers list.">
-        Destination
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_BW" desc="Option to print in black and white.">
-        Black and white
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_COLLATE" desc="Option to collate multiple copies.">
-        Collate
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_COLOR" desc="Option to print in color.">
-        Color
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_LANDSCAPE" desc="Option to print in landscape mode.">
-        Landscape
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_PORTRAIT" desc="Option to print in portrait mode.">
-        Portrait
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_TWO_SIDED" desc="Option to do two-sided (duplex) printing.">
-        Two-sided
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PAGES_LABEL" desc="Page range option label.">
-        Pages
-      </message>
-      <message name="IDS_PRINT_PREVIEW_LAYOUT_LABEL" desc="Layout option label.">
-        Layout
-      </message>
-      <message name="IDS_PRINT_PREVIEW_COPIES_LABEL" desc="Copies option label.">
-        Copies
-      </message>
-      <message name="IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT" desc="Example page range text.">
-        e.g. 1-5, 8, 11-13
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT" desc="Aria-label page range text.">
-        page range text box
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO" desc="Aria-label page range radio.">
-        page range radio button
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PRINT_TO_PDF"
-               desc="Option shown on printer drop-down list for saving previewed document as a PDF.">
-        Save as PDF
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT"
-          desc="Message shown in the print preview page after choosing cloud print before the dialog displays">
-        Loading <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_LONG" desc="Print summary, explaining to the user how many pages will be printed.">
-        Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph> (<ph name="NUMBER_OF_PAGES">$3<ex>4</ex></ph> <ph name="PAGE_OR_PAGES_LABEL">$4<ex>Pages</ex></ph>)
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT" desc="Print summary, explaining to the user how many pages will be printed.">
-        Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL" desc="Label shown in the print preview summary.">
-        sheets of paper
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
-        sheet of paper
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
-        page
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL" desc="Label shown in the print preview summary.">
-        pages
-      </message>
-      <if expr="is_macosx">
-        <message name="IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP" desc="Option allowing the user to open the pdf in native preview app">
-        Open PDF in Preview
+      <if expr="pp_ifdef('enable_full_printing')">
+        <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
+          Print
+        </message>
+        <message name="IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE" desc="Fallback title for print preview page on Chrome OS.">
+          Google Cloud Print
+        </message>
+        <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview is still loading.">
+          Loading preview
+        </message>
+        <message name="IDS_PRINT_PREVIEW_FAILED" desc="Message to display when print preview fails.">
+          Print preview failed.
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PRINT_BUTTON" desc="Print button.">
+          Print
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SAVE_BUTTON" desc="Save button.">
+          Save
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PRINTING" desc="Text shown after the user clicks on the print button and before the print preview tab is closed to let him know that printing is in progress.">
+          Printing...
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS" desc="Text shown after the user clicks on the print/save button while Save To PDF is selected, but the PDF file is not ready yet.">
+          Saving to PDF in progress
+        </message>
+        <if expr="is_macosx">
+          <message name="IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW" desc="Text shown after the user clicks on the open pdf in preview button while the pdf file is not ready yet.">
+          Opening PDF in Preview
+          </message>
+        </if>
+        <message name="IDS_PRINT_PREVIEW_CANCEL_BUTTON" desc="Cancel button.">
+          Cancel
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_ALL_PAGES" desc="Option to print all pages.">
+          All
+        </message>
+        <message name="IDS_PRINT_PREVIEW_DESTINATION_LABEL" desc="Destination option label. It is displayed right on top of the available printers list.">
+          Destination
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_BW" desc="Option to print in black and white.">
+          Black and white
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_COLLATE" desc="Option to collate multiple copies.">
+          Collate
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_COLOR" desc="Option to print in color.">
+          Color
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_LANDSCAPE" desc="Option to print in landscape mode.">
+          Landscape
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_PORTRAIT" desc="Option to print in portrait mode.">
+          Portrait
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_TWO_SIDED" desc="Option to do two-sided (duplex) printing.">
+          Two-sided
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PAGES_LABEL" desc="Page range option label.">
+          Pages
+        </message>
+        <message name="IDS_PRINT_PREVIEW_LAYOUT_LABEL" desc="Layout option label.">
+          Layout
+        </message>
+        <message name="IDS_PRINT_PREVIEW_COPIES_LABEL" desc="Copies option label.">
+          Copies
+        </message>
+        <message name="IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT" desc="Example page range text.">
+          e.g. 1-5, 8, 11-13
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT" desc="Aria-label page range text.">
+          page range text box
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO" desc="Aria-label page range radio.">
+          page range radio button
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PRINT_TO_PDF"
+                 desc="Option shown on printer drop-down list for saving previewed document as a PDF.">
+          Save as PDF
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT"
+            desc="Message shown in the print preview page after choosing cloud print before the dialog displays">
+          Loading <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_LONG" desc="Print summary, explaining to the user how many pages will be printed.">
+          Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph> (<ph name="NUMBER_OF_PAGES">$3<ex>4</ex></ph> <ph name="PAGE_OR_PAGES_LABEL">$4<ex>Pages</ex></ph>)
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT" desc="Print summary, explaining to the user how many pages will be printed.">
+          Total: <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL" desc="Label shown in the print preview summary.">
+          sheets of paper
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
+          sheet of paper
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
+          page
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL" desc="Label shown in the print preview summary.">
+          pages
+        </message>
+        <if expr="is_macosx">
+          <message name="IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP" desc="Option allowing the user to open the pdf in native preview app">
+          Open PDF in Preview
+          </message>
+        </if>
+        <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the native print system dialog instead of printing through the print preview mechanism. Shortcut key is not translated">
+          Print using system dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
+        </message>
+        <message name="IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the cloud print dialog instead of printing through the print preview mechanism.">
+          Print using <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> dialog... <ph name="SHORTCUT_KEY">$2<ex>(Shift+Ctrl+P)</ex></ph>
+        </message>
+        <message name="IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION_NO_SHORTCUT" desc="Option allowing the user to access advanced printer settings using the cloud print dialog instead of printing through the print preview mechanism without a shortcut key.">
+          Print using <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> dialog...
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION" desc="Instruction shown when the user enters an invalid page range.">
+          Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE">$1<ex>e.g. 1-5, 8, 11-13</ex></ph>
+        </message>
+        <message name="IDS_PRINT_PREVIEW_COPIES_INSTRUCTION" desc="Instruction shown when the user enters an invalid number of copies.">
+          Use a number to indicate how many copies to print (1 or more).
+        </message>
+        <message name="IDS_PRINT_PREVIEW_INCREMENT_TITLE" desc="Title shown when the user hovers mouse over the increment button. Also added for improved accessibility">
+          Increment
+        </message>
+        <message name="IDS_PRINT_PREVIEW_DECREMENT_TITLE" desc="Title shown when the user hovers mouse over the decrement button. Also added for improved accessibility">
+          Decrement
+        </message>
+        <message name="IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL" desc="ARIA label used by screen reader to explain the purpose of the page selection textbox">
+          Print Specific Pages
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTIONS_LABEL" desc="Options label currently providing the choice to print headers and footers.">
+          Options
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER" desc="Checkbox label that provides a choice to print the headers and footers.">
+          Headers and footers
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE" desc="Checkbox label shown in print preview page to auto fit the PDF page.">
+          Fit to page
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES" desc="Checkbox label shown in print preview page to print webpage backgrounds.">
+          Background colors and images
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY" desc="Checkbox label shown in print preview page to print only selected content.">
+          Selection only
+        </message>
+        <message name="IDS_PRINT_PREVIEW_MARGINS_LABEL" desc="Margins option label. Provides user the option to change the margins of the printed page.">
+          Margins
+        </message>
+        <message name="IDS_PRINT_PREVIEW_DEFAULT_MARGINS" desc="Option that specifies the page be printed with default margins.">
+          Default
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_MARGINS" desc="Option that specifies the page be printed with no margins.">
+          None
+        </message>
+        <message name="IDS_PRINT_PREVIEW_CUSTOM_MARGINS" desc="Option that specifies the page be printed with user-specified custom margins.">
+          Custom
+        </message>
+        <message name="IDS_PRINT_PREVIEW_MINIMUM_MARGINS" desc="Option that specifies the page be printed with the minimum allowed margins by the printer.">
+          Minimum
+        </message>
+        <message name="IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the top margin textbox.">
+          Top margin
+        </message>
+        <message name="IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the bottom margin textbox.">
+          Bottom margin
+        </message>
+        <message name="IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the left margin textbox.">
+          Left margin
+        </message>
+        <message name="IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the right margin textbox.">
+          Right margin
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing or when print preview fails.">
+          Print using system dialog…
+        </message>
+        <message name="IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE" desc="Title of the destination search UI component.">
+          Select a destination
+        </message>
+        <message name="IDS_PRINT_PREVIEW_USER_INFO" desc="Message describing which user's destinations are being shown.">
+          Showing destinations for <ph name="EMAIL">$1<ex>testing@gmail.com</ex></ph>
+        </message>
+        <message name="IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION" desc="Message describing features of Google Cloud Print.">
+          Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK">$1<ex>&lt;span&gt;</ex></ph>Sign in<ph name="END_LINK">$2<ex>&lt;/span&gt;</ex></ph> to print to Google Cloud Print.
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER" desc="Text to put in a search box when user has not entered a search query.">
+          Search destinations
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE" desc="Message to show when no destinations were found.">
+          No destinations found
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SHOW_ALL_BUTTON_TEXT" desc="Label on a button to show all print destinations.">
+          Show All...
+        </message>
+        <message name="IDS_PRINT_PREVIEW_DESTINATION_COUNT" desc="Message to show how many print destinations the user has.">
+          (<ph name="COUNT">$1<ex>154</ex></ph> total)
+        </message>
+        <message name="IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE" desc="Title of the section of recently used print destinations.">
+          Recent Destinations
+        </message>
+        <message name="IDS_PRINT_PREVIEW_LOCAL_DESTINATIONS_TITLE" desc="Title of the section of local print destinations.">
+          Local Destinations
+        </message>
+        <message name="IDS_PRINT_PREVIEW_CLOUD_DESTINATIONS_TITLE" desc="Title of the section of cloud print destinations.">
+          Google Cloud Print
+        </message>
+        <message name="IDS_PRINT_PREVIEW_MANAGE" desc="Text of link to manage printers.">
+          Manage...
+        </message>
+        <message name="IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS" desc="Text of link to setup cloud printers.">
+          Setup...
+        </message>
+        <message name="IDS_PRINT_PREVIEW_CHANGE_DESTINATION" desc="Label on button to change print destination." meaning="Label text">
+          Change...
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR" desc="Shown when printer has been offline for more than a year.">
+          Offline for more than a year
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH" desc="Shown when printer has been offline for more than a month.">
+          Offline for more than a month
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK" desc="Shown when printer has been offline for more than a week.">
+          Offline for more than a week
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OFFLINE" desc="Shown when printer is currently offline.">
+          Currently offline
+        </message>
+        <message name="IDS_PRINT_PREVIEW_FEDEX_TOS" desc="Terms-of-service for using the FedEx Office printer.">
+          By printing to FedEx Office, you accept their <ph name="START_LINK">$1</ph>terms of use<ph name="END_LINK">$2</ph>.
+        </message>
+        <message name="IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL" desc="Label of the terms-of-service agreement checkbox.">
+          I agree
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE" desc="Title of promotion shown when user has no Google Cloud Print printers.">
+          Add Printers
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY" desc="Main body of promotion shown when user has no Google Cloud Print printers.">
+          You can add printers to your computer by clicking the "Add a printer"
+          button below. If you have no printers to add, you'll still be able to save
+          a PDF or save to Google Drive.
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC" desc="A description of the Google Cloud Print service.">
+          Adding your printers to Google Cloud Print allows you to print from
+          anywhere, to anywhere. Share your printers with whoever you choose and
+          print to them from Chrome, your phone, tablet, PC, or any other
+          web-connected device.
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL" desc="Label of button to setup Google Cloud Print printers.">
+          Add a printer
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL" desc="Label of button to cancel the Google Cloud Print promotion.">
+          Not now
+        </message>
+        <message name="IDS_PRINT_PREVIEW_COULD_NOT_PRINT" desc="Error message when printing fails in the print preview">
+          Printing failed. Please check your printer and try again.
+        </message>
+        <message name="IDS_PRINT_PREVIEW_REGISTER_PROMO_BUTTON_TEXT">
+          Register
         </message>
       </if>
-      <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the native print system dialog instead of printing through the print preview mechanism. Shortcut key is not translated">
-        Print using system dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
-      </message>
-      <message name="IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the cloud print dialog instead of printing through the print preview mechanism.">
-        Print using <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> dialog... <ph name="SHORTCUT_KEY">$2<ex>(Shift+Ctrl+P)</ex></ph>
-      </message>
-      <message name="IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION_NO_SHORTCUT" desc="Option allowing the user to access advanced printer settings using the cloud print dialog instead of printing through the print preview mechanism without a shortcut key.">
-        Print using <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> dialog...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION" desc="Instruction shown when the user enters an invalid page range.">
-        Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE">$1<ex>e.g. 1-5, 8, 11-13</ex></ph>
-      </message>
-      <message name="IDS_PRINT_PREVIEW_COPIES_INSTRUCTION" desc="Instruction shown when the user enters an invalid number of copies.">
-        Use a number to indicate how many copies to print (1 or more).
-      </message>
-      <message name="IDS_PRINT_PREVIEW_INCREMENT_TITLE" desc="Title shown when the user hovers mouse over the increment button. Also added for improved accessibility">
-        Increment
-      </message>
-      <message name="IDS_PRINT_PREVIEW_DECREMENT_TITLE" desc="Title shown when the user hovers mouse over the decrement button. Also added for improved accessibility">
-        Decrement
-      </message>
-      <message name="IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL" desc="ARIA label used by screen reader to explain the purpose of the page selection textbox">
-        Print Specific Pages
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTIONS_LABEL" desc="Options label currently providing the choice to print headers and footers.">
-        Options
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER" desc="Checkbox label that provides a choice to print the headers and footers.">
-        Headers and footers
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE" desc="Checkbox label shown in print preview page to auto fit the PDF page.">
-        Fit to page
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES" desc="Checkbox label shown in print preview page to print webpage backgrounds.">
-        Background colors and images
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY" desc="Checkbox label shown in print preview page to print only selected content.">
-        Selection only
-      </message>
-      <message name="IDS_PRINT_PREVIEW_MARGINS_LABEL" desc="Margins option label. Provides user the option to change the margins of the printed page.">
-        Margins
-      </message>
-      <message name="IDS_PRINT_PREVIEW_DEFAULT_MARGINS" desc="Option that specifies the page be printed with default margins.">
-        Default
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NO_MARGINS" desc="Option that specifies the page be printed with no margins.">
-        None
-      </message>
-      <message name="IDS_PRINT_PREVIEW_CUSTOM_MARGINS" desc="Option that specifies the page be printed with user-specified custom margins.">
-        Custom
-      </message>
-      <message name="IDS_PRINT_PREVIEW_MINIMUM_MARGINS" desc="Option that specifies the page be printed with the minimum allowed margins by the printer.">
-        Minimum
-      </message>
-      <message name="IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the top margin textbox.">
-        Top margin
-      </message>
-      <message name="IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the bottom margin textbox.">
-        Bottom margin
-      </message>
-      <message name="IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the left margin textbox.">
-        Left margin
-      </message>
-      <message name="IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the right margin textbox.">
-        Right margin
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing or when print preview fails.">
-        Print using system dialog…
-      </message>
-      <message name="IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE" desc="Title of the destination search UI component.">
-        Select a destination
-      </message>
-      <message name="IDS_PRINT_PREVIEW_USER_INFO" desc="Message describing which user's destinations are being shown.">
-        Showing destinations for <ph name="EMAIL">$1<ex>testing@gmail.com</ex></ph>
-      </message>
-      <message name="IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION" desc="Message describing features of Google Cloud Print.">
-        Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK">$1<ex>&lt;span&gt;</ex></ph>Sign in<ph name="END_LINK">$2<ex>&lt;/span&gt;</ex></ph> to print to Google Cloud Print.
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER" desc="Text to put in a search box when user has not entered a search query.">
-        Search destinations
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE" desc="Message to show when no destinations were found.">
-        No destinations found
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SHOW_ALL_BUTTON_TEXT" desc="Label on a button to show all print destinations.">
-        Show All...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_DESTINATION_COUNT" desc="Message to show how many print destinations the user has.">
-        (<ph name="COUNT">$1<ex>154</ex></ph> total)
-      </message>
-      <message name="IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE" desc="Title of the section of recently used print destinations.">
-        Recent Destinations
-      </message>
-      <message name="IDS_PRINT_PREVIEW_LOCAL_DESTINATIONS_TITLE" desc="Title of the section of local print destinations.">
-        Local Destinations
-      </message>
-      <message name="IDS_PRINT_PREVIEW_CLOUD_DESTINATIONS_TITLE" desc="Title of the section of cloud print destinations.">
-        Google Cloud Print
-      </message>
-      <message name="IDS_PRINT_PREVIEW_MANAGE" desc="Text of link to manage printers.">
-        Manage...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS" desc="Text of link to setup cloud printers.">
-        Setup...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_CHANGE_DESTINATION" desc="Label on button to change print destination." meaning="Label text">
-        Change...
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR" desc="Shown when printer has been offline for more than a year.">
-        Offline for more than a year
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH" desc="Shown when printer has been offline for more than a month.">
-        Offline for more than a month
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK" desc="Shown when printer has been offline for more than a week.">
-        Offline for more than a week
-      </message>
-      <message name="IDS_PRINT_PREVIEW_OFFLINE" desc="Shown when printer is currently offline.">
-        Currently offline
-      </message>
-      <message name="IDS_PRINT_PREVIEW_FEDEX_TOS" desc="Terms-of-service for using the FedEx Office printer.">
-        By printing to FedEx Office, you accept their <ph name="START_LINK">$1</ph>terms of use<ph name="END_LINK">$2</ph>.
-      </message>
-      <message name="IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL" desc="Label of the terms-of-service agreement checkbox.">
-        I agree
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE" desc="Title of promotion shown when user has no Google Cloud Print printers.">
-        Add Printers
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY" desc="Main body of promotion shown when user has no Google Cloud Print printers.">
-        You can add printers to your computer by clicking the "Add a printer"
-        button below. If you have no printers to add, you'll still be able to save
-        a PDF or save to Google Drive.
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC" desc="A description of the Google Cloud Print service.">
-        Adding your printers to Google Cloud Print allows you to print from
-        anywhere, to anywhere. Share your printers with whoever you choose and
-        print to them from Chrome, your phone, tablet, PC, or any other
-        web-connected device.
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL" desc="Label of button to setup Google Cloud Print printers.">
-        Add a printer
-      </message>
-      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL" desc="Label of button to cancel the Google Cloud Print promotion.">
-        Not now
-      </message>
-      <message name="IDS_PRINT_PREVIEW_COULD_NOT_PRINT" desc="Error message when printing fails in the print preview">
-        Printing failed. Please check your printer and try again.
-      </message>
-      <message name="IDS_PRINT_PREVIEW_REGISTER_PROMO_BUTTON_TEXT">
-        Register
-      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_SOCKET_SLOT" desc="Status text when Chrome is at its connection limit, and is waiting for a URL request to complete to free up a connection.">

@@ -1738,6 +1738,9 @@
       ['enable_printing!=0', {
         'grit_defines': ['-D', 'enable_printing'],
       }],
+      ['enable_printing==1', {
+        'grit_defines': ['-D', 'enable_full_printing'],
+      }],
       ['enable_themes==1', {
         'grit_defines': ['-D', 'enable_themes'],
       }],

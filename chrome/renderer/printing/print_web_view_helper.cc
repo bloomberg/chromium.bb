@@ -1410,7 +1410,7 @@ bool PrintWebViewHelper::CalculateNumberOfPages(blink::WebFrame* frame,
     notify_browser_of_print_failure_ = false;
     render_view()->RunModalAlertDialog(
         frame,
-        l10n_util::GetStringUTF16(IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
+        l10n_util::GetStringUTF16(IDS_PRINT_INVALID_PRINTER_SETTINGS));
     return false;
   }
 
@@ -1475,7 +1475,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
         render_view()->RunModalAlertDialog(
             print_frame,
             l10n_util::GetStringUTF16(
-                IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
+                IDS_PRINT_INVALID_PRINTER_SETTINGS));
       }
     }
     return false;
