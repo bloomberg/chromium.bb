@@ -83,12 +83,10 @@ class WebSocketEventHandler : public net::WebSocketEventInterface {
 
   // net::WebSocketEventInterface implementation
 
-  // TODO(ricea): Add |extensions| parameter to pass the list of enabled
-  // WebSocket extensions through to the renderer to make it visible to
-  // Javascript.
   virtual ChannelState OnAddChannelResponse(
       bool fail,
-      const std::string& selected_subprotocol) OVERRIDE;
+      const std::string& selected_subprotocol,
+      const std::string& extensions) OVERRIDE;
   virtual ChannelState OnDataFrame(bool fin,
                                    WebSocketMessageType type,
                                    const std::vector<char>& data) OVERRIDE;
@@ -120,12 +118,14 @@ WebSocketEventHandler::~WebSocketEventHandler() {
 
 ChannelState WebSocketEventHandler::OnAddChannelResponse(
     bool fail,
-    const std::string& selected_protocol) {
+    const std::string& selected_protocol,
+    const std::string& extensions) {
   DVLOG(3) << "WebSocketEventHandler::OnAddChannelResponse"
            << " routing_id=" << routing_id_ << " fail=" << fail
-           << " selected_protocol=\"" << selected_protocol << "\"";
+           << " selected_protocol=\"" << selected_protocol << "\""
+           << " extensions=\"" << extensions << "\"";
   return StateCast(dispatcher_->SendAddChannelResponse(
-      routing_id_, fail, selected_protocol, std::string()));
+      routing_id_, fail, selected_protocol, extensions));
 }
 
 ChannelState WebSocketEventHandler::OnDataFrame(

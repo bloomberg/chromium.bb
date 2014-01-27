@@ -361,7 +361,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
   if (!socket_url.SchemeIsWSOrWSS()) {
     // TODO(ricea): Kill the renderer (this error should have been caught by
     // Javascript).
-    AllowUnused(event_interface_->OnAddChannelResponse(true, ""));
+    AllowUnused(event_interface_->OnAddChannelResponse(true, "", ""));
     // |this| is deleted here.
     return;
   }
@@ -383,7 +383,8 @@ void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
   stream_ = stream.Pass();
   state_ = CONNECTED;
   if (event_interface_->OnAddChannelResponse(
-          false, stream_->GetSubProtocol()) == CHANNEL_DELETED)
+          false, stream_->GetSubProtocol(), stream_->GetExtensions()) ==
+      CHANNEL_DELETED)
     return;
 
   // TODO(ricea): Get flow control information from the WebSocketStream once we
