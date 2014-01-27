@@ -3368,50 +3368,6 @@ Make sure you do not expose any sensitive information.
         Choose your account picture
       </message>
 
-      <!-- User Image default image accessible descriptions -->
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_19" desc="Description of the default user icon with a picture of a bicycle">
-        Bicycle
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_20" desc="Description of the default user icon with a picture of a Bokeh (an out-of focus effect in photography)">
-        Bokeh
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_21" desc="Description of the default user icon with a picture of a game of chess">
-        Chess
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_22" desc="Description of the default user icon with a picture of a cup of coffee">
-        Coffee
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_23" desc="Description of the default user icon with a picture of a dragonfly">
-        Dragonfly
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_24" desc="Description of the default user icon with a picture of a frog">
-        Frog
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_25" desc="Description of the default user icon with a picture of a Ganzania (a kind of flower - okay to translate as just flower or some similar flower name)">
-        Ganzania Flower
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_26" desc="Description of the default user icon with a picture of a Jack Russell Terrir (a kind of dog - okay to translate as just dog)">
-        Jack Russell Terrier
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_27" desc="Description of the default user icon with a picture of a jellyfish">
-        Jellyfish
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_28" desc="Description of the default user icon with a picture of a kiwi (fruit)">
-        Kiwi
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_29" desc="Description of the default user icon with a picture of a penguin">
-        Penguin
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_30" desc="Description of the default user icon with a picture of a rainbowfish (a kind of fish)">
-        Rainbowfish
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_31" desc="Description of the default user icon with a picture of a record player (phonograph)">
-        Record player
-      </message>
-      <message name="IDS_LOGIN_DEFAULT_USER_DESC_32" desc="Description of the default user icon with a picture of a butterfly upside-down on a flower; the name of the photo is Upside-Down.">
-        Upside Down
-      </message>
-
       <!-- FindInPage strings -->
       <message name="IDS_FIND_IN_PAGE_COUNT" desc="How many matches found and what item we are showing">
         <ph name="ACTIVE_MATCH">$1<ex>1</ex></ph> of <ph name="TOTAL_MATCHCOUNT">$2<ex>5</ex></ph>
@@ -3425,7 +3381,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_FIND_IN_PAGE_CLOSE_TOOLTIP" desc="The tooltip for the close button">
         Close find bar
       </message>
-
 
       <!-- Fullscreen mode -->
       <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering full screen mode. Clicking on the link exits full screen mode.">

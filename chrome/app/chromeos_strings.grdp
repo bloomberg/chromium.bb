@@ -20,6 +20,50 @@ Press any key to continue exploring.
     Going.. Going... Gone.
   </message>
 
+  <!-- User Image default image accessible descriptions -->
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_19" desc="Description of the default user icon with a picture of a bicycle">
+    Bicycle
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_20" desc="Description of the default user icon with a picture of a Bokeh (an out-of focus effect in photography)">
+    Bokeh
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_21" desc="Description of the default user icon with a picture of a game of chess">
+    Chess
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_22" desc="Description of the default user icon with a picture of a cup of coffee">
+    Coffee
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_23" desc="Description of the default user icon with a picture of a dragonfly">
+    Dragonfly
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_24" desc="Description of the default user icon with a picture of a frog">
+    Frog
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_25" desc="Description of the default user icon with a picture of a Ganzania (a kind of flower - okay to translate as just flower or some similar flower name)">
+    Ganzania Flower
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_26" desc="Description of the default user icon with a picture of a Jack Russell Terrir (a kind of dog - okay to translate as just dog)">
+    Jack Russell Terrier
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_27" desc="Description of the default user icon with a picture of a jellyfish">
+    Jellyfish
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_28" desc="Description of the default user icon with a picture of a kiwi (fruit)">
+    Kiwi
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_29" desc="Description of the default user icon with a picture of a penguin">
+    Penguin
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_30" desc="Description of the default user icon with a picture of a rainbowfish (a kind of fish)">
+    Rainbowfish
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_31" desc="Description of the default user icon with a picture of a record player (phonograph)">
+    Record player
+  </message>
+  <message name="IDS_LOGIN_DEFAULT_USER_DESC_32" desc="Description of the default user icon with a picture of a butterfly upside-down on a flower; the name of the photo is Upside-Down.">
+    Upside Down
+  </message>
+
 <!-- Imageburn Strings -->
   <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
     Checking for updates
