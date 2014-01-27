@@ -335,8 +335,6 @@ FileError ResourceMetadata::ReadDirectoryByPath(
 
 FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  // TODO(hashimoto): Return an error if the operation will result in having
-  // multiple entries with the same resource ID.
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
@@ -349,6 +347,24 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
       old_entry.file_info().is_directory() !=  // Reject incompatible input.
       entry.file_info().is_directory())
     return FILE_ERROR_INVALID_OPERATION;
+
+  if (!entry.resource_id().empty()) {
+    // Multiple entries cannot share the same resource ID.
+    std::string local_id;
+    FileError error = GetIdByResourceId(entry.resource_id(), &local_id);
+    switch (error) {
+      case FILE_ERROR_OK:
+        if (local_id != entry.local_id())
+          return FILE_ERROR_INVALID_OPERATION;
+        break;
+
+      case FILE_ERROR_NOT_FOUND:
+        break;
+
+      default:
+        return error;
+    }
+  }
 
   // Make sure that the new parent exists and it is a directory.
   ResourceEntry new_parent;

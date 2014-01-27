@@ -424,6 +424,27 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
             resource_metadata_->RefreshEntry(dir_entry));
 }
 
+TEST_F(ResourceMetadataTest, RefreshEntry_ResourceIDCheck) {
+  // Get an entry with a non-empty resource ID.
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
+      base::FilePath::FromUTF8Unsafe("drive/root/dir1"), &entry));
+  EXPECT_FALSE(entry.resource_id().empty());
+
+  // Add a new entry with an empty resource ID.
+  ResourceEntry new_entry;
+  new_entry.set_parent_local_id(entry.local_id());
+  new_entry.set_title("new entry");
+  std::string local_id;
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(new_entry, &local_id));
+
+  // Try to refresh the new entry with a used resource ID.
+  new_entry.set_local_id(local_id);
+  new_entry.set_resource_id(entry.resource_id());
+  EXPECT_EQ(FILE_ERROR_INVALID_OPERATION,
+            resource_metadata_->RefreshEntry(new_entry));
+}
+
 TEST_F(ResourceMetadataTest, GetSubDirectoriesRecursively) {
   std::set<base::FilePath> sub_directories;
 
