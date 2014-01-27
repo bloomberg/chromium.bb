@@ -86,8 +86,10 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
           params_.frames_per_buffer(), base::TimeDelta::FromMilliseconds(10));
 
       int16* output = NULL;
+      int new_volume = 0;
       while(audio_processor->ProcessAndConsumeData(
-          base::TimeDelta::FromMilliseconds(10), 255, false, &output)) {
+          base::TimeDelta::FromMilliseconds(10), 255, false, &new_volume,
+          &output)) {
         EXPECT_TRUE(output != NULL);
         EXPECT_EQ(audio_processor->OutputFormat().sample_rate(),
                   expected_output_sample_rate);
@@ -99,6 +101,41 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 
       data_ptr += params_.frames_per_buffer() * params_.channels();
     }
+  }
+
+  void VerifyDefaultComponents(MediaStreamAudioProcessor* audio_processor) {
+    webrtc::AudioProcessing* audio_processing =
+        audio_processor->audio_processing_.get();
+#if defined(OS_ANDROID)
+    EXPECT_TRUE(audio_processing->echo_control_mobile()->is_enabled());
+    EXPECT_TRUE(audio_processing->echo_control_mobile()->routing_mode() ==
+        webrtc::EchoControlMobile::kSpeakerphone);
+    EXPECT_FALSE(audio_processing->echo_cancellation()->is_enabled());
+#elif !defined(OS_IOS)
+    EXPECT_TRUE(audio_processing->echo_cancellation()->is_enabled());
+    EXPECT_TRUE(audio_processing->echo_cancellation()->suppression_level() ==
+        webrtc::EchoCancellation::kHighSuppression);
+    EXPECT_TRUE(audio_processing->echo_cancellation()->are_metrics_enabled());
+    EXPECT_TRUE(
+        audio_processing->echo_cancellation()->is_delay_logging_enabled());
+#endif
+
+    EXPECT_TRUE(audio_processing->noise_suppression()->is_enabled());
+    EXPECT_TRUE(audio_processing->noise_suppression()->level() ==
+        webrtc::NoiseSuppression::kHigh);
+    EXPECT_TRUE(audio_processing->high_pass_filter()->is_enabled());
+    EXPECT_TRUE(audio_processing->gain_control()->is_enabled());
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    EXPECT_TRUE(audio_processing->gain_control()->mode() ==
+        webrtc::GainControl::kFixedDigital);
+    EXPECT_FALSE(audio_processing->voice_detection()->is_enabled());
+#else
+    EXPECT_TRUE(audio_processing->gain_control()->mode() ==
+        webrtc::GainControl::kAdaptiveAnalog);
+    EXPECT_TRUE(audio_processing->voice_detection()->is_enabled());
+    EXPECT_TRUE(audio_processing->voice_detection()->likelihood() ==
+        webrtc::VoiceDetection::kVeryLowLikelihood);
+#endif
   }
 
   media::AudioParameters params_;
@@ -125,6 +162,7 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
   scoped_refptr<MediaStreamAudioProcessor> audio_processor(
       new MediaStreamAudioProcessor(params_, constraints, 0));
   EXPECT_TRUE(audio_processor->has_audio_processing());
+  VerifyDefaultComponents(audio_processor);
 
   ProcessDataAndVerifyFormat(audio_processor,
                              kAudioProcessingSampleRate,

@@ -39,10 +39,8 @@ struct {
     webrtc::MediaConstraintsInterface::kValueTrue },
   { webrtc::MediaConstraintsInterface::kHighpassFilter,
     webrtc::MediaConstraintsInterface::kValueTrue },
-  // TODO(xians): Verify if it is OK to set typing detection to kValueFalse as
-  // default.
   { webrtc::MediaConstraintsInterface::kTypingNoiseDetection,
-    webrtc::MediaConstraintsInterface::kValueFalse },
+    webrtc::MediaConstraintsInterface::kValueTrue },
 };
 
 } // namespace
@@ -90,23 +88,20 @@ bool GetPropertyFromConstraints(const MediaConstraintsInterface* constraints,
 }
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
-#if defined(OS_IOS)
-  // On iOS, VPIO provides built-in EC and AGC.
-  return;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // Mobile devices are using AECM.
-  int err = audio_processing->echo_control_mobile()->Enable(true);
-  err |= audio_processing->echo_control_mobile()->set_routing_mode(
+  int err = audio_processing->echo_control_mobile()->set_routing_mode(
       webrtc::EchoControlMobile::kSpeakerphone);
+  err |= audio_processing->echo_control_mobile()->Enable(true);
   CHECK_EQ(err, 0);
 #else
-  int err = audio_processing->echo_cancellation()->Enable(true);
-  err |= audio_processing->echo_cancellation()->set_suppression_level(
+  int err = audio_processing->echo_cancellation()->set_suppression_level(
       webrtc::EchoCancellation::kHighSuppression);
 
   // Enable the metrics for AEC.
   err |= audio_processing->echo_cancellation()->enable_metrics(true);
   err |= audio_processing->echo_cancellation()->enable_delay_logging(true);
+  err |= audio_processing->echo_cancellation()->Enable(true);
   CHECK_EQ(err, 0);
 #endif
 }
@@ -122,7 +117,6 @@ void EnableHighPassFilter(AudioProcessing* audio_processing) {
   CHECK_EQ(audio_processing->high_pass_filter()->Enable(true), 0);
 }
 
-// TODO(xians): stereo swapping
 void EnableTypingDetection(AudioProcessing* audio_processing) {
   int err = audio_processing->voice_detection()->Enable(true);
   err |= audio_processing->voice_detection()->set_likelihood(
@@ -161,6 +155,17 @@ void StartAecDump(AudioProcessing* audio_processing) {
 void StopAecDump(AudioProcessing* audio_processing) {
   if (audio_processing->StopDebugRecording())
     DLOG(ERROR) << "Fail to stop AEC debug recording";
+}
+
+void EnableAutomaticGainControl(AudioProcessing* audio_processing) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  const webrtc::GainControl::Mode mode = webrtc::GainControl::kFixedDigital;
+#else
+  const webrtc::GainControl::Mode mode = webrtc::GainControl::kAdaptiveAnalog;
+#endif
+  int err = audio_processing->gain_control()->set_mode(mode);
+  err |= audio_processing->gain_control()->Enable(true);
+  CHECK_EQ(err, 0);
 }
 
 }  // namespace content
