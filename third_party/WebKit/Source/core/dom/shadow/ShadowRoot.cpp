@@ -173,7 +173,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
             toText(child)->recalcTextStyle(change, lastTextNode);
             lastTextNode = toText(child);
         } else if (child->isElementNode()) {
-            if (shouldRecalcStyle(change, child))
+            if (child->shouldCallRecalcStyle(change))
                 toElement(child)->recalcStyle(change, lastTextNode);
             if (child->renderer())
                 lastTextNode = 0;

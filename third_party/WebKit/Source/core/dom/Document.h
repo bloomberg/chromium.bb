@@ -1097,6 +1097,9 @@ private:
     void processHttpEquivXFrameOptions(const AtomicString& content);
     void processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content);
 
+    // Returns true if Document::recalcStyle() needs to be run.
+    bool shouldCallRecalcStyleForDocument();
+
     DocumentLifecycle m_lifecycle;
 
     bool m_hasNodesWithPlaceholderStyle;

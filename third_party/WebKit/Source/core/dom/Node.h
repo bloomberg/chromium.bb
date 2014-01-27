@@ -539,6 +539,9 @@ public:
     void reattach(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
 
+    // Returns true if recalcStyle should be called on the object, if there is such a method (on Document and Element).
+    bool shouldCallRecalcStyle(StyleRecalcChange);
+
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
     RenderStyle* renderStyle() const;
     RenderStyle* parentRenderStyle() const;
@@ -860,9 +863,9 @@ inline void Node::lazyReattachIfAttached()
     markAncestorsWithChildNeedsStyleRecalc();
 }
 
-inline bool shouldRecalcStyle(StyleRecalcChange change, const Node* node)
+inline bool Node::shouldCallRecalcStyle(StyleRecalcChange change)
 {
-    return change >= Inherit || node->childNeedsStyleRecalc() || node->needsStyleRecalc();
+    return change >= Inherit || needsStyleRecalc() || childNeedsStyleRecalc();
 }
 
 inline bool isTreeScopeRoot(const Node* node)

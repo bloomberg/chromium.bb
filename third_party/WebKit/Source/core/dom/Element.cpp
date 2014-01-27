@@ -1666,13 +1666,13 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     StyleResolverParentPusher parentPusher(*this);
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (shouldRecalcStyle(change, root)) {
+        if (root->shouldCallRecalcStyle(change)) {
             parentPusher.push();
             root->recalcStyle(change);
         }
     }
 
-    if (shouldRecalcStyle(change, this))
+    if (shouldCallRecalcStyle(change))
         updatePseudoElement(BEFORE, change);
 
     if (change < Force && hasRareData() && childNeedsStyleRecalc())
@@ -1690,7 +1690,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
             lastTextNode = toText(child);
         } else if (child->isElementNode()) {
             Element* element = toElement(child);
-            if (shouldRecalcStyle(change, element)) {
+            if (element->shouldCallRecalcStyle(change)) {
                 parentPusher.push();
                 element->recalcStyle(change, lastTextNode);
             } else if (element->supportsStyleSharing()) {
@@ -1701,7 +1701,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
         }
     }
 
-    if (shouldRecalcStyle(change, this)) {
+    if (shouldCallRecalcStyle(change)) {
         updatePseudoElement(AFTER, change);
         updatePseudoElement(BACKDROP, change);
     }
@@ -2769,7 +2769,7 @@ void Element::normalizeAttributes()
 void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 {
     PseudoElement* element = pseudoElement(pseudoId);
-    if (element && (needsStyleRecalc() || shouldRecalcStyle(change, element))) {
+    if (element && (needsStyleRecalc() || element->shouldCallRecalcStyle(change))) {
         // Need to clear the cached style if the PseudoElement wants a recalc so it
         // computes a new style.
         if (element->needsStyleRecalc())

@@ -1526,6 +1526,11 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
     return TreeWalker::create(root, whatToShow, filter);
 }
 
+bool Document::shouldCallRecalcStyleForDocument()
+{
+    return needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty();
+}
+
 void Document::scheduleStyleRecalc()
 {
     if (!isActive())
@@ -1534,7 +1539,7 @@ void Document::scheduleStyleRecalc()
     if (m_styleRecalcTimer.isActive() || !shouldScheduleLayout())
         return;
 
-    ASSERT(needsStyleRecalc() || childNeedsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty());
+    ASSERT(shouldCallRecalcStyleForDocument());
 
     m_styleRecalcTimer.startOneShot(0);
 
@@ -1710,7 +1715,7 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         if (Element* documentElement = this->documentElement()) {
             inheritHtmlAndBodyElementStyles(change);
-            if (shouldRecalcStyle(change, documentElement))
+            if (documentElement->shouldCallRecalcStyle(change))
                 documentElement->recalcStyle(change);
         }
 
@@ -1743,7 +1748,7 @@ void Document::updateStyleIfNeeded()
     ASSERT(isMainThread());
     ASSERT(!view() || (!view()->isInPerformLayout() && !view()->isPainting()));
 
-    if (!needsStyleRecalc() && !childNeedsStyleRecalc() && !childNeedsDistributionRecalc() && m_useElementsNeedingUpdate.isEmpty())
+    if (!shouldCallRecalcStyleForDocument())
         return;
 
     RefPtr<Frame> holder(m_frame);
@@ -1754,13 +1759,20 @@ void Document::updateStyleIfNeeded()
 
 void Document::updateStyleForNodeIfNeeded(Node* node)
 {
-    if (!hasPendingForcedStyleRecalc() && !childNeedsStyleRecalc() && !needsStyleRecalc())
+    if (!shouldCallRecalcStyleForDocument())
         return;
 
-    bool needsStyleRecalc = hasPendingForcedStyleRecalc();
-    for (Node* ancestor = node; ancestor && !needsStyleRecalc; ancestor = ancestor->parentOrShadowHostNode())
-        needsStyleRecalc = ancestor->needsStyleRecalc();
-    if (needsStyleRecalc)
+    // At this point, we know that we need to recalc some style on the document in order to fully update styles.
+    // However, style on 'node' only needs to be recalculated if a global recomputation is needed, or a node on
+    // the path from 'node' to the root needs style recalc.
+
+    // Global needed.
+    bool needsRecalc = needsStyleRecalc() || childNeedsDistributionRecalc() || !m_useElementsNeedingUpdate.isEmpty();
+
+    // On the path.
+    for (Node* ancestor = node; ancestor && !needsRecalc; ancestor = ancestor->parentOrShadowHostNode())
+        needsRecalc = ancestor->needsStyleRecalc();
+    if (needsRecalc)
         updateStyleIfNeeded();
 }
 
