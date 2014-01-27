@@ -28,7 +28,17 @@
 #define WESTON_VERSION_MICRO @WESTON_VERSION_MICRO@
 #define WESTON_VERSION "@WESTON_VERSION@"
 
-/* Can be used like #if WESTON_VERSION_AT_LEAST(1, 2, 0) */
+/* This macro may not do what you expect.  Weston doesn't guarantee
+ * any stable API between 1.X and 1.Y, and thus this macro will return
+ * FALSE on any WESTON_VERSION_AT_LEAST(1,X,0) if the actualy version
+ * is 1.Y.0 and X !=Y).  In particular, it fail if X < Y, that is,
+ * 1.3.0 is considered to not be "at least" 1.4.0.
+ *
+ * If you want to test for the version number being 1.3.0 or above or
+ * maybe in a range (eg 1.2.0 to 1.4.0), just use the WESTON_VERSION_*
+ * defines above directly.
+ */
+
 #define WESTON_VERSION_AT_LEAST(major, minor, micro) \
         (WESTON_VERSION_MAJOR == (major) && \
          WESTON_VERSION_MINOR == (minor) && \
