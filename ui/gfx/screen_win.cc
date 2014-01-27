@@ -19,7 +19,7 @@ MONITORINFOEX GetMonitorInfoForMonitor(HMONITOR monitor) {
   MONITORINFOEX monitor_info;
   ZeroMemory(&monitor_info, sizeof(MONITORINFOEX));
   monitor_info.cbSize = sizeof(monitor_info);
-  base::win::GetMonitorInfoWrapper(monitor, &monitor_info);
+  GetMonitorInfo(monitor, &monitor_info);
   return monitor_info;
 }
 
@@ -100,8 +100,8 @@ gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
 
   MONITORINFOEX monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);
-  base::win::GetMonitorInfoWrapper(
-      MonitorFromWindow(window_hwnd, MONITOR_DEFAULTTONEAREST), &monitor_info);
+  GetMonitorInfo(MonitorFromWindow(window_hwnd, MONITOR_DEFAULTTONEAREST),
+                 &monitor_info);
   return GetDisplay(monitor_info);
 }
 
@@ -111,7 +111,7 @@ gfx::Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
   MONITORINFOEX mi;
   ZeroMemory(&mi, sizeof(MONITORINFOEX));
   mi.cbSize = sizeof(mi);
-  if (monitor && base::win::GetMonitorInfoWrapper(monitor, &mi)) {
+  if (monitor && GetMonitorInfo(monitor, &mi)) {
     return GetDisplay(mi);
   }
   return gfx::Display();

@@ -329,33 +329,6 @@ bool DismissVirtualKeyboard() {
 
 typedef HWND (*MetroRootWindow) ();
 
-// As of this writing, GetMonitorInfo function seem to return wrong values
-// for rcWork.left and rcWork.top in case of split screen situation inside
-// metro mode. In order to get required values we query for core window screen
-// coordinates.
-// TODO(shrikant): Remove detour code once GetMonitorInfo is fixed for 8.1.
-BOOL GetMonitorInfoWrapper(HMONITOR monitor, MONITORINFO* mi) {
-  BOOL ret = ::GetMonitorInfo(monitor, mi);
-#if !defined(USE_ASH)
-  if (base::win::IsMetroProcess() &&
-      base::win::GetVersion() >= base::win::VERSION_WIN8_1) {
-    static MetroRootWindow root_window = NULL;
-    if (!root_window) {
-      HMODULE metro = base::win::GetMetroModule();
-      // There are apparently instances when current process is inside metro
-      // environment but metro driver dll is not loaded.
-      if (!metro) {
-        return ret;
-      }
-      root_window = reinterpret_cast<MetroRootWindow>(
-          ::GetProcAddress(metro, "GetRootWindow"));
-    }
-    ret = ::GetWindowRect(root_window(), &(mi->rcWork));
-  }
-#endif
-  return ret;
-}
-
 bool IsEnrolledToDomain() {
   LPWSTR domain;
   NETSETUP_JOIN_STATUS join_status;

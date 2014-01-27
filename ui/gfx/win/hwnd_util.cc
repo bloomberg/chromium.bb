@@ -24,7 +24,7 @@ void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
     if (hmon) {
       MONITORINFO mi;
       mi.cbSize = sizeof(mi);
-      base::win::GetMonitorInfoWrapper(hmon, &mi);
+      GetMonitorInfo(hmon, &mi);
       Rect window_rect(bounds);
       Rect monitor_rect(mi.rcWork);
       Rect new_window_rect = window_rect;
@@ -150,7 +150,7 @@ void CenterAndSizeWindow(HWND parent,
     if (monitor) {
       MONITORINFO mi = {0};
       mi.cbSize = sizeof(mi);
-      base::win::GetMonitorInfoWrapper(monitor, &mi);
+      GetMonitorInfo(monitor, &mi);
       center_bounds = mi.rcWork;
     } else {
       NOTREACHED() << "Unable to get default monitor";

@@ -186,7 +186,7 @@ bool GetMonitorAndRects(const RECT& rect,
     return false;
   MONITORINFO monitor_info = { 0 };
   monitor_info.cbSize = sizeof(monitor_info);
-  base::win::GetMonitorInfoWrapper(*monitor, &monitor_info);
+  GetMonitorInfo(*monitor, &monitor_info);
   *monitor_rect = gfx::Rect(monitor_info.rcMonitor);
   *work_area = gfx::Rect(monitor_info.rcWork);
   return true;
@@ -550,7 +550,7 @@ void HWNDMessageHandler::GetWindowPlacement(
     } else {
       MONITORINFO mi;
       mi.cbSize = sizeof(mi);
-      const bool succeeded = base::win::GetMonitorInfoWrapper(
+      const bool succeeded = GetMonitorInfo(
           MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST), &mi) != 0;
       DCHECK(succeeded);
 
@@ -1168,7 +1168,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
     HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
     MONITORINFO mi;
     mi.cbSize = sizeof mi;
-    base::win::GetMonitorInfoWrapper(monitor, &mi);
+    GetMonitorInfo(monitor, &mi);
     CRect work_rect = mi.rcWork;
     work_rect.OffsetRect(-window_rect.left, -window_rect.top);
     new_region = CreateRectRgnIndirect(&work_rect);

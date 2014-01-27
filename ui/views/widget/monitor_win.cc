@@ -18,7 +18,7 @@ gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect) {
   if (monitor) {
     MONITORINFO mi = {0};
     mi.cbSize = sizeof(mi);
-    base::win::GetMonitorInfoWrapper(monitor, &mi);
+    GetMonitorInfo(monitor, &mi);
     return gfx::Rect(mi.rcWork);
   }
   NOTREACHED();

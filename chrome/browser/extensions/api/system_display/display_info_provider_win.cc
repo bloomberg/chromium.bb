@@ -31,7 +31,7 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
   MONITORINFOEX monitor_info;
   ZeroMemory(&monitor_info, sizeof(MONITORINFOEX));
   monitor_info.cbSize = sizeof(monitor_info);
-  base::win::GetMonitorInfoWrapper(monitor, &monitor_info);
+  GetMonitorInfo(monitor, &monitor_info);
 
   DISPLAY_DEVICE device;
   device.cb = sizeof(device);
