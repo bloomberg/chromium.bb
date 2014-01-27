@@ -187,6 +187,38 @@ void RenderBlockFlow::willBeDestroyed()
     RenderBlock::willBeDestroyed();
 }
 
+void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight)
+{
+    ColumnInfo* colInfo = columnInfo();
+    if (hasColumns()) {
+        if (!pageLogicalHeight) {
+            LayoutUnit oldLogicalHeight = logicalHeight();
+            setLogicalHeight(0);
+            // We need to go ahead and set our explicit page height if one exists, so that we can
+            // avoid doing two layout passes.
+            updateLogicalHeight();
+            LayoutUnit columnHeight = contentLogicalHeight();
+            if (columnHeight > 0) {
+                pageLogicalHeight = columnHeight;
+                hasSpecifiedPageLogicalHeight = true;
+            }
+            setLogicalHeight(oldLogicalHeight);
+        }
+        if (colInfo->columnHeight() != pageLogicalHeight && everHadLayout()) {
+            colInfo->setColumnHeight(pageLogicalHeight);
+            pageLogicalHeightChanged = true;
+        }
+
+        if (!hasSpecifiedPageLogicalHeight && !pageLogicalHeight)
+            colInfo->clearForcedBreaks();
+
+        colInfo->setPaginationUnit(paginationUnit());
+    } else if (isRenderFlowThread()) {
+        pageLogicalHeight = 1; // This is just a hack to always make sure we have a page logical height.
+        pageLogicalHeightChanged = toRenderFlowThread(this)->pageLogicalSizeChanged();
+    }
+}
+
 bool RenderBlockFlow::relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer& statePusher)
 {
     if (!hasColumns())
