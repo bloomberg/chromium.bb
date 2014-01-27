@@ -170,6 +170,9 @@ using-the-dev-server/xbuddy-for-devserver
   # stateful partition and thus has enough space to store the payloads.
   DEVICE_WORK_DIR = '/mnt/stateful_partition/cros-flash'
 
+  # Override base class property to enable stats upload.
+  upload_stats = True
+
   @classmethod
   def GetUpdateStatus(cls, device, keys=None):
     """Returns the status of the update engine on the |device|.

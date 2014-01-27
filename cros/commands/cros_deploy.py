@@ -39,6 +39,9 @@ For more information of cros build usage:
 
   DEVICE_WORK_DIR = '/tmp/cros-deploy'
 
+  # Override base class property to enable stats upload.
+  upload_stats = True
+
   def __init__(self, options):
     """Initializes DeployCommand."""
     cros.CrosCommand.__init__(self, options)
