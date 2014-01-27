@@ -293,7 +293,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "{{method.name}}"));
+    v8::Local<v8::Value> hiddenValue = getHiddenValue(info.GetIsolate(), info.This(), "{{method.name}}");
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;

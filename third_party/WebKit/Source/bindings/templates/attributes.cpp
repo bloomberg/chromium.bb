@@ -23,7 +23,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     if (!imp->{{attribute.cached_attribute_validation_method}}()) {
-        v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
+        v8::Handle<v8::Value> jsValue = getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
@@ -66,7 +66,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    info.Holder()->SetHiddenValue(propertyName, {{attribute.cpp_value}}.v8Value());
+    setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, {{attribute.cpp_value}}.v8Value());
     {% endif %}
     {# End special cases #}
     {% if attribute.is_keep_alive_for_gc %}
@@ -75,7 +75,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "{{attribute.name}}", wrapper);
+        setHiddenValue(info.GetIsolate(), info.Holder(), "{{attribute.name}}", wrapper);
         {{attribute.v8_set_return_value}};
     }
     {% else %}
@@ -181,7 +181,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     exceptionState.throwIfNeeded();
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    info.Holder()->DeleteHiddenValue(v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
+    deleteHiddenValue(info.GetIsolate(), info.Holder(), "{{attribute.name}}"); // Invalidate the cached value.
     {% endif %}
 }
 {% endfilter %}

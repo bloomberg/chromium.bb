@@ -161,19 +161,18 @@ def generate_getter(interface, attribute, contents):
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'jsValue'
 
-    if contents['is_keep_alive_for_gc']:
-        v8_set_return_value_statement = 'v8SetReturnValue(info, wrapper)'
-        includes.add('bindings/v8/V8HiddenPropertyName.h')
-    else:
+    def v8_set_return_value_statement():
+        if contents['is_keep_alive_for_gc']:
+            return 'v8SetReturnValue(info, wrapper)'
         if attribute.is_nullable and v8_types.is_interface_type(idl_type):
             set_cpp_value = 'jsValue.release()'
         else:
             set_cpp_value = cpp_value
-        v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, set_cpp_value, extended_attributes=extended_attributes, script_wrappable='imp')
+        return v8_types.v8_set_return_value(idl_type, set_cpp_value, extended_attributes=extended_attributes, script_wrappable='imp')
 
     contents.update({
         'cpp_value': cpp_value,
-        'v8_set_return_value': v8_set_return_value_statement,
+        'v8_set_return_value': v8_set_return_value_statement(),
     })
 
 
