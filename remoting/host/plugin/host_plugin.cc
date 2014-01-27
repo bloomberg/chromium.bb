@@ -375,9 +375,9 @@ void InitializePlugin() {
 
   if (remoting::LoadResources("")) {
     g_ui_name = new std::string(
-        l10n_util::GetStringUTF8(IDR_REMOTING_HOST_PLUGIN_NAME));
+        l10n_util::GetStringUTF8(IDS_REMOTING_HOST_PLUGIN_NAME));
     g_ui_description = new std::string(
-        l10n_util::GetStringUTF8(IDR_REMOTING_HOST_PLUGIN_DESCRIPTION));
+        l10n_util::GetStringUTF8(IDS_REMOTING_HOST_PLUGIN_DESCRIPTION));
   } else {
     g_ui_name = new std::string();
     g_ui_description = new std::string();

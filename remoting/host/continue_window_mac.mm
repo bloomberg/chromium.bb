@@ -112,17 +112,17 @@ scoped_ptr<HostWindow> HostWindow::CreateContinueWindow() {
 
   // Create alert.
   continue_alert_.reset([[NSAlert alloc] init]);
-  [continue_alert_ setMessageText:l10n_util::GetNSString(IDR_CONTINUE_PROMPT)];
+  [continue_alert_ setMessageText:l10n_util::GetNSString(IDS_CONTINUE_PROMPT)];
 
   NSButton* continue_button =
       [continue_alert_ addButtonWithTitle:l10n_util::GetNSString(
-          IDR_CONTINUE_BUTTON)];
+          IDS_CONTINUE_BUTTON)];
   [continue_button setAction:@selector(onContinue:)];
   [continue_button setTarget:self];
 
   NSButton* cancel_button =
       [continue_alert_ addButtonWithTitle:l10n_util::GetNSString(
-          IDR_STOP_SHARING_BUTTON)];
+          IDS_STOP_SHARING_BUTTON)];
   [cancel_button setAction:@selector(onCancel:)];
   [cancel_button setTarget:self];
 

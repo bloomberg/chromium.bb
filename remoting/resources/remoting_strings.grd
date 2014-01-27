@@ -138,552 +138,552 @@
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <if expr="pp_ifdef('_google_chrome')">
-        <message desc="Message shown when the Chrome Remote Desktop client tab is closed while a connection is active." name="IDR_CLOSE_PROMPT">
+        <message desc="Message shown when the Chrome Remote Desktop client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chrome Remote Desktop session.
         </message>
-        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chrome Remote Desktop app before use." name="IDR_DESCRIPTION_AUTHORIZE">
+        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chrome Remote Desktop app before use." name="IDS_DESCRIPTION_AUTHORIZE">
           To use Chrome Remote Desktop you must grant extended access permissions to your computer. You only have to do this once.
         </message>
-        <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chrome Remote Desktop app to access the authentication URL." name="IDR_DESCRIPTION_THIRD_PARTY_AUTH">
+        <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chrome Remote Desktop app to access the authentication URL." name="IDS_DESCRIPTION_THIRD_PARTY_AUTH">
           The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:
         </message>
-        <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDR_DESCRIPTION_HOME">
+        <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDS_DESCRIPTION_HOME">
           Chrome Remote Desktop allows you to securely share your computer over the Web. Both users must be running the Chrome Remote Desktop app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
         </message>
-        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDR_ERROR_AUTHENTICATION_FAILED">
+        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED">
           Authentication failed. Please sign in to Chrome Remote Desktop again.
         </message>
-        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDR_ERROR_BAD_PLUGIN_VERSION">
+        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
           Some components required for Chrome Remote Desktop are missing. Please make sure you have installed the latest version and try again.
         </message>
-        <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDR_ERROR_INCOMPATIBLE_PROTOCOL">
+        <message desc="Error that is shown on the client side when incompatible Chrome Remote Desktop versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL">
           An incompatible version of Chrome Remote Desktop was detected. Please make sure that you have the latest version of Chrome and Chrome Remote Desktop on both computers and try again.
         </message>
-        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chrome Remote Desktop host, and a user in a different domain is trying to use it as a Chrome Remote Desktop host." name="IDR_ERROR_INVALID_HOST_DOMAIN">
+        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chrome Remote Desktop host, and a user in a different domain is trying to use it as a Chrome Remote Desktop host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
           Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.
         </message>
-        <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDR_ERROR_NOT_AUTHENTICATED">
+        <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDS_ERROR_NOT_AUTHENTICATED">
           You are not signed in to Chrome Remote Desktop. Please sign in and try again.
         </message>
-        <message desc="Error displayed if the client plugin fails to load." name="IDR_ERROR_MISSING_PLUGIN">
+        <message desc="Error displayed if the client plugin fails to load." name="IDS_ERROR_MISSING_PLUGIN">
           Some components required for Chrome Remote Desktop are missing. Please make sure you're running the latest version of Chrome and try again.
         </message>
-        <message desc="Message displayed when the current computer is accepting remote connections." name="IDR_HOME_DAEMON_ACTIVE_MESSAGE">
+        <message desc="Message displayed when the current computer is accepting remote connections." name="IDS_HOME_DAEMON_ACTIVE_MESSAGE">
           You may securely access this computer using Chrome Remote Desktop.
         </message>
-        <message desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them." name="IDR_HOME_DAEMON_START_MESSAGE">
+        <message desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them." name="IDS_HOME_DAEMON_START_MESSAGE">
           You must enable remote connections if you want to use Chrome Remote Desktop to access this computer.
         </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_SUPPORTED">
+        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDS_HOST_LIST_EMPTY_HOSTING_SUPPORTED">
           To enable remote connections to a different computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
         </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_UNSUPPORTED">
+        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDS_HOST_LIST_EMPTY_HOSTING_UNSUPPORTED">
           You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
         </message>
-        <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDR_HOST_SETUP_CRASH_REPORTING_MESSAGE">
+        <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDS_HOST_SETUP_CRASH_REPORTING_MESSAGE">
           Help us improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.
         </message>
-        <message desc="Message shown when user is asked to manually install the Host components." name="IDR_HOST_SETUP_INSTALL">
+        <message desc="Message shown when user is asked to manually install the Host components." name="IDS_HOST_SETUP_INSTALL">
           Chrome is downloading the Chrome Remote Desktop Host installer.  Once the download is complete, please run the installer before continuing.
         </message>
-        <message desc="Message displayed when the client or host has disconnected." name="IDR_MESSAGE_SESSION_FINISHED">
+        <message desc="Message displayed when the client or host has disconnected." name="IDS_MESSAGE_SESSION_FINISHED">
           Your Chrome Remote Desktop session has ended.
         </message>
-        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDR_PRODUCT_NAME">
+        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME">
           Chrome Remote Desktop
         </message>
-        <message desc="Message displayed at the bottom of the client connect dialog if Chrome Remote Desktop is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
+        <message desc="Message displayed at the bottom of the client connect dialog if Chrome Remote Desktop is running in the wrong start-up mode." name="IDS_WARNING_NOT_WINDOWED">
           NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.
         </message>
-        <message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_TITLE">
+        <message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDS_HOST_NEEDS_UPDATE_TITLE">
           Chrome Remote Desktop on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
         </message>
-        <message name="IDR_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chrome Remote Desktop">
+        <message name="IDS_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chrome Remote Desktop">
           Want to help improve Chrome Remote Desktop? <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://goo.gl/njH2q&gt;</ex></ph>Take the survey.<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>
         </message>
-        <message name="IDR_COMPANY_NAME" desc="The company name specified in the version information of each Chrome Remote Desktop Host executable.">
+        <message name="IDS_COMPANY_NAME" desc="The company name specified in the version information of each Chrome Remote Desktop Host executable.">
           Google Inc.
         </message>
-        <message name="IDR_COPYRIGHT" desc="The copyright message specified in the version information of each Chrome Remote Desktop Host executable. It should be updated every year.">
+        <message name="IDS_COPYRIGHT" desc="The copyright message specified in the version information of each Chrome Remote Desktop Host executable. It should be updated every year.">
           Copyright 2013 Google Inc. All Rights Reserved.
         </message>
-        <message name="IDR_DISPLAY_SERVICE_NAME" desc="The name of the Windows service installed by Chrome Remote Desktop.">
+        <message name="IDS_DISPLAY_SERVICE_NAME" desc="The name of the Windows service installed by Chrome Remote Desktop.">
           Chrome Remote Desktop Service
         </message>
-        <message name="IDR_SERVICE_DESCRIPTION" desc="The description of the Windows service installed by Chrome Remote Desktop.">
+        <message name="IDS_SERVICE_DESCRIPTION" desc="The description of the Windows service installed by Chrome Remote Desktop.">
           This service enables incoming connections from Chrome Remote Desktop clients.
         </message>
-        <message name="IDR_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chrome Remote Desktop Host.">
+        <message name="IDS_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chrome Remote Desktop Host.">
           Chrome Remote Desktop Host Controller
         </message>
-        <message name="IDR_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
+        <message name="IDS_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chrome Remote Desktop.
         </message>
-        <message name="IDR_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chrome Remote Desktop Host plugin displayed by Chrome at about:plugins.">
+        <message name="IDS_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chrome Remote Desktop Host plugin displayed by Chrome at about:plugins.">
           Chrome Remote Desktop Host
         </message>
-        <message name="IDR_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Preferences bundle on MacOS.">
+        <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Preferences bundle on MacOS.">
           Chrome Remote Desktop Host Preferences
         </message>
-        <message name="IDR_MAC_PREFPANE_ICON_LABEL" desc="The name of Chrome Remote Desktop Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
+        <message name="IDS_MAC_PREFPANE_ICON_LABEL" desc="The name of Chrome Remote Desktop Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
           Chrome Remote&#x0a;Desktop Host
         </message>
-        <message name="IDR_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS.">
+        <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chrome Remote Desktop Host Uninstaller bundle on MacOS.">
           Chrome Remote Desktop Host Uninstaller
         </message>
       </if>
 
       <if expr="not pp_ifdef('_google_chrome')">
-        <message desc="Message shown when the Chromoting client tab is closed while a connection is active." name="IDR_CLOSE_PROMPT">
+        <message desc="Message shown when the Chromoting client tab is closed while a connection is active." name="IDS_CLOSE_PROMPT">
           Leaving this page will end your Chromoting session.
         </message>
-        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use." name="IDR_DESCRIPTION_AUTHORIZE">
+        <message desc="Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use." name="IDS_DESCRIPTION_AUTHORIZE">
           To use Chromoting you must grant extended access permissions to your computer. You only have to do this once.
         </message>
-        <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chromoting app to access the authentication URL." name="IDR_DESCRIPTION_THIRD_PARTY_AUTH">
+        <message desc="Confirmation prompt shown when a user needs to authenticate against a third party, explaining the need to authorize the Chromoting app to access the authentication URL." name="IDS_DESCRIPTION_THIRD_PARTY_AUTH">
           The remote host requires you to authenticate to a third-party website. To continue, you must grant Chromoting additional permissions to access this address:
         </message>
-        <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDR_DESCRIPTION_HOME">
+        <message desc="Description for the home screen. This is shown when the app starts up, above buttons to share or connect." name="IDS_DESCRIPTION_HOME">
           Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL">$1<ex>&lt;a href=http://chrome.google.com/remotedesktop&gt;chrome.google.com/remotedesktop&lt;/a&gt;</ex></ph>.
         </message>
-        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDR_ERROR_AUTHENTICATION_FAILED">
+        <message desc="Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem." name="IDS_ERROR_AUTHENTICATION_FAILED">
           Authentication failed. Please sign in to Chromoting again.
         </message>
-        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDR_ERROR_BAD_PLUGIN_VERSION">
+        <message desc="Error displayed if the host or client plugin are missing or if they could not be loaded." name="IDS_ERROR_BAD_PLUGIN_VERSION">
           Some components required for Chromoting are missing. Please make sure you have installed the latest version and try again.
         </message>
-        <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDR_ERROR_INCOMPATIBLE_PROTOCOL">
+        <message desc="Error that is shown on the client side when incompatible Chromoting versions are installed on host and client." name="IDS_ERROR_INCOMPATIBLE_PROTOCOL">
           An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.
         </message>
-        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host." name="IDR_ERROR_INVALID_HOST_DOMAIN">
+        <message desc="Error displayed when the computer has a policy that only users in a particular domain may use it as a Chromoting host, and a user in a different domain is trying to use it as a Chromoting host." name="IDS_ERROR_INVALID_HOST_DOMAIN">
           Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.
         </message>
-        <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDR_ERROR_NOT_AUTHENTICATED">
+        <message desc="Error displayed when an operation is attempted that requires a signed-in user, but no-one is currently signed in." name="IDS_ERROR_NOT_AUTHENTICATED">
           You are not signed in to Chromoting. Please sign in and try again.
         </message>
-        <message desc="Error displayed if the client plugin fails to load." name="IDR_ERROR_MISSING_PLUGIN">
+        <message desc="Error displayed if the client plugin fails to load." name="IDS_ERROR_MISSING_PLUGIN">
           Some components required for Chromoting are missing. Please make sure you're running the latest version of Chrome and try again.
         </message>
-        <message desc="Message displayed when the current computer is accepting remote connections." name="IDR_HOME_DAEMON_ACTIVE_MESSAGE">
+        <message desc="Message displayed when the current computer is accepting remote connections." name="IDS_HOME_DAEMON_ACTIVE_MESSAGE">
           You may securely access this computer using Chromoting.
         </message>
-        <message desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them." name="IDR_HOME_DAEMON_START_MESSAGE">
+        <message desc="Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them." name="IDS_HOME_DAEMON_START_MESSAGE">
           You must enable remote connections if you want to use Chromoting to access this computer.
         </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_SUPPORTED">
+        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDS_HOST_LIST_EMPTY_HOSTING_SUPPORTED">
           To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
         </message>
-        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDR_HOST_LIST_EMPTY_HOSTING_UNSUPPORTED">
+        <message desc="Message displayed to the user if there are no hosts registered to their account, informing them how to set up a host on another computer." name="IDS_HOST_LIST_EMPTY_HOSTING_UNSUPPORTED">
           You have no computers registered. To enable remote connections to a computer, install Chromoting there and click “<ph name="BUTTON_NAME">$1<ex>Enable remote connections</ex></ph>”.
         </message>
-        <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDR_HOST_SETUP_CRASH_REPORTING_MESSAGE">
+        <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDS_HOST_SETUP_CRASH_REPORTING_MESSAGE">
           Help us improve Chromoting by allowing us to collect usage statistics and crash reports.
         </message>
-        <message desc="Message shown when user is asked to manually install the Host components." name="IDR_HOST_SETUP_INSTALL">
+        <message desc="Message shown when user is asked to manually install the Host components." name="IDS_HOST_SETUP_INSTALL">
           Chrome is downloading the Chromoting Host installer.  Once the download is complete, please run the installer before continuing.
         </message>
-        <message desc="Message displayed when the client or host has disconnected." name="IDR_MESSAGE_SESSION_FINISHED">
+        <message desc="Message displayed when the client or host has disconnected." name="IDS_MESSAGE_SESSION_FINISHED">
           Your Chromoting session has ended.
         </message>
-        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDR_PRODUCT_NAME">
+        <message desc="The product name. Displayed in various Chrome pages, including the New Tab page, and displayed prominently on the app's main page." name="IDS_PRODUCT_NAME">
           Chromoting
         </message>
-        <message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDR_WARNING_NOT_WINDOWED">
+        <message desc="Message displayed at the bottom of the client connect dialog if Chromoting is running in the wrong start-up mode." name="IDS_WARNING_NOT_WINDOWED">
           NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.
         </message>
-        <message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_TITLE">
+        <message desc="Error message displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDS_HOST_NEEDS_UPDATE_TITLE">
           Chromoting on <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> is out-of-date and needs to be updated.
         </message>
-        <message  name="IDR_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chromoting">
+        <message  name="IDS_SURVEY_INVITATION" desc="Invitation to the user to participate in a user survey for Chromoting">
           Want to help improve Chromoting? <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://goo.gl/njH2q&gt;</ex></ph>Take the survey.<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>
         </message>
-        <message name="IDR_COMPANY_NAME" desc="The company name specified in the version information of each Chromoting Host executable.">
+        <message name="IDS_COMPANY_NAME" desc="The company name specified in the version information of each Chromoting Host executable.">
           The Chromium Authors
         </message>
-        <message name="IDR_COPYRIGHT" desc="The copyright message specified in the version information of each Chromoting Host executable. It should be updated every year.">
+        <message name="IDS_COPYRIGHT" desc="The copyright message specified in the version information of each Chromoting Host executable. It should be updated every year.">
           Copyright 2013 The Chromium Authors. All Rights Reserved.
         </message>
-        <message name="IDR_DISPLAY_SERVICE_NAME" desc="The name of the Windows service installed by Chromoting.">
+        <message name="IDS_DISPLAY_SERVICE_NAME" desc="The name of the Windows service installed by Chromoting.">
           Chromoting Service
         </message>
-        <message name="IDR_SERVICE_DESCRIPTION" desc="The description of the Windows service installed by Chromoting.">
+        <message name="IDS_SERVICE_DESCRIPTION" desc="The description of the Windows service installed by Chromoting.">
           This service enables incoming connections from Chromoting clients.
         </message>
-        <message name="IDR_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chromoting Host.">
+        <message name="IDS_CONTROLLER_NAME" desc="The name of the component to be elevated shown on the UAC prompt when enabling or disabling Chromoting Host.">
           Chromoting Host Controller
         </message>
-        <message name="IDR_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
+        <message name="IDS_VERIFY_PIN_DIALOG_MESSAGE" desc="The message displayed by the PIN verification dialog.">
           Please confirm your account and PIN below to allow access by Chromoting.
         </message>
-        <message name="IDR_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chromoting Host plugin displayed by Chrome at about:plugins.">
+        <message name="IDS_REMOTING_HOST_PLUGIN_NAME" desc="Name of Chromoting Host plugin displayed by Chrome at about:plugins.">
           Chromoting Host
         </message>
-        <message name="IDR_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Preferences bundle on MacOS.">
+        <message name="IDS_MAC_PREFPANE_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Preferences bundle on MacOS.">
           Chromoting Host Preferences
         </message>
-        <message name="IDR_MAC_PREFPANE_ICON_LABEL" desc="The name of Chromoting Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
+        <message name="IDS_MAC_PREFPANE_ICON_LABEL" desc="The name of Chromoting Host icon in Preference Pane on MacOS. The carriage return makes sure that the label is not truncated.">
           Chromoting&#x0a;Host
         </message>
-        <message name="IDR_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Uninstaller bundle on MacOS.">
+        <message name="IDS_MAC_UNINSTALLER_BUNDLE_NAME" desc="The bundle name specified in the property list of Chromoting Host Uninstaller bundle on MacOS.">
           Chromoting Host Uninstaller
         </message>
       </if>
 
-      <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDR_ACCESS_CODE">
+      <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
         Access code
       </message>
-      <message desc="Text displayed when the access code is due to time out within 30 seconds." name="IDR_ACCESS_CODE_TIMER">
+      <message desc="Text displayed when the access code is due to time out within 30 seconds." name="IDS_ACCESS_CODE_TIMER">
         This access code will expire in <ph name="TIMEOUT">$1<ex>0:30</ex></ph>
       </message>
-      <message desc="In the connection history dialog, clicking this button shows all recent connections unfiltered." name="IDR_ALL_CONNECTIONS">
+      <message desc="In the connection history dialog, clicking this button shows all recent connections unfiltered." name="IDS_ALL_CONNECTIONS">
         All connections
       </message>
-      <message desc="Label next to the PIN entry edit box. The user must enter a PIN before enabling remote access to their computer." name="IDR_ASK_PIN_DIALOG_LABEL">
+      <message desc="Label next to the PIN entry edit box. The user must enter a PIN before enabling remote access to their computer." name="IDS_ASK_PIN_DIALOG_LABEL">
         PIN
       </message>
-      <message desc="Label next to the PIN confirmation edit box. The user must enter a PIN before enabling remote access to their computer." name="IDR_ASK_PIN_DIALOG_CONFIRM_LABEL">
+      <message desc="Label next to the PIN confirmation edit box. The user must enter a PIN before enabling remote access to their computer." name="IDS_ASK_PIN_DIALOG_CONFIRM_LABEL">
         Re-type PIN
       </message>
-      <message desc="Label for general-purpose Cancel buttons." name="IDR_CANCEL">
+      <message desc="Label for general-purpose Cancel buttons." name="IDS_CANCEL">
         Cancel
       </message>
-      <message desc="In the connection history dialog, clicking this button will delete the connection history." name="IDR_CLEAR_HISTORY">
+      <message desc="In the connection history dialog, clicking this button will delete the connection history." name="IDS_CLEAR_HISTORY">
         Clear history
       </message>
-      <message desc="Label for general-purpose Close buttons." name="IDR_CLOSE">
+      <message desc="Label for general-purpose Close buttons." name="IDS_CLOSE">
         Close
       </message>
-      <message desc="Label for the connect button. Clicking this button will start the Chrome Remote Desktop session if the access code is correct." name="IDR_CONNECT_BUTTON">
+      <message desc="Label for the connect button. Clicking this button will start the Chrome Remote Desktop session if the access code is correct." name="IDS_CONNECT_BUTTON">
         Connect
       </message>
-      <message desc="Label for the connect button for hosts running an out-of-date version of the Me2Me host software. The user clicks this button to acknowledge the message but continue with the connection anyway." name="IDR_CONNECT_ANYWAY">
+      <message desc="Label for the connect button for hosts running an out-of-date version of the Me2Me host software. The user clicks this button to acknowledge the message but continue with the connection anyway." name="IDS_CONNECT_ANYWAY">
         Connect anyway
       </message>
-      <message desc="Confirmation prompt shown when a user attempts to delete a Me2Me host from their host list." name="IDR_CONFIRM_HOST_DELETE">
+      <message desc="Confirmation prompt shown when a user attempts to delete a Me2Me host from their host list." name="IDS_CONFIRM_HOST_DELETE">
         Are you sure you want to disable remote connections to <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>? If you change your mind, you'll need to visit that computer to re-enable connections.
       </message>
-      <message desc="Column header in the connection history table showing the email address of the client end of the connection (the initiator) which may be this or another computer." name="IDR_CONNECTION_FROM_HEADER">
+      <message desc="Column header in the connection history table showing the email address of the client end of the connection (the initiator) which may be this or another computer." name="IDS_CONNECTION_FROM_HEADER">
         From
       </message>
-      <message desc="Label for the connection history button. Clicking this button opens a dialog showing recent connections." name="IDR_CONNECTION_HISTORY_BUTTON">
+      <message desc="Label for the connection history button. Clicking this button opens a dialog showing recent connections." name="IDS_CONNECTION_HISTORY_BUTTON">
         Connection history
       </message>
-      <message desc="Title for the connection history dialog. This dialog shows recent connections made to and from this computer" name="IDR_CONNECTION_HISTORY_TITLE">
+      <message desc="Title for the connection history dialog. This dialog shows recent connections made to and from this computer" name="IDS_CONNECTION_HISTORY_TITLE">
         Connection History
       </message>
-      <message desc="Column header in the connection history table showing the email address of the host end of the connection (the connectee) which may be this or another computer." name="IDR_CONNECTION_TO_HEADER">
+      <message desc="Column header in the connection history table showing the email address of the host end of the connection (the connectee) which may be this or another computer." name="IDS_CONNECTION_TO_HEADER">
         To
       </message>
-      <message desc="Label for the continue button on the pre-authorization page. Clicking this button takes the user to the standard Google Accounts authorization page." name="IDR_CONTINUE_BUTTON">
+      <message desc="Label for the continue button on the pre-authorization page. Clicking this button takes the user to the standard Google Accounts authorization page." name="IDS_CONTINUE_BUTTON">
         Continue
       </message>
-      <message desc="Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it." name="IDR_CONTINUE_PROMPT">
+      <message desc="Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it." name="IDS_CONTINUE_PROMPT">
         You are currently sharing this machine with another user. Do you want to continue sharing?
       </message>
-      <message desc="Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share Now' quote should be copied verbatim from the corresponding translation." name="IDR_DESCRIPTION_CONNECT">
+      <message desc="Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share Now' quote should be copied verbatim from the corresponding translation." name="IDS_DESCRIPTION_CONNECT">
         Ask the user whose computer you wish to access to click ‘Share Now’ and give you the access code.
       </message>
-      <message desc="Label for the 'yes' response to the dialog asking the user to confirm whether or not they want to disable remote access to a host." name="IDR_DISABLE_HOST">
+      <message desc="Label for the 'yes' response to the dialog asking the user to confirm whether or not they want to disable remote access to a host." name="IDS_DISABLE_HOST">
         Disable
       </message>
-      <message desc="Label for the client-side disconnect button. Clicking this button disconnects oneself from the host." name="IDR_DISCONNECT_MYSELF_BUTTON">
+      <message desc="Label for the client-side disconnect button. Clicking this button disconnects oneself from the host." name="IDS_DISCONNECT_MYSELF_BUTTON">
         Disconnect
       </message>
-      <message desc="Column header in the connection history table showing the length of time for which a connection was active, if available." name="IDR_DURATION_HEADER">
+      <message desc="Column header in the connection history table showing the length of time for which a connection was active, if available." name="IDS_DURATION_HEADER">
         Duration
       </message>
-      <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDR_ERROR_HOST_OVERLOAD">
+      <message desc="Error that is shown on the client side when the host is blocking all connections due to failed authentication attempts." name="IDS_ERROR_HOST_OVERLOAD">
         Connections to the remote computer are temporarily blocked because somebody was trying to connect to it with invalid PIN. Please try again later.
       </message>
-      <message desc="Error that is shown on the client side when we don't get a response from the host." name="IDR_ERROR_HOST_IS_OFFLINE">
+      <message desc="Error that is shown on the client side when we don't get a response from the host." name="IDS_ERROR_HOST_IS_OFFLINE">
         The remote computer is not responding to connection requests. Please verify that it is online and try again.
       </message>
-      <message desc="Error displayed if an invalid access code is entered." name="IDR_ERROR_INVALID_ACCESS_CODE">
+      <message desc="Error displayed if an invalid access code is entered." name="IDS_ERROR_INVALID_ACCESS_CODE">
         The access code is invalid. Please try again.
       </message>
-      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDR_ERROR_P2P_FAILURE">
+      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDS_ERROR_P2P_FAILURE">
         Unable to reach the host. This is probably due to the configuration of the network you are using.
       </message>
-      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDR_ERROR_NETWORK_FAILURE">
+      <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDS_ERROR_NETWORK_FAILURE">
         Could not connect to the network. Please check that your device is on-line.
       </message>
-      <message desc="Error displayed when the service returns a 503 error. Such errors are usually temporary, and resolve themselves in about 30 seconds." name="IDR_ERROR_SERVICE_UNAVAILABLE">
+      <message desc="Error displayed when the service returns a 503 error. Such errors are usually temporary, and resolve themselves in about 30 seconds." name="IDS_ERROR_SERVICE_UNAVAILABLE">
         The service is temporarily unavailable. Please try again later.
       </message>
-      <message desc="Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further." name="IDR_ERROR_UNEXPECTED">
+      <message desc="Error displayed in situations where things go wrong in ways not anticipated by the developers. There is typically no user-workaround to suggest, other than reporting the error so that we can investigate further." name="IDS_ERROR_UNEXPECTED">
         An unexpected error occurred. Please report this problem to the developers.
       </message>
-      <message desc="Text displayed while a client is connecting to a host, but before the connection is established." name="IDR_FOOTER_CONNECTING">
+      <message desc="Text displayed while a client is connecting to a host, but before the connection is established." name="IDS_FOOTER_CONNECTING">
         Connecting…
       </message>
-      <message desc="Footer text displayed at the host after an access code has been generated, but before a client connects." name="IDR_FOOTER_WAITING">
+      <message desc="Footer text displayed at the host after an access code has been generated, but before a client connects." name="IDS_FOOTER_WAITING">
         waiting for connection…
       </message>
-      <message desc="Menu option for toggle full-screen mode. Equivalent to using the Wrench menu to do the same thing." name="IDR_FULL_SCREEN">
+      <message desc="Menu option for toggle full-screen mode. Equivalent to using the Wrench menu to do the same thing." name="IDS_FULL_SCREEN">
         Full screen
       </message>
-      <message desc="Button displayed underneath explanatory text for app features. Clicking causes the text, infographic and the button itself to be replaced by the actual UI for that feature." name="IDR_GET_STARTED">
+      <message desc="Button displayed underneath explanatory text for app features. Clicking causes the text, infographic and the button itself to be replaced by the actual UI for that feature." name="IDS_GET_STARTED">
         Get started
       </message>
-      <message desc="Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ." name="IDR_HELP">
+      <message desc="Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ." name="IDS_HELP">
         Help
       </message>
-      <message desc="Clicking this button starts the desktop access process." name="IDR_HOME_ACCESS_BUTTON">
+      <message desc="Clicking this button starts the desktop access process." name="IDS_HOME_ACCESS_BUTTON">
         Access
       </message>
-      <message desc="Description of the 'access' or 'client' functionality, displayed next to a button that instigates an access operation." name="IDR_HOME_ACCESS_DESCRIPTION">
+      <message desc="Description of the 'access' or 'client' functionality, displayed next to a button that instigates an access operation." name="IDS_HOME_ACCESS_DESCRIPTION">
         See and control a shared computer.
       </message>
-      <message desc="Hyperlink displayed immediately after the message indicating that the current computer is accepting remote connectins. Clicking this link allows the user to change the PIN (personal identification number) for accessing this host." name="IDR_HOME_DAEMON_CHANGE_PIN_LINK">
+      <message desc="Hyperlink displayed immediately after the message indicating that the current computer is accepting remote connectins. Clicking this link allows the user to change the PIN (personal identification number) for accessing this host." name="IDS_HOME_DAEMON_CHANGE_PIN_LINK">
         Change PIN
       </message>
-      <message desc="Button displayed when the current computer is accepting remote connections. Clicking this button causes it to stop accepting remote connections." name="IDR_HOME_DAEMON_STOP_BUTTON">
+      <message desc="Button displayed when the current computer is accepting remote connections. Clicking this button causes it to stop accepting remote connections." name="IDS_HOME_DAEMON_STOP_BUTTON">
         Disable remote connections
       </message>
-      <message desc="Button displayed when the current computer is not accepting remote connections. Clicking this button causes it to start accepting remote connections." name="IDR_HOME_DAEMON_START_BUTTON">
+      <message desc="Button displayed when the current computer is not accepting remote connections. Clicking this button causes it to start accepting remote connections." name="IDS_HOME_DAEMON_START_BUTTON">
         Enable remote connections
       </message>
-      <message desc="Explanatory text displayed when the user enables remote access or changes the PIN." name="IDR_HOST_SETUP_DIALOG_DESCRIPTION">
+      <message desc="Explanatory text displayed when the user enables remote access or changes the PIN." name="IDS_HOST_SETUP_DIALOG_DESCRIPTION">
         To protect access to this computer, please choose a PIN of <ph name="BOLD_START">$1<ex>&lt;b&gt;</ex></ph>at least six digits<ph name="BOLD_END">$2<ex>&lt;/b&gt;</ex></ph>. This PIN will be required when connecting from another location.
       </message>
-      <message desc="Message shown when host service fails to start when enabling the host on local computer." name="IDR_HOST_SETUP_HOST_FAILED">
+      <message desc="Message shown when host service fails to start when enabling the host on local computer." name="IDS_HOST_SETUP_HOST_FAILED">
         Failed to start remote access service.
       </message>
-      <message desc="Message shown when user has attempted to continue past the manual install dialog, but the Host components are not yet installed." name="IDR_HOST_SETUP_INSTALL_PENDING">
+      <message desc="Message shown when user has attempted to continue past the manual install dialog, but the Host components are not yet installed." name="IDS_HOST_SETUP_INSTALL_PENDING">
         Please run the installer before continuing.
       </message>
-      <message desc="Message shown when host registration fails when enabling the host on local computer." name="IDR_ERROR_HOST_REGISTRATION_FAILED">
+      <message desc="Message shown when host registration fails when enabling the host on local computer." name="IDS_ERROR_HOST_REGISTRATION_FAILED">
         Failed to register this computer.
       </message>
-      <message desc="Message shown after access to local computer has been enabled successfully." name="IDR_HOST_SETUP_STARTED">
+      <message desc="Message shown after access to local computer has been enabled successfully." name="IDS_HOST_SETUP_STARTED">
         Remote connections for this computer have been enabled.
       </message>
-      <message desc="Instructions to the user to ask them to disable power management for the computer in order to be able to connect to it." name="IDR_HOST_SETUP_STARTED_DISABLE_SLEEP">
+      <message desc="Instructions to the user to ask them to disable power management for the computer in order to be able to connect to it." name="IDS_HOST_SETUP_STARTED_DISABLE_SLEEP">
         Please check your computer's power management settings and ensure that it is not configured to sleep when idle.
       </message>
-      <message desc="Message shown when local machine is being registered in the directory and when starting the host." name="IDR_HOST_SETUP_STARTING">
+      <message desc="Message shown when local machine is being registered in the directory and when starting the host." name="IDS_HOST_SETUP_STARTING">
         Enabling remote connections for this computer…
       </message>
-      <message desc="Message shown after we've failed to stop the host." name="IDR_HOST_SETUP_STOP_FAILED">
+      <message desc="Message shown after we've failed to stop the host." name="IDS_HOST_SETUP_STOP_FAILED">
         Failed to disable remote access to this computer. Please try again later.
       </message>
-      <message desc="Message shown after host has been stopped." name="IDR_HOST_SETUP_STOPPED">
+      <message desc="Message shown after host has been stopped." name="IDS_HOST_SETUP_STOPPED">
         Remote connections for this computer have been disabled.
       </message>
-      <message desc="Message shown when host is being stopped on the local machine." name="IDR_HOST_SETUP_STOPPING">
+      <message desc="Message shown when host is being stopped on the local machine." name="IDS_HOST_SETUP_STOPPING">
         Disabling remote connections for this computer…
       </message>
-      <message desc="Message shown after changing PIN for the local computer." name="IDR_HOST_SETUP_UPDATED_PIN">
+      <message desc="Message shown after changing PIN for the local computer." name="IDS_HOST_SETUP_UPDATED_PIN">
         Your PIN has been updated.
       </message>
-      <message desc="Message shown while changing PIN for the local computer." name="IDR_HOST_SETUP_UPDATING_PIN">
+      <message desc="Message shown while changing PIN for the local computer." name="IDS_HOST_SETUP_UPDATING_PIN">
         The PIN for this computer is being updated…
       </message>
-      <message desc="Message shown we fail to update PIN for the local computer." name="IDR_HOST_SETUP_UPDATE_PIN_FAILED">
+      <message desc="Message shown we fail to update PIN for the local computer." name="IDS_HOST_SETUP_UPDATE_PIN_FAILED">
         Failed to update the PIN. Please try again later.
       </message>
-      <message desc="Clicking this button starts the desktop sharing process." name="IDR_HOME_SHARE_BUTTON">
+      <message desc="Clicking this button starts the desktop sharing process." name="IDS_HOME_SHARE_BUTTON">
         Share
       </message>
-      <message desc="Description of the 'share' or 'host' functionality, displayed next to a button that instigates a share operation." name="IDR_HOME_SHARE_DESCRIPTION">
+      <message desc="Description of the 'share' or 'host' functionality, displayed next to a button that instigates a share operation." name="IDS_HOME_SHARE_DESCRIPTION">
         Share this computer for another user to see and control.
       </message>
-      <message desc="Text displayed below the description of the 'share' or 'host' functionality on ChromeOS devices, where it is not yet supported." name="IDR_HOME_SHARE_DESCRIPTION_CHROME_OS">
+      <message desc="Text displayed below the description of the 'share' or 'host' functionality on ChromeOS devices, where it is not yet supported." name="IDS_HOME_SHARE_DESCRIPTION_CHROME_OS">
         (this feature is not yet available for Chromebooks… stay tuned)
       </message>
-      <message desc="In the connection history dialog, clicking this button shows only recent connections to this computer." name="IDR_INCOMING_CONNECTIONS">
+      <message desc="In the connection history dialog, clicking this button shows only recent connections to this computer." name="IDS_INCOMING_CONNECTIONS">
         To this computer
       </message>
-      <message desc="Instructions shown above the access code when it is ready to be conveyed to the client." name="IDR_INSTRUCTIONS_SHARE_ABOVE">
+      <message desc="Instructions shown above the access code when it is ready to be conveyed to the client." name="IDS_INSTRUCTIONS_SHARE_ABOVE">
         To begin sharing your desktop, give the access code below to the person who will be assisting you.
       </message>
-      <message desc="Instructions shown below the access code when it is ready to be conveyed to the client." name="IDR_INSTRUCTIONS_SHARE_BELOW">
+      <message desc="Instructions shown below the access code when it is ready to be conveyed to the client." name="IDS_INSTRUCTIONS_SHARE_BELOW">
         Once they enter the code your sharing session will begin.
       </message>
-      <message desc="An error message displayed if the user enters an invalid PIN while setting up a host." name="IDR_INVALID_PIN">
+      <message desc="An error message displayed if the user enters an invalid PIN while setting up a host." name="IDS_INVALID_PIN">
         Please enter a PIN consisting of six or more digits.
       </message>
-      <message desc="Description of the 'IT2Me' remote support functionality, displayed until the user clicks a 'get started' button, at which point it is replaced by the actual UI for that functionality." name="IDR_IT2ME_FIRST_RUN">
+      <message desc="Description of the 'IT2Me' remote support functionality, displayed until the user clicks a 'get started' button, at which point it is replaced by the actual UI for that functionality." name="IDS_IT2ME_FIRST_RUN">
         User-to-user screen sharing, perfect for remote technical support.
       </message>
-      <message desc="String displayed in front of the host when a connection is active informing the client user who they are connected to." name="IDR_LABEL_CONNECTED">
+      <message desc="String displayed in front of the host when a connection is active informing the client user who they are connected to." name="IDS_LABEL_CONNECTED">
         Connected:
       </message>
-      <message desc="Description of the 'Me2Me' remote access functionality, displayed until the user clicks a 'get started' button, at which point it is replaced by the actual UI for that functionality." name="IDR_ME2ME_FIRST_RUN">
+      <message desc="Description of the 'Me2Me' remote access functionality, displayed until the user clicks a 'get started' button, at which point it is replaced by the actual UI for that functionality." name="IDS_ME2ME_FIRST_RUN">
         Access your own computer from anywhere.
       </message>
-      <message desc="Text shown while generating an access code." name="IDR_MESSAGE_GENERATING">
+      <message desc="Text shown while generating an access code." name="IDS_MESSAGE_GENERATING">
         Generating access code…
       </message>
-      <message desc="Message shown on the host computer while a session is active informing them who is connected." name="IDR_MESSAGE_SHARED">
+      <message desc="Message shown on the host computer while a session is active informing them who is connected." name="IDS_MESSAGE_SHARED">
         Your desktop is currently shared with <ph name="USER">$1<ex>user@domain.com</ex></ph>.
       </message>
-      <message desc="Sub-title for the one-time authorization step. Displayed after the product name and separated by a chevron." name="IDR_MODE_AUTHORIZE">
+      <message desc="Sub-title for the one-time authorization step. Displayed after the product name and separated by a chevron." name="IDS_MODE_AUTHORIZE">
         Authorize
       </message>
-      <message desc="Sub-title for the remote assistance section of the UI, which contains buttons to share this computer or to connect to another computer, both on a one-off basis." name="IDR_MODE_IT2ME">
+      <message desc="Sub-title for the remote assistance section of the UI, which contains buttons to share this computer or to connect to another computer, both on a one-off basis." name="IDS_MODE_IT2ME">
         Remote Assistance
       </message>
-      <message desc="Sub-title for the remote access section of the UI, which contains a list of currently-shared hosts and a button to enable this computer for long-term sharing." name="IDR_MODE_ME2ME">
+      <message desc="Sub-title for the remote access section of the UI, which contains a list of currently-shared hosts and a button to enable this computer for long-term sharing." name="IDS_MODE_ME2ME">
         My Computers
       </message>
-      <message desc="Label for general-purpose OK buttons." name="IDR_OK">
+      <message desc="Label for general-purpose OK buttons." name="IDS_OK">
         OK
       </message>
-      <message desc="Modified version of the host name shown for hosts that are not currently accessible, and for which no last-online status is available." name="IDR_OFFLINE">
+      <message desc="Modified version of the host name shown for hosts that are not currently accessible, and for which no last-online status is available." name="IDS_OFFLINE">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
       </message>
-      <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDR_LAST_ONLINE">
+      <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDS_LAST_ONLINE">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (last online <ph name="DATE">$2<ex>1/6/13</ex></ph>)
       </message>
-      <message desc="Modified version of the host name shown for hosts that are running an out-of-date version of the Me2Me host software." name="IDR_UPDATE_REQUIRED">
+      <message desc="Modified version of the host name shown for hosts that are running an out-of-date version of the Me2Me host software." name="IDS_UPDATE_REQUIRED">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (out-of-date)
       </message>
-      <message desc="Explanatory text displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDR_HOST_NEEDS_UPDATE_DETAIL">
+      <message desc="Explanatory text displayed if the user tries to connect to a computer running out-of-date Me2Me host software." name="IDS_HOST_NEEDS_UPDATE_DETAIL">
         Software updates usually happen automatically, but can fail in some rare cases. Updating the software should take no more than a few minutes and can be done while connected to your computer remotely.
       </message>
-      <message desc="In the connection history dialog, clicking this button shows only recent connections from this computer." name="IDR_OUTGOING_CONNECTIONS">
+      <message desc="In the connection history dialog, clicking this button shows only recent connections from this computer." name="IDS_OUTGOING_CONNECTIONS">
         From this computer
       </message>
-      <message desc="Label for the PIN entry box." name="IDR_PIN">
+      <message desc="Label for the PIN entry box." name="IDS_PIN">
         PIN
       </message>
-      <message desc="Message displayed to the user asking them to enter a PIN for the host they are connecting to." name="IDR_PIN_MESSAGE">
+      <message desc="Message displayed to the user asking them to enter a PIN for the host they are connecting to." name="IDS_PIN_MESSAGE">
         Please enter your PIN for <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>.
       </message>
-      <message desc="Error message displayed to the user if they enter different PINs in the boxes marked 'PIN' and 'retype PIN'." name="IDR_PINS_NOT_EQUAL">
+      <message desc="Error message displayed to the user if they enter different PINs in the boxes marked 'PIN' and 'retype PIN'." name="IDS_PINS_NOT_EQUAL">
         Please enter the same PIN in both boxes.
       </message>
-      <message desc="Web-app description. Displayed in Chrome's extensions page. KEEP THIS TO 132 CHARACTERS OR LESS, as this is a hard limit imposed by Chrome Web Store." name="IDR_PRODUCT_DESCRIPTION">
+      <message desc="Web-app description. Displayed in Chrome's extensions page. KEEP THIS TO 132 CHARACTERS OR LESS, as this is a hard limit imposed by Chrome Web Store." name="IDS_PRODUCT_DESCRIPTION">
         Access other computers or allow another user to access your computer securely over the Internet.
       </message>
-      <message desc="Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page." name="IDR_RECONNECT">
+      <message desc="Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page." name="IDS_RECONNECT">
         Reconnect
       </message>
-      <message desc="Button for enabling or disabling the 'resize-to-client' functionality, whereby the host desktop is resized to match the client size as closely as possible." name="IDR_RESIZE_TO_CLIENT">
+      <message desc="Button for enabling or disabling the 'resize-to-client' functionality, whereby the host desktop is resized to match the client size as closely as possible." name="IDS_RESIZE_TO_CLIENT">
         Resize desktop to fit
       </message>
-      <message desc="Label for button to retry connecting to a Me2Me host, after failing to connect to that host. This button appears on the 'session-finished' page." name="IDR_RETRY">
+      <message desc="Label for button to retry connecting to a Me2Me host, after failing to connect to that host. This button appears on the 'session-finished' page." name="IDS_RETRY">
         Retry
       </message>
-      <message desc="Tool-bar button used to access the Full-screen and shrink-to-fit features ('screen' in this context refers to the fact that the options are related to how the remote screen is displayed)." name="IDR_SCREEN_OPTIONS">
+      <message desc="Tool-bar button used to access the Full-screen and shrink-to-fit features ('screen' in this context refers to the fact that the options are related to how the remote screen is displayed)." name="IDS_SCREEN_OPTIONS">
         Screen options
       </message>
-      <message desc="Label for the client-side menu button that sends a Ctrl-Alt-Del sequence to the host. Clicking this button behaves as if Ctrl, Alt and Del were pressed and then released at the host." name="IDR_SEND_CTRL_ALT_DEL">
+      <message desc="Label for the client-side menu button that sends a Ctrl-Alt-Del sequence to the host. Clicking this button behaves as if Ctrl, Alt and Del were pressed and then released at the host." name="IDS_SEND_CTRL_ALT_DEL">
         Ctrl-Alt-Del
       </message>
-      <message desc="Tool-bar button used to access buttons for pressing and releasing keys or sequences of keys that might not otherwise be available. For example, Ctrl-Alt-Del, which if pressed at a client would take effect there, rather than being sent to the host as the user expected." name="IDR_SEND_KEYS">
+      <message desc="Tool-bar button used to access buttons for pressing and releasing keys or sequences of keys that might not otherwise be available. For example, Ctrl-Alt-Del, which if pressed at a client would take effect there, rather than being sent to the host as the user expected." name="IDS_SEND_KEYS">
         Send keys
       </message>
-      <message desc="Label for the client-side menu button that sends a PrtScn key press to the host. The 'PrtScn' abbreviation (as typically printed on the keycap on English keyboards) is preferred over 'Print Screen', to make it clearer that this refers to the physical PrtScn key, and not the OS-specific keyboard shortcut for the screen capture functionality." name="IDR_SEND_PRINT_SCREEN">
+      <message desc="Label for the client-side menu button that sends a PrtScn key press to the host. The 'PrtScn' abbreviation (as typically printed on the keycap on English keyboards) is preferred over 'Print Screen', to make it clearer that this refers to the physical PrtScn key, and not the OS-specific keyboard shortcut for the screen capture functionality." name="IDS_SEND_PRINT_SCREEN">
         PrtScn
       </message>
-      <message desc="Menu option for enabling shrink-to-fit. When clicked, the remote desktop will be scaled down so that it fits in the browser window." name="IDR_SHRINK_TO_FIT">
+      <message desc="Menu option for enabling shrink-to-fit. When clicked, the remote desktop will be scaled down so that it fits in the browser window." name="IDS_SHRINK_TO_FIT">
         Shrink to fit
       </message>
-      <message desc="Sign in button, visible if the user's authentication token is corrupt, in which case the user has to sign in (authenticate) to the app again." name="IDR_SIGN_IN_BUTTON">
+      <message desc="Sign in button, visible if the user's authentication token is corrupt, in which case the user has to sign in (authenticate) to the app again." name="IDS_SIGN_IN_BUTTON">
         Sign in
       </message>
-      <message desc="Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state." name="IDR_SIGN_OUT_BUTTON">
+      <message desc="Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state." name="IDS_SIGN_OUT_BUTTON">
         Sign out
       </message>
-      <message desc="Label for the 'stop sharing' button on the host-side. Clicking this button disconnects the client." name="IDR_STOP_SHARING_BUTTON">
+      <message desc="Label for the 'stop sharing' button on the host-side. Clicking this button disconnects the client." name="IDS_STOP_SHARING_BUTTON">
         Stop Sharing
       </message>
-      <message desc="Column header in the connection history table showing the time and date of a connection." name="IDR_TIME_HEADER">
+      <message desc="Column header in the connection history table showing the time and date of a connection." name="IDS_TIME_HEADER">
         Time
       </message>
-      <message desc="The tool-tip shown when the user hovers over an on-line host. Clicking the host will initiate a connection to it." name="IDR_TOOLTIP_CONNECT">
+      <message desc="The tool-tip shown when the user hovers over an on-line host. Clicking the host will initiate a connection to it." name="IDS_TOOLTIP_CONNECT">
         Connect to <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>
       </message>
-      <message desc="The tool-tip shown when the user hovers over the 'delete host' button. Clicking this button removes the host from the list and disables connections to it." name="IDR_TOOLTIP_DELETE">
+      <message desc="The tool-tip shown when the user hovers over the 'delete host' button. Clicking this button removes the host from the list and disables connections to it." name="IDS_TOOLTIP_DELETE">
         Disable remote connections to this computer
       </message>
-      <message desc="The tool-tip shown when the user hovers over the 'refresh host list' button. Clicking this button reloads the host list without reloading the app." name="IDR_TOOLTIP_REFRESH">
+      <message desc="The tool-tip shown when the user hovers over the 'refresh host list' button. Clicking this button reloads the host list without reloading the app." name="IDS_TOOLTIP_REFRESH">
         Refresh the list of hosts
       </message>
-      <message desc="The tool-tip shown when the user hovers over the 'rename host' button. Clicking this button allows the host name to be edited in-place." name="IDR_TOOLTIP_RENAME">
+      <message desc="The tool-tip shown when the user hovers over the 'rename host' button. Clicking this button allows the host name to be edited in-place." name="IDS_TOOLTIP_RENAME">
         Edit computer name
       </message>
-      <message desc="Message displayed at the bottom of the host screen if local policy dictates that NAT traversal is disabled, meaning that connections outside the local network will not work." name="IDR_WARNING_NAT_DISABLED">
+      <message desc="Message displayed at the bottom of the host screen if local policy dictates that NAT traversal is disabled, meaning that connections outside the local network will not work." name="IDS_WARNING_NAT_DISABLED">
         NOTE: Policy settings permit connections only between computers within your network.
       </message>
-      <message desc="Link to learn more detailed information on a topic." name="IDR_LEARN_HOW">
+      <message desc="Link to learn more detailed information on a topic." name="IDS_LEARN_HOW">
         Learn how.
       </message>
-      <message desc="Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe. This string appears in a UI with limited horizontal space. Please try to keep translations no more than about 30 characters." name="IDR_WHY_IS_THIS_SAFE">
+      <message desc="Help link displayed when the user enables the host on this computer. Clicking this link opens a page that explains why this operation is safe. This string appears in a UI with limited horizontal space. Please try to keep translations no more than about 30 characters." name="IDS_WHY_IS_THIS_SAFE">
         Why is this safe?
       </message>
-      <message desc="Check-box displayed when the user enters their PIN to connect to a host allowing them to 'pair' the client and host, avoiding the need to enter the PIN each time." name="IDR_REMEMBER_PIN">
+      <message desc="Check-box displayed when the user enters their PIN to connect to a host allowing them to 'pair' the client and host, avoiding the need to enter the PIN each time." name="IDS_REMEMBER_PIN">
         Don't ask for a PIN again when connecting to this host from this computer.
       </message>
-      <message name="IDR_HANGOUTS_INVITATION" desc="Text for the invitation to try Remote Desktop app in Hangouts.">
+      <message name="IDS_HANGOUTS_INVITATION" desc="Text for the invitation to try Remote Desktop app in Hangouts.">
         Want to help someone while having a video chat with them too? Try <ph name="LINK_BEGIN">$1<ex>&lt;a href=https://plus.google.com/hangouts&gt;</ex></ph> Remote Desktop in Google Hangouts<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message name="IDR_REMOTING_CORE_DESCRIPTION" desc="The file description specified in the version information of remoting_core.dll.">
+      <message name="IDS_REMOTING_CORE_DESCRIPTION" desc="The file description specified in the version information of remoting_core.dll.">
         Core Library
       </message>
-      <message name="IDR_REMOTING_DESKTOP_DESCRIPTION" desc="The file description specified in the version information of remoting_desktop.exe.">
+      <message name="IDS_REMOTING_DESKTOP_DESCRIPTION" desc="The file description specified in the version information of remoting_desktop.exe.">
         Desktop Integration Process
       </message>
-      <message name="IDR_REMOTING_HOST_DESCRIPTION" desc="The file description specified in the version information of remoting_host.exe.">
+      <message name="IDS_REMOTING_HOST_DESCRIPTION" desc="The file description specified in the version information of remoting_host.exe.">
         Host Process
       </message>
-      <message name="IDR_REMOTING_HOST_PLUGIN_DESCRIPTION" desc="The file description specified in the version information of remoting_host_plugin.dll.">
+      <message name="IDS_REMOTING_HOST_PLUGIN_DESCRIPTION" desc="The file description specified in the version information of remoting_host_plugin.dll.">
         Allow another user to access your computer securely over the Internet.
       </message>
-      <message name="IDR_VERIFY_PIN_DIALOG_EMAIL_LABEL" desc="The message displayed by the PIN verification dialog.">
+      <message name="IDS_VERIFY_PIN_DIALOG_EMAIL_LABEL" desc="The message displayed by the PIN verification dialog.">
         Account
       </message>
-      <message name="IDR_HOST_CATEGORY" desc="Name of the message category assigned to all messages written to the EventLog by Chromoting Host.">
+      <message name="IDS_HOST_CATEGORY" desc="Name of the message category assigned to all messages written to the EventLog by Chromoting Host.">
         Host
       </message>
-      <message name="IDR_HOST_CLIENT_CONNECTED" desc="The message reported to the EventLog by Chromoting Host every time a client connects.">
+      <message name="IDS_HOST_CLIENT_CONNECTED" desc="The message reported to the EventLog by Chromoting Host every time a client connects.">
         Client connected: <ph name="CLIENT_USERNAME">%1<ex>client@email.com</ex></ph>.
       </message>
-      <message name="IDR_HOST_CLIENT_DISCONNECTED" desc="The message reported to the EventLog by Chromoting Host every time a client disconnects.">
+      <message name="IDS_HOST_CLIENT_DISCONNECTED" desc="The message reported to the EventLog by Chromoting Host every time a client disconnects.">
         Client disconnected: <ph name="CLIENT_USERNAME">%1<ex>client@email.com</ex></ph>.
       </message>
-      <message name="IDR_HOST_CLIENT_ACCESS_DENIED" desc="The message reported to the EventLog by Chromoting Host every time the host denies access to a client.">
+      <message name="IDS_HOST_CLIENT_ACCESS_DENIED" desc="The message reported to the EventLog by Chromoting Host every time the host denies access to a client.">
         Access denied for client: <ph name="CLIENT_USERNAME">%1<ex>client@email.com</ex></ph>.
       </message>
-      <message name="IDR_HOST_CLIENT_ROUTING_CHANGED" desc="The message reported to the EventLog by Chromoting Host every time a channel (a logical connection) between the client and the host is established. Multiple channels can be multiplexed over the same underlying protocol connection. The IP addresses and connection type of the underlying connection are reported. The channel and connection types are reported as opaque strings which should not be translated.">
+      <message name="IDS_HOST_CLIENT_ROUTING_CHANGED" desc="The message reported to the EventLog by Chromoting Host every time a channel (a logical connection) between the client and the host is established. Multiple channels can be multiplexed over the same underlying protocol connection. The IP addresses and connection type of the underlying connection are reported. The channel and connection types are reported as opaque strings which should not be translated.">
         Channel IP for client: <ph name="CLIENT_GAIA_IDENTIFIER">%1<ex>client@email.com/TalkGadgetABCDABCD</ex></ph> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT">%2<ex>127.0.0.1:1000</ex></ph>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT">%3<ex>127.0.0.1:2000</ex></ph>' channel='<ph name="CHANNEL_TYPE">%4<ex>mux</ex></ph>' connection='<ph name="CONNECTION_TYPE">%5<ex>direct</ex></ph>'.
       </message>
-      <message name="IDR_HOST_STARTED" desc="The message reported to the EventLog by Chromoting Host every time it is started.">
+      <message name="IDS_HOST_STARTED" desc="The message reported to the EventLog by Chromoting Host every time it is started.">
         Host started for user: <ph name="HOST_USERNAME">%1<ex>host@email.com</ex></ph>.
       </message>
-      <message desc="Link to allow a host's paired clients to be viewed or edited." name="IDR_HOME_DAEMON_MANAGE_PAIRINGS">
+      <message desc="Link to allow a host's paired clients to be viewed or edited." name="IDS_HOME_DAEMON_MANAGE_PAIRINGS">
         View/edit
       </message>
-      <message desc="Link to delete a specific paired client." name="IDR_DELETE_PAIRED_CLIENT">
+      <message desc="Link to delete a specific paired client." name="IDS_DELETE_PAIRED_CLIENT">
         Delete
       </message>
-      <message desc="Link to delete all paired clients." name="IDR_DELETE_ALL_PAIRED_CLIENTS">
+      <message desc="Link to delete all paired clients." name="IDS_DELETE_ALL_PAIRED_CLIENTS">
         Delete all
       </message>
-      <message desc="Message displayed in the paired client manager dialog when all paired clients have been deleted." name="IDR_NO_PAIRED_CLIENTS">
+      <message desc="Message displayed in the paired client manager dialog when all paired clients have been deleted." name="IDS_NO_PAIRED_CLIENTS">
         All paired clients have been deleted.
       </message>
-      <message desc="Message displayed when the current computer has been paired with one or more clients, allowing them to connect without needing a PIN." name="IDR_HOME_DAEMON_PAIRED_MESSAGE">
+      <message desc="Message displayed when the current computer has been paired with one or more clients, allowing them to connect without needing a PIN." name="IDS_HOME_DAEMON_PAIRED_MESSAGE">
         This computer is configured to allow one or more clients to connect without entering a PIN.
       </message>
-      <message desc="Message displayed above the list of paired clients, explaining its purpose." name="IDR_PAIRED_CLIENTS_INTRODUCTION">
+      <message desc="Message displayed above the list of paired clients, explaining its purpose." name="IDS_PAIRED_CLIENTS_INTRODUCTION">
         The following clients have been paired with this computer and can connect without supplying a PIN. You can revoke this permission at any time, either individually, or for all clients.
       </message>
-      <message desc="Table header for the dates at which clients were paired." name="IDR_PAIRED_CLIENT_DATE">
+      <message desc="Table header for the dates at which clients were paired." name="IDS_PAIRED_CLIENT_DATE">
         Pairing date
       </message>
-      <message desc="Table header for the names of paired clients." name="IDR_PAIRED_CLIENT_NAME">
+      <message desc="Table header for the names of paired clients." name="IDS_PAIRED_CLIENT_NAME">
         Client
       </message>
-      <message desc="Text shown while a background operation is in progress." name="IDR_WORKING">
+      <message desc="Text shown while a background operation is in progress." name="IDS_WORKING">
         Working…
       </message>
-      <message desc="Menu option to open a new connection." name="IDR_NEW_CONNECTION">
+      <message desc="Menu option to open a new connection." name="IDS_NEW_CONNECTION">
         New connection
       </message>
-      <message desc="Menu option to open a new window." name="IDR_NEW_WINDOW">
+      <message desc="Menu option to open a new window." name="IDS_NEW_WINDOW">
         New window…
       </message>
     </messages>

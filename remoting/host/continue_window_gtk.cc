@@ -68,12 +68,12 @@ void ContinueWindowGtk::CreateWindow() {
   DCHECK(!continue_window_);
 
   continue_window_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDR_PRODUCT_NAME).c_str(),
+      l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str(),
       NULL,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      l10n_util::GetStringUTF8(IDR_STOP_SHARING_BUTTON).c_str(),
+      l10n_util::GetStringUTF8(IDS_STOP_SHARING_BUTTON).c_str(),
       GTK_RESPONSE_CANCEL,
-      l10n_util::GetStringUTF8(IDR_CONTINUE_BUTTON).c_str(),
+      l10n_util::GetStringUTF8(IDS_CONTINUE_BUTTON).c_str(),
       GTK_RESPONSE_OK,
       NULL);
 
@@ -92,7 +92,7 @@ void ContinueWindowGtk::CreateWindow() {
       gtk_dialog_get_content_area(GTK_DIALOG(continue_window_));
 
   GtkWidget* text_label =
-      gtk_label_new(l10n_util::GetStringUTF8(IDR_CONTINUE_PROMPT).c_str());
+      gtk_label_new(l10n_util::GetStringUTF8(IDS_CONTINUE_PROMPT).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(text_label), TRUE);
   // TODO(lambroslambrou): Fix magic numbers, as in disconnect_window_gtk.cc.
   gtk_misc_set_padding(GTK_MISC(text_label), 12, 12);

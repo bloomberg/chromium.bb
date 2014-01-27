@@ -96,7 +96,7 @@ void DisconnectWindowGtk::Start(
   g_signal_connect(disconnect_window_, "delete-event",
                    G_CALLBACK(OnDeleteThunk), this);
   gtk_window_set_title(window,
-                       l10n_util::GetStringUTF8(IDR_PRODUCT_NAME).c_str());
+                       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
   gtk_window_set_resizable(window, FALSE);
 
   // Try to keep the window always visible.
@@ -140,7 +140,7 @@ void DisconnectWindowGtk::Start(
   gtk_container_add(GTK_CONTAINER(align), button_row);
 
   button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDR_STOP_SHARING_BUTTON).c_str());
+      l10n_util::GetStringUTF8(IDS_STOP_SHARING_BUTTON).c_str());
   gtk_box_pack_end(GTK_BOX(button_row), button_, FALSE, FALSE, 0);
 
   g_signal_connect(button_, "clicked", G_CALLBACK(OnClickedThunk), this);
@@ -164,7 +164,7 @@ void DisconnectWindowGtk::Start(
       base::UTF8ToUTF16(client_jid.substr(0, client_jid.find('/')));
   gtk_label_set_text(
       GTK_LABEL(message_),
-      l10n_util::GetStringFUTF8(IDR_MESSAGE_SHARED, username).c_str());
+      l10n_util::GetStringFUTF8(IDS_MESSAGE_SHARED, username).c_str());
   gtk_window_present(window);
 }
 

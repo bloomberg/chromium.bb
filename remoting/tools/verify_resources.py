@@ -45,8 +45,8 @@ def LoadTagsFromGrd(filename):
   msgs_and_structs.extend(xml.getElementsByTagName("structure"))
   for res in msgs_and_structs:
     name = res.getAttribute("name")
-    if not name or not name.startswith("IDR_"):
-      raise Exception("Tag name doesn't start with IDR_: %s" % name)
+    if not name or not name.startswith("IDS_"):
+      raise Exception("Tag name doesn't start with IDS_: %s" % name)
     tags.append(name[4:])
   return tags
 
@@ -68,7 +68,7 @@ def ExtractTagFromLine(file_type, line):
     if m: return m.group(1)
   elif file_type == 'cc' or file_type == 'mm':
     # C++ style
-    m = re.search('IDR_([A-Z0-9_]*)', line)
+    m = re.search('IDS_([A-Z0-9_]*)', line)
     if m: return m.group(1)
     m = re.search('/\*i18n-content\*/["]([^\`"]*)["]', line)
     if m: return m.group(1)
