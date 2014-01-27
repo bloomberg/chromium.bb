@@ -118,7 +118,6 @@
             '<@(_inputs)',
             '<@(_outputs)'
           ],
-          'msvs_cygwin_shell': 0,
         },
         {
           'action_name': 'generateXMLViewerJS',
@@ -135,7 +134,6 @@
             '<@(_inputs)',
             '<@(_outputs)'
           ],
-          'msvs_cygwin_shell': 0,
         },
         {
           'action_name': 'HTMLEntityTable',
@@ -177,9 +175,9 @@
             '<@(in_files)',
             '--output_dir',
             '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--gperf', '<(gperf_exe)',
             '--defines', '<(feature_defines)',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'StylePropertyShorthand',
@@ -243,13 +241,14 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.h',
           ],
           'action': [
+             'python',
              '../build/scripts/make_css_value_keywords.py',
              '<@(in_files)',
              '--output_dir',
              '<(SHARED_INTERMEDIATE_DIR)/blink',
+            '--gperf', '<(gperf_exe)',
             '--defines', '<(feature_defines)',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'HTMLElementFactory',
@@ -437,8 +436,9 @@
             '<@(scripts)',
             '--',
             '--defines', '<(feature_defines)',
+            '<@(preprocessor)',
+            '--perl', '<(perl_exe)',
           ],
-          'msvs_cygwin_shell': 1,
         },
         {
           'action_name': 'FetchInitiatorTypeNames',
@@ -636,7 +636,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink',
             '<(bison_exe)',
           ],
-          'msvs_cygwin_shell': 1,
         },
       ],
     },

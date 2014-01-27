@@ -34,8 +34,10 @@ shift;
 my $out = $ARGV[0];
 shift;
 
-open HEADER, ">", $header or die;
-open OUT, ">", $out or die;
+$header =~ s|\\|/|g;
+$out =~ s|\\|/|g;
+open HEADER, ">", $header or die "$!\n";
+open OUT, ">", $out or die "$!\n";
 
 print HEADER "namespace WebCore {\n";
 print OUT "namespace WebCore {\n";

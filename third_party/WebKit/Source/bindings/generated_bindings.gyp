@@ -119,6 +119,16 @@
       }, {
         'write_file_only_if_changed': '--write-file-only-if-changed 0',
       }],
+      ['OS!="win"', {
+        # This fails to import on Windows (running native perl) because of a
+        # dependency on JSON::XS (which is a separate module). It's necessary
+        # on Mac and CrOS. It's not generally necessary on standard Linux, but
+        # depending on what the user has locally it could be. So, don't use on
+        # Windows is the simplest solution.
+        'json_perl_module_include_path': '-I<(DEPTH)/third_party/JSON/out/lib/perl5',
+      }, {
+        'json_perl_module_include_path': '',
+      }],
     ],
   },
 
@@ -150,7 +160,6 @@
          '<@(generated_global_constructors_idl_files)',
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
        ],
-       'msvs_cygwin_shell': 0,
        'action': [
          'python',
          'scripts/compute_dependencies.py',
@@ -235,7 +244,6 @@
           # Hook for embedders to specify extra directories to find IDL files.
           'extra_blink_generator_include_dirs%': [],
         },
-        'msvs_cygwin_shell': 0,
         # sanitize-win-build-log.sed uses a regex which matches this command
         # line (Perl script + .idl file being processed).
         # Update that regex if command line changes (other than changing flags)
@@ -244,7 +252,7 @@
           '-w',
           '-Iscripts',
           '-I../build/scripts',
-          '-I<(DEPTH)/third_party/JSON/out/lib/perl5',
+          '<@(json_perl_module_include_path)',
           'scripts/generate_bindings.pl',
           '--outputDir',
           '<(bindings_output_dir)',
