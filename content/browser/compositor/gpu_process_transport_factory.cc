@@ -38,7 +38,6 @@
 
 #if defined(OS_WIN)
 #include "content/browser/compositor/software_output_device_win.h"
-#include "ui/surface/accelerated_surface_win.h"
 #elif defined(USE_OZONE)
 #include "content/browser/compositor/software_output_device_ozone.h"
 #elif defined(USE_X11)
@@ -52,9 +51,6 @@ namespace content {
 
 struct GpuProcessTransportFactory::PerCompositorData {
   int surface_id;
-#if defined(OS_WIN)
-  scoped_ptr<AcceleratedSurface> accelerated_surface;
-#endif
   scoped_refptr<ReflectorImpl> reflector;
 };
 
@@ -417,10 +413,6 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 
   PerCompositorData* data = new PerCompositorData;
   data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
-#if defined(OS_WIN)
-  if (GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface())
-    data->accelerated_surface.reset(new AcceleratedSurface(widget));
-#endif
   tracker->SetSurfaceHandle(
       data->surface_id,
       gfx::GLSurfaceHandle(widget, gfx::NATIVE_DIRECT));

@@ -37,7 +37,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/message_center/message_center_switches.h"
-#include "ui/surface/surface_switches.h"
 #include "ui/views/views_switches.h"
 
 #if defined(USE_ASH)

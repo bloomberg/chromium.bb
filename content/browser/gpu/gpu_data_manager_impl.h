@@ -133,12 +133,6 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Called when switching gpu.
   void HandleGpuSwitch();
 
-#if defined(OS_WIN)
-  // Is the GPU process using the accelerated surface to present, instead of
-  // presenting by itself.
-  bool IsUsingAcceleratedSurface() const;
-#endif
-
   // Maintenance of domains requiring explicit user permission before
   // using client-facing 3D APIs (WebGL, Pepper 3D), either because
   // the domain has caused the GPU to reset, or because too many GPU

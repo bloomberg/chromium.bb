@@ -46,7 +46,6 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "ui/gfx/switches.h"
-#include "ui/surface/accelerated_surface_win.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -753,11 +752,6 @@ void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
   initialized_ = result;
 
-#if defined(OS_WIN)
-  if (kind_ == GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED)
-    AcceleratedPresenter::SetAdapterLUID(gpu_info.adapter_luid);
-#endif
-
   if (!initialized_)
     GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
 }
@@ -963,50 +957,18 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     return;
   }
 
-  // Otherwise it's the UI swap.
-
-  scoped_refptr<AcceleratedPresenter> presenter(
-      AcceleratedPresenter::GetForWindow(handle.handle));
-  if (!presenter) {
-    TRACE_EVENT1("gpu",
-                 "EarlyOut_NativeWindowNotFound",
-                 "handle",
-                 handle.handle);
-    ignore_result(scoped_completion_runner.Release());
-    AcceleratedSurfaceBuffersSwappedCompleted(host_id_,
-                                              params.route_id,
-                                              params.surface_id,
-                                              true,
-                                              base::TimeTicks(),
-                                              base::TimeDelta(),
-                                              params.latency_info);
-    return;
-  }
-
+  TRACE_EVENT1("gpu",
+               "EarlyOut_NativeWindowNotFound",
+               "handle",
+               handle.handle);
   ignore_result(scoped_completion_runner.Release());
-  presenter->AsyncPresentAndAcknowledge(
-      params.size,
-      params.surface_handle,
-      params.latency_info,
-      base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
-                 host_id_,
-                 params.route_id,
-                 params.surface_id));
-
-  FrameSubscriberMap::iterator it = frame_subscribers_.find(params.surface_id);
-  if (it != frame_subscribers_.end() && it->second) {
-    const base::TimeTicks present_time = base::TimeTicks::Now();
-    scoped_refptr<media::VideoFrame> target_frame;
-    RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback copy_callback;
-    if (it->second->ShouldCaptureFrame(present_time,
-                                       &target_frame, &copy_callback)) {
-      // It is a potential improvement to do the copy in present, but we use a
-      // simpler approach for now.
-      presenter->AsyncCopyToVideoFrame(
-          gfx::Rect(params.size), target_frame,
-          base::Bind(copy_callback, present_time));
-    }
-  }
+  AcceleratedSurfaceBuffersSwappedCompleted(host_id_,
+                                            params.route_id,
+                                            params.surface_id,
+                                            true,
+                                            base::TimeTicks(),
+                                            base::TimeDelta(),
+                                            params.latency_info);
 }
 
 void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(
@@ -1032,13 +994,6 @@ void GpuProcessHost::OnAcceleratedSurfaceSuspend(int32 surface_id) {
 #endif
     return;
   }
-
-  scoped_refptr<AcceleratedPresenter> presenter(
-      AcceleratedPresenter::GetForWindow(handle));
-  if (!presenter)
-    return;
-
-  presenter->Suspend();
 }
 
 void GpuProcessHost::OnAcceleratedSurfaceRelease(
@@ -1053,13 +1008,6 @@ void GpuProcessHost::OnAcceleratedSurfaceRelease(
     return;
 #endif
   }
-
-  scoped_refptr<AcceleratedPresenter> presenter(
-      AcceleratedPresenter::GetForWindow(handle));
-  if (!presenter)
-    return;
-
-  presenter->ReleaseSurface();
 }
 
 #endif  // OS_WIN
@@ -1137,7 +1085,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kDisableGLMultisampling,
     switches::kDisableGpuSandbox,
     switches::kDisableGpuWatchdog,
-    switches::kDisableImageTransportSurface,
     switches::kDisableLogging,
     switches::kDisableSeccompFilterSandbox,
 #if defined(ENABLE_WEBRTC)

@@ -939,17 +939,6 @@ LONG_STRING_CONST(
       ]
     },
     {
-      "id": 80,
-      "description": "Texture sharing should be disabled on all Windows machines",
-      "cr_bugs": [304369, 315215],
-      "os": {
-        "type": "win"
-      },
-      "features": [
-        "texture_sharing"
-      ]
-    },
-    {
       "id": 81,
       "description": "Apple software renderer used under VMWare hangs on Mac OS 10.6 and 10.7",
       "cr_bugs": [230931],

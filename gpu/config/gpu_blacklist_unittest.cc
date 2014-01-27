@@ -115,10 +115,6 @@ GPU_BLACKLIST_FEATURE_TEST(FlashStage3DBaseline,
                            "flash_stage3d_baseline",
                            GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE)
 
-GPU_BLACKLIST_FEATURE_TEST(TextureSharing,
-                           "texture_sharing",
-                           GPU_FEATURE_TYPE_TEXTURE_SHARING)
-
 GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideoDecode,
                            "accelerated_video_decode",
                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE)

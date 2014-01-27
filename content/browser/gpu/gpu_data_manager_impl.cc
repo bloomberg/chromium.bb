@@ -206,13 +206,6 @@ void GpuDataManagerImpl::HandleGpuSwitch() {
   private_->HandleGpuSwitch();
 }
 
-#if defined(OS_WIN)
-bool GpuDataManagerImpl::IsUsingAcceleratedSurface() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsUsingAcceleratedSurface();
-}
-#endif
-
 void GpuDataManagerImpl::BlockDomainFrom3DAPIs(
     const GURL& url, DomainGuilt guilt) {
   base::AutoLock auto_lock(lock_);

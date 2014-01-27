@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "ui/aura/remote_root_window_host_win.h"
-#include "ui/surface/accelerated_surface_win.h"
 
 namespace ash {
 namespace test {
@@ -32,8 +31,6 @@ void TestMetroViewerProcessHost::OnSetTargetSurface(
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
   aura::RemoteWindowTreeHostWin::Instance()->SetRemoteWindowHandle(hwnd);
   aura::RemoteWindowTreeHostWin::Instance()->Connected(this);
-
-  backing_surface_.reset(new AcceleratedSurface(hwnd));
 }
 
 void TestMetroViewerProcessHost::OnOpenURL(const base::string16& url) {

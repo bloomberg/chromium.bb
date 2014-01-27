@@ -32,7 +32,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/remote_root_window_host_win.h"
-#include "ui/surface/accelerated_surface_win.h"
 #include "url/gurl.h"
 
 namespace {

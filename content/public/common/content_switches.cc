@@ -238,10 +238,6 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 
-// Disable the use of an ImageTransportSurface. This means the GPU process
-// will present the rendered page rather than the browser process.
-const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";
-
 // Prevent Java from running.
 const char kDisableJava[]                   = "disable-java";
 

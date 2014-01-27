@@ -82,12 +82,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void HandleGpuSwitch();
 
-#if defined(OS_WIN)
-  // Is the GPU process using the accelerated surface to present, instead of
-  // presenting by itself.
-  bool IsUsingAcceleratedSurface() const;
-#endif
-
   bool CanUseGpuBrowserCompositor() const;
 
   void BlockDomainFrom3DAPIs(

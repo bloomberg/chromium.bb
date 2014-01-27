@@ -117,14 +117,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index) {
           false
       },
       {
-          "texture_sharing",
-          manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING),
-          command_line.HasSwitch(switches::kDisableImageTransportSurface),
-          "Sharing textures between processes has been disabled, either via"
-          " about:flags or command line.",
-          false
-      },
-      {
           "video_decode",
           manager->IsFeatureBlacklisted(
               gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),

@@ -29,8 +29,6 @@ class TestMetroViewerProcessHost : public win8::MetroViewerProcessHost {
       const base::string16& search_string) OVERRIDE;
   virtual void OnWindowSizeChanged(uint32 width, uint32 height) OVERRIDE;
 
-  scoped_ptr<AcceleratedSurface> backing_surface_;
-
   bool closed_unexpectedly_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMetroViewerProcessHost);

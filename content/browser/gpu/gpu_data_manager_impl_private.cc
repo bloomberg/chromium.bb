@@ -146,27 +146,23 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
   const gpu::GpuFeatureType kGpuFeatures[] = {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING,
-      gpu::GPU_FEATURE_TYPE_WEBGL,
-      gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING
+      gpu::GPU_FEATURE_TYPE_WEBGL
   };
   const std::string kGpuBlacklistFeatureHistogramNames[] = {
       "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResults.AcceleratedCompositing",
       "GPU.BlacklistFeatureTestResults.Webgl",
-      "GPU.BlacklistFeatureTestResults.TextureSharing"
   };
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableAcceleratedCompositing),
       command_line.HasSwitch(switches::kDisableExperimentalWebGL),
-      command_line.HasSwitch(switches::kDisableImageTransportSurface)
   };
 #if defined(OS_WIN)
   const std::string kGpuBlacklistFeatureHistogramNamesWin[] = {
       "GPU.BlacklistFeatureTestResultsWindows.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResultsWindows.AcceleratedCompositing",
       "GPU.BlacklistFeatureTestResultsWindows.Webgl",
-      "GPU.BlacklistFeatureTestResultsWindows.TextureSharing"
   };
 #endif
   const size_t kNumFeatures =
@@ -682,9 +678,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       !command_line->HasSwitch(switches::kDisableGLMultisampling)) {
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
   }
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING)) {
-    command_line->AppendSwitch(switches::kDisableImageTransportSurface);
-  }
   if (gpu_driver_bugs_.find(gpu::DISABLE_D3D11) != gpu_driver_bugs_.end())
     command_line->AppendSwitch(switches::kDisableD3D11);
   if (use_swiftshader_) {
@@ -897,20 +890,6 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
   GpuDataManagerImpl::UnlockedSession session(owner_);
   observer_list_->Notify(&GpuDataManagerObserver::OnGpuSwitching);
 }
-
-#if defined(OS_WIN)
-bool GpuDataManagerImplPrivate::IsUsingAcceleratedSurface() const {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-
-  if (use_swiftshader_)
-    return false;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableImageTransportSurface))
-    return false;
-  return !IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING);
-}
-#endif
 
 bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
   return !ShouldUseSwiftShader() &&
