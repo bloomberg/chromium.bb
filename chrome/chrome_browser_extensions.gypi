@@ -641,7 +641,6 @@
         'browser/extensions/app_sync_data.h',
         'browser/extensions/blacklist.cc',
         'browser/extensions/blacklist.h',
-        'browser/extensions/blacklist_state.h',
         'browser/extensions/blacklist_state_fetcher.cc',
         'browser/extensions/blacklist_state_fetcher.h',
         'browser/extensions/blob_reader.cc',

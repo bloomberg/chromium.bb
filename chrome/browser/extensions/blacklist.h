@@ -15,10 +15,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/blacklist_state.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/blacklist_state.h"
 
 namespace extensions {
 

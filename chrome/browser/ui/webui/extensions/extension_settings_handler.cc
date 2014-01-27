@@ -69,6 +69,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/lazy_background_task_queue.h"
@@ -255,6 +256,29 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
         IDS_OPTIONS_INSTALL_LOCATION_3RD_PARTY);
   }
   extension_data->SetString("locationText", location_text);
+
+  base::string16 blacklist_text;
+  switch (extension_service_->extension_prefs()->GetExtensionBlacklistState(
+              extension->id())) {
+    case BLACKLISTED_SECURITY_VULNERABILITY:
+      blacklist_text = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_BLACKLISTED_SECURITY_VULNERABILITY);
+      break;
+
+    case BLACKLISTED_CWS_POLICY_VIOLATION:
+      blacklist_text = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_BLACKLISTED_CWS_POLICY_VIOLATION);
+      break;
+
+    case BLACKLISTED_POTENTIALLY_UNWANTED:
+      blacklist_text = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_BLACKLISTED_POTENTIALLY_UNWANTED);
+      break;
+
+    default:
+      break;
+  }
+  extension_data->SetString("blacklistText", blacklist_text);
 
   // Force unpacked extensions to show at the top.
   if (Manifest::IsUnpackedLocation(extension->location()))

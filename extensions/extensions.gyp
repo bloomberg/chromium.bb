@@ -168,6 +168,7 @@
         'browser/admin_policy.cc',
         'browser/admin_policy.h',
         'browser/app_sorting.h',
+        'browser/blacklist_state.h',
         'browser/error_map.cc',
         'browser/error_map.h',
         'browser/event_listener_map.cc',

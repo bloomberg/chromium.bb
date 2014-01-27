@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_scoped_prefs.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -190,6 +191,16 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Called to change the extension's state when it is enabled/disabled.
   void SetExtensionState(const std::string& extension_id, Extension::State);
 
+  // Called to change the extension's BlacklistState. Currently only used for
+  // non-malicious extensions.
+  // TODO(oleg): replace SetExtensionBlacklisted by this function.
+  void SetExtensionBlacklistState(const std::string& extension_id,
+                                  BlacklistState state);
+
+  // Checks whether |extension_id| is marked as greylisted.
+  // TODO(oleg): Replace IsExtensionBlacklisted by this method.
+  BlacklistState GetExtensionBlacklistState(const std::string& extension_id);
+
   // Populates |out| with the ids of all installed extensions.
   void GetExtensions(ExtensionIdList* out);
 
@@ -241,7 +252,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
                            Extension::DisableReason disable_reason);
   void ClearDisableReasons(const std::string& extension_id);
 
-  // Gets the set of extensions that have been blacklisted in prefs.
+  // Gets the set of extensions that have been blacklisted in prefs. This will
+  // return only the blocked extensions, not the "greylist" extensions.
+  // TODO(oleg): Make method names consistent here, in extension service and in
+  // blacklist.
   std::set<std::string> GetBlacklistedExtensions();
 
   // Sets whether the extension with |id| is blacklisted.

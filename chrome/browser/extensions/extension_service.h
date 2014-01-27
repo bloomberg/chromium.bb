@@ -62,6 +62,8 @@ class SettingsFrontend;
 class UpdateObserver;
 }  // namespace extensions
 
+using extensions::ExtensionIdSet;
+
 namespace syncer {
 class SyncErrorFactory;
 }
@@ -601,6 +603,9 @@ class ExtensionService
 #endif
 
  private:
+  // Populates greylist_.
+  void LoadGreylistFromPrefs();
+
   // Signals *ready_ and sends a notification to the listeners.
   void SetReadyAndNotifyListeners();
 
@@ -668,7 +673,18 @@ class ExtensionService
 
   // Manages the blacklisted extensions, intended as callback from
   // Blacklist::GetBlacklistedIDs.
-  void ManageBlacklist(const std::set<std::string>& blacklisted_ids);
+  void ManageBlacklist(
+      const extensions::Blacklist::BlacklistStateMap& blacklisted_ids);
+
+  // Add extensions in |blocked| to blacklisted_extensions, remove extensions
+  // that are neither in |blocked|, nor in |unchanged|.
+  void UpdateBlockedExtensions(const ExtensionIdSet& blocked,
+                               const ExtensionIdSet& unchanged);
+
+  void UpdateGreylistedExtensions(
+      const ExtensionIdSet& greylist,
+      const ExtensionIdSet& unchanged,
+      const extensions::Blacklist::BlacklistStateMap& state_map);
 
   // Controls if installs are delayed. See comment for
   // |installs_delayed_for_gc_|.
@@ -700,6 +716,14 @@ class ExtensionService
 
   // Sets of enabled/disabled/terminated/blacklisted extensions. Not owned.
   extensions::ExtensionRegistry* registry_;
+
+  // Set of greylisted extensions. These extensions are disabled if they are
+  // already installed in Chromium at the time when they are added to
+  // the greylist. Unlike blacklisted extensions, greylisted ones are visible
+  // to the user and if user re-enables such an extension, they remain enabled.
+  //
+  // These extensions should appear in registry_.
+  extensions::ExtensionSet greylist_;
 
   // The list of extension installs delayed for various reasons.  The reason
   // for delayed install is stored in ExtensionPrefs. These are not part of
@@ -823,6 +847,12 @@ class ExtensionService
                            WillNotLoadBlacklistedExtensionsFromDirectory);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            BlacklistedInPrefsFromStartup);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           GreylistedExtensionDisabled);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           GreylistDontEnableManuallyDisabled);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           GreylistUnknownDontChange);
   DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };
 

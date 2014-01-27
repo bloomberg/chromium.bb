@@ -117,6 +117,9 @@ cr.define('options', function() {
       var locationText = node.querySelector('.location-text');
       locationText.textContent = extension.locationText;
 
+      var blacklistText = node.querySelector('.blacklist-text');
+      blacklistText.textContent = extension.blacklistText;
+
       var description = node.querySelector('.extension-description span');
       description.textContent = extension.description;
 

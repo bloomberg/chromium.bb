@@ -852,4 +852,48 @@ class ExtensionPrefsBlacklistedExtensions : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsBlacklistedExtensions,
        ExtensionPrefsBlacklistedExtensions) {}
 
+// Tests the blacklist state. Old "blacklist" preference should take precedence
+// over new "blacklist_state".
+class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
+ public:
+  virtual ~ExtensionPrefsBlacklistState() {}
+
+  virtual void Initialize() OVERRIDE {
+    extension_a_ = prefs_.AddExtension("a");
+  }
+
+  virtual void Verify() OVERRIDE {
+    ExtensionIdSet empty_ids;
+    EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
+
+    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+    EXPECT_EQ(BLACKLISTED_MALWARE,
+              prefs()->GetExtensionBlacklistState(extension_a_->id()));
+
+    prefs()->SetExtensionBlacklistState(extension_a_->id(),
+                                        BLACKLISTED_POTENTIALLY_UNWANTED);
+    EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED,
+              prefs()->GetExtensionBlacklistState(extension_a_->id()));
+    EXPECT_FALSE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
+    EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
+
+    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+    EXPECT_TRUE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
+    EXPECT_EQ(BLACKLISTED_MALWARE,
+              prefs()->GetExtensionBlacklistState(extension_a_->id()));
+    EXPECT_EQ(1u, prefs()->GetBlacklistedExtensions().size());
+
+    prefs()->SetExtensionBlacklistState(extension_a_->id(),
+                                        NOT_BLACKLISTED);
+    EXPECT_EQ(NOT_BLACKLISTED,
+              prefs()->GetExtensionBlacklistState(extension_a_->id()));
+    EXPECT_FALSE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
+    EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
+  }
+
+ private:
+  scoped_refptr<const Extension> extension_a_;
+};
+TEST_F(ExtensionPrefsBlacklistState, ExtensionPrefsBlacklistState) {}
+
 }  // namespace extensions

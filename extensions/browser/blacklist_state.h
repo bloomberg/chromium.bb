@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_BLACKLIST_STATE_H_
-#define CHROME_BROWSER_EXTENSIONS_BLACKLIST_STATE_H_
+#ifndef EXTENSIONS_BROWSER_BLACKLIST_STATE_H_
+#define EXTENSIONS_BROWSER_BLACKLIST_STATE_H_
 
 namespace extensions {
 
@@ -21,4 +21,4 @@ enum BlacklistState {
 
 } // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_BLACKLIST_STATE_H_
+#endif  // EXTENSIONS_BROWSER_BLACKLIST_STATE_H_

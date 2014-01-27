@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/blacklist_state.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
+#include "extensions/browser/blacklist_state.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 

@@ -66,6 +66,9 @@ const char kPrefVersion[] = "manifest.version";
 // Indicates whether an extension is blacklisted.
 const char kPrefBlacklist[] = "blacklist";
 
+// If extension is greylisted.
+const char kPrefBlacklistState[] = "blacklist_state";
+
 // The count of how many times we prompted the user to acknowledge an
 // extension.
 const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
@@ -761,12 +764,8 @@ std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() {
 void ExtensionPrefs::SetExtensionBlacklisted(const std::string& extension_id,
                                              bool is_blacklisted) {
   bool currently_blacklisted = IsExtensionBlacklisted(extension_id);
-  if (is_blacklisted == currently_blacklisted) {
-    NOTREACHED() << extension_id << " is " <<
-                    (currently_blacklisted ? "already" : "not") <<
-                    " blacklisted";
+  if (is_blacklisted == currently_blacklisted)
     return;
-  }
 
   // Always make sure the "acknowledged" bit is cleared since the blacklist bit
   // is changing.
@@ -1144,6 +1143,25 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
   bool enabled = (state == Extension::ENABLED);
   extension_pref_value_map_->SetExtensionState(extension_id, enabled);
   content_settings_store_->SetExtensionState(extension_id, enabled);
+}
+
+void ExtensionPrefs::SetExtensionBlacklistState(const std::string& extension_id,
+                                                BlacklistState state) {
+  SetExtensionBlacklisted(extension_id, state == BLACKLISTED_MALWARE);
+  UpdateExtensionPref(extension_id, kPrefBlacklistState,
+                      new base::FundamentalValue(state));
+}
+
+BlacklistState ExtensionPrefs::GetExtensionBlacklistState(
+    const std::string& extension_id) {
+  if (IsExtensionBlacklisted(extension_id))
+    return BLACKLISTED_MALWARE;
+  const base::DictionaryValue* ext_prefs = GetExtensionPref(extension_id);
+  int int_value;
+  if (ext_prefs && ext_prefs->GetInteger(kPrefBlacklistState, &int_value))
+    return static_cast<BlacklistState>(int_value);
+
+  return NOT_BLACKLISTED;
 }
 
 std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
