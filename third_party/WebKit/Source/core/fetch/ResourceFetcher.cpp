@@ -445,7 +445,7 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
     return true;
 }
 
-bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction)
+bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
 {
     SecurityOrigin* securityOrigin = options.securityOrigin.get();
     if (!securityOrigin && document())
@@ -550,30 +550,23 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     return true;
 }
 
-bool ResourceFetcher::canAccess(Resource* resource, CORSEnabled corsEnabled, FetchRequest::OriginRestriction originRestriction)
+bool ResourceFetcher::canAccessResource(Resource* resource, const KURL& url) const
 {
     // Redirects can change the response URL different from one of request.
-    if (!canRequest(resource->type(), resource->response().url(), resource->options(), false, originRestriction))
+    if (!canRequest(resource->type(), url, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
 
-    String error;
-    switch (resource->type()) {
-    case Resource::Script:
-    case Resource::ImportResource:
-        if (corsEnabled == PotentiallyCORSEnabled
-            && !m_document->securityOrigin()->canRequest(resource->response().url())
-            && !resource->passesAccessControlCheck(m_document->securityOrigin(), error)) {
-            if (frame() && frame()->document())
-                frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Script from origin '" + SecurityOrigin::create(resource->response().url())->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + error);
-            return false;
-        }
+    if (!document() || document()->securityOrigin()->canRequest(url))
+        return true;
 
-        break;
-    default:
-        ASSERT_NOT_REACHED(); // FIXME: generalize to non-script resources
+    String errorDescription;
+    if (!resource->passesAccessControlCheck(document()->securityOrigin(), errorDescription)) {
+        if (frame() && frame()->document()) {
+            String resourceType = Resource::resourceTypeToString(resource->type(), resource->options().initiatorInfo);
+            frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
+        }
         return false;
     }
-
     return true;
 }
 
@@ -622,7 +615,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     // See if we can use an existing resource from the cache.
     ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url);
 
-    const RevalidationPolicy policy = determineRevalidationPolicy(type, request.mutableResourceRequest(), request.forPreload(), resource.get(), request.defer());
+    const RevalidationPolicy policy = determineRevalidationPolicy(type, request.mutableResourceRequest(), request.forPreload(), resource.get(), request.defer(), request.options());
     switch (policy) {
     case Reload:
         memoryCache()->remove(resource.get());
@@ -842,7 +835,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(const ResourcePtr<
     }
 }
 
-ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, ResourceRequest& request, bool forPreload, Resource* existingResource, FetchRequest::DeferOption defer) const
+ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, ResourceRequest& request, bool forPreload, Resource* existingResource, FetchRequest::DeferOption defer, const ResourceLoaderOptions& options) const
 {
     if (!existingResource)
         return Load;
@@ -898,6 +891,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to Cache-control: no-store.");
         return Reload;
     }
+
+    // If fetching a resource with a different 'CORS enabled' flag, reload.
+    if (type != Resource::MainResource && options.corsEnabled != existingResource->options().corsEnabled)
+        return Reload;
 
     // If credentials were sent with the previous request and won't be
     // with this one, or vice versa, re-fetch the resource.

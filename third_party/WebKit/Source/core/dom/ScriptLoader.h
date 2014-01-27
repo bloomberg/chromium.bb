@@ -50,12 +50,6 @@ public:
     void executeScript(const ScriptSourceCode&);
     void execute(ScriptResource*);
 
-    // Check if potentially cross-origin enabled script is accessible
-    // prior to execution. Returns 'false' if not accessible, signalling
-    // that callers must not dispatch load events as the cross-origin
-    // fetch failed.
-    bool executePotentiallyCrossOriginScript(const ScriptSourceCode&);
-
     // XML parser calls these
     void dispatchLoadEvent();
     void dispatchErrorEvent();
@@ -71,7 +65,6 @@ public:
     bool isParserInserted() const { return m_parserInserted; }
     bool alreadyStarted() const { return m_alreadyStarted; }
     bool forceAsync() const { return m_forceAsync; }
-    bool isPotentiallyCORSEnabled() const { return m_isPotentiallyCORSEnabled; }
 
     // Helper functions used by our parent classes.
     void didNotifySubtreeInsertionsToDocument();
@@ -105,7 +98,6 @@ private:
     bool m_willExecuteWhenDocumentFinishedParsing : 1;
     bool m_forceAsync : 1;
     bool m_willExecuteInOrder : 1;
-    bool m_isPotentiallyCORSEnabled : 1;
     String m_characterEncoding;
     String m_fallbackCharacterEncoding;
 };

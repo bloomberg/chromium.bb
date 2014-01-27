@@ -91,6 +91,8 @@ private:
 
     void didFinishLoadingOnePart(double finishTime);
 
+    bool responseNeedsAccessControlCheck() const;
+
     OwnPtr<blink::WebURLLoader> m_loader;
     RefPtr<ResourceLoaderHost> m_host;
 

@@ -39,8 +39,8 @@ public:
     static PassRefPtr<CSSImageValue> create(const KURL& url, StyleImage* image) { return adoptRef(new CSSImageValue(url, image)); }
     ~CSSImageValue();
 
-    StyleFetchedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&, CORSEnabled);
-    StyleFetchedImage* cachedImage(ResourceFetcher* fetcher) { return cachedImage(fetcher, ResourceFetcher::defaultResourceOptions(), NotCORSEnabled); }
+    StyleFetchedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&);
+    StyleFetchedImage* cachedImage(ResourceFetcher* fetcher) { return cachedImage(fetcher, ResourceFetcher::defaultResourceOptions()); }
     // Returns a StyleFetchedImage if the image is cached already, otherwise a StylePendingImage.
     StyleImage* cachedOrPendingImage();
 

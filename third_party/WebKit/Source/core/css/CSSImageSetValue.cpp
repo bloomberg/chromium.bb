@@ -88,7 +88,7 @@ CSSImageSetValue::ImageWithScale CSSImageSetValue::bestImageForScaleFactor()
     return image;
 }
 
-StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, float deviceScaleFactor, const ResourceLoaderOptions& options, CORSEnabled corsEnabled)
+StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, float deviceScaleFactor, const ResourceLoaderOptions& options)
 {
     ASSERT(loader);
 
@@ -105,8 +105,8 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, 
         if (Document* document = loader->document()) {
             FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css, options);
 
-            if (corsEnabled == PotentiallyCORSEnabled)
-                updateRequestForAccessControl(request.mutableResourceRequest(), loader->document()->securityOrigin(), options.allowCredentials);
+            if (options.corsEnabled == IsCORSEnabled)
+                request.setCrossOriginAccessControl(loader->document()->securityOrigin(), options.allowCredentials);
 
             if (ResourcePtr<ImageResource> cachedImage = loader->fetchImage(request)) {
                 m_imageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);
@@ -120,7 +120,7 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, 
 
 StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* fetcher, float deviceScaleFactor)
 {
-    return cachedImageSet(fetcher, deviceScaleFactor, ResourceFetcher::defaultResourceOptions(), NotCORSEnabled);
+    return cachedImageSet(fetcher, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
 }
 
 StyleImage* CSSImageSetValue::cachedOrPendingImageSet(float deviceScaleFactor)

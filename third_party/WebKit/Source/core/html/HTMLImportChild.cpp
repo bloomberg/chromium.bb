@@ -177,7 +177,7 @@ void HTMLImportChild::createLoader()
 {
     ASSERT(!isStateBlockedFromCreatingDocument());
     ASSERT(!m_loader);
-    m_loader = HTMLImportLoader::create(this, parent()->document()->fetcher());
+    m_loader = HTMLImportLoader::create(this);
     m_loader->addClient(this);
     m_loader->startLoading(resource());
 }

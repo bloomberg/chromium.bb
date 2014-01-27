@@ -72,6 +72,7 @@ FetchRequest::~FetchRequest()
 void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, StoredCredentials allowCredentials)
 {
     updateRequestForAccessControl(m_resourceRequest, origin, allowCredentials);
+    m_options.corsEnabled = IsCORSEnabled;
 }
 
 } // namespace WebCore

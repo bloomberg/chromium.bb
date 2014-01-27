@@ -70,10 +70,10 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, cons
     }
 }
 
-static PassRefPtr<StyleImage> doLoadPendingImage(ResourceFetcher* fetcher, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options, CORSEnabled corsEnabled)
+static PassRefPtr<StyleImage> doLoadPendingImage(ResourceFetcher* fetcher, StylePendingImage* pendingImage, float deviceScaleFactor, const ResourceLoaderOptions& options)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
-        return imageValue->cachedImage(fetcher, options, corsEnabled);
+        return imageValue->cachedImage(fetcher, options);
 
     if (CSSImageGeneratorValue* imageGeneratorValue
         = pendingImage->cssImageGeneratorValue()) {
@@ -86,14 +86,14 @@ static PassRefPtr<StyleImage> doLoadPendingImage(ResourceFetcher* fetcher, Style
         return cursorImageValue->cachedImage(fetcher, deviceScaleFactor);
 
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
-        return imageSetValue->cachedImageSet(fetcher, deviceScaleFactor, options, corsEnabled);
+        return imageSetValue->cachedImageSet(fetcher, deviceScaleFactor, options);
 
     return 0;
 }
 
 PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)
 {
-    return doLoadPendingImage(m_fetcher, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions(), NotCORSEnabled);
+    return doLoadPendingImage(m_fetcher, pendingImage, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
 }
 
 void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeValue* shapeValue, float deviceScaleFactor)
@@ -107,8 +107,9 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
 
     ResourceLoaderOptions options = ResourceFetcher::defaultResourceOptions();
     options.allowCredentials = DoNotAllowStoredCredentials;
+    options.corsEnabled = IsCORSEnabled;
 
-    shapeValue->setImage(doLoadPendingImage(m_fetcher, toStylePendingImage(image), deviceScaleFactor, options, PotentiallyCORSEnabled));
+    shapeValue->setImage(doLoadPendingImage(m_fetcher, toStylePendingImage(image), deviceScaleFactor, options));
 }
 
 void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementStyleResources& elementStyleResources)

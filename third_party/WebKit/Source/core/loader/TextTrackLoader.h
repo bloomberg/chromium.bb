@@ -78,14 +78,13 @@ private:
     TextTrackLoader(TextTrackLoaderClient&, Document&);
 
     void cueLoadTimerFired(Timer<TextTrackLoader>*);
-    void corsPolicyPreventedLoad();
+    void corsPolicyPreventedLoad(SecurityOrigin*, const KURL&);
 
     TextTrackLoaderClient& m_client;
     OwnPtr<VTTParser> m_cueParser;
     // FIXME: Remove this pointer and get the Document from m_client.
     Document& m_document;
     Timer<TextTrackLoader> m_cueLoadTimer;
-    String m_crossOriginMode;
     State m_state;
     bool m_newCuesAvailable;
 };

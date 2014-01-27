@@ -42,15 +42,8 @@
 
 namespace WebCore {
 
-PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* import, ResourceFetcher* fetcher)
-{
-    RefPtr<HTMLImportLoader> self = adoptRef(new HTMLImportLoader(import, fetcher));
-    return self.release();
-}
-
-HTMLImportLoader::HTMLImportLoader(HTMLImport* import, ResourceFetcher* fetcher)
+HTMLImportLoader::HTMLImportLoader(HTMLImport* import)
     : m_import(import)
-    , m_fetcher(fetcher)
     , m_state(StateLoading)
 {
 }
@@ -68,12 +61,12 @@ void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
 
 void HTMLImportLoader::responseReceived(Resource* resource, const ResourceResponse& response)
 {
-    // Current canAccess() implementation isn't sufficient for catching cross-domain redirects: http://crbug.com/256976
-    if (!m_fetcher->canAccess(resource, PotentiallyCORSEnabled)) {
+    // Resource may already have been loaded with the import loader
+    // being added as a client later & now being notified. Fail early.
+    if (resource->loadFailedOrCanceled()) {
         setState(StateError);
         return;
     }
-
     setState(startWritingAndParsing(response));
 }
 
@@ -168,6 +161,5 @@ void HTMLImportLoader::removeClient(HTMLImportLoaderClient* client)
     ASSERT(kNotFound != m_clients.find(client));
     m_clients.remove(m_clients.find(client));
 }
-
 
 } // namespace WebCore

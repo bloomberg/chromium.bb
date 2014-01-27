@@ -92,6 +92,13 @@ enum SynchronousPolicy {
     RequestAsynchronously
 };
 
+// A resource fetch can be marked as being CORS enabled. The loader
+// must perform an access check upon seeing the response.
+enum CORSEnabled {
+    NotCORSEnabled,
+    IsCORSEnabled
+};
+
 struct ResourceLoaderOptions {
     ResourceLoaderOptions()
         : sniffContent(DoNotSniffContent)
@@ -104,6 +111,7 @@ struct ResourceLoaderOptions {
         , requestInitiatorContext(DocumentContext)
         , mixedContentBlockingTreatment(TreatAsDefaultForType)
         , synchronousPolicy(RequestAsynchronously)
+        , corsEnabled(NotCORSEnabled)
     {
     }
 
@@ -126,6 +134,7 @@ struct ResourceLoaderOptions {
         , requestInitiatorContext(requestInitiatorContext)
         , mixedContentBlockingTreatment(TreatAsDefaultForType)
         , synchronousPolicy(RequestAsynchronously)
+        , corsEnabled(NotCORSEnabled)
     {
     }
 
@@ -140,6 +149,7 @@ struct ResourceLoaderOptions {
     RequestInitiatorContext requestInitiatorContext;
     MixedContentBlockingTreatment mixedContentBlockingTreatment;
     SynchronousPolicy synchronousPolicy;
+    CORSEnabled corsEnabled; // If the resource is loaded out-of-origin, whether or not to use CORS.
     RefPtr<SecurityOrigin> securityOrigin;
 };
 

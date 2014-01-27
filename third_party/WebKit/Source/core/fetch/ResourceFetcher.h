@@ -61,11 +61,6 @@ class KURL;
 class ResourceTimingInfo;
 class ResourceLoaderSet;
 
-enum CORSEnabled {
-    NotCORSEnabled,
-    PotentiallyCORSEnabled // Indicates "potentially CORS-enabled fetch" in HTML standard.
-};
-
 // The ResourceFetcher provides a per-context interface to the MemoryCache
 // and enforces a bunch of security checks and rules for resource revalidation.
 // Its lifetime is roughly per-DocumentLoader, in that it is generally created
@@ -133,7 +128,6 @@ public:
     void preload(Resource::Type, FetchRequest&, const String& charset);
     void checkForPendingPreloads();
     void printPreloadStats();
-    bool canAccess(Resource*, CORSEnabled, FetchRequest::OriginRestriction = FetchRequest::UseDefaultOriginRestrictionForType);
 
     void setDefersLoading(bool);
     void stopFetching();
@@ -158,6 +152,7 @@ public:
     virtual bool defersLoading() const OVERRIDE;
     virtual bool isLoadedBy(ResourceLoaderHost*) const OVERRIDE;
     virtual bool shouldRequest(Resource*, const ResourceRequest&, const ResourceLoaderOptions&) OVERRIDE;
+    virtual bool canAccessResource(Resource*, const KURL&) const OVERRIDE;
     virtual void refResourceLoaderHost() OVERRIDE;
     virtual void derefResourceLoaderHost() OVERRIDE;
 
@@ -177,13 +172,13 @@ private:
     void requestPreload(Resource::Type, FetchRequest&, const String& charset);
 
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
-    RevalidationPolicy determineRevalidationPolicy(Resource::Type, ResourceRequest&, bool forPreload, Resource* existingResource, FetchRequest::DeferOption) const;
+    RevalidationPolicy determineRevalidationPolicy(Resource::Type, ResourceRequest&, bool forPreload, Resource* existingResource, FetchRequest::DeferOption, const ResourceLoaderOptions&) const;
 
     void determineTargetType(ResourceRequest&, Resource::Type);
     ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
 
-    bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction);
+    bool canRequest(Resource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const;
     bool checkInsecureContent(Resource::Type, const KURL&, MixedContentBlockingTreatment) const;
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);

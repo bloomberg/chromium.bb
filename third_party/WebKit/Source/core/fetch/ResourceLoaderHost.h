@@ -70,6 +70,7 @@ public:
     virtual void willStartLoadingResource(ResourceRequest&) = 0;
 
     virtual bool shouldRequest(Resource*, const ResourceRequest&, const ResourceLoaderOptions&) = 0;
+    virtual bool canAccessResource(Resource*, const KURL&) const = 0;
     virtual bool defersLoading() const = 0;
     virtual bool isLoadedBy(ResourceLoaderHost*) const = 0;
 

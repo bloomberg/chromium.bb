@@ -293,6 +293,12 @@ void ResourceLoader::didSendData(blink::WebURLLoader*, unsigned long long bytesS
     m_resource->didSendData(bytesSent, totalBytesToBeSent);
 }
 
+bool ResourceLoader::responseNeedsAccessControlCheck() const
+{
+    // If the fetch was (potentially) CORS enabled, an access control check of the response is required.
+    return m_options.corsEnabled == IsCORSEnabled;
+}
+
 void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse& response)
 {
     ASSERT(!response.isNull());
@@ -304,14 +310,24 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     RELEASE_ASSERT(isMultipartPayload || isValidStateTransition);
     m_connectionState = ConnectionStateReceivedResponse;
 
+    const ResourceResponse& resourceResponse = response.toResourceResponse();
+
+    if (responseNeedsAccessControlCheck()) {
+        m_resource->setResponse(resourceResponse);
+        if (!m_host->canAccessResource(m_resource, response.url())) {
+            cancel();
+            return;
+        }
+    }
+
     // Reference the object in this method since the additional processing can do
     // anything including removing the last reference to this object.
     RefPtr<ResourceLoader> protect(this);
-    m_resource->responseReceived(response.toResourceResponse());
+    m_resource->responseReceived(resourceResponse);
     if (m_state == Terminated)
         return;
 
-    m_host->didReceiveResponse(m_resource, response.toResourceResponse());
+    m_host->didReceiveResponse(m_resource, resourceResponse);
 
     if (response.toResourceResponse().isMultipart()) {
         // We don't count multiParts in a ResourceFetcher's request count

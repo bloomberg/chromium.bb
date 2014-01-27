@@ -60,7 +60,7 @@ StyleImage* CSSImageValue::cachedOrPendingImage()
     return m_image.get();
 }
 
-StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const ResourceLoaderOptions& options, CORSEnabled corsEnabled)
+StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
     ASSERT(fetcher);
 
@@ -69,8 +69,8 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const Re
 
         FetchRequest request(ResourceRequest(m_url), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
 
-        if (corsEnabled == PotentiallyCORSEnabled)
-            updateRequestForAccessControl(request.mutableResourceRequest(), fetcher->document()->securityOrigin(), options.allowCredentials);
+        if (options.corsEnabled == IsCORSEnabled)
+            request.setCrossOriginAccessControl(fetcher->document()->securityOrigin(), options.allowCredentials);
 
         if (ResourcePtr<ImageResource> cachedImage = fetcher->fetchImage(request))
             m_image = StyleFetchedImage::create(cachedImage.get());

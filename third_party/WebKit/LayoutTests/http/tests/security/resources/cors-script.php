@@ -7,6 +7,9 @@ if (strtolower($_GET["credentials"]) == "true") {
 }
 header("Content-Type: application/javascript");
 $value = $_GET['value'];
+if ($_SERVER['HTTP_ORIGIN'] && $_GET['value_cors']) {
+    $value = $_GET['value_cors'];
+}
 if ($value)
     echo "result = \"" . $value . "\";";
 else if (strtolower($_GET["fail"]) == "true")

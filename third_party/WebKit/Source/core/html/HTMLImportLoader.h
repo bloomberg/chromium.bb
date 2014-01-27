@@ -57,7 +57,10 @@ public:
         StateReady
     };
 
-    static PassRefPtr<HTMLImportLoader> create(HTMLImport*, ResourceFetcher*);
+    static PassRefPtr<HTMLImportLoader> create(HTMLImport* import)
+    {
+        return adoptRef(new HTMLImportLoader(import));
+    }
 
     virtual ~HTMLImportLoader();
 
@@ -74,7 +77,7 @@ public:
     bool isOwnedBy(const HTMLImport* import) const { return m_import == import; }
 
 private:
-    HTMLImportLoader(HTMLImport*, ResourceFetcher*);
+    HTMLImportLoader(HTMLImport*);
 
     // RawResourceClient
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
@@ -89,7 +92,6 @@ private:
     void didFinish();
 
     HTMLImport* m_import;
-    ResourceFetcher* m_fetcher;
     Vector<HTMLImportLoaderClient*> m_clients;
     State m_state;
     RefPtr<Document> m_importedDocument;

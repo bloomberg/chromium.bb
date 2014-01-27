@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/fetch/Resource.h"
 
+#include "FetchInitiatorTypeNames.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/MemoryCache.h"
@@ -888,6 +889,64 @@ void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
     m_resourcesWithPendingClients.clear();
     for (size_t i = 0; i < resources.size(); i++)
         resources[i]->finishPendingClients();
+}
+
+static const char* initatorTypeNameToString(const AtomicString& initiatorTypeName)
+{
+    if (initiatorTypeName == FetchInitiatorTypeNames::css)
+        return "CSS resource";
+    if (initiatorTypeName == FetchInitiatorTypeNames::document)
+        return "Document";
+    if (initiatorTypeName == FetchInitiatorTypeNames::icon)
+        return "Icon";
+    if (initiatorTypeName == FetchInitiatorTypeNames::internal)
+        return "Internal resource";
+    if (initiatorTypeName == FetchInitiatorTypeNames::link)
+        return "Link element resource";
+    if (initiatorTypeName == FetchInitiatorTypeNames::processinginstruction)
+        return "Processing instruction";
+    if (initiatorTypeName == FetchInitiatorTypeNames::texttrack)
+        return "Text track";
+    if (initiatorTypeName == FetchInitiatorTypeNames::xml)
+        return "XML resource";
+    if (initiatorTypeName == FetchInitiatorTypeNames::xmlhttprequest)
+        return "XMLHttpRequest";
+
+    return "Resource";
+}
+
+const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& initiatorInfo)
+{
+    switch (type) {
+    case Resource::MainResource:
+        return "Main resource";
+    case Resource::Image:
+        return "Image";
+    case Resource::CSSStyleSheet:
+        return "CSS stylesheet";
+    case Resource::Script:
+        return "Script";
+    case Resource::Font:
+        return "Font";
+    case Resource::Raw:
+        return initatorTypeNameToString(initiatorInfo.name);
+    case Resource::SVGDocument:
+        return "SVG document";
+    case Resource::XSLStyleSheet:
+        return "XSL stylesheet";
+    case Resource::LinkPrefetch:
+        return "Link prefetch resource";
+    case Resource::LinkSubresource:
+        return "Link subresource";
+    case Resource::TextTrack:
+        return "Text track";
+    case Resource::Shader:
+        return "Shader";
+    case Resource::ImportResource:
+        return "Imported resource";
+    }
+    ASSERT_NOT_REACHED();
+    return initatorTypeNameToString(initiatorInfo.name);
 }
 
 #if !LOG_DISABLED

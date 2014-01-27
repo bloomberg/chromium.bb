@@ -36,6 +36,7 @@
 
 namespace WebCore {
 
+struct FetchInitiatorInfo;
 class MemoryCache;
 class CachedMetadata;
 class ResourceClient;
@@ -249,6 +250,8 @@ public:
     double loadFinishTime() const { return m_loadFinishTime; }
 
     virtual bool canReuse(const ResourceRequest&) const { return true; }
+
+    static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
 
 protected:
     virtual void checkNotify();

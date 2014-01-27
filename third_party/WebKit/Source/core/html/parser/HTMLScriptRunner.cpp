@@ -137,8 +137,8 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
             scriptLoader->dispatchErrorEvent();
         else {
             ASSERT(isExecutingScript());
-            if (scriptLoader->executePotentiallyCrossOriginScript(sourceCode))
-                element->dispatchEvent(createScriptLoadEvent());
+            scriptLoader->executeScript(sourceCode);
+            element->dispatchEvent(createScriptLoadEvent());
         }
     }
     ASSERT(!isExecutingScript());
